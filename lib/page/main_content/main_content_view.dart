@@ -14,16 +14,16 @@ class MainContentPage extends StatelessWidget {
 
     return Scaffold(
         appBar: AppBar(
-          title: Text(I18nKey.theme.tr),
+          title: Text(I18nKey.content.tr),
         ),
         body: ListView(
           children: <Widget>[
             ListTile(
-              title: Text(I18nKey.themeDark.tr),
+              title: Text("1111"),
               onTap: () => {},
             ),
             ListTile(
-              title: Text(I18nKey.themeLight.tr),
+              title: Text("2222"),
               onTap: () => {},
             ),
           ],
