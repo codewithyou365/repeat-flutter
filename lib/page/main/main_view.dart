@@ -24,14 +24,14 @@ class MainPage extends StatelessWidget {
           children: [
             Row(
               children: [
+                const Spacer(),
                 Container(
-                  padding: EdgeInsets.only(left: 32.w),
+                  padding: EdgeInsets.only(right: 40.w),
                   child: InkWell(
                     onTap: () => {Nav.mainSettings.push()},
                     child: Text(I18nKey.settings.tr),
                   ),
                 ),
-                const Spacer(),
               ],
             ),
             const Spacer(),

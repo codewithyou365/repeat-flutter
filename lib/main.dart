@@ -23,17 +23,19 @@ class MyApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (_, child) {
-        return GetMaterialApp(
-          translations: I18nTranslations(),
-          locale: I18nLocal.en.locale,
-          initialRoute: Nav.initialRoute,
-          getPages: Nav.getPages,
-          themeMode: logic.themeMode.value,
-          theme: logic.themeMode.value == ThemeMode.light ? ThemeData.light() : ThemeData.dark(),
-          debugShowCheckedModeBanner: false,
-          title: 'First Method',
-          home: child,
-        );
+        return Obx(() {
+          return GetMaterialApp(
+            translations: I18nTranslations(),
+            locale: I18nLocal.en.locale,
+            initialRoute: Nav.initialRoute,
+            getPages: Nav.getPages,
+            themeMode: logic.themeMode.value,
+            theme: logic.themeMode.value == ThemeMode.light ? ThemeData.light() : ThemeData.dark(),
+            debugShowCheckedModeBanner: false,
+            title: 'First Method',
+            home: child,
+          );
+        });
       },
     );
   }

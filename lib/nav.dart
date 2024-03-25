@@ -58,9 +58,7 @@ enum Nav {
     ),
     GetPage(
       name: mainSettings.toPath(),
-      transition: Transition.leftToRight,
-      fullscreenDialog: true,
-      popGesture: false,
+      transition: Transition.rightToLeft,
       page: () => MainSettingsPage(),
     ),
     GetPage(

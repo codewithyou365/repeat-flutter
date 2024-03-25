@@ -8,11 +8,7 @@ class MainSettingsThemeLogic extends GetxController {
   final MainSettingsThemeState state = MainSettingsThemeState();
 
   set(ThemeMode mode) {
-    Get.changeThemeMode(mode);
-    if (mode == ThemeMode.dark) {
-      Get.changeTheme(ThemeData.dark());
-    } else if (mode == ThemeMode.light) {
-      Get.changeTheme(ThemeData.light());
-    }
+    var myAppLogic = Get.find<MyAppLogic>();
+    myAppLogic.themeMode.value = mode;
   }
 }
