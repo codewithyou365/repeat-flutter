@@ -8,7 +8,7 @@ import 'i18n/i18n_translations.dart';
 void main() => runApp(MyApp());
 
 class MyAppLogic extends GetxController {
-  final themeMode = ThemeMode.dark.obs;
+  final themeMode = ThemeMode.light.obs;
 }
 
 class MyApp extends StatelessWidget {
@@ -25,6 +25,7 @@ class MyApp extends StatelessWidget {
       builder: (_, child) {
         return GetMaterialApp(
           translations: I18nTranslations(),
+          locale: I18nLocal.en.locale,
           initialRoute: Nav.initialRoute,
           getPages: Nav.getPages,
           themeMode: logic.themeMode.value,

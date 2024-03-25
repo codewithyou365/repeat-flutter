@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/nav.dart';
 
 import 'main_logic.dart';
 
@@ -12,26 +15,44 @@ class MainPage extends StatelessWidget {
     final state = Get.find<MainLogic>().state;
 
     return Scaffold(
-      body: Container(
-        child: Text("nihao"),
+      appBar: AppBar(
+        title: const Text(""),
       ),
-      bottomNavigationBar: Obx(() => BottomNavigationBar(
-          currentIndex: state.bottomNavigationBarIndex.value,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.text_snippet),
-              label: 'Home',
+      body: Container(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.only(left: 32.w),
+                  child: InkWell(
+                    onTap: () => {Nav.mainSettings.push()},
+                    child: Text(I18nKey.settings.tr),
+                  ),
+                ),
+                const Spacer(),
+              ],
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.search),
-              label: 'Search',
+            const Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              // Distribute buttons evenly
+              children: [
+                InkWell(
+                  onTap: () => {Nav.mainContent.push()},
+                  child: Text(I18nKey.content.tr),
+                ),
+                InkWell(
+                  onTap: () => {},
+                  child: Text(I18nKey.statistic.tr),
+                ),
+              ],
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
-              label: 'Settings', // Replace with desired label
-            ),
+            Container(padding: EdgeInsets.all(16.w))
           ],
-          onTap: logic.onBottomNavigationBarTap)),
+        ),
+      ),
     );
   }
 }

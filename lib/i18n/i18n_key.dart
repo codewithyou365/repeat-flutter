@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 enum I18nKey {
   appName,
   settings,
+  content,
+  statistic,
   language,
   theme,
   themeDark,

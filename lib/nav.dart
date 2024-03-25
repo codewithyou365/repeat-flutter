@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 import 'package:repeat_flutter/page/main/main_binding.dart';
 import 'package:repeat_flutter/page/main/main_view.dart';
+import 'package:repeat_flutter/page/main_content/main_content_binding.dart';
+import 'package:repeat_flutter/page/main_content/main_content_view.dart';
 import 'package:repeat_flutter/page/main_settings/main_settings_view.dart';
 import 'package:repeat_flutter/page/main_settings_lang/main_settings_lang_binding.dart';
 import 'package:repeat_flutter/page/main_settings_lang/main_settings_lang_view.dart';
@@ -10,6 +12,7 @@ import 'package:repeat_flutter/page/main_settings_theme/main_settings_theme_view
 
 enum Nav {
   main,
+  mainContent,
   mainSettings,
   mainSettingsLang,
   mainSettingsTheme,
@@ -46,8 +49,18 @@ enum Nav {
         binding: MainBinding()
     ),
     GetPage(
+        name: mainContent.toPath(),
+        transition: Transition.downToUp,
+        fullscreenDialog: true,
+        popGesture: false,
+        page: () => MainContentPage(),
+        binding: MainContentBinding()
+    ),
+    GetPage(
       name: mainSettings.toPath(),
-      transition: Transition.rightToLeft,
+      transition: Transition.leftToRight,
+      fullscreenDialog: true,
+      popGesture: false,
       page: () => MainSettingsPage(),
     ),
     GetPage(

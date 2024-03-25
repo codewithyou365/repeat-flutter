@@ -7,6 +7,8 @@ class ConfigEn extends Config {
   ConfigEn({Map<String, String>? defaultData}) : super(defaultData) {
     put(I18nKey.appName, "Repeat");
     put(I18nKey.settings, "Settings");
+    put(I18nKey.content, "Content");
+    put(I18nKey.statistic, "Stats");
     put(I18nKey.language, "Language");
     put(I18nKey.theme, "Theme");
     put(I18nKey.themeDark, "Dart");
