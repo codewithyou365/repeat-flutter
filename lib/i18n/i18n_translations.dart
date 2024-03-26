@@ -20,13 +20,20 @@ extension I18nLocalExtension on I18nLocal {
   }
 }
 
+extension I18nLocalFromString on I18nLocal {
+  static I18nLocal c(String value) {
+    return I18nLocal.values.firstWhere(
+      (e) => e.toString().split('.')[1].toUpperCase() == value.toUpperCase(),
+      orElse: () => I18nLocal.en,
+    );
+  }
+}
+
+final ConfigEn configEn = ConfigEn();
+
 class I18nTranslations extends Translations {
-  final ConfigEn configEn = ConfigEn();
+  static final Map<String, Map<String, String>> data = {I18nLocal.en.name: configEn.data, I18nLocal.zh.name: ConfigZh(defaultData: configEn.data).data};
 
   @override
-  Map<String, Map<String, String>> get keys =>
-      {
-        I18nLocal.en.name: configEn.data,
-        I18nLocal.zh.name: ConfigZh(defaultData: configEn.data).data
-      };
+  Map<String, Map<String, String>> get keys => data;
 }
