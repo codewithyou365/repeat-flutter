@@ -63,6 +63,8 @@ class _$AppDatabase extends AppDatabase {
 
   SettingsDao? _settingsDaoInstance;
 
+  CacheFileDao? _cacheFileDaoInstance;
+
   Future<sqflite.Database> open(
     String path,
     List<Migration> migrations, [
@@ -86,6 +88,8 @@ class _$AppDatabase extends AppDatabase {
       onCreate: (database, version) async {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Settings` (`id` INTEGER NOT NULL, `themeMode` TEXT NOT NULL, `i18n` TEXT NOT NULL, PRIMARY KEY (`id`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `CacheFile` (`url` TEXT NOT NULL, `success` INTEGER NOT NULL, `msg` TEXT NOT NULL, PRIMARY KEY (`url`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -96,6 +100,11 @@ class _$AppDatabase extends AppDatabase {
   @override
   SettingsDao get settingsDao {
     return _settingsDaoInstance ??= _$SettingsDao(database, changeListener);
+  }
+
+  @override
+  CacheFileDao get cacheFileDao {
+    return _cacheFileDaoInstance ??= _$CacheFileDao(database, changeListener);
   }
 }
 
@@ -147,5 +156,58 @@ class _$SettingsDao extends SettingsDao {
   @override
   Future<void> updateSettings(Settings settings) async {
     await _settingsUpdateAdapter.update(settings, OnConflictStrategy.replace);
+  }
+}
+
+class _$CacheFileDao extends CacheFileDao {
+  _$CacheFileDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _cacheFileInsertionAdapter = InsertionAdapter(
+            database,
+            'CacheFile',
+            (CacheFile item) => <String, Object?>{
+                  'url': item.url,
+                  'success': item.success ? 1 : 0,
+                  'msg': item.msg
+                }),
+        _cacheFileUpdateAdapter = UpdateAdapter(
+            database,
+            'CacheFile',
+            ['url'],
+            (CacheFile item) => <String, Object?>{
+                  'url': item.url,
+                  'success': item.success ? 1 : 0,
+                  'msg': item.msg
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<CacheFile> _cacheFileInsertionAdapter;
+
+  final UpdateAdapter<CacheFile> _cacheFileUpdateAdapter;
+
+  @override
+  Future<CacheFile?> one() async {
+    return _queryAdapter.query('SELECT * FROM CacheFile limit 1',
+        mapper: (Map<String, Object?> row) => CacheFile(
+            row['url'] as String, (row['success'] as int) != 0,
+            msg: row['msg'] as String));
+  }
+
+  @override
+  Future<void> insertCacheFile(CacheFile settings) async {
+    await _cacheFileInsertionAdapter.insert(
+        settings, OnConflictStrategy.replace);
+  }
+
+  @override
+  Future<void> updateCacheFile(CacheFile settings) async {
+    await _cacheFileUpdateAdapter.update(settings, OnConflictStrategy.replace);
   }
 }

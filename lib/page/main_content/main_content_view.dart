@@ -19,15 +19,14 @@ class MainContentPage extends StatelessWidget {
         body: ListView(
           children: <Widget>[
             ListTile(
-              title: Text("1111"),
-              onTap: () => {},
+              title: Text("DownloadTest"),
+              onTap: () => {logic.downloadTest(context)},
             ),
             ListTile(
               title: Text("2222"),
               onTap: () => {},
             ),
           ],
-        )
-    );
+        ));
   }
 }
