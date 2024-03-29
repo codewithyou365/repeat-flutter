@@ -9,8 +9,8 @@ abstract class CacheFileDao {
   Future<CacheFile?> one();
 
   @Insert(onConflict: OnConflictStrategy.replace)
-  Future<void> insertCacheFile(CacheFile settings);
+  Future<void> insertCacheFile(CacheFile data);
 
   @Update(onConflict: OnConflictStrategy.replace)
-  Future<void> updateCacheFile(CacheFile settings);
+  Future<void> updateCacheFile(CacheFile data);
 }

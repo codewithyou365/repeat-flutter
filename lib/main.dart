@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var logic = Get.find<MyAppLogic>();
-
+    var locale = logic.i18nLocal.value.locale;
     return ScreenUtilInit(
       designSize: const Size(360, 690),
       minTextAdapt: true,
@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
         return Obx(() {
           return GetMaterialApp(
             translations: I18nTranslations(),
-            locale: logic.i18nLocal.value.locale,
+            locale: locale,
             initialRoute: Nav.initialRoute,
             getPages: Nav.getPages,
             themeMode: logic.themeMode.value,

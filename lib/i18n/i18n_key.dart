@@ -11,6 +11,10 @@ enum I18nKey {
   theme,
   themeDark,
   themeLight,
+  btnDelete,
+  btnEdit,
+  btnCopy,
+  btnDownload,
   ;
 
   String trArgs([List<String> args = const []]) {

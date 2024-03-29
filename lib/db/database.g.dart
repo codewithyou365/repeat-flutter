@@ -65,6 +65,8 @@ class _$AppDatabase extends AppDatabase {
 
   CacheFileDao? _cacheFileDaoInstance;
 
+  ContentIndexDao? _contentIndexDaoInstance;
+
   Future<sqflite.Database> open(
     String path,
     List<Migration> migrations, [
@@ -90,6 +92,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE TABLE IF NOT EXISTS `Settings` (`id` INTEGER NOT NULL, `themeMode` TEXT NOT NULL, `i18n` TEXT NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `CacheFile` (`url` TEXT NOT NULL, `success` INTEGER NOT NULL, `msg` TEXT NOT NULL, PRIMARY KEY (`url`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `ContentIndex` (`url` TEXT NOT NULL, `success` INTEGER NOT NULL, `msg` TEXT NOT NULL, PRIMARY KEY (`url`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -105,6 +109,12 @@ class _$AppDatabase extends AppDatabase {
   @override
   CacheFileDao get cacheFileDao {
     return _cacheFileDaoInstance ??= _$CacheFileDao(database, changeListener);
+  }
+
+  @override
+  ContentIndexDao get contentIndexDao {
+    return _contentIndexDaoInstance ??=
+        _$ContentIndexDao(database, changeListener);
   }
 }
 
@@ -201,13 +211,65 @@ class _$CacheFileDao extends CacheFileDao {
   }
 
   @override
-  Future<void> insertCacheFile(CacheFile settings) async {
-    await _cacheFileInsertionAdapter.insert(
-        settings, OnConflictStrategy.replace);
+  Future<void> insertCacheFile(CacheFile data) async {
+    await _cacheFileInsertionAdapter.insert(data, OnConflictStrategy.replace);
   }
 
   @override
-  Future<void> updateCacheFile(CacheFile settings) async {
-    await _cacheFileUpdateAdapter.update(settings, OnConflictStrategy.replace);
+  Future<void> updateCacheFile(CacheFile data) async {
+    await _cacheFileUpdateAdapter.update(data, OnConflictStrategy.replace);
+  }
+}
+
+class _$ContentIndexDao extends ContentIndexDao {
+  _$ContentIndexDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _contentIndexInsertionAdapter = InsertionAdapter(
+            database,
+            'ContentIndex',
+            (ContentIndex item) => <String, Object?>{
+                  'url': item.url,
+                  'success': item.success ? 1 : 0,
+                  'msg': item.msg
+                }),
+        _contentIndexUpdateAdapter = UpdateAdapter(
+            database,
+            'ContentIndex',
+            ['url'],
+            (ContentIndex item) => <String, Object?>{
+                  'url': item.url,
+                  'success': item.success ? 1 : 0,
+                  'msg': item.msg
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<ContentIndex> _contentIndexInsertionAdapter;
+
+  final UpdateAdapter<ContentIndex> _contentIndexUpdateAdapter;
+
+  @override
+  Future<List<ContentIndex>> findContentIndex() async {
+    return _queryAdapter.queryList('SELECT * FROM ContentIndex',
+        mapper: (Map<String, Object?> row) => ContentIndex(
+            row['url'] as String, (row['success'] as int) != 0,
+            msg: row['msg'] as String));
+  }
+
+  @override
+  Future<void> insertContentIndex(ContentIndex data) async {
+    await _contentIndexInsertionAdapter.insert(
+        data, OnConflictStrategy.replace);
+  }
+
+  @override
+  Future<void> updateContentIndex(ContentIndex data) async {
+    await _contentIndexUpdateAdapter.update(data, OnConflictStrategy.replace);
   }
 }

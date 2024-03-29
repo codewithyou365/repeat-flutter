@@ -13,5 +13,9 @@ class ConfigZh extends Config {
     put(I18nKey.theme, "主题");
     put(I18nKey.themeDark, "暗色主题");
     put(I18nKey.themeLight, "亮色主题");
+    put(I18nKey.btnDelete, "删除");
+    put(I18nKey.btnEdit, "编辑");
+    put(I18nKey.btnCopy, "复制");
+    put(I18nKey.btnDownload, "下载");
   }
 }

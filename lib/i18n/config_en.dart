@@ -13,5 +13,9 @@ class ConfigEn extends Config {
     put(I18nKey.theme, "Theme");
     put(I18nKey.themeDark, "Dart");
     put(I18nKey.themeLight, "Light");
+    put(I18nKey.btnDelete, "Delete");
+    put(I18nKey.btnEdit, "Edit");
+    put(I18nKey.btnCopy, "Copy");
+    put(I18nKey.btnDownload, "Download");
   }
 }
