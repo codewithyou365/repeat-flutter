@@ -12,6 +12,6 @@ abstract class ContentIndexDao {
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertContentIndex(ContentIndex data);
 
-  @Update(onConflict: OnConflictStrategy.replace)
-  Future<void> updateContentIndex(ContentIndex data);
+  @delete
+  Future<void> deleteContentIndex(ContentIndex data);
 }

@@ -13,4 +13,10 @@ abstract class CacheFileDao {
 
   @Update(onConflict: OnConflictStrategy.replace)
   Future<void> updateCacheFile(CacheFile data);
+
+  @Query('UPDATE OR ABORT CacheFile SET count=:count,total=:total WHERE url = :url')
+  Future<void> updateProgressByUrl(String url, int count, int total);
+
+  @Query('UPDATE OR ABORT CacheFile SET count=total WHERE url = :url')
+  Future<void> updateFinish(String url);
 }

@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
@@ -20,16 +18,18 @@ class MainContentPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(I18nKey.content.tr),
       ),
-      body: buildList(logic),
+      body: buildList(context, logic),
     );
   }
 
-  Widget buildList(MainContentLogic logic) {
+  Widget buildList(BuildContext context, MainContentLogic logic) {
     return GetBuilder<MainContentLogic>(
-        id: MainContentLogic.id, builder: (_) => _buildList(logic));
+      id: MainContentLogic.id,
+      builder: (_) => _buildList(context, logic),
+    );
   }
 
-  Widget _buildList(MainContentLogic logic) {
+  Widget _buildList(BuildContext context, MainContentLogic logic) {
     final state = logic.state;
     if (state.indexes.isEmpty) {
       if (state.loading.value) {
@@ -40,43 +40,45 @@ class MainContentPage extends StatelessWidget {
         );
       }
       return TextButton(
-        onPressed: () => {openEditDialog(logic, ContentIndex("", false))},
-        child: Text("Add"),
+        onPressed: () => {
+          openEditDialog(logic, ContentIndex(""), I18nKey.labelAddContentIndex.tr),
+        },
+        child: Text(I18nKey.btnAdd.tr),
       );
     }
     return ListView(
       children: List.generate(
         state.indexes.length,
-        (index) => buildItem(logic, model: state.indexes[index]),
+        (index) => buildItem(context, logic, state.indexes[index]),
       ),
     );
   }
 
-  openEditDialog(MainContentLogic logic, ContentIndex model) {
+  openEditDialog(MainContentLogic logic, ContentIndex model, String title) {
     final firstNameController = TextEditingController(text: model.url);
     Get.defaultDialog(
       content: Column(
         mainAxisSize: MainAxisSize.min, // Ensure dialog fits content
         children: [
-          Text("Enter your information:"),
-          SizedBox(height: 10),
+          Text(title),
+          const SizedBox(height: 10),
           TextFormField(
             controller: firstNameController,
             decoration: InputDecoration(
-              labelText: 'URL',
+              labelText: I18nKey.labelUrl.tr,
             ),
           ),
         ],
       ),
       actions: [
         TextButton(
-          child: Text("Cancel"),
+          child: Text(I18nKey.btnCancel.tr),
           onPressed: () {
             Get.back();
           },
         ),
         TextButton(
-          child: Text("OK"),
+          child: Text(I18nKey.btnOk.tr),
           onPressed: () {
             logic.add(firstNameController.value.text);
             Get.back();
@@ -86,26 +88,98 @@ class MainContentPage extends StatelessWidget {
     );
   }
 
-  Widget buildItem(MainContentLogic logic, {required ContentIndex model}) {
+  openDeleteDialog(MainContentLogic logic, ContentIndex model) {
+    Get.defaultDialog(
+      content: Column(
+        mainAxisSize: MainAxisSize.min, // Ensure dialog fits content
+        children: [
+          Text(I18nKey.labelDeleteContentIndex.trArgs([model.url])),
+        ],
+      ),
+      actions: [
+        TextButton(
+          child: Text(I18nKey.btnCancel.tr),
+          onPressed: () {
+            Get.back();
+          },
+        ),
+        TextButton(
+          child: Text(I18nKey.btnOk.tr),
+          onPressed: () {
+            logic.delete(model.url);
+            Get.back();
+          },
+        ),
+      ],
+    );
+  }
+
+  openDownloadDialog(MainContentLogic logic, ContentIndex model) {
+    final state = logic.state;
+    Get.defaultDialog(
+      title: I18nKey.labelDownloadContent.tr,
+      content: Obx(() {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            LinearProgressIndicator(
+              value: state.indexCount.value / state.indexTotal.value,
+              semanticsLabel: "${(state.indexCount.value / state.indexTotal.value * 100).toStringAsFixed(1)}%",
+            ),
+            const SizedBox(height: 10),
+            LinearProgressIndicator(
+              value: state.contentProgress.value,
+              semanticsLabel: "${(state.contentProgress.value * 100).toStringAsFixed(1)}%",
+            ),
+          ],
+        );
+      }),
+      actions: [
+        TextButton(
+          child: Text(I18nKey.btnCancel.tr),
+          onPressed: () {
+            Get.back();
+          },
+        ),
+        TextButton(
+          child: Text(I18nKey.btnDownload.tr),
+          onPressed: () {
+            logic.download(model.url);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget buildItem(BuildContext context, MainContentLogic logic, ContentIndex model) {
+    var textStyle = TextStyle(fontSize: 12.w);
     return SwipeActionCell(
       key: ObjectKey(model.url),
       trailingActions: <SwipeAction>[
         SwipeAction(
-            title: I18nKey.btnDownload.tr,
-            onTap: (CompletionHandler handler) async {
-              //logic.downloadTest();
-            }),
+          title: I18nKey.btnDownload.tr,
+          style: textStyle,
+          color: Theme.of(context).secondaryHeaderColor,
+          onTap: (CompletionHandler handler) async {
+            openDownloadDialog(logic, model);
+          },
+        ),
         SwipeAction(
-            title: I18nKey.btnEdit.tr,
-            onTap: (CompletionHandler handler) async {}),
+          title: I18nKey.btnDelete.tr,
+          style: textStyle,
+          color: Theme.of(context).secondaryHeaderColor,
+          onTap: (CompletionHandler handler) async {
+            openDeleteDialog(logic, model);
+          },
+        ),
         SwipeAction(
-            title: I18nKey.btnDelete.tr,
-            onTap: (CompletionHandler handler) async {}),
-        SwipeAction(
-            title: I18nKey.btnCopy.tr,
-            onTap: (CompletionHandler handler) async {
-              openEditDialog(logic, model);
-            }),
+          title: I18nKey.btnCopy.tr,
+          style: textStyle,
+          color: Theme.of(context).secondaryHeaderColor,
+          onTap: (CompletionHandler handler) async {
+            openEditDialog(logic, model, I18nKey.labelAddContentIndex.tr);
+          },
+        ),
       ],
       child: Padding(
         padding: EdgeInsets.all(16.w),

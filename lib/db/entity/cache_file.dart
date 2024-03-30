@@ -6,9 +6,10 @@ import 'package:floor/floor.dart';
 class CacheFile {
   @primaryKey
   final String url;
-  final bool success;
 
+  final int count;
+  final int total;
   final String msg;
 
-  CacheFile(this.url, this.success, {this.msg = ""});
+  CacheFile(this.url, {this.msg = "", this.count = 0, this.total = 1});
 }

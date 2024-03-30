@@ -91,9 +91,9 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Settings` (`id` INTEGER NOT NULL, `themeMode` TEXT NOT NULL, `i18n` TEXT NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `CacheFile` (`url` TEXT NOT NULL, `success` INTEGER NOT NULL, `msg` TEXT NOT NULL, PRIMARY KEY (`url`))');
+            'CREATE TABLE IF NOT EXISTS `CacheFile` (`url` TEXT NOT NULL, `count` INTEGER NOT NULL, `total` INTEGER NOT NULL, `msg` TEXT NOT NULL, PRIMARY KEY (`url`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `ContentIndex` (`url` TEXT NOT NULL, `success` INTEGER NOT NULL, `msg` TEXT NOT NULL, PRIMARY KEY (`url`))');
+            'CREATE TABLE IF NOT EXISTS `ContentIndex` (`url` TEXT NOT NULL, PRIMARY KEY (`url`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -179,7 +179,8 @@ class _$CacheFileDao extends CacheFileDao {
             'CacheFile',
             (CacheFile item) => <String, Object?>{
                   'url': item.url,
-                  'success': item.success ? 1 : 0,
+                  'count': item.count,
+                  'total': item.total,
                   'msg': item.msg
                 }),
         _cacheFileUpdateAdapter = UpdateAdapter(
@@ -188,7 +189,8 @@ class _$CacheFileDao extends CacheFileDao {
             ['url'],
             (CacheFile item) => <String, Object?>{
                   'url': item.url,
-                  'success': item.success ? 1 : 0,
+                  'count': item.count,
+                  'total': item.total,
                   'msg': item.msg
                 });
 
@@ -205,9 +207,28 @@ class _$CacheFileDao extends CacheFileDao {
   @override
   Future<CacheFile?> one() async {
     return _queryAdapter.query('SELECT * FROM CacheFile limit 1',
-        mapper: (Map<String, Object?> row) => CacheFile(
-            row['url'] as String, (row['success'] as int) != 0,
-            msg: row['msg'] as String));
+        mapper: (Map<String, Object?> row) => CacheFile(row['url'] as String,
+            msg: row['msg'] as String,
+            count: row['count'] as int,
+            total: row['total'] as int));
+  }
+
+  @override
+  Future<void> updateProgressByUrl(
+    String url,
+    int count,
+    int total,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE OR ABORT CacheFile SET count=?2,total=?3 WHERE url = ?1',
+        arguments: [url, count, total]);
+  }
+
+  @override
+  Future<void> updateFinish(String url) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE OR ABORT CacheFile SET count=total WHERE url = ?1',
+        arguments: [url]);
   }
 
   @override
@@ -229,20 +250,9 @@ class _$ContentIndexDao extends ContentIndexDao {
         _contentIndexInsertionAdapter = InsertionAdapter(
             database,
             'ContentIndex',
-            (ContentIndex item) => <String, Object?>{
-                  'url': item.url,
-                  'success': item.success ? 1 : 0,
-                  'msg': item.msg
-                }),
-        _contentIndexUpdateAdapter = UpdateAdapter(
-            database,
-            'ContentIndex',
-            ['url'],
-            (ContentIndex item) => <String, Object?>{
-                  'url': item.url,
-                  'success': item.success ? 1 : 0,
-                  'msg': item.msg
-                });
+            (ContentIndex item) => <String, Object?>{'url': item.url}),
+        _contentIndexDeletionAdapter = DeletionAdapter(database, 'ContentIndex',
+            ['url'], (ContentIndex item) => <String, Object?>{'url': item.url});
 
   final sqflite.DatabaseExecutor database;
 
@@ -252,14 +262,13 @@ class _$ContentIndexDao extends ContentIndexDao {
 
   final InsertionAdapter<ContentIndex> _contentIndexInsertionAdapter;
 
-  final UpdateAdapter<ContentIndex> _contentIndexUpdateAdapter;
+  final DeletionAdapter<ContentIndex> _contentIndexDeletionAdapter;
 
   @override
   Future<List<ContentIndex>> findContentIndex() async {
     return _queryAdapter.queryList('SELECT * FROM ContentIndex',
-        mapper: (Map<String, Object?> row) => ContentIndex(
-            row['url'] as String, (row['success'] as int) != 0,
-            msg: row['msg'] as String));
+        mapper: (Map<String, Object?> row) =>
+            ContentIndex(row['url'] as String));
   }
 
   @override
@@ -269,7 +278,7 @@ class _$ContentIndexDao extends ContentIndexDao {
   }
 
   @override
-  Future<void> updateContentIndex(ContentIndex data) async {
-    await _contentIndexUpdateAdapter.update(data, OnConflictStrategy.replace);
+  Future<void> deleteContentIndex(ContentIndex data) async {
+    await _contentIndexDeletionAdapter.delete(data);
   }
 }
