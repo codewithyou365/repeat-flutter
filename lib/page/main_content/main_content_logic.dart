@@ -4,6 +4,8 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
 import 'package:repeat_flutter/logic/constant.dart';
 import 'package:repeat_flutter/logic/download.dart';
+import 'package:repeat_flutter/logic/video_kv.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'main_content_state.dart';
 
@@ -51,8 +53,17 @@ class MainContentLogic extends GetxController {
   }
 
   download(String url) async {
-    // url = "https://raw.githubusercontent.com/codewithyou365/repeat-flutter/main/README.md";
-    var path = await urlToCachePath(CacheFilePrefixPath.content, url);
+    state.indexCount.value = 0;
+    state.indexTotal.value = 1;
+    var directory = await getTemporaryDirectory();
+    var rootPath = "${directory.path}/${CacheFilePrefixPath.content}/${urlToRootPath(url)}";
+    var fileName = urlToFileName(url);
+    var path = "$rootPath/$fileName";
     await downloadFile(url, path, progressCallback: downloadProgress);
+    VideoKv kv = await VideoKv.fromFile(path, defaultRootUri: Uri.parse(url));
+    state.indexTotal.value = state.indexTotal.value + kv.data.length;
+    for (var v in kv.data) {
+      await downloadFile("${kv.rootUrl}/${v.videoUrl}", "$rootPath/${v.videoPath}", progressCallback: downloadProgress);
+    }
   }
 }

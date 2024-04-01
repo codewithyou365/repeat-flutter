@@ -1,9 +1,9 @@
-import 'package:path_provider/path_provider.dart';
+String urlToFileName(String urlPath) {
+  var ret = urlPath.split("/").last;
+  return ret;
+}
 
-// - `NSCachesDirectory` on iOS and macOS.
-// - `Context.getCacheDir` on Android.
-Future<String> urlToCachePath(String prefix, String urlPath) async {
-  var directory = await getTemporaryDirectory();
+String urlToRootPath(String urlPath) {
   var ret = urlPath.split("://").last;
-  return "${directory.path}/$prefix/$ret";
+  return ret.substring(0, ret.lastIndexOf("/"));
 }

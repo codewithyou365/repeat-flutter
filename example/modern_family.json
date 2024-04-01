@@ -1,0 +1,30 @@
+{
+  "type": "VIDEO-KV",
+  "_rootUrl": "http://172.16.90.162:18139",
+  "data": [
+    {
+      "videoUrl": "/modern_family/Modern Family (2009) Season 1-11 S01-S11 (1080p Mixed x265 HEVC 10bit AAC 5.1 Silence)/Season 1 (BluRay)/Modern Family (2009) - S01E01 - Pilot (1080p BluRay x265 Silence).mkv",
+      "videoPath": "/modern_family/v/s1.mkv",
+      "split": [
+        {
+          "start": "00:02.92",
+          "end": "00:04.62",
+          "key": "Kids, breakfast!",
+          "value": "孩子们  吃早饭了"
+        },
+        {
+          "start": "00:05.10",
+          "end": "00:06.37",
+          "key": "Kids,?",
+          "value": "孩子们"
+        },
+        {
+          "start": "00:07.08",
+          "end": "00:08.40",
+          "key": "Phil, would you get them?",
+          "value": "菲尔  把他们叫下来好吗?"
+        }
+      ]
+    }
+  ]
+}
