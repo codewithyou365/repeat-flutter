@@ -32,7 +32,10 @@ extension I18nLocalFromString on I18nLocal {
 final ConfigEn configEn = ConfigEn();
 
 class I18nTranslations extends Translations {
-  static final Map<String, Map<String, String>> data = {I18nLocal.en.name: configEn.data, I18nLocal.zh.name: ConfigZh(defaultData: configEn.data).data};
+  static final Map<String, Map<String, String>> data = {
+    I18nLocal.en.name: configEn.data,
+    I18nLocal.zh.name: ConfigZh(defaultData: configEn.data).data,
+  };
 
   @override
   Map<String, Map<String, String>> get keys => data;

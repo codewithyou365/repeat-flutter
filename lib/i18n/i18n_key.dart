@@ -23,6 +23,8 @@ enum I18nKey {
   btnAdd,
   btnCopy,
   btnDownload,
+  btnReview,
+  btnRepeat,
   ;
 
   String trArgs([List<String> args = const []]) {

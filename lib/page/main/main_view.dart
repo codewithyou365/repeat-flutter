@@ -35,6 +35,35 @@ class MainPage extends StatelessWidget {
               ],
             ),
             const Spacer(),
+            SizedBox(
+              height: 60.w,
+              width: 200.w,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).secondaryHeaderColor,
+                ),
+                onPressed: () => {
+                  Nav.mainRepeat.push(),
+                },
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 11.0.w),
+                  child: Column(
+                    children: [
+                      Text(I18nKey.btnRepeat.tr,
+                          style: TextStyle(
+                            color: Theme.of(context).shadowColor,
+                          )),
+                      Text(
+                        "${state.totalCount.value}",
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 80.w,
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               // Distribute buttons evenly
@@ -49,7 +78,9 @@ class MainPage extends StatelessWidget {
                 ),
               ],
             ),
-            Container(padding: EdgeInsets.all(16.w))
+            SizedBox(
+              height: 30.w,
+            ),
           ],
         ),
       ),
