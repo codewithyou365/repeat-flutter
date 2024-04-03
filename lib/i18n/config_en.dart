@@ -16,8 +16,9 @@ class ConfigEn extends Config {
     put(I18nKey.labelUrl, "URL");
     put(I18nKey.labelAddContentIndex, "Add content index");
     put(I18nKey.labelEditContentIndex, "Edit content index");
-    put(I18nKey.labelDeleteContentIndex, "Confirm to delete content index\n\n%s");
+    put(I18nKey.labelDeleteContentIndex, "Please confirm to delete content index\n\n%s");
     put(I18nKey.labelDownloadContent, "Download content");
+    put(I18nKey.labelScheduleContent, "Add learning task with %s units.");
     put(I18nKey.btnCancel, "Cancel");
     put(I18nKey.btnOk, "Ok");
     put(I18nKey.btnDelete, "Delete");
@@ -27,5 +28,6 @@ class ConfigEn extends Config {
     put(I18nKey.btnDownload, "Download");
     put(I18nKey.btnReview, "Review");
     put(I18nKey.btnRepeat, "Repeat");
+    put(I18nKey.btnSchedule, "Schedule");
   }
 }

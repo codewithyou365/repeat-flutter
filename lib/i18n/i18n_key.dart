@@ -16,6 +16,7 @@ enum I18nKey {
   labelEditContentIndex,
   labelDeleteContentIndex,
   labelDownloadContent,
+  labelScheduleContent,
   btnCancel,
   btnOk,
   btnDelete,
@@ -23,6 +24,7 @@ enum I18nKey {
   btnAdd,
   btnCopy,
   btnDownload,
+  btnSchedule,
   btnReview,
   btnRepeat,
   ;

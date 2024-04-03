@@ -32,6 +32,8 @@ class MainContentLogic extends GetxController {
     await Db().db.contentIndexDao.insertContentIndex(contentIndex);
   }
 
+  getData(String url) async {}
+
   downloadProgress(int startTime, int count, int total, bool finish) {
     if (finish) {
       state.indexCount.value++;
@@ -60,7 +62,7 @@ class MainContentLogic extends GetxController {
     var fileName = urlToFileName(url);
     var path = "$rootPath/$fileName";
     await downloadFile(url, path, progressCallback: downloadProgress);
-    VideoKv kv = await VideoKv.fromFile(path, defaultRootUri: Uri.parse(url));
+    VideoKv kv = await VideoKv.fromFile(path, Uri.parse(url));
     state.indexTotal.value = state.indexTotal.value + kv.data.length;
     for (var v in kv.data) {
       await downloadFile("${kv.rootUrl}/${v.videoUrl}", "$rootPath/${v.videoPath}", progressCallback: downloadProgress);

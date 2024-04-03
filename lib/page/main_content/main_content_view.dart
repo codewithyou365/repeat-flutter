@@ -150,26 +150,63 @@ class MainContentPage extends StatelessWidget {
       ],
     );
   }
+  openScheduleDialog(MainContentLogic logic, ContentIndex model) {
+    final state = logic.state;
+    Get.defaultDialog(
+      content: Column(
+        mainAxisSize: MainAxisSize.min, // Ensure dialog fits content
+        children: [
+          Text(I18nKey.labelScheduleContent.trArgs([model.url])),
+        ],
+      ),
+      actions: [
+        TextButton(
+          child: Text(I18nKey.btnCancel.tr),
+          onPressed: () {
+            Get.back();
+          },
+        ),
+        TextButton(
+          child: Text(I18nKey.btnOk.tr),
+          onPressed: () {
+            logic.delete(model.url);
+            Get.back();
+          },
+        ),
+      ],
+    );
+  }
 
   Widget buildItem(BuildContext context, MainContentLogic logic, ContentIndex model) {
     var textStyle = TextStyle(fontSize: 12.w);
     return SwipeActionCell(
       key: ObjectKey(model.url),
-      trailingActions: <SwipeAction>[
-        SwipeAction(
-          title: I18nKey.btnDownload.tr,
-          style: textStyle,
-          color: Theme.of(context).secondaryHeaderColor,
-          onTap: (CompletionHandler handler) async {
-            openDownloadDialog(logic, model);
-          },
-        ),
+      leadingActions: <SwipeAction>[
         SwipeAction(
           title: I18nKey.btnDelete.tr,
           style: textStyle,
           color: Theme.of(context).secondaryHeaderColor,
           onTap: (CompletionHandler handler) async {
             openDeleteDialog(logic, model);
+          },
+        ),
+      ],
+      trailingActions: <SwipeAction>[
+        SwipeAction(
+          title: I18nKey.btnSchedule.tr,
+          style: textStyle,
+          color: Theme.of(context).secondaryHeaderColor,
+          onTap: (CompletionHandler handler) async {
+            await
+            openScheduleDialog(logic, model);
+          },
+        ),
+        SwipeAction(
+          title: I18nKey.btnDownload.tr,
+          style: textStyle,
+          color: Theme.of(context).secondaryHeaderColor,
+          onTap: (CompletionHandler handler) async {
+            openDownloadDialog(logic, model);
           },
         ),
         SwipeAction(

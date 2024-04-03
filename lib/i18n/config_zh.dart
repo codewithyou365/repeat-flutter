@@ -16,8 +16,9 @@ class ConfigZh extends Config {
     put(I18nKey.labelUrl, "地址");
     put(I18nKey.labelAddContentIndex, "新增内容索引");
     put(I18nKey.labelEditContentIndex, "编辑内容索引");
-    put(I18nKey.labelDeleteContentIndex, "确定删除内容索引\n\n%s");
+    put(I18nKey.labelDeleteContentIndex, "请确定删除内容索引\n\n%s");
     put(I18nKey.labelDownloadContent, "下载内容");
+    put(I18nKey.labelScheduleContent, "添加学习任务 %s 个单位");
     put(I18nKey.btnCancel, "取消");
     put(I18nKey.btnOk, "确定");
     put(I18nKey.btnDelete, "删除");
@@ -27,5 +28,6 @@ class ConfigZh extends Config {
     put(I18nKey.btnDownload, "下载");
     put(I18nKey.btnReview, "回顾");
     put(I18nKey.btnRepeat, "重复");
+    put(I18nKey.btnSchedule, "安排");
   }
 }
