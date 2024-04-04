@@ -17,6 +17,6 @@ abstract class CacheFileDao {
   @Query('UPDATE OR ABORT CacheFile SET count=:count,total=:total WHERE url = :url')
   Future<void> updateProgressByUrl(String url, int count, int total);
 
-  @Query('UPDATE OR ABORT CacheFile SET count=total WHERE url = :url')
-  Future<void> updateFinish(String url);
+  @Query('UPDATE OR ABORT CacheFile SET count=total,path=:path WHERE url = :url')
+  Future<void> updateFinish(String url, String path);
 }

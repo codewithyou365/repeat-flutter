@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	err := http.ListenAndServe(":18139", http.FileServer(http.Dir("./")))
+	err := http.ListenAndServe("0.0.0.0:18139", http.FileServer(http.Dir("./")))
 	if err != nil {
 		panic(err)
 	}

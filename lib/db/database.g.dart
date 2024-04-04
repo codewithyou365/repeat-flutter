@@ -91,7 +91,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Settings` (`id` INTEGER NOT NULL, `themeMode` TEXT NOT NULL, `i18n` TEXT NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `CacheFile` (`url` TEXT NOT NULL, `count` INTEGER NOT NULL, `total` INTEGER NOT NULL, `msg` TEXT NOT NULL, PRIMARY KEY (`url`))');
+            'CREATE TABLE IF NOT EXISTS `CacheFile` (`url` TEXT NOT NULL, `path` TEXT NOT NULL, `count` INTEGER NOT NULL, `total` INTEGER NOT NULL, `msg` TEXT NOT NULL, PRIMARY KEY (`url`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `ContentIndex` (`url` TEXT NOT NULL, PRIMARY KEY (`url`))');
 
@@ -179,6 +179,7 @@ class _$CacheFileDao extends CacheFileDao {
             'CacheFile',
             (CacheFile item) => <String, Object?>{
                   'url': item.url,
+                  'path': item.path,
                   'count': item.count,
                   'total': item.total,
                   'msg': item.msg
@@ -189,6 +190,7 @@ class _$CacheFileDao extends CacheFileDao {
             ['url'],
             (CacheFile item) => <String, Object?>{
                   'url': item.url,
+                  'path': item.path,
                   'count': item.count,
                   'total': item.total,
                   'msg': item.msg
@@ -207,7 +209,8 @@ class _$CacheFileDao extends CacheFileDao {
   @override
   Future<CacheFile?> one() async {
     return _queryAdapter.query('SELECT * FROM CacheFile limit 1',
-        mapper: (Map<String, Object?> row) => CacheFile(row['url'] as String,
+        mapper: (Map<String, Object?> row) => CacheFile(
+            row['url'] as String, row['path'] as String,
             msg: row['msg'] as String,
             count: row['count'] as int,
             total: row['total'] as int));
@@ -225,10 +228,13 @@ class _$CacheFileDao extends CacheFileDao {
   }
 
   @override
-  Future<void> updateFinish(String url) async {
+  Future<void> updateFinish(
+    String url,
+    String path,
+  ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE OR ABORT CacheFile SET count=total WHERE url = ?1',
-        arguments: [url]);
+        'UPDATE OR ABORT CacheFile SET count=total,path=?2 WHERE url = ?1',
+        arguments: [url, path]);
   }
 
   @override

@@ -1,16 +1,17 @@
-import 'package:flutter/services.dart' as services;
+import 'dart:io';
+
 import 'dart:convert' as convert;
 
-class VideoKv {
-  String type;
-  String rootPath;
-  String rootUrl;
+import 'repeat_content.dart';
+
+class VideoKv extends RepeatContent {
   List<Video> data;
 
-  VideoKv(this.type, this.rootPath, this.rootUrl, this.data);
+  VideoKv(String type, String rootPath, String rootUrl, this.data) : super(type, rootPath, rootUrl);
 
   static Future<VideoKv> fromFile(String path, Uri defaultRootUri) async {
-    String jsonString = await services.rootBundle.loadString(path);
+    File file = File(path);
+    String jsonString = await file.readAsString();
     Map<String, dynamic> jsonData = convert.jsonDecode(jsonString);
     var kv = VideoKv.fromJson(jsonData);
     if (kv.rootUrl == "") {

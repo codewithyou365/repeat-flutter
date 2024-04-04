@@ -1,11 +1,17 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/cache_file.dart';
+import 'package:repeat_flutter/logic/constant.dart';
 
 typedef DownloadProgressCallback = void Function(int startTime, int count, int total, bool finish);
+typedef Finish = Future<FileLocation> Function(FileLocation fp);
 
-Future<void> downloadFile(String urlPath, String localPath, {DownloadProgressCallback? progressCallback}) async {
-  var cacheFile = CacheFile(urlPath);
+Future<bool> downloadFile(String urlPath, Finish finish, {DownloadProgressCallback? progressCallback}) async {
+  var cacheFile = CacheFile(urlPath, "");
   await Db().db.cacheFileDao.insertCacheFile(cacheFile);
   int startTime = DateTime.now().millisecondsSinceEpoch;
   int lastUpdateTime = 0;
@@ -13,7 +19,10 @@ Future<void> downloadFile(String urlPath, String localPath, {DownloadProgressCal
   int fileTotal = -1;
   var dio = Dio();
   try {
-    await dio.download(urlPath, localPath, onReceiveProgress: (int count, int total) {
+    var directory = await getTemporaryDirectory();
+    var rootPath = "${directory.path}/${CacheFilePrefixPath.content}";
+    var fl = FileLocation(rootPath, "temp");
+    await dio.download(urlPath, fl.path, onReceiveProgress: (int count, int total) {
       fileCount = count;
       if ((DateTime.now().millisecondsSinceEpoch - lastUpdateTime) > 100) {
         lastUpdateTime = DateTime.now().millisecondsSinceEpoch;
@@ -27,12 +36,17 @@ Future<void> downloadFile(String urlPath, String localPath, {DownloadProgressCal
     if (fileTotal == -1) {
       fileTotal = fileCount;
     }
-    await Db().db.cacheFileDao.updateFinish(urlPath);
+    var newFl = await finish(fl);
+    await ensureFolderExists(newFl.folderPath);
+    await File(fl.path).rename(newFl.path);
+    await Db().db.cacheFileDao.updateFinish(urlPath, newFl.path);
     if (progressCallback != null) {
       progressCallback(startTime, fileTotal, fileTotal, true);
     }
-  } on DioException catch (e) {
-    cacheFile = CacheFile(urlPath, msg: e.message.toString());
+    return true;
+  } on Exception catch (e) {
+    cacheFile = CacheFile(urlPath, "", msg: e.toString());
     Db().db.cacheFileDao.updateCacheFile(cacheFile);
   }
+  return false;
 }
