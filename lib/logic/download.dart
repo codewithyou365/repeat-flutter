@@ -10,6 +10,10 @@ import 'package:repeat_flutter/logic/constant.dart';
 typedef DownloadProgressCallback = void Function(int startTime, int count, int total, bool finish);
 typedef Finish = Future<FileLocation> Function(FileLocation fp);
 
+Future<CacheFile?> downloadFilePath(String url) async {
+  return await Db().db.cacheFileDao.one(url);
+}
+
 Future<bool> downloadFile(String urlPath, Finish finish, {DownloadProgressCallback? progressCallback}) async {
   var cacheFile = CacheFile(urlPath, "");
   await Db().db.cacheFileDao.insertCacheFile(cacheFile);

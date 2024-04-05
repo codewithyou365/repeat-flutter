@@ -150,13 +150,15 @@ class MainContentPage extends StatelessWidget {
       ],
     );
   }
-  openScheduleDialog(MainContentLogic logic, ContentIndex model) {
+
+  openScheduleDialog(MainContentLogic logic, ContentIndex model) async {
     final state = logic.state;
+    var unitCount = await logic.getUnitCount(model.url);
     Get.defaultDialog(
       content: Column(
         mainAxisSize: MainAxisSize.min, // Ensure dialog fits content
         children: [
-          Text(I18nKey.labelScheduleContent.trArgs([model.url])),
+          Text(I18nKey.labelScheduleContent.trArgs([unitCount.toString()])),
         ],
       ),
       actions: [
@@ -169,7 +171,7 @@ class MainContentPage extends StatelessWidget {
         TextButton(
           child: Text(I18nKey.btnOk.tr),
           onPressed: () {
-            logic.delete(model.url);
+            logic.addToSchedule(model.url);
             Get.back();
           },
         ),
@@ -197,7 +199,6 @@ class MainContentPage extends StatelessWidget {
           style: textStyle,
           color: Theme.of(context).secondaryHeaderColor,
           onTap: (CompletionHandler handler) async {
-            await
             openScheduleDialog(logic, model);
           },
         ),

@@ -2,8 +2,9 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
+import 'package:repeat_flutter/db/entity/schedule.dart';
 import 'package:repeat_flutter/logic/download.dart';
-import 'package:repeat_flutter/logic/model/video_kv.dart';
+import 'package:repeat_flutter/logic/model/kv.dart';
 
 import 'main_content_state.dart';
 
@@ -30,7 +31,39 @@ class MainContentLogic extends GetxController {
     await Db().db.contentIndexDao.insertContentIndex(contentIndex);
   }
 
-  getData(String url) async {}
+  Future<int> getUnitCount(String url) async {
+    var cacheFile = await downloadFilePath(url);
+    if (cacheFile == null) {
+      return 0;
+    }
+    var kv = await Kv.fromFile(cacheFile.path, Uri.parse(url));
+    var total = 0;
+    for (var d in kv.data) {
+      total += d.split.length;
+    }
+    return total;
+  }
+
+  Future<int> addToSchedule(String url) async {
+    var cacheFile = await downloadFilePath(url);
+    if (cacheFile == null) {
+      return 0;
+    }
+    var kv = await Kv.fromFile(cacheFile.path, Uri.parse(url));
+    List<Schedule> entities = [];
+    for (var d in kv.data) {
+      for (var s in d.split) {
+        entities.add(Schedule("${kv.rootPath}|${d.index}|${s.index}", 0));
+      }
+    }
+    await Db().db.scheduleDao.insertSchedules(entities);
+
+    var total = 0;
+    for (var d in kv.data) {
+      total += d.split.length;
+    }
+    return total;
+  }
 
   downloadProgress(int startTime, int count, int total, bool finish) {
     if (finish) {
@@ -55,12 +88,12 @@ class MainContentLogic extends GetxController {
   download(String url) async {
     state.indexCount.value = 0;
     state.indexTotal.value = 1;
-    late VideoKv kv;
+    late Kv kv;
     late String rootPath;
     var success = await downloadFile(
       url,
       (fl) async {
-        kv = await VideoKv.fromFile(fl.path, Uri.parse(url));
+        kv = await Kv.fromFile(fl.path, Uri.parse(url));
         rootPath = fl.folderPath.joinPath(kv.rootPath);
         return FileLocation(rootPath, urlToFileName(url));
       },
@@ -69,9 +102,13 @@ class MainContentLogic extends GetxController {
     if (success) {
       state.indexTotal.value = state.indexTotal.value + kv.data.length;
       for (var v in kv.data) {
+        var innerUrl = v.url;
+        if (!innerUrl.startsWith("http")) {
+          innerUrl = kv.rootUrl.joinPath(v.url);
+        }
         await downloadFile(
-          "${kv.rootUrl}/${v.videoUrl}",
-          (fl) async => FileLocation.create(rootPath.joinPath(v.videoPath)),
+          innerUrl,
+          (fl) async => FileLocation.create(rootPath.joinPath(v.path)),
           progressCallback: downloadProgress,
         );
       }

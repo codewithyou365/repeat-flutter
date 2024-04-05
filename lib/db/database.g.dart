@@ -67,6 +67,8 @@ class _$AppDatabase extends AppDatabase {
 
   ContentIndexDao? _contentIndexDaoInstance;
 
+  ScheduleDao? _scheduleDaoInstance;
+
   Future<sqflite.Database> open(
     String path,
     List<Migration> migrations, [
@@ -94,6 +96,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE TABLE IF NOT EXISTS `CacheFile` (`url` TEXT NOT NULL, `path` TEXT NOT NULL, `count` INTEGER NOT NULL, `total` INTEGER NOT NULL, `msg` TEXT NOT NULL, PRIMARY KEY (`url`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `ContentIndex` (`url` TEXT NOT NULL, PRIMARY KEY (`url`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `Schedule` (`key` TEXT NOT NULL, `progress` INTEGER NOT NULL, PRIMARY KEY (`key`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -115,6 +119,11 @@ class _$AppDatabase extends AppDatabase {
   ContentIndexDao get contentIndexDao {
     return _contentIndexDaoInstance ??=
         _$ContentIndexDao(database, changeListener);
+  }
+
+  @override
+  ScheduleDao get scheduleDao {
+    return _scheduleDaoInstance ??= _$ScheduleDao(database, changeListener);
   }
 }
 
@@ -207,13 +216,14 @@ class _$CacheFileDao extends CacheFileDao {
   final UpdateAdapter<CacheFile> _cacheFileUpdateAdapter;
 
   @override
-  Future<CacheFile?> one() async {
-    return _queryAdapter.query('SELECT * FROM CacheFile limit 1',
+  Future<CacheFile?> one(String url) async {
+    return _queryAdapter.query('SELECT * FROM CacheFile WHERE url = ?1',
         mapper: (Map<String, Object?> row) => CacheFile(
             row['url'] as String, row['path'] as String,
             msg: row['msg'] as String,
             count: row['count'] as int,
-            total: row['total'] as int));
+            total: row['total'] as int),
+        arguments: [url]);
   }
 
   @override
@@ -286,5 +296,78 @@ class _$ContentIndexDao extends ContentIndexDao {
   @override
   Future<void> deleteContentIndex(ContentIndex data) async {
     await _contentIndexDeletionAdapter.delete(data);
+  }
+}
+
+class _$ScheduleDao extends ScheduleDao {
+  _$ScheduleDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _scheduleInsertionAdapter = InsertionAdapter(
+            database,
+            'Schedule',
+            (Schedule item) =>
+                <String, Object?>{'key': item.key, 'progress': item.progress}),
+        _scheduleUpdateAdapter = UpdateAdapter(
+            database,
+            'Schedule',
+            ['key'],
+            (Schedule item) =>
+                <String, Object?>{'key': item.key, 'progress': item.progress});
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<Schedule> _scheduleInsertionAdapter;
+
+  final UpdateAdapter<Schedule> _scheduleUpdateAdapter;
+
+  @override
+  Future<Schedule?> one(String url) async {
+    return _queryAdapter.query('SELECT * FROM Schedule WHERE url = ?1',
+        mapper: (Map<String, Object?> row) =>
+            Schedule(row['key'] as String, row['progress'] as int),
+        arguments: [url]);
+  }
+
+  @override
+  Future<void> updateProgressByUrl(
+    String url,
+    int count,
+    int total,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE OR ABORT Schedule SET count=?2,total=?3 WHERE url = ?1',
+        arguments: [url, count, total]);
+  }
+
+  @override
+  Future<void> updateFinish(
+    String url,
+    String path,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE OR ABORT Schedule SET count=total,path=?2 WHERE url = ?1',
+        arguments: [url, path]);
+  }
+
+  @override
+  Future<void> insertSchedule(Schedule data) async {
+    await _scheduleInsertionAdapter.insert(data, OnConflictStrategy.replace);
+  }
+
+  @override
+  Future<void> insertSchedules(List<Schedule> entities) async {
+    await _scheduleInsertionAdapter.insertList(
+        entities, OnConflictStrategy.replace);
+  }
+
+  @override
+  Future<void> updateSchedule(Schedule data) async {
+    await _scheduleUpdateAdapter.update(data, OnConflictStrategy.replace);
   }
 }

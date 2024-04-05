@@ -5,8 +5,8 @@ import 'package:repeat_flutter/db/entity/cache_file.dart';
 
 @dao
 abstract class CacheFileDao {
-  @Query('SELECT * FROM CacheFile limit 1')
-  Future<CacheFile?> one();
+  @Query('SELECT * FROM CacheFile WHERE url = :url')
+  Future<CacheFile?> one(String url);
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertCacheFile(CacheFile data);

@@ -1,11 +1,10 @@
 {
   "type": "VIDEO-KV",
-  "_rootUrl": "http://172.16.90.162:18139",
   "rootPath": "serial",
   "data": [
     {
-      "videoUrl": "/modern_family/Modern Family (2009) Season 1-11 S01-S11 (1080p Mixed x265 HEVC 10bit AAC 5.1 Silence)/Season 1 (BluRay)/Modern Family (2009) - S01E01 - Pilot (1080p BluRay x265 Silence).mkv",
-      "videoPath": "/modern_family/v/s1.mkv",
+      "url": "/serial/modern_family/Modern Family (2009) Season 1-11 S01-S11 (1080p Mixed x265 HEVC 10bit AAC 5.1 Silence)/Season 1 (BluRay)/Modern Family (2009) - S01E01 - Pilot (1080p BluRay x265 Silence).mkv",
+      "path": "/modern_family/v/s1.mkv",
       "split": [
         {
           "start": "00:02.92",

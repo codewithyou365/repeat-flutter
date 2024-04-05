@@ -1,0 +1,26 @@
+{
+  "type": "AUDIO-KV",
+  "rootPath": "book",
+  "data": [
+    {
+      "url": "https://i.xiao84.com/en-nce/3mp3-us/III-01.mp3",
+      "path": "/nce3/a/01.mp3",
+      "index": "nce3/01",
+      "split": [
+        {
+          "start": "00:13.00",
+          "end": "00:18.62",
+          "index": "0",
+          "key": "Pumas are large, cat-like animals which are found in America.",
+          "value": "美洲狮是一种体形似猫的大动物，产于美洲。"
+        },
+        {
+          "start": "00:18.66",
+          "end": "00:28.37",
+          "key": "When reports came into London Zoo that a wild puma had been spotted forty-five miles south of London, they were not taken seriously.",
+          "value": "当伦敦动物园接到报告说，在伦敦以南45英里处发现一只美洲狮时，这些报告并没有受到重视。"
+        }
+      ]
+    }
+  ]
+}
