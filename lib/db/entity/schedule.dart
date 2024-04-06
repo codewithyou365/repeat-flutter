@@ -7,7 +7,12 @@ class Schedule {
   @primaryKey
   final String key;
 
+  //todo type
+
   final int progress;
 
-  Schedule(this.key, this.progress);
+  final int next;
+  final int sort;
+
+  Schedule(this.key, this.progress, this.next, this.sort);
 }

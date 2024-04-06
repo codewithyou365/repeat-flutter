@@ -21,11 +21,16 @@ class MainContentLogic extends GetxController {
   delete(String url) async {
     state.indexes.removeWhere((element) => identical(element.url, url));
     update([MainContentLogic.id]);
-    await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(url));
+    await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(url, 0));
   }
 
   add(String url) async {
-    var contentIndex = ContentIndex(url);
+    var idleSortSequenceNumber = await Db().db.contentIndexDao.getIdleSortSequenceNumber();
+    if (idleSortSequenceNumber == null) {
+      print("too many data");
+      return;
+    }
+    var contentIndex = ContentIndex(url, idleSortSequenceNumber);
     state.indexes.add(contentIndex);
     update([MainContentLogic.id]);
     await Db().db.contentIndexDao.insertContentIndex(contentIndex);
@@ -44,16 +49,31 @@ class MainContentLogic extends GetxController {
     return total;
   }
 
-  Future<int> addToSchedule(String url) async {
+  Future<int> addToSchedule(String url, int contentIndexSort) async {
     var cacheFile = await downloadFilePath(url);
     if (cacheFile == null) {
       return 0;
     }
     var kv = await Kv.fromFile(cacheFile.path, Uri.parse(url));
     List<Schedule> entities = [];
+    if (kv.data.length >= 100000) {
+      print("too many data");
+      return 0;
+    }
     for (var d in kv.data) {
-      for (var s in d.split) {
-        entities.add(Schedule("${kv.rootPath}|${d.index}|${s.index}", 0));
+      if (d.split.length >= 100000) {
+        print("too many data");
+        return 0;
+      }
+    }
+
+    for (var di = 0; di < kv.data.length; di++) {
+      var d = kv.data[di];
+      for (var si = 0; si < d.split.length; si++) {
+        var s = d.split[si];
+        var key = "${kv.rootPath}|${d.index.padLeft(3, '0')}|${s.index.padLeft(3, '0')}";
+        //4611686118427387904-(99999*10000000000+99999*100000+99999)
+        entities.add(Schedule(key, 0, DateTime.now().millisecondsSinceEpoch, contentIndexSort * 10000000000 + di * 100000 + si));
       }
     }
     await Db().db.scheduleDao.insertSchedules(entities);

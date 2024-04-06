@@ -41,7 +41,7 @@ class MainContentPage extends StatelessWidget {
       }
       return TextButton(
         onPressed: () => {
-          openEditDialog(logic, ContentIndex(""), I18nKey.labelAddContentIndex.tr),
+          openEditDialog(logic, ContentIndex("", state.indexes.length), I18nKey.labelAddContentIndex.tr),
         },
         child: Text(I18nKey.btnAdd.tr),
       );
@@ -152,7 +152,6 @@ class MainContentPage extends StatelessWidget {
   }
 
   openScheduleDialog(MainContentLogic logic, ContentIndex model) async {
-    final state = logic.state;
     var unitCount = await logic.getUnitCount(model.url);
     Get.defaultDialog(
       content: Column(
@@ -171,7 +170,7 @@ class MainContentPage extends StatelessWidget {
         TextButton(
           child: Text(I18nKey.btnOk.tr),
           onPressed: () {
-            logic.addToSchedule(model.url);
+            logic.addToSchedule(model.url, model.sort);
             Get.back();
           },
         ),
