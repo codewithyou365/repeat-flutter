@@ -5,6 +5,7 @@ import 'package:repeat_flutter/db/entity/content_index.dart';
 import 'package:repeat_flutter/db/entity/schedule.dart';
 import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/kv.dart';
+import 'package:repeat_flutter/page/main/main_logic.dart';
 
 import 'main_content_state.dart';
 
@@ -22,6 +23,10 @@ class MainContentLogic extends GetxController {
     state.indexes.removeWhere((element) => identical(element.url, url));
     update([MainContentLogic.id]);
     await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(url, 0));
+    var deleteList = await Db().db.scheduleDao.findScheduleByUrl(url);
+    await Db().db.scheduleDao.deleteContentIndex(deleteList);
+    var mainLogic = Get.find<MainLogic>();
+    mainLogic.init();
   }
 
   add(String url) async {
@@ -71,13 +76,14 @@ class MainContentLogic extends GetxController {
       var d = kv.data[di];
       for (var si = 0; si < d.split.length; si++) {
         var s = d.split[si];
-        var key = "${kv.rootPath}|${d.index.padLeft(3, '0')}|${s.index.padLeft(3, '0')}";
+        var key = "${kv.rootPath}|${d.index}|${s.index}";
         //4611686118427387904-(99999*10000000000+99999*100000+99999)
-        entities.add(Schedule(key, 0, DateTime.now().millisecondsSinceEpoch, contentIndexSort * 10000000000 + di * 100000 + si));
+        entities.add(Schedule(key, url, 0, 0, DateTime.now().millisecondsSinceEpoch, contentIndexSort * 10000000000 + di * 100000 + si));
       }
     }
     await Db().db.scheduleDao.insertSchedules(entities);
-
+    var mainLogic = Get.find<MainLogic>();
+    mainLogic.init();
     var total = 0;
     for (var d in kv.data) {
       total += d.split.length;

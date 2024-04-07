@@ -99,11 +99,15 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `ContentIndex` (`url` TEXT NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`url`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Schedule` (`key` TEXT NOT NULL, `progress` INTEGER NOT NULL, `next` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`key`))');
+            'CREATE TABLE IF NOT EXISTS `Schedule` (`key` TEXT NOT NULL, `url` TEXT NOT NULL, `type` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `next` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`key`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Id99999` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE UNIQUE INDEX `index_ContentIndex_sort` ON `ContentIndex` (`sort`)');
+        await database
+            .execute('CREATE INDEX `index_Schedule_url` ON `Schedule` (`url`)');
+        await database.execute(
+            'CREATE INDEX `index_Schedule_next` ON `Schedule` (`next`)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -332,16 +336,20 @@ class _$ScheduleDao extends ScheduleDao {
             'Schedule',
             (Schedule item) => <String, Object?>{
                   'key': item.key,
+                  'url': item.url,
+                  'type': item.type,
                   'progress': item.progress,
                   'next': item.next,
                   'sort': item.sort
                 }),
-        _scheduleUpdateAdapter = UpdateAdapter(
+        _scheduleDeletionAdapter = DeletionAdapter(
             database,
             'Schedule',
             ['key'],
             (Schedule item) => <String, Object?>{
                   'key': item.key,
+                  'url': item.url,
+                  'type': item.type,
                   'progress': item.progress,
                   'next': item.next,
                   'sort': item.sort
@@ -355,40 +363,28 @@ class _$ScheduleDao extends ScheduleDao {
 
   final InsertionAdapter<Schedule> _scheduleInsertionAdapter;
 
-  final UpdateAdapter<Schedule> _scheduleUpdateAdapter;
+  final DeletionAdapter<Schedule> _scheduleDeletionAdapter;
 
   @override
-  Future<Schedule?> one(String url) async {
-    return _queryAdapter.query('SELECT * FROM Schedule WHERE url = ?1',
-        mapper: (Map<String, Object?> row) => Schedule(row['key'] as String,
-            row['progress'] as int, row['next'] as int, row['sort'] as int),
+  Future<List<Schedule>> findSchedule(int limit) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM Schedule where next<datetime(\'now\') order by progress,sort limit ?1',
+        mapper: (Map<String, Object?> row) => Schedule(row['key'] as String, row['url'] as String, row['type'] as int, row['progress'] as int, row['next'] as int, row['sort'] as int),
+        arguments: [limit]);
+  }
+
+  @override
+  Future<List<Schedule>> findScheduleByUrl(String url) async {
+
+    return _queryAdapter.queryList('SELECT * FROM Schedule WHERE url = ?1',
+        mapper: (Map<String, Object?> row) => Schedule(
+            row['key'] as String,
+            row['url'] as String,
+            row['type'] as int,
+            row['progress'] as int,
+            row['next'] as int,
+            row['sort'] as int),
         arguments: [url]);
-  }
-
-  @override
-  Future<void> updateProgressByUrl(
-    String url,
-    int count,
-    int total,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'UPDATE OR ABORT Schedule SET count=?2,total=?3 WHERE url = ?1',
-        arguments: [url, count, total]);
-  }
-
-  @override
-  Future<void> updateFinish(
-    String url,
-    String path,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'UPDATE OR ABORT Schedule SET count=total,path=?2 WHERE url = ?1',
-        arguments: [url, path]);
-  }
-
-  @override
-  Future<void> insertSchedule(Schedule data) async {
-    await _scheduleInsertionAdapter.insert(data, OnConflictStrategy.replace);
   }
 
   @override
@@ -398,8 +394,8 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> updateSchedule(Schedule data) async {
-    await _scheduleUpdateAdapter.update(data, OnConflictStrategy.replace);
+  Future<void> deleteContentIndex(List<Schedule> data) async {
+    await _scheduleDeletionAdapter.deleteList(data);
   }
 }
 
