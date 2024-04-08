@@ -374,16 +374,9 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<List<Schedule>> findScheduleByUrl(String url) async {
-
-    return _queryAdapter.queryList('SELECT * FROM Schedule WHERE url = ?1',
-        mapper: (Map<String, Object?> row) => Schedule(
-            row['key'] as String,
-            row['url'] as String,
-            row['type'] as int,
-            row['progress'] as int,
-            row['next'] as int,
-            row['sort'] as int),
+  Future<List<String>> findKeyByUrl(String url) async {
+    return _queryAdapter.queryList('SELECT `key` FROM Schedule WHERE url = ?1',
+        mapper: (Map<String, Object?> row) => row.values.first as String,
         arguments: [url]);
   }
 

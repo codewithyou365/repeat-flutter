@@ -23,8 +23,8 @@ class MainContentLogic extends GetxController {
     state.indexes.removeWhere((element) => identical(element.url, url));
     update([MainContentLogic.id]);
     await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(url, 0));
-    var deleteList = await Db().db.scheduleDao.findScheduleByUrl(url);
-    await Db().db.scheduleDao.deleteContentIndex(deleteList);
+    var deleteKeyList = await Db().db.scheduleDao.findKeyByUrl(url);
+    await Db().db.scheduleDao.deleteContentIndex(Schedule.create(deleteKeyList));
     var mainLogic = Get.find<MainLogic>();
     mainLogic.init();
   }

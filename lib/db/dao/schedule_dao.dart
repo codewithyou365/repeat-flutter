@@ -11,8 +11,8 @@ abstract class ScheduleDao {
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertSchedules(List<Schedule> entities);
 
-  @Query('SELECT * FROM Schedule WHERE url = :url')
-  Future<List<Schedule>> findScheduleByUrl(String url);
+  @Query('SELECT `key` FROM Schedule WHERE url = :url')
+  Future<List<String>> findKeyByUrl(String url);
 
   @delete
   Future<void> deleteContentIndex(List<Schedule> data);
