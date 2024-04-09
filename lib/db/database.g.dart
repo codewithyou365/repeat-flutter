@@ -69,7 +69,7 @@ class _$AppDatabase extends AppDatabase {
 
   ScheduleDao? _scheduleDaoInstance;
 
-  Id99999Dao? _id99999DaoInstance;
+  BaseService? _baseServiceInstance;
 
   Future<sqflite.Database> open(
     String path,
@@ -102,6 +102,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE TABLE IF NOT EXISTS `Schedule` (`key` TEXT NOT NULL, `url` TEXT NOT NULL, `type` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `next` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`key`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Id99999` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `Lock` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE UNIQUE INDEX `index_ContentIndex_sort` ON `ContentIndex` (`sort`)');
         await database
@@ -137,8 +139,8 @@ class _$AppDatabase extends AppDatabase {
   }
 
   @override
-  Id99999Dao get id99999Dao {
-    return _id99999DaoInstance ??= _$Id99999Dao(database, changeListener);
+  BaseService get baseService {
+    return _baseServiceInstance ??= _$BaseService(database, changeListener);
   }
 }
 
@@ -392,13 +394,15 @@ class _$ScheduleDao extends ScheduleDao {
   }
 }
 
-class _$Id99999Dao extends Id99999Dao {
-  _$Id99999Dao(
+class _$BaseService extends BaseService {
+  _$BaseService(
     this.database,
     this.changeListener,
   )   : _queryAdapter = QueryAdapter(database),
         _id99999InsertionAdapter = InsertionAdapter(database, 'Id99999',
-            (Id99999 item) => <String, Object?>{'id': item.id});
+            (Id99999 item) => <String, Object?>{'id': item.id}),
+        _lockInsertionAdapter = InsertionAdapter(
+            database, 'Lock', (Lock item) => <String, Object?>{'id': item.id});
 
   final sqflite.DatabaseExecutor database;
 
@@ -408,15 +412,45 @@ class _$Id99999Dao extends Id99999Dao {
 
   final InsertionAdapter<Id99999> _id99999InsertionAdapter;
 
+  final InsertionAdapter<Lock> _lockInsertionAdapter;
+
   @override
-  Future<Id99999?> one() async {
+  Future<Id99999?> getId99999() async {
     return _queryAdapter.query('SELECT * FROM Id99999 limit 1',
         mapper: (Map<String, Object?> row) => Id99999(row['id'] as int));
   }
 
   @override
-  Future<void> insertSchedules(List<Id99999> entities) async {
+  Future<Lock?> getLock() async {
+    return _queryAdapter.query('SELECT * FROM Lock limit 1',
+        mapper: (Map<String, Object?> row) => Lock(row['id'] as int));
+  }
+
+  @override
+  Future<void> insertId99999(List<Id99999> entities) async {
     await _id99999InsertionAdapter.insertList(
         entities, OnConflictStrategy.replace);
   }
+
+  @override
+  Future<void> insertLock(Lock entity) async {
+    await _lockInsertionAdapter.insert(entity, OnConflictStrategy.replace);
+  }
+
+  @override
+  Future<void> initData() async {
+    if (database is sqflite.Transaction) {
+      await super.initData();
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        await transactionDatabase.baseService.initData();
+      });
+    }
+  }
 }
+
+// ignore_for_file: unused_element
+final _dateTimeConverter = DateTimeConverter();
