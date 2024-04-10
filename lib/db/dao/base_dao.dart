@@ -3,7 +3,7 @@ import 'package:repeat_flutter/db/entity/id99999.dart';
 import 'package:repeat_flutter/db/entity/lock.dart';
 
 @dao
-abstract class BaseService {
+abstract class BaseDao {
   @Query('SELECT * FROM Id99999 limit 1')
   Future<Id99999?> getId99999();
 

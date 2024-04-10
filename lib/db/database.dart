@@ -12,15 +12,17 @@ import 'package:repeat_flutter/db/entity/content_index.dart';
 import 'package:repeat_flutter/db/entity/id99999.dart';
 import 'package:repeat_flutter/db/entity/lock.dart';
 import 'package:repeat_flutter/db/entity/schedule.dart';
+import 'package:repeat_flutter/db/entity/schedule_current.dart';
+import 'package:repeat_flutter/db/entity/schedule_today.dart';
 import 'package:repeat_flutter/db/type_converter.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 
-import 'service/base_service.dart';
+import 'dao/base_dao.dart';
 import 'entity/settings.dart';
 
 part 'database.g.dart'; // the generated code will be there
 
-@Database(version: 1, entities: [Settings, CacheFile, ContentIndex, Schedule, Id99999, Lock])
+@Database(version: 1, entities: [Settings, CacheFile, ContentIndex, Schedule, ScheduleCurrent, ScheduleToday, Id99999, Lock])
 @TypeConverters([DateTimeConverter])
 abstract class AppDatabase extends FloorDatabase {
   SettingsDao get settingsDao;
@@ -31,7 +33,7 @@ abstract class AppDatabase extends FloorDatabase {
 
   ScheduleDao get scheduleDao;
 
-  BaseService get baseService;
+  BaseDao get baseService;
 }
 
 class Db {
@@ -42,8 +44,12 @@ class Db {
 
   late AppDatabase db;
 
-  Future<AppDatabase> init() async {
-    db = await $FloorAppDatabase.databaseBuilder('app_database.db').build();
+  Future<AppDatabase> init({bool inMemory = false}) async {
+    if (inMemory) {
+      db = await $FloorAppDatabase.inMemoryDatabaseBuilder().build();
+    } else {
+      db = await $FloorAppDatabase.databaseBuilder('app_database.db').build();
+    }
     await db.baseService.initData();
     return db;
   }

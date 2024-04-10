@@ -78,7 +78,7 @@ class MainContentLogic extends GetxController {
         var s = d.split[si];
         var key = "${kv.rootPath}|${d.index}|${s.index}";
         //4611686118427387904-(99999*10000000000+99999*100000+99999)
-        entities.add(Schedule(key, url, 0, 0, DateTime.now().millisecondsSinceEpoch, contentIndexSort * 10000000000 + di * 100000 + si));
+        entities.add(Schedule(key, url, d.url, 0, 0, DateTime.now(), contentIndexSort * 10000000000 + di * 100000 + si));
       }
     }
     await Db().db.scheduleDao.insertSchedules(entities);
