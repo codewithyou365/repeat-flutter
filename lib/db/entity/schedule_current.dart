@@ -12,13 +12,7 @@ class ScheduleCurrent {
 
   final int progress;
 
-  ScheduleCurrent(this.key, this.url, this.sort, this.progress);
+  final DateTime errorTime;
 
-  static List<ScheduleCurrent> create(List<String> keys) {
-    List<ScheduleCurrent> ret = [];
-    for (int i = 0; i < keys.length; i++) {
-      ret.add(ScheduleCurrent(keys[i], '', 0, 0));
-    }
-    return ret;
-  }
+  ScheduleCurrent(this.key, this.url, this.sort, this.progress, this.errorTime);
 }

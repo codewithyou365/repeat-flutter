@@ -14,6 +14,23 @@ class LearnContent {
 
 @dao
 abstract class ScheduleDao {
+  static List<int> ebbinghausForgettingCurve = [
+    8 * 60 * 60,
+    2 * 24 * 60 * 60,
+    4 * 24 * 60 * 60,
+    7 * 24 * 60 * 60,
+    15 * 24 * 60 * 60,
+    30 * 24 * 60 * 60,
+    3 * 31 * 24 * 60 * 60,
+    6 * 31 * 24 * 60 * 60,
+    12 * 31 * 24 * 60 * 60,
+  ];
+  static int intervalSeconds = 8 * 60 * 60;
+  static int findLearnCountPerDay = 90;
+  static int learnCountPerDay = 30;
+  static int learnCountPerGroup = 10;
+  static int maxRepeatTime = 3;
+
   @Query('SELECT * FROM Lock where id=1 for update')
   Future<void> forUpdate();
 
@@ -21,11 +38,8 @@ abstract class ScheduleDao {
   @Query("SELECT * FROM ScheduleToday limit 1")
   Future<ScheduleToday?> findOneScheduleToday();
 
-  @Query('SELECT `key` FROM ScheduleToday')
-  Future<List<String>> findScheduleTodayKey();
-
-  @delete
-  Future<void> deleteScheduleToday(List<ScheduleToday> data);
+  @Query('DELETE FROM ScheduleToday')
+  Future<void> deleteScheduleToday();
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertScheduleToday(List<ScheduleToday> entities);
@@ -37,20 +51,37 @@ abstract class ScheduleDao {
   @Query("SELECT * FROM ScheduleCurrent limit 1")
   Future<ScheduleCurrent?> findOneScheduleCurrent();
 
-  @Query('SELECT `key` FROM ScheduleCurrent')
-  Future<List<String>> findScheduleCurrentKey();
-
-  @delete
-  Future<void> deleteScheduleCurrent(List<ScheduleCurrent> data);
+  @Query('DELETE FROM ScheduleCurrent')
+  Future<void> deleteScheduleCurrent();
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertScheduleCurrent(List<ScheduleCurrent> entities);
 
-  @Query('SELECT * FROM ScheduleCurrent order by sort')
+  @Query('SELECT * FROM ScheduleCurrent order by errorTime desc,sort asc')
   Future<List<ScheduleCurrent>> findScheduleCurrent();
 
   @Query("SELECT * FROM Schedule where next<datetime('now') order by progress,sort limit :limit")
   Future<List<Schedule>> findSchedule(int limit);
+
+  /// --- error
+
+  @Query('UPDATE Schedule SET progress=:progress,next=:next WHERE `key`=:key')
+  Future<void> setSchedule(String key, int progress, DateTime next);
+
+  @Query('UPDATE ScheduleCurrent SET progress=:progress,errorTime=:errorTime WHERE `key`=:key')
+  Future<void> setScheduleCurrentForError(String key, int progress, DateTime errorTime);
+
+  @Query('UPDATE ScheduleCurrent SET progress=:progress WHERE `key`=:key')
+  Future<void> setScheduleCurrentForRight(String key, int progress);
+
+  @Query("SELECT * FROM Schedule WHERE `key`=:key")
+  Future<Schedule?> getOneSchedule(String key);
+
+  @Query("SELECT * FROM ScheduleCurrent WHERE `key`=:key")
+  Future<ScheduleCurrent?> getOneScheduleCurrent(String key);
+
+  @delete
+  Future<void> deleteOneScheduleCurrent(ScheduleCurrent data);
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertSchedules(List<Schedule> entities);
@@ -63,13 +94,6 @@ abstract class ScheduleDao {
 
   @transaction
   Future<LearnContent> initCurrent() async {
-    const intervalSeconds = 15;
-    const learnCountPerDay = 6;
-    const learnCountPerGroup = 2;
-
-    //const intervalSeconds = 8 * 60 * 60;
-    //const learnCountPerDay = 30;
-    //const learnCountPerGroup = 10;
     await forUpdate();
     var now = DateTime.now();
     var renew = false;
@@ -80,14 +104,13 @@ abstract class ScheduleDao {
       var scheduleToady = await findOneScheduleToday();
       if (scheduleToady == null) {
         needToInsert = true;
-      } else if (scheduleToady.fullTime.compareTo(now.subtract(const Duration(seconds: intervalSeconds))) < 0) {
+      } else if (scheduleToady.fullTime.compareTo(now.subtract(Duration(seconds: intervalSeconds))) < 0) {
         needToDelete = true;
         needToInsert = true;
       }
 
       if (needToDelete) {
-        var keys = await findScheduleTodayKey();
-        await deleteScheduleToday(ScheduleToday.create(keys));
+        await deleteScheduleToday();
       }
 
       if (needToInsert) {
@@ -111,18 +134,18 @@ abstract class ScheduleDao {
         needToInsert = true;
       } else if (renew) {
         needToDelete = true;
+        needToInsert = true;
       }
 
       if (needToDelete) {
-        var keys = await findScheduleCurrentKey();
-        await deleteScheduleCurrent(ScheduleCurrent.create(keys));
+        await deleteScheduleCurrent();
       }
 
       if (needToInsert) {
         for (int i = 0; i < learnCountPerGroup; ++i) {
           if (i < schedulesToday.length) {
             var element = schedulesToday[i];
-            schedulesCurrent.add(ScheduleCurrent(element.key, element.url, element.sort, 0));
+            schedulesCurrent.add(ScheduleCurrent(element.key, element.url, element.sort, 0, DateTime.fromMicrosecondsSinceEpoch(0)));
           }
         }
         await insertScheduleCurrent(schedulesCurrent);
@@ -131,5 +154,48 @@ abstract class ScheduleDao {
       }
     }
     return LearnContent(schedulesToday, schedulesCurrent);
+  }
+
+  @transaction
+  Future<void> error(String key) async {
+    await forUpdate();
+    var now = DateTime.now();
+    await setSchedule(key, 0, now.add(Duration(seconds: ebbinghausForgettingCurve.first)));
+    await setScheduleCurrentForError(key, 0, now);
+  }
+
+  @transaction
+  Future<void> right(String key) async {
+    await forUpdate();
+    var now = DateTime.now();
+    var scheduleCurrent = await getOneScheduleCurrent(key);
+    if (scheduleCurrent == null) {
+      return;
+    }
+    bool complete = false;
+    if (scheduleCurrent.progress == 0 && DateTime.fromMicrosecondsSinceEpoch(0).compareTo(scheduleCurrent.errorTime) == 0) {
+      complete = true;
+      await setScheduleCurrentForRight(key, maxRepeatTime);
+    }
+
+    if (scheduleCurrent.progress + 1 > maxRepeatTime) {
+      complete = true;
+      await setScheduleCurrentForRight(key, maxRepeatTime);
+    }
+    if (complete) {
+      var schedule = await getOneSchedule(key);
+      if (schedule == null) {
+        return;
+      }
+      if (schedule.next.compareTo(now) < 0) {
+        if (schedule.progress + 1 >= ebbinghausForgettingCurve.length - 1) {
+          await setSchedule(key, schedule.progress + 1, now.add(Duration(seconds: ebbinghausForgettingCurve.last)));
+        } else {
+          await setSchedule(key, schedule.progress + 1, now.add(Duration(seconds: ebbinghausForgettingCurve[schedule.progress + 1])));
+        }
+      }
+    } else {
+      await setScheduleCurrentForRight(key, scheduleCurrent.progress + 1);
+    }
   }
 }
