@@ -26,7 +26,7 @@ abstract class ScheduleDao {
     12 * 31 * 24 * 60 * 60,
   ];
   static int intervalSeconds = 8 * 60 * 60;
-  static int findLearnCountPerDay = 90;
+  static int findLearnCountPerDay = 45;
   static int learnCountPerDay = 30;
   static int learnCountPerGroup = 10;
   static int maxRepeatTime = 3;
@@ -114,11 +114,12 @@ abstract class ScheduleDao {
       }
 
       if (needToInsert) {
-        List<Schedule> schedules = await findSchedule(learnCountPerDay);
+        List<Schedule> schedules = await findSchedule(findLearnCountPerDay);
         for (var element in schedules) {
           schedulesToday.add(ScheduleToday(element.key, element.url, element.sort, now));
         }
-        await insertScheduleToday(schedulesToday);
+        schedulesToday.sort((a, b) => a.sort.compareTo(b.sort));
+        await insertScheduleToday(schedulesToday.take(learnCountPerDay).toList());
       } else {
         schedulesToday = await findScheduleToday();
       }

@@ -59,8 +59,9 @@ void main() {
       result = await dao.initCurrent();
       expect(result.schedulesToday.length, 3);
       expect(result.schedulesToday[0].key, "apple");
-      expect(result.schedulesToday[1].key, "peach");
-      expect(result.schedulesToday[2].key, "pear");
+      expect(result.schedulesToday[1].key, "pear");
+      expect(result.schedulesToday[2].key, "peach");
+
 
       await dao.right("apple");
       scheduleCurrent = await dao.getOneScheduleCurrent("apple");
@@ -104,9 +105,9 @@ void main() {
 
       result = await dao.initCurrent();
       expect(result.schedulesToday.length, 3);
-      expect(result.schedulesToday[0].key, "peach");
+      expect(result.schedulesToday[0].key, "apple");
       expect(result.schedulesToday[1].key, "pear");
-      expect(result.schedulesToday[2].key, "apple");
+      expect(result.schedulesToday[2].key, "peach");
     });
 
     test('Test2', () async {});
