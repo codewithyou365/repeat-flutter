@@ -15,9 +15,9 @@ void main() {
       ScheduleDao.learnCountPerGroup = 2;
       ScheduleDao.maxRepeatTime = 3;
       List<Schedule> entities = [];
-      entities.add(Schedule("apple", "indexUrl", "dataUrl", 0, 0, DateTime.now(), 0));
-      entities.add(Schedule("pear", "indexUrl", "dataUrl", 0, 0, DateTime.now(), 1));
-      entities.add(Schedule("peach", "indexUrl", "dataUrl", 0, 0, DateTime.now(), 2));
+      entities.add(Schedule("apple", 0, 1, 0, 0, 0, DateTime.now(), 0));
+      entities.add(Schedule("pear", 0, 2, 0, 0, 0, DateTime.now(), 1));
+      entities.add(Schedule("peach", 0, 3, 0, 0, 0, DateTime.now(), 2));
       await dao.insertSchedules(entities);
       entities = await Db().db.scheduleDao.findSchedule(30);
 
@@ -61,7 +61,6 @@ void main() {
       expect(result.schedulesToday[0].key, "apple");
       expect(result.schedulesToday[1].key, "pear");
       expect(result.schedulesToday[2].key, "peach");
-
 
       await dao.right("apple");
       scheduleCurrent = await dao.getOneScheduleCurrent("apple");

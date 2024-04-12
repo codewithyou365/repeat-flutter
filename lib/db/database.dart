@@ -14,6 +14,7 @@ import 'package:repeat_flutter/db/entity/lock.dart';
 import 'package:repeat_flutter/db/entity/schedule.dart';
 import 'package:repeat_flutter/db/entity/schedule_current.dart';
 import 'package:repeat_flutter/db/entity/schedule_today.dart';
+import 'package:repeat_flutter/db/entity/segment.dart';
 import 'package:repeat_flutter/db/type_converter.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 
@@ -22,7 +23,7 @@ import 'entity/settings.dart';
 
 part 'database.g.dart'; // the generated code will be there
 
-@Database(version: 1, entities: [Settings, CacheFile, ContentIndex, Schedule, ScheduleCurrent, ScheduleToday, Id99999, Lock])
+@Database(version: 1, entities: [Settings, CacheFile, ContentIndex, Segment, Schedule, ScheduleCurrent, ScheduleToday, Id99999, Lock])
 @TypeConverters([DateTimeConverter])
 abstract class AppDatabase extends FloorDatabase {
   SettingsDao get settingsDao;

@@ -2,9 +2,13 @@
 
 import 'package:floor/floor.dart';
 
-@entity
+@Entity(indices: [
+  Index(value: ['url'], unique: true),
+])
 class CacheFile {
-  @primaryKey
+  @PrimaryKey(autoGenerate: true)
+  final int? id;
+
   final String url;
 
   final String path;
@@ -13,5 +17,5 @@ class CacheFile {
   final int total;
   final String msg;
 
-  CacheFile(this.url, this.path, {this.msg = "", this.count = 0, this.total = 1});
+  CacheFile(this.url, this.path, {this.id, this.msg = "", this.count = 0, this.total = 1});
 }

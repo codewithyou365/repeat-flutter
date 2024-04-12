@@ -4,6 +4,7 @@ import 'package:floor/floor.dart';
 import 'package:repeat_flutter/db/entity/schedule.dart';
 import 'package:repeat_flutter/db/entity/schedule_today.dart';
 import 'package:repeat_flutter/db/entity/schedule_current.dart';
+import 'package:repeat_flutter/db/entity/segment.dart';
 
 class LearnContent {
   List<ScheduleToday> schedulesToday;
@@ -15,6 +16,7 @@ class LearnContent {
 @dao
 abstract class ScheduleDao {
   static List<int> ebbinghausForgettingCurve = [
+    0,
     8 * 60 * 60,
     2 * 24 * 60 * 60,
     4 * 24 * 60 * 60,
@@ -77,6 +79,20 @@ abstract class ScheduleDao {
   @Query("SELECT * FROM Schedule WHERE `key`=:key")
   Future<Schedule?> getOneSchedule(String key);
 
+  @Query("SELECT"
+      " Schedule.`key` `key`"
+      ",indexFile.id indexFileId"
+      ",indexFile.url indexFileUrl"
+      ",indexFile.path indexFilePath"
+      ",Schedule.lessonIndex lessonIndex"
+      ",Schedule.segmentIndex segmentIndex"
+      ",lessonFile.path lessonFilePath"
+      " FROM Schedule"
+      " JOIN CacheFile indexFile ON indexFile.id=Schedule.indexFileId"
+      " JOIN CacheFile lessonFile ON lessonFile.id=Schedule.lessonFileId"
+      " WHERE Schedule.`key`=:key")
+  Future<Segment?> getSegment(String key);
+
   @Query("SELECT * FROM ScheduleCurrent WHERE `key`=:key")
   Future<ScheduleCurrent?> getOneScheduleCurrent(String key);
 
@@ -116,7 +132,7 @@ abstract class ScheduleDao {
       if (needToInsert) {
         List<Schedule> schedules = await findSchedule(findLearnCountPerDay);
         for (var element in schedules) {
-          schedulesToday.add(ScheduleToday(element.key, element.url, element.sort, now));
+          schedulesToday.add(ScheduleToday(element.key, element.sort, now));
         }
         schedulesToday.sort((a, b) => a.sort.compareTo(b.sort));
         await insertScheduleToday(schedulesToday.take(learnCountPerDay).toList());
@@ -146,7 +162,7 @@ abstract class ScheduleDao {
         for (int i = 0; i < learnCountPerGroup; ++i) {
           if (i < schedulesToday.length) {
             var element = schedulesToday[i];
-            schedulesCurrent.add(ScheduleCurrent(element.key, element.url, element.sort, 0, DateTime.fromMicrosecondsSinceEpoch(0)));
+            schedulesCurrent.add(ScheduleCurrent(element.key, 0, 0, DateTime.fromMicrosecondsSinceEpoch(0)));
           }
         }
         await insertScheduleCurrent(schedulesCurrent);

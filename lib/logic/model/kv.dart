@@ -5,9 +5,9 @@ import 'dart:convert' as convert;
 import 'repeat_content.dart';
 
 class Kv extends RepeatContent {
-  List<Data> data;
+  List<Lesson> lesson;
 
-  Kv(String type, String rootPath, String rootUrl, this.data) : super(type, rootPath, rootUrl);
+  Kv(String type, String rootPath, String rootUrl, this.lesson) : super(type, rootPath, rootUrl);
 
   static Future<Kv> fromFile(String path, Uri defaultRootUri) async {
     File file = File(path);
@@ -28,40 +28,40 @@ class Kv extends RepeatContent {
       json['type'],
       json['rootPath'] ?? "",
       json['rootUrl'] ?? "",
-      List<Data>.from(json['data'].map((dynamic d) => Data.fromJson(d))),
+      List<Lesson>.from(json['lesson'].map((dynamic d) => Lesson.fromJson(d))),
     );
   }
 }
 
-class Data {
+class Lesson {
   String url;
   String path;
   String index;
-  List<Split> split;
+  List<Segment> segment;
 
-  Data(this.url, this.path, this.index, this.split);
+  Lesson(this.url, this.path, this.index, this.segment);
 
-  factory Data.fromJson(Map<String, dynamic> json) {
-    return Data(
+  factory Lesson.fromJson(Map<String, dynamic> json) {
+    return Lesson(
       json['url'],
       json['path'],
       json['index'] ?? json['path'],
-      List<Split>.from(json['split'].map((dynamic s) => Split.fromJson(s, json['split'].indexOf(s)))),
+      List<Segment>.from(json['segment'].map((dynamic s) => Segment.fromJson(s, json['segment'].indexOf(s)))),
     );
   }
 }
 
-class Split {
+class Segment {
   String start;
   String end;
   String index;
   String key;
   String value;
 
-  Split(this.start, this.end, this.index, this.key, this.value);
+  Segment(this.start, this.end, this.index, this.key, this.value);
 
-  factory Split.fromJson(Map<String, dynamic> json, int index) {
-    return Split(
+  factory Segment.fromJson(Map<String, dynamic> json, int index) {
+    return Segment(
       json['start'],
       json['end'],
       json['index'] ?? index.toString(),

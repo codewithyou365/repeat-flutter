@@ -22,6 +22,7 @@ class MainContentLogic extends GetxController {
   delete(String url) async {
     state.indexes.removeWhere((element) => identical(element.url, url));
     update([MainContentLogic.id]);
+    // TODO here some error
     await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(url, 0));
     var deleteKeyList = await Db().db.scheduleDao.findKeyByUrl(url);
     await Db().db.scheduleDao.deleteContentIndex(Schedule.create(deleteKeyList));
@@ -48,8 +49,8 @@ class MainContentLogic extends GetxController {
     }
     var kv = await Kv.fromFile(cacheFile.path, Uri.parse(url));
     var total = 0;
-    for (var d in kv.data) {
-      total += d.split.length;
+    for (var d in kv.lesson) {
+      total += d.segment.length;
     }
     return total;
   }
@@ -61,32 +62,33 @@ class MainContentLogic extends GetxController {
     }
     var kv = await Kv.fromFile(cacheFile.path, Uri.parse(url));
     List<Schedule> entities = [];
-    if (kv.data.length >= 100000) {
+    if (kv.lesson.length >= 100000) {
       print("too many data");
       return 0;
     }
-    for (var d in kv.data) {
-      if (d.split.length >= 100000) {
+    for (var d in kv.lesson) {
+      if (d.segment.length >= 100000) {
         print("too many data");
         return 0;
       }
     }
 
-    for (var di = 0; di < kv.data.length; di++) {
-      var d = kv.data[di];
-      for (var si = 0; si < d.split.length; si++) {
-        var s = d.split[si];
-        var key = "${kv.rootPath}|${d.index}|${s.index}";
+    for (var lessonIndex = 0; lessonIndex < kv.lesson.length; lessonIndex++) {
+      var lesson = kv.lesson[lessonIndex];
+      var lessonId = await Db().db.cacheFileDao.getId(url);
+      for (var segmentIndex = 0; segmentIndex < lesson.segment.length; segmentIndex++) {
+        var segment = lesson.segment[segmentIndex];
+        var key = "${kv.rootPath}|${lesson.index}|${segment.index}";
         //4611686118427387904-(99999*10000000000+99999*100000+99999)
-        entities.add(Schedule(key, url, d.url, 0, 0, DateTime.now(), contentIndexSort * 10000000000 + di * 100000 + si));
+        entities.add(Schedule(key, cacheFile.id!, lessonId!, lessonIndex, segmentIndex, 0, DateTime.now(), contentIndexSort * 10000000000 + lessonIndex * 100000 + segmentIndex));
       }
     }
     await Db().db.scheduleDao.insertSchedules(entities);
     var mainLogic = Get.find<MainLogic>();
     mainLogic.init();
     var total = 0;
-    for (var d in kv.data) {
-      total += d.split.length;
+    for (var d in kv.lesson) {
+      total += d.segment.length;
     }
     return total;
   }
@@ -126,8 +128,8 @@ class MainContentLogic extends GetxController {
       progressCallback: downloadProgress,
     );
     if (success) {
-      state.indexTotal.value = state.indexTotal.value + kv.data.length;
-      for (var v in kv.data) {
+      state.indexTotal.value = state.indexTotal.value + kv.lesson.length;
+      for (var v in kv.lesson) {
         var innerUrl = v.url;
         if (!innerUrl.startsWith("http")) {
           innerUrl = kv.rootUrl.joinPath(v.url);

@@ -29,5 +29,10 @@ class ConfigEn extends Config {
     put(I18nKey.btnReview, "Review");
     put(I18nKey.btnRepeat, "Repeat");
     put(I18nKey.btnSchedule, "Schedule");
+    put(I18nKey.btnShow, "SHOW");
+    put(I18nKey.btnUnknown, "UNKNOWN");
+    put(I18nKey.btnKnow, "KNOW");
+    put(I18nKey.btnError, "ERROR");
+    put(I18nKey.btnNext, "NEXT");
   }
 }

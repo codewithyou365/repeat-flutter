@@ -29,5 +29,10 @@ class ConfigZh extends Config {
     put(I18nKey.btnReview, "回顾");
     put(I18nKey.btnRepeat, "重复");
     put(I18nKey.btnSchedule, "安排");
+    put(I18nKey.btnShow, "展示");
+    put(I18nKey.btnUnknown, "不知道");
+    put(I18nKey.btnKnow, "知道");
+    put(I18nKey.btnError, "错误");
+    put(I18nKey.btnNext, "下一个");
   }
 }

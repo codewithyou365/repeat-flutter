@@ -27,6 +27,11 @@ enum I18nKey {
   btnSchedule,
   btnReview,
   btnRepeat,
+  btnShow,
+  btnUnknown,
+  btnKnow,
+  btnError,
+  btnNext,
   ;
 
   String trArgs([List<String> args = const []]) {

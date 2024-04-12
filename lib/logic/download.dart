@@ -15,8 +15,7 @@ Future<CacheFile?> downloadFilePath(String url) async {
 }
 
 Future<bool> downloadFile(String urlPath, Finish finish, {DownloadProgressCallback? progressCallback}) async {
-  var cacheFile = CacheFile(urlPath, "");
-  await Db().db.cacheFileDao.insertCacheFile(cacheFile);
+  var id = await Db().db.cacheFileDao.insert(urlPath);
   int startTime = DateTime.now().millisecondsSinceEpoch;
   int lastUpdateTime = 0;
   int fileCount = 1;
@@ -31,7 +30,7 @@ Future<bool> downloadFile(String urlPath, Finish finish, {DownloadProgressCallba
       if ((DateTime.now().millisecondsSinceEpoch - lastUpdateTime) > 100) {
         lastUpdateTime = DateTime.now().millisecondsSinceEpoch;
         fileTotal = total;
-        Db().db.cacheFileDao.updateProgressByUrl(urlPath, count, total);
+        Db().db.cacheFileDao.updateProgressById(id, count, total);
         if (progressCallback != null) {
           progressCallback(startTime, count, total, false);
         }
@@ -43,14 +42,13 @@ Future<bool> downloadFile(String urlPath, Finish finish, {DownloadProgressCallba
     var newFl = await finish(fl);
     await ensureFolderExists(newFl.folderPath);
     await File(fl.path).rename(newFl.path);
-    await Db().db.cacheFileDao.updateFinish(urlPath, newFl.path);
+    await Db().db.cacheFileDao.updateFinish(id, newFl.path);
     if (progressCallback != null) {
       progressCallback(startTime, fileTotal, fileTotal, true);
     }
     return true;
   } on Exception catch (e) {
-    cacheFile = CacheFile(urlPath, "", msg: e.toString());
-    Db().db.cacheFileDao.updateCacheFile(cacheFile);
+    Db().db.cacheFileDao.updateCacheFile(id, e.toString());
   }
   return false;
 }
