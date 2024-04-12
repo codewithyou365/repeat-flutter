@@ -75,7 +75,7 @@ class MainContentLogic extends GetxController {
 
     for (var lessonIndex = 0; lessonIndex < kv.lesson.length; lessonIndex++) {
       var lesson = kv.lesson[lessonIndex];
-      var lessonId = await Db().db.cacheFileDao.getId(url);
+      var lessonId = await Db().db.cacheFileDao.getId(lesson.url);
       for (var segmentIndex = 0; segmentIndex < lesson.segment.length; segmentIndex++) {
         var segment = lesson.segment[segmentIndex];
         var key = "${kv.rootPath}|${lesson.index}|${segment.index}";
