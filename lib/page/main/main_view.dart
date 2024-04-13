@@ -12,9 +12,7 @@ class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final logic = Get.find<MainLogic>();
-    final state = Get
-        .find<MainLogic>()
-        .state;
+    final state = Get.find<MainLogic>().state;
     logic.init();
     return Scaffold(
       appBar: AppBar(
@@ -42,13 +40,10 @@ class MainPage extends StatelessWidget {
               width: 200.w,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme
-                      .of(context)
-                      .secondaryHeaderColor,
+                  backgroundColor: Theme.of(context).secondaryHeaderColor,
                 ),
-                onPressed: () =>
-                {
-                  Nav.mainRepeat.push(),
+                onPressed: () => {
+                  logic.tryMainRepeat(),
                 },
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 11.0.w),
@@ -56,9 +51,7 @@ class MainPage extends StatelessWidget {
                     children: [
                       Text(I18nKey.btnRepeat.tr,
                           style: TextStyle(
-                            color: Theme
-                                .of(context)
-                                .shadowColor,
+                            color: Theme.of(context).shadowColor,
                           )),
                       Obx(() {
                         return Text(

@@ -19,6 +19,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelDeleteContentIndex, "请确定删除内容索引\n\n%s");
     put(I18nKey.labelDownloadContent, "下载内容");
     put(I18nKey.labelScheduleContent, "添加学习任务 %s 个单位");
+    put(I18nKey.labelNoLearningContent, "现在没有学习内容");
+    put(I18nKey.labelTips, "提示");
     put(I18nKey.btnCancel, "取消");
     put(I18nKey.btnOk, "确定");
     put(I18nKey.btnDelete, "删除");

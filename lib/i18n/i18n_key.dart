@@ -17,6 +17,8 @@ enum I18nKey {
   labelDeleteContentIndex,
   labelDownloadContent,
   labelScheduleContent,
+  labelNoLearningContent,
+  labelTips,
   btnCancel,
   btnOk,
   btnDelete,
