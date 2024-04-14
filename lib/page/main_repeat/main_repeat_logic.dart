@@ -1,46 +1,56 @@
-import 'package:audioplayers/audioplayers.dart';
+import 'dart:async';
+
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/schedule_current.dart';
 import 'package:repeat_flutter/logic/model/kv.dart';
+import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 import 'main_repeat_state.dart';
 
 class MainRepeatLogic extends GetxController {
-  final player = AudioPlayer();
   final MainRepeatState state = MainRepeatState();
 
-  Future<void> init() async {
+  @override
+  Future<void> onInit() async {
+    super.onInit();
     state.learnContent = await Db().db.scheduleDao.initCurrent();
     state.total = state.learnContent.schedulesCurrent.length;
     setProgress(state.learnContent.schedulesCurrent);
-    await setCurrentLearnContent();
+    state.scheduleIndex.value = 0;
+    await setCurrentLearnContent(state.scheduleIndex.value);
   }
 
-  Future<void> play(String path) async {
-    player.play(DeviceFileSource(path));
+  void next() {
+    state.scheduleIndex.value = state.scheduleIndex.value + 1;
+    setCurrentLearnContent(state.scheduleIndex.value);
   }
 
-  setCurrentLearnContent() async {
+  Future<Kv?> setCurrentLearnContent(int index) async {
     if (state.learnContent.schedulesCurrent.isEmpty) {
-      return;
+      return null;
     }
-    var first = state.learnContent.schedulesCurrent[0];
+    var first = state.learnContent.schedulesCurrent[index];
     var segmentIndex = await Db().db.scheduleDao.getSegment(first.key);
     if (segmentIndex == null) {
-      return;
+      return null;
     }
     var kv = state.indexIdToKv[segmentIndex.indexFileId];
     if (kv == null) {
       kv = await Kv.fromFile(segmentIndex.indexFilePath, Uri.parse(segmentIndex.indexFileUrl));
       state.indexIdToKv[segmentIndex.indexFileId] = kv;
     }
-    var segment = kv.lesson[segmentIndex.lessonIndex].segment[segmentIndex.segmentIndex];
-
-    state.lessonFilePath.value = segmentIndex.lessonFilePath;
+    var lesson = kv.lesson[segmentIndex.lessonIndex];
+    var segment = lesson.segment[segmentIndex.segmentIndex];
+    state.lessonFilePath = segmentIndex.lessonFilePath;
+    state.segmentIndex.value = segmentIndex.segmentIndex;
     state.segmentKey.value = segment.key;
     state.segmentValue.value = segment.value;
+    for (var s in lesson.segment) {
+      state.segments.add(Line.toLine(s.start, s.end));
+    }
+    return kv;
   }
 
   setProgress(List<ScheduleCurrent> currents) {

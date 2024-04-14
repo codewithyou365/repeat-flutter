@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/page/main_repeat/main_repeat_state.dart';
+import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 import 'main_repeat_logic.dart';
 
@@ -12,7 +13,6 @@ class MainRepeatPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final logic = Get.find<MainRepeatLogic>();
     final state = Get.find<MainRepeatLogic>().state;
-    logic.init();
 
     return Scaffold(
       appBar: AppBar(
@@ -25,12 +25,8 @@ class MainRepeatPage extends StatelessWidget {
           children: [
             Text(state.segmentKey.value),
             Text(state.segmentValue.value),
-            TextButton(
-              child: Text(state.lessonFilePath.value),
-              onPressed: () {
-                logic.play(state.lessonFilePath.value);
-              },
-            ),
+            Text(state.lessonFilePath),
+            PlayerBar(state.segmentIndex.value, state.segments, state.lessonFilePath),
             buildBottom(logic),
           ],
         );
@@ -57,7 +53,13 @@ class MainRepeatPage extends StatelessWidget {
           ],
         );
       default:
-        return buildButton(I18nKey.btnNext.tr, () {});
+        return Row(
+          children: [
+            buildButton(I18nKey.btnNext.tr, () {
+              logic.next();
+            }),
+          ],
+        );
     }
   }
 
