@@ -5,17 +5,25 @@ import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 enum MainRepeatStep { recall, evaluate, finish }
 
+// recall by value
+// recall by media (audio, video or image)
+// recall by key
+
+enum MainRepeatMode { byValue, byMedia, byKey }
+
 class MainRepeatState {
   var total = 10;
   Map<int, Kv> indexIdToKv = {};
   var progress = (-1).obs;
   var lessonFilePath = "";
-  var scheduleIndex = 0.obs;
+  var scheduleIndex = 0;
   var segmentIndex = 0.obs;
+
   var segmentKey = "".obs;
   var segmentValue = "".obs;
   List<Line> segments = [];
-  var step = MainRepeatStep.finish;
+  var step = MainRepeatStep.recall;
+  var mode = MainRepeatMode.byValue;
   var learnContent = LearnContent([], []);
 
   MainRepeatState() {

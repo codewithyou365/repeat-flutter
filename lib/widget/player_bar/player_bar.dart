@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class PlayerBar extends StatefulWidget {
+
   final int? index;
   final List<Line> lines;
   final String path;

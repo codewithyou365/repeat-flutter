@@ -10,6 +10,7 @@ import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 import 'main_repeat_state.dart';
 
 class MainRepeatLogic extends GetxController {
+  static const String id = "MainRepeatLogic";
   final MainRepeatState state = MainRepeatState();
 
   @override
@@ -18,21 +19,46 @@ class MainRepeatLogic extends GetxController {
     state.learnContent = await Db().db.scheduleDao.initCurrent();
     state.total = state.learnContent.schedulesCurrent.length;
     setProgress(state.learnContent.schedulesCurrent);
-    state.scheduleIndex.value = 0;
-    await setCurrentLearnContent(state.scheduleIndex.value);
+    await setCurrentLearnContent();
+    update([MainRepeatLogic.id]);
   }
 
-  void next() {
-    state.scheduleIndex.value = state.scheduleIndex.value + 1;
-    setCurrentLearnContent(state.scheduleIndex.value);
+  void show() {
+    state.step = MainRepeatStep.evaluate;
+    update([MainRepeatLogic.id]);
   }
 
-  Future<Kv?> setCurrentLearnContent(int index) async {
+  void error({next = false}) async {
+    var curr = state.learnContent.schedulesCurrent[state.scheduleIndex];
+    await Db().db.scheduleDao.error(curr.key);
+    state.step = MainRepeatStep.finish;
+    update([MainRepeatLogic.id]);
+    if (next) {
+      this.next();
+    }
+  }
+
+  void know() async {
+    var curr = state.learnContent.schedulesCurrent[state.scheduleIndex];
+    await Db().db.scheduleDao.error(curr.key);
+    state.step = MainRepeatStep.finish;
+    update([MainRepeatLogic.id]);
+    next();
+  }
+
+  void next() async {
+    state.scheduleIndex = state.scheduleIndex + 1;
+    state.step = MainRepeatStep.recall;
+    await setCurrentLearnContent();
+    update([MainRepeatLogic.id]);
+  }
+
+  Future<Kv?> setCurrentLearnContent() async {
     if (state.learnContent.schedulesCurrent.isEmpty) {
       return null;
     }
-    var first = state.learnContent.schedulesCurrent[index];
-    var segmentIndex = await Db().db.scheduleDao.getSegment(first.key);
+    var curr = state.learnContent.schedulesCurrent[state.scheduleIndex];
+    var segmentIndex = await Db().db.scheduleDao.getSegment(curr.key);
     if (segmentIndex == null) {
       return null;
     }
