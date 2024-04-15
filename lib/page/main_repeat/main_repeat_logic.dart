@@ -42,7 +42,6 @@ class MainRepeatLogic extends GetxController {
     var curr = state.learnContent.schedulesCurrent[state.scheduleIndex];
     await Db().db.scheduleDao.error(curr.key);
     state.step = MainRepeatStep.finish;
-    update([MainRepeatLogic.id]);
     next();
   }
 
