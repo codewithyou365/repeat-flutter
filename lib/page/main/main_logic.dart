@@ -8,9 +8,16 @@ import 'main_state.dart';
 class MainLogic extends GetxController {
   final MainState state = MainState();
 
-  init() async {
+  @override
+  void onInit() {
+    super.onInit();
+    init();
+  }
+
+  void init() async {
+    var now = DateTime.now();
     state.schedules.clear();
-    state.schedules.addAll(await Db().db.scheduleDao.findSchedule(30));
+    state.schedules.addAll(await Db().db.scheduleDao.findSchedule(30, now));
     state.totalCount.value = state.schedules.length;
   }
 

@@ -7,11 +7,11 @@ class ScheduleCurrent {
   @primaryKey
   final String key;
 
-  final int sort;
+  int sort;
 
-  final int progress;
+  int progress;
 
-  final DateTime errorTime;
+  DateTime viewTime;
 
-  ScheduleCurrent(this.key, this.sort, this.progress, this.errorTime);
+  ScheduleCurrent(this.key, this.sort, this.progress, this.viewTime);
 }

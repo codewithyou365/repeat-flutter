@@ -2,6 +2,7 @@
 
 // required package imports
 import 'dart:async';
+import 'dart:developer';
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/db/dao/cache_file_dao.dart';
 import 'package:repeat_flutter/db/dao/content_index_dao.dart';
@@ -50,6 +51,7 @@ class Db {
       db = await $FloorAppDatabase.inMemoryDatabaseBuilder().build();
     } else {
       db = await $FloorAppDatabase.databaseBuilder('app_database.db').build();
+      log("Database path: ${await sqflite.getDatabasesPath()}");
     }
     await db.baseService.initData();
     return db;

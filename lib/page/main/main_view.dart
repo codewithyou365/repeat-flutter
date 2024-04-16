@@ -13,7 +13,6 @@ class MainPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final logic = Get.find<MainLogic>();
     final state = Get.find<MainLogic>().state;
-    logic.init();
     return Scaffold(
       appBar: AppBar(
         title: const Text(""),

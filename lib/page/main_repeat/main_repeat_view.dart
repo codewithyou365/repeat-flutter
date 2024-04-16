@@ -18,7 +18,7 @@ class MainRepeatPage extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           title: Obx(() {
-            return Text("${state.progress}/${state.total}");
+            return Text("${state.progress}/${state.total}-${state.segmentDatabaseKey}");
           }),
         ),
         body: GetBuilder<MainRepeatLogic>(
@@ -51,7 +51,7 @@ class MainRepeatPage extends StatelessWidget {
             case MainRepeatMode.byMedia:
               return PlayerBar(state.segmentIndex.value, state.segments, state.lessonFilePath);
             default:
-              return Text(state.segmentKey.value);
+              return Text(state.segmentKey);
           }
         }
       default:
@@ -64,7 +64,7 @@ class MainRepeatPage extends StatelessWidget {
                     padding: EdgeInsets.only(bottom: 8.w),
                     child: Text(state.segmentValue.value),
                   ),
-                  Text(state.segmentKey.value),
+                  Text(state.segmentKey),
                   PlayerBar(state.segmentIndex.value, state.segments, state.lessonFilePath),
                 ],
               );
@@ -76,7 +76,7 @@ class MainRepeatPage extends StatelessWidget {
                     child: PlayerBar(state.segmentIndex.value, state.segments, state.lessonFilePath),
                   ),
                   Text(state.segmentValue.value),
-                  Text(state.segmentKey.value),
+                  Text(state.segmentKey),
                 ],
               );
             default:
@@ -84,7 +84,7 @@ class MainRepeatPage extends StatelessWidget {
                 children: [
                   Padding(
                     padding: EdgeInsets.only(bottom: 8.w),
-                    child: Text(state.segmentKey.value),
+                    child: Text(state.segmentKey),
                   ),
                   Text(state.segmentValue.value),
                   PlayerBar(state.segmentIndex.value, state.segments, state.lessonFilePath),

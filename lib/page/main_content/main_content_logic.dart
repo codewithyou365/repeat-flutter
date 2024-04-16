@@ -26,8 +26,7 @@ class MainContentLogic extends GetxController {
     await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(url, 0));
     var deleteKeyList = await Db().db.scheduleDao.findKeyByUrl(url);
     await Db().db.scheduleDao.deleteContentIndex(Schedule.create(deleteKeyList));
-    var mainLogic = Get.find<MainLogic>();
-    mainLogic.init();
+    Get.find<MainLogic>().init();
   }
 
   add(String url) async {
@@ -84,8 +83,7 @@ class MainContentLogic extends GetxController {
       }
     }
     await Db().db.scheduleDao.insertSchedules(entities);
-    var mainLogic = Get.find<MainLogic>();
-    mainLogic.init();
+    Get.find<MainLogic>().init();
     var total = 0;
     for (var d in kv.lesson) {
       total += d.segment.length;

@@ -99,11 +99,9 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `ContentIndex` (`url` TEXT NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`url`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Segment` (`key` TEXT NOT NULL, `indexFileId` INTEGER NOT NULL, `indexFileUrl` TEXT NOT NULL, `indexFilePath` TEXT NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `lessonFilePath` TEXT NOT NULL, PRIMARY KEY (`key`))');
-        await database.execute(
             'CREATE TABLE IF NOT EXISTS `Schedule` (`key` TEXT NOT NULL, `indexFileId` INTEGER NOT NULL, `lessonFileId` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `next` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`key`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `ScheduleCurrent` (`key` TEXT NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `errorTime` INTEGER NOT NULL, PRIMARY KEY (`key`))');
+            'CREATE TABLE IF NOT EXISTS `ScheduleCurrent` (`key` TEXT NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, PRIMARY KEY (`key`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `ScheduleToday` (`key` TEXT NOT NULL, `sort` INTEGER NOT NULL, `fullTime` INTEGER NOT NULL, PRIMARY KEY (`key`))');
         await database.execute(
@@ -382,7 +380,7 @@ class _$ScheduleDao extends ScheduleDao {
                   'key': item.key,
                   'sort': item.sort,
                   'progress': item.progress,
-                  'errorTime': _dateTimeConverter.encode(item.errorTime)
+                  'viewTime': _dateTimeConverter.encode(item.viewTime)
                 }),
         _scheduleInsertionAdapter = InsertionAdapter(
             database,
@@ -405,7 +403,7 @@ class _$ScheduleDao extends ScheduleDao {
                   'key': item.key,
                   'sort': item.sort,
                   'progress': item.progress,
-                  'errorTime': _dateTimeConverter.encode(item.errorTime)
+                  'viewTime': _dateTimeConverter.encode(item.viewTime)
                 }),
         _scheduleDeletionAdapter = DeletionAdapter(
             database,
@@ -468,13 +466,19 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
+  Future<int?> totalScheduleCurrent() async {
+    return _queryAdapter.query('SELECT count(1) FROM ScheduleCurrent',
+        mapper: (Map<String, Object?> row) => row.values.first as int);
+  }
+
+  @override
   Future<ScheduleCurrent?> findOneScheduleCurrent() async {
     return _queryAdapter.query('SELECT * FROM ScheduleCurrent limit 1',
         mapper: (Map<String, Object?> row) => ScheduleCurrent(
             row['key'] as String,
             row['sort'] as int,
             row['progress'] as int,
-            _dateTimeConverter.decode(row['errorTime'] as int)));
+            _dateTimeConverter.decode(row['viewTime'] as int)));
   }
 
   @override
@@ -483,22 +487,30 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<List<ScheduleCurrent>> findScheduleCurrent() async {
+  Future<List<ScheduleCurrent>> findScheduleCurrent(int maxProgress) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM ScheduleCurrent order by errorTime desc,sort asc',
-        mapper: (Map<String, Object?> row) => ScheduleCurrent(
-            row['key'] as String,
-            row['sort'] as int,
-            row['progress'] as int,
-            _dateTimeConverter.decode(row['errorTime'] as int)));
+        'SELECT * FROM ScheduleCurrent where progress<?1 order by viewTime,sort asc',
+        mapper: (Map<String, Object?> row) => ScheduleCurrent(row['key'] as String, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int)),
+        arguments: [maxProgress]);
   }
 
   @override
-  Future<List<Schedule>> findSchedule(int limit) async {
+  Future<List<Schedule>> findSchedule(
+    int limit,
+    DateTime now,
+  ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM Schedule where next<datetime(\'now\') order by progress,sort limit ?1',
-        mapper: (Map<String, Object?> row) => Schedule(row['key'] as String, row['indexFileId'] as int, row['lessonFileId'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['progress'] as int, _dateTimeConverter.decode(row['next'] as int), row['sort'] as int),
-        arguments: [limit]);
+        'SELECT * FROM Schedule where next<?2 order by progress,sort limit ?1',
+        mapper: (Map<String, Object?> row) => Schedule(
+            row['key'] as String,
+            row['indexFileId'] as int,
+            row['lessonFileId'] as int,
+            row['lessonIndex'] as int,
+            row['segmentIndex'] as int,
+            row['progress'] as int,
+            _dateTimeConverter.decode(row['next'] as int),
+            row['sort'] as int),
+        arguments: [limit, _dateTimeConverter.encode(now)]);
   }
 
   @override
@@ -513,24 +525,14 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> setScheduleCurrentForError(
+  Future<void> setScheduleCurrent(
     String key,
     int progress,
-    DateTime errorTime,
+    DateTime viewTime,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE ScheduleCurrent SET progress=?2,errorTime=?3 WHERE `key`=?1',
-        arguments: [key, progress, _dateTimeConverter.encode(errorTime)]);
-  }
-
-  @override
-  Future<void> setScheduleCurrentForRight(
-    String key,
-    int progress,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'UPDATE ScheduleCurrent SET progress=?2 WHERE `key`=?1',
-        arguments: [key, progress]);
+        'UPDATE ScheduleCurrent SET progress=?2,viewTime=?3 WHERE `key`=?1',
+        arguments: [key, progress, _dateTimeConverter.encode(viewTime)]);
   }
 
   @override
@@ -563,7 +565,7 @@ class _$ScheduleDao extends ScheduleDao {
             row['key'] as String,
             row['sort'] as int,
             row['progress'] as int,
-            _dateTimeConverter.decode(row['errorTime'] as int)),
+            _dateTimeConverter.decode(row['viewTime'] as int)),
         arguments: [key]);
   }
 
@@ -618,29 +620,29 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> error(String key) async {
+  Future<void> error(ScheduleCurrent scheduleCurrent) async {
     if (database is sqflite.Transaction) {
-      await super.error(key);
+      await super.error(scheduleCurrent);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        await transactionDatabase.scheduleDao.error(key);
+        await transactionDatabase.scheduleDao.error(scheduleCurrent);
       });
     }
   }
 
   @override
-  Future<void> right(String key) async {
+  Future<void> right(ScheduleCurrent scheduleCurrent) async {
     if (database is sqflite.Transaction) {
-      await super.right(key);
+      await super.right(scheduleCurrent);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        await transactionDatabase.scheduleDao.right(key);
+        await transactionDatabase.scheduleDao.right(scheduleCurrent);
       });
     }
   }

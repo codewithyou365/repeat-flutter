@@ -31,6 +31,7 @@ abstract class ScheduleDao {
   static int findLearnCountPerDay = 45;
   static int learnCountPerDay = 30;
   static int learnCountPerGroup = 10;
+  static const int maxLearnCountPerGroup = 1000;
   static int maxRepeatTime = 3;
 
   @Query('SELECT * FROM Lock where id=1 for update')
@@ -50,6 +51,9 @@ abstract class ScheduleDao {
   Future<List<ScheduleToday>> findScheduleToday();
 
   /// --- currency schedule ---
+  @Query('SELECT count(1) FROM ScheduleCurrent')
+  Future<int?> totalScheduleCurrent();
+
   @Query("SELECT * FROM ScheduleCurrent limit 1")
   Future<ScheduleCurrent?> findOneScheduleCurrent();
 
@@ -59,22 +63,19 @@ abstract class ScheduleDao {
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertScheduleCurrent(List<ScheduleCurrent> entities);
 
-  @Query('SELECT * FROM ScheduleCurrent order by errorTime desc,sort asc')
-  Future<List<ScheduleCurrent>> findScheduleCurrent();
+  @Query('SELECT * FROM ScheduleCurrent where progress<:maxProgress order by viewTime,sort asc')
+  Future<List<ScheduleCurrent>> findScheduleCurrent(int maxProgress);
 
-  @Query("SELECT * FROM Schedule where next<datetime('now') order by progress,sort limit :limit")
-  Future<List<Schedule>> findSchedule(int limit);
+  @Query("SELECT * FROM Schedule where next<:now order by progress,sort limit :limit")
+  Future<List<Schedule>> findSchedule(int limit, DateTime now);
 
   /// --- error
 
   @Query('UPDATE Schedule SET progress=:progress,next=:next WHERE `key`=:key')
   Future<void> setSchedule(String key, int progress, DateTime next);
 
-  @Query('UPDATE ScheduleCurrent SET progress=:progress,errorTime=:errorTime WHERE `key`=:key')
-  Future<void> setScheduleCurrentForError(String key, int progress, DateTime errorTime);
-
-  @Query('UPDATE ScheduleCurrent SET progress=:progress WHERE `key`=:key')
-  Future<void> setScheduleCurrentForRight(String key, int progress);
+  @Query('UPDATE ScheduleCurrent SET progress=:progress,viewTime=:viewTime WHERE `key`=:key')
+  Future<void> setScheduleCurrent(String key, int progress, DateTime viewTime);
 
   @Query("SELECT * FROM Schedule WHERE `key`=:key")
   Future<Schedule?> getOneSchedule(String key);
@@ -130,7 +131,7 @@ abstract class ScheduleDao {
       }
 
       if (needToInsert) {
-        List<Schedule> schedules = await findSchedule(findLearnCountPerDay);
+        List<Schedule> schedules = await findSchedule(findLearnCountPerDay, now);
         for (var element in schedules) {
           schedulesToday.add(ScheduleToday(element.key, element.sort, now));
         }
@@ -162,42 +163,40 @@ abstract class ScheduleDao {
         for (int i = 0; i < learnCountPerGroup; ++i) {
           if (i < schedulesToday.length) {
             var element = schedulesToday[i];
-            schedulesCurrent.add(ScheduleCurrent(element.key, 0, 0, DateTime.fromMicrosecondsSinceEpoch(0)));
+            schedulesCurrent.add(ScheduleCurrent(element.key, i, 0, DateTime.fromMicrosecondsSinceEpoch(0)));
           }
         }
         await insertScheduleCurrent(schedulesCurrent);
       } else {
-        schedulesCurrent = await findScheduleCurrent();
+        schedulesCurrent = await findScheduleCurrent(maxRepeatTime);
       }
     }
     return LearnContent(schedulesToday, schedulesCurrent);
   }
 
   @transaction
-  Future<void> error(String key) async {
+  Future<void> error(ScheduleCurrent scheduleCurrent) async {
     await forUpdate();
+    var key = scheduleCurrent.key;
     var now = DateTime.now();
     await setSchedule(key, 0, now.add(Duration(seconds: ebbinghausForgettingCurve.first)));
-    await setScheduleCurrentForError(key, 0, now);
+    await setScheduleCurrentWithCache(scheduleCurrent, 0, now);
   }
 
   @transaction
-  Future<void> right(String key) async {
+  Future<void> right(ScheduleCurrent scheduleCurrent) async {
     await forUpdate();
+    var key = scheduleCurrent.key;
     var now = DateTime.now();
-    var scheduleCurrent = await getOneScheduleCurrent(key);
-    if (scheduleCurrent == null) {
-      return;
-    }
     bool complete = false;
-    if (scheduleCurrent.progress == 0 && DateTime.fromMicrosecondsSinceEpoch(0).compareTo(scheduleCurrent.errorTime) == 0) {
+    if (scheduleCurrent.progress == 0 && DateTime.fromMicrosecondsSinceEpoch(0).compareTo(scheduleCurrent.viewTime) == 0) {
       complete = true;
-      await setScheduleCurrentForRight(key, maxRepeatTime);
+      await setScheduleCurrentWithCache(scheduleCurrent, maxRepeatTime, now);
     }
 
     if (scheduleCurrent.progress + 1 > maxRepeatTime) {
       complete = true;
-      await setScheduleCurrentForRight(key, maxRepeatTime);
+      await setScheduleCurrentWithCache(scheduleCurrent, maxRepeatTime, now);
     }
     if (complete) {
       var schedule = await getOneSchedule(key);
@@ -212,7 +211,14 @@ abstract class ScheduleDao {
         }
       }
     } else {
-      await setScheduleCurrentForRight(key, scheduleCurrent.progress + 1);
+      await setScheduleCurrentWithCache(scheduleCurrent, scheduleCurrent.progress + 1, now);
     }
+  }
+
+  Future<void> setScheduleCurrentWithCache(ScheduleCurrent scheduleCurrent, int progress, DateTime now) async {
+    var key = scheduleCurrent.key;
+    await setScheduleCurrent(key, progress, now);
+    scheduleCurrent.progress = progress;
+    scheduleCurrent.viewTime = now;
   }
 }

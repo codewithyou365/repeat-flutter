@@ -54,4 +54,8 @@ cd - || exit 1
 read -p "generate database.g.dart (y: start)" -r start
 if [ "$start" == "y" ]; then
   flutter packages pub run build_runner build
+  lineNumber=$(grep -n 'CREATE TABLE IF NOT EXISTS ``' ./lib/db/database.g.dart | cut -d: -f1)
+  if [ -n "$lineNumber" ]; then
+    sed -i '' "$((lineNumber - 1)),${lineNumber}d" ./lib/db/database.g.dart
+  fi
 fi

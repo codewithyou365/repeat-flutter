@@ -19,7 +19,8 @@ class MainRepeatState {
   var scheduleIndex = 0;
   var segmentIndex = 0.obs;
 
-  var segmentKey = "".obs;
+  var segmentDatabaseKey = "".obs;
+  var segmentKey = "";
   var segmentValue = "".obs;
   List<Line> segments = [];
   var step = MainRepeatStep.recall;

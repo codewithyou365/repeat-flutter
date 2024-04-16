@@ -2,7 +2,7 @@
 
 import 'package:floor/floor.dart';
 
-@entity
+@Entity(tableName: "")
 class Segment {
   @primaryKey
   final String key;
