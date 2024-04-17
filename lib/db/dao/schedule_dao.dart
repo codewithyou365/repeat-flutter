@@ -44,6 +44,9 @@ abstract class ScheduleDao {
   @Query('DELETE FROM ScheduleToday')
   Future<void> deleteScheduleToday();
 
+  @delete
+  Future<void> deleteScheduleTodayByCurrent(List<ScheduleCurrent> data);
+
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertScheduleToday(List<ScheduleToday> entities);
 
@@ -53,6 +56,9 @@ abstract class ScheduleDao {
   /// --- currency schedule ---
   @Query('SELECT count(1) FROM ScheduleCurrent')
   Future<int?> totalScheduleCurrent();
+
+  @Query("SELECT * FROM ScheduleCurrent")
+  Future<List<ScheduleCurrent>> findAllScheduleCurrent();
 
   @Query("SELECT * FROM ScheduleCurrent limit 1")
   Future<ScheduleCurrent?> findOneScheduleCurrent();
@@ -87,10 +93,10 @@ abstract class ScheduleDao {
       ",indexFile.path indexFilePath"
       ",Schedule.lessonIndex lessonIndex"
       ",Schedule.segmentIndex segmentIndex"
-      ",lessonFile.path lessonFilePath"
+      ",mediaFile.path mediaFilePath"
       " FROM Schedule"
       " JOIN CacheFile indexFile ON indexFile.id=Schedule.indexFileId"
-      " JOIN CacheFile lessonFile ON lessonFile.id=Schedule.lessonFileId"
+      " JOIN CacheFile mediaFile ON mediaFile.id=Schedule.mediaFileId"
       " WHERE Schedule.`key`=:key")
   Future<Segment?> getSegment(String key);
 
@@ -109,6 +115,7 @@ abstract class ScheduleDao {
   @delete
   Future<void> deleteContentIndex(List<Schedule> data);
 
+ // TODO need to optimize the return structure
   @transaction
   Future<LearnContent> initCurrent() async {
     await forUpdate();
@@ -213,6 +220,15 @@ abstract class ScheduleDao {
     } else {
       await setScheduleCurrentWithCache(scheduleCurrent, scheduleCurrent.progress + 1, now);
     }
+  }
+
+  @transaction
+  Future<List<ScheduleCurrent>> clearCurrent() async {
+    await forUpdate();
+    var ret = await findAllScheduleCurrent();
+    await deleteScheduleTodayByCurrent(ret);
+    await deleteScheduleCurrent();
+    return ret;
   }
 
   Future<void> setScheduleCurrentWithCache(ScheduleCurrent scheduleCurrent, int progress, DateTime now) async {

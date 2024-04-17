@@ -12,7 +12,7 @@ class Segment {
   final int lessonIndex;
   final int segmentIndex;
 
-  final String lessonFilePath;
+  final String mediaFilePath;
 
-  Segment(this.key, this.indexFileId, this.indexFileUrl, this.indexFilePath, this.lessonIndex, this.segmentIndex, this.lessonFilePath);
+  Segment(this.key, this.indexFileId, this.indexFileUrl, this.indexFilePath, this.lessonIndex, this.segmentIndex, this.mediaFilePath);
 }

@@ -5,6 +5,7 @@ import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/schedule_current.dart';
 import 'package:repeat_flutter/logic/model/kv.dart';
+import 'package:repeat_flutter/logic/model/learn_segment.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/main/main_logic.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
@@ -18,6 +19,11 @@ class MainRepeatLogic extends GetxController {
   @override
   Future<void> onInit() async {
     super.onInit();
+    await init();
+  }
+
+  init() async {
+    super.onInit();
     state.learnContent = await Db().db.scheduleDao.initCurrent();
     var total = await Db().db.scheduleDao.totalScheduleCurrent();
     state.total = total!;
@@ -30,6 +36,7 @@ class MainRepeatLogic extends GetxController {
   void onClose() {
     super.onClose();
     Get.find<MainLogic>().init();
+    LearnSegments.clear();
   }
 
   void show() {
@@ -42,7 +49,7 @@ class MainRepeatLogic extends GetxController {
       Nav.mainRepeatFinish.push();
       return;
     }
-    var curr = state.learnContent.schedulesCurrent[state.scheduleIndex];
+    var curr = state.learnContent.schedulesCurrent[0];
     await Db().db.scheduleDao.error(curr);
     state.learnContent.schedulesCurrent.sort(schedulesCurrentSort);
     state.step = MainRepeatStep.finish;
@@ -57,7 +64,7 @@ class MainRepeatLogic extends GetxController {
       Nav.mainRepeatFinish.push();
       return;
     }
-    var curr = state.learnContent.schedulesCurrent[state.scheduleIndex];
+    var curr = state.learnContent.schedulesCurrent[0];
     await Db().db.scheduleDao.right(curr);
     if (curr.progress >= ScheduleDao.maxRepeatTime) {
       state.learnContent.schedulesCurrent.removeAt(0);
@@ -82,7 +89,8 @@ class MainRepeatLogic extends GetxController {
     if (state.learnContent.schedulesCurrent.isEmpty) {
       return null;
     }
-    var curr = state.learnContent.schedulesCurrent[state.scheduleIndex];
+    // TODO here has some duplicate code (learn_segment.dart)
+    var curr = state.learnContent.schedulesCurrent[0];
     var segmentIndex = await Db().db.scheduleDao.getSegment(curr.key);
     if (segmentIndex == null) {
       return null;
@@ -92,22 +100,22 @@ class MainRepeatLogic extends GetxController {
       kv = await Kv.fromFile(segmentIndex.indexFilePath, Uri.parse(segmentIndex.indexFileUrl));
       state.indexIdToKv[segmentIndex.indexFileId] = kv;
     }
-    state.segmentDatabaseKey.value = curr.key;
+    state.scheduleKey = curr.key;
     var lesson = kv.lesson[segmentIndex.lessonIndex];
     var segment = lesson.segment[segmentIndex.segmentIndex];
-    state.lessonFilePath = segmentIndex.lessonFilePath;
-    state.segmentIndex.value = segmentIndex.segmentIndex;
+    state.mediaFilePath = segmentIndex.mediaFilePath;
+    state.mediaSegmentIndex = segmentIndex.segmentIndex;
     state.segmentKey = segment.key;
-    state.segmentValue.value = segment.value;
+    state.segmentValue = segment.value;
     for (var s in lesson.segment) {
-      state.segments.add(Line.toLine(s.start, s.end));
+      state.segments.add(MediaSegment.toLine(s.start, s.end));
     }
     return kv;
   }
 
   setProgress() {
     var currents = state.learnContent.schedulesCurrent;
-    state.progress.value = state.total - currents.length;
+    state.progress = state.total - currents.length;
   }
 
   int schedulesCurrentSort(ScheduleCurrent a, ScheduleCurrent b) {

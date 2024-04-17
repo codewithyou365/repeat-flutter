@@ -1,5 +1,7 @@
+import 'package:repeat_flutter/logic/model/learn_segment.dart';
+
 class MainRepeatFinishState {
-  MainRepeatFinishState() {
-    ///Initialize variables
-  }
+  List<LearnSegment> learnSegments = [];
+
+  MainRepeatFinishState();
 }

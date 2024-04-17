@@ -10,7 +10,7 @@ class Schedule {
   final String key;
 
   final int indexFileId;
-  final int lessonFileId;
+  final int mediaFileId;
 
   final int lessonIndex;
   final int segmentIndex;
@@ -20,7 +20,7 @@ class Schedule {
   final DateTime next;
   final int sort;
 
-  Schedule(this.key, this.indexFileId, this.lessonFileId, this.lessonIndex, this.segmentIndex, this.progress, this.next, this.sort);
+  Schedule(this.key, this.indexFileId, this.mediaFileId, this.lessonIndex, this.segmentIndex, this.progress, this.next, this.sort);
 
   static List<Schedule> create(List<String> keys) {
     List<Schedule> ret = [];

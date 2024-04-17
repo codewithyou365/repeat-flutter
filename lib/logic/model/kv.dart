@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'dart:convert' as convert;
 
-import 'repeat_content.dart';
+import 'repeat_file.dart';
 
-class Kv extends RepeatContent {
+class Kv extends RepeatFile {
   List<Lesson> lesson;
 
   Kv(String type, String rootPath, String rootUrl, this.lesson) : super(type, rootPath, rootUrl);

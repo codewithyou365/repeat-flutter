@@ -99,7 +99,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `ContentIndex` (`url` TEXT NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`url`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Schedule` (`key` TEXT NOT NULL, `indexFileId` INTEGER NOT NULL, `lessonFileId` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `next` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`key`))');
+            'CREATE TABLE IF NOT EXISTS `Schedule` (`key` TEXT NOT NULL, `indexFileId` INTEGER NOT NULL, `mediaFileId` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `next` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`key`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `ScheduleCurrent` (`key` TEXT NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, PRIMARY KEY (`key`))');
         await database.execute(
@@ -388,7 +388,7 @@ class _$ScheduleDao extends ScheduleDao {
             (Schedule item) => <String, Object?>{
                   'key': item.key,
                   'indexFileId': item.indexFileId,
-                  'lessonFileId': item.lessonFileId,
+                  'mediaFileId': item.mediaFileId,
                   'lessonIndex': item.lessonIndex,
                   'segmentIndex': item.segmentIndex,
                   'progress': item.progress,
@@ -412,7 +412,7 @@ class _$ScheduleDao extends ScheduleDao {
             (Schedule item) => <String, Object?>{
                   'key': item.key,
                   'indexFileId': item.indexFileId,
-                  'lessonFileId': item.lessonFileId,
+                  'mediaFileId': item.mediaFileId,
                   'lessonIndex': item.lessonIndex,
                   'segmentIndex': item.segmentIndex,
                   'progress': item.progress,
@@ -472,6 +472,16 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
+  Future<List<ScheduleCurrent>> findAllScheduleCurrent() async {
+    return _queryAdapter.queryList('SELECT * FROM ScheduleCurrent',
+        mapper: (Map<String, Object?> row) => ScheduleCurrent(
+            row['key'] as String,
+            row['sort'] as int,
+            row['progress'] as int,
+            _dateTimeConverter.decode(row['viewTime'] as int)));
+  }
+
+  @override
   Future<ScheduleCurrent?> findOneScheduleCurrent() async {
     return _queryAdapter.query('SELECT * FROM ScheduleCurrent limit 1',
         mapper: (Map<String, Object?> row) => ScheduleCurrent(
@@ -504,7 +514,7 @@ class _$ScheduleDao extends ScheduleDao {
         mapper: (Map<String, Object?> row) => Schedule(
             row['key'] as String,
             row['indexFileId'] as int,
-            row['lessonFileId'] as int,
+            row['mediaFileId'] as int,
             row['lessonIndex'] as int,
             row['segmentIndex'] as int,
             row['progress'] as int,
@@ -541,7 +551,7 @@ class _$ScheduleDao extends ScheduleDao {
         mapper: (Map<String, Object?> row) => Schedule(
             row['key'] as String,
             row['indexFileId'] as int,
-            row['lessonFileId'] as int,
+            row['mediaFileId'] as int,
             row['lessonIndex'] as int,
             row['segmentIndex'] as int,
             row['progress'] as int,
@@ -553,8 +563,8 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<Segment?> getSegment(String key) async {
     return _queryAdapter.query(
-        'SELECT Schedule.`key` `key`,indexFile.id indexFileId,indexFile.url indexFileUrl,indexFile.path indexFilePath,Schedule.lessonIndex lessonIndex,Schedule.segmentIndex segmentIndex,lessonFile.path lessonFilePath FROM Schedule JOIN CacheFile indexFile ON indexFile.id=Schedule.indexFileId JOIN CacheFile lessonFile ON lessonFile.id=Schedule.lessonFileId WHERE Schedule.`key`=?1',
-        mapper: (Map<String, Object?> row) => Segment(row['key'] as String, row['indexFileId'] as int, row['indexFileUrl'] as String, row['indexFilePath'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int, row['lessonFilePath'] as String),
+        'SELECT Schedule.`key` `key`,indexFile.id indexFileId,indexFile.url indexFileUrl,indexFile.path indexFilePath,Schedule.lessonIndex lessonIndex,Schedule.segmentIndex segmentIndex,mediaFile.path mediaFilePath FROM Schedule JOIN CacheFile indexFile ON indexFile.id=Schedule.indexFileId JOIN CacheFile mediaFile ON mediaFile.id=Schedule.mediaFileId WHERE Schedule.`key`=?1',
+        mapper: (Map<String, Object?> row) => Segment(row['key'] as String, row['indexFileId'] as int, row['indexFileUrl'] as String, row['indexFilePath'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int, row['mediaFilePath'] as String),
         arguments: [key]);
   }
 
@@ -593,6 +603,11 @@ class _$ScheduleDao extends ScheduleDao {
   Future<void> insertSchedules(List<Schedule> entities) async {
     await _scheduleInsertionAdapter.insertList(
         entities, OnConflictStrategy.replace);
+  }
+
+  @override
+  Future<void> deleteScheduleTodayByCurrent(List<ScheduleCurrent> data) async {
+    await _scheduleCurrentDeletionAdapter.deleteList(data);
   }
 
   @override
@@ -643,6 +658,20 @@ class _$ScheduleDao extends ScheduleDao {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         await transactionDatabase.scheduleDao.right(scheduleCurrent);
+      });
+    }
+  }
+
+  @override
+  Future<List<ScheduleCurrent>> clearCurrent() async {
+    if (database is sqflite.Transaction) {
+      return super.clearCurrent();
+    } else {
+      return (database as sqflite.Database)
+          .transaction<List<ScheduleCurrent>>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        return transactionDatabase.scheduleDao.clearCurrent();
       });
     }
   }

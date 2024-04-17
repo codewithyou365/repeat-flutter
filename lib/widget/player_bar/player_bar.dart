@@ -6,7 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class PlayerBar extends StatefulWidget {
 
   final int? index;
-  final List<Line> lines;
+  final List<MediaSegment> lines;
   final String path;
 
   PlayerBar(this.index, this.lines, this.path, {super.key});
@@ -122,19 +122,19 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
   }
 }
 
-class Line {
+class MediaSegment {
   final double start;
   final double end;
 
   final double blockStart;
   final double blockEnd;
 
-  Line(this.start, this.end, this.blockStart, this.blockEnd);
+  MediaSegment(this.start, this.end, this.blockStart, this.blockEnd);
 
-  static Line toLine(String startTime, String endTime) {
+  static MediaSegment toLine(String startTime, String endTime) {
     double startSeconds = parseTimeToSeconds(startTime);
     double endSeconds = parseTimeToSeconds(endTime);
-    return Line(startSeconds, endSeconds, startSeconds * factor, endSeconds * factor);
+    return MediaSegment(startSeconds, endSeconds, startSeconds * factor, endSeconds * factor);
   }
 
   static double parseTimeToSeconds(String time) {
@@ -150,7 +150,7 @@ class Line {
 }
 
 class PlayerBarPainter extends CustomPainter {
-  final List<Line> lines;
+  final List<MediaSegment> lines;
   final double offset;
   late final Paint centerLine;
   late final Paint contentLine;
