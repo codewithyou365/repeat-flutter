@@ -131,7 +131,7 @@ class MediaSegment {
 
   MediaSegment(this.start, this.end, this.blockStart, this.blockEnd);
 
-  static MediaSegment toLine(String startTime, String endTime) {
+  static MediaSegment from(String startTime, String endTime) {
     double startSeconds = parseTimeToSeconds(startTime);
     double endSeconds = parseTimeToSeconds(endTime);
     return MediaSegment(startSeconds, endSeconds, startSeconds * factor, endSeconds * factor);
