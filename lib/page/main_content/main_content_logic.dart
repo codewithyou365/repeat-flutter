@@ -2,9 +2,10 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
-import 'package:repeat_flutter/db/entity/schedule.dart';
+import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
+import 'package:repeat_flutter/db/entity/segment.dart' as entity;
 import 'package:repeat_flutter/logic/download.dart';
-import 'package:repeat_flutter/logic/model/kv.dart';
+import 'package:repeat_flutter/logic/model/qa_repeat_file.dart';
 import 'package:repeat_flutter/page/main/main_logic.dart';
 
 import 'main_content_state.dart';
@@ -25,7 +26,7 @@ class MainContentLogic extends GetxController {
     // TODO here some error
     await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(url, 0));
     var deleteKeyList = await Db().db.scheduleDao.findKeyByUrl(url);
-    await Db().db.scheduleDao.deleteContentIndex(Schedule.create(deleteKeyList));
+    // TODO await Db().db.scheduleDao.deleteContentIndex(Schedule.create(deleteKeyList));
     Get.find<MainLogic>().init();
   }
 
@@ -46,7 +47,7 @@ class MainContentLogic extends GetxController {
     if (cacheFile == null) {
       return 0;
     }
-    var kv = await Kv.fromFile(cacheFile.path, Uri.parse(url));
+    var kv = await QaRepeatFile.fromFile(cacheFile.path, Uri.parse(url));
     var total = 0;
     for (var d in kv.lesson) {
       total += d.segment.length;
@@ -59,8 +60,9 @@ class MainContentLogic extends GetxController {
     if (cacheFile == null) {
       return 0;
     }
-    var kv = await Kv.fromFile(cacheFile.path, Uri.parse(url));
-    List<Schedule> entities = [];
+    var kv = await QaRepeatFile.fromFile(cacheFile.path, Uri.parse(url));
+    List<entity.Segment> segments = [];
+    List<SegmentOverallPrg> segmentOverallPrgs = [];
     if (kv.lesson.length >= 100000) {
       print("too many data");
       return 0;
@@ -74,15 +76,17 @@ class MainContentLogic extends GetxController {
 
     for (var lessonIndex = 0; lessonIndex < kv.lesson.length; lessonIndex++) {
       var lesson = kv.lesson[lessonIndex];
-      var lessonId = await Db().db.cacheFileDao.getId(lesson.url);
+      var mediaFileId = await Db().db.cacheFileDao.getId(lesson.url);
       for (var segmentIndex = 0; segmentIndex < lesson.segment.length; segmentIndex++) {
         var segment = lesson.segment[segmentIndex];
-        var key = "${kv.rootPath}|${lesson.index}|${segment.index}";
+        var key = "${kv.rootPath}|${lesson.key}|${segment.key}";
         //4611686118427387904-(99999*10000000000+99999*100000+99999)
-        entities.add(Schedule(key, cacheFile.id!, lessonId!, lessonIndex, segmentIndex, 0, DateTime.now(), contentIndexSort * 10000000000 + lessonIndex * 100000 + segmentIndex));
+        segments.add(entity.Segment(key, cacheFile.id!, mediaFileId!, lessonIndex, segmentIndex));
+        segmentOverallPrgs.add(SegmentOverallPrg(key, 0, DateTime.now(), contentIndexSort * 10000000000 + lessonIndex * 100000 + segmentIndex));
       }
     }
-    await Db().db.scheduleDao.insertSchedules(entities);
+    await Db().db.scheduleDao.insertSegments(segments);
+    await Db().db.scheduleDao.insertSegmentOverallPrgs(segmentOverallPrgs);
     Get.find<MainLogic>().init();
     var total = 0;
     for (var d in kv.lesson) {
@@ -114,12 +118,12 @@ class MainContentLogic extends GetxController {
   download(String url) async {
     state.indexCount.value = 0;
     state.indexTotal.value = 1;
-    late Kv kv;
+    late QaRepeatFile kv;
     late String rootPath;
     var success = await downloadFile(
       url,
       (fl) async {
-        kv = await Kv.fromFile(fl.path, Uri.parse(url));
+        kv = await QaRepeatFile.fromFile(fl.path, Uri.parse(url));
         rootPath = fl.folderPath.joinPath(kv.rootPath);
         return FileLocation(rootPath, urlToFileName(url));
       },

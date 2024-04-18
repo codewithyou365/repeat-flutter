@@ -4,16 +4,16 @@ import 'dart:convert' as convert;
 
 import 'repeat_file.dart';
 
-class Kv extends RepeatFile {
+class QaRepeatFile extends RepeatFile {
   List<Lesson> lesson;
 
-  Kv(String type, String rootPath, String rootUrl, this.lesson) : super(type, rootPath, rootUrl);
+  QaRepeatFile(String type, String rootPath, String key, String rootUrl, this.lesson) : super(type, rootPath, key, rootUrl);
 
-  static Future<Kv> fromFile(String path, Uri defaultRootUri) async {
+  static Future<QaRepeatFile> fromFile(String path, Uri defaultRootUri) async {
     File file = File(path);
     String jsonString = await file.readAsString();
     Map<String, dynamic> jsonData = convert.jsonDecode(jsonString);
-    var kv = Kv.fromJson(jsonData);
+    var kv = QaRepeatFile.fromJson(jsonData);
     if (kv.rootUrl == "") {
       kv.rootUrl = "${defaultRootUri.scheme}://${defaultRootUri.host}:${defaultRootUri.port}";
     }
@@ -23,10 +23,11 @@ class Kv extends RepeatFile {
     return kv;
   }
 
-  factory Kv.fromJson(Map<String, dynamic> json) {
-    return Kv(
+  factory QaRepeatFile.fromJson(Map<String, dynamic> json) {
+    return QaRepeatFile(
       json['type'],
       json['rootPath'] ?? "",
+      json['key'] ?? json['rootPath'] ?? "",
       json['rootUrl'] ?? "",
       List<Lesson>.from(json['lesson'].map((dynamic d) => Lesson.fromJson(d))),
     );
@@ -36,16 +37,16 @@ class Kv extends RepeatFile {
 class Lesson {
   String url;
   String path;
-  String index;
+  String key;
   List<Segment> segment;
 
-  Lesson(this.url, this.path, this.index, this.segment);
+  Lesson(this.url, this.path, this.key, this.segment);
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
     return Lesson(
       json['url'],
       json['path'],
-      json['index'] ?? json['path'],
+      json['key'] ?? json['path'],
       List<Segment>.from(json['segment'].map((dynamic s) => Segment.fromJson(s, json['segment'].indexOf(s)))),
     );
   }
@@ -54,19 +55,19 @@ class Lesson {
 class Segment {
   String start;
   String end;
-  String index;
   String key;
-  String value;
+  String q;
+  String a;
 
-  Segment(this.start, this.end, this.index, this.key, this.value);
+  Segment(this.start, this.end, this.key, this.q, this.a);
 
   factory Segment.fromJson(Map<String, dynamic> json, int index) {
     return Segment(
       json['start'],
       json['end'],
-      json['index'] ?? index.toString(),
-      json['key'],
-      json['value'],
+      json['key'] ?? index.toString(),
+      json['q'],
+      json['a'],
     );
   }
 }

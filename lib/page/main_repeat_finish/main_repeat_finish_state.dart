@@ -1,7 +1,7 @@
-import 'package:repeat_flutter/logic/model/learn_segment.dart';
+import 'package:repeat_flutter/logic/model/segment_content.dart';
 
 class MainRepeatFinishState {
-  List<LearnSegment> learnSegments = [];
+  List<SegmentContent> segments = [];
 
   MainRepeatFinishState();
 }

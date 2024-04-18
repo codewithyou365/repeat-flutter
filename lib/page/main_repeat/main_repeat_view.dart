@@ -20,7 +20,7 @@ class MainRepeatPage extends StatelessWidget {
           title: GetBuilder<MainRepeatLogic>(
             id: MainRepeatLogic.id,
             builder: (_) {
-              return Text("${state.progress}/${state.total}-${state.scheduleKey}");
+              return Text("${state.progress}/${state.total}-${state.segment.key}");
             },
           ),
         ),
@@ -49,26 +49,26 @@ class MainRepeatPage extends StatelessWidget {
       case MainRepeatStep.recall:
         {
           switch (state.mode) {
-            case MainRepeatMode.byValue:
-              return Text(state.segmentValue);
+            case MainRepeatMode.byQuestion:
+              return Text(state.segment.question);
             case MainRepeatMode.byMedia:
-              return PlayerBar(state.mediaSegmentIndex, state.segments, state.mediaFilePath);
+              return PlayerBar(state.segment.segmentIndex, state.segment.mediaSegments, state.segment.mediaFilePath);
             default:
-              return Text(state.segmentKey);
+              return Text(state.segment.answer);
           }
         }
       default:
         {
           switch (state.mode) {
-            case MainRepeatMode.byValue:
+            case MainRepeatMode.byQuestion:
               return Column(
                 children: [
                   Padding(
                     padding: EdgeInsets.only(bottom: 8.w),
-                    child: Text(state.segmentValue),
+                    child: Text(state.segment.question),
                   ),
-                  Text(state.segmentKey),
-                  PlayerBar(state.mediaSegmentIndex, state.segments, state.mediaFilePath),
+                  Text(state.segment.answer),
+                  PlayerBar(state.segment.segmentIndex, state.segment.mediaSegments, state.segment.mediaFilePath),
                 ],
               );
             case MainRepeatMode.byMedia:
@@ -76,10 +76,10 @@ class MainRepeatPage extends StatelessWidget {
                 children: [
                   Padding(
                     padding: EdgeInsets.only(bottom: 8.w),
-                    child: PlayerBar(state.mediaSegmentIndex, state.segments, state.mediaFilePath),
+                    child: PlayerBar(state.segment.segmentIndex, state.segment.mediaSegments, state.segment.mediaFilePath),
                   ),
-                  Text(state.segmentValue),
-                  Text(state.segmentKey),
+                  Text(state.segment.question),
+                  Text(state.segment.answer),
                 ],
               );
             default:
@@ -87,10 +87,10 @@ class MainRepeatPage extends StatelessWidget {
                 children: [
                   Padding(
                     padding: EdgeInsets.only(bottom: 8.w),
-                    child: Text(state.segmentKey),
+                    child: Text(state.segment.answer),
                   ),
-                  Text(state.segmentValue),
-                  PlayerBar(state.mediaSegmentIndex, state.segments, state.mediaFilePath),
+                  Text(state.segment.question),
+                  PlayerBar(state.segment.segmentIndex, state.segment.mediaSegments, state.segment.mediaFilePath),
                 ],
               );
           }

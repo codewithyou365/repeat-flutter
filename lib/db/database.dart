@@ -12,11 +12,11 @@ import 'package:repeat_flutter/db/entity/cache_file.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
 import 'package:repeat_flutter/db/entity/id99999.dart';
 import 'package:repeat_flutter/db/entity/lock.dart';
-import 'package:repeat_flutter/db/entity/schedule.dart';
-import 'package:repeat_flutter/db/entity/schedule_current.dart';
-import 'package:repeat_flutter/db/entity/schedule_today.dart';
 import 'package:repeat_flutter/db/entity/segment.dart';
+import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
+import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/db/type_converter.dart';
+import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 
 import 'dao/base_dao.dart';
@@ -24,7 +24,17 @@ import 'entity/settings.dart';
 
 part 'database.g.dart'; // the generated code will be there
 
-@Database(version: 1, entities: [Settings, CacheFile, ContentIndex, Segment, Schedule, ScheduleCurrent, ScheduleToday, Id99999, Lock])
+@Database(version: 1, entities: [
+  Settings,
+  CacheFile,
+  ContentIndex,
+  Segment,
+  SegmentOverallPrg,
+  SegmentTodayPrg,
+  SegmentContentInDb,
+  Id99999,
+  Lock,
+])
 @TypeConverters([DateTimeConverter])
 abstract class AppDatabase extends FloorDatabase {
   SettingsDao get settingsDao;

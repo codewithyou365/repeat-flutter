@@ -1,6 +1,6 @@
-import 'package:repeat_flutter/db/dao/schedule_dao.dart';
-import 'package:repeat_flutter/logic/model/kv.dart';
-import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
+import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/logic/model/qa_repeat_file.dart';
+import 'package:repeat_flutter/logic/model/segment_content.dart';
 
 enum MainRepeatStep { recall, evaluate, finish }
 
@@ -8,26 +8,17 @@ enum MainRepeatStep { recall, evaluate, finish }
 // recall by media (audio, video or image)
 // recall by key
 
-enum MainRepeatMode { byValue, byMedia, byKey }
+enum MainRepeatMode { byQuestion, byMedia, byKey }
 
 class MainRepeatState {
-  var total = 10;
-  Map<int, Kv> indexIdToKv = {};
   var progress = -1;
+  var total = 10;
 
-  var mediaFilePath = "";
-  var mediaSegmentIndex = 0;
+  SegmentContent segment = SegmentContent("", 0, 0, 0, 0, "", "", "");
+  late List<SegmentTodayPrg> c;
 
-  var scheduleKey = "";
-  var segmentKey = "";
-  var segmentValue = "";
-  List<MediaSegment> segments = [];
+
 
   var step = MainRepeatStep.recall;
-  var mode = MainRepeatMode.byValue;
-  var learnContent = LearnContent([], []);
-
-  MainRepeatState() {
-    ///Initialize variables
-  }
+  var mode = MainRepeatMode.byQuestion;
 }

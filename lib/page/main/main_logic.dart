@@ -16,9 +16,9 @@ class MainLogic extends GetxController {
 
   void init() async {
     var now = DateTime.now();
-    state.schedules.clear();
-    state.schedules.addAll(await Db().db.scheduleDao.findSchedule(30, now));
-    state.totalCount.value = state.schedules.length;
+    state.segments.clear();
+    state.segments.addAll(await Db().db.scheduleDao.findSegmentOverallPrg(30, now));
+    state.totalCount.value = state.segments.length;
   }
 
   tryMainRepeat() {

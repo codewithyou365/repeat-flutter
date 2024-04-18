@@ -99,11 +99,11 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `ContentIndex` (`url` TEXT NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`url`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Schedule` (`key` TEXT NOT NULL, `indexFileId` INTEGER NOT NULL, `mediaFileId` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `next` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`key`))');
+            'CREATE TABLE IF NOT EXISTS `Segment` (`key` TEXT NOT NULL, `indexFileId` INTEGER NOT NULL, `mediaFileId` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, PRIMARY KEY (`key`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `ScheduleCurrent` (`key` TEXT NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, PRIMARY KEY (`key`))');
+            'CREATE TABLE IF NOT EXISTS `SegmentOverallPrg` (`key` TEXT NOT NULL, `progress` INTEGER NOT NULL, `next` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`key`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `ScheduleToday` (`key` TEXT NOT NULL, `sort` INTEGER NOT NULL, `fullTime` INTEGER NOT NULL, PRIMARY KEY (`key`))');
+            'CREATE TABLE IF NOT EXISTS `SegmentTodayPrg` (`key` TEXT NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`key`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Id99999` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
@@ -113,7 +113,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE UNIQUE INDEX `index_ContentIndex_sort` ON `ContentIndex` (`sort`)');
         await database.execute(
-            'CREATE INDEX `index_Schedule_next` ON `Schedule` (`next`)');
+            'CREATE INDEX `index_SegmentOverallPrg_next` ON `SegmentOverallPrg` (`next`)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -365,56 +365,31 @@ class _$ScheduleDao extends ScheduleDao {
     this.database,
     this.changeListener,
   )   : _queryAdapter = QueryAdapter(database),
-        _scheduleTodayInsertionAdapter = InsertionAdapter(
+        _segmentTodayPrgInsertionAdapter = InsertionAdapter(
             database,
-            'ScheduleToday',
-            (ScheduleToday item) => <String, Object?>{
-                  'key': item.key,
-                  'sort': item.sort,
-                  'fullTime': _dateTimeConverter.encode(item.fullTime)
-                }),
-        _scheduleCurrentInsertionAdapter = InsertionAdapter(
-            database,
-            'ScheduleCurrent',
-            (ScheduleCurrent item) => <String, Object?>{
+            'SegmentTodayPrg',
+            (SegmentTodayPrg item) => <String, Object?>{
                   'key': item.key,
                   'sort': item.sort,
                   'progress': item.progress,
-                  'viewTime': _dateTimeConverter.encode(item.viewTime)
+                  'viewTime': _dateTimeConverter.encode(item.viewTime),
+                  'createTime': _dateTimeConverter.encode(item.createTime)
                 }),
-        _scheduleInsertionAdapter = InsertionAdapter(
+        _segmentInsertionAdapter = InsertionAdapter(
             database,
-            'Schedule',
-            (Schedule item) => <String, Object?>{
+            'Segment',
+            (Segment item) => <String, Object?>{
                   'key': item.key,
                   'indexFileId': item.indexFileId,
                   'mediaFileId': item.mediaFileId,
                   'lessonIndex': item.lessonIndex,
-                  'segmentIndex': item.segmentIndex,
-                  'progress': item.progress,
-                  'next': _dateTimeConverter.encode(item.next),
-                  'sort': item.sort
+                  'segmentIndex': item.segmentIndex
                 }),
-        _scheduleCurrentDeletionAdapter = DeletionAdapter(
+        _segmentOverallPrgInsertionAdapter = InsertionAdapter(
             database,
-            'ScheduleCurrent',
-            ['key'],
-            (ScheduleCurrent item) => <String, Object?>{
+            'SegmentOverallPrg',
+            (SegmentOverallPrg item) => <String, Object?>{
                   'key': item.key,
-                  'sort': item.sort,
-                  'progress': item.progress,
-                  'viewTime': _dateTimeConverter.encode(item.viewTime)
-                }),
-        _scheduleDeletionAdapter = DeletionAdapter(
-            database,
-            'Schedule',
-            ['key'],
-            (Schedule item) => <String, Object?>{
-                  'key': item.key,
-                  'indexFileId': item.indexFileId,
-                  'mediaFileId': item.mediaFileId,
-                  'lessonIndex': item.lessonIndex,
-                  'segmentIndex': item.segmentIndex,
                   'progress': item.progress,
                   'next': _dateTimeConverter.encode(item.next),
                   'sort': item.sort
@@ -426,15 +401,11 @@ class _$ScheduleDao extends ScheduleDao {
 
   final QueryAdapter _queryAdapter;
 
-  final InsertionAdapter<ScheduleToday> _scheduleTodayInsertionAdapter;
+  final InsertionAdapter<SegmentTodayPrg> _segmentTodayPrgInsertionAdapter;
 
-  final InsertionAdapter<ScheduleCurrent> _scheduleCurrentInsertionAdapter;
+  final InsertionAdapter<Segment> _segmentInsertionAdapter;
 
-  final InsertionAdapter<Schedule> _scheduleInsertionAdapter;
-
-  final DeletionAdapter<ScheduleCurrent> _scheduleCurrentDeletionAdapter;
-
-  final DeletionAdapter<Schedule> _scheduleDeletionAdapter;
+  final InsertionAdapter<SegmentOverallPrg> _segmentOverallPrgInsertionAdapter;
 
   @override
   Future<void> forUpdate() async {
@@ -443,117 +414,84 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<ScheduleToday?> findOneScheduleToday() async {
-    return _queryAdapter.query('SELECT * FROM ScheduleToday limit 1',
-        mapper: (Map<String, Object?> row) => ScheduleToday(
-            row['key'] as String,
-            row['sort'] as int,
-            _dateTimeConverter.decode(row['fullTime'] as int)));
-  }
-
-  @override
-  Future<void> deleteScheduleToday() async {
-    await _queryAdapter.queryNoReturn('DELETE FROM ScheduleToday');
-  }
-
-  @override
-  Future<List<ScheduleToday>> findScheduleToday() async {
-    return _queryAdapter.queryList('SELECT * FROM ScheduleToday order by sort',
-        mapper: (Map<String, Object?> row) => ScheduleToday(
-            row['key'] as String,
-            row['sort'] as int,
-            _dateTimeConverter.decode(row['fullTime'] as int)));
-  }
-
-  @override
-  Future<int?> totalScheduleCurrent() async {
-    return _queryAdapter.query('SELECT count(1) FROM ScheduleCurrent',
+  Future<int?> totalSegmentTodayPrg() async {
+    return _queryAdapter.query('SELECT count(1) FROM SegmentTodayPrg',
         mapper: (Map<String, Object?> row) => row.values.first as int);
   }
 
   @override
-  Future<List<ScheduleCurrent>> findAllScheduleCurrent() async {
-    return _queryAdapter.queryList('SELECT * FROM ScheduleCurrent',
-        mapper: (Map<String, Object?> row) => ScheduleCurrent(
+  Future<List<SegmentTodayPrg>> findAllSegmentTodayPrg() async {
+    return _queryAdapter.queryList('SELECT * FROM SegmentTodayPrg',
+        mapper: (Map<String, Object?> row) => SegmentTodayPrg(
             row['key'] as String,
             row['sort'] as int,
             row['progress'] as int,
-            _dateTimeConverter.decode(row['viewTime'] as int)));
+            _dateTimeConverter.decode(row['viewTime'] as int),
+            _dateTimeConverter.decode(row['createTime'] as int)));
   }
 
   @override
-  Future<ScheduleCurrent?> findOneScheduleCurrent() async {
-    return _queryAdapter.query('SELECT * FROM ScheduleCurrent limit 1',
-        mapper: (Map<String, Object?> row) => ScheduleCurrent(
+  Future<SegmentTodayPrg?> findOneSegmentTodayPrg() async {
+    return _queryAdapter.query('SELECT * FROM SegmentTodayPrg limit 1',
+        mapper: (Map<String, Object?> row) => SegmentTodayPrg(
             row['key'] as String,
             row['sort'] as int,
             row['progress'] as int,
-            _dateTimeConverter.decode(row['viewTime'] as int)));
+            _dateTimeConverter.decode(row['viewTime'] as int),
+            _dateTimeConverter.decode(row['createTime'] as int)));
   }
 
   @override
-  Future<void> deleteScheduleCurrent() async {
-    await _queryAdapter.queryNoReturn('DELETE FROM ScheduleCurrent');
+  Future<void> deleteSegmentTodayPrg() async {
+    await _queryAdapter.queryNoReturn('DELETE FROM SegmentTodayPrg');
   }
 
   @override
-  Future<List<ScheduleCurrent>> findScheduleCurrent(int maxProgress) async {
+  Future<List<SegmentTodayPrg>> findSegmentTodayPrg(int maxProgress) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM ScheduleCurrent where progress<?1 order by viewTime,sort asc',
-        mapper: (Map<String, Object?> row) => ScheduleCurrent(row['key'] as String, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int)),
+        'SELECT * FROM SegmentTodayPrg where progress<?1 order by viewTime,sort asc',
+        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['key'] as String, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [maxProgress]);
   }
 
   @override
-  Future<List<Schedule>> findSchedule(
+  Future<List<SegmentOverallPrg>> findSegmentOverallPrg(
     int limit,
     DateTime now,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM Schedule where next<?2 order by progress,sort limit ?1',
-        mapper: (Map<String, Object?> row) => Schedule(
-            row['key'] as String,
-            row['indexFileId'] as int,
-            row['mediaFileId'] as int,
-            row['lessonIndex'] as int,
-            row['segmentIndex'] as int,
-            row['progress'] as int,
-            _dateTimeConverter.decode(row['next'] as int),
-            row['sort'] as int),
+        'SELECT * FROM SegmentOverallPrg where next<?2 order by progress,sort limit ?1',
+        mapper: (Map<String, Object?> row) => SegmentOverallPrg(row['key'] as String, row['progress'] as int, _dateTimeConverter.decode(row['next'] as int), row['sort'] as int),
         arguments: [limit, _dateTimeConverter.encode(now)]);
   }
 
   @override
-  Future<void> setSchedule(
+  Future<void> setSegmentOverallPrg(
     String key,
     int progress,
     DateTime next,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Schedule SET progress=?2,next=?3 WHERE `key`=?1',
+        'UPDATE SegmentOverallPrg SET progress=?2,next=?3 WHERE `key`=?1',
         arguments: [key, progress, _dateTimeConverter.encode(next)]);
   }
 
   @override
-  Future<void> setScheduleCurrent(
+  Future<void> setSegmentTodayPrg(
     String key,
     int progress,
     DateTime viewTime,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE ScheduleCurrent SET progress=?2,viewTime=?3 WHERE `key`=?1',
+        'UPDATE SegmentTodayPrg SET progress=?2,viewTime=?3 WHERE `key`=?1',
         arguments: [key, progress, _dateTimeConverter.encode(viewTime)]);
   }
 
   @override
-  Future<Schedule?> getOneSchedule(String key) async {
-    return _queryAdapter.query('SELECT * FROM Schedule WHERE `key`=?1',
-        mapper: (Map<String, Object?> row) => Schedule(
+  Future<SegmentOverallPrg?> getSegmentOverallPrg(String key) async {
+    return _queryAdapter.query('SELECT * FROM SegmentOverallPrg WHERE `key`=?1',
+        mapper: (Map<String, Object?> row) => SegmentOverallPrg(
             row['key'] as String,
-            row['indexFileId'] as int,
-            row['mediaFileId'] as int,
-            row['lessonIndex'] as int,
-            row['segmentIndex'] as int,
             row['progress'] as int,
             _dateTimeConverter.decode(row['next'] as int),
             row['sort'] as int),
@@ -561,21 +499,10 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<Segment?> getSegment(String key) async {
+  Future<SegmentContentInDb?> getSegmentContent(String key) async {
     return _queryAdapter.query(
-        'SELECT Schedule.`key` `key`,indexFile.id indexFileId,indexFile.url indexFileUrl,indexFile.path indexFilePath,Schedule.lessonIndex lessonIndex,Schedule.segmentIndex segmentIndex,mediaFile.path mediaFilePath FROM Schedule JOIN CacheFile indexFile ON indexFile.id=Schedule.indexFileId JOIN CacheFile mediaFile ON mediaFile.id=Schedule.mediaFileId WHERE Schedule.`key`=?1',
-        mapper: (Map<String, Object?> row) => Segment(row['key'] as String, row['indexFileId'] as int, row['indexFileUrl'] as String, row['indexFilePath'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int, row['mediaFilePath'] as String),
-        arguments: [key]);
-  }
-
-  @override
-  Future<ScheduleCurrent?> getOneScheduleCurrent(String key) async {
-    return _queryAdapter.query('SELECT * FROM ScheduleCurrent WHERE `key`=?1',
-        mapper: (Map<String, Object?> row) => ScheduleCurrent(
-            row['key'] as String,
-            row['sort'] as int,
-            row['progress'] as int,
-            _dateTimeConverter.decode(row['viewTime'] as int)),
+        'SELECT Segment.`key` `key`,indexFile.id indexFileId,mediaFile.id mediaFileId,Segment.lessonIndex lessonIndex,Segment.segmentIndex segmentIndex,indexFile.url indexFileUrl,indexFile.path indexFilePath,mediaFile.path mediaFilePath FROM Segment JOIN CacheFile indexFile ON indexFile.id=Segment.indexFileId JOIN CacheFile mediaFile ON mediaFile.id=Segment.mediaFileId WHERE Segment.`key`=?1',
+        mapper: (Map<String, Object?> row) => SegmentContentInDb(row['key'] as String, row['indexFileId'] as int, row['mediaFileId'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['indexFileUrl'] as String, row['indexFilePath'] as String, row['mediaFilePath'] as String),
         arguments: [key]);
   }
 
@@ -588,54 +515,40 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> insertScheduleToday(List<ScheduleToday> entities) async {
-    await _scheduleTodayInsertionAdapter.insertList(
+  Future<void> insertSegmentTodayPrg(List<SegmentTodayPrg> entities) async {
+    await _segmentTodayPrgInsertionAdapter.insertList(
         entities, OnConflictStrategy.replace);
   }
 
   @override
-  Future<void> insertScheduleCurrent(List<ScheduleCurrent> entities) async {
-    await _scheduleCurrentInsertionAdapter.insertList(
+  Future<void> insertSegments(List<Segment> entities) async {
+    await _segmentInsertionAdapter.insertList(
         entities, OnConflictStrategy.replace);
   }
 
   @override
-  Future<void> insertSchedules(List<Schedule> entities) async {
-    await _scheduleInsertionAdapter.insertList(
+  Future<void> insertSegmentOverallPrgs(
+      List<SegmentOverallPrg> entities) async {
+    await _segmentOverallPrgInsertionAdapter.insertList(
         entities, OnConflictStrategy.replace);
   }
 
   @override
-  Future<void> deleteScheduleTodayByCurrent(List<ScheduleCurrent> data) async {
-    await _scheduleCurrentDeletionAdapter.deleteList(data);
-  }
-
-  @override
-  Future<void> deleteOneScheduleCurrent(ScheduleCurrent data) async {
-    await _scheduleCurrentDeletionAdapter.delete(data);
-  }
-
-  @override
-  Future<void> deleteContentIndex(List<Schedule> data) async {
-    await _scheduleDeletionAdapter.deleteList(data);
-  }
-
-  @override
-  Future<LearnContent> initCurrent() async {
+  Future<List<SegmentTodayPrg>> initToday() async {
     if (database is sqflite.Transaction) {
-      return super.initCurrent();
+      return super.initToday();
     } else {
       return (database as sqflite.Database)
-          .transaction<LearnContent>((transaction) async {
+          .transaction<List<SegmentTodayPrg>>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        return transactionDatabase.scheduleDao.initCurrent();
+        return transactionDatabase.scheduleDao.initToday();
       });
     }
   }
 
   @override
-  Future<void> error(ScheduleCurrent scheduleCurrent) async {
+  Future<void> error(SegmentTodayPrg scheduleCurrent) async {
     if (database is sqflite.Transaction) {
       await super.error(scheduleCurrent);
     } else {
@@ -649,29 +562,29 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> right(ScheduleCurrent scheduleCurrent) async {
+  Future<void> right(SegmentTodayPrg segmentTodayPrg) async {
     if (database is sqflite.Transaction) {
-      await super.right(scheduleCurrent);
+      await super.right(segmentTodayPrg);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        await transactionDatabase.scheduleDao.right(scheduleCurrent);
+        await transactionDatabase.scheduleDao.right(segmentTodayPrg);
       });
     }
   }
 
   @override
-  Future<List<ScheduleCurrent>> clearCurrent() async {
+  Future<List<SegmentTodayPrg>> clearToday() async {
     if (database is sqflite.Transaction) {
-      return super.clearCurrent();
+      return super.clearToday();
     } else {
       return (database as sqflite.Database)
-          .transaction<List<ScheduleCurrent>>((transaction) async {
+          .transaction<List<SegmentTodayPrg>>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        return transactionDatabase.scheduleDao.clearCurrent();
+        return transactionDatabase.scheduleDao.clearToday();
       });
     }
   }

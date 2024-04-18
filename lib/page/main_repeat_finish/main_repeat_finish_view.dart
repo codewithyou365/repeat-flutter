@@ -13,18 +13,23 @@ class MainRepeatFinishPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(I18nKey.btnReview.tr),
       ),
-      body: ListView.builder(
-        itemCount: state.learnSegments.length,
-        itemBuilder: (BuildContext context, int index) {
-          return Column(
-            children: [
-              ListTile(
-                title: Text(state.learnSegments[index].value),
-              ),
-              ListTile(
-                title: Text(state.learnSegments[index].key),
-              ),
-            ],
+      body: GetBuilder<MainRepeatFinishLogic>(
+        id: MainRepeatFinishLogic.id,
+        builder: (_) {
+          return ListView.builder(
+            itemCount: state.segments.length,
+            itemBuilder: (BuildContext context, int index) {
+              return Column(
+                children: [
+                  ListTile(
+                    title: Text(state.segments[index].question),
+                  ),
+                  ListTile(
+                    title: Text(state.segments[index].answer),
+                  ),
+                ],
+              );
+            },
           );
         },
       ),

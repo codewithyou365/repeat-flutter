@@ -1,21 +1,23 @@
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/logic/model/learn_segment.dart';
+import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/page/main_repeat/main_repeat_logic.dart';
 
 import 'main_repeat_finish_state.dart';
 
 class MainRepeatFinishLogic extends GetxController {
+  static const String id = "MainRepeatFinishLogic";
   final MainRepeatFinishState state = MainRepeatFinishState();
 
   @override
   void onInit() async {
     super.onInit();
-    var curr = await Db().db.scheduleDao.clearCurrent();
+    var curr = await Db().db.scheduleDao.clearToday();
     for (var e in curr) {
-      var learnSegment = await LearnSegments.from(e.key);
-      state.learnSegments.add(learnSegment!);
+      var learnSegment = await SegmentHelp.from(e.key);
+      state.segments.add(learnSegment!);
     }
+    update([MainRepeatFinishLogic.id]);
     await Get.find<MainRepeatLogic>().init();
   }
 }

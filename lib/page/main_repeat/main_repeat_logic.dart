@@ -3,12 +3,10 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/schedule_current.dart';
-import 'package:repeat_flutter/logic/model/kv.dart';
-import 'package:repeat_flutter/logic/model/learn_segment.dart';
+import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/main/main_logic.dart';
-import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 import 'main_repeat_state.dart';
 
@@ -23,11 +21,12 @@ class MainRepeatLogic extends GetxController {
   }
 
   init() async {
-    super.onInit();
-    state.learnContent = await Db().db.scheduleDao.initCurrent();
-    var total = await Db().db.scheduleDao.totalScheduleCurrent();
+    state.c = await Db().db.scheduleDao.initToday();
+    var total = await Db().db.scheduleDao.totalSegmentTodayPrg();
     state.total = total!;
-    setProgress();
+    state.progress = state.total - state.c.length;
+    state.step = MainRepeatStep.recall;
+    state.mode = MainRepeatMode.byQuestion;
     await setCurrentLearnContent();
     update([MainRepeatLogic.id]);
   }
@@ -36,7 +35,7 @@ class MainRepeatLogic extends GetxController {
   void onClose() {
     super.onClose();
     Get.find<MainLogic>().init();
-    LearnSegments.clear();
+    SegmentHelp.clear();
   }
 
   void show() {
@@ -45,13 +44,13 @@ class MainRepeatLogic extends GetxController {
   }
 
   void error({next = false}) async {
-    if (state.learnContent.schedulesCurrent.isEmpty) {
+    if (state.c.isEmpty) {
       Nav.mainRepeatFinish.push();
       return;
     }
-    var curr = state.learnContent.schedulesCurrent[0];
+    var curr = state.c[0];
     await Db().db.scheduleDao.error(curr);
-    state.learnContent.schedulesCurrent.sort(schedulesCurrentSort);
+    state.c.sort(schedulesCurrentSort);
     state.step = MainRepeatStep.finish;
     update([MainRepeatLogic.id]);
     if (next) {
@@ -60,21 +59,21 @@ class MainRepeatLogic extends GetxController {
   }
 
   void know() async {
-    if (state.learnContent.schedulesCurrent.isEmpty) {
+    if (state.c.isEmpty) {
       Nav.mainRepeatFinish.push();
       return;
     }
-    var curr = state.learnContent.schedulesCurrent[0];
+    var curr = state.c[0];
     await Db().db.scheduleDao.right(curr);
     if (curr.progress >= ScheduleDao.maxRepeatTime) {
-      state.learnContent.schedulesCurrent.removeAt(0);
+      state.c.removeAt(0);
     }
-    if (state.learnContent.schedulesCurrent.isEmpty) {
+    if (state.c.isEmpty) {
       Nav.mainRepeatFinish.push();
       return;
     }
-    state.learnContent.schedulesCurrent.sort(schedulesCurrentSort);
-    setProgress();
+    state.c.sort(schedulesCurrentSort);
+    state.progress = state.total - state.c.length;
     state.step = MainRepeatStep.finish;
     next();
   }
@@ -85,40 +84,19 @@ class MainRepeatLogic extends GetxController {
     update([MainRepeatLogic.id]);
   }
 
-  Future<Kv?> setCurrentLearnContent() async {
-    if (state.learnContent.schedulesCurrent.isEmpty) {
-      return null;
+  Future<void> setCurrentLearnContent() async {
+    if (state.c.isEmpty) {
+      return;
     }
-    // TODO here has some duplicate code (learn_segment.dart)
-    var curr = state.learnContent.schedulesCurrent[0];
-    var segmentIndex = await Db().db.scheduleDao.getSegment(curr.key);
-    if (segmentIndex == null) {
-      return null;
+    var curr = state.c[0];
+    var learnSegment = await SegmentHelp.from(curr.key);
+    if (learnSegment == null) {
+      return;
     }
-    var kv = state.indexIdToKv[segmentIndex.indexFileId];
-    if (kv == null) {
-      kv = await Kv.fromFile(segmentIndex.indexFilePath, Uri.parse(segmentIndex.indexFileUrl));
-      state.indexIdToKv[segmentIndex.indexFileId] = kv;
-    }
-    state.scheduleKey = curr.key;
-    var lesson = kv.lesson[segmentIndex.lessonIndex];
-    var segment = lesson.segment[segmentIndex.segmentIndex];
-    state.mediaFilePath = segmentIndex.mediaFilePath;
-    state.mediaSegmentIndex = segmentIndex.segmentIndex;
-    state.segmentKey = segment.key;
-    state.segmentValue = segment.value;
-    for (var s in lesson.segment) {
-      state.segments.add(MediaSegment.toLine(s.start, s.end));
-    }
-    return kv;
+    state.segment = learnSegment;
   }
 
-  setProgress() {
-    var currents = state.learnContent.schedulesCurrent;
-    state.progress = state.total - currents.length;
-  }
-
-  int schedulesCurrentSort(ScheduleCurrent a, ScheduleCurrent b) {
+  int schedulesCurrentSort(SegmentTodayPrg a, SegmentTodayPrg b) {
     if (a.viewTime != b.viewTime) {
       return a.viewTime.compareTo(b.viewTime);
     } else {
