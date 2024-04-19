@@ -4,12 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class PlayerBar extends StatefulWidget {
-
   final int? index;
   final List<MediaSegment> lines;
   final String path;
 
-  PlayerBar(this.index, this.lines, this.path, {super.key});
+  const PlayerBar(this.index, this.lines, this.path, {super.key});
 
   @override
   PlayerBarState createState() => PlayerBarState();
@@ -74,10 +73,8 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
       player.seek(Duration(milliseconds: widget.lines[0].start.toInt() - currOffset));
     } else if (player.state == PlayerState.playing) {
     } else {
-      print("error state");
       return;
     }
-    print(_offset.toInt());
     startTime = DateTime.now().millisecondsSinceEpoch + currOffset;
     player.seek(Duration(milliseconds: widget.lines[0].start.toInt() - currOffset));
   }
@@ -154,39 +151,87 @@ class PlayerBarPainter extends CustomPainter {
   final double offset;
   late final Paint centerLine;
   late final Paint contentLine;
+  late final Paint gapLine;
 
   PlayerBarPainter(this.offset, this.lines) {
     centerLine = Paint()
       ..color = Colors.blue
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 30.0.w;
+      ..strokeWidth = 1;
     contentLine = Paint()
       ..color = Colors.blue
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
+      ..strokeWidth = 20.0.w;
+    gapLine = Paint()
+      ..color = Colors.blue
+      ..strokeWidth = 10.0.w;
   }
 
   @override
   void paint(Canvas canvas, Size size) {
+    final double lineWidth = 10.w;
+    final double gapWidth = 10.w;
+    final double totalWidth = lineWidth + gapWidth;
+
     final double centerY = size.height / 2;
     final double centerX = size.width / 2;
     canvas.drawLine(
       Offset(centerX, 0),
       Offset(centerX, size.height),
-      contentLine,
+      centerLine,
     );
     var startOffset = 0.0;
     if (lines.isNotEmpty) {
       startOffset = -lines[0].blockStart;
     }
+    double offsetStartX = 0;
+    // TODO need to improve the performance, and to draw the playtime
+    for (int i = 0; i < 999; i++, offsetStartX += totalWidth) {
+      if (i.isOdd) {
+        continue;
+      }
+      double startX = offsetStartX + offset;
+      double endX = offsetStartX + offset + lineWidth;
+      if (endX < 0) {
+        continue;
+      }
+      if (startX > size.width) {
+        break;
+      }
+      if (startX < 0) {
+        startX = 0;
+      }
+      if (endX > size.width) {
+        endX = size.width;
+      }
+      canvas.drawLine(
+        Offset(startX, 10.w),
+        Offset(endX, 10.w),
+        gapLine,
+      );
+    }
+
+    // TODO need to improve the performance
     for (final line in lines) {
-      final double startX = line.blockStart + offset + centerX + startOffset;
-      final double endX = line.blockEnd + offset + centerX + startOffset;
+      double startX = line.blockStart + offset + centerX + startOffset;
+      double endX = line.blockEnd + offset + centerX + startOffset;
+      if (endX < 0) {
+        continue;
+      }
+      if (startX > size.width) {
+        break;
+      }
+      if (startX < 0) {
+        startX = 0;
+      }
+      if (endX > size.width) {
+        endX = size.width;
+      }
 
       canvas.drawLine(
         Offset(startX, centerY),
         Offset(endX, centerY),
-        centerLine,
+        contentLine,
       );
     }
   }

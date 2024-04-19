@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
-import 'package:repeat_flutter/page/main_repeat/main_repeat_logic.dart';
+import 'package:repeat_flutter/page/main/main_logic.dart';
 
 import 'main_repeat_finish_state.dart';
 
@@ -18,6 +18,12 @@ class MainRepeatFinishLogic extends GetxController {
       state.segments.add(learnSegment!);
     }
     update([MainRepeatFinishLogic.id]);
-    await Get.find<MainRepeatLogic>().init();
+  }
+
+  @override
+  void onClose() {
+    super.onClose();
+    Get.find<MainLogic>().init();
+    SegmentHelp.clear();
   }
 }

@@ -104,8 +104,6 @@ class MainRepeatPage extends StatelessWidget {
         return Row(
           children: [
             buildButton(I18nKey.btnShow.tr, () => logic.show()),
-            const Spacer(),
-            buildButton(I18nKey.btnUnknown.tr, () => logic.error()),
           ],
         );
       case MainRepeatStep.evaluate:
@@ -113,7 +111,7 @@ class MainRepeatPage extends StatelessWidget {
           children: [
             buildButton(I18nKey.btnKnow.tr, () => logic.know()),
             const Spacer(),
-            buildButton(I18nKey.btnError.tr, () => logic.error(next: true)),
+            buildButton(I18nKey.btnError.tr, () => logic.error()),
           ],
         );
       default:

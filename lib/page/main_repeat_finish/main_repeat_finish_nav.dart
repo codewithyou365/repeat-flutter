@@ -5,7 +5,9 @@ import 'package:repeat_flutter/page/main_repeat_finish/main_repeat_finish_view.d
 GetPage mainRepeatFinishNav(String path) {
   return GetPage(
     name: path,
-    transition: Transition.rightToLeft,
+    transition: Transition.downToUp,
+    fullscreenDialog: true,
+    popGesture: false,
     page: () => MainRepeatFinishPage(),
     binding: MainRepeatFinishBinding(),
   );

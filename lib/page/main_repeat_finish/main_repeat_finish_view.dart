@@ -12,6 +12,14 @@ class MainRepeatFinishPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(I18nKey.btnReview.tr),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            // TODO need to extract the `until` function into Nav.dart
+            // TODO need to listen to system back event
+            Get.until((route) => Get.currentRoute == '/main'); // Close the special view and go back to home
+          },
+        ),
       ),
       body: GetBuilder<MainRepeatFinishLogic>(
         id: MainRepeatFinishLogic.id,

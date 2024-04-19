@@ -6,7 +6,6 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
-import 'package:repeat_flutter/page/main/main_logic.dart';
 
 import 'main_repeat_state.dart';
 
@@ -31,21 +30,14 @@ class MainRepeatLogic extends GetxController {
     update([MainRepeatLogic.id]);
   }
 
-  @override
-  void onClose() {
-    super.onClose();
-    Get.find<MainLogic>().init();
-    SegmentHelp.clear();
-  }
-
   void show() {
     state.step = MainRepeatStep.evaluate;
     update([MainRepeatLogic.id]);
   }
 
-  void error({next = false}) async {
+  void error() async {
     if (state.c.isEmpty) {
-      Nav.mainRepeatFinish.push();
+      finish();
       return;
     }
     var curr = state.c[0];
@@ -53,14 +45,11 @@ class MainRepeatLogic extends GetxController {
     state.c.sort(schedulesCurrentSort);
     state.step = MainRepeatStep.finish;
     update([MainRepeatLogic.id]);
-    if (next) {
-      this.next();
-    }
   }
 
   void know() async {
     if (state.c.isEmpty) {
-      Nav.mainRepeatFinish.push();
+      finish();
       return;
     }
     var curr = state.c[0];
@@ -69,13 +58,13 @@ class MainRepeatLogic extends GetxController {
       state.c.removeAt(0);
     }
     if (state.c.isEmpty) {
-      Nav.mainRepeatFinish.push();
+      finish();
       return;
     }
     state.c.sort(schedulesCurrentSort);
     state.progress = state.total - state.c.length;
     state.step = MainRepeatStep.finish;
-    next();
+    update([MainRepeatLogic.id]);
   }
 
   void next() async {
@@ -102,5 +91,9 @@ class MainRepeatLogic extends GetxController {
     } else {
       return a.sort.compareTo(b.sort);
     }
+  }
+
+  finish() {
+    Nav.mainRepeatFinish.push();
   }
 }
