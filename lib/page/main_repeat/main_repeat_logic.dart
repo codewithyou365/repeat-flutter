@@ -57,10 +57,6 @@ class MainRepeatLogic extends GetxController {
     if (curr.progress >= ScheduleDao.maxRepeatTime) {
       state.c.removeAt(0);
     }
-    if (state.c.isEmpty) {
-      finish();
-      return;
-    }
     state.c.sort(schedulesCurrentSort);
     state.progress = state.total - state.c.length;
     state.step = MainRepeatStep.finish;
@@ -68,6 +64,10 @@ class MainRepeatLogic extends GetxController {
   }
 
   void next() async {
+    if (state.c.isEmpty) {
+      finish();
+      return;
+    }
     state.step = MainRepeatStep.recall;
     await setCurrentLearnContent();
     update([MainRepeatLogic.id]);
