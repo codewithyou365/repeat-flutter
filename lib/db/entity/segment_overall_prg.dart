@@ -3,16 +3,18 @@
 import 'package:floor/floor.dart';
 
 @Entity(indices: [
-  Index(value: ['next']),
+  Index(value: ['next', 'progress', 'sort']),
+  Index(value: ['sort'], unique: true),
 ])
 class SegmentOverallPrg {
   @primaryKey
   final String key;
 
+  final DateTime next;
+
   final int progress;
 
-  final DateTime next;
   final int sort;
 
-  SegmentOverallPrg(this.key, this.progress, this.next, this.sort);
+  SegmentOverallPrg(this.key, this.next, this.progress, this.sort);
 }

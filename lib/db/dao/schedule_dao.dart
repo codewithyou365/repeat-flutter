@@ -5,11 +5,10 @@ import 'dart:math';
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/db/entity/segment.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
+import 'package:repeat_flutter/db/entity/segment_review.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/logic/date_help.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
-
-// Sop : SegmentOverallProgress(Schedule)
-// Stp : SegmentTodayProgress(ScheduleCurrent)
 
 @dao
 abstract class ScheduleDao {
@@ -35,12 +34,13 @@ abstract class ScheduleDao {
   @Query('SELECT * FROM Lock where id=1 for update')
   Future<void> forUpdate();
 
-  /// --- currency schedule ---
+  /// --- SegmentTodayPrg ---
+
   @Query('SELECT count(1) FROM SegmentTodayPrg')
   Future<int?> totalSegmentTodayPrg();
 
-  @Query("SELECT * FROM SegmentTodayPrg")
-  Future<List<SegmentTodayPrg>> findAllSegmentTodayPrg();
+  @Query("SELECT `key` FROM SegmentTodayPrg")
+  Future<List<String>> findAllSegmentTodayPrg();
 
   @Query("SELECT * FROM SegmentTodayPrg limit 1")
   Future<SegmentTodayPrg?> findOneSegmentTodayPrg();
@@ -54,8 +54,21 @@ abstract class ScheduleDao {
   @Query('SELECT * FROM SegmentTodayPrg where progress<:maxProgress order by viewTime,sort asc')
   Future<List<SegmentTodayPrg>> findSegmentTodayPrg(int maxProgress);
 
+  @Query("SELECT count(1) FROM SegmentReview"
+      " JOIN SegmentOverallPrg ON SegmentOverallPrg.`key` = SegmentReview.`key`"
+      " WHERE SegmentReview.createDate=:now")
+  Future<int?> findLearnedCount(int now);
+
+  @Query("SELECT SegmentOverallPrg.* FROM SegmentReview"
+      " JOIN SegmentOverallPrg ON SegmentOverallPrg.`key` = SegmentReview.`key`"
+      " WHERE SegmentReview.createDate=:now")
+  Future<List<SegmentOverallPrg>> findLearned(int now);
+
   @Query("SELECT * FROM SegmentOverallPrg where next<:now order by progress,sort limit :limit")
   Future<List<SegmentOverallPrg>> findSegmentOverallPrg(int limit, DateTime now);
+
+  @Query("SELECT count(1) FROM SegmentOverallPrg where next<:now order by progress,sort limit :limit")
+  Future<int?> findSegmentOverallPrgCount(int limit, DateTime now);
 
   /// --- error
 
@@ -67,6 +80,13 @@ abstract class ScheduleDao {
 
   @Query("SELECT * FROM SegmentOverallPrg WHERE `key`=:key")
   Future<SegmentOverallPrg?> getSegmentOverallPrg(String key);
+
+  /// --- SegmentReview
+  @Insert(onConflict: OnConflictStrategy.ignore)
+  Future<void> insertSegmentReview(List<SegmentReview> review);
+
+  @Query("SELECT `key` FROM SegmentReview on SegmentReview.createTime=:now")
+  Future<List<String>> findTodaySegmentReview(int now);
 
   @Query("SELECT"
       " Segment.`key` `key`"
@@ -114,12 +134,17 @@ abstract class ScheduleDao {
       }
 
       if (needToInsert) {
+        List<SegmentOverallPrg> learned = await findLearned(DateHelp.from(now));
+        if (learned.length >= learnCountPerDay) {
+          return [];
+        }
         List<SegmentOverallPrg> overall = await findSegmentOverallPrg(findLearnCountPerDay, now);
         for (var element in overall) {
           tps.add(SegmentTodayPrg(element.key, element.sort, 0, DateTime.fromMicrosecondsSinceEpoch(0), DateTime.now()));
         }
+
         tps.sort((a, b) => a.sort.compareTo(b.sort));
-        tps = tps.sublist(0, min(learnCountPerGroup, tps.length));
+        tps = tps.sublist(0, min(min(learnCountPerGroup, tps.length), learnCountPerDay - learned.length));
         await insertSegmentTodayPrg(tps);
       } else {
         tps = await findSegmentTodayPrg(maxRepeatTime);
@@ -170,10 +195,11 @@ abstract class ScheduleDao {
   }
 
   @transaction
-  Future<List<SegmentTodayPrg>> clearToday() async {
+  Future<List<String>> finishCurrent() async {
     await forUpdate();
     var ret = await findAllSegmentTodayPrg();
     await deleteSegmentTodayPrg();
+    await insertSegmentReview(SegmentReview.from(ret));
     return ret;
   }
 

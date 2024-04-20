@@ -82,7 +82,7 @@ class MainContentLogic extends GetxController {
         var key = "${kv.rootPath}|${lesson.key}|${segment.key}";
         //4611686118427387904-(99999*10000000000+99999*100000+99999)
         segments.add(entity.Segment(key, cacheFile.id!, mediaFileId!, lessonIndex, segmentIndex));
-        segmentOverallPrgs.add(SegmentOverallPrg(key, 0, DateTime.now(), contentIndexSort * 10000000000 + lessonIndex * 100000 + segmentIndex));
+        segmentOverallPrgs.add(SegmentOverallPrg(key, DateTime.now(), 0, contentIndexSort * 10000000000 + lessonIndex * 100000 + segmentIndex));
       }
     }
     await Db().db.scheduleDao.insertSegments(segments);

@@ -12,9 +12,9 @@ class MainRepeatFinishLogic extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    var curr = await Db().db.scheduleDao.clearToday();
-    for (var e in curr) {
-      var learnSegment = await SegmentHelp.from(e.key);
+    var curr = await Db().db.scheduleDao.finishCurrent();
+    for (var key in curr) {
+      var learnSegment = await SegmentHelp.from(key);
       state.segments.add(learnSegment!);
     }
     update([MainRepeatFinishLogic.id]);

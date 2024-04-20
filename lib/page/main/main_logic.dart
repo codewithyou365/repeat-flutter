@@ -1,6 +1,10 @@
+import 'dart:math';
+
 import 'package:get/get.dart';
+import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/date_help.dart';
 import 'package:repeat_flutter/nav.dart';
 
 import 'main_state.dart';
@@ -16,9 +20,10 @@ class MainLogic extends GetxController {
 
   void init() async {
     var now = DateTime.now();
-    state.segments.clear();
-    state.segments.addAll(await Db().db.scheduleDao.findSegmentOverallPrg(30, now));
-    state.totalCount.value = state.segments.length;
+    var learned = await Db().db.scheduleDao.findLearnedCount(DateHelp.from(now));
+    var unlearned = await Db().db.scheduleDao.findSegmentOverallPrgCount(ScheduleDao.learnCountPerDay, now);
+
+    state.totalCount.value = min(ScheduleDao.learnCountPerDay - learned!, unlearned!);
   }
 
   tryMainRepeat() {
