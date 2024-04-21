@@ -99,9 +99,9 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `ContentIndex` (`url` TEXT NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`url`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Segment` (`key` TEXT NOT NULL, `indexDocId` INTEGER NOT NULL, `mediaDocId` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, PRIMARY KEY (`key`))');
+            'CREATE TABLE IF NOT EXISTS `Segment` (`key` TEXT NOT NULL, `indexDocId` INTEGER NOT NULL, `mediaDocId` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`key`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentOverallPrg` (`key` TEXT NOT NULL, `next` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`key`))');
+            'CREATE TABLE IF NOT EXISTS `SegmentOverallPrg` (`key` TEXT NOT NULL, `next` INTEGER NOT NULL, `progress` INTEGER NOT NULL, PRIMARY KEY (`key`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentTodayPrg` (`key` TEXT NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`key`))');
         await database.execute(
@@ -115,9 +115,9 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE UNIQUE INDEX `index_ContentIndex_sort` ON `ContentIndex` (`sort`)');
         await database.execute(
-            'CREATE INDEX `index_SegmentOverallPrg_next_progress_sort` ON `SegmentOverallPrg` (`next`, `progress`, `sort`)');
+            'CREATE UNIQUE INDEX `index_Segment_sort` ON `Segment` (`sort`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_SegmentOverallPrg_sort` ON `SegmentOverallPrg` (`sort`)');
+            'CREATE INDEX `index_SegmentOverallPrg_next_progress` ON `SegmentOverallPrg` (`next`, `progress`)');
         await database.execute(
             'CREATE INDEX `index_SegmentReview_createDate` ON `SegmentReview` (`createDate`)');
 
@@ -387,7 +387,7 @@ class _$ScheduleDao extends ScheduleDao {
             (SegmentReview item) => <String, Object?>{
                   'key': item.key,
                   'count': item.count,
-                  'createDate': item.createDate
+                  'createDate': _dateConverter.encode(item.createDate)
                 }),
         _segmentInsertionAdapter = InsertionAdapter(
             database,
@@ -397,7 +397,8 @@ class _$ScheduleDao extends ScheduleDao {
                   'indexDocId': item.indexDocId,
                   'mediaDocId': item.mediaDocId,
                   'lessonIndex': item.lessonIndex,
-                  'segmentIndex': item.segmentIndex
+                  'segmentIndex': item.segmentIndex,
+                  'sort': item.sort
                 }),
         _segmentOverallPrgInsertionAdapter = InsertionAdapter(
             database,
@@ -405,7 +406,24 @@ class _$ScheduleDao extends ScheduleDao {
             (SegmentOverallPrg item) => <String, Object?>{
                   'key': item.key,
                   'next': _dateTimeConverter.encode(item.next),
-                  'progress': item.progress,
+                  'progress': item.progress
+                }),
+        _contentIndexDeletionAdapter = DeletionAdapter(
+            database,
+            'ContentIndex',
+            ['url'],
+            (ContentIndex item) =>
+                <String, Object?>{'url': item.url, 'sort': item.sort}),
+        _segmentDeletionAdapter = DeletionAdapter(
+            database,
+            'Segment',
+            ['key'],
+            (Segment item) => <String, Object?>{
+                  'key': item.key,
+                  'indexDocId': item.indexDocId,
+                  'mediaDocId': item.mediaDocId,
+                  'lessonIndex': item.lessonIndex,
+                  'segmentIndex': item.segmentIndex,
                   'sort': item.sort
                 });
 
@@ -423,10 +441,21 @@ class _$ScheduleDao extends ScheduleDao {
 
   final InsertionAdapter<SegmentOverallPrg> _segmentOverallPrgInsertionAdapter;
 
+  final DeletionAdapter<ContentIndex> _contentIndexDeletionAdapter;
+
+  final DeletionAdapter<Segment> _segmentDeletionAdapter;
+
   @override
   Future<void> forUpdate() async {
     await _queryAdapter
         .queryNoReturn('SELECT * FROM Lock where id=1 for update');
+  }
+
+  @override
+  Future<String?> getDoc(String url) async {
+    return _queryAdapter.query('SELECT path FROM Doc WHERE url = ?1',
+        mapper: (Map<String, Object?> row) => row.values.first as String,
+        arguments: [url]);
   }
 
   @override
@@ -460,35 +489,46 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<List<SegmentTodayPrg>> findSegmentTodayPrg(int maxProgress) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM SegmentTodayPrg where progress<?1 order by viewTime,sort asc ',
+        'SELECT * FROM SegmentTodayPrg where progress<?1 order by viewTime,sort asc',
         mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['key'] as String, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [maxProgress]);
   }
 
   @override
-  Future<int?> findLearnedCount(int now) async {
+  Future<void> setSegmentTodayPrg(
+    String key,
+    int progress,
+    DateTime viewTime,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE SegmentTodayPrg SET progress=?2,viewTime=?3 WHERE `key`=?1',
+        arguments: [key, progress, _dateTimeConverter.encode(viewTime)]);
+  }
+
+  @override
+  Future<int?> findLearnedCount(Date now) async {
     return _queryAdapter.query(
-        'SELECT count(1) FROM SegmentReview JOIN SegmentOverallPrg ON SegmentOverallPrg.`key` = SegmentReview.`key` WHERE SegmentReview.createDate=?1',
+        'SELECT count(1) FROM SegmentReview JOIN SegmentOverallPrg ON SegmentOverallPrg.`key` = SegmentReview.`key` JOIN Segment ON Segment.`key` = SegmentReview.`key` WHERE SegmentReview.createDate=?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [now]);
+        arguments: [_dateConverter.encode(now)]);
   }
 
   @override
-  Future<List<SegmentOverallPrg>> findLearned(int now) async {
+  Future<List<SegmentOverallPrg>> findLearned(Date now) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentOverallPrg.* FROM SegmentReview JOIN SegmentOverallPrg ON SegmentOverallPrg.`key` = SegmentReview.`key` WHERE SegmentReview.createDate=?1',
-        mapper: (Map<String, Object?> row) => SegmentOverallPrg(row['key'] as String, _dateTimeConverter.decode(row['next'] as int), row['progress'] as int, row['sort'] as int),
-        arguments: [now]);
+        'SELECT SegmentOverallPrg.* FROM SegmentReview JOIN SegmentOverallPrg ON SegmentOverallPrg.`key` = SegmentReview.`key` JOIN Segment ON Segment.`key` = SegmentReview.`key` WHERE SegmentReview.createDate=?1',
+        mapper: (Map<String, Object?> row) => SegmentOverallPrg(row['key'] as String, _dateTimeConverter.decode(row['next'] as int), row['progress'] as int),
+        arguments: [_dateConverter.encode(now)]);
   }
 
   @override
-  Future<List<SegmentOverallPrg>> findSegmentOverallPrg(
+  Future<List<Segment>> scheduleToday(
     int limit,
     DateTime now,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM SegmentOverallPrg where next<?2 order by progress,sort limit ?1',
-        mapper: (Map<String, Object?> row) => SegmentOverallPrg(row['key'] as String, _dateTimeConverter.decode(row['next'] as int), row['progress'] as int, row['sort'] as int),
+        'SELECT Segment.* FROM SegmentOverallPrg JOIN Segment ON Segment.`key` = SegmentOverallPrg.`key` where SegmentOverallPrg.next<?2 order by SegmentOverallPrg.progress limit ?1',
+        mapper: (Map<String, Object?> row) => Segment(row['key'] as String, row['indexDocId'] as int, row['mediaDocId'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['sort'] as int),
         arguments: [limit, _dateTimeConverter.encode(now)]);
   }
 
@@ -498,7 +538,7 @@ class _$ScheduleDao extends ScheduleDao {
     DateTime now,
   ) async {
     return _queryAdapter.query(
-        'SELECT count(1) FROM SegmentOverallPrg where next<?2 order by progress,sort limit ?1',
+        'SELECT count(1) FROM SegmentOverallPrg JOIN Segment ON Segment.`key` = SegmentOverallPrg.`key` where next<?2 order by progress,sort limit ?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [limit, _dateTimeConverter.encode(now)]);
   }
@@ -515,24 +555,12 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> setSegmentTodayPrg(
-    String key,
-    int progress,
-    DateTime viewTime,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'UPDATE SegmentTodayPrg SET progress=?2,viewTime=?3 WHERE `key`=?1',
-        arguments: [key, progress, _dateTimeConverter.encode(viewTime)]);
-  }
-
-  @override
   Future<SegmentOverallPrg?> getSegmentOverallPrg(String key) async {
     return _queryAdapter.query('SELECT * FROM SegmentOverallPrg WHERE `key`=?1',
         mapper: (Map<String, Object?> row) => SegmentOverallPrg(
             row['key'] as String,
             _dateTimeConverter.decode(row['next'] as int),
-            row['progress'] as int,
-            row['sort'] as int),
+            row['progress'] as int),
         arguments: [key]);
   }
 
@@ -547,8 +575,8 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<SegmentContentInDb?> getSegmentContent(String key) async {
     return _queryAdapter.query(
-        'SELECT Segment.`key` `key`,indexDoc.id indexDocId,mediaDoc.id mediaDocId,Segment.lessonIndex lessonIndex,Segment.segmentIndex segmentIndex,indexDoc.url indexDocUrl,indexDoc.path indexDocPath,mediaDoc.path mediaDocPath FROM Segment JOIN Doc indexDoc ON indexDoc.id=Segment.indexDocId JOIN Doc mediaDoc ON mediaDoc.id=Segment.mediaDocId WHERE Segment.`key`=?1',
-        mapper: (Map<String, Object?> row) => SegmentContentInDb(row['key'] as String, row['indexDocId'] as int, row['mediaDocId'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['indexDocUrl'] as String, row['indexDocPath'] as String, row['mediaDocPath'] as String),
+        'SELECT Segment.`key` `key`,indexDoc.id  indexDocId,mediaDoc.id mediaDocId,Segment.lessonIndex lessonIndex,Segment.segmentIndex segmentIndex,Segment.sort sort,indexDoc.url indexDocUrl,indexDoc.path indexDocPath,mediaDoc.path mediaDocPath FROM Segment JOIN Doc indexDoc ON indexDoc.id=Segment.indexDocId JOIN Doc mediaDoc ON mediaDoc.id=Segment.mediaDocId WHERE Segment.`key`=?1',
+        mapper: (Map<String, Object?> row) => SegmentContentInDb(row['key'] as String, row['indexDocId'] as int, row['mediaDocId'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['sort'] as int, row['indexDocUrl'] as String, row['indexDocPath'] as String, row['mediaDocPath'] as String),
         arguments: [key]);
   }
 
@@ -582,7 +610,52 @@ class _$ScheduleDao extends ScheduleDao {
   Future<void> insertSegmentOverallPrgs(
       List<SegmentOverallPrg> entities) async {
     await _segmentOverallPrgInsertionAdapter.insertList(
-        entities, OnConflictStrategy.replace);
+        entities, OnConflictStrategy.ignore);
+  }
+
+  @override
+  Future<void> deleteContentIndex(ContentIndex data) async {
+    await _contentIndexDeletionAdapter.delete(data);
+  }
+
+  @override
+  Future<void> deleteSegments(List<Segment> data) async {
+    await _segmentDeletionAdapter.deleteList(data);
+  }
+
+  @override
+  Future<void> importSegment(
+    List<Segment> segments,
+    List<SegmentOverallPrg> segmentOverallPrgs,
+  ) async {
+    if (database is sqflite.Transaction) {
+      await super.importSegment(segments, segmentOverallPrgs);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        await transactionDatabase.scheduleDao
+            .importSegment(segments, segmentOverallPrgs);
+      });
+    }
+  }
+
+  @override
+  Future<void> deleteContent(
+    String url,
+    List<Segment> segments,
+  ) async {
+    if (database is sqflite.Transaction) {
+      await super.deleteContent(url, segments);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        await transactionDatabase.scheduleDao.deleteContent(url, segments);
+      });
+    }
   }
 
   @override
@@ -702,3 +775,4 @@ class _$BaseDao extends BaseDao {
 
 // ignore_for_file: unused_element
 final _dateTimeConverter = DateTimeConverter();
+final _dateConverter = DateConverter();

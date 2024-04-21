@@ -4,6 +4,7 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:floor/floor.dart';
+import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/dao/content_index_dao.dart';
 import 'package:repeat_flutter/db/dao/doc_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
@@ -37,7 +38,10 @@ part 'database.g.dart'; // the generated code will be there
   Id99999,
   Lock,
 ])
-@TypeConverters([DateTimeConverter])
+@TypeConverters([
+  DateTimeConverter,
+  DateConverter,
+])
 abstract class AppDatabase extends FloorDatabase {
   KvDao get kvDao;
 

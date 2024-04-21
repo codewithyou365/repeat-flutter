@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
+import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment.dart' as entity;
 import 'package:repeat_flutter/logic/download.dart';
@@ -23,10 +24,23 @@ class MainContentLogic extends GetxController {
   delete(String url) async {
     state.indexes.removeWhere((element) => identical(element.url, url));
     update([MainContentLogic.id]);
-    // TODO here some error
-    await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(url, 0));
-    var deleteKeyList = await Db().db.scheduleDao.findKeyByUrl(url);
-    // TODO await Db().db.scheduleDao.deleteContentIndex(Schedule.create(deleteKeyList));
+    var doc = await downloadDocPath(url);
+    if (doc == null) {
+      return;
+    }
+
+    var kv = await QaRepeatDoc.fromPath(doc.path, Uri.parse(url));
+    List<entity.Segment> segments = [];
+    for (var lessonIndex = 0; lessonIndex < kv.lesson.length; lessonIndex++) {
+      var lesson = kv.lesson[lessonIndex];
+      for (var segmentIndex = 0; segmentIndex < lesson.segment.length; segmentIndex++) {
+        var segment = lesson.segment[segmentIndex];
+        var key = "${kv.rootPath}|${lesson.key}|${segment.key}";
+        segments.add(entity.Segment(key, 0, 0, 0, 0, 0));
+      }
+    }
+
+    await Db().db.scheduleDao.deleteContent(url, segments);
     Get.find<MainLogic>().init();
   }
 
@@ -55,22 +69,23 @@ class MainContentLogic extends GetxController {
     return total;
   }
 
-  Future<int> addToSchedule(String url, int contentIndexSort) async {
+  Future<void> addToSchedule(String url, int contentIndexSort) async {
     var doc = await downloadDocPath(url);
     if (doc == null) {
-      return 0;
+      return;
     }
-    var kv = await QaRepeatDoc.fromPath(doc.path, Uri.parse(url));
+
     List<entity.Segment> segments = [];
     List<SegmentOverallPrg> segmentOverallPrgs = [];
+    var kv = await QaRepeatDoc.fromPath(doc.path, Uri.parse(url));
     if (kv.lesson.length >= 100000) {
       print("too many data");
-      return 0;
+      return;
     }
     for (var d in kv.lesson) {
       if (d.segment.length >= 100000) {
         print("too many data");
-        return 0;
+        return;
       }
     }
 
@@ -81,18 +96,12 @@ class MainContentLogic extends GetxController {
         var segment = lesson.segment[segmentIndex];
         var key = "${kv.rootPath}|${lesson.key}|${segment.key}";
         //4611686118427387904-(99999*10000000000+99999*100000+99999)
-        segments.add(entity.Segment(key, doc.id!, mediaFileId!, lessonIndex, segmentIndex));
-        segmentOverallPrgs.add(SegmentOverallPrg(key, DateTime.now(), 0, contentIndexSort * 10000000000 + lessonIndex * 100000 + segmentIndex));
+        segments.add(entity.Segment(key, doc.id!, mediaFileId!, lessonIndex, segmentIndex, contentIndexSort * 10000000000 + lessonIndex * 100000 + segmentIndex));
+        segmentOverallPrgs.add(SegmentOverallPrg(key, DateTime.now(), 0));
       }
     }
-    await Db().db.scheduleDao.insertSegments(segments);
-    await Db().db.scheduleDao.insertSegmentOverallPrgs(segmentOverallPrgs);
+    await Db().db.scheduleDao.importSegment(segments, segmentOverallPrgs);
     Get.find<MainLogic>().init();
-    var total = 0;
-    for (var d in kv.lesson) {
-      total += d.segment.length;
-    }
-    return total;
   }
 
   downloadProgress(int startTime, int count, int total, bool finish) {

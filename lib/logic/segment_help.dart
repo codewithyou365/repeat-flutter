@@ -4,12 +4,12 @@ import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 class SegmentHelp {
-  static Map<String, QaRepeatDoc> indexDocPathToKv = {};
+  static Map<String, QaRepeatDoc> indexDocPathToQa = {};
   static Map<String, List<MediaSegment>> mediaDocPathToMediaSegments = {};
   static Map<String, SegmentContent> scheduleKeyToLearnSegment = {};
 
   static clear() {
-    indexDocPathToKv = {};
+    indexDocPathToQa = {};
     mediaDocPathToMediaSegments = {};
     scheduleKeyToLearnSegment = {};
   }
@@ -23,13 +23,13 @@ class SegmentHelp {
       return null;
     }
     var ret = SegmentContent.from(retInDb);
-    var kv = indexDocPathToKv[ret.indexDocPath];
-    if (kv == null) {
-      kv = await QaRepeatDoc.fromPath(ret.indexDocPath, Uri.parse(ret.indexDocUrl));
-      indexDocPathToKv[ret.indexDocPath] = kv;
+    var qa = indexDocPathToQa[ret.indexDocPath];
+    if (qa == null) {
+      qa = await QaRepeatDoc.fromPath(ret.indexDocPath, Uri.parse(ret.indexDocUrl));
+      indexDocPathToQa[ret.indexDocPath] = qa;
     }
 
-    var lesson = kv.lesson[ret.lessonIndex];
+    var lesson = qa.lesson[ret.lessonIndex];
     // full qa
     {
       var segment = lesson.segment[ret.segmentIndex];

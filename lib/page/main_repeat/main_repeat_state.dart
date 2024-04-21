@@ -13,10 +13,8 @@ class MainRepeatState {
   var progress = -1;
   var total = 10;
 
-  SegmentContent segment = SegmentContent("", 0, 0, 0, 0, "", "", "");
+  SegmentContent segment = SegmentContent("", 0, 0, 0, 0, 0, "", "", "");
   late List<SegmentTodayPrg> c;
-
-
 
   var step = MainRepeatStep.recall;
   var mode = MainRepeatMode.byQuestion;
