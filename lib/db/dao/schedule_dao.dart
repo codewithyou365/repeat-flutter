@@ -24,10 +24,11 @@ abstract class ScheduleDao {
     6 * 31 * 24 * 60 * 60,
     12 * 31 * 24 * 60 * 60,
   ];
+  static var review = [3 * 24 * 60 * 60, 3 * 24 * 60 * 60];
   static int intervalSeconds = 8 * 60 * 60;
   static int findLearnCountPerDay = 45;
-  static int learnCountPerDay = 30;
-  static int learnCountPerGroup = 10;
+  static int learnCountPerDay = 4;
+  static int learnCountPerGroup = 2;
   static const int maxLearnCountPerGroup = 1000;
   static int maxRepeatTime = 3;
 
@@ -90,16 +91,16 @@ abstract class ScheduleDao {
 
   @Query("SELECT"
       " Segment.`key` `key`"
-      ",indexFile.id indexFileId"
-      ",mediaFile.id mediaFileId"
+      ",indexDoc.id indexDocId"
+      ",mediaDoc.id mediaDocId"
       ",Segment.lessonIndex lessonIndex"
       ",Segment.segmentIndex segmentIndex"
-      ",indexFile.url indexFileUrl"
-      ",indexFile.path indexFilePath"
-      ",mediaFile.path mediaFilePath"
+      ",indexDoc.url indexDocUrl"
+      ",indexDoc.path indexDocPath"
+      ",mediaDoc.path mediaDocPath"
       " FROM Segment"
-      " JOIN CacheFile indexFile ON indexFile.id=Segment.indexFileId"
-      " JOIN CacheFile mediaFile ON mediaFile.id=Segment.mediaFileId"
+      " JOIN Doc indexDoc ON indexDoc.id=Segment.indexDocId"
+      " JOIN Doc mediaDoc ON mediaDoc.id=Segment.mediaDocId"
       " WHERE Segment.`key`=:key")
   Future<SegmentContentInDb?> getSegmentContent(String key);
 

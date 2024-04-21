@@ -4,11 +4,11 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:floor/floor.dart';
-import 'package:repeat_flutter/db/dao/cache_file_dao.dart';
 import 'package:repeat_flutter/db/dao/content_index_dao.dart';
+import 'package:repeat_flutter/db/dao/doc_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
-import 'package:repeat_flutter/db/dao/settings_dao.dart';
-import 'package:repeat_flutter/db/entity/cache_file.dart';
+import 'package:repeat_flutter/db/dao/kv_dao.dart';
+import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
 import 'package:repeat_flutter/db/entity/id99999.dart';
 import 'package:repeat_flutter/db/entity/lock.dart';
@@ -21,13 +21,13 @@ import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 
 import 'dao/base_dao.dart';
-import 'entity/settings.dart';
+import 'entity/kv.dart';
 
 part 'database.g.dart'; // the generated code will be there
 
 @Database(version: 1, entities: [
-  Settings,
-  CacheFile,
+  Kv,
+  Doc,
   ContentIndex,
   Segment,
   SegmentOverallPrg,
@@ -39,15 +39,15 @@ part 'database.g.dart'; // the generated code will be there
 ])
 @TypeConverters([DateTimeConverter])
 abstract class AppDatabase extends FloorDatabase {
-  SettingsDao get settingsDao;
+  KvDao get kvDao;
 
-  CacheFileDao get cacheFileDao;
+  DocDao get docDao;
 
   ContentIndexDao get contentIndexDao;
 
   ScheduleDao get scheduleDao;
 
-  BaseDao get baseService;
+  BaseDao get baseDao;
 }
 
 class Db {
@@ -65,7 +65,7 @@ class Db {
       db = await $FloorAppDatabase.databaseBuilder('app_database.db').build();
       log("Database path: ${await sqflite.getDatabasesPath()}");
     }
-    await db.baseService.initData();
+    await db.baseDao.initData();
     return db;
   }
 }

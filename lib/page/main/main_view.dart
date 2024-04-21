@@ -42,13 +42,13 @@ class MainPage extends StatelessWidget {
                   backgroundColor: Theme.of(context).secondaryHeaderColor,
                 ),
                 onPressed: () => {
-                  logic.tryMainRepeat(),
+                  logic.tryReview(),
                 },
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 11.0.w),
                   child: Column(
                     children: [
-                      Text(I18nKey.btnRepeat.tr,
+                      Text(I18nKey.btnReview.tr,
                           style: TextStyle(
                             color: Theme.of(context).shadowColor,
                           )),

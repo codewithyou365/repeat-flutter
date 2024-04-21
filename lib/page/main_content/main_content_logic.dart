@@ -5,7 +5,7 @@ import 'package:repeat_flutter/db/entity/content_index.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment.dart' as entity;
 import 'package:repeat_flutter/logic/download.dart';
-import 'package:repeat_flutter/logic/model/qa_repeat_file.dart';
+import 'package:repeat_flutter/logic/model/qa_repeat_doc.dart';
 import 'package:repeat_flutter/page/main/main_logic.dart';
 
 import 'main_content_state.dart';
@@ -43,11 +43,11 @@ class MainContentLogic extends GetxController {
   }
 
   Future<int> getUnitCount(String url) async {
-    var cacheFile = await downloadFilePath(url);
-    if (cacheFile == null) {
+    var doc = await downloadDocPath(url);
+    if (doc == null) {
       return 0;
     }
-    var kv = await QaRepeatFile.fromFile(cacheFile.path, Uri.parse(url));
+    var kv = await QaRepeatDoc.fromPath(doc.path, Uri.parse(url));
     var total = 0;
     for (var d in kv.lesson) {
       total += d.segment.length;
@@ -56,11 +56,11 @@ class MainContentLogic extends GetxController {
   }
 
   Future<int> addToSchedule(String url, int contentIndexSort) async {
-    var cacheFile = await downloadFilePath(url);
-    if (cacheFile == null) {
+    var doc = await downloadDocPath(url);
+    if (doc == null) {
       return 0;
     }
-    var kv = await QaRepeatFile.fromFile(cacheFile.path, Uri.parse(url));
+    var kv = await QaRepeatDoc.fromPath(doc.path, Uri.parse(url));
     List<entity.Segment> segments = [];
     List<SegmentOverallPrg> segmentOverallPrgs = [];
     if (kv.lesson.length >= 100000) {
@@ -76,12 +76,12 @@ class MainContentLogic extends GetxController {
 
     for (var lessonIndex = 0; lessonIndex < kv.lesson.length; lessonIndex++) {
       var lesson = kv.lesson[lessonIndex];
-      var mediaFileId = await Db().db.cacheFileDao.getId(lesson.url);
+      var mediaFileId = await Db().db.docDao.getId(lesson.url);
       for (var segmentIndex = 0; segmentIndex < lesson.segment.length; segmentIndex++) {
         var segment = lesson.segment[segmentIndex];
         var key = "${kv.rootPath}|${lesson.key}|${segment.key}";
         //4611686118427387904-(99999*10000000000+99999*100000+99999)
-        segments.add(entity.Segment(key, cacheFile.id!, mediaFileId!, lessonIndex, segmentIndex));
+        segments.add(entity.Segment(key, doc.id!, mediaFileId!, lessonIndex, segmentIndex));
         segmentOverallPrgs.add(SegmentOverallPrg(key, DateTime.now(), 0, contentIndexSort * 10000000000 + lessonIndex * 100000 + segmentIndex));
       }
     }
@@ -118,14 +118,14 @@ class MainContentLogic extends GetxController {
   download(String url) async {
     state.indexCount.value = 0;
     state.indexTotal.value = 1;
-    late QaRepeatFile kv;
+    late QaRepeatDoc kv;
     late String rootPath;
-    var success = await downloadFile(
+    var success = await downloadDoc(
       url,
       (fl) async {
-        kv = await QaRepeatFile.fromFile(fl.path, Uri.parse(url));
+        kv = await QaRepeatDoc.fromPath(fl.path, Uri.parse(url));
         rootPath = fl.folderPath.joinPath(kv.rootPath);
-        return FileLocation(rootPath, urlToFileName(url));
+        return DocLocation(rootPath, urlToDocName(url));
       },
       progressCallback: downloadProgress,
     );
@@ -136,9 +136,9 @@ class MainContentLogic extends GetxController {
         if (!innerUrl.startsWith("http")) {
           innerUrl = kv.rootUrl.joinPath(v.url);
         }
-        await downloadFile(
+        await downloadDoc(
           innerUrl,
-          (fl) async => FileLocation.create(rootPath.joinPath(v.path)),
+          (fl) async => DocLocation.create(rootPath.joinPath(v.path)),
           progressCallback: downloadProgress,
         );
       }

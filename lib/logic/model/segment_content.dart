@@ -4,19 +4,19 @@ import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 @Entity(tableName: "")
 class SegmentContentInDb extends Segment {
-  final String indexFileUrl;
-  final String indexFilePath;
-  final String mediaFilePath;
+  final String indexDocUrl;
+  final String indexDocPath;
+  final String mediaDocPath;
 
   SegmentContentInDb(
     super.key,
-    super.indexFileId,
-    super.mediaFileId,
+    super.indexDocId,
+    super.mediaDocId,
     super.lessonIndex,
     super.segmentIndex,
-    this.indexFileUrl,
-    this.indexFilePath,
-    this.mediaFilePath,
+    this.indexDocUrl,
+    this.indexDocPath,
+    this.mediaDocPath,
   );
 }
 
@@ -27,25 +27,25 @@ class SegmentContent extends SegmentContentInDb {
 
   SegmentContent(
     super.key,
-    super.indexFileId,
-    super.mediaFileId,
+    super.indexDocId,
+    super.mediaDocId,
     super.lessonIndex,
     super.segmentIndex,
-    super.indexFileUrl,
-    super.indexFilePath,
-    super.mediaFilePath,
+    super.indexDocUrl,
+    super.indexDocPath,
+    super.mediaDocPath,
   );
 
   static SegmentContent from(SegmentContentInDb d) {
     return SegmentContent(
       d.key,
-      d.indexFileId,
-      d.mediaFileId,
+      d.indexDocId,
+      d.mediaDocId,
       d.lessonIndex,
       d.segmentIndex,
-      d.indexFileUrl,
-      d.indexFilePath,
-      d.mediaFilePath,
+      d.indexDocUrl,
+      d.indexDocPath,
+      d.mediaDocPath,
     );
   }
 }

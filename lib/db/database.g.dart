@@ -61,15 +61,15 @@ class _$AppDatabase extends AppDatabase {
     changeListener = listener ?? StreamController<String>.broadcast();
   }
 
-  SettingsDao? _settingsDaoInstance;
+  KvDao? _kvDaoInstance;
 
-  CacheFileDao? _cacheFileDaoInstance;
+  DocDao? _docDaoInstance;
 
   ContentIndexDao? _contentIndexDaoInstance;
 
   ScheduleDao? _scheduleDaoInstance;
 
-  BaseDao? _baseServiceInstance;
+  BaseDao? _baseDaoInstance;
 
   Future<sqflite.Database> open(
     String path,
@@ -93,27 +93,25 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Settings` (`id` INTEGER NOT NULL, `themeMode` TEXT NOT NULL, `i18n` TEXT NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Kv` (`key` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`key`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `CacheFile` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `url` TEXT NOT NULL, `path` TEXT NOT NULL, `count` INTEGER NOT NULL, `total` INTEGER NOT NULL, `msg` TEXT NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `Doc` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `url` TEXT NOT NULL, `path` TEXT NOT NULL, `count` INTEGER NOT NULL, `total` INTEGER NOT NULL, `msg` TEXT NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `ContentIndex` (`url` TEXT NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`url`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Segment` (`key` TEXT NOT NULL, `indexFileId` INTEGER NOT NULL, `mediaFileId` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, PRIMARY KEY (`key`))');
+            'CREATE TABLE IF NOT EXISTS `Segment` (`key` TEXT NOT NULL, `indexDocId` INTEGER NOT NULL, `mediaDocId` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, PRIMARY KEY (`key`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentOverallPrg` (`key` TEXT NOT NULL, `next` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`key`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentTodayPrg` (`key` TEXT NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`key`))');
-        await database.execute(
-            'CREATE TABLE IF NOT EXISTS `` (`indexFileUrl` TEXT NOT NULL, `indexFilePath` TEXT NOT NULL, `mediaFilePath` TEXT NOT NULL, `key` TEXT NOT NULL, `indexFileId` INTEGER NOT NULL, `mediaFileId` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, PRIMARY KEY (`key`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentReview` (`key` TEXT NOT NULL, `count` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`key`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Id99999` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Lock` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
-        await database.execute(
-            'CREATE UNIQUE INDEX `index_CacheFile_url` ON `CacheFile` (`url`)');
+        await database
+            .execute('CREATE UNIQUE INDEX `index_Doc_url` ON `Doc` (`url`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_ContentIndex_sort` ON `ContentIndex` (`sort`)');
         await database.execute(
@@ -130,13 +128,13 @@ class _$AppDatabase extends AppDatabase {
   }
 
   @override
-  SettingsDao get settingsDao {
-    return _settingsDaoInstance ??= _$SettingsDao(database, changeListener);
+  KvDao get kvDao {
+    return _kvDaoInstance ??= _$KvDao(database, changeListener);
   }
 
   @override
-  CacheFileDao get cacheFileDao {
-    return _cacheFileDaoInstance ??= _$CacheFileDao(database, changeListener);
+  DocDao get docDao {
+    return _docDaoInstance ??= _$DocDao(database, changeListener);
   }
 
   @override
@@ -151,33 +149,21 @@ class _$AppDatabase extends AppDatabase {
   }
 
   @override
-  BaseDao get baseService {
-    return _baseServiceInstance ??= _$BaseDao(database, changeListener);
+  BaseDao get baseDao {
+    return _baseDaoInstance ??= _$BaseDao(database, changeListener);
   }
 }
 
-class _$SettingsDao extends SettingsDao {
-  _$SettingsDao(
+class _$KvDao extends KvDao {
+  _$KvDao(
     this.database,
     this.changeListener,
   )   : _queryAdapter = QueryAdapter(database),
-        _settingsInsertionAdapter = InsertionAdapter(
+        _kvInsertionAdapter = InsertionAdapter(
             database,
-            'Settings',
-            (Settings item) => <String, Object?>{
-                  'id': item.id,
-                  'themeMode': item.themeMode,
-                  'i18n': item.i18n
-                }),
-        _settingsUpdateAdapter = UpdateAdapter(
-            database,
-            'Settings',
-            ['id'],
-            (Settings item) => <String, Object?>{
-                  'id': item.id,
-                  'themeMode': item.themeMode,
-                  'i18n': item.i18n
-                });
+            'Kv',
+            (Kv item) =>
+                <String, Object?>{'key': item.key, 'value': item.value});
 
   final sqflite.DatabaseExecutor database;
 
@@ -185,37 +171,49 @@ class _$SettingsDao extends SettingsDao {
 
   final QueryAdapter _queryAdapter;
 
-  final InsertionAdapter<Settings> _settingsInsertionAdapter;
-
-  final UpdateAdapter<Settings> _settingsUpdateAdapter;
+  final InsertionAdapter<Kv> _kvInsertionAdapter;
 
   @override
-  Future<Settings?> one() async {
-    return _queryAdapter.query('SELECT * FROM Settings limit 1',
-        mapper: (Map<String, Object?> row) => Settings(row['id'] as int,
-            row['themeMode'] as String, row['i18n'] as String));
+  Future<List<Kv>> find(List<String> key) async {
+    const offset = 1;
+    final _sqliteVariablesForKey =
+        Iterable<String>.generate(key.length, (i) => '?${i + offset}')
+            .join(',');
+    return _queryAdapter.queryList(
+        'SELECT * FROM Kv where `key` in (' + _sqliteVariablesForKey + ')',
+        mapper: (Map<String, Object?> row) =>
+            Kv(row['key'] as String, row['value'] as String),
+        arguments: [...key]);
   }
 
   @override
-  Future<void> insertSettings(Settings settings) async {
-    await _settingsInsertionAdapter.insert(settings, OnConflictStrategy.abort);
+  Future<Kv?> one(String key) async {
+    return _queryAdapter.query('SELECT * FROM Kv where `key`=?1',
+        mapper: (Map<String, Object?> row) =>
+            Kv(row['key'] as String, row['value'] as String),
+        arguments: [key]);
   }
 
   @override
-  Future<void> updateSettings(Settings settings) async {
-    await _settingsUpdateAdapter.update(settings, OnConflictStrategy.replace);
+  Future<void> insertKv(Kv kv) async {
+    await _kvInsertionAdapter.insert(kv, OnConflictStrategy.replace);
+  }
+
+  @override
+  Future<void> insertKvs(List<Kv> kv) async {
+    await _kvInsertionAdapter.insertList(kv, OnConflictStrategy.replace);
   }
 }
 
-class _$CacheFileDao extends CacheFileDao {
-  _$CacheFileDao(
+class _$DocDao extends DocDao {
+  _$DocDao(
     this.database,
     this.changeListener,
   )   : _queryAdapter = QueryAdapter(database),
-        _cacheFileInsertionAdapter = InsertionAdapter(
+        _docInsertionAdapter = InsertionAdapter(
             database,
-            'CacheFile',
-            (CacheFile item) => <String, Object?>{
+            'Doc',
+            (Doc item) => <String, Object?>{
                   'id': item.id,
                   'url': item.url,
                   'path': item.path,
@@ -230,7 +228,7 @@ class _$CacheFileDao extends CacheFileDao {
 
   final QueryAdapter _queryAdapter;
 
-  final InsertionAdapter<CacheFile> _cacheFileInsertionAdapter;
+  final InsertionAdapter<Doc> _docInsertionAdapter;
 
   @override
   Future<void> forUpdate() async {
@@ -240,22 +238,22 @@ class _$CacheFileDao extends CacheFileDao {
 
   @override
   Future<int?> getId(String url) async {
-    return _queryAdapter.query('SELECT id FROM CacheFile WHERE url = ?1',
+    return _queryAdapter.query('SELECT id FROM Doc WHERE url = ?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [url]);
   }
 
   @override
   Future<String?> getPath(int id) async {
-    return _queryAdapter.query('SELECT path FROM CacheFile WHERE id = ?1',
+    return _queryAdapter.query('SELECT path FROM Doc WHERE id = ?1',
         mapper: (Map<String, Object?> row) => row.values.first as String,
         arguments: [id]);
   }
 
   @override
-  Future<CacheFile?> one(String url) async {
-    return _queryAdapter.query('SELECT * FROM CacheFile WHERE url = ?1',
-        mapper: (Map<String, Object?> row) => CacheFile(
+  Future<Doc?> one(String url) async {
+    return _queryAdapter.query('SELECT * FROM Doc WHERE url = ?1',
+        mapper: (Map<String, Object?> row) => Doc(
             row['url'] as String, row['path'] as String,
             id: row['id'] as int?,
             msg: row['msg'] as String,
@@ -265,12 +263,12 @@ class _$CacheFileDao extends CacheFileDao {
   }
 
   @override
-  Future<void> updateCacheFile(
+  Future<void> updateDoc(
     int id,
     String msg,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE OR ABORT CacheFile SET msg=?2 WHERE id = ?1',
+        'UPDATE OR ABORT Doc SET msg=?2 WHERE id = ?1',
         arguments: [id, msg]);
   }
 
@@ -281,7 +279,7 @@ class _$CacheFileDao extends CacheFileDao {
     int total,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE OR ABORT CacheFile SET count=?2,total=?3 WHERE id = ?1',
+        'UPDATE OR ABORT Doc SET count=?2,total=?3 WHERE id = ?1',
         arguments: [id, count, total]);
   }
 
@@ -291,13 +289,13 @@ class _$CacheFileDao extends CacheFileDao {
     String path,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE OR ABORT CacheFile SET count=total,path=?2 WHERE id = ?1',
+        'UPDATE OR ABORT Doc SET count=total,path=?2 WHERE id = ?1',
         arguments: [id, path]);
   }
 
   @override
-  Future<void> insertCacheFile(CacheFile data) async {
-    await _cacheFileInsertionAdapter.insert(data, OnConflictStrategy.replace);
+  Future<void> insertDoc(Doc data) async {
+    await _docInsertionAdapter.insert(data, OnConflictStrategy.replace);
   }
 
   @override
@@ -309,7 +307,7 @@ class _$CacheFileDao extends CacheFileDao {
           .transaction<int>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        return transactionDatabase.cacheFileDao.insert(url);
+        return transactionDatabase.docDao.insert(url);
       });
     }
   }
@@ -396,8 +394,8 @@ class _$ScheduleDao extends ScheduleDao {
             'Segment',
             (Segment item) => <String, Object?>{
                   'key': item.key,
-                  'indexFileId': item.indexFileId,
-                  'mediaFileId': item.mediaFileId,
+                  'indexDocId': item.indexDocId,
+                  'mediaDocId': item.mediaDocId,
                   'lessonIndex': item.lessonIndex,
                   'segmentIndex': item.segmentIndex
                 }),
@@ -462,7 +460,7 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<List<SegmentTodayPrg>> findSegmentTodayPrg(int maxProgress) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM SegmentTodayPrg where progress<?1 order by viewTime,sort asc',
+        'SELECT * FROM SegmentTodayPrg where progress<?1 order by viewTime,sort asc ',
         mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['key'] as String, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [maxProgress]);
   }
@@ -478,7 +476,7 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<List<SegmentOverallPrg>> findLearned(int now) async {
     return _queryAdapter.queryList(
-        'SELECT  SegmentOverallPrg.* FROM SegmentReview JOIN SegmentOverallPrg ON SegmentOverallPrg.`key` = SegmentReview.`key` WHERE SegmentReview.createDate=?1',
+        'SELECT SegmentOverallPrg.* FROM SegmentReview JOIN SegmentOverallPrg ON SegmentOverallPrg.`key` = SegmentReview.`key` WHERE SegmentReview.createDate=?1',
         mapper: (Map<String, Object?> row) => SegmentOverallPrg(row['key'] as String, _dateTimeConverter.decode(row['next'] as int), row['progress'] as int, row['sort'] as int),
         arguments: [now]);
   }
@@ -549,8 +547,8 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<SegmentContentInDb?> getSegmentContent(String key) async {
     return _queryAdapter.query(
-        'SELECT Segment.`key` `key`,indexFile.id indexFileId,mediaFile.id mediaFileId,Segment.lessonIndex lessonIndex,Segment.segmentIndex segmentIndex,indexFile.url indexFileUrl,indexFile.path indexFilePath,mediaFile.path mediaFilePath FROM Segment JOIN CacheFile indexFile ON indexFile.id=Segment.indexFileId JOIN CacheFile mediaFile ON mediaFile.id=Segment.mediaFileId WHERE Segment.`key`=?1',
-        mapper: (Map<String, Object?> row) => SegmentContentInDb(row['key'] as String, row['indexFileId'] as int, row['mediaFileId'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['indexFileUrl'] as String, row['indexFilePath'] as String, row['mediaFilePath'] as String),
+        'SELECT Segment.`key` `key`,indexDoc.id indexDocId,mediaDoc.id mediaDocId,Segment.lessonIndex lessonIndex,Segment.segmentIndex segmentIndex,indexDoc.url indexDocUrl,indexDoc.path indexDocPath,mediaDoc.path mediaDocPath FROM Segment JOIN Doc indexDoc ON indexDoc.id=Segment.indexDocId JOIN Doc mediaDoc ON mediaDoc.id=Segment.mediaDocId WHERE Segment.`key`=?1',
+        mapper: (Map<String, Object?> row) => SegmentContentInDb(row['key'] as String, row['indexDocId'] as int, row['mediaDocId'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['indexDocUrl'] as String, row['indexDocPath'] as String, row['mediaDocPath'] as String),
         arguments: [key]);
   }
 
@@ -696,7 +694,7 @@ class _$BaseDao extends BaseDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        await transactionDatabase.baseService.initData();
+        await transactionDatabase.baseDao.initData();
       });
     }
   }

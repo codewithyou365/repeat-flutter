@@ -6,16 +6,16 @@ import 'package:floor/floor.dart';
 class Segment {
   @primaryKey
   final String key;
-  final int indexFileId;
-  final int mediaFileId;
+  final int indexDocId;
+  final int mediaDocId;
 
   final int lessonIndex;
   final int segmentIndex;
 
   Segment(
     this.key,
-    this.indexFileId,
-    this.mediaFileId,
+    this.indexDocId,
+    this.mediaDocId,
     this.lessonIndex,
     this.segmentIndex,
   );

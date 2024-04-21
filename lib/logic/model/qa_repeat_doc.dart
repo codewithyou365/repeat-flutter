@@ -2,18 +2,18 @@ import 'dart:io';
 
 import 'dart:convert' as convert;
 
-import 'repeat_file.dart';
+import 'repeat_doc.dart';
 
-class QaRepeatFile extends RepeatFile {
+class QaRepeatDoc extends RepeatDoc {
   List<Lesson> lesson;
 
-  QaRepeatFile(String type, String rootPath, String key, String rootUrl, this.lesson) : super(type, rootPath, key, rootUrl);
+  QaRepeatDoc(String type, String rootPath, String key, String rootUrl, this.lesson) : super(type, rootPath, key, rootUrl);
 
-  static Future<QaRepeatFile> fromFile(String path, Uri defaultRootUri) async {
+  static Future<QaRepeatDoc> fromPath(String path, Uri defaultRootUri) async {
     File file = File(path);
     String jsonString = await file.readAsString();
     Map<String, dynamic> jsonData = convert.jsonDecode(jsonString);
-    var kv = QaRepeatFile.fromJson(jsonData);
+    var kv = QaRepeatDoc.fromJson(jsonData);
     if (kv.rootUrl == "") {
       kv.rootUrl = "${defaultRootUri.scheme}://${defaultRootUri.host}:${defaultRootUri.port}";
     }
@@ -23,8 +23,8 @@ class QaRepeatFile extends RepeatFile {
     return kv;
   }
 
-  factory QaRepeatFile.fromJson(Map<String, dynamic> json) {
-    return QaRepeatFile(
+  factory QaRepeatDoc.fromJson(Map<String, dynamic> json) {
+    return QaRepeatDoc(
       json['type'],
       json['rootPath'] ?? "",
       json['key'] ?? json['rootPath'] ?? "",

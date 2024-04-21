@@ -52,7 +52,7 @@ class MainRepeatPage extends StatelessWidget {
             case MainRepeatMode.byQuestion:
               return Text(state.segment.question);
             case MainRepeatMode.byMedia:
-              return PlayerBar(state.segment.segmentIndex, state.segment.mediaSegments, state.segment.mediaFilePath);
+              return PlayerBar(state.segment.segmentIndex, state.segment.mediaSegments, state.segment.mediaDocPath);
             default:
               return Text(state.segment.answer);
           }
@@ -68,7 +68,7 @@ class MainRepeatPage extends StatelessWidget {
                     child: Text(state.segment.question),
                   ),
                   Text(state.segment.answer),
-                  PlayerBar(state.segment.segmentIndex, state.segment.mediaSegments, state.segment.mediaFilePath),
+                  PlayerBar(state.segment.segmentIndex, state.segment.mediaSegments, state.segment.mediaDocPath),
                 ],
               );
             case MainRepeatMode.byMedia:
@@ -76,7 +76,7 @@ class MainRepeatPage extends StatelessWidget {
                 children: [
                   Padding(
                     padding: EdgeInsets.only(bottom: 8.w),
-                    child: PlayerBar(state.segment.segmentIndex, state.segment.mediaSegments, state.segment.mediaFilePath),
+                    child: PlayerBar(state.segment.segmentIndex, state.segment.mediaSegments, state.segment.mediaDocPath),
                   ),
                   Text(state.segment.question),
                   Text(state.segment.answer),
@@ -90,7 +90,7 @@ class MainRepeatPage extends StatelessWidget {
                     child: Text(state.segment.answer),
                   ),
                   Text(state.segment.question),
-                  PlayerBar(state.segment.segmentIndex, state.segment.mediaSegments, state.segment.mediaFilePath),
+                  PlayerBar(state.segment.segmentIndex, state.segment.mediaSegments, state.segment.mediaDocPath),
                 ],
               );
           }

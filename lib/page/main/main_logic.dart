@@ -26,7 +26,7 @@ class MainLogic extends GetxController {
     state.totalCount.value = min(ScheduleDao.learnCountPerDay - learned!, unlearned!);
   }
 
-  tryMainRepeat() {
+  tryReview() {
     if (state.totalCount.value == 0) {
       Get.snackbar(
         I18nKey.labelTips.tr,

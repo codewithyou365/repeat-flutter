@@ -1,6 +1,6 @@
 import 'dart:io';
 
-String urlToFileName(String urlPath) {
+String urlToDocName(String urlPath) {
   var ret = urlPath.split("/").last;
   return ret;
 }
@@ -28,18 +28,18 @@ extension StringExtension on String {
   }
 }
 
-class FileLocation {
+class DocLocation {
   String folderPath;
   String fileName;
 
   get path => "$folderPath/$fileName";
 
-  FileLocation(this.folderPath, this.fileName);
+  DocLocation(this.folderPath, this.fileName);
 
-  static FileLocation create(String path) {
+  static DocLocation create(String path) {
     var folderPath = path.substring(0, path.lastIndexOf("/"));
     var fileName = path.split("/").last;
-    return FileLocation(folderPath, fileName);
+    return DocLocation(folderPath, fileName);
   }
 }
 
