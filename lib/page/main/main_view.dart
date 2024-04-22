@@ -36,30 +36,61 @@ class MainPage extends StatelessWidget {
             const Spacer(),
             SizedBox(
               height: 60.w,
-              width: 200.w,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).secondaryHeaderColor,
-                ),
-                onPressed: () => {
-                  logic.tryReview(),
-                },
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 11.0.w),
-                  child: Column(
-                    children: [
-                      Text(I18nKey.btnReview.tr,
-                          style: TextStyle(
-                            color: Theme.of(context).shadowColor,
-                          )),
-                      Obx(() {
-                        return Text(
-                          "${state.totalCount.value}",
-                        );
-                      }),
-                    ],
+              width: 300.w,
+              child: Row(
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).secondaryHeaderColor,
+                      minimumSize: Size(140.w, 60.w),
+                    ),
+                    onPressed: () => {
+                      logic.tryReview(),
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 11.0.w),
+                      child: Column(
+                        children: [
+                          Text(I18nKey.btnLearn.tr,
+                              style: TextStyle(
+                                color: Theme.of(context).shadowColor,
+                              )),
+                          Obx(() {
+                            return Text(
+                              "${state.learnTotalCount.value}",
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                  Spacer(),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).secondaryHeaderColor,
+                      minimumSize: Size(140.w, 60.w),
+                    ),
+                    onPressed: () => {
+                      logic.tryReview(),
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 11.0.w),
+                      child: Column(
+                        children: [
+                          Text(I18nKey.btnReview.tr,
+                              style: TextStyle(
+                                color: Theme.of(context).shadowColor,
+                              )),
+                          Obx(() {
+                            return Text(
+                              "${state.reviewLevelCount.value}-${state.reviewTotalCount.value}",
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             SizedBox(

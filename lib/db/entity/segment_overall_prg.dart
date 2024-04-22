@@ -1,4 +1,4 @@
-// entity/schedule.dart
+// entity/segment_overall_prg.dart
 
 import 'package:floor/floor.dart';
 

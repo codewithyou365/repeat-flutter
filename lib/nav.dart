@@ -21,8 +21,8 @@ enum Nav {
 
   const Nav(this.path);
 
-  Future? push() {
-    return Get.toNamed(path);
+  Future? push({dynamic arguments}) {
+    return Get.toNamed(path, arguments: arguments);
   }
 
   Future? pop() {

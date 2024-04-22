@@ -28,8 +28,8 @@ class ConfigZh extends Config {
     put(I18nKey.btnAdd, "新增");
     put(I18nKey.btnCopy, "复制");
     put(I18nKey.btnDownload, "下载");
+    put(I18nKey.btnLearn, "学习");
     put(I18nKey.btnReview, "回顾");
-    put(I18nKey.btnRepeat, "重复");
     put(I18nKey.btnSchedule, "安排");
     put(I18nKey.btnShow, "展示");
     put(I18nKey.btnUnknown, "不知道");

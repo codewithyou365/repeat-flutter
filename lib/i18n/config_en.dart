@@ -28,8 +28,8 @@ class ConfigEn extends Config {
     put(I18nKey.btnAdd, "Add");
     put(I18nKey.btnCopy, "Copy");
     put(I18nKey.btnDownload, "Download");
+    put(I18nKey.btnLearn, "Learn");
     put(I18nKey.btnReview, "Review");
-    put(I18nKey.btnRepeat, "Repeat");
     put(I18nKey.btnSchedule, "Schedule");
     put(I18nKey.btnShow, "SHOW");
     put(I18nKey.btnUnknown, "UNKNOWN");

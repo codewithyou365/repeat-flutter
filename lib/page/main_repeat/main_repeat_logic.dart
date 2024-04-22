@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/db/entity/segment_current_prg.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
 
@@ -20,8 +20,13 @@ class MainRepeatLogic extends GetxController {
   }
 
   init() async {
-    state.c = await Db().db.scheduleDao.initToday();
-    var total = await Db().db.scheduleDao.totalSegmentTodayPrg();
+    if (Get.arguments == "review") {
+      state.forReview = {};
+      state.c = await Db().db.scheduleDao.initToday(state.forReview!);
+    } else {
+      state.c = await Db().db.scheduleDao.initToday(null);
+    }
+    var total = await Db().db.scheduleDao.totalSegmentCurrentPrg();
     state.total = total!;
     state.progress = state.total - state.c.length;
     state.step = MainRepeatStep.recall;
@@ -35,16 +40,20 @@ class MainRepeatLogic extends GetxController {
     update([MainRepeatLogic.id]);
   }
 
-  void error() async {
+  void error({next = false}) async {
     if (state.c.isEmpty) {
       finish();
       return;
     }
     var curr = state.c[0];
-    await Db().db.scheduleDao.error(curr);
+    await Db().db.scheduleDao.error(curr, state.forReview?[curr.key] ?? "");
     state.c.sort(schedulesCurrentSort);
     state.step = MainRepeatStep.finish;
-    update([MainRepeatLogic.id]);
+    if (next) {
+      await next();
+    } else {
+      update([MainRepeatLogic.id]);
+    }
   }
 
   void know() async {
@@ -53,7 +62,7 @@ class MainRepeatLogic extends GetxController {
       return;
     }
     var curr = state.c[0];
-    await Db().db.scheduleDao.right(curr);
+    await Db().db.scheduleDao.right(curr, state.forReview?[curr.key] ?? "");
     if (curr.progress >= ScheduleDao.maxRepeatTime) {
       state.c.removeAt(0);
     }
@@ -85,7 +94,7 @@ class MainRepeatLogic extends GetxController {
     state.segment = learnSegment;
   }
 
-  int schedulesCurrentSort(SegmentTodayPrg a, SegmentTodayPrg b) {
+  int schedulesCurrentSort(SegmentCurrentPrg a, SegmentCurrentPrg b) {
     if (a.viewTime != b.viewTime) {
       return a.viewTime.compareTo(b.viewTime);
     } else {

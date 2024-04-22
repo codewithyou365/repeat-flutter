@@ -16,9 +16,11 @@ import 'package:repeat_flutter/db/entity/lock.dart';
 import 'package:repeat_flutter/db/entity/segment.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment_review.dart';
-import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/db/entity/segment_current_prg.dart';
+import 'package:repeat_flutter/db/entity/segment_today_review.dart';
 import 'package:repeat_flutter/db/type_converter.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
+import 'package:repeat_flutter/logic/model/segment_review_content.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 
 import 'dao/base_dao.dart';
@@ -32,9 +34,11 @@ part 'database.g.dart'; // the generated code will be there
   ContentIndex,
   Segment,
   SegmentOverallPrg,
-  SegmentTodayPrg,
-  SegmentContentInDb,
   SegmentReview,
+  SegmentTodayReview,
+  SegmentCurrentPrg,
+  SegmentContentInDb,
+  SegmentReviewContentInDb,
   Id99999,
   Lock,
 ])

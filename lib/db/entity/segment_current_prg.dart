@@ -1,11 +1,14 @@
-// entity/schedule_today.dart
+// entity/segment_current_prg.dart
 
 import 'package:floor/floor.dart';
 
-@entity
-class SegmentTodayPrg {
-  @primaryKey
+@Entity(
+  primaryKeys: ['key', 'learnOrReview'],
+)
+class SegmentCurrentPrg {
   final String key;
+
+  bool learnOrReview;
 
   int sort;
 
@@ -15,8 +18,9 @@ class SegmentTodayPrg {
 
   DateTime createTime;
 
-  SegmentTodayPrg(
+  SegmentCurrentPrg(
     this.key,
+    this.learnOrReview,
     this.sort,
     this.progress,
     this.viewTime,

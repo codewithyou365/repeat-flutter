@@ -1,23 +1,21 @@
-// entity/schedule.dart
+// entity/segment_review.dart
 
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
 
-@Entity(indices: [
-  Index(value: ['createDate']),
-])
+@Entity(
+  primaryKeys: ['createDate', 'key'],
+)
 class SegmentReview {
-  @primaryKey
+  final Date createDate;
   final String key;
 
   final int count;
 
-  final Date createDate;
-
-  SegmentReview(this.key, this.count, this.createDate);
+  SegmentReview(this.createDate, this.key, this.count);
 
   static List<SegmentReview> from(List<String> keys) {
     final now = Date.from(DateTime.now());
-    return keys.map((key) => SegmentReview(key, 0, now)).toList();
+    return keys.map((key) => SegmentReview(now, key, 0)).toList();
   }
 }
