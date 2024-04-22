@@ -1,4 +1,3 @@
-import 'package:repeat_flutter/db/entity/segment_review.dart';
 import 'package:repeat_flutter/db/entity/segment_current_prg.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 
