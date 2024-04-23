@@ -22,7 +22,7 @@ Future<bool> downloadDoc(String urlPath, Finish finish, {DownloadProgressCallbac
   int fileTotal = -1;
   var dio = Dio();
   try {
-    var directory = await getTemporaryDirectory();
+    var directory = await getApplicationDocumentsDirectory();
     var rootPath = "${directory.path}/${DocPrefixPath.content}";
     var fl = DocLocation(rootPath, "temp");
     await dio.download(urlPath, fl.path, onReceiveProgress: (int count, int total) {

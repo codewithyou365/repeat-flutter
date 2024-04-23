@@ -24,8 +24,8 @@ cd ./lib || exit 1
   echo "" >>$OUTPUT_FILE
   echo "  const Nav(this.path);" >>$OUTPUT_FILE
   echo "" >>$OUTPUT_FILE
-  echo "  Future? push() {" >>$OUTPUT_FILE
-  echo "    return Get.toNamed(path);" >>$OUTPUT_FILE
+  echo "  Future? push({dynamic arguments}) {" >>$OUTPUT_FILE
+  echo "    return Get.toNamed(path, arguments: arguments);" >>$OUTPUT_FILE
   echo "  }" >>$OUTPUT_FILE
   echo "" >>$OUTPUT_FILE
   echo "  Future? pop() {" >>$OUTPUT_FILE
@@ -54,8 +54,9 @@ cd - || exit 1
 read -p "generate database.g.dart (y: start)" -r start
 if [ "$start" == "y" ]; then
   flutter packages pub run build_runner build
-  lineNumber=$(grep -n 'CREATE TABLE IF NOT EXISTS ``' ./lib/db/database.g.dart | cut -d: -f1)
-  if [ -n "$lineNumber" ]; then
+  while grep -q 'CREATE TABLE IF NOT EXISTS ``' ./lib/db/database.g.dart; do
+    lineNumber=$(grep -n 'CREATE TABLE IF NOT EXISTS ``' ./lib/db/database.g.dart | cut -d: -f1 | head -n 1)
     sed -i '' "$((lineNumber - 1)),${lineNumber}d" ./lib/db/database.g.dart
-  fi
+  done
+
 fi

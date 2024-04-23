@@ -1,4 +1,5 @@
 import 'package:repeat_flutter/db/entity/segment_current_prg.dart';
+import 'package:repeat_flutter/db/entity/segment_today_review.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 
 enum MainRepeatStep { recall, evaluate, finish }
@@ -15,7 +16,7 @@ class MainRepeatState {
 
   SegmentContent segment = SegmentContent("", 0, 0, 0, 0, 0, "", "", "");
   late List<SegmentCurrentPrg> c;
-  Map<String, String>? forReview;
+  Map<String, List<SegmentTodayReview>>? forReview;
   var step = MainRepeatStep.recall;
   var mode = MainRepeatMode.byQuestion;
 }

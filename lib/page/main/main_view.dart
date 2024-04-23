@@ -45,7 +45,7 @@ class MainPage extends StatelessWidget {
                       minimumSize: Size(140.w, 60.w),
                     ),
                     onPressed: () => {
-                      logic.tryReview(),
+                      logic.tryLearn(),
                     },
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 11.0.w),

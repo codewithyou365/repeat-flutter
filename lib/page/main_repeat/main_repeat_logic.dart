@@ -6,6 +6,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/segment_current_prg.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/page/main/main_logic.dart';
 
 import 'main_repeat_state.dart';
 
@@ -19,6 +20,12 @@ class MainRepeatLogic extends GetxController {
     await init();
   }
 
+  @override
+  void onClose() {
+    super.onClose();
+    Get.find<MainLogic>().init();
+  }
+
   init() async {
     if (Get.arguments == "review") {
       state.forReview = {};
@@ -26,7 +33,7 @@ class MainRepeatLogic extends GetxController {
     } else {
       state.c = await Db().db.scheduleDao.initToday(null);
     }
-    var total = await Db().db.scheduleDao.totalSegmentCurrentPrg();
+    var total = await Db().db.scheduleDao.totalSegmentCurrentPrg(Get.arguments != "review");
     state.total = total!;
     state.progress = state.total - state.c.length;
     state.step = MainRepeatStep.recall;
@@ -40,17 +47,17 @@ class MainRepeatLogic extends GetxController {
     update([MainRepeatLogic.id]);
   }
 
-  void error({next = false}) async {
+  void error({autoNext = false}) async {
     if (state.c.isEmpty) {
       finish();
       return;
     }
     var curr = state.c[0];
-    await Db().db.scheduleDao.error(curr, state.forReview?[curr.key] ?? "");
+    await Db().db.scheduleDao.error(curr, state.forReview?[curr.key] ?? []);
     state.c.sort(schedulesCurrentSort);
     state.step = MainRepeatStep.finish;
-    if (next) {
-      await next();
+    if (autoNext) {
+      next();
     } else {
       update([MainRepeatLogic.id]);
     }
@@ -62,7 +69,7 @@ class MainRepeatLogic extends GetxController {
       return;
     }
     var curr = state.c[0];
-    await Db().db.scheduleDao.right(curr, state.forReview?[curr.key] ?? "");
+    await Db().db.scheduleDao.right(curr, state.forReview?[curr.key] ?? []);
     if (curr.progress >= ScheduleDao.maxRepeatTime) {
       state.c.removeAt(0);
     }
@@ -103,6 +110,10 @@ class MainRepeatLogic extends GetxController {
   }
 
   finish() {
-    Nav.mainRepeatFinish.push();
+    if (state.forReview != null) {
+      Nav.mainRepeatFinish.push(arguments: state.forReview!);
+    } else {
+      Nav.mainRepeatFinish.push();
+    }
   }
 }

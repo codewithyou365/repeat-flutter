@@ -113,7 +113,7 @@ class MainRepeatPage extends StatelessWidget {
           children: [
             buildButton(I18nKey.btnKnow.tr, () => logic.know()),
             const Spacer(),
-            buildButton(I18nKey.btnError.tr, () => logic.error(next: true)),
+            buildButton(I18nKey.btnError.tr, () => logic.error(autoNext: true)),
           ],
         );
       default:

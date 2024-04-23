@@ -5,7 +5,8 @@ class SegmentReviewContentInDb {
   @primaryKey
   final String key;
   final int sort;
-  final String createDate;
+  final int reviewCount;
+  final String reviewCreateDate;
 
-  SegmentReviewContentInDb(this.key, this.sort, this.createDate);
+  SegmentReviewContentInDb(this.key, this.sort, this.reviewCount, this.reviewCreateDate);
 }
