@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/extension.dart';
-import 'package:repeat_flutter/logic/constant.dart';
 import 'package:repeat_flutter/nav.dart';
 
 import 'db/database.dart';
@@ -14,17 +13,17 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   var db = await Db().init();
-  var settings = await db.kvDao.find([SettingsConstant.settingsI18n.name, SettingsConstant.settingsTheme.name]);
+  var settings = await db.kvDao.find([K.settingsI18n, K.settingsTheme]);
   if (settings.isEmpty) {
     settings = [
-      Kv(SettingsConstant.settingsI18n.name, I18nLocal.en.name),
-      Kv(SettingsConstant.settingsTheme.name, ThemeMode.light.name),
+      Kv(K.settingsI18n, I18nLocal.en.name),
+      Kv(K.settingsTheme, ThemeMode.light.name),
     ];
     db.kvDao.insertKvs(settings);
   }
-  Map<String, String> settingsMap = {for (var kv in settings) kv.key: kv.value};
-  logic.themeMode.value = ThemeModeFromString.c(settingsMap[SettingsConstant.settingsTheme.name]!);
-  logic.i18nLocal.value = I18nLocalFromString.c(settingsMap[SettingsConstant.settingsI18n.name]!);
+  Map<K, String> settingsMap = {for (var kv in settings) kv.key: kv.value};
+  logic.themeMode.value = ThemeModeFromString.c(settingsMap[K.settingsTheme]!);
+  logic.i18nLocal.value = I18nLocalFromString.c(settingsMap[K.settingsI18n]!);
   runApp(MyApp());
 }
 

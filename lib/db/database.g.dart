@@ -162,8 +162,10 @@ class _$KvDao extends KvDao {
         _kvInsertionAdapter = InsertionAdapter(
             database,
             'Kv',
-            (Kv item) =>
-                <String, Object?>{'key': item.key, 'value': item.value});
+            (Kv item) => <String, Object?>{
+                  'key': _kConverter.encode(item.key),
+                  'value': item.value
+                });
 
   final sqflite.DatabaseExecutor database;
 
@@ -174,24 +176,24 @@ class _$KvDao extends KvDao {
   final InsertionAdapter<Kv> _kvInsertionAdapter;
 
   @override
-  Future<List<Kv>> find(List<String> key) async {
+  Future<List<Kv>> find(List<K> key) async {
     const offset = 1;
     final _sqliteVariablesForKey =
         Iterable<String>.generate(key.length, (i) => '?${i + offset}')
             .join(',');
     return _queryAdapter.queryList(
         'SELECT * FROM Kv where `key` in (' + _sqliteVariablesForKey + ')',
-        mapper: (Map<String, Object?> row) =>
-            Kv(row['key'] as String, row['value'] as String),
-        arguments: [...key]);
+        mapper: (Map<String, Object?> row) => Kv(
+            _kConverter.decode(row['key'] as String), row['value'] as String),
+        arguments: [...key.map((element) => _kConverter.encode(element))]);
   }
 
   @override
-  Future<Kv?> one(String key) async {
+  Future<Kv?> one(K key) async {
     return _queryAdapter.query('SELECT * FROM Kv where `key`=?1',
-        mapper: (Map<String, Object?> row) =>
-            Kv(row['key'] as String, row['value'] as String),
-        arguments: [key]);
+        mapper: (Map<String, Object?> row) => Kv(
+            _kConverter.decode(row['key'] as String), row['value'] as String),
+        arguments: [_kConverter.encode(key)]);
   }
 
   @override
@@ -726,19 +728,19 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<void> insertSegmentCurrentPrg(List<SegmentCurrentPrg> entities) async {
     await _segmentCurrentPrgInsertionAdapter.insertList(
-        entities, OnConflictStrategy.replace);
+        entities, OnConflictStrategy.fail);
   }
 
   @override
   Future<void> insertSegmentTodayReview(List<SegmentTodayReview> review) async {
     await _segmentTodayReviewInsertionAdapter.insertList(
-        review, OnConflictStrategy.ignore);
+        review, OnConflictStrategy.fail);
   }
 
   @override
   Future<void> insertSegmentReview(List<SegmentReview> review) async {
     await _segmentReviewInsertionAdapter.insertList(
-        review, OnConflictStrategy.ignore);
+        review, OnConflictStrategy.fail);
   }
 
   @override
@@ -922,5 +924,6 @@ class _$BaseDao extends BaseDao {
 }
 
 // ignore_for_file: unused_element
+final _kConverter = KConverter();
 final _dateTimeConverter = DateTimeConverter();
 final _dateConverter = DateConverter();
