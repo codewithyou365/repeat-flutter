@@ -107,7 +107,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentTodayReview` (`createDate` INTEGER NOT NULL, `key` TEXT NOT NULL, `count` INTEGER NOT NULL, `finish` INTEGER NOT NULL, PRIMARY KEY (`createDate`, `key`, `count`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentCurrentPrg` (`key` TEXT NOT NULL, `learnOrReview` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`key`, `learnOrReview`))');
+            'CREATE TABLE IF NOT EXISTS `SegmentCurrentPrg` (`key` TEXT NOT NULL, `learnOrReview` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, PRIMARY KEY (`key`, `learnOrReview`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Id99999` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
@@ -373,6 +373,13 @@ class _$ScheduleDao extends ScheduleDao {
     this.database,
     this.changeListener,
   )   : _queryAdapter = QueryAdapter(database),
+        _kvInsertionAdapter = InsertionAdapter(
+            database,
+            'Kv',
+            (Kv item) => <String, Object?>{
+                  'key': _kConverter.encode(item.key),
+                  'value': item.value
+                }),
         _segmentCurrentPrgInsertionAdapter = InsertionAdapter(
             database,
             'SegmentCurrentPrg',
@@ -381,8 +388,7 @@ class _$ScheduleDao extends ScheduleDao {
                   'learnOrReview': item.learnOrReview ? 1 : 0,
                   'sort': item.sort,
                   'progress': item.progress,
-                  'viewTime': _dateTimeConverter.encode(item.viewTime),
-                  'createTime': _dateTimeConverter.encode(item.createTime)
+                  'viewTime': _dateTimeConverter.encode(item.viewTime)
                 }),
         _segmentTodayReviewInsertionAdapter = InsertionAdapter(
             database,
@@ -437,6 +443,14 @@ class _$ScheduleDao extends ScheduleDao {
                   'lessonIndex': item.lessonIndex,
                   'segmentIndex': item.segmentIndex,
                   'sort': item.sort
+                }),
+        _kvDeletionAdapter = DeletionAdapter(
+            database,
+            'Kv',
+            ['key'],
+            (Kv item) => <String, Object?>{
+                  'key': _kConverter.encode(item.key),
+                  'value': item.value
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -444,6 +458,8 @@ class _$ScheduleDao extends ScheduleDao {
   final StreamController<String> changeListener;
 
   final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<Kv> _kvInsertionAdapter;
 
   final InsertionAdapter<SegmentCurrentPrg> _segmentCurrentPrgInsertionAdapter;
 
@@ -459,6 +475,8 @@ class _$ScheduleDao extends ScheduleDao {
   final DeletionAdapter<ContentIndex> _contentIndexDeletionAdapter;
 
   final DeletionAdapter<Segment> _segmentDeletionAdapter;
+
+  final DeletionAdapter<Kv> _kvDeletionAdapter;
 
   @override
   Future<void> forUpdate() async {
@@ -489,8 +507,14 @@ class _$ScheduleDao extends ScheduleDao {
             (row['learnOrReview'] as int) != 0,
             row['sort'] as int,
             row['progress'] as int,
-            _dateTimeConverter.decode(row['viewTime'] as int),
-            _dateTimeConverter.decode(row['createTime'] as int)));
+            _dateTimeConverter.decode(row['viewTime'] as int)));
+  }
+
+  @override
+  Future<String?> value(K key) async {
+    return _queryAdapter.query('SELECT value FROM Kv WHERE `key`=?1',
+        mapper: (Map<String, Object?> row) => row.values.first as String,
+        arguments: [_kConverter.encode(key)]);
   }
 
   @override
@@ -503,8 +527,7 @@ class _$ScheduleDao extends ScheduleDao {
             (row['learnOrReview'] as int) != 0,
             row['sort'] as int,
             row['progress'] as int,
-            _dateTimeConverter.decode(row['viewTime'] as int),
-            _dateTimeConverter.decode(row['createTime'] as int)),
+            _dateTimeConverter.decode(row['viewTime'] as int)),
         arguments: [learnOrReview ? 1 : 0]);
   }
 
@@ -520,7 +543,7 @@ class _$ScheduleDao extends ScheduleDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT * FROM SegmentCurrentPrg where learnOrReview=?1 and progress<?2 order by viewTime,sort asc',
-        mapper: (Map<String, Object?> row) => SegmentCurrentPrg(row['key'] as String, (row['learnOrReview'] as int) != 0, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), _dateTimeConverter.decode(row['createTime'] as int)),
+        mapper: (Map<String, Object?> row) => SegmentCurrentPrg(row['key'] as String, (row['learnOrReview'] as int) != 0, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int)),
         arguments: [learnOrReview ? 1 : 0, maxProgress]);
   }
 
@@ -531,7 +554,7 @@ class _$ScheduleDao extends ScheduleDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT SegmentCurrentPrg.* FROM SegmentCurrentPrg JOIN (SELECT `key`  ,max(SegmentTodayReview.finish) finish  FROM SegmentTodayReview  WHERE SegmentTodayReview.count=?2  group by SegmentTodayReview.key ) SegmentReviewKey ON SegmentReviewKey.`key` = SegmentCurrentPrg.`key` AND SegmentReviewKey.finish=0 where learnOrReview=?1 order by viewTime,sort asc',
-        mapper: (Map<String, Object?> row) => SegmentCurrentPrg(row['key'] as String, (row['learnOrReview'] as int) != 0, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), _dateTimeConverter.decode(row['createTime'] as int)),
+        mapper: (Map<String, Object?> row) => SegmentCurrentPrg(row['key'] as String, (row['learnOrReview'] as int) != 0, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int)),
         arguments: [learnOrReview ? 1 : 0, reviewCount]);
   }
 
@@ -681,14 +704,6 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<List<String>> findTodaySegmentReview(int now) async {
-    return _queryAdapter.queryList(
-        'SELECT `key` FROM SegmentReview on SegmentReview.createTime=?1',
-        mapper: (Map<String, Object?> row) => row.values.first as String,
-        arguments: [now]);
-  }
-
-  @override
   Future<void> setSegmentReviewCount(
     List<Date> createDate,
     String key,
@@ -723,6 +738,11 @@ class _$ScheduleDao extends ScheduleDao {
         'SELECT `key` FROM Schedule WHERE indexUrl = ?1',
         mapper: (Map<String, Object?> row) => row.values.first as String,
         arguments: [indexUrl]);
+  }
+
+  @override
+  Future<void> insertKv(Kv kv) async {
+    await _kvInsertionAdapter.insert(kv, OnConflictStrategy.ignore);
   }
 
   @override
@@ -764,6 +784,11 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<void> deleteSegments(List<Segment> data) async {
     await _segmentDeletionAdapter.deleteList(data);
+  }
+
+  @override
+  Future<void> deleteKv(Kv kv) async {
+    await _kvDeletionAdapter.delete(kv);
   }
 
   @override

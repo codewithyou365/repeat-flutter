@@ -16,14 +16,11 @@ class SegmentCurrentPrg {
 
   DateTime viewTime;
 
-  DateTime createTime;
-
   SegmentCurrentPrg(
     this.key,
     this.learnOrReview,
     this.sort,
     this.progress,
     this.viewTime,
-    this.createTime,
   );
 }

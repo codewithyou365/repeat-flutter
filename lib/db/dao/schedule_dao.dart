@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/num.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
+import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/db/entity/segment.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment_review.dart';
@@ -59,6 +60,15 @@ abstract class ScheduleDao {
 
   @Query("SELECT * FROM SegmentCurrentPrg")
   Future<List<SegmentCurrentPrg>> findAllSegmentCurrentPrg();
+
+  @Insert(onConflict: OnConflictStrategy.ignore)
+  Future<void> insertKv(Kv kv);
+
+  @delete
+  Future<void> deleteKv(Kv kv);
+
+  @Query("SELECT value FROM Kv WHERE `key`=:key")
+  Future<String?> value(K key);
 
   @Query("SELECT * FROM SegmentCurrentPrg where learnOrReview=:learnOrReview limit 1")
   Future<SegmentCurrentPrg?> findOneSegmentCurrentPrg(bool learnOrReview);
@@ -165,9 +175,6 @@ abstract class ScheduleDao {
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertSegmentReview(List<SegmentReview> review);
 
-  @Query("SELECT `key` FROM SegmentReview on SegmentReview.createTime=:now")
-  Future<List<String>> findTodaySegmentReview(int now);
-
   @Query('UPDATE SegmentReview SET count=:count WHERE createDate in (:createDate) and `key`=:key')
   Future<void> setSegmentReviewCount(List<Date> createDate, String key, int count);
 
@@ -225,15 +232,19 @@ abstract class ScheduleDao {
     {
       var needToDelete = false;
       var needToInsert = false;
-      var tp = await findOneSegmentCurrentPrg(learnOrReview);
-      if (tp == null) {
-        needToInsert = true;
-      } else if (tp.createTime.compareTo(now.subtract(Duration(seconds: intervalSeconds))) < 0) {
+      var todayLearnCreateTime = await value(K.todayLearnCreateTime);
+      if (todayLearnCreateTime != null && DateTime.parse(todayLearnCreateTime).compareTo(now.subtract(Duration(seconds: intervalSeconds))) < 0) {
         needToDelete = true;
         needToInsert = true;
+      } else {
+        var tp = await findOneSegmentCurrentPrg(learnOrReview);
+        if (tp == null) {
+          needToInsert = true;
+        }
       }
 
       if (needToDelete) {
+        await deleteKv(Kv(K.todayLearnCreateTime, ""));
         await deleteSegmentCurrentPrg();
         await deleteSegmentTodayReview();
       }
@@ -249,7 +260,7 @@ abstract class ScheduleDao {
           return [];
         }
         for (var ts in tss) {
-          tps.add(SegmentCurrentPrg(ts.key, learnOrReview, ts.sort, 0, DateTime.fromMicrosecondsSinceEpoch(0), DateTime.now()));
+          tps.add(SegmentCurrentPrg(ts.key, learnOrReview, ts.sort, 0, DateTime.fromMicrosecondsSinceEpoch(0)));
         }
         await insertSegmentCurrentPrg(tps);
       } else {
@@ -348,6 +359,7 @@ abstract class ScheduleDao {
     var learnOrReview = reviews.isEmpty;
     var key = scheduleCurrent.key;
     var now = DateTime.now();
+    await insertKv(Kv(K.todayLearnCreateTime, now.toString()));
     await setSegmentOverallPrg(key, 0, now.add(Duration(seconds: intervalSeconds)));
     await setScheduleCurrentWithCache(scheduleCurrent, learnOrReview, 0, now);
   }
@@ -358,6 +370,7 @@ abstract class ScheduleDao {
     var learnOrReview = reviews.isEmpty;
     var key = segmentTodayPrg.key;
     var now = DateTime.now();
+    await insertKv(Kv(K.todayLearnCreateTime, now.toString()));
     bool complete = false;
     if (segmentTodayPrg.progress == 0 && DateTime.fromMicrosecondsSinceEpoch(0).compareTo(segmentTodayPrg.viewTime) == 0) {
       complete = true;
