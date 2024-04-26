@@ -511,9 +511,9 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<String?> value(K key) async {
-    return _queryAdapter.query('SELECT value FROM Kv WHERE `key`=?1',
-        mapper: (Map<String, Object?> row) => row.values.first as String,
+  Future<int?> value(K key) async {
+    return _queryAdapter.query('SELECT CAST(value as INTEGER) FROM Kv WHERE `key`=?1',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [_kConverter.encode(key)]);
   }
 

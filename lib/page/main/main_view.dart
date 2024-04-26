@@ -34,61 +34,37 @@ class MainPage extends StatelessWidget {
               ],
             ),
             const Spacer(),
+            Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Obx(() {
+                return Text(state.learnDeadlineTips.value);
+              }),
+            ),
             SizedBox(
               height: 60.w,
               width: 300.w,
               child: Row(
                 children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).secondaryHeaderColor,
-                      minimumSize: Size(140.w, 60.w),
-                    ),
-                    onPressed: () => {
-                      logic.tryLearn(),
-                    },
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 11.0.w),
-                      child: Column(
-                        children: [
-                          Text(I18nKey.btnLearn.tr,
-                              style: TextStyle(
-                                color: Theme.of(context).shadowColor,
-                              )),
-                          Obx(() {
-                            return Text(
-                              "${state.learnTotalCount.value}",
-                            );
-                          }),
-                        ],
-                      ),
-                    ),
+                  buildButton(
+                    context,
+                    logic.tryLearn,
+                    I18nKey.btnLearn.tr,
+                    Obx(() {
+                      return Text(
+                        "${state.learnTotalCount.value}",
+                      );
+                    }),
                   ),
-                  Spacer(),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).secondaryHeaderColor,
-                      minimumSize: Size(140.w, 60.w),
-                    ),
-                    onPressed: () => {
-                      logic.tryReview(),
-                    },
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 11.0.w),
-                      child: Column(
-                        children: [
-                          Text(I18nKey.btnReview.tr,
-                              style: TextStyle(
-                                color: Theme.of(context).shadowColor,
-                              )),
-                          Obx(() {
-                            return Text(
-                              "${state.reviewLevelCount.value}-${state.reviewTotalCount.value}",
-                            );
-                          }),
-                        ],
-                      ),
-                    ),
+                  const Spacer(),
+                  buildButton(
+                    context,
+                    logic.tryReview,
+                    I18nKey.btnReview.tr,
+                    Obx(() {
+                      return Text(
+                        "${state.reviewLevelCount.value}-${state.reviewTotalCount.value}",
+                      );
+                    }),
                   ),
                 ],
               ),
@@ -113,6 +89,28 @@ class MainPage extends StatelessWidget {
             SizedBox(
               height: 30.w,
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildButton(BuildContext context, VoidCallback? press, String title, ObxWidget text) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Theme.of(context).secondaryHeaderColor,
+        minimumSize: Size(140.w, 60.w),
+      ),
+      onPressed: press,
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 11.0.w),
+        child: Column(
+          children: [
+            Text(title,
+                style: TextStyle(
+                  color: Theme.of(context).shadowColor,
+                )),
+            text,
           ],
         ),
       ),

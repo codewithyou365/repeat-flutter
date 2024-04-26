@@ -67,8 +67,8 @@ abstract class ScheduleDao {
   @delete
   Future<void> deleteKv(Kv kv);
 
-  @Query("SELECT value FROM Kv WHERE `key`=:key")
-  Future<String?> value(K key);
+  @Query("SELECT CAST(value as INTEGER) FROM Kv WHERE `key`=:key")
+  Future<int?> value(K key);
 
   @Query("SELECT * FROM SegmentCurrentPrg where learnOrReview=:learnOrReview limit 1")
   Future<SegmentCurrentPrg?> findOneSegmentCurrentPrg(bool learnOrReview);
@@ -233,7 +233,7 @@ abstract class ScheduleDao {
       var needToDelete = false;
       var needToInsert = false;
       var todayLearnCreateTime = await value(K.todayLearnCreateTime);
-      if (todayLearnCreateTime != null && DateTime.parse(todayLearnCreateTime).compareTo(now.subtract(Duration(seconds: intervalSeconds))) < 0) {
+      if (todayLearnCreateTime != null && DateTime.fromMillisecondsSinceEpoch(todayLearnCreateTime).compareTo(now.subtract(Duration(seconds: intervalSeconds))) < 0) {
         needToDelete = true;
         needToInsert = true;
       } else {
@@ -359,7 +359,7 @@ abstract class ScheduleDao {
     var learnOrReview = reviews.isEmpty;
     var key = scheduleCurrent.key;
     var now = DateTime.now();
-    await insertKv(Kv(K.todayLearnCreateTime, now.toString()));
+    await insertKv(Kv(K.todayLearnCreateTime, "${now.millisecondsSinceEpoch}"));
     await setSegmentOverallPrg(key, 0, now.add(Duration(seconds: intervalSeconds)));
     await setScheduleCurrentWithCache(scheduleCurrent, learnOrReview, 0, now);
   }
@@ -370,7 +370,7 @@ abstract class ScheduleDao {
     var learnOrReview = reviews.isEmpty;
     var key = segmentTodayPrg.key;
     var now = DateTime.now();
-    await insertKv(Kv(K.todayLearnCreateTime, now.toString()));
+    await insertKv(Kv(K.todayLearnCreateTime, "${now.millisecondsSinceEpoch}"));
     bool complete = false;
     if (segmentTodayPrg.progress == 0 && DateTime.fromMicrosecondsSinceEpoch(0).compareTo(segmentTodayPrg.viewTime) == 0) {
       complete = true;
