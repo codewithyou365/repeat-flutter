@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
-import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment.dart' as entity;
 import 'package:repeat_flutter/logic/download.dart';
@@ -88,7 +88,7 @@ class MainContentLogic extends GetxController {
         return;
       }
     }
-
+    var now = DateTime.now();
     for (var lessonIndex = 0; lessonIndex < kv.lesson.length; lessonIndex++) {
       var lesson = kv.lesson[lessonIndex];
       var mediaFileId = await Db().db.docDao.getId(lesson.url);
@@ -97,7 +97,7 @@ class MainContentLogic extends GetxController {
         var key = "${kv.rootPath}|${lesson.key}|${segment.key}";
         //4611686118427387904-(99999*10000000000+99999*100000+99999)
         segments.add(entity.Segment(key, doc.id!, mediaFileId!, lessonIndex, segmentIndex, contentIndexSort * 10000000000 + lessonIndex * 100000 + segmentIndex));
-        segmentOverallPrgs.add(SegmentOverallPrg(key, DateTime.now(), 0));
+        segmentOverallPrgs.add(SegmentOverallPrg(key, Date.from(now), 0));
       }
     }
     await Db().db.scheduleDao.importSegment(segments, segmentOverallPrgs);

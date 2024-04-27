@@ -423,7 +423,7 @@ class _$ScheduleDao extends ScheduleDao {
             'SegmentOverallPrg',
             (SegmentOverallPrg item) => <String, Object?>{
                   'key': item.key,
-                  'next': _dateTimeConverter.encode(item.next),
+                  'next': _dateConverter.encode(item.next),
                   'progress': item.progress
                 }),
         _contentIndexDeletionAdapter = DeletionAdapter(
@@ -512,7 +512,8 @@ class _$ScheduleDao extends ScheduleDao {
 
   @override
   Future<int?> value(K key) async {
-    return _queryAdapter.query('SELECT CAST(value as INTEGER) FROM Kv WHERE `key`=?1',
+    return _queryAdapter.query(
+        'SELECT CAST(value as INTEGER) FROM Kv WHERE `key`=?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [_kConverter.encode(key)]);
   }
@@ -587,7 +588,7 @@ class _$ScheduleDao extends ScheduleDao {
   Future<List<SegmentOverallPrg>> findLearned(Date now) async {
     return _queryAdapter.queryList(
         'SELECT SegmentOverallPrg.* FROM SegmentReview JOIN SegmentOverallPrg ON SegmentOverallPrg.`key` = SegmentReview.`key` JOIN Segment ON Segment.`key` = SegmentReview.`key` WHERE SegmentReview.createDate=?1',
-        mapper: (Map<String, Object?> row) => SegmentOverallPrg(row['key'] as String, _dateTimeConverter.decode(row['next'] as int), row['progress'] as int),
+        mapper: (Map<String, Object?> row) => SegmentOverallPrg(row['key'] as String, _dateConverter.decode(row['next'] as int), row['progress'] as int),
         arguments: [_dateConverter.encode(now)]);
   }
 
@@ -663,12 +664,12 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<List<SegmentReviewContentInDb>> scheduleLearnToday(
     int limit,
-    DateTime now,
+    Date now,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT Segment.key,Segment.sort,\'0\' reviewCreateDate,0 reviewCount FROM SegmentOverallPrg JOIN Segment ON Segment.`key` = SegmentOverallPrg.`key` where SegmentOverallPrg.next<?2 order by SegmentOverallPrg.progress limit ?1',
+        'SELECT Segment.key,Segment.sort,\'0\' reviewCreateDate,0 reviewCount FROM SegmentOverallPrg JOIN Segment ON Segment.`key` = SegmentOverallPrg.`key` where SegmentOverallPrg.next<=?2 order by SegmentOverallPrg.progress limit ?1',
         mapper: (Map<String, Object?> row) => SegmentReviewContentInDb(row['key'] as String, row['sort'] as int, row['reviewCount'] as int, row['reviewCreateDate'] as String),
-        arguments: [limit, _dateTimeConverter.encode(now)]);
+        arguments: [limit, _dateConverter.encode(now)]);
   }
 
   @override
@@ -686,11 +687,11 @@ class _$ScheduleDao extends ScheduleDao {
   Future<void> setSegmentOverallPrg(
     String key,
     int progress,
-    DateTime next,
+    Date next,
   ) async {
     await _queryAdapter.queryNoReturn(
         'UPDATE SegmentOverallPrg SET progress=?2,next=?3 WHERE `key`=?1',
-        arguments: [key, progress, _dateTimeConverter.encode(next)]);
+        arguments: [key, progress, _dateConverter.encode(next)]);
   }
 
   @override
@@ -698,7 +699,7 @@ class _$ScheduleDao extends ScheduleDao {
     return _queryAdapter.query('SELECT * FROM SegmentOverallPrg WHERE `key`=?1',
         mapper: (Map<String, Object?> row) => SegmentOverallPrg(
             row['key'] as String,
-            _dateTimeConverter.decode(row['next'] as int),
+            _dateConverter.decode(row['next'] as int),
             row['progress'] as int),
         arguments: [key]);
   }

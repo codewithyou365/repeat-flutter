@@ -25,8 +25,11 @@ class MainLogic extends GetxController {
   void init() async {
     var now = DateTime.now();
     await Db().db.scheduleDao.tryClear();
-    var todayLearnCreateTime = await Db().db.scheduleDao.value(K.todayLearnCreateTime) ?? 0;
-    state.learnDeadline = todayLearnCreateTime + ScheduleDao.intervalSeconds * 1000 - 300000;
+    var todayLearnCreateDate = await Db().db.scheduleDao.value(K.todayLearnCreateDate) ?? 0;
+    var next = Db().db.scheduleDao.getNext(now, ScheduleDao.intervalSeconds);
+    if (todayLearnCreateDate != 0 && next.value - todayLearnCreateDate > 0) {
+      state.learnDeadline = next.toDateTime().millisecondsSinceEpoch;
+    }
     resetLearnDeadline();
 
     var learned = await Db().db.scheduleDao.findLearnedCount(Date.from(now));

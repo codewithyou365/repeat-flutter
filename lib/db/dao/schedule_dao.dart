@@ -37,7 +37,8 @@ abstract class ScheduleDao {
   static const int maxLearnCountPerGroup = 1000;
   static int maxRepeatTime = 3;
 
-  static List<int> review = [3 * 24 * 60 * 60, 7 * 24 * 60 * 60];
+  //static List<int> review = [3 * 24 * 60 * 60, 7 * 24 * 60 * 60];
+  static List<int> review = [0, 30];
 
   static int reviewMaxCount = learnCountPerDay * review.length;
 
@@ -157,8 +158,8 @@ abstract class ScheduleDao {
       ",0 reviewCount"
       " FROM SegmentOverallPrg"
       " JOIN Segment ON Segment.`key` = SegmentOverallPrg.`key`"
-      " where SegmentOverallPrg.next<:now order by SegmentOverallPrg.progress limit :limit")
-  Future<List<SegmentReviewContentInDb>> scheduleLearnToday(int limit, DateTime now);
+      " where SegmentOverallPrg.next<=:now order by SegmentOverallPrg.progress limit :limit")
+  Future<List<SegmentReviewContentInDb>> scheduleLearnToday(int limit, Date now);
 
   @Query("SELECT count(1) FROM SegmentOverallPrg"
       " JOIN Segment ON Segment.`key` = SegmentOverallPrg.`key`"
@@ -166,7 +167,7 @@ abstract class ScheduleDao {
   Future<int?> findSegmentOverallPrgCount(int limit, DateTime now);
 
   @Query('UPDATE SegmentOverallPrg SET progress=:progress,next=:next WHERE `key`=:key')
-  Future<void> setSegmentOverallPrg(String key, int progress, DateTime next);
+  Future<void> setSegmentOverallPrg(String key, int progress, Date next);
 
   @Query("SELECT * FROM SegmentOverallPrg WHERE `key`=:key")
   Future<SegmentOverallPrg?> getSegmentOverallPrg(String key);
@@ -232,8 +233,8 @@ abstract class ScheduleDao {
     {
       var needToDelete = false;
       var needToInsert = false;
-      var todayLearnCreateTime = await value(K.todayLearnCreateTime);
-      if (todayLearnCreateTime != null && DateTime.fromMillisecondsSinceEpoch(todayLearnCreateTime).compareTo(now.subtract(Duration(seconds: intervalSeconds))) < 0) {
+      var todayLearnCreateDate = await value(K.todayLearnCreateDate);
+      if (todayLearnCreateDate != null && Date.from(now).value != todayLearnCreateDate) {
         needToDelete = true;
         needToInsert = true;
       } else {
@@ -244,7 +245,7 @@ abstract class ScheduleDao {
       }
 
       if (needToDelete) {
-        await deleteKv(Kv(K.todayLearnCreateTime, ""));
+        await deleteKv(Kv(K.todayLearnCreateDate, ""));
         await deleteSegmentCurrentPrg();
         await deleteSegmentTodayReview();
       }
@@ -304,7 +305,7 @@ abstract class ScheduleDao {
     if (learned.length >= learnCountPerDay) {
       return [];
     }
-    List<SegmentReviewContentInDb> tss = await scheduleLearnToday(findLearnCountPerDay, now);
+    List<SegmentReviewContentInDb> tss = await scheduleLearnToday(findLearnCountPerDay, Date.from(now));
     tss.sort((a, b) => a.sort.compareTo(b.sort));
     tss = tss.sublist(0, min(min(learnCountPerGroup, tss.length), learnCountPerDay - learned.length));
     return tss;
@@ -359,8 +360,8 @@ abstract class ScheduleDao {
     var learnOrReview = reviews.isEmpty;
     var key = scheduleCurrent.key;
     var now = DateTime.now();
-    await insertKv(Kv(K.todayLearnCreateTime, "${now.millisecondsSinceEpoch}"));
-    await setSegmentOverallPrg(key, 0, now.add(Duration(seconds: intervalSeconds)));
+    await insertKv(Kv(K.todayLearnCreateDate, "${Date.from(now).value}"));
+    await setSegmentOverallPrg(key, 0, getNext(now, intervalSeconds));
     await setScheduleCurrentWithCache(scheduleCurrent, learnOrReview, 0, now);
   }
 
@@ -370,7 +371,7 @@ abstract class ScheduleDao {
     var learnOrReview = reviews.isEmpty;
     var key = segmentTodayPrg.key;
     var now = DateTime.now();
-    await insertKv(Kv(K.todayLearnCreateTime, "${now.millisecondsSinceEpoch}"));
+    await insertKv(Kv(K.todayLearnCreateDate, "${Date.from(now).value}"));
     bool complete = false;
     if (segmentTodayPrg.progress == 0 && DateTime.fromMicrosecondsSinceEpoch(0).compareTo(segmentTodayPrg.viewTime) == 0) {
       complete = true;
@@ -392,11 +393,11 @@ abstract class ScheduleDao {
           return;
         }
         await insertSegmentReview([SegmentReview(Date.from(now), key, 0)]);
-        if (schedule.next.compareTo(now) < 0) {
+        if (schedule.next.value <= Date.from(now).value) {
           if (schedule.progress + 1 >= ebbinghausForgettingCurve.length - 1) {
-            await setSegmentOverallPrg(key, schedule.progress + 1, now.add(Duration(seconds: ebbinghausForgettingCurve.last)));
+            await setSegmentOverallPrg(key, schedule.progress + 1, getNext(now, ebbinghausForgettingCurve.last));
           } else {
-            await setSegmentOverallPrg(key, schedule.progress + 1, now.add(Duration(seconds: ebbinghausForgettingCurve[schedule.progress + 1])));
+            await setSegmentOverallPrg(key, schedule.progress + 1, getNext(now, ebbinghausForgettingCurve[schedule.progress + 1]));
           }
         }
       }
@@ -426,5 +427,15 @@ abstract class ScheduleDao {
     await setSegmentCurrentPrg(key, learnOrReview, progress, now);
     segmentTodayPrg.progress = progress;
     segmentTodayPrg.viewTime = now;
+  }
+
+  Date getNext(DateTime now, int seconds) {
+    var a = Date.from(now);
+    var b = Date.from(now.add(Duration(seconds: seconds)));
+    if (a.value == b.value) {
+      return Date.from(now.add(const Duration(days: 1)));
+    } else {
+      return b;
+    }
   }
 }

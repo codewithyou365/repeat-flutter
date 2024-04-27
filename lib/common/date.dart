@@ -20,4 +20,14 @@ class Date {
 
     return Date(int.parse(year + month + day));
   }
+
+  DateTime toDateTime() {
+    String stringValue = _value.toString();
+    var md = stringValue.substring(stringValue.length - 4);
+    int year = int.parse(stringValue.substring(0, stringValue.length - 4));
+    int month = int.parse(md.substring(0, 2));
+    int day = int.parse(md.substring(2, 4));
+
+    return DateTime(year, month, day);
+  }
 }
