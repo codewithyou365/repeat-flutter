@@ -18,7 +18,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelEditContentIndex, "Edit content index");
     put(I18nKey.labelDeleteContentIndex, "Please confirm to delete content index\n\n%s");
     put(I18nKey.labelDownloadContent, "Download content");
-    put(I18nKey.labelScheduleContent, "Add learning task with %s units.");
+    put(I18nKey.labelScheduleContent, "Add learning task with %s segments.");
     put(I18nKey.labelNoLearningContent, "There is no learning content available at this time.");
     put(I18nKey.labelResetLearningContent, "The learning content will be reset in %s");
     put(I18nKey.labelTips, "Tips");
