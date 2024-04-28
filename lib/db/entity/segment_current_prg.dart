@@ -3,9 +3,10 @@
 import 'package:floor/floor.dart';
 
 @Entity(
-  primaryKeys: ['key', 'learnOrReview'],
+  primaryKeys: ['group', 'key', 'learnOrReview'],
 )
 class SegmentCurrentPrg {
+  final String group;
   final String key;
 
   bool learnOrReview;
@@ -21,6 +22,7 @@ class SegmentCurrentPrg {
     this.learnOrReview,
     this.sort,
     this.progress,
-    this.viewTime,
-  );
+    this.viewTime, {
+    this.group = "en",
+  });
 }

@@ -93,21 +93,21 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Kv` (`key` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`key`))');
+            'CREATE TABLE IF NOT EXISTS `Kv` (`group` TEXT NOT NULL, `key` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`group`, `key`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Doc` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `url` TEXT NOT NULL, `path` TEXT NOT NULL, `count` INTEGER NOT NULL, `total` INTEGER NOT NULL, `msg` TEXT NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `ContentIndex` (`url` TEXT NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`url`))');
+            'CREATE TABLE IF NOT EXISTS `ContentIndex` (`group` TEXT NOT NULL, `url` TEXT NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`group`, `url`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Segment` (`key` TEXT NOT NULL, `indexDocId` INTEGER NOT NULL, `mediaDocId` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`key`))');
+            'CREATE TABLE IF NOT EXISTS `Segment` (`group` TEXT NOT NULL, `key` TEXT NOT NULL, `indexDocId` INTEGER NOT NULL, `mediaDocId` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`group`, `key`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentOverallPrg` (`key` TEXT NOT NULL, `next` INTEGER NOT NULL, `progress` INTEGER NOT NULL, PRIMARY KEY (`key`))');
+            'CREATE TABLE IF NOT EXISTS `SegmentOverallPrg` (`group` TEXT NOT NULL, `key` TEXT NOT NULL, `next` INTEGER NOT NULL, `progress` INTEGER NOT NULL, PRIMARY KEY (`group`, `key`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentReview` (`createDate` INTEGER NOT NULL, `key` TEXT NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY (`createDate`, `key`))');
+            'CREATE TABLE IF NOT EXISTS `SegmentReview` (`group` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `key` TEXT NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY (`group`, `createDate`, `key`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentTodayReview` (`createDate` INTEGER NOT NULL, `key` TEXT NOT NULL, `count` INTEGER NOT NULL, `finish` INTEGER NOT NULL, PRIMARY KEY (`createDate`, `key`, `count`))');
+            'CREATE TABLE IF NOT EXISTS `SegmentTodayReview` (`group` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `key` TEXT NOT NULL, `count` INTEGER NOT NULL, `finish` INTEGER NOT NULL, PRIMARY KEY (`group`, `createDate`, `key`, `count`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentCurrentPrg` (`key` TEXT NOT NULL, `learnOrReview` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, PRIMARY KEY (`key`, `learnOrReview`))');
+            'CREATE TABLE IF NOT EXISTS `SegmentCurrentPrg` (`group` TEXT NOT NULL, `key` TEXT NOT NULL, `learnOrReview` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, PRIMARY KEY (`group`, `key`, `learnOrReview`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Id99999` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
@@ -163,6 +163,7 @@ class _$KvDao extends KvDao {
             database,
             'Kv',
             (Kv item) => <String, Object?>{
+                  'group': item.group,
                   'key': _kConverter.encode(item.key),
                   'value': item.value
                 });
@@ -184,7 +185,8 @@ class _$KvDao extends KvDao {
     return _queryAdapter.queryList(
         'SELECT * FROM Kv where `key` in (' + _sqliteVariablesForKey + ')',
         mapper: (Map<String, Object?> row) => Kv(
-            _kConverter.decode(row['key'] as String), row['value'] as String),
+            _kConverter.decode(row['key'] as String), row['value'] as String,
+            group: row['group'] as String),
         arguments: [...key.map((element) => _kConverter.encode(element))]);
   }
 
@@ -192,7 +194,8 @@ class _$KvDao extends KvDao {
   Future<Kv?> one(K key) async {
     return _queryAdapter.query('SELECT * FROM Kv where `key`=?1',
         mapper: (Map<String, Object?> row) => Kv(
-            _kConverter.decode(row['key'] as String), row['value'] as String),
+            _kConverter.decode(row['key'] as String), row['value'] as String,
+            group: row['group'] as String),
         arguments: [_kConverter.encode(key)]);
   }
 
@@ -323,14 +326,20 @@ class _$ContentIndexDao extends ContentIndexDao {
         _contentIndexInsertionAdapter = InsertionAdapter(
             database,
             'ContentIndex',
-            (ContentIndex item) =>
-                <String, Object?>{'url': item.url, 'sort': item.sort}),
+            (ContentIndex item) => <String, Object?>{
+                  'group': item.group,
+                  'url': item.url,
+                  'sort': item.sort
+                }),
         _contentIndexDeletionAdapter = DeletionAdapter(
             database,
             'ContentIndex',
-            ['url'],
-            (ContentIndex item) =>
-                <String, Object?>{'url': item.url, 'sort': item.sort});
+            ['group', 'url'],
+            (ContentIndex item) => <String, Object?>{
+                  'group': item.group,
+                  'url': item.url,
+                  'sort': item.sort
+                });
 
   final sqflite.DatabaseExecutor database;
 
@@ -345,8 +354,9 @@ class _$ContentIndexDao extends ContentIndexDao {
   @override
   Future<List<ContentIndex>> findContentIndex() async {
     return _queryAdapter.queryList('SELECT * FROM ContentIndex order by sort',
-        mapper: (Map<String, Object?> row) =>
-            ContentIndex(row['url'] as String, row['sort'] as int));
+        mapper: (Map<String, Object?> row) => ContentIndex(
+            row['url'] as String, row['sort'] as int,
+            group: row['group'] as String));
   }
 
   @override
@@ -377,6 +387,7 @@ class _$ScheduleDao extends ScheduleDao {
             database,
             'Kv',
             (Kv item) => <String, Object?>{
+                  'group': item.group,
                   'key': _kConverter.encode(item.key),
                   'value': item.value
                 }),
@@ -384,6 +395,7 @@ class _$ScheduleDao extends ScheduleDao {
             database,
             'SegmentCurrentPrg',
             (SegmentCurrentPrg item) => <String, Object?>{
+                  'group': item.group,
                   'key': item.key,
                   'learnOrReview': item.learnOrReview ? 1 : 0,
                   'sort': item.sort,
@@ -394,6 +406,7 @@ class _$ScheduleDao extends ScheduleDao {
             database,
             'SegmentTodayReview',
             (SegmentTodayReview item) => <String, Object?>{
+                  'group': item.group,
                   'createDate': _dateConverter.encode(item.createDate),
                   'key': item.key,
                   'count': item.count,
@@ -403,6 +416,7 @@ class _$ScheduleDao extends ScheduleDao {
             database,
             'SegmentReview',
             (SegmentReview item) => <String, Object?>{
+                  'group': item.group,
                   'createDate': _dateConverter.encode(item.createDate),
                   'key': item.key,
                   'count': item.count
@@ -411,6 +425,7 @@ class _$ScheduleDao extends ScheduleDao {
             database,
             'Segment',
             (Segment item) => <String, Object?>{
+                  'group': item.group,
                   'key': item.key,
                   'indexDocId': item.indexDocId,
                   'mediaDocId': item.mediaDocId,
@@ -422,6 +437,7 @@ class _$ScheduleDao extends ScheduleDao {
             database,
             'SegmentOverallPrg',
             (SegmentOverallPrg item) => <String, Object?>{
+                  'group': item.group,
                   'key': item.key,
                   'next': _dateConverter.encode(item.next),
                   'progress': item.progress
@@ -429,14 +445,18 @@ class _$ScheduleDao extends ScheduleDao {
         _contentIndexDeletionAdapter = DeletionAdapter(
             database,
             'ContentIndex',
-            ['url'],
-            (ContentIndex item) =>
-                <String, Object?>{'url': item.url, 'sort': item.sort}),
+            ['group', 'url'],
+            (ContentIndex item) => <String, Object?>{
+                  'group': item.group,
+                  'url': item.url,
+                  'sort': item.sort
+                }),
         _segmentDeletionAdapter = DeletionAdapter(
             database,
             'Segment',
-            ['key'],
+            ['group', 'key'],
             (Segment item) => <String, Object?>{
+                  'group': item.group,
                   'key': item.key,
                   'indexDocId': item.indexDocId,
                   'mediaDocId': item.mediaDocId,
@@ -447,8 +467,9 @@ class _$ScheduleDao extends ScheduleDao {
         _kvDeletionAdapter = DeletionAdapter(
             database,
             'Kv',
-            ['key'],
+            ['group', 'key'],
             (Kv item) => <String, Object?>{
+                  'group': item.group,
                   'key': _kConverter.encode(item.key),
                   'value': item.value
                 });
@@ -507,7 +528,8 @@ class _$ScheduleDao extends ScheduleDao {
             (row['learnOrReview'] as int) != 0,
             row['sort'] as int,
             row['progress'] as int,
-            _dateTimeConverter.decode(row['viewTime'] as int)));
+            _dateTimeConverter.decode(row['viewTime'] as int),
+            group: row['group'] as String));
   }
 
   @override
@@ -528,7 +550,8 @@ class _$ScheduleDao extends ScheduleDao {
             (row['learnOrReview'] as int) != 0,
             row['sort'] as int,
             row['progress'] as int,
-            _dateTimeConverter.decode(row['viewTime'] as int)),
+            _dateTimeConverter.decode(row['viewTime'] as int),
+            group: row['group'] as String),
         arguments: [learnOrReview ? 1 : 0]);
   }
 
@@ -544,7 +567,7 @@ class _$ScheduleDao extends ScheduleDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT * FROM SegmentCurrentPrg where learnOrReview=?1 and progress<?2 order by viewTime,sort asc',
-        mapper: (Map<String, Object?> row) => SegmentCurrentPrg(row['key'] as String, (row['learnOrReview'] as int) != 0, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int)),
+        mapper: (Map<String, Object?> row) => SegmentCurrentPrg(row['key'] as String, (row['learnOrReview'] as int) != 0, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), group: row['group'] as String),
         arguments: [learnOrReview ? 1 : 0, maxProgress]);
   }
 
@@ -555,7 +578,7 @@ class _$ScheduleDao extends ScheduleDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT SegmentCurrentPrg.* FROM SegmentCurrentPrg JOIN (SELECT `key`  ,max(SegmentTodayReview.finish) finish  FROM SegmentTodayReview  WHERE SegmentTodayReview.count=?2  group by SegmentTodayReview.key ) SegmentReviewKey ON SegmentReviewKey.`key` = SegmentCurrentPrg.`key` AND SegmentReviewKey.finish=0 where learnOrReview=?1 order by viewTime,sort asc',
-        mapper: (Map<String, Object?> row) => SegmentCurrentPrg(row['key'] as String, (row['learnOrReview'] as int) != 0, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int)),
+        mapper: (Map<String, Object?> row) => SegmentCurrentPrg(row['key'] as String, (row['learnOrReview'] as int) != 0, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), group: row['group'] as String),
         arguments: [learnOrReview ? 1 : 0, reviewCount]);
   }
 
@@ -588,7 +611,7 @@ class _$ScheduleDao extends ScheduleDao {
   Future<List<SegmentOverallPrg>> findLearned(Date now) async {
     return _queryAdapter.queryList(
         'SELECT SegmentOverallPrg.* FROM SegmentReview JOIN SegmentOverallPrg ON SegmentOverallPrg.`key` = SegmentReview.`key` JOIN Segment ON Segment.`key` = SegmentReview.`key` WHERE SegmentReview.createDate=?1',
-        mapper: (Map<String, Object?> row) => SegmentOverallPrg(row['key'] as String, _dateConverter.decode(row['next'] as int), row['progress'] as int),
+        mapper: (Map<String, Object?> row) => SegmentOverallPrg(row['key'] as String, _dateConverter.decode(row['next'] as int), row['progress'] as int, group: row['group'] as String),
         arguments: [_dateConverter.encode(now)]);
   }
 
@@ -604,7 +627,7 @@ class _$ScheduleDao extends ScheduleDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT SegmentReview.* FROM SegmentTodayReview JOIN SegmentReview ON SegmentReview.createDate = SegmentTodayReview.createDate  ANd SegmentReview.`key` = SegmentTodayReview.`key` JOIN Segment ON Segment.`key` = SegmentReview.`key` WHERE SegmentTodayReview.createDate=?1 AND SegmentTodayReview.count=?2',
-        mapper: (Map<String, Object?> row) => SegmentReview(_dateConverter.decode(row['createDate'] as int), row['key'] as String, row['count'] as int),
+        mapper: (Map<String, Object?> row) => SegmentReview(_dateConverter.decode(row['createDate'] as int), row['key'] as String, row['count'] as int, group: row['group'] as String),
         arguments: [_dateConverter.encode(now), count]);
   }
 
@@ -616,7 +639,8 @@ class _$ScheduleDao extends ScheduleDao {
             _dateConverter.decode(row['createDate'] as int),
             row['key'] as String,
             row['count'] as int,
-            (row['finish'] as int) != 0));
+            (row['finish'] as int) != 0,
+            group: row['group'] as String));
   }
 
   @override
@@ -700,7 +724,8 @@ class _$ScheduleDao extends ScheduleDao {
         mapper: (Map<String, Object?> row) => SegmentOverallPrg(
             row['key'] as String,
             _dateConverter.decode(row['next'] as int),
-            row['progress'] as int),
+            row['progress'] as int,
+            group: row['group'] as String),
         arguments: [key]);
   }
 

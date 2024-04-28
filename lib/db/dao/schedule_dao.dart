@@ -37,8 +37,9 @@ abstract class ScheduleDao {
   static const int maxLearnCountPerGroup = 1000;
   static int maxRepeatTime = 3;
 
-  //static List<int> review = [3 * 24 * 60 * 60, 7 * 24 * 60 * 60];
-  static List<int> review = [0, 30];
+  static List<int> review = [3 * 24 * 60 * 60, 7 * 24 * 60 * 60];
+
+  //static List<int> review = [0, 30];
 
   static int reviewMaxCount = learnCountPerDay * review.length;
 

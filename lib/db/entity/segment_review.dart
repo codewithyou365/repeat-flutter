@@ -4,15 +4,21 @@ import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
 
 @Entity(
-  primaryKeys: ['createDate', 'key'],
+  primaryKeys: ['group', 'createDate', 'key'],
 )
 class SegmentReview {
+  final String group;
   final Date createDate;
   final String key;
 
   final int count;
 
-  SegmentReview(this.createDate, this.key, this.count);
+  SegmentReview(
+    this.createDate,
+    this.key,
+    this.count, {
+    this.group = "en",
+  });
 
   static List<SegmentReview> fromMap(Map<String, String> keyToCreateDates) {
     List<SegmentReview> ret = [];

@@ -2,14 +2,21 @@
 
 import 'package:floor/floor.dart';
 
-@Entity(indices: [
-  Index(value: ['sort'], unique: true),
-])
+@Entity(
+  primaryKeys: ['group', 'url'],
+  indices: [
+    Index(value: ['sort'], unique: true),
+  ],
+)
 class ContentIndex {
-  @primaryKey
+  final String group;
   final String url;
 
   final int sort;
 
-  ContentIndex(this.url, this.sort);
+  ContentIndex(
+    this.url,
+    this.sort, {
+    this.group = "en",
+  });
 }

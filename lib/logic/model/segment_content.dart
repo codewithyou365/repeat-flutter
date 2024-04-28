@@ -4,6 +4,7 @@ import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 @Entity(tableName: "")
 class SegmentContentInDb extends Segment {
+  @primaryKey
   final String indexDocUrl;
   final String indexDocPath;
   final String mediaDocPath;
