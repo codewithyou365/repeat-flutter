@@ -103,7 +103,7 @@ class MainPage extends StatelessWidget {
       ),
       onPressed: press,
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 11.0.w),
+        padding: EdgeInsets.symmetric(vertical: 8.0.w),
         child: Column(
           children: [
             Text(title,

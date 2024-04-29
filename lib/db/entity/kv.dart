@@ -8,15 +8,15 @@ enum K {
   todayLearnCreateDate,
 }
 
-@Entity(primaryKeys: ['group', 'key'])
+@Entity(primaryKeys: ['g', 'k'])
 class Kv {
-  final String group;
-  final K key;
+  final String g;
+  final K k;
   final String value;
 
   Kv(
-    this.key,
+    this.k,
     this.value, {
-    this.group = "",
+    this.g = "",
   });
 }

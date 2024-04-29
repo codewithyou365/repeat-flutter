@@ -9,8 +9,12 @@ class QaRepeatDoc extends RepeatDoc {
 
   QaRepeatDoc(String type, String rootPath, String key, String rootUrl, this.lesson) : super(type, rootPath, key, rootUrl);
 
-  static Future<QaRepeatDoc> fromPath(String path, Uri defaultRootUri) async {
+  static Future<QaRepeatDoc?> fromPath(String path, Uri defaultRootUri) async {
     File file = File(path);
+    bool exist = await file.exists();
+    if (!exist) {
+      return null;
+    }
     String jsonString = await file.readAsString();
     Map<String, dynamic> jsonData = convert.jsonDecode(jsonString);
     var kv = QaRepeatDoc.fromJson(jsonData);

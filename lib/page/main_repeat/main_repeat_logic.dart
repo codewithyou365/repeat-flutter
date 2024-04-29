@@ -53,7 +53,7 @@ class MainRepeatLogic extends GetxController {
       return;
     }
     var curr = state.c[0];
-    await Db().db.scheduleDao.error(curr, state.forReview?[curr.key] ?? []);
+    await Db().db.scheduleDao.error(curr, state.forReview?[curr.k] ?? []);
     state.c.sort(schedulesCurrentSort);
     state.step = MainRepeatStep.finish;
     if (autoNext) {
@@ -69,7 +69,7 @@ class MainRepeatLogic extends GetxController {
       return;
     }
     var curr = state.c[0];
-    await Db().db.scheduleDao.right(curr, state.forReview?[curr.key] ?? []);
+    await Db().db.scheduleDao.right(curr, state.forReview?[curr.k] ?? []);
     if (curr.progress >= ScheduleDao.maxRepeatTime) {
       state.c.removeAt(0);
     }
@@ -94,7 +94,7 @@ class MainRepeatLogic extends GetxController {
       return;
     }
     var curr = state.c[0];
-    var learnSegment = await SegmentHelp.from(curr.key);
+    var learnSegment = await SegmentHelp.from(curr.k);
     if (learnSegment == null) {
       return;
     }

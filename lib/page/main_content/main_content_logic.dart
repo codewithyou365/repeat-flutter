@@ -26,10 +26,15 @@ class MainContentLogic extends GetxController {
     update([MainContentLogic.id]);
     var doc = await downloadDocPath(url);
     if (doc == null) {
+      await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(url, 0));
       return;
     }
 
     var kv = await QaRepeatDoc.fromPath(doc.path, Uri.parse(url));
+    if (kv == null) {
+      await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(url, 0));
+      return;
+    }
     List<entity.Segment> segments = [];
     for (var lessonIndex = 0; lessonIndex < kv.lesson.length; lessonIndex++) {
       var lesson = kv.lesson[lessonIndex];
@@ -62,6 +67,10 @@ class MainContentLogic extends GetxController {
       return 0;
     }
     var kv = await QaRepeatDoc.fromPath(doc.path, Uri.parse(url));
+    if (kv == null) {
+      print("data error");
+      return 0;
+    }
     var total = 0;
     for (var d in kv.lesson) {
       total += d.segment.length;
@@ -78,6 +87,10 @@ class MainContentLogic extends GetxController {
     List<entity.Segment> segments = [];
     List<SegmentOverallPrg> segmentOverallPrgs = [];
     var kv = await QaRepeatDoc.fromPath(doc.path, Uri.parse(url));
+    if (kv == null) {
+      print("data error");
+      return;
+    }
     if (kv.lesson.length >= 100000) {
       print("too many data");
       return;
@@ -127,23 +140,26 @@ class MainContentLogic extends GetxController {
   download(String url) async {
     state.indexCount.value = 0;
     state.indexTotal.value = 1;
-    late QaRepeatDoc kv;
+    QaRepeatDoc? kv;
     late String rootPath;
     var success = await downloadDoc(
       url,
       (fl) async {
         kv = await QaRepeatDoc.fromPath(fl.path, Uri.parse(url));
-        rootPath = fl.folderPath.joinPath(kv.rootPath);
+        if (kv == null) {
+          return null;
+        }
+        rootPath = fl.folderPath.joinPath(kv!.rootPath);
         return DocLocation(rootPath, urlToDocName(url));
       },
       progressCallback: downloadProgress,
     );
-    if (success) {
-      state.indexTotal.value = state.indexTotal.value + kv.lesson.length;
-      for (var v in kv.lesson) {
+    if (success && kv != null) {
+      state.indexTotal.value = state.indexTotal.value + kv!.lesson.length;
+      for (var v in kv!.lesson) {
         var innerUrl = v.url;
         if (!innerUrl.startsWith("http")) {
-          innerUrl = kv.rootUrl.joinPath(v.url);
+          innerUrl = kv!.rootUrl.joinPath(v.url);
         }
         await downloadDoc(
           innerUrl,

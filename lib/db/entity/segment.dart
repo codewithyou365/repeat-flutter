@@ -3,14 +3,14 @@
 import 'package:floor/floor.dart';
 
 @Entity(
-  primaryKeys: ['group', 'key'],
+  primaryKeys: ['g', 'k'],
   indices: [
     Index(value: ['sort'], unique: true),
   ],
 )
 class Segment {
-  final String group;
-  final String key;
+  final String g;
+  final String k;
   final int indexDocId;
   final int mediaDocId;
 
@@ -20,12 +20,12 @@ class Segment {
   final int sort;
 
   Segment(
-    this.key,
+    this.k,
     this.indexDocId,
     this.mediaDocId,
     this.lessonIndex,
     this.segmentIndex,
     this.sort, {
-    this.group = "en",
+    this.g = "en",
   });
 }

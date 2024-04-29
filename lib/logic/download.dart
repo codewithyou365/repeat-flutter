@@ -8,7 +8,7 @@ import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/logic/constant.dart';
 
 typedef DownloadProgressCallback = void Function(int startTime, int count, int total, bool finish);
-typedef Finish = Future<DocLocation> Function(DocLocation fp);
+typedef Finish = Future<DocLocation?> Function(DocLocation fp);
 
 Future<Doc?> downloadDocPath(String url) async {
   return await Db().db.docDao.one(url);
@@ -40,6 +40,9 @@ Future<bool> downloadDoc(String urlPath, Finish finish, {DownloadProgressCallbac
       fileTotal = fileCount;
     }
     var newFl = await finish(fl);
+    if (newFl == null) {
+      return false;
+    }
     await ensureFolderExists(newFl.folderPath);
     await File(fl.path).rename(newFl.path);
     await Db().db.docDao.updateFinish(id, newFl.path);

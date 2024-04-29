@@ -7,11 +7,11 @@ import 'package:repeat_flutter/db/entity/kv.dart';
 
 @dao
 abstract class KvDao {
-  @Query('SELECT * FROM Kv where `key` in (:key)')
-  Future<List<Kv>> find(List<K> key);
+  @Query('SELECT * FROM Kv where `k` in (:k)')
+  Future<List<Kv>> find(List<K> k);
 
-  @Query('SELECT * FROM Kv where `key`=:key')
-  Future<Kv?> one(K key);
+  @Query('SELECT * FROM Kv where `k`=:k')
+  Future<Kv?> one(K k);
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertKv(Kv kv);

@@ -21,7 +21,7 @@ void main() async {
     ];
     db.kvDao.insertKvs(settings);
   }
-  Map<K, String> settingsMap = {for (var kv in settings) kv.key: kv.value};
+  Map<K, String> settingsMap = {for (var kv in settings) kv.k: kv.value};
   logic.themeMode.value = ThemeModeFromString.c(settingsMap[K.settingsTheme]!);
   logic.i18nLocal.value = I18nLocalFromString.c(settingsMap[K.settingsI18n]!);
   runApp(MyApp());

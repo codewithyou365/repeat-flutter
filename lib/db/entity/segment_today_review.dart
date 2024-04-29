@@ -4,24 +4,24 @@ import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
 
 @Entity(
-  primaryKeys: ['group', 'createDate', 'key', 'count'],
+  primaryKeys: ['g', 'createDate', 'k', 'count'],
 )
 class SegmentTodayReview {
-  final String group;
+  final String g;
   final Date createDate;
-  final String key;
+  final String k;
   final int count;
   final bool finish;
 
   SegmentTodayReview(
     this.createDate,
-    this.key,
+    this.k,
     this.count,
     this.finish, {
-    this.group = "en",
+    this.g = "en",
   });
 
-  static List<SegmentTodayReview> from(List<int> createDates, String key, int count) {
-    return createDates.map((date) => SegmentTodayReview(Date(date), key, count, false)).toList();
+  static List<SegmentTodayReview> from(List<int> createDates, String k, int count) {
+    return createDates.map((date) => SegmentTodayReview(Date(date), k, count, false)).toList();
   }
 }

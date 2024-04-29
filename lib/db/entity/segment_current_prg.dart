@@ -3,11 +3,11 @@
 import 'package:floor/floor.dart';
 
 @Entity(
-  primaryKeys: ['group', 'key', 'learnOrReview'],
+  primaryKeys: ['g', 'k', 'learnOrReview'],
 )
 class SegmentCurrentPrg {
-  final String group;
-  final String key;
+  final String g;
+  final String k;
 
   bool learnOrReview;
 
@@ -18,11 +18,11 @@ class SegmentCurrentPrg {
   DateTime viewTime;
 
   SegmentCurrentPrg(
-    this.key,
+    this.k,
     this.learnOrReview,
     this.sort,
     this.progress,
     this.viewTime, {
-    this.group = "en",
+    this.g = "en",
   });
 }

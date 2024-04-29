@@ -27,7 +27,7 @@ class MainLogic extends GetxController {
     await Db().db.scheduleDao.tryClear();
     var todayLearnCreateDate = await Db().db.scheduleDao.value(K.todayLearnCreateDate) ?? 0;
     var next = Db().db.scheduleDao.getNext(now, ScheduleDao.intervalSeconds);
-    if (todayLearnCreateDate != 0 && next.value - todayLearnCreateDate > 0) {
+    if (todayLearnCreateDate != 0 && next.value - todayLearnCreateDate > 0 && todayLearnCreateDate == Date.from(now).value) {
       state.learnDeadline = next.toDateTime().millisecondsSinceEpoch;
     }
     resetLearnDeadline();

@@ -20,7 +20,7 @@ class MainRepeatPage extends StatelessWidget {
           title: GetBuilder<MainRepeatLogic>(
             id: MainRepeatLogic.id,
             builder: (_) {
-              return Text("${state.progress}/${state.total}-${state.segment.key}");
+              return Text("${state.progress}/${state.total}-${state.segment.k}");
             },
           ),
         ),

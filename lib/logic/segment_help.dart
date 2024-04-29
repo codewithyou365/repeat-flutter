@@ -26,6 +26,9 @@ class SegmentHelp {
     var qa = indexDocPathToQa[ret.indexDocPath];
     if (qa == null) {
       qa = await QaRepeatDoc.fromPath(ret.indexDocPath, Uri.parse(ret.indexDocUrl));
+      if (qa == null) {
+        return null;
+      }
       indexDocPathToQa[ret.indexDocPath] = qa;
     }
 
