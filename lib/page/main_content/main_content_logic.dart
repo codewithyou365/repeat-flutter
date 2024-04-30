@@ -29,8 +29,14 @@ class MainContentLogic extends GetxController {
       await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(url, 0));
       return;
     }
-
-    var kv = await QaRepeatDoc.fromPath(doc.path, Uri.parse(url));
+    Uri uri;
+    try {
+      uri = Uri.parse(url);
+    } catch (e) {
+      await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(url, 0));
+      return;
+    }
+    var kv = await QaRepeatDoc.fromPath(doc.path, uri);
     if (kv == null) {
       await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(url, 0));
       return;
