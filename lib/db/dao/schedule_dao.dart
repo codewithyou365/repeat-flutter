@@ -41,7 +41,7 @@ abstract class ScheduleDao {
 
   //static List<int> review = [0, 30];
 
-  static int reviewMaxCount = learnCountPerDay * review.length;
+  static int catchUpAdditionDay = 1;
 
   @Query('SELECT * FROM Lock where id=1 for update')
   Future<void> forUpdate();
@@ -113,13 +113,14 @@ abstract class ScheduleDao {
   @Query('DELETE FROM SegmentTodayReview')
   Future<void> deleteSegmentTodayReview();
 
-  @Query("SELECT SegmentReview.* FROM SegmentTodayReview"
+  @Query("SELECT SegmentReview.k FROM SegmentTodayReview"
       " JOIN SegmentReview ON SegmentReview.createDate = SegmentTodayReview.createDate"
       "  ANd SegmentReview.`k` = SegmentTodayReview.`k`"
       " JOIN Segment ON Segment.`k` = SegmentReview.`k`"
       " WHERE SegmentTodayReview.createDate=:now"
+      " AND SegmentTodayReview.finish=true"
       " AND SegmentTodayReview.count=:count")
-  Future<List<SegmentReview>> findReviewed(Date now, int count);
+  Future<List<String>> todayFinishReviewed(Date now, int count);
 
   @Query("SELECT * FROM SegmentTodayReview WHERE SegmentTodayReview.finish=false limit 1")
   Future<SegmentTodayReview?> findTodayReviewUnfinished();
@@ -147,11 +148,12 @@ abstract class ScheduleDao {
       "  ,min(SegmentReview.count) count"
       "  FROM SegmentReview"
       "  WHERE SegmentReview.count=:reviewCount"
-      "  and SegmentReview.createDate>=:minCreateDate"
+      "  and SegmentReview.createDate>=:startDate"
+      "  and SegmentReview.createDate<=:endDate"
       "  group by SegmentReview.k"
-      "  limit :limit) SegmentReviewKey on SegmentReviewKey.`k`=Segment.`k`"
+      ") SegmentReviewKey on SegmentReviewKey.`k`=Segment.`k`"
       " order by sort")
-  Future<List<SegmentReviewContentInDb>> scheduleReviewToday(int reviewCount, int minCreateDate, int limit);
+  Future<List<SegmentReviewContentInDb>> shouldTodayReview(int reviewCount, Date startDate, Date endDate);
 
   @Query("SELECT Segment.k"
       ",Segment.sort"
@@ -293,14 +295,6 @@ abstract class ScheduleDao {
     return tps;
   }
 
-  // String getSegmentCurrentPrgKey(String k, bool learnOrReview) {
-  //   if (learnOrReview) {
-  //     return "+$key";
-  //   } else {
-  //     return "-$key";
-  //   }
-  // }
-
   Future<List<SegmentReviewContentInDb>> forLearnInsert(DateTime now) async {
     List<SegmentOverallPrg> learned = await findLearned(Date.from(now));
     if (learned.length >= learnCountPerDay) {
@@ -317,31 +311,36 @@ abstract class ScheduleDao {
     Map<String, List<SegmentTodayReview>> keyToCreateDate,
     List<bool> needInsertToday,
   ) async {
-    int? needReviewLevel;
+    int? currReviewLevel;
     SegmentTodayReview? todayReviewUnfinished = await findTodayReviewUnfinished();
     if (todayReviewUnfinished == null) {
       needInsertToday[0] = true;
     } else {
       needInsertToday[0] = false;
-      needReviewLevel = todayReviewUnfinished.count;
+      currReviewLevel = todayReviewUnfinished.count;
     }
     for (int i = review.length - 1; i >= 0; --i) {
-      if (needReviewLevel != null && i != needReviewLevel) {
+      if (currReviewLevel != null && i != currReviewLevel) {
         continue;
       }
-      var minCreateDate = await findReviewedMinCreateDate(i, Date.from(now.subtract(Duration(seconds: review[i]))));
-      if (minCreateDate == null || minCreateDate == -1) {
+
+      var shouldStartDate = Date.from(now.subtract(Duration(seconds: review[i])));
+      var startDateInt = await findReviewedMinCreateDate(i, shouldStartDate);
+      if (startDateInt == null || startDateInt == -1) {
         continue;
       }
-      List<SegmentReview> reviewed = await findReviewed(Date.from(now), i);
-      if (reviewMaxCount - reviewed.length <= 0) {
+      var startDate = Date(startDateInt);
+      var endDate = startDate;
+      if (startDate.value != shouldStartDate.value) {
+        // If we need to catch up, we should only pursue it for one day.
+        endDate = Date.from(startDate.toDateTime().add(Duration(days: catchUpAdditionDay)));
+      }
+      List<SegmentReviewContentInDb> all = await shouldTodayReview(i, startDate, endDate);
+
+      if (all.isEmpty) {
         continue;
       }
-      List<SegmentReviewContentInDb> tss = await scheduleReviewToday(i, minCreateDate, reviewMaxCount - reviewed.length);
-      if (tss.isEmpty) {
-        continue;
-      }
-      for (var r in tss) {
+      for (var r in all) {
         var dates = Num.toInts(r.reviewCreateDate);
         List<SegmentTodayReview> value = [];
         for (var date in dates) {
@@ -349,7 +348,9 @@ abstract class ScheduleDao {
         }
         keyToCreateDate[r.k] = value;
       }
-      return tss;
+      List<String> finished = await todayFinishReviewed(Date.from(now), i);
+      all.removeWhere((segmentReview) => finished.any((k) => k == segmentReview.k));
+      return all;
     }
 
     return [];

@@ -620,13 +620,13 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<List<SegmentReview>> findReviewed(
+  Future<List<String>> todayFinishReviewed(
     Date now,
     int count,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentReview.* FROM SegmentTodayReview JOIN SegmentReview ON SegmentReview.createDate = SegmentTodayReview.createDate  ANd SegmentReview.`k` = SegmentTodayReview.`k` JOIN Segment ON Segment.`k` = SegmentReview.`k` WHERE SegmentTodayReview.createDate=?1 AND SegmentTodayReview.count=?2',
-        mapper: (Map<String, Object?> row) => SegmentReview(_dateConverter.decode(row['createDate'] as int), row['k'] as String, row['count'] as int, g: row['g'] as String),
+        'SELECT SegmentReview.k FROM SegmentTodayReview JOIN SegmentReview ON SegmentReview.createDate = SegmentTodayReview.createDate  ANd SegmentReview.`k` = SegmentTodayReview.`k` JOIN Segment ON Segment.`k` = SegmentReview.`k` WHERE SegmentTodayReview.createDate=?1 AND SegmentTodayReview.finish=true AND SegmentTodayReview.count=?2',
+        mapper: (Map<String, Object?> row) => row.values.first as String,
         arguments: [_dateConverter.encode(now), count]);
   }
 
@@ -673,15 +673,19 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<List<SegmentReviewContentInDb>> scheduleReviewToday(
+  Future<List<SegmentReviewContentInDb>> shouldTodayReview(
     int reviewCount,
-    int minCreateDate,
-    int limit,
+    Date startDate,
+    Date endDate,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT Segment.k,Segment.sort,SegmentReviewKey.createDate reviewCreateDate,SegmentReviewKey.count reviewCount FROM Segment JOIN (SELECT `k`  ,group_concat(createDate) createDate  ,min(SegmentReview.count) count  FROM SegmentReview  WHERE SegmentReview.count=?1  and SegmentReview.createDate>=?2  group by SegmentReview.k  limit ?3) SegmentReviewKey on SegmentReviewKey.`k`=Segment.`k` order by sort',
+        'SELECT Segment.k,Segment.sort,SegmentReviewKey.createDate reviewCreateDate,SegmentReviewKey.count reviewCount FROM Segment JOIN (SELECT `k`  ,group_concat(createDate) createDate  ,min(SegmentReview.count) count  FROM SegmentReview  WHERE SegmentReview.count=?1  and SegmentReview.createDate>=?2  and SegmentReview.createDate<=?3  group by SegmentReview.k) SegmentReviewKey on SegmentReviewKey.`k`=Segment.`k` order by sort',
         mapper: (Map<String, Object?> row) => SegmentReviewContentInDb(row['k'] as String, row['sort'] as int, row['reviewCount'] as int, row['reviewCreateDate'] as String),
-        arguments: [reviewCount, minCreateDate, limit]);
+        arguments: [
+          reviewCount,
+          _dateConverter.encode(startDate),
+          _dateConverter.encode(endDate)
+        ]);
   }
 
   @override
