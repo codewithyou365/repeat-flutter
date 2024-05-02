@@ -24,7 +24,8 @@ class MainLogic extends GetxController {
 
   void init() async {
     var now = DateTime.now();
-    await Db().db.scheduleDao.tryClear();
+    await Db().db.scheduleDao.tryClear(false);
+    await Db().db.scheduleDao.tryClear(true);
     var todayLearnCreateDate = await Db().db.scheduleDao.value(K.todayLearnCreateDate) ?? 0;
     var next = Db().db.scheduleDao.getNext(now, ScheduleDao.intervalSeconds);
     if (todayLearnCreateDate != 0 && next.value - todayLearnCreateDate > 0 && todayLearnCreateDate == Date.from(now).value) {

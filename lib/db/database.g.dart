@@ -520,15 +520,18 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<List<SegmentCurrentPrg>> findAllSegmentCurrentPrg() async {
-    return _queryAdapter.queryList('SELECT * FROM SegmentCurrentPrg',
+  Future<List<SegmentCurrentPrg>> findAllSegmentCurrentPrg(
+      bool learnOrReview) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM SegmentCurrentPrg where learnOrReview=?1',
         mapper: (Map<String, Object?> row) => SegmentCurrentPrg(
             row['k'] as String,
             (row['learnOrReview'] as int) != 0,
             row['sort'] as int,
             row['progress'] as int,
             _dateTimeConverter.decode(row['viewTime'] as int),
-            g: row['g'] as String));
+            g: row['g'] as String),
+        arguments: [learnOrReview ? 1 : 0]);
   }
 
   @override
@@ -555,7 +558,14 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> deleteSegmentCurrentPrg() async {
+  Future<void> deleteSegmentCurrentPrg(bool learnOrReview) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM SegmentCurrentPrg where learnOrReview=?1',
+        arguments: [learnOrReview ? 1 : 0]);
+  }
+
+  @override
+  Future<void> deleteAllSegmentCurrentPrg() async {
     await _queryAdapter.queryNoReturn('DELETE FROM SegmentCurrentPrg');
   }
 
@@ -905,15 +915,15 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<List<String>> tryClear() async {
+  Future<List<String>> tryClear(bool learnOrReview) async {
     if (database is sqflite.Transaction) {
-      return super.tryClear();
+      return super.tryClear(learnOrReview);
     } else {
       return (database as sqflite.Database)
           .transaction<List<String>>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        return transactionDatabase.scheduleDao.tryClear();
+        return transactionDatabase.scheduleDao.tryClear(learnOrReview);
       });
     }
   }

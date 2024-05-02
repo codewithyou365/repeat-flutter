@@ -60,8 +60,8 @@ abstract class ScheduleDao {
   @Query('SELECT count(1) FROM SegmentCurrentPrg where learnOrReview=:learnOrReview')
   Future<int?> totalSegmentCurrentPrg(bool learnOrReview);
 
-  @Query("SELECT * FROM SegmentCurrentPrg")
-  Future<List<SegmentCurrentPrg>> findAllSegmentCurrentPrg();
+  @Query("SELECT * FROM SegmentCurrentPrg where learnOrReview=:learnOrReview")
+  Future<List<SegmentCurrentPrg>> findAllSegmentCurrentPrg(bool learnOrReview);
 
   @Insert(onConflict: OnConflictStrategy.ignore)
   Future<void> insertKv(Kv kv);
@@ -75,8 +75,11 @@ abstract class ScheduleDao {
   @Query("SELECT * FROM SegmentCurrentPrg where learnOrReview=:learnOrReview limit 1")
   Future<SegmentCurrentPrg?> findOneSegmentCurrentPrg(bool learnOrReview);
 
+  @Query('DELETE FROM SegmentCurrentPrg where learnOrReview=:learnOrReview')
+  Future<void> deleteSegmentCurrentPrg(bool learnOrReview);
+
   @Query('DELETE FROM SegmentCurrentPrg')
-  Future<void> deleteSegmentCurrentPrg();
+  Future<void> deleteAllSegmentCurrentPrg();
 
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertSegmentCurrentPrg(List<SegmentCurrentPrg> entities);
@@ -249,7 +252,7 @@ abstract class ScheduleDao {
 
       if (needToDelete) {
         await deleteKv(Kv(K.todayLearnCreateDate, ""));
-        await deleteSegmentCurrentPrg();
+        await deleteAllSegmentCurrentPrg();
         await deleteSegmentTodayReview();
       }
 
@@ -409,9 +412,9 @@ abstract class ScheduleDao {
   }
 
   @transaction
-  Future<List<String>> tryClear() async {
+  Future<List<String>> tryClear(bool learnOrReview) async {
     await forUpdate();
-    var ret = await findAllSegmentCurrentPrg();
+    var ret = await findAllSegmentCurrentPrg(learnOrReview);
     var count = 0;
     for (var r in ret) {
       if (r.progress == maxRepeatTime) {
@@ -419,7 +422,7 @@ abstract class ScheduleDao {
       }
     }
     if (count == ret.length) {
-      await deleteSegmentCurrentPrg();
+      await deleteSegmentCurrentPrg(learnOrReview);
     }
     return ret.map((e) => e.k).toList();
   }

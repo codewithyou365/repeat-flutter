@@ -13,7 +13,11 @@ class MainRepeatFinishLogic extends GetxController {
   void onInit() async {
     super.onInit();
     List<String> curr = [];
-    curr = await Db().db.scheduleDao.tryClear();
+    if (Get.arguments == "review") {
+      curr = await Db().db.scheduleDao.tryClear(false);
+    } else {
+      curr = await Db().db.scheduleDao.tryClear(true);
+    }
     for (var key in curr) {
       var learnSegment = await SegmentHelp.from(key);
       state.segments.add(learnSegment!);

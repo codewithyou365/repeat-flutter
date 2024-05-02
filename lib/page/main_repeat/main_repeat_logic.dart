@@ -111,7 +111,7 @@ class MainRepeatLogic extends GetxController {
 
   finish() {
     if (state.forReview != null) {
-      Nav.mainRepeatFinish.push(arguments: state.forReview!);
+      Nav.mainRepeatFinish.push(arguments: "review");
     } else {
       Nav.mainRepeatFinish.push();
     }
