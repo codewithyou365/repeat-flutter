@@ -63,6 +63,7 @@ class MainRepeatLogic extends GetxController {
     }
   }
 
+  // TODO add device volume button
   void know() async {
     if (state.c.isEmpty) {
       finish();

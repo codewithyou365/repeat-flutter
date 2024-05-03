@@ -81,7 +81,9 @@ class MainPage extends StatelessWidget {
                   child: Text(I18nKey.content.tr),
                 ),
                 InkWell(
-                  onTap: () => {},
+                  onTap: () => {
+                    // !!! TODO stats
+                  },
                   child: Text(I18nKey.statistic.tr),
                 ),
               ],
@@ -103,7 +105,7 @@ class MainPage extends StatelessWidget {
       ),
       onPressed: press,
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 8.0.w),
+        padding: EdgeInsets.symmetric(vertical: 8.0.h),
         child: Column(
           children: [
             Text(title,

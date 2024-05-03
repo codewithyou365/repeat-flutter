@@ -20,6 +20,7 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
   int startTime = 0;
   double _offset = 0.0;
   double _previousOffset = 0.0;
+  // TODO support video
   final player = AudioPlayer();
   int? startIndex;
   late AnimationController _controller;
