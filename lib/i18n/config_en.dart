@@ -9,6 +9,8 @@ class ConfigEn extends Config {
     put(I18nKey.settings, "Settings");
     put(I18nKey.content, "Content");
     put(I18nKey.statistic, "Stats");
+    put(I18nKey.statisticLearn, "Stats-Learn");
+    put(I18nKey.statisticReview, "Stats-Review");
     put(I18nKey.language, "Language");
     put(I18nKey.theme, "Theme");
     put(I18nKey.themeDark, "Dart");
@@ -22,6 +24,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelNoLearningContent, "There is no learning content available at this time.");
     put(I18nKey.labelResetLearningContent, "The learning content will be reset in %s");
     put(I18nKey.labelTips, "Tips");
+    put(I18nKey.labelNoContent, "No content yet");
     put(I18nKey.btnCancel, "Cancel");
     put(I18nKey.btnOk, "Ok");
     put(I18nKey.btnDelete, "Delete");

@@ -81,9 +81,7 @@ class MainPage extends StatelessWidget {
                   child: Text(I18nKey.content.tr),
                 ),
                 InkWell(
-                  onTap: () => {
-                    // !!! TODO stats
-                  },
+                  onTap: () => {Nav.mainStats.push()},
                   child: Text(I18nKey.statistic.tr),
                 ),
               ],

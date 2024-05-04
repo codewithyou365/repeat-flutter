@@ -9,6 +9,8 @@ class ConfigZh extends Config {
     put(I18nKey.settings, "设置");
     put(I18nKey.content, "内容");
     put(I18nKey.statistic, "统计");
+    put(I18nKey.statisticLearn, "统计-学习");
+    put(I18nKey.statisticReview, "统计-回顾");
     put(I18nKey.language, "语言");
     put(I18nKey.theme, "主题");
     put(I18nKey.themeDark, "暗色主题");
@@ -22,6 +24,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelNoLearningContent, "现在没有学习内容");
     put(I18nKey.labelResetLearningContent, "在 %s 后，将重置学习内容");
     put(I18nKey.labelTips, "提示");
+    put(I18nKey.labelNoContent, "暂无内容");
     put(I18nKey.btnCancel, "取消");
     put(I18nKey.btnOk, "确定");
     put(I18nKey.btnDelete, "删除");

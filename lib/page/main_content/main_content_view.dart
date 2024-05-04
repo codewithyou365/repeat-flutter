@@ -13,7 +13,6 @@ class MainContentPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final logic = Get.find<MainContentLogic>();
-    logic.init();
     return Scaffold(
       appBar: AppBar(
         title: Text(I18nKey.content.tr),

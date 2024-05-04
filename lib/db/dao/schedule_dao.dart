@@ -178,7 +178,14 @@ abstract class ScheduleDao {
   @Query("SELECT * FROM SegmentOverallPrg WHERE `k`=:k")
   Future<SegmentOverallPrg?> getSegmentOverallPrg(String k);
 
+  @Query("SELECT * FROM SegmentOverallPrg order by next desc")
+  Future<List<SegmentOverallPrg>> getAllSegmentOverallPrg();
+
   /// --- SegmentReview
+
+  @Query("SELECT * FROM SegmentReview order by createDate desc")
+  Future<List<SegmentReview>> getAllSegmentReview();
+
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertSegmentReview(List<SegmentReview> review);
 

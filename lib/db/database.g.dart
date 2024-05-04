@@ -743,6 +743,28 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
+  Future<List<SegmentOverallPrg>> getAllSegmentOverallPrg() async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM SegmentOverallPrg order by next desc',
+        mapper: (Map<String, Object?> row) => SegmentOverallPrg(
+            row['k'] as String,
+            _dateConverter.decode(row['next'] as int),
+            row['progress'] as int,
+            g: row['g'] as String));
+  }
+
+  @override
+  Future<List<SegmentReview>> getAllSegmentReview() async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM SegmentReview order by createDate desc',
+        mapper: (Map<String, Object?> row) => SegmentReview(
+            _dateConverter.decode(row['createDate'] as int),
+            row['k'] as String,
+            row['count'] as int,
+            g: row['g'] as String));
+  }
+
+  @override
   Future<void> setSegmentReviewCount(
     List<Date> createDate,
     String k,

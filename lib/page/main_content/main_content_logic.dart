@@ -15,6 +15,12 @@ class MainContentLogic extends GetxController {
   static const String id = "MainContentLogicList";
   final MainContentState state = MainContentState();
 
+  @override
+  void onInit() {
+    super.onInit();
+    init();
+  }
+
   init() async {
     state.indexes.clear();
     state.indexes.addAll(await Db().db.contentIndexDao.findContentIndex());
