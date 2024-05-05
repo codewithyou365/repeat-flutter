@@ -38,6 +38,7 @@ enum I18nKey {
   btnKnow,
   btnError,
   btnNext,
+  btnFinish,
   ;
 
   String trArgs([List<String> args = const []]) {

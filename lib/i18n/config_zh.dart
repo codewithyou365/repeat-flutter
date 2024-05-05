@@ -40,5 +40,6 @@ class ConfigZh extends Config {
     put(I18nKey.btnKnow, "知道");
     put(I18nKey.btnError, "错误");
     put(I18nKey.btnNext, "下一个");
+    put(I18nKey.btnFinish, "完成");
   }
 }

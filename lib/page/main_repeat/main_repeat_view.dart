@@ -103,7 +103,7 @@ class MainRepeatPage extends StatelessWidget {
       case MainRepeatStep.recall:
         return Row(
           children: [
-            buildButton(I18nKey.btnShow.tr, () => logic.show()),
+            buildButton(I18nKey.btnKnow.tr, () => logic.show()),
             const Spacer(),
             buildButton(I18nKey.btnUnknown.tr, () => logic.error()),
           ],
@@ -111,17 +111,25 @@ class MainRepeatPage extends StatelessWidget {
       case MainRepeatStep.evaluate:
         return Row(
           children: [
-            buildButton(I18nKey.btnKnow.tr, () => logic.know()),
+            buildButton(I18nKey.btnNext.tr, () => logic.know(autoNext: true)),
             const Spacer(),
-            buildButton(I18nKey.btnError.tr, () => logic.error(autoNext: true)),
+            buildButton(I18nKey.btnError.tr, () => logic.error()),
           ],
         );
       default:
-        return Row(
-          children: [
-            buildButton(I18nKey.btnNext.tr, () => logic.next()),
-          ],
-        );
+        if (logic.state.c.isEmpty) {
+          return Row(
+            children: [
+              buildButton(I18nKey.btnFinish.tr, () => logic.next()),
+            ],
+          );
+        } else {
+          return Row(
+            children: [
+              buildButton(I18nKey.btnNext.tr, () => logic.next()),
+            ],
+          );
+        }
     }
   }
 

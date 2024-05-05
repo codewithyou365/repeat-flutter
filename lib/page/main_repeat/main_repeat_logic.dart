@@ -55,16 +55,16 @@ class MainRepeatLogic extends GetxController {
     var curr = state.c[0];
     await Db().db.scheduleDao.error(curr, state.forReview?[curr.k] ?? []);
     state.c.sort(schedulesCurrentSort);
-    state.step = MainRepeatStep.finish;
     if (autoNext) {
       next();
     } else {
+      state.step = MainRepeatStep.finish;
       update([MainRepeatLogic.id]);
     }
   }
 
   // TODO add device volume button
-  void know() async {
+  void know({autoNext = false}) async {
     if (state.c.isEmpty) {
       finish();
       return;
@@ -76,8 +76,12 @@ class MainRepeatLogic extends GetxController {
     }
     state.c.sort(schedulesCurrentSort);
     state.progress = state.total - state.c.length;
-    state.step = MainRepeatStep.finish;
-    update([MainRepeatLogic.id]);
+    if (autoNext && state.c.isNotEmpty) {
+      next();
+    } else {
+      state.step = MainRepeatStep.finish;
+      update([MainRepeatLogic.id]);
+    }
   }
 
   void next() async {
