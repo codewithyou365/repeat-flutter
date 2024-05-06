@@ -170,10 +170,13 @@ abstract class ScheduleDao {
   @Query("SELECT count(1) FROM SegmentOverallPrg"
       " JOIN Segment ON Segment.`k` = SegmentOverallPrg.`k`"
       " where next<:now order by progress,sort limit :limit")
-  Future<int?> findSegmentOverallPrgCount(int limit, DateTime now);
+  Future<int?> findSegmentOverallPrgCount(int limit, Date now);
 
   @Query('UPDATE SegmentOverallPrg SET progress=:progress,next=:next WHERE `k`=:k')
-  Future<void> setSegmentOverallPrg(String k, int progress, Date next);
+  Future<void> setPrgAndNext4Sop(String k, int progress, Date next);
+
+  @Query('UPDATE SegmentOverallPrg SET progress=:progress WHERE `k`=:k')
+  Future<void> setPrg4Sop(String k, int progress);
 
   @Query("SELECT * FROM SegmentOverallPrg WHERE `k`=:k")
   Future<SegmentOverallPrg?> getSegmentOverallPrg(String k);
@@ -373,7 +376,7 @@ abstract class ScheduleDao {
     var k = scheduleCurrent.k;
     var now = DateTime.now();
     await insertKv(Kv(K.todayLearnCreateDate, "${Date.from(now).value}"));
-    await setSegmentOverallPrg(k, 0, getNext(now, intervalSeconds));
+    await setPrg4Sop(k, 0);
     await setScheduleCurrentWithCache(scheduleCurrent, learnOrReview, 0, now);
   }
 
@@ -407,9 +410,9 @@ abstract class ScheduleDao {
         await insertSegmentReview([SegmentReview(Date.from(now), k, 0)]);
         if (schedule.next.value <= Date.from(now).value) {
           if (schedule.progress + 1 >= ebbinghausForgettingCurve.length - 1) {
-            await setSegmentOverallPrg(k, schedule.progress + 1, getNext(now, ebbinghausForgettingCurve.last));
+            await setPrgAndNext4Sop(k, schedule.progress + 1, getNext(now, ebbinghausForgettingCurve.last));
           } else {
-            await setSegmentOverallPrg(k, schedule.progress + 1, getNext(now, ebbinghausForgettingCurve[schedule.progress + 1]));
+            await setPrgAndNext4Sop(k, schedule.progress + 1, getNext(now, ebbinghausForgettingCurve[schedule.progress + 1]));
           }
         }
       }

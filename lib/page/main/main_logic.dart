@@ -34,7 +34,7 @@ class MainLogic extends GetxController {
     resetLearnDeadline();
 
     var learned = await Db().db.scheduleDao.findLearnedCount(Date.from(now));
-    var unlearned = await Db().db.scheduleDao.findSegmentOverallPrgCount(ScheduleDao.learnCountPerDay, now);
+    var unlearned = await Db().db.scheduleDao.findSegmentOverallPrgCount(ScheduleDao.learnCountPerDay, Date.from(now));
     state.learnTotalCount.value = min(ScheduleDao.learnCountPerDay - learned!, unlearned!);
 
     var review = await Db().db.scheduleDao.forReviewInsert(now, {}, [false]);

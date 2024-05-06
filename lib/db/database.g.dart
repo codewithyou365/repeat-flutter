@@ -712,16 +712,16 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<int?> findSegmentOverallPrgCount(
     int limit,
-    DateTime now,
+    Date now,
   ) async {
     return _queryAdapter.query(
         'SELECT count(1) FROM SegmentOverallPrg JOIN Segment ON Segment.`k` = SegmentOverallPrg.`k` where next<?2 order by progress,sort limit ?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [limit, _dateTimeConverter.encode(now)]);
+        arguments: [limit, _dateConverter.encode(now)]);
   }
 
   @override
-  Future<void> setSegmentOverallPrg(
+  Future<void> setPrgAndNext4Sop(
     String k,
     int progress,
     Date next,
@@ -729,6 +729,16 @@ class _$ScheduleDao extends ScheduleDao {
     await _queryAdapter.queryNoReturn(
         'UPDATE SegmentOverallPrg SET progress=?2,next=?3 WHERE `k`=?1',
         arguments: [k, progress, _dateConverter.encode(next)]);
+  }
+
+  @override
+  Future<void> setPrg4Sop(
+    String k,
+    int progress,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE SegmentOverallPrg SET progress=?2 WHERE `k`=?1',
+        arguments: [k, progress]);
   }
 
   @override
