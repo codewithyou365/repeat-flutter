@@ -715,7 +715,7 @@ class _$ScheduleDao extends ScheduleDao {
     Date now,
   ) async {
     return _queryAdapter.query(
-        'SELECT count(1) FROM SegmentOverallPrg JOIN Segment ON Segment.`k` = SegmentOverallPrg.`k` where next<?2 order by progress,sort limit ?1',
+        'SELECT count(1) FROM SegmentOverallPrg JOIN Segment ON Segment.`k` = SegmentOverallPrg.`k` where next<=?2 order by progress,sort limit ?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [limit, _dateConverter.encode(now)]);
   }

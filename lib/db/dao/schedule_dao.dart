@@ -169,7 +169,7 @@ abstract class ScheduleDao {
 
   @Query("SELECT count(1) FROM SegmentOverallPrg"
       " JOIN Segment ON Segment.`k` = SegmentOverallPrg.`k`"
-      " where next<:now order by progress,sort limit :limit")
+      " where next<=:now order by progress,sort limit :limit")
   Future<int?> findSegmentOverallPrgCount(int limit, Date now);
 
   @Query('UPDATE SegmentOverallPrg SET progress=:progress,next=:next WHERE `k`=:k')
