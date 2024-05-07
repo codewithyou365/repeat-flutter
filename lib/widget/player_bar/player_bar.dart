@@ -20,6 +20,7 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
   int startTime = 0;
   double _offset = 0.0;
   double _previousOffset = 0.0;
+
   // TODO support video
   final player = AudioPlayer();
   int? startIndex;
@@ -137,12 +138,13 @@ class MediaSegment {
 
   static double parseTimeToSeconds(String time) {
     List<String> p1 = time.split(':');
-    List<String> p2 = p1[1].split('.');
+    List<String> p2 = p1[2].split(',');
 
-    double minutes = double.parse(p1[0]);
+    double hours = double.parse(p1[0]);
+    double minutes = double.parse(p1[1]);
     double seconds = double.parse(p2[0]);
     double milliseconds = double.parse(p2[1]);
-    var ret = (minutes * 60 * 1000) + seconds * 1000 + milliseconds * 10;
+    var ret = (hours * 60 * 60 * 1000) + (minutes * 60 * 1000) + seconds * 1000 + milliseconds;
     return ret;
   }
 }
