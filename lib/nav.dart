@@ -1,26 +1,28 @@
 import 'package:get/get.dart';
-import 'package:repeat_flutter/page/main/main_nav.dart';
-import 'package:repeat_flutter/page/main_content/main_content_nav.dart';
-import 'package:repeat_flutter/page/main_repeat/main_repeat_nav.dart';
-import 'package:repeat_flutter/page/main_repeat_finish/main_repeat_finish_nav.dart';
-import 'package:repeat_flutter/page/main_settings/main_settings_nav.dart';
-import 'package:repeat_flutter/page/main_settings_lang/main_settings_lang_nav.dart';
-import 'package:repeat_flutter/page/main_settings_theme/main_settings_theme_nav.dart';
-import 'package:repeat_flutter/page/main_stats/main_stats_nav.dart';
-import 'package:repeat_flutter/page/main_stats_learn/main_stats_learn_nav.dart';
-import 'package:repeat_flutter/page/main_stats_review/main_stats_review_nav.dart';
+import 'package:repeat_flutter/page/gs/gs_nav.dart';
+import 'package:repeat_flutter/page/gs_cr/gs_cr_nav.dart';
+import 'package:repeat_flutter/page/gs_cr_content/gs_cr_content_nav.dart';
+import 'package:repeat_flutter/page/gs_cr_repeat/gs_cr_repeat_nav.dart';
+import 'package:repeat_flutter/page/gs_cr_repeat_finish/gs_cr_repeat_finish_nav.dart';
+import 'package:repeat_flutter/page/gs_cr_stats/gs_cr_stats_nav.dart';
+import 'package:repeat_flutter/page/gs_cr_stats_learn/gs_cr_stats_learn_nav.dart';
+import 'package:repeat_flutter/page/gs_cr_stats_review/gs_cr_stats_review_nav.dart';
+import 'package:repeat_flutter/page/gs_settings/gs_settings_nav.dart';
+import 'package:repeat_flutter/page/gs_settings_lang/gs_settings_lang_nav.dart';
+import 'package:repeat_flutter/page/gs_settings_theme/gs_settings_theme_nav.dart';
 
 enum Nav {
-  main("/main"),
-  mainContent("/main/content"),
-  mainRepeat("/main/repeat"),
-  mainRepeatFinish("/main/repeat/finish"),
-  mainSettings("/main/settings"),
-  mainSettingsLang("/main/settings/lang"),
-  mainSettingsTheme("/main/settings/theme"),
-  mainStats("/main/stats"),
-  mainStatsLearn("/main/stats/learn"),
-  mainStatsReview("/main/stats/review"),
+  gs("/gs"),
+  gsCr("/gs/cr"),
+  gsCrContent("/gs/cr/content"),
+  gsCrRepeat("/gs/cr/repeat"),
+  gsCrRepeatFinish("/gs/cr/repeat/finish"),
+  gsCrStats("/gs/cr/stats"),
+  gsCrStatsLearn("/gs/cr/stats/learn"),
+  gsCrStatsReview("/gs/cr/stats/review"),
+  gsSettings("/gs/settings"),
+  gsSettingsLang("/gs/settings/lang"),
+  gsSettingsTheme("/gs/settings/theme"),
   ;
 
   final String path;
@@ -39,18 +41,19 @@ enum Nav {
     Get.back();
   }
 
-  static final String initialRoute = main.path;
+  static final String initialRoute = gs.path;
 
   static final List<GetPage> getPages = [
-    mainNav(main.path),
-    mainContentNav(mainContent.path),
-    mainRepeatNav(mainRepeat.path),
-    mainRepeatFinishNav(mainRepeatFinish.path),
-    mainSettingsNav(mainSettings.path),
-    mainSettingsLangNav(mainSettingsLang.path),
-    mainSettingsThemeNav(mainSettingsTheme.path),
-    mainStatsNav(mainStats.path),
-    mainStatsLearnNav(mainStatsLearn.path),
-    mainStatsReviewNav(mainStatsReview.path),
+    gsNav(gs.path),
+    gsCrNav(gsCr.path),
+    gsCrContentNav(gsCrContent.path),
+    gsCrRepeatNav(gsCrRepeat.path),
+    gsCrRepeatFinishNav(gsCrRepeatFinish.path),
+    gsCrStatsNav(gsCrStats.path),
+    gsCrStatsLearnNav(gsCrStatsLearn.path),
+    gsCrStatsReviewNav(gsCrStatsReview.path),
+    gsSettingsNav(gsSettings.path),
+    gsSettingsLangNav(gsSettingsLang.path),
+    gsSettingsThemeNav(gsSettingsTheme.path),
   ];
 }

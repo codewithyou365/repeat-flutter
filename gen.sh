@@ -36,7 +36,7 @@ cd ./lib || exit 1
   echo "    Get.back();" >>$OUTPUT_FILE
   echo "  }" >>$OUTPUT_FILE
   echo "" >>$OUTPUT_FILE
-  echo "  static final String initialRoute = main.path;" >>$OUTPUT_FILE
+  echo "  static final String initialRoute = gs.path;" >>$OUTPUT_FILE
   echo "" >>$OUTPUT_FILE
   echo "  static final List<GetPage> getPages = [" >>$OUTPUT_FILE
 
