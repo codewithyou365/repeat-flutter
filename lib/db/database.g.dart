@@ -65,6 +65,8 @@ class _$AppDatabase extends AppDatabase {
 
   DocDao? _docDaoInstance;
 
+  ClassroomDao? _classroomDaoInstance;
+
   ContentIndexDao? _contentIndexDaoInstance;
 
   ScheduleDao? _scheduleDaoInstance;
@@ -77,7 +79,7 @@ class _$AppDatabase extends AppDatabase {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 1,
+      version: 2,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -97,6 +99,8 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Doc` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `url` TEXT NOT NULL, `path` TEXT NOT NULL, `count` INTEGER NOT NULL, `total` INTEGER NOT NULL, `msg` TEXT NOT NULL)');
         await database.execute(
+            'CREATE TABLE IF NOT EXISTS `Classroom` (`name` TEXT NOT NULL, `arg` TEXT NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`name`))');
+        await database.execute(
             'CREATE TABLE IF NOT EXISTS `ContentIndex` (`g` TEXT NOT NULL, `url` TEXT NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`g`, `url`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Segment` (`g` TEXT NOT NULL, `k` TEXT NOT NULL, `indexDocId` INTEGER NOT NULL, `mediaDocId` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`g`, `k`))');
@@ -114,6 +118,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE TABLE IF NOT EXISTS `Lock` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database
             .execute('CREATE UNIQUE INDEX `index_Doc_url` ON `Doc` (`url`)');
+        await database.execute(
+            'CREATE UNIQUE INDEX `index_Classroom_sort` ON `Classroom` (`sort`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_ContentIndex_sort` ON `ContentIndex` (`sort`)');
         await database.execute(
@@ -135,6 +141,11 @@ class _$AppDatabase extends AppDatabase {
   @override
   DocDao get docDao {
     return _docDaoInstance ??= _$DocDao(database, changeListener);
+  }
+
+  @override
+  ClassroomDao get classroomDao {
+    return _classroomDaoInstance ??= _$ClassroomDao(database, changeListener);
   }
 
   @override
@@ -312,6 +323,84 @@ class _$DocDao extends DocDao {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         return transactionDatabase.docDao.insert(url);
+      });
+    }
+  }
+}
+
+class _$ClassroomDao extends ClassroomDao {
+  _$ClassroomDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _classroomInsertionAdapter = InsertionAdapter(
+            database,
+            'Classroom',
+            (Classroom item) => <String, Object?>{
+                  'name': item.name,
+                  'arg': item.arg,
+                  'sort': item.sort
+                }),
+        _classroomDeletionAdapter = DeletionAdapter(
+            database,
+            'Classroom',
+            ['name'],
+            (Classroom item) => <String, Object?>{
+                  'name': item.name,
+                  'arg': item.arg,
+                  'sort': item.sort
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<Classroom> _classroomInsertionAdapter;
+
+  final DeletionAdapter<Classroom> _classroomDeletionAdapter;
+
+  @override
+  Future<void> forUpdate() async {
+    await _queryAdapter
+        .queryNoReturn('SELECT * FROM Lock where id=1 for update');
+  }
+
+  @override
+  Future<List<Classroom>> getAllClassroom() async {
+    return _queryAdapter.queryList('SELECT * FROM Classroom order by sort',
+        mapper: (Map<String, Object?> row) => Classroom(
+            row['name'] as String, row['arg'] as String, row['sort'] as int));
+  }
+
+  @override
+  Future<int?> getIdleSortSequenceNumber() async {
+    return _queryAdapter.query(
+        'SELECT Id99999.id FROM Id99999 LEFT JOIN Classroom ON Classroom.sort = Id99999.id WHERE Classroom.sort IS NULL limit 1',
+        mapper: (Map<String, Object?> row) => row.values.first as int);
+  }
+
+  @override
+  Future<void> insertClassroom(Classroom entity) async {
+    await _classroomInsertionAdapter.insert(entity, OnConflictStrategy.replace);
+  }
+
+  @override
+  Future<void> deleteContentIndex(Classroom data) async {
+    await _classroomDeletionAdapter.delete(data);
+  }
+
+  @override
+  Future<Classroom> add(String name) async {
+    if (database is sqflite.Transaction) {
+      return super.add(name);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<Classroom>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        return transactionDatabase.classroomDao.add(name);
       });
     }
   }

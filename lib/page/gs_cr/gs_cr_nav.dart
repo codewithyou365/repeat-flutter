@@ -6,6 +6,8 @@ GetPage gsCrNav(String path) {
   return GetPage(
     name: path,
     transition: Transition.fadeIn,
+    fullscreenDialog: true,
+    popGesture: false,
     page: () => GsCrPage(),
     binding: GsCrBinding(),
   );

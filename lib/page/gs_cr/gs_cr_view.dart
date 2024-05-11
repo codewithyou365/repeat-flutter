@@ -27,7 +27,9 @@ class GsCrPage extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.only(right: 40.w),
                   child: InkWell(
-                    onTap: () => {Nav.gsSettings.push()},
+                    onTap: () => {
+                      // todo
+                    },
                     child: Text(I18nKey.settings.tr),
                   ),
                 ),

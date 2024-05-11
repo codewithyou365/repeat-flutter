@@ -5,10 +5,12 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
+import 'package:repeat_flutter/db/dao/classroom_dao.dart';
 import 'package:repeat_flutter/db/dao/content_index_dao.dart';
 import 'package:repeat_flutter/db/dao/doc_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/kv_dao.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
 import 'package:repeat_flutter/db/entity/id99999.dart';
@@ -18,6 +20,7 @@ import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment_review.dart';
 import 'package:repeat_flutter/db/entity/segment_current_prg.dart';
 import 'package:repeat_flutter/db/entity/segment_today_review.dart';
+import 'package:repeat_flutter/db/migration/m1_2.dart';
 import 'package:repeat_flutter/db/type_converter.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/logic/model/segment_review_content.dart';
@@ -28,9 +31,10 @@ import 'entity/kv.dart';
 
 part 'database.g.dart'; // the generated code will be there
 
-@Database(version: 1, entities: [
+@Database(version: 2, entities: [
   Kv,
   Doc,
+  Classroom,
   ContentIndex,
   Segment,
   SegmentOverallPrg,
@@ -52,6 +56,8 @@ abstract class AppDatabase extends FloorDatabase {
 
   DocDao get docDao;
 
+  ClassroomDao get classroomDao;
+
   ContentIndexDao get contentIndexDao;
 
   ScheduleDao get scheduleDao;
@@ -71,7 +77,9 @@ class Db {
     if (inMemory) {
       db = await $FloorAppDatabase.inMemoryDatabaseBuilder().build();
     } else {
-      db = await $FloorAppDatabase.databaseBuilder('app_database.db').build();
+      db = await $FloorAppDatabase.databaseBuilder('app_database.db').addMigrations([
+        m1_2,
+      ]).build();
       log("Database path: ${await sqflite.getDatabasesPath()}");
     }
     await db.baseDao.initData();
