@@ -9,6 +9,7 @@ import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'gs_cr_state.dart';
 
@@ -51,10 +52,7 @@ class GsCrLogic extends GetxController {
 
   tryLearn() {
     if (state.learnTotalCount.value == 0) {
-      Get.snackbar(
-        I18nKey.labelTips.tr,
-        I18nKey.labelNoLearningContent.tr,
-      );
+      Snackbar.show(I18nKey.labelNoLearningContent.tr);
       return;
     }
     Nav.gsCrRepeat.push();
@@ -62,10 +60,7 @@ class GsCrLogic extends GetxController {
 
   tryReview() {
     if (state.reviewTotalCount.value == 0) {
-      Get.snackbar(
-        I18nKey.labelTips.tr,
-        I18nKey.labelNoLearningContent.tr,
-      );
+      Snackbar.show(I18nKey.labelNoLearningContent.tr);
       return;
     }
     Nav.gsCrRepeat.push(arguments: "review");
