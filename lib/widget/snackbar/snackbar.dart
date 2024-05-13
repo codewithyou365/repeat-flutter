@@ -16,7 +16,13 @@ class Snackbar {
       I18nKey.labelTips.tr,
       content,
     );
-    sb.future.whenComplete(() => finishCount++);
+    sb.future.whenComplete(() {
+      finishCount++;
+      if (finishCount == snackbar.length) {
+        finishCount = 0;
+        snackbar = [];
+      }
+    });
     snackbar.add(sb);
   }
 }
