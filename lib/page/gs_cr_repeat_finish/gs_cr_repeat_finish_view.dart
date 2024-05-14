@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/nav.dart';
 import 'gs_cr_repeat_finish_logic.dart';
 
 class GsCrRepeatFinishPage extends StatelessWidget {
@@ -15,9 +16,8 @@ class GsCrRepeatFinishPage extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            // TODO need to extract the `until` function into Nav.dart
             // TODO need to listen to system back event
-            Get.until((route) => Get.currentRoute == '/gs/cr'); // Close the special view and go back to home
+            Nav.gsCr.until();
           },
         ),
       ),

@@ -28,8 +28,8 @@ cd ./lib || exit 1
   echo "    return Get.toNamed(path, arguments: arguments);" >>$OUTPUT_FILE
   echo "  }" >>$OUTPUT_FILE
   echo "" >>$OUTPUT_FILE
-  echo "  Future? pop() {" >>$OUTPUT_FILE
-  echo "    return Get.offNamed(path);" >>$OUTPUT_FILE
+  echo "  void until() {" >>$OUTPUT_FILE
+  echo "    Get.until((route) => Get.currentRoute == path);" >>$OUTPUT_FILE
   echo "  }" >>$OUTPUT_FILE
   echo "" >>$OUTPUT_FILE
   echo "  static back() {" >>$OUTPUT_FILE

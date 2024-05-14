@@ -35,8 +35,8 @@ enum Nav {
     return Get.toNamed(path, arguments: arguments);
   }
 
-  Future? pop() {
-    return Get.offNamed(path);
+  void until() {
+    Get.until((route) => Get.currentRoute == path);
   }
 
   static back() {
