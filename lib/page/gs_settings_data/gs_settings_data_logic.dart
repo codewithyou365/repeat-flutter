@@ -11,7 +11,7 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 import 'gs_settings_data_state.dart';
 
-typedef DialogCallback = void Function(BuildContext context, String url);
+typedef DialogCallback = void Function(BuildContext context, String url, String? mojo);
 
 class GsSettingsDataLogic extends GetxController {
   final GsSettingsDataState state = GsSettingsDataState();
@@ -25,7 +25,7 @@ class GsSettingsDataLogic extends GetxController {
     state.importUrl = importUrl?.value ?? "";
   }
 
-  void export(BuildContext context, String url) async {
+  void export(BuildContext context, String url, String? mojo) async {
     showOverlay(() async {
       state.exportUrl = url;
       await Db().db.kvDao.insertKv(Kv(K.exportUrl, url));
@@ -36,10 +36,16 @@ class GsSettingsDataLogic extends GetxController {
     }, I18nKey.labelExporting.tr);
   }
 
-  void import(BuildContext context, String url) async {
+  void import(BuildContext context, String url, String? mojo) async {
+    state.importUrl = url;
+    await Db().db.kvDao.insertKv(Kv(K.importUrl, url));
+    String key = I18nKey.labelImportMojo.tr;
+    if (key != mojo) {
+      Get.back();
+      Snackbar.show(I18nKey.labelImportCanceled.tr);
+      return;
+    }
     showOverlay(() async {
-      state.importUrl = url;
-      await Db().db.kvDao.insertKv(Kv(K.importUrl, url));
       var path = await sqflite.getDatabasesPath();
       var success = await downloadDoc(
         url,

@@ -34,6 +34,9 @@ class ConfigZh extends Config {
     put(I18nKey.labelNoContent, "暂无内容");
     put(I18nKey.labelImportFailed, "导入失败");
     put(I18nKey.labelImportSuccess, "导入成功");
+    put(I18nKey.labelImportMojo, "导入新数据将清除所有现有数据");
+    put(I18nKey.labelImportMojoTips, "输入红色文字以继续");
+    put(I18nKey.labelImportCanceled, "导入取消");
     put(I18nKey.labelImporting, "导入中...");
     put(I18nKey.labelExporting, "导出中...");
     put(I18nKey.btnCancel, "取消");

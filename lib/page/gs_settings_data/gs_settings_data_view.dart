@@ -22,11 +22,11 @@ class GsSettingsDataPage extends StatelessWidget {
           children: <Widget>[
             ListTile(
               title: Text(I18nKey.btnExport.tr),
-              onTap: () => {openDialog(context, logic, I18nKey.btnExport.tr, state.exportUrl, logic.export)},
+              onTap: () => {openDialog(context, logic, I18nKey.btnExport.tr, state.exportUrl, null, logic.export)},
             ),
             ListTile(
               title: Text(I18nKey.btnImport.tr),
-              onTap: () => {openDialog(context, logic, I18nKey.btnImport.tr, state.importUrl, logic.import)},
+              onTap: () => {openDialog(context, logic, I18nKey.btnImport.tr, state.importUrl, I18nKey.labelImportMojoTips.tr, logic.import)},
             ),
           ],
         ),
@@ -34,8 +34,12 @@ class GsSettingsDataPage extends StatelessWidget {
     );
   }
 
-  openDialog(BuildContext context, GsSettingsDataLogic logic, String title, String url, DialogCallback callback) {
+  openDialog(BuildContext context, GsSettingsDataLogic logic, String title, String url, String? mojo, DialogCallback callback) {
     final textEditingController = TextEditingController(text: url);
+    TextEditingController? mojoEditingController;
+    if (mojo != null) {
+      mojoEditingController = TextEditingController();
+    }
     Get.defaultDialog(
       title: title,
       content: Column(
@@ -47,6 +51,26 @@ class GsSettingsDataPage extends StatelessWidget {
               labelText: I18nKey.labelUrl.tr,
             ),
           ),
+          if (mojo != null)
+            Padding(
+              padding: EdgeInsets.only(top: 40.w),
+              child: Text(
+                I18nKey.labelImportMojo.tr,
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 16.sp,
+                  decoration: TextDecoration.none,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ),
+          if (mojo != null)
+            TextFormField(
+              controller: mojoEditingController,
+              decoration: InputDecoration(
+                labelText: mojo,
+              ),
+            ),
         ],
       ),
       actions: [
@@ -63,7 +87,7 @@ class GsSettingsDataPage extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                  callback(context, textEditingController.value.text);
+                  callback(context, textEditingController.value.text, mojoEditingController?.value.text);
                 },
                 child: Text(I18nKey.btnOk.tr),
               ),

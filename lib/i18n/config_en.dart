@@ -34,6 +34,9 @@ class ConfigEn extends Config {
     put(I18nKey.labelNoContent, "No content yet");
     put(I18nKey.labelImportFailed, "Import failed");
     put(I18nKey.labelImportSuccess, "Import success");
+    put(I18nKey.labelImportMojo, "Importing new data will clear all existing data");
+    put(I18nKey.labelImportMojoTips, "Input red words to continue");
+    put(I18nKey.labelImportCanceled, "Import canceled");
     put(I18nKey.labelImporting, "Importing...");
     put(I18nKey.labelExporting, "Exporting...");
     put(I18nKey.btnCancel, "Cancel");
