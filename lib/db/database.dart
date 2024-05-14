@@ -66,6 +66,8 @@ abstract class AppDatabase extends FloorDatabase {
 }
 
 class Db {
+  static const String fileName = "app_database.db";
+
   Db._internal();
 
   factory Db() => _instance;
@@ -77,7 +79,7 @@ class Db {
     if (inMemory) {
       db = await $FloorAppDatabase.inMemoryDatabaseBuilder().build();
     } else {
-      db = await $FloorAppDatabase.databaseBuilder('app_database.db').addMigrations([
+      db = await $FloorAppDatabase.databaseBuilder(fileName).addMigrations([
         m1_2,
       ]).build();
       log("Database path: ${await sqflite.getDatabasesPath()}");

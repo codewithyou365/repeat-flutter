@@ -11,6 +11,7 @@ enum I18nKey {
   statisticReview,
   language,
   theme,
+  data,
   themeDark,
   themeLight,
   labelSelectClassroom,
@@ -29,6 +30,10 @@ enum I18nKey {
   labelResetLearningContent,
   labelTips,
   labelNoContent,
+  labelImportFailed,
+  labelImportSuccess,
+  labelImporting,
+  labelExporting,
   btnCancel,
   btnOk,
   btnDelete,
@@ -45,6 +50,8 @@ enum I18nKey {
   btnError,
   btnNext,
   btnFinish,
+  btnExport,
+  btnImport,
   ;
 
   String trArgs([List<String> args = const []]) {

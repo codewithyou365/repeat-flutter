@@ -13,6 +13,7 @@ class ConfigEn extends Config {
     put(I18nKey.statisticReview, "Stats-Review");
     put(I18nKey.language, "Language");
     put(I18nKey.theme, "Theme");
+    put(I18nKey.data, "Data");
     put(I18nKey.themeDark, "Dart");
     put(I18nKey.themeLight, "Light");
     put(I18nKey.labelSelectClassroom, "Select Classroom");
@@ -31,6 +32,10 @@ class ConfigEn extends Config {
     put(I18nKey.labelResetLearningContent, "The learning content will be reset in %s");
     put(I18nKey.labelTips, "Tips");
     put(I18nKey.labelNoContent, "No content yet");
+    put(I18nKey.labelImportFailed, "Import failed");
+    put(I18nKey.labelImportSuccess, "Import success");
+    put(I18nKey.labelImporting, "Importing...");
+    put(I18nKey.labelExporting, "Exporting...");
     put(I18nKey.btnCancel, "Cancel");
     put(I18nKey.btnOk, "Ok");
     put(I18nKey.btnDelete, "Delete");
@@ -47,5 +52,7 @@ class ConfigEn extends Config {
     put(I18nKey.btnError, "ERROR");
     put(I18nKey.btnNext, "NEXT");
     put(I18nKey.btnFinish, "FINISH");
+    put(I18nKey.btnExport, "Export");
+    put(I18nKey.btnImport, "Import");
   }
 }

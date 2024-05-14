@@ -13,6 +13,7 @@ class ConfigZh extends Config {
     put(I18nKey.statisticReview, "统计-回顾");
     put(I18nKey.language, "语言");
     put(I18nKey.theme, "主题");
+    put(I18nKey.data, "数据");
     put(I18nKey.themeDark, "暗色主题");
     put(I18nKey.themeLight, "亮色主题");
     put(I18nKey.labelSelectClassroom, "选择课堂");
@@ -31,6 +32,10 @@ class ConfigZh extends Config {
     put(I18nKey.labelResetLearningContent, "在 %s 后，将重置学习内容");
     put(I18nKey.labelTips, "提示");
     put(I18nKey.labelNoContent, "暂无内容");
+    put(I18nKey.labelImportFailed, "导入失败");
+    put(I18nKey.labelImportSuccess, "导入成功");
+    put(I18nKey.labelImporting, "导入中...");
+    put(I18nKey.labelExporting, "导出中...");
     put(I18nKey.btnCancel, "取消");
     put(I18nKey.btnOk, "确定");
     put(I18nKey.btnDelete, "删除");
@@ -47,5 +52,7 @@ class ConfigZh extends Config {
     put(I18nKey.btnError, "错误");
     put(I18nKey.btnNext, "下一个");
     put(I18nKey.btnFinish, "完成");
+    put(I18nKey.btnExport, "导出");
+    put(I18nKey.btnImport, "导入");
   }
 }

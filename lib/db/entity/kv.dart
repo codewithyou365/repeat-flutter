@@ -6,6 +6,8 @@ enum K {
   settingsI18n,
   settingsTheme,
   todayLearnCreateDate,
+  exportUrl,
+  importUrl,
 }
 
 @Entity(primaryKeys: ['g', 'k'])

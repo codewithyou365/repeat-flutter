@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/nav.dart';
+
+import 'gs_settings_logic.dart';
 
 class GsSettingsPage extends StatelessWidget {
   const GsSettingsPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final logic = Get.find<GsSettingsLogic>();
     return Scaffold(
         appBar: AppBar(
           title: Text(I18nKey.settings.tr),
@@ -27,7 +31,13 @@ class GsSettingsPage extends StatelessWidget {
                 Nav.gsSettingsTheme.push();
               },
             ),
-            // TODO add sql query view
+            ListTile(
+              leading: const Icon(Icons.dataset),
+              title: Text(I18nKey.data.tr),
+              onTap: () {
+                Nav.gsSettingsData.push();
+              },
+            ),
           ],
         ));
   }

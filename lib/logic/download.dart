@@ -14,8 +14,11 @@ Future<Doc?> downloadDocPath(String url) async {
   return await Db().db.docDao.one(url);
 }
 
-Future<bool> downloadDoc(String urlPath, Finish finish, {DownloadProgressCallback? progressCallback}) async {
-  var id = await Db().db.docDao.insert(urlPath);
+Future<bool> downloadDoc(String urlPath, Finish finish, {DownloadProgressCallback? progressCallback, withoutDb = false}) async {
+  var id = 0;
+  if (!withoutDb) {
+    id = await Db().db.docDao.insert(urlPath);
+  }
   int startTime = DateTime.now().millisecondsSinceEpoch;
   int lastUpdateTime = 0;
   int fileCount = 1;
@@ -30,7 +33,9 @@ Future<bool> downloadDoc(String urlPath, Finish finish, {DownloadProgressCallbac
       if ((DateTime.now().millisecondsSinceEpoch - lastUpdateTime) > 100) {
         lastUpdateTime = DateTime.now().millisecondsSinceEpoch;
         fileTotal = total;
-        Db().db.docDao.updateProgressById(id, count, total);
+        if (!withoutDb) {
+          Db().db.docDao.updateProgressById(id, count, total);
+        }
         if (progressCallback != null) {
           progressCallback(startTime, count, total, false);
         }
@@ -45,13 +50,17 @@ Future<bool> downloadDoc(String urlPath, Finish finish, {DownloadProgressCallbac
     }
     await ensureFolderExists(newFl.folderPath);
     await File(fl.path).rename(newFl.path);
-    await Db().db.docDao.updateFinish(id, newFl.path);
+    if (!withoutDb) {
+      await Db().db.docDao.updateFinish(id, newFl.path);
+    }
     if (progressCallback != null) {
       progressCallback(startTime, fileTotal, fileTotal, true);
     }
     return true;
   } on Exception catch (e) {
-    Db().db.docDao.updateDoc(id, e.toString());
+    if (!withoutDb) {
+      Db().db.docDao.updateDoc(id, e.toString());
+    }
   }
   return false;
 }
