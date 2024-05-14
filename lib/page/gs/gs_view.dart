@@ -69,7 +69,7 @@ class GsPage extends StatelessWidget {
   Widget buildButton(GsLogic logic, Classroom model) {
     return GestureDetector(
       onTap: () {
-        Nav.gsCr.push();
+        logic.select(model.name);
       },
       onLongPress: () {
         openDeleteDialog(logic, model);

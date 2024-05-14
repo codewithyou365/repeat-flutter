@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/nav.dart';
 
 import 'gs_state.dart';
 
@@ -15,6 +16,11 @@ class GsLogic extends GetxController {
     super.onInit();
     state.list = await Db().db.classroomDao.getAllClassroom();
     update([GsLogic.id]);
+  }
+
+  select(String crn) {
+    Classroom.curr = crn;
+    Nav.gsCr.push();
   }
 
   add(String name) async {

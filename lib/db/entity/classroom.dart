@@ -9,6 +9,8 @@ import 'package:floor/floor.dart';
   ],
 )
 class Classroom {
+  static String curr = "";
+
   final String name;
   final String arg;
   final int sort;

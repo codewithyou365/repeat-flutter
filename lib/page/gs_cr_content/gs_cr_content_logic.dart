@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment.dart' as entity;
@@ -23,7 +24,7 @@ class GsCrContentLogic extends GetxController {
 
   init() async {
     state.indexes.clear();
-    state.indexes.addAll(await Db().db.contentIndexDao.findContentIndex());
+    state.indexes.addAll(await Db().db.contentIndexDao.findContentIndex(Classroom.curr));
     update([GsCrContentLogic.id]);
   }
 
@@ -32,19 +33,19 @@ class GsCrContentLogic extends GetxController {
     update([GsCrContentLogic.id]);
     var doc = await downloadDocPath(url);
     if (doc == null) {
-      await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(url, 0));
+      await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(Classroom.curr, url, 0));
       return;
     }
     Uri uri;
     try {
       uri = Uri.parse(url);
     } catch (e) {
-      await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(url, 0));
+      await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(Classroom.curr, url, 0));
       return;
     }
     var kv = await QaRepeatDoc.fromPath(doc.path, uri);
     if (kv == null) {
-      await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(url, 0));
+      await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(Classroom.curr, url, 0));
       return;
     }
     List<entity.Segment> segments = [];
@@ -53,7 +54,7 @@ class GsCrContentLogic extends GetxController {
       for (var segmentIndex = 0; segmentIndex < lesson.segment.length; segmentIndex++) {
         var segment = lesson.segment[segmentIndex];
         var key = "${kv.rootPath}|${lesson.key}|${segment.key}";
-        segments.add(entity.Segment(key, 0, 0, 0, 0, 0));
+        segments.add(entity.Segment(Classroom.curr, key, 0, 0, 0, 0, 0));
       }
     }
 
@@ -62,12 +63,12 @@ class GsCrContentLogic extends GetxController {
   }
 
   add(String url) async {
-    var idleSortSequenceNumber = await Db().db.contentIndexDao.getIdleSortSequenceNumber();
+    var idleSortSequenceNumber = await Db().db.contentIndexDao.getIdleSortSequenceNumber(Classroom.curr);
     if (idleSortSequenceNumber == null) {
       print("too many data");
       return;
     }
-    var contentIndex = ContentIndex(url, idleSortSequenceNumber);
+    var contentIndex = ContentIndex(Classroom.curr, url, idleSortSequenceNumber);
     state.indexes.add(contentIndex);
     update([GsCrContentLogic.id]);
     await Db().db.contentIndexDao.insertContentIndex(contentIndex);
@@ -121,8 +122,8 @@ class GsCrContentLogic extends GetxController {
         var segment = lesson.segment[segmentIndex];
         var key = "${kv.rootPath}|${lesson.key}|${segment.key}";
         //4611686118427387904-(99999*10000000000+99999*100000+99999)
-        segments.add(entity.Segment(key, doc.id!, mediaFileId!, lessonIndex, segmentIndex, contentIndexSort * 10000000000 + lessonIndex * 100000 + segmentIndex));
-        segmentOverallPrgs.add(SegmentOverallPrg(key, Date.from(now), 0));
+        segments.add(entity.Segment(Classroom.curr, key, doc.id!, mediaFileId!, lessonIndex, segmentIndex, contentIndexSort * 10000000000 + lessonIndex * 100000 + segmentIndex));
+        segmentOverallPrgs.add(SegmentOverallPrg(Classroom.curr, key, Date.from(now), 0));
       }
     }
     await Db().db.scheduleDao.importSegment(segments, segmentOverallPrgs);

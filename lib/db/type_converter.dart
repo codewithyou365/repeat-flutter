@@ -1,5 +1,6 @@
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
+import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 
 class KConverter extends TypeConverter<K, String> {
@@ -10,6 +11,18 @@ class KConverter extends TypeConverter<K, String> {
 
   @override
   String encode(K value) {
+    return value.name;
+  }
+}
+
+class CrKConverter extends TypeConverter<CrK, String> {
+  @override
+  CrK decode(String databaseValue) {
+    return CrK.values.byName(databaseValue);
+  }
+
+  @override
+  String encode(CrK value) {
     return value.name;
   }
 }

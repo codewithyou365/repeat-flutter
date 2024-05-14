@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/segment_current_prg.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -33,7 +34,7 @@ class GsCrRepeatLogic extends GetxController {
     } else {
       state.c = await Db().db.scheduleDao.initToday(null);
     }
-    var total = await Db().db.scheduleDao.totalSegmentCurrentPrg(Get.arguments != "review");
+    var total = await Db().db.scheduleDao.totalSegmentCurrentPrg(Classroom.curr, Get.arguments != "review");
     state.total = total!;
     state.progress = state.total - state.c.length;
     state.step = RepeatStep.recall;

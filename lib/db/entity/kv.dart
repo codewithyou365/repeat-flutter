@@ -5,20 +5,17 @@ import 'package:floor/floor.dart';
 enum K {
   settingsI18n,
   settingsTheme,
-  todayLearnCreateDate,
   exportUrl,
   importUrl,
 }
 
-@Entity(primaryKeys: ['g', 'k'])
+@Entity(primaryKeys: ['k'])
 class Kv {
-  final String g;
   final K k;
   final String value;
 
   Kv(
     this.k,
-    this.value, {
-    this.g = "",
-  });
+    this.value,
+  );
 }

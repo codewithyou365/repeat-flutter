@@ -10,6 +10,7 @@ class SegmentContentInDb extends Segment {
   final String mediaDocPath;
 
   SegmentContentInDb(
+    super.crn,
     super.k,
     super.indexDocId,
     super.mediaDocId,
@@ -28,6 +29,7 @@ class SegmentContent extends SegmentContentInDb {
   var answer = "";
 
   SegmentContent(
+    super.crn,
     super.k,
     super.indexDocId,
     super.mediaDocId,
@@ -41,6 +43,7 @@ class SegmentContent extends SegmentContentInDb {
 
   static SegmentContent from(SegmentContentInDb d) {
     return SegmentContent(
+      d.crn,
       d.k,
       d.indexDocId,
       d.mediaDocId,

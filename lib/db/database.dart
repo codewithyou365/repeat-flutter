@@ -11,6 +11,7 @@ import 'package:repeat_flutter/db/dao/doc_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/kv_dao.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
 import 'package:repeat_flutter/db/entity/id99999.dart';
@@ -36,6 +37,7 @@ part 'database.g.dart'; // the generated code will be there
   Doc,
   Classroom,
   ContentIndex,
+  CrKv,
   Segment,
   SegmentOverallPrg,
   SegmentReview,
@@ -48,6 +50,7 @@ part 'database.g.dart'; // the generated code will be there
 ])
 @TypeConverters([
   KConverter,
+  CrKConverter,
   DateTimeConverter,
   DateConverter,
 ])

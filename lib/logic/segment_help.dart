@@ -1,4 +1,5 @@
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/logic/model/qa_repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
@@ -18,7 +19,7 @@ class SegmentHelp {
     if (scheduleKeyToLearnSegment.containsKey(scheduleKey)) {
       return scheduleKeyToLearnSegment[scheduleKey]!;
     }
-    var retInDb = await Db().db.scheduleDao.getSegmentContent(scheduleKey);
+    var retInDb = await Db().db.scheduleDao.getSegmentContent(Classroom.curr, scheduleKey);
     if (retInDb == null) {
       return null;
     }

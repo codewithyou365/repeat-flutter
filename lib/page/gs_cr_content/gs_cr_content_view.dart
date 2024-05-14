@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 
@@ -40,7 +41,7 @@ class GsCrContentPage extends StatelessWidget {
       }
       return TextButton(
         onPressed: () => {
-          openEditDialog(logic, ContentIndex("", state.indexes.length), I18nKey.labelAddContentIndex.tr),
+          openEditDialog(logic, ContentIndex(Classroom.curr, "", state.indexes.length), I18nKey.labelAddContentIndex.tr),
         },
         child: Text(I18nKey.btnAdd.tr),
       );
