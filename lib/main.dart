@@ -48,7 +48,6 @@ class MyApp extends StatelessWidget {
           return GetMaterialApp(
             translations: I18nTranslations(),
             locale: locale,
-            // TODO support main group
             initialRoute: Nav.initialRoute,
             getPages: Nav.getPages,
             themeMode: logic.themeMode.value,

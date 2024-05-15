@@ -19,8 +19,7 @@ import 'package:repeat_flutter/db/entity/lock.dart';
 import 'package:repeat_flutter/db/entity/segment.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment_review.dart';
-import 'package:repeat_flutter/db/entity/segment_current_prg.dart';
-import 'package:repeat_flutter/db/entity/segment_today_review.dart';
+import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/db/migration/m1_2.dart';
 import 'package:repeat_flutter/db/type_converter.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
@@ -41,8 +40,7 @@ part 'database.g.dart'; // the generated code will be there
   Segment,
   SegmentOverallPrg,
   SegmentReview,
-  SegmentTodayReview,
-  SegmentCurrentPrg,
+  SegmentTodayPrg,
   SegmentContentInDb,
   SegmentReviewContentInDb,
   Id99999,

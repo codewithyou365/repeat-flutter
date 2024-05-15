@@ -4,6 +4,7 @@ import 'package:floor/floor.dart';
 
 enum CrK {
   todayLearnCreateDate,
+  todayLearnScheduleConfig,
 }
 
 @Entity(primaryKeys: ['crn', 'k'])

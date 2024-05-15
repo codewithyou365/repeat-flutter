@@ -1,7 +1,9 @@
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
+import 'package:repeat_flutter/page/gs_cr_repeat/gs_cr_repeat_logic.dart';
 
 import 'gs_cr_repeat_finish_state.dart';
 
@@ -13,10 +15,10 @@ class GsCrRepeatFinishLogic extends GetxController {
   void onInit() async {
     super.onInit();
     List<String> curr = [];
-    if (Get.arguments == "review") {
-      curr = await Db().db.scheduleDao.tryClear(false);
-    } else {
-      curr = await Db().db.scheduleDao.tryClear(true);
+
+    var all = Get.find<GsCrRepeatLogic>().todayProgresses;
+    for (SegmentTodayPrg segment in all) {
+      curr.add(segment.k);
     }
     for (var key in curr) {
       var learnSegment = await SegmentHelp.from(key);
@@ -29,6 +31,5 @@ class GsCrRepeatFinishLogic extends GetxController {
   void onClose() {
     super.onClose();
     Get.find<GsCrLogic>().init();
-    SegmentHelp.clear();
   }
 }

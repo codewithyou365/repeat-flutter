@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/logic/constant.dart';
+import 'package:sqflite/sqflite.dart' as sqflite;
 
 typedef DownloadProgressCallback = void Function(int startTime, int count, int total, bool finish);
 typedef Finish = Future<DocLocation?> Function(DocLocation fp);
@@ -25,8 +25,8 @@ Future<bool> downloadDoc(String urlPath, Finish finish, {DownloadProgressCallbac
   int fileTotal = -1;
   var dio = Dio();
   try {
-    var directory = await getApplicationDocumentsDirectory();
-    var rootPath = "${directory.path}/${DocPrefixPath.content}";
+    var directory = await sqflite.getDatabasesPath();
+    var rootPath = "$directory/${DocPrefixPath.content}";
     var fl = DocLocation(rootPath, "temp");
     await dio.download(urlPath, fl.path, onReceiveProgress: (int count, int total) {
       fileCount = count;

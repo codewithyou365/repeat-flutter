@@ -28,7 +28,7 @@ class GsCrPage extends StatelessWidget {
                   padding: EdgeInsets.only(right: 40.w),
                   child: InkWell(
                     onTap: () => {
-                      // todo
+                      // TODO classroom settings
                     },
                     child: Text(I18nKey.settings.tr),
                   ),
@@ -64,7 +64,7 @@ class GsCrPage extends StatelessWidget {
                     I18nKey.btnReview.tr,
                     Obx(() {
                       return Text(
-                        "${state.reviewLevelCount.value}-${state.reviewTotalCount.value}",
+                        "${state.reviewTotalCount.value}",
                       );
                     }),
                   ),

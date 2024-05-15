@@ -3,8 +3,7 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/segment_current_prg.dart';
+import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
@@ -14,6 +13,8 @@ import 'gs_cr_repeat_state.dart';
 class GsCrRepeatLogic extends GetxController {
   static const String id = "MainRepeatLogic";
   final GsCrRepeatState state = GsCrRepeatState();
+  List<SegmentTodayPrg> todayProgresses = [];
+  TodayPrgType todayPrgType = TodayPrgType.learn;
 
   @override
   Future<void> onInit() async {
@@ -28,14 +29,25 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   init() async {
+    var all = Get.find<GsCrLogic>().todayProgresses;
     if (Get.arguments == "review") {
-      state.forReview = {};
-      state.c = await Db().db.scheduleDao.initToday(state.forReview!);
+      todayPrgType = TodayPrgType.review;
     } else {
-      state.c = await Db().db.scheduleDao.initToday(null);
+      todayPrgType = TodayPrgType.learn;
     }
-    var total = await Db().db.scheduleDao.totalSegmentCurrentPrg(Classroom.curr, Get.arguments != "review");
-    state.total = total!;
+    var levelAndGroupNumber = SegmentTodayPrg.getLevelAndGroupNumber(all, todayPrgType);
+    for (int lg in levelAndGroupNumber) {
+      state.c = SegmentTodayPrg.refine(all, todayPrgType, lg, false);
+      if (state.c.isNotEmpty) {
+        todayProgresses = SegmentTodayPrg.refine(all, todayPrgType, lg, true);
+        break;
+      }
+    }
+    if (state.c.isEmpty) {
+      Get.back();
+      return;
+    }
+    state.total = todayProgresses.length;
     state.progress = state.total - state.c.length;
     state.step = RepeatStep.recall;
     state.mode = RepeatMode.byQuestion;
@@ -54,7 +66,7 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     var curr = state.c[0];
-    await Db().db.scheduleDao.error(curr, state.forReview?[curr.k] ?? []);
+    await Db().db.scheduleDao.error(curr);
     state.c.sort(schedulesCurrentSort);
     if (autoNext) {
       next();
@@ -71,7 +83,7 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     var curr = state.c[0];
-    await Db().db.scheduleDao.right(curr, state.forReview?[curr.k] ?? []);
+    await Db().db.scheduleDao.right(curr);
     if (curr.progress >= ScheduleDao.maxRepeatTime) {
       state.c.removeAt(0);
     }
@@ -107,7 +119,7 @@ class GsCrRepeatLogic extends GetxController {
     state.segment = learnSegment;
   }
 
-  int schedulesCurrentSort(SegmentCurrentPrg a, SegmentCurrentPrg b) {
+  int schedulesCurrentSort(SegmentTodayPrg a, SegmentTodayPrg b) {
     if (a.viewTime != b.viewTime) {
       return a.viewTime.compareTo(b.viewTime);
     } else {
@@ -116,7 +128,7 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   finish() {
-    if (state.forReview != null) {
+    if (todayPrgType == TodayPrgType.review) {
       Nav.gsCrRepeatFinish.push(arguments: "review");
     } else {
       Nav.gsCrRepeatFinish.push();

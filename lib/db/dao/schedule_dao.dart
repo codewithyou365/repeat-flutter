@@ -1,20 +1,17 @@
 // dao/schedule_dao.dart
 
-import 'dart:math';
+import 'dart:convert';
 
 import 'package:floor/floor.dart';
-import 'package:repeat_flutter/common/num.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/segment.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment_review.dart';
-import 'package:repeat_flutter/db/entity/segment_current_prg.dart';
+import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/common/date.dart';
-import 'package:repeat_flutter/db/entity/segment_today_review.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
-import 'package:repeat_flutter/logic/model/segment_review_content.dart';
 
 @dao
 abstract class ScheduleDao {
@@ -32,12 +29,10 @@ abstract class ScheduleDao {
   ];
 
   static int intervalSeconds = ebbinghausForgettingCurve[1];
-  static int findLearnCountPerDay = 45;
-  static int learnCountPerDay = 4;
   static int learnCountPerGroup = 2;
-  static const int maxLearnCountPerGroup = 1000;
   static int maxRepeatTime = 3;
 
+  static List<int> learn = [2, 4];
   static List<int> review = [3 * 24 * 60 * 60, 7 * 24 * 60 * 60];
 
   //static List<int> review = [0, 30];
@@ -53,15 +48,15 @@ abstract class ScheduleDao {
   @delete
   Future<void> deleteSegments(List<Segment> data);
 
-  /// --- SegmentCurrentPrg ---
+  /// --- SegmentTodayPrg ---
 
-  @Query('SELECT count(1) FROM SegmentCurrentPrg where crn=:crn and learnOrReview=:learnOrReview')
-  Future<int?> totalSegmentCurrentPrg(String crn, bool learnOrReview);
+  @Query('SELECT count(1) FROM SegmentTodayPrg where crn=:crn and learnOrReview=:learnOrReview')
+  Future<int?> totalSegmentTodayPrg(String crn, bool learnOrReview);
 
-  @Query("SELECT * FROM SegmentCurrentPrg where crn=:crn and learnOrReview=:learnOrReview")
-  Future<List<SegmentCurrentPrg>> findAllSegmentCurrentPrg(String crn, bool learnOrReview);
+  @Query("SELECT * FROM SegmentTodayPrg where crn=:crn and learnOrReview=:learnOrReview")
+  Future<List<SegmentTodayPrg>> findAllSegmentTodayPrg(String crn, bool learnOrReview);
 
-  @Insert(onConflict: OnConflictStrategy.ignore)
+  @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertKv(CrKv kv);
 
   @delete
@@ -70,57 +65,29 @@ abstract class ScheduleDao {
   @Query("SELECT CAST(value as INTEGER) FROM CrKv WHERE crn=:crn and `k`=:k")
   Future<int?> value(String crn, CrK k);
 
-  @Query("SELECT * FROM SegmentCurrentPrg where crn=:crn and learnOrReview=:learnOrReview limit 1")
-  Future<SegmentCurrentPrg?> findOneSegmentCurrentPrg(String crn, bool learnOrReview);
+  @Query("SELECT * FROM SegmentTodayPrg where crn=:crn limit 1")
+  Future<SegmentTodayPrg?> findOneSegmentTodayPrg(String crn);
 
-  @Query('DELETE FROM SegmentCurrentPrg where crn=:crn and learnOrReview=:learnOrReview')
-  Future<void> deleteSegmentCurrentPrg(String crn, bool learnOrReview);
+  @Query('DELETE FROM SegmentTodayPrg where crn=:crn')
+  Future<void> deleteSegmentTodayPrg(String crn);
 
-  @Query('DELETE FROM SegmentCurrentPrg where crn=:crn')
-  Future<void> deleteAllSegmentCurrentPrg(String crn);
+  @Query('DELETE FROM SegmentTodayPrg where crn=:crn')
+  Future<void> deleteAllSegmentTodayPrg(String crn);
 
   @Insert(onConflict: OnConflictStrategy.fail)
-  Future<void> insertSegmentCurrentPrg(List<SegmentCurrentPrg> entities);
+  Future<void> insertSegmentTodayPrg(List<SegmentTodayPrg> entities);
 
-  @Query('SELECT * FROM SegmentCurrentPrg where crn=:crn and learnOrReview=:learnOrReview and progress<:maxProgress order by viewTime,sort asc')
-  Future<List<SegmentCurrentPrg>> findSegmentCurrentPrg(String crn, bool learnOrReview, int maxProgress);
+  @Query('SELECT * FROM SegmentTodayPrg where crn=:crn order by id asc')
+  Future<List<SegmentTodayPrg>> findSegmentTodayPrg(String crn);
 
-  @Query('UPDATE SegmentCurrentPrg SET progress=:progress,viewTime=:viewTime WHERE crn=:crn and `k`=:k and learnOrReview=:learnOrReview')
-  Future<void> setSegmentCurrentPrg(String crn, String k, bool learnOrReview, int progress, DateTime viewTime);
+  @Query('UPDATE SegmentTodayPrg SET progress=:progress,viewTime=:viewTime,finish=:finish WHERE crn=:crn and `k`=:k and type=:type')
+  Future<void> setSegmentTodayPrg(String crn, String k, int type, int progress, DateTime viewTime, bool finish);
 
   @Query("SELECT count(1) FROM SegmentReview"
       " JOIN SegmentOverallPrg ON SegmentOverallPrg.crn=:crn and SegmentOverallPrg.`k` = SegmentReview.`k`"
       " JOIN Segment ON Segment.crn=:crn and Segment.`k` = SegmentReview.`k`"
       " WHERE SegmentReview.createDate=:now")
   Future<int?> findLearnedCount(String crn, Date now);
-
-  @Query("SELECT SegmentOverallPrg.* FROM SegmentReview"
-      " JOIN SegmentOverallPrg ON SegmentOverallPrg.crn=:crn and SegmentOverallPrg.`k` = SegmentReview.`k`"
-      " JOIN Segment ON Segment.crn=:crn and Segment.`k` = SegmentReview.`k`"
-      " WHERE SegmentReview.crn=:crn and SegmentReview.createDate=:now")
-  Future<List<SegmentOverallPrg>> findLearned(String crn, Date now);
-
-  @Query('DELETE FROM SegmentTodayReview where crn=:crn')
-  Future<void> deleteSegmentTodayReview(String crn);
-
-  @Query("SELECT SegmentReview.k FROM SegmentTodayReview"
-      " JOIN SegmentReview ON SegmentReview.crn=:crn"
-      "  AND SegmentReview.createDate = SegmentTodayReview.createDate"
-      "  ANd SegmentReview.`k` = SegmentTodayReview.`k`"
-      " JOIN Segment ON Segment.crn=:crn and Segment.`k` = SegmentReview.`k`"
-      " WHERE SegmentTodayReview.crn=:crn and SegmentTodayReview.createDate=:now"
-      " AND SegmentTodayReview.finish=true"
-      " AND SegmentTodayReview.count=:count")
-  Future<List<String>> todayFinishReviewed(String crn, Date now, int count);
-
-  @Query("SELECT * FROM SegmentTodayReview WHERE SegmentTodayReview.crn=:crn and SegmentTodayReview.finish=false limit 1")
-  Future<SegmentTodayReview?> findTodayReviewUnfinished(String crn);
-
-  @Insert(onConflict: OnConflictStrategy.fail)
-  Future<void> insertSegmentTodayReview(List<SegmentTodayReview> review);
-
-  @Query('UPDATE SegmentTodayReview SET finish=1 WHERE crn=:crn createDate in (:createDate) and `k`=:k')
-  Future<void> setSegmentTodayReviewFinish(String crn, List<Date> createDate, String k);
 
   @Query("SELECT ifnull(min(createDate),-1) FROM SegmentReview"
       " JOIN Segment ON Segment.crn=:crn and Segment.`k` = SegmentReview.`k`"
@@ -130,37 +97,64 @@ abstract class ScheduleDao {
       " order by createDate")
   Future<int?> findReviewedMinCreateDate(String crn, int reviewCount, Date now);
 
-  @Query("SELECT Segment.crn"
-      ",Segment.k"
+  @Query("SELECT SegmentReview.crn"
+      ",SegmentReview.`k`"
+      ",0 type"
       ",Segment.sort"
-      ",SegmentReviewKey.createDate reviewCreateDate"
-      ",SegmentReviewKey.count reviewCount"
-      " FROM Segment"
-      " JOIN (SELECT `k`"
-      "  ,group_concat(createDate) createDate"
-      "  ,min(SegmentReview.count) count"
-      "  FROM SegmentReview"
-      "  WHERE SegmentReview.crn=:crn"
-      "  and SegmentReview.count=:reviewCount"
-      "  and SegmentReview.createDate>=:startDate"
-      "  and SegmentReview.createDate<=:endDate"
-      "  group by SegmentReview.k"
-      ") SegmentReviewKey on SegmentReviewKey.`k`=Segment.`k`"
-      " WHERE Segment.crn=:crn"
-      " order by sort")
-  Future<List<SegmentReviewContentInDb>> shouldTodayReview(String crn, int reviewCount, Date startDate, Date endDate);
+      ",0 progress"
+      ",0 viewTime"
+      ",SegmentReview.count reviewCount"
+      ",SegmentReview.createDate reviewCreateDate"
+      ",0 finish"
+      " FROM SegmentReview"
+      " JOIN Segment ON Segment.crn=:crn"
+      "  AND Segment.`k`=SegmentReview.`k`"
+      " WHERE SegmentReview.crn=:crn"
+      " AND SegmentReview.count=:reviewCount"
+      " AND SegmentReview.createDate>=:startDate"
+      " AND SegmentReview.createDate<=:endDate"
+      " ORDER BY Segment.sort")
+  Future<List<SegmentTodayPrg>> scheduleReview(String crn, int reviewCount, Date startDate, Date endDate);
 
-  @Query("SELECT Segment.crn"
+  @Query("SELECT * FROM ("
+      " SELECT Segment.crn"
       ",Segment.k"
+      ",0 type"
       ",Segment.sort"
-      ",'0' reviewCreateDate"
+      ",0 progress"
+      ",0 viewTime"
       ",0 reviewCount"
+      ",0 reviewCreateDate"
+      ",0 finish"
       " FROM SegmentOverallPrg"
       " JOIN Segment ON Segment.crn=:crn"
       "  and Segment.`k` = SegmentOverallPrg.`k`"
-      " where Segment.crn=:crn"
-      " and SegmentOverallPrg.next<=:now order by SegmentOverallPrg.progress limit :limit")
-  Future<List<SegmentReviewContentInDb>> scheduleLearnToday(String crn, int limit, Date now);
+      " where SegmentOverallPrg.crn=:crn"
+      " and SegmentOverallPrg.next<=:now"
+      " and SegmentOverallPrg.progress=:progress"
+      " order by SegmentOverallPrg.progress,Segment.sort limit :limit"
+      " ) Segment order by Segment.sort")
+  Future<List<SegmentTodayPrg>> scheduleLearn1(String crn, int progress, int limit, Date now);
+
+  @Query("SELECT * FROM ("
+      " SELECT Segment.crn"
+      ",Segment.k"
+      ",0 type"
+      ",Segment.sort"
+      ",0 progress"
+      ",0 viewTime"
+      ",0 reviewCount"
+      ",0 reviewCreateDate"
+      ",0 finish"
+      " FROM SegmentOverallPrg"
+      " JOIN Segment ON Segment.crn=:crn"
+      "  and Segment.`k` = SegmentOverallPrg.`k`"
+      " where SegmentOverallPrg.crn=:crn"
+      " and SegmentOverallPrg.next<=:now"
+      " and SegmentOverallPrg.progress>=:minProgress"
+      " order by SegmentOverallPrg.progress,Segment.sort limit :limit"
+      " ) Segment order by Segment.sort")
+  Future<List<SegmentTodayPrg>> scheduleLearn2(String crn, int minProgress, int limit, Date now);
 
   @Query("SELECT count(1) FROM SegmentOverallPrg"
       " JOIN Segment ON Segment.crn=:crn and Segment.`k` = SegmentOverallPrg.`k`"
@@ -187,8 +181,8 @@ abstract class ScheduleDao {
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertSegmentReview(List<SegmentReview> review);
 
-  @Query('UPDATE SegmentReview SET count=:count WHERE crn=:crn and createDate in (:createDate) and `k`=:k')
-  Future<void> setSegmentReviewCount(String crn, List<Date> createDate, String k, int count);
+  @Query('UPDATE SegmentReview SET count=:count WHERE crn=:crn and createDate=:createDate and `k`=:k')
+  Future<void> setSegmentReviewCount(String crn, Date createDate, String k, int count);
 
   @Query("SELECT"
       " Segment.crn"
@@ -230,171 +224,90 @@ abstract class ScheduleDao {
 
   /// for progress
   @transaction
-  Future<List<SegmentCurrentPrg>> initToday(Map<String, List<SegmentTodayReview>>? forReview) async {
+  Future<List<SegmentTodayPrg>> initToday() async {
     await forUpdate();
+    List<SegmentTodayPrg> todayPrg = [];
     var now = DateTime.now();
-    var learnOrReview = true;
-    if (forReview != null) {
-      learnOrReview = false;
+    var needToInsert = false;
+    var todayLearnCreateDate = await value(Classroom.curr, CrK.todayLearnCreateDate);
+    if (todayLearnCreateDate == null) {
+      needToInsert = true;
     }
-    var needInsertToday = [false];
-    List<SegmentCurrentPrg> tps = <SegmentCurrentPrg>[];
-    {
-      var needToDelete = false;
-      var needToInsert = false;
-      var todayLearnCreateDate = await value(Classroom.curr, CrK.todayLearnCreateDate);
-      if (todayLearnCreateDate != null && Date.from(now).value != todayLearnCreateDate) {
-        needToDelete = true;
-        needToInsert = true;
-      } else {
-        var tp = await findOneSegmentCurrentPrg(Classroom.curr, learnOrReview);
-        if (tp == null) {
-          needToInsert = true;
-        }
+    if (todayLearnCreateDate != null && Date.from(now).value != todayLearnCreateDate) {
+      needToInsert = true;
+    }
+
+    if (needToInsert) {
+      await insertKv(CrKv(Classroom.curr, CrK.todayLearnCreateDate, "${Date.from(now).value}"));
+      var config = json.encode({"learn": learn, "review": review});
+      await insertKv(CrKv(Classroom.curr, CrK.todayLearnScheduleConfig, config));
+      await deleteAllSegmentTodayPrg(Classroom.curr);
+
+      var lastLevel = learn.length - 1;
+      // learn 0
+      for (int i = 0; i < lastLevel; ++i) {
+        var sls = await scheduleLearn1(Classroom.curr, i, learn[i], Date.from(now));
+        SegmentTodayPrg.setType(sls, TodayPrgType.learn, i, learnCountPerGroup);
+        todayPrg.addAll(sls);
+      }
+      // learn 1,...
+      {
+        var sls = await scheduleLearn2(Classroom.curr, lastLevel, learn[lastLevel], Date.from(now));
+        SegmentTodayPrg.setType(sls, TodayPrgType.learn, lastLevel, learnCountPerGroup);
+        todayPrg.addAll(sls);
       }
 
-      if (needToDelete) {
-        await deleteKv(CrKv(Classroom.curr, CrK.todayLearnCreateDate, ""));
-        await deleteAllSegmentCurrentPrg(Classroom.curr);
-        await deleteSegmentTodayReview(Classroom.curr);
+      // review ...,1,0
+      for (int i = review.length - 1; i >= 0; --i) {
+        var shouldStartDate = Date.from(now.subtract(Duration(seconds: review[i])));
+        var startDateInt = await findReviewedMinCreateDate(Classroom.curr, i, shouldStartDate);
+        if (startDateInt == null || startDateInt == -1) {
+          continue;
+        }
+        var startDate = Date(startDateInt);
+        var endDate = startDate;
+        if (startDate.value != shouldStartDate.value) {
+          // If we need to catch up, we should only pursue it for one day.
+          endDate = Date.from(startDate.toDateTime().add(Duration(days: catchUpAdditionDay)));
+        }
+        List<SegmentTodayPrg> sls = await scheduleReview(Classroom.curr, i, startDate, endDate);
+        SegmentTodayPrg.setType(sls, TodayPrgType.review, i, 0);
+        todayPrg.addAll(sls);
       }
-
-      if (needToInsert) {
-        List<SegmentReviewContentInDb> tss = [];
-        if (learnOrReview) {
-          tss = await forLearnInsert(now);
-        } else {
-          tss = await forReviewInsert(now, forReview!, needInsertToday);
-        }
-        if (tss.isEmpty) {
-          return [];
-        }
-        for (var ts in tss) {
-          tps.add(SegmentCurrentPrg(Classroom.curr, ts.k, learnOrReview, ts.sort, 0, DateTime.fromMicrosecondsSinceEpoch(0)));
-        }
-        await insertSegmentCurrentPrg(tps);
-      } else {
-        if (learnOrReview) {
-          tps = await findSegmentCurrentPrg(Classroom.curr, learnOrReview, maxRepeatTime);
-        } else {
-          tps = await findSegmentCurrentPrg(Classroom.curr, learnOrReview, maxRepeatTime);
-          await forReviewInsert(now, forReview!, needInsertToday);
-        }
-      }
-    }
-    if (needInsertToday[0]) {
-      List<SegmentTodayReview> todayReviews = [];
-      if (forReview!.isNotEmpty) {
-        forReview.forEach((k, value) {
-          todayReviews.addAll(value);
-        });
-        todayReviews.sort((a, b) {
-          if (a.createDate != b.createDate) {
-            return a.createDate.value.compareTo(b.createDate.value);
-          } else {
-            return a.k.compareTo(b.k);
-          }
-        });
-        await insertSegmentTodayReview(todayReviews);
-      }
-    }
-    return tps;
-  }
-
-  Future<List<SegmentReviewContentInDb>> forLearnInsert(DateTime now) async {
-    List<SegmentOverallPrg> learned = await findLearned(Classroom.curr, Date.from(now));
-    if (learned.length >= learnCountPerDay) {
-      return [];
-    }
-    List<SegmentReviewContentInDb> tss = await scheduleLearnToday(Classroom.curr, findLearnCountPerDay, Date.from(now));
-    tss.sort((a, b) => a.sort.compareTo(b.sort));
-    tss = tss.sublist(0, min(min(learnCountPerGroup, tss.length), learnCountPerDay - learned.length));
-    return tss;
-  }
-
-  Future<List<SegmentReviewContentInDb>> forReviewInsert(
-    DateTime now,
-    Map<String, List<SegmentTodayReview>> keyToCreateDate,
-    List<bool> needInsertToday,
-  ) async {
-    int? currReviewLevel;
-    SegmentTodayReview? todayReviewUnfinished = await findTodayReviewUnfinished(Classroom.curr);
-    if (todayReviewUnfinished == null) {
-      needInsertToday[0] = true;
+      await insertSegmentTodayPrg(todayPrg);
     } else {
-      needInsertToday[0] = false;
-      currReviewLevel = todayReviewUnfinished.count;
+      todayPrg = await findSegmentTodayPrg(Classroom.curr);
     }
-    for (int i = review.length - 1; i >= 0; --i) {
-      if (currReviewLevel != null && i != currReviewLevel) {
-        continue;
-      }
-
-      var shouldStartDate = Date.from(now.subtract(Duration(seconds: review[i])));
-      var startDateInt = await findReviewedMinCreateDate(Classroom.curr, i, shouldStartDate);
-      if (startDateInt == null || startDateInt == -1) {
-        continue;
-      }
-      var startDate = Date(startDateInt);
-      var endDate = startDate;
-      if (startDate.value != shouldStartDate.value) {
-        // If we need to catch up, we should only pursue it for one day.
-        endDate = Date.from(startDate.toDateTime().add(Duration(days: catchUpAdditionDay)));
-      }
-      List<SegmentReviewContentInDb> all = await shouldTodayReview(Classroom.curr, i, startDate, endDate);
-
-      if (all.isEmpty) {
-        continue;
-      }
-      for (var r in all) {
-        var dates = Num.toInts(r.reviewCreateDate);
-        List<SegmentTodayReview> value = [];
-        for (var date in dates) {
-          value.add(SegmentTodayReview(Classroom.curr, Date(date), r.k, r.reviewCount, false));
-        }
-        keyToCreateDate[r.k] = value;
-      }
-      List<String> finished = await todayFinishReviewed(Classroom.curr, Date.from(now), i);
-      all.removeWhere((segmentReview) => finished.any((k) => k == segmentReview.k));
-      return all;
-    }
-
-    return [];
+    return todayPrg;
   }
 
   @transaction
-  Future<void> error(SegmentCurrentPrg scheduleCurrent, List<SegmentTodayReview> reviews) async {
+  Future<void> error(SegmentTodayPrg scheduleCurrent) async {
     await forUpdate();
-    var learnOrReview = reviews.isEmpty;
     var k = scheduleCurrent.k;
     var now = DateTime.now();
-    await insertKv(CrKv(Classroom.curr, CrK.todayLearnCreateDate, "${Date.from(now).value}"));
     await setPrg4Sop(Classroom.curr, k, 0);
-    await setScheduleCurrentWithCache(scheduleCurrent, learnOrReview, 0, now);
+    await setScheduleCurrentWithCache(scheduleCurrent, 0, now);
   }
 
   @transaction
-  Future<void> right(SegmentCurrentPrg segmentTodayPrg, List<SegmentTodayReview> reviews) async {
+  Future<void> right(SegmentTodayPrg segmentTodayPrg) async {
     await forUpdate();
-    var learnOrReview = reviews.isEmpty;
     var k = segmentTodayPrg.k;
     var now = DateTime.now();
-    await insertKv(CrKv(Classroom.curr, CrK.todayLearnCreateDate, "${Date.from(now).value}"));
     bool complete = false;
     if (segmentTodayPrg.progress == 0 && DateTime.fromMicrosecondsSinceEpoch(0).compareTo(segmentTodayPrg.viewTime) == 0) {
       complete = true;
-      await setScheduleCurrentWithCache(segmentTodayPrg, learnOrReview, maxRepeatTime, now);
+      await setScheduleCurrentWithCache(segmentTodayPrg, maxRepeatTime, now);
     }
 
     if (segmentTodayPrg.progress + 1 >= maxRepeatTime) {
       complete = true;
-      await setScheduleCurrentWithCache(segmentTodayPrg, learnOrReview, maxRepeatTime, now);
+      await setScheduleCurrentWithCache(segmentTodayPrg, maxRepeatTime, now);
     }
     if (complete) {
-      if (reviews.isNotEmpty) {
-        List<Date> createDates = reviews.map((e) => e.createDate).toList();
-        await setSegmentReviewCount(Classroom.curr, createDates, k, reviews.first.count + 1);
-        await setSegmentTodayReviewFinish(Classroom.curr, createDates, k);
+      if (segmentTodayPrg.reviewCreateDate.value != 0) {
+        await setSegmentReviewCount(Classroom.curr, segmentTodayPrg.reviewCreateDate, k, segmentTodayPrg.reviewCount + 1);
       } else {
         var schedule = await getSegmentOverallPrg(Classroom.curr, k);
         if (schedule == null) {
@@ -410,31 +323,26 @@ abstract class ScheduleDao {
         }
       }
     } else {
-      await setScheduleCurrentWithCache(segmentTodayPrg, learnOrReview, segmentTodayPrg.progress + 1, now);
+      await setScheduleCurrentWithCache(segmentTodayPrg, segmentTodayPrg.progress + 1, now);
     }
   }
 
-  @transaction
-  Future<List<String>> tryClear(bool learnOrReview) async {
-    await forUpdate();
-    var ret = await findAllSegmentCurrentPrg(Classroom.curr, learnOrReview);
-    var count = 0;
-    for (var r in ret) {
-      if (r.progress == maxRepeatTime) {
-        count++;
-      }
+  Future<void> setScheduleCurrentWithCache(SegmentTodayPrg segmentTodayPrg, int progress, DateTime now) async {
+    var finish = false;
+    if (progress >= maxRepeatTime) {
+      finish = true;
     }
-    if (count == ret.length) {
-      await deleteSegmentCurrentPrg(Classroom.curr, learnOrReview);
-    }
-    return ret.map((e) => e.k).toList();
-  }
-
-  Future<void> setScheduleCurrentWithCache(SegmentCurrentPrg segmentTodayPrg, bool learnOrReview, int progress, DateTime now) async {
-    var k = segmentTodayPrg.k;
-    await setSegmentCurrentPrg(Classroom.curr, k, learnOrReview, progress, now);
+    await setSegmentTodayPrg(
+      Classroom.curr,
+      segmentTodayPrg.k,
+      segmentTodayPrg.type,
+      progress,
+      now,
+      finish,
+    );
     segmentTodayPrg.progress = progress;
     segmentTodayPrg.viewTime = now;
+    segmentTodayPrg.finish = finish;
   }
 
   Date getNext(DateTime now, int seconds) {

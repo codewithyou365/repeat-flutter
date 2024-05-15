@@ -7,8 +7,10 @@ import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
+import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/common/date.dart';
+import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -16,18 +18,20 @@ import 'gs_cr_state.dart';
 
 class GsCrLogic extends GetxController {
   final GsCrState state = GsCrState();
+  List<SegmentTodayPrg> todayProgresses = [];
   Timer? timer;
 
   @override
   void onInit() {
     super.onInit();
+    SegmentHelp.clear();
     init();
   }
 
   void init() async {
     var now = DateTime.now();
-    await Db().db.scheduleDao.tryClear(false);
-    await Db().db.scheduleDao.tryClear(true);
+    todayProgresses = await Db().db.scheduleDao.initToday();
+
     var todayLearnCreateDate = await Db().db.scheduleDao.value(Classroom.curr, CrK.todayLearnCreateDate) ?? 0;
     var next = Db().db.scheduleDao.getNext(now, ScheduleDao.intervalSeconds);
     if (todayLearnCreateDate != 0 && next.value - todayLearnCreateDate > 0 && todayLearnCreateDate == Date.from(now).value) {
@@ -35,18 +39,8 @@ class GsCrLogic extends GetxController {
     }
     resetLearnDeadline();
 
-    var learned = await Db().db.scheduleDao.findLearnedCount(Classroom.curr,Date.from(now));
-    var unlearned = await Db().db.scheduleDao.findSegmentOverallPrgCount(Classroom.curr,ScheduleDao.learnCountPerDay, Date.from(now));
-    state.learnTotalCount.value = min(ScheduleDao.learnCountPerDay - learned!, unlearned!);
-
-    var review = await Db().db.scheduleDao.forReviewInsert(now, {}, [false]);
-    if (review.isEmpty) {
-      state.reviewLevelCount.value = 0;
-      state.reviewTotalCount.value = 0;
-    } else {
-      state.reviewLevelCount.value = review.first.reviewCount;
-      state.reviewTotalCount.value = review.length;
-    }
+    state.learnTotalCount.value = SegmentTodayPrg.getUnfinishedCount(todayProgresses, TodayPrgType.learn);
+    state.reviewTotalCount.value = SegmentTodayPrg.getUnfinishedCount(todayProgresses, TodayPrgType.review);
 
     startTimer();
   }

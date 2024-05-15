@@ -8,6 +8,7 @@ import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment.dart' as entity;
 import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/qa_repeat_doc.dart';
+import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 
 import 'gs_cr_content_state.dart';
@@ -181,5 +182,6 @@ class GsCrContentLogic extends GetxController {
         );
       }
     }
+    SegmentHelp.clear();
   }
 }
