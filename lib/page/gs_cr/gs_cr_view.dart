@@ -28,7 +28,8 @@ class GsCrPage extends StatelessWidget {
                   padding: EdgeInsets.only(right: 40.w),
                   child: InkWell(
                     onTap: () => {
-                      // TODO classroom settings
+                      // TODO classroom settings learn config
+                      // TODO classroom settings reset learn content
                     },
                     child: Text(I18nKey.settings.tr),
                   ),
