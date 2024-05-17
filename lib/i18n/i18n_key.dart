@@ -19,6 +19,7 @@ enum I18nKey {
   labelClassroomName,
   labelClassroomNameEmpty,
   labelClassroomNameError,
+  labelClassroomNameDuplicated,
   labelDelete,
   labelUrl,
   labelAddContentIndex,

@@ -15,7 +15,7 @@ abstract class ClassroomDao {
       ' limit 1')
   Future<int?> getIdleSortSequenceNumber();
 
-  @Insert(onConflict: OnConflictStrategy.replace)
+  @Insert(onConflict: OnConflictStrategy.ignore)
   Future<void> insertClassroom(Classroom entity);
 
   @delete

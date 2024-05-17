@@ -21,6 +21,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelClassroomName, "课堂名称");
     put(I18nKey.labelClassroomNameEmpty, "课堂名字应不能为空");
     put(I18nKey.labelClassroomNameError, "课堂名字应为 3 个字母或更少，并且由字母数字字符组成。");
+    put(I18nKey.labelClassroomNameDuplicated, "课堂名字重复。");
     put(I18nKey.labelDelete, "删除 ！");
     put(I18nKey.labelUrl, "地址");
     put(I18nKey.labelAddContentIndex, "新增内容索引");

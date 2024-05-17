@@ -21,6 +21,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelClassroomName, "Classroom Name");
     put(I18nKey.labelClassroomNameEmpty, "The classroom name cannot be empty");
     put(I18nKey.labelClassroomNameError, "The classroom name should be 3 letters or less and consist of alphanumeric characters.");
+    put(I18nKey.labelClassroomNameDuplicated, "The classroom name is duplicated.");
     put(I18nKey.labelDelete, "Delete !");
     put(I18nKey.labelUrl, "URL");
     put(I18nKey.labelAddContentIndex, "Add content index");

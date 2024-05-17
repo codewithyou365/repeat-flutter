@@ -3,6 +3,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'gs_state.dart';
 
@@ -25,17 +26,18 @@ class GsLogic extends GetxController {
 
   add(String name) async {
     if (name.isEmpty) {
-      Get.snackbar(
-        I18nKey.labelTips.tr,
-        I18nKey.labelClassroomNameEmpty.tr,
-      );
+      Get.back();
+      Snackbar.show(I18nKey.labelClassroomNameEmpty.tr);
       return;
     }
     if (name.length > 3 || !reg.hasMatch(name)) {
-      Get.snackbar(
-        I18nKey.labelTips.tr,
-        I18nKey.labelClassroomNameError.tr,
-      );
+      Get.back();
+      Snackbar.show(I18nKey.labelClassroomNameError.tr);
+      return;
+    }
+    if (state.list.any((e) => e.name == name)) {
+      Get.back();
+      Snackbar.show(I18nKey.labelClassroomNameDuplicated.tr);
       return;
     }
     var classroom = await Db().db.classroomDao.add(name);

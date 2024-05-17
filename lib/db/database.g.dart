@@ -395,7 +395,7 @@ class _$ClassroomDao extends ClassroomDao {
 
   @override
   Future<void> insertClassroom(Classroom entity) async {
-    await _classroomInsertionAdapter.insert(entity, OnConflictStrategy.replace);
+    await _classroomInsertionAdapter.insert(entity, OnConflictStrategy.ignore);
   }
 
   @override
