@@ -50,7 +50,6 @@ class GsCrRepeatLogic extends GetxController {
     state.total = todayProgresses.length;
     state.progress = state.total - state.c.length;
     state.step = RepeatStep.recall;
-    state.mode = RepeatMode.byQuestion;
     await setCurrentLearnContent();
     update([GsCrRepeatLogic.id]);
   }
@@ -58,6 +57,13 @@ class GsCrRepeatLogic extends GetxController {
   void show() {
     state.step = RepeatStep.evaluate;
     update([GsCrRepeatLogic.id]);
+  }
+
+  void tryToTip() {
+    if (state.step == RepeatStep.recall) {
+      state.step = RepeatStep.tip;
+      update([GsCrRepeatLogic.id]);
+    }
   }
 
   void error({autoNext = false}) async {

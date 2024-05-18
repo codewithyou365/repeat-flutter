@@ -34,10 +34,15 @@ class SegmentHelp {
     }
 
     var lesson = qa.lesson[ret.lessonIndex];
-    // full qa
+    // full title, prevQa and qa
     {
+      ret.title = lesson.title;
       var segment = lesson.segment[ret.segmentIndex];
-
+      if (ret.segmentIndex != 0) {
+        var prevSegment = lesson.segment[ret.segmentIndex - 1];
+        ret.prevQuestion = prevSegment.q;
+        ret.prevAnswer = prevSegment.a;
+      }
       ret.question = segment.q;
       ret.answer = segment.a;
     }

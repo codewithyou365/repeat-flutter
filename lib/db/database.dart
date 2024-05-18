@@ -23,7 +23,6 @@ import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/db/migration/m1_2.dart';
 import 'package:repeat_flutter/db/type_converter.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
-import 'package:repeat_flutter/logic/model/segment_review_content.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 
 import 'dao/base_dao.dart';
@@ -42,7 +41,6 @@ part 'database.g.dart'; // the generated code will be there
   SegmentReview,
   SegmentTodayPrg,
   SegmentContentInDb,
-  SegmentReviewContentInDb,
   Id99999,
   Lock,
 ])

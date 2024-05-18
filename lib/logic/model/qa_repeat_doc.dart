@@ -42,15 +42,17 @@ class Lesson {
   String url;
   String path;
   String key;
+  String title;
   List<Segment> segment;
 
-  Lesson(this.url, this.path, this.key, this.segment);
+  Lesson(this.url, this.path, this.key, this.title, this.segment);
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
     return Lesson(
       json['url'],
       json['path'],
       json['key'] ?? json['path'],
+      json['title'] ?? json['key'] ?? json['path'],
       List<Segment>.from(json['segment'].map((dynamic s) => Segment.fromJson(s, json['segment'].indexOf(s)))),
     );
   }
