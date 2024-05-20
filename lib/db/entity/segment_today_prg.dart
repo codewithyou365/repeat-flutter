@@ -50,7 +50,7 @@ class SegmentTodayPrg {
       for (int i = 0; i < list.length; i++) {
         var sl = list[i];
         sl.type = SegmentTodayPrg.toType(todayPrgType, level, groupNumber);
-        if (i != 0 && i % limit == 0) {
+        if ((i + 1) % limit == 0) {
           groupNumber++;
         }
       }
