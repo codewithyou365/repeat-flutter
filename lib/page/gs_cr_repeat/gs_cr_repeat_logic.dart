@@ -59,11 +59,9 @@ class GsCrRepeatLogic extends GetxController {
     update([GsCrRepeatLogic.id]);
   }
 
-  void tryToTip() {
-    if (state.step == RepeatStep.recall) {
-      state.step = RepeatStep.tip;
-      update([GsCrRepeatLogic.id]);
-    }
+  void tip() {
+    state.step = RepeatStep.tip;
+    update([GsCrRepeatLogic.id]);
   }
 
   void error({autoNext = false}) async {

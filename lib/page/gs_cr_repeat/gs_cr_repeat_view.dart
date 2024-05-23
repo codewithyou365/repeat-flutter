@@ -28,30 +28,21 @@ class GsCrRepeatPage extends StatelessWidget {
       body: GetBuilder<GsCrRepeatLogic>(
         id: GsCrRepeatLogic.id,
         builder: (_) {
-          return Column(
-            children: [
-              Padding(
-                padding: EdgeInsets.all(36.w),
-                child: buildContent(state),
-              ),
-              const Spacer(),
-              if (state.step == RepeatStep.recall)
-                InkWell(
-                  onTap: () => {logic.tryToTip()},
-                  child: Text(I18nKey.labelTips.tr),
-                ),
-              Padding(
-                padding: EdgeInsets.all(36.w),
-                child: buildBottom(logic),
-              ),
-            ],
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            child: Column(
+              children: [
+                buildContent(context, state),
+                buildBottom(logic),
+              ],
+            ),
           );
         },
       ),
     );
   }
 
-  Widget buildContent(GsCrRepeatState state) {
+  Widget buildContent(BuildContext context, GsCrRepeatState state) {
     state.step.index;
     List<List<ContentType>> currProcessContent;
     var processIndex = state.progress;
@@ -69,30 +60,71 @@ class GsCrRepeatPage extends StatelessWidget {
       showContent = currProcessContent[currProcessContent.length - 1];
     }
 
-    if (showContent.length == 1) {
-      return buildInnerContent(showContent[0], state.segment);
-    }
+    Widget question = const Text("???");
+    Widget? media;
     List<Widget> ret = [];
     for (int i = 0; i < showContent.length; i++) {
-      ret.add(buildInnerContent(showContent[i], state.segment));
+      var widget = buildInnerContent(context, showContent[i], state.segment);
+      if (showContent[i] == ContentType.media) {
+        media = widget;
+      } else if (showContent[i] == ContentType.questionOrPrevAnswerOrTitle) {
+        if (widget != null) {
+          question = widget;
+        }
+      } else {
+        var innerContent = widget;
+        if (innerContent != null) {
+          ret.add(innerContent);
+        }
+      }
     }
-
-    return Column(children: ret);
+    var bottomHeight = 180.h;
+    if (media != null) {
+      bottomHeight += 100.h;
+    }
+    return Column(children: [
+      question,
+      if (media != null) media,
+      Padding(
+        padding: EdgeInsets.only(bottom: 15.h),
+      ),
+      SizedBox(
+        height: MediaQuery.of(context).size.height - bottomHeight,
+        child: ret.isEmpty ? const Text("") : ListView(children: ret),
+      ),
+    ]);
   }
 
-  Widget buildInnerContent(ContentType t, SegmentContent segment) {
+  Widget? buildInnerContent(BuildContext context, ContentType t, SegmentContent segment) {
     switch (t) {
-      case ContentType.question:
-        return Text(segment.question);
-      case ContentType.media:
-        return PlayerBar(segment.segmentIndex, segment.mediaSegments, segment.mediaDocPath);
+      case ContentType.questionOrPrevAnswerOrTitle:
+        if (segment.question != "") {
+          return Text(segment.question);
+        } else if (segment.prevAnswer != "") {
+          return Text(segment.prevAnswer);
+        } else if (segment.title != "") {
+          return Text(segment.title);
+        } else {
+          return const Text("???");
+        }
+      case ContentType.tip:
+        if (segment.tip != "") {
+          return Text(
+            segment.tip,
+            style: TextStyle(
+              color: Theme.of(context).hintColor,
+            ),
+          );
+        } else {
+          return null;
+        }
       case ContentType.answer:
         return Text(segment.answer);
-      case ContentType.prevAnswerOrTitle:
-        if (segment.prevAnswer != "") {
-          return Text(segment.prevAnswer);
+      case ContentType.media:
+        if (segment.mediaDocPath != "") {
+          return PlayerBar(segment.segmentIndex, segment.mediaSegments, segment.mediaDocPath);
         } else {
-          return Text(segment.title);
+          return null;
         }
       default:
         return Padding(
@@ -104,6 +136,15 @@ class GsCrRepeatPage extends StatelessWidget {
   Widget buildBottom(GsCrRepeatLogic logic) {
     switch (logic.state.step) {
       case RepeatStep.recall:
+        return Row(
+          children: [
+            buildButton(I18nKey.btnKnow.tr, () => logic.show()),
+            const Spacer(),
+            buildButton(I18nKey.labelTips.tr, () => logic.tip()),
+            const Spacer(),
+            buildButton(I18nKey.btnUnknown.tr, () => logic.error()),
+          ],
+        );
       case RepeatStep.tip:
         return Row(
           children: [
@@ -139,8 +180,8 @@ class GsCrRepeatPage extends StatelessWidget {
 
   Widget buildButton(String text, VoidCallback onPressed) {
     return TextButton(
-      child: Text(text),
       onPressed: onPressed,
+      child: Text(text),
     );
   }
 }

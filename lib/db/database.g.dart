@@ -882,7 +882,7 @@ class _$ScheduleDao extends ScheduleDao {
     String k,
   ) async {
     return _queryAdapter.query(
-        'SELECT Segment.crn,Segment.`k` `k`,indexDoc.id indexDocId,mediaDoc.id mediaDocId,Segment.lessonIndex lessonIndex,Segment.segmentIndex segmentIndex,Segment.sort sort,indexDoc.url indexDocUrl,indexDoc.path indexDocPath,mediaDoc.path mediaDocPath FROM Segment JOIN Doc indexDoc ON indexDoc.id=Segment.indexDocId JOIN Doc mediaDoc ON mediaDoc.id=Segment.mediaDocId WHERE Segment.crn=?1 and Segment.`k`=?2',
+        'SELECT Segment.crn,Segment.`k` `k`,IFNULL(indexDoc.id,0) indexDocId,IFNULL(mediaDoc.id,0) mediaDocId,Segment.lessonIndex lessonIndex,Segment.segmentIndex segmentIndex,Segment.sort sort,IFNULL(indexDoc.url,\'\') indexDocUrl,IFNULL(indexDoc.path,\'\') indexDocPath,IFNULL(mediaDoc.path,\'\') mediaDocPath FROM Segment LEFT JOIN Doc indexDoc ON indexDoc.id=Segment.indexDocId LEFT JOIN Doc mediaDoc ON mediaDoc.id=Segment.mediaDocId WHERE Segment.crn=?1 and Segment.`k`=?2',
         mapper: (Map<String, Object?> row) => SegmentContentInDb(row['crn'] as String, row['k'] as String, row['indexDocId'] as int, row['mediaDocId'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['sort'] as int, row['indexDocUrl'] as String, row['indexDocPath'] as String, row['mediaDocPath'] as String),
         arguments: [crn, k]);
   }

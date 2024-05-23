@@ -1,11 +1,11 @@
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/logic/model/qa_repeat_doc.dart';
+import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 class SegmentHelp {
-  static Map<String, QaRepeatDoc> indexDocPathToQa = {};
+  static Map<String, RepeatDoc> indexDocPathToQa = {};
   static Map<String, List<MediaSegment>> mediaDocPathToMediaSegments = {};
   static Map<String, SegmentContent> scheduleKeyToLearnSegment = {};
 
@@ -26,7 +26,7 @@ class SegmentHelp {
     var ret = SegmentContent.from(retInDb);
     var qa = indexDocPathToQa[ret.indexDocPath];
     if (qa == null) {
-      qa = await QaRepeatDoc.fromPath(ret.indexDocPath, Uri.parse(ret.indexDocUrl));
+      qa = await RepeatDoc.fromPath(ret.indexDocPath, Uri.parse(ret.indexDocUrl));
       if (qa == null) {
         return null;
       }
@@ -44,11 +44,12 @@ class SegmentHelp {
         ret.prevAnswer = prevSegment.a;
       }
       ret.question = segment.q;
+      ret.tip = segment.tip;
       ret.answer = segment.a;
     }
 
     // full mediaSegments
-    {
+    if (ret.mediaDocPath != "") {
       var mediaSegments = mediaDocPathToMediaSegments[ret.mediaDocPath];
       if (mediaSegments == null) {
         mediaSegments = [];

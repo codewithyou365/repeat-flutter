@@ -29,6 +29,7 @@ class SegmentContent extends SegmentContentInDb {
   var prevQuestion = "";
   var prevAnswer = "";
   var question = "";
+  var tip = "";
   var answer = "";
 
   SegmentContent(

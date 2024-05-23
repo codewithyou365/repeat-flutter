@@ -1,0 +1,22 @@
+{
+  "rootPath": "database",
+  "key": "database",
+  "lesson": [
+    {
+      "key": "sql/2024",
+      "title": "SQL",
+      "segment": [
+        {
+          "q": "Find all the top three highest-paid employees in your department",
+          "tip": "表: Employee\n\n+--------------+---------+\n| Column Name  | Type    |\n+--------------+---------+\n| id           | int     |\n| name         | varchar |\n| salary       | int     |\n| departmentId | int     |\n+--------------+---------+\nid 是该表的主键列(具有唯一值的列)。\ndepartmentId 是 Department 表中 ID 的外键（reference 列）。\n该表的每一行都表示员工的ID、姓名和工资。它还包含了他们部门的ID。\n \n\n表: Department\n\n+-------------+---------+\n| Column Name | Type    |\n+-------------+---------+\n| id          | int     |\n| name        | varchar |\n+-------------+---------+\nid 是该表的主键列(具有唯一值的列)。\n该表的每一行表示部门ID和部门名。\n \n\n公司的主管们感兴趣的是公司每个部门中谁赚的钱最多。一个部门的 高收入者 是指一个员工的工资在该部门的 不同 工资中 排名前三 。\n\n编写解决方案，找出每个部门中 收入高的员工 。\n\n以 任意顺序 返回结果表。\n\n返回结果格式如下所示。\n\n \n\n示例 1:\n\n输入: \nEmployee 表:\n+----+-------+--------+--------------+\n| id | name  | salary | departmentId |\n+----+-------+--------+--------------+\n| 1  | Joe   | 85000  | 1            |\n| 2  | Henry | 80000  | 2            |\n| 3  | Sam   | 60000  | 2            |\n| 4  | Max   | 90000  | 1            |\n| 5  | Janet | 69000  | 1            |\n| 6  | Randy | 85000  | 1            |\n| 7  | Will  | 70000  | 1            |\n+----+-------+--------+--------------+\nDepartment  表:\n+----+-------+\n| id | name  |\n+----+-------+\n| 1  | IT    |\n| 2  | Sales |\n+----+-------+\n输出: \n+------------+----------+--------+\n| Department | Employee | Salary |\n+------------+----------+--------+\n| IT         | Max      | 90000  |\n| IT         | Joe      | 85000  |\n| IT         | Randy    | 85000  |\n| IT         | Will     | 70000  |\n| Sales      | Henry    | 80000  |\n| Sales      | Sam      | 60000  |\n+------------+----------+--------+\n解释:\n在IT部门:\n- Max的工资最高\n- 兰迪和乔都赚取第二高的独特的薪水\n- 威尔的薪水是第三高的\n\n在销售部:\n- 亨利的工资最高\n- 山姆的薪水第二高\n- 没有第三高的工资，因为只有两名员工",
+          "a": "1.\ndense_rank() over (PARTITION BY employee.departmentId order by salary desc) dr \n 2.\nSELECT\n    d.Name AS 'Department', e1.Name AS 'Employee', e1.Salary\nFROM\n    Employee e1\n        JOIN\n    Department d ON e1.DepartmentId = d.Id\nWHERE\n    3 > (SELECT\n            COUNT(DISTINCT e2.Salary)\n        FROM\n            Employee e2\n        WHERE\n            e2.Salary > e1.Salary\n                AND e1.DepartmentId = e2.DepartmentId\n        )\n;"
+        },
+        {
+          "q": "Find the second highest paid employee",
+          "tip": "Employee 表：\n+-------------+------+\n| Column Name | Type |\n+-------------+------+\n| id          | int  |\n| salary      | int  |\n+-------------+------+\n在 SQL 中，id 是这个表的主键。\n表的每一行包含员工的工资信息。\n \n\n查询并返回 Employee 表中第二高的薪水 。如果不存在第二高的薪水，查询应该返回 null(Pandas 则返回 None) 。\n\n查询结果如下例所示。\n\n \n\n示例 1：\n\n输入：\nEmployee 表：\n+----+--------+\n| id | salary |\n+----+--------+\n| 1  | 100    |\n| 2  | 200    |\n| 3  | 300    |\n+----+--------+\n输出：\n+---------------------+\n| SecondHighestSalary |\n+---------------------+\n| 200                 |\n+---------------------+\n示例 2：\n\n输入：\nEmployee 表：\n+----+--------+\n| id | salary |\n+----+--------+\n| 1  | 100    |\n+----+--------+\n输出：\n+---------------------+\n| SecondHighestSalary |\n+---------------------+\n| null                |\n+---------------------+",
+          "a": "SELECT\n    (SELECT DISTINCT\n            Salary\n        FROM\n            Employee\n        ORDER BY Salary DESC\n        LIMIT 1 OFFSET 1) AS SecondHighestSalary\n;"
+        }
+      ]
+    }
+  ]
+}

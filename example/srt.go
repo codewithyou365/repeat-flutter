@@ -12,7 +12,7 @@ import (
 type segment struct {
 	Start string `json:"start"`
 	End   string `json:"end"`
-	Q     string `json:"q"`
+	Tip   string `json:"tip"`
 	A     string `json:"a"`
 }
 
@@ -46,11 +46,11 @@ func main() {
 				} else {
 					curr.A = curr.A + line
 					for scanner.Scan() {
-						lineQ := strings.TrimSpace(scanner.Text())
-						if len(lineQ) == 0 {
+						lineTip := strings.TrimSpace(scanner.Text())
+						if len(lineTip) == 0 {
 							continue
 						}
-						curr.Q = lineQ
+						curr.Tip = lineTip
 						break
 					}
 					segments = append(segments, curr)

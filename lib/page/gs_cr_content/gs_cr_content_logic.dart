@@ -7,7 +7,7 @@ import 'package:repeat_flutter/db/entity/content_index.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment.dart' as entity;
 import 'package:repeat_flutter/logic/download.dart';
-import 'package:repeat_flutter/logic/model/qa_repeat_doc.dart';
+import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 
@@ -44,7 +44,7 @@ class GsCrContentLogic extends GetxController {
       await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(Classroom.curr, url, 0));
       return;
     }
-    var kv = await QaRepeatDoc.fromPath(doc.path, uri);
+    var kv = await RepeatDoc.fromPath(doc.path, uri);
     if (kv == null) {
       await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(Classroom.curr, url, 0));
       return;
@@ -80,7 +80,7 @@ class GsCrContentLogic extends GetxController {
     if (doc == null) {
       return 0;
     }
-    var kv = await QaRepeatDoc.fromPath(doc.path, Uri.parse(url));
+    var kv = await RepeatDoc.fromPath(doc.path, Uri.parse(url));
     if (kv == null) {
       print("data error");
       return 0;
@@ -100,7 +100,7 @@ class GsCrContentLogic extends GetxController {
 
     List<entity.Segment> segments = [];
     List<SegmentOverallPrg> segmentOverallPrgs = [];
-    var kv = await QaRepeatDoc.fromPath(doc.path, Uri.parse(url));
+    var kv = await RepeatDoc.fromPath(doc.path, Uri.parse(url));
     if (kv == null) {
       print("data error");
       return;
@@ -118,12 +118,27 @@ class GsCrContentLogic extends GetxController {
     var now = DateTime.now();
     for (var lessonIndex = 0; lessonIndex < kv.lesson.length; lessonIndex++) {
       var lesson = kv.lesson[lessonIndex];
-      var mediaFileId = await Db().db.docDao.getId(lesson.url);
+      var mediaDocId = 0;
+      if (lesson.url != "") {
+        if (!lesson.url.startsWith("http")) {
+          lesson.url = kv.rootUrl.joinPath(lesson.url);
+        }
+        var docId = await Db().db.docDao.getId(lesson.url);
+        mediaDocId = docId!;
+      }
       for (var segmentIndex = 0; segmentIndex < lesson.segment.length; segmentIndex++) {
         var segment = lesson.segment[segmentIndex];
         var key = "${kv.rootPath}|${lesson.key}|${segment.key}";
         //4611686118427387904-(99999*10000000000+99999*100000+99999)
-        segments.add(entity.Segment(Classroom.curr, key, doc.id!, mediaFileId!, lessonIndex, segmentIndex, contentIndexSort * 10000000000 + lessonIndex * 100000 + segmentIndex));
+        segments.add(entity.Segment(
+          Classroom.curr,
+          key,
+          doc.id!,
+          mediaDocId,
+          lessonIndex,
+          segmentIndex,
+          contentIndexSort * 10000000000 + lessonIndex * 100000 + segmentIndex,
+        ));
         segmentOverallPrgs.add(SegmentOverallPrg(Classroom.curr, key, Date.from(now), 0));
       }
     }
@@ -154,12 +169,12 @@ class GsCrContentLogic extends GetxController {
   download(String url) async {
     state.indexCount.value = 0;
     state.indexTotal.value = 1;
-    QaRepeatDoc? kv;
+    RepeatDoc? kv;
     late String rootPath;
     var success = await downloadDoc(
       url,
       (fl) async {
-        kv = await QaRepeatDoc.fromPath(fl.path, Uri.parse(url));
+        kv = await RepeatDoc.fromPath(fl.path, Uri.parse(url));
         if (kv == null) {
           return null;
         }
@@ -172,6 +187,10 @@ class GsCrContentLogic extends GetxController {
       state.indexTotal.value = state.indexTotal.value + kv!.lesson.length;
       for (var v in kv!.lesson) {
         var innerUrl = v.url;
+        if (innerUrl == "") {
+          downloadProgress(0, 0, 0, true);
+          continue;
+        }
         if (!innerUrl.startsWith("http")) {
           innerUrl = kv!.rootUrl.joinPath(v.url);
         }

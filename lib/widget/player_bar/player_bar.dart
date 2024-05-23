@@ -114,7 +114,7 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
         });
       },
       child: CustomPaint(
-        size: Size(360.w, 100.w),
+        size: Size(360.w, 100.h),
         painter: PlayerBarPainter(_offset, widget.lines),
       ),
     );

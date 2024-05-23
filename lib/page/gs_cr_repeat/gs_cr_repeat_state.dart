@@ -8,7 +8,7 @@ enum RepeatStep { recall, tip, evaluate, finish }
 // recall by media (audio, video or image)
 // recall by key
 
-enum ContentType { prevAnswerOrTitle, question, answer, media, padding }
+enum ContentType { questionOrPrevAnswerOrTitle, tip, answer, media, padding }
 
 class GsCrRepeatState {
   var progress = -1;
@@ -19,9 +19,9 @@ class GsCrRepeatState {
   var step = RepeatStep.recall;
   var showContent = [
     [
-      [ContentType.prevAnswerOrTitle],
-      [ContentType.prevAnswerOrTitle, ContentType.question],
-      [ContentType.prevAnswerOrTitle, ContentType.question, ContentType.padding, ContentType.answer, ContentType.media]
+      [ContentType.questionOrPrevAnswerOrTitle],
+      [ContentType.questionOrPrevAnswerOrTitle, ContentType.media, ContentType.tip],
+      [ContentType.questionOrPrevAnswerOrTitle, ContentType.media, ContentType.tip, ContentType.padding, ContentType.answer]
     ],
   ];
 }
