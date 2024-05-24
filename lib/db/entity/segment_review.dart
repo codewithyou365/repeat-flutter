@@ -4,19 +4,17 @@ import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
 
 @Entity(
-  primaryKeys: ['crn', 'createDate', 'k'],
+  primaryKeys: ['createDate', 'segmentKeyId'],
 )
 class SegmentReview {
-  final String crn;
   final Date createDate;
-  final String k;
+  final int segmentKeyId;
 
   final int count;
 
   SegmentReview(
-    this.crn,
     this.createDate,
-    this.k,
+    this.segmentKeyId,
     this.count,
   );
 }

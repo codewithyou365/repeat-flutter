@@ -4,6 +4,7 @@ import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
+import 'package:repeat_flutter/db/entity/segment_key.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment.dart' as entity;
 import 'package:repeat_flutter/logic/download.dart';
@@ -37,29 +38,7 @@ class GsCrContentLogic extends GetxController {
       await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(Classroom.curr, url, 0));
       return;
     }
-    Uri uri;
-    try {
-      uri = Uri.parse(url);
-    } catch (e) {
-      await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(Classroom.curr, url, 0));
-      return;
-    }
-    var kv = await RepeatDoc.fromPath(doc.path, uri);
-    if (kv == null) {
-      await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(Classroom.curr, url, 0));
-      return;
-    }
-    List<entity.Segment> segments = [];
-    for (var lessonIndex = 0; lessonIndex < kv.lesson.length; lessonIndex++) {
-      var lesson = kv.lesson[lessonIndex];
-      for (var segmentIndex = 0; segmentIndex < lesson.segment.length; segmentIndex++) {
-        var segment = lesson.segment[segmentIndex];
-        var key = "${kv.rootPath}|${lesson.key}|${segment.key}";
-        segments.add(entity.Segment(Classroom.curr, key, 0, 0, 0, 0, 0));
-      }
-    }
-
-    await Db().db.scheduleDao.deleteContent(url, segments);
+    await Db().db.scheduleDao.deleteContent(url, doc.id!);
     Get.find<GsCrLogic>().init();
   }
 
@@ -97,7 +76,7 @@ class GsCrContentLogic extends GetxController {
     if (doc == null) {
       return;
     }
-
+    List<SegmentKey> segmentKeys = [];
     List<entity.Segment> segments = [];
     List<SegmentOverallPrg> segmentOverallPrgs = [];
     var kv = await RepeatDoc.fromPath(doc.path, Uri.parse(url));
@@ -130,19 +109,22 @@ class GsCrContentLogic extends GetxController {
         var segment = lesson.segment[segmentIndex];
         var key = "${kv.rootPath}|${lesson.key}|${segment.key}";
         //4611686118427387904-(99999*10000000000+99999*100000+99999)
-        segments.add(entity.Segment(
+        segmentKeys.add(SegmentKey(
           Classroom.curr,
           key,
+        ));
+        segments.add(entity.Segment(
+          0,
           doc.id!,
           mediaDocId,
           lessonIndex,
           segmentIndex,
           contentIndexSort * 10000000000 + lessonIndex * 100000 + segmentIndex,
         ));
-        segmentOverallPrgs.add(SegmentOverallPrg(Classroom.curr, key, Date.from(now), 0));
+        segmentOverallPrgs.add(SegmentOverallPrg(0, Date.from(now), 0));
       }
     }
-    await Db().db.scheduleDao.importSegment(segments, segmentOverallPrgs);
+    await Db().db.scheduleDao.importSegment(segmentKeys, segments, segmentOverallPrgs);
     Get.find<GsCrLogic>().init();
   }
 

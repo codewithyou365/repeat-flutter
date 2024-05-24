@@ -4,22 +4,20 @@ import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
 
 @Entity(
-  primaryKeys: ['crn', 'k'],
+  primaryKeys: ['segmentKeyId'],
   indices: [
     Index(value: ['next', 'progress']),
   ],
 )
 class SegmentOverallPrg {
-  final String crn;
-  final String k;
+  int segmentKeyId;
 
   final Date next;
 
   final int progress;
 
   SegmentOverallPrg(
-    this.crn,
-    this.k,
+    this.segmentKeyId,
     this.next,
     this.progress,
   );

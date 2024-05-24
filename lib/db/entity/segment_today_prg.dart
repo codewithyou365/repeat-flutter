@@ -10,15 +10,14 @@ enum TodayPrgType {
 
 @Entity(
   indices: [
-    Index(value: ['crn', 'k', 'type'], unique: true),
+    Index(value: ['segmentKeyId', 'type'], unique: true),
     Index(value: ['sort']),
   ],
 )
 class SegmentTodayPrg {
   @PrimaryKey(autoGenerate: true)
   final int? id;
-  final String crn;
-  final String k;
+  final int segmentKeyId;
   int type;
   final int sort;
   int progress;
@@ -28,8 +27,7 @@ class SegmentTodayPrg {
   bool finish;
 
   SegmentTodayPrg(
-    this.crn,
-    this.k,
+    this.segmentKeyId,
     this.type,
     this.sort,
     this.progress,
@@ -75,8 +73,7 @@ class SegmentTodayPrg {
     List<SegmentTodayPrg> clonedList = [];
     for (SegmentTodayPrg segment in list) {
       SegmentTodayPrg clonedSegment = SegmentTodayPrg(
-        segment.crn,
-        segment.k,
+        segment.segmentKeyId,
         segment.type,
         segment.sort,
         segment.progress,

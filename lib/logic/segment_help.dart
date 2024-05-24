@@ -1,5 +1,4 @@
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
@@ -7,7 +6,7 @@ import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 class SegmentHelp {
   static Map<String, RepeatDoc> indexDocPathToQa = {};
   static Map<String, List<MediaSegment>> mediaDocPathToMediaSegments = {};
-  static Map<String, SegmentContent> scheduleKeyToLearnSegment = {};
+  static Map<int, SegmentContent> scheduleKeyToLearnSegment = {};
 
   static clear() {
     indexDocPathToQa = {};
@@ -15,11 +14,11 @@ class SegmentHelp {
     scheduleKeyToLearnSegment = {};
   }
 
-  static Future<SegmentContent?> from(String scheduleKey) async {
-    if (scheduleKeyToLearnSegment.containsKey(scheduleKey)) {
-      return scheduleKeyToLearnSegment[scheduleKey]!;
+  static Future<SegmentContent?> from(int segmentKeyId) async {
+    if (scheduleKeyToLearnSegment.containsKey(segmentKeyId)) {
+      return scheduleKeyToLearnSegment[segmentKeyId]!;
     }
-    var retInDb = await Db().db.scheduleDao.getSegmentContent(Classroom.curr, scheduleKey);
+    var retInDb = await Db().db.scheduleDao.getSegmentContent(segmentKeyId);
     if (retInDb == null) {
       return null;
     }
@@ -61,7 +60,7 @@ class SegmentHelp {
       ret.mediaSegments = mediaSegments;
     }
 
-    scheduleKeyToLearnSegment[scheduleKey] = ret;
+    scheduleKeyToLearnSegment[segmentKeyId] = ret;
     return ret;
   }
 }

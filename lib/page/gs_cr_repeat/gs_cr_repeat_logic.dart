@@ -116,7 +116,7 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     var curr = state.c[0];
-    var learnSegment = await SegmentHelp.from(curr.k);
+    var learnSegment = await SegmentHelp.from(curr.segmentKeyId);
     if (learnSegment == null) {
       return;
     }

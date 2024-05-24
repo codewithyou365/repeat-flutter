@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
-import 'package:repeat_flutter/db/entity/segment_review.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/model/segment_review_with_key.dart';
 import 'gs_cr_stats_review_logic.dart';
 
 class GsCrStatsReviewPage extends StatelessWidget {
@@ -37,7 +36,7 @@ class GsCrStatsReviewPage extends StatelessWidget {
     );
   }
 
-  Widget buildItem(BuildContext context, GsCrStatsReviewLogic logic, SegmentReview model) {
+  Widget buildItem(BuildContext context, GsCrStatsReviewLogic logic, SegmentReviewWithKey model) {
     return Padding(
       padding: EdgeInsets.all(16.w),
       child: Row(

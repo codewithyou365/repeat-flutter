@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'dart:convert' as convert;
 
-
 class RepeatDoc {
   String rootPath;
   String key;
@@ -78,8 +77,8 @@ class Segment {
     return Segment(
       json['start'] ?? "",
       json['end'] ?? "",
-      json['key'] ?? index.toString(),
-      json['q'],
+      json['key'] ?? (index + 1).toString(),
+      json['q'] ?? "",
       json['tip'] ?? "",
       json['a'],
     );

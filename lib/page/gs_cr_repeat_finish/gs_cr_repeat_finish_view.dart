@@ -14,7 +14,7 @@ class GsCrRepeatFinishPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(I18nKey.btnReview.tr),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             // TODO need to listen to system back event
             Nav.gsCr.until();
@@ -29,9 +29,14 @@ class GsCrRepeatFinishPage extends StatelessWidget {
             itemBuilder: (BuildContext context, int index) {
               return Column(
                 children: [
-                  ListTile(
-                    title: Text(state.segments[index].question),
-                  ),
+                  if (state.segments[index].question != "")
+                    ListTile(
+                      title: Text(state.segments[index].question),
+                    ),
+                  if (state.segments[index].tip != "")
+                    ListTile(
+                      title: Text(state.segments[index].tip),
+                    ),
                   ListTile(
                     title: Text(state.segments[index].answer),
                   ),

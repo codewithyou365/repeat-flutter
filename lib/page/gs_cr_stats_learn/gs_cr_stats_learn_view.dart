@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/logic/model/segment_overall_prg_with_key.dart';
 
 import 'gs_cr_stats_learn_logic.dart';
 
@@ -38,7 +37,7 @@ class GsCrStatsLearnPage extends StatelessWidget {
     );
   }
 
-  Widget buildItem(BuildContext context, GsCrStatsLearnLogic logic, SegmentOverallPrg model) {
+  Widget buildItem(BuildContext context, GsCrStatsLearnLogic logic, SegmentOverallPrgWithKey model) {
     return Padding(
       padding: EdgeInsets.all(16.w),
       child: Row(

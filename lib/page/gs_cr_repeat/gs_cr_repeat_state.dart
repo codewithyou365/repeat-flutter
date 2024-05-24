@@ -14,7 +14,7 @@ class GsCrRepeatState {
   var progress = -1;
   var total = 10;
 
-  SegmentContent segment = SegmentContent(Classroom.curr, "", 0, 0, 0, 0, 0, "", "", "");
+  SegmentContent segment = SegmentContent(0, 0, 0, 0, 0, 0, Classroom.curr, "", "", "", "");
   late List<SegmentTodayPrg> c;
   var step = RepeatStep.recall;
   var showContent = [
