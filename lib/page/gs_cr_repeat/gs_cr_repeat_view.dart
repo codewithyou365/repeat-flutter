@@ -32,7 +32,7 @@ class GsCrRepeatPage extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 24.w),
             child: Column(
               children: [
-                buildContent(context, state),
+                buildContent(context, logic),
                 buildBottom(logic),
               ],
             ),
@@ -42,7 +42,8 @@ class GsCrRepeatPage extends StatelessWidget {
     );
   }
 
-  Widget buildContent(BuildContext context, GsCrRepeatState state) {
+  Widget buildContent(BuildContext context, GsCrRepeatLogic logic) {
+    var state = logic.state;
     state.step.index;
     List<List<ContentType>> currProcessContent;
     var processIndex = state.progress;
@@ -78,21 +79,42 @@ class GsCrRepeatPage extends StatelessWidget {
         }
       }
     }
-    var bottomHeight = 180.h;
-    if (media != null) {
-      bottomHeight += 100.h;
-    }
+
+    WidgetsBinding.instance.addPostFrameCallback(afterLayout);
     return Column(children: [
-      question,
+      Container(
+        key: state.questionKey,
+        child: question,
+      ),
       if (media != null) media,
       Padding(
         padding: EdgeInsets.only(bottom: 15.h),
       ),
-      SizedBox(
-        height: MediaQuery.of(context).size.height - bottomHeight,
-        child: ret.isEmpty ? const Text("") : ListView(children: ret),
-      ),
+      Obx(() {
+        if (state.questionHeight.value > 0) {
+          var bottomHeight = 180.h;
+          var mediaHeight = 0.h;
+          if (media != null) {
+            mediaHeight = 100.h;
+          }
+          return SizedBox(
+            height: MediaQuery.of(context).size.height - bottomHeight - mediaHeight - state.questionHeight.value,
+            child: ret.isEmpty ? const Text("") : ListView(children: ret),
+          );
+        }
+        return const Text("");
+      }),
     ]);
+  }
+
+  void afterLayout(_) {
+    final state = Get.find<GsCrRepeatLogic>().state;
+    var context = state.questionKey.currentContext;
+    if (context == null) {
+      return;
+    }
+    final RenderBox renderBox = context.findRenderObject() as RenderBox;
+    state.questionHeight.value = renderBox.size.height;
   }
 
   Widget? buildInnerContent(BuildContext context, ContentType t, SegmentContent segment) {
