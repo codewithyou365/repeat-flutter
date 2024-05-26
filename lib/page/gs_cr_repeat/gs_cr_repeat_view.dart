@@ -162,7 +162,7 @@ class GsCrRepeatPage extends StatelessWidget {
           children: [
             buildButton(I18nKey.btnKnow.tr, () => logic.show()),
             const Spacer(),
-            buildButton(I18nKey.labelTips.tr, () => logic.tip()),
+            buildButton(I18nKey.btnTips.tr, () => logic.tip()),
             const Spacer(),
             buildButton(I18nKey.btnUnknown.tr, () => logic.error()),
           ],

@@ -49,6 +49,7 @@ enum I18nKey {
   btnLearn,
   btnReview,
   btnShow,
+  btnTips,
   btnUnknown,
   btnKnow,
   btnError,
