@@ -40,8 +40,6 @@ abstract class ScheduleDao {
 
   //static List<int> review = [0, 30];
 
-  static int catchUpAdditionDay = 1;
-
   @Query('SELECT * FROM Lock where id=1 for update')
   Future<void> forUpdate();
 
@@ -108,10 +106,9 @@ abstract class ScheduleDao {
       " JOIN SegmentKey on SegmentKey.id=SegmentReview.segmentKeyId AND SegmentKey.crn=:crn"
       " JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId"
       " WHERE SegmentReview.count=:reviewCount"
-      " AND SegmentReview.createDate>=:startDate"
-      " AND SegmentReview.createDate<=:endDate"
+      " AND SegmentReview.createDate=:startDate"
       " ORDER BY Segment.sort")
-  Future<List<SegmentTodayPrg>> scheduleReview(String crn, int reviewCount, Date startDate, Date endDate);
+  Future<List<SegmentTodayPrg>> scheduleReview(String crn, int reviewCount, Date startDate);
 
   @Query("SELECT * FROM ("
       " SELECT SegmentOverallPrg.segmentKeyId"
@@ -298,6 +295,8 @@ abstract class ScheduleDao {
       }
 
       // review ...,1,0
+      List<Date> reviewDays = [];
+      List<int> reviewLevel = [];
       for (int i = review.length - 1; i >= 0; --i) {
         var shouldStartDate = Date.from(now.subtract(Duration(seconds: review[i])));
         var startDateInt = await findReviewedMinCreateDate(Classroom.curr, i, shouldStartDate);
@@ -305,12 +304,17 @@ abstract class ScheduleDao {
           continue;
         }
         var startDate = Date(startDateInt);
-        var endDate = startDate;
+        reviewDays.add(startDate);
+        reviewLevel.add(i);
         if (startDate.value != shouldStartDate.value) {
           // If we need to catch up, we should only pursue it for one day.
-          endDate = Date.from(startDate.toDateTime().add(Duration(days: catchUpAdditionDay)));
+          reviewDays.add(Date.from(startDate.toDateTime().add(const Duration(days: 1))));
+          reviewLevel.add(i);
         }
-        List<SegmentTodayPrg> sls = await scheduleReview(Classroom.curr, i, startDate, endDate);
+      }
+      for (int i = 0; i < reviewDays.length; ++i) {
+        var reviewDay = reviewDays[i];
+        List<SegmentTodayPrg> sls = await scheduleReview(Classroom.curr, reviewLevel[i], reviewDay);
         SegmentTodayPrg.setType(sls, TodayPrgType.review, i, 0);
         todayPrg.addAll(sls);
       }

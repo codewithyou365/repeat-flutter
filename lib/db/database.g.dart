@@ -692,26 +692,11 @@ class _$ScheduleDao extends ScheduleDao {
     String crn,
     int reviewCount,
     Date startDate,
-    Date endDate,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentReview.segmentKeyId,0 type,Segment.sort,0 progress,0 viewTime,SegmentReview.count reviewCount,SegmentReview.createDate reviewCreateDate,0 finish FROM SegmentReview JOIN SegmentKey on SegmentKey.id=SegmentReview.segmentKeyId AND SegmentKey.crn=?1 JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId WHERE SegmentReview.count=?2 AND SegmentReview.createDate>=?3 AND SegmentReview.createDate<=?4 ORDER BY Segment.sort',
-        mapper: (Map<String, Object?> row) => SegmentTodayPrg(
-            row['segmentKeyId'] as int,
-            row['type'] as int,
-            row['sort'] as int,
-            row['progress'] as int,
-            _dateTimeConverter.decode(row['viewTime'] as int),
-            row['reviewCount'] as int,
-            _dateConverter.decode(row['reviewCreateDate'] as int),
-            (row['finish'] as int) != 0,
-            id: row['id'] as int?),
-        arguments: [
-          crn,
-          reviewCount,
-          _dateConverter.encode(startDate),
-          _dateConverter.encode(endDate)
-        ]);
+        'SELECT SegmentReview.segmentKeyId,0 type,Segment.sort,0 progress,0 viewTime,SegmentReview.count reviewCount,SegmentReview.createDate reviewCreateDate,0 finish FROM SegmentReview JOIN SegmentKey on SegmentKey.id=SegmentReview.segmentKeyId AND SegmentKey.crn=?1 JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId WHERE SegmentReview.count=?2 AND SegmentReview.createDate=?3 ORDER BY Segment.sort',
+        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
+        arguments: [crn, reviewCount, _dateConverter.encode(startDate)]);
   }
 
   @override
