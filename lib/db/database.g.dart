@@ -134,7 +134,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE UNIQUE INDEX `index_Classroom_sort` ON `Classroom` (`sort`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_ContentIndex_sort` ON `ContentIndex` (`sort`)');
+            'CREATE INDEX `index_ContentIndex_sort` ON `ContentIndex` (`sort`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_Segment_sort` ON `Segment` (`sort`)');
         await database.execute(
