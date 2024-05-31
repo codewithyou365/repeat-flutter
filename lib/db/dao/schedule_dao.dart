@@ -8,6 +8,7 @@ import 'package:repeat_flutter/db/entity/content_index.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/segment.dart';
 import 'package:repeat_flutter/db/entity/segment_key.dart';
+import 'package:repeat_flutter/db/entity/segment_overall_listen_prg.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment_review.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
@@ -214,6 +215,9 @@ abstract class ScheduleDao {
   @Insert(onConflict: OnConflictStrategy.ignore)
   Future<void> insertSegmentOverallPrgs(List<SegmentOverallPrg> entities);
 
+  @Insert(onConflict: OnConflictStrategy.ignore)
+  Future<void> insertSegmentOverallListenPrgs(List<SegmentOverallListenPrg> entities);
+
   /// for manager
   @transaction
   Future<void> importSegment(
@@ -235,15 +239,18 @@ abstract class ScheduleDao {
     for (var segmentKey in segmentKeys) {
       keyToSegmentKey[segmentKey.k] = segmentKey;
     }
+    List<SegmentOverallListenPrg> segmentOverallListenPrgs = [];
     for (var i = 0; i < rawSegmentKeys.length; i++) {
       var rawSegmentKey = rawSegmentKeys[i];
       var segmentKeyWithId = keyToSegmentKey[rawSegmentKey.k];
       var id = segmentKeyWithId!.id!;
       segments[i].segmentKeyId = id;
       segmentOverallPrgs[i].segmentKeyId = id;
+      segmentOverallListenPrgs.add(SegmentOverallListenPrg.from(segmentOverallPrgs[i]));
     }
     await insertSegments(segments);
     await insertSegmentOverallPrgs(segmentOverallPrgs);
+    await insertSegmentOverallListenPrgs(segmentOverallListenPrgs);
   }
 
   @transaction

@@ -122,6 +122,8 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentOverallPrg` (`segmentKeyId` INTEGER NOT NULL, `next` INTEGER NOT NULL, `progress` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`))');
         await database.execute(
+            'CREATE TABLE IF NOT EXISTS `SegmentOverallListenPrg` (`segmentKeyId` INTEGER NOT NULL, `next` INTEGER NOT NULL, `progress` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`))');
+        await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentReview` (`createDate` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY (`createDate`, `segmentKeyId`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentTodayPrg` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `segmentKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `reviewCount` INTEGER NOT NULL, `reviewCreateDate` INTEGER NOT NULL, `finish` INTEGER NOT NULL)');
@@ -141,6 +143,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE UNIQUE INDEX `index_SegmentKey_crn_k` ON `SegmentKey` (`crn`, `k`)');
         await database.execute(
             'CREATE INDEX `index_SegmentOverallPrg_next_progress` ON `SegmentOverallPrg` (`next`, `progress`)');
+        await database.execute(
+            'CREATE INDEX `index_SegmentOverallListenPrg_next_progress` ON `SegmentOverallListenPrg` (`next`, `progress`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_SegmentTodayPrg_segmentKeyId_type` ON `SegmentTodayPrg` (`segmentKeyId`, `type`)');
         await database.execute(
@@ -544,6 +548,14 @@ class _$ScheduleDao extends ScheduleDao {
                   'next': _dateConverter.encode(item.next),
                   'progress': item.progress
                 }),
+        _segmentOverallListenPrgInsertionAdapter = InsertionAdapter(
+            database,
+            'SegmentOverallListenPrg',
+            (SegmentOverallListenPrg item) => <String, Object?>{
+                  'segmentKeyId': item.segmentKeyId,
+                  'next': _dateConverter.encode(item.next),
+                  'progress': item.progress
+                }),
         _contentIndexDeletionAdapter = DeletionAdapter(
             database,
             'ContentIndex',
@@ -592,6 +604,9 @@ class _$ScheduleDao extends ScheduleDao {
   final InsertionAdapter<Segment> _segmentInsertionAdapter;
 
   final InsertionAdapter<SegmentOverallPrg> _segmentOverallPrgInsertionAdapter;
+
+  final InsertionAdapter<SegmentOverallListenPrg>
+      _segmentOverallListenPrgInsertionAdapter;
 
   final DeletionAdapter<ContentIndex> _contentIndexDeletionAdapter;
 
@@ -843,6 +858,13 @@ class _$ScheduleDao extends ScheduleDao {
   Future<void> insertSegmentOverallPrgs(
       List<SegmentOverallPrg> entities) async {
     await _segmentOverallPrgInsertionAdapter.insertList(
+        entities, OnConflictStrategy.ignore);
+  }
+
+  @override
+  Future<void> insertSegmentOverallListenPrgs(
+      List<SegmentOverallListenPrg> entities) async {
+    await _segmentOverallListenPrgInsertionAdapter.insertList(
         entities, OnConflictStrategy.ignore);
   }
 

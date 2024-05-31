@@ -18,6 +18,7 @@ import 'package:repeat_flutter/db/entity/id99999.dart';
 import 'package:repeat_flutter/db/entity/lock.dart';
 import 'package:repeat_flutter/db/entity/segment.dart';
 import 'package:repeat_flutter/db/entity/segment_key.dart';
+import 'package:repeat_flutter/db/entity/segment_overall_listen_prg.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment_review.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
@@ -43,6 +44,7 @@ part 'database.g.dart'; // the generated code will be there
   SegmentKey,
   SegmentOverallPrg,
   SegmentOverallPrgWithKey,
+  SegmentOverallListenPrg,
   SegmentReview,
   SegmentReviewWithKey,
   SegmentTodayPrg,
