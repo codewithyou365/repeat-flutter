@@ -64,22 +64,41 @@ class Lesson {
 }
 
 class Segment {
-  String start;
-  String end;
   String key;
-  String q;
+  String tipStart;
+  String tipEnd;
   String tip;
+  String qStart;
+  String qEnd;
+  String q;
+  String aStart;
+  String aEnd;
   String a;
 
-  Segment(this.start, this.end, this.key, this.q, this.tip, this.a);
+  Segment(
+    this.key,
+    this.tipStart,
+    this.tipEnd,
+    this.tip,
+    this.qStart,
+    this.qEnd,
+    this.q,
+    this.aStart,
+    this.aEnd,
+    this.a,
+  );
 
   factory Segment.fromJson(Map<String, dynamic> json, int index) {
     return Segment(
-      json['start'] ?? "",
-      json['end'] ?? "",
       json['key'] ?? (index + 1).toString(),
-      json['q'] ?? "",
+      json['tipStart'] ?? "",
+      json['tipEnd'] ?? "",
       json['tip'] ?? "",
+      json['qStart'] ?? "",
+      json['qEnd'] ?? "",
+      json['q'] ?? "",
+      json['aStart'] ?? "",
+      json['aEnd'] ?? "",
       json['a'],
     );
   }

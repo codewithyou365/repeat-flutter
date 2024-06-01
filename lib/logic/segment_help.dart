@@ -53,7 +53,7 @@ class SegmentHelp {
       if (mediaSegments == null) {
         mediaSegments = [];
         for (var s in lesson.segment) {
-          mediaSegments.add(MediaSegment.from(s.start, s.end));
+          mediaSegments.add(MediaSegment.from(s.aStart, s.aEnd));
         }
         mediaDocPathToMediaSegments[ret.mediaDocPath] = mediaSegments;
       }
