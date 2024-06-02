@@ -27,9 +27,10 @@ class SegmentContentInDb extends Segment {
 }
 
 class SegmentContent extends SegmentContentInDb {
-  List<MediaSegment> mediaSegments = [];
+  List<MediaSegment> qMediaSegments = [];
+  List<MediaSegment> aMediaSegments = [];
+  MediaSegment? titleMediaSegment;
   var title = "";
-  var prevQuestion = "";
   var prevAnswer = "";
   var question = "";
   var tip = "";

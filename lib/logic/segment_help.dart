@@ -5,12 +5,17 @@ import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 class SegmentHelp {
   static Map<String, RepeatDoc> indexDocPathToQa = {};
-  static Map<String, List<MediaSegment>> mediaDocPathToMediaSegments = {};
+
+  static Map<String, MediaSegment> mediaDocPathToTitleMediaSegment = {};
+  static Map<String, List<MediaSegment>> mediaDocPathToQuestionMediaSegments = {};
+  static Map<String, List<MediaSegment>> mediaDocPathToAnswerMediaSegments = {};
+
   static Map<int, SegmentContent> scheduleKeyToLearnSegment = {};
 
   static clear() {
     indexDocPathToQa = {};
-    mediaDocPathToMediaSegments = {};
+    mediaDocPathToAnswerMediaSegments = {};
+    mediaDocPathToQuestionMediaSegments = {};
     scheduleKeyToLearnSegment = {};
   }
 
@@ -39,7 +44,6 @@ class SegmentHelp {
       var segment = lesson.segment[ret.segmentIndex];
       if (ret.segmentIndex != 0) {
         var prevSegment = lesson.segment[ret.segmentIndex - 1];
-        ret.prevQuestion = prevSegment.q;
         ret.prevAnswer = prevSegment.a;
       }
       ret.question = segment.q;
@@ -49,15 +53,46 @@ class SegmentHelp {
 
     // full mediaSegments
     if (ret.mediaDocPath != "") {
-      var mediaSegments = mediaDocPathToMediaSegments[ret.mediaDocPath];
-      if (mediaSegments == null) {
-        mediaSegments = [];
-        for (var s in lesson.segment) {
-          mediaSegments.add(MediaSegment.from(s.aStart, s.aEnd));
-        }
-        mediaDocPathToMediaSegments[ret.mediaDocPath] = mediaSegments;
+      var titleMediaSegment = mediaDocPathToTitleMediaSegment[ret.mediaDocPath];
+      if (titleMediaSegment == null) {
+        titleMediaSegment = MediaSegment.from(lesson.titleStart, lesson.titleEnd);
+        mediaDocPathToTitleMediaSegment[ret.mediaDocPath] = titleMediaSegment;
       }
-      ret.mediaSegments = mediaSegments;
+      if (titleMediaSegment.start == 0 && titleMediaSegment.start == titleMediaSegment.end) {
+        ret.titleMediaSegment = null;
+      } else {
+        ret.titleMediaSegment = titleMediaSegment;
+      }
+
+      var qMediaSegments = mediaDocPathToQuestionMediaSegments[ret.mediaDocPath];
+      if (qMediaSegments == null) {
+        qMediaSegments = [];
+        var ok = true;
+        for (var s in lesson.segment) {
+          var start = s.qStart;
+          var end = s.qEnd;
+          if (start == '' || end == '') {
+            ok = false;
+            break;
+          }
+          qMediaSegments.add(MediaSegment.from(start, end));
+        }
+        if (!ok) {
+          qMediaSegments = [];
+        }
+        mediaDocPathToQuestionMediaSegments[ret.mediaDocPath] = qMediaSegments;
+      }
+      ret.qMediaSegments = qMediaSegments;
+
+      var aMediaSegments = mediaDocPathToAnswerMediaSegments[ret.mediaDocPath];
+      if (aMediaSegments == null) {
+        aMediaSegments = [];
+        for (var s in lesson.segment) {
+          aMediaSegments.add(MediaSegment.from(s.aStart, s.aEnd));
+        }
+        mediaDocPathToAnswerMediaSegments[ret.mediaDocPath] = aMediaSegments;
+      }
+      ret.aMediaSegments = aMediaSegments;
     }
 
     scheduleKeyToLearnSegment[segmentKeyId] = ret;

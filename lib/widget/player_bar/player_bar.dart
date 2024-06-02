@@ -8,7 +8,7 @@ class PlayerBar extends StatefulWidget {
   final List<MediaSegment> lines;
   final String path;
 
-  const PlayerBar(this.index, this.lines, this.path, {super.key});
+  const PlayerBar(this.index, this.lines, this.path, {Key? key}) : super(key: key);
 
   @override
   PlayerBarState createState() => PlayerBarState();
@@ -44,14 +44,15 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
   }
 
   stopAutoMove() {
+    _controller.stop();
     player.stop();
   }
 
-  autoMove({offset = 0}) {
+  autoMove({offset}) {
     if (widget.path.isEmpty || widget.lines.isEmpty || widget.index == null) {
       return;
     }
-    if (offset != 0) {
+    if (offset != null) {
       _offset = offset;
     }
     var currOffset = _offset ~/ factor;

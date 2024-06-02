@@ -10,8 +10,8 @@ import (
 )
 
 type segment struct {
-	Start string `json:"start"`
-	End   string `json:"end"`
+	Start string `json:"aStart"`
+	End   string `json:"aEnd"`
 	Tip   string `json:"tip"`
 	A     string `json:"a"`
 }

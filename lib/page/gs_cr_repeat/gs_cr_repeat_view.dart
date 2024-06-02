@@ -60,33 +60,40 @@ class GsCrRepeatPage extends StatelessWidget {
     } else {
       showContent = currProcessContent[currProcessContent.length - 1];
     }
-
+    Widget? questionMedia;
     Widget question = const Text("???");
-    Widget? media;
-    List<Widget> ret = [];
+    Widget? answerMedia;
+
+    List<Widget> listViewContent = [];
     for (int i = 0; i < showContent.length; i++) {
-      var widget = buildInnerContent(context, showContent[i], state.segment);
-      if (showContent[i] == ContentType.media) {
-        media = widget;
-      } else if (showContent[i] == ContentType.questionOrPrevAnswerOrTitle) {
-        if (widget != null) {
-          question = widget;
+      if (showContent[i] == ContentType.questionOrPrevAnswerOrTitle) {
+        var textAndMedia = buildInnerContent(state, context, ContentType.questionOrPrevAnswerOrTitle, state.segment);
+        question = textAndMedia[0];
+        if (textAndMedia.length == 2) {
+          questionMedia = textAndMedia[1];
+        }
+      } else if (showContent[i] == ContentType.answer) {
+        var textAndMedia = buildInnerContent(state, context, ContentType.answer, state.segment);
+        listViewContent.add(textAndMedia[0]);
+        if (textAndMedia.length == 2) {
+          answerMedia = textAndMedia[1];
         }
       } else {
-        var innerContent = widget;
-        if (innerContent != null) {
-          ret.add(innerContent);
+        var innerContent = buildInnerContent(state, context, showContent[i], state.segment);
+        for (Widget w in innerContent) {
+          listViewContent.add(w);
         }
       }
     }
 
     WidgetsBinding.instance.addPostFrameCallback(afterLayout);
     return Column(children: [
+      if (questionMedia != null) questionMedia,
       Container(
         key: state.questionKey,
         child: question,
       ),
-      if (media != null) media,
+      if (answerMedia != null) answerMedia,
       Padding(
         padding: EdgeInsets.only(bottom: 15.h),
       ),
@@ -94,12 +101,15 @@ class GsCrRepeatPage extends StatelessWidget {
         if (state.questionHeight.value > 0) {
           var bottomHeight = 180.h;
           var mediaHeight = 0.h;
-          if (media != null) {
-            mediaHeight = 100.h;
+          if (questionMedia != null) {
+            mediaHeight += 100.h;
+          }
+          if (answerMedia != null) {
+            mediaHeight += 100.h;
           }
           return SizedBox(
             height: MediaQuery.of(context).size.height - bottomHeight - mediaHeight - state.questionHeight.value,
-            child: ret.isEmpty ? const Text("") : ListView(children: ret),
+            child: listViewContent.isEmpty ? const Text("") : ListView(children: listViewContent),
           );
         }
         return const Text("");
@@ -115,43 +125,69 @@ class GsCrRepeatPage extends StatelessWidget {
     }
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     state.questionHeight.value = renderBox.size.height;
+    if (state.step == RepeatStep.recall) {
+      state.questionMediaKey.currentState?.autoMove(offset: 0.0);
+    } else {
+      state.questionMediaKey.currentState?.stopAutoMove();
+    }
   }
 
-  Widget? buildInnerContent(BuildContext context, ContentType t, SegmentContent segment) {
+  List<Widget> buildInnerContent(GsCrRepeatState state, BuildContext context, ContentType t, SegmentContent segment) {
+    List<Widget> ret = [];
     switch (t) {
       case ContentType.questionOrPrevAnswerOrTitle:
         if (segment.question != "") {
-          return Text(segment.question);
+          if (segment.mediaDocPath != "" && segment.qMediaSegments.isNotEmpty) {
+            ret.add(Text(segment.question));
+            ret.add(PlayerBar(segment.segmentIndex, segment.qMediaSegments, segment.mediaDocPath, key: state.questionMediaKey));
+            return ret;
+          }
+          ret.add(Text(segment.question));
+          return ret;
         } else if (segment.prevAnswer != "") {
-          return Text(segment.prevAnswer);
+          if (segment.mediaDocPath != "") {
+            ret.add(Text(segment.prevAnswer));
+            ret.add(PlayerBar(0, [segment.aMediaSegments[segment.segmentIndex - 1]], segment.mediaDocPath, key: state.questionMediaKey));
+            return ret;
+          }
+          ret.add(Text(segment.prevAnswer));
+          return ret;
         } else if (segment.title != "") {
-          return Text(segment.title);
+          if (segment.mediaDocPath != "" && segment.titleMediaSegment != null) {
+            ret.add(Text(segment.title));
+            ret.add(PlayerBar(0, [segment.titleMediaSegment!], segment.mediaDocPath, key: state.questionMediaKey));
+            return ret;
+          }
+          ret.add(Text(segment.title));
+          return ret;
         } else {
-          return const Text("???");
+          ret.add(const Text("???"));
+          return ret;
         }
+      case ContentType.answer:
+        if (segment.mediaDocPath != "") {
+          ret.add(Text(segment.answer));
+          ret.add(PlayerBar(segment.segmentIndex, segment.aMediaSegments, segment.mediaDocPath));
+          return ret;
+        }
+        ret.add(Text(segment.answer));
+        return ret;
       case ContentType.tip:
         if (segment.tip != "") {
-          return Text(
+          ret.add(Text(
             segment.tip,
             style: TextStyle(
               color: Theme.of(context).hintColor,
             ),
-          );
-        } else {
-          return null;
+          ));
+          return ret;
         }
-      case ContentType.answer:
-        return Text(segment.answer);
-      case ContentType.media:
-        if (segment.mediaDocPath != "") {
-          return PlayerBar(segment.segmentIndex, segment.mediaSegments, segment.mediaDocPath);
-        } else {
-          return null;
-        }
+        return [];
       default:
-        return Padding(
+        ret.add(Padding(
           padding: EdgeInsets.only(bottom: 8.w),
-        );
+        ));
+        return ret;
     }
   }
 

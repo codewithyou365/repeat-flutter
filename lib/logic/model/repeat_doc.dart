@@ -43,9 +43,11 @@ class Lesson {
   String path;
   String key;
   String title;
+  String titleStart;
+  String titleEnd;
   List<Segment> segment;
 
-  Lesson(this.url, this.path, this.key, this.title, this.segment);
+  Lesson(this.url, this.path, this.key, this.title, this.titleStart, this.titleEnd, this.segment);
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
     var url = json['url'] ?? "";
@@ -58,6 +60,8 @@ class Lesson {
       path,
       json['key'] ?? json['path'],
       json['title'] ?? json['key'] ?? json['path'],
+      json['titleStart'] ?? "00:00:00,000",
+      json['titleEnd'] ?? "00:00:00,000",
       List<Segment>.from(json['segment'].map((dynamic s) => Segment.fromJson(s, json['segment'].indexOf(s)))),
     );
   }
