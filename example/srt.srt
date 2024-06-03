@@ -1,113 +1,111 @@
 1
-00:00:16,866 --> 00:00:18,000
-These days, |
+00:00:02,166 --> 00:00:03,900
+The facts
+The facts
 
 2
-00:00:18,000 --> 00:00:24,166
-people who do manual work often receive far more money than people who work in offices.
-如今，从事体力劳动的人的收入一般要比坐办公室的人高出许多。
-
+00:00:16,666 --> 00:00:24,633
+Editors of newspapers and magazines often go to extremes to provide their readers with unimportant facts and statistics.
+报刊杂志的编辑常常为了向读者提供成立一些无关紧要的事实和统计数字而走向极端。
 
 3
-00:00:24,766 --> 00:00:36,066
-People who work in offices are frequently referred to as "white-collar workers' for the simple reason that they usually wear a collar and tie to go to work.
-坐办公室的之所以常常被称作“白领工人”，就是因为他们通常是穿着硬领白衬衫，系着领带去上班。
+00:00:25,033 --> 00:00:34,400
+Last year a journalist had been instructed by a well-known magazine to write an article on the president's palace in a new African republic.
+去年，一位记者受一家有名的杂志的委托写一篇关于非洲某个新成立共和国总统府的文章。
 
 
 4
-00:00:36,833 --> 00:00:38,633
-Such is human nature, |
+00:00:35,033 --> 00:00:36,833
+When the article arrived, |
 
 5
-00:00:38,666 --> 00:00:47,533
-that a great many people are often willing to sacrifice higher pay for the privilege of becoming white-collar workers.
-许多人常常情愿放弃较高的薪水以换取做白领工人的殊荣，此乃人之常情。
+00:00:36,933 --> 00:00:41,533
+the editor read the first sentence and then refused to publish it.
+稿子寄来后，编辑看了第一句话就拒绝予以发表。
 
 
 6
-00:00:48,266 --> 00:00:52,033
-This can give rise to curious situations, |
+00:00:42,433 --> 00:00:43,733
+The article began: |
 
 7
-00:00:52,366 --> 00:00:59,433
-as it did in the case of Alfred Bloggs who worked as a dustman for the Ellesmere Corporation.
-而这常常会引起种种奇怪的现象，在埃尔斯米尔公司当清洁工的艾尔弗雷德.布洛斯就是一个例子。
-
+00:00:44,566 --> 00:00:49,433
+‘Hundreds of steps lead to the high wall which surrounds the president's palace|
 
 8
-00:01:00,800 --> 00:01:02,300
-When he got married, |
+00:00:49,933 --> 00:00:59,566
+’The editor at once sent the journalist a fax instructing him to find out the exact number of steps and the height of the wall.
+文章的开头是这样的：“几百级台阶通向环绕总统府的高墙。”编辑立即给那位记者发去传真，要求他核实一下台阶的确切数字和围墙的高度。
+
 
 9
-00:01:02,300 --> 00:01:07,166
-Alf was too embarrassed to say anything to his wife about his job.
-艾尔弗结婚时，感到非常难为情，而没有将自己的职业告诉妻子。
-
+00:01:01,300 --> 00:01:05,666
+The journalist immediately set out to obtain these important facts, |
 
 10
-00:01:07,633 --> 00:01:10,866
-He simply told her that he worked for the Corporation.
-他只说在埃尔斯米尔公司上班。
+00:01:05,666 --> 00:01:08,100
+but he took a long time to send them.
+这位记者立刻开始去获取这些重要的事实，但他用了很长时间才发送它们。
 
 11
-00:01:11,500 --> 00:01:12,600
-Every morning, |
+00:01:08,500 --> 00:01:11,133
+Meanwhile the editor was getting impatient |
 
 12
-00:01:12,600 --> 00:01:16,100
-he left home dressed in a smart black suit.
-每天早晨，他穿上一身漂亮的黑色西装离家上班，
-
-
+00:01:11,133 --> 00:01:13,466
+for the magazine would soon go to press
+在此期间，编辑等得不耐烦了，因为杂志马上要付印。
 
 13
-00:01:16,400 --> 00:01:22,333
-He then changed into overalls and spent the next eight hours as a dustman.
-然后换上工作服，当8个小时清洁工。
-
+00:01:14,266 --> 00:01:17,033
+He sent the journalist two more faxes, |
 
 14
-00:01:23,000 --> 00:01:24,733
-Before returning home at night. |
+00:01:17,033 --> 00:01:18,800
+but received no reply
+他给记者先后发去两份传真，但对方毫无反应。
 
 15
-00:01:24,866 --> 00:01:28,466
-He took a shower and changed back into his suit.
-晚上回家前，他洗个淋浴，重新换上那身黑色西服。
-
+00:01:19,400 --> 00:01:26,100
+He sent yet another fax informing the journalist that if he did not reply soon he would be fired
+于是他又发了一份传真，通知那位记者说，若再不迅速答复，将被解雇。
 
 16
-00:01:29,000 --> 00:01:41,133
-Alf did this for over two years and his fellow dustmen kept his secret Alf's wife has never discovered that she married a dustman and she never will, |
+00:01:26,566 --> 00:01:29,666
+When the journalist again failed to reply, |
 
 17
-00:01:41,400 --> 00:01:44,166
-for Alf has just found another job. |
+00:01:30,000 --> 00:01:34,833
+the editor reluctantly published the article as it had originally been written
+但记者还是没有回复。编辑无奈，勉强按原样发稿了。
 
 18
-00:01:44,433 --> 00:01:47,033
-He will soon be working in an office.
-两年多以来，艾尔弗一直这样，他的同事也为他保守秘密。艾尔弗的妻子一直不知道她嫁给了一个清洁工，而且她永远也不会知道了，因为艾尔弗已找到薪职，不久就要坐办公室里工作了。
+00:01:35,400 --> 00:01:36,800
+A week later, |
 
 19
-00:01:47,566 --> 00:01:51,066
-He will be earning only half as much as he used to, |
-
+00:01:36,800 --> 00:01:40,400
+the editor at last received a fax from the journalist.
+一周之后，编辑终于接到了记者的传真。
 
 20
-00:01:51,200 --> 00:01:56,566
-but he feels that his rise in status is well worth the loss of money.
-他将来挣的钱只有他现在的一半。不过他觉得，地位升高了，损失点儿钱也值得。
+00:01:40,800 --> 00:01:43,733
+Not only had the poor man been arrested, |
 
 21
-00:01:57,033 --> 00:01:58,166
-From now on, |
-
+00:01:44,100 --> 00:01:46,566
+but he had been sent to prison as well
+那个可怜的记者不仅被捕了，而且还被送进了监狱。
 22
-00:01:58,300 --> 00:02:03,366
-he will wear a suit all day and others will call him 'Mr. |
+00:01:46,966 --> 00:01:48,100
+However, |
 
 23
-00:02:03,366 --> 00:02:05,566
-Bloggs', not 'Alf'.
-从此，艾尔弗可以一天到晚穿西服了。别人将称呼他为“布洛格斯先生”，而不再叫他“艾尔弗”了。
+00:01:48,100 --> 00:01:57,233
+he had at last been allowed to send a fax in which he informed the editor that the he had been arrested while counting the 1,|
+
+24
+00:01:57,500 --> 00:02:04,333
+084 steps leading to the fifteen-foot wall which surrounded the president's palace.
+不过，他终于获准发回了一份传真。在传真中他告诉编辑，就在他数通向15英尺高的总统府围墙的 1,084 级台阶时，被抓了起来。
+

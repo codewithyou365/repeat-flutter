@@ -10,10 +10,10 @@ import (
 )
 
 type segment struct {
-	Start string `json:"aStart"`
-	End   string `json:"aEnd"`
-	Tip   string `json:"tip"`
-	A     string `json:"a"`
+	AStart string `json:"aStart"`
+	AEnd   string `json:"aEnd"`
+	Tip    string `json:"tip"`
+	A      string `json:"a"`
 }
 
 func main() {
@@ -35,10 +35,10 @@ func main() {
 		} else {
 			if offset%3 == 1 {
 				se := strings.Split(line, "-->")
-				if curr.Start == "" {
-					curr.Start = strings.TrimSpace(se[0])
+				if curr.AStart == "" {
+					curr.AStart = strings.TrimSpace(se[0])
 				}
-				curr.End = strings.TrimSpace(se[1])
+				curr.AEnd = strings.TrimSpace(se[1])
 			}
 			if offset%3 == 2 {
 				if strings.HasSuffix(line, "|") {
@@ -61,14 +61,14 @@ func main() {
 		}
 	}
 	if len(segments) != 0 {
-		millis := timeRangeToMillis(segments[0].Start)
-		segments[0].Start = forStart(millis, 500)
-		millis = timeRangeToMillis(segments[len(segments)-1].End)
-		segments[len(segments)-1].End = forEnd(millis, 500)
+		millis := timeRangeToMillis(segments[0].AStart)
+		segments[0].AStart = forStart(millis, 500)
+		millis = timeRangeToMillis(segments[len(segments)-1].AEnd)
+		segments[len(segments)-1].AEnd = forEnd(millis, 500)
 
 		for i := 1; i < len(segments); i++ {
-			pe := timeRangeToMillis(segments[i-1].End)
-			cs := timeRangeToMillis(segments[i].Start)
+			pe := timeRangeToMillis(segments[i-1].AEnd)
+			cs := timeRangeToMillis(segments[i].AStart)
 			middleGap := (cs - pe) / 2
 			middleGap -= 50
 			if middleGap < 0 {
@@ -77,14 +77,15 @@ func main() {
 			if middleGap > 500 {
 				middleGap = 500
 			}
-			segments[i].Start = forStart(cs, middleGap)
-			segments[i-1].End = forEnd(pe, middleGap)
+			segments[i].AStart = forStart(cs, middleGap)
+			segments[i-1].AEnd = forEnd(pe, middleGap)
 		}
 	}
 
 	out, _ := json.MarshalIndent(segments, "", "  ")
 	fmt.Print(string(out))
 }
+
 func forStart(millis, duration int) string {
 	millis -= duration
 	if millis < 0 {
