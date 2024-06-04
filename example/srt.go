@@ -9,11 +9,17 @@ import (
 	"strings"
 )
 
+const QaMode = "qa"
+const NormalMode = ""
+
 type segment struct {
-	AStart string `json:"aStart"`
-	AEnd   string `json:"aEnd"`
-	Tip    string `json:"tip"`
-	A      string `json:"a"`
+	QStart string `json:"qStart,omitempty"`
+	QEnd   string `json:"qEnd,omitempty"`
+	Q      string `json:"q,omitempty"`
+	AStart string `json:"aStart,omitempty"`
+	AEnd   string `json:"aEnd,omitempty"`
+	Tip    string `json:"tip,omitempty"`
+	A      string `json:"a,omitempty"`
 }
 
 func main() {
@@ -28,57 +34,126 @@ func main() {
 	scanner := bufio.NewScanner(file)
 	segments := make([]*segment, 0, 10)
 	curr := &segment{}
+	mode := ""
+	modeOffset := 0
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
+		if mode == "" {
+			if line == QaMode {
+				mode = QaMode
+				continue
+			} else {
+				mode = NormalMode
+			}
+		}
 		if len(line) == 0 {
 			continue
 		} else {
 			if offset%3 == 1 {
-				se := strings.Split(line, "-->")
-				if curr.AStart == "" {
-					curr.AStart = strings.TrimSpace(se[0])
+				if mode == QaMode {
+					if modeOffset%2 == 0 {
+						se := strings.Split(line, "-->")
+						if curr.QStart == "" {
+							curr.QStart = strings.TrimSpace(se[0])
+						}
+						curr.QEnd = strings.TrimSpace(se[1])
+					} else {
+						se := strings.Split(line, "-->")
+						if curr.AStart == "" {
+							curr.AStart = strings.TrimSpace(se[0])
+						}
+						curr.AEnd = strings.TrimSpace(se[1])
+					}
+				} else {
+					se := strings.Split(line, "-->")
+					if curr.AStart == "" {
+						curr.AStart = strings.TrimSpace(se[0])
+					}
+					curr.AEnd = strings.TrimSpace(se[1])
 				}
-				curr.AEnd = strings.TrimSpace(se[1])
 			}
 			if offset%3 == 2 {
-				if strings.HasSuffix(line, "|") {
-					curr.A = curr.A + strings.TrimRight(line, "|")
-				} else {
-					curr.A = curr.A + line
-					for scanner.Scan() {
-						lineTip := strings.TrimSpace(scanner.Text())
-						if len(lineTip) == 0 {
-							continue
+				if mode == QaMode {
+					if modeOffset%2 == 0 {
+						if strings.HasSuffix(line, "|") {
+							curr.Q = curr.Q + strings.TrimRight(line, "|")
+						} else {
+							curr.Q = curr.Q + line
+							modeOffset++
 						}
-						curr.Tip = lineTip
-						break
+					} else {
+						if strings.HasSuffix(line, "|") {
+							curr.A = curr.A + strings.TrimRight(line, "|")
+						} else {
+							curr.A = curr.A + line
+							segments = append(segments, curr)
+							curr = &segment{}
+							modeOffset++
+						}
 					}
-					segments = append(segments, curr)
-					curr = &segment{}
+				} else {
+					if strings.HasSuffix(line, "|") {
+						curr.A = curr.A + strings.TrimRight(line, "|")
+					} else {
+						curr.A = curr.A + line
+						for scanner.Scan() {
+							lineTip := strings.TrimSpace(scanner.Text())
+							if len(lineTip) == 0 {
+								continue
+							}
+							curr.Tip = lineTip
+							break
+						}
+						segments = append(segments, curr)
+						curr = &segment{}
+					}
 				}
 			}
 			offset++
 		}
 	}
 	if len(segments) != 0 {
-		millis := timeRangeToMillis(segments[0].AStart)
-		segments[0].AStart = forStart(millis, 500)
-		millis = timeRangeToMillis(segments[len(segments)-1].AEnd)
-		segments[len(segments)-1].AEnd = forEnd(millis, 500)
+		{
+			millis := timeRangeToMillis(segments[0].AStart)
+			segments[0].AStart = forStart(millis, 500)
+			millis = timeRangeToMillis(segments[len(segments)-1].AEnd)
+			segments[len(segments)-1].AEnd = forEnd(millis, 500)
 
-		for i := 1; i < len(segments); i++ {
-			pe := timeRangeToMillis(segments[i-1].AEnd)
-			cs := timeRangeToMillis(segments[i].AStart)
-			middleGap := (cs - pe) / 2
-			middleGap -= 50
-			if middleGap < 0 {
-				continue
+			for i := 1; i < len(segments); i++ {
+				pe := timeRangeToMillis(segments[i-1].AEnd)
+				cs := timeRangeToMillis(segments[i].AStart)
+				middleGap := (cs - pe) / 2
+				middleGap -= 50
+				if middleGap < 0 {
+					continue
+				}
+				if middleGap > 500 {
+					middleGap = 500
+				}
+				segments[i].AStart = forStart(cs, middleGap)
+				segments[i-1].AEnd = forEnd(pe, middleGap)
 			}
-			if middleGap > 500 {
-				middleGap = 500
+		}
+		if mode == QaMode {
+			millis := timeRangeToMillis(segments[0].QStart)
+			segments[0].QStart = forStart(millis, 500)
+			millis = timeRangeToMillis(segments[len(segments)-1].QEnd)
+			segments[len(segments)-1].QEnd = forEnd(millis, 500)
+
+			for i := 1; i < len(segments); i++ {
+				pe := timeRangeToMillis(segments[i-1].QEnd)
+				cs := timeRangeToMillis(segments[i].QStart)
+				middleGap := (cs - pe) / 2
+				middleGap -= 50
+				if middleGap < 0 {
+					continue
+				}
+				if middleGap > 500 {
+					middleGap = 500
+				}
+				segments[i].QStart = forStart(cs, middleGap)
+				segments[i-1].QEnd = forEnd(pe, middleGap)
 			}
-			segments[i].AStart = forStart(cs, middleGap)
-			segments[i-1].AEnd = forEnd(pe, middleGap)
 		}
 	}
 

@@ -139,7 +139,7 @@ class GsCrRepeatPage extends StatelessWidget {
         if (segment.question != "") {
           if (segment.mediaDocPath != "" && segment.qMediaSegments.isNotEmpty) {
             ret.add(Text(segment.question));
-            ret.add(PlayerBar(segment.segmentIndex, segment.qMediaSegments, segment.mediaDocPath, key: state.questionMediaKey));
+            ret.add(PlayerBar(0, [segment.qMediaSegments[segment.segmentIndex]], segment.mediaDocPath, key: state.questionMediaKey));
             return ret;
           }
           ret.add(Text(segment.question));
