@@ -82,6 +82,7 @@ class GsCrRepeatLogic extends GetxController {
 
   // TODO add device volume button
   void know({autoNext = false}) async {
+    // TODO need to add a click gap
     if (state.c.isEmpty) {
       finish();
       return;
