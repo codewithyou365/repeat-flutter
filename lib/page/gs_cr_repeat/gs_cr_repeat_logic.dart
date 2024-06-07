@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
@@ -15,6 +16,7 @@ class GsCrRepeatLogic extends GetxController {
   final GsCrRepeatState state = GsCrRepeatState();
   List<SegmentTodayPrg> todayProgresses = [];
   TodayPrgType todayPrgType = TodayPrgType.learn;
+  Ticker ticker = Ticker(1000);
 
   @override
   Future<void> onInit() async {
@@ -55,6 +57,9 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   void show() {
+    if (ticker.isStuck()) {
+      return;
+    }
     state.step = RepeatStep.evaluate;
     update([GsCrRepeatLogic.id]);
   }
@@ -65,6 +70,9 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   void error({autoNext = false}) async {
+    if (ticker.isStuck()) {
+      return;
+    }
     if (state.c.isEmpty) {
       finish();
       return;
@@ -73,7 +81,7 @@ class GsCrRepeatLogic extends GetxController {
     await Db().db.scheduleDao.error(curr);
     state.c.sort(schedulesCurrentSort);
     if (autoNext) {
-      next();
+      next(fromView: false);
     } else {
       state.step = RepeatStep.finish;
       update([GsCrRepeatLogic.id]);
@@ -82,7 +90,9 @@ class GsCrRepeatLogic extends GetxController {
 
   // TODO add device volume button
   void know({autoNext = false}) async {
-    // TODO need to add a click gap
+    if (ticker.isStuck()) {
+      return;
+    }
     if (state.c.isEmpty) {
       finish();
       return;
@@ -95,14 +105,17 @@ class GsCrRepeatLogic extends GetxController {
     state.c.sort(schedulesCurrentSort);
     state.progress = state.total - state.c.length;
     if (autoNext && state.c.isNotEmpty) {
-      next();
+      next(fromView: false);
     } else {
       state.step = RepeatStep.finish;
       update([GsCrRepeatLogic.id]);
     }
   }
 
-  void next() async {
+  void next({fromView = true}) async {
+    if (fromView && ticker.isStuck()) {
+      return;
+    }
     if (state.c.isEmpty) {
       finish();
       return;
