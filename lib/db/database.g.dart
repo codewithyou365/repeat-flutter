@@ -649,10 +649,10 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<List<SegmentTodayPrg>> findSegmentTodayPrg(String crn) async {
+  Future<List<SegmentTodayPrgWithKey>> findSegmentTodayPrg(String crn) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentTodayPrg.* FROM SegmentTodayPrg JOIN SegmentKey on SegmentKey.id=SegmentTodayPrg.segmentKeyId AND SegmentKey.crn=?1 order by id asc',
-        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
+        'SELECT SegmentTodayPrg.*,SegmentKey.k FROM SegmentTodayPrg JOIN SegmentKey on SegmentKey.id=SegmentTodayPrg.segmentKeyId AND SegmentKey.crn=?1 order by id asc',
+        mapper: (Map<String, Object?> row) => SegmentTodayPrgWithKey(row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, row['k'] as String),
         arguments: [crn]);
   }
 
@@ -688,40 +688,40 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<List<SegmentTodayPrg>> scheduleReview(
+  Future<List<SegmentTodayPrgWithKey>> scheduleReview(
     String crn,
     int reviewCount,
     Date startDate,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentReview.segmentKeyId,0 type,Segment.sort,0 progress,0 viewTime,SegmentReview.count reviewCount,SegmentReview.createDate reviewCreateDate,0 finish FROM SegmentReview JOIN SegmentKey on SegmentKey.id=SegmentReview.segmentKeyId AND SegmentKey.crn=?1 JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId WHERE SegmentReview.count=?2 AND SegmentReview.createDate=?3 ORDER BY Segment.sort',
-        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
+        'SELECT SegmentReview.segmentKeyId,0 type,Segment.sort,0 progress,0 viewTime,SegmentReview.count reviewCount,SegmentReview.createDate reviewCreateDate,0 finish,SegmentKey.k FROM SegmentReview JOIN SegmentKey on SegmentKey.id=SegmentReview.segmentKeyId AND SegmentKey.crn=?1 JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId WHERE SegmentReview.count=?2 AND SegmentReview.createDate=?3 ORDER BY Segment.sort',
+        mapper: (Map<String, Object?> row) => SegmentTodayPrgWithKey(row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, row['k'] as String),
         arguments: [crn, reviewCount, _dateConverter.encode(startDate)]);
   }
 
   @override
-  Future<List<SegmentTodayPrg>> scheduleLearn1(
+  Future<List<SegmentTodayPrgWithKey>> scheduleLearn1(
     String crn,
     int progress,
     int limit,
     Date now,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM ( SELECT SegmentOverallPrg.segmentKeyId,0 type,Segment.sort,0 progress,0 viewTime,0 reviewCount,0 reviewCreateDate,0 finish FROM SegmentOverallPrg JOIN SegmentKey on SegmentKey.id=SegmentOverallPrg.segmentKeyId AND SegmentKey.crn=?1 JOIN Segment ON Segment.segmentKeyId=SegmentOverallPrg.segmentKeyId where SegmentOverallPrg.next<=?4 and SegmentOverallPrg.progress=?2 order by SegmentOverallPrg.progress,Segment.sort limit ?3 ) Segment order by Segment.sort',
-        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
+        'SELECT * FROM ( SELECT SegmentOverallPrg.segmentKeyId,0 type,Segment.sort,0 progress,0 viewTime,0 reviewCount,0 reviewCreateDate,0 finish,SegmentKey.k FROM SegmentOverallPrg JOIN SegmentKey on SegmentKey.id=SegmentOverallPrg.segmentKeyId AND SegmentKey.crn=?1 JOIN Segment ON Segment.segmentKeyId=SegmentOverallPrg.segmentKeyId where SegmentOverallPrg.next<=?4 and SegmentOverallPrg.progress=?2 order by SegmentOverallPrg.progress,Segment.sort limit ?3 ) Segment order by Segment.sort',
+        mapper: (Map<String, Object?> row) => SegmentTodayPrgWithKey(row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, row['k'] as String),
         arguments: [crn, progress, limit, _dateConverter.encode(now)]);
   }
 
   @override
-  Future<List<SegmentTodayPrg>> scheduleLearn2(
+  Future<List<SegmentTodayPrgWithKey>> scheduleLearn2(
     String crn,
     int minProgress,
     int limit,
     Date now,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM ( SELECT SegmentOverallPrg.segmentKeyId,0 type,Segment.sort,0 progress,0 viewTime,0 reviewCount,0 reviewCreateDate,0 finish FROM SegmentOverallPrg JOIN SegmentKey on SegmentKey.id=SegmentOverallPrg.segmentKeyId AND SegmentKey.crn=?1 JOIN Segment ON Segment.segmentKeyId=SegmentOverallPrg.segmentKeyId where SegmentOverallPrg.next<=?4 and SegmentOverallPrg.progress>=?2 order by SegmentOverallPrg.progress,Segment.sort limit ?3 ) Segment order by Segment.sort',
-        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
+        'SELECT * FROM ( SELECT SegmentOverallPrg.segmentKeyId,0 type,Segment.sort,0 progress,0 viewTime,0 reviewCount,0 reviewCreateDate,0 finish,SegmentKey.k FROM SegmentOverallPrg JOIN SegmentKey on SegmentKey.id=SegmentOverallPrg.segmentKeyId AND SegmentKey.crn=?1 JOIN Segment ON Segment.segmentKeyId=SegmentOverallPrg.segmentKeyId where SegmentOverallPrg.next<=?4 and SegmentOverallPrg.progress>=?2 order by SegmentOverallPrg.progress,Segment.sort limit ?3 ) Segment order by Segment.sort',
+        mapper: (Map<String, Object?> row) => SegmentTodayPrgWithKey(row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, row['k'] as String),
         arguments: [crn, minProgress, limit, _dateConverter.encode(now)]);
   }
 
@@ -898,12 +898,12 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<List<SegmentTodayPrg>> initToday() async {
+  Future<List<SegmentTodayPrgWithKey>> initToday() async {
     if (database is sqflite.Transaction) {
       return super.initToday();
     } else {
       return (database as sqflite.Database)
-          .transaction<List<SegmentTodayPrg>>((transaction) async {
+          .transaction<List<SegmentTodayPrgWithKey>>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         return transactionDatabase.scheduleDao.initToday();

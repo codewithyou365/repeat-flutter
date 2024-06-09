@@ -15,7 +15,6 @@ class GsCrRepeatLogic extends GetxController {
   static const String id = "MainRepeatLogic";
   final GsCrRepeatState state = GsCrRepeatState();
   List<SegmentTodayPrg> todayProgresses = [];
-  TodayPrgType todayPrgType = TodayPrgType.learn;
   Ticker ticker = Ticker(1000);
 
   @override
@@ -32,18 +31,9 @@ class GsCrRepeatLogic extends GetxController {
 
   init() async {
     var all = Get.find<GsCrLogic>().todayProgresses;
-    if (Get.arguments == "review") {
-      todayPrgType = TodayPrgType.review;
-    } else {
-      todayPrgType = TodayPrgType.learn;
-    }
-    var levelAndGroupNumber = SegmentTodayPrg.getLevelAndGroupNumber(all, todayPrgType);
-    for (int lg in levelAndGroupNumber) {
-      state.c = SegmentTodayPrg.refine(all, todayPrgType, lg, false);
-      if (state.c.isNotEmpty) {
-        todayProgresses = SegmentTodayPrg.refine(all, todayPrgType, lg, true);
-        break;
-      }
+    state.c = all;
+    if (state.c.isNotEmpty) {
+      todayProgresses = SegmentTodayPrg.refineFinished(all);
     }
     if (state.c.isEmpty) {
       Get.back();
@@ -146,10 +136,6 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   finish() {
-    if (todayPrgType == TodayPrgType.review) {
-      Nav.gsCrRepeatFinish.push(arguments: "review");
-    } else {
-      Nav.gsCrRepeatFinish.push();
-    }
+    Nav.gsCrRepeatFinish.push();
   }
 }

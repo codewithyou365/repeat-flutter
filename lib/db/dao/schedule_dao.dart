@@ -15,6 +15,7 @@ import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/logic/model/segment_overall_prg_with_key.dart';
 import 'package:repeat_flutter/logic/model/segment_review_with_key.dart';
+import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
 
 @dao
 abstract class ScheduleDao {
@@ -76,11 +77,13 @@ abstract class ScheduleDao {
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertSegmentTodayPrg(List<SegmentTodayPrg> entities);
 
-  @Query('SELECT SegmentTodayPrg.* FROM SegmentTodayPrg'
+  @Query('SELECT SegmentTodayPrg.*'
+      ',SegmentKey.k'
+      ' FROM SegmentTodayPrg'
       " JOIN SegmentKey on SegmentKey.id=SegmentTodayPrg.segmentKeyId"
       " AND SegmentKey.crn=:crn"
       ' order by id asc')
-  Future<List<SegmentTodayPrg>> findSegmentTodayPrg(String crn);
+  Future<List<SegmentTodayPrgWithKey>> findSegmentTodayPrg(String crn);
 
   @Query('UPDATE SegmentTodayPrg SET progress=:progress,viewTime=:viewTime,finish=:finish WHERE segmentKeyId=:segmentKeyId and type=:type')
   Future<void> setSegmentTodayPrg(int segmentKeyId, int type, int progress, DateTime viewTime, bool finish);
@@ -102,13 +105,14 @@ abstract class ScheduleDao {
       ",SegmentReview.count reviewCount"
       ",SegmentReview.createDate reviewCreateDate"
       ",0 finish"
+      ",SegmentKey.k"
       " FROM SegmentReview"
       " JOIN SegmentKey on SegmentKey.id=SegmentReview.segmentKeyId AND SegmentKey.crn=:crn"
       " JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId"
       " WHERE SegmentReview.count=:reviewCount"
       " AND SegmentReview.createDate=:startDate"
       " ORDER BY Segment.sort")
-  Future<List<SegmentTodayPrg>> scheduleReview(String crn, int reviewCount, Date startDate);
+  Future<List<SegmentTodayPrgWithKey>> scheduleReview(String crn, int reviewCount, Date startDate);
 
   @Query("SELECT * FROM ("
       " SELECT SegmentOverallPrg.segmentKeyId"
@@ -119,6 +123,7 @@ abstract class ScheduleDao {
       ",0 reviewCount"
       ",0 reviewCreateDate"
       ",0 finish"
+      ",SegmentKey.k"
       " FROM SegmentOverallPrg"
       " JOIN SegmentKey on SegmentKey.id=SegmentOverallPrg.segmentKeyId AND SegmentKey.crn=:crn"
       " JOIN Segment ON Segment.segmentKeyId=SegmentOverallPrg.segmentKeyId"
@@ -126,7 +131,7 @@ abstract class ScheduleDao {
       " and SegmentOverallPrg.progress=:progress"
       " order by SegmentOverallPrg.progress,Segment.sort limit :limit"
       " ) Segment order by Segment.sort")
-  Future<List<SegmentTodayPrg>> scheduleLearn1(String crn, int progress, int limit, Date now);
+  Future<List<SegmentTodayPrgWithKey>> scheduleLearn1(String crn, int progress, int limit, Date now);
 
   @Query("SELECT * FROM ("
       " SELECT SegmentOverallPrg.segmentKeyId"
@@ -137,6 +142,7 @@ abstract class ScheduleDao {
       ",0 reviewCount"
       ",0 reviewCreateDate"
       ",0 finish"
+      ",SegmentKey.k"
       " FROM SegmentOverallPrg"
       " JOIN SegmentKey on SegmentKey.id=SegmentOverallPrg.segmentKeyId AND SegmentKey.crn=:crn"
       " JOIN Segment ON Segment.segmentKeyId=SegmentOverallPrg.segmentKeyId"
@@ -144,7 +150,7 @@ abstract class ScheduleDao {
       " and SegmentOverallPrg.progress>=:minProgress"
       " order by SegmentOverallPrg.progress,Segment.sort limit :limit"
       " ) Segment order by Segment.sort")
-  Future<List<SegmentTodayPrg>> scheduleLearn2(String crn, int minProgress, int limit, Date now);
+  Future<List<SegmentTodayPrgWithKey>> scheduleLearn2(String crn, int minProgress, int limit, Date now);
 
   @Query('UPDATE SegmentOverallPrg SET progress=:progress,next=:next WHERE segmentKeyId=:segmentKeyId')
   Future<void> setPrgAndNext4Sop(int segmentKeyId, int progress, Date next);
@@ -260,9 +266,9 @@ abstract class ScheduleDao {
 
   /// for progress
   @transaction
-  Future<List<SegmentTodayPrg>> initToday() async {
+  Future<List<SegmentTodayPrgWithKey>> initToday() async {
     await forUpdate();
-    List<SegmentTodayPrg> todayPrg = [];
+    List<SegmentTodayPrgWithKey> todayPrg = [];
     var now = DateTime.now();
     var needToInsert = false;
     var todayLearnCreateDate = await valueKv(Classroom.curr, CrK.todayLearnCreateDate);
@@ -314,7 +320,7 @@ abstract class ScheduleDao {
       }
       for (int i = 0; i < reviewDays.length; ++i) {
         var reviewDay = reviewDays[i];
-        List<SegmentTodayPrg> sls = await scheduleReview(Classroom.curr, reviewLevel[i], reviewDay);
+        List<SegmentTodayPrgWithKey> sls = await scheduleReview(Classroom.curr, reviewLevel[i], reviewDay);
         SegmentTodayPrg.setType(sls, TodayPrgType.review, i, 0);
         todayPrg.addAll(sls);
       }
@@ -322,6 +328,7 @@ abstract class ScheduleDao {
     } else {
       todayPrg = await findSegmentTodayPrg(Classroom.curr);
     }
+    todayPrg.sort((a, b) => a.sort.compareTo(b.sort));
     return todayPrg;
   }
 

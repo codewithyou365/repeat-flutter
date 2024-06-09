@@ -9,6 +9,7 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/common/date.dart';
+import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -17,7 +18,7 @@ import 'gs_cr_state.dart';
 
 class GsCrLogic extends GetxController {
   final GsCrState state = GsCrState();
-  List<SegmentTodayPrg> todayProgresses = [];
+  List<SegmentTodayPrgWithKey> todayProgresses = [];
   Timer? timer;
 
   @override
@@ -38,8 +39,7 @@ class GsCrLogic extends GetxController {
     }
     resetLearnDeadline();
 
-    state.learnTotalCount.value = SegmentTodayPrg.getUnfinishedCount(todayProgresses, TodayPrgType.learn);
-    state.reviewTotalCount.value = SegmentTodayPrg.getUnfinishedCount(todayProgresses, TodayPrgType.review);
+    state.learnTotalCount.value = SegmentTodayPrg.getUnfinishedCount(todayProgresses);
 
     startTimer();
   }
@@ -57,7 +57,7 @@ class GsCrLogic extends GetxController {
       Snackbar.show(I18nKey.labelNoLearningContent.tr);
       return;
     }
-    Nav.gsCrRepeat.push(arguments: "review");
+    Nav.gsCrRepeat.push();
   }
 
   resetLearnDeadline() {

@@ -65,10 +65,6 @@ class SegmentTodayPrg {
     return (todayPrgType.index + 1) * 10000000000 + level * 100000 + groupNumber;
   }
 
-  static int toTypeWithLg(TodayPrgType todayPrgType, int levelAndGroupNumber) {
-    return (todayPrgType.index + 1) * 10000000000 + levelAndGroupNumber;
-  }
-
   static List<SegmentTodayPrg> clone(List<SegmentTodayPrg> list) {
     List<SegmentTodayPrg> clonedList = [];
     for (SegmentTodayPrg segment in list) {
@@ -87,33 +83,39 @@ class SegmentTodayPrg {
     return clonedList;
   }
 
-  static List<SegmentTodayPrg> refine(List<SegmentTodayPrg> list, TodayPrgType todayPrgType, int levelAndGroupNumber, bool withoutFinish) {
+  static List<SegmentTodayPrg> refineFinished(List<SegmentTodayPrg> list) {
+    var wrapper = list.where((segment) {
+      return segment.finish == false;
+    });
+    return wrapper.toList();
+  }
+
+  static List<SegmentTodayPrg> refine(List<SegmentTodayPrg> list, int levelAndGroupNumber, bool withoutFinish) {
     var wrapper = list.where((segment) {
       if (withoutFinish) {
-        return segment.type == toTypeWithLg(todayPrgType, levelAndGroupNumber);
+        return segment.type % 10000000000 == levelAndGroupNumber;
       } else {
-        return segment.type == toTypeWithLg(todayPrgType, levelAndGroupNumber) && segment.finish == false;
+        return segment.type % 10000000000 == levelAndGroupNumber && segment.finish == false;
       }
     });
     return wrapper.toList();
   }
 
-  static List<int> getLevelAndGroupNumber(List<SegmentTodayPrg> list, TodayPrgType todayPrgType) {
+  static List<int> getLevelAndGroupNumber(List<SegmentTodayPrg> list) {
     List<int> types = [];
     for (SegmentTodayPrg segment in list) {
-      int typeIndex = (segment.type ~/ 10000000000) - 1;
-      if (TodayPrgType.values[typeIndex] == todayPrgType) {
-        types.add(segment.type - (todayPrgType.index + 1) * 10000000000);
+      var type = segment.type % 10000000000;
+      if (!types.contains(type)) {
+        types.add(type);
       }
     }
     return types.toList();
   }
 
-  static int getUnfinishedCount(List<SegmentTodayPrg> list, TodayPrgType todayPrgType) {
+  static int getUnfinishedCount(List<SegmentTodayPrg> list) {
     var ret = 0;
     for (SegmentTodayPrg segment in list) {
-      int typeIndex = (segment.type ~/ 10000000000) - 1;
-      if (TodayPrgType.values[typeIndex] == todayPrgType && segment.finish == false) {
+      if (segment.finish == false) {
         ret++;
       }
     }

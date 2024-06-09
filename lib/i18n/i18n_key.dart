@@ -48,6 +48,7 @@ enum I18nKey {
   btnSchedule,
   btnLearn,
   btnReview,
+  btnRepeat,
   btnShow,
   btnTips,
   btnUnknown,

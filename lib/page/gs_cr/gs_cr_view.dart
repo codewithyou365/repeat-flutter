@@ -44,32 +44,16 @@ class GsCrPage extends StatelessWidget {
               }),
             ),
             SizedBox(
-              height: 60.w,
               width: 300.w,
-              child: Row(
-                children: [
-                  buildButton(
-                    context,
-                    logic.tryLearn,
-                    I18nKey.btnLearn.tr,
-                    Obx(() {
-                      return Text(
-                        "${state.learnTotalCount.value}",
-                      );
-                    }),
-                  ),
-                  const Spacer(),
-                  buildButton(
-                    context,
-                    logic.tryReview,
-                    I18nKey.btnReview.tr,
-                    Obx(() {
-                      return Text(
-                        "${state.reviewTotalCount.value}",
-                      );
-                    }),
-                  ),
-                ],
+              child: buildButton(
+                context,
+                logic.tryLearn,
+                I18nKey.btnRepeat.tr,
+                Obx(() {
+                  return Text(
+                    "${state.learnTotalCount.value}",
+                  );
+                }),
               ),
             ),
             SizedBox(
