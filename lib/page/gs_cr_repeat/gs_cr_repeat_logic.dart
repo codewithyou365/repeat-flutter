@@ -5,6 +5,7 @@ import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
@@ -14,7 +15,7 @@ import 'gs_cr_repeat_state.dart';
 class GsCrRepeatLogic extends GetxController {
   static const String id = "MainRepeatLogic";
   final GsCrRepeatState state = GsCrRepeatState();
-  List<SegmentTodayPrg> todayProgresses = [];
+  List<SegmentTodayPrgWithKey> todayProgresses = [];
   Ticker ticker = Ticker(1000);
 
   @override
@@ -31,9 +32,9 @@ class GsCrRepeatLogic extends GetxController {
 
   init() async {
     var all = Get.find<GsCrLogic>().todayProgresses;
-    state.c = all;
+    state.c = SegmentTodayPrg.refineWithFinish(all, false);
     if (state.c.isNotEmpty) {
-      todayProgresses = SegmentTodayPrg.refineFinished(all);
+      todayProgresses = all;
     }
     if (state.c.isEmpty) {
       Get.back();

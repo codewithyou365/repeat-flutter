@@ -83,9 +83,9 @@ class SegmentTodayPrg {
     return clonedList;
   }
 
-  static List<SegmentTodayPrg> refineFinished(List<SegmentTodayPrg> list) {
+  static List<SegmentTodayPrg> refineWithFinish(List<SegmentTodayPrg> list, bool finish) {
     var wrapper = list.where((segment) {
-      return segment.finish == false;
+      return segment.finish == finish;
     });
     return wrapper.toList();
   }
