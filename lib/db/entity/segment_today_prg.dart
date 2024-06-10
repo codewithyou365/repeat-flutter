@@ -35,7 +35,7 @@ class SegmentTodayPrg {
     this.reviewCount,
     this.reviewCreateDate,
     this.finish, {
-    this.id = 0,
+    this.id,
   });
 
   static void setType(List<SegmentTodayPrg> list, TodayPrgType todayPrgType, int level, int limit) {
