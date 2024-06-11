@@ -40,6 +40,10 @@ class ConfigEn extends Config {
     put(I18nKey.labelImportCanceled, "Import canceled");
     put(I18nKey.labelImporting, "Importing...");
     put(I18nKey.labelExporting, "Exporting...");
+    put(I18nKey.labelExecuting, "Executing...");
+    put(I18nKey.labelResetSchedule, "Reset Schedule !");
+    put(I18nKey.labelResetScheduleDesc, "After executing the reset schedule, the unfinished tasks for today will be reset. Do you want to continue?");
+    put(I18nKey.labelFinish, "Finish");
     put(I18nKey.btnCancel, "Cancel");
     put(I18nKey.btnOk, "Ok");
     put(I18nKey.btnDelete, "Delete");

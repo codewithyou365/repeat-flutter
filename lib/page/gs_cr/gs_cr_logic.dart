@@ -28,7 +28,7 @@ class GsCrLogic extends GetxController {
     init();
   }
 
-  void init() async {
+  Future<void> init() async {
     var now = DateTime.now();
     todayProgresses = await Db().db.scheduleDao.initToday();
 

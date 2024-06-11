@@ -29,7 +29,7 @@ class GsCrPage extends StatelessWidget {
                   child: InkWell(
                     onTap: () => {
                       // TODO classroom settings learn config
-                      // TODO classroom settings reset learn content
+                      Nav.gsCrSettings.push()
                     },
                     child: Text(I18nKey.settings.tr),
                   ),
