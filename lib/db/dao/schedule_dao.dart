@@ -36,7 +36,8 @@ abstract class ScheduleDao {
   static int learnCountPerGroup = 2;
   static int maxRepeatTime = 3;
 
-  static List<int> learn = [2, 4];
+  static List<int> learn = [2, 2];
+  static Map<int, int> levelToResidueLearn = {1: 2};
   static List<int> review = [3 * 24 * 60 * 60, 7 * 24 * 60 * 60];
 
   //static List<int> review = [0, 30];
@@ -137,7 +138,7 @@ abstract class ScheduleDao {
       " SELECT SegmentOverallPrg.segmentKeyId"
       ",0 type"
       ",Segment.sort"
-      ",0 progress"
+      ",SegmentOverallPrg.progress progress"
       ",0 viewTime"
       ",0 reviewCount"
       ",0 reviewCreateDate"
@@ -148,9 +149,9 @@ abstract class ScheduleDao {
       " JOIN Segment ON Segment.segmentKeyId=SegmentOverallPrg.segmentKeyId"
       " where SegmentOverallPrg.next<=:now"
       " and SegmentOverallPrg.progress>=:minProgress"
-      " order by SegmentOverallPrg.progress,Segment.sort limit :limit"
+      " order by SegmentOverallPrg.progress,Segment.sort"
       " ) Segment order by Segment.sort")
-  Future<List<SegmentTodayPrgWithKey>> scheduleLearn2(String crn, int minProgress, int limit, Date now);
+  Future<List<SegmentTodayPrgWithKey>> scheduleLearn2(String crn, int minProgress, Date now);
 
   @Query('UPDATE SegmentOverallPrg SET progress=:progress,next=:next WHERE segmentKeyId=:segmentKeyId')
   Future<void> setPrgAndNext4Sop(int segmentKeyId, int progress, Date next);
@@ -286,18 +287,37 @@ abstract class ScheduleDao {
       var ids = await getSegmentKeyIdByCrn(Classroom.curr);
       await deleteSegmentTodayPrgByIds(ids);
 
-      var lastLevel = learn.length - 1;
       // learn 0
-      for (int i = 0; i < lastLevel; ++i) {
+      for (int i = 0; i < learn.length; ++i) {
         var sls = await scheduleLearn1(Classroom.curr, i, learn[i], Date.from(now));
         SegmentTodayPrg.setType(sls, TodayPrgType.learn, i, learnCountPerGroup);
         todayPrg.addAll(sls);
       }
       // learn 1,...
-      {
-        var sls = await scheduleLearn2(Classroom.curr, lastLevel, learn[lastLevel], Date.from(now));
-        SegmentTodayPrg.setType(sls, TodayPrgType.learn, lastLevel, learnCountPerGroup);
-        todayPrg.addAll(sls);
+      if (levelToResidueLearn.isNotEmpty) {
+        int minLevel = (1 << 63) - 1;
+        for (var level in levelToResidueLearn.keys) {
+          if (level < minLevel) {
+            minLevel = level;
+          }
+        }
+        var sls = await scheduleLearn2(Classroom.curr, minLevel, Date.from(now));
+        sls.shuffle();
+        for (var level in levelToResidueLearn.keys) {
+          var currLevelSls = sls.where((sl) {
+            return sl.progress >= level;
+          }).toList();
+
+          var limit = levelToResidueLearn[level];
+          currLevelSls = currLevelSls.sublist(0, limit);
+          sls.removeWhere((sl) => currLevelSls.any((currSl) => sl.k == currSl.k));
+
+          for (int i = 0; i < currLevelSls.length; i++) {
+            currLevelSls[i].progress = 0;
+          }
+          SegmentTodayPrg.setType(currLevelSls, TodayPrgType.learn, level, learnCountPerGroup);
+          todayPrg.addAll(currLevelSls);
+        }
       }
 
       // review ...,1,0
