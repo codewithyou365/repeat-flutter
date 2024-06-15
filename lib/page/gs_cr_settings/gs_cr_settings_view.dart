@@ -18,7 +18,7 @@ class GsCrSettingsPage extends StatelessWidget {
         children: <Widget>[
           ListTile(
             leading: const Icon(Icons.redo),
-            title: Text(I18nKey.labelResetSchedule.tr),
+            title: Text(I18nKey.labelResetLearn.tr),
             onTap: () {
               openResetScheduleDialog(logic);
             },
@@ -30,8 +30,8 @@ class GsCrSettingsPage extends StatelessWidget {
 
   openResetScheduleDialog(GsCrSettingsLogic logic) {
     Get.defaultDialog(
-      title: I18nKey.labelResetSchedule.tr,
-      content: Text(I18nKey.labelResetScheduleDesc.tr),
+      title: I18nKey.labelResetLearn.tr,
+      content: Text(I18nKey.labelResetLearnDesc.tr),
       actions: [
         TextButton(
           child: Text(I18nKey.btnCancel.tr),

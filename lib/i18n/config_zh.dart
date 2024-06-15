@@ -41,8 +41,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelImporting, "导入中...");
     put(I18nKey.labelExporting, "导出中...");
     put(I18nKey.labelExecuting, "执行中...");
-    put(I18nKey.labelResetSchedule, "重置规划 ！");
-    put(I18nKey.labelResetScheduleDesc, "执行重置规划后，将重置今日未完成的任务，是否继续？");
+    put(I18nKey.labelResetLearn, "重置");
+    put(I18nKey.labelResetLearnDesc, "执行重置后，将重置今日未完成的任务，是否继续？");
     put(I18nKey.labelFinish, "完成");
     put(I18nKey.btnCancel, "取消");
     put(I18nKey.btnOk, "确定");
