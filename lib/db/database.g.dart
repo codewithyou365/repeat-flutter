@@ -108,7 +108,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Kv` (`k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`k`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Doc` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `url` TEXT NOT NULL, `path` TEXT NOT NULL, `count` INTEGER NOT NULL, `total` INTEGER NOT NULL, `msg` TEXT NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `Doc` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `url` TEXT NOT NULL, `path` TEXT NOT NULL, `count` INTEGER NOT NULL, `total` INTEGER NOT NULL, `msg` TEXT NOT NULL, `hash` TEXT NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Classroom` (`name` TEXT NOT NULL, `arg` TEXT NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`name`))');
         await database.execute(
@@ -250,7 +250,8 @@ class _$DocDao extends DocDao {
                   'path': item.path,
                   'count': item.count,
                   'total': item.total,
-                  'msg': item.msg
+                  'msg': item.msg,
+                  'hash': item.hash
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -285,7 +286,7 @@ class _$DocDao extends DocDao {
   Future<Doc?> one(String url) async {
     return _queryAdapter.query('SELECT * FROM Doc WHERE url = ?1',
         mapper: (Map<String, Object?> row) => Doc(
-            row['url'] as String, row['path'] as String,
+            row['url'] as String, row['path'] as String, row['hash'] as String,
             id: row['id'] as int?,
             msg: row['msg'] as String,
             count: row['count'] as int,
@@ -318,10 +319,11 @@ class _$DocDao extends DocDao {
   Future<void> updateFinish(
     int id,
     String path,
+    String hash,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE OR ABORT Doc SET count=total,path=?2 WHERE id = ?1',
-        arguments: [id, path]);
+        'UPDATE OR ABORT Doc SET count=total,path=?2,hash=?3 WHERE id = ?1',
+        arguments: [id, path, hash]);
   }
 
   @override
@@ -330,12 +332,12 @@ class _$DocDao extends DocDao {
   }
 
   @override
-  Future<int> insert(String url) async {
+  Future<Doc> insert(String url) async {
     if (database is sqflite.Transaction) {
       return super.insert(url);
     } else {
       return (database as sqflite.Database)
-          .transaction<int>((transaction) async {
+          .transaction<Doc>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         return transactionDatabase.docDao.insert(url);

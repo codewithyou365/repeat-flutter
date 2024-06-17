@@ -16,6 +16,7 @@ class Doc {
   final int count;
   final int total;
   final String msg;
+  final String hash;
 
-  Doc(this.url, this.path, {this.id, this.msg = "", this.count = 0, this.total = 1});
+  Doc(this.url, this.path, this.hash, {this.id, this.msg = "", this.count = 0, this.total = 1});
 }

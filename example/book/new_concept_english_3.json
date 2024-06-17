@@ -6,6 +6,7 @@
     {
       "url": "https://i.xiao84.com/en-nce/3mp3-us/III-01.mp3",
       "path": "/nce3/a/01.mp3",
+      "hash": "33ea211859a778604418b94022e11258f81f8f6d",
       "key": "nce3/01",
       "title": "A puma at large",
       "titleStart": "00:00:01,833",
@@ -94,6 +95,7 @@
     {
       "url": "https://i.xiao84.com/en-nce/3mp3-us/III-02.mp3",
       "path": "/nce3/a/02.mp3",
+      "hash": "d5c2de8715ef5cbb424d10820f1bcb4bcf31071a",
       "key": "nce3/02",
       "title": "Thirteen equals one",
       "titleStart": "00:00:01,633",
@@ -170,10 +172,11 @@
     {
       "url": "https://i.xiao84.com/en-nce/3mp3-us/III-03.mp3",
       "path": "/nce3/a/03.mp3",
+      "hash": "00264adfe92821a6cb14b5e003443425214be08a",
       "key": "nce3/03",
       "title": "An unknown goddess",
       "titleStart": "00:00:01,866",
-      "titleEnd": "00:00:08,033",
+      "titleEnd": "00:00:04,033",
       "segment": [
         {
           "aStart": "00:00:15,733",
@@ -282,6 +285,7 @@
     {
       "url": "https://i.xiao84.com/en-nce/3mp3-us/III-04.mp3",
       "path": "/nce3/a/04.mp3",
+      "hash": "359f202dc3d72e38e490a9fc41f28f0d7b1cb949",
       "key": "nce3/04",
       "title": "The double life of Alfred Bloggs",
       "titleStart": "00:00:01,966",
@@ -364,6 +368,7 @@
     {
       "url": "https://i.xiao84.com/en-nce/3mp3-us/III-05.mp3",
       "path": "/nce3/a/05.mp3",
+      "hash": "b19c954cc32ba359cf7ee4fa55c7941ef2fadbcd",
       "key": "nce3/05",
       "title": "The facts",
       "titleStart": "00:00:01,666",
@@ -446,6 +451,7 @@
     {
       "url": "https://i.xiao84.com/en-nce/3mp3-us/III-06.mp3",
       "path": "/nce3/a/06.mp3",
+      "hash": "320f9b90400c0053dda44286d0e6916a75d715f0",
       "key": "nce3/06",
       "title": "Smash-and-grab",
       "titleStart": "00:00:01,766",
@@ -540,7 +546,8 @@
     {
       "url": "https://i.xiao84.com/en-nce/3mp3-us/III-07.mp3",
       "path": "/nce3/a/07.mp3",
-      "key": "nce3/06",
+      "hash": "c8df572bf4e16cdb3feaab0629c5a209aebc9929",
+      "key": "nce3/07",
       "title": "Mutilated ladies",
       "titleStart": "00:00:01,433",
       "titleEnd": "00:00:03,900",

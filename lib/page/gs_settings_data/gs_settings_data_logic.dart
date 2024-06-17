@@ -49,7 +49,7 @@ class GsSettingsDataLogic extends GetxController {
       var path = await sqflite.getDatabasesPath();
       var success = await downloadDoc(
         url,
-        (fl) async => DocLocation.create(path.joinPath(Db.fileName)),
+        (fl, tempFile) async => DocLocation.create(path.joinPath(Db.fileName)),
         withoutDb: true,
       );
       await Db().db.close();

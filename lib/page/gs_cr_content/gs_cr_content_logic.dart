@@ -155,12 +155,16 @@ class GsCrContentLogic extends GetxController {
     late String rootPath;
     var success = await downloadDoc(
       url,
-      (fl) async {
+      (fl, tempFile) async {
         kv = await RepeatDoc.fromPath(fl.path, Uri.parse(url));
         if (kv == null) {
           return null;
         }
-        rootPath = fl.folderPath.joinPath(kv!.rootPath);
+        if (tempFile) {
+          rootPath = fl.folderPath.joinPath(kv!.rootPath);
+        } else {
+          rootPath = DocLocation.create(fl.path).folderPath;
+        }
         return DocLocation(rootPath, urlToDocName(url));
       },
       progressCallback: downloadProgress,
@@ -178,7 +182,8 @@ class GsCrContentLogic extends GetxController {
         }
         await downloadDoc(
           innerUrl,
-          (fl) async => DocLocation.create(rootPath.joinPath(v.path)),
+          (fl, tempFile) async => DocLocation.create(rootPath.joinPath(v.path)),
+          hash: v.hash,
           progressCallback: downloadProgress,
         );
       }

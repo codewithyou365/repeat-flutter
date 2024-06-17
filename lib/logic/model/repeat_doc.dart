@@ -41,13 +41,14 @@ class RepeatDoc {
 class Lesson {
   String url;
   String path;
+  String hash;
   String key;
   String title;
   String titleStart;
   String titleEnd;
   List<Segment> segment;
 
-  Lesson(this.url, this.path, this.key, this.title, this.titleStart, this.titleEnd, this.segment);
+  Lesson(this.url, this.path, this.hash, this.key, this.title, this.titleStart, this.titleEnd, this.segment);
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
     var url = json['url'] ?? "";
@@ -58,6 +59,7 @@ class Lesson {
     return Lesson(
       url,
       path,
+      json['hash'] ?? '',
       json['key'] ?? json['path'],
       json['title'] ?? json['key'] ?? json['path'],
       json['titleStart'] ?? "00:00:00,000",

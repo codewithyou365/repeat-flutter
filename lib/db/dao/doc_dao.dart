@@ -26,19 +26,19 @@ abstract class DocDao {
   @Query('UPDATE OR ABORT Doc SET count=:count,total=:total WHERE id = :id')
   Future<void> updateProgressById(int id, int count, int total);
 
-  @Query('UPDATE OR ABORT Doc SET count=total,path=:path WHERE id = :id')
-  Future<void> updateFinish(int id, String path);
+  @Query('UPDATE OR ABORT Doc SET count=total,path=:path,hash=:hash WHERE id = :id')
+  Future<void> updateFinish(int id, String path, String hash);
 
   @transaction
-  Future<int> insert(String url) async {
+  Future<Doc> insert(String url) async {
     await forUpdate();
-    var id = await getId(url);
-    if (id != null) {
-      return id;
+    var ret = await one(url);
+    if (ret != null) {
+      return ret;
     }
-    var cache = Doc(url, "");
+    var cache = Doc(url, "", "");
     insertDoc(cache);
-    id = await getId(url);
-    return id!;
+    ret = await one(url);
+    return ret!;
   }
 }
