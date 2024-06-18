@@ -702,20 +702,7 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<List<SegmentTodayPrgWithKey>> scheduleLearn1(
-    String crn,
-    int progress,
-    int limit,
-    Date now,
-  ) async {
-    return _queryAdapter.queryList(
-        'SELECT * FROM ( SELECT SegmentOverallPrg.segmentKeyId,0 type,Segment.sort,0 progress,0 viewTime,0 reviewCount,0 reviewCreateDate,0 finish,SegmentKey.k FROM SegmentOverallPrg JOIN SegmentKey on SegmentKey.id=SegmentOverallPrg.segmentKeyId AND SegmentKey.crn=?1 JOIN Segment ON Segment.segmentKeyId=SegmentOverallPrg.segmentKeyId where SegmentOverallPrg.next<=?4 and SegmentOverallPrg.progress=?2 order by SegmentOverallPrg.progress,Segment.sort limit ?3 ) Segment order by Segment.sort',
-        mapper: (Map<String, Object?> row) => SegmentTodayPrgWithKey(row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, row['k'] as String),
-        arguments: [crn, progress, limit, _dateConverter.encode(now)]);
-  }
-
-  @override
-  Future<List<SegmentTodayPrgWithKey>> scheduleLearn2(
+  Future<List<SegmentTodayPrgWithKey>> scheduleLearn(
     String crn,
     int minProgress,
     Date now,

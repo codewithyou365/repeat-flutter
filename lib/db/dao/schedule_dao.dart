@@ -17,6 +17,41 @@ import 'package:repeat_flutter/logic/model/segment_overall_prg_with_key.dart';
 import 'package:repeat_flutter/logic/model/segment_review_with_key.dart';
 import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
 
+// ebbinghaus learning type
+enum Elt {
+  fix,
+  random,
+  sort,
+}
+
+// ebbinghaus learning config
+class ElConfig {
+  Elt type;
+  int level;
+  int learnCount;
+  int learnCountPerGroup;
+
+  ElConfig(this.type, this.level, this.learnCount, this.learnCountPerGroup);
+
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type.name,
+      'level': level,
+      'learnCount': learnCount,
+      'learnCountPerGroup': learnCountPerGroup,
+    };
+  }
+
+  factory ElConfig.fromJson(Map<String, dynamic> json) {
+    return ElConfig(
+      Elt.values.firstWhere((e) => e.name == json['type']),
+      json['level'],
+      json['learnCount'],
+      json['learnCountPerGroup'],
+    );
+  }
+}
+
 @dao
 abstract class ScheduleDao {
   static List<int> ebbinghausForgettingCurve = [
@@ -36,8 +71,11 @@ abstract class ScheduleDao {
   static int learnCountPerGroup = 2;
   static int maxRepeatTime = 3;
 
-  static List<int> learn = [2, 2];
-  static Map<int, int> levelToResidueLearn = {1: 2};
+  static List<ElConfig> elConfigs = [
+    ElConfig(Elt.fix, 0, 2, 2),
+    ElConfig(Elt.fix, 1, 2, 2),
+    ElConfig(Elt.random, 1, 2, 2),
+  ];
   static List<int> review = [3 * 24 * 60 * 60, 7 * 24 * 60 * 60];
 
   //static List<int> review = [0, 30];
@@ -119,25 +157,6 @@ abstract class ScheduleDao {
       " SELECT SegmentOverallPrg.segmentKeyId"
       ",0 type"
       ",Segment.sort"
-      ",0 progress"
-      ",0 viewTime"
-      ",0 reviewCount"
-      ",0 reviewCreateDate"
-      ",0 finish"
-      ",SegmentKey.k"
-      " FROM SegmentOverallPrg"
-      " JOIN SegmentKey on SegmentKey.id=SegmentOverallPrg.segmentKeyId AND SegmentKey.crn=:crn"
-      " JOIN Segment ON Segment.segmentKeyId=SegmentOverallPrg.segmentKeyId"
-      " where SegmentOverallPrg.next<=:now"
-      " and SegmentOverallPrg.progress=:progress"
-      " order by SegmentOverallPrg.progress,Segment.sort limit :limit"
-      " ) Segment order by Segment.sort")
-  Future<List<SegmentTodayPrgWithKey>> scheduleLearn1(String crn, int progress, int limit, Date now);
-
-  @Query("SELECT * FROM ("
-      " SELECT SegmentOverallPrg.segmentKeyId"
-      ",0 type"
-      ",Segment.sort"
       ",SegmentOverallPrg.progress progress"
       ",0 viewTime"
       ",0 reviewCount"
@@ -151,7 +170,7 @@ abstract class ScheduleDao {
       " and SegmentOverallPrg.progress>=:minProgress"
       " order by SegmentOverallPrg.progress,Segment.sort"
       " ) Segment order by Segment.sort")
-  Future<List<SegmentTodayPrgWithKey>> scheduleLearn2(String crn, int minProgress, Date now);
+  Future<List<SegmentTodayPrgWithKey>> scheduleLearn(String crn, int minProgress, Date now);
 
   @Query('UPDATE SegmentOverallPrg SET progress=:progress,next=:next WHERE segmentKeyId=:segmentKeyId')
   Future<void> setPrgAndNext4Sop(int segmentKeyId, int progress, Date next);
@@ -282,41 +301,29 @@ abstract class ScheduleDao {
 
     if (needToInsert) {
       await insertKv(CrKv(Classroom.curr, CrK.todayLearnCreateDate, "${Date.from(now).value}"));
-      var config = json.encode({"learn": learn, "review": review});
+      var config = json.encode({"config": elConfigs, "review": review});
       await insertKv(CrKv(Classroom.curr, CrK.todayLearnScheduleConfig, config));
       var ids = await getSegmentKeyIdByCrn(Classroom.curr);
       await deleteSegmentTodayPrgByIds(ids);
 
-      // learn 0
-      for (int i = 0; i < learn.length; ++i) {
-        var sls = await scheduleLearn1(Classroom.curr, i, learn[i], Date.from(now));
-        SegmentTodayPrg.setType(sls, TodayPrgType.learn, i, learnCountPerGroup);
-        todayPrg.addAll(sls);
-      }
-      // learn 1,...
-      if (levelToResidueLearn.isNotEmpty) {
+      if (elConfigs.isNotEmpty) {
         int minLevel = (1 << 63) - 1;
-        for (var level in levelToResidueLearn.keys) {
-          if (level < minLevel) {
-            minLevel = level;
+        for (var config in elConfigs) {
+          if (config.level < minLevel) {
+            minLevel = config.level;
           }
         }
-        var sls = await scheduleLearn2(Classroom.curr, minLevel, Date.from(now));
-        sls.shuffle();
-        for (var level in levelToResidueLearn.keys) {
-          var currLevelSls = sls.where((sl) {
-            return sl.progress >= level;
-          }).toList();
-
-          var limit = levelToResidueLearn[level];
-          currLevelSls = currLevelSls.sublist(0, limit);
-          sls.removeWhere((sl) => currLevelSls.any((currSl) => sl.k == currSl.k));
-
-          for (int i = 0; i < currLevelSls.length; i++) {
-            currLevelSls[i].progress = 0;
+        var all = await scheduleLearn(Classroom.curr, minLevel, Date.from(now));
+        for (var config in elConfigs) {
+          if (config.type == Elt.sort) {
+            todayPrg.addAll(refineEl(all, config));
           }
-          SegmentTodayPrg.setType(currLevelSls, TodayPrgType.learn, level, learnCountPerGroup);
-          todayPrg.addAll(currLevelSls);
+        }
+        all.shuffle();
+        for (var config in elConfigs) {
+          if (config.type != Elt.sort) {
+            todayPrg.addAll(refineEl(all, config));
+          }
         }
       }
 
@@ -350,6 +357,35 @@ abstract class ScheduleDao {
     }
     todayPrg.sort((a, b) => a.sort.compareTo(b.sort));
     return todayPrg;
+  }
+
+  List<SegmentTodayPrgWithKey> refineEl(List<SegmentTodayPrgWithKey> all, ElConfig config) {
+    List<SegmentTodayPrgWithKey> curr;
+    if (config.type == Elt.fix) {
+      curr = all.where((sl) {
+        return sl.progress == config.level;
+      }).toList();
+    } else {
+      curr = all.where((sl) {
+        return sl.progress >= config.level;
+      }).toList();
+    }
+    if (curr.isEmpty) {
+      return curr;
+    }
+    List<SegmentTodayPrgWithKey> ret;
+    if (config.learnCount <= 0) {
+      ret = curr;
+    } else {
+      ret = curr.sublist(0, config.learnCount);
+    }
+    all.removeWhere((a) => ret.any((b) => a.k == b.k));
+
+    for (int i = 0; i < ret.length; i++) {
+      ret[i].progress = 0;
+    }
+    SegmentTodayPrg.setType(ret, TodayPrgType.learn, config.level, config.learnCountPerGroup);
+    return ret;
   }
 
   @transaction
