@@ -18,7 +18,7 @@ import 'package:repeat_flutter/logic/model/segment_review_with_key.dart';
 import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
 
 // ebbinghaus learning type
-enum Elt {
+enum ElType {
   fix,
   random,
   sort,
@@ -26,7 +26,7 @@ enum Elt {
 
 // ebbinghaus learning config
 class ElConfig {
-  Elt type;
+  ElType type;
   int level;
   int learnCount;
   int learnCountPerGroup;
@@ -44,9 +44,40 @@ class ElConfig {
 
   factory ElConfig.fromJson(Map<String, dynamic> json) {
     return ElConfig(
-      Elt.values.firstWhere((e) => e.name == json['type']),
+      ElType.values.firstWhere((e) => e.name == json['type']),
       json['level'],
       json['learnCount'],
+      json['learnCountPerGroup'],
+    );
+  }
+}
+
+// review ebbinghaus learning config
+class RelConfig {
+  int level;
+  int before;
+  int chase;
+  Date from;
+  int learnCountPerGroup;
+
+  RelConfig(this.level, this.before, this.chase, this.from, this.learnCountPerGroup);
+
+  Map<String, dynamic> toJson() {
+    return {
+      'level': level,
+      'before': before,
+      'chase': level,
+      'from': from.value,
+      'learnCountPerGroup': learnCountPerGroup,
+    };
+  }
+
+  factory RelConfig.fromJson(Map<String, dynamic> json) {
+    return RelConfig(
+      json['level'],
+      json['before'],
+      json['chase'],
+      Date(json['from']),
       json['learnCountPerGroup'],
     );
   }
@@ -68,13 +99,12 @@ abstract class ScheduleDao {
   ];
 
   static int intervalSeconds = ebbinghausForgettingCurve[1];
-  static int learnCountPerGroup = 2;
   static int maxRepeatTime = 3;
 
   static List<ElConfig> elConfigs = [
-    ElConfig(Elt.fix, 0, 2, 2),
-    ElConfig(Elt.fix, 1, 2, 2),
-    ElConfig(Elt.random, 1, 2, 2),
+    ElConfig(ElType.fix, 0, 2, 2),
+    ElConfig(ElType.fix, 1, 2, 2),
+    ElConfig(ElType.random, 1, 2, 2),
   ];
   static List<int> review = [3 * 24 * 60 * 60, 7 * 24 * 60 * 60];
 
@@ -315,13 +345,13 @@ abstract class ScheduleDao {
         }
         var all = await scheduleLearn(Classroom.curr, minLevel, Date.from(now));
         for (var config in elConfigs) {
-          if (config.type == Elt.sort) {
+          if (config.type == ElType.sort) {
             todayPrg.addAll(refineEl(all, config));
           }
         }
         all.shuffle();
         for (var config in elConfigs) {
-          if (config.type != Elt.sort) {
+          if (config.type != ElType.sort) {
             todayPrg.addAll(refineEl(all, config));
           }
         }
@@ -361,7 +391,7 @@ abstract class ScheduleDao {
 
   List<SegmentTodayPrgWithKey> refineEl(List<SegmentTodayPrgWithKey> all, ElConfig config) {
     List<SegmentTodayPrgWithKey> curr;
-    if (config.type == Elt.fix) {
+    if (config.type == ElType.fix) {
       curr = all.where((sl) {
         return sl.progress == config.level;
       }).toList();
