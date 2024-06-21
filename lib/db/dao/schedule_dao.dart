@@ -106,7 +106,10 @@ abstract class ScheduleDao {
     ElConfig(ElType.fix, 1, 2, 2),
     ElConfig(ElType.random, 1, 2, 2),
   ];
-  static List<int> review = [3 * 24 * 60 * 60, 7 * 24 * 60 * 60];
+  static List<RelConfig> relConfigs = [
+    RelConfig(0, 3, 1, Date(20240101), 0),
+    RelConfig(1, 7, 1, Date(20240101), 0),
+  ];
 
   //static List<int> review = [0, 30];
 
@@ -331,7 +334,7 @@ abstract class ScheduleDao {
 
     if (needToInsert) {
       await insertKv(CrKv(Classroom.curr, CrK.todayLearnCreateDate, "${Date.from(now).value}"));
-      var config = json.encode({"config": elConfigs, "review": review});
+      var config = json.encode({"elConfigs": elConfigs, "relConfigs": relConfigs});
       await insertKv(CrKv(Classroom.curr, CrK.todayLearnScheduleConfig, config));
       var ids = await getSegmentKeyIdByCrn(Classroom.curr);
       await deleteSegmentTodayPrgByIds(ids);
@@ -358,27 +361,47 @@ abstract class ScheduleDao {
       }
 
       // review ...,1,0
-      List<Date> reviewDays = [];
-      List<int> reviewLevel = [];
-      for (int i = review.length - 1; i >= 0; --i) {
-        var shouldStartDate = Date.from(now.subtract(Duration(seconds: review[i])));
-        var startDateInt = await findReviewedMinCreateDate(Classroom.curr, i, shouldStartDate);
+      List<RelConfig> configs = [];
+      for (int level = relConfigs.length - 1; level >= 0; --level) {
+        var relConfig = relConfigs[level];
+        if (level != relConfig.level) {
+          continue;
+        }
+        if (relConfig.before < 0) {
+          continue;
+        }
+        if (relConfig.chase < 0) {
+          continue;
+        }
+        if (relConfig.learnCountPerGroup < 0) {
+          continue;
+        }
+        if (Date.from(now).value < relConfig.from.value) {
+          continue;
+        }
+        var shouldStartDate = Date.from(now.subtract(Duration(days: relConfig.before)));
+        if (shouldStartDate.value < relConfig.from.value) {
+          continue;
+        }
+        var startDateInt = await findReviewedMinCreateDate(Classroom.curr, level, shouldStartDate);
         if (startDateInt == null || startDateInt == -1) {
           continue;
         }
+        if (startDateInt < relConfig.from.value) {
+          startDateInt = relConfig.from.value;
+        }
         var startDate = Date(startDateInt);
-        reviewDays.add(startDate);
-        reviewLevel.add(i);
-        if (startDate.value != shouldStartDate.value) {
-          // If we need to catch up, we should only pursue it for one day.
-          reviewDays.add(Date.from(startDate.toDateTime().add(const Duration(days: 1))));
-          reviewLevel.add(i);
+        configs.add(RelConfig(level, 0, 0, startDate, relConfig.learnCountPerGroup));
+        for (int day = 0; day < relConfig.chase && startDate.toDateTime().add(Duration(days: day)) != shouldStartDate.toDateTime(); day++) {
+          // If we need to catch up, we should pursue it.
+          configs.add(RelConfig(level, 0, 0, Date.from(startDate.toDateTime().add(Duration(days: day + 1))), relConfig.learnCountPerGroup));
         }
       }
-      for (int i = 0; i < reviewDays.length; ++i) {
-        var reviewDay = reviewDays[i];
-        List<SegmentTodayPrgWithKey> sls = await scheduleReview(Classroom.curr, reviewLevel[i], reviewDay);
-        SegmentTodayPrg.setType(sls, TodayPrgType.review, i, 0);
+      for (int i = 0; i < configs.length; ++i) {
+        var relConfig = configs[i];
+        var reviewDay = relConfig.from;
+        List<SegmentTodayPrgWithKey> sls = await scheduleReview(Classroom.curr, relConfig.level, reviewDay);
+        SegmentTodayPrg.setType(sls, TodayPrgType.review, i, relConfig.learnCountPerGroup);
         todayPrg.addAll(sls);
       }
       await insertSegmentTodayPrg(todayPrg);
