@@ -32,7 +32,10 @@ Future<bool> downloadDoc(String urlPath, Finish finish, {String hash = "", Downl
       var exist = false;
       if (doc.path != "" && doc.hash != "" && hash != "") {
         if (doc.hash == hash) {
-          exist = true;
+          String fileHash = await Hash.toSha1(doc.path);
+          if (fileHash == hash) {
+            exist = true;
+          }
         }
       }
       if (exist == true) {
