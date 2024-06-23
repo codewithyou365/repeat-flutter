@@ -42,7 +42,9 @@ class GsCrRepeatLogic extends GetxController {
     }
     state.total = todayProgresses.length;
     state.progress = state.total - state.c.length;
-    state.step = RepeatStep.recall;
+    state.step = getStepForRecallOrTip();
+    state.tryNeedPlayQuestion = true;
+    state.tryNeedPlayAnswer = false;
     await setCurrentLearnContent();
     update([GsCrRepeatLogic.id]);
   }
@@ -52,11 +54,15 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     state.step = RepeatStep.evaluate;
+    state.tryNeedPlayQuestion = false;
+    state.tryNeedPlayAnswer = true;
     update([GsCrRepeatLogic.id]);
   }
 
   void tip() {
     state.step = RepeatStep.tip;
+    state.tryNeedPlayQuestion = false;
+    state.tryNeedPlayAnswer = false;
     update([GsCrRepeatLogic.id]);
   }
 
@@ -68,6 +74,8 @@ class GsCrRepeatLogic extends GetxController {
       finish();
       return;
     }
+    state.tryNeedPlayQuestion = false;
+    state.tryNeedPlayAnswer = true;
     var curr = state.c[0];
     await Db().db.scheduleDao.error(curr);
     state.c.sort(schedulesCurrentSort);
@@ -88,6 +96,8 @@ class GsCrRepeatLogic extends GetxController {
       finish();
       return;
     }
+    state.tryNeedPlayQuestion = false;
+    state.tryNeedPlayAnswer = true;
     var curr = state.c[0];
     await Db().db.scheduleDao.right(curr);
     if (curr.progress >= ScheduleDao.maxRepeatTime) {
@@ -111,7 +121,9 @@ class GsCrRepeatLogic extends GetxController {
       finish();
       return;
     }
-    state.step = RepeatStep.recall;
+    state.step = getStepForRecallOrTip();
+    state.tryNeedPlayQuestion = true;
+    state.tryNeedPlayAnswer = false;
     await setCurrentLearnContent();
     update([GsCrRepeatLogic.id]);
   }
@@ -136,7 +148,46 @@ class GsCrRepeatLogic extends GetxController {
     }
   }
 
+  RepeatStep getStepForRecallOrTip() {
+    var currProcessShowContent = getCurrProcessShowContent();
+    var same = false;
+    if (currProcessShowContent.length > 2) {
+      var size = currProcessShowContent[0].length;
+      if (size == currProcessShowContent[1].length) {
+        var allSame = true;
+        for (int i = 0; i < size; i++) {
+          if (currProcessShowContent[0][i] != currProcessShowContent[i][i]) {
+            allSame = false;
+            break;
+          }
+        }
+        same = allSame;
+      }
+    }
+    same = true;
+    if (same) {
+      return RepeatStep.tip;
+    } else {
+      return RepeatStep.recall;
+    }
+  }
+
+  List<List<ContentType>> getCurrProcessShowContent() {
+    List<List<ContentType>> currProcessShowContent;
+    var processIndex = state.progress;
+    if (processIndex < 0) {
+      currProcessShowContent = state.showContent[0];
+    } else if (processIndex < state.showContent.length) {
+      currProcessShowContent = state.showContent[processIndex];
+    } else {
+      currProcessShowContent = state.showContent[state.showContent.length - 1];
+    }
+    return currProcessShowContent;
+  }
+
   finish() {
+    state.tryNeedPlayQuestion = false;
+    state.tryNeedPlayAnswer = false;
     Nav.gsCrRepeatFinish.push();
   }
 }

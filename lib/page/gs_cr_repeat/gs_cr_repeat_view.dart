@@ -45,20 +45,12 @@ class GsCrRepeatPage extends StatelessWidget {
   Widget buildContent(BuildContext context, GsCrRepeatLogic logic) {
     var state = logic.state;
     state.step.index;
-    List<List<ContentType>> currProcessContent;
-    var processIndex = state.progress;
-    if (processIndex < 0) {
-      currProcessContent = state.showContent[0];
-    } else if (processIndex < state.showContent.length) {
-      currProcessContent = state.showContent[processIndex];
-    } else {
-      currProcessContent = state.showContent[state.showContent.length - 1];
-    }
+    var currProcessShowContent = logic.getCurrProcessShowContent();
     List<ContentType> showContent;
-    if (state.step.index < currProcessContent.length) {
-      showContent = currProcessContent[state.step.index];
+    if (state.step.index < currProcessShowContent.length) {
+      showContent = currProcessShowContent[state.step.index];
     } else {
-      showContent = currProcessContent[currProcessContent.length - 1];
+      showContent = currProcessShowContent[currProcessShowContent.length - 1];
     }
     Widget? questionMedia;
     Widget question = const Text("???");
@@ -125,10 +117,16 @@ class GsCrRepeatPage extends StatelessWidget {
     }
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     state.questionHeight.value = renderBox.size.height;
-    if (state.step == RepeatStep.recall) {
-      state.questionMediaKey.currentState?.autoMove(offset: 0.0);
+    if (state.tryNeedPlayQuestion) {
+      state.questionMediaKey.currentState?.move(offset: 0.0);
     } else {
-      state.questionMediaKey.currentState?.stopAutoMove();
+      state.questionMediaKey.currentState?.stopMove();
+    }
+
+    if (state.tryNeedPlayAnswer) {
+      state.answerMediaKey.currentState?.moveByIndex();
+    } else {
+      state.answerMediaKey.currentState?.stopMove();
     }
   }
 
@@ -167,7 +165,7 @@ class GsCrRepeatPage extends StatelessWidget {
       case ContentType.answer:
         if (segment.mediaDocPath != "") {
           ret.add(Text(segment.answer));
-          ret.add(PlayerBar(segment.segmentIndex, segment.aMediaSegments, segment.mediaDocPath));
+          ret.add(PlayerBar(segment.segmentIndex, segment.aMediaSegments, segment.mediaDocPath, key: state.answerMediaKey));
           return ret;
         }
         ret.add(Text(segment.answer));

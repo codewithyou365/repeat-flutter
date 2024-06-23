@@ -43,12 +43,21 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
     });
   }
 
-  stopAutoMove() {
+  stopMove() {
     _controller.stop();
     player.stop();
   }
 
-  autoMove({offset}) {
+  moveByIndex() {
+    if (startIndex == null || startIndex != widget.index) {
+      if (widget.path.isNotEmpty && widget.lines.isNotEmpty && widget.index != null) {
+        move(offset: (widget.lines[0].start.toInt() - widget.lines[widget.index!].start.toInt()) * factor);
+        startIndex = widget.index;
+      }
+    }
+  }
+
+  move({offset}) {
     if (widget.path.isEmpty || widget.lines.isEmpty || widget.index == null) {
       return;
     }
@@ -91,12 +100,6 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
 
   @override
   Widget build(BuildContext context) {
-    if (startIndex == null || startIndex != widget.index) {
-      if (widget.path.isNotEmpty && widget.lines.isNotEmpty && widget.index != null) {
-        autoMove(offset: (widget.lines[0].start.toInt() - widget.lines[widget.index!].start.toInt()) * factor);
-        startIndex = widget.index;
-      }
-    }
     return GestureDetector(
       onHorizontalDragStart: (details) {
         _previousOffset = details.localPosition.dx;
@@ -104,7 +107,7 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
         player.pause();
       },
       onHorizontalDragEnd: (details) {
-        autoMove();
+        move();
       },
       onHorizontalDragUpdate: (details) {
         double currentOffset = details.localPosition.dx;
