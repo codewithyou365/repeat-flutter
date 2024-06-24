@@ -637,6 +637,107 @@
           "a": "'So long as there's something to identify, we will give people their money back, ' said a spokeswoman for the Bank. 'Last year, we paid ￡1.5m on 21,000 claims.'"
         }
       ]
+    },
+    {
+      "url": "https://i.xiao84.com/en-nce/3mp3-us/III-08.mp3",
+      "path": "/nce3/a/08.mp3",
+      "hash": "433635774aa711ace8a930f58808a663898158e3",
+      "key": "nce3/08",
+      "title": "A famous monastery",
+      "titleStart": "00:00:01,666",
+      "titleEnd": "00:00:04,633",
+      "segment": [
+        {
+          "aStart": "00:00:14,533",
+          "aEnd": "00:00:20,233",
+          "tip": "圣伯纳德大山口连接着瑞士与意大利，",
+          "a": "The Great St. Bernard Pass connects Switzerland to Italy."
+        },
+        {
+          "aStart": "00:00:20,333",
+          "aEnd": "00:00:27,833",
+          "tip": "海拔2，473米，是欧洲最高的山口。",
+          "a": "At 2, 473 metres, it is the highest mountain pass in Europe."
+        },
+        {
+          "aStart": "00:00:27,933",
+          "aEnd": "00:00:36,516",
+          "tip": "11世纪建造的著名的圣伯纳德修道院位于离山口1英里远的地方。",
+          "a": "The famous monastery of St. Bernard, which was founded in the eleventh century, lies about a mile away."
+        },
+        {
+          "aStart": "00:00:36,616",
+          "aEnd": "00:00:44,249",
+          "tip": "几百年来，圣伯纳德修道院驯养的狗拯救了许多翻越这道山口的旅游者的生命。",
+          "a": "For hundreds of years, St. Bernard dogs have saved the lives of travellers crossing the dangerous Pass."
+        },
+        {
+          "aStart": "00:00:44,350",
+          "aEnd": "00:00:53,116",
+          "tip": "这些最先从亚洲引进的狗，待人友好，早在罗马时代就给人当看门狗了。",
+          "a": "These friendly dogs, which were first brought from Asia, were used as watchdogs even in Roman times."
+        },
+        {
+          "aStart": "00:00:53,217",
+          "aEnd": "00:01:06,166",
+          "tip": "如今由于在山里开挖了隧道，翻越山口已不那么危险了。但每年还要派狗到雪地里去帮助那些遇到困难的旅游者。",
+          "a": "Now that a tunnel has been built through the mountains, the Pass is less dangerous, but each year, the dogs are still sent out into the snow whenever a traveller is in difficulty."
+        },
+        {
+          "aStart": "00:01:06,266",
+          "aEnd": "00:01:13,866",
+          "tip": "尽管修通了隧道，但仍有一些人想冒险徒步跨越圣伯纳德山口。",
+          "a": "Despite the new tunnel, there are still a few people who rashly attempt to cross the Pass on foot."
+        },
+        {
+          "aStart": "00:01:14,266",
+          "aEnd": "00:01:23,783",
+          "tip": "夏天的几个月里，修道院十分忙碌，因为有成千上万的人驾车通过山口，顺道来修道院参观。",
+          "a": "During the summer months, the monastery is very busy, for it is visited by thousands of people who cross the Pass in cars."
+        },
+        {
+          "aStart": "00:01:23,883",
+          "aEnd": "00:01:29,999",
+          "tip": "由于来人太多，狗被关在专门的围栏里。",
+          "a": "As there are so many people about, the dogs have to be kept in a special enclosure."
+        },
+        {
+          "aStart": "00:01:30,100",
+          "aEnd": "00:01:35,249",
+          "tip": "然而到了冬天，修道院里的生活则是另一番景象。",
+          "a": "In winter, however, life at the monastery is quite different."
+        },
+        {
+          "aStart": "00:01:35,350",
+          "aEnd": "00:01:42,433",
+          "tip": "气温下降到零下30度，试图跨越山口的人寥寥无几。",
+          "a": "The temperature drops to-30°and very few people attempt to cross the Pass."
+        },
+        {
+          "aStart": "00:01:42,533",
+          "aEnd": "00:01:47,116",
+          "tip": "修道士们喜欢冬天，而不太喜欢夏天。",
+          "a": "The monks prefer winter to summer for they have more privacy."
+        },
+        {
+          "aStart": "00:01:47,217",
+          "aEnd": "00:01:53,599",
+          "tip": "因为在冬天，他们可以更多地过上无人打扰的生活。狗也比较自由，被放出围栏，四处遛达。",
+          "a": "The dogs have greater freedom, too, for they are allowed to wander outside their enclosure."
+        },
+        {
+          "aStart": "00:01:53,700",
+          "aEnd": "00:02:02,083",
+          "tip": "冬天常来修道院参观的只有一批批滑雪者。他们在圣诞节或复活节到那儿去。",
+          "a": "The only regular visitors to the monastery in winter are parties of skiers who go there at Christmas and Easter."
+        },
+        {
+          "aStart": "00:02:02,183",
+          "aEnd": "00:02:11,433",
+          "tip": "这些热爱高山清静环境的年轻人每年都受到圣伯纳德修道院的热烈欢迎。",
+          "a": "These young people, who love the peace of the mountains, always receive a warm welcome at St. Bernard's monastery."
+        }
+      ]
     }
   ]
 }
