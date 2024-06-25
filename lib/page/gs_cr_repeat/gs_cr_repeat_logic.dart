@@ -164,7 +164,6 @@ class GsCrRepeatLogic extends GetxController {
         same = allSame;
       }
     }
-    same = true;
     if (same) {
       return RepeatStep.tip;
     } else {
