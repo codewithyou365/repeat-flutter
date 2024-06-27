@@ -87,6 +87,14 @@ class GsCrRepeatLogic extends GetxController {
     }
   }
 
+  Future<void> tryToSetNext() async {
+    if (state.c.length > 1) {
+      var next = state.c[1];
+      var content = await SegmentHelp.from(next.segmentKeyId);
+      state.nextKey = content!.k;
+    }
+  }
+
   // TODO add device volume button
   void know({autoNext = false}) async {
     if (ticker.isStuck()) {
@@ -133,6 +141,7 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     var curr = state.c[0];
+    tryToSetNext();
     var learnSegment = await SegmentHelp.from(curr.segmentKeyId);
     if (learnSegment == null) {
       return;

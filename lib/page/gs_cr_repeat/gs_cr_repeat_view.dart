@@ -190,7 +190,8 @@ class GsCrRepeatPage extends StatelessWidget {
   }
 
   Widget buildBottom(GsCrRepeatLogic logic) {
-    switch (logic.state.step) {
+    var state = logic.state;
+    switch (state.step) {
       case RepeatStep.recall:
         return Row(
           children: [
@@ -212,7 +213,7 @@ class GsCrRepeatPage extends StatelessWidget {
       case RepeatStep.evaluate:
         return Row(
           children: [
-            buildButton(I18nKey.btnNext.tr, () => logic.know(autoNext: true)),
+            buildButton("${I18nKey.btnNext.tr}\n${state.nextKey}", () => logic.know(autoNext: true)),
             const Spacer(),
             buildButton(I18nKey.btnError.tr, () => logic.error()),
           ],
@@ -227,7 +228,7 @@ class GsCrRepeatPage extends StatelessWidget {
         } else {
           return Row(
             children: [
-              buildButton(I18nKey.btnNext.tr, () => logic.next()),
+              buildButton("${I18nKey.btnNext.tr}\n${state.nextKey}", () => logic.next()),
             ],
           );
         }

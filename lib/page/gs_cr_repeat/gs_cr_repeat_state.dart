@@ -20,6 +20,7 @@ class GsCrRepeatState {
 
   // for logic
 
+  var nextKey = "";
   var progress = -1;
   var total = 10;
 
