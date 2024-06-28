@@ -108,7 +108,7 @@ class GsCrRepeatLogic extends GetxController {
     state.tryNeedPlayAnswer = true;
     var curr = state.c[0];
     await Db().db.scheduleDao.right(curr);
-    if (curr.progress >= ScheduleDao.maxRepeatTime) {
+    if (curr.progress >= ScheduleDao.scheduleConfig.maxRepeatTime) {
       state.c.removeAt(0);
     }
     state.c.sort(schedulesCurrentSort);

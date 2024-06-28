@@ -33,7 +33,7 @@ class GsCrLogic extends GetxController {
     todayProgresses = await Db().db.scheduleDao.initToday();
 
     var todayLearnCreateDate = await Db().db.scheduleDao.valueKv(Classroom.curr, CrK.todayLearnCreateDate) ?? 0;
-    var next = Db().db.scheduleDao.getNext(now, ScheduleDao.intervalSeconds);
+    var next = Db().db.scheduleDao.getNext(now, ScheduleDao.scheduleConfig.intervalSeconds);
     if (todayLearnCreateDate != 0 && next.value - todayLearnCreateDate > 0 && todayLearnCreateDate == Date.from(now).value) {
       state.learnDeadline = next.toDateTime().millisecondsSinceEpoch;
     }

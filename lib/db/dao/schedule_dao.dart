@@ -79,33 +79,75 @@ class RelConfig {
   }
 }
 
+class ScheduleConfig {
+  List<int> forgettingCurve;
+  int intervalSeconds;
+  int maxRepeatTime;
+  List<ElConfig> elConfigs;
+  List<RelConfig> relConfigs;
+
+  ScheduleConfig(
+    this.forgettingCurve,
+    this.intervalSeconds,
+    this.maxRepeatTime,
+    this.elConfigs,
+    this.relConfigs,
+  );
+
+  Map<String, dynamic> toJson() {
+    List<Map<String, dynamic>> elConfigsJson = elConfigs.map((elConfig) => elConfig.toJson()).toList();
+    List<Map<String, dynamic>> relConfigsJson = relConfigs.map((relConfig) => relConfig.toJson()).toList();
+
+    return {
+      'forgettingCurve': forgettingCurve,
+      'intervalSeconds': intervalSeconds,
+      'maxRepeatTime': maxRepeatTime,
+      'elConfigs': elConfigsJson,
+      'relConfigs': relConfigsJson,
+    };
+  }
+
+  factory ScheduleConfig.fromJson(Map<String, dynamic> json) {
+    var elConfigsList = json['elConfigs'] as List;
+    var relConfigsList = json['relConfigs'] as List;
+
+    return ScheduleConfig(
+      (json['forgettingCurve'] as List).map((e) => e as int).toList(),
+      json['intervalSeconds'] as int,
+      json['maxRepeatTime'] as int,
+      elConfigsList.map((e) => ElConfig.fromJson(e as Map<String, dynamic>)).toList(),
+      relConfigsList.map((e) => RelConfig.fromJson(e as Map<String, dynamic>)).toList(),
+    );
+  }
+}
+
 @dao
 abstract class ScheduleDao {
-  static List<int> ebbinghausForgettingCurve = [
-    0,
+  static ScheduleConfig scheduleConfig = ScheduleConfig(
+    [
+      0,
+      12 * 60 * 60,
+      2 * 24 * 60 * 60,
+      4 * 24 * 60 * 60,
+      7 * 24 * 60 * 60,
+      15 * 24 * 60 * 60,
+      30 * 24 * 60 * 60,
+      3 * 31 * 24 * 60 * 60,
+      6 * 31 * 24 * 60 * 60,
+      12 * 31 * 24 * 60 * 60,
+    ],
     12 * 60 * 60,
-    2 * 24 * 60 * 60,
-    4 * 24 * 60 * 60,
-    7 * 24 * 60 * 60,
-    15 * 24 * 60 * 60,
-    30 * 24 * 60 * 60,
-    3 * 31 * 24 * 60 * 60,
-    6 * 31 * 24 * 60 * 60,
-    12 * 31 * 24 * 60 * 60,
-  ];
-
-  static int intervalSeconds = ebbinghausForgettingCurve[1];
-  static int maxRepeatTime = 3;
-
-  static List<ElConfig> elConfigs = [
-    ElConfig(/* random */ false, /* extendLevel */ false, /* level */ 0, /* learnCount */ 2, /* learnCountPerGroup */ 2),
-    ElConfig(/* random */ false, /* extendLevel */ false, /* level */ 1, /* learnCount */ 2, /* learnCountPerGroup */ 2),
-    ElConfig(/* random  */ true, /* extendLevel  */ true, /* level */ 1, /* learnCount */ 2, /* learnCountPerGroup */ 2),
-  ];
-  static List<RelConfig> relConfigs = [
-    RelConfig(/* level */ 0, /* before */ 3, /* chase */ 1, /* from */ Date(20240101), /* learnCountPerGroup */ 0),
-    RelConfig(/* level */ 1, /* before */ 7, /* chase */ 1, /* from */ Date(20240101), /* learnCountPerGroup */ 0),
-  ];
+    3,
+    [
+      ElConfig(/* random */ false, /* extendLevel */ false, /* level */ 0, /* learnCount */ 2, /* learnCountPerGroup */ 2),
+      ElConfig(/* random */ false, /* extendLevel */ false, /* level */ 1, /* learnCount */ 2, /* learnCountPerGroup */ 2),
+      ElConfig(/* random  */ true, /* extendLevel  */ true, /* level */ 1, /* learnCount */ 2, /* learnCountPerGroup */ 2),
+    ],
+    [
+      RelConfig(/* level */ 0, /* before */ 3, /* chase */ 1, /* from */ Date(20240101), /* learnCountPerGroup */ 0),
+      RelConfig(/* level */ 1, /* before */ 7, /* chase */ 1, /* from */ Date(20240101), /* learnCountPerGroup */ 0),
+    ],
+  );
 
   //static List<int> review = [0, 30];
 
@@ -330,10 +372,11 @@ abstract class ScheduleDao {
 
     if (needToInsert) {
       await insertKv(CrKv(Classroom.curr, CrK.todayLearnCreateDate, "${Date.from(now).value}"));
-      var config = json.encode({"elConfigs": elConfigs, "relConfigs": relConfigs});
+      var config = json.encode(scheduleConfig);
       await insertKv(CrKv(Classroom.curr, CrK.todayLearnScheduleConfig, config));
       var ids = await getSegmentKeyIdByCrn(Classroom.curr);
       await deleteSegmentTodayPrgByIds(ids);
+      var elConfigs = scheduleConfig.elConfigs;
 
       if (elConfigs.isNotEmpty) {
         int minLevel = (1 << 63) - 1;
@@ -355,7 +398,7 @@ abstract class ScheduleDao {
           }
         }
       }
-
+      var relConfigs = scheduleConfig.relConfigs;
       // review ...,1,0
       List<RelConfig> configs = [];
       for (int level = relConfigs.length - 1; level >= 0; --level) {
@@ -426,7 +469,7 @@ abstract class ScheduleDao {
     if (config.learnCount <= 0) {
       ret = curr;
     } else {
-      ret = curr.sublist(0, config.learnCount);
+      ret = curr.sublist(0, curr.length < config.learnCount ? curr.length : config.learnCount);
     }
     all.removeWhere((a) => ret.any((b) => a.k == b.k));
 
@@ -452,6 +495,7 @@ abstract class ScheduleDao {
     var segmentKeyId = segmentTodayPrg.segmentKeyId;
     var now = DateTime.now();
     bool complete = false;
+    var maxRepeatTime = scheduleConfig.maxRepeatTime;
     if (segmentTodayPrg.progress == 0 && DateTime.fromMicrosecondsSinceEpoch(0).compareTo(segmentTodayPrg.viewTime) == 0) {
       complete = true;
       await setScheduleCurrentWithCache(segmentTodayPrg, maxRepeatTime, now);
@@ -471,10 +515,11 @@ abstract class ScheduleDao {
         }
         await insertSegmentReview([SegmentReview(Date.from(now), segmentKeyId, 0)]);
         if (schedule.next.value <= Date.from(now).value) {
-          if (schedule.progress + 1 >= ebbinghausForgettingCurve.length - 1) {
-            await setPrgAndNext4Sop(segmentKeyId, schedule.progress + 1, getNext(now, ebbinghausForgettingCurve.last));
+          var forgettingCurve = scheduleConfig.forgettingCurve;
+          if (schedule.progress + 1 >= forgettingCurve.length - 1) {
+            await setPrgAndNext4Sop(segmentKeyId, schedule.progress + 1, getNext(now, forgettingCurve.last));
           } else {
-            await setPrgAndNext4Sop(segmentKeyId, schedule.progress + 1, getNext(now, ebbinghausForgettingCurve[schedule.progress + 1]));
+            await setPrgAndNext4Sop(segmentKeyId, schedule.progress + 1, getNext(now, forgettingCurve[schedule.progress + 1]));
           }
         }
       }
@@ -485,7 +530,7 @@ abstract class ScheduleDao {
 
   Future<void> setScheduleCurrentWithCache(SegmentTodayPrg segmentTodayPrg, int progress, DateTime now) async {
     var finish = false;
-    if (progress >= maxRepeatTime) {
+    if (progress >= scheduleConfig.maxRepeatTime) {
       finish = true;
     }
     await setSegmentTodayPrg(
