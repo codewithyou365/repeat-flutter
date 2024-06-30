@@ -711,12 +711,12 @@
           "aStart": "00:01:35,350",
           "aEnd": "00:01:42,433",
           "tip": "气温下降到零下30度，试图跨越山口的人寥寥无几。",
-          "a": "The temperature drops to-30°and very few people attempt to cross the Pass."
+          "a": "The temperature drops to -30° (minus 30 degree) and very few people attempt to cross the Pass."
         },
         {
           "aStart": "00:01:42,533",
           "aEnd": "00:01:47,116",
-          "tip": "修道士们喜欢冬天，而不太喜欢夏天。",
+          "tip": "修道士们喜欢冬天，而不太喜欢夏天。\n直译： 僧侣们比起夏天更喜欢冬天，因为他们有更多的隐私。",
           "a": "The monks prefer winter to summer for they have more privacy."
         },
         {
