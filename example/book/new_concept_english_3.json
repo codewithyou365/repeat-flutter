@@ -716,13 +716,13 @@
         {
           "aStart": "00:01:42,533",
           "aEnd": "00:01:47,116",
-          "tip": "修道士们喜欢冬天，而不太喜欢夏天。\n直译： 僧侣们比起夏天更喜欢冬天，因为他们有更多的隐私。",
+          "tip": "修道士们喜欢冬天，而不太喜欢夏天。因为在冬天，他们可以更多地过上无人打扰的生活。\n直译： 僧侣们比起夏天更喜欢冬天，因为他们有更多的隐私。",
           "a": "The monks prefer winter to summer for they have more privacy."
         },
         {
           "aStart": "00:01:47,217",
           "aEnd": "00:01:53,599",
-          "tip": "因为在冬天，他们可以更多地过上无人打扰的生活。狗也比较自由，被放出围栏，四处遛达。",
+          "tip": "狗也比较自由，被放出围栏，四处遛达。",
           "a": "The dogs have greater freedom, too, for they are allowed to wander outside their enclosure."
         },
         {
