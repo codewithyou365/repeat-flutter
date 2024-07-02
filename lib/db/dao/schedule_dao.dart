@@ -12,6 +12,7 @@ import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment_review.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/common/date.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/logic/model/segment_overall_prg_with_key.dart';
 import 'package:repeat_flutter/logic/model/segment_review_with_key.dart';
@@ -45,6 +46,22 @@ class ElConfig {
       json['learnCount'],
       json['learnCountPerGroup'],
     );
+  }
+
+  tr() {
+    var key = "labelElConfig";
+    List<String> args = [level.toString()];
+    key += random ? "1" : "0";
+    key += extendLevel ? "1" : "0";
+    key += learnCount > 0 ? "1" : "0";
+    if (learnCount > 0) args.add(learnCount.toString());
+    key += learnCountPerGroup > 0 ? "1" : "0";
+    if (learnCountPerGroup > 0) args.add(learnCountPerGroup.toString());
+    I18nKey ret = I18nKey.values.firstWhere(
+      (e) => e.name == key,
+      orElse: () => throw ArgumentError('Invalid I18nKey: $key'),
+    );
+    return ret.trArgs(args);
   }
 }
 

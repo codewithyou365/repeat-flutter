@@ -14,16 +14,20 @@ class GsCrSettingsDscPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(I18nKey.settings.tr),
       ),
-      body: ListView(
-        children: <Widget>[
-          ListTile(
-            leading: const Icon(Icons.redo),
-            title: Text(I18nKey.labelResetLearn.tr),
-            onTap: () {
-              openResetScheduleDialog(logic);
-            },
-          ),
-        ],
+      body: GetBuilder<GsCrSettingsDscLogic>(
+        id: GsCrSettingsDscLogic.elConfigsId,
+        builder: (_) => ReorderableListView(
+          onReorder: logic.reorder,
+          children: logic.state.elConfigs
+              .map(
+                (item) => ListTile(
+                  key: item.key,
+                  title: Text(item.config.tr()),
+                  onTap: () {},
+                ),
+              )
+              .toList(),
+        ),
       ),
     );
   }
