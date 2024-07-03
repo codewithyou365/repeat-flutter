@@ -19,6 +19,14 @@ class GsCrSettingsDscLogic extends GetxController {
 
   void resetDailySchedule() {}
 
+  void setCurrElConfig(ElConfig config) {
+    state.currElConfig.random.value = config.random;
+    state.currElConfig.extendLevel.value = config.extendLevel;
+    state.currElConfig.level.value = config.level;
+    state.currElConfig.learnCount.value = config.learnCount;
+    state.currElConfig.learnCountPerGroup.value = config.learnCountPerGroup;
+  }
+
   void reorder(int oldIndex, int newIndex) {
     if (oldIndex < newIndex) {
       newIndex -= 1;
