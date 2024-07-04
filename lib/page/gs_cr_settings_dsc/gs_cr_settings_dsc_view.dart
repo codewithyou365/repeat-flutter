@@ -40,7 +40,7 @@ class GsCrSettingsDscPage extends StatelessWidget {
   openEditDialog(GsCrSettingsDscLogic logic) {
     var config = logic.state.currElConfig;
     Get.defaultDialog(
-      title: "xx",
+      title: I18nKey.settings.tr,
       content: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.w),
         child: Column(
@@ -71,48 +71,19 @@ class GsCrSettingsDscPage extends StatelessWidget {
                 }),
               ],
             ),
-            Row(
-              children: [
-                Text("等级"),
-                Spacer(),
-                InkWell(
-                  onTap: () {
-                    openInputNumberDialog("等级", config.level);
-                  },
-                  child: Obx(() {
-                    return Text(config.level.value.toString());
-                  }),
-                )
-              ],
-            ),
-            Row(
-              children: [
-                Text("数量"),
-                Spacer(),
-                InkWell(
-                  onTap: () {
-                    openInputNumberDialog("数量", config.learnCount);
-                  },
-                  child: Obx(() {
-                    return Text(config.learnCount.value.toString());
-                  }),
-                )
-              ],
-            ),
-            Row(
-              children: [
-                Text("每组数量"),
-                Spacer(),
-                InkWell(
-                  onTap: () {
-                    openInputNumberDialog("每组数量", config.learnCountPerGroup);
-                  },
-                  child: Obx(() {
-                    return Text(config.learnCountPerGroup.value.toString());
-                  }),
-                )
-              ],
-            ),
+            buildNumberItem("等级", config.level),
+            buildNumberItem("数量", config.learnCount),
+            buildNumberItem("每组数量", config.learnCountPerGroup),
+            const Divider(),
+            Obx(() {
+              return Text(ElConfig(
+                config.random.value,
+                config.extendLevel.value,
+                config.level.value,
+                config.learnCount.value,
+                config.learnCountPerGroup.value,
+              ).tr());
+            }),
           ],
         ),
       ),
@@ -129,6 +100,23 @@ class GsCrSettingsDscPage extends StatelessWidget {
             Get.back();
           },
         ),
+      ],
+    );
+  }
+
+  Widget buildNumberItem(String title, RxInt value) {
+    return Row(
+      children: [
+        Text(title),
+        const Spacer(),
+        InkWell(
+          onTap: () {
+            openInputNumberDialog(title, value);
+          },
+          child: Obx(() {
+            return Text(value.value.toString(), style: TextStyle(fontSize: 24.sp));
+          }),
+        )
       ],
     );
   }
