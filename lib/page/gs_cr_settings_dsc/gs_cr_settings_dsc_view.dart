@@ -26,7 +26,7 @@ class GsCrSettingsDscPage extends StatelessWidget {
                   key: item.key,
                   title: Text(item.config.tr()),
                   onTap: () {
-                    logic.setCurrElConfig(item.config);
+                    logic.setCurrElConfig(item);
                     openEditDialog(logic);
                   },
                 ),
@@ -45,32 +45,8 @@ class GsCrSettingsDscPage extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 16.w),
         child: Column(
           children: [
-            Row(
-              children: [
-                Text("是否随机"),
-                Spacer(),
-                Obx(() {
-                  return Switch(
-                      value: config.random.value,
-                      onChanged: (bool value) {
-                        config.random.value = value;
-                      });
-                }),
-              ],
-            ),
-            Row(
-              children: [
-                Text("以后"),
-                Spacer(),
-                Obx(() {
-                  return Switch(
-                      value: config.extendLevel.value,
-                      onChanged: (bool value) {
-                        config.extendLevel.value = value;
-                      });
-                }),
-              ],
-            ),
+            buildSwitch("是否随机", config.random),
+            buildSwitch("以后", config.extendLevel),
             buildNumberItem("等级", config.level),
             buildNumberItem("数量", config.learnCount),
             buildNumberItem("每组数量", config.learnCountPerGroup),
@@ -89,17 +65,42 @@ class GsCrSettingsDscPage extends StatelessWidget {
       ),
       actions: [
         TextButton(
-          child: Text(I18nKey.btnCancel.tr),
+          child: Text(I18nKey.btnCopy.tr),
           onPressed: () {
+            logic.copyItem();
+            Get.back();
+          },
+        ),
+        TextButton(
+          child: Text(I18nKey.btnDelete.tr),
+          onPressed: () {
+            logic.deleteItem();
             Get.back();
           },
         ),
         TextButton(
           child: Text(I18nKey.btnOk.tr),
           onPressed: () {
+            logic.updateItem();
             Get.back();
           },
         ),
+      ],
+    );
+  }
+
+  Widget buildSwitch(String title, RxBool ele) {
+    return Row(
+      children: [
+        Text(title),
+        const Spacer(),
+        Obx(() {
+          return Switch(
+              value: ele.value,
+              onChanged: (bool value) {
+                ele.value = value;
+              });
+        }),
       ],
     );
   }
