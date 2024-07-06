@@ -1,6 +1,6 @@
 // dao/schedule_dao.dart
 
-import 'dart:convert';
+import 'dart:convert' as convert;
 
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
@@ -140,7 +140,9 @@ class ScheduleConfig {
 
 @dao
 abstract class ScheduleDao {
-  static ScheduleConfig scheduleConfig = ScheduleConfig(
+  static ScheduleConfig scheduleConfig = ScheduleConfig([], 0, 0, [], []);
+
+  static ScheduleConfig defaultScheduleConfig = ScheduleConfig(
     [
       0,
       12 * 60 * 60,
@@ -196,7 +198,10 @@ abstract class ScheduleDao {
   Future<void> deleteKv(CrKv kv);
 
   @Query("SELECT CAST(value as INTEGER) FROM CrKv WHERE crn=:crn and k=:k")
-  Future<int?> valueKv(String crn, CrK k);
+  Future<int?> intKv(String crn, CrK k);
+
+  @Query("SELECT value FROM CrKv WHERE crn=:crn and k=:k")
+  Future<String?> stringKv(String crn, CrK k);
 
   @Query('DELETE FROM SegmentTodayPrg where segmentKeyId in (:ids)')
   Future<void> deleteSegmentTodayPrgByIds(List<int> ids);
@@ -379,18 +384,24 @@ abstract class ScheduleDao {
     List<SegmentTodayPrgWithKey> todayPrg = [];
     var now = DateTime.now();
     var needToInsert = false;
-    var todayLearnCreateDate = await valueKv(Classroom.curr, CrK.todayLearnCreateDate);
+    var todayLearnCreateDate = await intKv(Classroom.curr, CrK.todayLearnCreateDate);
     if (todayLearnCreateDate == null) {
       needToInsert = true;
     }
     if (todayLearnCreateDate != null && Date.from(now).value != todayLearnCreateDate) {
       needToInsert = true;
     }
+    // init config
+    var configJsonStr = await stringKv(Classroom.curr, CrK.todayLearnScheduleConfig);
+    if (configJsonStr == null) {
+      configJsonStr = convert.json.encode(defaultScheduleConfig);
+      await insertKv(CrKv(Classroom.curr, CrK.todayLearnScheduleConfig, configJsonStr));
+    }
+    Map<String, dynamic> configJson = convert.jsonDecode(configJsonStr);
+    scheduleConfig = ScheduleConfig.fromJson(configJson);
 
     if (needToInsert) {
       await insertKv(CrKv(Classroom.curr, CrK.todayLearnCreateDate, "${Date.from(now).value}"));
-      var config = json.encode(scheduleConfig);
-      await insertKv(CrKv(Classroom.curr, CrK.todayLearnScheduleConfig, config));
       var ids = await getSegmentKeyIdByCrn(Classroom.curr);
       await deleteSegmentTodayPrgByIds(ids);
       var elConfigs = scheduleConfig.elConfigs;

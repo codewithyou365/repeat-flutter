@@ -627,13 +627,23 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<int?> valueKv(
+  Future<int?> intKv(
     String crn,
     CrK k,
   ) async {
     return _queryAdapter.query(
         'SELECT CAST(value as INTEGER) FROM CrKv WHERE crn=?1 and k=?2',
         mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [crn, _crKConverter.encode(k)]);
+  }
+
+  @override
+  Future<String?> stringKv(
+    String crn,
+    CrK k,
+  ) async {
+    return _queryAdapter.query('SELECT value FROM CrKv WHERE crn=?1 and k=?2',
+        mapper: (Map<String, Object?> row) => row.values.first as String,
         arguments: [crn, _crKConverter.encode(k)]);
   }
 
