@@ -16,7 +16,6 @@ class GsCrSettingsLogic extends GetxController {
   void resetSchedule() {
     showOverlay(() async {
       await Db().db.scheduleDao.deleteKv(CrKv(Classroom.curr, CrK.todayLearnCreateDate, ""));
-      await Db().db.scheduleDao.deleteKv(CrKv(Classroom.curr, CrK.todayLearnScheduleConfig, ""));
       await Get.find<GsCrLogic>().init();
       Nav.back();
       Snackbar.show(I18nKey.labelFinish.tr);
