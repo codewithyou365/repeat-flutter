@@ -648,6 +648,17 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
+  Future<void> updateKv(
+    String crn,
+    CrK k,
+    String value,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE CrKv SET value=?3 WHERE crn=?1 and k=?2',
+        arguments: [crn, _crKConverter.encode(k), value]);
+  }
+
+  @override
   Future<void> deleteSegmentTodayPrgByIds(List<int> ids) async {
     const offset = 1;
     final _sqliteVariablesForIds =

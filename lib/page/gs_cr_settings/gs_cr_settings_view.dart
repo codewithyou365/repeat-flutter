@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
 import 'gs_cr_settings_logic.dart';
 
@@ -21,39 +22,25 @@ class GsCrSettingsPage extends StatelessWidget {
             leading: const Icon(Icons.redo),
             title: Text(I18nKey.labelResetLearn.tr),
             onTap: () {
-              openResetScheduleDialog(logic);
+              MsgBox.yesOrNo(I18nKey.labelResetLearn.tr, I18nKey.labelResetLearnDesc.tr, yes: logic.resetSchedule);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.redo),
+            title: Text(I18nKey.labelResetConfig.tr),
+            onTap: () {
+              MsgBox.yesOrNo(I18nKey.labelResetConfig.tr, I18nKey.labelResetConfigDesc.tr, yes: logic.resetConfig);
             },
           ),
           ListTile(
             leading: const Icon(Icons.settings),
-            title: Text(I18nKey.labelLearnSettings.tr),
+            title: Text(I18nKey.labelConfigSettings.tr),
             onTap: () {
               Nav.gsCrSettingsDsc.push();
             },
           ),
         ],
       ),
-    );
-  }
-
-  openResetScheduleDialog(GsCrSettingsLogic logic) {
-    Get.defaultDialog(
-      title: I18nKey.labelResetLearn.tr,
-      content: Text(I18nKey.labelResetLearnDesc.tr),
-      actions: [
-        TextButton(
-          child: Text(I18nKey.btnCancel.tr),
-          onPressed: () {
-            Get.back();
-          },
-        ),
-        TextButton(
-          child: Text(I18nKey.btnOk.tr),
-          onPressed: () {
-            logic.resetSchedule();
-          },
-        ),
-      ],
     );
   }
 }

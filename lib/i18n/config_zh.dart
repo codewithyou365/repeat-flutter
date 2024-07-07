@@ -41,9 +41,10 @@ class ConfigZh extends Config {
     put(I18nKey.labelImporting, "导入中...");
     put(I18nKey.labelExporting, "导出中...");
     put(I18nKey.labelExecuting, "执行中...");
-    put(I18nKey.labelResetLearn, "重置");
+    put(I18nKey.labelResetLearn, "重置学习内容");
     put(I18nKey.labelResetLearnDesc, "执行重置后，将重置今日未完成的任务，是否继续？");
-    put(I18nKey.labelLearnSettings, "学习设置");
+
+    put(I18nKey.labelConfigSettings, "学习设置");
     put(I18nKey.labelElConfig0000, "安排%s级数量不限 (每组不限)");
     put(I18nKey.labelElConfig0001, "安排%s级数量不限 (每组%s个)");
     put(I18nKey.labelElConfig0010, "安排%s级数量: %s (每组不限)");
@@ -61,6 +62,10 @@ class ConfigZh extends Config {
     put(I18nKey.labelElConfig1110, "随机安排%s级及以后数量: %s (每组不限)");
     put(I18nKey.labelElConfig1111, "随机安排%s级及以后数量: %s (每组%s个)");
     put(I18nKey.labelFinish, "完成");
+    put(I18nKey.labelSavingConfirm, "是否确定保存？");
+    put(I18nKey.labelConfigChange, "配置已改变是否保存？");
+    put(I18nKey.labelResetConfig, "重置配置");
+    put(I18nKey.labelResetConfigDesc, "执行重置配置后，将使用系统默认的配置？");
     put(I18nKey.btnCancel, "取消");
     put(I18nKey.btnOk, "确定");
     put(I18nKey.btnDelete, "删除");

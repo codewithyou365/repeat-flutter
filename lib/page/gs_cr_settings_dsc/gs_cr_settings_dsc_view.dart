@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/nav.dart';
 
 import 'gs_cr_settings_dsc_logic.dart';
 
@@ -14,7 +15,13 @@ class GsCrSettingsDscPage extends StatelessWidget {
     final logic = Get.find<GsCrSettingsDscLogic>();
     return Scaffold(
       appBar: AppBar(
-        title: Text(I18nKey.settings.tr),
+        title: Text(I18nKey.labelConfigSettings.tr),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            tryOpenSaveConfirmDialog(logic);
+          },
+        ),
       ),
       body: GetBuilder<GsCrSettingsDscLogic>(
         id: GsCrSettingsDscLogic.elConfigsId,
@@ -166,6 +173,35 @@ class GsCrSettingsDscPage extends StatelessWidget {
         TextButton(
           child: Text(I18nKey.btnOk.tr),
           onPressed: () {
+            Get.back();
+          },
+        ),
+      ],
+    );
+  }
+
+  tryOpenSaveConfirmDialog(GsCrSettingsDscLogic logic) {
+    var same = logic.isSame();
+    if (same) {
+      Get.back();
+      return;
+    }
+    Get.defaultDialog(
+      title: I18nKey.labelSavingConfirm.tr,
+      content: Text(I18nKey.labelConfigChange.tr),
+      actions: [
+        TextButton(
+          child: Text(I18nKey.btnCancel.tr),
+          onPressed: () {
+            Get.back();
+            Get.back();
+          },
+        ),
+        TextButton(
+          child: Text(I18nKey.btnOk.tr),
+          onPressed: () {
+            logic.save();
+            Get.back();
             Get.back();
           },
         ),

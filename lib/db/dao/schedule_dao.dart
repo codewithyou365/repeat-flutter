@@ -203,6 +203,9 @@ abstract class ScheduleDao {
   @Query("SELECT value FROM CrKv WHERE crn=:crn and k=:k")
   Future<String?> stringKv(String crn, CrK k);
 
+  @Query('UPDATE CrKv SET value=:value WHERE crn=:crn and k=:k')
+  Future<void> updateKv(String crn, CrK k, String value);
+
   @Query('DELETE FROM SegmentTodayPrg where segmentKeyId in (:ids)')
   Future<void> deleteSegmentTodayPrgByIds(List<int> ids);
 

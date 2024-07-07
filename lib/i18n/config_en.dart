@@ -41,9 +41,9 @@ class ConfigEn extends Config {
     put(I18nKey.labelImporting, "Importing...");
     put(I18nKey.labelExporting, "Exporting...");
     put(I18nKey.labelExecuting, "Executing...");
-    put(I18nKey.labelResetLearn, "Reset");
+    put(I18nKey.labelResetLearn, "Reset Learn");
     put(I18nKey.labelResetLearnDesc, "After executing the reset function, the unfinished tasks for today will be reset. Do you want to continue?");
-    put(I18nKey.labelLearnSettings, "Learn Settings");
+    put(I18nKey.labelConfigSettings, "Config Settings");
     put(I18nKey.labelElConfig0000, "Organize Level %s quantities: unlimited (unlimited per group)");
     put(I18nKey.labelElConfig0001, "Organize Level %s quantities: unlimited (%s per group)");
     put(I18nKey.labelElConfig0010, "Organize Level %s quantities: %s (unlimited per group)");
@@ -61,6 +61,10 @@ class ConfigEn extends Config {
     put(I18nKey.labelElConfig1110, "Randomly organize Level %s and subsequent quantities: %s (unlimited per group)");
     put(I18nKey.labelElConfig1111, "Randomly organize Level %s and subsequent quantities: %s (%s per group)");
     put(I18nKey.labelFinish, "Finish");
+    put(I18nKey.labelSavingConfirm, "Are you sure to save?");
+    put(I18nKey.labelConfigChange, "Do you want to save the changes you made?");
+    put(I18nKey.labelResetConfig, "Reset Config");
+    put(I18nKey.labelResetConfigDesc, "After resetting the configuration, the system’s default configuration will be used.");
     put(I18nKey.btnCancel, "Cancel");
     put(I18nKey.btnOk, "Ok");
     put(I18nKey.btnDelete, "Delete");

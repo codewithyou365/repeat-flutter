@@ -1,6 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
+import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/entity/cr_kv.dart';
 
 import 'gs_cr_settings_dsc_state.dart';
 
@@ -15,7 +20,16 @@ class GsCrSettingsDscLogic extends GetxController {
 
     for (var index = 0; index < ScheduleDao.scheduleConfig.elConfigs.length; index++) {
       var value = ScheduleDao.scheduleConfig.elConfigs[index];
-      state.elConfigs.add(ElConfigView(index, ValueKey(valueKey++), value));
+      state.elConfigs.add(ElConfigView(
+          index,
+          ValueKey(valueKey++),
+          ElConfig(
+            value.random,
+            value.extendLevel,
+            value.level,
+            value.learnCount,
+            value.learnCountPerGroup,
+          )));
     }
   }
 
@@ -73,5 +87,26 @@ class GsCrSettingsDscLogic extends GetxController {
       state.elConfigs[index].index = index;
     }
     update([elConfigsId]);
+  }
+
+  bool isSame() {
+    List<ElConfig> a = ScheduleDao.scheduleConfig.elConfigs;
+    List<ElConfig> b = [];
+    for (var index = 0; index < state.elConfigs.length; index++) {
+      b.add(state.elConfigs[index].config);
+    }
+    String aStr = json.encode(a);
+    String bStr = json.encode(b);
+    return aStr == bStr;
+  }
+
+  void save() {
+    List<ElConfig> newElConfigs = [];
+    for (var index = 0; index < state.elConfigs.length; index++) {
+      newElConfigs.add(state.elConfigs[index].config);
+    }
+    ScheduleDao.scheduleConfig.elConfigs = newElConfigs;
+    String value = json.encode(ScheduleDao.scheduleConfig);
+    Db().db.scheduleDao.updateKv(Classroom.curr, CrK.todayLearnScheduleConfig, value);
   }
 }
