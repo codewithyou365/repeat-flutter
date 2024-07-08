@@ -3,19 +3,18 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/nav.dart';
 
-import 'gs_cr_settings_dsc_logic.dart';
+import 'gs_cr_settings_el_logic.dart';
 
-class GsCrSettingsDscPage extends StatelessWidget {
-  const GsCrSettingsDscPage({Key? key}) : super(key: key);
+class GsCrSettingsElPage extends StatelessWidget {
+  const GsCrSettingsElPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final logic = Get.find<GsCrSettingsDscLogic>();
+    final logic = Get.find<GsCrSettingsElLogic>();
     return Scaffold(
       appBar: AppBar(
-        title: Text(I18nKey.labelConfigSettings.tr),
+        title: Text(I18nKey.labelConfigSettingsForEl.tr),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -23,8 +22,8 @@ class GsCrSettingsDscPage extends StatelessWidget {
           },
         ),
       ),
-      body: GetBuilder<GsCrSettingsDscLogic>(
-        id: GsCrSettingsDscLogic.elConfigsId,
+      body: GetBuilder<GsCrSettingsElLogic>(
+        id: GsCrSettingsElLogic.elConfigsId,
         builder: (_) => ReorderableListView(
           onReorder: logic.reorder,
           children: logic.state.elConfigs
@@ -44,7 +43,7 @@ class GsCrSettingsDscPage extends StatelessWidget {
     );
   }
 
-  openEditDialog(GsCrSettingsDscLogic logic) {
+  openEditDialog(GsCrSettingsElLogic logic) {
     var config = logic.state.currElConfig;
     Get.defaultDialog(
       title: I18nKey.settings.tr,
@@ -180,7 +179,7 @@ class GsCrSettingsDscPage extends StatelessWidget {
     );
   }
 
-  tryOpenSaveConfirmDialog(GsCrSettingsDscLogic logic) {
+  tryOpenSaveConfirmDialog(GsCrSettingsElLogic logic) {
     var same = logic.isSame();
     if (same) {
       Get.back();

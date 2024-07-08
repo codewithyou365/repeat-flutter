@@ -7,9 +7,9 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 
-import 'gs_cr_settings_dsc_state.dart';
+import 'gs_cr_settings_el_state.dart';
 
-class GsCrSettingsDscLogic extends GetxController {
+class GsCrSettingsElLogic extends GetxController {
   static const String elConfigsId = "elConfigsId";
   final GsCrSettingsState state = GsCrSettingsState();
   static int valueKey = 0;

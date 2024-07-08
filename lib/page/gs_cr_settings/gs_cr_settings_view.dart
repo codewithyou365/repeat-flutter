@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'gs_cr_settings_logic.dart';
 
@@ -34,9 +35,22 @@ class GsCrSettingsPage extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.settings),
-            title: Text(I18nKey.labelConfigSettings.tr),
+            title: Text(I18nKey.labelConfigSettingsForEl.tr),
+            onLongPress: () {
+              MsgBox.yes(I18nKey.labelTips.tr, I18nKey.labelConfigSettingsForElDesc.tr);
+            },
             onTap: () {
-              Nav.gsCrSettingsDsc.push();
+              Nav.gsCrSettingsEl.push();
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.settings),
+            title: Text(I18nKey.labelConfigSettingsForRel.tr),
+            onLongPress: () {
+              MsgBox.yes(I18nKey.labelTips.tr, I18nKey.labelConfigSettingsForRelDesc.tr);
+            },
+            onTap: () {
+              Snackbar.show(I18nKey.labelDeveloping.tr);
             },
           ),
         ],

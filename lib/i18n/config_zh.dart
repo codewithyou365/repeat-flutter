@@ -16,6 +16,7 @@ class ConfigZh extends Config {
     put(I18nKey.data, "数据");
     put(I18nKey.themeDark, "暗色主题");
     put(I18nKey.themeLight, "亮色主题");
+    put(I18nKey.labelDeveloping, "开发中");
     put(I18nKey.labelSelectClassroom, "选择课堂");
     put(I18nKey.labelDeleteClassroom, "请确定删除这个课堂 : %s");
     put(I18nKey.labelClassroomName, "课堂名称");
@@ -43,8 +44,10 @@ class ConfigZh extends Config {
     put(I18nKey.labelExecuting, "执行中...");
     put(I18nKey.labelResetLearn, "重置学习内容");
     put(I18nKey.labelResetLearnDesc, "执行重置后，将重置今日未完成的任务，是否继续？");
-
-    put(I18nKey.labelConfigSettings, "学习设置");
+    put(I18nKey.labelConfigSettingsForEl, "EL设置");
+    put(I18nKey.labelConfigSettingsForElDesc, "EL 是 ebbinghaus learning 缩写，以艾宾浩斯遗忘曲线进行安排学习。");
+    put(I18nKey.labelConfigSettingsForRel, "REL设置");
+    put(I18nKey.labelConfigSettingsForRelDesc, "REL 是 review ebbinghaus learning 缩写， 对之前的学习，进行回顾安排的配置。");
     put(I18nKey.labelElConfig0000, "安排%s级数量不限 (每组不限)");
     put(I18nKey.labelElConfig0001, "安排%s级数量不限 (每组%s个)");
     put(I18nKey.labelElConfig0010, "安排%s级数量: %s (每组不限)");

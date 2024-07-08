@@ -16,6 +16,7 @@ class ConfigEn extends Config {
     put(I18nKey.data, "Data");
     put(I18nKey.themeDark, "Dart");
     put(I18nKey.themeLight, "Light");
+    put(I18nKey.labelDeveloping, "Developing");
     put(I18nKey.labelSelectClassroom, "Select Classroom");
     put(I18nKey.labelDeleteClassroom, "Please confirm to delete \n this classroom : %s");
     put(I18nKey.labelClassroomName, "Classroom Name");
@@ -43,7 +44,10 @@ class ConfigEn extends Config {
     put(I18nKey.labelExecuting, "Executing...");
     put(I18nKey.labelResetLearn, "Reset Learn");
     put(I18nKey.labelResetLearnDesc, "After executing the reset function, the unfinished tasks for today will be reset. Do you want to continue?");
-    put(I18nKey.labelConfigSettings, "Config Settings");
+    put(I18nKey.labelConfigSettingsForEl, "Config Settings For EL");
+    put(I18nKey.labelConfigSettingsForElDesc, "EL is short for `ebbinghaus learning`. Arrange study sessions according to the Ebbinghaus forgetting curve.");
+    put(I18nKey.labelConfigSettingsForRel, "Config Settings For REL");
+    put(I18nKey.labelConfigSettingsForRelDesc, "REL is short for `review ebbinghaus learning`. Make arrangements for reviewing previous studies.");
     put(I18nKey.labelElConfig0000, "Organize Level %s quantities: unlimited (unlimited per group)");
     put(I18nKey.labelElConfig0001, "Organize Level %s quantities: unlimited (%s per group)");
     put(I18nKey.labelElConfig0010, "Organize Level %s quantities: %s (unlimited per group)");
