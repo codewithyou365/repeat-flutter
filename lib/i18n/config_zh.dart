@@ -64,6 +64,10 @@ class ConfigZh extends Config {
     put(I18nKey.labelElConfig1101, "随机安排%s级及以后数量不限 (每组%s个)");
     put(I18nKey.labelElConfig1110, "随机安排%s级及以后数量: %s (每组不限)");
     put(I18nKey.labelElConfig1111, "随机安排%s级及以后数量: %s (每组%s个)");
+    put(I18nKey.labelRelConfig00, "第%s次回顾%s天以前的内容，从%s开始 (每组不限)");
+    put(I18nKey.labelRelConfig01, "第%s次回顾%s天以前的内容，从%s开始 (每组%s个)");
+    put(I18nKey.labelRelConfig10, "第%s次回顾%s天以前的内容，从%s开始\n如果需要进行追赶,每次追赶%s天的量 (每组不限)");
+    put(I18nKey.labelRelConfig11, "第%s次回顾%s天以前的内容，从%s开始\n如果需要进行追赶,每次追赶%s天的量 (每组%s个)");
     put(I18nKey.labelFinish, "完成");
     put(I18nKey.labelSavingConfirm, "是否确定保存？");
     put(I18nKey.labelConfigChange, "配置已改变是否保存？");

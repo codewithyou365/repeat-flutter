@@ -64,6 +64,10 @@ class ConfigEn extends Config {
     put(I18nKey.labelElConfig1101, "Randomly organize Level %s and subsequent quantities: unlimited (%s per group)");
     put(I18nKey.labelElConfig1110, "Randomly organize Level %s and subsequent quantities: %s (unlimited per group)");
     put(I18nKey.labelElConfig1111, "Randomly organize Level %s and subsequent quantities: %s (%s per group)");
+    put(I18nKey.labelRelConfig00, "The %sth review will cover the content from %s days ago, starting from %s. (unlimited per group)");
+    put(I18nKey.labelRelConfig01, "The %sth review will cover the content from %s days ago, starting from %s. (%s per group)");
+    put(I18nKey.labelRelConfig10, "The %sth review will cover the content from %s days ago, starting from %s. \nIf catching up is necessary, cover %s days’ worth of content each time. (unlimited per group)");
+    put(I18nKey.labelRelConfig11, "The %sth review will cover the content from %s days ago, starting from %s. \nIf catching up is necessary, cover %s days’ worth of content each time. (%s per group)");
     put(I18nKey.labelFinish, "Finish");
     put(I18nKey.labelSavingConfirm, "Are you sure to save?");
     put(I18nKey.labelConfigChange, "Do you want to save the changes you made?");

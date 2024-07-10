@@ -50,7 +50,7 @@ class GsCrSettingsPage extends StatelessWidget {
               MsgBox.yes(I18nKey.labelTips.tr, I18nKey.labelConfigSettingsForRelDesc.tr);
             },
             onTap: () {
-              Snackbar.show(I18nKey.labelDeveloping.tr);
+              Nav.gsCrSettingsRel.push();
             },
           ),
         ],

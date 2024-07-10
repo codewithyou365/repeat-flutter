@@ -94,6 +94,20 @@ class RelConfig {
       json['learnCountPerGroup'],
     );
   }
+
+  tr() {
+    var key = "labelRelConfig";
+    List<String> args = [level.toString(), before.toString(), from.value.toString()];
+    key += chase > 0 ? "1" : "0";
+    if (chase > 0) args.add(chase.toString());
+    key += learnCountPerGroup > 0 ? "1" : "0";
+    if (learnCountPerGroup > 0) args.add(learnCountPerGroup.toString());
+    I18nKey ret = I18nKey.values.firstWhere(
+      (e) => e.name == key,
+      orElse: () => throw ArgumentError('Invalid I18nKey: $key'),
+    );
+    return ret.trArgs(args);
+  }
 }
 
 class ScheduleConfig {
@@ -163,8 +177,8 @@ abstract class ScheduleDao {
       ElConfig(/* random  */ true, /* extendLevel  */ true, /* level */ 1, /* learnCount */ 2, /* learnCountPerGroup */ 2),
     ],
     [
-      RelConfig(/* level */ 0, /* before */ 3, /* chase */ 1, /* from */ Date(20240101), /* learnCountPerGroup */ 0),
-      RelConfig(/* level */ 1, /* before */ 7, /* chase */ 1, /* from */ Date(20240101), /* learnCountPerGroup */ 0),
+      RelConfig(/* level */ 0, /* before */ 3, /* chase */ 1, /* from */ Date(20240321), /* learnCountPerGroup */ 0),
+      RelConfig(/* level */ 1, /* before */ 7, /* chase */ 1, /* from */ Date(20240321), /* learnCountPerGroup */ 0),
     ],
   );
 
