@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-
+import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'gs_cr_settings_rel_logic.dart';
 
 class GsCrSettingsRelPage extends StatelessWidget {
@@ -34,7 +34,7 @@ class GsCrSettingsRelPage extends StatelessWidget {
                   title: Text(item.config.tr()),
                   onTap: () {
                     logic.setCurrElConfig(item);
-                    openEditDialog(logic);
+                    openEditDialog(logic, context);
                   },
                 ),
               )
@@ -44,7 +44,7 @@ class GsCrSettingsRelPage extends StatelessWidget {
     );
   }
 
-  openEditDialog(GsCrSettingsRelLogic logic) {
+  openEditDialog(GsCrSettingsRelLogic logic, BuildContext context) {
     var config = logic.state.currRelConfig;
     Get.defaultDialog(
       title: I18nKey.settings.tr,
@@ -53,7 +53,7 @@ class GsCrSettingsRelPage extends StatelessWidget {
         child: Column(
           children: [
             buildNumberItem("多少天前", config.before),
-            buildNumberItem("开始时间", config.from),
+            buildNumberItemForDate("开始时间", config.from, context),
             buildNumberItem("追赶", config.chase),
             buildNumberItem("每组数量", config.learnCountPerGroup),
             const Divider(),
@@ -107,6 +107,32 @@ class GsCrSettingsRelPage extends StatelessWidget {
                 ele.value = value;
               });
         }),
+      ],
+    );
+  }
+
+  Widget buildNumberItemForDate(String title, RxInt value, BuildContext context) {
+    return Row(
+      children: [
+        Text(title),
+        const Spacer(),
+        InkWell(
+          onTap: () async {
+            var result = await showBoardDateTimePicker(
+              initialDate: Date(value.value).toDateTime(),
+              context: context,
+              pickerType: DateTimePickerType.date,
+              options: const BoardDateTimeOptions(showDateButton: false),
+            );
+            if (result == null) {
+              return;
+            }
+            value.value = Date.from(result).value;
+          },
+          child: Obx(() {
+            return Text(Date(value.value).format(), style: TextStyle(fontSize: 24.sp));
+          }),
+        )
       ],
     );
   }
