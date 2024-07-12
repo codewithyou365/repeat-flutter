@@ -68,6 +68,14 @@ class ConfigEn extends Config {
     put(I18nKey.labelRelConfig01, "The %sth review will cover the content from %s days ago, starting from %s. (%s per group)");
     put(I18nKey.labelRelConfig10, "The %sth review will cover the content from %s days ago, starting from %s. \nIf catching up is necessary, cover %s days’ worth of content each time. (unlimited per group)");
     put(I18nKey.labelRelConfig11, "The %sth review will cover the content from %s days ago, starting from %s. \nIf catching up is necessary, cover %s days’ worth of content each time. (%s per group)");
+    put(I18nKey.labelElRandom, "Random");
+    put(I18nKey.labelElExtend, "And subsequent");
+    put(I18nKey.labelElLevel, "Level");
+    put(I18nKey.labelElLearnCount, "Learn count");
+    put(I18nKey.labelRelBefore, "How many days ago");
+    put(I18nKey.labelRelFrom, "Start from");
+    put(I18nKey.labelRelChase, "Catching number");
+    put(I18nKey.labelLearnCountPerGroup, "Number per group");
     put(I18nKey.labelFinish, "Finish");
     put(I18nKey.labelSavingConfirm, "Are you sure to save?");
     put(I18nKey.labelConfigChange, "Do you want to save the changes you made?");

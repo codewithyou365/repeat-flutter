@@ -21,17 +21,17 @@ import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
 // ebbinghaus learning config
 class ElConfig {
   bool random;
-  bool extendLevel;
+  bool extend;
   int level;
   int learnCount;
   int learnCountPerGroup;
 
-  ElConfig(this.random, this.extendLevel, this.level, this.learnCount, this.learnCountPerGroup);
+  ElConfig(this.random, this.extend, this.level, this.learnCount, this.learnCountPerGroup);
 
   Map<String, dynamic> toJson() {
     return {
       'random': random,
-      'extendLevel': extendLevel,
+      'extend': extend,
       'level': level,
       'learnCount': learnCount,
       'learnCountPerGroup': learnCountPerGroup,
@@ -41,7 +41,7 @@ class ElConfig {
   factory ElConfig.fromJson(Map<String, dynamic> json) {
     return ElConfig(
       json['random'],
-      json['extendLevel'],
+      json['extend'],
       json['level'],
       json['learnCount'],
       json['learnCountPerGroup'],
@@ -52,7 +52,7 @@ class ElConfig {
     var key = "labelElConfig";
     List<String> args = [level.toString()];
     key += random ? "1" : "0";
-    key += extendLevel ? "1" : "0";
+    key += extend ? "1" : "0";
     key += learnCount > 0 ? "1" : "0";
     if (learnCount > 0) args.add(learnCount.toString());
     key += learnCountPerGroup > 0 ? "1" : "0";
@@ -498,7 +498,7 @@ abstract class ScheduleDao {
 
   List<SegmentTodayPrgWithKey> refineEl(List<SegmentTodayPrgWithKey> all, ElConfig config) {
     List<SegmentTodayPrgWithKey> curr;
-    if (config.extendLevel) {
+    if (config.extend) {
       curr = all.where((sl) {
         return sl.progress >= config.level;
       }).toList();

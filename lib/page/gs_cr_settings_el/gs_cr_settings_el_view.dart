@@ -51,16 +51,16 @@ class GsCrSettingsElPage extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 16.w),
         child: Column(
           children: [
-            buildSwitch("是否随机", config.random),
-            buildSwitch("以后", config.extendLevel),
-            buildNumberItem("等级", config.level),
-            buildNumberItem("数量", config.learnCount),
-            buildNumberItem("每组数量", config.learnCountPerGroup),
+            buildSwitch(I18nKey.labelElRandom.tr, config.random),
+            buildSwitch(I18nKey.labelElExtend.tr, config.extend),
+            buildNumberItem(I18nKey.labelElLevel.tr, config.level),
+            buildNumberItem(I18nKey.labelElLearnCount.tr, config.learnCount),
+            buildNumberItem(I18nKey.labelLearnCountPerGroup.tr, config.learnCountPerGroup),
             const Divider(),
             Obx(() {
               return Text(ElConfig(
                 config.random.value,
-                config.extendLevel.value,
+                config.extend.value,
                 config.level.value,
                 config.learnCount.value,
                 config.learnCountPerGroup.value,
@@ -165,13 +165,15 @@ class GsCrSettingsElPage extends StatelessWidget {
   }
 
   openInputNumberDialog(String title, RxInt value) {
+    RxInt tempValue = RxInt(value.value);
     Get.defaultDialog(
       title: title,
-      content: buildInput(value),
+      content: buildInput(tempValue),
       actions: [
         TextButton(
           child: Text(I18nKey.btnOk.tr),
           onPressed: () {
+            value.value = tempValue.value;
             Get.back();
           },
         ),

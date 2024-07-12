@@ -15,7 +15,7 @@ class GsCrSettingsRelPage extends StatelessWidget {
     final logic = Get.find<GsCrSettingsRelLogic>();
     return Scaffold(
       appBar: AppBar(
-        title: Text(I18nKey.labelConfigSettingsForEl.tr),
+        title: Text(I18nKey.labelConfigSettingsForRel.tr),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -52,10 +52,10 @@ class GsCrSettingsRelPage extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 16.w),
         child: Column(
           children: [
-            buildNumberItem("多少天前", config.before),
-            buildNumberItemForDate("开始时间", config.from, context),
-            buildNumberItem("追赶", config.chase),
-            buildNumberItem("每组数量", config.learnCountPerGroup),
+            buildNumberItem(I18nKey.labelRelBefore.tr, config.before),
+            buildNumberItemForDate(I18nKey.labelRelFrom.tr, config.from, context),
+            buildNumberItem(I18nKey.labelRelChase.tr, config.chase),
+            buildNumberItem(I18nKey.labelLearnCountPerGroup.tr, config.learnCountPerGroup),
             const Divider(),
             Obx(() {
               return Text(RelConfig(
@@ -191,13 +191,15 @@ class GsCrSettingsRelPage extends StatelessWidget {
   }
 
   openInputNumberDialog(String title, RxInt value) {
+    RxInt tempValue = RxInt(value.value);
     Get.defaultDialog(
       title: title,
-      content: buildInput(value),
+      content: buildInput(tempValue),
       actions: [
         TextButton(
           child: Text(I18nKey.btnOk.tr),
           onPressed: () {
+            value.value = tempValue.value;
             Get.back();
           },
         ),

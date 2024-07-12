@@ -68,6 +68,14 @@ class ConfigZh extends Config {
     put(I18nKey.labelRelConfig01, "第%s次回顾%s天以前的内容，从%s开始 (每组%s个)");
     put(I18nKey.labelRelConfig10, "第%s次回顾%s天以前的内容，从%s开始\n如果需要进行追赶,每次追赶%s天的量 (每组不限)");
     put(I18nKey.labelRelConfig11, "第%s次回顾%s天以前的内容，从%s开始\n如果需要进行追赶,每次追赶%s天的量 (每组%s个)");
+    put(I18nKey.labelElRandom, "是否随机");
+    put(I18nKey.labelElExtend, "以后");
+    put(I18nKey.labelElLevel, "等级");
+    put(I18nKey.labelElLearnCount, "学习数量");
+    put(I18nKey.labelRelBefore, "多少天前");
+    put(I18nKey.labelRelFrom, "开始时间");
+    put(I18nKey.labelRelChase, "追赶");
+    put(I18nKey.labelLearnCountPerGroup, "每组数量");
     put(I18nKey.labelFinish, "完成");
     put(I18nKey.labelSavingConfirm, "是否确定保存？");
     put(I18nKey.labelConfigChange, "配置已改变是否保存？");

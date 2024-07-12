@@ -18,7 +18,7 @@ class ElConfigView {
 
 class ElConfigObs {
   var random = false.obs;
-  var extendLevel = false.obs;
+  var extend = false.obs;
   var level = 0.obs;
   var learnCount = 2.obs;
   var learnCountPerGroup = 2.obs;
