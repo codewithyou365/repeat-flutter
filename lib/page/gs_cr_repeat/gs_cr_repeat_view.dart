@@ -52,71 +52,26 @@ class GsCrRepeatPage extends StatelessWidget {
     } else {
       showContent = currProcessShowContent[currProcessShowContent.length - 1];
     }
-    Widget? questionMedia;
-    Widget question = const Text("???");
-    Widget? answerMedia;
 
     List<Widget> listViewContent = [];
     for (int i = 0; i < showContent.length; i++) {
-      if (showContent[i] == ContentType.questionOrPrevAnswerOrTitle) {
-        var textAndMedia = buildInnerContent(state, context, ContentType.questionOrPrevAnswerOrTitle, state.segment);
-        question = textAndMedia[0];
-        if (textAndMedia.length == 2) {
-          questionMedia = textAndMedia[1];
-        }
-      } else if (showContent[i] == ContentType.answer) {
-        var textAndMedia = buildInnerContent(state, context, ContentType.answer, state.segment);
-        listViewContent.add(textAndMedia[0]);
-        if (textAndMedia.length == 2) {
-          answerMedia = textAndMedia[1];
-        }
-      } else {
-        var innerContent = buildInnerContent(state, context, showContent[i], state.segment);
-        for (Widget w in innerContent) {
-          listViewContent.add(w);
-        }
+      var w = buildInnerContent(state, context, showContent[i], state.segment);
+      if (w != null) {
+        listViewContent.add(w);
       }
     }
 
     WidgetsBinding.instance.addPostFrameCallback(afterLayout);
-    return Column(children: [
-      if (questionMedia != null) questionMedia,
-      Container(
-        key: state.questionKey,
-        child: question,
-      ),
-      if (answerMedia != null) answerMedia,
-      Padding(
-        padding: EdgeInsets.only(bottom: 15.h),
-      ),
-      Obx(() {
-        if (state.questionHeight.value > 0) {
-          var bottomHeight = 180.h;
-          var mediaHeight = 0.h;
-          if (questionMedia != null) {
-            mediaHeight += 100.h;
-          }
-          if (answerMedia != null) {
-            mediaHeight += 100.h;
-          }
-          return SizedBox(
-            height: MediaQuery.of(context).size.height - bottomHeight - mediaHeight - state.questionHeight.value,
-            child: listViewContent.isEmpty ? const Text("") : ListView(children: listViewContent),
-          );
-        }
-        return const Text("");
-      }),
-    ]);
+    var bottomHeight = 180.h;
+
+    return SizedBox(
+      height: MediaQuery.of(context).size.height - bottomHeight,
+      child: listViewContent.isEmpty ? const Text("") : ListView(children: listViewContent),
+    );
   }
 
   void afterLayout(_) {
     final state = Get.find<GsCrRepeatLogic>().state;
-    var context = state.questionKey.currentContext;
-    if (context == null) {
-      return;
-    }
-    final RenderBox renderBox = context.findRenderObject() as RenderBox;
-    state.questionHeight.value = renderBox.size.height;
     if (state.tryNeedPlayQuestion) {
       state.questionMediaKey.currentState?.move(offset: 0.0);
     } else {
@@ -130,62 +85,48 @@ class GsCrRepeatPage extends StatelessWidget {
     }
   }
 
-  List<Widget> buildInnerContent(GsCrRepeatState state, BuildContext context, ContentType t, SegmentContent segment) {
-    List<Widget> ret = [];
+  Widget? buildInnerContent(GsCrRepeatState state, BuildContext context, ContentType t, SegmentContent segment) {
     switch (t) {
+      case ContentType.questionOrPrevAnswerOrTitleMedia:
+        if (segment.question != "" && segment.mediaDocPath != "" && segment.qMediaSegments.isNotEmpty) {
+          return PlayerBar(0, [segment.qMediaSegments[segment.segmentIndex]], segment.mediaDocPath, key: state.questionMediaKey);
+        } else if (segment.prevAnswer != "" && segment.mediaDocPath != "") {
+          return PlayerBar(0, [segment.aMediaSegments[segment.segmentIndex - 1]], segment.mediaDocPath, key: state.questionMediaKey);
+        } else if (segment.title != "" && segment.mediaDocPath != "" && segment.titleMediaSegment != null) {
+          return PlayerBar(0, [segment.titleMediaSegment!], segment.mediaDocPath, key: state.questionMediaKey);
+        }
+        return null;
       case ContentType.questionOrPrevAnswerOrTitle:
         if (segment.question != "") {
-          if (segment.mediaDocPath != "" && segment.qMediaSegments.isNotEmpty) {
-            ret.add(Text(segment.question));
-            ret.add(PlayerBar(0, [segment.qMediaSegments[segment.segmentIndex]], segment.mediaDocPath, key: state.questionMediaKey));
-            return ret;
-          }
-          ret.add(Text(segment.question));
-          return ret;
+          return Text(segment.question);
         } else if (segment.prevAnswer != "") {
-          if (segment.mediaDocPath != "") {
-            ret.add(Text(segment.prevAnswer));
-            ret.add(PlayerBar(0, [segment.aMediaSegments[segment.segmentIndex - 1]], segment.mediaDocPath, key: state.questionMediaKey));
-            return ret;
-          }
-          ret.add(Text(segment.prevAnswer));
-          return ret;
+          return Text(segment.prevAnswer);
         } else if (segment.title != "") {
-          if (segment.mediaDocPath != "" && segment.titleMediaSegment != null) {
-            ret.add(Text(segment.title));
-            ret.add(PlayerBar(0, [segment.titleMediaSegment!], segment.mediaDocPath, key: state.questionMediaKey));
-            return ret;
-          }
-          ret.add(Text(segment.title));
-          return ret;
+          return Text(segment.title);
         } else {
-          ret.add(const Text("???"));
-          return ret;
+          return const Text("???");
         }
-      case ContentType.answer:
+      case ContentType.answerMedia:
         if (segment.mediaDocPath != "") {
-          ret.add(Text(segment.answer));
-          ret.add(PlayerBar(segment.segmentIndex, segment.aMediaSegments, segment.mediaDocPath, key: state.answerMediaKey));
-          return ret;
+          return PlayerBar(segment.segmentIndex, segment.aMediaSegments, segment.mediaDocPath, key: state.answerMediaKey);
         }
-        ret.add(Text(segment.answer));
-        return ret;
+        return null;
+      case ContentType.answer:
+        return Text(segment.answer);
       case ContentType.tip:
         if (segment.tip != "") {
-          ret.add(Text(
+          return Text(
             segment.tip,
             style: TextStyle(
               color: Theme.of(context).hintColor,
             ),
-          ));
-          return ret;
+          );
         }
-        return [];
+        return null;
       default:
-        ret.add(Padding(
+        return Padding(
           padding: EdgeInsets.only(bottom: 8.w),
-        ));
-        return ret;
+        );
     }
   }
 

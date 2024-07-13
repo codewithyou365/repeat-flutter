@@ -7,12 +7,10 @@ import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 enum RepeatStep { recall, tip, evaluate, finish }
 
-enum ContentType { questionOrPrevAnswerOrTitle, tip, answer }
+enum ContentType { questionOrPrevAnswerOrTitleMedia, questionOrPrevAnswerOrTitle, tip, answerMedia, answer }
 
 class GsCrRepeatState {
   // for ui
-  final GlobalKey questionKey = GlobalKey();
-  RxDouble questionHeight = (-1.0).obs;
   final GlobalKey<PlayerBarState> questionMediaKey = GlobalKey<PlayerBarState>();
   final GlobalKey<PlayerBarState> answerMediaKey = GlobalKey<PlayerBarState>();
   var tryNeedPlayQuestion = true;
@@ -30,9 +28,22 @@ class GsCrRepeatState {
 
   var showContent = [
     [
-      [ContentType.questionOrPrevAnswerOrTitle],
-      [ContentType.questionOrPrevAnswerOrTitle, ContentType.tip],
-      [ContentType.questionOrPrevAnswerOrTitle, ContentType.tip, ContentType.answer]
+      [
+        ContentType.questionOrPrevAnswerOrTitleMedia,
+        ContentType.questionOrPrevAnswerOrTitle,
+      ],
+      [
+        ContentType.questionOrPrevAnswerOrTitleMedia,
+        ContentType.questionOrPrevAnswerOrTitle,
+        ContentType.tip,
+      ],
+      [
+        ContentType.questionOrPrevAnswerOrTitleMedia,
+        ContentType.questionOrPrevAnswerOrTitle,
+        ContentType.tip,
+        ContentType.answerMedia,
+        ContentType.answer,
+      ],
     ],
   ];
 }
