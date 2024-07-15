@@ -28,14 +28,14 @@ class GsCrRepeatPage extends StatelessWidget {
       body: GetBuilder<GsCrRepeatLogic>(
         id: GsCrRepeatLogic.id,
         builder: (_) {
-          return Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w),
-            child: Column(
-              children: [
-                buildContent(context, logic),
-                buildBottom(logic),
-              ],
-            ),
+          return Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                child: buildContent(context, logic),
+              ),
+              buildBottom(logic),
+            ],
           );
         },
       ),
@@ -46,7 +46,7 @@ class GsCrRepeatPage extends StatelessWidget {
     var state = logic.state;
     state.step.index;
     var currProcessShowContent = logic.getCurrProcessShowContent();
-    List<ContentType> showContent;
+    List<ContentTypeWithTip> showContent;
     if (state.step.index < currProcessShowContent.length) {
       showContent = currProcessShowContent[state.step.index];
     } else {
@@ -55,17 +55,20 @@ class GsCrRepeatPage extends StatelessWidget {
 
     List<Widget> listViewContent = [];
     for (int i = 0; i < showContent.length; i++) {
-      var w = buildInnerContent(state, context, showContent[i], state.segment);
+      var w = buildInnerContent(state, context, showContent[i].contentType, state.segment);
       if (w != null) {
-        listViewContent.add(w);
+        if (showContent[i].tip && state.openTip) {
+          listViewContent.add(w);
+        } else if (!showContent[i].tip) {
+          listViewContent.add(w);
+        }
       }
     }
 
     WidgetsBinding.instance.addPostFrameCallback(afterLayout);
-    var bottomHeight = 180.h;
 
     return SizedBox(
-      height: MediaQuery.of(context).size.height - bottomHeight,
+      height: 546.h,
       child: listViewContent.isEmpty ? const Text("") : ListView(children: listViewContent),
     );
   }
@@ -132,54 +135,95 @@ class GsCrRepeatPage extends StatelessWidget {
 
   Widget buildBottom(GsCrRepeatLogic logic) {
     var state = logic.state;
-    switch (state.step) {
-      case RepeatStep.recall:
-        return Row(
-          children: [
-            buildButton(I18nKey.btnKnow.tr, () => logic.show()),
-            const Spacer(),
-            buildButton(I18nKey.btnTips.tr, () => logic.tip()),
-            const Spacer(),
-            buildButton(I18nKey.btnUnknown.tr, () => logic.error()),
-          ],
-        );
-      case RepeatStep.tip:
-        return Row(
-          children: [
-            buildButton(I18nKey.btnKnow.tr, () => logic.show()),
-            const Spacer(),
-            buildButton(I18nKey.btnUnknown.tr, () => logic.error()),
-          ],
-        );
-      case RepeatStep.evaluate:
-        return Row(
-          children: [
-            buildButton("${I18nKey.btnNext.tr}\n${state.nextKey}", () => logic.know(autoNext: true)),
-            const Spacer(),
-            buildButton(I18nKey.btnError.tr, () => logic.error()),
-          ],
-        );
-      default:
-        if (logic.state.c.isEmpty) {
+    if (state.openTip) {
+      switch (state.step) {
+        case RepeatStep.recall:
           return Row(
             children: [
-              buildButton(I18nKey.btnFinish.tr, () => logic.next()),
+              buildButton(I18nKey.btnKnow.tr, () => logic.show()),
+              const Spacer(),
+              buildButton(I18nKey.btnUnknown.tr, () => logic.error()),
             ],
           );
-        } else {
+        case RepeatStep.evaluate:
           return Row(
             children: [
-              buildButton("${I18nKey.btnNext.tr}\n${state.nextKey}", () => logic.next()),
+              buildButton("${I18nKey.btnNext.tr}\n${state.nextKey}", () => logic.know(autoNext: true)),
+              const Spacer(),
+              buildButton(I18nKey.btnError.tr, () => logic.error()),
             ],
           );
-        }
+        default:
+          if (logic.state.c.isEmpty) {
+            return Row(
+              children: [
+                buildButton(I18nKey.btnFinish.tr, () => logic.next()),
+              ],
+            );
+          } else {
+            return Row(
+              children: [
+                buildButton("${I18nKey.btnNext.tr}\n${state.nextKey}", () => logic.next()),
+              ],
+            );
+          }
+      }
+    } else {
+      switch (state.step) {
+        case RepeatStep.recall:
+          return Row(
+            children: [
+              buildButton(I18nKey.btnKnow.tr, () => logic.show()),
+              const Spacer(),
+              buildButton(I18nKey.btnTips.tr, () => logic.tip()),
+              const Spacer(),
+              buildButton(I18nKey.btnUnknown.tr, () => logic.error()),
+            ],
+          );
+        case RepeatStep.evaluate:
+          return Row(
+            children: [
+              buildButton("${I18nKey.btnNext.tr}\n${state.nextKey}", () => logic.know(autoNext: true)),
+              const Spacer(),
+              buildButton(I18nKey.btnTips.tr, () => logic.tip()),
+              const Spacer(),
+              buildButton(I18nKey.btnError.tr, () => logic.error()),
+            ],
+          );
+        default:
+          if (logic.state.c.isEmpty) {
+            return Row(
+              children: [
+                buildButton(I18nKey.btnFinish.tr, () => logic.next()),
+                const Spacer(),
+                buildButton(I18nKey.btnTips.tr, () => logic.tip()),
+                const Spacer(),
+                buildButton("", () => {}),
+              ],
+            );
+          } else {
+            return Row(
+              children: [
+                buildButton("${I18nKey.btnNext.tr}\n${state.nextKey}", () => logic.next()),
+                const Spacer(),
+                buildButton(I18nKey.btnTips.tr, () => logic.tip()),
+                const Spacer(),
+                buildButton("", () => {}),
+              ],
+            );
+          }
+      }
     }
   }
 
   Widget buildButton(String text, VoidCallback onPressed) {
-    return TextButton(
-      onPressed: onPressed,
-      child: Text(text),
+    return SizedBox(
+      width: 120.w,
+      height: 50.h,
+      child: TextButton(
+        onPressed: onPressed,
+        child: Text(text),
+      ),
     );
   }
 }

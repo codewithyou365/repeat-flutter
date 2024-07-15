@@ -42,7 +42,7 @@ class GsCrRepeatLogic extends GetxController {
     }
     state.total = todayProgresses.length;
     state.progress = state.total - state.c.length;
-    state.step = getStepForRecallOrTip();
+    state.step = RepeatStep.recall;
     state.tryNeedPlayQuestion = true;
     state.tryNeedPlayAnswer = false;
     await setCurrentLearnContent();
@@ -60,7 +60,7 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   void tip() {
-    state.step = RepeatStep.tip;
+    state.openTip = true;
     state.tryNeedPlayQuestion = false;
     state.tryNeedPlayAnswer = false;
     update([GsCrRepeatLogic.id]);
@@ -129,7 +129,7 @@ class GsCrRepeatLogic extends GetxController {
       finish();
       return;
     }
-    state.step = getStepForRecallOrTip();
+    state.step = RepeatStep.recall;
     state.tryNeedPlayQuestion = true;
     state.tryNeedPlayAnswer = false;
     await setCurrentLearnContent();
@@ -142,6 +142,7 @@ class GsCrRepeatLogic extends GetxController {
     }
     var curr = state.c[0];
     tryToSetNext();
+    state.openTip = false;
     var learnSegment = await SegmentHelp.from(curr.segmentKeyId);
     if (learnSegment == null) {
       return;
@@ -157,31 +158,8 @@ class GsCrRepeatLogic extends GetxController {
     }
   }
 
-  RepeatStep getStepForRecallOrTip() {
-    var currProcessShowContent = getCurrProcessShowContent();
-    var same = false;
-    if (currProcessShowContent.length > 2) {
-      var size = currProcessShowContent[0].length;
-      if (size == currProcessShowContent[1].length) {
-        var allSame = true;
-        for (int i = 0; i < size; i++) {
-          if (currProcessShowContent[0][i] != currProcessShowContent[i][i]) {
-            allSame = false;
-            break;
-          }
-        }
-        same = allSame;
-      }
-    }
-    if (same) {
-      return RepeatStep.tip;
-    } else {
-      return RepeatStep.recall;
-    }
-  }
-
-  List<List<ContentType>> getCurrProcessShowContent() {
-    List<List<ContentType>> currProcessShowContent;
+  List<List<ContentTypeWithTip>> getCurrProcessShowContent() {
+    List<List<ContentTypeWithTip>> currProcessShowContent;
     var processIndex = state.progress;
     if (processIndex < 0) {
       currProcessShowContent = state.showContent[0];
