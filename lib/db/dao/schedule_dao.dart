@@ -551,21 +551,26 @@ abstract class ScheduleDao {
       await setScheduleCurrentWithCache(segmentTodayPrg, maxRepeatTime, now);
     }
     if (complete) {
+      var schedule = await getSegmentOverallPrg(segmentKeyId);
+      if (schedule == null) {
+        return;
+      }
+      var adjustProgress = false;
       if (segmentTodayPrg.reviewCreateDate.value != 0) {
         await setSegmentReviewCount(segmentTodayPrg.reviewCreateDate, segmentKeyId, segmentTodayPrg.reviewCount + 1);
-      } else {
-        var schedule = await getSegmentOverallPrg(segmentKeyId);
-        if (schedule == null) {
-          return;
+        if (schedule.progress == 0) {
+          adjustProgress = true;
         }
+      } else {
         await insertSegmentReview([SegmentReview(Date.from(now), segmentKeyId, 0)]);
-        if (schedule.next.value <= Date.from(now).value) {
-          var forgettingCurve = scheduleConfig.forgettingCurve;
-          if (schedule.progress + 1 >= forgettingCurve.length - 1) {
-            await setPrgAndNext4Sop(segmentKeyId, schedule.progress + 1, getNext(now, forgettingCurve.last));
-          } else {
-            await setPrgAndNext4Sop(segmentKeyId, schedule.progress + 1, getNext(now, forgettingCurve[schedule.progress + 1]));
-          }
+        adjustProgress = true;
+      }
+      if (adjustProgress && schedule.next.value <= Date.from(now).value) {
+        var forgettingCurve = scheduleConfig.forgettingCurve;
+        if (schedule.progress + 1 >= forgettingCurve.length - 1) {
+          await setPrgAndNext4Sop(segmentKeyId, schedule.progress + 1, getNext(now, forgettingCurve.last));
+        } else {
+          await setPrgAndNext4Sop(segmentKeyId, schedule.progress + 1, getNext(now, forgettingCurve[schedule.progress + 1]));
         }
       }
     } else {
