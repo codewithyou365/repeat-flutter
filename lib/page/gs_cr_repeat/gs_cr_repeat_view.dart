@@ -92,11 +92,11 @@ class GsCrRepeatPage extends StatelessWidget {
     switch (t) {
       case ContentType.questionOrPrevAnswerOrTitleMedia:
         if (segment.question != "" && segment.mediaDocPath != "" && segment.qMediaSegments.isNotEmpty) {
-          return PlayerBar(0, [segment.qMediaSegments[segment.segmentIndex]], segment.mediaDocPath, key: state.questionMediaKey);
+          return PlayerBar(state.questionMediaId, 0, [segment.qMediaSegments[segment.segmentIndex]], segment.mediaDocPath, key: state.questionMediaKey);
         } else if (segment.prevAnswer != "" && segment.mediaDocPath != "") {
-          return PlayerBar(0, [segment.aMediaSegments[segment.segmentIndex - 1]], segment.mediaDocPath, key: state.questionMediaKey);
+          return PlayerBar(state.questionMediaId, 0, [segment.aMediaSegments[segment.segmentIndex - 1]], segment.mediaDocPath, key: state.questionMediaKey);
         } else if (segment.title != "" && segment.mediaDocPath != "" && segment.titleMediaSegment != null) {
-          return PlayerBar(0, [segment.titleMediaSegment!], segment.mediaDocPath, key: state.questionMediaKey);
+          return PlayerBar(state.questionMediaId, 0, [segment.titleMediaSegment!], segment.mediaDocPath, key: state.questionMediaKey);
         }
         return null;
       case ContentType.questionOrPrevAnswerOrTitle:
@@ -111,7 +111,7 @@ class GsCrRepeatPage extends StatelessWidget {
         }
       case ContentType.answerMedia:
         if (segment.mediaDocPath != "") {
-          return PlayerBar(segment.segmentIndex, segment.aMediaSegments, segment.mediaDocPath, key: state.answerMediaKey);
+          return PlayerBar(state.answerMediaId, segment.segmentIndex, segment.aMediaSegments, segment.mediaDocPath, key: state.answerMediaKey);
         }
         return null;
       case ContentType.answer:

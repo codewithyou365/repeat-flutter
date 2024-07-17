@@ -17,6 +17,8 @@ class ContentTypeWithTip {
 
 class GsCrRepeatState {
   // for ui
+  final String questionMediaId = "qm";
+  final String answerMediaId = "am";
   final GlobalKey<PlayerBarState> questionMediaKey = GlobalKey<PlayerBarState>();
   final GlobalKey<PlayerBarState> answerMediaKey = GlobalKey<PlayerBarState>();
   var tryNeedPlayQuestion = true;

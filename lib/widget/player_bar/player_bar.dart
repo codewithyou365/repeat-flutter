@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class PlayerBar extends StatefulWidget {
+  final String playerId;
   final int? index;
   final List<MediaSegment> lines;
   final String path;
 
-  const PlayerBar(this.index, this.lines, this.path, {Key? key}) : super(key: key);
+  const PlayerBar(this.playerId, this.index, this.lines, this.path, {Key? key}) : super(key: key);
 
   @override
   PlayerBarState createState() => PlayerBarState();
@@ -22,7 +23,7 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
   double _previousOffset = 0.0;
 
   // TODO support video
-  final player = AudioPlayer();
+  AudioPlayer? player;
   int? startIndex;
   late AnimationController _controller;
 
@@ -31,6 +32,7 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
   @override
   void initState() {
     super.initState();
+    player = AudioPlayer(playerId: widget.playerId);
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
@@ -45,7 +47,7 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
 
   stopMove() {
     _controller.stop();
-    player.stop();
+    player!.stop();
   }
 
   moveByIndex() {
@@ -76,25 +78,20 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
     }
 
     _controller.reset();
-    _controller.animateTo(100, duration: Duration(milliseconds: duration.toInt())).then((value) => {player.pause()});
-    if (player.state == PlayerState.paused) {
-      player.resume();
-      player.seek(Duration(milliseconds: widget.lines[0].start.toInt() - currOffset));
-    } else if (player.state == PlayerState.stopped) {
-      player.play(DeviceFileSource(widget.path));
-      player.seek(Duration(milliseconds: widget.lines[0].start.toInt() - currOffset));
-    } else if (player.state == PlayerState.playing) {
+    _controller.animateTo(100, duration: Duration(milliseconds: duration.toInt())).then((value) => {player!.pause()});
+    if (player!.state != PlayerState.disposed) {
+      player!.play(DeviceFileSource(widget.path));
     } else {
       return;
     }
     startTime = DateTime.now().millisecondsSinceEpoch + currOffset;
-    player.seek(Duration(milliseconds: widget.lines[0].start.toInt() - currOffset));
+    player!.seek(Duration(milliseconds: widget.lines[0].start.toInt() - currOffset));
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    player.dispose();
+    player!.dispose();
     super.dispose();
   }
 
@@ -104,7 +101,7 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
       onHorizontalDragStart: (details) {
         _previousOffset = details.localPosition.dx;
         _controller.stop(canceled: false);
-        player.pause();
+        player!.pause();
       },
       onHorizontalDragEnd: (details) {
         move();
