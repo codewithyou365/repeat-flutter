@@ -21,7 +21,7 @@ class GsCrRepeatPage extends StatelessWidget {
         title: GetBuilder<GsCrRepeatLogic>(
           id: GsCrRepeatLogic.id,
           builder: (_) {
-            return Text("${state.progress}/${state.total}-${state.segment.k}");
+            return Text("${state.progress + state.fakeKnow}/${state.total}-${state.segment.k}");
           },
         ),
       ),

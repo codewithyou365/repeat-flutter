@@ -45,6 +45,7 @@ class GsCrRepeatLogic extends GetxController {
     state.step = RepeatStep.recall;
     state.tryNeedPlayQuestion = true;
     state.tryNeedPlayAnswer = false;
+    state.fakeKnow = 0;
     await setCurrentLearnContent();
     update([GsCrRepeatLogic.id]);
   }
@@ -56,6 +57,7 @@ class GsCrRepeatLogic extends GetxController {
     state.step = RepeatStep.evaluate;
     state.tryNeedPlayQuestion = false;
     state.tryNeedPlayAnswer = true;
+    state.fakeKnow = 1;
     update([GsCrRepeatLogic.id]);
   }
 
@@ -76,6 +78,7 @@ class GsCrRepeatLogic extends GetxController {
     }
     state.tryNeedPlayQuestion = false;
     state.tryNeedPlayAnswer = true;
+    state.fakeKnow = 0;
     var curr = state.c[0];
     await Db().db.scheduleDao.error(curr);
     state.c.sort(schedulesCurrentSort);
@@ -106,6 +109,7 @@ class GsCrRepeatLogic extends GetxController {
     }
     state.tryNeedPlayQuestion = false;
     state.tryNeedPlayAnswer = true;
+    state.fakeKnow = 0;
     var curr = state.c[0];
     await Db().db.scheduleDao.right(curr);
     if (curr.progress >= ScheduleDao.scheduleConfig.maxRepeatTime) {
@@ -132,6 +136,7 @@ class GsCrRepeatLogic extends GetxController {
     state.step = RepeatStep.recall;
     state.tryNeedPlayQuestion = true;
     state.tryNeedPlayAnswer = false;
+    state.fakeKnow = 0;
     await setCurrentLearnContent();
     update([GsCrRepeatLogic.id]);
   }
@@ -174,6 +179,7 @@ class GsCrRepeatLogic extends GetxController {
   finish() {
     state.tryNeedPlayQuestion = false;
     state.tryNeedPlayAnswer = false;
+    state.fakeKnow = 0;
     Nav.gsCrRepeatFinish.push();
   }
 }

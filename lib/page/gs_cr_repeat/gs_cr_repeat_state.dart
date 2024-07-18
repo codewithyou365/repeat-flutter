@@ -28,6 +28,7 @@ class GsCrRepeatState {
 
   var nextKey = "";
   var progress = -1;
+  var fakeKnow = 0;
   var total = 10;
 
   SegmentContent segment = SegmentContent(0, 0, 0, 0, 0, 0, Classroom.curr, "", "", "", "");
