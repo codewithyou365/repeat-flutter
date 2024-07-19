@@ -6,7 +6,7 @@ import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 enum RepeatStep { recall, evaluate, finish }
 
-enum ContentType { questionOrPrevAnswerOrTitleMedia, questionOrPrevAnswerOrTitle, tip, answerMedia, answer }
+enum ContentType { questionOrPrevAnswerOrTitleMedia, questionOrPrevAnswerOrTitle, tip, answerMedia, answerMediaWithPnController, answerPnController, answer }
 
 class ContentTypeWithTip {
   ContentType contentType;
@@ -35,6 +35,7 @@ class GsCrRepeatState {
   late List<SegmentTodayPrg> c;
   var step = RepeatStep.recall;
   var openTip = false;
+  var pnOffset = 0;
 
   var showContent = [
     [
@@ -47,7 +48,7 @@ class GsCrRepeatState {
         ContentTypeWithTip(ContentType.questionOrPrevAnswerOrTitleMedia, false),
         ContentTypeWithTip(ContentType.questionOrPrevAnswerOrTitle, false),
         ContentTypeWithTip(ContentType.tip, true),
-        ContentTypeWithTip(ContentType.answerMedia, false),
+        ContentTypeWithTip(ContentType.answerMediaWithPnController, false),
         ContentTypeWithTip(ContentType.answer, false),
       ],
     ],

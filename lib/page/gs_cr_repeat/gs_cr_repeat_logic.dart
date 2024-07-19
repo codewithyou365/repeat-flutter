@@ -46,8 +46,7 @@ class GsCrRepeatLogic extends GetxController {
     state.tryNeedPlayQuestion = true;
     state.tryNeedPlayAnswer = false;
     state.fakeKnow = 0;
-    await setCurrentLearnContent();
-    update([GsCrRepeatLogic.id]);
+    await setCurrentLearnContentAndUpdateView();
   }
 
   void show() {
@@ -137,22 +136,47 @@ class GsCrRepeatLogic extends GetxController {
     state.tryNeedPlayQuestion = true;
     state.tryNeedPlayAnswer = false;
     state.fakeKnow = 0;
-    await setCurrentLearnContent();
-    update([GsCrRepeatLogic.id]);
+    await setCurrentLearnContentAndUpdateView();
   }
 
-  Future<void> setCurrentLearnContent() async {
+  Future<bool?> setCurrentLearnContentAndUpdateView({int? pnOffset}) async {
     if (state.c.isEmpty) {
-      return;
+      return null;
     }
     var curr = state.c[0];
     tryToSetNext();
+    pnOffset ??= 0;
     state.openTip = false;
-    var learnSegment = await SegmentHelp.from(curr.segmentKeyId);
+    var oldSegmentKeyId = state.segment.segmentKeyId ?? 0;
+    var learnSegment = await SegmentHelp.from(curr.segmentKeyId, offset: pnOffset);
     if (learnSegment == null) {
-      return;
+      return null;
+    }
+    if (learnSegment.segmentKeyId == oldSegmentKeyId) {
+      return false;
     }
     state.segment = learnSegment;
+    update([GsCrRepeatLogic.id]);
+    return true;
+  }
+
+  Future<void> resetPnOffset() async {
+    setCurrentLearnContentAndUpdateView(pnOffset: 0);
+    state.pnOffset = 0;
+  }
+
+  Future<void> plusPnOffset() async {
+    var ok = await setCurrentLearnContentAndUpdateView(pnOffset: state.pnOffset + 1);
+    if (ok ?? false) {
+      ++state.pnOffset;
+    }
+  }
+
+  Future<void> minusPnOffset() async {
+    var ok = await setCurrentLearnContentAndUpdateView(pnOffset: state.pnOffset - 1);
+    if (ok ?? false) {
+      --state.pnOffset;
+    }
   }
 
   int schedulesCurrentSort(SegmentTodayPrg a, SegmentTodayPrg b) {

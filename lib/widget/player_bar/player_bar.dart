@@ -8,8 +8,20 @@ class PlayerBar extends StatefulWidget {
   final int? index;
   final List<MediaSegment> lines;
   final String path;
+  final VoidCallback? onPrevious;
+  final VoidCallback? onReplay;
+  final VoidCallback? onNext;
 
-  const PlayerBar(this.playerId, this.index, this.lines, this.path, {Key? key}) : super(key: key);
+  const PlayerBar(
+    this.playerId,
+    this.index,
+    this.lines,
+    this.path, {
+    Key? key,
+    this.onPrevious,
+    this.onReplay,
+    this.onNext,
+  }) : super(key: key);
 
   @override
   PlayerBarState createState() => PlayerBarState();
@@ -17,15 +29,18 @@ class PlayerBar extends StatefulWidget {
 
 const double factor = 0.06;
 
-class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixin {
+class PlayerBarState extends State<PlayerBar> with TickerProviderStateMixin {
   int startTime = 0;
   double _offset = 0.0;
   double _previousOffset = 0.0;
+  bool showMenu = false;
 
   // TODO support video
   AudioPlayer? player;
-  int? startIndex;
   late AnimationController _controller;
+
+  late AnimationController _menuController;
+  late Animation<Offset> _menuOffsetAnimation;
 
   PlayerBarState();
 
@@ -43,6 +58,18 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
         _offset = offset;
       });
     });
+
+    _menuController = AnimationController(
+      duration: const Duration(milliseconds: 100),
+      vsync: this,
+    );
+    _menuOffsetAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 1.0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _menuController,
+      curve: Curves.easeInOut,
+    ));
   }
 
   stopMove() {
@@ -51,11 +78,8 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
   }
 
   moveByIndex() {
-    if (startIndex == null || startIndex != widget.index) {
-      if (widget.path.isNotEmpty && widget.lines.isNotEmpty && widget.index != null) {
-        move(offset: (widget.lines[0].start.toInt() - widget.lines[widget.index!].start.toInt()) * factor);
-        startIndex = widget.index;
-      }
+    if (widget.path.isNotEmpty && widget.lines.isNotEmpty && widget.index != null) {
+      move(offset: (widget.lines[0].start.toInt() - widget.lines[widget.index!].start.toInt()) * factor);
     }
   }
 
@@ -90,6 +114,7 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
 
   @override
   void dispose() {
+    _menuController.dispose();
     _controller.dispose();
     player!.dispose();
     super.dispose();
@@ -98,6 +123,17 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onTap: () {
+        stopMove();
+        setState(() {
+          showMenu = !showMenu;
+          if (showMenu) {
+            _menuController.forward();
+          } else {
+            _menuController.reverse();
+          }
+        });
+      },
       onHorizontalDragStart: (details) {
         _previousOffset = details.localPosition.dx;
         _controller.stop(canceled: false);
@@ -114,9 +150,48 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
           _previousOffset = currentOffset;
         });
       },
-      child: CustomPaint(
-        size: Size(360.w, 100.h),
-        painter: PlayerBarPainter(_offset, widget.lines),
+      child: Stack(
+        children: [
+          CustomPaint(
+            size: Size(360.w, 50.w),
+            painter: PlayerBarPainter(_offset, widget.lines),
+          ),
+          ClipRect(
+            child: SizedBox(
+              height: 50.w,
+              child: SlideTransition(
+                position: _menuOffsetAnimation,
+                child: Row(
+                  children: [
+                    const Spacer(),
+                    if (widget.onPrevious != null)
+                      IconButton(
+                        icon: const Icon(Icons.skip_previous),
+                        iconSize: 30.w,
+                        onPressed: widget.onPrevious,
+                      ),
+                    IconButton(
+                      icon: const Icon(Icons.replay),
+                      iconSize: 30.w,
+                      onPressed: () {
+                        if (widget.onReplay != null) {
+                          widget.onReplay!();
+                        }
+                        moveByIndex();
+                      },
+                    ),
+                    if (widget.onNext != null)
+                      IconButton(
+                        icon: const Icon(Icons.skip_next),
+                        iconSize: 30.w,
+                        onPressed: widget.onNext,
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -168,7 +243,7 @@ class PlayerBarPainter extends CustomPainter {
       ..strokeWidth = 20.0.w;
     gapLine = Paint()
       ..color = Colors.blue
-      ..strokeWidth = 10.0.w;
+      ..strokeWidth = 1.0;
   }
 
   @override
@@ -209,8 +284,13 @@ class PlayerBarPainter extends CustomPainter {
         endX = size.width;
       }
       canvas.drawLine(
-        Offset(startX, 10.w),
-        Offset(endX, 10.w),
+        Offset(startX, 0.w),
+        Offset(endX, 0.w),
+        gapLine,
+      );
+      canvas.drawLine(
+        Offset(startX, size.height),
+        Offset(endX, size.height),
         gapLine,
       );
     }

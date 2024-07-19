@@ -1,4 +1,5 @@
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
@@ -19,7 +20,18 @@ class SegmentHelp {
     scheduleKeyToLearnSegment = {};
   }
 
-  static Future<SegmentContent?> from(int segmentKeyId) async {
+  static Future<SegmentContent?> from(int segmentKeyId, {int offset = 0}) async {
+    if (offset < 0) {
+      var id = await Db().db.scheduleDao.getPrevSegmentKeyIdWithOffset(Classroom.curr, segmentKeyId, offset.abs());
+      if (id != null) {
+        segmentKeyId = id;
+      }
+    } else if (offset > 0) {
+      var id = await Db().db.scheduleDao.getNextSegmentKeyIdWithOffset(Classroom.curr, segmentKeyId, offset.abs());
+      if (id != null) {
+        segmentKeyId = id;
+      }
+    }
     if (scheduleKeyToLearnSegment.containsKey(segmentKeyId)) {
       return scheduleKeyToLearnSegment[segmentKeyId]!;
     }

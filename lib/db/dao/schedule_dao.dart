@@ -336,6 +336,28 @@ abstract class ScheduleDao {
       " WHERE Segment.segmentKeyId=:segmentKeyId")
   Future<SegmentContentInDb?> getSegmentContent(int segmentKeyId);
 
+  @Query("SELECT LimitSegment.segmentKeyId"
+      " FROM (SELECT Segment.sort,Segment.segmentKeyId"
+      "  FROM Segment"
+      "  JOIN SegmentKey ON SegmentKey.id = Segment.segmentKeyId AND SegmentKey.crn=:crn"
+      "  WHERE Segment.sort<(SELECT Segment.sort FROM Segment WHERE Segment.segmentKeyId=:segmentKeyId)"
+      "  ORDER BY Segment.sort desc"
+      "  LIMIT :offset) LimitSegment"
+      "  ORDER BY LimitSegment.sort"
+      " LIMIT 1")
+  Future<int?> getPrevSegmentKeyIdWithOffset(String crn, int segmentKeyId, int offset);
+
+  @Query("SELECT LimitSegment.segmentKeyId"
+      " FROM (SELECT Segment.sort,Segment.segmentKeyId"
+      "  FROM Segment"
+      "  JOIN SegmentKey ON SegmentKey.id = Segment.segmentKeyId AND SegmentKey.crn=:crn"
+      "  WHERE Segment.sort>(SELECT Segment.sort FROM Segment WHERE Segment.segmentKeyId=:segmentKeyId)"
+      "  ORDER BY Segment.sort"
+      "  LIMIT :offset) LimitSegment"
+      "  ORDER BY LimitSegment.sort desc"
+      " LIMIT 1")
+  Future<int?> getNextSegmentKeyIdWithOffset(String crn, int segmentKeyId, int offset);
+
   @Insert(onConflict: OnConflictStrategy.ignore)
   Future<void> insertSegmentKeys(List<SegmentKey> entities);
 

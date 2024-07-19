@@ -135,8 +135,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE UNIQUE INDEX `index_Classroom_sort` ON `Classroom` (`sort`)');
         await database.execute(
             'CREATE INDEX `index_ContentIndex_sort` ON `ContentIndex` (`sort`)');
-        await database.execute(
-            'CREATE UNIQUE INDEX `index_Segment_sort` ON `Segment` (`sort`)');
+        await database
+            .execute('CREATE INDEX `index_Segment_sort` ON `Segment` (`sort`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_SegmentKey_crn_k` ON `SegmentKey` (`crn`, `k`)');
         await database.execute(
@@ -800,6 +800,30 @@ class _$ScheduleDao extends ScheduleDao {
         'SELECT Segment.segmentKeyId,IFNULL(indexDoc.id,0) indexDocId,IFNULL(mediaDoc.id,0) mediaDocId,Segment.lessonIndex lessonIndex,Segment.segmentIndex segmentIndex,Segment.sort sort,SegmentKey.crn crn,SegmentKey.k k,IFNULL(indexDoc.url,\'\') indexDocUrl,IFNULL(indexDoc.path,\'\') indexDocPath,IFNULL(mediaDoc.path,\'\') mediaDocPath FROM Segment JOIN SegmentKey segmentKey ON segmentKey.id=?1 LEFT JOIN Doc indexDoc ON indexDoc.id=Segment.indexDocId LEFT JOIN Doc mediaDoc ON mediaDoc.id=Segment.mediaDocId WHERE Segment.segmentKeyId=?1',
         mapper: (Map<String, Object?> row) => SegmentContentInDb(row['segmentKeyId'] as int, row['indexDocId'] as int, row['mediaDocId'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['sort'] as int, row['crn'] as String, row['k'] as String, row['indexDocUrl'] as String, row['indexDocPath'] as String, row['mediaDocPath'] as String),
         arguments: [segmentKeyId]);
+  }
+
+  @override
+  Future<int?> getPrevSegmentKeyIdWithOffset(
+    String crn,
+    int segmentKeyId,
+    int offset,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT LimitSegment.segmentKeyId FROM (SELECT Segment.sort,Segment.segmentKeyId  FROM Segment  JOIN SegmentKey ON SegmentKey.id = Segment.segmentKeyId AND SegmentKey.crn=?1  WHERE Segment.sort<(SELECT Segment.sort FROM Segment WHERE Segment.segmentKeyId=?2)  ORDER BY Segment.sort desc  LIMIT ?3) LimitSegment  ORDER BY LimitSegment.sort LIMIT 1',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [crn, segmentKeyId, offset]);
+  }
+
+  @override
+  Future<int?> getNextSegmentKeyIdWithOffset(
+    String crn,
+    int segmentKeyId,
+    int offset,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT LimitSegment.segmentKeyId FROM (SELECT Segment.sort,Segment.segmentKeyId  FROM Segment  JOIN SegmentKey ON SegmentKey.id = Segment.segmentKeyId AND SegmentKey.crn=?1  WHERE Segment.sort>(SELECT Segment.sort FROM Segment WHERE Segment.segmentKeyId=?2)  ORDER BY Segment.sort  LIMIT ?3) LimitSegment  ORDER BY LimitSegment.sort desc LIMIT 1',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [crn, segmentKeyId, offset]);
   }
 
   @override

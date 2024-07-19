@@ -5,7 +5,7 @@ import 'package:floor/floor.dart';
 @Entity(
   primaryKeys: ['segmentKeyId'],
   indices: [
-    Index(value: ['sort'], unique: true),
+    Index(value: ['sort']),
   ],
 )
 class Segment {
