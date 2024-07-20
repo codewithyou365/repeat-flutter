@@ -47,9 +47,9 @@ class GsCrRepeatState {
       [
         ContentTypeWithTip(ContentType.questionOrPrevAnswerOrTitleMedia, false),
         ContentTypeWithTip(ContentType.questionOrPrevAnswerOrTitle, false),
-        ContentTypeWithTip(ContentType.tip, true),
         ContentTypeWithTip(ContentType.answerMediaWithPnController, false),
         ContentTypeWithTip(ContentType.answer, false),
+        ContentTypeWithTip(ContentType.tip, true),
       ],
     ],
   ];
