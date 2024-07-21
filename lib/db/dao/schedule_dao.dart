@@ -297,7 +297,7 @@ abstract class ScheduleDao {
       " FROM SegmentOverallPrg"
       " JOIN SegmentKey on SegmentKey.id=SegmentOverallPrg.segmentKeyId"
       " AND SegmentKey.crn=:crn"
-      " ORDER BY next desc, segmentKeyId asc")
+      " ORDER BY SegmentOverallPrg.segmentKeyId asc")
   Future<List<SegmentOverallPrgWithKey>> getAllSegmentOverallPrg(String crn);
 
   /// --- SegmentReview
