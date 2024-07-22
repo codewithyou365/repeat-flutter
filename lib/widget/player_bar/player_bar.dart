@@ -34,6 +34,7 @@ class PlayerBarState extends State<PlayerBar> with TickerProviderStateMixin {
   double _offset = 0.0;
   double _previousOffset = 0.0;
   bool showMenu = false;
+  bool playing = true;
 
   // TODO support video
   AudioPlayer? player;
@@ -74,7 +75,8 @@ class PlayerBarState extends State<PlayerBar> with TickerProviderStateMixin {
 
   stopMove() {
     _controller.stop();
-    player!.stop();
+    player!.pause();
+    playing = false;
   }
 
   moveByIndex() {
@@ -102,9 +104,10 @@ class PlayerBarState extends State<PlayerBar> with TickerProviderStateMixin {
     }
 
     _controller.reset();
-    _controller.animateTo(100, duration: Duration(milliseconds: duration.toInt())).then((value) => {player!.pause()});
+    _controller.animateTo(100, duration: Duration(milliseconds: duration.toInt())).then((value) => {stopMove()});
     if (player!.state != PlayerState.disposed) {
       player!.play(DeviceFileSource(widget.path));
+      playing = true;
     } else {
       return;
     }
@@ -122,77 +125,92 @@ class PlayerBarState extends State<PlayerBar> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        stopMove();
-        setState(() {
-          showMenu = !showMenu;
-          if (showMenu) {
-            _menuController.forward();
-          } else {
-            _menuController.reverse();
-          }
-        });
-      },
-      onHorizontalDragStart: (details) {
-        _previousOffset = details.localPosition.dx;
-        _controller.stop(canceled: false);
-        player!.pause();
-      },
-      onHorizontalDragEnd: (details) {
-        move();
-      },
-      onHorizontalDragUpdate: (details) {
-        double currentOffset = details.localPosition.dx;
-        double delta = currentOffset - _previousOffset;
-        setState(() {
-          _offset += delta;
-          _previousOffset = currentOffset;
-        });
-      },
-      child: Stack(
-        children: [
-          CustomPaint(
+    return Stack(
+      children: [
+        GestureDetector(
+          onTapDown: (details) {
+            _previousOffset = details.localPosition.dx;
+            stopMove();
+            if (!showMenu) {
+              _menuController.forward();
+              showMenu = true;
+            }
+            setState(() {});
+          },
+          onHorizontalDragEnd: (details) {
+            move();
+          },
+          onHorizontalDragUpdate: (details) {
+            double currentOffset = details.localPosition.dx;
+            double delta = currentOffset - _previousOffset;
+            setState(() {
+              _offset += delta;
+              _previousOffset = currentOffset;
+            });
+          },
+          child: CustomPaint(
             size: Size(360.w, 50.w),
             painter: PlayerBarPainter(_offset, widget.lines),
           ),
-          ClipRect(
-            child: SizedBox(
-              height: 50.w,
-              child: SlideTransition(
-                position: _menuOffsetAnimation,
-                child: Row(
-                  children: [
-                    const Spacer(),
-                    if (widget.onPrevious != null)
-                      IconButton(
-                        icon: const Icon(Icons.skip_previous),
-                        iconSize: 30.w,
-                        onPressed: widget.onPrevious,
-                      ),
+        ),
+        ClipRect(
+          child: SizedBox(
+            height: 50.w,
+            child: SlideTransition(
+              position: _menuOffsetAnimation,
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    iconSize: 20.w,
+                    onPressed: () {
+                      if (showMenu) {
+                        _menuController.reverse();
+                        showMenu = false;
+                      }
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.replay),
+                    iconSize: 20.w,
+                    onPressed: () {
+                      if (widget.onReplay != null) {
+                        widget.onReplay!();
+                      }
+                      moveByIndex();
+                    },
+                  ),
+                  const Spacer(),
+                  if (widget.onPrevious != null)
                     IconButton(
-                      icon: const Icon(Icons.replay),
-                      iconSize: 30.w,
-                      onPressed: () {
-                        if (widget.onReplay != null) {
-                          widget.onReplay!();
-                        }
-                        moveByIndex();
-                      },
+                      icon: const Icon(Icons.skip_previous),
+                      iconSize: 20.w,
+                      onPressed: widget.onPrevious,
                     ),
-                    if (widget.onNext != null)
-                      IconButton(
-                        icon: const Icon(Icons.skip_next),
-                        iconSize: 30.w,
-                        onPressed: widget.onNext,
-                      ),
-                  ],
-                ),
+                  IconButton(
+                    icon: playing ? const Icon(Icons.pause) : const Icon(Icons.play_arrow),
+                    iconSize: 20.w,
+                    onPressed: () {
+                      if (playing) {
+                        stopMove();
+                      } else {
+                        move();
+                      }
+                      setState(() {});
+                    },
+                  ),
+                  if (widget.onNext != null)
+                    IconButton(
+                      icon: const Icon(Icons.skip_next),
+                      iconSize: 20.w,
+                      onPressed: widget.onNext,
+                    ),
+                ],
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
