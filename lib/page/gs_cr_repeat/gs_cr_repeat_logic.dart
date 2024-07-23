@@ -106,8 +106,6 @@ class GsCrRepeatLogic extends GetxController {
       finish();
       return;
     }
-    state.tryNeedPlayQuestion = false;
-    state.tryNeedPlayAnswer = true;
     state.fakeKnow = 0;
     var curr = state.c[0];
     await Db().db.scheduleDao.right(curr);
@@ -117,8 +115,12 @@ class GsCrRepeatLogic extends GetxController {
     state.c.sort(schedulesCurrentSort);
     state.progress = state.total - state.c.length;
     if (autoNext && state.c.isNotEmpty) {
+      state.tryNeedPlayQuestion = false;
+      state.tryNeedPlayAnswer = true;
       next(fromView: false);
     } else {
+      state.tryNeedPlayQuestion = false;
+      state.tryNeedPlayAnswer = false;
       state.step = RepeatStep.finish;
       update([GsCrRepeatLogic.id]);
     }
@@ -139,7 +141,7 @@ class GsCrRepeatLogic extends GetxController {
     await setCurrentLearnContentAndUpdateView();
   }
 
-  Future<bool?> setCurrentLearnContentAndUpdateView({int? pnOffset}) async {
+  Future<bool?> setCurrentLearnContentAndUpdateView({int? pnOffset, needDiff = false}) async {
     if (state.c.isEmpty) {
       return null;
     }
@@ -147,12 +149,12 @@ class GsCrRepeatLogic extends GetxController {
     tryToSetNext();
     pnOffset ??= 0;
     state.openTip = false;
-    var oldSegmentKeyId = state.segment.segmentKeyId ?? 0;
+    var oldSegmentKeyId = state.segment.segmentKeyId;
     var learnSegment = await SegmentHelp.from(curr.segmentKeyId, offset: pnOffset);
     if (learnSegment == null) {
       return null;
     }
-    if (learnSegment.segmentKeyId == oldSegmentKeyId) {
+    if (learnSegment.segmentKeyId == oldSegmentKeyId && needDiff) {
       return false;
     }
     state.segment = learnSegment;
@@ -166,15 +168,15 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   Future<void> plusPnOffset() async {
-    var ok = await setCurrentLearnContentAndUpdateView(pnOffset: state.pnOffset + 1);
-    if (ok ?? false) {
+    var diff = await setCurrentLearnContentAndUpdateView(pnOffset: state.pnOffset + 1, needDiff: true);
+    if (diff ?? false) {
       ++state.pnOffset;
     }
   }
 
   Future<void> minusPnOffset() async {
-    var ok = await setCurrentLearnContentAndUpdateView(pnOffset: state.pnOffset - 1);
-    if (ok ?? false) {
+    var diff = await setCurrentLearnContentAndUpdateView(pnOffset: state.pnOffset - 1, needDiff: true);
+    if (diff ?? false) {
       --state.pnOffset;
     }
   }
