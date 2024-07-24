@@ -27,7 +27,6 @@ class GsCrSettingsRelLogic extends GetxController {
           RelConfig(
             value.level,
             value.before,
-            value.chase,
             value.from,
             value.learnCountPerGroup,
           )));
@@ -40,7 +39,6 @@ class GsCrSettingsRelLogic extends GetxController {
     state.currRelConfigIndex = index;
     state.currRelConfig.level.value = config.level;
     state.currRelConfig.before.value = config.before;
-    state.currRelConfig.chase.value = config.chase;
     state.currRelConfig.from.value = config.from.value;
     state.currRelConfig.learnCountPerGroup.value = config.learnCountPerGroup;
   }
@@ -58,7 +56,6 @@ class GsCrSettingsRelLogic extends GetxController {
     var config = RelConfig(
       state.currRelConfig.level.value,
       state.currRelConfig.before.value,
-      state.currRelConfig.chase.value,
       Date(state.currRelConfig.from.value),
       state.currRelConfig.learnCountPerGroup.value,
     );
@@ -77,7 +74,6 @@ class GsCrSettingsRelLogic extends GetxController {
     var config = state.relConfigs[index];
     config.config.level = state.currRelConfig.level.value;
     config.config.before = state.currRelConfig.before.value;
-    config.config.chase = state.currRelConfig.chase.value;
     config.config.from = Date(state.currRelConfig.from.value);
     config.config.learnCountPerGroup = state.currRelConfig.learnCountPerGroup.value;
     updateIndexAndView();

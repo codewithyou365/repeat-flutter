@@ -38,16 +38,16 @@ class SegmentTodayPrg {
     this.id,
   });
 
-  static void setType(List<SegmentTodayPrg> list, TodayPrgType todayPrgType, int level, int limit) {
+  static void setType(List<SegmentTodayPrg> list, TodayPrgType todayPrgType, int index, int limit) {
     if (limit <= 0) {
       for (SegmentTodayPrg sl in list) {
-        sl.type = SegmentTodayPrg.toType(todayPrgType, level, 0);
+        sl.type = SegmentTodayPrg.toType(todayPrgType, index, 0);
       }
     } else {
       var groupNumber = 0;
       for (int i = 0; i < list.length; i++) {
         var sl = list[i];
-        sl.type = SegmentTodayPrg.toType(todayPrgType, level, groupNumber);
+        sl.type = SegmentTodayPrg.toType(todayPrgType, index, groupNumber);
         if ((i + 1) % limit == 0) {
           groupNumber++;
         }
@@ -55,14 +55,14 @@ class SegmentTodayPrg {
     }
   }
 
-  static int toType(TodayPrgType todayPrgType, int level, int groupNumber) {
-    if (level >= 100000) {
+  static int toType(TodayPrgType todayPrgType, int index, int groupNumber) {
+    if (index >= 100000) {
       throw Exception("Level cannot be greater than or equal to 100000");
     }
     if (groupNumber >= 100000) {
       throw Exception("GroupNumber cannot be greater than or equal to 100000");
     }
-    return (todayPrgType.index + 1) * 10000000000 + level * 100000 + groupNumber;
+    return (todayPrgType.index + 1) * 10000000000 + index * 100000 + groupNumber;
   }
 
   static List<SegmentTodayPrg> clone(List<SegmentTodayPrg> list) {

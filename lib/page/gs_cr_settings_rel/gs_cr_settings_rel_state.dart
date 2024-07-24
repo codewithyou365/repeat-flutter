@@ -19,7 +19,6 @@ class RelConfigView {
 class RelConfigObs {
   var level = 0.obs;
   var before = 0.obs;
-  var chase = 0.obs;
   var from = 20240321.obs;
   var learnCountPerGroup = 2.obs;
 }

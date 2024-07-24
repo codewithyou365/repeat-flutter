@@ -54,14 +54,12 @@ class GsCrSettingsRelPage extends StatelessWidget {
           children: [
             buildNumberItem(I18nKey.labelRelBefore.tr, config.before),
             buildNumberItemForDate(I18nKey.labelRelFrom.tr, config.from, context),
-            buildNumberItem(I18nKey.labelRelChase.tr, config.chase),
             buildNumberItem(I18nKey.labelLearnCountPerGroup.tr, config.learnCountPerGroup),
             const Divider(),
             Obx(() {
               return Text(RelConfig(
                 config.level.value,
                 config.before.value,
-                config.chase.value,
                 Date(config.from.value),
                 config.learnCountPerGroup.value,
               ).tr());

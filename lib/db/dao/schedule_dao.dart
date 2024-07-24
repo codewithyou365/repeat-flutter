@@ -69,11 +69,10 @@ class ElConfig {
 class RelConfig {
   int level;
   int before;
-  int chase;
   Date from;
   int learnCountPerGroup;
 
-  RelConfig(this.level, this.before, this.chase, this.from, this.learnCountPerGroup);
+  RelConfig(this.level, this.before, this.from, this.learnCountPerGroup);
 
   Map<String, dynamic> toJson() {
     return {
@@ -89,7 +88,6 @@ class RelConfig {
     return RelConfig(
       json['level'],
       json['before'],
-      json['chase'],
       Date(json['from']),
       json['learnCountPerGroup'],
     );
@@ -98,8 +96,6 @@ class RelConfig {
   tr() {
     var key = "labelRelConfig";
     List<String> args = [level.toString(), before.toString(), from.value.toString()];
-    key += chase > 0 ? "1" : "0";
-    if (chase > 0) args.add(chase.toString());
     key += learnCountPerGroup > 0 ? "1" : "0";
     if (learnCountPerGroup > 0) args.add(learnCountPerGroup.toString());
     I18nKey ret = I18nKey.values.firstWhere(
@@ -177,8 +173,8 @@ abstract class ScheduleDao {
       ElConfig(/* random  */ true, /* extendLevel  */ true, /* level */ 1, /* learnCount */ 2, /* learnCountPerGroup */ 2),
     ],
     [
-      RelConfig(/* level */ 0, /* before */ 3, /* chase */ 1, /* from */ Date(20240321), /* learnCountPerGroup */ 0),
-      RelConfig(/* level */ 1, /* before */ 7, /* chase */ 1, /* from */ Date(20240321), /* learnCountPerGroup */ 0),
+      RelConfig(/* level */ 0, /* before */ 3, /* from */ Date(20240321), /* learnCountPerGroup */ 0),
+      RelConfig(/* level */ 1, /* before */ 7, /* from */ Date(20240321), /* learnCountPerGroup */ 0),
     ],
   );
 
@@ -453,30 +449,28 @@ abstract class ScheduleDao {
           }
         }
         var all = await scheduleLearn(Classroom.curr, minLevel, Date.from(now));
-        for (var config in elConfigs) {
+        for (int i = 0; i < elConfigs.length; ++i) {
+          var config = elConfigs[i];
           if (!config.random) {
-            todayPrg.addAll(refineEl(all, config));
+            todayPrg.addAll(refineEl(all, i, config));
           }
         }
         all.shuffle();
-        for (var config in elConfigs) {
+        for (int i = 0; i < elConfigs.length; ++i) {
+          var config = elConfigs[i];
           if (config.random) {
-            todayPrg.addAll(refineEl(all, config));
+            todayPrg.addAll(refineEl(all, i, config));
           }
         }
       }
       var relConfigs = scheduleConfig.relConfigs;
       // review ...,1,0
-      List<RelConfig> configs = [];
-      for (int level = relConfigs.length - 1; level >= 0; --level) {
-        var relConfig = relConfigs[level];
-        if (level != relConfig.level) {
+      for (int index = relConfigs.length - 1; index >= 0; --index) {
+        var relConfig = relConfigs[index];
+        if (index != relConfig.level) {
           continue;
         }
         if (relConfig.before < 0) {
-          continue;
-        }
-        if (relConfig.chase < 0) {
           continue;
         }
         if (relConfig.learnCountPerGroup < 0) {
@@ -489,25 +483,16 @@ abstract class ScheduleDao {
         if (shouldStartDate.value < relConfig.from.value) {
           continue;
         }
-        var startDateInt = await findReviewedMinCreateDate(Classroom.curr, level, shouldStartDate);
+        var startDateInt = await findReviewedMinCreateDate(Classroom.curr, index, shouldStartDate);
         if (startDateInt == null || startDateInt == -1) {
           continue;
         }
         if (startDateInt < relConfig.from.value) {
           startDateInt = relConfig.from.value;
         }
-        var startDate = Date(startDateInt);
-        configs.add(RelConfig(level, 0, 0, startDate, relConfig.learnCountPerGroup));
-        for (int day = 0; day < relConfig.chase && startDate.toDateTime().add(Duration(days: day)) != shouldStartDate.toDateTime(); day++) {
-          // If we need to catch up, we should pursue it.
-          configs.add(RelConfig(level, 0, 0, Date.from(startDate.toDateTime().add(Duration(days: day + 1))), relConfig.learnCountPerGroup));
-        }
-      }
-      for (int i = 0; i < configs.length; ++i) {
-        var relConfig = configs[i];
         var reviewDay = relConfig.from;
         List<SegmentTodayPrgWithKey> sls = await scheduleReview(Classroom.curr, relConfig.level, reviewDay);
-        SegmentTodayPrg.setType(sls, TodayPrgType.review, i, relConfig.learnCountPerGroup);
+        SegmentTodayPrg.setType(sls, TodayPrgType.review, index, relConfig.learnCountPerGroup);
         todayPrg.addAll(sls);
       }
       await insertSegmentTodayPrg(todayPrg);
@@ -518,7 +503,7 @@ abstract class ScheduleDao {
     return todayPrg;
   }
 
-  List<SegmentTodayPrgWithKey> refineEl(List<SegmentTodayPrgWithKey> all, ElConfig config) {
+  List<SegmentTodayPrgWithKey> refineEl(List<SegmentTodayPrgWithKey> all, int index, ElConfig config) {
     List<SegmentTodayPrgWithKey> curr;
     if (config.extend) {
       curr = all.where((sl) {
@@ -543,7 +528,7 @@ abstract class ScheduleDao {
     for (int i = 0; i < ret.length; i++) {
       ret[i].progress = 0;
     }
-    SegmentTodayPrg.setType(ret, TodayPrgType.learn, config.level, config.learnCountPerGroup);
+    SegmentTodayPrg.setType(ret, TodayPrgType.learn, index, config.learnCountPerGroup);
     return ret;
   }
 
