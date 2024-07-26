@@ -496,6 +496,8 @@ abstract class ScheduleDao {
         todayPrg.addAll(sls);
       }
       await insertSegmentTodayPrg(todayPrg);
+      var configInUseStr = convert.json.encode(scheduleConfig);
+      await insertKv(CrKv(Classroom.curr, CrK.todayLearnScheduleConfigInUse, configInUseStr));
     } else {
       todayPrg = await findSegmentTodayPrg(Classroom.curr);
     }

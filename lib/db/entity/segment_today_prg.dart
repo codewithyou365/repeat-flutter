@@ -65,6 +65,32 @@ class SegmentTodayPrg {
     return (todayPrgType.index + 1) * 10000000000 + index * 100000 + groupNumber;
   }
 
+  static int getPrgTypeAndIndex(int type) {
+    int prgTypeIndex = (type ~/ 10000000000) - 1;
+    int index = (type % 10000000000) ~/ 100000;
+    return toPrgTypeAndIndex(prgTypeIndex, index);
+  }
+
+  static int toPrgTypeAndIndex(int prgTypeIndex, int index) {
+    if (prgTypeIndex < 0 || prgTypeIndex >= TodayPrgType.values.length) {
+      throw Exception("Invalid TodayPrgType index");
+    }
+
+    return (prgTypeIndex * 100000) + index;
+  }
+
+  static TodayPrgType getPrgType(int type) {
+    int typeIndex = (type ~/ 10000000000) - 1;
+    if (typeIndex < 0 || typeIndex >= TodayPrgType.values.length) {
+      throw Exception("Invalid type index");
+    }
+    return TodayPrgType.values[typeIndex];
+  }
+
+  static int getIndex(int type) {
+    return (type ~/ 100000) % 100000;
+  }
+
   static List<SegmentTodayPrg> clone(List<SegmentTodayPrg> list) {
     List<SegmentTodayPrg> clonedList = [];
     for (SegmentTodayPrg segment in list) {

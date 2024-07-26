@@ -31,7 +31,7 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   init() async {
-    var all = Get.find<GsCrLogic>().todayProgresses;
+    var all = Get.find<GsCrLogic>().currProgresses;
     state.c = SegmentTodayPrg.refineWithFinish(all, false);
     if (state.c.isNotEmpty) {
       todayProgresses = all;

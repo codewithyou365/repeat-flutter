@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'dart:convert' as convert;
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
@@ -17,8 +18,9 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'gs_cr_state.dart';
 
 class GsCrLogic extends GetxController {
+  static const String id = "GsCrLogic";
   final GsCrState state = GsCrState();
-  List<SegmentTodayPrgWithKey> todayProgresses = [];
+  List<SegmentTodayPrgWithKey> currProgresses = [];
   Timer? timer;
 
   @override
@@ -30,7 +32,77 @@ class GsCrLogic extends GetxController {
 
   Future<void> init() async {
     var now = DateTime.now();
-    todayProgresses = await Db().db.scheduleDao.initToday();
+    List<SegmentTodayPrgWithKey> allProgresses = await Db().db.scheduleDao.initToday();
+    currProgresses = allProgresses;
+    state.segments = [];
+
+    var configInUseJsonStr = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.todayLearnScheduleConfigInUse);
+    ScheduleConfig? scheduleConfig;
+    if (configInUseJsonStr != null) {
+      try {
+        Map<String, dynamic> configJson = convert.jsonDecode(configInUseJsonStr);
+        scheduleConfig = ScheduleConfig.fromJson(configJson);
+      } catch (_) {}
+    }
+    List<SegmentTodayPrgWithKeyInView> learn = [];
+    List<SegmentTodayPrgWithKeyInView> review = [];
+    Map<int, SegmentTodayPrgWithKeyInView> temp = {};
+    for (var item in allProgresses) {
+      var prgType = SegmentTodayPrg.getPrgType(item.type);
+      var index = SegmentTodayPrg.getIndex(item.type);
+      var prgTypeAndIndex = SegmentTodayPrg.getPrgTypeAndIndex(item.type);
+
+      SegmentTodayPrgWithKeyInView view;
+      if (temp.containsKey(prgTypeAndIndex)) {
+        view = temp[prgTypeAndIndex]!;
+      } else {
+        view = SegmentTodayPrgWithKeyInView(
+          index,
+          prgTypeAndIndex,
+          "",
+          prgType.name.toString().toUpperCase(),
+          scheduleConfig?.elConfigs.elementAt(index).tr() ?? index.toString(),
+          [],
+        );
+        temp[prgTypeAndIndex] = view;
+      }
+      view.segments.add(item);
+      view.name = "片段共计${view.segments.length}";
+    }
+    if (scheduleConfig != null) {
+      for (var index = 0; index < scheduleConfig.elConfigs.length; index++) {
+        var prgTypeAndIndex = SegmentTodayPrg.toPrgTypeAndIndex(0, index);
+        if (temp.containsKey(prgTypeAndIndex)) {
+          learn.add(temp[prgTypeAndIndex]!);
+        } else {
+          learn.add(SegmentTodayPrgWithKeyInView(
+            index,
+            prgTypeAndIndex,
+            "片段共计0",
+            TodayPrgType.learn.name.toString().toUpperCase(),
+            scheduleConfig.elConfigs.elementAt(index).tr(),
+            [],
+          ));
+        }
+      }
+      for (var index = 0; index < scheduleConfig.relConfigs.length; index++) {
+        var prgTypeAndIndex = SegmentTodayPrg.toPrgTypeAndIndex(1, index);
+        if (temp.containsKey(prgTypeAndIndex)) {
+          review.add(temp[prgTypeAndIndex]!);
+        } else {
+          review.add(SegmentTodayPrgWithKeyInView(
+            index,
+            prgTypeAndIndex,
+            "片段共计0",
+            TodayPrgType.review.name.toString().toUpperCase(),
+            scheduleConfig.relConfigs.elementAt(index).tr(),
+            [],
+          ));
+        }
+      }
+    }
+    state.segments.addAll(learn);
+    state.segments.addAll(review);
 
     var todayLearnCreateDate = await Db().db.scheduleDao.intKv(Classroom.curr, CrK.todayLearnCreateDate) ?? 0;
     var next = Db().db.scheduleDao.getNext(now, ScheduleDao.scheduleConfig.intervalSeconds);
@@ -39,9 +111,10 @@ class GsCrLogic extends GetxController {
     }
     resetLearnDeadline();
 
-    state.learnTotalCount.value = SegmentTodayPrg.getUnfinishedCount(todayProgresses);
+    state.learnTotalCount.value = SegmentTodayPrg.getUnfinishedCount(currProgresses);
 
     startTimer();
+    update([GsCrLogic.id]);
   }
 
   tryLearn() {
