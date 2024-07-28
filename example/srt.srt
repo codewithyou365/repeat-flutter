@@ -1,161 +1,159 @@
-1
-00:00:03,333 --> 00:00:04,333
-Flying cats
-Flying cats
-
 2
-00:00:17,300 --> 00:00:21,100
-Cats never fail to fascinate human beings.
-猫总能引起人们的极大兴趣。
-3
-00:00:21,733 --> 00:00:24,733
-They can be friendly and affectionate towards humans, |
+00:00:02,933 --> 00:00:05,200
+The loss of the Titanic
+The loss of the Titanic
 
-4
-00:00:24,933 --> 00:00:28,666
-but they lead mysterious lives of their own as well.
-它们可以对人友好，充满柔情。但是，它们又有自己神秘的生活方式。
 
 5
-00:00:29,466 --> 00:00:33,066
-They never become submissive like dogs and horses.
-它们从不像狗和马一样变得那么顺从。
+00:00:19,266 --> 00:00:21,433
+The great ship, Titanic, |
 
 6
-00:00:33,533 --> 00:00:34,600
-As a result, |
+00:00:21,433 --> 00:00:25,433
+sailed for New York from Southampton on April 10th, |
 
 7
-00:00:34,933 --> 00:00:38,533
-humans have learned to respect feline independence.
-结果是人们已经学会尊重猫的独立性。
-
+00:00:25,433 --> 00:00:26,533
+1912.
+巨轮“泰坦尼克”号1912年4月10日从南安普敦起锚驶向纽约。
 
 
 8
-00:00:39,233 --> 00:00:43,500
-Most cats remain suspicious of humans all their lives.
-在它们的一生中，大多数猫都对人存有戒心。
+00:00:27,233 --> 00:00:29,233
+She was carrying 1,|
 
 9
-00:00:43,866 --> 00:00:51,133
-One of the things that fascinates us most about cats is the popular belief that they have nine lives.
-最使我们感兴趣的一件事情就是一种通俗的信念——猫有九条命。
+00:00:29,233 --> 00:00:34,500
+316 passengers and crew of 891.
+船上载有1,316名乘客与891名船员。
+
 
 10
-00:00:51,766 --> 00:00:52,933
-Apparently, |
+00:00:35,433 --> 00:00:38,366
+Even by modern standards, the 46,|
+
 
 11
-00:00:53,233 --> 00:00:56,333
-there is a good deal of truth in this idea.
-显然，这种说法里面包含着许多真实性。
+00:00:38,366 --> 00:00:42,300
+000 ton Titanic was a colossal ship.
+却使用现代标准来衡量，45,000 吨的“泰坦尼克”号与算得上一艘巨轮了。
 
 12
-00:00:57,566 --> 00:01:02,100
-A cat's ability to survive falls is based on fact.
-猫在跌落时能够大难不死是有事实作为依据的。
-
+00:00:42,666 --> 00:00:44,466
+At the time, however, |
 
 13
-00:01:03,000 --> 00:01:12,533
-Recently the New York Animal Medical Centre made a study of 132 cats over a period of five months.
-最近，纽约动物医疗中心对132只猫进行了为期5个月的综合研究。
+00:00:44,466 --> 00:00:48,433
+she was not only the largest ship that had ever been built, |
 
 14
-00:01:12,966 --> 00:01:16,600
-All these cats had one experience in common: |
+00:00:48,433 --> 00:00:51,266
+but was regarded as unsinkable, |
 
 15
-00:01:16,966 --> 00:01:19,333
-they had fallen off high buildings, |
+00:00:51,300 --> 00:00:55,433
+for she had sixteen watertight compartments.
+当时，这艘轮船不仅是造船史上建造的最大的一艘船，而且也被认为是不会沉没的。因为船由16个密封舱组成，
 
 16
-00:01:19,366 --> 00:01:23,333
-yet only eight of them died from shock or injuries.
-所有这些猫都有一个共同的经历：它们都曾从高层建筑上摔下来过，但只有其中的8只猫死于震荡或跌伤。
+00:00:55,766 --> 00:00:57,966
+Even if two of these were flooded, |
 
 17
-00:01:24,100 --> 00:01:24,866
-Of course, |
+00:00:57,966 --> 00:01:00,200
+she would still be able to float.
+即使有两个舱进水，仍可漂浮的水面上。
 
 18
-00:01:25,200 --> 00:01:29,700
-New Yorkis the ideal place for such an interesting study, |
+00:01:00,833 --> 00:01:05,833
+The tragic sinking of this great liner will always be remembered, |
 
 19
-00:01:30,033 --> 00:01:33,200
-because there is no shortage of tall buildings. |
+00:01:05,833 --> 00:01:10,600
+for she went down on her first voyage with heavy loss of life.
+然而，这艘巨轮首航就下沉，造成大批人员死亡。人们将永远记着这艘巨轮的沉没惨剧。
 
 20
-00:01:33,766 --> 00:01:36,600
-There are plenty of high-rise windowsills to fall, |
+00:01:11,866 --> 00:01:13,833
+Four days after setting out, |
 
 21
-00:01:36,600 --> 00:01:37,600
-from!
-当然，纽约是进行这种有趣的试验的一个理想的地方，因为那里根本不缺乏高楼大厦，有的是高层的窗槛从上往下坠落。
+00:01:13,833 --> 00:01:19,000
+while the Titanic was sailing across the icy water of the North Atlantic, |
+
 
 22
-00:01:38,466 --> 00:01:40,666
-One cat, Sabrina, |
+00:01:19,433 --> 00:01:23,266
+huge iceberg was suddenly spotted by a lookout.
+“泰坦尼克”起航后的第4天，它正行驶在北大西洋冰冷的海面上。突然，了望员发现一座冰山。
 
 23
-00:01:40,666 --> 00:01:43,100
-fell 32 storeys, |
+00:01:23,833 --> 00:01:25,966
+After the alarm had been given, |
 
 24
-00:01:43,300 --> 00:01:45,833
-yet only suffered from a broken tooth.
-有一只叫萨伯瑞娜的猫从32层楼上掉下来，但只摔断了一颗牙。
+00:01:25,966 --> 00:01:30,433
+the great ship turned sharply to avoid a direct collision.
+警报响过不久，巨轮急转弯，以避免与冰山正面相撞。
+
 
 
 25
-00:01:46,800 --> 00:01:50,133
-‘Cats behave like well-trained paratroopers, |
+00:01:31,166 --> 00:01:33,866
+The Titanic turned just in time, |
 
 26
-00:01:50,333 --> 00:01:51,633
-’ a doctor said.
-“猫就像训练有素的跳伞队员，”一位医生说。
+00:01:34,266 --> 00:01:41,866
+narrowly missing the immense walk of ice which rose over 100 feet out of the water beside her.
+“泰坦尼克”这个弯拐得及时，紧贴着高出海面100英尺的巨大的冰墙擦过去 。
 
 
 27
-00:01:51,900 --> 00:01:55,066
-It seems that the further cats fall, |
+00:01:42,733 --> 00:01:43,700
+Suddenly, |
 
 28
-00:01:55,333 --> 00:01:58,833
-the less they are likely to injure themselves.
-看起来，猫跌落的距离越长，它们就越不会伤害自己。
-
+00:01:43,700 --> 00:01:47,133
+there was a slight trembling sound from below, |
 
 29
-00:01:59,000 --> 00:02:00,700
-In a long drop, |
+00:01:47,500 --> 00:01:51,066
+and the captain went down to see what had happened.
+突然，从船舱下部传来一声微颤音，船长走下船舱去查看究竟。
 
 30
-00:02:00,700 --> 00:02:04,400
-they reach speeds of 60 miles an hour and more.
-在一个长长的跌落过程中，它们可以达到每小时60英里甚至更快的速度。
+00:01:51,700 --> 00:01:57,033
+The noise had been so faint that no one though that the ship had been damaged.
+由于这个声音非常轻，没人会想到船身已遭损坏。
 
 
 31
-00:02:04,900 --> 00:02:06,266
-At high speeds, |
+00:01:57,500 --> 00:01:58,266
+Below, |
 
 32
-00:02:06,500 --> 00:02:08,966
-falling cats have time to relax.
-在高速下落中，猫有时间放松自己。
-
+00:01:58,266 --> 00:02:03,833
+the captain realized to his horror that the Titanic was sinking rapidly, |
 
 33
-00:02:09,200 --> 00:02:13,133
-They stretch out their legs like flying squirrels.
-它们伸展开四肢，就像飞行中的松鼠一样。
+00:02:03,966 --> 00:02:09,533
+for five of her sixteen watertight compartments had already been flooded!
+在下面，船长惊恐的地发现“泰坦尼克”号正在急速下沉 ，16个密封舱已有5个进水。
+
 
 34
-00:02:13,666 --> 00:02:20,300
-This increases their air-resistance and reduces the shock of impact when they hit the ground.
-这样就加大了空气阻力，并减小了它们着地时冲击力带来的震动。
+00:02:09,966 --> 00:02:16,433
+The order to abandon ship was given and hundreds of people plunged into the icy water.
+于是，他发出弃船的命令 ，几百人跳进了冰冷刺骨的海水里 。
+35
+00:02:17,166 --> 00:02:20,500
+As there were not enough lifeboats for everybody, |
+
+36
+00:02:20,866 --> 00:02:21,566
+1,|
+
+37
+00:02:21,566 --> 00:02:24,133
+500 lives were lost.
+由于没有足够的救生艇运载所有乘客，结果，1,500 人丧生。

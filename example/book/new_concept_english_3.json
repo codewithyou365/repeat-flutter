@@ -857,6 +857,101 @@
           "a": "This increases their air-resistance and reduces the shock of impact when they hit the ground."
         }
       ]
+    },
+    {
+      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/10_289.mp3",
+      "path": "/nce3/a/10.mp3",
+      "hash": "950022158070d4caeb888ab6d97328c7d9bbb55e",
+      "key": "nce3/10",
+      "title": "The loss of the Titanic",
+      "titleStart": "00:00:02,433",
+      "titleEnd": "00:00:05,700",
+      "segment": [
+        {
+          "aStart": "00:00:18,766",
+          "aEnd": "00:00:26,833",
+          "tip": "巨轮“泰坦尼克”号1912年4月10日从南安普敦起锚驶向纽约。",
+          "a": "The great ship, Titanic, sailed for New York from Southampton on April 10th, 1912."
+        },
+        {
+          "aStart": "00:00:26,933",
+          "aEnd": "00:00:34,916",
+          "tip": "船上载有1,316名乘客与891名船员。",
+          "a": "She was carrying 1,316 passengers and crew of 891."
+        },
+        {
+          "aStart": "00:00:35,017",
+          "aEnd": "00:00:42,433",
+          "tip": "却使用现代标准来衡量，45,000 吨的“泰坦尼克”号与算得上一艘巨轮了。",
+          "a": "Even by modern standards, the 46,000 ton Titanic was a colossal ship."
+        },
+        {
+          "aStart": "00:00:42,533",
+          "aEnd": "00:00:55,549",
+          "tip": "当时，这艘轮船不仅是造船史上建造的最大的一艘船，而且也被认为是不会沉没的。因为船由16个密封舱组成，",
+          "a": "At the time, however, she was not only the largest ship that had ever been built, but was regarded as unsinkable, for she had sixteen watertight compartments."
+        },
+        {
+          "aStart": "00:00:55,650",
+          "aEnd": "00:01:00,466",
+          "tip": "即使有两个舱进水，仍可漂浮的水面上。",
+          "a": "Even if two of these were flooded, she would still be able to float."
+        },
+        {
+          "aStart": "00:01:00,567",
+          "aEnd": "00:01:11,100",
+          "tip": "然而，这艘巨轮首航就下沉，造成大批人员死亡。人们将永远记着这艘巨轮的沉没惨剧。",
+          "a": "The tragic sinking of this great liner will always be remembered, for she went down on her first voyage with heavy loss of life."
+        },
+        {
+          "aStart": "00:01:11,366",
+          "aEnd": "00:01:23,499",
+          "tip": "“泰坦尼克”起航后的第4天，它正行驶在北大西洋冰冷的海面上。突然，了望员发现一座冰山。",
+          "a": "Four days after setting out, while the Titanic was sailing across the icy water of the North Atlantic, huge iceberg was suddenly spotted by a lookout."
+        },
+        {
+          "aStart": "00:01:23,600",
+          "aEnd": "00:01:30,749",
+          "tip": "警报响过不久，巨轮急转弯，以避免与冰山正面相撞。",
+          "a": "After the alarm had been given, the great ship turned sharply to avoid a direct collision."
+        },
+        {
+          "aStart": "00:01:30,850",
+          "aEnd": "00:01:42,249",
+          "tip": "“泰坦尼克”这个弯拐得及时，紧贴着高出海面100英尺的巨大的冰墙擦过去 。",
+          "a": "The Titanic turned just in time, narrowly missing the immense walk of ice which rose over 100 feet out of the water beside her."
+        },
+        {
+          "aStart": "00:01:42,350",
+          "aEnd": "00:01:51,333",
+          "tip": "突然，从船舱下部传来一声微颤音，船长走下船舱去查看究竟。",
+          "a": "Suddenly, there was a slight trembling sound from below, and the captain went down to see what had happened."
+        },
+        {
+          "aStart": "00:01:51,433",
+          "aEnd": "00:01:57,216",
+          "tip": "由于这个声音非常轻，没人会想到船身已遭损坏。",
+          "a": "The noise had been so faint that no one though that the ship had been damaged."
+        },
+        {
+          "aStart": "00:01:57,317",
+          "aEnd": "00:02:09,699",
+          "tip": "在下面，船长惊恐的地发现“泰坦尼克”号正在急速下沉 ，16个密封舱已有5个进水。",
+          "a": "Below, the captain realized to his horror that the Titanic was sinking rapidly, for five of her sixteen watertight compartments had already been flooded!"
+        },
+        {
+          "aStart": "00:02:09,800",
+          "aEnd": "00:02:16,749",
+          "tip": "于是，他发出弃船的命令 ，几百人跳进了冰冷刺骨的海水里。",
+          "a": "The order to abandon ship was given and hundreds of people plunged into the icy water."
+        },
+        {
+          "aStart": "00:02:16,850",
+          "aEnd": "00:02:24,633",
+          "tip": "由于没有足够的救生艇运载所有乘客，结果，1,500 人丧生。",
+          "a": "As there were not enough lifeboats for everybody, 1,500 lives were lost."
+        }
+      ]
     }
   ]
 }
