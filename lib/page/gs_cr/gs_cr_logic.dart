@@ -43,6 +43,8 @@ class GsCrLogic extends GetxController {
         Map<String, dynamic> configJson = convert.jsonDecode(configInUseJsonStr);
         scheduleConfig = ScheduleConfig.fromJson(configJson);
       } catch (_) {}
+    } else {
+      scheduleConfig = ScheduleDao.scheduleConfig;
     }
     List<SegmentTodayPrgWithKeyInView> learn = [];
     List<SegmentTodayPrgWithKeyInView> review = [];
