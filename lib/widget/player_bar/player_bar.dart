@@ -34,6 +34,8 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
   double _offset = 0.0;
   double _previousOffset = 0.0;
   bool playing = true;
+  int mediaStart = 0;
+  int mediaEnd = 0;
 
   // TODO support video
   AudioPlayer? player;
@@ -65,25 +67,36 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
 
   moveByIndex() {
     if (widget.path.isNotEmpty && widget.lines.isNotEmpty && widget.index != null) {
-      move(offset: (widget.lines[0].start.toInt() - widget.lines[widget.index!].start.toInt()) * factor);
+      mediaStart = widget.lines[0].start.toInt() - widget.lines[widget.index!].start.toInt();
+      mediaEnd = widget.lines[0].start.toInt() - widget.lines[widget.index!].end.toInt();
+      move(offset: mediaStart);
     }
   }
 
-  move({offset}) {
+  move({int? offset, int? inc}) {
     if (widget.path.isEmpty || widget.lines.isEmpty || widget.index == null) {
       return;
     }
+    var currOffset = 0;
     if (offset != null) {
-      _offset = offset;
+      currOffset = offset;
+    } else if (inc != null) {
+      currOffset = _offset ~/ factor - inc;
+      if (currOffset > mediaStart) {
+        currOffset = mediaStart;
+      } else if (currOffset < mediaEnd) {
+        currOffset = mediaEnd + 200;
+      }
+    } else {
+      currOffset = _offset ~/ factor;
     }
-    var currOffset = _offset ~/ factor;
     var duration = -1.0;
 
     for (int i = 0; i < widget.lines.length && duration < 0; i++) {
       duration = widget.lines[i].end - widget.lines[0].start + currOffset;
     }
     if (duration < 0) {
-      duration = 3000;
+      duration = 200;
       currOffset = (duration + widget.lines[0].start - widget.lines[widget.lines.length - 1].end).toInt();
     }
 
@@ -136,12 +149,13 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
           height: 50.w,
           child: Row(
             children: [
-              if (widget.onPrevious != null)
-                IconButton(
-                  icon: const Icon(Icons.skip_previous),
-                  iconSize: 20.w,
-                  onPressed: widget.onPrevious,
-                ),
+              IconButton(
+                icon: const Icon(Icons.replay_5),
+                iconSize: 20.w,
+                onPressed: () {
+                  move(inc: -5000);
+                },
+              ),
               IconButton(
                 icon: const Icon(Icons.replay),
                 iconSize: 20.w,
@@ -152,7 +166,20 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
                   moveByIndex();
                 },
               ),
+              IconButton(
+                icon: const Icon(Icons.forward_5),
+                iconSize: 20.w,
+                onPressed: () {
+                  move(inc: 5000);
+                },
+              ),
               const Spacer(),
+              if (widget.onPrevious != null)
+                IconButton(
+                  icon: const Icon(Icons.skip_previous),
+                  iconSize: 20.w,
+                  onPressed: widget.onPrevious,
+                ),
               IconButton(
                 icon: playing ? const Icon(Icons.pause) : const Icon(Icons.play_arrow),
                 iconSize: 20.w,

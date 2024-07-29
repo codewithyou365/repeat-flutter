@@ -67,7 +67,7 @@ class GsCrRepeatPage extends StatelessWidget {
   void afterLayout(_) {
     final state = Get.find<GsCrRepeatLogic>().state;
     if (state.tryNeedPlayQuestion) {
-      state.questionMediaKey.currentState?.move(offset: 0.0);
+      state.questionMediaKey.currentState?.moveByIndex();
     } else {
       state.questionMediaKey.currentState?.stopMove();
     }
