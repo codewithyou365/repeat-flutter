@@ -30,7 +30,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelDeleteContentIndex, "请确定删除内容索引\n\n%s");
     put(I18nKey.labelDownloadContent, "下载内容");
     put(I18nKey.labelScheduleContent, "添加学习任务 %s 个单位");
-    put(I18nKey.labelNoLearningContent, "现在没有学习内容");
+    put(I18nKey.labelNoLearningContent, "没有学习内容");
     put(I18nKey.labelResetLearningContent, "在 %s 后，将重置学习内容");
     put(I18nKey.labelTips, "提示");
     put(I18nKey.labelNoContent, "暂无内容");
@@ -74,6 +74,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelRelFrom, "开始时间");
     put(I18nKey.labelLearnCountPerGroup, "每组数量");
     put(I18nKey.labelFinish, "完成");
+    put(I18nKey.labelAll, "全部");
     put(I18nKey.labelSavingConfirm, "是否确定保存？");
     put(I18nKey.labelConfigChange, "配置已改变是否保存？");
     put(I18nKey.labelResetConfig, "重置配置");

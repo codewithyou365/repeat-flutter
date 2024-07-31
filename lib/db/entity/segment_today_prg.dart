@@ -2,8 +2,10 @@
 
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
+import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
 
 enum TodayPrgType {
+  none,
   learn,
   review,
 }
@@ -62,25 +64,23 @@ class SegmentTodayPrg {
     if (groupNumber >= 100000) {
       throw Exception("GroupNumber cannot be greater than or equal to 100000");
     }
-    return (todayPrgType.index + 1) * 10000000000 + index * 100000 + groupNumber;
+    return (todayPrgType.index) * 10000000000 + index * 100000 + groupNumber;
   }
 
   static int getPrgTypeAndIndex(int type) {
-    int prgTypeIndex = (type ~/ 10000000000) - 1;
+    int prgTypeIndex = (type ~/ 10000000000);
     int index = (type % 10000000000) ~/ 100000;
-    return toPrgTypeAndIndex(prgTypeIndex, index);
+    TodayPrgType todayPrgType = TodayPrgType.values[prgTypeIndex];
+    return toPrgTypeAndIndex(todayPrgType, index);
   }
 
-  static int toPrgTypeAndIndex(int prgTypeIndex, int index) {
-    if (prgTypeIndex < 0 || prgTypeIndex >= TodayPrgType.values.length) {
-      throw Exception("Invalid TodayPrgType index");
-    }
-
+  static int toPrgTypeAndIndex(TodayPrgType type, int index) {
+    var prgTypeIndex = type.index;
     return (prgTypeIndex * 100000) + index;
   }
 
   static TodayPrgType getPrgType(int type) {
-    int typeIndex = (type ~/ 10000000000) - 1;
+    int typeIndex = (type ~/ 10000000000);
     if (typeIndex < 0 || typeIndex >= TodayPrgType.values.length) {
       throw Exception("Invalid type index");
     }
@@ -116,35 +116,41 @@ class SegmentTodayPrg {
     return wrapper.toList();
   }
 
-  static List<SegmentTodayPrg> refine(List<SegmentTodayPrg> list, int levelAndGroupNumber, bool withoutFinish) {
-    var wrapper = list.where((segment) {
-      if (withoutFinish) {
-        return segment.type % 10000000000 == levelAndGroupNumber;
-      } else {
-        return segment.type % 10000000000 == levelAndGroupNumber && segment.finish == false;
-      }
-    });
-    return wrapper.toList();
-  }
-
-  static List<int> getLevelAndGroupNumber(List<SegmentTodayPrg> list) {
-    List<int> types = [];
-    for (SegmentTodayPrg segment in list) {
-      var type = segment.type % 10000000000;
-      if (!types.contains(type)) {
-        types.add(type);
-      }
-    }
-    return types.toList();
-  }
-
-  static int getUnfinishedCount(List<SegmentTodayPrg> list) {
+  static int getFinishedCount(List<SegmentTodayPrg> list) {
     var ret = 0;
     for (SegmentTodayPrg segment in list) {
-      if (segment.finish == false) {
+      if (segment.finish) {
         ret++;
       }
     }
     return ret;
+  }
+
+  static List<SegmentTodayPrgWithKey> getFirstUnfinishedGroup(List<SegmentTodayPrgWithKey> list) {
+    Map<int, List<SegmentTodayPrgWithKey>> grouped = {};
+    for (var item in list) {
+      if (!grouped.containsKey(item.type)) {
+        grouped[item.type] = [];
+      }
+      grouped[item.type]!.add(item);
+    }
+
+    List<int> types = [];
+    for (var item in list) {
+      if (!types.contains(item.type)) {
+        types.add(item.type);
+      }
+    }
+
+    for (var type in types) {
+      if (grouped[type] == null) {
+        continue;
+      }
+      var group = grouped[type]!;
+      if (group.any((item) => !item.finish)) {
+        return group;
+      }
+    }
+    return [];
   }
 }

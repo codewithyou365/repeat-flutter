@@ -33,7 +33,9 @@ class GsCrLogic extends GetxController {
   Future<void> init() async {
     var now = DateTime.now();
     List<SegmentTodayPrgWithKey> allProgresses = await Db().db.scheduleDao.initToday();
-    currProgresses = allProgresses;
+    state.all = allProgresses;
+    state.review = [];
+    state.learn = [];
     state.segments = [];
 
     var configInUseJsonStr = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.todayLearnScheduleConfigInUse);
@@ -43,65 +45,63 @@ class GsCrLogic extends GetxController {
         Map<String, dynamic> configJson = convert.jsonDecode(configInUseJsonStr);
         scheduleConfig = ScheduleConfig.fromJson(configJson);
       } catch (_) {}
-    } else {
-      scheduleConfig = ScheduleDao.scheduleConfig;
     }
+    scheduleConfig ??= ScheduleDao.scheduleConfig;
     List<SegmentTodayPrgWithKeyInView> learn = [];
     List<SegmentTodayPrgWithKeyInView> review = [];
     Map<int, SegmentTodayPrgWithKeyInView> temp = {};
     for (var item in allProgresses) {
-      var prgType = SegmentTodayPrg.getPrgType(item.type);
-      var index = SegmentTodayPrg.getIndex(item.type);
       var prgTypeAndIndex = SegmentTodayPrg.getPrgTypeAndIndex(item.type);
 
       SegmentTodayPrgWithKeyInView view;
       if (temp.containsKey(prgTypeAndIndex)) {
         view = temp[prgTypeAndIndex]!;
       } else {
-        view = SegmentTodayPrgWithKeyInView(
-          index,
-          prgTypeAndIndex,
-          "",
-          prgType.name.toString().toUpperCase(),
-          scheduleConfig?.elConfigs.elementAt(index).tr() ?? index.toString(),
-          [],
-        );
+        view = SegmentTodayPrgWithKeyInView([]);
         temp[prgTypeAndIndex] = view;
       }
       view.segments.add(item);
-      view.name = "片段共计${view.segments.length}";
     }
-    if (scheduleConfig != null) {
-      for (var index = 0; index < scheduleConfig.elConfigs.length; index++) {
-        var prgTypeAndIndex = SegmentTodayPrg.toPrgTypeAndIndex(0, index);
-        if (temp.containsKey(prgTypeAndIndex)) {
-          learn.add(temp[prgTypeAndIndex]!);
-        } else {
-          learn.add(SegmentTodayPrgWithKeyInView(
-            index,
-            prgTypeAndIndex,
-            "片段共计0",
-            TodayPrgType.learn.name.toString().toUpperCase(),
-            scheduleConfig.elConfigs.elementAt(index).tr(),
-            [],
-          ));
-        }
+    int uniqIndex = 0;
+    for (var index = 0; index < scheduleConfig.elConfigs.length; index++) {
+      var prgTypeAndIndex = SegmentTodayPrg.toPrgTypeAndIndex(TodayPrgType.learn, index);
+      var learnedTotalCount = 0;
+      var learnTotalCount = 0;
+      SegmentTodayPrgWithKeyInView rule;
+      if (temp.containsKey(prgTypeAndIndex)) {
+        rule = temp[prgTypeAndIndex]!;
+        learnedTotalCount = SegmentTodayPrg.getFinishedCount(rule.segments);
+        learnTotalCount = rule.segments.length;
+      } else {
+        rule = SegmentTodayPrgWithKeyInView([]);
       }
-      for (var index = 0; index < scheduleConfig.relConfigs.length; index++) {
-        var prgTypeAndIndex = SegmentTodayPrg.toPrgTypeAndIndex(1, index);
-        if (temp.containsKey(prgTypeAndIndex)) {
-          review.add(temp[prgTypeAndIndex]!);
-        } else {
-          review.add(SegmentTodayPrgWithKeyInView(
-            index,
-            prgTypeAndIndex,
-            "片段共计0",
-            TodayPrgType.review.name.toString().toUpperCase(),
-            scheduleConfig.relConfigs.elementAt(index).tr(),
-            [],
-          ));
-        }
+      rule.index = index;
+      rule.uniqIndex = uniqIndex++;
+      rule.type = TodayPrgType.learn;
+      rule.name = "R$index: $learnedTotalCount/$learnTotalCount";
+      rule.desc = scheduleConfig.elConfigs.elementAt(index).tr();
+      learn.add(rule);
+      state.learn.addAll(rule.segments);
+    }
+    for (var index = 0; index < scheduleConfig.relConfigs.length; index++) {
+      var prgTypeAndIndex = SegmentTodayPrg.toPrgTypeAndIndex(TodayPrgType.review, index);
+      var learnedTotalCount = 0;
+      var learnTotalCount = 0;
+      SegmentTodayPrgWithKeyInView rule;
+      if (temp.containsKey(prgTypeAndIndex)) {
+        rule = temp[prgTypeAndIndex]!;
+        learnedTotalCount = SegmentTodayPrg.getFinishedCount(rule.segments);
+        learnTotalCount = rule.segments.length;
+      } else {
+        rule = SegmentTodayPrgWithKeyInView([]);
       }
+      rule.index = index;
+      rule.uniqIndex = uniqIndex++;
+      rule.type = TodayPrgType.review;
+      rule.name = "R$index: $learnedTotalCount/$learnTotalCount";
+      rule.desc = scheduleConfig.relConfigs.elementAt(index).tr();
+      review.add(rule);
+      state.review.addAll(rule.segments);
     }
     state.segments.addAll(learn);
     state.segments.addAll(review);
@@ -113,34 +113,69 @@ class GsCrLogic extends GetxController {
     }
     resetLearnDeadline();
 
-    state.learnTotalCount.value = SegmentTodayPrg.getUnfinishedCount(currProgresses);
+    state.learnedTotalCount = SegmentTodayPrg.getFinishedCount(allProgresses);
+    state.learnTotalCount = allProgresses.length;
+
+    for (var l in learn) {
+      var learnedTotalCount = SegmentTodayPrg.getFinishedCount(state.learn);
+      var learnTotalCount = state.learn.length;
+      l.groupDesc = toGroupName(TodayPrgType.learn) + ": $learnedTotalCount/$learnTotalCount";
+    }
+
+    for (var l in review) {
+      var learnedTotalCount = SegmentTodayPrg.getFinishedCount(state.review);
+      var learnTotalCount = state.review.length;
+      l.groupDesc = toGroupName(TodayPrgType.review) + ": $learnedTotalCount/$learnTotalCount";
+    }
+
+    state.all.sort((a, b) => a.sort.compareTo(b.sort));
+    state.learn.sort((a, b) => a.sort.compareTo(b.sort));
+    state.review.sort((a, b) => a.sort.compareTo(b.sort));
 
     startTimer();
     update([GsCrLogic.id]);
   }
 
-  tryLearn() {
-    if (state.learnTotalCount.value == 0) {
-      Snackbar.show(I18nKey.labelNoLearningContent.tr);
-      return;
-    }
-    Nav.gsCrRepeat.push();
+  tryStartAll() {
+    tryStart(state.all);
   }
 
-  tryReview() {
-    if (state.reviewTotalCount.value == 0) {
+  tryStartGroup(TodayPrgType type) {
+    if (type == TodayPrgType.learn) {
+      tryStart(state.learn);
+    } else if (type == TodayPrgType.review) {
+      tryStart(state.review);
+    }
+  }
+
+  toGroupName(TodayPrgType type) {
+    if (type == TodayPrgType.learn) {
+      return I18nKey.btnLearn.tr;
+    } else {
+      return I18nKey.btnReview.tr;
+    }
+  }
+
+  tryStart(List<SegmentTodayPrgWithKey> list, {bool grouping = false}) {
+    if (grouping) {
+      list = SegmentTodayPrg.getFirstUnfinishedGroup(list);
+    }
+    var learnedTotalCount = SegmentTodayPrg.getFinishedCount(list);
+    var learnTotalCount = list.length;
+    if (learnTotalCount - learnedTotalCount == 0) {
       Snackbar.show(I18nKey.labelNoLearningContent.tr);
       return;
     }
+    currProgresses = list;
     Nav.gsCrRepeat.push();
   }
 
   resetLearnDeadline() {
     var now = DateTime.now();
     if (now.millisecondsSinceEpoch < state.learnDeadline) {
-      state.learnDeadlineTips.value = I18nKey.labelResetLearningContent.trArgs([formatHm(state.learnDeadline - now.millisecondsSinceEpoch)]);
+      state.learnDeadlineTips = I18nKey.labelResetLearningContent.trArgs([formatHm(state.learnDeadline - now.millisecondsSinceEpoch)]);
     } else {
-      state.learnDeadlineTips.value = "";
+      state.learnDeadlineTips = "";
     }
   }
 

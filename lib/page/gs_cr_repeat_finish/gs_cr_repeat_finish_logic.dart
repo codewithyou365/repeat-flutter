@@ -26,9 +26,4 @@ class GsCrRepeatFinishLogic extends GetxController {
     update([GsCrRepeatFinishLogic.id]);
   }
 
-  @override
-  void onClose() {
-    super.onClose();
-    Get.find<GsCrLogic>().init();
-  }
 }

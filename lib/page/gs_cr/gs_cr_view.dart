@@ -65,14 +65,23 @@ class GsCrPage extends StatelessWidget {
       builder: (_) {
         return GroupedListView<SegmentTodayPrgWithKeyInView, String>(
           elements: state.segments,
-          groupBy: (element) => element.group,
+          groupBy: (element) => element.type.name,
           groupHeaderBuilder: (element) => SizedBox(
             height: 40,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Text(
-                element.group,
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+              child: Row(
+                children: [
+                  Text(
+                    element.groupDesc,
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.play_arrow),
+                    onPressed: () => {logic.tryStartGroup(element.type)},
+                  ),
+                ],
               ),
             ),
           ),
@@ -84,32 +93,35 @@ class GsCrPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(state.learnDeadlineTips.value),
+                  Text(state.learnDeadlineTips),
                   Row(
                     children: [
                       Text(
-                        "所有  (${state.learnTotalCount.value})",
+                        "${I18nKey.labelAll.tr}: ${state.learnedTotalCount}/${state.learnTotalCount}",
                         style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                       ),
                       const Spacer(),
                       IconButton(
                         icon: const Icon(Icons.play_arrow),
-                        onPressed: logic.tryLearn,
+                        onPressed: logic.tryStartAll,
                       ),
                     ],
                   ),
-                  Row(
-                    children: [
-                      Text(
-                        element.group,
-                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.play_arrow),
-                        onPressed: logic.tryLearn,
-                      ),
-                    ],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Row(
+                      children: [
+                        Text(
+                          element.groupDesc,
+                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          icon: const Icon(Icons.play_arrow),
+                          onPressed: () => {logic.tryStartGroup(element.type)},
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -126,7 +138,7 @@ class GsCrPage extends StatelessWidget {
                   const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.play_arrow),
-                    onPressed: logic.tryLearn,
+                    onPressed: () => {logic.tryStart(element.segments, grouping: true)},
                   ),
                 ],
               ),

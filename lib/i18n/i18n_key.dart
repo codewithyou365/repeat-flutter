@@ -72,6 +72,7 @@ enum I18nKey {
   labelRelFrom,
   labelLearnCountPerGroup,
   labelFinish,
+  labelAll,
   labelSavingConfirm,
   labelConfigChange,
   labelResetConfig,

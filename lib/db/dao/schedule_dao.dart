@@ -490,8 +490,7 @@ abstract class ScheduleDao {
         if (startDateInt < relConfig.from.value) {
           startDateInt = relConfig.from.value;
         }
-        var reviewDay = relConfig.from;
-        List<SegmentTodayPrgWithKey> sls = await scheduleReview(Classroom.curr, relConfig.level, reviewDay);
+        List<SegmentTodayPrgWithKey> sls = await scheduleReview(Classroom.curr, relConfig.level, Date(startDateInt));
         SegmentTodayPrg.setType(sls, TodayPrgType.review, index, relConfig.learnCountPerGroup);
         todayPrg.addAll(sls);
       }
@@ -501,7 +500,6 @@ abstract class ScheduleDao {
     } else {
       todayPrg = await findSegmentTodayPrg(Classroom.curr);
     }
-    todayPrg.sort((a, b) => a.sort.compareTo(b.sort));
     return todayPrg;
   }
 
