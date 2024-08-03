@@ -62,7 +62,9 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
   stopMove() {
     _controller.stop();
     player!.pause();
-    playing = false;
+    setState(() {
+      playing = false;
+    });
   }
 
   moveByIndex() {
@@ -102,14 +104,11 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
 
     _controller.reset();
     _controller.animateTo(100, duration: Duration(milliseconds: duration.toInt())).then((value) => {stopMove()});
-    if (player!.state != PlayerState.disposed) {
-      player!.play(DeviceFileSource(widget.path));
-      playing = true;
-    } else {
-      return;
-    }
+    player!.play(DeviceFileSource(widget.path));
+    playing = true;
     startTime = DateTime.now().millisecondsSinceEpoch + currOffset;
     player!.seek(Duration(milliseconds: widget.lines[0].start.toInt() - currOffset));
+    setState(() {});
   }
 
   @override
@@ -127,7 +126,6 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
           onHorizontalDragStart: (details) {
             _previousOffset = details.localPosition.dx;
             stopMove();
-            setState(() {});
           },
           onHorizontalDragEnd: (details) {
             move();
@@ -178,7 +176,12 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
                 IconButton(
                   icon: const Icon(Icons.skip_previous),
                   iconSize: 20.w,
-                  onPressed: widget.onPrevious,
+                  onPressed: () {
+                    if (widget.onPrevious != null) {
+                      widget.onPrevious!();
+                    }
+                    moveByIndex();
+                  },
                 ),
               IconButton(
                 icon: playing ? const Icon(Icons.pause) : const Icon(Icons.play_arrow),
@@ -189,14 +192,18 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
                   } else {
                     move();
                   }
-                  setState(() {});
                 },
               ),
               if (widget.onNext != null)
                 IconButton(
                   icon: const Icon(Icons.skip_next),
                   iconSize: 20.w,
-                  onPressed: widget.onNext,
+                  onPressed: () {
+                    if (widget.onNext != null) {
+                      widget.onNext!();
+                    }
+                    moveByIndex();
+                  },
                 ),
             ],
           ),

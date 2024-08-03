@@ -62,8 +62,6 @@ class GsCrRepeatLogic extends GetxController {
 
   void tip() {
     state.openTip = true;
-    state.tryNeedPlayQuestion = false;
-    state.tryNeedPlayAnswer = false;
     update([GsCrRepeatLogic.id]);
   }
 
