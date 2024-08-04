@@ -94,6 +94,7 @@ enum I18nKey {
   btnKnow,
   btnError,
   btnNext,
+  btnPrevious,
   btnFinish,
   btnExport,
   btnImport,

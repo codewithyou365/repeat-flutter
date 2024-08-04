@@ -96,6 +96,7 @@ class ConfigZh extends Config {
     put(I18nKey.btnKnow, "知道");
     put(I18nKey.btnError, "错误");
     put(I18nKey.btnNext, "下一个");
+    put(I18nKey.btnPrevious, "上一个");
     put(I18nKey.btnFinish, "完成");
     put(I18nKey.btnExport, "导出");
     put(I18nKey.btnImport, "导入");

@@ -19,9 +19,15 @@ class GsCrRepeatPage extends StatelessWidget {
     return GetBuilder<GsCrRepeatLogic>(
       id: GsCrRepeatLogic.id,
       builder: (_) {
+        var currIndex = 0;
+        if (state.justView) {
+          currIndex = state.justViewIndex + 1;
+        } else {
+          currIndex = state.progress + state.fakeKnow;
+        }
         return Scaffold(
           appBar: AppBar(
-            title: Text("${state.progress + state.fakeKnow}/${state.total}-${state.segment.k}"),
+            title: Text("$currIndex/${state.total}-${state.segment.k}"),
           ),
           body: Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -155,29 +161,49 @@ class GsCrRepeatPage extends StatelessWidget {
     var rightButtonText = "";
     void Function() leftButtonLogic = () => {};
     void Function() rightButtonLogic = () => {};
-
-    switch (state.step) {
-      case RepeatStep.recall:
-        leftButtonText = I18nKey.btnKnow.tr;
-        leftButtonLogic = logic.show;
-        rightButtonText = I18nKey.btnUnknown.tr;
-        rightButtonLogic = logic.error;
-        break;
-      case RepeatStep.evaluate:
-        leftButtonText = "${I18nKey.btnNext.tr}\n${state.nextKey}";
-        leftButtonLogic = () => logic.know(autoNext: true);
-        rightButtonText = I18nKey.btnError.tr;
-        rightButtonLogic = logic.error;
-        break;
-      case RepeatStep.finish:
-        if (logic.state.c.isEmpty) {
+    if (state.justView) {
+      switch (state.step) {
+        case RepeatStep.recall:
+          leftButtonText = I18nKey.btnShow.tr;
+          leftButtonLogic = logic.showForJustView;
+          rightButtonText = I18nKey.btnPrevious.tr;
+          rightButtonLogic = logic.previousForJustView;
+          break;
+        case RepeatStep.evaluate:
+          leftButtonText = I18nKey.btnNext.tr;
+          leftButtonLogic = logic.nextForJustView;
+          rightButtonText = I18nKey.btnPrevious.tr;
+          rightButtonLogic = logic.previousForJustView;
+          break;
+        case RepeatStep.finish:
           leftButtonText = I18nKey.btnFinish.tr;
-          leftButtonLogic = logic.next;
-        } else {
+          leftButtonLogic = logic.finish;
+          break;
+      }
+    } else {
+      switch (state.step) {
+        case RepeatStep.recall:
+          leftButtonText = I18nKey.btnKnow.tr;
+          leftButtonLogic = logic.show;
+          rightButtonText = I18nKey.btnUnknown.tr;
+          rightButtonLogic = logic.error;
+          break;
+        case RepeatStep.evaluate:
           leftButtonText = "${I18nKey.btnNext.tr}\n${state.nextKey}";
-          leftButtonLogic = logic.next;
-        }
-        break;
+          leftButtonLogic = () => logic.know(autoNext: true);
+          rightButtonText = I18nKey.btnError.tr;
+          rightButtonLogic = logic.error;
+          break;
+        case RepeatStep.finish:
+          if (logic.state.c.isEmpty) {
+            leftButtonText = I18nKey.btnFinish.tr;
+            leftButtonLogic = logic.next;
+          } else {
+            leftButtonText = "${I18nKey.btnNext.tr}\n${state.nextKey}";
+            leftButtonLogic = logic.next;
+          }
+          break;
+      }
     }
 
     return Stack(

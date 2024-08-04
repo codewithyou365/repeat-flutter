@@ -10,6 +10,7 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/common/date.dart';
+import 'package:repeat_flutter/logic/constant.dart';
 import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -45,6 +46,8 @@ class GsCrLogic extends GetxController {
         Map<String, dynamic> configJson = convert.jsonDecode(configInUseJsonStr);
         scheduleConfig = ScheduleConfig.fromJson(configJson);
       } catch (_) {}
+    } else {
+      scheduleConfig = ScheduleDao.scheduleConfig;
     }
     scheduleConfig ??= ScheduleDao.scheduleConfig;
     List<SegmentTodayPrgWithKeyInView> learn = [];
@@ -136,15 +139,15 @@ class GsCrLogic extends GetxController {
     update([GsCrLogic.id]);
   }
 
-  tryStartAll() {
-    tryStart(state.all);
+  tryStartAll({Repeat mode = Repeat.normal}) {
+    tryStart(state.all, mode: mode);
   }
 
-  tryStartGroup(TodayPrgType type) {
+  tryStartGroup(TodayPrgType type, {Repeat mode = Repeat.normal}) {
     if (type == TodayPrgType.learn) {
-      tryStart(state.learn);
+      tryStart(state.learn, mode: mode);
     } else if (type == TodayPrgType.review) {
-      tryStart(state.review);
+      tryStart(state.review, mode: mode);
     }
   }
 
@@ -156,18 +159,20 @@ class GsCrLogic extends GetxController {
     }
   }
 
-  tryStart(List<SegmentTodayPrgWithKey> list, {bool grouping = false}) {
+  tryStart(List<SegmentTodayPrgWithKey> list, {bool grouping = false, Repeat mode = Repeat.normal}) {
     if (grouping) {
       list = SegmentTodayPrg.getFirstUnfinishedGroup(list);
     }
-    var learnedTotalCount = SegmentTodayPrg.getFinishedCount(list);
-    var learnTotalCount = list.length;
-    if (learnTotalCount - learnedTotalCount == 0) {
-      Snackbar.show(I18nKey.labelNoLearningContent.tr);
-      return;
+    if (mode == Repeat.normal) {
+      var learnedTotalCount = SegmentTodayPrg.getFinishedCount(list);
+      var learnTotalCount = list.length;
+      if (learnTotalCount - learnedTotalCount == 0) {
+        Snackbar.show(I18nKey.labelNoLearningContent.tr);
+        return;
+      }
     }
     currProgresses = list;
-    Nav.gsCrRepeat.push();
+    Nav.gsCrRepeat.push(arguments: mode);
   }
 
   resetLearnDeadline() {

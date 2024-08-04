@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/constant.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_state.dart';
 
@@ -68,20 +69,23 @@ class GsCrPage extends StatelessWidget {
           groupBy: (element) => element.type.name,
           groupHeaderBuilder: (element) => SizedBox(
             height: 40,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Row(
-                children: [
-                  Text(
-                    element.groupDesc,
-                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.play_arrow),
-                    onPressed: () => {logic.tryStartGroup(element.type)},
-                  ),
-                ],
+            child: InkWell(
+              onTap: () => {logic.tryStartGroup(element.type, mode: Repeat.justView)},
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Row(
+                  children: [
+                    Text(
+                      element.groupDesc,
+                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.play_arrow),
+                      onPressed: () => {logic.tryStartGroup(element.type)},
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -94,33 +98,39 @@ class GsCrPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(state.learnDeadlineTips),
-                  Row(
-                    children: [
-                      Text(
-                        "${I18nKey.labelAll.tr}: ${state.learnedTotalCount}/${state.learnTotalCount}",
-                        style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.play_arrow),
-                        onPressed: logic.tryStartAll,
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  InkWell(
+                    onTap: () => {logic.tryStartAll(mode: Repeat.justView)},
                     child: Row(
                       children: [
                         Text(
-                          element.groupDesc,
-                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                          "${I18nKey.labelAll.tr}: ${state.learnedTotalCount}/${state.learnTotalCount}",
+                          style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                         ),
                         const Spacer(),
                         IconButton(
                           icon: const Icon(Icons.play_arrow),
-                          onPressed: () => {logic.tryStartGroup(element.type)},
+                          onPressed: logic.tryStartAll,
                         ),
                       ],
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => {logic.tryStartGroup(element.type, mode: Repeat.justView)},
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Row(
+                        children: [
+                          Text(
+                            element.groupDesc,
+                            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            icon: const Icon(Icons.play_arrow),
+                            onPressed: () => {logic.tryStartGroup(element.type)},
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -130,19 +140,22 @@ class GsCrPage extends StatelessWidget {
           itemBuilder: (context, SegmentTodayPrgWithKeyInView element) => Card(
             elevation: 8.0,
             margin: EdgeInsets.fromLTRB(6, element.uniqIndex == 0 ? 90 : 10.0, 6.0, 10.0),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-              title: Row(
-                children: [
-                  Text(element.name),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.play_arrow),
-                    onPressed: () => {logic.tryStart(element.segments, grouping: true)},
-                  ),
-                ],
+            child: InkWell(
+              onTap: () => {logic.tryStart(element.segments, mode: Repeat.justView)},
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                title: Row(
+                  children: [
+                    Text(element.name),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.play_arrow),
+                      onPressed: () => {logic.tryStart(element.segments, grouping: true)},
+                    ),
+                  ],
+                ),
+                subtitle: Text(element.desc),
               ),
-              subtitle: Text(element.desc),
             ),
           ),
           itemComparator: (item1, item2) => item1.index.compareTo(item2.index),

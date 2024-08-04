@@ -96,6 +96,7 @@ class ConfigEn extends Config {
     put(I18nKey.btnKnow, "KNOW");
     put(I18nKey.btnError, "ERROR");
     put(I18nKey.btnNext, "NEXT");
+    put(I18nKey.btnPrevious, "PREV");
     put(I18nKey.btnFinish, "FINISH");
     put(I18nKey.btnExport, "Export");
     put(I18nKey.btnImport, "Import");

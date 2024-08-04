@@ -33,6 +33,8 @@ class GsCrRepeatState {
 
   SegmentContent segment = SegmentContent(0, 0, 0, 0, 0, 0, Classroom.curr, "", "", "", "");
   late List<SegmentTodayPrg> c;
+  var justView = false;
+  var justViewIndex = 0;
   var step = RepeatStep.recall;
   var openTip = false;
   var pnOffset = 0;

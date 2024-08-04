@@ -5,6 +5,7 @@ import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/logic/constant.dart';
 import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -32,7 +33,13 @@ class GsCrRepeatLogic extends GetxController {
 
   init() async {
     var all = Get.find<GsCrLogic>().currProgresses;
-    state.c = SegmentTodayPrg.refineWithFinish(all, false);
+    state.justView = false;
+    if (Get.arguments == Repeat.justView) {
+      state.justView = true;
+      state.c = all;
+    } else {
+      state.c = SegmentTodayPrg.refineWithFinish(all, false);
+    }
     if (state.c.isNotEmpty) {
       todayProgresses = all;
     }
@@ -77,7 +84,9 @@ class GsCrRepeatLogic extends GetxController {
     state.tryNeedPlayAnswer = true;
     state.fakeKnow = 0;
     var curr = state.c[0];
-    await Db().db.scheduleDao.error(curr);
+    if (!state.justView) {
+      await Db().db.scheduleDao.error(curr);
+    }
     state.c.sort(schedulesCurrentSort);
     if (autoNext) {
       next(fromView: false);
@@ -106,7 +115,9 @@ class GsCrRepeatLogic extends GetxController {
     }
     state.fakeKnow = 0;
     var curr = state.c[0];
-    await Db().db.scheduleDao.right(curr);
+    if (!state.justView) {
+      await Db().db.scheduleDao.right(curr);
+    }
     if (curr.progress >= ScheduleDao.scheduleConfig.maxRepeatTime) {
       state.c.removeAt(0);
     }
@@ -139,11 +150,49 @@ class GsCrRepeatLogic extends GetxController {
     await setCurrentLearnContentAndUpdateView();
   }
 
-  Future<bool?> setCurrentLearnContentAndUpdateView({int? pnOffset, needDiff = false}) async {
+  void showForJustView() {
+    if (ticker.isStuck()) {
+      return;
+    }
+    state.step = RepeatStep.evaluate;
+    state.tryNeedPlayQuestion = false;
+    state.tryNeedPlayAnswer = true;
+    update([GsCrRepeatLogic.id]);
+  }
+
+  void nextForJustView() async {
+    if (ticker.isStuck()) {
+      return;
+    }
+    state.step = RepeatStep.recall;
+    state.tryNeedPlayQuestion = true;
+    state.tryNeedPlayAnswer = false;
+    state.fakeKnow = 0;
+    if (state.justViewIndex < state.c.length - 1) {
+      state.justViewIndex++;
+    }
+    await setCurrentLearnContentAndUpdateView(index: state.justViewIndex);
+  }
+
+  void previousForJustView() async {
+    if (ticker.isStuck()) {
+      return;
+    }
+    state.step = RepeatStep.recall;
+    state.tryNeedPlayQuestion = true;
+    state.tryNeedPlayAnswer = false;
+    state.fakeKnow = 0;
+    if (state.justViewIndex > 0) {
+      state.justViewIndex--;
+    }
+    await setCurrentLearnContentAndUpdateView(index: state.justViewIndex);
+  }
+
+  Future<bool?> setCurrentLearnContentAndUpdateView({int index = 0, int? pnOffset, needDiff = false}) async {
     if (state.c.isEmpty) {
       return null;
     }
-    var curr = state.c[0];
+    var curr = state.c[index];
     tryToSetNext();
     pnOffset ??= 0;
     state.openTip = false;
@@ -161,20 +210,34 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   Future<void> resetPnOffset() async {
-    setCurrentLearnContentAndUpdateView(pnOffset: 0);
+    if (state.justView) {
+      await setCurrentLearnContentAndUpdateView(index: state.justViewIndex, pnOffset: 0);
+    } else {
+      await setCurrentLearnContentAndUpdateView(pnOffset: 0);
+    }
     state.pnOffset = 0;
   }
 
   Future<void> plusPnOffset() async {
-    var diff = await setCurrentLearnContentAndUpdateView(pnOffset: state.pnOffset + 1, needDiff: true);
-    if (diff ?? false) {
+    var diff = false;
+    if (state.justView) {
+      diff = await setCurrentLearnContentAndUpdateView(index: state.justViewIndex, pnOffset: state.pnOffset + 1, needDiff: true) ?? false;
+    } else {
+      diff = await setCurrentLearnContentAndUpdateView(pnOffset: state.pnOffset + 1, needDiff: true) ?? false;
+    }
+    if (diff) {
       ++state.pnOffset;
     }
   }
 
   Future<void> minusPnOffset() async {
-    var diff = await setCurrentLearnContentAndUpdateView(pnOffset: state.pnOffset - 1, needDiff: true);
-    if (diff ?? false) {
+    var diff = false;
+    if (state.justView) {
+      diff = await setCurrentLearnContentAndUpdateView(index: state.justViewIndex, pnOffset: state.pnOffset - 1, needDiff: true) ?? false;
+    } else {
+      diff = await setCurrentLearnContentAndUpdateView(pnOffset: state.pnOffset - 1, needDiff: true) ?? false;
+    }
+    if (diff) {
       --state.pnOffset;
     }
   }
