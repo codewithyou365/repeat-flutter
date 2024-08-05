@@ -69,6 +69,7 @@ class GsCrRepeatLogic extends GetxController {
 
   void tip() {
     state.openTip = true;
+    state.skipAfterLayoutLogic = true;
     update([GsCrRepeatLogic.id]);
   }
 

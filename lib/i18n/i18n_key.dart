@@ -15,6 +15,7 @@ enum I18nKey {
   themeDark,
   themeLight,
   labelDeveloping,
+  labelTitle,
   labelSelectClassroom,
   labelDeleteClassroom,
   labelClassroomName,

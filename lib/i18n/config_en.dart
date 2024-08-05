@@ -17,6 +17,7 @@ class ConfigEn extends Config {
     put(I18nKey.themeDark, "Dart");
     put(I18nKey.themeLight, "Light");
     put(I18nKey.labelDeveloping, "Developing");
+    put(I18nKey.labelTitle, "Title");
     put(I18nKey.labelSelectClassroom, "Select Classroom");
     put(I18nKey.labelDeleteClassroom, "Please confirm to delete \n this classroom : %s");
     put(I18nKey.labelClassroomName, "Classroom Name");

@@ -78,11 +78,12 @@ class GsCrLogic extends GetxController {
       } else {
         rule = SegmentTodayPrgWithKeyInView([]);
       }
+      var config = scheduleConfig.elConfigs.elementAt(index);
       rule.index = index;
       rule.uniqIndex = uniqIndex++;
       rule.type = TodayPrgType.learn;
-      rule.name = "R$index: $learnedTotalCount/$learnTotalCount";
-      rule.desc = scheduleConfig.elConfigs.elementAt(index).tr();
+      rule.name = config.title == "" ? "R$index: $learnedTotalCount/$learnTotalCount" : "${config.title}: $learnedTotalCount/$learnTotalCount";
+      rule.desc = config.tr();
       learn.add(rule);
       state.learn.addAll(rule.segments);
     }
@@ -98,11 +99,12 @@ class GsCrLogic extends GetxController {
       } else {
         rule = SegmentTodayPrgWithKeyInView([]);
       }
+      var config = scheduleConfig.relConfigs.elementAt(index);
       rule.index = index;
       rule.uniqIndex = uniqIndex++;
       rule.type = TodayPrgType.review;
-      rule.name = "R$index: $learnedTotalCount/$learnTotalCount";
-      rule.desc = scheduleConfig.relConfigs.elementAt(index).tr();
+      rule.name = config.title == "" ? "R$index: $learnedTotalCount/$learnTotalCount" : "${config.title}: $learnedTotalCount/$learnTotalCount";
+      rule.desc = config.tr();
       review.add(rule);
       state.review.addAll(rule.segments);
     }

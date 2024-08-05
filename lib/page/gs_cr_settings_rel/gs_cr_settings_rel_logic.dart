@@ -25,6 +25,7 @@ class GsCrSettingsRelLogic extends GetxController {
           index,
           ValueKey(valueKey++),
           RelConfig(
+            value.title,
             value.level,
             value.before,
             value.from,
@@ -37,6 +38,7 @@ class GsCrSettingsRelLogic extends GetxController {
     var index = configView.index;
     var config = configView.config;
     state.currRelConfigIndex = index;
+    state.currRelConfig.title.value = config.title;
     state.currRelConfig.level.value = config.level;
     state.currRelConfig.before.value = config.before;
     state.currRelConfig.from.value = config.from.value;
@@ -54,6 +56,7 @@ class GsCrSettingsRelLogic extends GetxController {
 
   void copyItem() {
     var config = RelConfig(
+      state.currRelConfig.title.value,
       state.currRelConfig.level.value,
       state.currRelConfig.before.value,
       Date(state.currRelConfig.from.value),
@@ -72,6 +75,7 @@ class GsCrSettingsRelLogic extends GetxController {
   void updateItem() {
     int index = state.currRelConfigIndex;
     var config = state.relConfigs[index];
+    config.config.title = state.currRelConfig.title.value;
     config.config.level = state.currRelConfig.level.value;
     config.config.before = state.currRelConfig.before.value;
     config.config.from = Date(state.currRelConfig.from.value);

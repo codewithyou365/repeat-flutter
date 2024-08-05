@@ -17,6 +17,7 @@ class ElConfigView {
 }
 
 class ElConfigObs {
+  var title = "".obs;
   var random = false.obs;
   var extend = false.obs;
   var level = 0.obs;

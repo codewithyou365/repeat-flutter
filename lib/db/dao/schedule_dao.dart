@@ -20,16 +20,18 @@ import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
 
 // ebbinghaus learning config
 class ElConfig {
+  String title;
   bool random;
   bool extend;
   int level;
   int learnCount;
   int learnCountPerGroup;
 
-  ElConfig(this.random, this.extend, this.level, this.learnCount, this.learnCountPerGroup);
+  ElConfig(this.title, this.random, this.extend, this.level, this.learnCount, this.learnCountPerGroup);
 
   Map<String, dynamic> toJson() {
     return {
+      'title': title,
       'random': random,
       'extend': extend,
       'level': level,
@@ -40,6 +42,7 @@ class ElConfig {
 
   factory ElConfig.fromJson(Map<String, dynamic> json) {
     return ElConfig(
+      json['title'],
       json['random'],
       json['extend'],
       json['level'],
@@ -63,19 +66,29 @@ class ElConfig {
     );
     return ret.trArgs(args);
   }
+
+  trWithTitle() {
+    var desc = tr();
+    if (title != "") {
+      desc = "$title:$desc";
+    }
+    return desc;
+  }
 }
 
 // review ebbinghaus learning config
 class RelConfig {
+  String title;
   int level;
   int before;
   Date from;
   int learnCountPerGroup;
 
-  RelConfig(this.level, this.before, this.from, this.learnCountPerGroup);
+  RelConfig(this.title, this.level, this.before, this.from, this.learnCountPerGroup);
 
   Map<String, dynamic> toJson() {
     return {
+      'title': title,
       'level': level,
       'before': before,
       'chase': level,
@@ -86,6 +99,7 @@ class RelConfig {
 
   factory RelConfig.fromJson(Map<String, dynamic> json) {
     return RelConfig(
+      json['title'],
       json['level'],
       json['before'],
       Date(json['from']),
@@ -103,6 +117,14 @@ class RelConfig {
       orElse: () => throw ArgumentError('Invalid I18nKey: $key'),
     );
     return ret.trArgs(args);
+  }
+
+  trWithTitle() {
+    var desc = tr();
+    if (title != "") {
+      desc = "$title:$desc";
+    }
+    return desc;
   }
 }
 
@@ -168,13 +190,13 @@ abstract class ScheduleDao {
     12 * 60 * 60,
     3,
     [
-      ElConfig(/* random */ false, /* extendLevel */ false, /* level */ 0, /* learnCount */ 2, /* learnCountPerGroup */ 2),
-      ElConfig(/* random */ false, /* extendLevel */ false, /* level */ 1, /* learnCount */ 2, /* learnCountPerGroup */ 2),
-      ElConfig(/* random  */ true, /* extendLevel  */ true, /* level */ 1, /* learnCount */ 2, /* learnCountPerGroup */ 2),
+      ElConfig(/* title */ "", /* random */ false, /* extendLevel */ false, /* level */ 0, /* learnCount */ 2, /* learnCountPerGroup */ 2),
+      ElConfig(/* title */ "", /* random */ false, /* extendLevel */ false, /* level */ 1, /* learnCount */ 2, /* learnCountPerGroup */ 2),
+      ElConfig(/* title */ "", /* random  */ true, /* extendLevel  */ true, /* level */ 1, /* learnCount */ 2, /* learnCountPerGroup */ 2),
     ],
     [
-      RelConfig(/* level */ 0, /* before */ 3, /* from */ Date(20240321), /* learnCountPerGroup */ 0),
-      RelConfig(/* level */ 1, /* before */ 7, /* from */ Date(20240321), /* learnCountPerGroup */ 0),
+      RelConfig(/* title */ "", /* level */ 0, /* before */ 3, /* from */ Date(20240321), /* learnCountPerGroup */ 0),
+      RelConfig(/* title */ "", /* level */ 1, /* before */ 7, /* from */ Date(20240321), /* learnCountPerGroup */ 0),
     ],
   );
 

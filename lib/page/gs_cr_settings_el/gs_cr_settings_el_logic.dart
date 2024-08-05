@@ -24,6 +24,7 @@ class GsCrSettingsElLogic extends GetxController {
           index,
           ValueKey(valueKey++),
           ElConfig(
+            value.title,
             value.random,
             value.extend,
             value.level,
@@ -37,6 +38,7 @@ class GsCrSettingsElLogic extends GetxController {
     var index = configView.index;
     var config = configView.config;
     state.currElConfigIndex = index;
+    state.currElConfig.title.value = config.title;
     state.currElConfig.random.value = config.random;
     state.currElConfig.extend.value = config.extend;
     state.currElConfig.level.value = config.level;
@@ -55,6 +57,7 @@ class GsCrSettingsElLogic extends GetxController {
 
   void copyItem() {
     var config = ElConfig(
+      state.currElConfig.title.value,
       state.currElConfig.random.value,
       state.currElConfig.extend.value,
       state.currElConfig.level.value,
@@ -74,6 +77,7 @@ class GsCrSettingsElLogic extends GetxController {
   void updateItem() {
     int index = state.currElConfigIndex;
     var config = state.elConfigs[index];
+    config.config.title = state.currElConfig.title.value;
     config.config.random = state.currElConfig.random.value;
     config.config.extend = state.currElConfig.extend.value;
     config.config.level = state.currElConfig.level.value;

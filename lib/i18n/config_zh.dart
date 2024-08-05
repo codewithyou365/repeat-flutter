@@ -17,6 +17,7 @@ class ConfigZh extends Config {
     put(I18nKey.themeDark, "暗色主题");
     put(I18nKey.themeLight, "亮色主题");
     put(I18nKey.labelDeveloping, "开发中");
+    put(I18nKey.labelTitle, "标题");
     put(I18nKey.labelSelectClassroom, "选择课堂");
     put(I18nKey.labelDeleteClassroom, "请确定删除这个课堂 : %s");
     put(I18nKey.labelClassroomName, "课堂名称");

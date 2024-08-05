@@ -17,6 +17,7 @@ class RelConfigView {
 }
 
 class RelConfigObs {
+  var title = "".obs;
   var level = 0.obs;
   var before = 0.obs;
   var from = 20240321.obs;

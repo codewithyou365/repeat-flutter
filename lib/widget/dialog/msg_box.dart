@@ -16,29 +16,71 @@ class MsgBox {
     Get.defaultDialog(
       title: title,
       content: Text(desc),
-      actions: [
-        TextButton(
-          child: Text(noBtnTitle ?? I18nKey.btnCancel.tr),
-          onPressed: () {
-            if (no != null) {
-              no();
-            } else {
-              Get.back();
-            }
-          },
+      actions: yesOrNoAction(yes: yes, no: no, yesBtnTitle: yesBtnTitle, noBtnTitle: noBtnTitle),
+    );
+  }
+
+  static strInputWithYesOrNo(
+    RxString model,
+    String title,
+    String decoration, {
+    VoidCallback? yes,
+    String? yesBtnTitle,
+    VoidCallback? no,
+    String? noBtnTitle,
+  }) {
+    final tec = TextEditingController(text: model.value);
+    Get.defaultDialog(
+      title: title,
+      content: TextFormField(
+        controller: tec,
+        decoration: InputDecoration(
+          labelText: decoration,
         ),
-        TextButton(
-          onPressed: () {
+      ),
+      actions: yesOrNoAction(
+          yes: () {
             if (yes != null) {
               yes();
             } else {
+              model.value = tec.text.trim();
               Get.back();
             }
           },
-          child: Text(yesBtnTitle ?? I18nKey.btnOk.tr),
-        ),
-      ],
+          no: no,
+          yesBtnTitle: yesBtnTitle,
+          noBtnTitle: noBtnTitle),
     );
+  }
+
+  static List<Widget> yesOrNoAction({
+    VoidCallback? yes,
+    String? yesBtnTitle,
+    VoidCallback? no,
+    String? noBtnTitle,
+  }) {
+    return [
+      TextButton(
+        child: Text(noBtnTitle ?? I18nKey.btnCancel.tr),
+        onPressed: () {
+          if (no != null) {
+            no();
+          } else {
+            Get.back();
+          }
+        },
+      ),
+      TextButton(
+        onPressed: () {
+          if (yes != null) {
+            yes();
+          } else {
+            Get.back();
+          }
+        },
+        child: Text(yesBtnTitle ?? I18nKey.btnOk.tr),
+      ),
+    ];
   }
 
   static yes(

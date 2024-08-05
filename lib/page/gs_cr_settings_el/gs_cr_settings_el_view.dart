@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
 import 'gs_cr_settings_el_logic.dart';
 
@@ -30,7 +31,7 @@ class GsCrSettingsElPage extends StatelessWidget {
               .map(
                 (item) => ListTile(
                   key: item.key,
-                  title: Text(item.config.tr()),
+                  title: Text(item.config.trWithTitle()),
                   onTap: () {
                     logic.setCurrElConfig(item);
                     openEditDialog(logic);
@@ -51,6 +52,7 @@ class GsCrSettingsElPage extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 16.w),
         child: Column(
           children: [
+            buildStringItem(I18nKey.labelTitle.tr, config.title),
             buildSwitch(I18nKey.labelElRandom.tr, config.random),
             buildSwitch(I18nKey.labelElExtend.tr, config.extend),
             buildNumberItem(I18nKey.labelElLevel.tr, config.level),
@@ -59,12 +61,13 @@ class GsCrSettingsElPage extends StatelessWidget {
             const Divider(),
             Obx(() {
               return Text(ElConfig(
+                config.title.value,
                 config.random.value,
                 config.extend.value,
                 config.level.value,
                 config.learnCount.value,
                 config.learnCountPerGroup.value,
-              ).tr());
+              ).trWithTitle());
             }),
           ],
         ),
@@ -108,6 +111,23 @@ class GsCrSettingsElPage extends StatelessWidget {
               });
         }),
       ],
+    );
+  }
+
+  Widget buildStringItem(String title, RxString value) {
+    return InkWell(
+      onTap: () {
+        MsgBox.strInputWithYesOrNo(value, title, "");
+      },
+      child: Row(
+        children: [
+          Text(title),
+          const Spacer(),
+          Obx(() {
+            return Text(value.value.toString(), style: TextStyle(fontSize: 24.sp));
+          })
+        ],
+      ),
     );
   }
 
