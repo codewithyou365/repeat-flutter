@@ -14,6 +14,7 @@ import 'package:repeat_flutter/logic/constant.dart';
 import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'gs_cr_state.dart';
@@ -194,5 +195,27 @@ class GsCrLogic extends GetxController {
     timer = Timer.periodic(duration, (Timer timer) {
       resetLearnDeadline();
     });
+  }
+
+  void config(TodayPrgType type) async {
+    showTransparentOverlay(() async {
+      Nav.gsCrSettings.push();
+      await Future.delayed(const Duration(milliseconds: 700));
+    });
+    await Future.delayed(const Duration(milliseconds: 400));
+    if (type == TodayPrgType.learn) {
+      Nav.gsCrSettingsEl.push();
+    } else {
+      Nav.gsCrSettingsRel.push();
+    }
+  }
+
+  void resetSchedule() {
+    showOverlay(() async {
+      await Db().db.scheduleDao.deleteKv(CrKv(Classroom.curr, CrK.todayLearnCreateDate, ""));
+      await init();
+      Nav.back();
+      Snackbar.show(I18nKey.labelFinish.tr);
+    }, I18nKey.labelExecuting.tr);
   }
 }

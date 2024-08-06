@@ -22,13 +22,4 @@ class GsCrSettingsLogic extends GetxController {
       Snackbar.show(I18nKey.labelFinish.tr);
     }, I18nKey.labelExecuting.tr);
   }
-
-  void resetSchedule() {
-    showOverlay(() async {
-      await Db().db.scheduleDao.deleteKv(CrKv(Classroom.curr, CrK.todayLearnCreateDate, ""));
-      await Get.find<GsCrLogic>().init();
-      Nav.back();
-      Snackbar.show(I18nKey.labelFinish.tr);
-    }, I18nKey.labelExecuting.tr);
-  }
 }

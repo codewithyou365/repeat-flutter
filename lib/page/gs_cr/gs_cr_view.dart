@@ -6,6 +6,7 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/constant.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_state.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
 import 'gs_cr_logic.dart';
 
@@ -81,6 +82,10 @@ class GsCrPage extends StatelessWidget {
                     ),
                     const Spacer(),
                     IconButton(
+                      icon: const Icon(Icons.settings),
+                      onPressed: () => {logic.config(element.type)},
+                    ),
+                    IconButton(
                       icon: const Icon(Icons.play_arrow),
                       onPressed: () => {logic.tryStartGroup(element.type)},
                     ),
@@ -108,6 +113,12 @@ class GsCrPage extends StatelessWidget {
                         ),
                         const Spacer(),
                         IconButton(
+                          icon: const Icon(Icons.redo),
+                          onPressed: () {
+                            MsgBox.yesOrNo(I18nKey.labelResetLearn.tr, I18nKey.labelResetLearnDesc.tr, yes: logic.resetSchedule);
+                          },
+                        ),
+                        IconButton(
                           icon: const Icon(Icons.play_arrow),
                           onPressed: logic.tryStartAll,
                         ),
@@ -125,6 +136,10 @@ class GsCrPage extends StatelessWidget {
                             style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                           ),
                           const Spacer(),
+                          IconButton(
+                            icon: const Icon(Icons.settings),
+                            onPressed: () => {logic.config(element.type)},
+                          ),
                           IconButton(
                             icon: const Icon(Icons.play_arrow),
                             onPressed: () => {logic.tryStartGroup(element.type)},

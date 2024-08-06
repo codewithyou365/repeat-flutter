@@ -21,13 +21,6 @@ class GsCrSettingsPage extends StatelessWidget {
         children: <Widget>[
           ListTile(
             leading: const Icon(Icons.redo),
-            title: Text(I18nKey.labelResetLearn.tr),
-            onTap: () {
-              MsgBox.yesOrNo(I18nKey.labelResetLearn.tr, I18nKey.labelResetLearnDesc.tr, yes: logic.resetSchedule);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.redo),
             title: Text(I18nKey.labelResetConfig.tr),
             onTap: () {
               MsgBox.yesOrNo(I18nKey.labelResetConfig.tr, I18nKey.labelResetConfigDesc.tr, yes: logic.resetConfig);

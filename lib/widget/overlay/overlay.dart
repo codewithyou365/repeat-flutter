@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+Future<T> showTransparentOverlay<T>(Future<T> Function() asyncFunction) async {
+  return Get.showOverlay(
+    asyncFunction: asyncFunction,
+    opacity: 0,
+    loadingWidget: Container(),
+  );
+}
+
 Future<T> showOverlay<T>(Future<T> Function() asyncFunction, String title) async {
   return Get.showOverlay(
     asyncFunction: asyncFunction,
