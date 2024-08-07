@@ -32,6 +32,7 @@ class GsCrRepeatState {
   var total = 10;
 
   SegmentContent segment = SegmentContent(0, 0, 0, 0, 0, 0, Classroom.curr, "", "", "", "");
+  SegmentContent currSegment = SegmentContent(0, 0, 0, 0, 0, 0, Classroom.curr, "", "", "", "");
   late List<SegmentTodayPrg> c;
   var justView = false;
   var justViewIndex = 0;

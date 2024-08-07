@@ -189,12 +189,16 @@ class GsCrRepeatLogic extends GetxController {
     await setCurrentLearnContentAndUpdateView(index: state.justViewIndex);
   }
 
-  Future<bool?> setCurrentLearnContentAndUpdateView({int index = 0, int? pnOffset, needDiff = false}) async {
+  Future<bool?> setCurrentLearnContentAndUpdateView({int index = 0, int? pnOffset}) async {
     if (state.c.isEmpty) {
       return null;
     }
     var curr = state.c[index];
     tryToSetNext();
+    bool fromPn = false;
+    if (pnOffset != null) {
+      fromPn = true;
+    }
     pnOffset ??= 0;
     state.openTip = false;
     var oldSegmentKeyId = state.segment.segmentKeyId;
@@ -202,19 +206,28 @@ class GsCrRepeatLogic extends GetxController {
     if (learnSegment == null) {
       return null;
     }
-    if (learnSegment.segmentKeyId == oldSegmentKeyId && needDiff) {
+    if (learnSegment.segmentKeyId == oldSegmentKeyId && fromPn) {
       return false;
     }
     state.segment = learnSegment;
+    if (!fromPn) {
+      state.currSegment = learnSegment;
+    }
     update([GsCrRepeatLogic.id]);
     return true;
   }
 
   Future<void> resetPnOffset() async {
     if (state.justView) {
-      await setCurrentLearnContentAndUpdateView(index: state.justViewIndex, pnOffset: 0);
+      await setCurrentLearnContentAndUpdateView(
+        index: state.justViewIndex,
+        pnOffset: 0,
+      );
     } else {
-      await setCurrentLearnContentAndUpdateView(pnOffset: 0);
+      await setCurrentLearnContentAndUpdateView(
+        index: state.c.indexWhere((t) => t.segmentKeyId == state.currSegment.segmentKeyId),
+        pnOffset: 0,
+      );
     }
     state.pnOffset = 0;
   }
@@ -222,9 +235,17 @@ class GsCrRepeatLogic extends GetxController {
   Future<void> plusPnOffset() async {
     var diff = false;
     if (state.justView) {
-      diff = await setCurrentLearnContentAndUpdateView(index: state.justViewIndex, pnOffset: state.pnOffset + 1, needDiff: true) ?? false;
+      diff = await setCurrentLearnContentAndUpdateView(
+            index: state.justViewIndex,
+            pnOffset: state.pnOffset + 1,
+          ) ??
+          false;
     } else {
-      diff = await setCurrentLearnContentAndUpdateView(pnOffset: state.pnOffset + 1, needDiff: true) ?? false;
+      diff = await setCurrentLearnContentAndUpdateView(
+            index: state.c.indexWhere((t) => t.segmentKeyId == state.currSegment.segmentKeyId),
+            pnOffset: state.pnOffset + 1,
+          ) ??
+          false;
     }
     if (diff) {
       ++state.pnOffset;
@@ -234,9 +255,17 @@ class GsCrRepeatLogic extends GetxController {
   Future<void> minusPnOffset() async {
     var diff = false;
     if (state.justView) {
-      diff = await setCurrentLearnContentAndUpdateView(index: state.justViewIndex, pnOffset: state.pnOffset - 1, needDiff: true) ?? false;
+      diff = await setCurrentLearnContentAndUpdateView(
+            index: state.justViewIndex,
+            pnOffset: state.pnOffset - 1,
+          ) ??
+          false;
     } else {
-      diff = await setCurrentLearnContentAndUpdateView(pnOffset: state.pnOffset - 1, needDiff: true) ?? false;
+      diff = await setCurrentLearnContentAndUpdateView(
+            index: state.c.indexWhere((t) => t.segmentKeyId == state.currSegment.segmentKeyId),
+            pnOffset: state.pnOffset - 1,
+          ) ??
+          false;
     }
     if (diff) {
       --state.pnOffset;
