@@ -49,7 +49,7 @@ class GsCrRepeatPage extends StatelessWidget {
     } else {
       showContent = currProcessShowContent[currProcessShowContent.length - 1];
     }
-
+    List<ContentType> validContentType = [];
     List<Widget> listViewContent = [];
     for (int i = 0; i < showContent.length; i++) {
       var w = buildInnerContent(logic, context, showContent[i].contentType, state.segment);
@@ -59,10 +59,13 @@ class GsCrRepeatPage extends StatelessWidget {
         } else if (!showContent[i].tip) {
           listViewContent.add(w);
         }
+        validContentType.add(showContent[i].contentType);
       }
     }
 
-    WidgetsBinding.instance.addPostFrameCallback(afterLayout);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      logic.mediaLoad(validContentType);
+    });
 
     return SizedBox(
       height: height,
@@ -70,35 +73,16 @@ class GsCrRepeatPage extends StatelessWidget {
     );
   }
 
-  void afterLayout(_) {
-    final state = Get.find<GsCrRepeatLogic>().state;
-    if (state.skipAfterLayoutLogic) {
-      state.skipAfterLayoutLogic = false;
-      return;
-    }
-    if (state.tryNeedPlayQuestion) {
-      state.questionMediaKey.currentState?.moveByIndex();
-    } else {
-      state.questionMediaKey.currentState?.stopMove();
-    }
-
-    if (state.tryNeedPlayAnswer) {
-      state.answerMediaKey.currentState?.moveByIndex();
-    } else {
-      state.answerMediaKey.currentState?.stopMove();
-    }
-  }
-
   Widget? buildInnerContent(GsCrRepeatLogic logic, BuildContext context, ContentType t, SegmentContent segment) {
     GsCrRepeatState state = logic.state;
     switch (t) {
       case ContentType.questionOrPrevAnswerOrTitleMedia:
-        if (segment.question != "" && segment.mediaDocPath != "" && segment.qMediaSegments.isNotEmpty) {
-          return PlayerBar(state.questionMediaId, 0, [segment.qMediaSegments[segment.segmentIndex]], segment.mediaDocPath, key: state.questionMediaKey);
-        } else if (segment.prevAnswer != "" && segment.mediaDocPath != "") {
-          return PlayerBar(state.questionMediaId, 0, [segment.aMediaSegments[segment.segmentIndex - 1]], segment.mediaDocPath, key: state.questionMediaKey);
-        } else if (segment.title != "" && segment.mediaDocPath != "" && segment.titleMediaSegment != null) {
-          return PlayerBar(state.questionMediaId, 0, [segment.titleMediaSegment!], segment.mediaDocPath, key: state.questionMediaKey);
+        if (segment.mediaDocPath != "" && segment.qMediaSegments.isNotEmpty) {
+          return PlayerBar(state.questionMediaId, 0, [segment.qMediaSegments[segment.segmentIndex]], segment.mediaDocPath, key: state.questionMediaKey, onInited: logic.onMediaInited);
+        } else if (segment.mediaDocPath != "" && segment.aMediaSegments.isNotEmpty && segment.segmentIndex - 1 >= 0) {
+          return PlayerBar(state.questionMediaId, 0, [segment.aMediaSegments[segment.segmentIndex - 1]], segment.mediaDocPath, key: state.questionMediaKey, onInited: logic.onMediaInited);
+        } else if (segment.mediaDocPath != "" && segment.titleMediaSegment != null) {
+          return PlayerBar(state.questionMediaId, 0, [segment.titleMediaSegment!], segment.mediaDocPath, key: state.questionMediaKey, onInited: logic.onMediaInited);
         }
         return null;
 
@@ -110,27 +94,42 @@ class GsCrRepeatPage extends StatelessWidget {
         } else if (segment.title != "") {
           return Text(segment.title);
         } else {
-          return const Text("???");
+          return null;
         }
       case ContentType.answerMedia:
-        if (segment.mediaDocPath != "") {
+        if (segment.mediaDocPath != "" && segment.aMediaSegments.isNotEmpty) {
           return PlayerBar(
             state.answerMediaId,
             segment.segmentIndex,
             segment.aMediaSegments,
             segment.mediaDocPath,
             key: state.answerMediaKey,
+            onInited: logic.onMediaInited,
           );
         }
         return null;
       case ContentType.answerMediaWithPnController:
-        if (segment.mediaDocPath != "") {
+        if (segment.mediaDocPath != "" && segment.aMediaSegments.isNotEmpty) {
+          var left = 0;
+          var right = 0;
+          var curr = 0;
+          List<MediaSegment> segments = [];
+          for (var i = -left; i <= right; i++) {
+            var index = segment.segmentIndex + i;
+            if (index >= 0 && index < segment.aMediaSegments.length) {
+              segments.add(segment.aMediaSegments[index]);
+              if (i == 0) {
+                curr = segments.length - 1;
+              }
+            }
+          }
           return PlayerBar(
             state.answerMediaId,
-            segment.segmentIndex,
-            segment.aMediaSegments,
+            curr,
+            segments,
             segment.mediaDocPath,
             key: state.answerMediaKey,
+            onInited: logic.onMediaInited,
             onPrevious: logic.minusPnOffset,
             onReplay: logic.resetPnOffset,
             onNext: logic.plusPnOffset,
@@ -234,20 +233,20 @@ class GsCrRepeatPage extends StatelessWidget {
   Widget buildMediaController(GsCrRepeatLogic logic, GlobalKey<PlayerBarState> p) {
     return Row(
       children: [
+        IconButton(
+          icon: const Icon(Icons.replay),
+          iconSize: 20.w,
+          onPressed: logic.resetPnOffset,
+        ),
         const Spacer(),
         IconButton(
           icon: const Icon(Icons.skip_previous),
-          iconSize: 30.w,
+          iconSize: 20.w,
           onPressed: logic.minusPnOffset,
         ),
         IconButton(
-          icon: const Icon(Icons.replay),
-          iconSize: 30.w,
-          onPressed: logic.resetPnOffset,
-        ),
-        IconButton(
           icon: const Icon(Icons.skip_next),
-          iconSize: 30.w,
+          iconSize: 20.w,
           onPressed: logic.plusPnOffset,
         ),
       ],

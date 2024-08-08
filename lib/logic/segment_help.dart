@@ -99,8 +99,18 @@ class SegmentHelp {
       var aMediaSegments = mediaDocPathToAnswerMediaSegments[ret.mediaDocPath];
       if (aMediaSegments == null) {
         aMediaSegments = [];
+        var ok = true;
         for (var s in lesson.segment) {
-          aMediaSegments.add(MediaSegment.from(s.aStart, s.aEnd));
+          var start = s.aStart;
+          var end = s.aEnd;
+          if (start == '' || end == '') {
+            ok = false;
+            break;
+          }
+          aMediaSegments.add(MediaSegment.from(start, end));
+        }
+        if (!ok) {
+          aMediaSegments = [];
         }
         mediaDocPathToAnswerMediaSegments[ret.mediaDocPath] = aMediaSegments;
       }

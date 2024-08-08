@@ -69,7 +69,7 @@ class GsCrRepeatLogic extends GetxController {
 
   void tip() {
     state.openTip = true;
-    state.skipAfterLayoutLogic = true;
+    state.skipControlMedia = true;
     update([GsCrRepeatLogic.id]);
   }
 
@@ -215,6 +215,41 @@ class GsCrRepeatLogic extends GetxController {
     }
     update([GsCrRepeatLogic.id]);
     return true;
+  }
+
+  void mediaLoad(List<ContentType> contentTypes) {
+    if (state.skipControlMedia) {
+      state.skipControlMedia = false;
+      return;
+    }
+    if (contentTypes.contains(ContentType.questionOrPrevAnswerOrTitleMedia)) {
+      if (state.questionMediaKey.currentState != null) {
+        state.questionMediaKey.currentState?.mediaLoad();
+      }
+    }
+    if (contentTypes.contains(ContentType.answerMedia) || contentTypes.contains(ContentType.answerMediaWithPnController)) {
+      if (state.answerMediaKey.currentState != null) {
+        state.answerMediaKey.currentState?.mediaLoad();
+      }
+    }
+  }
+
+  Future<void> onMediaInited(String playerId) async {
+    if (playerId == state.questionMediaId) {
+      if (state.tryNeedPlayQuestion) {
+        state.questionMediaKey.currentState?.moveByIndex();
+      } else {
+        state.questionMediaKey.currentState?.stopMove();
+      }
+    }
+
+    if (playerId == state.answerMediaId) {
+      if (state.tryNeedPlayAnswer) {
+        state.answerMediaKey.currentState?.moveByIndex();
+      } else {
+        state.answerMediaKey.currentState?.stopMove();
+      }
+    }
   }
 
   Future<void> resetPnOffset() async {

@@ -1,13 +1,17 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import 'media.dart';
+
+typedef InitCallback = void Function(String playerId);
 
 class PlayerBar extends StatefulWidget {
   final String playerId;
   final int? index;
   final List<MediaSegment> lines;
   final String path;
+  final InitCallback? onInited;
   final VoidCallback? onPrevious;
   final VoidCallback? onReplay;
   final VoidCallback? onNext;
@@ -18,6 +22,7 @@ class PlayerBar extends StatefulWidget {
     this.lines,
     this.path, {
     Key? key,
+    this.onInited,
     this.onPrevious,
     this.onReplay,
     this.onNext,
@@ -29,7 +34,7 @@ class PlayerBar extends StatefulWidget {
 
 const double factor = 0.06;
 
-class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixin {
+class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixin, Media {
   int startTime = 0;
   double _offset = 0.0;
   double _previousOffset = 0.0;
@@ -37,8 +42,6 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
   int mediaStart = 0;
   int mediaEnd = 0;
 
-  // TODO support video
-  AudioPlayer? player;
   late AnimationController _controller;
 
   PlayerBarState();
@@ -46,7 +49,6 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
   @override
   void initState() {
     super.initState();
-    player = AudioPlayer(playerId: widget.playerId);
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
@@ -59,9 +61,18 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
     });
   }
 
-  stopMove() {
+  void mediaLoad() {
+    mediaInit(widget.path, widget.playerId).then((value) {
+      if (widget.onInited != null) {
+        widget.onInited!(widget.playerId);
+      }
+      setState(() {});
+    });
+  }
+
+  stopMove() async {
+    await mediaStop();
     _controller.stop();
-    player!.pause();
     setState(() {
       playing = false;
     });
@@ -75,7 +86,7 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
     }
   }
 
-  move({int? offset, int? inc}) {
+  move({int? offset, int? inc}) async {
     if (widget.path.isEmpty || widget.lines.isEmpty || widget.index == null) {
       return;
     }
@@ -104,22 +115,35 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
 
     _controller.reset();
     _controller.animateTo(100, duration: Duration(milliseconds: duration.toInt())).then((value) => {stopMove()});
-    player!.play(DeviceFileSource(widget.path));
     playing = true;
     startTime = DateTime.now().millisecondsSinceEpoch + currOffset;
-    player!.seek(Duration(milliseconds: widget.lines[0].start.toInt() - currOffset));
+    await mediaPlayAndSeek(Duration(milliseconds: widget.lines[0].start.toInt() - currOffset));
     setState(() {});
   }
 
   @override
   void dispose() {
+    mediaDispose();
     _controller.dispose();
-    player!.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    var mv = mediaView();
+    if (mv == null) {
+      return buildBar(context);
+    } else {
+      return Column(
+        children: [
+          mv,
+          buildBar(context),
+        ],
+      );
+    }
+  }
+
+  Widget buildBar(BuildContext context) {
     return Stack(
       children: [
         GestureDetector(

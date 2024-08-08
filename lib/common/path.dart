@@ -20,10 +20,12 @@ extension StringExtension on String {
   String joinPath(String path) {
     if (path == "") {
       return this;
-    } else if (path.startsWith("/")) {
-      return "$this$path";
-    } else {
+    } else if (path.startsWith("/") && this.endsWith("/")) {
+      return "$this${path.substring(1)}";
+    } else if (!path.startsWith("/") && !this.endsWith("/")) {
       return "$this/$path";
+    } else {
+      return "$this$path";
     }
   }
 }

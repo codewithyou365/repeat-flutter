@@ -38,7 +38,7 @@ class GsCrRepeatState {
   var justViewIndex = 0;
   var step = RepeatStep.recall;
   var openTip = false;
-  var skipAfterLayoutLogic = false;
+  var skipControlMedia = false;
   var pnOffset = 0;
 
   var showContent = [

@@ -47,6 +47,7 @@ dependencies:
   crypto: ^3.0.3
   board_datetime_picker: ^2.0.0
   grouped_list: ^6.0.0
+  video_player: ^2.9.1
 dev_dependencies:
   floor_generator: ^1.4.2
   build_runner: ^2.1.2
