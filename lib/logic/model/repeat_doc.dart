@@ -43,12 +43,25 @@ class Lesson {
   String path;
   String hash;
   String key;
+  String defaultQuestion;
+  String defaultTip;
   String title;
   String titleStart;
   String titleEnd;
   List<Segment> segment;
 
-  Lesson(this.url, this.path, this.hash, this.key, this.title, this.titleStart, this.titleEnd, this.segment);
+  Lesson(
+    this.url,
+    this.path,
+    this.hash,
+    this.key,
+    this.defaultQuestion,
+    this.defaultTip,
+    this.title,
+    this.titleStart,
+    this.titleEnd,
+    this.segment,
+  );
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
     var url = json['url'] ?? "";
@@ -56,15 +69,24 @@ class Lesson {
     if (url != "") {
       path = json['path'];
     }
+    var defaultQuestion = json['defaultQuestion'] ?? '';
+    var defaultTip = json['defaultTip'] ?? '';
     return Lesson(
       url,
       path,
       json['hash'] ?? '',
       json['key'] ?? json['path'],
+      defaultQuestion,
+      defaultTip,
       json['title'] ?? json['key'] ?? json['path'],
       json['titleStart'] ?? "00:00:00,000",
       json['titleEnd'] ?? "00:00:00,000",
-      List<Segment>.from(json['segment'].map((dynamic s) => Segment.fromJson(s, json['segment'].indexOf(s)))),
+      List<Segment>.from(json['segment'].map((dynamic s) => Segment.fromJson(
+            s,
+            json['segment'].indexOf(s),
+            defaultQuestion,
+            defaultTip,
+          ))),
     );
   }
 }
@@ -94,15 +116,20 @@ class Segment {
     this.a,
   );
 
-  factory Segment.fromJson(Map<String, dynamic> json, int index) {
+  factory Segment.fromJson(
+    Map<String, dynamic> json,
+    int index,
+    String defaultQuestion,
+    String defaultTip,
+  ) {
     return Segment(
       json['key'] ?? (index + 1).toString(),
       json['tipStart'] ?? "",
       json['tipEnd'] ?? "",
-      json['tip'] ?? "",
+      json['tip'] ?? defaultTip,
       json['qStart'] ?? "",
       json['qEnd'] ?? "",
-      json['q'] ?? "",
+      json['q'] ?? defaultQuestion,
       json['aStart'] ?? "",
       json['aEnd'] ?? "",
       json['a'],
