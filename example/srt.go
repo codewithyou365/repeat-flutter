@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+const ListenMode = "l"
 const QaMode = "qa"
 const NormalMode = ""
 
@@ -42,6 +43,9 @@ func main() {
 			if line == QaMode {
 				mode = QaMode
 				continue
+			} else if line == ListenMode {
+				mode = ListenMode
+				continue
 			} else {
 				mode = NormalMode
 			}
@@ -50,7 +54,13 @@ func main() {
 			continue
 		} else {
 			if offset%3 == 1 {
-				if mode == QaMode {
+				if mode == ListenMode {
+					se := strings.Split(line, "-->")
+					if curr.QStart == "" {
+						curr.QStart = strings.TrimSpace(se[0])
+					}
+					curr.QEnd = strings.TrimSpace(se[1])
+				} else if mode == QaMode {
 					if modeOffset%2 == 0 {
 						se := strings.Split(line, "-->")
 						if curr.QStart == "" {
@@ -73,7 +83,11 @@ func main() {
 				}
 			}
 			if offset%3 == 2 {
-				if mode == QaMode {
+				if mode == ListenMode {
+					curr.A = line
+					segments = append(segments, curr)
+					curr = &segment{}
+				} else if mode == QaMode {
 					if modeOffset%2 == 0 {
 						if strings.HasSuffix(line, "|") {
 							curr.Q = curr.Q + strings.TrimRight(line, "|")
@@ -134,7 +148,7 @@ func main() {
 				segments[i-1].AEnd = forEnd(pe, middleGap)
 			}
 		}
-		if mode == QaMode {
+		if mode == QaMode || mode == ListenMode {
 			millis := timeRangeToMillis(segments[0].QStart)
 			segments[0].QStart = forStart(millis, 500)
 			millis = timeRangeToMillis(segments[len(segments)-1].QEnd)
