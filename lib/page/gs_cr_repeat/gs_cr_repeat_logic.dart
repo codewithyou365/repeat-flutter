@@ -5,11 +5,13 @@ import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/constant.dart';
 import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'gs_cr_repeat_state.dart';
 
@@ -71,6 +73,10 @@ class GsCrRepeatLogic extends GetxController {
     state.openTip = true;
     state.skipControlMedia = true;
     update([GsCrRepeatLogic.id]);
+  }
+
+  void tipLongPress() {
+    Snackbar.show(I18nKey.labelOnTapError.tr);
   }
 
   void error({autoNext = false}) async {

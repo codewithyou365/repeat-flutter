@@ -164,6 +164,7 @@ class GsCrRepeatPage extends StatelessWidget {
     var rightButtonText = "";
     void Function() leftButtonLogic = () => {};
     void Function() rightButtonLogic = () => {};
+    void Function()? rightButtonLongPressLogic;
     if (state.justView) {
       switch (state.step) {
         case RepeatStep.recall:
@@ -189,13 +190,15 @@ class GsCrRepeatPage extends StatelessWidget {
           leftButtonText = I18nKey.btnKnow.tr;
           leftButtonLogic = logic.show;
           rightButtonText = I18nKey.btnUnknown.tr;
-          rightButtonLogic = logic.error;
+          rightButtonLogic = logic.tipLongPress;
+          rightButtonLongPressLogic = logic.error;
           break;
         case RepeatStep.evaluate:
           leftButtonText = "${I18nKey.btnNext.tr}\n${state.nextKey}";
           leftButtonLogic = () => logic.know(autoNext: true);
           rightButtonText = I18nKey.btnError.tr;
-          rightButtonLogic = logic.error;
+          rightButtonLogic = logic.tipLongPress;
+          rightButtonLongPressLogic = logic.error;
           break;
         case RepeatStep.finish:
           if (logic.state.c.isEmpty) {
@@ -215,7 +218,13 @@ class GsCrRepeatPage extends StatelessWidget {
           children: [
             buildButton(leftButtonText, leftButtonLogic, height, width: 180.w),
             const Spacer(),
-            buildButton(rightButtonText, rightButtonLogic, height, width: 180.w),
+            buildButton(
+              rightButtonText,
+              rightButtonLogic,
+              height,
+              width: 180.w,
+              onLongPress: rightButtonLongPressLogic,
+            ),
           ],
         ),
         if (!state.openTip)
@@ -253,9 +262,16 @@ class GsCrRepeatPage extends StatelessWidget {
     );
   }
 
-  Widget buildButton(String text, VoidCallback onPressed, double height, {double? width}) {
+  Widget buildButton(
+    String text,
+    VoidCallback onTap,
+    double height, {
+    double? width,
+    VoidCallback? onLongPress,
+  }) {
     return InkWell(
-      onTap: onPressed,
+      onTap: onTap,
+      onLongPress: onLongPress,
       child: Container(
         width: width,
         height: height,

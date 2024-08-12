@@ -78,6 +78,7 @@ enum I18nKey {
   labelConfigChange,
   labelResetConfig,
   labelResetConfigDesc,
+  labelOnTapError,
   btnCancel,
   btnOk,
   btnDelete,
