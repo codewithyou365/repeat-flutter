@@ -80,6 +80,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelConfigChange, "配置已改变是否保存？");
     put(I18nKey.labelResetConfig, "重置配置");
     put(I18nKey.labelResetConfigDesc, "执行重置配置后，将使用系统默认的配置？");
+    put(I18nKey.labelOnTapError, "请长按按键进行确认");
     put(I18nKey.btnCancel, "取消");
     put(I18nKey.btnOk, "确定");
     put(I18nKey.btnDelete, "删除");

@@ -80,6 +80,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelConfigChange, "Do you want to save the changes you made?");
     put(I18nKey.labelResetConfig, "Reset Config");
     put(I18nKey.labelResetConfigDesc, "After resetting the configuration, the system’s default configuration will be used.");
+    put(I18nKey.labelOnTapError, "Please press and hold the button to confirm");
     put(I18nKey.btnCancel, "Cancel");
     put(I18nKey.btnOk, "Ok");
     put(I18nKey.btnDelete, "Delete");
