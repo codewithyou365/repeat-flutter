@@ -163,6 +163,10 @@ class GsCrLogic extends GetxController {
   }
 
   tryStart(List<SegmentTodayPrgWithKey> list, {bool grouping = false, Repeat mode = Repeat.normal}) {
+    if (list.isEmpty) {
+      Snackbar.show(I18nKey.labelNoLearningContent.tr);
+      return;
+    }
     if (grouping) {
       list = SegmentTodayPrg.getFirstUnfinishedGroup(list);
     }
