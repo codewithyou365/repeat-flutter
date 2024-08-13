@@ -95,8 +95,8 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
       currOffset = offset;
     } else if (inc != null) {
       currOffset = _offset ~/ factor - inc;
-      if (currOffset > mediaStart) {
-        currOffset = mediaStart;
+      if (currOffset > widget.lines[0].start.toInt()) {
+        currOffset = widget.lines[0].start.toInt();
       } else if (currOffset < mediaEnd) {
         currOffset = mediaEnd + 200;
       }
