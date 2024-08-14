@@ -79,9 +79,9 @@ class GsCrRepeatPage extends StatelessWidget {
       case ContentType.questionOrPrevAnswerOrTitleMedia:
         if (segment.mediaDocPath != "" && segment.qMediaSegments.isNotEmpty) {
           return PlayerBar(state.questionMediaId, 0, [segment.qMediaSegments[segment.segmentIndex]], segment.mediaDocPath, key: state.questionMediaKey, onInited: logic.onMediaInited);
-        } else if (segment.mediaDocPath != "" && segment.aMediaSegments.isNotEmpty && segment.segmentIndex - 1 >= 0) {
+        } else if (segment.question == "" && segment.mediaDocPath != "" && segment.aMediaSegments.isNotEmpty && segment.segmentIndex - 1 >= 0) {
           return PlayerBar(state.questionMediaId, 0, [segment.aMediaSegments[segment.segmentIndex - 1]], segment.mediaDocPath, key: state.questionMediaKey, onInited: logic.onMediaInited);
-        } else if (segment.mediaDocPath != "" && segment.titleMediaSegment != null) {
+        } else if (segment.question == "" && segment.mediaDocPath != "" && segment.titleMediaSegment != null) {
           return PlayerBar(state.questionMediaId, 0, [segment.titleMediaSegment!], segment.mediaDocPath, key: state.questionMediaKey, onInited: logic.onMediaInited);
         }
         return null;
