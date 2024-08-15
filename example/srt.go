@@ -127,7 +127,7 @@ func main() {
 		}
 	}
 	if len(segments) != 0 {
-		{
+		if segments[0].AStart != "" {
 			millis := timeRangeToMillis(segments[0].AStart)
 			segments[0].AStart = forStart(millis, 500)
 			millis = timeRangeToMillis(segments[len(segments)-1].AEnd)
