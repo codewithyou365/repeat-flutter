@@ -4,6 +4,8 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+import 'video_mask.dart';
+
 class MediaCache {
   String path;
   AudioPlayer? audioPlayer;
@@ -85,15 +87,9 @@ mixin Media {
     }
   }
 
-  Widget? mediaView() {
+  Widget? mediaView(double initMaskRatio, SetMaskRatioCallback? setMaskRatio) {
     if (video) {
-      if (videoPlayer!.value.isInitialized) {
-        return AspectRatio(
-          aspectRatio: videoPlayer!.value.aspectRatio,
-          child: VideoPlayer(videoPlayer!),
-        );
-      }
-      return Container();
+      return VideoMask(videoPlayer!, initMaskRatio, setMaskRatio);
     } else {
       return null;
     }

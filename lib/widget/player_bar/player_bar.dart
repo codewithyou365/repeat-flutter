@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'media.dart';
+import 'video_mask.dart';
 
 typedef InitCallback = void Function(String playerId);
 
@@ -15,6 +16,8 @@ class PlayerBar extends StatefulWidget {
   final VoidCallback? onPrevious;
   final VoidCallback? onReplay;
   final VoidCallback? onNext;
+  final double initMaskRatio;
+  final SetMaskRatioCallback? setMaskRatio;
 
   const PlayerBar(
     this.playerId,
@@ -26,6 +29,8 @@ class PlayerBar extends StatefulWidget {
     this.onPrevious,
     this.onReplay,
     this.onNext,
+    this.initMaskRatio = 0,
+    this.setMaskRatio,
   }) : super(key: key);
 
   @override
@@ -130,7 +135,7 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
 
   @override
   Widget build(BuildContext context) {
-    var mv = mediaView();
+    var mv = mediaView(widget.initMaskRatio, widget.setMaskRatio);
     if (mv == null) {
       return buildBar(context);
     } else {

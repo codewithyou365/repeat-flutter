@@ -6,7 +6,16 @@ import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 enum RepeatStep { recall, evaluate, finish }
 
-enum ContentType { questionOrPrevAnswerOrTitleMedia, questionOrPrevAnswerOrTitle, tip, answerMedia, answerMediaWithPnController, answerPnController, answer }
+enum ContentType {
+  questionOrPrevAnswerOrTitleMedia,
+  questionOrPrevAnswerOrTitleMediaPncAndWom,
+  questionOrPrevAnswerOrTitle,
+  tip,
+  answerMedia,
+  answerMediaPnc,
+  answerPnController,
+  answer,
+}
 
 class ContentTypeWithTip {
   ContentType contentType;
@@ -49,9 +58,9 @@ class GsCrRepeatState {
         ContentTypeWithTip(ContentType.tip, true),
       ],
       [
-        ContentTypeWithTip(ContentType.questionOrPrevAnswerOrTitleMedia, false),
+        ContentTypeWithTip(ContentType.questionOrPrevAnswerOrTitleMediaPncAndWom, false),
         ContentTypeWithTip(ContentType.questionOrPrevAnswerOrTitle, false),
-        ContentTypeWithTip(ContentType.answerMediaWithPnController, false),
+        ContentTypeWithTip(ContentType.answerMediaPnc, false),
         ContentTypeWithTip(ContentType.answer, false),
         ContentTypeWithTip(ContentType.tip, true),
       ],

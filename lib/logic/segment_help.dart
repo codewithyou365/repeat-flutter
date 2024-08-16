@@ -7,6 +7,8 @@ import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 class SegmentHelp {
   static Map<String, RepeatDoc> indexDocPathToQa = {};
 
+  static Map<String, double?> mediaDocPathToVideoMaskRatio = {};
+
   static Map<String, MediaSegment> mediaDocPathToTitleMediaSegment = {};
   static Map<String, List<MediaSegment>> mediaDocPathToQuestionMediaSegments = {};
   static Map<String, List<MediaSegment>> mediaDocPathToAnswerMediaSegments = {};
@@ -15,9 +17,22 @@ class SegmentHelp {
 
   static clear() {
     indexDocPathToQa = {};
+    mediaDocPathToVideoMaskRatio = {};
     mediaDocPathToAnswerMediaSegments = {};
     mediaDocPathToQuestionMediaSegments = {};
     scheduleKeyToLearnSegment = {};
+  }
+
+  static double getVideoMaskRatio(String path) {
+    var ret = mediaDocPathToVideoMaskRatio[path];
+    if (ret != null && ret > 0) {
+      return ret;
+    }
+    return 20;
+  }
+
+  static void setVideoMaskRatio(String path, double ratio) {
+    mediaDocPathToVideoMaskRatio[path] = ratio;
   }
 
   static Future<SegmentContent?> from(int segmentKeyId, {int offset = 0}) async {
@@ -65,6 +80,17 @@ class SegmentHelp {
 
     // full mediaSegments
     if (ret.mediaDocPath != "") {
+      // for mask ratio
+      var ratio = mediaDocPathToVideoMaskRatio[ret.mediaDocPath];
+      if (ratio == null) {
+        var va = await Db().db.videoAttributeDao.one(ret.mediaDocPath);
+        if (va != null) {
+          mediaDocPathToVideoMaskRatio[ret.mediaDocPath] = va.maskRatio;
+        } else {
+          mediaDocPathToVideoMaskRatio[ret.mediaDocPath] = 20;
+        }
+      }
+
       var titleMediaSegment = mediaDocPathToTitleMediaSegment[ret.mediaDocPath];
       if (titleMediaSegment == null) {
         titleMediaSegment = MediaSegment.from(lesson.titleStart, lesson.titleEnd);
