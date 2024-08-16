@@ -78,14 +78,82 @@ class GsCrRepeatPage extends StatelessWidget {
     switch (t) {
       case ContentType.questionOrPrevAnswerOrTitleMedia:
         if (segment.mediaDocPath != "" && segment.qMediaSegments.isNotEmpty) {
-          return PlayerBar(state.questionMediaId, 0, [segment.qMediaSegments[segment.segmentIndex]], segment.mediaDocPath, key: state.questionMediaKey, onInited: logic.onMediaInited);
+          return PlayerBar(
+            state.questionMediaId,
+            0,
+            [segment.qMediaSegments[segment.segmentIndex]],
+            segment.mediaDocPath,
+            key: state.questionMediaKey,
+            onInited: logic.onMediaInited,
+            initMaskRatio: logic.getMaskRatio(),
+            setMaskRatio: logic.setMaskRatio,
+          );
         } else if (segment.question == "" && segment.mediaDocPath != "" && segment.aMediaSegments.isNotEmpty && segment.segmentIndex - 1 >= 0) {
-          return PlayerBar(state.questionMediaId, 0, [segment.aMediaSegments[segment.segmentIndex - 1]], segment.mediaDocPath, key: state.questionMediaKey, onInited: logic.onMediaInited);
+          return PlayerBar(
+            state.questionMediaId,
+            0,
+            [segment.aMediaSegments[segment.segmentIndex - 1]],
+            segment.mediaDocPath,
+            key: state.questionMediaKey,
+            onInited: logic.onMediaInited,
+            initMaskRatio: logic.getMaskRatio(),
+            setMaskRatio: logic.setMaskRatio,
+          );
         } else if (segment.question == "" && segment.mediaDocPath != "" && segment.titleMediaSegment != null) {
-          return PlayerBar(state.questionMediaId, 0, [segment.titleMediaSegment!], segment.mediaDocPath, key: state.questionMediaKey, onInited: logic.onMediaInited);
+          return PlayerBar(
+            state.questionMediaId,
+            0,
+            [segment.titleMediaSegment!],
+            segment.mediaDocPath,
+            key: state.questionMediaKey,
+            onInited: logic.onMediaInited,
+            initMaskRatio: logic.getMaskRatio(),
+            setMaskRatio: logic.setMaskRatio,
+          );
         }
         return null;
-
+      case ContentType.questionOrPrevAnswerOrTitleMediaPncAndWom:
+        if (segment.mediaDocPath != "" && segment.qMediaSegments.isNotEmpty) {
+          return PlayerBar(
+            state.questionMediaId,
+            0,
+            [segment.qMediaSegments[segment.segmentIndex]],
+            segment.mediaDocPath,
+            key: state.questionMediaKey,
+            initMaskRatio: logic.getMaskRatio(),
+            onInited: logic.onMediaInited,
+            onPrevious: logic.minusPnOffset,
+            onReplay: logic.resetPnOffset,
+            onNext: logic.plusPnOffset,
+          );
+        } else if (segment.question == "" && segment.mediaDocPath != "" && segment.aMediaSegments.isNotEmpty && segment.segmentIndex - 1 >= 0) {
+          return PlayerBar(
+            state.questionMediaId,
+            0,
+            [segment.aMediaSegments[segment.segmentIndex - 1]],
+            segment.mediaDocPath,
+            key: state.questionMediaKey,
+            initMaskRatio: logic.getMaskRatio(),
+            onInited: logic.onMediaInited,
+            onPrevious: logic.minusPnOffset,
+            onReplay: logic.resetPnOffset,
+            onNext: logic.plusPnOffset,
+          );
+        } else if (segment.question == "" && segment.mediaDocPath != "" && segment.titleMediaSegment != null) {
+          return PlayerBar(
+            state.questionMediaId,
+            0,
+            [segment.titleMediaSegment!],
+            segment.mediaDocPath,
+            key: state.questionMediaKey,
+            initMaskRatio: logic.getMaskRatio(),
+            onInited: logic.onMediaInited,
+            onPrevious: logic.minusPnOffset,
+            onReplay: logic.resetPnOffset,
+            onNext: logic.plusPnOffset,
+          );
+        }
+        return null;
       case ContentType.questionOrPrevAnswerOrTitle:
         if (segment.question != "") {
           return Text(segment.question);
@@ -108,7 +176,7 @@ class GsCrRepeatPage extends StatelessWidget {
           );
         }
         return null;
-      case ContentType.answerMediaWithPnController:
+      case ContentType.answerMediaPnc:
         if (segment.mediaDocPath != "" && segment.aMediaSegments.isNotEmpty) {
           var left = 0;
           var right = 0;

@@ -76,6 +76,8 @@ class _$AppDatabase extends AppDatabase {
 
   DocDao? _docDaoInstance;
 
+  VideoAttributeDao? _videoAttributeDaoInstance;
+
   ClassroomDao? _classroomDaoInstance;
 
   ContentIndexDao? _contentIndexDaoInstance;
@@ -90,7 +92,7 @@ class _$AppDatabase extends AppDatabase {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 2,
+      version: 3,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -109,6 +111,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE TABLE IF NOT EXISTS `Kv` (`k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`k`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Doc` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `url` TEXT NOT NULL, `path` TEXT NOT NULL, `count` INTEGER NOT NULL, `total` INTEGER NOT NULL, `msg` TEXT NOT NULL, `hash` TEXT NOT NULL)');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `VideoAttribute` (`path` TEXT NOT NULL, `maskRatio` REAL NOT NULL, PRIMARY KEY (`path`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Classroom` (`name` TEXT NOT NULL, `arg` TEXT NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`name`))');
         await database.execute(
@@ -160,6 +164,12 @@ class _$AppDatabase extends AppDatabase {
   @override
   DocDao get docDao {
     return _docDaoInstance ??= _$DocDao(database, changeListener);
+  }
+
+  @override
+  VideoAttributeDao get videoAttributeDao {
+    return _videoAttributeDaoInstance ??=
+        _$VideoAttributeDao(database, changeListener);
   }
 
   @override
@@ -343,6 +353,42 @@ class _$DocDao extends DocDao {
         return transactionDatabase.docDao.insert(url);
       });
     }
+  }
+}
+
+class _$VideoAttributeDao extends VideoAttributeDao {
+  _$VideoAttributeDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _videoAttributeInsertionAdapter = InsertionAdapter(
+            database,
+            'VideoAttribute',
+            (VideoAttribute item) => <String, Object?>{
+                  'path': item.path,
+                  'maskRatio': item.maskRatio
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<VideoAttribute> _videoAttributeInsertionAdapter;
+
+  @override
+  Future<VideoAttribute?> one(String path) async {
+    return _queryAdapter.query('SELECT * FROM VideoAttribute WHERE path = ?1',
+        mapper: (Map<String, Object?> row) =>
+            VideoAttribute(row['path'] as String, row['maskRatio'] as double),
+        arguments: [path]);
+  }
+
+  @override
+  Future<void> insertVideoAttribute(VideoAttribute entity) async {
+    await _videoAttributeInsertionAdapter.insert(
+        entity, OnConflictStrategy.replace);
   }
 }
 
@@ -770,7 +816,7 @@ class _$ScheduleDao extends ScheduleDao {
   Future<List<SegmentOverallPrgWithKey>> getAllSegmentOverallPrg(
       String crn) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentOverallPrg.*,SegmentKey.crn,SegmentKey.k FROM SegmentOverallPrg JOIN SegmentKey on SegmentKey.id=SegmentOverallPrg.segmentKeyId AND SegmentKey.crn=?1 ORDER BY next desc, segmentKeyId asc',
+        'SELECT SegmentOverallPrg.*,SegmentKey.crn,SegmentKey.k FROM SegmentOverallPrg JOIN SegmentKey on SegmentKey.id=SegmentOverallPrg.segmentKeyId AND SegmentKey.crn=?1 ORDER BY SegmentOverallPrg.segmentKeyId asc',
         mapper: (Map<String, Object?> row) => SegmentOverallPrgWithKey(row['segmentKeyId'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, row['crn'] as String, row['k'] as String),
         arguments: [crn]);
   }

@@ -5,6 +5,7 @@ import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/db/entity/video_attribute.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/constant.dart';
 import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
@@ -228,12 +229,12 @@ class GsCrRepeatLogic extends GetxController {
       state.skipControlMedia = false;
       return;
     }
-    if (contentTypes.contains(ContentType.questionOrPrevAnswerOrTitleMedia)) {
+    if (contentTypes.contains(ContentType.questionOrPrevAnswerOrTitleMedia) || contentTypes.contains(ContentType.questionOrPrevAnswerOrTitleMediaPncAndWom)) {
       if (state.questionMediaKey.currentState != null) {
         state.questionMediaKey.currentState?.mediaLoad();
       }
     }
-    if (contentTypes.contains(ContentType.answerMedia) || contentTypes.contains(ContentType.answerMediaWithPnController)) {
+    if (contentTypes.contains(ContentType.answerMedia) || contentTypes.contains(ContentType.answerMediaPnc)) {
       if (state.answerMediaKey.currentState != null) {
         state.answerMediaKey.currentState?.mediaLoad();
       }
@@ -339,5 +340,21 @@ class GsCrRepeatLogic extends GetxController {
     state.tryNeedPlayAnswer = false;
     state.fakeKnow = 0;
     Nav.gsCrRepeatFinish.push();
+  }
+
+  void setMaskRatio(double ratio) {
+    SegmentHelp.setVideoMaskRatio(state.currSegment.mediaDocPath, ratio);
+    var va = VideoAttribute(state.currSegment.mediaDocPath, ratio);
+    Db().db.videoAttributeDao.insertVideoAttribute(va);
+  }
+
+  double getMaskRatio() {
+    if (state.justView) {
+      return 0;
+    }
+    if (state.step != RepeatStep.recall) {
+      return 0;
+    }
+    return SegmentHelp.getVideoMaskRatio(state.currSegment.mediaDocPath);
   }
 }
