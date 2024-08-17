@@ -23,7 +23,7 @@ func main() {
 	fs := http.FileServer(http.Dir("./"))
 	http.Handle("/files/", http.StripPrefix("/files", fs))
 
-	log.Print("Server started on localhost:18139, use /upload for uploading files and /files/{fileName} for downloading")
+	log.Print("Server started on :18139 , use http://localhost:18139/upload for uploading files and http://localhost:18139/files for downloading")
 	log.Fatal(http.ListenAndServe(":18139", nil))
 }
 
