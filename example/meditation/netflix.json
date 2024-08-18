@@ -1,0 +1,1842 @@
+{
+  "rootPath": "meditation",
+  "key": "meditation",
+  "lesson": [
+    {
+      "key": "np1",
+      "url": "np1.mp4",
+      "path": "np1.mp4",
+      "hash": "0ec33d4278bdc5a90ab96a24f17a08f41dc2dfd2",
+      "defaultQuestion": "",
+      "defaultTip": "",
+      "title": "How to get started",
+      "segment": [
+        {
+          "qStart": "00:00:07,166",
+          "qEnd": "00:00:09,733",
+          "a": "our lives are filled with distraction"
+        },
+        {
+          "qStart": "00:00:09,733",
+          "qEnd": "00:00:11,633",
+          "a": "filled with stimulation"
+        },
+        {
+          "qStart": "00:00:13,900",
+          "qEnd": "00:00:18,433",
+          "a": "but imagine if there was a way to slow things down"
+        },
+        {
+          "qStart": "00:00:19,166",
+          "qEnd": "00:00:22,400",
+          "a": "for the mind to unwind and for our body"
+        },
+        {
+          "qStart": "00:00:22,466",
+          "qEnd": "00:00:24,766",
+          "a": "to let go that stress"
+        },
+        {
+          "qStart": "00:00:29,266",
+          "qEnd": "00:00:31,666",
+          "a": "when was the last time that you stopped"
+        },
+        {
+          "qStart": "00:00:31,766",
+          "qEnd": "00:00:32,933",
+          "a": "that you were still"
+        },
+        {
+          "qStart": "00:00:33,033",
+          "qEnd": "00:00:34,333",
+          "a": "that you put down your phone"
+        },
+        {
+          "qStart": "00:00:34,333",
+          "qEnd": "00:00:37,433",
+          "a": "that you got rid of all the distractions around you"
+        },
+        {
+          "qStart": "00:00:40,966",
+          "qEnd": "00:00:44,583",
+          "a": "when was the last time that you did nothing"
+        },
+        {
+          "qStart": "00:00:44,683",
+          "qEnd": "00:00:46,966",
+          "a": "and by nothing I really mean"
+        },
+        {
+          "qStart": "00:00:47,066",
+          "qEnd": "00:00:48,366",
+          "a": "nothing"
+        },
+        {
+          "qStart": "00:00:55,966",
+          "qEnd": "00:00:57,133",
+          "a": "hi"
+        },
+        {
+          "qStart": "00:00:57,133",
+          "qEnd": "00:01:00,966",
+          "a": "I'm Andy and welcome to Headspace Guide to meditation"
+        },
+        {
+          "qStart": "00:01:02,300",
+          "qEnd": "00:01:04,400",
+          "a": "I'm going to be your guide as we"
+        },
+        {
+          "qStart": "00:01:04,400",
+          "qEnd": "00:01:06,466",
+          "a": "explore the mind and discover"
+        },
+        {
+          "qStart": "00:01:06,566",
+          "qEnd": "00:01:09,833",
+          "a": "how meditation can benefit us in our life"
+        },
+        {
+          "qStart": "00:01:10,066",
+          "qEnd": "00:01:11,566",
+          "a": "whether you've done"
+        },
+        {
+          "qStart": "00:01:11,666",
+          "qEnd": "00:01:14,300",
+          "a": "some meditation before or completely new to this"
+        },
+        {
+          "qStart": "00:01:14,400",
+          "qEnd": "00:01:17,333",
+          "a": "I'm going to lead you through every step of the way"
+        },
+        {
+          "qStart": "00:01:17,433",
+          "qEnd": "00:01:19,266",
+          "a": "throughout this series"
+        },
+        {
+          "qStart": "00:01:19,300",
+          "qEnd": "00:01:22,083",
+          "a": "I'll introduce you to a variety of techniques"
+        },
+        {
+          "qStart": "00:01:22,183",
+          "qEnd": "00:01:23,866",
+          "a": "and explain how each one"
+        },
+        {
+          "qStart": "00:01:23,966",
+          "qEnd": "00:01:27,166",
+          "a": "can be used for specific situations in your life"
+        },
+        {
+          "qStart": "00:01:27,500",
+          "qEnd": "00:01:29,333",
+          "a": "at the end of each episode"
+        },
+        {
+          "qStart": "00:01:29,333",
+          "qEnd": "00:01:31,500",
+          "a": "you'll have the chance to practice that technique"
+        },
+        {
+          "qStart": "00:01:31,500",
+          "qEnd": "00:01:33,833",
+          "a": "as I guide you through a meditation"
+        },
+        {
+          "qStart": "00:01:33,933",
+          "qEnd": "00:01:36,800",
+          "a": "I hope to show you how meditation can help you"
+        },
+        {
+          "qStart": "00:01:36,800",
+          "qEnd": "00:01:38,200",
+          "a": "to be more present"
+        },
+        {
+          "qStart": "00:01:38,266",
+          "qEnd": "00:01:39,850",
+          "a": "and less distracted"
+        },
+        {
+          "qStart": "00:01:39,950",
+          "qEnd": "00:01:42,683",
+          "a": "how we can bring a greater sense of enjoyment to life"
+        },
+        {
+          "qStart": "00:01:42,783",
+          "qEnd": "00:01:44,533",
+          "a": "whilst helping us to connect"
+        },
+        {
+          "qStart": "00:01:44,600",
+          "qEnd": "00:01:46,900",
+          "a": "with those that we care about most"
+        },
+        {
+          "qStart": "00:01:51,900",
+          "qEnd": "00:01:55,900",
+          "a": "so you may be asking well what is meditation"
+        },
+        {
+          "qStart": "00:01:56,266",
+          "qEnd": "00:01:57,333",
+          "a": "well"
+        },
+        {
+          "qStart": "00:01:57,333",
+          "qEnd": "00:01:59,716",
+          "a": "it's actually a really simple thing"
+        },
+        {
+          "qStart": "00:01:59,817",
+          "qEnd": "00:02:03,533",
+          "a": "meditation is essentially a skill a way of"
+        },
+        {
+          "qStart": "00:02:03,533",
+          "qEnd": "00:02:06,866",
+          "a": "training our mind so that we can have a calmer"
+        },
+        {
+          "qStart": "00:02:06,866",
+          "qEnd": "00:02:09,466",
+          "a": "clearer mind and a greater sense of ease"
+        },
+        {
+          "qStart": "00:02:09,533",
+          "qEnd": "00:02:12,866",
+          "a": "in our mind our body and in our life"
+        },
+        {
+          "qStart": "00:02:14,300",
+          "qEnd": "00:02:18,600",
+          "a": "you can meditate alone or you can meditate with others"
+        },
+        {
+          "qStart": "00:02:18,766",
+          "qEnd": "00:02:19,933",
+          "a": "so essentially"
+        },
+        {
+          "qStart": "00:02:19,933",
+          "qEnd": "00:02:22,700",
+          "a": "we're just removing ourselves for a few minutes"
+        },
+        {
+          "qStart": "00:02:22,733",
+          "qEnd": "00:02:23,966",
+          "a": "perhaps a bit longer"
+        },
+        {
+          "qStart": "00:02:24,000",
+          "qEnd": "00:02:27,700",
+          "a": "on a regular basis when we pause and train the mind"
+        },
+        {
+          "qStart": "00:02:27,800",
+          "qEnd": "00:02:29,416",
+          "a": "to be more present"
+        },
+        {
+          "qStart": "00:02:29,516",
+          "qEnd": "00:02:31,200",
+          "a": "less distracted"
+        },
+        {
+          "qStart": "00:02:33,800",
+          "qEnd": "00:02:35,966",
+          "a": "so I was about 10 years old"
+        },
+        {
+          "qStart": "00:02:35,966",
+          "qEnd": "00:02:38,400",
+          "a": "when I was first introduced to meditation"
+        },
+        {
+          "qStart": "00:02:38,500",
+          "qEnd": "00:02:40,200",
+          "a": "but it wasn't really until my"
+        },
+        {
+          "qStart": "00:02:40,300",
+          "qEnd": "00:02:42,700",
+          "a": "late teens maybe even my early 20s"
+        },
+        {
+          "qStart": "00:02:42,733",
+          "qEnd": "00:02:45,400",
+          "a": "they had a bigger impact on my life"
+        },
+        {
+          "qStart": "00:02:45,666",
+          "qEnd": "00:02:48,300",
+          "a": "as they got a little bit older I experienced some"
+        },
+        {
+          "qStart": "00:02:48,400",
+          "qEnd": "00:02:49,399",
+          "a": "loss in my life"
+        },
+        {
+          "qStart": "00:02:49,500",
+          "qEnd": "00:02:51,266",
+          "a": "people really close to me"
+        },
+        {
+          "qStart": "00:02:51,666",
+          "qEnd": "00:02:53,949",
+          "a": "and I didn't know how to deal with that"
+        },
+        {
+          "qStart": "00:02:54,050",
+          "qEnd": "00:02:56,933",
+          "a": "so I found myself overwhelmed by emotion"
+        },
+        {
+          "qStart": "00:02:56,933",
+          "qEnd": "00:03:00,566",
+          "a": "I found that my mind was often very busy"
+        },
+        {
+          "qStart": "00:03:01,700",
+          "qEnd": "00:03:02,966",
+          "a": "and I thought"
+        },
+        {
+          "qStart": "00:03:02,966",
+          "qEnd": "00:03:06,100",
+          "a": "at some level that I could think my way out of it"
+        },
+        {
+          "qStart": "00:03:07,033",
+          "qEnd": "00:03:09,200",
+          "a": "as it turned out I couldn't"
+        },
+        {
+          "qStart": "00:03:09,200",
+          "qEnd": "00:03:11,566",
+          "a": "I needed something more radical"
+        },
+        {
+          "qStart": "00:03:12,100",
+          "qEnd": "00:03:14,550",
+          "a": "so I decided to quit my degree"
+        },
+        {
+          "qStart": "00:03:14,650",
+          "qEnd": "00:03:17,200",
+          "a": "and become a Buddhist monk instead"
+        },
+        {
+          "qStart": "00:03:18,266",
+          "qEnd": "00:03:20,516",
+          "a": "I went off to the Himalayas and"
+        },
+        {
+          "qStart": "00:03:20,617",
+          "qEnd": "00:03:22,466",
+          "a": "I began a journey in many years where I"
+        },
+        {
+          "qStart": "00:03:22,466",
+          "qEnd": "00:03:23,166",
+          "a": "lived in a number"
+        },
+        {
+          "qStart": "00:03:23,166",
+          "qEnd": "00:03:25,416",
+          "a": "of different monasteries in different countries"
+        },
+        {
+          "qStart": "00:03:25,516",
+          "qEnd": "00:03:28,900",
+          "a": "and during that time I had a good fortune to"
+        },
+        {
+          "qStart": "00:03:29,000",
+          "qEnd": "00:03:31,966",
+          "a": "learn from some of the greatest masters in many"
+        },
+        {
+          "qStart": "00:03:31,966",
+          "qEnd": "00:03:33,800",
+          "a": "different traditions"
+        },
+        {
+          "qStart": "00:03:34,166",
+          "qEnd": "00:03:35,733",
+          "a": "and my hope is"
+        },
+        {
+          "qStart": "00:03:35,733",
+          "qEnd": "00:03:37,133",
+          "a": "that I can share their wisdom"
+        },
+        {
+          "qStart": "00:03:37,133",
+          "qEnd": "00:03:38,333",
+          "a": "and their insight with you"
+        },
+        {
+          "qStart": "00:03:38,433",
+          "qEnd": "00:03:40,700",
+          "a": "so that you don't have to go to the Himalayas"
+        },
+        {
+          "qStart": "00:03:40,766",
+          "qEnd": "00:03:42,966",
+          "a": "you don't have to become a monk or a none"
+        },
+        {
+          "qStart": "00:03:43,067",
+          "qEnd": "00:03:45,700",
+          "a": "and you don't have to make all the mistakes that I made"
+        },
+        {
+          "qStart": "00:03:45,700",
+          "qEnd": "00:03:47,233",
+          "a": "on my journey"
+        },
+        {
+          "qStart": "00:03:49,033",
+          "qEnd": "00:03:51,533",
+          "a": "when I started practicing at the monastery"
+        },
+        {
+          "qStart": "00:03:51,533",
+          "qEnd": "00:03:52,616",
+          "a": "I just assumed"
+        },
+        {
+          "qStart": "00:03:52,717",
+          "qEnd": "00:03:55,400",
+          "a": "the meditation meant to control the mind"
+        },
+        {
+          "qStart": "00:03:55,500",
+          "qEnd": "00:03:58,216",
+          "a": "to change the mind to be able to get rid"
+        },
+        {
+          "qStart": "00:03:58,317",
+          "qEnd": "00:04:01,033",
+          "a": "of thoughts and distractions"
+        },
+        {
+          "qStart": "00:04:01,133",
+          "qEnd": "00:04:03,783",
+          "a": "but my teacher explained it in a different way"
+        },
+        {
+          "qStart": "00:04:03,883",
+          "qEnd": "00:04:04,799",
+          "a": "he said look"
+        },
+        {
+          "qStart": "00:04:04,900",
+          "qEnd": "00:04:07,766",
+          "a": "imagine that you are sitting on the side of the road"
+        },
+        {
+          "qStart": "00:04:08,866",
+          "qEnd": "00:04:11,600",
+          "a": "he said now all you have to do is to just sit there"
+        },
+        {
+          "qStart": "00:04:11,600",
+          "qEnd": "00:04:12,933",
+          "a": "and watch the cars"
+        },
+        {
+          "qStart": "00:04:13,000",
+          "qEnd": "00:04:15,000",
+          "a": "the cars of your thoughts"
+        },
+        {
+          "qStart": "00:04:17,233",
+          "qEnd": "00:04:19,000",
+          "a": "sounds easy right"
+        },
+        {
+          "qStart": "00:04:19,100",
+          "qEnd": "00:04:21,100",
+          "a": "but what usually happens"
+        },
+        {
+          "qStart": "00:04:21,100",
+          "qEnd": "00:04:22,200",
+          "a": "is that we feel"
+        },
+        {
+          "qStart": "00:04:22,200",
+          "qEnd": "00:04:25,433",
+          "a": "a bit unsettled by the movement of the traffic"
+        },
+        {
+          "qStart": "00:04:27,033",
+          "qEnd": "00:04:28,200",
+          "a": "so we run out"
+        },
+        {
+          "qStart": "00:04:28,200",
+          "qEnd": "00:04:30,516",
+          "a": "into the road and we try and stop the cars"
+        },
+        {
+          "qStart": "00:04:30,617",
+          "qEnd": "00:04:34,100",
+          "a": "or maybe we even find ourselves chasing after a few"
+        },
+        {
+          "qStart": "00:04:34,566",
+          "qEnd": "00:04:38,066",
+          "a": "forgetting that the idea was to just sit there"
+        },
+        {
+          "qStart": "00:04:38,966",
+          "qEnd": "00:04:40,000",
+          "a": "now obviously"
+        },
+        {
+          "qStart": "00:04:40,000",
+          "qEnd": "00:04:42,766",
+          "a": "all of this running around only adds to the feeling"
+        },
+        {
+          "qStart": "00:04:42,766",
+          "qEnd": "00:04:44,533",
+          "a": "of restlessness in our mind"
+        },
+        {
+          "qStart": "00:04:44,633",
+          "qEnd": "00:04:48,533",
+          "a": "so training the mind is about changing our relationship"
+        },
+        {
+          "qStart": "00:04:48,566",
+          "qEnd": "00:04:51,400",
+          "a": "with those passing thoughts and feelings"
+        },
+        {
+          "qStart": "00:04:52,266",
+          "qEnd": "00:04:54,400",
+          "a": "learning how to view them with"
+        },
+        {
+          "qStart": "00:04:54,400",
+          "qEnd": "00:04:55,666",
+          "a": "a little more perspective"
+        },
+        {
+          "qStart": "00:04:55,666",
+          "qEnd": "00:04:59,666",
+          "a": "and when we do this we naturally find a place of calm"
+        },
+        {
+          "qStart": "00:05:02,233",
+          "qEnd": "00:05:04,300",
+          "a": "will we sometimes forget"
+        },
+        {
+          "qStart": "00:05:04,300",
+          "qEnd": "00:05:06,983",
+          "a": "the idea of the exercise and become distracted"
+        },
+        {
+          "qStart": "00:05:07,083",
+          "qEnd": "00:05:08,300",
+          "a": "of course we will"
+        },
+        {
+          "qStart": "00:05:08,400",
+          "qEnd": "00:05:10,233",
+          "a": "but as soon as we remember"
+        },
+        {
+          "qStart": "00:05:10,333",
+          "qEnd": "00:05:11,699",
+          "a": "here we are"
+        },
+        {
+          "qStart": "00:05:11,800",
+          "qEnd": "00:05:13,916",
+          "a": "back on the side of the road again"
+        },
+        {
+          "qStart": "00:05:14,017",
+          "qEnd": "00:05:16,366",
+          "a": "just watching the traffic go by"
+        },
+        {
+          "qStart": "00:05:16,467",
+          "qEnd": "00:05:20,833",
+          "a": "perfectly at ease in both body and mind"
+        },
+        {
+          "qStart": "00:05:27,266",
+          "qEnd": "00:05:29,666",
+          "a": "one of the fundamental techniques for"
+        },
+        {
+          "qStart": "00:05:29,666",
+          "qEnd": "00:05:31,500",
+          "a": "cultivating that place of calm"
+        },
+        {
+          "qStart": "00:05:31,500",
+          "qEnd": "00:05:33,600",
+          "a": "is called focused attention"
+        },
+        {
+          "qStart": "00:05:34,666",
+          "qEnd": "00:05:36,200",
+          "a": "when we're training the mind"
+        },
+        {
+          "qStart": "00:05:36,200",
+          "qEnd": "00:05:38,700",
+          "a": "having something to focus our attention on is really"
+        },
+        {
+          "qStart": "00:05:38,700",
+          "qEnd": "00:05:40,666",
+          "a": "important it could be"
+        },
+        {
+          "qStart": "00:05:40,767",
+          "qEnd": "00:05:42,166",
+          "a": "a visualization"
+        },
+        {
+          "qStart": "00:05:42,267",
+          "qEnd": "00:05:44,766",
+          "a": "a question a word a phrase"
+        },
+        {
+          "qStart": "00:05:44,867",
+          "qEnd": "00:05:47,300",
+          "a": "or maybe even something external"
+        },
+        {
+          "qStart": "00:05:47,900",
+          "qEnd": "00:05:51,833",
+          "a": "the most common thing to focus on is the breath"
+        },
+        {
+          "qStart": "00:05:53,366",
+          "qEnd": "00:05:56,100",
+          "a": "having that place of focused attention"
+        },
+        {
+          "qStart": "00:05:56,200",
+          "qEnd": "00:05:57,650",
+          "a": "that gives us an anchor"
+        },
+        {
+          "qStart": "00:05:57,750",
+          "qEnd": "00:06:00,366",
+          "a": "is something to come back to when we suddenly realize"
+        },
+        {
+          "qStart": "00:06:00,366",
+          "qEnd": "00:06:01,966",
+          "a": "that the minds wandered off"
+        },
+        {
+          "qStart": "00:06:02,067",
+          "qEnd": "00:06:06,166",
+          "a": "which of course it inevitably will do at times"
+        },
+        {
+          "qStart": "00:06:06,300",
+          "qEnd": "00:06:09,133",
+          "a": "and when we focus on an object like Brat"
+        },
+        {
+          "qStart": "00:06:09,200",
+          "qEnd": "00:06:11,300",
+          "a": "it's not that we're trying to escape thoughts"
+        },
+        {
+          "qStart": "00:06:11,300",
+          "qEnd": "00:06:13,399",
+          "a": "or shut out the world around us"
+        },
+        {
+          "qStart": "00:06:13,500",
+          "qEnd": "00:06:15,366",
+          "a": "we're learning to recognize"
+        },
+        {
+          "qStart": "00:06:15,466",
+          "qEnd": "00:06:17,533",
+          "a": "when we've got caught up in that thinking"
+        },
+        {
+          "qStart": "00:06:17,566",
+          "qEnd": "00:06:19,133",
+          "a": "or in any type of distraction"
+        },
+        {
+          "qStart": "00:06:19,200",
+          "qEnd": "00:06:21,083",
+          "a": "and to gently step out of it"
+        },
+        {
+          "qStart": "00:06:21,183",
+          "qEnd": "00:06:22,416",
+          "a": "to let it go"
+        },
+        {
+          "qStart": "00:06:22,517",
+          "qEnd": "00:06:26,866",
+          "a": "and to return to that place of calm focused attention"
+        },
+        {
+          "qStart": "00:06:31,066",
+          "qEnd": "00:06:34,666",
+          "a": "techniques like focused attention are not something new"
+        },
+        {
+          "qStart": "00:06:34,767",
+          "qEnd": "00:06:37,166",
+          "a": "they're part of a Buddhist tradition that dates back"
+        },
+        {
+          "qStart": "00:06:37,166",
+          "qEnd": "00:06:39,100",
+          "a": "thousands of years"
+        },
+        {
+          "qStart": "00:06:39,500",
+          "qEnd": "00:06:41,366",
+          "a": "and within those practices"
+        },
+        {
+          "qStart": "00:06:41,366",
+          "qEnd": "00:06:43,000",
+          "a": "there's a tradition of passing down"
+        },
+        {
+          "qStart": "00:06:43,000",
+          "qEnd": "00:06:44,700",
+          "a": "learning from teacher to student"
+        },
+        {
+          "qStart": "00:06:44,700",
+          "qEnd": "00:06:45,983",
+          "a": "teacher to student"
+        },
+        {
+          "qStart": "00:06:46,083",
+          "qEnd": "00:06:47,866",
+          "a": "and it's something that was very fortunate"
+        },
+        {
+          "qStart": "00:06:47,866",
+          "qEnd": "00:06:48,883",
+          "a": "to experience"
+        },
+        {
+          "qStart": "00:06:48,983",
+          "qEnd": "00:06:50,766",
+          "a": "and now I feel really privileged"
+        },
+        {
+          "qStart": "00:06:50,766",
+          "qEnd": "00:06:53,000",
+          "a": "to share these teachings with you"
+        },
+        {
+          "qStart": "00:06:54,100",
+          "qEnd": "00:06:57,216",
+          "a": "so my hope is that when you meditate"
+        },
+        {
+          "qStart": "00:06:57,316",
+          "qEnd": "00:06:59,100",
+          "a": "you meditate with the confidence"
+        },
+        {
+          "qStart": "00:06:59,200",
+          "qEnd": "00:07:01,116",
+          "a": "that this is something that's been around"
+        },
+        {
+          "qStart": "00:07:01,217",
+          "qEnd": "00:07:04,900",
+          "a": "in R\u0026D essentially for thousands of years"
+        },
+        {
+          "qStart": "00:07:06,633",
+          "qEnd": "00:07:09,100",
+          "a": "the actual focus on the breath"
+        },
+        {
+          "qStart": "00:07:09,100",
+          "qEnd": "00:07:11,966",
+          "a": "itself evolved from techniques that were developed"
+        },
+        {
+          "qStart": "00:07:12,067",
+          "qEnd": "00:07:14,466",
+          "a": "almost 3000 years ago"
+        },
+        {
+          "qStart": "00:07:15,566",
+          "qEnd": "00:07:16,566",
+          "a": "now of course"
+        },
+        {
+          "qStart": "00:07:16,566",
+          "qEnd": "00:07:17,333",
+          "a": "the people who've"
+        },
+        {
+          "qStart": "00:07:17,333",
+          "qEnd": "00:07:19,966",
+          "a": "practiced over the years have felt the benefits"
+        },
+        {
+          "qStart": "00:07:19,966",
+          "qEnd": "00:07:21,533",
+          "a": "but haven't necessarily been"
+        },
+        {
+          "qStart": "00:07:21,533",
+          "qEnd": "00:07:24,266",
+          "a": "able to explain what's happening physiologically"
+        },
+        {
+          "qStart": "00:07:24,366",
+          "qEnd": "00:07:25,933",
+          "a": "but in the last 20 years"
+        },
+        {
+          "qStart": "00:07:25,933",
+          "qEnd": "00:07:28,066",
+          "a": "scientists have been able to do just that"
+        },
+        {
+          "qStart": "00:07:28,167",
+          "qEnd": "00:07:32,016",
+          "a": "to rigorously measure what's happening to heart rate"
+        },
+        {
+          "qStart": "00:07:32,116",
+          "qEnd": "00:07:33,333",
+          "a": "to blood pressure"
+        },
+        {
+          "qStart": "00:07:33,433",
+          "qEnd": "00:07:34,266",
+          "a": "to stress levels"
+        },
+        {
+          "qStart": "00:07:34,266",
+          "qEnd": "00:07:37,166",
+          "a": "and even the structure of the brain itself"
+        },
+        {
+          "qStart": "00:07:38,600",
+          "qEnd": "00:07:40,000",
+          "a": "when I was a monk"
+        },
+        {
+          "qStart": "00:07:40,000",
+          "qEnd": "00:07:42,300",
+          "a": "I had no idea that there was something called"
+        },
+        {
+          "qStart": "00:07:42,366",
+          "qEnd": "00:07:44,049",
+          "a": "neuroplasticity"
+        },
+        {
+          "qStart": "00:07:44,150",
+          "qEnd": "00:07:45,866",
+          "a": "that the brain was flexible"
+        },
+        {
+          "qStart": "00:07:45,866",
+          "qEnd": "00:07:48,066",
+          "a": "malleable that it could change"
+        },
+        {
+          "qStart": "00:07:48,600",
+          "qEnd": "00:07:51,983",
+          "a": "and that scientists were actually witnessing this by"
+        },
+        {
+          "qStart": "00:07:52,083",
+          "qEnd": "00:07:55,200",
+          "a": "putting monks through an fmri"
+        },
+        {
+          "qStart": "00:07:55,200",
+          "qEnd": "00:07:58,000",
+          "a": "scanner and witnessing what was happening to the brain"
+        },
+        {
+          "qStart": "00:07:58,000",
+          "qEnd": "00:08:02,300",
+          "a": "before during and after meditation"
+        },
+        {
+          "qStart": "00:08:03,066",
+          "qEnd": "00:08:06,000",
+          "a": "and we know now that when we sit to meditate"
+        },
+        {
+          "qStart": "00:08:06,000",
+          "qEnd": "00:08:07,900",
+          "a": "in the same way as when we go"
+        },
+        {
+          "qStart": "00:08:08,000",
+          "qEnd": "00:08:10,300",
+          "a": "and work out in the gym we train a muscle"
+        },
+        {
+          "qStart": "00:08:10,300",
+          "qEnd": "00:08:12,266",
+          "a": "it gets thicker and stronger"
+        },
+        {
+          "qStart": "00:08:12,266",
+          "qEnd": "00:08:13,516",
+          "a": "in the same way"
+        },
+        {
+          "qStart": "00:08:13,616",
+          "qEnd": "00:08:14,800",
+          "a": "that part of the brain"
+        },
+        {
+          "qStart": "00:08:14,800",
+          "qEnd": "00:08:17,166",
+          "a": "that's responsible for a feeling of"
+        },
+        {
+          "qStart": "00:08:17,267",
+          "qEnd": "00:08:19,166",
+          "a": "happiness and wellbeing"
+        },
+        {
+          "qStart": "00:08:19,166",
+          "qEnd": "00:08:20,950",
+          "a": "that's receiving more blood flow"
+        },
+        {
+          "qStart": "00:08:21,050",
+          "qEnd": "00:08:22,166",
+          "a": "it's getting thicker"
+        },
+        {
+          "qStart": "00:08:22,166",
+          "qEnd": "00:08:25,233",
+          "a": "it's getting stronger so we actually spend more time"
+        },
+        {
+          "qStart": "00:08:25,333",
+          "qEnd": "00:08:27,000",
+          "a": "in that place"
+        },
+        {
+          "qStart": "00:08:28,600",
+          "qEnd": "00:08:32,000",
+          "a": "meditation has been proven to reduce stress"
+        },
+        {
+          "qStart": "00:08:32,000",
+          "qEnd": "00:08:34,499",
+          "a": "frustration depression and pain"
+        },
+        {
+          "qStart": "00:08:34,600",
+          "qEnd": "00:08:36,900",
+          "a": "and also to increase happiness"
+        },
+        {
+          "qStart": "00:08:36,933",
+          "qEnd": "00:08:38,700",
+          "a": "heightening levels of patience"
+        },
+        {
+          "qStart": "00:08:38,700",
+          "qEnd": "00:08:40,966",
+          "a": "acceptance and compassion"
+        },
+        {
+          "qStart": "00:08:41,633",
+          "qEnd": "00:08:44,133",
+          "a": "so even when you're sitting there"
+        },
+        {
+          "qStart": "00:08:44,133",
+          "qEnd": "00:08:46,100",
+          "a": "and it feels like nothing's happening"
+        },
+        {
+          "qStart": "00:08:46,166",
+          "qEnd": "00:08:47,566",
+          "a": "you can feel confident"
+        },
+        {
+          "qStart": "00:08:47,600",
+          "qEnd": "00:08:48,766",
+          "a": "the meditation"
+        },
+        {
+          "qStart": "00:08:48,867",
+          "qEnd": "00:08:52,266",
+          "a": "and mindfulness can make a change in our life"
+        },
+        {
+          "qStart": "00:08:55,200",
+          "qEnd": "00:08:57,866",
+          "a": "the best way of experiencing meditation"
+        },
+        {
+          "qStart": "00:08:57,866",
+          "qEnd": "00:08:59,149",
+          "a": "is to actually do it"
+        },
+        {
+          "qStart": "00:08:59,250",
+          "qEnd": "00:09:01,166",
+          "a": "not to just talk about it"
+        },
+        {
+          "qStart": "00:09:02,033",
+          "qEnd": "00:09:03,600",
+          "a": "now I'm gonna guide you through it"
+        },
+        {
+          "qStart": "00:09:03,600",
+          "qEnd": "00:09:06,266",
+          "a": "so don't worry if you've never done anything like this"
+        },
+        {
+          "qStart": "00:09:06,266",
+          "qEnd": "00:09:07,566",
+          "a": "before"
+        },
+        {
+          "qStart": "00:09:08,200",
+          "qEnd": "00:09:12,633",
+          "a": "and remember some days meditation is gonna feel easy"
+        },
+        {
+          "qStart": "00:09:12,733",
+          "qEnd": "00:09:14,866",
+          "a": "on other days it might feel difficult"
+        },
+        {
+          "qStart": "00:09:14,966",
+          "qEnd": "00:09:17,733",
+          "a": "the trick is to gently stay with it each time"
+        },
+        {
+          "qStart": "00:09:17,766",
+          "qEnd": "00:09:19,900",
+          "a": "no matter how it feels"
+        },
+        {
+          "qStart": "00:09:20,766",
+          "qEnd": "00:09:22,666",
+          "a": "the most important thing"
+        },
+        {
+          "qStart": "00:09:22,733",
+          "qEnd": "00:09:24,366",
+          "a": "is that you set yourself up in a place"
+        },
+        {
+          "qStart": "00:09:24,366",
+          "qEnd": "00:09:25,633",
+          "a": "that you're gonna be comfortable"
+        },
+        {
+          "qStart": "00:09:25,733",
+          "qEnd": "00:09:26,949",
+          "a": "now you can do this"
+        },
+        {
+          "qStart": "00:09:27,050",
+          "qEnd": "00:09:29,149",
+          "a": "sitting up or lying down"
+        },
+        {
+          "qStart": "00:09:29,250",
+          "qEnd": "00:09:30,866",
+          "a": "you definitely don't have to be sitting"
+        },
+        {
+          "qStart": "00:09:30,866",
+          "qEnd": "00:09:32,366",
+          "a": "cross legged on the floor"
+        },
+        {
+          "qStart": "00:09:32,467",
+          "qEnd": "00:09:36,233",
+          "a": "and you can do it alone or you can do it with others"
+        },
+        {
+          "qStart": "00:09:37,066",
+          "qEnd": "00:09:40,233",
+          "a": "you ready let's give it a go"
+        },
+        {
+          "qStart": "00:09:42,000",
+          "qEnd": "00:09:44,166",
+          "a": "we're gonna start with the eyes open"
+        },
+        {
+          "qStart": "00:09:44,266",
+          "qEnd": "00:09:46,566",
+          "a": "and a nice soft focus just aware"
+        },
+        {
+          "qStart": "00:09:46,566",
+          "qEnd": "00:09:48,666",
+          "a": "of the space around you"
+        },
+        {
+          "qStart": "00:09:48,800",
+          "qEnd": "00:09:51,200",
+          "a": "and with that soft focus with the eyes"
+        },
+        {
+          "qStart": "00:09:51,200",
+          "qEnd": "00:09:53,466",
+          "a": "we're gonna take a couple of big deep breaths"
+        },
+        {
+          "qStart": "00:09:53,466",
+          "qEnd": "00:09:55,600",
+          "a": "breathing in through the nose"
+        },
+        {
+          "qStart": "00:09:57,366",
+          "qEnd": "00:10:00,100",
+          "a": "and out through the mouth"
+        },
+        {
+          "qStart": "00:10:00,966",
+          "qEnd": "00:10:03,449",
+          "a": "as you breathe in notice how"
+        },
+        {
+          "qStart": "00:10:03,550",
+          "qEnd": "00:10:05,383",
+          "a": "the lungs fill with air"
+        },
+        {
+          "qStart": "00:10:05,483",
+          "qEnd": "00:10:07,550",
+          "a": "the body expands"
+        },
+        {
+          "qStart": "00:10:07,650",
+          "qEnd": "00:10:11,983",
+          "a": "as you exhale just noticing how the body softens"
+        },
+        {
+          "qStart": "00:10:12,083",
+          "qEnd": "00:10:14,016",
+          "a": "as you breathe out"
+        },
+        {
+          "qStart": "00:10:14,116",
+          "qEnd": "00:10:17,700",
+          "a": "this one more time breathing in through the nose"
+        },
+        {
+          "qStart": "00:10:19,466",
+          "qEnd": "00:10:21,050",
+          "a": "and this time"
+        },
+        {
+          "qStart": "00:10:21,150",
+          "qEnd": "00:10:23,850",
+          "a": "as you breathe out through the mouth if you'd like to"
+        },
+        {
+          "qStart": "00:10:23,950",
+          "qEnd": "00:10:27,366",
+          "a": "just gently closing the eyes"
+        },
+        {
+          "qStart": "00:10:28,066",
+          "qEnd": "00:10:30,233",
+          "a": "and just take a moment"
+        },
+        {
+          "qStart": "00:10:30,333",
+          "qEnd": "00:10:32,966",
+          "a": "before you do anything else"
+        },
+        {
+          "qStart": "00:10:32,966",
+          "qEnd": "00:10:35,933",
+          "a": "just to appreciate and enjoy that feeling"
+        },
+        {
+          "qStart": "00:10:36,033",
+          "qEnd": "00:10:37,900",
+          "a": "of having stopped"
+        },
+        {
+          "qStart": "00:10:38,066",
+          "qEnd": "00:10:40,649",
+          "a": "of having nothing to do"
+        },
+        {
+          "qStart": "00:10:40,750",
+          "qEnd": "00:10:43,066",
+          "a": "nowhere to go"
+        },
+        {
+          "qStart": "00:10:44,766",
+          "qEnd": "00:10:47,466",
+          "a": "notice the feeling of weight"
+        },
+        {
+          "qStart": "00:10:48,233",
+          "qEnd": "00:10:52,100",
+          "a": "the weight of the body pressing down against the seat"
+        },
+        {
+          "qStart": "00:10:52,166",
+          "qEnd": "00:10:54,466",
+          "a": "or the floor beneath you"
+        },
+        {
+          "qStart": "00:10:58,366",
+          "qEnd": "00:11:00,133",
+          "a": "and take a moment as well"
+        },
+        {
+          "qStart": "00:11:00,133",
+          "qEnd": "00:11:02,000",
+          "a": "just to notice your surroundings"
+        },
+        {
+          "qStart": "00:11:02,000",
+          "qEnd": "00:11:03,466",
+          "a": "without looking around"
+        },
+        {
+          "qStart": "00:11:03,567",
+          "qEnd": "00:11:06,266",
+          "a": "just noticing the different sounds"
+        },
+        {
+          "qStart": "00:11:06,266",
+          "qEnd": "00:11:08,199",
+          "a": "not trying to shut them out"
+        },
+        {
+          "qStart": "00:11:08,300",
+          "qEnd": "00:11:11,816",
+          "a": "just noticing any resistance towards them"
+        },
+        {
+          "qStart": "00:11:11,916",
+          "qEnd": "00:11:15,233",
+          "a": "just getting comfortable in that space"
+        },
+        {
+          "qStart": "00:11:19,000",
+          "qEnd": "00:11:21,666",
+          "a": "and use this opportunity as well just to"
+        },
+        {
+          "qStart": "00:11:21,666",
+          "qEnd": "00:11:25,166",
+          "a": "notice how the body feels very often"
+        },
+        {
+          "qStart": "00:11:25,266",
+          "qEnd": "00:11:26,983",
+          "a": "we don't really take time"
+        },
+        {
+          "qStart": "00:11:27,083",
+          "qEnd": "00:11:29,266",
+          "a": "to notice how the body feels"
+        },
+        {
+          "qStart": "00:11:29,266",
+          "qEnd": "00:11:31,066",
+          "a": "so is there a feeling of heaviness"
+        },
+        {
+          "qStart": "00:11:31,066",
+          "qEnd": "00:11:33,066",
+          "a": "or lightness in the body"
+        },
+        {
+          "qStart": "00:11:35,633",
+          "qEnd": "00:11:40,766",
+          "a": "a sense of restlessness or stillness in the body"
+        },
+        {
+          "qStart": "00:11:49,000",
+          "qEnd": "00:11:52,716",
+          "a": "and as you bring your attention into the body"
+        },
+        {
+          "qStart": "00:11:52,817",
+          "qEnd": "00:11:56,516",
+          "a": "just starting to become more aware"
+        },
+        {
+          "qStart": "00:11:56,616",
+          "qEnd": "00:11:57,566",
+          "a": "of that feeling"
+        },
+        {
+          "qStart": "00:11:57,566",
+          "qEnd": "00:12:00,683",
+          "a": "that movement of breath in the body"
+        },
+        {
+          "qStart": "00:12:00,783",
+          "qEnd": "00:12:03,733",
+          "a": "so you don't have to breathe in any special way"
+        },
+        {
+          "qStart": "00:12:03,733",
+          "qEnd": "00:12:07,000",
+          "a": "just allow the body to do its own thing"
+        },
+        {
+          "qStart": "00:12:07,300",
+          "qEnd": "00:12:08,866",
+          "a": "some people feel"
+        },
+        {
+          "qStart": "00:12:08,866",
+          "qEnd": "00:12:11,983",
+          "a": "the movement of breath in their chest their shoulders"
+        },
+        {
+          "qStart": "00:12:12,083",
+          "qEnd": "00:12:13,900",
+          "a": "for some it's in the diaphragm"
+        },
+        {
+          "qStart": "00:12:13,900",
+          "qEnd": "00:12:15,866",
+          "a": "and for some it's in the stomach"
+        },
+        {
+          "qStart": "00:12:16,833",
+          "qEnd": "00:12:18,466",
+          "a": "if you can't feel anything"
+        },
+        {
+          "qStart": "00:12:18,466",
+          "qEnd": "00:12:19,066",
+          "a": "any movement"
+        },
+        {
+          "qStart": "00:12:19,066",
+          "qEnd": "00:12:21,583",
+          "a": "just gently place your hand on your stomach"
+        },
+        {
+          "qStart": "00:12:21,683",
+          "qEnd": "00:12:25,866",
+          "a": "so you can feel that rising and falling sensation"
+        },
+        {
+          "qStart": "00:12:35,200",
+          "qEnd": "00:12:37,433",
+          "a": "so just settling"
+        },
+        {
+          "qStart": "00:12:37,533",
+          "qEnd": "00:12:40,249",
+          "a": "the mind again"
+        },
+        {
+          "qStart": "00:12:40,350",
+          "qEnd": "00:12:43,866",
+          "a": "thoughts are going to arise the mind's going to wander"
+        },
+        {
+          "qStart": "00:12:43,866",
+          "qEnd": "00:12:46,500",
+          "a": "just notice when the minds wandered off"
+        },
+        {
+          "qStart": "00:12:47,300",
+          "qEnd": "00:12:50,966",
+          "a": "and just gently come back to the breath"
+        },
+        {
+          "qStart": "00:12:52,066",
+          "qEnd": "00:12:53,400",
+          "a": "to begin with"
+        },
+        {
+          "qStart": "00:12:53,400",
+          "qEnd": "00:12:56,483",
+          "a": "we are just noticing the breath in a very general way"
+        },
+        {
+          "qStart": "00:12:56,583",
+          "qEnd": "00:12:58,966",
+          "a": "perhaps starting to notice"
+        },
+        {
+          "qStart": "00:12:59,066",
+          "qEnd": "00:13:01,183",
+          "a": "whether the breaths are long"
+        },
+        {
+          "qStart": "00:13:01,283",
+          "qEnd": "00:13:02,966",
+          "a": "or short"
+        },
+        {
+          "qStart": "00:13:03,233",
+          "qEnd": "00:13:05,433",
+          "a": "deep or shallow"
+        },
+        {
+          "qStart": "00:13:17,466",
+          "qEnd": "00:13:20,833",
+          "a": "again we might find ourselves thinking"
+        },
+        {
+          "qStart": "00:13:20,933",
+          "qEnd": "00:13:23,066",
+          "a": "either about the exercise or other things"
+        },
+        {
+          "qStart": "00:13:23,066",
+          "qEnd": "00:13:25,299",
+          "a": "just realizing when that's happened"
+        },
+        {
+          "qStart": "00:13:25,400",
+          "qEnd": "00:13:27,449",
+          "a": "letting those thoughts go"
+        },
+        {
+          "qStart": "00:13:27,550",
+          "qEnd": "00:13:30,200",
+          "a": "and coming back to the breath again"
+        },
+        {
+          "qStart": "00:13:31,800",
+          "qEnd": "00:13:34,566",
+          "a": "and just to make it a little easier"
+        },
+        {
+          "qStart": "00:13:34,666",
+          "qEnd": "00:13:36,300",
+          "a": "to focus on the breath"
+        },
+        {
+          "qStart": "00:13:36,300",
+          "qEnd": "00:13:39,266",
+          "a": "we're going to begin to count the breaths as they pass"
+        },
+        {
+          "qStart": "00:13:39,366",
+          "qEnd": "00:13:42,016",
+          "a": "so as you feel the rising sensation"
+        },
+        {
+          "qStart": "00:13:42,117",
+          "qEnd": "00:13:43,633",
+          "a": "counting one"
+        },
+        {
+          "qStart": "00:13:43,766",
+          "qEnd": "00:13:45,683",
+          "a": "falling sensation"
+        },
+        {
+          "qStart": "00:13:45,783",
+          "qEnd": "00:13:46,783",
+          "a": "2"
+        },
+        {
+          "qStart": "00:13:46,883",
+          "qEnd": "00:13:48,400",
+          "a": "is silently in the mine"
+        },
+        {
+          "qStart": "00:13:48,400",
+          "qEnd": "00:13:49,616",
+          "a": "then three"
+        },
+        {
+          "qStart": "00:13:49,717",
+          "qEnd": "00:13:51,500",
+          "a": "and 4"
+        },
+        {
+          "qStart": "00:13:51,766",
+          "qEnd": "00:13:54,300",
+          "a": "just up to a count of 10"
+        },
+        {
+          "qStart": "00:13:54,400",
+          "qEnd": "00:13:58,150",
+          "a": "when you get to 10 you're going to stop and start again"
+        },
+        {
+          "qStart": "00:13:58,250",
+          "qEnd": "00:13:59,700",
+          "a": "at one"
+        },
+        {
+          "qStart": "00:14:18,866",
+          "qEnd": "00:14:21,283",
+          "a": "to remember no effort"
+        },
+        {
+          "qStart": "00:14:21,383",
+          "qEnd": "00:14:25,000",
+          "a": "required the body knows how to breath"
+        },
+        {
+          "qStart": "00:14:30,600",
+          "qEnd": "00:14:33,366",
+          "a": "not getting involved in any thinking"
+        },
+        {
+          "qStart": "00:14:33,366",
+          "qEnd": "00:14:36,066",
+          "a": "just allowing the thoughts to come and go"
+        },
+        {
+          "qStart": "00:14:50,966",
+          "qEnd": "00:14:53,516",
+          "a": "and in those moments"
+        },
+        {
+          "qStart": "00:14:53,616",
+          "qEnd": "00:14:57,483",
+          "a": "when you realise the minds wandered off just gently"
+        },
+        {
+          "qStart": "00:14:57,583",
+          "qEnd": "00:15:00,833",
+          "a": "bringing the attention back to the breath again"
+        },
+        {
+          "qStart": "00:15:12,366",
+          "qEnd": "00:15:16,600",
+          "a": "so just stay with that feeling"
+        },
+        {
+          "qStart": "00:15:17,200",
+          "qEnd": "00:15:19,133",
+          "a": "and rising"
+        },
+        {
+          "qStart": "00:15:19,233",
+          "qEnd": "00:15:21,500",
+          "a": "and falling sensation"
+        },
+        {
+          "qStart": "00:15:22,500",
+          "qEnd": "00:15:25,300",
+          "a": "just for a few moments longer"
+        },
+        {
+          "qStart": "00:15:48,033",
+          "qEnd": "00:15:51,466",
+          "a": "and then just for a moment now"
+        },
+        {
+          "qStart": "00:15:51,566",
+          "qEnd": "00:15:53,766",
+          "a": "I'd like you to let go"
+        },
+        {
+          "qStart": "00:15:53,867",
+          "qEnd": "00:15:56,933",
+          "a": "of any focus even of the breath now"
+        },
+        {
+          "qStart": "00:15:57,033",
+          "qEnd": "00:15:58,333",
+          "a": "and for a few seconds"
+        },
+        {
+          "qStart": "00:15:58,333",
+          "qEnd": "00:16:00,500",
+          "a": "just allow your mind to do whatever"
+        },
+        {
+          "qStart": "00:16:00,566",
+          "qEnd": "00:16:01,899",
+          "a": "he wants to do"
+        },
+        {
+          "qStart": "00:16:02,000",
+          "qEnd": "00:16:03,566",
+          "a": "so if he's been wanting to think"
+        },
+        {
+          "qStart": "00:16:03,566",
+          "qEnd": "00:16:05,333",
+          "a": "you can let it think now"
+        },
+        {
+          "qStart": "00:16:05,433",
+          "qEnd": "00:16:08,183",
+          "a": "just allow the mind to do whatever"
+        },
+        {
+          "qStart": "00:16:08,283",
+          "qEnd": "00:16:10,066",
+          "a": "it wants to do"
+        },
+        {
+          "qStart": "00:16:25,600",
+          "qEnd": "00:16:29,500",
+          "a": "and now just gently bringing the attention"
+        },
+        {
+          "qStart": "00:16:29,600",
+          "qEnd": "00:16:31,566",
+          "a": "back to the body"
+        },
+        {
+          "qStart": "00:16:31,666",
+          "qEnd": "00:16:34,700",
+          "a": "just coming back now to that feeling"
+        },
+        {
+          "qStart": "00:16:34,733",
+          "qEnd": "00:16:35,400",
+          "a": "of weight"
+        },
+        {
+          "qStart": "00:16:35,400",
+          "qEnd": "00:16:38,483",
+          "a": "that feeling of contact against the seat"
+        },
+        {
+          "qStart": "00:16:38,583",
+          "qEnd": "00:16:41,966",
+          "a": "or the floor beneath you"
+        },
+        {
+          "qStart": "00:16:44,233",
+          "qEnd": "00:16:48,500",
+          "a": "as noticing the sounds around you again"
+        },
+        {
+          "qStart": "00:16:50,166",
+          "qEnd": "00:16:54,666",
+          "a": "and whenever you feel ready you can just gently"
+        },
+        {
+          "qStart": "00:16:54,766",
+          "qEnd": "00:16:56,733",
+          "a": "open your eyes again"
+        },
+        {
+          "qStart": "00:16:56,833",
+          "qEnd": "00:16:58,999",
+          "a": "but before you move"
+        },
+        {
+          "qStart": "00:16:59,100",
+          "qEnd": "00:17:02,516",
+          "a": "just take a moment to notice how you feel"
+        },
+        {
+          "qStart": "00:17:02,616",
+          "qEnd": "00:17:04,300",
+          "a": "in your body"
+        },
+        {
+          "qStart": "00:17:04,400",
+          "qEnd": "00:17:06,083",
+          "a": "and in your mind"
+        },
+        {
+          "qStart": "00:17:06,183",
+          "qEnd": "00:17:09,100",
+          "a": "the more often we do this after meditation"
+        },
+        {
+          "qStart": "00:17:09,100",
+          "qEnd": "00:17:10,733",
+          "a": "the more we are reminded"
+        },
+        {
+          "qStart": "00:17:10,833",
+          "qEnd": "00:17:12,566",
+          "a": "of how much"
+        },
+        {
+          "qStart": "00:17:12,666",
+          "qEnd": "00:17:14,083",
+          "a": "we need"
+        },
+        {
+          "qStart": "00:17:14,183",
+          "qEnd": "00:17:15,400",
+          "a": "to pause in our life"
+        },
+        {
+          "qStart": "00:17:15,400",
+          "qEnd": "00:17:18,200",
+          "a": "to take this time out for ourselves"
+        },
+        {
+          "qStart": "00:17:22,200",
+          "qEnd": "00:17:26,666",
+          "a": "and if you can resist any temptation to analyze"
+        },
+        {
+          "qStart": "00:17:26,666",
+          "qEnd": "00:17:27,800",
+          "a": "what's happened"
+        },
+        {
+          "qStart": "00:17:27,800",
+          "qEnd": "00:17:29,749",
+          "a": "the benefit or anything else"
+        },
+        {
+          "qStart": "00:17:29,850",
+          "qEnd": "00:17:32,350",
+          "a": "just knowing that in taking the time"
+        },
+        {
+          "qStart": "00:17:32,450",
+          "qEnd": "00:17:34,766",
+          "a": "it's making a difference"
+        },
+        {
+          "qStart": "00:17:35,233",
+          "qEnd": "00:17:36,850",
+          "a": "and then my final"
+        },
+        {
+          "qStart": "00:17:36,950",
+          "qEnd": "00:17:39,949",
+          "a": "bit of advice is always before you get up"
+        },
+        {
+          "qStart": "00:17:40,050",
+          "qEnd": "00:17:42,416",
+          "a": "just remind yourself as an intention"
+        },
+        {
+          "qStart": "00:17:42,517",
+          "qEnd": "00:17:45,933",
+          "a": "to take this quality of mind with you into your life"
+        },
+        {
+          "qStart": "00:17:46,033",
+          "qEnd": "00:17:47,966",
+          "a": "it's great to take some time out"
+        },
+        {
+          "qStart": "00:17:48,066",
+          "qEnd": "00:17:51,066",
+          "a": "to close our eyes to be still to be quiet"
+        },
+        {
+          "qStart": "00:17:51,166",
+          "qEnd": "00:17:53,149",
+          "a": "and there are real benefits to that"
+        },
+        {
+          "qStart": "00:17:53,250",
+          "qEnd": "00:17:55,100",
+          "a": "but I feel like the real benefits of"
+        },
+        {
+          "qStart": "00:17:55,100",
+          "qEnd": "00:17:57,066",
+          "a": "meditation have found when we take that"
+        },
+        {
+          "qStart": "00:17:57,066",
+          "qEnd": "00:17:58,316",
+          "a": "quality of mind"
+        },
+        {
+          "qStart": "00:17:58,417",
+          "qEnd": "00:18:00,333",
+          "a": "into our everyday life"
+        },
+        {
+          "qStart": "00:18:00,433",
+          "qEnd": "00:18:03,766",
+          "a": "into our relationships into our experience"
+        },
+        {
+          "qStart": "00:18:03,867",
+          "qEnd": "00:18:06,449",
+          "a": "so always putting in that intention"
+        },
+        {
+          "qStart": "00:18:06,550",
+          "qEnd": "00:18:08,666",
+          "a": "before you get up and move"
+        },
+        {
+          "qStart": "00:18:11,966",
+          "qEnd": "00:18:15,916",
+          "a": "so hope you'll join me in Episode 2 as we explore"
+        },
+        {
+          "qStart": "00:18:16,016",
+          "qEnd": "00:18:18,766",
+          "a": "how we can let go of the baggage"
+        },
+        {
+          "qStart": "00:18:18,866",
+          "qEnd": "00:18:21,200",
+          "a": "that we carry around with us in our mind"
+        },
+        {
+          "qStart": "00:18:21,266",
+          "qEnd": "00:18:24,000",
+          "a": "and how we can find a greater sense of acceptance"
+        },
+        {
+          "qStart": "00:18:24,000",
+          "qEnd": "00:18:25,999",
+          "a": "and relaxation in our life"
+        },
+        {
+          "qStart": "00:18:26,100",
+          "qEnd": "00:18:28,733",
+          "a": "I'll be back here then with a new technique for you"
+        },
+        {
+          "qStart": "00:18:28,733",
+          "qEnd": "00:18:30,633",
+          "a": "I look forward to seeing you then"
+        },
+        {
+          "qStart": "00:19:01,233",
+          "qEnd": "00:19:04,100",
+          "a": "Dad Space Studios"
+        }
+      ]
+    }
+  ]
+}
