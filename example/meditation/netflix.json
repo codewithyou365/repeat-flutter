@@ -1846,7 +1846,7 @@
       "defaultQuestion": "",
       "defaultTip": "",
       "title": "How to Let Go",
-      "segments": [
+      "segment": [
         {
           "qStart": "00:00:07,466",
           "qEnd": "00:00:11,500",
