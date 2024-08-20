@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/common/path.dart';
+import 'package:repeat_flutter/common/url.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
@@ -165,7 +166,7 @@ class GsCrContentLogic extends GetxController {
         } else {
           rootPath = DocLocation.create(fl.path).folderPath;
         }
-        return DocLocation(rootPath, urlToDocName(url));
+        return DocLocation(rootPath, Url.toDocName(url));
       },
       progressCallback: downloadProgress,
     );

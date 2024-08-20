@@ -1,12 +1,12 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:repeat_flutter/common/folder.dart';
 import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/logic/constant.dart';
-import 'package:sqflite/sqflite.dart' as sqflite;
 
 typedef DownloadProgressCallback = void Function(int startTime, int count, int total, bool finish);
 typedef Finish = Future<DocLocation?> Function(DocLocation fp, bool tempFile);
@@ -46,8 +46,7 @@ Future<bool> downloadDoc(String urlPath, Finish finish, {String hash = "", Downl
         return true;
       }
     }
-    var directory = await sqflite.getDatabasesPath();
-    var rootPath = "$directory/${DocPrefixPath.content}";
+    var rootPath = await DocPath.getRootPath();
     var fl = DocLocation(rootPath, "temp");
     await dio.download(urlPath, fl.path, onReceiveProgress: (int count, int total) {
       fileCount = count;
@@ -69,7 +68,7 @@ Future<bool> downloadDoc(String urlPath, Finish finish, {String hash = "", Downl
     if (newFl == null) {
       return false;
     }
-    await ensureFolderExists(newFl.folderPath);
+    await Folder.ensureExists(newFl.folderPath);
     await File(fl.path).rename(newFl.path);
     if (!withoutDb) {
       String hash = await Hash.toSha1(newFl.path);
