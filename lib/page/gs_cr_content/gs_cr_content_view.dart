@@ -191,6 +191,14 @@ class GsCrContentPage extends StatelessWidget {
             openDeleteDialog(logic, model);
           },
         ),
+        SwipeAction(
+          title: I18nKey.btnShare.tr,
+          style: textStyle,
+          color: Theme.of(context).secondaryHeaderColor,
+          onTap: (CompletionHandler handler) async {
+            logic.share(model);
+          },
+        ),
       ],
       trailingActions: <SwipeAction>[
         SwipeAction(

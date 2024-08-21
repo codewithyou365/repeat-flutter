@@ -8,10 +8,14 @@ import 'package:repeat_flutter/db/entity/content_index.dart';
 import 'package:repeat_flutter/db/entity/segment_key.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment.dart' as entity;
+import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
+import 'package:repeat_flutter/widget/overlay/overlay.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'gs_cr_content_state.dart';
 
@@ -34,7 +38,7 @@ class GsCrContentLogic extends GetxController {
   delete(String url) async {
     state.indexes.removeWhere((element) => identical(element.url, url));
     update([GsCrContentLogic.id]);
-    var doc = await downloadDocPath(url);
+    var doc = await downloadDocInfo(url);
     if (doc == null) {
       await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(Classroom.curr, url, 0));
       return;
@@ -55,8 +59,29 @@ class GsCrContentLogic extends GetxController {
     await Db().db.contentIndexDao.insertContentIndex(contentIndex);
   }
 
+  share(ContentIndex model) async {
+    showTransparentOverlay(() async {
+      var doc = await downloadDocInfo(model.url);
+      if (doc == null) {
+        Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
+        return;
+      }
+      var kv = await RepeatDoc.fromPath(doc.path, Uri.parse(model.url));
+      if (kv == null) {
+        Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
+        return;
+      }
+      var illegalLesson = kv.lesson.where((l) => l.path != l.url).toList();
+      var args = [model.url];
+      if (illegalLesson.isEmpty) {
+        args.add(kv.rootPath.joinPath(Url.toDocName(model.url)));
+      }
+      Nav.gsCrContentShare.push(arguments: args);
+    });
+  }
+
   Future<int> getUnitCount(String url) async {
-    var doc = await downloadDocPath(url);
+    var doc = await downloadDocInfo(url);
     if (doc == null) {
       return 0;
     }
@@ -73,7 +98,7 @@ class GsCrContentLogic extends GetxController {
   }
 
   Future<void> addToSchedule(String url, int contentIndexSort) async {
-    var doc = await downloadDocPath(url);
+    var doc = await downloadDocInfo(url);
     if (doc == null) {
       return;
     }
