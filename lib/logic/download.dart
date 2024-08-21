@@ -11,7 +11,7 @@ import 'package:repeat_flutter/logic/constant.dart';
 typedef DownloadProgressCallback = void Function(int startTime, int count, int total, bool finish);
 typedef Finish = Future<DocLocation?> Function(DocLocation fp, bool tempFile);
 
-Future<Doc?> downloadDocPath(String url) async {
+Future<Doc?> downloadDocInfo(String url) async {
   return await Db().db.docDao.one(url);
 }
 

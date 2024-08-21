@@ -8,6 +8,7 @@ class ConfigZh extends Config {
     put(I18nKey.appName, "重复");
     put(I18nKey.settings, "设置");
     put(I18nKey.content, "内容");
+    put(I18nKey.contentShare, "内容-分享");
     put(I18nKey.statistic, "统计");
     put(I18nKey.statisticLearn, "统计-学习");
     put(I18nKey.statisticReview, "统计-回顾");
@@ -26,6 +27,9 @@ class ConfigZh extends Config {
     put(I18nKey.labelClassroomNameDuplicated, "课堂名字重复。");
     put(I18nKey.labelDelete, "删除 ！");
     put(I18nKey.labelUrl, "地址");
+    put(I18nKey.labelOriginalAddress, "原始地址");
+    put(I18nKey.labelLanAddress, "局域网地址");
+    put(I18nKey.labelDownloadFirstBeforeSharing, "请先下载再进行分享");
     put(I18nKey.labelAddContentIndex, "新增内容索引");
     put(I18nKey.labelEditContentIndex, "编辑内容索引");
     put(I18nKey.labelDeleteContentIndex, "请确定删除内容索引\n\n%s");
@@ -85,6 +89,7 @@ class ConfigZh extends Config {
     put(I18nKey.btnCancel, "取消");
     put(I18nKey.btnOk, "确定");
     put(I18nKey.btnDelete, "删除");
+    put(I18nKey.btnShare, "分享");
     put(I18nKey.btnEdit, "编辑");
     put(I18nKey.btnAdd, "新增");
     put(I18nKey.btnCopy, "复制");
