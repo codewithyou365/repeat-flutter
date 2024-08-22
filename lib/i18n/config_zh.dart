@@ -86,6 +86,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelResetConfigDesc, "执行重置配置后，将使用系统默认的配置？");
     put(I18nKey.labelOnTapError, "请长按按键进行确认");
     put(I18nKey.labelSetMaskTips, "向左滑动增加挡板高度");
+    put(I18nKey.labelQrCodeContentCopiedToClipboard, "二维码内容已拷贝到剪切板中");
     put(I18nKey.btnCancel, "取消");
     put(I18nKey.btnOk, "确定");
     put(I18nKey.btnDelete, "删除");
