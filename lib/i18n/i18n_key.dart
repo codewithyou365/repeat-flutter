@@ -84,6 +84,7 @@ enum I18nKey {
   labelResetConfigDesc,
   labelOnTapError,
   labelSetMaskTips,
+  labelQrCodeContentCopiedToClipboard,
   btnCancel,
   btnOk,
   btnDelete,
