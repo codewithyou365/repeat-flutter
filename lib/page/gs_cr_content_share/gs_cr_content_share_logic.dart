@@ -35,9 +35,10 @@ class GsCrContentShareLogic extends GetxController {
 
   Future<void> _startHttpService() async {
     try {
-      var port = 12413;
+      var port = 40321;
       _httpServer = await HttpServer.bind(InternetAddress.anyIPv4, port);
       List<String> ips = await getLanIps();
+      // TODO support multiple lan address
       state.lanAddress.value = ips.map((ip) => 'http://$ip:$port/${state.lanAddressSuffix}').join("\n");
       _httpServer!.listen((HttpRequest request) async {
         _handleRequest(request);

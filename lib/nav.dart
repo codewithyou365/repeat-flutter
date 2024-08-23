@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/page/gs/gs_nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_content/gs_cr_content_nav.dart';
+import 'package:repeat_flutter/page/gs_cr_content_scan/gs_cr_content_scan_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_content_share/gs_cr_content_share_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/gs_cr_repeat_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat_finish/gs_cr_repeat_finish_nav.dart';
@@ -20,6 +21,7 @@ enum Nav {
   gs("/gs"),
   gsCr("/gs/cr"),
   gsCrContent("/gs/cr/content"),
+  gsCrContentScan("/gs/cr/content/scan"),
   gsCrContentShare("/gs/cr/content/share"),
   gsCrRepeat("/gs/cr/repeat"),
   gsCrRepeatFinish("/gs/cr/repeat/finish"),
@@ -39,16 +41,21 @@ enum Nav {
 
   const Nav(this.path);
 
-  Future? push({dynamic arguments}) {
-    return Get.toNamed(path, arguments: arguments);
+  Future<T?>? push<T>({dynamic arguments}) {
+    return Get.toNamed<T>(path, arguments: arguments);
   }
 
   void until() {
     Get.until((route) => Get.currentRoute == path);
   }
 
-  static back() {
-    Get.back();
+  static back<T>({
+    T? result,
+    bool closeOverlays = false,
+    bool canPop = true,
+    int? id,
+  }) {
+    Get.back(result: result, closeOverlays: closeOverlays, canPop: canPop, id: id);
   }
 
   static final String initialRoute = gs.path;
@@ -57,6 +64,7 @@ enum Nav {
     gsNav(gs.path),
     gsCrNav(gsCr.path),
     gsCrContentNav(gsCrContent.path),
+    gsCrContentScanNav(gsCrContentScan.path),
     gsCrContentShareNav(gsCrContentShare.path),
     gsCrRepeatNav(gsCrRepeat.path),
     gsCrRepeatFinishNav(gsCrRepeatFinish.path),

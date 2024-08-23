@@ -24,16 +24,21 @@ cd ./lib || exit 1
   echo "" >>$OUTPUT_FILE
   echo "  const Nav(this.path);" >>$OUTPUT_FILE
   echo "" >>$OUTPUT_FILE
-  echo "  Future? push({dynamic arguments}) {" >>$OUTPUT_FILE
-  echo "    return Get.toNamed(path, arguments: arguments);" >>$OUTPUT_FILE
+  echo "  Future<T?>? push<T>({dynamic arguments}) {" >>$OUTPUT_FILE
+  echo "    return Get.toNamed<T>(path, arguments: arguments);" >>$OUTPUT_FILE
   echo "  }" >>$OUTPUT_FILE
   echo "" >>$OUTPUT_FILE
   echo "  void until() {" >>$OUTPUT_FILE
   echo "    Get.until((route) => Get.currentRoute == path);" >>$OUTPUT_FILE
   echo "  }" >>$OUTPUT_FILE
   echo "" >>$OUTPUT_FILE
-  echo "  static back() {" >>$OUTPUT_FILE
-  echo "    Get.back();" >>$OUTPUT_FILE
+  echo "  static back<T>({" >>$OUTPUT_FILE
+  echo "    T? result," >>$OUTPUT_FILE
+  echo "    bool closeOverlays = false," >>$OUTPUT_FILE
+  echo "    bool canPop = true," >>$OUTPUT_FILE
+  echo "    int? id," >>$OUTPUT_FILE
+  echo "  }) {" >>$OUTPUT_FILE
+  echo "    Get.back(result: result, closeOverlays: closeOverlays, canPop: canPop, id: id);" >>$OUTPUT_FILE
   echo "  }" >>$OUTPUT_FILE
   echo "" >>$OUTPUT_FILE
   echo "  static final String initialRoute = gs.path;" >>$OUTPUT_FILE
