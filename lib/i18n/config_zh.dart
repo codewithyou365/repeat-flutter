@@ -87,6 +87,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelOnTapError, "请长按按键进行确认");
     put(I18nKey.labelSetMaskTips, "向左滑动增加挡板高度");
     put(I18nKey.labelQrCodeContentCopiedToClipboard, "二维码内容已拷贝到剪切板中");
+    put(I18nKey.labelShouldLinkToTheContentBeAdded, "是否添加改内容链接");
     put(I18nKey.btnCancel, "取消");
     put(I18nKey.btnOk, "确定");
     put(I18nKey.btnDelete, "删除");

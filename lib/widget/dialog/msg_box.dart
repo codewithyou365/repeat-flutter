@@ -15,6 +15,7 @@ class MsgBox {
   }) {
     Get.defaultDialog(
       title: title,
+      barrierDismissible: false,
       content: Text(desc),
       actions: yesOrNoAction(yes: yes, no: no, yesBtnTitle: yesBtnTitle, noBtnTitle: noBtnTitle),
     );

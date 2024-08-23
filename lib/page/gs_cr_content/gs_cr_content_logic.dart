@@ -47,6 +47,13 @@ class GsCrContentLogic extends GetxController {
     Get.find<GsCrLogic>().init();
   }
 
+  addByScan() async {
+    var url = await Nav.gsCrContentScan.push();
+    if (url != null && url is String && url != "") {
+      await add(url);
+    }
+  }
+
   add(String url) async {
     var idleSortSequenceNumber = await Db().db.contentIndexDao.getIdleSortSequenceNumber(Classroom.curr);
     if (idleSortSequenceNumber == null) {

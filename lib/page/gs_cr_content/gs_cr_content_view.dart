@@ -17,6 +17,15 @@ class GsCrContentPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(I18nKey.content.tr),
+        actions: <Widget>[
+          Padding(
+            padding: EdgeInsets.all(8.0.w),
+            child: IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: logic.addByScan,
+            ),
+          ),
+        ],
       ),
       body: buildList(context, logic),
     );
