@@ -1,7 +1,13 @@
 import 'package:get/get.dart';
 
+class Address {
+  String title;
+  String address;
+
+  Address(this.title, this.address);
+}
+
 class GsCrContentShareState {
-  var originalAddress = "";
-  var lanAddress = "".obs;
+  final List<Address> addresses = <Address>[];
   var lanAddressSuffix = "";
 }
