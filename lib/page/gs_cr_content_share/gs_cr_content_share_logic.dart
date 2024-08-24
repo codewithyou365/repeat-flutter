@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/url.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/constant.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'gs_cr_content_share_state.dart';
 
@@ -16,7 +18,8 @@ class GsCrContentShareLogic extends GetxController {
   void onInit() {
     super.onInit();
     List<String> arguments = Get.arguments as List<String>;
-    state.originalAddress = arguments[0];
+    state.addresses.add(Address(I18nKey.labelOriginalAddress.tr, arguments[0]));
+
     if (arguments.length > 1) {
       state.lanAddressSuffix = arguments[1];
     }
@@ -34,31 +37,41 @@ class GsCrContentShareLogic extends GetxController {
   }
 
   Future<void> _startHttpService() async {
+    var port = 40321;
+    List<String> ips = [];
     try {
-      var port = 40321;
+      ips = await getLanIps();
+    } catch (e) {
+      Snackbar.show('Error getting LAN IP : $e');
+      return;
+    }
+
+    try {
       _httpServer = await HttpServer.bind(InternetAddress.anyIPv4, port);
-      List<String> ips = await getLanIps();
-      // TODO support multiple lan address
-      state.lanAddress.value = ips.map((ip) => 'http://$ip:$port/${state.lanAddressSuffix}').join("\n");
       _httpServer!.listen((HttpRequest request) async {
         _handleRequest(request);
       });
     } catch (e) {
-      print('Error starting HTTP service: $e');
+      Snackbar.show('Error starting HTTP service: $e');
+      return;
     }
+    for (var i = 0; i < ips.length; i++) {
+      String ip = ips[i];
+      state.addresses.add(Address("${I18nKey.labelLanAddress.tr} $i", 'http://$ip:$port/${state.lanAddressSuffix}'));
+    }
+    update([id]);
   }
 
   Future<void> _stopHttpService() async {
     if (_httpServer != null) {
       await _httpServer!.close();
-      print('HTTP service stopped');
+      Snackbar.show('HTTP service stopped');
       _httpServer = null;
     }
   }
 
   void _handleRequest(HttpRequest request) async {
     final response = request.response;
-    print(request.uri.pathSegments);
     if (request.uri.path == '/___hello_world') {
       response.statusCode = HttpStatus.ok;
       response.write('{"message": "Hello, World!"}');

@@ -14,22 +14,23 @@ class GsCrContentSharePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final logic = Get.find<GsCrContentShareLogic>();
-    var state = logic.state;
     return Scaffold(
       appBar: AppBar(
         title: Text(I18nKey.contentShare.tr),
       ),
-      body: Column(
-        children: [
-          buildItem(I18nKey.labelOriginalAddress.tr, state.originalAddress),
-          Obx(() {
-            if (state.lanAddress.value != "") {
-              return buildItem(I18nKey.labelLanAddress.tr, state.lanAddress.value);
-            } else {
-              return Container();
-            }
-          })
-        ],
+      body: GetBuilder<GsCrContentShareLogic>(
+        id: GsCrContentShareLogic.id,
+        builder: (_) => _buildList(context, logic),
+      ),
+    );
+  }
+
+  Widget _buildList(BuildContext context, GsCrContentShareLogic logic) {
+    final state = logic.state;
+    return ListView(
+      children: List.generate(
+        state.addresses.length,
+        (index) => buildItem(state.addresses[index].title, state.addresses[index].address),
       ),
     );
   }
