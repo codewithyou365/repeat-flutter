@@ -4,11 +4,11 @@ TME is short for Two Mad Explorers, which is a YouTube channel.
 
 ## downloader:
 
-https://yt1ss.pro/zh-cn150/
+https://www.xtdowner.com/video/bilibili/
 
 recommend downloading the 720p video
 
 ## detail:
 
-20240509: https://www.youtube.com/watch?v=BXk6mgHQ-N8
+20240509: https://www.bilibili.com/video/BV1ZW42197U9?p=1
 
