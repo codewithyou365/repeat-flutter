@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/common/path.dart';
@@ -79,9 +81,12 @@ class GsCrContentLogic extends GetxController {
         return;
       }
       var illegalLesson = kv.lesson.where((l) => l.path != l.url).toList();
-      var args = [model.url];
-      if (illegalLesson.isEmpty) {
-        args.add(kv.rootPath.joinPath(Url.toDocName(model.url)));
+      var args = [model.url, kv.rootPath.joinPath(Url.toDocName(model.url))];
+      if (illegalLesson.isNotEmpty) {
+        for (Lesson l in kv.lesson) {
+          l.url = l.path;
+        }
+        args.add(json.encode(kv));
       }
       Nav.gsCrContentShare.push(arguments: args);
     });

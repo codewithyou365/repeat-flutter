@@ -36,6 +36,15 @@ class RepeatDoc {
       List<Lesson>.from(json['lesson'].map((dynamic d) => Lesson.fromJson(d))),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'rootPath': rootPath,
+      'key': key,
+      'rootUrl': rootUrl,
+      'lesson': lesson,
+    };
+  }
 }
 
 class Lesson {
@@ -89,6 +98,21 @@ class Lesson {
           ))),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'url': url,
+      'path': path,
+      'hash': hash,
+      'key': key,
+      'defaultQuestion': defaultQuestion,
+      'defaultTip': defaultTip,
+      'title': title,
+      'titleStart': titleStart,
+      'titleEnd': titleEnd,
+      'segment': segment,
+    };
+  }
 }
 
 class Segment {
@@ -134,5 +158,20 @@ class Segment {
       json['aEnd'] ?? "",
       json['a'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'key': key,
+      'tipStart': tipStart,
+      'tipEnd': tipEnd,
+      'tip': tip,
+      'qStart': qStart,
+      'qEnd': qEnd,
+      'q': q,
+      'aStart': aStart,
+      'aEnd': aEnd,
+      'a': a,
+    };
   }
 }

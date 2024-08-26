@@ -21,7 +21,10 @@ class GsCrContentShareLogic extends GetxController {
     state.addresses.add(Address(I18nKey.labelOriginalAddress.tr, arguments[0]));
 
     if (arguments.length > 1) {
-      state.lanAddressSuffix = arguments[1];
+      state.lanAddressSuffix = "/${arguments[1].replaceAll(RegExp(r'^/+'), '')}";
+    }
+    if (arguments.length > 2) {
+      state.manifestJson = arguments[2];
     }
     if (state.lanAddressSuffix.isNotEmpty) {
       _startHttpService();
@@ -57,7 +60,7 @@ class GsCrContentShareLogic extends GetxController {
     }
     for (var i = 0; i < ips.length; i++) {
       String ip = ips[i];
-      state.addresses.add(Address("${I18nKey.labelLanAddress.tr} $i", 'http://$ip:$port/${state.lanAddressSuffix}'));
+      state.addresses.add(Address("${I18nKey.labelLanAddress.tr} $i", 'http://$ip:$port${state.lanAddressSuffix}'));
     }
     update([id]);
   }
@@ -76,7 +79,7 @@ class GsCrContentShareLogic extends GetxController {
       response.statusCode = HttpStatus.ok;
       response.write('{"message": "Hello, World!"}');
     } else {
-      await _serveFile(Url.toPath(request.uri.pathSegments), response);
+      await _serveFile(request.uri.pathSegments, response);
     }
 
     await response.close();
@@ -94,7 +97,14 @@ class GsCrContentShareLogic extends GetxController {
     return ret; // Fallback if no LAN IP found
   }
 
-  Future<void> _serveFile(String path, HttpResponse response) async {
+  Future<void> _serveFile(List<String> pathSegments, HttpResponse response) async {
+    var path = Url.toPath(pathSegments);
+    if (state.manifestJson != "" && path == state.lanAddressSuffix) {
+      response.headers.contentType = ContentType.binary;
+      response.headers.set('Content-Disposition', 'attachment; filename="${pathSegments.last}"');
+      response.write(state.manifestJson);
+      return;
+    }
     var directory = await DocPath.getRootPath();
     var filePath = directory.joinPath(path);
     final file = File(filePath);
