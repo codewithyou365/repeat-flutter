@@ -521,6 +521,17 @@ class _$ContentIndexDao extends ContentIndexDao {
   }
 
   @override
+  Future<int?> count(
+    String crn,
+    String url,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT count(1) FROM ContentIndex where crn=?1 and url=?2',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [crn, url]);
+  }
+
+  @override
   Future<void> insertContentIndex(ContentIndex data) async {
     await _contentIndexInsertionAdapter.insert(
         data, OnConflictStrategy.replace);
