@@ -88,6 +88,9 @@ class ConfigEn extends Config {
     put(I18nKey.labelSetMaskTips, "Swipe left to increase the height of the barrier.");
     put(I18nKey.labelQrCodeContentCopiedToClipboard, "QR code content copied to clipboard");
     put(I18nKey.labelShouldLinkToTheContentBeAdded, "Should the link to the content be added?");
+    put(I18nKey.labelTooMuchData, "Too much data!");
+    put(I18nKey.labelDataDuplication, "Data duplication!");
+    put(I18nKey.labelDataAnomaly, "Data anomaly!");
     put(I18nKey.btnCancel, "Cancel");
     put(I18nKey.btnOk, "Ok");
     put(I18nKey.btnDelete, "Delete");

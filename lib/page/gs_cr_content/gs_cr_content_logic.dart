@@ -45,6 +45,7 @@ class GsCrContentLogic extends GetxController {
       await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(Classroom.curr, url, 0));
       return;
     }
+    // TODO 删除 所有 学习记录
     await Db().db.scheduleDao.deleteContent(url, doc.id!);
     Get.find<GsCrLogic>().init();
   }
@@ -59,7 +60,11 @@ class GsCrContentLogic extends GetxController {
   add(String url) async {
     var idleSortSequenceNumber = await Db().db.contentIndexDao.getIdleSortSequenceNumber(Classroom.curr);
     if (idleSortSequenceNumber == null) {
-      print("too many data");
+      Snackbar.show(I18nKey.labelTooMuchData.tr);
+      return;
+    }
+    if (await Db().db.contentIndexDao.count(Classroom.curr, url) != 0) {
+      Snackbar.show(I18nKey.labelDataDuplication.tr);
       return;
     }
     var contentIndex = ContentIndex(Classroom.curr, url, idleSortSequenceNumber);
@@ -99,7 +104,7 @@ class GsCrContentLogic extends GetxController {
     }
     var kv = await RepeatDoc.fromPath(doc.path, Uri.parse(url));
     if (kv == null) {
-      print("data error");
+      Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return 0;
     }
     var total = 0;
@@ -119,16 +124,16 @@ class GsCrContentLogic extends GetxController {
     List<SegmentOverallPrg> segmentOverallPrgs = [];
     var kv = await RepeatDoc.fromPath(doc.path, Uri.parse(url));
     if (kv == null) {
-      print("data error");
+      Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
     if (kv.lesson.length >= 100000) {
-      print("too many data");
+      Snackbar.show(I18nKey.labelTooMuchData.tr);
       return;
     }
     for (var d in kv.lesson) {
       if (d.segment.length >= 100000) {
-        print("too many data");
+        Snackbar.show(I18nKey.labelTooMuchData.tr);
         return;
       }
     }
