@@ -89,6 +89,7 @@ enum I18nKey {
   labelTooMuchData,
   labelDataDuplication,
   labelDataAnomaly,
+  labelDataAnomalyWithArg,
   btnCancel,
   btnOk,
   btnDelete,

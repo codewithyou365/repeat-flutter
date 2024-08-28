@@ -19,4 +19,14 @@ class Folder {
       }
     } on FileSystemException catch (_) {}
   }
+
+  static Future<void> delete(String path) async {
+    try {
+      final directory = Directory(path);
+      var exists = await directory.exists();
+      if (exists) {
+        await directory.delete(recursive: true);
+      }
+    } on FileSystemException catch (_) {}
+  }
 }

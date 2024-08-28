@@ -33,6 +33,7 @@ class MsgBox {
     final tec = TextEditingController(text: model.value);
     Get.defaultDialog(
       title: title,
+      barrierDismissible: false,
       content: TextFormField(
         controller: tec,
         decoration: InputDecoration(
@@ -41,10 +42,10 @@ class MsgBox {
       ),
       actions: yesOrNoAction(
           yes: () {
+            model.value = tec.text.trim();
             if (yes != null) {
               yes();
             } else {
-              model.value = tec.text.trim();
               Get.back();
             }
           },

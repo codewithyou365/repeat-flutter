@@ -1,18 +1,26 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/date.dart';
+import 'package:repeat_flutter/common/folder.dart';
+import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/url.dart';
+import 'package:repeat_flutter/common/zip.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
+import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/db/entity/segment_key.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment.dart' as entity;
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/constant.dart';
 import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
+import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
@@ -57,20 +65,70 @@ class GsCrContentLogic extends GetxController {
     }
   }
 
-  add(String url) async {
+  addByZip() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['zip'],
+    );
+    var path = "";
+    if (result != null && result.files.single.path != null) {
+      path = result.files.single.path!;
+    } else {
+      Snackbar.show(I18nKey.labelDataAnomalyWithArg.trArgs(['74']));
+      return;
+    }
+    var zipTargetPath = await DocPath.getZipTargetPath(clearFirst: true);
+    await Zip.uncompress(File(path), zipTargetPath);
+    ZipIndexDoc? zipIndex = await ZipIndexDoc.fromPath();
+    if (zipIndex == null) {
+      Snackbar.show(I18nKey.labelDataAnomalyWithArg.trArgs(['81']));
+      return;
+    }
+
+    var repeatDocPath = zipTargetPath.joinPath(zipIndex.file);
+    var kv = await RepeatDoc.fromPath(repeatDocPath, Uri.parse(zipIndex.url));
+    if (kv == null) {
+      Snackbar.show(I18nKey.labelDataAnomalyWithArg.trArgs(['88']));
+      return;
+    }
+    var success = await add(zipIndex.url);
+    if (!success) {
+      return;
+    }
+    var rootPath = await DocPath.getContentPath();
+
+    // for repeat document
+    rootPath = rootPath.joinPath(kv.rootPath);
+    await Folder.ensureExists(rootPath);
+    var targetRepeatDocPath = rootPath.joinPath(zipIndex.file);
+    await File(repeatDocPath).rename(targetRepeatDocPath);
+    String hash = await Hash.toSha1(targetRepeatDocPath);
+    await Db().db.docDao.insertDoc(Doc(zipIndex.url, targetRepeatDocPath, hash));
+
+    // for media document
+    for (var v in kv.lesson) {
+      var targetPath = rootPath.joinPath(v.path);
+      await File(zipTargetPath.joinPath(v.path)).rename(targetPath);
+      String hash = await Hash.toSha1(targetPath);
+      await Db().db.docDao.insertDoc(Doc(kv.rootUrl.joinPath(v.url), targetPath, hash));
+    }
+  }
+
+  Future<bool> add(String url) async {
     var idleSortSequenceNumber = await Db().db.contentIndexDao.getIdleSortSequenceNumber(Classroom.curr);
     if (idleSortSequenceNumber == null) {
       Snackbar.show(I18nKey.labelTooMuchData.tr);
-      return;
+      return false;
     }
     if (await Db().db.contentIndexDao.count(Classroom.curr, url) != 0) {
       Snackbar.show(I18nKey.labelDataDuplication.tr);
-      return;
+      return false;
     }
     var contentIndex = ContentIndex(Classroom.curr, url, idleSortSequenceNumber);
     state.indexes.add(contentIndex);
     update([GsCrContentLogic.id]);
     await Db().db.contentIndexDao.insertContentIndex(contentIndex);
+    return true;
   }
 
   share(ContentIndex model) async {

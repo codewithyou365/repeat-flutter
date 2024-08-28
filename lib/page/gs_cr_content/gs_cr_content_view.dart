@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
 import 'gs_cr_content_logic.dart';
 
@@ -18,12 +18,30 @@ class GsCrContentPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(I18nKey.content.tr),
         actions: <Widget>[
-          Padding(
-            padding: EdgeInsets.all(8.0.w),
-            child: IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: logic.addByScan,
-            ),
+          PopupMenuButton<String>(
+            onSelected: (String result) {
+              print('Selected: $result');
+            },
+            icon: const Icon(Icons.add),
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              PopupMenuItem<String>(
+                onTap: logic.addByScan,
+                value: 'SCAN',
+                child: const Text('SCAN'),
+              ),
+              PopupMenuItem<String>(
+                onTap: () {
+                  openEditDialog(logic, "", I18nKey.labelAddContentIndex.tr);
+                },
+                value: 'URL',
+                child: const Text('URL'),
+              ),
+              PopupMenuItem<String>(
+                onTap: logic.addByZip,
+                value: 'ZIP',
+                child: const Text('ZIP'),
+              ),
+            ],
           ),
         ],
       ),
@@ -48,12 +66,6 @@ class GsCrContentPage extends StatelessWidget {
           child: const CircularProgressIndicator(),
         );
       }
-      return TextButton(
-        onPressed: () => {
-          openEditDialog(logic, ContentIndex(Classroom.curr, "", state.indexes.length), I18nKey.labelAddContentIndex.tr),
-        },
-        child: Text(I18nKey.btnAdd.tr),
-      );
     }
     return ListView(
       children: List.generate(
@@ -63,44 +75,18 @@ class GsCrContentPage extends StatelessWidget {
     );
   }
 
-  openEditDialog(GsCrContentLogic logic, ContentIndex model, String title) {
-    final firstNameController = TextEditingController(text: model.url);
-    Get.defaultDialog(
-      content: Column(
-        mainAxisSize: MainAxisSize.min, // Ensure dialog fits content
-        children: [
-          Text(title),
-          const SizedBox(height: 10),
-          TextFormField(
-            controller: firstNameController,
-            decoration: InputDecoration(
-              labelText: I18nKey.labelUrl.tr,
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          child: Text(I18nKey.btnCancel.tr),
-          onPressed: () {
-            Get.back();
-          },
-        ),
-        TextButton(
-          child: Text(I18nKey.btnOk.tr),
-          onPressed: () {
-            logic.add(firstNameController.value.text);
-            Get.back();
-          },
-        ),
-      ],
-    );
+  openEditDialog(GsCrContentLogic logic, String url, String title) {
+    var value = url.obs;
+    MsgBox.strInputWithYesOrNo(value, title, I18nKey.labelUrl.tr, yes: () {
+      logic.add(value.value);
+      Get.back();
+    });
   }
 
   openDeleteDialog(GsCrContentLogic logic, ContentIndex model) {
     Get.defaultDialog(
       content: Column(
-        mainAxisSize: MainAxisSize.min, // Ensure dialog fits content
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(I18nKey.labelDeleteContentIndex.trArgs([model.url])),
         ],
@@ -231,7 +217,7 @@ class GsCrContentPage extends StatelessWidget {
           style: textStyle,
           color: Theme.of(context).secondaryHeaderColor,
           onTap: (CompletionHandler handler) async {
-            openEditDialog(logic, model, I18nKey.labelAddContentIndex.tr);
+            openEditDialog(logic, model.url, I18nKey.labelAddContentIndex.tr);
           },
         ),
       ],

@@ -91,6 +91,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelTooMuchData, "Too much data!");
     put(I18nKey.labelDataDuplication, "Data duplication!");
     put(I18nKey.labelDataAnomaly, "Data anomaly!");
+    put(I18nKey.labelDataAnomalyWithArg, "Data anomaly! %s");
     put(I18nKey.btnCancel, "Cancel");
     put(I18nKey.btnOk, "Ok");
     put(I18nKey.btnDelete, "Delete");

@@ -105,7 +105,7 @@ class GsCrContentShareLogic extends GetxController {
       response.write(state.manifestJson);
       return;
     }
-    var directory = await DocPath.getRootPath();
+    var directory = await DocPath.getContentPath();
     var filePath = directory.joinPath(path);
     final file = File(filePath);
     if (await file.exists()) {
