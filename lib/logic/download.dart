@@ -46,7 +46,7 @@ Future<bool> downloadDoc(String urlPath, Finish finish, {String hash = "", Downl
         return true;
       }
     }
-    var rootPath = await DocPath.getRootPath();
+    var rootPath = await DocPath.getContentPath();
     var fl = DocLocation(rootPath, "temp");
     await dio.download(urlPath, fl.path, onReceiveProgress: (int count, int total) {
       fileCount = count;

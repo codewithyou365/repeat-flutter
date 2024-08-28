@@ -91,6 +91,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelTooMuchData, "数据过多!");
     put(I18nKey.labelDataDuplication, "数据重复!");
     put(I18nKey.labelDataAnomaly, "数据异常!");
+    put(I18nKey.labelDataAnomalyWithArg, "数据异常! %s");
     put(I18nKey.btnCancel, "取消");
     put(I18nKey.btnOk, "确定");
     put(I18nKey.btnDelete, "删除");
