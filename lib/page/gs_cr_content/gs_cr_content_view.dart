@@ -4,6 +4,7 @@ import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
 import 'gs_cr_content_logic.dart';
@@ -19,27 +20,17 @@ class GsCrContentPage extends StatelessWidget {
         title: Text(I18nKey.content.tr),
         actions: <Widget>[
           PopupMenuButton<String>(
-            onSelected: (String result) {
-              print('Selected: $result');
-            },
             icon: const Icon(Icons.add),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                onTap: logic.addByScan,
-                value: 'SCAN',
-                child: const Text('SCAN'),
-              ),
               PopupMenuItem<String>(
                 onTap: () {
                   openEditDialog(logic, "", I18nKey.labelAddContentIndex.tr);
                 },
-                value: 'URL',
-                child: const Text('URL'),
+                child: Text(I18nKey.labelRemoteImport.tr),
               ),
               PopupMenuItem<String>(
                 onTap: logic.addByZip,
-                value: 'ZIP',
-                child: const Text('ZIP'),
+                child: Text(I18nKey.labelLocalImport.tr),
               ),
             ],
           ),
@@ -77,10 +68,16 @@ class GsCrContentPage extends StatelessWidget {
 
   openEditDialog(GsCrContentLogic logic, String url, String title) {
     var value = url.obs;
-    MsgBox.strInputWithYesOrNo(value, title, I18nKey.labelUrl.tr, yes: () {
-      logic.add(value.value);
-      Get.back();
-    });
+    MsgBox.strInputWithYesOrNo(
+      value,
+      title,
+      I18nKey.labelRemoteUrl.tr,
+      yes: () {
+        logic.add(value.value);
+        Get.back();
+      },
+      qrPagePath: Nav.gsCrContentScan.path,
+    );
   }
 
   openDeleteDialog(GsCrContentLogic logic, ContentIndex model) {

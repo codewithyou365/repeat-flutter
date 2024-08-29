@@ -29,8 +29,22 @@ class MsgBox {
     String? yesBtnTitle,
     VoidCallback? no,
     String? noBtnTitle,
+    String? qrPagePath,
   }) {
     final tec = TextEditingController(text: model.value);
+    Widget? suffixIcon;
+    if (qrPagePath != null) {
+      suffixIcon = IconButton(
+        icon: const Icon(Icons.qr_code),
+        onPressed: () async {
+          var value = await Get.toNamed(qrPagePath);
+          if (value != null && value is String && value != "") {
+            tec.text = value;
+          }
+        },
+      );
+    }
+
     Get.defaultDialog(
       title: title,
       barrierDismissible: false,
@@ -38,6 +52,7 @@ class MsgBox {
         controller: tec,
         decoration: InputDecoration(
           labelText: decoration,
+          suffixIcon: suffixIcon,
         ),
       ),
       actions: yesOrNoAction(

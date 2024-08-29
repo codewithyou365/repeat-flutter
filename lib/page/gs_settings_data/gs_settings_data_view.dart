@@ -48,7 +48,7 @@ class GsSettingsDataPage extends StatelessWidget {
           TextFormField(
             controller: textEditingController,
             decoration: InputDecoration(
-              labelText: I18nKey.labelUrl.tr,
+              labelText: I18nKey.labelRemoteUrl.tr,
             ),
           ),
           if (mojo != null)

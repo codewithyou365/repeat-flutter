@@ -26,7 +26,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelClassroomNameError, "The classroom name should be 3 letters or less and consist of alphanumeric characters.");
     put(I18nKey.labelClassroomNameDuplicated, "The classroom name is duplicated.");
     put(I18nKey.labelDelete, "Delete !");
-    put(I18nKey.labelUrl, "URL");
+    put(I18nKey.labelRemoteUrl, "Remote URL");
     put(I18nKey.labelOriginalAddress, "Original address");
     put(I18nKey.labelLanAddress, "LAN address");
     put(I18nKey.labelDownloadFirstBeforeSharing, "Please download first before sharing.");
@@ -92,6 +92,9 @@ class ConfigEn extends Config {
     put(I18nKey.labelDataDuplication, "Data duplication!");
     put(I18nKey.labelDataAnomaly, "Data anomaly!");
     put(I18nKey.labelDataAnomalyWithArg, "Data anomaly! %s");
+    put(I18nKey.labelRemoteImport, "Remote Import");
+    put(I18nKey.labelLocalImport, "Local Import");
+    put(I18nKey.labelLocalImportCancel, "Local Import is Canceled");
     put(I18nKey.btnCancel, "Cancel");
     put(I18nKey.btnOk, "Ok");
     put(I18nKey.btnDelete, "Delete");
