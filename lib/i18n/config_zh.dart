@@ -26,7 +26,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelClassroomNameError, "课堂名字应为 3 个字母或更少，并且由字母数字字符组成。");
     put(I18nKey.labelClassroomNameDuplicated, "课堂名字重复。");
     put(I18nKey.labelDelete, "删除 ！");
-    put(I18nKey.labelUrl, "地址");
+    put(I18nKey.labelRemoteUrl, "远程地址");
     put(I18nKey.labelOriginalAddress, "原始地址");
     put(I18nKey.labelLanAddress, "局域网地址");
     put(I18nKey.labelDownloadFirstBeforeSharing, "请先下载再进行分享");
@@ -92,6 +92,9 @@ class ConfigZh extends Config {
     put(I18nKey.labelDataDuplication, "数据重复!");
     put(I18nKey.labelDataAnomaly, "数据异常!");
     put(I18nKey.labelDataAnomalyWithArg, "数据异常! %s");
+    put(I18nKey.labelRemoteImport, "远程导入");
+    put(I18nKey.labelLocalImport, "本地导入");
+    put(I18nKey.labelLocalImportCancel, "本地导入取消");
     put(I18nKey.btnCancel, "取消");
     put(I18nKey.btnOk, "确定");
     put(I18nKey.btnDelete, "删除");

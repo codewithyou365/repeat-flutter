@@ -58,13 +58,6 @@ class GsCrContentLogic extends GetxController {
     Get.find<GsCrLogic>().init();
   }
 
-  addByScan() async {
-    var url = await Nav.gsCrContentScan.push();
-    if (url != null && url is String && url != "") {
-      await add(url);
-    }
-  }
-
   addByZip() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -74,7 +67,7 @@ class GsCrContentLogic extends GetxController {
     if (result != null && result.files.single.path != null) {
       path = result.files.single.path!;
     } else {
-      Snackbar.show(I18nKey.labelDataAnomalyWithArg.trArgs(['74']));
+      Snackbar.show(I18nKey.labelLocalImportCancel.tr);
       return;
     }
     var zipTargetPath = await DocPath.getZipTargetPath(clearFirst: true);
