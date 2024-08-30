@@ -144,7 +144,7 @@ class GsCrContentShareLogic extends GetxController {
       List<ZipArchive> zipFiles = [ZipArchive(File(repeatDocPath), name)];
       var zipSavePath = await DocPath.getZipSavePath(clearFirst: true);
       var indexFilePath = zipSavePath.joinPath(DocPath.zipIndexFile);
-      var indexContent = ZipIndexDoc(state.rawUrl, name);
+      var indexContent = ZipIndexDoc(name, state.rawUrl);
       var indexFile = File(indexFilePath);
       zipFiles.add(ZipArchive(await indexFile.writeAsString(json.encode(indexContent)), DocPath.zipIndexFile));
 
