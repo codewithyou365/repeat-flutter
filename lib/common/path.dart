@@ -1,6 +1,14 @@
-import 'dart:io';
 
 extension StringExtension on String {
+  String trimFormat() {
+    var lastIndexOf = this.lastIndexOf(".");
+    if (lastIndexOf == -1) {
+      return this;
+    } else {
+      return substring(0, lastIndexOf);
+    }
+  }
+
   String joinPath(String path) {
     if (path == "") {
       return this;

@@ -2,6 +2,13 @@ import 'dart:io';
 
 import 'package:archive/archive.dart';
 
+class ZipArchive {
+  final File file;
+  final String path;
+
+  ZipArchive(this.file, this.path);
+}
+
 class Zip {
   static Future<void> uncompress(File zipFile, String destinationDir) async {
     final bytes = await zipFile.readAsBytes();
@@ -27,5 +34,22 @@ class Zip {
     }
 
     print('Files extracted to ${directory.path}');
+  }
+
+  static Future<File> compress(List<ZipArchive> files, File zipFile) async {
+    final archive = Archive();
+
+    for (var file in files) {
+      final bytes = await file.file.readAsBytes();
+      final archiveFile = ArchiveFile(file.path, bytes.length, bytes);
+      archive.addFile(archiveFile);
+    }
+
+    final zipEncoder = ZipEncoder();
+    final zipData = zipEncoder.encode(archive);
+
+    await zipFile.writeAsBytes(zipData!);
+
+    return zipFile;
   }
 }

@@ -3,20 +3,25 @@ import 'package:sqflite/sqflite.dart' as sqflite;
 
 class DocPath {
   static const String content = "c";
-  static const String zipDownload = "zd";
+  static const String zipSave = "zs";
   static const String zipTarget = "zt";
   static const String zipIndexFile = "__index.json";
 
   static Future<String> getContentPath() async {
-    var directory = await sqflite.getDatabasesPath();
-    var path = "$directory/$content";
-    await Folder.ensureExists(path);
-    return path;
+    return await _getPath(content);
+  }
+
+  static Future<String> getZipSavePath({clearFirst = false}) async {
+    return await _getPath(zipSave, clearFirst: clearFirst);
   }
 
   static Future<String> getZipTargetPath({clearFirst = false}) async {
+    return await _getPath(zipTarget, clearFirst: clearFirst);
+  }
+
+  static Future<String> _getPath(String dir, {clearFirst = false}) async {
     var directory = await sqflite.getDatabasesPath();
-    var path = "$directory/$zipTarget";
+    var path = "$directory/$dir";
     if (clearFirst) {
       await Folder.delete(path);
     }

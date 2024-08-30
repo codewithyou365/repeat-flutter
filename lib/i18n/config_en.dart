@@ -30,6 +30,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelOriginalAddress, "Original address");
     put(I18nKey.labelLanAddress, "LAN address");
     put(I18nKey.labelDownloadFirstBeforeSharing, "Please download first before sharing.");
+    put(I18nKey.labelDownloadFirstBeforeSaving, "Please download first before saving.");
     put(I18nKey.labelAddContentIndex, "Add content index");
     put(I18nKey.labelEditContentIndex, "Edit content index");
     put(I18nKey.labelDeleteContentIndex, "Please confirm to delete content index\n\n%s");
@@ -47,6 +48,10 @@ class ConfigEn extends Config {
     put(I18nKey.labelImporting, "Importing...");
     put(I18nKey.labelExporting, "Exporting...");
     put(I18nKey.labelExecuting, "Executing...");
+    put(I18nKey.labelSaving, "Saving...");
+    put(I18nKey.labelSelectDirectoryToSave, "Select a directory to save %s");
+    put(I18nKey.labelSaveSuccess, "Save success : %s");
+    put(I18nKey.labelSaveCancel, "Save canceled");
     put(I18nKey.labelResetLearn, "Reset Learn");
     put(I18nKey.labelResetLearnDesc, "After executing the reset function, the unfinished tasks for today will be reset. Do you want to continue?");
     put(I18nKey.labelConfigSettingsForEl, "Learn Config");

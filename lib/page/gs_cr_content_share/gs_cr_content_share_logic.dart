@@ -1,10 +1,16 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/url.dart';
+import 'package:repeat_flutter/common/zip.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/constant.dart';
+import 'package:repeat_flutter/logic/model/repeat_doc.dart';
+import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
+import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'gs_cr_content_share_state.dart';
@@ -18,7 +24,8 @@ class GsCrContentShareLogic extends GetxController {
   void onInit() {
     super.onInit();
     List<String> arguments = Get.arguments as List<String>;
-    state.addresses.add(Address(I18nKey.labelOriginalAddress.tr, arguments[0]));
+    state.rawUrl = arguments[0];
+    state.addresses.add(Address(I18nKey.labelOriginalAddress.tr, state.rawUrl));
 
     if (arguments.length > 1) {
       state.lanAddressSuffix = "/${arguments[1].replaceAll(RegExp(r'^/+'), '')}";
@@ -120,5 +127,44 @@ class GsCrContentShareLogic extends GetxController {
         ..statusCode = HttpStatus.notFound
         ..write('File not found');
     }
+  }
+
+  void onSave() {
+    showOverlay(() async {
+      await Future.delayed(const Duration(milliseconds: 500));
+      var rootPath = await DocPath.getContentPath();
+      var repeatDocPath = rootPath.joinPath(state.lanAddressSuffix);
+      var kv = await RepeatDoc.fromPath(repeatDocPath, Uri.parse(state.rawUrl));
+      if (kv == null) {
+        Snackbar.show(I18nKey.labelDownloadFirstBeforeSaving.tr);
+        return;
+      }
+
+      var name = Url.toDocName(state.rawUrl);
+      List<ZipArchive> zipFiles = [ZipArchive(File(repeatDocPath), name)];
+      var zipSavePath = await DocPath.getZipSavePath(clearFirst: true);
+      var indexFilePath = zipSavePath.joinPath(DocPath.zipIndexFile);
+      var indexContent = ZipIndexDoc(state.rawUrl, name);
+      var indexFile = File(indexFilePath);
+      zipFiles.add(ZipArchive(await indexFile.writeAsString(json.encode(indexContent)), DocPath.zipIndexFile));
+
+      rootPath = rootPath.joinPath(kv.rootPath);
+      for (var v in kv.lesson) {
+        var targetPath = rootPath.joinPath(v.path);
+        zipFiles.add(ZipArchive(File(targetPath), v.path));
+      }
+      String zipFileName = "${name.trimFormat()}.zip";
+      File zipFile = File(zipSavePath.joinPath(zipFileName));
+      await Zip.compress(zipFiles, zipFile);
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      String? selectedDirectory = await FilePicker.platform.getDirectoryPath(dialogTitle: "Select a directory to save $zipFileName");
+      if (selectedDirectory != null) {
+        await zipFile.rename(selectedDirectory.joinPath(zipFileName));
+        Snackbar.show(I18nKey.labelSaveSuccess.trArgs([zipFileName]));
+      } else {
+        Snackbar.show(I18nKey.labelSaveCancel.tr);
+      }
+    }, I18nKey.labelSaving.tr);
   }
 }

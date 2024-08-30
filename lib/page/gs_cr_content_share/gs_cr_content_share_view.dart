@@ -17,6 +17,15 @@ class GsCrContentSharePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(I18nKey.contentShare.tr),
+        actions: <Widget>[
+          Padding(
+            padding: EdgeInsets.all(8.0.w),
+            child: IconButton(
+              icon: const Icon(Icons.save),
+              onPressed: logic.onSave,
+            ),
+          ),
+        ],
       ),
       body: GetBuilder<GsCrContentShareLogic>(
         id: GsCrContentShareLogic.id,
