@@ -30,6 +30,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelOriginalAddress, "原始地址");
     put(I18nKey.labelLanAddress, "局域网地址");
     put(I18nKey.labelDownloadFirstBeforeSharing, "请先下载再进行分享");
+    put(I18nKey.labelDownloadFirstBeforeSaving, "请先下载再进行保存");
     put(I18nKey.labelAddContentIndex, "新增内容索引");
     put(I18nKey.labelEditContentIndex, "编辑内容索引");
     put(I18nKey.labelDeleteContentIndex, "请确定删除内容索引\n\n%s");
@@ -47,6 +48,10 @@ class ConfigZh extends Config {
     put(I18nKey.labelImporting, "导入中...");
     put(I18nKey.labelExporting, "导出中...");
     put(I18nKey.labelExecuting, "执行中...");
+    put(I18nKey.labelSaving, "保存中...");
+    put(I18nKey.labelSaveSuccess, "保存成功 : %s");
+    put(I18nKey.labelSelectDirectoryToSave, "选择一个目录进行保存 %s");
+    put(I18nKey.labelSaveCancel, "保存已取消");
     put(I18nKey.labelResetLearn, "重置学习内容");
     put(I18nKey.labelResetLearnDesc, "执行重置后，将重置今日未完成的任务，是否继续？");
     put(I18nKey.labelConfigSettingsForEl, "学习设置");

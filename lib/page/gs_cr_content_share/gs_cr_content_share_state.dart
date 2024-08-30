@@ -1,5 +1,3 @@
-import 'package:get/get.dart';
-
 class Address {
   String title;
   String address;
@@ -9,6 +7,7 @@ class Address {
 
 class GsCrContentShareState {
   final List<Address> addresses = <Address>[];
+  var rawUrl = "";
   var lanAddressSuffix = "";
   var manifestJson = "";
 }
