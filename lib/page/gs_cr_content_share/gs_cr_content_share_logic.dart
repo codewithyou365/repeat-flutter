@@ -158,7 +158,9 @@ class GsCrContentShareLogic extends GetxController {
       await Zip.compress(zipFiles, zipFile);
       await Future.delayed(const Duration(milliseconds: 500));
 
-      String? selectedDirectory = await FilePicker.platform.getDirectoryPath(dialogTitle: "Select a directory to save $zipFileName");
+      String? selectedDirectory = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: I18nKey.labelSelectDirectoryToSave.trArgs([zipFileName]),
+      );
       if (selectedDirectory != null) {
         await zipFile.rename(selectedDirectory.joinPath(zipFileName));
         Snackbar.show(I18nKey.labelSaveSuccess.trArgs([zipFileName]));
