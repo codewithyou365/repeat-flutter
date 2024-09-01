@@ -134,6 +134,10 @@ class MsgBox {
     double? size,
   }) {
     size ??= 200.w;
+    Color color = Colors.black;
+    if (Get.context != null) {
+      color = Theme.of(Get.context!).brightness == Brightness.dark ? color = Colors.white : Colors.black;
+    }
     Get.defaultDialog(
       title: title,
       content: Column(
@@ -145,6 +149,14 @@ class MsgBox {
               height: size,
               child: QrImageView(
                 data: qrContent,
+                eyeStyle: QrEyeStyle(
+                  eyeShape: QrEyeShape.square,
+                  color: color,
+                ),
+                dataModuleStyle: QrDataModuleStyle(
+                  dataModuleShape: QrDataModuleShape.square,
+                  color: color,
+                ),
                 version: QrVersions.auto,
                 size: size,
               ),
