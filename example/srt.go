@@ -11,7 +11,8 @@ import (
 
 const ListenMode = "l"
 const QaMode = "qa"
-const NormalMode = ""
+const NormalMode = "n"
+const NormalWithPerfectPunctuationMode = "npp"
 
 type segment struct {
 	QStart string `json:"qStart,omitempty"`
@@ -24,7 +25,15 @@ type segment struct {
 }
 
 func main() {
-	file, err := os.Open("srt.srt")
+	fileName := "srt.srt"
+	if len(os.Args) > 1 {
+		fileName = os.Args[1]
+	}
+	_debug := false
+	if len(os.Args) > 2 {
+		_debug = true
+	}
+	file, err := os.Open(fileName)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return
@@ -36,6 +45,9 @@ func main() {
 	segments := make([]*segment, 0, 10)
 	curr := &segment{}
 	mode := ""
+	preContent := ""
+	preContentFields := make([]string, 0)
+	preContentIndex := 0
 	modeOffset := 0
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -46,8 +58,21 @@ func main() {
 			} else if line == ListenMode {
 				mode = ListenMode
 				continue
+			} else if line == NormalWithPerfectPunctuationMode {
+				mode = NormalWithPerfectPunctuationMode
+				continue
 			} else {
 				mode = NormalMode
+			}
+		}
+		if mode == NormalWithPerfectPunctuationMode {
+			if line != "---" {
+				preContent += line + " "
+				continue
+			} else {
+				preContentFields = strings.Fields(preContent)
+				mode = NormalMode
+				continue
 			}
 		}
 		if len(line) == 0 {
@@ -110,6 +135,24 @@ func main() {
 						curr.A = curr.A + strings.TrimRight(line, "|")
 					} else {
 						curr.A = curr.A + line
+						if len(preContentFields) > 0 {
+							currFields := strings.Fields(curr.A)
+							for i := 0; i < len(currFields); i++ {
+								if currFields[i] == "s" || currFields[i] == "t" {
+									preContentIndex--
+									continue
+								}
+								if i+preContentIndex < len(preContentFields) && preContentFields[i+preContentIndex] != currFields[i] {
+									currFields[i] = preContentFields[i+preContentIndex]
+								}
+							}
+							preContentIndex += len(currFields)
+							curr.A = strings.Join(currFields, " ")
+
+						}
+						if _debug {
+							fmt.Println(curr.A)
+						}
 						for scanner.Scan() {
 							lineTip := strings.TrimSpace(scanner.Text())
 							if len(lineTip) == 0 {
@@ -201,6 +244,6 @@ func millisToTimeRange(millis int) string {
 	hour := millis / 3600000
 	min := (millis % 3600000) / 60000
 	sec := (millis % 60000) / 1000
-	millisec := millis % 1000
-	return fmt.Sprintf("%02d:%02d:%02d,%03d", hour, min, sec, millisec)
+	milliSec := millis % 1000
+	return fmt.Sprintf("%02d:%02d:%02d,%03d", hour, min, sec, milliSec)
 }
