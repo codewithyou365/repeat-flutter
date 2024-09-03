@@ -1,5 +1,4 @@
 {
-  "type": "AUDIO-KV",
   "rootPath": "book",
   "key": "book",
   "lesson": [
@@ -1200,6 +1199,196 @@
           "aEnd": "00:02:05,366",
           "tip": "5天后，一条油轮从那儿路过，搭救了他们。这二位不得不离开那个荒岛时，还真的感到遗憾呢！",
           "a": "When a passing tanker rescued them five days later, both men were genuinely sorry that they had to leave."
+        }
+      ]
+    },
+    {
+      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/13_310.mp3",
+      "path": "/nce3/a/13.mp3",
+      "hash": "b3883c552763c6a85bbfabd11194eb4c0654b811",
+      "key": "nce3/13",
+      "title": "It's only me",
+      "titleStart": "00:00:02,300",
+      "titleEnd": "00:00:04,733",
+      "segment": [
+        {
+          "aStart": "00:00:02,300",
+          "aEnd": "00:00:04,733",
+          "tip": "It's only me",
+          "a": "It's only me"
+        },
+        {
+          "aStart": "00:00:15,900",
+          "aEnd": "00:00:24,583",
+          "tip": "理查兹夫人等丈夫上班走后，把孩子送去上学，然后来到楼上自己的卧室。",
+          "a": "After her husband had gone to work. Mrs. Richards sent her children to school and went upstairs to her bedroom."
+        },
+        {
+          "aStart": "00:00:24,683",
+          "aEnd": "00:00:34,516",
+          "tip": "那天上午，她兴奋得什么家务活都不想做，因为晚上她要同丈夫一起参加一个化装舞会。",
+          "a": "She was too excited to do any housework that morning, for in the evening she would be going to a fancy-dress part with her husband."
+        },
+        {
+          "aStart": "00:00:34,617",
+          "aEnd": "00:00:43,333",
+          "tip": "她打算装扮成鬼的模样。头天晚上她已把化装服做好，这时她急于想试试。",
+          "a": "She intended to dress up as a ghost and as she had made her costume the night before, she was impatient to try it on."
+        },
+        {
+          "aStart": "00:00:43,766",
+          "aEnd": "00:00:49,266",
+          "tip": "尽管化装服仅由一个被单制成，却十分逼真。",
+          "a": "Though the costume consisted only of a sheet, it was very effective."
+        },
+        {
+          "aStart": "00:00:49,367",
+          "aEnd": "00:00:53,766",
+          "tip": "理查兹夫人穿上化装服后下了楼，",
+          "a": "After putting it on, Mrs. Richards went downstairs."
+        },
+        {
+          "aStart": "00:00:53,866",
+          "aEnd": "00:00:57,816",
+          "tip": "想看穿起来是否舒服。",
+          "a": "She wanted to find out whether it would be comfortable to wear."
+        },
+        {
+          "aStart": "00:00:57,917",
+          "aEnd": "00:01:04,383",
+          "tip": "理查兹夫人刚刚走进餐厅，前门就传来敲门声。",
+          "a": "Just as Mrs. Richards was entering the dinning room, there was a knock on the front door."
+        },
+        {
+          "aStart": "00:01:04,483",
+          "aEnd": "00:01:07,383",
+          "tip": "她知道来了一定面包师。",
+          "a": "She knew that it must be the baker."
+        },
+        {
+          "aStart": "00:01:07,483",
+          "aEnd": "00:01:14,183",
+          "tip": "她曾告诉过面包师，如果她不去开门，他可直接进门，把面包放在厨房的桌上。",
+          "a": "She had told him to come straight in if ever she failed to open the door and to leave the bread on the kitchen table."
+        },
+        {
+          "aStart": "00:01:14,283",
+          "aEnd": "00:01:21,816",
+          "tip": "理查兹夫人不想吓唬这个可怜人，便赶紧躲到了楼梯下的小储藏室里。",
+          "a": "Not wanting to frighten the poor man, Mrs. Richards quickly hid in the small storeroom under the stairs."
+        },
+        {
+          "aStart": "00:01:21,916",
+          "aEnd": "00:01:26,433",
+          "tip": "她听见前门被打开，走廊里响起重重的脚步声。",
+          "a": "She heard the front door open and heavy footsteps in the hall."
+        },
+        {
+          "aStart": "00:01:26,600",
+          "aEnd": "00:01:30,983",
+          "tip": "突然贮藏门开了，一个男人走了进来。",
+          "a": "Suddenly the door of the storeroom was opened and a man entered."
+        },
+        {
+          "aStart": "00:01:31,083",
+          "aEnd": "00:01:38,483",
+          "tip": "理查兹夫人这才想到一定是供电局来人查电表了。",
+          "a": "Mrs. Richards realized that it must be the man from the Electricity Board who had come to read the metre."
+        },
+        {
+          "aStart": "00:01:38,583",
+          "aEnd": "00:01:46,199",
+          "tip": "她说了声“是我，别怕！”然后想进行一番解释，但已来不及了。",
+          "a": "She tried to explain the situation, saying 'It's only me', but it was too late."
+        },
+        {
+          "aStart": "00:01:46,300",
+          "aEnd": "00:01:51,316",
+          "tip": "那人大叫了一声，惊退了几步。",
+          "a": "The man let out cry and jumped back several paces."
+        },
+        {
+          "aStart": "00:01:51,417",
+          "aEnd": "00:01:57,833",
+          "tip": "理查兹夫人朝他走去，只见他“砰”的一声关上门逃走了。",
+          "a": "When Mrs. Richards walked towards him, he fled, slamming the door behind him."
+        }
+      ]
+    },
+    {
+      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/14_813.mp3",
+      "path": "/nce3/a/14.mp3",
+      "hash": "f7f38f858a1319d94a113e8108f03351ed803f41",
+      "key": "nce3/14",
+      "title": "A noble gangster",
+      "titleStart": "00:00:01,933",
+      "titleEnd": "00:00:08,400",
+      "segment": [
+        {
+          "aStart": "00:00:14,766",
+          "aEnd": "00:00:25,949",
+          "tip": "曾经有一个时期,芝加哥的店主和商行的老板们不得不拿出大笔的钱给歹徒以换取\"保护\"。",
+          "a": "There was a time when the owners of shops and businesses in Chicago that to pay large sums of money to gangsters in return for 'protection.'"
+        },
+        {
+          "aStart": "00:00:26,050",
+          "aEnd": "00:00:34,916",
+          "tip": "如果交款不及时,歹徒们就会很快捣毁他的商店,让他破产.",
+          "a": "If the money was not paid promptly, the gangsters would quickly put a man out of business by destroying his shop."
+        },
+        {
+          "aStart": "00:00:35,017",
+          "aEnd": "00:00:39,399",
+          "tip": "榨取\"保护金\"并不是一种现代的罪恶行径.",
+          "a": "Obtaining 'protection money' is not a modern crime."
+        },
+        {
+          "aStart": "00:00:39,500",
+          "aEnd": "00:00:56,000",
+          "tip": "早在14世纪,英国人约翰.霍克伍德就有过非凡的发现: 人们情愿拿出大笔的钱,也不愿毕生的心血毁于歹徒之手.",
+          "a": "As long ago as the fourteenth century, an Englishman, Sir John Hawkwood, made the remarkable discovery that people would rather pay large sums of money than have their life work destroyed by gangsters."
+        },
+        {
+          "aStart": "00:00:56,100",
+          "aEnd": "00:01:05,083",
+          "tip": "600年前,约翰.霍克伍德爵士带着一队士兵来到意大利,在佛罗伦萨附近驻扎下来,",
+          "a": "Six hundred years ago, Sir Johan Hawkwood arrived in Italy with a band of soldiers and settled near Florence."
+        },
+        {
+          "aStart": "00:01:05,183",
+          "aEnd": "00:01:13,016",
+          "tip": "很快就出了名.意大利人叫他乔凡尼.阿库托.",
+          "a": "He soon made a name for himself and came to be known to the Italians as Giovanni Acuto."
+        },
+        {
+          "aStart": "00:01:13,117",
+          "aEnd": "00:01:25,016",
+          "tip": "每次意大利各城邦之间打伏,霍克伍德把他的士兵雇佣给愿给他出高价的君主。",
+          "a": "Whenever the Italian city-states were at war with each other, Hawkwood used to hire his soldiers to princes who were willing to pay the high price he demanded."
+        },
+        {
+          "aStart": "00:01:25,117",
+          "aEnd": "00:01:39,833",
+          "tip": "和平时期,当生意萧条时,霍克伍德便带领士兵进入某个城邦,纵火烧毁一两个农场,然后提出,如向他们缴纳保护金,他们便主动撤离。",
+          "a": "In times of peace, when business was bad, Hawkwood and his men would march into a city-state and, after burning down a few farms, would offer to go away protection money was paid to them."
+        },
+        {
+          "aStart": "00:01:39,933",
+          "aEnd": "00:01:43,933",
+          "tip": "霍克伍德用这种方法挣了大笔钱.",
+          "a": "Hawkwood made large sums of money in this way."
+        },
+        {
+          "aStart": "00:01:44,033",
+          "aEnd": "00:01:49,616",
+          "tip": "尽管如此,意大利人还是把他视作某种英雄。",
+          "a": "In spite of this, the Italians regarded him as a sort of hero."
+        },
+        {
+          "aStart": "00:01:49,716",
+          "aEnd": "00:02:08,133",
+          "tip": "他80岁那年死去时,佛罗伦萨人为他举行了国葬,并为他画像以纪念这位\"骁勇无比的战士、杰出的领袖乔凡尼.阿库托先生.\"",
+          "a": "When he died at the age of eighty, the Florentines gave him a state funeral and had a pictured with as dedicated to the memory of 'the most valiant soldier and most notable leader, Signor Giovanni Haukodue.'"
         }
       ]
     }

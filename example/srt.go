@@ -139,7 +139,8 @@ func main() {
 							currFields := strings.Fields(curr.A)
 							for i := 0; i < len(currFields); i++ {
 								if currFields[i] == "s" || currFields[i] == "t" {
-									preContentIndex--
+									currFields = append(currFields[0:i], currFields[i+1:]...)
+									i--
 									continue
 								}
 								if i+preContentIndex < len(preContentFields) && preContentFields[i+preContentIndex] != currFields[i] {
