@@ -1,116 +1,77 @@
 npp
 
-Life on a desert island
+A noble gangster
 
-Most of us have formed an unrealistic picture of life on a desert island. We sometimes imagine a desert island to be a sort of paradise where the sun always shines. Life there is simple and good. Ripe fruit falls from the trees and you never have to work. The other side of the picture is quite the opposite. Life on a desert island is wretched. You either starve to death or live like Robinson Crusoe, Waiting for a boat which never comes. Perhaps there is an element of truth in both these pictures, but few us have had the opportunity to find out.
+There was a time when the owners of shops and businesses in Chicago that to pay large sums of money to gangsters in return for 'protection.' If the money was not paid promptly, the gangsters would quickly put a man out of business by destroying his shop. Obtaining 'protection money' is not a modern crime. As long ago as the fourteenth century, an Englishman, Sir John Hawkwood, made the remarkable discovery that people would rather pay large sums of money than have their life work destroyed by gangsters.
 
-Two men who recently spent five days on a coral island wished they had stayed there longer. They were taking a badly damaged boat from the Virgin Islands to Miami to have it repaired. During the journey, their boat began to sink. They quickly loaded a small rubber dinghy with food, matches, and cans of beer and rowed for a few miles across the Caribbean until they arrived at a tiny coral island. There were hardly any trees on the island and there was no water, but this did not prove to be a problem. The men collected rainwater in the rubber dinghy. As they had brought a spear gun with them, they had plenty to eat. They caught lobster and fish every day, and, as one of them put it 'ate like kings'. When a passing tanker rescued them five days later, both men were genuinely sorry that they had to leave.
+Six hundred years ago, Sir Johan Hawkwood arrived in Italy with a band of soldiers and settled near Florence. He soon made a name for himself and came to be known to the Italians as Giovanni Acuto. Whenever the Italian city-states were at war with each other, Hawkwood used to hire his soldiers to princes who were willing to pay the high price he demanded. In times of peace, when business was bad, Hawkwood and his men would march into a city-state and, after burning down a few farms, would offer to go away protection money was paid to them. Hawkwood made large sums of money in this way. In spite of this, the Italians regarded him as a sort of hero. When he died at the age of eighty, the Florentines gave him a state funeral and had a pictured with as dedicated to the memory of 'the most valiant soldier and most notable leader, Signor Giovanni Haukodue.'
 
 ---
 
+
 1
-00:00:02,366 --> 00:00:04,366
-Life on a desert island
-Life on a desert island
+00:00:02,433 --> 00:00:07,900
+A noble gangster
+A noble gangster
 
 2
-00:00:16,233 --> 00:00:21,500
-Most of us have formed an unrealistic picture of life on a desert island
-我们许多人对于荒岛生活有一种不切实际的想法。
+00:00:15,266 --> 00:00:25,733
+There was a time when the owners of shops and businesses in Chicago that to pay large sums of money to gangsters in return for   protection
+曾经有一个时期,芝加哥的店主和商行的老板们不得不拿出大笔的钱给歹徒以换取"保护"。
 
 3
-00:00:22,166 --> 00:00:29,766
-We sometimes imagine a desert island to be a sort of paradise where the sun always shines
-我们有时想象荒岛是阳光终日普照的天堂。
+00:00:26,266 --> 00:00:34,500
+If the money was not paid promptly   the gangsters would quickly put a man out of business by destroying his shop
+如果交款不及时,歹徒们就会很快捣毁他的商店,让他破产.
+
 4
-00:00:29,966 --> 00:00:32,000
-Life there is simple and good
-在那里，生活简单又美好。
+00:00:35,433 --> 00:00:39,233
+Obtaining   protection money   is not a modern crime
+榨取"保护金"并不是一种现代的罪恶行径.
+
 
 5
-00:00:32,533 --> 00:00:36,933
-Ripe fruit falls from the trees and you never have to work
-成熟的水果从树上掉下来，人们根本无需劳动。
-
+00:00:39,666 --> 00:00:55,500
+As long ago as the fourteenth century   an Englishman   Sir John Hawkwood   made the remarkable discovery that people would rather pay large sums of money than have their life work destroyed by gangsters
+早在14世纪,英国人约翰.霍克伍德就有过非凡的发现:"人们情愿拿出大笔的钱,也不愿毕生的心血毁于歹徒之手.
 
 6
-00:00:37,566 --> 00:00:40,800
-The other side of the picture is quite the opposite
-另一种想法恰恰相反，
+00:00:56,600 --> 00:01:04,966
+Six hundred years ago   Sir Johan Hawkwood arrived in Italy with a band of soldiers and settled near Florence
+600年前,约翰.霍克伍德爵士带着一队士兵来到意大利,在佛罗伦萨附近驻扎下来,
 
 
 7
-00:00:41,200 --> 00:00:43,700
-Life on a desert island is wretched
-认为荒岛生活很可怕，
+00:01:05,300 --> 00:01:12,733
+He soon made a name for himself and came to be known to the Italians as Giovanni Acuto
+很快就出了名.意大利人叫他乔凡尼.阿库托.
+
 
 8
-00:00:43,933 --> 00:00:51,600
-You either starve to death or live like Robinson Crusoe  Waiting for a boat which never comes
-要么饿死，要么像鲁滨孙那样，天天盼船来，却总没见船影。
+00:01:13,400 --> 00:01:24,900
+Whenever the Italian city-states were at war with each other   Hawkwood used to hire his soldiers to princes who were willing to pay the high price he demanded
+每次意大利各城邦之间打伏,霍克伍德把他的士兵雇佣给愿给他出高价的君主。
+
 
 9
-00:00:52,433 --> 00:00:59,766
-Perhaps there is an element of truth in both these pictures  but few us have had the opportunity to find out
-也许，这两种都像都有可信之处。但很少有人能有机会去弄个究竟。
-
-
+00:01:25,233 --> 00:01:39,500
+In times of peace   when business was bad   Hawkwood and his men would march into a city-state and   after burning down a few farms   would offer to go away protection money was paid to them
+和平时期,当生意萧条时,霍克伍德便带领士兵进入某个城邦,纵火烧毁一两个农场,然后提出,如向他们缴纳保护金,他们便主动撤离。
 
 10
-00:01:00,833 --> 00:01:08,166
-Two men who recently spent five days on a coral island wished they had stayed there longer
-最近有两个人在一座珊瑚岛上呆了5天，他们真希望在那儿再多呆一些日子。
-
+00:01:40,266 --> 00:01:43,666
+Hawkwood made large sums of money in this way
+霍克伍德用这种方法挣了大笔钱.
 
 11
-00:01:09,200 --> 00:01:15,466
-They were taking a badly damaged boat from the Virgin Islands to Miami to have it repaired
-他们驾着一条严重损坏的小船从维尔京群岛到迈阿密修理。
+00:01:44,300 --> 00:01:49,466
+In spite of this   the Italians regarded him as a sort of hero
+尽管如此,意大利人还是把他视作某种英雄。
+
+
 
 
 12
-00:01:15,866 --> 00:01:18,933
-During the journey  their boat began to sink
-途中，船开始下沉，
-
-
-13
-00:01:20,166 --> 00:01:32,933
-They quickly loaded a small rubber dinghy with food  matches  and cans of beer and rowed for a few miles across the Caribbean until they arrived at a tiny coral island
-他们迅速把食物、火柴、罐装啤酒往一只救生筏上装。然后在加勒比海上划行了几英里，到了一座珊瑚岛上。
-
-
-14
-00:01:33,600 --> 00:01:40,533
-There were hardly any trees on the island and there was no water  but this did not prove to be a problem
-岛上几乎没有一颗树，也没有淡水，但这不算什么问题。
-
-
-15
-00:01:41,533 --> 00:01:44,733
-The men collected rainwater in the rubber dinghy
-他们用像皮艇蓄积雨水。
-
-
-16
-00:01:45,233 --> 00:01:49,266
-As they had brought a spear gun with them  they had plenty to eat
-由于他们随身带了一支捕鱼枪，因此，吃饭不愁。
-
-
-17
-00:01:49,600 --> 00:01:52,466
-They caught lobster and fish every day |
-
-
-
-18
-00:01:52,766 --> 00:01:56,866
-and  as one of them put it  ate like kings
-他们天天捕捉龙虾和鱼，正如其中一位所说，吃得“像国王一样好”。
-
-
-19
-00:01:57,200 --> 00:02:04,866
-When a passing tanker rescued them five days later  both men were genuinely sorry that they had to leave
-5天后，一条油轮从那儿路过，搭救了他们。这二位不得不离开那个荒岛时，还真的感到遗憾呢！
+00:01:49,866 --> 00:02:07,633
+When he died at the age of eighty   the Florentines gave him a state funeral and had a pictured with as dedicated to the memory of   the most valiant soldier and most notable leader   Signor Giovanni Haukodue
+他80岁那年死去时,佛罗伦萨人为他举行了国葬,并为他画像以纪念这位"骁勇无比的战士、杰出的领袖乔凡尼.阿库托先生."
