@@ -1,77 +1,120 @@
 npp
 
-A noble gangster
+Little White Lamb
 
-There was a time when the owners of shops and businesses in Chicago that to pay large sums of money to gangsters in return for 'protection.' If the money was not paid promptly, the gangsters would quickly put a man out of business by destroying his shop. Obtaining 'protection money' is not a modern crime. As long ago as the fourteenth century, an Englishman, Sir John Hawkwood, made the remarkable discovery that people would rather pay large sums of money than have their life work destroyed by gangsters.
+Mary and her husband Dimitri lived in the tiny village of Perachora in southern Greece. One of Mary's prize possessions was a little white lamb which her husband had given her. She kept it tied to a tree in a field during the day and went to fetch it every evening. One evening, how-ever, the lamb was missing. The rope had been cut, so it was obvious that the lamb had been stolen.
 
-Six hundred years ago, Sir Johan Hawkwood arrived in Italy with a band of soldiers and settled near Florence. He soon made a name for himself and came to be known to the Italians as Giovanni Acuto. Whenever the Italian city-states were at war with each other, Hawkwood used to hire his soldiers to princes who were willing to pay the high price he demanded. In times of peace, when business was bad, Hawkwood and his men would march into a city-state and, after burning down a few farms, would offer to go away protection money was paid to them. Hawkwood made large sums of money in this way. In spite of this, the Italians regarded him as a sort of hero. When he died at the age of eighty, the Florentines gave him a state funeral and had a pictured with as dedicated to the memory of 'the most valiant soldier and most notable leader, Signor Giovanni Haukodue.'
+When Dimitri came in from the fields, his wife told him what had happened. Dimitri at once set out to find the thief. He knew it would not prove difficult in such a small village. After telling several of his friends about the theft, Dimitri found out that his neighbour, Aleko, had suddenly acquired a new lamb. Dimitri immediately went to Aleko's house and angrily accused him of stealing the lamb. He told him he had better return it or he would call the police. Aleko denied taking it and led Dimitri into his back-yard. It was true that he had just bought a lamb, he explained, but his lamb was black. Ashamed of having acted so rashly, Dimitri apologized to Aleko for having accused him. While they were talking it began to rain and Dimitri stayed in Aleko's house until the rain stopped. When he went outside half an hour later, he was astonished to find that the little black lamb was almost white. Its wool, which had been dyed black, had been washed clean by the rain!
 
 ---
 
 
 1
-00:00:02,433 --> 00:00:07,900
-A noble gangster
-A noble gangster
+00:00:00,700 --> 00:00:04,733
+Little White Lamb
+Little White Lamb
 
 2
-00:00:15,266 --> 00:00:25,733
-There was a time when the owners of shops and businesses in Chicago that to pay large sums of money to gangsters in return for   protection
-曾经有一个时期,芝加哥的店主和商行的老板们不得不拿出大笔的钱给歹徒以换取"保护"。
+00:00:17,300 --> 00:00:24,300
+Mary and her husband Dimitri lived in the tiny village of Perachora in southern Greece
+玛丽与丈夫迪米特里住在希腊南部一个叫波拉考拉的小村庄里。
+
 
 3
-00:00:26,266 --> 00:00:34,500
-If the money was not paid promptly   the gangsters would quickly put a man out of business by destroying his shop
-如果交款不及时,歹徒们就会很快捣毁他的商店,让他破产.
+00:00:25,100 --> 00:00:31,466
+One of Mary  s prize possessions was a little white lamb which her husband had given her
+玛丽最珍贵的财产之一就是丈夫送给她的一只白色小羔羊。
+
+
 
 4
-00:00:35,433 --> 00:00:39,233
-Obtaining   protection money   is not a modern crime
-榨取"保护金"并不是一种现代的罪恶行径.
+00:00:31,833 --> 00:00:38,733
+She kept it tied to a tree in a field during the day and went to fetch it every evening
+白天， 玛丽把羔羊拴在地里的一颗树上，每天晚上把它牵回家。
+
 
 
 5
-00:00:39,666 --> 00:00:55,500
-As long ago as the fourteenth century   an Englishman   Sir John Hawkwood   made the remarkable discovery that people would rather pay large sums of money than have their life work destroyed by gangsters
-早在14世纪,英国人约翰.霍克伍德就有过非凡的发现:"人们情愿拿出大笔的钱,也不愿毕生的心血毁于歹徒之手.
+00:00:39,466 --> 00:00:42,900
+One evening   how-ever   the lamb was missing
+可是，一天晚上，那只小羔羊失踪了。
+
+
 
 6
-00:00:56,600 --> 00:01:04,966
-Six hundred years ago   Sir Johan Hawkwood arrived in Italy with a band of soldiers and settled near Florence
-600年前,约翰.霍克伍德爵士带着一队士兵来到意大利,在佛罗伦萨附近驻扎下来,
+00:00:43,200 --> 00:00:48,566
+The rope had been cut   so it was obvious that the lamb had been stolen
+绳子被人割断，很明显小羔羊是被人偷走了。
+
+
 
 
 7
-00:01:05,300 --> 00:01:12,733
-He soon made a name for himself and came to be known to the Italians as Giovanni Acuto
-很快就出了名.意大利人叫他乔凡尼.阿库托.
+00:00:49,500 --> 00:00:54,433
+When Dimitri came in from the fields  His wife told him what had happened
+迪米特里从地里回来， 妻子把情况跟他一说，
 
 
 8
-00:01:13,400 --> 00:01:24,900
-Whenever the Italian city-states were at war with each other   Hawkwood used to hire his soldiers to princes who were willing to pay the high price he demanded
-每次意大利各城邦之间打伏,霍克伍德把他的士兵雇佣给愿给他出高价的君主。
+00:00:55,100 --> 00:00:58,700
+Dimitri at once set out to find the thief
+他马上出去找偷羔羊的人。
 
 
 9
-00:01:25,233 --> 00:01:39,500
-In times of peace   when business was bad   Hawkwood and his men would march into a city-state and   after burning down a few farms   would offer to go away protection money was paid to them
-和平时期,当生意萧条时,霍克伍德便带领士兵进入某个城邦,纵火烧毁一两个农场,然后提出,如向他们缴纳保护金,他们便主动撤离。
+00:00:58,866 --> 00:01:02,866
+He knew it would not prove difficult in such a small village
+他知道在这样一个小村庄里抓住小偷并不困难。
+
 
 10
-00:01:40,266 --> 00:01:43,666
-Hawkwood made large sums of money in this way
-霍克伍德用这种方法挣了大笔钱.
+00:01:04,166 --> 00:01:14,566
+After telling several of his friends about the theft   Dimitri found out that his neighbour   Aleko   had suddenly acquired a new lamb
+把失窃的事告诉几个朋友后， 迪米特里发现他的邻居阿列科家突然多了一只小羔羊。
 
 11
-00:01:44,300 --> 00:01:49,466
-In spite of this   the Italians regarded him as a sort of hero
-尽管如此,意大利人还是把他视作某种英雄。
-
+00:01:15,200 --> 00:01:22,133
+Dimitri immediately went to Aleko  s house and angrily accused him of stealing the lamb
+迪米特里立刻去了阿列科家，气呼呼地指责他偷了羔羊，
 
 
 
 12
-00:01:49,866 --> 00:02:07,633
-When he died at the age of eighty   the Florentines gave him a state funeral and had a pictured with as dedicated to the memory of   the most valiant soldier and most notable leader   Signor Giovanni Haukodue
-他80岁那年死去时,佛罗伦萨人为他举行了国葬,并为他画像以纪念这位"骁勇无比的战士、杰出的领袖乔凡尼.阿库托先生."
+00:01:22,633 --> 00:01:26,866
+He told him he had better return it or he would call the police
+告诉他最好把羊交还， 否则就去叫警察。
+
+
+
+13
+00:01:27,600 --> 00:01:32,533
+Aleko denied taking it and led Dimitri into his back-yard
+阿列科不承认，并把迪米特里领进院子。
+
+14
+00:01:32,966 --> 00:01:39,100
+It was true that he had just bought a lamb   he explained   but his lamb was black
+不错，他的确刚买了一只羔羊，阿列科解释说，但他的羔羊是黑色的。
+
+15
+00:01:40,300 --> 00:01:47,566
+Ashamed of having acted so rashly   Dimitri apologized to Aleko for having accused him
+迪米特里为自己的鲁莽而感到不好意思， 向阿列科道了歉， 说是错怪了他。
+
+
+16
+00:01:48,300 --> 00:01:55,966
+While they were talking it began to rain and Dimitri stayed in Aleko  s house until the rain stopped
+就在他俩说话的时候， 天下起了雨， 迪米特里便呆在阿列科家里避雨， 一直等到雨停为止。
+
+17
+00:01:56,100 --> 00:02:04,866
+When he went outside half an hour later   he was astonished to find that the little black lamb was almost white
+半小时后，当他从屋里出来时，他惊奇地发现小黑羔羊全身几乎都变成白色。
+
+
+18
+00:02:05,400 --> 00:02:11,366
+Its wool   which had been dyed black   had been washed clean by the rain!
+原来羊毛上染的黑色被雨水冲掉了！
+
