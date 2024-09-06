@@ -1,128 +1,119 @@
 npp
 
-Electric currents in modern art
+Pioneer pilots
 
-Modern sculpture rarely surprises us any more. The idea that modern art can only be seen in museums is mistaken. Even people who take no interest in art cannot have failed to notice examples of modern sculpture on display in public places. Strange forms stand in gardens, and outside buildings and shops. We have got quite used to them. Some so-called 'modern' pieces have been on display for nearly eighty years.
+In 1908 Lord Northcliffe offered a prize of $1,000 to the first man who would fly across the English Channel. Over a year passed before the first attempt was made. On July 19th, 1909, in the early morning, Hubert Latham took off from the French coast in his plane the 'Antoinette IV.' He had travelled only seven miles across the Channel when his engine failed and he was forced to land on sea. The 'Antoinette' floated on the water until Latham was picked up by a ship.
 
-In spite of this, some people -- including myself -- were surprise by a recent exhibition of modern sculpture. The first thing I saw when I entered the art gallery was a notice which said: 'Do not touch the exhibits. Some of them are dangerous!' The objects on display were pieces of moving sculpture. Oddly shaped forms that are suspended form the ceiling and move in response to a gust of wind are quite familiar to everybody. These objects, however, were different. Lined up against the wall, there were long thin wires attached to metal spheres. The spheres had been magnetized and attracted or repelled each other all the time. In the centre of the hall, there were a number of tall structures which contained coloured lights. These lights flickered continuously like traffic lights which have gone mad. Sparks were emitted from small black boxes and red lamps flashed on and off angrily. It was rather like an exhibition of prehistoric electronic equipment. These peculiar forms not only seemed designed to shock people emotionally, but to give them electric shocks as well!
+Two days alter, Louis Bleriot arrived near Calais with a plane called 'No. XI'. Bleriot had been making planes since 1905 and this was his lattes model. A week before, he had completed a successful overland flight during which he covered twenty-six miles. Latham, however, did not give up easily. He, too, arrived near Calais on the same day with a new 'Antoinette'. It looked as if there would be an exciting race across the Channel. Both planes were going to take off on July 25th, but Latham failed to get up early enough, After making a short test flight at 4,15 a.m., Bleriot set off half an hour later. His great flight lasted thirty-seven minutes. When he landed near Dover, the first person to greet him was a local policeman. Latham made another attempt a week later and got within half a mile of Dover, but he was unlucky again. His engine failed and he landed on the sea for the second time.
 
 ---
 
 1
-00:00:02,233 --> 00:00:04,866
-Electric currents in modern art
-Electric currents in modern art
+00:00:02,100 --> 00:00:03,866
+Pioneer pilots
+Pioneer pilots
 
 2
-00:00:15,666 --> 00:00:19,100
-Modern sculpture rarely surprises us any more
-现代雕塑不再使我们感到惊讶了。
+00:00:15,733 --> 00:00:26,466
+In 1908 Lord Northcliffe offered a prize of $1,000 to the first man who would fly across the English Channel
+1908年，诺斯克利夫勋爵拿出1,000英镑，作为对第一个飞越英吉利海峡的人的奖励。
+
 
 3
-00:00:19,566 --> 00:00:24,900
-The idea that modern art can only be seen in museums is mistaken
-那种认为现代艺术只能在博物馆里才能看到的观点是错误的。
+00:00:26,900 --> 00:00:30,533
+Over a year passed before the first attempt was made
+然而一年多过去了才有人出来尝试。
+
 
 4
-00:00:25,733 --> 00:00:34,666
-Even people who take no interest in art cannot have failed to notice examples of modern sculpture on display in public places
-即使是对艺术不感兴趣的人也不会注意到在公共场所展示的现代艺术品。
-
-
+00:00:31,233 --> 00:00:42,600
+On July 19th  1909  in the early morning  Hubert Latham took off from the French coast in his plane the  Antoinette IV
+1909年7月19日凌晨，休伯特.莱瑟姆驾驶“安特瓦特4号”飞机从法国海岸起飞，
 
 5
-00:00:35,566 --> 00:00:40,266
-Strange forms stand in gardens  and outside buildings and shops
-公园里、大楼和商店外竖立着的奇形怪状的雕塑，
-
+00:00:43,100 --> 00:00:51,700
+He had travelled only seven miles across the Channel when his engine failed and he was forced to land on sea
+但他只在海峡上空飞行7英里，引擎就发生了故障，他只好降落在海面上。
 
 
 6
-00:00:40,733 --> 00:00:42,900
-We have got quite used to them
-对这些， 我们已经司空见惯了。
+00:00:52,166 --> 00:00:57,700
+The  Antoinette  floated on the water until Latham was picked up by a ship
+“安特瓦特”号飞机在海上漂浮，后来有船经过，莱瑟姆方才获救。
+
 
 
 7
-00:00:43,600 --> 00:00:49,333
-Some so-called  modern  pieces have been on display for nearly eighty years
-有些所谓的“现代”艺术品在那里已经陈列了近80年了。
-
+00:00:59,233 --> 00:01:05,333
+Two days alter  Louis Bleriot arrived near Calais with a plane called  No |
 
 
 8
-00:00:49,866 --> 00:00:57,933
-In spite of this  some people -- including myself -- were surprise by a recent exhibition of modern sculpture
-尽管如此， 最近举办的一次现代雕塑展览还是使一些人（包括我在内）大吃了一惊。
-
+00:01:05,333 --> 00:01:06,066
+XI
+两天之后，路易斯.布莱里奥驾驶一名为“11号”的飞机来到加来附近。
 
 9
-00:00:58,733 --> 00:01:03,400
-The first thing I saw when I entered the art gallery was a notice which said: |
-10
-00:01:04,333 --> 00:01:06,400
-Do not touch the exhibits |
+00:01:07,100 --> 00:01:13,633
+Bleriot had been making planes since 1905 and this was his lattes model
+布莱里奥从1905年起便开始研制飞机，“11号”飞机是他制作的最新型号。
 
+
+10
+00:01:14,233 --> 00:01:21,900
+A week before  he had completed a successful overland flight during which he covered twenty-six miles
+一周以前，他曾成功地进行了一次26英里的陆上飞行。
 
 
 11
-00:01:06,566 --> 00:01:08,400
-Some of them are dangerous! |
+00:01:22,566 --> 00:01:25,400
+Latham  however  did not give up easily
+但是莱瑟姆不肯轻易罢休。
 
 
 12
-00:01:09,433 --> 00:01:13,200
-The objects on display were pieces of moving sculpture
-走进展厅首先看到的是一张告示， 上面写着“切勿触摸展品，某些展品有危险！” 展品都是些活动的雕像。
-
+00:01:25,700 --> 00:01:31,800
+He  too  arrived near Calais on the same day with a new  Antoinette
+同一天，他驾驶一架新的“安特瓦特”号飞机来到了加来附近。
 
 13
-00:01:14,133 --> 00:01:23,533
-Oddly shaped forms that are suspended form the ceiling and move in response to a gust of wind are quite familiar to everybody
-人们所熟悉的是悬挂在天花板上、造型奇特、随风飘荡的雕塑品。
+00:01:32,033 --> 00:01:36,533
+It looked as if there would be an exciting race across the Channel
+看来会有一场激烈的飞越英吉利海峡的竞争。
 
 
 14
-00:01:24,066 --> 00:01:27,166
-These objects  however  were different
-这些展品却使人大开眼界。
-
+00:01:37,166 --> 00:01:49,000
+Both planes were going to take off on July 25th  but Latham failed to get up early enough  After making a short test flight at 4,15 a|
 
 
 15
-00:01:27,933 --> 00:01:33,766
-Lined up against the wall  there were long thin wires attached to metal spheres
-靠墙排列着许多细长的电线， 而电线又连着金属球。
-
+00:01:49,000 --> 00:01:49,700
+m |
 
 16
-00:01:34,166 --> 00:01:40,300
-The spheres had been magnetized and attracted or repelled each other all the time
-金属球经过磁化， 互相之间不停地相互吸引或相互排斥。
+00:01:49,866 --> 00:01:52,833
+Bleriot set off half an hour later
+两架飞机都打算在7月25日起飞，但莱瑟姆那天起床晚了。布莱里奥凌晨4点15分作了一次短距离试飞，半小时后便正式出发了。
 
 
 17
-00:01:40,966 --> 00:01:47,200
-In the centre of the hall  there were a number of tall structures which contained coloured lights
-展厅中央是装有彩色灯泡的许多高高的构件，
-
+00:01:53,066 --> 00:01:56,700
+His great flight lasted thirty-seven minutes
+他这次伟大的飞行持续37分钟。
 
 18
-00:01:47,666 --> 00:01:53,066
-These lights flickered continuously like traffic lights which have gone mad
-灯泡一刻不停地闪烁着， 就像失去了控制的红绿灯。
+00:01:56,866 --> 00:02:02,866
+When he landed near Dover  the first person to greet him was a local policeman
+当他在多佛着陆后，第一个迎接他的是当地一名警察。
+
 
 19
-00:01:54,133 --> 00:02:00,800
-Sparks were emitted from small black boxes and red lamps flashed on and off angrily
-小黑盒子里迸出火花，红色灯泡发怒似地忽明忽暗。
+00:02:03,666 --> 00:02:11,433
+Latham made another attempt a week later and got within half a mile of Dover  but he was unlucky again
+莱瑟姆一周以后也作了一次尝试，飞到离多佛不到半英里的地方。这次他又遭厄运，
 
 20
-00:02:01,166 --> 00:02:06,066
-It was rather like an exhibition of prehistoric electronic equipment
-这儿倒像是在展览古老的电子设备。
-
-21
-00:02:06,933 --> 00:02:15,466
-These peculiar forms not only seemed designed to shock people emotionally  but to give them electric shocks as well!
-好像设计这些奇形怪状的展品不仅是为了给人感情上的强烈刺激， 而且还想给人以电击似的！
+00:02:11,833 --> 00:02:16,633
+His engine failed and he landed on the sea for the second time
+因引擎故障第二次降落在海面上。
