@@ -1,124 +1,135 @@
 npp
 
-By heart
+A skeleton in the cupboard
 
-Some plays are so successful that they run for years on end, In many ways, this is unfortunate for the poor actors who are required to go on repeating the same lines night after night. One would expect them to know their parts by heart and never have cause to falter. Yet this is not always the case.
+We often read in novels how a seemingly respectable person or family has some terrible secret which has been concealed from strangers for years. The English language possesses a vivid saying to describe this sort of situation. The terrible secret is called 'a skeleton in the cupboard'. At some dramatic moment in the story, the terrible secret becomes known and a reputation is ruined. The reader's hair stands on end when he reads in the final pages of the novel that the heroine a dear old lady who had always been so kind to everybody, had, in her youth, poisoned every one of her five husbands.
 
-A famous actor in a highly successful play was once cast in the role of an aristocrat who had been imprisoned in the Bastille for twenty years. In the last act, a gaoler would always come on to the stage with a letter which he would hand to the prisoner. Even though the noble was expected to read the letter at each performance, he always insisted that it should be written out in full.
-
-One night, the gaoler decided to play a joke on his colleague to find out if, after so many performances, he had managed to learn the contents of the letter by heart. The curtain went up on the final act of the play and revealed the aristocrat sitting alone behind bars in his dark cell. Just then, the gaoler appeared with the precious letter in his bands. He entered the cell and presented the letter to the aristocrat. But the copy he gave him had not been written out in full as usual. It was simply a blank sheet of paper. The gaoler looked on eagerly, anxious to see if his fellow actor had at last learnt his lines. The noble stared at the blank sheet of paper for a few seconds. Then, squinting his eyes, he said: 'The light is dim. Read the letter to me'. And he promptly handed the sheet of paper to the gaoler. Finding that he could not remember a word of the letter either, the gaoler replied: 'The light is indeed dim, sire, I must get my glasses.' With this, he hurried off the stage. Much to the aristocrat's amusement, the gaoler returned a few moments later with a pair of glasses and the usual copy of the letter with he proceeded to read to the prisoner.
+It is all very well for such things to occur in fiction. To varying degrees, we all have secrets which we do not want even our closest friends to learn, but few of us have skeletons in the cupboard. The only person I know who has a skeleton in the cupboard is George Carlton, and he is very pound of the fact. George studied medicine in his youth. Instead of becoming a doctor, however, he became a successful writer of detective stories. I once spend an uncomfortable weekend which I shall never forget at his house. George showed me to the guestroom which, he said, was rarely used. He told me to unpack my things and then come down to dinner. After I had stacked my shirts and underclothes in two empty drawers, I decided to hang one of the tow suits I had brought with me in the cupboard. I opened the cupboard door and then stood in front of it petrified. A skeleton was dangling before my eyes. The sudden movement of the door made it sway slightly and it gave me the impression that it was about to leap out at me. Dropping my suit, I dashed downstairs to tell George. This was worse than 'a terrible secret'; this was a read skeleton! But George was unsympathetic. 'Oh, that,' he said with a smile as if he were talking about an old friend. 'That's Sebastian. You forget that I was a medical student once upon a time.'
 
 ---
 
 1
-00:00:02,633 --> 00:00:05,933
-By heart
-By heart
+00:00:02,400 --> 00:00:04,233
+A skeleton in the cupboard
+A skeleton in the cupboard
 
 2
-00:00:17,400 --> 00:00:32,233
-Some plays are so successful that they run for years on end  In many ways  this is unfortunate for the poor actors who are required to go on repeating the same lines night after night
-有些剧目十分成功，以致连续上演好几年。这样一来，可怜的演员们可倒霉了。因为他们需要一夜连着一夜地重复同样的台词。
+00:00:12,000 --> 00:00:24,266
+We often read in novels how a seemingly respectable person or family has some terrible secret which has been concealed from strangers for years
+在小说中， 我们经常读到一个表面上受人尊重的人物或家庭， 却有着某种多年不为人所知的骇人听闻的秘密。
 
 3
-00:00:32,966 --> 00:00:38,666
-One would expect them to know their parts by heart and never have cause to falter
-人们以为，这些演员一定会把台词背得烂熟，绝不会临场结巴的，
+00:00:24,700 --> 00:00:29,833
+The English language possesses a vivid saying to describe this sort of situation
+英语中有一个生动的说法来形容这种情况。
 
 4
-00:00:39,100 --> 00:00:41,866
-Yet this is not always the case
-但情况却并不总是这样。
+00:00:30,633 --> 00:00:34,700
+The terrible secret is called  a skeleton in the cupboard
+惊人的秘密称作“柜中骷髅”。
 
 5
-00:00:42,766 --> 00:00:53,933
-A famous actor in a highly successful play was once cast in the role of an aristocrat who had been imprisoned in the Bastille for twenty years
-有一位名演员曾在一出极为成功的剧目中扮演一个贵族角色， 这个贵族已在巴士底狱被关押了20年。
+00:00:35,666 --> 00:00:42,400
+At some dramatic moment in the story  the terrible secret becomes known and a reputation is ruined
+在小说的某个戏剧性时刻， 可怕的秘密泄漏出来， 接着便是某人的声誉扫地。
 
 6
-00:00:54,200 --> 00:01:02,666
-In the last act  a gaoler would always come on to the stage with a letter which he would hand to the prisoner
-在最后一幕中， 狱卒手持一封信上场， 然后将信交给狱中那位贵族。
+00:00:43,100 --> 00:00:58,733
+The reader s hair stands on end when he reads in the final pages of the novel that the heroine a dear old lady who had always been so kind to everybody  had  in her youth  poisoned every one of her five husbands
+当读者到小说最后几页了解到书中女主人公，那位一向待大家很好的可爱的老妇人年轻时一连毒死了她的5个丈夫时，不禁会毛骨悚然。
+
 
 7
-00:01:03,466 --> 00:01:11,866
-Even though the noble was expected to read the letter at each performance  he always insisted that it should be written out in full
-尽管那个贵族每场戏都得念一遍那封信。 但他还是坚持要求将信的全文写在信纸上。
-
+00:00:59,900 --> 00:01:03,500
+It is all very well for such things to occur in fiction
+这种事发生在小说中是无可非议的。
 
 8
-00:01:12,833 --> 00:01:24,733
-One night  the gaoler decided to play a joke on his colleague to find out if  after so many performances  he had managed to learn the contents of the letter by heart
-一天晚上， 狱卒决定与他的同事开一个玩笑， 看看他反复演出这么多场之后，是否已将信的内容记熟了。
+00:01:04,466 --> 00:01:14,700
+To varying degrees  we all have secrets which we do not want even our closest friends to learn  but few of us have skeletons in the cupboard
+尽管我们人人都有各种大小秘密。 连最亲密的朋友都不愿让他们知道， 但我们当中极少有人有柜中骷髅。
 
 9
-00:01:25,466 --> 00:01:34,366
-The curtain went up on the final act of the play and revealed the aristocrat sitting alone behind bars in his dark cell
-大幕拉开，最后一幕戏开演，贵族独自一人坐在铁窗后阴暗的牢房里。
+00:01:15,500 --> 00:01:23,000
+The only person I know who has a skeleton in the cupboard is George Carlton  and he is very pound of the fact
+我所认识的唯一的在柜中藏骷嵝的人便是乔治.卡尔顿， 他甚至引以为自豪。
 
 10
-00:01:35,100 --> 00:01:40,100
-Just then  the gaoler appeared with the precious letter in his bands
-这时狱卒上场，手里拿着那封珍贵的信。
-
+00:01:23,933 --> 00:01:26,266
+George studied medicine in his youth
+乔治年轻时学过医，
 
 11
-00:01:40,266 --> 00:01:44,833
-He entered the cell and presented the letter to the aristocrat
-狱卒走进牢房，将 信交给贵族。
+00:01:26,666 --> 00:01:33,233
+Instead of becoming a doctor  however  he became a successful writer of detective stories
+然而，他后来没当上医生， 却成了一位成功的侦探小说作家。
 
 12
-00:01:45,166 --> 00:01:49,966
-But the copy he gave him had not been written out in full as usual
-但这回狱卒给贵族的信没有像往常那样把全文写全，
+00:01:33,800 --> 00:01:38,633
+I once spend an uncomfortable weekend which I shall never forget at his house
+有一次，我在他家里度周末， 过得很不愉快。这事我永远不会忘记。
 
 13
-00:01:50,400 --> 00:01:53,500
-It was simply a blank sheet of paper
-而是一张白纸。
+00:01:39,433 --> 00:01:43,600
+George showed me to the guestroom which  he said  was rarely used
+乔治把我领进客房，说这间很少使用。
 
 14
-00:01:54,100 --> 00:02:01,766
-The gaoler looked on eagerly  anxious to see if his fellow actor had at last learnt his lines
-狱卒热切地观察着， 急于想了解他的同事是否记熟了台词。
+00:01:44,033 --> 00:01:47,500
+He told me to unpack my things and then come down to dinner
+他让我打开行装后下楼吃饭。
 
 15
-00:02:02,233 --> 00:02:07,100
-The noble stared at the blank sheet of paper for a few seconds
-贵 族盯着纸看了几秒钟，
+00:01:48,333 --> 00:01:56,933
+After I had stacked my shirts and underclothes in two empty drawers  I decided to hang one of the tow suits I had brought with me in the cupboard
+我将衬衫、内衣放进两个空抽屉里， 然后我想把随身带来的两套西服中的一套挂到大衣柜里去。
 
 16
-00:02:07,600 --> 00:02:11,233
-Then  squinting his eyes  he said: |
-
-17
-00:02:12,000 --> 00:02:13,533
-The light is dim |
-
-18
-00:02:13,900 --> 00:02:15,666
-Read the letter to me |
+00:01:56,933 --> 00:02:04,066
+I opened the cupboard door and then stood in front of it petrified
+我打开柜门，站在柜门前一下惊呆了。
 
 19
-00:02:16,000 --> 00:02:19,766
-And he promptly handed the sheet of paper to the gaoler
-然后，眼珠一转，说道：“光线太暗，请给我读一下这封信。” 说完， 他一下子把信递给狱卒。
+00:02:04,066 --> 00:02:06,666
+A skeleton was dangling before my eyes
+一具骷髅悬挂在眼前，
+
 
 20
-00:02:20,466 --> 00:02:26,366
-Finding that he could not remember a word of the letter either  the gaoler replied: |
+00:02:07,133 --> 00:02:14,600
+The sudden movement of the door made it sway slightly and it gave me the impression that it was about to leap out at me
+由于柜门突然打开，它也随之轻微摇晃起来， 让我觉得它好像马上要跳出柜门朝我扑过来似的。
 
 21
-00:02:27,066 --> 00:02:32,166
-The light is indeed dim  sire  I must get my glasses |
+00:02:15,433 --> 00:02:19,700
+Dropping my suit  I dashed downstairs to tell George
+我扔下西服冲下楼去告诉乔治。
 
 22
-00:02:32,600 --> 00:02:35,500
-With this  he hurried off the stage
-狱卒发现自己连一个字也记不住， 于是便说：“陛下，这儿光线的确太暗了，我得去眼镜拿来。” 他一边说着，一边匆匆下台。
+00:02:20,500 --> 00:02:23,000
+This was worse than 'a terrible secret'; |
 
 23
-00:02:36,400 --> 00:02:49,433
-Much to the aristocrat s amusement  the gaoler returned a few moments later with a pair of glasses and the usual copy of the letter with he proceeded to read to the prisoner
-贵族感到非常好笑的是：一会儿工夫，狱卒重新登台， 拿来一副眼镜以及平时使用的那封信， 然后为那囚犯念了起来。
+00:02:23,033 --> 00:02:25,133
+this was a read skeleton!
+这是比“骇人听闻的秘密”更加惊人的东西， 这是一具真正的骷髅啊！
 
+24
+00:02:25,933 --> 00:02:28,266
+But George was unsympathetic
+但乔治却无动于衷。
+
+25
+00:02:28,400 --> 00:02:34,100
+Oh  that   he said with a smile as if he were talking about an old friend
+“噢，是它呀！他笑着说道，俨然在谈论一位老朋友。
+
+
+26
+00:02:34,633 --> 00:02:36,100
+That s Sebastian |
+
+27
+00:02:36,833 --> 00:02:40,233
+You forget that I was a medical student once upon a time
+“那是塞巴斯蒂安。你忘了我以前是学医的了。”
