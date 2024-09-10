@@ -1,129 +1,139 @@
 npp
 
-Wanted: a large biscuit tin
 
-No one can avoid being influenced by advertisements. Much as we may pride ourselves on our good taste, we are no longer free to choose the things we want, for advertising exerts a subtle influence on us. In their efforts to persuade us to buy this or that product, advertisers have made a close study of human nature and have classified all our little weaknesses.
+Five pound too dear
 
-Advertisers discovered years ago that all of us love to get something for nothing. An advertisement which begins with the magic word FREE can rarely go wrong. These days, advertisers not only offer free samples, but free cars, free houses, and free trips round the world as well. They devise hundreds of competitions which will enable us to win huge sums of money. Radio and television have made it possible for advertisers to capture the attention of millions of people in this way.
 
-During a radio programme, a company of biscuit manufacturers once asked listeners to bake biscuits and send them to their factory. They offered to pay $10 a pound for the biggest biscuit baked by a listener. The response to this competition was tremendous. Before long, biscuits of all shapes and sizes began arriving at the factory. One lady brought in a biscuit on a wheelbarrow. It weighed nearly 500 pounds. A little later, a man came along with a biscuit which occupied the whole boot of his car. All the biscuits that were sent were carefully weighed. The largest was 713 pounds. It seemed certain that this would win the prize. But just before the competition closed, a lorry arrived at the factory with a truly colossal biscuit which weighed 2,400 pounds. It had been baked by a college student who had used over 1,000 pounds of flour, 800 pounds of sugar, 200 pounds of fat, and 400 pounds of various other ingredients. It was so heavy that a crane had to be used to remove it from the lorry. The manufacturers had to pay more money than they had anticipated, or they bought the biscuit from the student for $24,000.
+Small boats loaded with wares sped to the great liner as she was entering the harbour. Before she had anchored, the men from the boats had climbed on board and the decks were son covered with colourful rugs from Persia, silks from India, copper coffee pots, and beautiful handmade silverware. It was difficult not to be tempted. Many of the tourists on board had begun bargaining with the tradesmen, but I decide not to buy anything until I had disembarked.
+
+I had no sooner got off the ship than I was assailed by a man who wanted to sell me a diamond ring. I had no intention of buying one, but I could not conceal the fact that I was impressed by the size of the diamonds. Some of them were as big as marbles. The man went to great lengths to prove that the diamonds were real. As we were walking past a shop, he held a diamond firmly against the window and made a deep impression in the glass. It took me over half an hour to get rid of him.
+
+The next man to approach me was selling expensive pens and watches. I examined one of the pens closely. It certainly looked genuine. At the base of the gold cap, the words 'made in the U.S.A.' had been neatly inscribed. The man said that the pen was worth ￡50, but as a special favour, he would let me have it for ￡30. I shook my head and held up a finger indicating that I was willing to pay five pounds. Gesticulating wildly, the man acted as if he found my offer out-rageous, but he eventually reduced the price to ￡10. Shrugging my shoulders, I began to walk away when, a moment later, he ran after me and thrust the pen into my hands. Though he kept throwing up his arms in despair, he readily accepted the five pounds I gave him. I felt especially pleased with my wonderful bargain--until I got back to the ship. No matter how hard I tried, it was im-possible to fill this beautiful pen with ink and to this day it has never written a single word !
 
 ---
 
 1
-00:00:02,500 --> 00:00:05,400
-Wanted  a large biscuit tin
-Wanted  a large biscuit tin
+00:00:02,666 --> 00:00:04,900
+Five pound too dear
+Five pound too dear
 
 2
-00:00:15,500 --> 00:00:19,300
-No one can avoid being influenced by advertisements
-没有人能避免受广告的影响。
+00:00:17,033 --> 00:00:22,933
+Small boats loaded with wares sped to the great liner as she was entering the harbour
+当一艘大型班船进港的时候，许多小船载着各种杂货快速向客轮驶来。
 
 3
-00:00:19,633 --> 00:00:30,100
-Much as we may pride ourselves on our good taste  we are no longer free to choose the things we want  for advertising exerts a subtle influence on us
-尽管我们可以自夸自己的鉴赏力如何敏锐，但我们已经无法独立自主地选购自己所需的东西了。这是因为广告在我们身上施加着一种潜移默化的影响。
+00:00:23,833 --> 00:00:39,500
+Before she had anchored  the men from the boats had climbed on board and the decks were son covered with colourful rugs from Persia  silks from India  copper coffee pots  and beautiful handmade silverware
+大船还未下锚。小船上的人就纷纷爬上客轮。一会儿工夫，甲板上就摆满了色彩斑斓的波斯地毯。印度丝绸。铜咖啡壶以及手工制作的漂亮的银器。
 
 4
-00:00:30,933 --> 00:00:41,700
-In their efforts to persuade us to buy this or that product  advertisers have made a close study of human nature and have classified all our little weaknesses
-做广告的人在力图劝说我们买下这种产品或那种产品之前，已经仔细地研究了人的本性，并把人的弱点进行了分类。
-
+00:00:40,033 --> 00:00:42,533
+It was difficult not to be tempted
+要想不为这些东西所动心是很困难的。
 
 5
-00:00:43,166 --> 00:00:48,366
-Advertisers discovered years ago that all of us love to get something for nothing
-做广告的人们多年前就发现我们大家都喜欢免费得到东西。
+00:00:43,333 --> 00:00:52,566
+Many of the tourists on board had begun bargaining with the tradesmen  but I decide not to buy anything until I had disembarked
+船上许多游客开始同商贩讨价还价起来，但我打定主意上岸之前什么也不买。
+
 
 6
-00:00:48,933 --> 00:00:54,966
-An advertisement which begins with the magic word FREE can rarely go wrong
-凡是用“免费”这个神奇的词开头的广告很少会失败的。
+00:00:53,566 --> 00:01:00,966
+I had no sooner got off the ship than I was assailed by a man who wanted to sell me a diamond ring
+我刚下船，就被一个人截住，他向我兜售一枚钻石戒指。 	I had no sooner… than… : 刚…就…
 
 7
-00:00:55,900 --> 00:01:05,700
-These days  advertisers not only offer free samples  but free cars  free houses  and free trips round the world as well
-目前，做广告的人不仅提供免费样品，而且还提供免费汽车，免费住房，免费周游世界。
+00:01:02,133 --> 00:01:10,666
+I had no intention of buying one  but I could not conceal the fact that I was impressed by the size of the diamonds
+我根本不想买，但我不能掩饰这样一个事实：其钻石之大给我留下了深刻的印象。
 
 8
-00:01:06,800 --> 00:01:12,300
-They devise hundreds of competitions which will enable us to win huge sums of money
-他们设计数以百计的竞赛，竞赛中有人可赢得巨额奖金。
+00:01:11,566 --> 00:01:14,066
+Some of them were as big as marbles
+有的钻石像玻璃球那么大。
 
 9
-00:01:12,766 --> 00:01:20,033
-Radio and television have made it possible for advertisers to capture the attention of millions of people in this way
-电台、电视使做广告的人可以用这种手段吸引成百万人的注意力。
-
+00:01:14,666 --> 00:01:19,300
+The man went to great lengths to prove that the diamonds were real
+那人竭力想证明那钻石是真货。 great lengths to
 
 10
-00:01:21,166 --> 00:01:30,166
-During a radio programme  a company of biscuit manufacturers once asked listeners to bake biscuits and send them to their factory
-有一次，在电台播放的节目里，一个生产饼干的公司请听众烘制饼干送到他们的工厂去。
+00:01:19,833 --> 00:01:28,000
+As we were walking past a shop  he held a diamond firmly against the window and made a deep impression in the glass
+我们路过一家商店时，他将一颗钻石使劲地往橱窗上一按，在玻璃上留下一道深痕。
 
 11
-00:01:31,300 --> 00:01:36,500
-They offered to pay $10 a pound for the biggest biscuit baked by a listener
-他们愿意以每磅10美元的价钱买下由听众烘制的最大的饼干。
+00:01:28,866 --> 00:01:32,000
+It took me over half an hour to get rid of him
+我花了半个多小时才摆脱了他的纠缠。
+
 
 12
-00:01:37,100 --> 00:01:40,433
-The response to this competition was tremendous
-这次竞赛在听众中引起极其热烈的反响。
+00:01:32,966 --> 00:01:37,500
+The next man to approach me was selling expensive pens and watches
+向我兜售的第二个人是卖名贵钢笔和手表的。
 
 13
-00:01:41,033 --> 00:01:46,766
-Before long  biscuits of all shapes and sizes began arriving at the factory
-不久，形状各异，大小不一的饼干陆续送到工厂。
+00:01:38,033 --> 00:01:40,733
+I examined one of the pens closely
+我仔细察看了一枝钢笔，
 
 14
-00:01:47,166 --> 00:01:50,100
-One lady brought in a biscuit on a wheelbarrow
-一位女士用手推车运来一个饼干，
+00:01:41,033 --> 00:01:43,066
+It certainly looked genuine
+那看上去确实不假，
 
 15
-00:01:50,333 --> 00:01:53,100
-It weighed nearly 500 pounds
-重达500磅左右。
+00:01:43,766 --> 00:01:48,166
+At the base of the gold cap  the words  made in the U|
+
+
 16
-00:01:53,366 --> 00:01:59,600
-A little later  a man came along with a biscuit which occupied the whole boot of his car
-相隔不一会儿，一个男子也带来一个大饼干，那个饼干把汽车的行李箱挤得满满的。
+00:01:48,166 --> 00:01:48,366
+S|
 
 17
-00:02:00,700 --> 00:02:04,000
-All the biscuits that were sent were carefully weighed
-凡送来的饼干都仔细地称量。
+00:01:48,366 --> 00:01:49,066
+A |
 
 18
-00:02:04,366 --> 00:02:08,133
-The largest was 713 pounds
-最重的一个达713磅，
+00:01:49,400 --> 00:01:51,666
+had been neatly inscribed
+金笔帽下方整齐地刻有“美国制造”字样。
 
 19
-00:02:08,500 --> 00:02:11,833
-It seemed certain that this would win the prize
-看来这个饼干获奖无疑了。
+00:01:52,366 --> 00:02:00,733
+The man said that the pen was worth ￡50  but as a special favour  he would let me have it for ￡30
+那人说那支笔值50英镑，作为特别优惠，他愿意让我出30英镑成交。
 
 20
-00:02:12,400 --> 00:02:23,766
-But just before the competition closed  a lorry arrived at the factory with a truly colossal biscuit which weighed 2,400 pounds
-但就在竞赛截止时间将到之际，一辆卡车驶进了工厂，运来了一个特大无比、重达2,400磅的饼干。
+00:02:02,200 --> 00:02:09,166
+I shook my head and held up a finger indicating that I was willing to pay five pounds
+我摇摇头， 伸出5根手指表示我只愿出5镑钱。
 
 21
-00:02:24,433 --> 00:02:37,933
-It had been baked by a college student who had used over 1,000 pounds of flour  800 pounds of sugar  200 pounds of fat  and 400 pounds of various other ingredients
-它是由一个大学生烘制的，用去1,000多磅的面粉、800磅食糖、200磅动物脂肪及400磅其他各种原料。
+00:02:10,533 --> 00:02:21,333
+Gesticulating wildly  the man acted as if he found my offer out-rageous  but he eventually reduced the price to ￡10
+那人激动地打着手势， 仿佛我的出价使他不能容忍。 但他终于把价钱降到了10英镑。
 
 22
-00:02:38,233 --> 00:02:43,133
-It was so heavy that a crane had to be used to remove it from the lorry
-饼干份量太重了，用了一台起重机才把它从卡车上卸下。
+00:02:22,633 --> 00:02:32,333
+Shrugging my shoulders  I began to walk away when  a moment later  he ran after me and thrust the pen into my hands
+我耸耸肩膀掉头走开了。 一会儿，他突然从后追了上来， 把笔塞到我手里。
 
 23
-00:02:43,966 --> 00:02:52,233
-The manufacturers had to pay more money than they had anticipated  or they bought the biscuit from the student for $24,000
-饼干公司不得不付出比他们预计多得多的钱，因为为买下那学生烘制的饼干他们支付了24,000美元。
+00:02:33,366 --> 00:02:39,900
+Though he kept throwing up his arms in despair  he readily accepted the five pounds I gave him
+虽然他绝望地举起双手， 但他毫不迟疑地收下了我付给他的5镑钱。
 
+24
+00:02:40,466 --> 00:02:47,200
+I felt especially pleased with my wonderful bargain--until I got back to the ship
+在回到船上之前，我一直为我的绝妙的讨价还价而洋洋得意。
+
+25
+00:02:47,800 --> 00:02:59,500
+No matter how hard I tried  it was im-possible to fill this beautiful pen with ink and to this day it has never written a single word !
+然而不管我如何摆弄，那枝漂亮的钢笔就是吸不进墨水来。直到今天，那枝笔连一个字也没写过！
 
