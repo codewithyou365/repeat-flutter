@@ -1,139 +1,148 @@
 npp
 
 
-Five pound too dear
+The death of a ghost
 
+For years, villagers believed that Endley Farm was haunted. The farm was owned by two brothers, Joe and Bob Cox. They employed a few farmhands, but no one was willing to work there long. Every time a worker gave up his job, he told the same story. Farm labourers said that they always woke up to find that work had been done overnight. Hay had been cut and cowsheds had been cleaned. A farm worker, who stayed up all night claimed to have seen a figure cutting corn in the moonlight. In time, it became an accepted fact the Cox brothers employed a conscientious ghost that did most of their work for them.
 
-Small boats loaded with wares sped to the great liner as she was entering the harbour. Before she had anchored, the men from the boats had climbed on board and the decks were son covered with colourful rugs from Persia, silks from India, copper coffee pots, and beautiful handmade silverware. It was difficult not to be tempted. Many of the tourists on board had begun bargaining with the tradesmen, but I decide not to buy anything until I had disembarked.
+No one suspected that there might be someone else on the farm who had never been seen. This was indeed the case. A short time ago, villagers were astonished to learn that the ghost of Endley had died. Everyone went to the funeral, for the 'ghost' was none other than Eric Cox, a third brother who was supposed to have died as a young man. After the funeral, Joe and Bob revealed a secret which they had kept for over fifty years.
 
-I had no sooner got off the ship than I was assailed by a man who wanted to sell me a diamond ring. I had no intention of buying one, but I could not conceal the fact that I was impressed by the size of the diamonds. Some of them were as big as marbles. The man went to great lengths to prove that the diamonds were real. As we were walking past a shop, he held a diamond firmly against the window and made a deep impression in the glass. It took me over half an hour to get rid of him.
-
-The next man to approach me was selling expensive pens and watches. I examined one of the pens closely. It certainly looked genuine. At the base of the gold cap, the words 'made in the U.S.A.' had been neatly inscribed. The man said that the pen was worth ￡50, but as a special favour, he would let me have it for ￡30. I shook my head and held up a finger indicating that I was willing to pay five pounds. Gesticulating wildly, the man acted as if he found my offer out-rageous, but he eventually reduced the price to ￡10. Shrugging my shoulders, I began to walk away when, a moment later, he ran after me and thrust the pen into my hands. Though he kept throwing up his arms in despair, he readily accepted the five pounds I gave him. I felt especially pleased with my wonderful bargain--until I got back to the ship. No matter how hard I tried, it was im-possible to fill this beautiful pen with ink and to this day it has never written a single word !
+Eric had been the eldest son of the family, very much older than his two brothers. He had been obliged to join the army during the Second World War. As he hated army life, he decided to desert his regiment. When he learnt that he would be sent abroad, he returned to the farm and his father hid him until the end of the war. Fearing the authorities, Eric remained in hiding after the war as well. His father told everybody that Eric had been killed in action. The only other people who knew the secret were Joe and Bob. They did not even tell their wives. When their father died, they thought it their duty to keep Eric in hiding. All these years, Eric had lived as a recluse. He used to sleep during the day and work at night, quite unaware of the fact that he had become the ghost of Endley. When he died, however, his brothers found it impossible to keep the secret any longer.
 
 ---
 
+
 1
-00:00:02,666 --> 00:00:04,900
-Five pound too dear
-Five pound too dear
+00:00:02,133 --> 00:00:06,266
+The death of a ghost
+The death of a ghost
 
 2
-00:00:17,033 --> 00:00:22,933
-Small boats loaded with wares sped to the great liner as she was entering the harbour
-当一艘大型班船进港的时候，许多小船载着各种杂货快速向客轮驶来。
+00:00:13,766 --> 00:00:18,266
+For years  villagers believed that Endley Farm was haunted
+多年来，村民们一直认为恩得利农场在闹鬼。
 
 3
-00:00:23,833 --> 00:00:39,500
-Before she had anchored  the men from the boats had climbed on board and the decks were son covered with colourful rugs from Persia  silks from India  copper coffee pots  and beautiful handmade silverware
-大船还未下锚。小船上的人就纷纷爬上客轮。一会儿工夫，甲板上就摆满了色彩斑斓的波斯地毯。印度丝绸。铜咖啡壶以及手工制作的漂亮的银器。
+00:00:18,900 --> 00:00:23,066
+The farm was owned by two brothers  Joe and Bob Cox
+恩得利农场属于乔.考科斯和鲍勃.考科斯兄弟俩所有。
 
 4
-00:00:40,033 --> 00:00:42,533
-It was difficult not to be tempted
-要想不为这些东西所动心是很困难的。
+00:00:23,733 --> 00:00:28,400
+They employed a few farmhands  but no one was willing to work there long
+他们雇了几个农工，但谁也不愿意在那儿长期工作下去。
 
 5
-00:00:43,333 --> 00:00:52,566
-Many of the tourists on board had begun bargaining with the tradesmen  but I decide not to buy anything until I had disembarked
-船上许多游客开始同商贩讨价还价起来，但我打定主意上岸之前什么也不买。
-
+00:00:29,233 --> 00:00:33,933
+Every time a worker gave up his job  he told the same story
+每次雇工辞职后都叙述着同样的故事。
 
 6
-00:00:53,566 --> 00:01:00,966
-I had no sooner got off the ship than I was assailed by a man who wanted to sell me a diamond ring
-我刚下船，就被一个人截住，他向我兜售一枚钻石戒指。 	I had no sooner… than… : 刚…就…
+00:00:34,966 --> 00:00:40,833
+Farm labourers said that they always woke up to find that work had been done overnight
+雇工们说，常常一早起来发现有人在夜里把活干了，
+
 
 7
-00:01:02,133 --> 00:01:10,666
-I had no intention of buying one  but I could not conceal the fact that I was impressed by the size of the diamonds
-我根本不想买，但我不能掩饰这样一个事实：其钻石之大给我留下了深刻的印象。
+00:00:41,700 --> 00:00:45,366
+Hay had been cut and cowsheds had been cleaned
+干草已切好，牛棚也打扫干净了。
 
 8
-00:01:11,566 --> 00:01:14,066
-Some of them were as big as marbles
-有的钻石像玻璃球那么大。
+00:00:46,000 --> 00:00:52,966
+A farm worker  who stayed up all night claimed to have seen a figure cutting corn in the moonlight
+有一个彻夜未眠的雇工还声称他看见一个人影在月光下收割庄稼。
+
 
 9
-00:01:14,666 --> 00:01:19,300
-The man went to great lengths to prove that the diamonds were real
-那人竭力想证明那钻石是真货。 great lengths to
+00:00:53,600 --> 00:01:02,366
+In time  it became an accepted fact the Cox brothers employed a conscientious ghost that did most of their work for them
+随着时间的流逝，考科斯兄弟雇了一个尽心尽责的鬼，他们家的活大部分都让鬼给干了，这件事成了公认的事实。
+
 
 10
-00:01:19,833 --> 00:01:28,000
-As we were walking past a shop  he held a diamond firmly against the window and made a deep impression in the glass
-我们路过一家商店时，他将一颗钻石使劲地往橱窗上一按，在玻璃上留下一道深痕。
+00:01:04,100 --> 00:01:09,433
+No one suspected that there might be someone else on the farm who had never been seen
+谁也没想到农场竟会有一个从未露面的人。
 
 11
-00:01:28,866 --> 00:01:32,000
-It took me over half an hour to get rid of him
-我花了半个多小时才摆脱了他的纠缠。
-
+00:01:10,133 --> 00:01:12,233
+This was indeed the case
+但事实上确有此人。
 
 12
-00:01:32,966 --> 00:01:37,500
-The next man to approach me was selling expensive pens and watches
-向我兜售的第二个人是卖名贵钢笔和手表的。
+00:01:12,733 --> 00:01:19,200
+A short time ago  villagers were astonished to learn that the ghost of Endley had died
+不久之前， 村民们惊悉恩得利农场的鬼死了。
 
 13
-00:01:38,033 --> 00:01:40,733
-I examined one of the pens closely
-我仔细察看了一枝钢笔，
+00:01:20,000 --> 00:01:30,600
+Everyone went to the funeral  for the  ghost  was none other than Eric Cox  a third brother who was supposed to have died as a young man
+大家都去参加了葬礼，因为那“鬼”不是别人， 正是农场主的兄弟埃里克.考科斯。 人们以为埃里克年轻时就死了。
 
 14
-00:01:41,033 --> 00:01:43,066
-It certainly looked genuine
-那看上去确实不假，
+00:01:31,400 --> 00:01:38,666
+After the funeral  Joe and Bob revealed a secret which they had kept for over fifty years
+葬礼之后， 乔和鲍勃透露了他们保守了长达50多年的秘密。
+
 
 15
-00:01:43,766 --> 00:01:48,166
-At the base of the gold cap  the words  made in the U|
-
+00:01:39,500 --> 00:01:44,933
+Eric had been the eldest son of the family  very much older than his two brothers
+埃里克是这家长子。年龄比他两个弟弟大很多，
 
 16
-00:01:48,166 --> 00:01:48,366
-S|
+00:01:45,500 --> 00:01:49,633
+He had been obliged to join the army during the Second World War
+第二次世界大战期间被迫参军。
 
 17
-00:01:48,366 --> 00:01:49,066
-A |
+00:01:50,233 --> 00:01:54,933
+As he hated army life  he decided to desert his regiment
+他讨厌军旅生活， 决定逃离所在部队。
 
 18
-00:01:49,400 --> 00:01:51,666
-had been neatly inscribed
-金笔帽下方整齐地刻有“美国制造”字样。
+00:01:56,133 --> 00:02:03,533
+When he learnt that he would be sent abroad  he returned to the farm and his father hid him until the end of the war
+当他了解自己将被派遣出国时， 他逃回农场，父亲把他藏了起来，直到战争结束。
 
 19
-00:01:52,366 --> 00:02:00,733
-The man said that the pen was worth ￡50  but as a special favour  he would let me have it for ￡30
-那人说那支笔值50英镑，作为特别优惠，他愿意让我出30英镑成交。
+00:02:04,433 --> 00:02:09,633
+Fearing the authorities  Eric remained in hiding after the war as well
+由于害怕当局， 埃里克战后继续深藏不露。
 
 20
-00:02:02,200 --> 00:02:09,166
-I shook my head and held up a finger indicating that I was willing to pay five pounds
-我摇摇头， 伸出5根手指表示我只愿出5镑钱。
+00:02:10,333 --> 00:02:13,866
+His father told everybody that Eric had been killed in action
+他的父亲告诉大家， 埃里克在战争中被打死了。
 
 21
-00:02:10,533 --> 00:02:21,333
-Gesticulating wildly  the man acted as if he found my offer out-rageous  but he eventually reduced the price to ￡10
-那人激动地打着手势， 仿佛我的出价使他不能容忍。 但他终于把价钱降到了10英镑。
+00:02:15,000 --> 00:02:18,866
+The only other people who knew the secret were Joe and Bob
+除此之外， 只有乔与鲍知道这个秘密。
 
 22
-00:02:22,633 --> 00:02:32,333
-Shrugging my shoulders  I began to walk away when  a moment later  he ran after me and thrust the pen into my hands
-我耸耸肩膀掉头走开了。 一会儿，他突然从后追了上来， 把笔塞到我手里。
+00:02:19,533 --> 00:02:22,233
+They did not even tell their wives
+但他俩连自己的妻子都没告诉。
 
 23
-00:02:33,366 --> 00:02:39,900
-Though he kept throwing up his arms in despair  he readily accepted the five pounds I gave him
-虽然他绝望地举起双手， 但他毫不迟疑地收下了我付给他的5镑钱。
+00:02:22,733 --> 00:02:27,266
+When their father died  they thought it their duty to keep Eric in hiding
+父亲死后， 他们兄弟俩认为有责任继续把埃里克藏起来。
 
 24
-00:02:40,466 --> 00:02:47,200
-I felt especially pleased with my wonderful bargain--until I got back to the ship
-在回到船上之前，我一直为我的绝妙的讨价还价而洋洋得意。
+00:02:27,700 --> 00:02:32,000
+All these years  Eric had lived as a recluse
+这些年来， 埃里克过着隐士生活，
 
 25
-00:02:47,800 --> 00:02:59,500
-No matter how hard I tried  it was im-possible to fill this beautiful pen with ink and to this day it has never written a single word !
-然而不管我如何摆弄，那枝漂亮的钢笔就是吸不进墨水来。直到今天，那枝笔连一个字也没写过！
+00:02:32,633 --> 00:02:40,133
+He used to sleep during the day and work at night  quite unaware of the fact that he had become the ghost of Endley
+白天睡觉， 夜里出来干活，一点不知道自己已成了恩得利农场的活鬼。
+
+26
+00:02:40,600 --> 00:02:46,533
+When he died  however  his brothers found it impossible to keep the secret any longer
+他死后，他的弟弟们才觉得无法再保守这个秘密了。
 
