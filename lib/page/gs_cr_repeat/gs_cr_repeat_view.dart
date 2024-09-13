@@ -180,7 +180,7 @@ class GsCrRepeatPage extends StatelessWidget {
         if (segment.mediaDocPath != "" && segment.aMediaSegments.isNotEmpty) {
           var left = 0;
           var right = 0;
-          var curr = 0;
+          var curr = -1;
           List<MediaSegment> segments = [];
           for (var i = -left; i <= right; i++) {
             var index = segment.segmentIndex + i;
@@ -190,6 +190,9 @@ class GsCrRepeatPage extends StatelessWidget {
                 curr = segments.length - 1;
               }
             }
+          }
+          if(curr == -1){
+            return null;
           }
           return PlayerBar(
             state.answerMediaId,
