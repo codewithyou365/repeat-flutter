@@ -68,14 +68,16 @@ class SegmentHelp {
     // full title, prevQa and qa
     {
       ret.title = lesson.title;
-      var segment = lesson.segment[ret.segmentIndex];
-      if (ret.segmentIndex != 0) {
-        var prevSegment = lesson.segment[ret.segmentIndex - 1];
-        ret.prevAnswer = prevSegment.a;
+      if (ret.segmentIndex < lesson.segment.length) {
+        var segment = lesson.segment[ret.segmentIndex];
+        if (ret.segmentIndex != 0) {
+          var prevSegment = lesson.segment[ret.segmentIndex - 1];
+          ret.prevAnswer = prevSegment.a;
+        }
+        ret.question = segment.q;
+        ret.tip = segment.tip;
+        ret.answer = segment.a;
       }
-      ret.question = segment.q;
-      ret.tip = segment.tip;
-      ret.answer = segment.a;
     }
 
     // full mediaSegments
