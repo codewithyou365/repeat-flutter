@@ -12,6 +12,8 @@ import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
+import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'gs_cr_repeat_state.dart';
@@ -211,6 +213,19 @@ class GsCrRepeatLogic extends GetxController {
     var oldSegmentKeyId = state.segment.segmentKeyId;
     var learnSegment = await SegmentHelp.from(curr.segmentKeyId, offset: pnOffset);
     if (learnSegment == null) {
+      return null;
+    }
+    if (learnSegment.miss) {
+      MsgBox.yesOrNo(
+        I18nKey.btnTips.tr,
+        I18nKey.labelSegmentRemoved.tr,
+        yes: () {
+          showOverlay(() async {
+            await Db().db.scheduleDao.deleteBySegmentKeyId(curr.segmentKeyId);
+            Nav.gsCr.until();
+          }, I18nKey.labelExecuting.tr);
+        },
+      );
       return null;
     }
     if (learnSegment.segmentKeyId == oldSegmentKeyId && fromPn) {

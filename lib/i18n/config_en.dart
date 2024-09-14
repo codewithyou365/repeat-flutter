@@ -100,6 +100,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelRemoteImport, "Remote Import");
     put(I18nKey.labelLocalImport, "Local Import");
     put(I18nKey.labelLocalImportCancel, "Local Import is Canceled");
+    put(I18nKey.labelSegmentRemoved, "The learning segment has been removed, and it is recommended that the related schedule be deleted");
     put(I18nKey.btnCancel, "Cancel");
     put(I18nKey.btnOk, "Ok");
     put(I18nKey.btnDelete, "Delete");

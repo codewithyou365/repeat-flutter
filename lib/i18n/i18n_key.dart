@@ -98,6 +98,7 @@ enum I18nKey {
   labelRemoteImport,
   labelLocalImport,
   labelLocalImportCancel,
+  labelSegmentRemoved,
   btnCancel,
   btnOk,
   btnDelete,

@@ -901,6 +901,40 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
+  Future<void> deleteSegment(int segmentKeyId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM Segment WHERE segmentKeyId=?1',
+        arguments: [segmentKeyId]);
+  }
+
+  @override
+  Future<void> deleteSegmentKey(int segmentKeyId) async {
+    await _queryAdapter.queryNoReturn('DELETE FROM SegmentKey WHERE id=?1',
+        arguments: [segmentKeyId]);
+  }
+
+  @override
+  Future<void> deleteSegmentOverallPrg(int segmentKeyId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM SegmentOverallPrg WHERE segmentKeyId=?1',
+        arguments: [segmentKeyId]);
+  }
+
+  @override
+  Future<void> deleteSegmentReview(int segmentKeyId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM SegmentReview WHERE segmentKeyId=?1',
+        arguments: [segmentKeyId]);
+  }
+
+  @override
+  Future<void> deleteSegmentTodayPrg(int segmentKeyId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM SegmentTodayPrg WHERE segmentKeyId=?1',
+        arguments: [segmentKeyId]);
+  }
+
+  @override
   Future<void> insertKv(CrKv kv) async {
     await _crKvInsertionAdapter.insert(kv, OnConflictStrategy.replace);
   }
@@ -949,6 +983,21 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<void> deleteKv(CrKv kv) async {
     await _crKvDeletionAdapter.delete(kv);
+  }
+
+  @override
+  Future<void> deleteBySegmentKeyId(int segmentKeyId) async {
+    if (database is sqflite.Transaction) {
+      await super.deleteBySegmentKeyId(segmentKeyId);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        await transactionDatabase.scheduleDao
+            .deleteBySegmentKeyId(segmentKeyId);
+      });
+    }
   }
 
   @override
