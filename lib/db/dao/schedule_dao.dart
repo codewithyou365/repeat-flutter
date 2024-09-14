@@ -390,6 +390,31 @@ abstract class ScheduleDao {
   @Insert(onConflict: OnConflictStrategy.ignore)
   Future<void> insertSegmentOverallPrgs(List<SegmentOverallPrg> entities);
 
+  @Query('DELETE FROM Segment WHERE segmentKeyId=:segmentKeyId')
+  Future<void> deleteSegment(int segmentKeyId);
+
+  @Query('DELETE FROM SegmentKey WHERE id=:segmentKeyId')
+  Future<void> deleteSegmentKey(int segmentKeyId);
+
+  @Query('DELETE FROM SegmentOverallPrg WHERE segmentKeyId=:segmentKeyId')
+  Future<void> deleteSegmentOverallPrg(int segmentKeyId);
+
+  @Query('DELETE FROM SegmentReview WHERE segmentKeyId=:segmentKeyId')
+  Future<void> deleteSegmentReview(int segmentKeyId);
+
+  @Query('DELETE FROM SegmentTodayPrg WHERE segmentKeyId=:segmentKeyId')
+  Future<void> deleteSegmentTodayPrg(int segmentKeyId);
+
+  @transaction
+  Future<void> deleteBySegmentKeyId(int segmentKeyId) async {
+    await forUpdate();
+    await deleteSegment(segmentKeyId);
+    await deleteSegmentKey(segmentKeyId);
+    await deleteSegmentOverallPrg(segmentKeyId);
+    await deleteSegmentReview(segmentKeyId);
+    await deleteSegmentTodayPrg(segmentKeyId);
+  }
+
   /// for manager
   @transaction
   Future<void> importSegment(

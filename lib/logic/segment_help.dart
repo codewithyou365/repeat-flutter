@@ -77,6 +77,8 @@ class SegmentHelp {
         ret.question = segment.q;
         ret.tip = segment.tip;
         ret.answer = segment.a;
+      } else {
+        ret.miss = true;
       }
     }
 

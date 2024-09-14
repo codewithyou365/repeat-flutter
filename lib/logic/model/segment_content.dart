@@ -35,6 +35,7 @@ class SegmentContent extends SegmentContentInDb {
   var question = "";
   var tip = "";
   var answer = "";
+  var miss = false;
 
   SegmentContent(
     super.segmentKeyId,

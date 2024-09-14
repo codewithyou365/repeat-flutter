@@ -100,6 +100,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelRemoteImport, "远程导入");
     put(I18nKey.labelLocalImport, "本地导入");
     put(I18nKey.labelLocalImportCancel, "本地导入取消");
+    put(I18nKey.labelSegmentRemoved, "对应的学习片段已移除，建议删除相关学习规划");
     put(I18nKey.btnCancel, "取消");
     put(I18nKey.btnOk, "确定");
     put(I18nKey.btnDelete, "删除");
