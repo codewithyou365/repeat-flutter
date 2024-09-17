@@ -1346,7 +1346,7 @@
           "aStart": "00:00:56,100",
           "aEnd": "00:01:05,083",
           "tip": "600年前,约翰.霍克伍德爵士带着一队士兵来到意大利,在佛罗伦萨附近驻扎下来,",
-          "a": "Six hundred years ago, Sir Johan Hawkwood arrived in Italy with a band of soldiers and settled near Florence."
+          "a": "Six hundred years ago, Sir John Hawkwood arrived in Italy with a band of soldiers and settled near Florence."
         },
         {
           "aStart": "00:01:05,183",
@@ -1364,7 +1364,7 @@
           "aStart": "00:01:25,117",
           "aEnd": "00:01:39,833",
           "tip": "和平时期,当生意萧条时,霍克伍德便带领士兵进入某个城邦,纵火烧毁一两个农场,然后提出,如向他们缴纳保护金,他们便主动撤离。",
-          "a": "In times of peace, when business was bad, Hawkwood and his men would march into a city-state and, after burning down a few farms, would offer to go away protection money was paid to them."
+          "a": "In times of peace, when business was bad, Hawkwood and his men would march into a city-state and, after burning down a few farms, would offer to go away if protection money was paid to them."
         },
         {
           "aStart": "00:01:39,933",
@@ -3713,10 +3713,161 @@
       "path": "/nce3/a/33.mp3",
       "hash": "8e920ea0db309e213c767d84427e032f3ea25ae2",
       "key": "nce3/33",
-      "title": "A day t remember",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,233",
-      "segment": []
+      "title": "A day to remember",
+      "titleStart": "00:00:01,900",
+      "titleEnd": "00:00:04,433",
+      "segment": [
+        {
+          "aStart": "00:00:14,966",
+          "aEnd": "00:00:19,533",
+          "tip": "我们大家都有过事事不顺心的日子。",
+          "a": "We have all experienced days when everything goes wrong."
+        },
+        {
+          "aStart": "00:00:19,633",
+          "aEnd": "00:00:25,633",
+          "tip": "一天开始时，可能还不错，但突然间似乎一切都失去了控制。",
+          "a": "A day may begin well enough, but suddenly everything seems to get out of control."
+        },
+        {
+          "aStart": "00:00:25,733",
+          "aEnd": "00:00:33,716",
+          "tip": "情况经常是这样的，许许多多的事情都偏偏赶在同一时刻出问题，",
+          "a": "What invariably happens is that a great number of things choose to go wrong at precisely the same moment."
+        },
+        {
+          "aStart": "00:00:33,816",
+          "aEnd": "00:00:39,650",
+          "tip": "好像是一件无关紧要的小事引起了一连串的连锁反应。",
+          "a": "It is as if a single unimportant event set up a chain of reactions."
+        },
+        {
+          "aStart": "00:00:39,750",
+          "aEnd": "00:00:46,783",
+          "tip": "假设你在做饭，同时又在照看孩子。",
+          "a": "Let us suppose that you are preparing a meal and keeping an eye on the baby at the same time."
+        },
+        {
+          "aStart": "00:00:46,883",
+          "aEnd": "00:00:54,833",
+          "tip": "这时电话铃响了。它预示着一连串意想不到的灾难的来临。",
+          "a": "The telephone rings and this marks the prelude to an unforeseen series of catastrophes."
+        },
+        {
+          "aStart": "00:00:55,000",
+          "aEnd": "00:01:06,150",
+          "tip": "就在你接电话时，孩子把桌布从桌子上扯下来，将家中最好的陶瓷餐具半数摔碎，同时也弄伤了他自己。",
+          "a": "While you are on the phone, the baby pulls the tablecloth off the table, smashing half your best crockery and cutting himself in the process."
+        },
+        {
+          "aStart": "00:01:06,250",
+          "aEnd": "00:01:11,549",
+          "tip": "你急急忙忙挂上电话，赶去照看孩子和餐具。",
+          "a": "You hang up hurriedly and attend to baby, crockery, etc."
+        },
+        {
+          "aStart": "00:01:11,650",
+          "aEnd": "00:01:14,333",
+          "tip": "这时，饭又烧糊了。",
+          "a": "Meanwhile, the meal gets burnt."
+        },
+        {
+          "aStart": "00:01:14,433",
+          "aEnd": "00:01:23,949",
+          "tip": "好像这一切还不足以使你急得掉泪，你的丈夫接着回来了，事先没打招呼就带来3个客人吃饭。",
+          "a": "As if this were not enough to reduce you to tears, your husband arrives, unexpectedly bringing three guests to dinner."
+        },
+        {
+          "aStart": "00:01:24,050",
+          "aEnd": "00:01:33,216",
+          "tip": "就像许多人最近在悉尼郊区帕拉马塔发现的那样，有时乱子会闹得很大。",
+          "a": "Things can go wrong on a big scale, as a number of people recently discovered in Parramatta, a suburb of Sydney."
+        },
+        {
+          "aStart": "00:01:33,316",
+          "aEnd": "00:01:40,649",
+          "tip": "一天傍晚交通最拥挤时，一辆汽车撞上前面一辆汽车，两个司机争吵起来。",
+          "a": "During the rush hour one evening two cars collided and both drivers began to argue."
+        },
+        {
+          "aStart": "00:01:40,750",
+          "aEnd": "00:01:46,116",
+          "tip": "紧跟其后的一辆车上的司机碰巧是个初学者，",
+          "a": "The woman immediately behind the two cars happened to be a learner."
+        },
+        {
+          "aStart": "00:01:46,216",
+          "aEnd": "00:01:50,616",
+          "tip": "她一惊之下突然把车停了下来。",
+          "a": "She suddenly got into a panic and stopped her car."
+        },
+        {
+          "aStart": "00:01:50,717",
+          "aEnd": "00:01:54,400",
+          "tip": "她这一停使得跟在后头的司机也来个急刹车。",
+          "a": "This made the driver following her brake hard."
+        },
+        {
+          "aStart": "00:01:54,500",
+          "aEnd": "00:01:58,816",
+          "tip": "司机妻子正坐在他身边，手里托着块大蛋糕。",
+          "a": "His wife was sitting beside him holding a large cake."
+        },
+        {
+          "aStart": "00:01:58,916",
+          "aEnd": "00:02:06,150",
+          "tip": "她往前一冲，蛋糕从挡风玻璃飞了出去掉到马路上。 \\n 直译： 当她被抛向前时，蛋糕直接穿过了挡风玻璃，落在了路上。",
+          "a": "As she was thrown forward, the cake went right through the windscreen and landed on the road."
+        },
+        {
+          "aStart": "00:02:06,250",
+          "aEnd": "00:02:15,833",
+          "tip": "此时，一辆卡车正好从后边开到那辆汽车边上，司机看见一块蛋糕从天而降，紧急刹车。 。 \\n 直译： 看到一个蛋糕在空中飞过，一个正靠近汽车的卡车司机突然停了下来。",
+          "a": "Seeing a cake flying through the air, a lorry driver who was drawing up alongside the car, pulled up all of a sudden."
+        },
+        {
+          "aStart": "00:02:15,933",
+          "aEnd": "00:02:25,166",
+          "tip": "卡车上装着空啤酒瓶。成百只瓶子顺势从卡车后面滑出车外落在马路上。",
+          "a": "The lorry was loaded with empty beer bottles and hundreds of them slid off the back of the vehicle and on to the road."
+        },
+        {
+          "aStart": "00:02:25,267",
+          "aEnd": "00:02:29,300",
+          "tip": "这又引起一场唇枪舌剑的争吵。",
+          "a": "This led to yet another angry argument."
+        },
+        {
+          "aStart": "00:02:29,400",
+          "aEnd": "00:02:33,000",
+          "tip": "与此同时，后面的车辆排成了长龙，",
+          "a": "Meanwhile, the traffic piled up behind."
+        },
+        {
+          "aStart": "00:02:33,100",
+          "aEnd": "00:02:38,566",
+          "tip": "警察花了将近一个小时才使车辆又开起来。",
+          "a": "It took the police nearly an hour to get the traffic on the move again."
+        },
+        {
+          "aStart": "00:02:38,667",
+          "aEnd": "00:02:45,250",
+          "tip": "在这段时间里，卡车司机不得不清扫那几百只破瓶子。",
+          "a": "In the meantime, the lorry driver had to sweep up hundreds of broken bottles."
+        },
+        {
+          "aStart": "00:02:45,350",
+          "aEnd": "00:02:53,916",
+          "tip": "只有两只野狗从这一片混乱中得到好处，它们贪婪地吃掉了剩下的蛋糕。",
+          "a": "Only two stray dogs benefited from all this confusion, for they greedily devoured what was left of the cake."
+        },
+        {
+          "aStart": "00:02:54,016",
+          "aEnd": "00:02:57,400",
+          "tip": "这就是事事不顺心的那么一天！",
+          "a": "It was just one of those days!"
+        }
+      ]
     },
     {
       "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/34_218.mp3",
@@ -3724,9 +3875,142 @@
       "hash": "a18d1de69f70fe577c0321a0e0471e1867dba8f5",
       "key": "nce3/34",
       "title": "A happy discovery",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,233",
-      "segment": []
+      "titleStart": "00:00:01,866",
+      "titleEnd": "00:00:04,700",
+      "segment": [
+        {
+          "aStart": "00:00:13,933",
+          "aEnd": "00:00:20,333",
+          "tip": "古玩店对许多人来说有一种特殊的魅力。",
+          "a": "Antique shops exert a peculiar fascination on a great many people."
+        },
+        {
+          "aStart": "00:00:20,700",
+          "aEnd": "00:00:34,183",
+          "tip": "高档一点的古玩店为了防尘，把文物漂亮地陈列在玻璃柜子里，那里往往令人望而却步。",
+          "a": "The more expensive kind of antique shop where rare objects are beautifully displayed in glass cases to keep them free from dust is usually a forbidding place."
+        },
+        {
+          "aStart": "00:00:34,283",
+          "aEnd": "00:00:41,233",
+          "tip": "而对不太装腔作势的古玩店，无论是谁都不用壮着胆子才敢往里进。",
+          "a": "But no one has to muster up courage to enter a less pretentious antique shop."
+        },
+        {
+          "aStart": "00:00:41,333",
+          "aEnd": "00:00:54,666",
+          "tip": "人们还常常有希望在发霉、阴暗、杂乱无章、迷宫般的店堂里，从杂乱地摆放在地面上的、一堆堆各式各样的破烂货里找到一件稀世珍品。",
+          "a": "There is always hope that in its labyrinth of musty, dark, disordered rooms a real rarity will be found amongst the piles of assorted junk that little the floors."
+        },
+        {
+          "aStart": "00:00:54,766",
+          "aEnd": "00:00:58,500",
+          "tip": "无论是谁都不会一下子就发现一件珍品。",
+          "a": "No one discovers a rarity by chance."
+        },
+        {
+          "aStart": "00:00:58,733",
+          "aEnd": "00:01:09,349",
+          "tip": "一个到处找便宜的人必须具有耐心，而且最重要的是看到珍品时要有鉴别珍品的能力。",
+          "a": "A truly dedicated bargain hunter must have patience, and above all, the ability to recognize the worth of something when he sees it."
+        },
+        {
+          "aStart": "00:01:09,450",
+          "aEnd": "00:01:15,383",
+          "tip": "要做到这一点，他至少要像古董商一样懂行。",
+          "a": "To do this, he must be at least as knowledgeable as the dealer."
+        },
+        {
+          "aStart": "00:01:15,483",
+          "aEnd": "00:01:24,866",
+          "tip": "他必须像一个专心致志进行探索的科学家那样抱有这样的希望，即终有一天，他的努力会取得丰硕的成果。",
+          "a": "Like a scientist bent on making a discovery, he must cherish the hope that one day he will be amply rewarded."
+        },
+        {
+          "aStart": "00:01:24,967",
+          "aEnd": "00:01:30,383",
+          "tip": "我的老朋友弗兰克.哈利戴正是这样一个人。",
+          "a": "My old friend, Frank Halliday, is just such a person."
+        },
+        {
+          "aStart": "00:01:30,483",
+          "aEnd": "00:01:37,016",
+          "tip": "他多次向我详细讲他如何只花50英镑便买到一位名家的杰作。",
+          "a": "He has often described to me how he picked up a masterpiece for a mere ￡50."
+        },
+        {
+          "aStart": "00:01:37,117",
+          "aEnd": "00:01:43,616",
+          "tip": "一个星期六的上午，弗兰克去了我家附近的一家古玩店。",
+          "a": "One Saturday morning, Frank visited an antique shop in my neighbourhood."
+        },
+        {
+          "aStart": "00:01:43,716",
+          "aEnd": "00:01:49,799",
+          "tip": "由于他从未去过那儿，结果他发现许多有趣的东西。",
+          "a": "As he had never been there before, he found a great deal to interest him."
+        },
+        {
+          "aStart": "00:01:49,900",
+          "aEnd": "00:01:58,833",
+          "tip": "上午很快过去了，弗兰克正准备离去，突然看见地板上放着一只体积很大的货箱。",
+          "a": "The morning passed rapidly and Frank was about to leave when he noticed a large packing case lying on the floor."
+        },
+        {
+          "aStart": "00:01:58,933",
+          "aEnd": "00:02:05,633",
+          "tip": "古董商告诉他那只货箱刚到不久，但他嫌麻烦不想把它打开。",
+          "a": "The dealer told him that it had just come in but that he could not be bothered to open it."
+        },
+        {
+          "aStart": "00:02:05,866",
+          "aEnd": "00:02:11,783",
+          "tip": "经弗兰克恳求，古董商才勉强把货箱撬开了。",
+          "a": "Frank begged him to do so and the dealer reluctantly prised it open."
+        },
+        {
+          "aStart": "00:02:11,883",
+          "aEnd": "00:02:14,550",
+          "tip": "箱内东西令人失望。",
+          "a": "The contents were disappointing."
+        },
+        {
+          "aStart": "00:02:14,650",
+          "aEnd": "00:02:22,516",
+          "tip": "除了一柄式样别致、雕有花纹的匕首外，货箱内装满陶器，而且大部分都已破碎裂。",
+          "a": "Apart from an interesting-looking carved dagger, the box was full of crockery, much of it broken."
+        },
+        {
+          "aStart": "00:02:22,616",
+          "aEnd": "00:02:32,599",
+          "tip": "弗兰克轻轻地把陶器拿出箱子，突然发现在箱底有一幅微型画，",
+          "a": "Frank gently lifted the crockery out of the box an suddenly noticed a miniature painting at the bottom of the packing case."
+        },
+        {
+          "aStart": "00:02:32,700",
+          "aEnd": "00:02:41,400",
+          "tip": "画面构图与纸条使他想起一幅他所熟悉的意大利画，于是他决定将画买了下来。",
+          "a": "As its composition and line reminded him of an Italian painting he knew well, he decided to buy it."
+        },
+        {
+          "aStart": "00:02:41,933",
+          "aEnd": "00:02:47,616",
+          "tip": "古董商漫不经心看了一眼那幅画，告诉弗兰克那画值50英镑。",
+          "a": "Glancing at it briefly, the dealer told him that it was worth ￡50."
+        },
+        {
+          "aStart": "00:02:47,717",
+          "aEnd": "00:02:55,066",
+          "tip": "弗兰克几乎无法掩饰自己兴奋的心情，因为他明白自己发现了一件珍品。",
+          "a": "Frank could hardly conceal his excitement, for he knew that he had made a real discovery."
+        },
+        {
+          "aStart": "00:02:55,167",
+          "aEnd": "00:03:05,100",
+          "tip": "那幅不大的画原来是柯勒乔的一幅未被发现的杰作，价值几十万英镑。",
+          "a": "The tiny painting proved to be an unknown masterpiece by Correggio and was worth hundreds of thousands of pounds."
+        }
+      ]
     },
     {
       "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/35_076.mp3",
@@ -3734,9 +4018,130 @@
       "hash": "d26b56e55fe2ba9b9818b8e6b6d31084f812e550",
       "key": "nce3/35",
       "title": "Justice was done",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,233",
-      "segment": []
+      "titleStart": "00:00:02,166",
+      "titleEnd": "00:00:04,766",
+      "segment": [
+        {
+          "aStart": "00:00:19,333",
+          "aEnd": "00:00:25,183",
+          "tip": "“正义”这个词常常是同法庭连在一起的。",
+          "a": "The word justice is usually associated with courts of law."
+        },
+        {
+          "aStart": "00:00:25,283",
+          "aEnd": "00:00:32,866",
+          "tip": "当某人被证据确凿地证明无罪的时候，我们也许会说正义得到了伸张。",
+          "a": "We might say that justice has been done when a man's innocence or guilt has been proved beyond doubt."
+        },
+        {
+          "aStart": "00:00:32,966",
+          "aEnd": "00:00:37,466",
+          "tip": "正义是复杂的法律机器组成部分。",
+          "a": "Justice is part of the complex machinery of the law."
+        },
+        {
+          "aStart": "00:00:37,567",
+          "aEnd": "00:00:44,666",
+          "tip": "那些寻求正义的人走的是一条崎岖的道路，从来没有把握他们最终将到正义。",
+          "a": "Those who seek it undertake an arduous journey and can never be sure that they will find it."
+        },
+        {
+          "aStart": "00:00:44,767",
+          "aEnd": "00:00:50,899",
+          "tip": "法官无论如何聪明与有名，毕竟也是人，也会出差错的。",
+          "a": "Judges, however wise or eminent, are human and can make mistakes."
+        },
+        {
+          "aStart": "00:00:51,000",
+          "aEnd": "00:00:57,733",
+          "tip": "在个别情况下，正义不再是一种抽象概念。",
+          "a": "There are rare instances when justice almost ceases to be an abstract concept."
+        },
+        {
+          "aStart": "00:00:57,833",
+          "aEnd": "00:01:04,049",
+          "tip": "奖惩的实施是不受人意志支配的。",
+          "a": "Reward or punishment are meted out quite independent of human interference."
+        },
+        {
+          "aStart": "00:01:04,150",
+          "aEnd": "00:01:09,216",
+          "tip": "在这种时候，正义像一种有生命的力量行使其职能。",
+          "a": "At such times, justice acts like a living force."
+        },
+        {
+          "aStart": "00:01:09,316",
+          "aEnd": "00:01:23,266",
+          "tip": "当我们说“他罪有应得”这句话的时候，我们部分承认了某种特定的环境使得正义自动地起了作用。",
+          "a": "When we use a phrase like 'it serves him right', we are, in part, admitting that a certain set of circumstances has enabled justice to act of its own accord."
+        },
+        {
+          "aStart": "00:01:23,367",
+          "aEnd": "00:01:37,233",
+          "tip": "一天上午，当一个小偷在一家大型珠宝店里被人抓住的时候，店员一定会忍不住说：“他罪有应得。”",
+          "a": "When a thief was caught on the premises of large jewellery store on morning, the shop assistants must have found it impossible to resist the temptation to say 'it serves him right.'"
+        },
+        {
+          "aStart": "00:01:37,333",
+          "aEnd": "00:01:45,816",
+          "tip": "那是一座老式的、经过改造的房子，店里有许多废置不用的大壁炉和又高又窄的烟囱。",
+          "a": "The shop was an old converted house with many large, disused fireplaces and tall, narrow chimneys."
+        },
+        {
+          "aStart": "00:01:45,917",
+          "aEnd": "00:01:52,616",
+          "tip": "快到中午的时候，一个女售货员听见从一堵墙里传出一种闷声闷气的叫声。",
+          "a": "Towards midday, a girl heard a muffed cry coming from behind on of the walls."
+        },
+        {
+          "aStart": "00:01:52,717",
+          "aEnd": "00:02:00,850",
+          "tip": "由于这种喊叫声重复了几次，她跑去报告经理，经理当即给消防队挂了电话。",
+          "a": "As the cry was repeated several times, she ran to tell the manager who promptly rang up the fire brigade."
+        },
+        {
+          "aStart": "00:02:00,950",
+          "aEnd": "00:02:11,699",
+          "tip": "喊叫声肯定是从烟囱里传出来的，然而，因为烟囱太多，消防队员无法确定到底是哪一个。",
+          "a": "The cry had certainly come form one of the chimneys, but as there were so many of them, the fire fighters could not be certain which one it was."
+        },
+        {
+          "aStart": "00:02:11,800",
+          "aEnd": "00:02:19,383",
+          "tip": "他们通过叫击烟囱倾叫声而确定传出声音的那个烟囱。",
+          "a": "They located the right chimney by tapping at the walls and listening for the man's cries."
+        },
+        {
+          "aStart": "00:02:19,483",
+          "aEnd": "00:02:28,099",
+          "tip": "他们凿透了18英寸厚的墙壁，发现有个人卡在烟囱里。",
+          "a": "After chipping through a wall which was eighteen inches thick, they found that a man had been trapped in the chimney."
+        },
+        {
+          "aStart": "00:02:28,200",
+          "aEnd": "00:02:40,433",
+          "tip": "由于烟囱太窄，那人无法动弹。消防队员在墙上挖了个大洞，才终于把他解救出来。",
+          "a": "As it was extremely narrow, the man was unable to move, but the fire fighters were eventually able to free him by cutting a huge hole in the wall."
+        },
+        {
+          "aStart": "00:02:40,533",
+          "aEnd": "00:02:52,999",
+          "tip": "那个看来满脸沮丧、浑身漆黑的家伙从烟囱里一出来，就承认头天夜里他企图到店里行窍，但让烟囱卡住了。",
+          "a": "The sorry-looking, blackened figure that emerged, admitted at once that he had tried to break into the shop during the night but had got stuck in the chimney."
+        },
+        {
+          "aStart": "00:02:53,100",
+          "aEnd": "00:02:56,983",
+          "tip": "他已经在烟囱里被困了将近10个小时。",
+          "a": "He had been there for nearly ten hours."
+        },
+        {
+          "aStart": "00:02:57,083",
+          "aEnd": "00:03:02,433",
+          "tip": "甚至在那人还没被送交给警察之前，正义就已得到了伸张。",
+          "a": "Justice had been done even before the man was handed over to the police."
+        }
+      ]
     },
     {
       "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/36_573.mp3",
