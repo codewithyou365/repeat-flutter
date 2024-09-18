@@ -78,6 +78,9 @@ func main() {
 		if len(line) == 0 {
 			continue
 		} else {
+			if _debug {
+				fmt.Println(curr.A)
+			}
 			if offset%3 == 1 {
 				if mode == ListenMode {
 					se := strings.Split(line, "-->")

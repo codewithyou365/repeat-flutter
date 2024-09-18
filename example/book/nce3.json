@@ -1382,7 +1382,7 @@
           "aStart": "00:01:49,716",
           "aEnd": "00:02:08,133",
           "tip": "他80岁那年死去时,佛罗伦萨人为他举行了国葬,并为他画像以纪念这位\"骁勇无比的战士、杰出的领袖乔凡尼.阿库托先生.\"",
-          "a": "When he died at the age of eighty, the Florentines gave him a state funeral and had a pictured with as dedicated to the memory of 'the most valiant soldier and most notable leader, Signor Giovanni Haukodue.'"
+          "a": "When he died at the age of eighty, the Florentines gave him a state funeral and had a picture painted which was dedicated to the memory of 'the most valiant soldier and most notable leader, Signor Giovanni Haukodue'."
         }
       ]
     },
@@ -4149,9 +4149,130 @@
       "hash": "8a47ea3a92c4cce8083dff48c0ba22b153882fd6",
       "key": "nce3/36",
       "title": "A chance in a million",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,233",
-      "segment": []
+      "titleStart": "00:00:01,566",
+      "titleEnd": "00:00:04,566",
+      "segment": [
+        {
+          "aStart": "00:00:13,000",
+          "aEnd": "00:00:16,766",
+          "tip": "我们不再像以往那样轻易相信别人了。",
+          "a": "We are less credulous than we used to be."
+        },
+        {
+          "aStart": "00:00:16,866",
+          "aEnd": "00:00:30,050",
+          "tip": "在19世纪，小说家常在小说结尾处给读者准备一系列的巧合——大部分是牵强附会，极不可能的。",
+          "a": "In the nineteenth century, a novelist would bring his story to a conclusion by presenting his readers with a series of coincidences -- most of them wildly improbable."
+        },
+        {
+          "aStart": "00:00:30,150",
+          "aEnd": "00:00:37,466",
+          "tip": "当时的读者却愉快地接受这样一些事实，一个低贱的女佣实际上是主人公的母亲；",
+          "a": "Readers happily accepted the fact that an obscure maidservant was really the hero's mother."
+        },
+        {
+          "aStart": "00:00:37,567",
+          "aEnd": "00:00:48,049",
+          "tip": "主人公一位长期失散的兄弟，大家都以为死了，实际上一直活着，并且正在策划暗算主人公；",
+          "a": "A long-lost brother, who was presumed dead, was really alive all the time and wickedly plotting to bring about the hero's downfall."
+        },
+        {
+          "aStart": "00:00:48,150",
+          "aEnd": "00:00:49,633",
+          "tip": "如此等等，",
+          "a": "And so on."
+        },
+        {
+          "aStart": "00:00:49,733",
+          "aEnd": "00:00:55,766",
+          "tip": "现代读者会觉得这种天真的结局完全无法接受。",
+          "a": "Modern readers would find such naive solution totally unacceptable."
+        },
+        {
+          "aStart": "00:00:55,866",
+          "aEnd": "00:01:08,866",
+          "tip": "不过，在现实生活中，有时确实会出现一些巧合，这些巧合除了19世纪小说家外谁也不会相信。",
+          "a": "Yet, in real life, circumstances do sometimes conspire to bring about coincidences which anyone but a nineteenth century novelist would find incredible."
+        },
+        {
+          "aStart": "00:01:08,967",
+          "aEnd": "00:01:20,983",
+          "tip": "当我是个孩子的时候，我祖父给我讲了一位德国出租汽车司机弗朗兹。巴斯曼如何找到了据信已在20年前死去的兄弟的事。",
+          "a": "When I was a boy, my grandfather told me how a German taxi driver, Franz Bussman, found a brother who was thought to have been killed twenty years before."
+        },
+        {
+          "aStart": "00:01:21,083",
+          "aEnd": "00:01:26,699",
+          "tip": "一次，他与妻子徒步旅行。途中，停下来与一个工人交谈，",
+          "a": "While on a walking tour with his wife, he stooped to talk to a workman."
+        },
+        {
+          "aStart": "00:01:26,800",
+          "aEnd": "00:01:38,199",
+          "tip": "接着他们继续往前走去。巴斯曼夫人说那工人与她丈夫相貌很像，甚至猜测他可能就是她丈夫的兄弟。",
+          "a": "After they had gone on, Mrs. Bussman commented on the workman's close resemblance to her husband and even suggested that he might be his brother."
+        },
+        {
+          "aStart": "00:01:38,300",
+          "aEnd": "00:01:46,766",
+          "tip": "弗朗兹对此不屑一顾，指出他兄弟已经在战争中阵亡了。",
+          "a": "Franz poured scorn on the idea, pointing out that his brother had been killed in action during the war."
+        },
+        {
+          "aStart": "00:01:46,900",
+          "aEnd": "00:01:56,549",
+          "tip": "尽管巴斯曼夫人熟知这个情况，但她仍然认为自己的想法仍有百万分之一的可能性。",
+          "a": "Though Mrs. Busssman fully acquainted with this story, she thought that there was a chance in a million that she might be right."
+        },
+        {
+          "aStart": "00:01:56,650",
+          "aEnd": "00:02:04,499",
+          "tip": "几天后，她派了一个男孩去问那人是否叫汉斯.巴斯曼。",
+          "a": "A few days later, she sent a boy to the workman to ask him if his name was Hans Bussman."
+        },
+        {
+          "aStart": "00:02:04,600",
+          "aEnd": "00:02:13,466",
+          "tip": "不出巴斯曼夫人所料，那人的名字真是汉斯.巴斯曼，他确实是弗朗兹失散多年的兄弟。",
+          "a": "Needless to say, the man's name was Hans Bussman and he really was Franz's long-lost brother."
+        },
+        {
+          "aStart": "00:02:13,566",
+          "aEnd": "00:02:19,783",
+          "tip": "兄弟俩团聚之时，汉斯说明了他活下来的经过，",
+          "a": "When the brothers were reunited, Hans explained how it was that he was still alive."
+        },
+        {
+          "aStart": "00:02:19,883",
+          "aEnd": "00:02:29,516",
+          "tip": "战争即将结束时，他负伤被送进医院，并与部队失去联系。",
+          "a": "After having been wounded towards the end of the war, he had been sent to hospital and was separated from his unit."
+        },
+        {
+          "aStart": "00:02:29,617",
+          "aEnd": "00:02:37,233",
+          "tip": "医院遭到轰炸，汉斯步行回到了西德。",
+          "a": "The hospital had been bombed and Hans had made his way back into Western Germany on foot."
+        },
+        {
+          "aStart": "00:02:37,333",
+          "aEnd": "00:02:43,383",
+          "tip": "与此同时，他所在部队被击溃，他的所有档案材料全部毁于战火。",
+          "a": "Meanwhile, his unit was lost and all records of him had been destroyed."
+        },
+        {
+          "aStart": "00:02:43,483",
+          "aEnd": "00:02:52,800",
+          "tip": "汉斯重返故里，但他的家已被炸毁，左邻右舍谁也不知原住户的下落，",
+          "a": "Hans returned to his family home, but the house had been bombed and no one in the neighbourhood knew what had become of the inhabitants."
+        },
+        {
+          "aStart": "00:02:52,900",
+          "aEnd": "00:03:03,400",
+          "tip": "汉斯以为全家人都在空袭中遇难，于是便在距此50英里外的一座村子里定居下来，直至当日。",
+          "a": "Assuming that his family had been killed during an air raid, Hans settled down in a village fifty miles away where he had remained ever since."
+        }
+      ]
     },
     {
       "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/37_381.mp3",
@@ -4159,9 +4280,154 @@
       "hash": "ab83090c16f89c01c0684e98a95dab21db15d10f",
       "key": "nce3/37",
       "title": "The Westhaven Express",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,233",
-      "segment": []
+      "titleStart": "00:00:01,633",
+      "titleEnd": "00:00:04,666",
+      "segment": [
+        {
+          "aStart": "00:00:13,533",
+          "aEnd": "00:00:18,183",
+          "tip": "我们已经习惯于相信火车总是准点的。",
+          "a": "We have learnt to expect that trains will be punctual."
+        },
+        {
+          "aStart": "00:00:18,283",
+          "aEnd": "00:00:25,933",
+          "tip": "经过多年的适应，大多数人对火车时刻表产生了一种不可动摇的信念。",
+          "a": "After years of conditioning, most of us have developed an unshakable faith in railway timetables."
+        },
+        {
+          "aStart": "00:00:26,033",
+          "aEnd": "00:00:28,900",
+          "tip": "轮船船期可能因风暴而推延，",
+          "a": "Ships may be delayed by storms;"
+        },
+        {
+          "aStart": "00:00:28,933",
+          "aEnd": "00:00:35,349",
+          "tip": "飞机航班可能因恶劣天气而取消，唯有火车必然是准点的。",
+          "a": "flights may be cancelled because of bad weather, but trains must be on time."
+        },
+        {
+          "aStart": "00:00:35,450",
+          "aEnd": "00:00:42,883",
+          "tip": "只有非同寻常的大雪才可能暂时打乱铁路运行。",
+          "a": "Only an exceptionally heavy snowfall might temporarily dislocate railway services."
+        },
+        {
+          "aStart": "00:00:42,983",
+          "aEnd": "00:00:49,249",
+          "tip": "因此，一旦铁路上真出了问题，人们便不加思索地责备铁路当局。",
+          "a": "It is all too easy to blame the railway authorities when something does go wrong."
+        },
+        {
+          "aStart": "00:00:49,350",
+          "aEnd": "00:00:56,216",
+          "tip": "事实上，差错很可能是我们自己，而不是铁路当局的。",
+          "a": "The truth is that when mistakes occur, they are more likely to be ours than theirs."
+        },
+        {
+          "aStart": "00:00:56,317",
+          "aEnd": "00:01:05,683",
+          "tip": "我查看了列车时刻表，满意地了解到有一趟去威斯特海温的快车。",
+          "a": "After consulting my railway timetable, I noted with satisfaction that there was an express train to Westhaven."
+        },
+        {
+          "aStart": "00:01:05,783",
+          "aEnd": "00:01:13,416",
+          "tip": "这是趟直达车，旅途总共才需1小时17分钟。",
+          "a": "It went direct from my local station and the journey lasted mere hour and seventeen minutes."
+        },
+        {
+          "aStart": "00:01:13,516",
+          "aEnd": "00:01:20,733",
+          "tip": "上车后，我不禁注意到许多当地人也上了车。",
+          "a": "When I boarded the train, I could not help noticing that a great many local people got on as well."
+        },
+        {
+          "aStart": "00:01:20,833",
+          "aEnd": "00:01:24,716",
+          "tip": "一开始，我并不感到奇怪，",
+          "a": "At the time, this did not strike me as odd."
+        },
+        {
+          "aStart": "00:01:24,816",
+          "aEnd": "00:01:33,199",
+          "tip": "我想除我之外，想利用快车之便的也一定大有人在。",
+          "a": "I reflected that there must be a great many people besides myself who wished to take advantage of this excellent service."
+        },
+        {
+          "aStart": "00:01:33,300",
+          "aEnd": "00:01:41,266",
+          "tip": "火车开出几英里即在一个小站威德里停了下来。对此，我不觉得奇怪，",
+          "a": "Neither was I surprise when the train stopped at Widley, a tiny station a few miles along the line."
+        },
+        {
+          "aStart": "00:01:41,367",
+          "aEnd": "00:01:45,683",
+          "tip": "因为即便是特别快车也可能被信号拦住。",
+          "a": "Even a mighty express train can be held up by signals."
+        },
+        {
+          "aStart": "00:01:45,783",
+          "aEnd": "00:02:02,499",
+          "tip": "但是，当火车一站接着一站往前蠕动时，我便产生了怀疑。我突然感到这趟快车并没以时速90英里的速度呼啸前进，而是卟哧卟哧地向前爬行，时速仅30英里。",
+          "a": "But when the train dawdled at station after station, I began to wonder, It suddenly dawned on me that this express was not roaring down the line at ninety miles an hour, but barely chugging along at thirty."
+        },
+        {
+          "aStart": "00:02:02,600",
+          "aEnd": "00:02:09,316",
+          "tip": "1小时17分过去了，走了还不到一半路程。",
+          "a": "One hour and seventeen minutes passed and we had not even covered half the distance."
+        },
+        {
+          "aStart": "00:02:09,416",
+          "aEnd": "00:02:16,183",
+          "tip": "我问一位乘客，这是不是开往威斯特海温的那趟快车，他说从未听说过有这么一趟快车。",
+          "a": "I asked a passenger if this was the Westhaven Express, but he had not even heard of it."
+        },
+        {
+          "aStart": "00:02:16,283",
+          "aEnd": "00:02:20,766",
+          "tip": "我决定到目的地就给铁路部门提意见。",
+          "a": "I determined to lodge a complaint as soon as we arrived."
+        },
+        {
+          "aStart": "00:02:20,866",
+          "aEnd": "00:02:26,983",
+          "tip": "两小时后，我气呼呼地同威斯特海温站站长说起此事。",
+          "a": "Two hours later, I was talking angrily to the station master at Westhaven."
+        },
+        {
+          "aStart": "00:02:27,083",
+          "aEnd": "00:02:33,133",
+          "tip": "他说根本没有这趟车。于是我借他本人的列车时刻表，",
+          "a": "When he denied the train's existence, I borrowed his copy of the timetable."
+        },
+        {
+          "aStart": "00:02:33,233",
+          "aEnd": "00:02:40,033",
+          "tip": "我带着一种胜利者的调子告诉他那趟车白纸黑字。明明白白印在时刻表上。",
+          "a": "There was a note of triumph in my voice when I told him that it was there in black and white."
+        },
+        {
+          "aStart": "00:02:40,133",
+          "aEnd": "00:02:44,533",
+          "tip": "他迅速地扫视了一眼，让我再看一遍。",
+          "a": "Glancing at it briefly, he told me to look again."
+        },
+        {
+          "aStart": "00:02:44,633",
+          "aEnd": "00:02:50,900",
+          "tip": "一个小小的星形符号把我的目光引到了那页底部一个说明上。",
+          "a": "A tiny asterisk conducted me to a footnote at the bottom of the page."
+        },
+        {
+          "aStart": "00:02:50,933",
+          "aEnd": "00:02:55,566",
+          "tip": "上面写着：“此趟列车暂停运行。”",
+          "a": "It said: 'This service has been suspended.'"
+        }
+      ]
     },
     {
       "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/38_807.mp3",
@@ -4169,9 +4435,124 @@
       "hash": "438d8427d7c0f4719c62f15afe3980321420977b",
       "key": "nce3/38",
       "title": "The first calender",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,233",
-      "segment": []
+      "titleStart": "00:00:01,766",
+      "titleEnd": "00:00:04,633",
+      "segment": [
+        {
+          "aStart": "00:00:20,033",
+          "aEnd": "00:00:28,233",
+          "tip": "未来的历史学家在写我们这一段历史的时候会别具一格。",
+          "a": "Future historians will be in a unique position when they come to record the history of our own times."
+        },
+        {
+          "aStart": "00:00:28,333",
+          "aEnd": "00:00:36,833",
+          "tip": "对于逐渐积累起来的庞大材料，他们几乎不知道选取哪些好，",
+          "a": "They will hardly know which facts to select from the great mass of evidence that steadily accumulates."
+        },
+        {
+          "aStart": "00:00:36,933",
+          "aEnd": "00:00:42,333",
+          "tip": "而且，也不必完全依赖文字材料。",
+          "a": "What is more, they will not have to rely solely on the written word."
+        },
+        {
+          "aStart": "00:00:42,433",
+          "aEnd": "00:00:51,966",
+          "tip": "电影、录像、光盘和光盘驱动器只是能为他们提供令人眼花缭乱的大量信息的几种手段。",
+          "a": "Films, videos, CDs and CD-ROMS are just some of the bewildering amount of information they will have."
+        },
+        {
+          "aStart": "00:00:52,067",
+          "aEnd": "00:00:57,933",
+          "tip": "他们能够身临其境般地观看我们做事，倾听我们讲话。",
+          "a": "They will be able, as it were, to see and hear us in action."
+        },
+        {
+          "aStart": "00:00:58,400",
+          "aEnd": "00:01:06,666",
+          "tip": "但是，历史学家企图重现遥远的过去可是一项艰巨的任务，",
+          "a": "But the historian attempting to reconstruct the distant past is always faced with a difficult task."
+        },
+        {
+          "aStart": "00:01:06,767",
+          "aEnd": "00:01:12,249",
+          "tip": "他们必须根据现有的不充分的线索进行推理。 he can deduce from",
+          "a": "He has to deduce what he can from the few scanty clues available."
+        },
+        {
+          "aStart": "00:01:12,350",
+          "aEnd": "00:01:20,216",
+          "tip": "即使看起来微不足道的遗物，也可能揭示人类早期历史的一些有趣的内容。 shed light on",
+          "a": "Even seemingly insignificant remains can shed interesting light on the history of early man."
+        },
+        {
+          "aStart": "00:01:20,316",
+          "aEnd": "00:01:35,283",
+          "tip": "历史学家迄今认为日历是随农业的问世而出现的，因为当时人们面临着了解四季的实际需要，",
+          "a": "Up to now, historians have assumed that calendars came into being with the advent of agriculture, for then man was faced with a real need to understand something about the seasons."
+        },
+        {
+          "aStart": "00:01:35,383",
+          "aEnd": "00:01:42,500",
+          "tip": "但近期科学研究发现，好像这种假设是不正确的。",
+          "a": "Recent scientific evidence seems to indicate that this assumption is incorrect."
+        },
+        {
+          "aStart": "00:01:42,600",
+          "aEnd": "00:01:54,666",
+          "tip": "长期以来，历史学家一直对雕刻在墙壁上、骨头上、古代长毛象的象牙上的点、线和形形色色的符号感到困惑不解。",
+          "a": "Historians have long been puzzled by dots, lines and symbols which have been engraved on walls, bones, and the ivory tusks of mammoths."
+        },
+        {
+          "aStart": "00:01:54,767",
+          "aEnd": "00:02:08,783",
+          "tip": "这些痕迹是游牧人留下的，他们生活在从公元前约35，000年到公元前10，000年的冰川期的末期，以狩猎、捕鱼为生。",
+          "a": "The nomads who made these markings lived by hunting and fishing during the last Ice Age which began about 35,000 B.C. and ended about 10,000 B.C."
+        },
+        {
+          "aStart": "00:02:08,883",
+          "aEnd": "00:02:17,783",
+          "tip": "历史学家通过把世界各地留下的这种痕迹放在一起研究，终于弄懂了这种费解的代码。",
+          "a": "By correlating markings made in various parts of the world, historians have been able to read this difficult code."
+        },
+        {
+          "aStart": "00:02:17,883",
+          "aEnd": "00:02:24,133",
+          "tip": "他们发现代码与昼夜更迭和月亮圆缺有关，",
+          "a": "They have found that it is connected with the passage of days and the phases of the moon."
+        },
+        {
+          "aStart": "00:02:24,233",
+          "aEnd": "00:02:28,783",
+          "tip": "事实上是一种最原始的日历。",
+          "a": "It is, in fact, a primitive type of calendar."
+        },
+        {
+          "aStart": "00:02:28,883",
+          "aEnd": "00:02:37,199",
+          "tip": "大家早就知道，画在墙上的狩猎图景并不是单纯的艺术表现形式，",
+          "a": "It has long been known that the hunting scenes depicted on walls were not simply a form of artistic expression."
+        },
+        {
+          "aStart": "00:02:37,300",
+          "aEnd": "00:02:43,700",
+          "tip": "它们有着一定的含义，因为它们已接近古代人的文字形式。",
+          "a": "They had a definite meaning, for they were as near as early man could get to writing."
+        },
+        {
+          "aStart": "00:02:43,800",
+          "aEnd": "00:02:53,049",
+          "tip": "有时，这种图画与墙壁上的刻痕共存，它们之间可能有一定的联系。",
+          "a": "It is possible that there is a definite relation between these paintings and the markings that sometimes accompany them."
+        },
+        {
+          "aStart": "00:02:53,150",
+          "aEnd": "00:03:03,533",
+          "tip": "看来人类早就致力于探索四季变迁了，比人们想像的要早20,000年。",
+          "a": "It seems that man was making a real effort to understand the seasons 20,000 years earlier than has been supposed."
+        }
+      ]
     },
     {
       "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/39_657.mp3",
