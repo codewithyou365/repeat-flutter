@@ -5025,9 +5025,184 @@
       "hash": "79241e7643137c61da34eecb39f5d2c720aa58bf",
       "key": "nce3/42",
       "title": "Modern cavemen",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,233",
-      "segment": []
+      "titleStart": "00:00:01,733",
+      "titleEnd": "00:00:04,500",
+      "segment": [
+        {
+          "aStart": "00:00:14,800",
+          "aEnd": "00:00:23,100",
+          "tip": "洞穴勘查——或洞穴勘探——是一项比较新的体育活动。",
+          "a": "Cave exploration, or pot-holing, as it has come to be known, is a relatively new sport."
+        },
+        {
+          "aStart": "00:00:23,200",
+          "aEnd": "00:00:33,950",
+          "tip": "寻求独处的愿望或寻求意外发现的机会的欲望吸引人们来到地下深处。",
+          "a": "Perhaps it is the desire for solitude or the chance of making an unexpected discovery that lures people down to the depths of the earth."
+        },
+        {
+          "aStart": "00:00:34,050",
+          "aEnd": "00:00:40,833",
+          "tip": "要想对洞穴探险者的动机作出满意的解释是不可能的。",
+          "a": "It is impossible to give a satisfactory explanation for a pot-holer's motives."
+        },
+        {
+          "aStart": "00:00:40,900",
+          "aEnd": "00:00:48,716",
+          "tip": "对洞穴探险者来说，洞穴有一种特殊的魅力，就像高山对登山者有特殊魅力一样。",
+          "a": "For him, caves have the same peculiar fascination which high mountains have for the climber."
+        },
+        {
+          "aStart": "00:00:48,817",
+          "aEnd": "00:00:53,733",
+          "tip": "为什么洞空能引发人的那种探险本能，人们对此只能有一种模模糊糊的理解。",
+          "a": "They arouse instincts which can only be dimly understood."
+        },
+        {
+          "aStart": "00:00:53,900",
+          "aEnd": "00:01:00,016",
+          "tip": "探测非常深的洞穴不是那些在星期日下午漫步的人所能胜任的。",
+          "a": "Exploring really deep caves is not a task for the Sunday afternoon rambler."
+        },
+        {
+          "aStart": "00:01:00,116",
+          "aEnd": "00:01:07,683",
+          "tip": "这种活动需要有军事行动般的周密布署和预见能力。",
+          "a": "Such undertakings require the precise planning and foresight of military operations."
+        },
+        {
+          "aStart": "00:01:07,783",
+          "aEnd": "00:01:20,166",
+          "tip": "有时需要花费整整8天时间来搭起绳梯，建立供应基地，然后才能到一个很深的洞穴里。",
+          "a": "It can take as long as eight days to rig up rope ladders and to establish supply bases before a descent can be made into a very deep cave."
+        },
+        {
+          "aStart": "00:01:20,267",
+          "aEnd": "00:01:31,666",
+          "tip": "作出这样的准备是必要的，因为无法预见到洞穴探险者究竟会遇到什么性质的困难。",
+          "a": "Precautions of this sort are necessary, for it is impossible to foretell the exact nature of the difficulties which will confront the pot-holer."
+        },
+        {
+          "aStart": "00:01:31,767",
+          "aEnd": "00:01:38,416",
+          "tip": "世界上最深的洞穴是格里诺布尔附近的高弗.伯杰洞，",
+          "a": "The deepest known cave in the world is the Gouffre Berger near Grenoble."
+        },
+        {
+          "aStart": "00:01:38,517",
+          "aEnd": "00:01:44,083",
+          "tip": "深达3,723英尺。",
+          "a": "It extends to a depth of 3,723 feet."
+        },
+        {
+          "aStart": "00:01:44,183",
+          "aEnd": "00:01:53,416",
+          "tip": "这个深邃的洞穴是由一条地下暗泉冲刷岩石中的缝隙并使之慢慢变大而形成的。",
+          "a": "This immense chasm has been formed by an underground stream which has tunneled a course through a flaw in the rocks."
+        },
+        {
+          "aStart": "00:01:53,517",
+          "aEnd": "00:01:59,749",
+          "tip": "此洞的洞口在丹芬阿尔卑斯山的高原上，",
+          "a": "The entrance to the cave is on a plateau in the Dauphine Alps."
+        },
+        {
+          "aStart": "00:01:59,850",
+          "aEnd": "00:02:05,000",
+          "tip": "仅6英尺宽，很难被发现。",
+          "a": "As it is only six feet across, it is barely noticeable."
+        },
+        {
+          "aStart": "00:02:05,100",
+          "aEnd": "00:02:14,649",
+          "tip": "若不是法国著名洞穴探险家伯杰由于偶然的机会发现了这个洞口的话，这个洞也许不会为人所知。",
+          "a": "The cave might never have been discovered has not the entrance been spotted by the distinguished French pot-holer, Berger."
+        },
+        {
+          "aStart": "00:02:14,750",
+          "aEnd": "00:02:20,299",
+          "tip": "自从被发现以后，这个洞成了洞穴探险者的珠穆朗玛峰，",
+          "a": "Since its discovery, it has become a sort of potholers' Everest."
+        },
+        {
+          "aStart": "00:02:20,400",
+          "aEnd": "00:02:27,383",
+          "tip": "人们多次进入洞内探险，但至今尚有不少东西有待勘探。",
+          "a": "Though a number of descents have been made, much of it still remains to be explored."
+        },
+        {
+          "aStart": "00:02:27,483",
+          "aEnd": "00:02:32,716",
+          "tip": "最近，一队洞穴探险者下到了高弗.伯杰洞里。",
+          "a": "A team of pot-holers recently went down the Gouffre Berger."
+        },
+        {
+          "aStart": "00:02:32,817",
+          "aEnd": "00:02:43,216",
+          "tip": "他们从高原上的窄缝进去，顺着笔直陡峭的洞壁往下爬。来到一条狭窄的走廊上。",
+          "a": "After entering the narrow gap on the plateau, they climbed down the steep sides of the cave until they came to narrow corridor."
+        },
+        {
+          "aStart": "00:02:43,317",
+          "aEnd": "00:02:52,449",
+          "tip": "他们不得不侧着身子往前走，有时过浅溪，有时游过深潭。",
+          "a": "They had to edge their way along this, sometimes wading across shallow streams, or swimming across deep pools."
+        },
+        {
+          "aStart": "00:02:52,550",
+          "aEnd": "00:03:00,400",
+          "tip": "突然，他们来到一道瀑布前，那瀑布奔泻而下，注入洞底一处地下湖里。",
+          "a": "Suddenly they came to a waterfall which dropped into an underground lake at the bottom of the cave."
+        },
+        {
+          "aStart": "00:03:00,500",
+          "aEnd": "00:03:11,233",
+          "tip": "他们跳入湖中，把各种器具装上一只充气的橡皮艇，听任水流将他们带往对岸。",
+          "a": "They plunged into the lake, and after loading their gear on an inflatable rubber dinghy, let the current carry them to the other side."
+        },
+        {
+          "aStart": "00:03:11,333",
+          "aEnd": "00:03:18,250",
+          "tip": "湖水冰冷刺骨，他们必须穿上一种特制的橡皮服以保护自己。",
+          "a": "To protect themselves from the icy water, they had to wear special rubber suits."
+        },
+        {
+          "aStart": "00:03:18,350",
+          "aEnd": "00:03:26,400",
+          "tip": "在湖的尽头，他们见到一大堆一大堆由湖水冲刷上岸的碎石。",
+          "a": "At the far end of the lake, they came to huge piles of rubble which had been washed up by the water."
+        },
+        {
+          "aStart": "00:03:26,500",
+          "aEnd": "00:03:40,083",
+          "tip": "在这儿，他们可以听见一种连续不断的轰鸣声。后来他们发现这是由山洞顶部的一个小孔里喷出的水柱跌落到水潭中发出的声音。",
+          "a": "In this part of the cave, they could hear an insistent booming sound which they found was caused by a small waterspout shooting down into a pool from the roof of the cave."
+        },
+        {
+          "aStart": "00:03:40,183",
+          "aEnd": "00:03:49,483",
+          "tip": "洞穴探险者从岩石缝里挤身过去，来到一个巨大的洞里，其大小相当于一个音乐厅。",
+          "a": "Squeezing through a cleft in the rocks, the pot-holers arrived at an enormous cavern, the size of a huge concert hall."
+        },
+        {
+          "aStart": "00:03:49,583",
+          "aEnd": "00:04:04,966",
+          "tip": "他们打开强力弧光灯，看见一株株巨大的石笋，有的高达40英尺，像树干似地向上长着，与洞顶悬挂下来的钟乳石相接。",
+          "a": "After switching on powerful arc lights, they saw great stalagmites -- some of them over forty feet high -- rising up like tree-trunks to meet the stalactites suspended from the roof."
+        },
+        {
+          "aStart": "00:04:05,067",
+          "aEnd": "00:04:11,699",
+          "tip": "周围是一堆堆石灰石，像彩虹一样闪闪发光。",
+          "a": "Round about, piles of limestone glistened in all the colours of the rainbow."
+        },
+        {
+          "aStart": "00:04:11,800",
+          "aEnd": "00:04:24,100",
+          "tip": "洞里有一种可怕的寂静，唯一的可以听见的声响是高高的圆顶上不间断地滴水的嘀嗒声",
+          "a": "In the eerie silence of the cavern, the only sound that could be heard was made by water which dripped continuously from the high dome above them."
+        }
+      ]
     },
     {
       "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/43_681.mp3",
@@ -5035,9 +5210,172 @@
       "hash": "92b7be9dcbaf882b08ebc7ee7df6b51639676a39",
       "key": "nce3/43",
       "title": "Fully insured",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,233",
-      "segment": []
+      "titleStart": "00:00:02,533",
+      "titleEnd": "00:00:05,233",
+      "segment": [
+        {
+          "aStart": "00:00:15,000",
+          "aEnd": "00:00:20,200",
+          "tip": "保险公司一般说来愿意承保一切东西。",
+          "a": "Insurance companies are normally willing to insure anything."
+        },
+        {
+          "aStart": "00:00:20,300",
+          "aEnd": "00:00:27,633",
+          "tip": "承办公共财产或私人财产保险是世界上大部分国家的正常业务。",
+          "a": "Insuring public or private property is a standard practice in most countries in the world."
+        },
+        {
+          "aStart": "00:00:27,733",
+          "aEnd": "00:00:39,733",
+          "tip": "如果你要举办一次露天游园会或盛宴，为避免碰上不好的天气而遭受损失也同样可以保险，",
+          "a": "If, however, you were holding an open air garden party or a fete it would be equally possible to insure yourself in the event of bad weather."
+        },
+        {
+          "aStart": "00:00:39,833",
+          "aEnd": "00:00:49,316",
+          "tip": "不用说，保险公司承担风险越大，你付的保险费也就越高。",
+          "a": "Needless to say, the bigger the risk an insurance company takes, the higher the premium you will have to pay."
+        },
+        {
+          "aStart": "00:00:49,417",
+          "aEnd": "00:00:57,533",
+          "tip": "航运公司为打捞沉船而提出索赔，这是常有的事，",
+          "a": "It is not uncommon to hear that a shipping company has made a claim for cost of salvaging a sunken ship."
+        },
+        {
+          "aStart": "00:00:57,633",
+          "aEnd": "00:01:07,800",
+          "tip": "但某地当局为打捞一只焙制馅饼的盘子提出索赔，倒是件新鲜的事儿。",
+          "a": "But the claim made by a local authority to recover the cost of salvaging a sunken pie dish must surely be unique."
+        },
+        {
+          "aStart": "00:01:07,933",
+          "aEnd": "00:01:16,966",
+          "tip": "这个馅饼盘子确实少见，有18英尺长，6英尺宽。",
+          "a": "Admittedly it was an unusual pie dish, for it was eighteen feet long and six feet wide."
+        },
+        {
+          "aStart": "00:01:17,066",
+          "aEnd": "00:01:25,866",
+          "tip": "某地方当局买下它用来焙制一个巨大的馅饼为一年一度交易会助兴。",
+          "a": "It had been purchased by a local authority so that an enormous pie could be baked for an annual fair."
+        },
+        {
+          "aStart": "00:01:25,966",
+          "aEnd": "00:01:36,233",
+          "tip": "馅饼委员会确认运输这只盘子的最佳方案是通过运河水运。于是，他们对这只盘子的运输安全投了保。",
+          "a": "The pie committee decided that the best way to transport the dish would be by canal, so they insured it for the trip."
+        },
+        {
+          "aStart": "00:01:36,333",
+          "aEnd": "00:01:42,849",
+          "tip": "盘子下水后不久，馅饼委员会成员们来到当地一家小酒店庆贺。",
+          "a": "Shortly after it was launched, the pie committee went to a local inn to celebrate."
+        },
+        {
+          "aStart": "00:01:42,950",
+          "aEnd": "00:01:50,733",
+          "tip": "就在这个时候，许多十几岁的孩子爬盘子举行他们自己的集会。",
+          "a": "At the same time, a number of teenagers climbed on to the dish and held a little party of their own."
+        },
+        {
+          "aStart": "00:01:50,833",
+          "aEnd": "00:02:01,100",
+          "tip": "他们跳起了舞，盘子难以承受。舞会进行过程中，盘子倾覆，沉入了7英尺深的水中。",
+          "a": "Dancing proved to be more than the dish could bear, for during the party it capsized and sank in seven feet of water."
+        },
+        {
+          "aStart": "00:02:01,300",
+          "aEnd": "00:02:10,249",
+          "tip": "馅饼委员会给当地汽车修理库老板打电话，他闻讯后开着一辆急修车前来打捞盘子。",
+          "a": "The pie committee telephoned a local garage owner who arrived in a recovery truck to salvage the pie dish."
+        },
+        {
+          "aStart": "00:02:10,350",
+          "aEnd": "00:02:20,883",
+          "tip": "那些孩子们穿着湿衣服哆嗦，看着3个工人轮潜入水中以确定盘子的位置。",
+          "a": "Shivering in their wet clothes, the teenagers looked on while three men dived repeatedly into the water to locate the dish."
+        },
+        {
+          "aStart": "00:02:20,983",
+          "aEnd": "00:02:29,800",
+          "tip": "他们没费多大事儿就找到了盘子。可是把盘子捞出却是一个很大的难题。",
+          "a": "They had little difficulty in finding it, but hauling it out of the water proved to be a serious problem."
+        },
+        {
+          "aStart": "00:02:29,900",
+          "aEnd": "00:02:41,650",
+          "tip": "盘子四边十分光滑，要在盘边拴上绳索或链条而同时又不损坏它是很难办到的。",
+          "a": "The sides of the dish were so smooth that it was almost impossible to attach hawsers and chains to the rim without damaging it."
+        },
+        {
+          "aStart": "00:02:41,750",
+          "aEnd": "00:02:50,233",
+          "tip": "不过，他们终于将链条固定在盘子的一端，一台大功率的绞车开动起来。",
+          "a": "Eventually chains were fixed to one end of the dish and a powerful winch was put into operation."
+        },
+        {
+          "aStart": "00:02:50,366",
+          "aEnd": "00:02:57,766",
+          "tip": "盘子慢慢浮出水面，被轻轻地拽向运河岸边。",
+          "a": "The dish rose to the surface and was gently drawn towards the canal bank."
+        },
+        {
+          "aStart": "00:02:57,866",
+          "aEnd": "00:03:10,933",
+          "tip": "在令人忐忑不安的瞬间，盘子晃晃悠悠地上了岸，但它突然失去了平衡，又跌回水中。",
+          "a": "For one agonizing moment, the dish was perched precariously on the bank of the canal, but it suddenly overbalanced and slid back into the water."
+        },
+        {
+          "aStart": "00:03:11,033",
+          "aEnd": "00:03:15,366",
+          "tip": "工人们只得再来一次。",
+          "a": "The men were now obliged to try once more."
+        },
+        {
+          "aStart": "00:03:15,466",
+          "aEnd": "00:03:24,450",
+          "tip": "这次，他们用沉重的金属夹子把盘子夹住，以便往盘子上安装铁链。",
+          "a": "This time they fixed heavy metal clamps to both sides of the dish so that they could fasten the chains."
+        },
+        {
+          "aStart": "00:03:24,550",
+          "aEnd": "00:03:31,933",
+          "tip": "这次，盘子必须垂直吊出水面，因为盘子的一边紧靠着运河河岸。",
+          "a": "The dish now had to be lifted vertically because one edge was resting against the side of the canal."
+        },
+        {
+          "aStart": "00:03:32,033",
+          "aEnd": "00:03:38,483",
+          "tip": "绞盘机再次启动，一位工人发动了急修车的引擎。",
+          "a": "The winch was again put into operation and one of the men started up the truck."
+        },
+        {
+          "aStart": "00:03:38,583",
+          "aEnd": "00:03:44,916",
+          "tip": "几分钟后，盘子被成功地拽出了水面。",
+          "a": "Several minutes later, the dish was successfully hauled above the surface of the water."
+        },
+        {
+          "aStart": "00:03:45,016",
+          "aEnd": "00:03:53,683",
+          "tip": "波浪从盘子两侧急涌而出，在运河里掀起一股大浪。",
+          "a": "Water streamed in torrents over its sides with such force that it set up a huge wave in the canal."
+        },
+        {
+          "aStart": "00:03:53,783",
+          "aEnd": "00:04:03,883",
+          "tip": "但是当波浪从河对岸折回来时，就有再次把盘子拖进水里的危险。",
+          "a": "There was danger that the wave would rebound off the other side of the bank and send the dish plunging into the water again."
+        },
+        {
+          "aStart": "00:04:03,983",
+          "aEnd": "00:04:13,800",
+          "tip": "工人们动作迅速，终于赶在那股大浪返回之前把盘子拽到了岸上。",
+          "a": "By working at tremendous speed, the men managed to get the dish on to dry land before the wave returned."
+        }
+      ]
     },
     {
       "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/44_412.mp3",
@@ -5045,9 +5383,202 @@
       "hash": "8083506db46a07474fa361e1b7e61c904e7737d5",
       "key": "nce3/44",
       "title": "Speed and comfort",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,233",
-      "segment": []
+      "titleStart": "00:00:01,866",
+      "titleEnd": "00:00:04,633",
+      "segment": [
+        {
+          "aStart": "00:00:14,533",
+          "aEnd": "00:00:23,550",
+          "tip": "出远门的人常常需要决定是走旱路、水路，还是坐飞机。",
+          "a": "People travelling long distances frequently have to decide whether they would prefer to go by land, sea, or air."
+        },
+        {
+          "aStart": "00:00:23,650",
+          "aEnd": "00:00:30,616",
+          "tip": "很少有人能够真正喜欢坐几个小时以上的火车。",
+          "a": "Hardly anyone can positively enjoy sitting in a train for more than a few hours."
+        },
+        {
+          "aStart": "00:00:30,717",
+          "aEnd": "00:00:34,583",
+          "tip": "车厢很快就变得拥挤、闷热，",
+          "a": "Train compartments soon get cramped and stuffy."
+        },
+        {
+          "aStart": "00:00:34,683",
+          "aEnd": "00:00:38,816",
+          "tip": "想摆脱开旅途的困扰是很难的。",
+          "a": "It is almost impossible to take your mind off the journey."
+        },
+        {
+          "aStart": "00:00:38,917",
+          "aEnd": "00:00:48,566",
+          "tip": "看书只能解决部分问题。车轮与铁轨间单调的嘎喳声很快就会送你进入梦乡。",
+          "a": "Reading is only a partial solution, for the monotonous rhythm of the wheels clicking on the rails soon lulls you to sleep."
+        },
+        {
+          "aStart": "00:00:48,666",
+          "aEnd": "00:00:52,616",
+          "tip": "白天是忽睡忽醒，",
+          "a": "During the day, sleep comes in snatches."
+        },
+        {
+          "aStart": "00:00:52,717",
+          "aEnd": "00:00:58,366",
+          "tip": "到了夜晚，你真想睡了，却很难入睡。 \\nmanage to 设法",
+          "a": "At night, when you really wish to go to sleep, you rarely manage to do so."
+        },
+        {
+          "aStart": "00:00:58,466",
+          "aEnd": "00:01:10,399",
+          "tip": "即使你走运弄到一个卧铺，夜间有一半时间你会盯着车顶那盏小蓝灯而睡不着觉；要不然就为查票摸索你的车票。",
+          "a": "If you are lucky enough to get a sleeper, you spend half the night staring at the small blue light in the ceiling, or fumbling to find you ticket for inspection."
+        },
+        {
+          "aStart": "00:01:10,500",
+          "aEnd": "00:01:16,733",
+          "tip": "一旦抵达目的地，你总是疲惫不堪。",
+          "a": "Inevitably you arrive at your destination almost exhausted."
+        },
+        {
+          "aStart": "00:01:16,833",
+          "aEnd": "00:01:23,416",
+          "tip": "乘汽车作长途旅行则更加不舒服，因为连看书都几乎不可能。",
+          "a": "Long car journeys are even less pleasant, for it is quite impossible even to read."
+        },
+        {
+          "aStart": "00:01:23,517",
+          "aEnd": "00:01:38,650",
+          "tip": "在公路上还好，你至少能以相当快的速度安全地向前行。但旅行的大部分时间都花在路上，而且只有很少的服务设施，交通也很拥挤。",
+          "a": "On motorways you can, at least, travel fairly safely at high speeds, but more often than not, the greater part of the journey is spent on roads with few service stations and too much traffic."
+        },
+        {
+          "aStart": "00:01:38,750",
+          "aEnd": "00:01:46,516",
+          "tip": "相比之下，坐船旅行或环游可以得到文明世界的各种享受。",
+          "a": "By comparison, ferry trips or cruises offer a great variety of civilized comforts."
+        },
+        {
+          "aStart": "00:01:46,617",
+          "aEnd": "00:01:59,966",
+          "tip": "你可以在甲板上伸展四肢、做游戏，还能也很见到各种有趣的人，能享用各种美味佳肴——当然，这一切只有在大海风平浪静的情况下才有可能。",
+          "a": "You can stretch your legs on the spacious decks, play games, meet interesting people and enjoy good food -- always assuming, of course, that the sea is calm."
+        },
+        {
+          "aStart": "00:02:00,067",
+          "aEnd": "00:02:07,849",
+          "tip": "如果大海肆虐起来，你就可能晕船，那种难受劲儿是任何一种别的旅行的方式都不会带来的。",
+          "a": "If it is not, and you are likely to get seasick, no form of transport could be worse."
+        },
+        {
+          "aStart": "00:02:07,950",
+          "aEnd": "00:02:13,399",
+          "tip": "即使风平浪静，坐船旅行也要占用很长时间。",
+          "a": "Even if you travel in ideal weather, sea journeys take a long time."
+        },
+        {
+          "aStart": "00:02:13,500",
+          "aEnd": "00:02:21,416",
+          "tip": "没有多少人会为享受坐船旅行的乐趣而牺牲假期的时间。",
+          "a": "Relatively few people are prepared to sacrifice holiday time for the pleasure of travlling by sea."
+        },
+        {
+          "aStart": "00:02:21,516",
+          "aEnd": "00:02:29,566",
+          "tip": "飞机以危险而著称，连老资格的旅行者也怕飞机。",
+          "a": "Aeroplanes have the reputation of being dangerous and even hardened travellers are intimidated by them."
+        },
+        {
+          "aStart": "00:02:29,666",
+          "aEnd": "00:02:35,383",
+          "tip": "飞机另一个缺点是昂贵。",
+          "a": "They also have the disadvantage of being an expensive form of transport."
+        },
+        {
+          "aStart": "00:02:35,483",
+          "aEnd": "00:02:39,733",
+          "tip": "但就速度与舒适而言，飞机是无与伦比的。",
+          "a": "But nothing can match them for speed and comfort."
+        },
+        {
+          "aStart": "00:02:39,833",
+          "aEnd": "00:02:50,433",
+          "tip": "腾云驾雾，在30，000 英尺高空以500英里的时速旅行，这种经历令人心旷神怡。",
+          "a": "Travelling at a height of 30,000 feet, far above the clouds, and at over 500 miles an hour is an exhilarating experience."
+        },
+        {
+          "aStart": "00:02:50,600",
+          "aEnd": "00:02:59,449",
+          "tip": "你不必想办法去摆脱旅途的困扰，因为飞机会迅速地把你送到目的地。",
+          "a": "You do not have to devise ways of taking your mind off the journey, for an aeroplane gets you to your destination rapidly."
+        },
+        {
+          "aStart": "00:02:59,550",
+          "aEnd": "00:03:05,566",
+          "tip": "几小时之内，你躺在扶手椅上，享受着旅途的欢乐。",
+          "a": "For a few hours, you settle back in a deep armchair to enjoy the flight."
+        },
+        {
+          "aStart": "00:03:05,866",
+          "aEnd": "00:03:12,133",
+          "tip": "真正会享受的人还可以在某些航班上看一场电影和喝香槟。",
+          "a": "The real escapist can watch a film and sip champagne on some services."
+        },
+        {
+          "aStart": "00:03:12,233",
+          "aEnd": "00:03:18,283",
+          "tip": "即使没有这些消遣条件，也总是有事可做。",
+          "a": "But even when such refinements are not available, there is plenty to keep you occupied."
+        },
+        {
+          "aStart": "00:03:18,383",
+          "aEnd": "00:03:24,183",
+          "tip": "飞机上，你可以观察世界上非同寻常的奇妙的美景。",
+          "a": "An aeroplane offers you an unusual and breathtaking view of the world."
+        },
+        {
+          "aStart": "00:03:24,283",
+          "aEnd": "00:03:29,450",
+          "tip": "你毫不费劲地飞越高山幽谷，",
+          "a": "You soar effortlessly over high mountains and deep valleys."
+        },
+        {
+          "aStart": "00:03:29,550",
+          "aEnd": "00:03:32,633",
+          "tip": "你确能饱览大地的风貌。",
+          "a": "You really see the shape of the land."
+        },
+        {
+          "aStart": "00:03:32,733",
+          "aEnd": "00:03:48,366",
+          "tip": "如果这种景色被遮住了，你可以观赏一下展现在你面前的、一望数英里的、连绵不断的云海，同时阳光灿烂，天空清澈明朗。",
+          "a": "If the landscape is hidden from view, you can enjoy the extraordinary sight of unbroken cloud plains that stretch out for miles before you, while the sun shines brilliantly in a clear sky."
+        },
+        {
+          "aStart": "00:03:48,466",
+          "aEnd": "00:03:55,183",
+          "tip": "旅途平稳，丝毫不妨碍你阅读或睡眠。",
+          "a": "The journey is so smooth that there is nothing to prevent you from reading or sleeping."
+        },
+        {
+          "aStart": "00:03:55,283",
+          "aEnd": "00:04:00,200",
+          "tip": "不管你打算如何消磨时间，有件事是可以肯定的，",
+          "a": "However you decide to spend your time, one thing is certain:"
+        },
+        {
+          "aStart": "00:04:00,300",
+          "aEnd": "00:04:05,399",
+          "tip": "即当你抵达目的地时，你感到精神焕发，毫无倦意，",
+          "a": "you will arrive at your destination fresh and uncrumpled."
+        },
+        {
+          "aStart": "00:04:05,500",
+          "aEnd": "00:04:12,233",
+          "tip": "用不着因为漫长的旅途的辛苦而花几天时间休息来恢复精神。",
+          "a": "You will not have to spend the next few days recovering from a long and arduous journey."
+        }
+      ]
     },
     {
       "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/45_128.mp3",
