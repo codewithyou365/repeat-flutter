@@ -1465,13 +1465,13 @@
           "aStart": "00:01:29,400",
           "aEnd": "00:01:37,116",
           "tip": "乔治脱掉外套，卷起袖子，将右胳膊伸进了阴沟盖。",
-          "a": "George took off his jacket, rolled up his sleeves and pushed is right arm through the drain cover."
+          "a": "George took off his jacket, rolled up his sleeves and pushed his right arm through the drain cover."
         },
         {
           "aStart": "00:01:37,216",
           "aEnd": "00:01:45,416",
           "tip": "但他摸了半天也没找到那50便士硬币，他的胳膊反倒退不出来了。",
-          "a": "He could not find his fifty pence piece anywhere, and what is more, he could no get his arm out."
+          "a": "He could not find his fifty pence piece anywhere, and what is more, he could not get his arm out."
         },
         {
           "aStart": "00:01:45,517",
@@ -5586,9 +5586,154 @@
       "hash": "c7eaf0423ad619a29877b08b5bfa60fe6e547458",
       "key": "nce3/45",
       "title": "The power of the press",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,233",
-      "segment": []
+      "titleStart": "00:00:01,800",
+      "titleEnd": "00:00:04,600",
+      "segment": [
+        {
+          "aStart": "00:00:19,400",
+          "aEnd": "00:00:28,333",
+          "tip": "在民主国家里，任何限制新闻自由的企图都理所当然地受到谴责。",
+          "a": "In democratic countries any efforts to restrict the freedom of the press are rightly condemned."
+        },
+        {
+          "aStart": "00:00:28,433",
+          "aEnd": "00:00:33,033",
+          "tip": "然而，这种自由很容易被滥用。",
+          "a": "However, this freedom can easily be abused."
+        },
+        {
+          "aStart": "00:00:33,300",
+          "aEnd": "00:00:40,416",
+          "tip": "常人轶事往往比政治事件更能引起公众注意。",
+          "a": "Stories about people often attract far more public attention than political events."
+        },
+        {
+          "aStart": "00:00:40,517",
+          "aEnd": "00:00:51,433",
+          "tip": "我们都喜欢看关于别人生活的报道，但是否同样喜欢看关于自己生活的报道，就很难说了。",
+          "a": "Though we may enjoy reading about the lives of others, it is extremely doubtful whether we would equally enjoy reading about ourselves."
+        },
+        {
+          "aStart": "00:00:51,533",
+          "aEnd": "00:01:05,266",
+          "tip": "记者按事实至上的论点行事，发表有关别人生活的细节，有时会给当事人造成极大的痛苦。",
+          "a": "Acting on the contention that facts are sacred, reporters can cause untold suffering to individuals by publishing details about their private lives."
+        },
+        {
+          "aStart": "00:01:05,367",
+          "aEnd": "00:01:18,433",
+          "tip": "新闻具有巨大的威力。它们不仅可以给寻常人家的生活带来重大的变化，甚至还能推翻一个政府。",
+          "a": "Newspapers exert such tremendous influence that they can not only bring about major changes to the lives of ordinary people but can even overthrow a government."
+        },
+        {
+          "aStart": "00:01:18,766",
+          "aEnd": "00:01:27,866",
+          "tip": "下面这户穷人一夜之间出名发财的故事戏剧性地说明了新闻报道威力。",
+          "a": "The story of a poor family that acquired fame and fortune overnight, dramatically illustrates the power of the press."
+        },
+        {
+          "aStart": "00:01:27,967",
+          "aEnd": "00:01:35,600",
+          "tip": "这户人家住在南达科他州一个人口为23，000 的小镇上，镇名为阿拜丁。",
+          "a": "The family lived in Aberdeen, a small town of 23,000 inhabitants in South Dakota."
+        },
+        {
+          "aStart": "00:01:35,700",
+          "aEnd": "00:01:41,899",
+          "tip": "家里已有5个孩子，全家人常年在贫困中挣扎。",
+          "a": "As the parents had five children, life was a perpetual struggle against poverty."
+        },
+        {
+          "aStart": "00:01:42,000",
+          "aEnd": "00:01:49,149",
+          "tip": "第6个孩子即将问世，他们面临着更为严峻的经济问题。",
+          "a": "They were expecting their sixth child and were faced with even more pressing economic problems."
+        },
+        {
+          "aStart": "00:01:49,250",
+          "aEnd": "00:01:55,333",
+          "tip": "如果他们只添了1个孩子，这件事本来就不会引起任何人的注意。",
+          "a": "If they had only had one more child, the fact would have passed unnoticed."
+        },
+        {
+          "aStart": "00:01:55,433",
+          "aEnd": "00:02:02,133",
+          "tip": "这家人会继续为克服经济上的拮据而奋斗，并默默无闻地活下去。",
+          "a": "They would have continued to struggle against economic odds and would have lived in obscurity."
+        },
+        {
+          "aStart": "00:02:02,233",
+          "aEnd": "00:02:12,616",
+          "tip": "但是他们出人意料生了个五胞胎，4女1男。这事使他们的生活发生了根本的变化。",
+          "a": "But they suddenly became the parents of quintuplets,four girls and a boy, an event which radically changed their lives."
+        },
+        {
+          "aStart": "00:02:12,717",
+          "aEnd": "00:02:22,083",
+          "tip": "五胞胎降生第二天，一架飞机飞抵阿拜丁，随机带来60名记者与摄影师。",
+          "a": "The day after the birth of the five children, an aeroplane arrived in Aberdeen bringing sixty reporters and photographers."
+        },
+        {
+          "aStart": "00:02:22,183",
+          "aEnd": "00:02:24,583",
+          "tip": "这一家迅速出了名。",
+          "a": "The rise to fame was swift."
+        },
+        {
+          "aStart": "00:02:24,683",
+          "aEnd": "00:02:29,816",
+          "tip": "电视摄像机和报纸把消息传送到全国。",
+          "a": "Television cameras and newspapers carried the news to everyone in the country."
+        },
+        {
+          "aStart": "00:02:29,917",
+          "aEnd": "00:02:38,283",
+          "tip": "报纸、杂志出高价向他们购买文字、图片的独家报道权。",
+          "a": "Newspapers and magazines offered the family huge sums for the exclusive rights to publish stories and photographs."
+        },
+        {
+          "aStart": "00:02:38,383",
+          "aEnd": "00:02:48,383",
+          "tip": "不但素昧平生的人寄来了大量的礼物，而且婴儿食品、婴儿肥皂制造厂商为了替自己产品做广告也寄来了大量的礼物。",
+          "a": "Gifts poured in not only from unknown people, but room baby food and soap manufacturers who wished to advertise their products."
+        },
+        {
+          "aStart": "00:02:48,483",
+          "aEnd": "00:02:56,383",
+          "tip": "这家人住的旧家舍将由一座价值50万美元的新住宅所取代。",
+          "a": "The old farmhouse the family lived in was to be replaced by new $500,000 home."
+        },
+        {
+          "aStart": "00:02:56,483",
+          "aEnd": "00:03:06,416",
+          "tip": "由于记者纷纷要求会见，他们不得不请了律师充当他们家的发言人举行记者招待会。",
+          "a": "Reporters kept pressing for interviews so lawyers had to be employed to act as spokesmen for the family at press conferences."
+        },
+        {
+          "aStart": "00:03:06,516",
+          "aEnd": "00:03:16,983",
+          "tip": "眼下，五胞胎还静静地躺在医院婴儿室的氧气帐里，他们的父母却为这名声付出了代价，",
+          "a": "While the five babies were babies were still quietly sleeping in oxygen tents in hospital nursery, their parents were paying the price for fame."
+        },
+        {
+          "aStart": "00:03:17,083",
+          "aEnd": "00:03:21,849",
+          "tip": "他们再也无法过正常的生活。",
+          "a": "It would never again be possible for them to lead normal lives."
+        },
+        {
+          "aStart": "00:03:21,950",
+          "aEnd": "00:03:29,999",
+          "tip": "他们成了商业化的受害者，因为他们的名字具有了市场价值。",
+          "a": "They had become the victims of commercialization, for their names had acquired a market value."
+        },
+        {
+          "aStart": "00:03:30,100",
+          "aEnd": "00:03:37,866",
+          "tip": "这些孩子立即成了商品，而不是5个新的家庭成员。",
+          "a": "Instead of being five new family members, these children had immediately become a commodity."
+        }
+      ]
     },
     {
       "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/46_483.mp3",
@@ -5596,9 +5741,196 @@
       "hash": "6fee96901326a2ea9a747bc20f6a916e2c6f68d1",
       "key": "nce3/46",
       "title": "Do it yourself",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,233",
-      "segment": []
+      "titleStart": "00:00:02,100",
+      "titleEnd": "00:00:04,500",
+      "segment": [
+        {
+          "aStart": "00:00:16,533",
+          "aEnd": "00:00:26,816",
+          "tip": "现在我们自己动手做事的热情很高，结果对于专业工人的依赖越来越少了。",
+          "a": "So great is our passion for doing things for ourselves, that we are becoming increasingly less dependent on specialized labour."
+        },
+        {
+          "aStart": "00:00:26,916",
+          "aEnd": "00:00:34,933",
+          "tip": "由于出版了不计其数的教人自己动手做事的书报杂志，没有人再能说对某事一无所知。",
+          "a": "No one can plead ignorance of a subject any longer, for these are countless do-it-yourself publications."
+        },
+        {
+          "aStart": "00:00:35,033",
+          "aEnd": "00:00:43,466",
+          "tip": "新婚夫妇找来合适的工具和材料，喜气洋洋地开始布置新房。",
+          "a": "Armed with the right tools and materials, newlyweds gaily embark on the task of decorating their own homes."
+        },
+        {
+          "aStart": "00:00:43,567",
+          "aEnd": "00:00:55,850",
+          "tip": "特别是男人，常利用空闲时间安装壁炉、布置花园、建造车库、制作家具。",
+          "a": "Men, particularly, spend hours of their leisure time installing their own fireplaces, laying out their own gardens; building garages and making furniture."
+        },
+        {
+          "aStart": "00:00:55,950",
+          "aEnd": "00:01:02,083",
+          "tip": "有些热衷于自己动手的人甚至自己组装电脑。",
+          "a": "Some really keen enthusiasts go so far as to build their own computers."
+        },
+        {
+          "aStart": "00:01:02,183",
+          "aEnd": "00:01:15,300",
+          "tip": "为了满足自己动手热的需要，商店不仅为初学者提供专门的咨询服务，而且为顾客准备了各种零件，供他们买回家去安装。",
+          "a": "Shops cater for the do-it-yourself craze not only by running special advisory services for novices, but by offering consumers bits and pieces which they can assemble at home."
+        },
+        {
+          "aStart": "00:01:15,400",
+          "aEnd": "00:01:25,833",
+          "tip": "这些东西为人们潜在的创造力提供了一个绝妙的用武之地。但不幸的是，我们并非人人都是能工巧匠。",
+          "a": "Such things provide an excellent outlet for pent up creative energy, but unfortunately not all of us are born handymen."
+        },
+        {
+          "aStart": "00:01:26,066",
+          "aEnd": "00:01:33,266",
+          "tip": "妻子常常认为她们的丈夫无比聪明能干。",
+          "a": "Some wives tend to believe that their husbands are infinitely resourceful and can fix anything."
+        },
+        {
+          "aStart": "00:01:33,600",
+          "aEnd": "00:01:43,266",
+          "tip": "甚至那些连一枚钉子都钉不直的男人都被认为是天生的电工、木匠、水管工和机械师。",
+          "a": "Even men who can hardly drive a nail in straight are supposed to be born electricians, carpenters, plumbers and mechanics."
+        },
+        {
+          "aStart": "00:01:43,366",
+          "aEnd": "00:01:56,199",
+          "tip": "每当电灯保险丝烧断、家具榫头松动、管道堵塞、吸尘器不动时，有些妻子认为丈夫总有办法。",
+          "a": "When lights fuse, furniture gets rickety, pipes get clogged, or vacuum cleaners fail to operate, some woman assume that their husbands will somehow put things right."
+        },
+        {
+          "aStart": "00:01:56,300",
+          "aEnd": "00:02:08,733",
+          "tip": "自己动手的例子中最糟糕的是，有时甚至是男人尽管接连失败却还误以为自己什么都行，",
+          "a": "The worst thing about the do-it-yourself game is that sometimes even men live under the delusion that they can do anything, even when they have repeatedly been proved wrong."
+        },
+        {
+          "aStart": "00:02:08,833",
+          "aEnd": "00:02:12,783",
+          "tip": "原因就是要面子。\\n 直译 这是一个自尊心的问题，就像其他任何事情一样",
+          "a": "It is a question of pride as much as anything else."
+        },
+        {
+          "aStart": "00:02:12,883",
+          "aEnd": "00:02:18,766",
+          "tip": "今年春天，妻子让我请人检查一下我家的割草机。",
+          "a": "Last spring my wife suggested that I call in a man to look at our lawn mower."
+        },
+        {
+          "aStart": "00:02:18,867",
+          "aEnd": "00:02:27,283",
+          "tip": "那台割草机去年夏天就坏了，尽管我答应修，但一直没抽出时间，",
+          "a": "It had broken down the previous summer, and though I promised to repair it, I had never got round to it."
+        },
+        {
+          "aStart": "00:02:27,383",
+          "aEnd": "00:02:33,216",
+          "tip": "我不愿听妻子的建议，说我自己会修。",
+          "a": "I would not hear of the suggestion and said that I would fix it myself."
+        },
+        {
+          "aStart": "00:02:33,316",
+          "aEnd": "00:02:40,199",
+          "tip": "一个星期六的下午，我把割草机拉到了花园里，",
+          "a": "One Saturday afternoon, I hauled the machine into the garden and had a close look at it."
+        },
+        {
+          "aStart": "00:02:40,300",
+          "aEnd": "00:02:45,099",
+          "tip": "仔细检查了一番。在我看来，只需稍加调整即可。",
+          "a": "As far as I could see, it needed only a minor adjustment:"
+        },
+        {
+          "aStart": "00:02:45,200",
+          "aEnd": "00:02:53,649",
+          "tip": "这儿紧紧螺丝，那儿固定一下，再加几滴油，就会像新的一样了。",
+          "a": "a turn of a screw here, a little tightening up there, a drop of oil and it would be as good as new."
+        },
+        {
+          "aStart": "00:02:53,750",
+          "aEnd": "00:02:58,699",
+          "tip": "事实上，修理工作远不是那么简单。",
+          "a": "Inevitably the repair job was not quite so simple."
+        },
+        {
+          "aStart": "00:02:58,800",
+          "aEnd": "00:03:05,016",
+          "tip": "修完后割草机还是纹丝不动。于是，我决定把它拆开。",
+          "a": "The mower firmly refused to mow, so I decided to dismantle it."
+        },
+        {
+          "aStart": "00:03:05,116",
+          "aEnd": "00:03:11,816",
+          "tip": "一会儿工夫，割草机便被拆成一个个金属零件，乱七八糟地堆在花园里。",
+          "a": "The garden was soon littered with chunks of metal which had once made up a lawn mower."
+        },
+        {
+          "aStart": "00:03:11,917",
+          "aEnd": "00:03:15,116",
+          "tip": "但我却非常高兴，",
+          "a": "But I was extremely pleased with myself."
+        },
+        {
+          "aStart": "00:03:15,216",
+          "aEnd": "00:03:18,283",
+          "tip": "因为我找到了毛病所在。",
+          "a": "I had traced the cause of the trouble."
+        },
+        {
+          "aStart": "00:03:18,383",
+          "aEnd": "00:03:23,333",
+          "tip": "驱动轮子的链条断了一节。",
+          "a": "One of links in the chain that drives the wheels had snapped."
+        },
+        {
+          "aStart": "00:03:23,433",
+          "aEnd": "00:03:34,116",
+          "tip": "我买来一根新链条后，面临的就是如何把这些令人眼花缭乱的拼板重新组装起来。",
+          "a": "After buying a new chain I was faced with the insurmountable task of putting the confusing jigsaw puzzle together again."
+        },
+        {
+          "aStart": "00:03:34,216",
+          "aEnd": "00:03:52,016",
+          "tip": "等我装完后，那台割草机仍然一动不动，对此我倒并不感到吃惊。原因很简单，因为还剩下几个形状奇特的零件似乎哪里也装不上去。",
+          "a": "I was not surprised to find that the machine still refused to work after I had reassembled it, for the simple reason that I was left with several curiously shaped bits of metal which did not seem to fit anywhere."
+        },
+        {
+          "aStart": "00:03:52,117",
+          "aEnd": "00:03:54,633",
+          "tip": "我无可奈何，只好罢休。",
+          "a": "I gave up in despair."
+        },
+        {
+          "aStart": "00:03:54,733",
+          "aEnd": "00:03:57,783",
+          "tip": "几个星期过去了，草长了起来。",
+          "a": "The weeks passed and the grass grew."
+        },
+        {
+          "aStart": "00:03:57,883",
+          "aEnd": "00:04:06,583",
+          "tip": "妻子喋喋不休让我想点办法。我告诉她，要么买一台新割草机，要么让草长下去。",
+          "a": "When my wife nagged me to do something about it, I told her that either I would have to buy a new mower or let the grass grow."
+        },
+        {
+          "aStart": "00:04:06,683",
+          "aEnd": "00:04:11,466",
+          "tip": "不用说，我家现在已被丛林包围。",
+          "a": "Needless to say our house is now surrounded by a jungle."
+        },
+        {
+          "aStart": "00:04:11,567",
+          "aEnd": "00:04:18,800",
+          "tip": "深草丛中的某个地方有一台正在生锈的割草机，那就是我曾答应某日要修理的割草机。",
+          "a": "Buried somewhere in deep grass there is a rusting lawn mower which I have promised to repair one day."
+        }
+      ]
     },
     {
       "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/47_073.mp3",
@@ -5606,9 +5938,172 @@
       "hash": "539f71955991139fa22cc64cff1de4e6b1e20911",
       "key": "nce3/47",
       "title": "Too high a price?",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,233",
-      "segment": []
+      "titleStart": "00:00:01,966",
+      "titleEnd": "00:00:04,533",
+      "segment": [
+        {
+          "aStart": "00:00:18,133",
+          "aEnd": "00:00:25,149",
+          "tip": "污染就是我们为这个人口过密，过度工业化的星球所付出的代价。",
+          "a": "Pollution is the price we pay for an overpopulated, over industrialized planet."
+        },
+        {
+          "aStart": "00:00:25,250",
+          "aEnd": "00:00:30,566",
+          "tip": "当我们开始考虑垃圾问题时，我们只有4种对付垃圾的方法：",
+          "a": "When you come to think about it, there are only four ways you can deal with rubbish:"
+        },
+        {
+          "aStart": "00:00:30,667",
+          "aEnd": "00:00:37,383",
+          "tip": "倾倒、焚烧、把垃圾变成再生材料或试图少产生一些垃圾。",
+          "a": "dump it, burn it, turn it into something you can use again, attempt to produce less of it."
+        },
+        {
+          "aStart": "00:00:37,483",
+          "aEnd": "00:00:47,166",
+          "tip": "我们一直在试这4种方式，但是，我们在世界范围内仅产生的垃圾的量就有把我们覆盖的危险。",
+          "a": "We keep trying all four methods, but he sheer volume of rubbish we produce worldwide threatens to overwhelm us."
+        },
+        {
+          "aStart": "00:00:47,633",
+          "aEnd": "00:00:53,083",
+          "tip": "然而，垃圾只是我们这个星球的污染问题的一个方面。",
+          "a": "Rubbish, however, is only part of the problem of polluting our planet."
+        },
+        {
+          "aStart": "00:00:53,183",
+          "aEnd": "00:01:00,733",
+          "tip": "日益增长的对廉价食物的需求导致了另一种形式的污染。",
+          "a": "The need to produce ever-increasing quantities of cheap food leads to a different kind of pollution."
+        },
+        {
+          "aStart": "00:01:00,833",
+          "aEnd": "00:01:07,816",
+          "tip": "工业化的农作方式生产出廉价的肉类制品——牛肉、猪肉和鸡肉。",
+          "a": "Industrialized farming methods produce cheap meat products: beef, pork and chicken."
+        },
+        {
+          "aStart": "00:01:07,917",
+          "aEnd": "00:01:14,133",
+          "tip": "使用杀虫剂和化肥生产出廉价的谷物和蔬菜。",
+          "a": "The use of pesticides and fertilizers produces cheap grain and vegetables."
+        },
+        {
+          "aStart": "00:01:14,233",
+          "aEnd": "00:01:19,149",
+          "tip": "为了廉价食物我们付出代价已经太高了：",
+          "a": "The price we pay for cheap food may be already too high:"
+        },
+        {
+          "aStart": "00:01:19,250",
+          "aEnd": "00:01:29,433",
+          "tip": "牛肉中的疯牛病，鸡肉和鸡蛋中的沙门氏菌，奶制品中的利斯特杆菌。",
+          "a": "Mad Cow Disease (BSE) in cattle, salmonella in chicken and eggs, and wisteria in dairy products."
+        },
+        {
+          "aStart": "00:01:29,533",
+          "aEnd": "00:01:49,116",
+          "tip": "如果你想放弃肉类而变成一位素食者，那么你可以两者择一：或是选用价格昂贵、有机培植的蔬菜，或是当你认为在享用新鲜色拉和新鲜蔬菜或饮用一杯无害的水的时候，实际上每次都不断吃进杀虫剂。",
+          "a": "And if you think you'll abandon meat and become a vegetarian, you have the choice of very expensive organically-grown vegetables or a steady diet of pesticides every time you think you're eating fresh salads and vegetables, or just having an innocent glass of water!"
+        },
+        {
+          "aStart": "00:01:49,217",
+          "aEnd": "00:02:02,133",
+          "tip": "但是，还有一种更加隐蔽有害的污染，它专门影响城镇地区，侵袭我们的日常生活，那就是噪音。",
+          "a": "However, there is an even more insidious kind of pollution that particularly affects urban areas and invades our daily lives, and that is noise."
+        },
+        {
+          "aStart": "00:02:02,233",
+          "aEnd": "00:02:12,916",
+          "tip": "防盗警报器在白天和黑夜的任何时候都会响起来，它的作用只是骚扰过路行人，而实际上却帮助窃贼入室行窃。",
+          "a": "Burglar alarms going off at any time of the day or night serve only to annoy passers-by and actually assist burglars to burgle."
+        },
+        {
+          "aStart": "00:02:13,017",
+          "aEnd": "00:02:19,649",
+          "tip": "在街上，汽车的防盗警报不断对我们吼叫，这是人们极度烦燥的一个原因，",
+          "a": "Car alarms constantly scream at us in the street and are a source of profound irritation."
+        },
+        {
+          "aStart": "00:02:19,750",
+          "aEnd": "00:02:34,933",
+          "tip": "最近一个有关噪音的作用的调查（令人吃惊地）指出，夜间连续不断的狗叫声，在一个从1级至7级刻度表上应列为最严重的噪间污染。",
+          "a": "A recent survey of the effects of noise revealed (surprisingly?) that dogs barking incessantly in the night rated the highest form of noise pollution on a scale ranging from 1 to 7."
+        },
+        {
+          "aStart": "00:02:35,033",
+          "aEnd": "00:02:41,349",
+          "tip": "这个调查揭示了我们所不喜欢的大量的噪间的来源：",
+          "a": "The survey revealed a large number of sources of noise that we really dislike."
+        },
+        {
+          "aStart": "00:02:41,450",
+          "aEnd": "00:03:05,933",
+          "tip": "夏天呜呜作响的割草机，公寓楼里深夜聚会的喧哗声，大声吵闹的邻居，各式各样的车辆，特别是穿越寂静的村庄的集装箱卡车，从头顶飞过的飞机和直升机，被带到公共场所、音量开到最大的大功率收音机。",
+          "a": "Lawn mowers whining on a summer's day, late-night parties in apartment blocks, noisy neighbors, vehicles of al kinds, especially large container trucks thundering through quiet village, planes and helicopters flying overhead, large radios carried round in public places and played at maximum volume."
+        },
+        {
+          "aStart": "00:03:06,033",
+          "aEnd": "00:03:11,033",
+          "tip": "新技术也为噪音作了它的贡献。",
+          "a": "New technology has also made its own contribution to noise."
+        },
+        {
+          "aStart": "00:03:11,133",
+          "aEnd": "00:03:21,199",
+          "tip": "许多人都反对移动式电话，特别是在如饭店，公共交通车等公共场所使用移动电话。",
+          "a": "A lot of people object to mobile phones, especially when they are used in public places like restaurants or on public transport."
+        },
+        {
+          "aStart": "00:03:21,300",
+          "aEnd": "00:03:30,683",
+          "tip": "用移动电话大声交谈干扰我们的思路，破坏我们和朋友在一起轻声聊天所得到的乐趣。",
+          "a": "Loud conversations on mobile phones invade our thoughts or interrupt the pleasure of meeting friends for a quiet chat."
+        },
+        {
+          "aStart": "00:03:30,783",
+          "aEnd": "00:03:39,399",
+          "tip": "这个有关噪音的污染调查还揭示了一种出人意外而同时可能会引人意外而同时可能会引人发笑的老式噪音源。",
+          "a": "The noise pollution survey revealed a rather spurring and possibly amusing old fashioned source of noise."
+        },
+        {
+          "aStart": "00:03:39,500",
+          "aEnd": "00:03:42,783",
+          "tip": "它竟然是鼾声。",
+          "a": "It turned out to be snoring!"
+        },
+        {
+          "aStart": "00:03:42,883",
+          "aEnd": "00:03:45,933",
+          "tip": "人类是这方面的罪魁祸首。",
+          "a": "Men were found to be the worst offenders."
+        },
+        {
+          "aStart": "00:03:46,033",
+          "aEnd": "00:03:51,683",
+          "tip": "调查指出，20%的35岁左右的男人打鼾；",
+          "a": "It was revealed that 20% of men in their mid-thirties snore."
+        },
+        {
+          "aStart": "00:03:51,783",
+          "aEnd": "00:03:57,983",
+          "tip": "而到60岁这个年龄段，这个数字上升到令人惊愕的60%。",
+          "a": "This figure rises to a staggering 60% of men in their sixties."
+        },
+        {
+          "aStart": "00:03:58,083",
+          "aEnd": "00:04:10,933",
+          "tip": "与这些数字相比，只有5% 的女性经常打鼾；而其余则经常被与她们同睡、像吹号似地打着呼噜的男人吵醒或弄得睡不着。",
+          "a": "Against these figures, it was found that only 5% of women snore regularly, while the rest are constantly woken or kept awake by their trumpeting partners."
+        },
+        {
+          "aStart": "00:04:11,033",
+          "aEnd": "00:04:21,200",
+          "tip": "不管噪声来自何方，有一点是肯定的： 看来寂静已变成一种珍贵的回忆。",
+          "a": "Whatever the source of noise, one thing is certain: silence, it seems, has become a golden memory."
+        }
+      ]
     },
     {
       "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/48_857.mp3",
