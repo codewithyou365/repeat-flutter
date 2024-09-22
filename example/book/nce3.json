@@ -1483,13 +1483,13 @@
           "aStart": "00:01:54,983",
           "aEnd": "00:02:02,283",
           "tip": "有人打电话叫来消防队，两位消防队员使用了一种特殊的润滑剂才使乔治得以解脱。",
-          "a": "The fire brigade was called and two fire fighter freed George using a special type of grease."
+          "a": "The fire brigade was called and two fire fighters freed George using a special type of grease."
         },
         {
           "aStart": "00:02:02,383",
           "aEnd": "00:02:14,333",
           "tip": "不过，此事并没使乔治过于伤心，因为糖果店老板娘听说了他遇到的麻烦后，赏给他一大盒巧克力。",
-          "a": "George was not too upset by his experience because the lady who owns the sweet shop heard about his troubles and rewarded him with large box of chocolates."
+          "a": "George was not too upset by his experience because the lady who owns the sweet shop heard about his troubles and rewarded him with a large box of chocolates."
         }
       ]
     },
@@ -1499,7 +1499,7 @@
       "hash": "e9c128c8e034d15cd7162379e7159425572d32d8",
       "key": "nce3/16",
       "title": "Mary had a little lamb",
-      "titleStart": "00:00:00,200",
+      "titleStart": "00:00:02,160",
       "titleEnd": "00:00:05,233",
       "segment": [
         {
@@ -6111,19 +6111,393 @@
       "hash": "ba471ca4af12c29222ee941eda5926b971f68938",
       "key": "nce3/48",
       "title": "The silent village",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,233",
-      "segment": []
+      "titleStart": "00:00:01,966",
+      "titleEnd": "00:00:04,800",
+      "segment": [
+        {
+          "aStart": "00:00:14,100",
+          "aEnd": "00:00:22,749",
+          "tip": "在这个旅游频繁的世界上，仍有成千上万个游人足迹未至的地方。",
+          "a": "In this much-travelled world, there are still thousands of places which are inaccessible to tourists."
+        },
+        {
+          "aStart": "00:00:22,850",
+          "aEnd": "00:00:29,350",
+          "tip": "人们总是以为偏僻的地方的村民们热情好客。",
+          "a": "We always assume that villagers in remote places are friendly and hospitable."
+        },
+        {
+          "aStart": "00:00:29,450",
+          "aEnd": "00:00:39,516",
+          "tip": "但是，那些不但与外国旅游者隔绝，而且与本国同胞隔绝的人们有可能对游客抱有敌意。",
+          "a": "But people who are cut off not only from foreign tourists, but even from their own countrymen can be hostile to travellers."
+        },
+        {
+          "aStart": "00:00:39,617",
+          "aEnd": "00:00:48,533",
+          "tip": "到真正偏僻的村庄去旅游并不是一件愉快的事情。我与妻子在一次周游巴尔干半岛时对此深有体会。",
+          "a": "Visits to really remote villages are seldom enjoyable -- as my wife and I discovered during a tour through the Balkans."
+        },
+        {
+          "aStart": "00:00:48,633",
+          "aEnd": "00:00:55,650",
+          "tip": "我们在一座小镇上逗留了几天，参观了附近的许多古老的教堂。",
+          "a": "We had spent several days in a small town and visited a number of old churches in the vicinity."
+        },
+        {
+          "aStart": "00:00:55,750",
+          "aEnd": "00:01:07,316",
+          "tip": "这些教堂吸引大量游客，不仅是因为建筑风格奇特，而且还有大量保存完好的壁画。",
+          "a": "These attracted many visitors, for they were not only of great architectural interest, but contained a large number of beautifully preserved frescoes as well."
+        },
+        {
+          "aStart": "00:01:07,416",
+          "aEnd": "00:01:14,166",
+          "tip": "我们离开小镇的前一天，镇上来了几辆满载游客的公共汽车。",
+          "a": "On the day before our departure, several bus loads of tourists descended on the town."
+        },
+        {
+          "aStart": "00:01:14,266",
+          "aEnd": "00:01:21,866",
+          "tip": "人多得使我们难以忍受，于是我们决定利用最后一天去乡间一游。",
+          "a": "This was more than we could bear, so we decided to spend our last day exploring the countryside."
+        },
+        {
+          "aStart": "00:01:22,333",
+          "aEnd": "00:01:30,249",
+          "tip": "我们走上了一条出镇的小路，穿过几块农田，来到一片茂密的树林。",
+          "a": "Taking a path which led out of the town, we crossed a few fields until we came to a dense wood."
+        },
+        {
+          "aStart": "00:01:30,350",
+          "aEnd": "00:01:37,983",
+          "tip": "我们原以为小路会到此突然终止。没想到它到树林中继续向前延伸。",
+          "a": "We expected the path to end abruptly, but we found that it traced its way through the trees."
+        },
+        {
+          "aStart": "00:01:38,083",
+          "aEnd": "00:01:44,600",
+          "tip": "我们在树林中跋涉了两个多小时，到了一条深溪边。",
+          "a": "We tramped through the wood for over two hours until we arrived at a deep stream."
+        },
+        {
+          "aStart": "00:01:44,700",
+          "aEnd": "00:01:53,116",
+          "tip": "我们可以看到小路在深溪对岸继续向前伸展，但却不知如何越过这道深溪。",
+          "a": "We could see that the path continued on the other side, but we had no idea how we could get across the stream."
+        },
+        {
+          "aStart": "00:01:53,216",
+          "aEnd": "00:01:57,549",
+          "tip": "突然，妻子发现岸边泊着一条小船，",
+          "a": "Suddenly my wife spotted a boat moored to the bank."
+        },
+        {
+          "aStart": "00:01:57,650",
+          "aEnd": "00:02:01,149",
+          "tip": "船上有一船夫在呼呼大睡。",
+          "a": "In it there was a boatman fast asleep."
+        },
+        {
+          "aStart": "00:02:01,250",
+          "aEnd": "00:02:06,349",
+          "tip": "我们轻轻地把他唤醒，请他把我们摆渡过溪。",
+          "a": "We gently woke him up and asked him to ferry us to the other side."
+        },
+        {
+          "aStart": "00:02:06,450",
+          "aEnd": "00:02:12,799",
+          "tip": "一开始，他很不愿意，但经劝说，终于同意了。",
+          "a": "Though he was reluctant to do so at first, we eventually persuaded him to take us."
+        },
+        {
+          "aStart": "00:02:12,900",
+          "aEnd": "00:02:18,849",
+          "tip": "顺着小路，我们来到一个座落在陡峭山坡上的小村庄。",
+          "a": "The path led to a tiny village perched on the steep sides of a mountain."
+        },
+        {
+          "aStart": "00:02:18,950",
+          "aEnd": "00:02:26,650",
+          "tip": "这儿有一条未经修筑的弯弯曲曲的道路，路两边排列着一些矮小的农舍。",
+          "a": "The place consisted of a straggling unmade road which was lined on either side by small houses."
+        },
+        {
+          "aStart": "00:02:26,750",
+          "aEnd": "00:02:35,816",
+          "tip": "农舍全用灰色的土坯建成，因此，即使在晴朗的蓝天底下，",
+          "a": "Even under a clear blue sky, the village looked forbidding, as all the houses were built of grey mud bricks."
+        },
+        {
+          "aStart": "00:02:35,916",
+          "aEnd": "00:02:48,600",
+          "tip": "村庄看上去也会令人感到难以亲近。村里似乎无人居住，唯一的生命迹象是附近田里一只面目可憎的黑山羊，用一截短绳拴在一棵树上。",
+          "a": "The village seemed deserted, the only sign of life being an ugly-looking black goat on a short length of rope tied to a tree in a field nearby."
+        },
+        {
+          "aStart": "00:02:48,700",
+          "aEnd": "00:02:58,533",
+          "tip": "我们在田边一堵东倒西歪的篱笆墙上坐下来，打开几听沙丁鱼罐头，吃了一顿野外午餐。",
+          "a": "Sitting down on a dilapidated wooden fence near the field, we opened a couple of tins of sardines and had a picnic lunch."
+        },
+        {
+          "aStart": "00:02:58,633",
+          "aEnd": "00:03:04,483",
+          "tip": "突然，我注意到妻子十分惊恐。",
+          "a": "All at once, I noticed that my wife seemed to be filled with alarm."
+        },
+        {
+          "aStart": "00:03:04,583",
+          "aEnd": "00:03:12,733",
+          "tip": "我抬头一看，发现我们被一群衣衫褴褛的小孩团团围住了，他们在默不作声地看着我们吃饭。",
+          "a": "Looking up I saw that we were surrounded by children in rags who were looking at us silently as we ate."
+        },
+        {
+          "aStart": "00:03:12,833",
+          "aEnd": "00:03:19,533",
+          "tip": "我们给他们东西吃，客客气气地同他们交谈，但他们却一动也不动。",
+          "a": "We offered them food and spoke to them kindly, but they remained motionless."
+        },
+        {
+          "aStart": "00:03:19,633",
+          "aEnd": "00:03:23,783",
+          "tip": "我认为这不过是他们在陌生人面前表现出的害羞。",
+          "a": "I concluded that they were simply shy of strangers."
+        },
+        {
+          "aStart": "00:03:23,883",
+          "aEnd": "00:03:32,099",
+          "tip": "后来，我们在村里的主要街道上行走的时候，一队默不作声的孩子跟在我们后头。",
+          "a": "When we later walked down the main street of the villager, we were followed by a silent procession of children."
+        },
+        {
+          "aStart": "00:03:32,200",
+          "aEnd": "00:03:37,733",
+          "tip": "刚才还似乎空荡荡的村庄一下子活跃了起来，",
+          "a": "The village which had seemed deserted, immediately came to life."
+        },
+        {
+          "aStart": "00:03:37,833",
+          "aEnd": "00:03:40,316",
+          "tip": "窗口露出了一张张面孔，",
+          "a": "Faces appeared at windows."
+        },
+        {
+          "aStart": "00:03:40,417",
+          "aEnd": "00:03:45,433",
+          "tip": "只穿着衬衣的男人们站在屋子外面凶狠地盯着我们，",
+          "a": "Men in shirt sleeves stood outside their houses and glared at us."
+        },
+        {
+          "aStart": "00:03:45,533",
+          "aEnd": "00:03:50,549",
+          "tip": "披黑纱巾的老妇人站在门口偷偷地瞅着我们。",
+          "a": "Old women in black shawls peered at us from doorways."
+        },
+        {
+          "aStart": "00:03:50,650",
+          "aEnd": "00:03:56,316",
+          "tip": "最令人害怕的是到处没有一点声音。",
+          "a": "The most frightening thing of all was that not a sound could be heard."
+        },
+        {
+          "aStart": "00:03:56,416",
+          "aEnd": "00:04:01,333",
+          "tip": "毫无疑问，我们的来访是不受欢迎的。",
+          "a": "There was no doubt that we were unwelcome visitors."
+        },
+        {
+          "aStart": "00:04:01,433",
+          "aEnd": "00:04:03,983",
+          "tip": "我们不需要进一步的警告了。",
+          "a": "We needed no further warning."
+        },
+        {
+          "aStart": "00:04:04,083",
+          "aEnd": "00:04:14,666",
+          "tip": "便掉转身子，沿着那条主要街道加快步伐，快速地朝深溪边走去，希望船夫还在那儿等着我们。",
+          "a": "Turning back down the main street, we quickened our pace and made our way rapidly towards the stream where we hoped the boatman was waiting."
+        }
+      ]
     },
     {
       "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/49_339.mp3",
       "path": "/nce3/a/49.mp3",
       "hash": "34b725d499b282b5ce2048e7d8cfffe383a4bfad",
       "key": "nce3/49",
-      "title": "The ideal servant",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,233",
-      "segment": []
+      "title": "!The ideal servant",
+      "titleStart": "00:00:01,900",
+      "titleEnd": "00:00:05,066",
+      "segment": [
+        {
+          "aStart": "00:00:14,400",
+          "aEnd": "00:00:18,799",
+          "tip": "我的姑妈哈丽特好多年前就去世了，这倒是件好事。",
+          "a": "It is a good thing my aunt Harriet died years ago."
+        },
+        {
+          "aStart": "00:00:18,900",
+          "aEnd": "00:00:28,999",
+          "tip": "如果她活到今天，她将不能就她热衷的话题“佣人”发表意见了。",
+          "a": "If she were alive today she would not be able to air her views on her favourite topic of conversation: domestic servants."
+        },
+        {
+          "aStart": "00:00:29,100",
+          "aEnd": "00:00:35,183",
+          "tip": "哈丽特生活在一个悠闲的年代，家务事都由雇来的佣人代劳。",
+          "a": "Aunt Harriet lived in that leisurely age when servants were employed to do housework."
+        },
+        {
+          "aStart": "00:00:35,283",
+          "aEnd": "00:00:40,200",
+          "tip": "她在乡下有一幢巨大杂乱的房子，叫作“山墙庄园”。",
+          "a": "She had a huge, rambling country house called 'The Gables'."
+        },
+        {
+          "aStart": "00:00:40,300",
+          "aEnd": "00:00:52,516",
+          "tip": "她对这幢房子在感情上难舍难分。房子实在太大了，但在丈夫去世多年后，她仍然执意长年住在那儿。",
+          "a": "She was sentimentally attached to this house, for even though it was far too big for her needs, she persisted in living there long after her husband's death."
+        },
+        {
+          "aStart": "00:00:52,616",
+          "aEnd": "00:00:57,666",
+          "tip": "哈丽特姑妈年轻时，喜欢大摆宴席，招待宾客。",
+          "a": "Before she grew old, Aunt Harriet used to entertain lavishly."
+        },
+        {
+          "aStart": "00:00:57,767",
+          "aEnd": "00:01:01,099",
+          "tip": "我小时候常去“山墙庄园”作客。",
+          "a": "I often visited The Gables when I was a boy."
+        },
+        {
+          "aStart": "00:01:01,200",
+          "aEnd": "00:01:07,383",
+          "tip": "不管去多少宾客，大房子里总是收拾得干干净净。",
+          "a": "No matter how many guests were present, the great house was always immaculate."
+        },
+        {
+          "aStart": "00:01:07,483",
+          "aEnd": "00:01:22,966",
+          "tip": "镶木地板洁如明镜，擦得发亮的银器陈列在明亮的玻璃柜里，连姑夫的大量藏书也保存得很好，奇迹般地一尘不染。",
+          "a": "The parquet floors shone like mirrors; highly polished silver was displayed in gleaming glass cabinets; even my uncle's huge collection of books was kept miraculously free from dust."
+        },
+        {
+          "aStart": "00:01:23,066",
+          "aEnd": "00:01:32,516",
+          "tip": "哈丽特姑妈统率着一支看不见的佣人大军，他们不停地擦拭、清扫、刷洗。",
+          "a": "Aunt Harriet presided over an invisible army of servants that continuously scrubbed, cleaned, and polished."
+        },
+        {
+          "aStart": "00:01:32,617",
+          "aEnd": "00:01:45,016",
+          "tip": "她称这些佣人叫“流动人口”，因为他们来匆匆，所以我甚至都没有机会知道他们的姓名。",
+          "a": "She always referred to them as 'the shifting population', for they came and went with such frequency that I never even got a chance to learn their names."
+        },
+        {
+          "aStart": "00:01:45,117",
+          "aEnd": "00:01:59,933",
+          "tip": "姑妈待佣人在当时算是开明的，从来不让佣人每天工作超过8小时，但他们很难使她称心如意。",
+          "a": "Though my aunt pursued what was, in those days, an enlightened policy, in that she never allowed her domestic staff to work more than eight hours a day, she was extremely difficult to please."
+        },
+        {
+          "aStart": "00:02:00,033",
+          "aEnd": "00:02:16,600",
+          "tip": "她一方面总是批评人的本性朝三暮四，另一方面她又持之以恒地寻找一个理想的佣人。即使在贝西大大地伤她的心之后，她还在找，一直到她死去。",
+          "a": "While she always criticized the fickleness of human nature, she carried on an unrelenting search for the ideal servant to the end of her days, even after she had been sadly disillusioned by Bessie."
+        },
+        {
+          "aStart": "00:02:16,800",
+          "aEnd": "00:02:20,816",
+          "tip": "贝西在哈丽特家干了3年。",
+          "a": "Bessie worked for Aunt Harriet for three years."
+        },
+        {
+          "aStart": "00:02:20,916",
+          "aEnd": "00:02:28,583",
+          "tip": "在此期间，她赢得了姑母的赏识，甚至当上了大管家。",
+          "a": "During that time she so gained my aunt's confidence that she was put in charge of the domestic staff."
+        },
+        {
+          "aStart": "00:02:28,683",
+          "aEnd": "00:02:35,633",
+          "tip": "哈丽特不知该用什么言辞来赞扬贝西的勤奋与高效。",
+          "a": "Aunt Harriet could not find words to praise Bessie's industriousness and efficiency."
+        },
+        {
+          "aStart": "00:02:35,733",
+          "aEnd": "00:02:41,766",
+          "tip": "贝西除了有各种本领以外，还是一个烹饪大师。",
+          "a": "In addition to all her other qualifications, Bessie was an expert cook."
+        },
+        {
+          "aStart": "00:02:41,867",
+          "aEnd": "00:02:50,149",
+          "tip": "她担任“理想仆人”角色3年之后，哈丽特终于发现她有“小小的弱点”。",
+          "a": "She acted the role of the perfect servant for three years before Aunt Harriet discovered her 'little weakness'."
+        },
+        {
+          "aStart": "00:02:50,250",
+          "aEnd": "00:03:01,866",
+          "tip": "一次，姑妈有一个星期没在“山墙庄园”住。一天下午，她出其不意地回来了，带来一大批客人，吩咐贝西准备晚饭。",
+          "a": "After being absent from The Gables for a week, my aunt unexpectedly returned one afternoon with a party of guests and instructed Bessie to prepare dinner."
+        },
+        {
+          "aStart": "00:03:01,966",
+          "aEnd": "00:03:09,816",
+          "tip": "结果，不仅饭菜远不如平时做得好，而且贝西走起路来似乎东倒西歪。",
+          "a": "Not only was the meal well below the usual standard, but Bessie seemed unable to walk steadily."
+        },
+        {
+          "aStart": "00:03:09,917",
+          "aEnd": "00:03:14,499",
+          "tip": "她撞到了家具上，嘴里还不断咕咕哝哝议论客人。",
+          "a": "She bumped into the furniture and kept mumbling about the guests."
+        },
+        {
+          "aStart": "00:03:14,600",
+          "aEnd": "00:03:30,799",
+          "tip": "当她端着最后一道菜——一大盘布丁——走进屋来时，在地毯上绊了一跤。布丁飞到半空，从姑母身边擦过，然后狠狠地砸在餐桌上。",
+          "a": "When she came in with the last course -- a huge pudding -- she tripped on the carpet and the pudding went flying through the air, narrowly missed my aunt, and crashed on the dining table with considerable force."
+        },
+        {
+          "aStart": "00:03:30,900",
+          "aEnd": "00:03:37,916",
+          "tip": "这件事引起了客人们的欢笑，但哈丽特却着实吓了一跳。",
+          "a": "Though this caused great mirth among the guests, Aunt Harriet was horrified."
+        },
+        {
+          "aStart": "00:03:38,017",
+          "aEnd": "00:03:42,983",
+          "tip": "她不得不认定贝西是喝醉了。",
+          "a": "She reluctantly came to the conclusion that Bessie was drunk."
+        },
+        {
+          "aStart": "00:03:43,083",
+          "aEnd": "00:03:57,649",
+          "tip": "客人们自然从贝西为他们开门那一刻起就看出来了，在好长一段时间里，即最后这个乱子发生前，他们努力克制才没笑出声来。",
+          "a": "The guests had, of course, realized this from the moment Bessie opened the door for them and, long before the final catastrophe, had had a difficult time trying to conceal their amusement."
+        },
+        {
+          "aStart": "00:03:57,750",
+          "aEnd": "00:04:01,466",
+          "tip": "贝西当即被解雇了。",
+          "a": "The poor girl was dismissed instantly."
+        },
+        {
+          "aStart": "00:04:01,566",
+          "aEnd": "00:04:14,633",
+          "tip": "贝西走后，哈丽特姑妈发现在贝西以前用过的衣柜里整整齐齐地放着一堆堆形状各导、大小不一的酒瓶子。",
+          "a": "After her departure, Aunt Harriet discovered that there were piles of empty wine bottles of all shapes and sizes neatly stacked in what had once been Bessie's wardrobe."
+        },
+        {
+          "aStart": "00:04:14,733",
+          "aEnd": "00:04:19,633",
+          "tip": "这些酒瓶神不知鬼不觉地从酒窖来到了这里。",
+          "a": "They had mysteriously found their way there from the wine cellar!"
+        }
+      ]
     },
     {
       "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/50_600.mp3",
