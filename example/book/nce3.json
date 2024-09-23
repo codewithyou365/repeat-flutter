@@ -6505,9 +6505,190 @@
       "hash": "6e1eb7eb69fe84221b1f450c21e4fbed1981eced",
       "key": "nce3/50",
       "title": "New Year resolutions",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,233",
-      "segment": []
+      "titleStart": "00:00:02,366",
+      "titleEnd": "00:00:05,433",
+      "segment": [
+        {
+          "aStart": "00:00:16,266",
+          "aEnd": "00:00:19,716",
+          "tip": "新年是下决心的时候，",
+          "a": "The New Year is a time for resolutions."
+        },
+        {
+          "aStart": "00:00:19,816",
+          "aEnd": "00:00:27,266",
+          "tip": "至少在大多数人的心里会编排出一份“应做什么”和“不应做什么”的令人生畏的单子。",
+          "a": "Mentally, at least, most of us could compile formidable lists of 'dos' and 'don'ts'."
+        },
+        {
+          "aStart": "00:00:27,367",
+          "aEnd": "00:00:33,833",
+          "tip": "相同的决心以单调的规律年复一年地出现。",
+          "a": "The same old favourites recur year in year out with monotonous regularity."
+        },
+        {
+          "aStart": "00:00:33,933",
+          "aEnd": "00:00:51,266",
+          "tip": "我们决心每天早晨起得早些；吃得少些；多花点时间与孩子们一起做游戏；做大量的家务；对不喜欢的人友善一些；小心驾车；每天都要带着狗散步；等等。",
+          "a": "We resolve to get up earlier each morning, eat less, find more time to play with the children, do a thousand and one jobs about the house, be nice to people we don't like, drive carefully, and take the dog for a walk every day."
+        },
+        {
+          "aStart": "00:00:51,367",
+          "aEnd": "00:00:57,416",
+          "tip": "以往的经验告诉我们有些事是办不到的。",
+          "a": "Past experience has taught us that certain accomplishments are beyond attainment."
+        },
+        {
+          "aStart": "00:00:57,517",
+          "aEnd": "00:01:07,349",
+          "tip": "如果我们烟瘾大，戒不掉，那是因为屡戒屡败，失去信心。",
+          "a": "If we remain inveterate smokers, it is only because we have so often experienced the frustration that results from failure."
+        },
+        {
+          "aStart": "00:01:07,450",
+          "aEnd": "00:01:16,983",
+          "tip": "我们大多数人想自我完善却遭到失败，这是因为我们的规划过于宏大，而又根本没有时间去实施。",
+          "a": "Most of us fail in our efforts at self-improvement because our schemes are too ambitious and we never have time to carry them out."
+        },
+        {
+          "aStart": "00:01:17,083",
+          "aEnd": "00:01:28,716",
+          "tip": "我们还犯有一个根本性的错误，即把我们的决心向大家宣布。这样一旦滑回到那些老习惯上去，我们在别人的眼里会显得更加难堪。",
+          "a": "We also make the fundamental error of announcing our resolutions to everybody so that we look even more foolish when we slip back into our bad old ways."
+        },
+        {
+          "aStart": "00:01:28,816",
+          "aEnd": "00:01:35,716",
+          "tip": "我深知这些问题，于是，今年我对自己的计划要严加保密，",
+          "a": "Aware of these pitfalls, this year I attempted to keep my resolutions to myself."
+        },
+        {
+          "aStart": "00:01:35,816",
+          "aEnd": "00:01:40,199",
+          "tip": "只给自己定下两项适中的任务；",
+          "a": "I limited myself to two modest ambitions:"
+        },
+        {
+          "aStart": "00:01:40,300",
+          "aEnd": "00:01:46,283",
+          "tip": "每天早上锻炼身体，每天晚上多看点书。",
+          "a": "to do physical exercises every morning and to read more of an evening."
+        },
+        {
+          "aStart": "00:01:46,383",
+          "aEnd": "00:02:03,266",
+          "tip": "新年除夕举办的一次通宵晚会，使我理直气壮地在新年头一天免去了这两项任务。不过，新年第二天，我全力以赴地照着去做了。",
+          "a": "An all-night party on New Year's Eve provided me with a good excuse for not carrying out either of these new resolutions on the first day of the year, but on the second, I applied myself assiduously to the task."
+        },
+        {
+          "aStart": "00:02:03,366",
+          "aEnd": "00:02:12,883",
+          "tip": "早锻炼一共只有11分钟，我打算在别人起床之前进行。",
+          "a": "The daily exercises lasted only eleven minutes and I proposed to do them early in the morning before anyone had got up."
+        },
+        {
+          "aStart": "00:02:12,983",
+          "aEnd": "00:02:21,466",
+          "tip": "这就要求我比平时早11分钟把自己从床上拽起来，这种自我约束是很艰苦的。",
+          "a": "The self-discipline required to drag myself out of bed eleven minutes earlier than usual was considerable."
+        },
+        {
+          "aStart": "00:02:21,567",
+          "aEnd": "00:02:30,233",
+          "tip": "不过开头两天我还是成功地蹑手蹑脚地来到楼下起居室，被谁也没发现。",
+          "a": "Nevertheless, I managed to creep down into the living room for two days before anyone found me out."
+        },
+        {
+          "aStart": "00:02:30,500",
+          "aEnd": "00:02:42,399",
+          "tip": "我在地毯上跳来蹦过去，扭曲身子，摆出各种姿势，弄得浑身不舒服，然后坐到桌边吃早饭，一副筋疲力尽的样子。",
+          "a": "After jumping about on the carpet and twisting the human frame into uncomfortable positions, I sat down at the breakfast table in an exhausted condition."
+        },
+        {
+          "aStart": "00:02:42,500",
+          "aEnd": "00:02:45,466",
+          "tip": "正是这副模样泄露了我的秘密。",
+          "a": "It was this that betrayed me."
+        },
+        {
+          "aStart": "00:02:45,566",
+          "aEnd": "00:02:50,316",
+          "tip": "第二天早晨全家人结队来到起居室看我表演。",
+          "a": "The next morning the whole family trooped in to watch the performance."
+        },
+        {
+          "aStart": "00:02:50,416",
+          "aEnd": "00:03:00,083",
+          "tip": "这真叫人不好意思，但我心平气和地顶住全家人的嘲笑和奚落。不久，大家对我习以为常了，",
+          "a": "That was really unsettling, but I fended off the taunts and jibes of the family good-humouredly and soon everybody got used to the idea."
+        },
+        {
+          "aStart": "00:03:00,183",
+          "aEnd": "00:03:03,549",
+          "tip": "而这时我的热情却减退了。",
+          "a": "However, my enthusiasm waned."
+        },
+        {
+          "aStart": "00:03:03,650",
+          "aEnd": "00:03:07,550",
+          "tip": "我花在锻炼上的时间逐渐减少，",
+          "a": "The time I spent at exercises gradually diminished."
+        },
+        {
+          "aStart": "00:03:07,650",
+          "aEnd": "00:03:12,033",
+          "tip": "慢慢地从11分钟减到了零。",
+          "a": "Little by little the eleven minutes fell to zero."
+        },
+        {
+          "aStart": "00:03:12,133",
+          "aEnd": "00:03:16,899",
+          "tip": "到了1月10日，我恢复了原来的作息时间。",
+          "a": "By January 10th, I was back to where I had started from."
+        },
+        {
+          "aStart": "00:03:17,000",
+          "aEnd": "00:03:27,611",
+          "tip": "我辩解说，早晨少耗费精力锻炼，晚上下班回家看书时头脑更清醒些。",
+          "a": "I argued that if I spent less time exhausting myself at exercises in the morning, I would keep my mind fresh for reading when I got home from work."
+        },
+        {
+          "aStart": "00:03:27,712",
+          "aEnd": "00:03:36,983",
+          "tip": "有几天晚上，我极力摆脱了电视的诱惑，坐在自己的房间里，两眼盯在书上。",
+          "a": "Resisting the hypnotizing effect of television, I sat in my room for a few evenings with my eyes glued to a book."
+        },
+        {
+          "aStart": "00:03:37,083",
+          "aEnd": "00:03:46,633",
+          "tip": "可是，有一天夜里，我感到又冷又孤单，便来到楼下坐在电视机前假装看书。",
+          "a": "One night, however, feeling cold and lonely, I went downstairs and sat in front of the television pretending to read."
+        },
+        {
+          "aStart": "00:03:46,733",
+          "aEnd": "00:03:56,933",
+          "tip": "这下我可完了，因为不一会儿，我就恢复了以前的坏习惯，在屏幕前打起瞌睡来。",
+          "a": "That proved to be my undoing, for I soon got back to my old bad habit of dozing off in front of the screen."
+        },
+        {
+          "aStart": "00:03:57,033",
+          "aEnd": "00:04:01,200",
+          "tip": "但我还没有放弃多看些书的决心。",
+          "a": "I still haven't given up my resolution to do more reading."
+        },
+        {
+          "aStart": "00:04:01,200",
+          "aEnd": "00:04:08,316",
+          "tip": "事实上，我刚买来一本叫《一分钟读一千字的诀窍》的书。",
+          "a": "In fact, I have just bought a book entitled How to Read a Thousand Words a Minute."
+        },
+        {
+          "aStart": "00:04:08,416",
+          "aEnd": "00:04:14,333",
+          "tip": "也许这本书能解决我的问题，但我一直还没时间去看这本书！",
+          "a": "Perhaps it will solve my problem, but I just haven't had time to read it!"
+        }
+      ]
     },
     {
       "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/51_563.mp3",
@@ -6515,9 +6696,142 @@
       "hash": "93d4036349c462ee1763ca05db06834976dae425",
       "key": "nce3/51",
       "title": "Predicting the future",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,233",
-      "segment": []
+      "titleStart": "00:00:01,766",
+      "titleEnd": "00:00:04,533",
+      "segment": [
+        {
+          "aStart": "00:00:18,866",
+          "aEnd": "00:00:22,966",
+          "tip": "众所周知，预测未来是非常困难的。",
+          "a": "Predicting the future is notoriously difficult."
+        },
+        {
+          "aStart": "00:00:23,066",
+          "aEnd": "00:00:36,283",
+          "tip": "举个例子吧，在20世纪70年代中叶又有谁能想得到在20世纪末的时候，家庭用的计算机会像电视机一样普遍？",
+          "a": "Who could have imagined, in the mid 1970s, for example, that by the end of the 20th century, computers would be as common in people's homes as TV sets?"
+        },
+        {
+          "aStart": "00:00:36,383",
+          "aEnd": "00:00:46,966",
+          "tip": "在70年代，计算机已经相当普及了，但只用在大公司，",
+          "a": "In the 1970s, computers were common enough, but only in big business, government departments, and large organizations."
+        },
+        {
+          "aStart": "00:00:47,066",
+          "aEnd": "00:00:51,616",
+          "tip": "政府部门和大的组织之中，它们被称为主机。",
+          "a": "These were the so-called mainframe machines."
+        },
+        {
+          "aStart": "00:00:51,717",
+          "aEnd": "00:01:04,766",
+          "tip": "计算机主机确实很大，常常占据了装有空调的多间房间，雇用专职的技师，而且得用专门编写的软件才能运行。",
+          "a": "Mainframe computers were very large indeed, often occupying whole air-conditioned rooms, employing full-time technicians and run on specially-written software."
+        },
+        {
+          "aStart": "00:01:04,867",
+          "aEnd": "00:01:17,566",
+          "tip": "虽然这种大计算机仍然存在，但它们的许多功能已被体积小但功能齐全的个人电脑——即我们常说的PC机——所代替了。",
+          "a": "Though these large machines still exist, many of their functions have been taken over by small powerful personal computers, commonly known as PCs"
+        },
+        {
+          "aStart": "00:01:17,666",
+          "aEnd": "00:01:26,133",
+          "tip": "1975年，美国推出了一台被称为“牛郎星”的原始机型。",
+          "a": "In 1975, a primitive machine called the Altair, was launched in the USA."
+        },
+        {
+          "aStart": "00:01:26,233",
+          "aEnd": "00:01:33,316",
+          "tip": "严格地说起来，它可以被称为第一台“家用电脑”，而且它也指了今后的方向。",
+          "a": "It can properly be described as the first 'home computer' and it pointed the way to the future."
+        },
+        {
+          "aStart": "00:01:33,417",
+          "aEnd": "00:01:40,533",
+          "tip": "70年代末，在牛郎星之后又出现了一种被称为“苹果”的机型。",
+          "a": "This was followed, at the end of the 1970s, by a machine called an Apple."
+        },
+        {
+          "aStart": "00:01:40,633",
+          "aEnd": "00:01:49,466",
+          "tip": "80年代初，计算机行业的王牌公司美国国际商用机器公司（IBM）生产出了世界上第一台个人电脑。",
+          "a": "In the early 1980s, the computer giant, IBM produced the world's first Personal Computer."
+        },
+        {
+          "aStart": "00:01:49,566",
+          "aEnd": "00:01:58,716",
+          "tip": "这种电脑采用了一种被称为磁盘操作系统（DOS）的工作程序，而这种程序是由当时规模不大的微软公司生产的。",
+          "a": "This ran on an 'operating system' called DOS, produced by a then small company named Microsoft."
+        },
+        {
+          "aStart": "00:01:58,816",
+          "aEnd": "00:02:03,466",
+          "tip": "IBM的个人电脑被大规模地模仿。",
+          "a": "The IBM Personal Computer was widely copied."
+        },
+        {
+          "aStart": "00:02:03,567",
+          "aEnd": "00:02:15,466",
+          "tip": "从那些简陋的初级阶段，我们看到了现在都已普及的、使用简便的家用电脑和多媒体的微机的发展。",
+          "a": "From those humble beginnings, we have seen the development of the user-friendly home computers and multimedia machines which are in common use today"
+        },
+        {
+          "aStart": "00:02:15,800",
+          "aEnd": "00:02:34,516",
+          "tip": "想一想这些发展的时间多么短，就更觉得英国人莱昂.巴格瑞特有着非凡的能力。他在60年代就能预言我们今天知道的计算机的一些用途。",
+          "a": "Considering how recent these developments are, it is even more remarkable that as long ago as the 1960s, an Englishman, Leon Bagrit, was able to predict some of the uses of computers which we know today."
+        },
+        {
+          "aStart": "00:02:34,616",
+          "aEnd": "00:02:45,416",
+          "tip": "巴格瑞特根本不接受计算机可以学会自己去“思考”和计算可以“统治世界”这种想法，而这种想法是当时的人们都愿意相信的。",
+          "a": "Bagrit dismissed the idea that computers would learn to 'think' for themselves and would 'rule the world', which people liked to believe in those days."
+        },
+        {
+          "aStart": "00:02:45,516",
+          "aEnd": "00:03:12,733",
+          "tip": "巴格瑞特预示有一天计算机可以小到拿在手上，计算机可以使办公室人员和会计免除那些枯燥、重复的劳动。",
+          "a": "Bagrit foresaw a time when computers would be small enough to hold in the hand, when they would be capable of providing information about traffic jams and suggesting alternative routes, when they would be used in hospitals to help doctors to diagnose illnesses when they would relieve office workers and accountants of dull, repetitive clerical work."
+        },
+        {
+          "aStart": "00:03:13,066",
+          "aEnd": "00:03:17,500",
+          "tip": "计算机的所有这些功能现在都变得很平常。",
+          "a": "All these computer uses have become commonplace."
+        },
+        {
+          "aStart": "00:03:17,600",
+          "aEnd": "00:03:37,049",
+          "tip": "当然了，莱昂.巴格瑞特根本没有可能预测到国际交互网——就是把计算机连结到电话线路上，以便和世界上任何一个地方的人立即进行联系的一个世界范围的通讯系统——的发展。",
+          "a": "Of course, Leon Bagrit could not possibly have foreseen the development of the Internet, the worldwide system that enables us to communicate instantly with anyone in any part of the world by using computers linked to telephone networks."
+        },
+        {
+          "aStart": "00:03:37,150",
+          "aEnd": "00:03:51,449",
+          "tip": "他也无法预测到我们可以利用国际交互网获取有关任何已知专题的信息，以便在家里的屏幕上阅读，如果愿意的话甚至可以将其打印出来。",
+          "a": "Nor could he have foreseen how we could use the Internet to obtain information on every known subject, so we can read it on a screen in our homes and even print it as well if we want to."
+        },
+        {
+          "aStart": "00:03:51,550",
+          "aEnd": "00:03:59,216",
+          "tip": "计算机已经变得体积越来越小，功能越来越多，价格越来越低，",
+          "a": "Computers have become smaller and smaller, more and more powerful and cheaper and cheaper."
+        },
+        {
+          "aStart": "00:03:59,316",
+          "aEnd": "00:04:04,616",
+          "tip": "这就是莱昂.巴格瑞特的预测非凡的地方。",
+          "a": "This is what makes Leon Bagrit's predictions particularly remarkable."
+        },
+        {
+          "aStart": "00:04:04,716",
+          "aEnd": "00:04:14,333",
+          "tip": "如果他或是像他的什么人今天还活着的话，他大概可以告诉我们下一个50年后会发生什么事情。",
+          "a": "If he or someone like him, were alive today, he might be able to tell us what to expect in the next fifty years."
+        }
+      ]
     },
     {
       "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/52_513.mp3",
