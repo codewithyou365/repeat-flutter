@@ -10,6 +10,26 @@
       "title": "A puma at large",
       "titleStart": "00:00:01,833",
       "titleEnd": "00:00:04,466",
+      "raw": [
+        "A puma at large",
+        "Pumas are large, cat-like animals which are found in America. When",
+        "reports came into London Zoo that a wild puma had been spotted",
+        "forty-five miles south of London, they were not taken seriously.",
+        "However, as the evidence began to accumulate, experts from the",
+        "Zoo felt obliged to investigate, for the descriptions given by people",
+        "who claimed to have seen the puma were extraordinarily similar. ",
+        "The hunt for the puma began in a small village where a woman",
+        "picking blackberries saw 'a large cat' only five yards away from her. It immediately ran away when she saw",
+        "it, and experts confirmed that a puma will not attack a human being unless it is cornered. The search proved",
+        "difficult, for the puma was often observed at one place in the morning and at another place twenty miles",
+        "away in the evening. Wherever it went, it left behind it a trail of dead deer and small animals like rabbits. ",
+        "Paw prints were seen in a number of places and puma fur was found clinging to bushes. Several people",
+        "complained of 'cat-like noises' at night and a businessman on a fishing trip saw the puma up a tree. The",
+        "experts were now fully convinced that the animal was a puma, but where had it come from? As no pumas",
+        "had been reported missing from any zoo in the country, this one must have been in the possession of a",
+        "private collector and somehow managed to escape. The hunt went on for several weeks, but the puma was",
+        "not caught. It is disturbing to think that a dangerous wild animal is still at large in the quiet countryside."
+      ],
       "segment": [
         {
           "aStart": "00:00:13,966",
@@ -99,6 +119,27 @@
       "title": "Thirteen equals one",
       "titleStart": "00:00:01,633",
       "titleEnd": "00:00:04,400",
+      "raw": [
+        "Thirteen equals one",
+        "Our vicar is always raising money for one cause or another, but he",
+        "has never managed to get enough money to have the church clock",
+        "repaired. The big clock which used to strike the hours day and night",
+        "was damaged many years ago and has been silent ever since. ",
+        "One night, however, our vicar woke up with a start: the clock",
+        "was striking the hours! Looking at his watch, he saw that it was one",
+        "o'clock, but the bell struck thirteen times before it stopped. Armed",
+        "with a torch, the vicar went up into the clock tower to see what was going on. In the torchlight, he caught sight",
+        "of a figure whom he immediately recognized as Bill Wilkins, our local grocer. ",
+        "'Whatever are you doing up here Bill?' asked the vicar in surprise. ",
+        "'I'm trying to repair the bell,' answered Bill. 'I've been coming up here night after night for weeks now. ",
+        "You see, I was hoping to give you a surprise.'",
+        "'You certainly did give me a surprise!' said the vicar. 'You've probably woken up everyone in the",
+        "village as well. Still, I'm glad the bell is working again.'",
+        "'That's the trouble, vicar,' answered Bill. 'It's working all right, but I'm afraid that at one o'clock it will",
+        "strike thirteen times and there's nothing I can do about it.'",
+        "'We'll get used to that, Bill,' said the vicar. 'Thirteen is not as good as one, but it's better than nothing. ",
+        "Now let's go downstairs and have a cup of tea.'"
+      ],
       "segment": [
         {
           "aStart": "00:00:16,133",
@@ -146,7 +187,7 @@
           "aStart": "00:01:11,016",
           "aEnd": "00:01:21,899",
           "tip": "“我想把这口钟修好，”比尔回答说。“好几个星期了，我天天夜里到钟楼上来。嗯，我是想让你大吃一惊。”",
-          "a": "'I'm trying to repair the bell, ' answered Bill. 'I've been coming up here night after night for weeks now. You see, I was hoping to give you a surprise.'"
+          "a": "'I'm trying to repair the bell,' answered Bill. 'I've been coming up here night after night for weeks now. You see, I was hoping to give you a surprise.'"
         },
         {
           "aStart": "00:01:22,000",
@@ -158,13 +199,13 @@
           "aStart": "00:01:32,766",
           "aEnd": "00:01:44,699",
           "tip": "“问题就在这里，牧师，”比尔回答说。“不错，钟能报时了，但是，恐怕每到1点钟，它总要敲13下，对此我已无能为力了。”",
-          "a": "'That's the trouble, vicar, ' answered Bill. 'It's working all right, but I'm afraid that at one o'clock it will strike thirteen times and there's nothing I can do about it.'"
+          "a": "'That's the trouble, vicar,' answered Bill. 'It's working all right, but I'm afraid that at one o'clock it will strike thirteen times and there's nothing I can do about it.'"
         },
         {
           "aStart": "00:01:44,800",
           "aEnd": "00:01:57,200",
           "tip": "“大家慢慢就习惯了，比尔，”牧师说。“13下是不如1下好，但总比1下也不敲强。来，咱们下楼去喝杯茶吧。”",
-          "a": "'We'll get used to that, Bill,' said the vicar.'Thirteen is not as good as one, but it's better than nothing. Now let's go downstairs and have a cup of tea. '"
+          "a": "'We'll get used to that, Bill,' said the vicar. 'Thirteen is not as good as one, but it's better than nothing. Now let's go downstairs and have a cup of tea.'"
         }
       ]
     },
@@ -176,6 +217,26 @@
       "title": "An unknown goddess",
       "titleStart": "00:00:01,866",
       "titleEnd": "00:00:05,033",
+      "raw": [
+        "An unknown goddess",
+        "Some time ago, an interesting discovery was made by archaeologists",
+        "on the Aegean island of Kea. An American team explored a temple",
+        "which stands in an ancient city on the promontory of Ayia Irini. ",
+        "The city at one time must have been prosperous, for it enjoyed a",
+        "high level of civilization. Houses -- often three storeys high --",
+        "were built of stone. They had large rooms with beautifully decorated",
+        "walls. The city was even equipped with a drainage system, for a great many clay pipes were found beneath",
+        "the narrow streets. ",
+        "The temple which the archaeologists explored was used as a place of worship from the fifteenth century",
+        "B.C. until Roman times. In the most sacred room of the temple, clay fragments of fifteen statues were found. ",
+        "Each of these represented a goddess and had, at one time, been painted. The body of one statue was found",
+        "among remains dating from the fifteenth century B.C. Its missing head happened to be among remains of the",
+        "fifth century B.C. This head must have been found in Classical times and carefully preserved. It was very",
+        "old and precious even then. When the archaeologists reconstructed the fragments, they were amazed to find",
+        "that the goddess turned out to be a very modern-looking woman. She stood three feet high and her hands",
+        "rested on her hips. She was wearing a full-length skirt which swept the ground. Despite her great age, she",
+        "was very graceful indeed, but, so far, the archaeologists have been unable to discover her identity. "
+      ],
       "segment": [
         {
           "aStart": "00:00:15,733",
@@ -199,7 +260,7 @@
           "aStart": "00:00:38,733",
           "aEnd": "00:00:43,733",
           "tip": "房子一般有3层楼高，用石块修建。",
-          "a": "Houses, often three storeys high, were built of stone."
+          "a": "Houses -- often three storeys high -- were built of stone."
         },
         {
           "aStart": "00:00:43,833",
@@ -211,19 +272,19 @@
           "aStart": "00:00:48,183",
           "aEnd": "00:00:56,733",
           "tip": "城里甚至还敷设了排水系统，因为在狭窄的街道底下发现了许许多多陶土制作的排水管道。",
-          "a": "The city was even equipped with a drainage system, for a great many clay pipes were found beneath the narrow streets"
+          "a": "The city was even equipped with a drainage system, for a great many clay pipes were found beneath the narrow streets."
         },
         {
           "aStart": "00:00:57,000",
           "aEnd": "00:01:06,733",
           "tip": "考古工作者考察的这座庙宇从公元前15世纪直到罗马时代一直是祭祀祈祷的场所。",
-          "a": "The temple which the archaeologists explored was used as a place of worship from the 15th century B.C. until Roman times."
+          "a": "The temple which the archaeologists explored was used as a place of worship from the fifteenth century B.C. until Roman times."
         },
         {
           "aStart": "00:01:06,833",
           "aEnd": "00:01:13,766",
           "tip": "在庙中最神圣的一间殿堂里发现了15尊陶雕像的碎片。",
-          "a": "In the most sacred room of the temple, clay fragments of 15 statues were found."
+          "a": "In the most sacred room of the temple, clay fragments of fifteen statues were found."
         },
         {
           "aStart": "00:01:13,866",
@@ -235,13 +296,13 @@
           "aStart": "00:01:19,867",
           "aEnd": "00:01:26,649",
           "tip": "其中有一尊雕像，她的躯体是在公元前15世纪的历史文物中发现的，",
-          "a": "The body of one statue was found among remains dating from the 15th century B.C."
+          "a": "The body of one statue was found among remains dating from the fifteenth century B.C."
         },
         {
           "aStart": "00:01:26,750",
           "aEnd": "00:01:32,466",
           "tip": "而她那身异处的脑袋却碰巧是在公元前5世纪的文物中找到的。\n\n直译：它丢失的头恰好在公元前5世纪的遗迹中。",
-          "a": "Its missing head happened to be among remains of the 5th century B.C."
+          "a": "Its missing head happened to be among remains of the fifth century B.C."
         },
         {
           "aStart": "00:01:32,567",
@@ -259,7 +320,7 @@
           "aStart": "00:01:41,433",
           "aEnd": "00:01:50,666",
           "tip": "考古工作者把这些碎片重新拼装起来后，惊奇地发现那位女神原来是一位相貌十分摩登的女郎。",
-          "a": "When the archaeologists reconstructed the fragments, they were amazed to find that the goddess turned out to be a very modern-looking woman"
+          "a": "When the archaeologists reconstructed the fragments, they were amazed to find that the goddess turned out to be a very modern-looking woman."
         },
         {
           "aStart": "00:01:50,767",
@@ -277,7 +338,7 @@
           "aStart": "00:01:59,650",
           "aEnd": "00:02:10,633",
           "tip": "尽管上了年纪，但体态确实优美。不过，考古工作者至今未能确定这位女神的身份。",
-          "a": "Despite her great age, she was very graceful indeed, but, so far, the archaeologists have been unable to discover her identity"
+          "a": "Despite her great age, she was very graceful indeed, but, so far, the archaeologists have been unable to discover her identity."
         }
       ]
     },
@@ -289,6 +350,25 @@
       "title": "The double life of Alfred Bloggs",
       "titleStart": "00:00:01,966",
       "titleEnd": "00:00:06,033",
+      "raw": [
+        "The double life of Alfred Bloggs",
+        "These days, people who do manual work often receive far more",
+        "money than people who work in offices. People who work in offices",
+        "are frequently referred to as 'white-collar workers' for the simple",
+        "reason that they usually wear a collar and tie to go to work. Such is",
+        "human nature, that a great many people are often willing to sacrifice",
+        "higher pay for the privilege of becoming white-collar workers. This",
+        "can give rise to curious situations, as it did in the case of Alfred Bloggs who worked as a dustman for the",
+        "Ellesmere Corporation.",
+        "When he got married, Alf was too embarrassed to say anything to his wife about his job. He simply told",
+        "her that he worked for the Corporation. Every morning, he left home dressed in a smart black suit. He then",
+        "changed into overalls and spent the next eight hours as a dustman. Before returning home at night, he took a",
+        "shower and changed back into his suit. Alf did this for over two years and his fellow dustmen kept his secret.",
+        "Alf's wife has never discovered that she married a dustman and she never will, for Alf has just found another",
+        "job. He will soon be working in an office. He will be earning only half as much as he used to, but he feels that",
+        "his rise in status is well worth the loss of money. From now on, he will wear a suit all day and others will call",
+        "him 'Mr. Bloggs', not 'Alf'."
+      ],
       "segment": [
         {
           "aStart": "00:00:16,366",
@@ -342,13 +422,13 @@
           "aStart": "00:01:22,717",
           "aEnd": "00:01:28,683",
           "tip": "晚上回家前，他洗个淋浴，重新换上那身黑色西服。",
-          "a": "Before returning home at night. He took a shower and changed back into his suit."
+          "a": "Before returning home at night, he took a shower and changed back into his suit."
         },
         {
           "aStart": "00:01:28,783",
           "aEnd": "00:01:47,249",
           "tip": "两年多以来，艾尔弗一直这样，他的同事也为他保守秘密。艾尔弗的妻子一直不知道她嫁给了一个清洁工，而且她永远也不会知道了，因为艾尔弗已找到薪职，不久就要坐办公室里工作了。",
-          "a": "Alf did this for over two years and his fellow dustmen kept his secret Alf's wife has never discovered that she married a dustman and she never will, for Alf has just found another job. He will soon be working in an office."
+          "a": "Alf did this for over two years and his fellow dustmen kept his secret. Alf's wife has never discovered that she married a dustman and she never will, for Alf has just found another job. He will soon be working in an office."
         },
         {
           "aStart": "00:01:47,350",
@@ -372,6 +452,25 @@
       "title": "The facts",
       "titleStart": "00:00:01,666",
       "titleEnd": "00:00:04,400",
+      "raw": [
+        "The facts",
+        "Editors of newspapers and magazines often go to extremes to",
+        "provide their readers with unimportant facts and statistics. Last year",
+        "a journalist had been instructed by a well-known magazine to write",
+        "an article on the president's palace in a new African republic. When",
+        "the article arrived, the editor read the first sentence and then refused",
+        "to publish it. The article began: 'Hundreds of steps lead to the high",
+        "wall which surrounds the president's palace.' The editor at once sent the journalist a fax instructing him to",
+        "find out the exact number of steps and the height of the wall. ",
+        "The journalist immediately set out to obtain these important facts, but he took a long time to send them. ",
+        "Meanwhile, the editor was getting impatient, for the magazine would soon go to press. He sent the journalist",
+        "two more faxes, but received no reply. He sent yet another fax informing the journalist that if he did not",
+        "reply soon he would be fired. When the journalist again failed to reply, the editor reluctantly published the",
+        "article as it had originally been written. A week later, the editor at last received a fax from the journalist. Not",
+        "only had the poor man been arrested, but he had been sent to prison as well. However, he had at last been",
+        "allowed to send a fax in which he informed the editor that he had been arrested while counting the 1,084",
+        "steps leading to the fifteen-foot wall which surrounded the president's palace. "
+      ],
       "segment": [
         {
           "aStart": "00:00:16,166",
@@ -395,7 +494,7 @@
           "aStart": "00:00:42,033",
           "aEnd": "00:01:00,066",
           "tip": "文章的开头是这样的：“几百级台阶通向环绕总统府的高墙。”编辑立即给那位记者发去传真，要求他核实一下台阶的确切数字和围墙的高度。",
-          "a": "The article began: ‘Hundreds of steps lead to the high wall which surrounds the president's palace’. The editor at once sent the journalist a fax instructing him to find out the exact number of steps and the height of the wall."
+          "a": "The article began: 'Hundreds of steps lead to the high wall which surrounds the president's palace.' The editor at once sent the journalist a fax instructing him to find out the exact number of steps and the height of the wall."
         },
         {
           "aStart": "00:01:00,800",
@@ -407,7 +506,7 @@
           "aStart": "00:01:08,350",
           "aEnd": "00:01:13,816",
           "tip": "在此期间，编辑等得不耐烦了，因为杂志马上要付印。",
-          "a": "Meanwhile the editor was getting impatient for the magazine would soon go to press."
+          "a": "Meanwhile, the editor was getting impatient, for the magazine would soon go to press."
         },
         {
           "aStart": "00:01:13,916",
@@ -455,6 +554,26 @@
       "title": "Smash-and-grab",
       "titleStart": "00:00:01,766",
       "titleEnd": "00:00:04,366",
+      "raw": [
+        "Smash-and-grab",
+        "The expensive shops in a famous arcade near Piccadilly were just",
+        "opening. At this time of the morning, the arcade was almost empty. ",
+        "Mr. Taylor, the owner of a jewellery shop was admiring a new",
+        "window display. Two of his assistants had been working busily",
+        "since eight o'clock and had only just finished. Diamond necklaces",
+        "and rings had been beautifully arranged on a background of black",
+        "velvet. After gazing at the display for several minutes, Mr. Taylor",
+        "went back into his shop. ",
+        "The silence was suddenly broken when a large car, with its headlights on and its horn blaring, roared",
+        "down the arcade. It came to a stop outside the jeweller's. One man stayed at the wheel while two others with",
+        "black stockings over their faces jumped out and smashed the window of the shop with iron bars. While this",
+        "was going on, Mr. Taylor was upstairs. He and his staff began throwing furniture out of the window. Chairs",
+        "and tables went flying into the arcade. One of the thieves was struck by a heavy statue, but he was too busy",
+        "helping himself to diamonds to notice any pain. The raid was all over in three minutes, for the men scrambled",
+        "back into the car and it moved off at a fantastic speed. Just as it was leaving, Mr. Taylor rushed out and ran",
+        "after it throwing ashtrays and vases, but it was impossible to stop the thieves. They had got away with",
+        "thousands of pounds worth of diamonds. "
+      ],
       "segment": [
         {
           "aStart": "00:00:13,400",
@@ -538,7 +657,7 @@
           "aStart": "00:02:01,000",
           "aEnd": "00:02:06,433",
           "tip": "他们已带着价值数千镑的首饰逃之夭夭了。",
-          "a": "They had got away with thousands of pounds worth of diamonds"
+          "a": "They had got away with thousands of pounds worth of diamonds."
         }
       ]
     },
@@ -550,6 +669,25 @@
       "title": "Mutilated ladies",
       "titleStart": "00:00:01,433",
       "titleEnd": "00:00:03,900",
+      "raw": [
+        "Mutilated ladies",
+        "Has it ever happened to you? Have you ever put your trousers in",
+        "the washing machine and then remembered there was a large bank",
+        "note in your back pocket? When you rescued your trousers, did",
+        "you find the note was whiter than white? People who live in Britain",
+        "needn't despair when they make mistakes like this (and a lot of",
+        "people do)! Fortunately for them, the Bank of England has a team",
+        "called Mutilated Ladies which deals with claims from people who",
+        "fed their money to a machine or to their dog. Dogs, it seems, love to chew up money!",
+        "A recent case concerns Jane Butlin whose fiancé, John, runs a successful furniture business. John had a",
+        "very good day and put his wallet containing ￡3,000 into the microwave oven for safekeeping. Then he and",
+        "Jane went horse-riding. When they got home, Jane cooked their dinner in the microwave oven and without",
+        "realizing it, cooked her fiancé's wallet as well. Imagine their dismay when they found a beautifully-cooked",
+        "wallet and notes turned to ash! John went to see his bank manager who sent the remains of wallet and the",
+        "money to the special department of the Bank of England in Newcastle: the Mutilated Ladies! They examined",
+        " the remains and John got all his money back. 'So long as there's something to identify, we will give",
+        "people their money back, 'said a spokeswoman for the Bank. 'Last year, we paid ￡1.5m on 21,000 claims.'"
+      ],
       "segment": [
         {
           "aStart": "00:00:12,300",
@@ -573,7 +711,7 @@
           "aStart": "00:00:28,700",
           "aEnd": "00:00:36,166",
           "tip": "当英国人犯这种错误时，他们不必感到绝望（而许多国家的人都有这种绝望的感觉）。",
-          "a": "People who live in Britain needn't despair when they make mistakes like this(and a lot of people do)!"
+          "a": "People who live in Britain needn't despair when they make mistakes like this (and a lot of people do)!"
         },
         {
           "aStart": "00:00:36,267",
@@ -621,7 +759,7 @@
           "aStart": "00:01:30,666",
           "aEnd": "00:01:42,466",
           "tip": "约翰去找银行经理，经理把约翰的钱包和纸币的残留物送到英国银行在纽卡斯尔的一个专门部门: 残钞鉴别组！",
-          "a": "John went to see his bank manager who sent the remains of the wallet and the money to the special department of the Bank of England in Newcastle: the Mutilated Ladies!"
+          "a": "John went to see his bank manager who sent the remains of wallet and the money to the special department of the Bank of England in Newcastle: the Mutilated Ladies!\n（音频中是 of the wallet, 加 the 更为正确, 书本中没有加)"
         },
         {
           "aStart": "00:01:42,567",
@@ -633,7 +771,7 @@
           "aStart": "00:01:47,900",
           "aEnd": "00:02:04,166",
           "tip": "“只要有东西可供识别，我们会把钱还给人家的，”银行的一位女发言人说。“去年，我们对21,000起索赔要求支付了150万英镑。”",
-          "a": "'So long as there's something to identify, we will give people their money back, ' said a spokeswoman for the Bank. 'Last year, we paid ￡1.5m on 21,000 claims.'"
+          "a": "'So long as there's something to identify, we will give people their money back, 'said a spokeswoman for the Bank. 'Last year, we paid ￡1.5m on 21,000 claims.'\n*Damaged bank notes. The Queen's head appears on English bank notes, and 'lady' refers to this"
         }
       ]
     },
@@ -645,6 +783,26 @@
       "title": "A famous monastery",
       "titleStart": "00:00:01,666",
       "titleEnd": "00:00:04,633",
+      "raw": [
+        "A famous monastery",
+        "The Great St. Bernard Pass connects Switzerland to Italy. At 2,473",
+        "metres, it is the highest mountain pass in Europe. The famous",
+        "monastery of St. Bernard, which was founded in the eleventh",
+        "century, lies about a mile away. For hundreds of years, St. Bernard",
+        "dogs have saved the lives of travellers crossing the dangerous Pass. ",
+        "These friendly dogs, which were first brought from Asia, were used",
+        "as watchdogs even in Roman times. Now that a tunnel has been",
+        "built through the mountains, the Pass is less dangerous, but each year, the dogs are still sent out into the",
+        "snow whenever a traveller is in difficulty. Despite the new tunnel, there are still a few people who rashly",
+        "attempt to cross the Pass on foot. ",
+        "During the summer months, the monastery is very busy, for it is visited by thousands of people who cross",
+        "the Pass in cars. As there are so many people about, the dogs have to be kept in a special enclosure. In winter, ",
+        "however, life at the monastery is quite different. The temperature drops to -30° (minus 30 degrees)  and very few people attempt",
+        "to cross the Pass. The monks prefer winter to summer for they have more privacy. The dogs have greater",
+        "freedom, too, for they are allowed to wander outside their enclosure. The only regular visitors to the monastery",
+        "in winter are parties of skiers who go there at Christmas and Easter. These young people, who love the",
+        "peace of the mountains, always receive a warm welcome at St. Bernard's monastery. "
+      ],
       "segment": [
         {
           "aStart": "00:00:14,533",
@@ -656,7 +814,7 @@
           "aStart": "00:00:20,333",
           "aEnd": "00:00:27,833",
           "tip": "海拔2，473米，是欧洲最高的山口。",
-          "a": "At 2, 473 metres, it is the highest mountain pass in Europe."
+          "a": "At 2,473 metres, it is the highest mountain pass in Europe."
         },
         {
           "aStart": "00:00:27,933",
@@ -746,6 +904,25 @@
       "title": "Flying cats",
       "titleStart": "00:00:02,333",
       "titleEnd": "00:00:04,833",
+      "raw": [
+        "Flying cats",
+        "Cats never fail to fascinate human beings. They can be friendly and",
+        "affectionate towards humans, but they lead mysterious lives of their",
+        "own as well. They never become submissive like dogs and horses.",
+        "As a result, humans have learned to respect feline independence. ",
+        "Most cats remain suspicious of humans all their lives. One of the",
+        "things that fascinates us most about cats is the popular belief that",
+        "they have nine lives. Apparently, there is a good deal of truth in this idea. A cat's ability to survive falls is",
+        "based on fact. ",
+        "Recently the New York Animal Medical Centre made a study of 132 cats over a period of five months.",
+        "All these cats had one experience in common: they had fallen off high buildings, yet only eight of them died",
+        "from shock or injuries. Of course, New York is the ideal place for such an interesting study, because there is",
+        "no shortage of tall buildings. There are plenty of high-rise windowsills to fall from! One cat, Sabrina, fell 32",
+        "storeys, yet only suffered from a broken tooth. 'Cats behave like well-trained paratroopers,' a doctor said. It",
+        "seems that the further cats fall, the less they are likely to injure themselves. In a long drop, they reach speeds",
+        "of 60 miles an hour and more. At high speeds, falling cats have time to relax. They stretch out their legs like",
+        "flying squirrels. This increases their air-resistance and reduces the shock of impact when they hit the ground. "
+      ],
       "segment": [
         {
           "aStart": "00:00:16,800",
@@ -823,7 +1000,7 @@
           "aStart": "00:01:46,367",
           "aEnd": "00:01:51,716",
           "tip": "“猫就像训练有素的跳伞队员，”一位医生说。",
-          "a": "‘Cats behave like well-trained paratroopers,’ a doctor said."
+          "a": "'Cats behave like well-trained paratroopers,' a doctor said."
         },
         {
           "aStart": "00:01:51,817",
@@ -865,6 +1042,26 @@
       "title": "The loss of the Titanic",
       "titleStart": "00:00:02,433",
       "titleEnd": "00:00:05,700",
+      "raw": [
+        "The loss of the Titanic",
+        "The great ship, Titanic, sailed for New York from Southampton on",
+        "April 10th, 1912. She was carrying 1,316 passengers and a crew of",
+        "891. Even by modern standards, the 46,000 ton Titanic was a",
+        "colossal ship. At that time, however, she was not only the largest",
+        "ship that had ever been built, but was regarded as unsinkable, for",
+        "she had sixteen watertight compartments. Even if two of these were",
+        "flooded, she would still be able to float. The tragic sinking of this great liner will always be remembered, for",
+        "she went down on her first voyage with heavy loss of life. ",
+        "Four days after setting out, while the Titanic was sailing across the icy waters of the North Atlantic, a",
+        "huge iceberg was suddenly spotted by a lookout. After the alarm had been given, the great ship turned",
+        "sharply to avoid a direct collision. The Titanic turned just in time, narrowly missing the immense wall of ice",
+        "which rose over 100 feet out of the water beside her. Suddenly, there was a slight trembling sound from",
+        "below, and the captain went down to see what had happened. The noise had been so faint that no one thought",
+        "that the ship had been damaged. Below, the captain realized to his horror that the Titanic was sinking",
+        "rapidly, for five of her sixteen watertight compartments had already been flooded! The order to abandon",
+        "ship was given and hundreds of people plunged into the icy water. As there were not enough lifeboats for",
+        "everybody, 1,500 lives were lost. "
+      ],
       "segment": [
         {
           "aStart": "00:00:18,766",
@@ -876,7 +1073,7 @@
           "aStart": "00:00:26,933",
           "aEnd": "00:00:34,916",
           "tip": "船上载有1,316名乘客与891名船员。",
-          "a": "She was carrying 1,316 passengers and crew of 891."
+          "a": "She was carrying 1,316 passengers and a crew of 891."
         },
         {
           "aStart": "00:00:35,017",
@@ -906,7 +1103,7 @@
           "aStart": "00:01:11,366",
           "aEnd": "00:01:23,499",
           "tip": "“泰坦尼克”起航后的第4天，它正行驶在北大西洋冰冷的海面上。突然，了望员发现一座冰山。",
-          "a": "Four days after setting out, while the Titanic was sailing across the icy water of the North Atlantic, a huge iceberg was suddenly spotted by a lookout."
+          "a": "Four days after setting out, while the Titanic was sailing across the icy waters of the North Atlantic, a huge iceberg was suddenly spotted by a lookout."
         },
         {
           "aStart": "00:01:23,600",
@@ -960,6 +1157,33 @@
       "title": "Not guilty",
       "titleStart": "00:00:01,666",
       "titleEnd": "00:00:04,066",
+      "raw": [
+        "Not guilty",
+        "Customs Officers are quite tolerant these days, but they can still",
+        "stop you when you are going through the Green Channel and have",
+        "nothing to declare. Even really honest people are often made to",
+        "feel guilty. The hardened professional smuggler, on the other hand, ",
+        "is never troubled by such feelings, even if he has five hundred gold",
+        "watches hidden in his suitcase. When I returned from abroad",
+        "recently, a particularly officious young Customs Officer clearly",
+        "regarded me as a smuggler. ",
+        "'Have you anything to declare?' he asked, looking me in the eye. ",
+        "'No,' I answered confidently. ",
+        "'Would you mind unlocking this suitcase please?'",
+        "'Not at all,' I answered. ",
+        "The Officer went through the case with great care. All the things I had packed so carefully were soon in",
+        "a dreadful mess. I felt sure I would never be able to close the case again. Suddenly, I saw the Officer's face",
+        "light up. He had spotted a tiny bottle at the bottom of my case and he pounced on it with delight.",
+        "'Perfume, eh?' he asked sarcastically. 'You should have declared that. Perfume is not exempt from",
+        "import duty.' ",
+        "'But it isn't perfume,' I said. 'It's hair gel.' Then I added with a smile, 'It's a strange mixture I make",
+        "myself.'",
+        "As I expected, he did not believe me. ",
+        "'Try it!' I said encouragingly. ",
+        "The Officer unscrewed the cap and put the bottle to his nostrils. He was greeted by an unpleasant smell",
+        "which convinced him that I was telling the truth. A few minutes later, I was able to hurry away with precious",
+        "chalk marks on my baggage. "
+      ],
       "segment": [
         {
           "aStart": "00:00:12,666",
@@ -983,7 +1207,7 @@
           "aStart": "00:00:38,667",
           "aEnd": "00:00:47,833",
           "tip": "最近一次，我也出国归来，碰上一位特别好管闲事的年轻海关官员， 他显然把我当成走私犯。",
-          "a": "When I returned form abroad recently, a particularly officious young Customs Officer clearly regarded me as a smuggler."
+          "a": "When I returned from abroad recently, a particularly officious young Customs Officer clearly regarded me as a smuggler."
         },
         {
           "aStart": "00:00:47,933",
@@ -995,7 +1219,7 @@
           "aStart": "00:00:53,950",
           "aEnd": "00:00:57,283",
           "tip": "“没有。”我自信地回答说。",
-          "a": "'No', I answered confidently."
+          "a": "'No,' I answered confidently."
         },
         {
           "aStart": "00:00:57,383",
@@ -1019,7 +1243,7 @@
           "aStart": "00:01:07,500",
           "aEnd": "00:01:13,166",
           "tip": "所有细心包装好的东西一会儿工夫就乱成一团。",
-          "a": "All the thing I had packed so carefully were soon in a dreadful mess."
+          "a": "All the things I had packed so carefully were soon in a dreadful mess."
         },
         {
           "aStart": "00:01:13,266",
@@ -1073,7 +1297,7 @@
           "aStart": "00:02:00,666",
           "aEnd": "00:02:05,366",
           "tip": "海关官员拧开瓶盖，把瓶子放到鼻子底下。",
-          "a": "The officer unscrewed the cap and put the bottle to his nostrils."
+          "a": "The Officer unscrewed the cap and put the bottle to his nostrils."
         },
         {
           "aStart": "00:02:05,467",
@@ -1097,6 +1321,25 @@
       "title": "Life on a desert island",
       "titleStart": "00:00:01,866",
       "titleEnd": "00:00:04,866",
+      "raw": [
+        "Life on a desert island",
+        "Most of us have formed an unrealistic picture of life on a desert",
+        "island. We sometimes imagine a desert island to be a sort of paradise",
+        "where the sun always shines. Life there is simple and good. Ripe",
+        "fruit falls from the trees and you never have to work. The other side",
+        "of the picture is quite the opposite. Life on a desert island is",
+        "wretched. You either starve to death or live like Robinson Crusoe, ",
+        "waiting for a boat which never comes. Perhaps there is an element of truth in both these pictures, but few of",
+        "us have had the opportunity to find out. ",
+        "Two men who recently spent five days on a coral island wished they had stayed there longer. They were",
+        "taking a badly damaged boat from the Virgin Islands to Miami to have it repaired. During the journey, their",
+        "boat began to sink. They quickly loaded a small rubber dinghy with food, matches, and cans of beer and",
+        "rowed for a few miles across the Caribbean until they arrived at a tiny coral island. There were hardly any",
+        "trees on the island and there was no water, but this did not prove to be a problem. The men collected",
+        "rainwater in the rubber dinghy. As they had brought a spear gun with them, they had plenty to eat. They",
+        "caught lobster and fish every day, and, as one of them put it 'ate like kings'. When a passing tanker rescued",
+        "them five days later, both men were genuinely sorry that they had to leave. "
+      ],
       "segment": [
         {
           "aStart": "00:00:15,733",
@@ -1138,7 +1381,7 @@
           "aStart": "00:00:43,867",
           "aEnd": "00:00:51,966",
           "tip": "要么饿死，要么像鲁滨孙那样，天天盼船来，却总没见船影。",
-          "a": "You either starve to death or live like Robinson Crusoe, Waiting for a boat which never comes."
+          "a": "You either starve to death or live like Robinson Crusoe, waiting for a boat which never comes."
         },
         {
           "aStart": "00:00:52,067",
@@ -1207,15 +1450,34 @@
       "path": "/nce3/a/13.mp3",
       "hash": "b3883c552763c6a85bbfabd11194eb4c0654b811",
       "key": "nce3/13",
-      "title": "It's only me",
+      "title": "'It's only me'",
       "titleStart": "00:00:02,300",
       "titleEnd": "00:00:04,733",
+      "raw": [
+        "'It's only me'",
+        "After her husband had gone to work, Mrs. Richards sent her children",
+        "to school and went upstairs to her bedroom. She was too excited to",
+        "do any housework that morning, for in the evening she would be",
+        "going to a fancy-dress party with her husband. She intended to dress",
+        "up as a ghost and as she had made her costume the night before, she",
+        "was impatient to try it on. Though the costume consisted only of a",
+        "sheet, it was very effective. After putting it on, Mrs. Richards went",
+        "downstairs. She wanted to find out whether it would be comfortable to wear. ",
+        "Just as Mrs. Richards was entering the dining room, there was a knock on the front door. She knew that",
+        "it must be the baker. She had told him to come straight in if ever she failed to open the door and to leave the",
+        "bread on the kitchen table. Not wanting to frighten the poor man, Mrs. Richards quickly hid in the small",
+        "storeroom under the stairs. She heard the front door open and heavy footsteps in the hall. Suddenly the door",
+        "of the storeroom was opened and a man entered. Mrs. Richards realized that it must be the man from the",
+        "Electricity Board who had come to read the metre. She tried to explain the situation, saying 'It's only me', ",
+        "but it was too late. The man let out a cry and jumped back several paces. When Mrs. Richards walked",
+        "towards him, he fled, slamming the door behind him. "
+      ],
       "segment": [
         {
           "aStart": "00:00:15,900",
           "aEnd": "00:00:24,583",
           "tip": "理查兹夫人等丈夫上班走后，把孩子送去上学，然后来到楼上自己的卧室。",
-          "a": "After her husband had gone to work. Mrs. Richards sent her children to school and went upstairs to her bedroom."
+          "a": "After her husband had gone to work, Mrs. Richards sent her children to school and went upstairs to her bedroom."
         },
         {
           "aStart": "00:00:24,683",
@@ -1251,7 +1513,7 @@
           "aStart": "00:00:57,917",
           "aEnd": "00:01:04,383",
           "tip": "理查兹夫人刚刚走进餐厅，前门就传来敲门声。",
-          "a": "Just as Mrs. Richards was entering the dinning room, there was a knock on the front door."
+          "a": "Just as Mrs. Richards was entering the dining room, there was a knock on the front door."
         },
         {
           "aStart": "00:01:04,483",
@@ -1299,7 +1561,7 @@
           "aStart": "00:01:46,300",
           "aEnd": "00:01:51,316",
           "tip": "那人大叫了一声，惊退了几步。",
-          "a": "The man let out cry and jumped back several paces."
+          "a": "The man let out a cry and jumped back several paces."
         },
         {
           "aStart": "00:01:51,417",
@@ -1317,6 +1579,26 @@
       "title": "A noble gangster",
       "titleStart": "00:00:01,933",
       "titleEnd": "00:00:08,400",
+      "raw": [
+        "A noble gangster",
+        "There was a time when the owners of shops and businesses in",
+        "Chicago had to pay large sums of money to gangsters in return for",
+        "'protection'. If the money was not paid promptly, the gangsters",
+        "would quickly put a man out of business by destroying his shop.",
+        "Obtaining 'protection money' is not a modern crime. As long ago",
+        "as the fourteenth century, an Englishman, Sir John Hawkwood, ",
+        "made the remarkable discovery that people would rather pay large",
+        "sums of money than have their life work destroyed by gangsters. ",
+        "Six hundred years ago, Sir John Hawkwood arrived in Italy with a band of soldiers and settled near",
+        "Florence. He soon made a name for himself and came to be known to the Italians as Giovanni Acuto.",
+        "Whenever the Italian city-states were at war with each other, Hawkwood used to hire his soldiers to princes",
+        "who were willing to pay the high price he demanded. In times of peace, when business was bad, Hawkwood",
+        "and his men would march into a city-state and, after burning down a few farms, would offer to go away if",
+        "protection money was paid to them. Hawkwood made large sums of money in this way. In spite of this, the",
+        "Italians regarded him as a sort of hero. When he died at the age of eighty, the Florentines gave him a state",
+        "funeral and had a picture painted which was dedicated to the memory of 'the most valiant soldier and most",
+        "notable leader, Signor Giovanni Haukodue'. "
+      ],
       "segment": [
         {
           "aStart": "00:00:14,766",
@@ -1394,6 +1676,26 @@
       "title": "Fifty pence worth of trouble",
       "titleStart": "00:00:02,133",
       "titleEnd": "00:00:05,400",
+      "raw": [
+        "Fifty pence worth of trouble",
+        "Children always appreciate small gifts of money. Mum or dad, of",
+        "course, provide a regular supply of pocket money, but uncles and",
+        "aunts are always a source of extra income. With some children, ",
+        "small sums go a long way. If fifty pence pieces are not exchanged",
+        "for sweets, they rattle for months inside money boxes. Only very",
+        "thrifty children manage to fill up a money box. For most of them, ",
+        "fifty pence is a small price to pay for a nice big bar of chocolate. ",
+        "My nephew, George, has a money box but it is always empty. Very few of the fifty pence pieces and",
+        "pound coins I have given him have found their way there. I gave him fifty pence yesterday and advised him",
+        "to save it. Instead he bought himself fifty pence worth of trouble. On his way to the sweet shop, he dropped",
+        "his fifty pence and it bounced along the pavement and then disappeared down a drain. George took off his",
+        "jacket, rolled up his sleeves and pushed his right arm through the drain cover. He could not find his fifty",
+        "pence piece anywhere, and what is more, he could not get his arm out. A crowd of people gathered round",
+        "him and a lady rubbed his arm with soap and butter, but George was firmly stuck. The fire brigade was",
+        "called and two fire fighters freed George using a special type of grease. George was not too upset by his",
+        "experience because the lady who owns the sweet shop heard about his troubles and rewarded him with a",
+        "large box of chocolates. "
+      ],
       "segment": [
         {
           "aStart": "00:00:16,166",
@@ -1405,7 +1707,7 @@
           "aStart": "00:00:20,533",
           "aEnd": "00:00:30,600",
           "tip": "爸爸妈妈当然经常给孩子零花钱，但是，叔舅婶姨也是孩子们额外收入来源。",
-          "a": "Mum or dad, of course, provide a regular supply of pocket money, but uncles and ants are always a source of extra income."
+          "a": "Mum or dad, of course, provide a regular supply of pocket money, but uncles and aunts are always a source of extra income."
         },
         {
           "aStart": "00:00:30,700",
@@ -1501,6 +1803,25 @@
       "title": "Mary had a little lamb",
       "titleStart": "00:00:02,160",
       "titleEnd": "00:00:05,233",
+      "raw": [
+        "Mary had a little lamb",
+        "Mary and her husband Dimitri lived in the tiny village of Perachora",
+        "in southern Greece. One of Mary's prize possessions was a little",
+        "white lamb which her husband had given her. She kept it tied to a",
+        "tree in a field during the day and went to fetch it every evening.",
+        "One evening, however, the lamb was missing. The rope had been",
+        "cut, so it was obvious that the lamb had been stolen. ",
+        "When Dimitri came in from the fields, his wife told him what",
+        "had happened. Dimitri at once set out to find the thief. He knew it would not prove difficult in such a small",
+        "village. After telling several of his friends about the theft, Dimitri found out that his neighbour, Aleko, had",
+        "suddenly acquired a new lamb. Dimitri immediately went to Aleko's house and angrily accused him of",
+        "stealing the lamb. He told him he had better return it or he would call the police. Aleko denied taking it and",
+        "led Dimitri into his backyard. It was true that he had just bought a lamb, he explained, but his lamb was",
+        "black. Ashamed of having acted so rashly, Dimitri apologized to Aleko for having accused him. While they",
+        "were talking it began to rain and Dimitri stayed in Aleko's house until the rain stopped. When he went",
+        "outside half an hour later, he was astonished to find that the little black lamb was almost white. Its wool, ",
+        "which had been dyed black, had been washed clean by the rain!"
+      ],
       "segment": [
         {
           "aStart": "00:00:16,800",
@@ -1524,7 +1845,7 @@
           "aStart": "00:00:39,150",
           "aEnd": "00:00:43,000",
           "tip": "可是，一天晚上，那只小羔羊失踪了。",
-          "a": "One evening, how-ever, the lamb was missing."
+          "a": "One evening, however, the lamb was missing."
         },
         {
           "aStart": "00:00:43,100",
@@ -1572,7 +1893,7 @@
           "aStart": "00:01:27,283",
           "aEnd": "00:01:32,699",
           "tip": "阿列科不承认，并把迪米特里领进院子。",
-          "a": "Aleko denied taking it and led Dimitri into his back-yard."
+          "a": "Aleko denied taking it and led Dimitri into his backyard."
         },
         {
           "aStart": "00:01:32,800",
@@ -1614,6 +1935,26 @@
       "title": "The longest suspension bridge in the world",
       "titleStart": "00:00:02,366",
       "titleEnd": "00:00:08,000",
+      "raw": [
+        "The longest suspension bridge in the world",
+        "Verrazano, an Italian about whom little is known, sailed into New",
+        "York Harbour in 1524 and named it Angouleme. He described it as",
+        "'a very agreeable situation located within two small hills in the",
+        "midst of which flowed a great river.' Though Verrazano is by no",
+        "means considered to be a great explorer, his name will probably",
+        "remain immortal, for on November 21st, 1964, the longest",
+        "suspension bridge in the world was named after him",
+        "The Verrazano Bridge, which was designed by Othmar Ammann, joins Brooklyn to Staten Island. It has",
+        "a span of 4,260 feet. The bridge is so long that the shape of the earth had to be taken into account by its",
+        "designer. Two great towers support four huge cables. The towers are built on immense underwater platforms",
+        "made of steel and concrete. The platforms extend to a depth of over 100 feet under the sea. These alone took",
+        "sixteen months to build. Above the surface of the water, the towers rise to a height of nearly 700 feet. They",
+        "support the cables from which the bridge has been suspended. Each of the four cables contains 26,108",
+        "lengths of wire. It has been estimated that if the bridge were packed with cars, it would still only be carrying",
+        "a third of its total capacity. However, size and strength are not the only important things about this bridge.",
+        "Despite its immensity, it is both simple and elegant, fulfilling its designer's dream to create 'an enormous",
+        "object drawn as faintly as possible'. "
+      ],
       "segment": [
         {
           "aStart": "00:00:16,166",
@@ -1661,7 +2002,7 @@
           "aStart": "00:01:25,267",
           "aEnd": "00:01:31,816",
           "tip": "塔身建在巨大的水下钢盘混凝土平台上。",
-          "a": "The towers are built on immense underwater platforms make of steel and concrete."
+          "a": "The towers are built on immense underwater platforms made of steel and concrete."
         },
         {
           "aStart": "00:01:31,917",
@@ -1721,6 +2062,27 @@
       "title": "Electric currents in modern art",
       "titleStart": "00:00:01,733",
       "titleEnd": "00:00:05,366",
+      "raw": [
+        "Electric currents in modern art",
+        "Modern sculpture rarely surprises us any more. The idea that modern",
+        "art can only be seen in museums is mistaken. Even people who",
+        "take no interest in art cannot have failed to notice examples of",
+        "modern sculpture on display in public places. Strange forms stand",
+        "in gardens, and outside buildings and shops. We have got quite",
+        "used to them. Some so-called 'modern' pieces have been on display",
+        "for nearly eighty years. ",
+        "In spite of this, some people -- including myself -- were surprised by a recent exhibition of modern sculpture.",
+        "The first thing I saw when I entered the art gallery was a notice which said: 'Do not touch the exhibits. ",
+        "Some of them are dangerous!' The objects on display were pieces of moving sculpture. Oddly shaped forms",
+        "that are suspended from the ceiling and move in response to a gust of wind are quite familiar to everybody. ",
+        "These objects, however, were different. Lined up against the wall, there were long thin wires attached to",
+        "metal spheres. The spheres had been magnetized and attracted or repelled each other all the time. In the",
+        "centre of the hall, there were a number of tall structures which contained coloured lights. These lights",
+        "flickered continuously like traffic lights which have gone mad. Sparks were emitted from small black boxes",
+        "and red lamps flashed on and off angrily. It was rather like an exhibition of prehistoric electronic equipment.",
+        "These peculiar forms not only seemed designed to shock people emotionally, but to give them electric",
+        "shocks as well!"
+      ],
       "segment": [
         {
           "aStart": "00:00:15,166",
@@ -1762,7 +2124,7 @@
           "aStart": "00:00:49,650",
           "aEnd": "00:00:58,283",
           "tip": "尽管如此， 最近举办的一次现代雕塑展览还是使一些人（包括我在内）大吃了一惊。",
-          "a": "In spite of this, some people -- including myself -- were surprise by a recent exhibition of modern sculpture."
+          "a": "In spite of this, some people -- including myself -- were surprised by a recent exhibition of modern sculpture."
         },
         {
           "aStart": "00:00:58,383",
@@ -1774,7 +2136,7 @@
           "aStart": "00:01:13,717",
           "aEnd": "00:01:23,749",
           "tip": "人们所熟悉的是悬挂在天花板上、造型奇特、随风飘荡的雕塑品。",
-          "a": "Oddly shaped forms that are suspended form the ceiling and move in response to a gust of wind are quite familiar to everybody."
+          "a": "Oddly shaped forms that are suspended from the ceiling and move in response to a gust of wind are quite familiar to everybody."
         },
         {
           "aStart": "00:01:23,850",
@@ -1834,6 +2196,27 @@
       "title": "A very dear cat",
       "titleStart": "00:00:01,866",
       "titleEnd": "00:00:05,133",
+      "raw": [
+        "A very dear cat",
+        "Kidnappers are rarely interested in animals, but they recently took",
+        "considerable interest in Mrs. Eleanor Ramsay's cat. Mrs. Eleanor",
+        "Ramsay, a very wealthy old lady, has shared a flat with her cat, ",
+        "Rastus, for a great many years. Rastus leads an orderly life. He",
+        "usually takes a short walk in the evenings and is always home by",
+        "seven o'clock. One evening, however, he failed to arrive. Mrs. ",
+        "Ramsay got very worried. She looked everywhere for him but could",
+        "not find him. ",
+        "Three days after Rastus' disappearance, Mrs. Ramsay received an anonymous letter. The writer stated",
+        "that Rastus was in safe hands and would be returned immediately if Mrs. Ramsay paid a ransom of ￡1,000.",
+        "Mrs. Ramsay was instructed to place the money in a cardboard box and to leave it outside her door. At first, ",
+        "she decided to go to the police, but fearing that she would never see Rastus again -- the letter had made that",
+        "quite clear -- she changed her mind. She withdrew ￡1,000 from her bank and followed the kidnapper's ",
+        "instructions. The next morning, the box had disappeared but Mrs. Ramsay was sure that the kidnapper would",
+        "keep his word. Sure enough, Rastus arrived punctually at seven o'clock that evening. He looked very well, ",
+        "though he was rather thirsty, for he drank half a bottle of milk. The police were astounded when Mrs. ",
+        "Ramsay told them what she had done. She explained that Rastus was very dear to her. Considering the",
+        "amount she paid, he was dear in more ways than one!"
+      ],
       "segment": [
         {
           "aStart": "00:00:16,333",
@@ -1881,13 +2264,13 @@
           "aStart": "00:00:57,266",
           "aEnd": "00:01:03,949",
           "tip": "拉斯特斯失踪3天后，拉姆齐太太收到一封匿名信。",
-          "a": "There days after Rastus' disappearance, Mrs. Ramsay received an anonymous letter."
+          "a": "Three days after Rastus' disappearance, Mrs. Ramsay received an anonymous letter."
         },
         {
           "aStart": "00:01:04,050",
           "aEnd": "00:01:14,533",
           "tip": "写信人声称拉斯特斯安然无恙，只要拉姆齐太太愿意支付1,000 英镑赎金，可以立即将猫送还。",
-          "a": "The writer stated that Rastus was in safe hands and would be returned immediately if Mrs. Ramsay paid a ransom of $1,000."
+          "a": "The writer stated that Rastus was in safe hands and would be returned immediately if Mrs. Ramsay paid a ransom of ￡1,000."
         },
         {
           "aStart": "00:01:15,033",
@@ -1899,13 +2282,13 @@
           "aStart": "00:01:22,250",
           "aEnd": "00:01:35,466",
           "tip": "一开始拉姆齐太太打算报告警察，但又害怕再也见不到拉斯特斯——这点，信上说得十分明白——于是便改变了主意。",
-          "a": "At first she decided to go to the police, but fearing that she would never see Rastus again -- the letter had made that quite clear -- she changed her mind."
+          "a": "At first, she decided to go to the police, but fearing that she would never see Rastus again -- the letter had made that quite clear -- she changed her mind."
         },
         {
           "aStart": "00:01:35,566",
           "aEnd": "00:01:41,633",
           "tip": "她从银行取出1,000 英镑，并照绑架者的要求做了。",
-          "a": "She withdrew $1000 from her bank and followed the kidnapper's instructions."
+          "a": "She withdrew ￡1,000 from her bank and followed the kidnapper's instructions."
         },
         {
           "aStart": "00:01:41,733",
@@ -1923,7 +2306,7 @@
           "aStart": "00:01:56,350",
           "aEnd": "00:02:03,666",
           "tip": "它看上去一切正常，只是口渴得很，喝了半瓶牛奶。",
-          "a": "He looked very well though he was rather thirsty, for he drank half a bottle of milk."
+          "a": "He looked very well, though he was rather thirsty, for he drank half a bottle of milk."
         },
         {
           "aStart": "00:02:03,767",
@@ -1953,12 +2336,31 @@
       "title": "Pioneer pilots",
       "titleStart": "00:00:01,600",
       "titleEnd": "00:00:04,366",
+      "raw": [
+        "Pioneer pilots",
+        "In 1908 Lord Northcliffe offered a prize of ￡1,000 to the first man",
+        "who would fly across the English Channel. Over a year passed before",
+        "the first attempt was made. On July 19th, 1909, in the early morning, ",
+        "Hubert Latham took off from the French coast in his plane the",
+        "'Antoinette IV'. He had travelled only seven miles across the",
+        "Channel when his engine failed and he was forced to land on the",
+        "sea. The 'Antoinette' floated on the water until Latham was picked up by a ship.",
+        "Two days later, Louis Bleriot arrived near Calais with a plane called 'No. XI'. Bleriot had been making",
+        "planes since 1905 and this was his latest model. A week before, he had completed a successful overland",
+        "flight during which he covered twenty-six miles. Latham, however, did not give up easily. He, too, arrived",
+        "near Calais on the same day with a new 'Antoinette'. It looked as if there would be an exciting race across",
+        "the Channel. Both planes were going to take off on July 25th, but Latham failed to get up early enough. After",
+        "making a short test flight at 4.15 a.m., Bleriot set off half an hour later. His great flight lasted thirty-seven",
+        "minutes. When he landed near Dover, the first person to greet him was a local policeman. Latham made",
+        "another attempt a week later and got within half a mile of Dover, but he was unlucky again. His engine failed",
+        "and he landed on the sea for the second time."
+      ],
       "segment": [
         {
           "aStart": "00:00:15,233",
           "aEnd": "00:00:26,633",
           "tip": "1908年，诺斯克利夫勋爵拿出1,000英镑，作为对第一个飞越英吉利海峡的人的奖励。",
-          "a": "In 1908 Lord Northcliffe offered a prize of $1,000 to the first man who would fly across the English Channel."
+          "a": "In 1908 Lord Northcliffe offered a prize of ￡1,000 to the first man who would fly across the English Channel."
         },
         {
           "aStart": "00:00:26,733",
@@ -1970,13 +2372,13 @@
           "aStart": "00:00:30,933",
           "aEnd": "00:00:42,800",
           "tip": "1909年7月19日凌晨，休伯特.莱瑟姆驾驶“安特瓦特4号”飞机从法国海岸起飞，",
-          "a": "On July 19th, 1909, in the early morning, Hubert Latham took off from the French coast in his plane the 'Antoinette IV.'"
+          "a": "On July 19th, 1909, in the early morning, Hubert Latham took off from the French coast in his plane the 'Antoinette IV'."
         },
         {
           "aStart": "00:00:42,900",
           "aEnd": "00:00:51,883",
           "tip": "但他只在海峡上空飞行7英里，引擎就发生了故障，他只好降落在海面上。",
-          "a": "He had travelled only seven miles across the Channel when his engine failed and he was forced to land on sea."
+          "a": "He had travelled only seven miles across the Channel when his engine failed and he was forced to land on the sea."
         },
         {
           "aStart": "00:00:51,983",
@@ -1988,13 +2390,13 @@
           "aStart": "00:00:58,733",
           "aEnd": "00:01:06,533",
           "tip": "两天之后，路易斯.布莱里奥驾驶一名为“11号”的飞机来到加来附近。",
-          "a": "Two days alter, Louis Bleriot arrived near Calais with a plane called 'No. XI'."
+          "a": "Two days later, Louis Bleriot arrived near Calais with a plane called 'No. XI'."
         },
         {
           "aStart": "00:01:06,633",
           "aEnd": "00:01:13,883",
           "tip": "布莱里奥从1905年起便开始研制飞机，“11号”飞机是他制作的最新型号。",
-          "a": "Bleriot had been making planes since 1905 and this was his lattes model."
+          "a": "Bleriot had been making planes since 1905 and this was his latest model."
         },
         {
           "aStart": "00:01:13,983",
@@ -2024,7 +2426,7 @@
           "aStart": "00:01:36,900",
           "aEnd": "00:01:52,899",
           "tip": "两架飞机都打算在7月25日起飞，但莱瑟姆那天起床晚了。布莱里奥凌晨4点15分作了一次短距离试飞，半小时后便正式出发了。",
-          "a": "Both planes were going to take off on July 25th, but Latham failed to get up early enough, After making a short test flight at 4,15 a.m., Bleriot set off half an hour later."
+          "a": "Both planes were going to take off on July 25th, but Latham failed to get up early enough. After making a short test flight at 4.15 a.m., Bleriot set off half an hour later."
         },
         {
           "aStart": "00:01:53,000",
