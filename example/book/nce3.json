@@ -2462,6 +2462,31 @@
       "title": "Daniel Mendoza",
       "titleStart": "00:00:01,833",
       "titleEnd": "00:00:04,600",
+      "raw": [
+        "Daniel Mendoza",
+        "Boxing matches were very popular in England two hundred years",
+        "ago. In those days, boxers fought with bare fists for prize money. ",
+        "Because of this, they were known as 'prizefighters'. However, ",
+        "boxing was very crude, for there were no rules and a prizefighter",
+        "could be seriously injured or even killed during a match. ",
+        "One of the most colourful figures in boxing history was Daniel",
+        "Mendoza, who was born in 1764. The use of gloves was not introduced until 1860, when the Marquis of",
+        "Queensberry drew up the first set of rules. Though he was technically a prizefighter, Mendoza did much to",
+        "change crude prizefighting into a sport, for he brought science to the game. In his day, Mendoza enjoyed",
+        "tremendous popularity. He was adored by rich and poor alike. ",
+        "Mendoza rose to fame swiftly after a boxing match when he was only fourteen years old. This attracted",
+        "the attention of Richard Humphries who was then the most eminent boxer in England. He offered to train",
+        "Mendoza and his young pupil was quick to learn. In fact, Mendoza soon became so successful that Humphries",
+        "turned against him. The two men quarrelled bitterly and it was clear that the argument could only be settled",
+        "by a fight. A match was held at Stilton, where both men fought for an hour. The public bet a great deal of",
+        "money on Mendoza, but he was defeated. Mendoza met Humphries in the ring on a later occasion and he lost",
+        "for a second time. It was not until his third match in 1790 that he finally beat Humphries and became",
+        "Champion of England. Meanwhile, he founded a highly successful Academy and even Lord Byron became",
+        "one of his pupils. He earned enormous sums of money and was paid as much as ￡100 for a single appearance.",
+        " Despite this, he was so extravagant that he was always in debt. After he was defeated by a boxer called",
+        "Gentleman Jackson, he was quickly forgotten. He was sent to prison for failing to pay his debts and died in",
+        "poverty in 1836. "
+      ],
       "segment": [
         {
           "aStart": "00:00:18,166",
@@ -2485,7 +2510,7 @@
           "aStart": "00:00:33,083",
           "aEnd": "00:00:44,583",
           "tip": "不过，拳击是十分野蛮的，因为当时没有任何比赛规则，职业拳击手有可能在比赛中受重伤，甚至丧命。",
-          "a": "However, boxing was very crude, for these were no rules and a prizefighter could be seriously injured or even killed during a match."
+          "a": "However, boxing was very crude, for there were no rules and a prizefighter could be seriously injured or even killed during a match."
         },
         {
           "aStart": "00:00:44,683",
@@ -2509,7 +2534,7 @@
           "aStart": "00:01:13,383",
           "aEnd": "00:01:18,250",
           "tip": "门多萨在的全盛时期深受大家欢迎，",
-          "a": "In this day, Mendoza enjoyed tremendous popularity."
+          "a": "In his day, Mendoza enjoyed tremendous popularity."
         },
         {
           "aStart": "00:01:18,350",
@@ -2611,12 +2636,35 @@
       "title": "By heart",
       "titleStart": "00:00:02,133",
       "titleEnd": "00:00:06,433",
+      "raw": [
+        "By heart",
+        "Some plays are so successful that they run for years on end. In",
+        "many ways, this is unfortunate for the poor actors who are required",
+        "to go on repeating the same lines night after night. One would expect",
+        "them to know their parts by heart and never have cause to falter. ",
+        "Yet this is not always the case. ",
+        "A famous actor in a highly successful play was once cast in the",
+        "role of an aristocrat who had been imprisoned in the Bastille for twenty years. In the last act, a gaoler would",
+        "always come on to the stage with a letter which he would hand to the prisoner. Even though the noble was",
+        "expected to read the letter at each performance, he always insisted that it should be written out in full.",
+        "One night, the gaoler decided to play a joke on his colleague to find out if, after so many performances, ",
+        "he had managed to learn the contents of the letter by heart. The curtain went up on the final act of the play",
+        "and revealed the aristocrat sitting alone behind bars in his dark cell. Just then, the gaoler appeared with the",
+        "precious letter in his hands. He entered the cell and presented the letter to the aristocrat. But the copy he",
+        "gave him had not been written out in full as usual. It was simply a blank sheet of paper. The gaoler looked on",
+        "eagerly, anxious to see if his fellow actor had at last learnt his lines. The noble stared at the blank sheet of",
+        "paper for a few seconds. Then, squinting his eyes, he said: 'The light is dim. Read the letter to me.' And he",
+        "promptly handed the sheet of paper to the gaoler. Finding that he could not remember a word of the letter",
+        "either, the gaoler replied: 'The light is indeed dim, sire. I must get my glasses. 'With this, he hurried off the",
+        "stage. Much to the aristocrat's amusement, the gaoler returned a few moments later with a pair of glasses",
+        "and the usual copy of the letter which he proceeded to read to the prisoner. "
+      ],
       "segment": [
         {
           "aStart": "00:00:16,900",
           "aEnd": "00:00:32,549",
           "tip": "有些剧目十分成功，以致连续上演好几年。这样一来，可怜的演员们可倒霉了。因为他们需要一夜连着一夜地重复同样的台词。",
-          "a": "Some plays are so successful that they run for years on end, In many ways, this is unfortunate for the poor actors who are required to go on repeating the same lines night after night."
+          "a": "Some plays are so successful that they run for years on end. In many ways, this is unfortunate for the poor actors who are required to go on repeating the same lines night after night."
         },
         {
           "aStart": "00:00:32,650",
@@ -2664,7 +2712,7 @@
           "aStart": "00:01:34,783",
           "aEnd": "00:01:40,133",
           "tip": "这时狱卒上场，手里拿着那封珍贵的信。",
-          "a": "Just then, the gaoler appeared with the precious letter in his bands."
+          "a": "Just then, the gaoler appeared with the precious letter in his hands."
         },
         {
           "aStart": "00:01:40,233",
@@ -2700,19 +2748,19 @@
           "aStart": "00:02:07,400",
           "aEnd": "00:02:20,066",
           "tip": "然后，眼珠一转，说道：“光线太暗，请给我读一下这封信。” 说完， 他一下子把信递给狱卒。",
-          "a": "Then, squinting his eyes, he said: 'The light is dim. Read the letter to me'. And he promptly handed the sheet of paper to the gaoler."
+          "a": "Then, squinting his eyes, he said: 'The light is dim. Read the letter to me.' And he promptly handed the sheet of paper to the gaoler."
         },
         {
           "aStart": "00:02:20,166",
           "aEnd": "00:02:35,900",
           "tip": "狱卒发现自己连一个字也记不住， 于是便说：“陛下，这儿光线的确太暗了，我得去眼镜拿来。” 他一边说着，一边匆匆下台。",
-          "a": "Finding that he could not remember a word of the letter either, the gaoler replied: 'The light is indeed dim, sire, I must get my glasses.' With this, he hurried off the stage."
+          "a": "Finding that he could not remember a word of the letter either, the gaoler replied: 'The light is indeed dim, sire. I must get my glasses. 'With this, he hurried off the stage."
         },
         {
           "aStart": "00:02:36,000",
           "aEnd": "00:02:49,933",
           "tip": "贵族感到非常好笑的是：一会儿工夫，狱卒重新登台， 拿来一副眼镜以及平时使用的那封信， 然后为那囚犯念了起来。",
-          "a": "Much to the aristocrat's amusement, the gaoler returned a few moments later with a pair of glasses and the usual copy of the letter with he proceeded to read to the prisoner."
+          "a": "Much to the aristocrat's amusement, the gaoler returned a few moments later with a pair of glasses and the usual copy of the letter which he proceeded to read to the prisoner."
         }
       ]
     },
@@ -2724,6 +2772,30 @@
       "title": "One man's meat is another man's poison",
       "titleStart": "00:00:01,900",
       "titleEnd": "00:00:08,133",
+      "raw": [
+        "One man's meat is another man's poison",
+        "People become quite illogical when they try to decide what can be",
+        "eaten and what cannot be eaten. If you lived in the Mediterranean, ",
+        "for instance, you would consider octopus a great delicacy. You",
+        "would not be able to understand why some people find it repulsive. ",
+        "On the other hand, your stomach would turn at the idea of frying",
+        "potatoes in animal fat -- the normally accepted practice in many",
+        "northern countries. The sad truth is that most of us have been brought up to eat certain foods and we stick to",
+        "them all our lives. ",
+        "No creature has received more praise and abuse than the common garden snail. Cooked in wine, snails",
+        "are a great luxury in various parts of the world. There are countless people who, ever since their early years, ",
+        "have learned to associate snails with food. My friend, Robert, lives in a country where snails are despised. ",
+        "As his flat is in a large town, he has no garden of his own. For years he has been asking me to collect snails",
+        "from my garden and take them to him. The idea never appealed to me very much, but one day, after a heavy",
+        "shower, I happened to be walking in my garden when I noticed a huge number of snails taking a stroll on",
+        "some of my prize plants. Acting on a sudden impulse, I collected several dozen, put them in a paper bag, and",
+        "took them to Robert. Robert was delighted to see me and equally pleased with my little gift. I left the bag in",
+        "the hall and Robert and I went into the living room where we talked for a couple of hours. I had forgotten all",
+        "about the snails when Robert suddenly said that I must stay to dinner. Snails would, of course, be the main",
+        "dish. I did not fancy the idea and I reluctantly followed Robert out of the room. To our dismay, we saw that",
+        "there were snails everywhere: they had escaped from the paper bag and had taken complete possession of",
+        "the hall! I have never been able to look at a snail since then. "
+      ],
       "segment": [
         {
           "aStart": "00:00:19,766",
@@ -2795,7 +2867,7 @@
           "aStart": "00:01:42,150",
           "aEnd": "00:01:58,399",
           "tip": "一开始， 他的这一想法没有引起我多大兴趣。 后来有一天， 一场大雨后， 我在花园里漫无目的散步， 突然注意到许许多多蜗牛在我的一些心爱的花木上慢悠悠的蠕动着。",
-          "a": "The idea never appealed to me very much, but one day, after heavy shower, I happened to be walking in my garden when I noticed a huge number of snails taking a stroll on some of my prize plants."
+          "a": "The idea never appealed to me very much, but one day, after a heavy shower, I happened to be walking in my garden when I noticed a huge number of snails taking a stroll on some of my prize plants."
         },
         {
           "aStart": "00:01:58,500",
@@ -2855,6 +2927,31 @@
       "title": "A skeleton in the cupboard",
       "titleStart": "00:00:01,900",
       "titleEnd": "00:00:04,733",
+      "raw": [
+        "A skeleton in the cupboard",
+        "We often read in novels how a seemingly respectable person or",
+        "family has some terrible secret which has been concealed from",
+        "strangers for years. The English language possesses a vivid saying",
+        "to describe this sort of situation. The terrible secret is called 'a",
+        "skeleton in the cupboard'. At some dramatic moment in the story, ",
+        "the terrible secret becomes known and a reputation is ruined. The",
+        "reader's hair stands on end when he reads in the final pages of the",
+        "novel that the heroine, a dear old lady who had always been so kind to everybody, had, in her youth, poisoned",
+        "every one of her five husbands.",
+        "It is all very well for such things to occur in fiction. To varying degrees, we all have secrets which we do",
+        "not want even our closest friends to learn, but few of us have skeletons in the cupboard. The only person I",
+        "know who has a skeleton in the cupboard is George Carlton, and he is very proud of the fact. George studied",
+        "medicine in his youth. Instead of becoming a doctor, however, he became a successful writer of detective",
+        "stories. I once spent an uncomfortable weekend which I shall never forget at his house. George showed me",
+        "to the guestroom which, he said, was rarely used. He told me to unpack my things and then come down to",
+        "dinner. After I had stacked my shirts and underclothes in two empty drawers, I decided to hang one of the",
+        "two suits I had brought with me in the cupboard. I opened the cupboard door and then stood in front of",
+        "it petrified. A skeleton was dangling before my eyes. The sudden movement of the door made it sway",
+        "slightly and it gave me the impression that it was about to leap out at me. Dropping my suit, I dashed",
+        "downstairs to tell George. This was worse than 'a terrible secret'; this was a real skeleton! But George was",
+        "unsympathetic. 'Oh, that,' he said with a smile as if he were talking about an old friend. 'That's Sebastian. ",
+        "You forget that I was a medical student once upon a time.' "
+      ],
       "segment": [
         {
           "aStart": "00:00:11,500",
@@ -2884,7 +2981,7 @@
           "aStart": "00:00:42,800",
           "aEnd": "00:00:59,233",
           "tip": "当读者到小说最后几页了解到书中女主人公，那位一向待大家很好的可爱的老妇人年轻时一连毒死了她的5个丈夫时，不禁会毛骨悚然。",
-          "a": "The reader's hair stands on end when he reads in the final pages of the novel that the heroine a dear old lady who had always been so kind to everybody, had, in her youth, poisoned every one of her five husbands."
+          "a": "The reader's hair stands on end when he reads in the final pages of the novel that the heroine, a dear old lady who had always been so kind to everybody, had, in her youth, poisoned every one of her five husbands."
         },
         {
           "aStart": "00:00:59,400",
@@ -2902,7 +2999,7 @@
           "aStart": "00:01:15,150",
           "aEnd": "00:01:23,416",
           "tip": "我所认识的唯一的在柜中藏骷嵝的人便是乔治.卡尔顿， 他甚至引以为自豪。",
-          "a": "The only person I know who has a skeleton in the cupboard is George Carlton, and he is very pound of the fact."
+          "a": "The only person I know who has a skeleton in the cupboard is George Carlton, and he is very proud of the fact."
         },
         {
           "aStart": "00:01:23,517",
@@ -2920,7 +3017,7 @@
           "aStart": "00:01:33,567",
           "aEnd": "00:01:38,983",
           "tip": "有一次，我在他家里度周末， 过得很不愉快。这事我永远不会忘记。",
-          "a": "I once spend an uncomfortable weekend which I shall never forget at his house."
+          "a": "I once spent an uncomfortable weekend which I shall never forget at his house."
         },
         {
           "aStart": "00:01:39,083",
@@ -2938,7 +3035,7 @@
           "aStart": "00:01:47,967",
           "aEnd": "00:01:56,933",
           "tip": "我将衬衫、内衣放进两个空抽屉里， 然后我想把随身带来的两套西服中的一套挂到大衣柜里去。",
-          "a": "After I had stacked my shirts and underclothes in two empty drawers, I decided to hang one of the tow suits I had brought with me in the cupboard."
+          "a": "After I had stacked my shirts and underclothes in two empty drawers, I decided to hang one of the two suits I had brought with me in the cupboard."
         },
         {
           "aStart": "00:01:56,933",
@@ -2968,7 +3065,7 @@
           "aStart": "00:02:20,150",
           "aEnd": "00:02:25,483",
           "tip": "这是比“骇人听闻的秘密”更加惊人的东西， 这是一具真正的骷髅啊！",
-          "a": "This was worse than 'a terrible secret'; this was a read skeleton!"
+          "a": "This was worse than 'a terrible secret'; this was a real skeleton!"
         },
         {
           "aStart": "00:02:25,583",
@@ -2998,12 +3095,36 @@
       "title": "The Cutty Sark",
       "titleStart": "00:00:01,933",
       "titleEnd": "00:00:04,366",
+      "raw": [
+        "The Cutty Sark",
+        "One of the most famous sailing ships of the nineteenth century, the",
+        "Cutty Sark, can still be seen at Greenwich. She stands on dry land",
+        "and is visited by thousands of people each year. She serves as an",
+        "impressive reminder of the great ships of the past. Before they were",
+        "replaced by steamships, sailing vessels like the Cutty Sark were",
+        "used to carry tea from China and wool from Australia. The Cutty",
+        "Sark was one of the fastest sailing ships that has ever been built. The only other ship to match her was the",
+        "Thermopylae. Both these ships set out from Shanghai on June 18th, 1872 on an exciting race to England. ",
+        "This race, which went on for exactly four months, was the last of its kind. It marked the end of the great",
+        "tradition of ships with sails and the beginning of a new era. ",
+        "The first of the two ships to reach Java after the race had begun was the Thermopylae, but on the Indian",
+        "Ocean, the Cutty Sark took the lead. It seemed certain that she would be the first ship home, but during the",
+        "race she had a lot of bad luck. In August, she was struck by a very heavy storm during which her rudder was",
+        "torn away. The Cutty Sark rolled from side to side and it became impossible to steer her. A temporary",
+        "rudder was made on board from spare planks and it was fitted with great difficulty. This greatly reduced the",
+        "speed of the ship, for there was a danger that if she travelled too quickly, this rudder would be torn away as",
+        "well. Because of this, the Cutty Sark lost her lead. After crossing the Equator, the captain called in at a port",
+        "to have a new rudder fitted, but by now the Thermopylae was over five hundred miles ahead. Though the",
+        "new rudder was fitted at tremendous speed, it was impossible for the Cutty Sark to win. She arrived in",
+        "England a week after the Thermopylae. Even this was remarkable, considering that she had had so many",
+        "delays. There is no doubt that if she had not lost her rudder she would have won the race easily. "
+      ],
       "segment": [
         {
           "aStart": "00:00:15,666",
           "aEnd": "00:00:24,200",
           "tip": "人们在格林威治仍可看到19世纪最有名的帆船之一“卡蒂萨克”号。",
-          "a": "One of the most famous sailing ships of the nineteenth century, the Cutty Sark, can still be seen at Greewich."
+          "a": "One of the most famous sailing ships of the nineteenth century, the Cutty Sark, can still be seen at Greenwich."
         },
         {
           "aStart": "00:00:24,300",
@@ -3015,7 +3136,7 @@
           "aStart": "00:00:30,050",
           "aEnd": "00:00:35,933",
           "tip": "它给人们留下深刻的印象，",
-          "a": "She serves as an impressive reminder of the great ships of past."
+          "a": "She serves as an impressive reminder of the great ships of the past."
         },
         {
           "aStart": "00:00:36,033",
@@ -3027,7 +3148,7 @@
           "aStart": "00:00:47,067",
           "aEnd": "00:00:52,983",
           "tip": "“卡蒂萨克”号是帆船制造史上建造的最快的一艘帆船。",
-          "a": "The Cutty Sark was one the fastest sailing ships that has ever been built."
+          "a": "The Cutty Sark was one of the fastest sailing ships that has ever been built."
         },
         {
           "aStart": "00:00:53,083",
@@ -3057,7 +3178,7 @@
           "aStart": "00:01:22,266",
           "aEnd": "00:01:33,599",
           "tip": "比赛开始后，“赛姆皮雷”号率先抵达爪哇岛。但在印度洋上，“卡萨萨克”号驶到了前面。",
-          "a": "The first of the two ships to reach Java after the race had begun was the Thermopylae, but on the Indian Ocean, the Cutty Sark took lead."
+          "a": "The first of the two ships to reach Java after the race had begun was the Thermopylae, but on the Indian Ocean, the Cutty Sark took the lead."
         },
         {
           "aStart": "00:01:33,700",
@@ -3087,7 +3208,7 @@
           "aStart": "00:02:03,483",
           "aEnd": "00:02:13,983",
           "tip": "这样一来，大大降低了船的航速。因为船不能开得太快，否则就有危险，应急舵也会被刮走。",
-          "a": "This greatly reduced the speed of the ship, for there was a danger that if she traveled too quickly, this rudder would be torn away as well."
+          "a": "This greatly reduced the speed of the ship, for there was a danger that if she travelled too quickly, this rudder would be torn away as well. \n travelled traveled 都是正确的"
         },
         {
           "aStart": "00:02:14,083",
@@ -3123,7 +3244,7 @@
           "aStart": "00:02:47,700",
           "aEnd": "00:02:58,766",
           "tip": "毫无疑问，如果中途没有失去舵， “卡帝萨克”号肯定能在比赛中轻易夺冠。",
-          "a": "These is no doubt that if she had not lost her rudder she would have won the race easily."
+          "a": "There is no doubt that if she had not lost her rudder she would have won the race easily."
         }
       ]
     },
@@ -3135,6 +3256,31 @@
       "title": "Wanted: a large biscuit tin",
       "titleStart": "00:00:02,000",
       "titleEnd": "00:00:05,900",
+      "raw": [
+        "Wanted: a large biscuit tin",
+        "No one can avoid being influenced by advertisements. Much as we ",
+        "may pride ourselves on our good taste, we are no longer free to ",
+        "choose the things we want, for advertising exerts a subtle influence ",
+        "on us. In their efforts to persuade us to buy this or that product,  ",
+        "advertisers have made a close study of human nature and have ",
+        "classified all our little weaknesses.  ",
+        "Advertisers discovered years ago that all of us love to get ",
+        "something for nothing. An advertisement which begins with the magic word FREE can rarely go wrong.",
+        "These days, advertisers not only offer free samples, but free cars, free houses, and free trips round the world ",
+        "as well. They devise hundreds of competitions which will enable us to win huge sums of money. Radio and ",
+        "television have made it possible for advertisers to capture the attention of millions of people in this way.  ",
+        "During a radio programme, a company of biscuit manufacturers once asked listeners to bake biscuits and ",
+        "send them to their factory. They offered to pay $10 a pound for the biggest biscuit baked by a listener. The ",
+        "response to this competition was tremendous. Before long, biscuits of all shapes and sizes began arriving at ",
+        "the factory. One lady brought in a biscuit on a wheelbarrow. It weighed nearly 500 pounds. A little later, a ",
+        "man came along with a biscuit which occupied the whole boot of his car. All the biscuits that were sent were ",
+        "carefully weighed. The largest was 713 pounds. It seemed certain that this would win the prize. But just ",
+        "before the competition closed, a lorry arrived at the factory with a truly colossal biscuit which weighed ",
+        "2,400 pounds. It had been baked by a college student who had used over 1,000 pounds of flour, 800 pounds ",
+        "of sugar, 200 pounds of fat, and 400 pounds of various other ingredients. It was so heavy that a crane had to ",
+        "be used to remove it from the lorry. The manufacturers had to pay more money than they had anticipated,  ",
+        "for they bought the biscuit from the student for $24,000."
+      ],
       "segment": [
         {
           "aStart": "00:00:15,000",
@@ -3266,7 +3412,7 @@
           "aStart": "00:02:43,600",
           "aEnd": "00:02:52,733",
           "tip": "饼干公司不得不付出比他们预计多得多的钱，因为为买下那学生烘制的饼干他们支付了24,000美元。",
-          "a": "The manufacturers had to pay more money than they had anticipated, or they bought the biscuit from the student for $24,000."
+          "a": "The manufacturers had to pay more money than they had anticipated, for they bought the biscuit from the student for $24,000."
         }
       ]
     },
@@ -3278,6 +3424,30 @@
       "title": "Nothing to sell and nothing to buy",
       "titleStart": "00:00:01,933",
       "titleEnd": "00:00:05,766",
+      "raw": [
+        "Nothing to sell and nothing to buy",
+        "It has been said that everyone lives by selling something. In the",
+        "light of this statement, teachers live by selling knowledge, ",
+        "philosophers by selling wisdom and priests by selling spiritual",
+        "comfort. Though it may be possible to measure the value of material",
+        "goods in terms of money, it is extremely difficult to estimate the",
+        "true value of the services which people perform for us. There are",
+        "times when we would willingly give everything we possess to save",
+        "our lives, yet we might grudge paying a surgeon a high fee for offering us precisely this service. The",
+        "conditions of society are such that skills have to be paid for in the same way that goods are paid for at a shop.",
+        "Everyone has something to sell. ",
+        "Tramps seem to be the only exception to this general rule. Beggars almost sell themselves as human",
+        "beings to arouse the pity of passers-by. But real tramps are not beggars. They have nothing to sell and require",
+        "nothing from others. In seeking independence, they do not sacrifice their human dignity. A tramp may ask",
+        "you for money, but he will never ask you to feel sorry for him. He has deliberately chosen to lead the life he",
+        "leads and is fully aware of the consequences. He may never be sure where the next meal is coming from, but",
+        "he is free from the thousands of anxieties which afflict other people. His few material possessions make it",
+        "possible for him to move from place to place with ease. By having to sleep in the open, he gets far closer to",
+        "the world of nature than most of us ever do. He may hunt, beg, or steal occasionally to keep himself alive; he",
+        "may even, in times of real need, do a little work; but he will never sacrifice his freedom. We often speak of",
+        "tramps with contempt and put them in the same class as beggars, but how many of us can honestly say that",
+        "we have not felt a little envious of their simple way of life and their freedom from care?"
+      ],
       "segment": [
         {
           "aStart": "00:00:16,433",
@@ -3295,7 +3465,7 @@
           "aStart": "00:00:31,833",
           "aEnd": "00:00:46,183",
           "tip": "虽然物质产品的价值可以用金钱来衡量，但要估算别人为我们为所提供的服务的价值却是极其困难的。",
-          "a": "Though it may be possible to measure the value of material good in terms of money, it is extremely difficult to estimate the true value of the services which people perform for us."
+          "a": "Though it may be possible to measure the value of material goods in terms of money, it is extremely difficult to estimate the true value of the services which people perform for us."
         },
         {
           "aStart": "00:00:46,283",
@@ -3325,7 +3495,7 @@
           "aStart": "00:01:16,533",
           "aEnd": "00:01:22,899",
           "tip": "乞丐出售的几乎是他本人，以引起过路人的怜悯。",
-          "a": "Beggars almost sell themselves as human being to arouse the pity of passers-by."
+          "a": "Beggars almost sell themselves as human beings to arouse the pity of passers-by."
         },
         {
           "aStart": "00:01:23,000",
@@ -3361,7 +3531,7 @@
           "aStart": "00:01:49,017",
           "aEnd": "00:01:59,466",
           "tip": "他可能从不知道下顿饭有无着落，但他不像有人那样被千万桩愁事所折磨。",
-          "a": "He may never be sure where the next meal is coming from, but his is free from the thousands of anxieties which afflict other people."
+          "a": "He may never be sure where the next meal is coming from, but he is free from the thousands of anxieties which afflict other people."
         },
         {
           "aStart": "00:01:59,566",
@@ -3379,7 +3549,7 @@
           "aStart": "00:02:15,783",
           "aEnd": "00:02:21,699",
           "tip": "为了生存，他可能会去打猎、乞讨，偶尔偷上一两回；",
-          "a": "He may hunt, beg, or stead occasionally to keep himself alive;"
+          "a": "He may hunt, beg, or steal occasionally to keep himself alive;"
         },
         {
           "aStart": "00:02:21,800",
