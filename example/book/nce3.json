@@ -3576,9 +3576,34 @@
       "path": "/nce3/a/28.mp3",
       "hash": "7e45d75f48cdedb6236334555f6495dcd3017115",
       "key": "nce3/28",
-      "title": "Five pound too dear",
+      "title": "Five pounds too dear",
       "titleStart": "00:00:02,166",
       "titleEnd": "00:00:05,400",
+      "raw": [
+        "Five pounds too dear",
+        "Small boats loaded with wares sped to the great liner as she was",
+        "entering the harbour. Before she had anchored, the men from the",
+        "boats had climbed on board and the decks were soon covered with",
+        "colourful rugs from Persia, silks from India, copper coffee pots, ",
+        "and beautiful handmade silverware. It was difficult not to be",
+        "tempted. Many of the tourists on board had begun bargaining with",
+        "the tradesmen, but I decided not to buy anything until I had",
+        "disembarked. ",
+        "I had no sooner got off the ship than I was assailed by a man who wanted to sell me a diamond ring. I had",
+        "no intention of buying one, but I could not conceal the fact that I was impressed by the size of the diamonds. ",
+        "Some of them were as big as marbles. The man went to great lengths to prove that the diamonds were real. ",
+        "As we were walking past a shop, he held a diamond firmly against the window and made a deep impression",
+        "in the glass. It took me over half an hour to get rid of him. ",
+        "The next man to approach me was selling expensive pens and watches. I examined one of the pens",
+        "closely. It certainly looked genuine. At the base of the gold cap, the words 'made in the U.S.A.' had been",
+        "neatly inscribed. The man said that the pen was worth ￡50, but as a special favour, he would let me have it",
+        "for ￡30. I shook my head and held up five fingers indicating that I was willing to pay ￡5. Gesticulating",
+        "wildly, the man acted as if he found my offer outrageous, but he eventually reduced the price to ￡10. Shrugging",
+        " my shoulders, I began to walk away when, a moment later, he ran after me and thrust the pen into my",
+        "hands. Though he kept throwing up his arms in despair, he readily accepted the ￡5 I gave him. I felt especially",
+        " pleased with my wonderful bargain -- until I got back to the ship. No matter how hard I tried, it was",
+        "impossible to fill this beautiful pen with ink and to this day it has never written a single word!"
+      ],
       "segment": [
         {
           "aStart": "00:00:16,533",
@@ -3590,7 +3615,7 @@
           "aStart": "00:00:23,433",
           "aEnd": "00:00:39,716",
           "tip": "大船还未下锚。小船上的人就纷纷爬上客轮。一会儿工夫，甲板上就摆满了色彩斑斓的波斯地毯。印度丝绸。铜咖啡壶以及手工制作的漂亮的银器。",
-          "a": "Before she had anchored, the men from the boats had climbed on board and the decks were son covered with colourful rugs from Persia, silks from India, copper coffee pots, and beautiful handmade silverware."
+          "a": "Before she had anchored, the men from the boats had climbed on board and the decks were soon covered with colourful rugs from Persia, silks from India, copper coffee pots, and beautiful handmade silverware."
         },
         {
           "aStart": "00:00:39,817",
@@ -3602,7 +3627,7 @@
           "aStart": "00:00:42,983",
           "aEnd": "00:00:53,016",
           "tip": "船上许多游客开始同商贩讨价还价起来，但我打定主意上岸之前什么也不买。",
-          "a": "Many of the tourists on board had begun bargaining with the tradesmen, but I decide not to buy anything until I had disembarked."
+          "a": "Many of the tourists on board had begun bargaining with the tradesmen, but I decided not to buy anything until I had disembarked."
         },
         {
           "aStart": "00:00:53,116",
@@ -3674,13 +3699,13 @@
           "aStart": "00:02:01,700",
           "aEnd": "00:02:09,666",
           "tip": "我摇摇头， 伸出5根手指表示我只愿出5镑钱。",
-          "a": "I shook my head and held up a finger indicating that I was willing to pay five pounds."
+          "a": "I shook my head and held up five fingers indicating that I was willing to pay ￡5. "
         },
         {
           "aStart": "00:02:10,033",
           "aEnd": "00:02:21,833",
           "tip": "那人激动地打着手势， 仿佛我的出价使他不能容忍。 但他终于把价钱降到了10英镑。",
-          "a": "Gesticulating wildly, the man acted as if he found my offer out-rageous, but he eventually reduced the price to ￡10."
+          "a": "Gesticulating wildly, the man acted as if he found my offer outrageous, but he eventually reduced the price to ￡10."
         },
         {
           "aStart": "00:02:22,133",
@@ -3692,19 +3717,19 @@
           "aStart": "00:02:32,900",
           "aEnd": "00:02:40,133",
           "tip": "虽然他绝望地举起双手， 但他毫不迟疑地收下了我付给他的5镑钱。",
-          "a": "Though he kept throwing up his arms in despair, he readily accepted the five pounds I gave him."
+          "a": "Though he kept throwing up his arms in despair, he readily accepted the ￡5 I gave him."
         },
         {
           "aStart": "00:02:40,233",
           "aEnd": "00:02:47,450",
           "tip": "在回到船上之前，我一直为我的绝妙的讨价还价而洋洋得意。",
-          "a": "I felt especially pleased with my wonderful bargain--until I got back to the ship."
+          "a": "I felt especially pleased with my wonderful bargain -- until I got back to the ship."
         },
         {
           "aStart": "00:02:47,550",
           "aEnd": "00:03:00,000",
           "tip": "然而不管我如何摆弄，那枝漂亮的钢笔就是吸不进墨水来。直到今天，那枝笔连一个字也没写过！",
-          "a": "No matter how hard I tried, it was im-possible to fill this beautiful pen with ink and to this day it has never written a single word!"
+          "a": "No matter how hard I tried, it was impossible to fill this beautiful pen with ink and to this day it has never written a single word!"
         }
       ]
     },
@@ -3716,12 +3741,37 @@
       "title": "Funny or not?",
       "titleStart": "00:00:01,766",
       "titleEnd": "00:00:04,000",
+      "raw": [
+        "Funny or not?",
+        "Whether we find a joke funny or not largely depends on where we",
+        "have been brought up. The sense of humour is mysteriously bound",
+        "up with national characteristics. A Frenchman, for instance, might",
+        "find it hard to laugh at a Russian joke. In the same way, a Russian",
+        "might fail to see anything amusing in a joke which would make an",
+        "Englishman laugh to tears. ",
+        "Most funny stories are based on comic situations. In spite of",
+        "national differences, certain funny situations have a universal appeal. No matter where you live, you would",
+        "find it difficult not to laugh at, say, Charlie Chaplin's early films. However, a new type of humour, which",
+        "stems largely from the U.S., has recently come into fashion. It is called 'sick humour'. Comedians base their",
+        "jokes on tragic situations like violent death or serious accidents. Many people find this sort of joke distasteful",
+        "The following example of 'sick humour' will enable you to judge for yourself. ",
+        "A man who had broken his right leg was taken to hospital a few weeks before Christmas. From the",
+        "moment he arrived there, he kept on pestering his doctor to tell him when he would be able to go home. He",
+        "dreaded having to spend Christmas in hospital. Though the doctor did his best, the patient's recovery was",
+        "slow. On Christmas Day, the man still had his right leg in plaster. He spent a miserable day in bed thinking",
+        "of all the fun he was missing. The following day, however, the doctor consoled him by telling him that his",
+        "chances of being able to leave hospital in time for New Year celebrations were good. The man took heart",
+        "and, sure enough, on New Year's Eve he was able to hobble along to a party. To compensate for his unpleasant",
+        " experiences in hospital, the man drank a little more than was good for him. In the process, he enjoyed",
+        "himself thoroughly and kept telling everybody how much he hated hospitals. He was still mumbling something",
+        " about hospitals at the end of the party when he slipped on a piece of ice and broke his left leg. "
+      ],
       "segment": [
         {
           "aStart": "00:00:14,000",
           "aEnd": "00:00:20,766",
           "tip": "我们觉得一则笑话是否好笑，很大程度取决于我们是在哪儿长大的。",
-          "a": "Whether we find a joke funny or not largely depends on were we have been brought up."
+          "a": "Whether we find a joke funny or not largely depends on where we have been brought up."
         },
         {
           "aStart": "00:00:20,867",
@@ -3739,7 +3789,7 @@
           "aStart": "00:00:32,933",
           "aEnd": "00:00:42,333",
           "tip": "同样的道理，一则可以令英国人笑出泪来的笑话，俄国人听了可能觉得没有什么可笑之处。",
-          "a": "In the same way, a Russian might fail to see anything amusing in a joke witch would make an Englishman laugh to tears."
+          "a": "In the same way, a Russian might fail to see anything amusing in a joke which would make an Englishman laugh to tears."
         },
         {
           "aStart": "00:00:42,566",
@@ -3775,7 +3825,7 @@
           "aStart": "00:01:14,150",
           "aEnd": "00:01:22,466",
           "tip": "喜剧演员根据悲剧情节诸如暴死，重大事故等来编造笑话。",
-          "a": "Comedians base their jokes on tragic situation like violent death or serious accidents."
+          "a": "Comedians base their jokes on tragic situations like violent death or serious accidents."
         },
         {
           "aStart": "00:01:22,567",
@@ -3805,7 +3855,7 @@
           "aStart": "00:01:52,567",
           "aEnd": "00:01:57,550",
           "tip": "尽管医生竭力医治，但病人恢复缓慢。",
-          "a": "Though the doctors did his best, the patient's recovery was slow."
+          "a": "Though the doctor did his best, the patient's recovery was slow."
         },
         {
           "aStart": "00:01:57,650",
@@ -3829,7 +3879,7 @@
           "aStart": "00:02:21,283",
           "aEnd": "00:02:29,299",
           "tip": "那人听后振作了精神。果然，除夕时他可以一瘸一拐地去参加晚会了。",
-          "a": "The man took heart and, sure enough, on New Years' Eve he was able to hobble along to a party."
+          "a": "The man took heart and, sure enough, on New Year's Eve he was able to hobble along to a party."
         },
         {
           "aStart": "00:02:29,400",
@@ -3859,6 +3909,32 @@
       "title": "The death of a ghost",
       "titleStart": "00:00:01,633",
       "titleEnd": "00:00:06,766",
+      "raw": [
+        "The death of a ghost",
+        "For years, villagers believed that Endley Farm was haunted. The",
+        "farm was owned by two brothers, Joe and Bob Cox. They employed",
+        "a few farmhands, but no one was willing to work there long. Every",
+        "time a worker gave up his job, he told the same story. Farm labourers",
+        "said that they always woke up to find that work had been done",
+        "overnight. Hay had been cut and cowsheds had been cleaned. A",
+        "farm worker, who stayed up all night, claimed to have seen a figure",
+        "cutting corn in the moonlight. In time, it became an accepted fact that the Cox brothers employed a",
+        "conscientious ghost that did most of their work for them. ",
+        "No one suspected that there might be someone else on the farm who had never been seen. This was",
+        "indeed the case. A short time ago, villagers were astonished to learn that the ghost of Endley had died. ",
+        "Everyone went to the funeral, for the 'ghost' was none other than Eric Cox, a third brother who was",
+        "supposed to have died as a young man. After the funeral, Joe and Bob revealed a secret which they had kept",
+        "for over fifty years. ",
+        "Eric had been the eldest son of the family, very much older than his two brothers. He had been obliged to",
+        "join the army during the Second World War. As he hated army life, he decided to desert his regiment. When",
+        "he learnt that he would be sent abroad, he returned to the farm and his father hid him until the end of the war. ",
+        "Fearing the authorities, Eric remained in hiding after the war as well. His father told everybody that Eric had",
+        "been killed in action. The only other people who knew the secret were Joe and Bob. They did not even tell",
+        "their wives. When their father died, they thought it their duty to keep Eric in hiding. All these years, Eric had",
+        "lived as a recluse. He used to sleep during the day and work at night, quite unaware of the fact that he had",
+        "become the ghost of Endley. When he died, however, his brothers found it impossible to keep the secret any",
+        "longer. "
+      ],
       "segment": [
         {
           "aStart": "00:00:13,266",
@@ -3900,13 +3976,13 @@
           "aStart": "00:00:45,733",
           "aEnd": "00:00:53,233",
           "tip": "有一个彻夜未眠的雇工还声称他看见一个人影在月光下收割庄稼。",
-          "a": "A farm worker, who stayed up all night claimed to have seen a figure cutting corn in the moonlight."
+          "a": "A farm worker, who stayed up all night, claimed to have seen a figure cutting corn in the moonlight."
         },
         {
           "aStart": "00:00:53,333",
           "aEnd": "00:01:02,866",
           "tip": "随着时间的流逝，考科斯兄弟雇了一个尽心尽责的鬼，他们家的活大部分都让鬼给干了，这件事成了公认的事实。",
-          "a": "In time, it became an accepted fact the Cox brothers employed a conscientious ghost that did most of their work for them."
+          "a": "In time, it became an accepted fact that the Cox brothers employed a conscientious ghost that did most of their work for them."
         },
         {
           "aStart": "00:01:03,600",
@@ -4020,6 +4096,31 @@
       "title": "A lovable eccentric",
       "titleStart": "00:00:01,966",
       "titleEnd": "00:00:05,133",
+      "raw": [
+        "A lovable eccentric",
+        "True eccentrics never deliberately set out to draw attention to",
+        "themselves. They disregard social conventions without being",
+        "conscious that they are doing anything extraordinary. This invariably",
+        "wins them the love and respect of others, for they add colour to the",
+        "dull routine of everyday life. ",
+        "Up to the time of his death, Richard Colson was one of the most",
+        "notable figures in our town. He was a shrewd and wealthy",
+        "businessman, but most people in the town hardly knew anything about this side of his life. He was known to",
+        "us all as Dickie and his eccentricity had become legendary long before he died. ",
+        "Dickie disliked snobs intensely. Though he owned a large car, he hardly ever used it, preferring always",
+        "to go on foot. Even when it was raining heavily, he refused to carry an umbrella. One day, he walked into an",
+        "expensive shop after having been caught in a particularly heavy shower. He wanted to buy a ￡300 watch for",
+        "his wife, but he was in such a bedraggled condition that an assistant refused to serve him. Dickie left the",
+        "shop without a word and returned carrying a large cloth bag. As it was extremely heavy, he dumped it on the",
+        "counter. The assistant asked him to leave, but Dickie paid no attention to him and requested to see the",
+        "manager. Recognizing who the customer was, the manager was most apologetic and reprimanded the assistant",
+        " severely. When Dickie was given the watch, he presented the assistant with the cloth bag. It contained",
+        "￡300 in pennies. He insisted on the assistant's counting the money before he left -- 30,000 pennies in all!",
+        "On another occasion, he invited a number of important critics to see his private collection of modern",
+        "paintings. This exhibition received a great deal of attention in the press, for though the pictures were",
+        "supposed to be the work of famous artists, they had in fact been painted by Dickie. It took him four years",
+        "to stage this elaborate joke simply to prove that critics do not always know what they are talking about. "
+      ],
       "segment": [
         {
           "aStart": "00:00:15,900",
@@ -4085,7 +4186,7 @@
           "aStart": "00:01:28,883",
           "aEnd": "00:01:40,316",
           "tip": "要为妻子买一块价值300英镑的手表。但店员见他浑身泥水的样子，竟不肯接待他。",
-          "a": "He wanted to buy a ￡300 watch for his wife, but he was in such a bedraggled condition than an assistant refused to serve him."
+          "a": "He wanted to buy a ￡300 watch for his wife, but he was in such a bedraggled condition that an assistant refused to serve him."
         },
         {
           "aStart": "00:01:40,417",
@@ -4115,7 +4216,7 @@
           "aStart": "00:02:09,433",
           "aEnd": "00:02:15,299",
           "tip": "店员为迪基拿出了那块手表，迪基把布口袋递给他，",
-          "a": "When Dickie was given the watch, the presented the assistant with the cloth bag."
+          "a": "When Dickie was given the watch, he presented the assistant with the cloth bag."
         },
         {
           "aStart": "00:02:15,400",
@@ -4157,6 +4258,31 @@
       "title": "A lost ship",
       "titleStart": "00:00:01,666",
       "titleEnd": "00:00:04,233",
+      "raw": [
+        "A lost ship",
+        "The salvage operation had been a complete failure. The small ship, ",
+        "Elkor, which had been searching the Barents Sea for weeks, was",
+        "on its way home. A radio message from the mainland had been",
+        "received by the ship's captain instructing him to give up the search. ",
+        "The captain knew that another attempt would be made later, for the",
+        "sunken ship he was trying to find had been carrying a precious",
+        "cargo of gold bullion.",
+        "Despite the message, the captain of the Elkor decided to try once more. The sea bed was scoured with",
+        "powerful nets and there was tremendous excitement on board when a chest was raised from the bottom. ",
+        "Though the crew were at first under the impression that the lost ship had been found, the contents of the",
+        "chest proved them wrong. What they had in fact found was a ship which had been sunk many years before.",
+        "The chest contained the personal belongings of a seaman, Alan Fielding. There were books, clothing and",
+        "photographs, together with letters which the seaman had once received from his wife. The captain of the",
+        "Elkor ordered his men to salvage as much as possible from the wreck. Nothing of value was found, but the",
+        "numerous items which were brought to the surface proved to be of great interest. From a heavy gun that was",
+        "raised, the captain realized that the ship must have been a cruiser. In another chest, which contained the",
+        "belongings of a ship's officer, there was an unfinished letter which had been written on March 14th, 1943. ",
+        "The captain learnt from the letter that the name of the lost ship was the Karen. The most valuable find of all",
+        "was the ship's log book, parts of which it was still possible to read. From this the captain was able to piece",
+        "together all the information that had come to light. The Karen had been sailing in a convoy to Russia when",
+        "she was torpedoed by an enemy submarine. This was later confirmed by a naval official at the Ministry of",
+        "Defence after the Elkor had returned home. All the items that were found were sent to the War Museum."
+      ],
       "segment": [
         {
           "aStart": "00:00:14,933",
@@ -4270,7 +4396,7 @@
           "aStart": "00:02:25,383",
           "aEnd": "00:02:32,666",
           "tip": "这一说法在“埃尔科”号返航后得到国防部一位海军官员的证实。",
-          "a": "This was later confirmed by naval official at the Ministry of Defiance after the Elkor had returned home."
+          "a": "This was later confirmed by a naval official at the Ministry of Defence after the Elkor had returned home."
         },
         {
           "aStart": "00:02:32,767",
@@ -4288,6 +4414,31 @@
       "title": "A day to remember",
       "titleStart": "00:00:01,900",
       "titleEnd": "00:00:04,433",
+      "raw": [
+        "A day to remember",
+        "We have all experienced days when everything goes wrong. A day",
+        "may begin well enough, but suddenly everything seems to get out",
+        "of control. What invariably happens is that a great number of things",
+        "choose to go wrong at precisely the same moment. It is as if a single",
+        "unimportant event set up a chain of reactions. Let us suppose that",
+        "you are preparing a meal and keeping an eye on the baby at the",
+        "same time. The telephone rings and this marks the prelude to an",
+        "unforeseen series of catastrophes. While you are on the phone, the baby pulls the tablecloth off the table, ",
+        "smashing half your best crockery and cutting himself in the process. You hang up hurriedly and attend to",
+        "baby, crockery, etc. Meanwhile, the meal gets burnt. As if this were not enough to reduce you to tears, your",
+        "husband arrives, unexpectedly bringing three guests to dinner. ",
+        "Things can go wrong on a big scale, as a number of people recently discovered in Parramatta, a suburb of",
+        "Sydney. During the rush hour one evening two cars collided and both drivers began to argue. The woman",
+        "immediately behind the two cars happened to be a learner. She suddenly got into a panic and stopped her car. ",
+        "This made the driver following her brake hard. His wife was sitting beside him holding a large cake. As she",
+        "was thrown forward, the cake went right through the windscreen and landed on the road. Seeing a cake",
+        "flying through the air, a lorry driver who was drawing up alongside the car, pulled up all of a sudden. The",
+        "lorry was loaded with empty beer bottles and hundreds of them slid off the back of the vehicle and on to the",
+        "road. This led to yet another angry argument. Meanwhile, the traffic piled up behind. It took the police",
+        "nearly an hour to get the traffic on the move again. In the meantime, the lorry driver had to sweep up",
+        "hundreds of broken bottles. Only two stray dogs benefited from all this confusion, for they greedily",
+        "devoured what was left of the cake. It was just one of those days!"
+      ],
       "segment": [
         {
           "aStart": "00:00:14,966",
@@ -4449,6 +4600,32 @@
       "title": "A happy discovery",
       "titleStart": "00:00:01,866",
       "titleEnd": "00:00:04,700",
+      "raw": [
+        "A happy discovery",
+        "Antique shops exert a peculiar fascination on a great many people. ",
+        "The more expensive kind of antique shop where rare objects are",
+        "beautifully displayed in glass cases to keep them free from dust is",
+        "usually a forbidding place. But no one has to muster up courage to",
+        "enter a less pretentious antique shop. There is always hope that in",
+        "its labyrinth of musty, dark, disordered rooms a real rarity will be",
+        "found amongst the piles of assorted junk that litter the floors. ",
+        "No one discovers a rarity by chance. A truly dedicated bargain hunter must have patience, and above all, ",
+        "the ability to recognize the worth of something when he sees it. To do this, he must be at least as knowledgeable",
+        "as the dealer. Like a scientist bent on making a discovery, he must cherish the hope that one day he will be",
+        "amply rewarded. ",
+        "My old friend, Frank Halliday, is just such a person. He has often described to me how he picked up a",
+        "masterpiece for a mere ￡50. One Saturday morning, Frank visited an antique shop in my neighbourhood. As",
+        "he had never been there before, he found a great deal to interest him. The morning passed rapidly and Frank",
+        "was about to leave when he noticed a large packing case lying on the floor. The dealer told him that it had",
+        "just come in, but that he could not be bothered to open it. Frank begged him to do so and the dealer reluctantly",
+        " prised it open. The contents were disappointing. Apart from an interesting-looking carved dagger, the",
+        "box was full of crockery, much of it broken. Frank gently lifted the crockery out of the box and suddenly",
+        "noticed a miniature painting at the bottom of the packing case. As its composition and line reminded him of",
+        "an Italian painting he knew well, he decided to buy it. Glancing at it briefly, the dealer told him that it was",
+        "worth ￡50. Frank could hardly conceal his excitement, for he knew that he had made a real discovery. The",
+        "tiny painting proved to be an unknown masterpiece by Correggio and was worth hundreds of thousands of",
+        "pounds. "
+      ],
       "segment": [
         {
           "aStart": "00:00:13,933",
@@ -4472,7 +4649,7 @@
           "aStart": "00:00:41,333",
           "aEnd": "00:00:54,666",
           "tip": "人们还常常有希望在发霉、阴暗、杂乱无章、迷宫般的店堂里，从杂乱地摆放在地面上的、一堆堆各式各样的破烂货里找到一件稀世珍品。",
-          "a": "There is always hope that in its labyrinth of musty, dark, disordered rooms a real rarity will be found amongst the piles of assorted junk that little the floors."
+          "a": "There is always hope that in its labyrinth of musty, dark, disordered rooms a real rarity will be found amongst the piles of assorted junk that litter the floors."
         },
         {
           "aStart": "00:00:54,766",
@@ -4532,7 +4709,7 @@
           "aStart": "00:01:58,933",
           "aEnd": "00:02:05,633",
           "tip": "古董商告诉他那只货箱刚到不久，但他嫌麻烦不想把它打开。",
-          "a": "The dealer told him that it had just come in but that he could not be bothered to open it."
+          "a": "The dealer told him that it had just come in, but that he could not be bothered to open it."
         },
         {
           "aStart": "00:02:05,866",
@@ -4556,7 +4733,7 @@
           "aStart": "00:02:22,616",
           "aEnd": "00:02:32,599",
           "tip": "弗兰克轻轻地把陶器拿出箱子，突然发现在箱底有一幅微型画，",
-          "a": "Frank gently lifted the crockery out of the box an suddenly noticed a miniature painting at the bottom of the packing case."
+          "a": "Frank gently lifted the crockery out of the box and suddenly noticed a miniature painting at the bottom of the packing case."
         },
         {
           "aStart": "00:02:32,700",
