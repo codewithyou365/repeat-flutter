@@ -1577,8 +1577,8 @@
       "hash": "f7f38f858a1319d94a113e8108f03351ed803f41",
       "key": "nce3/14",
       "title": "A noble gangster",
-      "titleStart": "00:00:01,933",
-      "titleEnd": "00:00:08,400",
+      "titleStart": "00:00:02,000",
+      "titleEnd": "00:00:04,400",
       "raw": [
         "A noble gangster",
         "There was a time when the owners of shops and businesses in",
@@ -1934,7 +1934,7 @@
       "key": "nce3/17",
       "title": "The longest suspension bridge in the world",
       "titleStart": "00:00:02,366",
-      "titleEnd": "00:00:08,000",
+      "titleEnd": "00:00:07,500",
       "raw": [
         "The longest suspension bridge in the world",
         "Verrazano, an Italian about whom little is known, sailed into New",
@@ -4769,6 +4769,31 @@
       "title": "Justice was done",
       "titleStart": "00:00:02,166",
       "titleEnd": "00:00:04,766",
+      "raw": [
+        "Justice was done",
+        "The word justice is usually associated with courts of law. We might",
+        "say that justice has been done when a man's innocence or guilt has",
+        "been proved beyond doubt. Justice is part of the complex machinery",
+        "of the law. Those who seek it undertake an arduous journey and",
+        "can never be sure that they will find it. Judges, however wise or",
+        "eminent, are human and can make mistakes. ",
+        "There are rare instances when justice almost ceases to be an abstract concept. Reward or punishment are",
+        "meted out quite independent of human interference. At such times, justice acts like a living force. When we",
+        "use a phrase like 'it serves him right', we are, in part, admitting that a certain set of circumstances has",
+        "enabled justice to act of its own accord. ",
+        "When a thief was caught on the premises of a large jewellery store one morning, the shop assistants must",
+        "have found it impossible to resist the temptation to say 'it serves him right'. The shop was an old converted",
+        "house with many large, disused fireplaces and tall, narrow chimneys. Towards midday, a girl heard a muffled",
+        "cry coming from behind one of the walls. As the cry was repeated several times, she ran to tell the manager",
+        "who promptly rang up the fire brigade. The cry had certainly come from one of the chimneys, but as there",
+        "were so many of them, the fire fighters could not be certain which one it was. They located the right chimney",
+        "by tapping at the walls and listening for the man's cries. After chipping through a wall which was eighteen",
+        "inches thick, they found that a man had been trapped in the chimney. As it was extremely narrow, the man",
+        "was unable to move, but the fire fighters were eventually able to free him by cutting a huge hole in the wall.",
+        "The sorry-looking, blackened figure that emerged, admitted at once that he had tried to break into the shop",
+        "during the night but had got stuck in the chimney. He had been there for nearly ten hours. Justice had been",
+        "done even before the man was handed over to the police. "
+      ],
       "segment": [
         {
           "aStart": "00:00:19,333",
@@ -4828,7 +4853,7 @@
           "aStart": "00:01:23,367",
           "aEnd": "00:01:37,233",
           "tip": "一天上午，当一个小偷在一家大型珠宝店里被人抓住的时候，店员一定会忍不住说：“他罪有应得。”",
-          "a": "When a thief was caught on the premises of large jewellery store on morning, the shop assistants must have found it impossible to resist the temptation to say 'it serves him right.'"
+          "a": "When a thief was caught on the premises of a large jewellery store one morning, the shop assistants must have found it impossible to resist the temptation to say 'it serves him right'."
         },
         {
           "aStart": "00:01:37,333",
@@ -4840,7 +4865,7 @@
           "aStart": "00:01:45,917",
           "aEnd": "00:01:52,616",
           "tip": "快到中午的时候，一个女售货员听见从一堵墙里传出一种闷声闷气的叫声。",
-          "a": "Towards midday, a girl heard a muffed cry coming from behind on of the walls."
+          "a": "Towards midday, a girl heard a muffled cry coming from behind one of the walls."
         },
         {
           "aStart": "00:01:52,717",
@@ -4852,7 +4877,7 @@
           "aStart": "00:02:00,950",
           "aEnd": "00:02:11,699",
           "tip": "喊叫声肯定是从烟囱里传出来的，然而，因为烟囱太多，消防队员无法确定到底是哪一个。",
-          "a": "The cry had certainly come form one of the chimneys, but as there were so many of them, the fire fighters could not be certain which one it was."
+          "a": "The cry had certainly come from one of the chimneys, but as there were so many of them, the fire fighters could not be certain which one it was."
         },
         {
           "aStart": "00:02:11,800",
@@ -4900,6 +4925,32 @@
       "title": "A chance in a million",
       "titleStart": "00:00:01,566",
       "titleEnd": "00:00:04,566",
+      "raw": [
+        "A chance in a million",
+        "We are less credulous than we used to be. In the nineteenth century, ",
+        "a novelist would bring his story to a conclusion by presenting his",
+        "readers with a series of coincidences -- most of them wildly",
+        "improbable. Readers happily accepted the fact that an obscure",
+        "maidservant was really the hero's mother. A long-lost brother, who",
+        "was presumed dead, was really alive all the time and wickedly",
+        "plotting to bring about the hero's downfall. And so on. Modern",
+        "readers would find such naive solutions totally unacceptable. Yet, in real life, circumstances do sometimes",
+        "conspire to bring about coincidences which anyone but a nineteenth century novelist would find incredible. ",
+        "When I was a boy, my grandfather told me how a German taxi driver, Franz Bussman, found a brother",
+        "who was thought to have been killed twenty years before. While on a walking tour with his wife, he stopped",
+        "to talk to a workman. After they had gone on, Mrs. Bussman commented on the workman's close",
+        "resemblance to her husband and even suggested that he might be his brother. Franz poured scorn on the",
+        "idea, pointing out that his brother had been killed in action during the war. Though Mrs. Bussman was fully",
+        "acquainted with this story, she thought that there was a chance in a million that she might be right. A few",
+        "days later, she sent a boy to the workman to ask him if his name was Hans Bussman. Needless to say, the",
+        "man's name was Hans Bussman and he really was Franz's long-lost brother. When the brothers were",
+        "reunited, Hans explained how it was that he was still alive. After having been wounded towards the end of",
+        "the war, he had been sent to hospital and was separated from his unit. The hospital had been bombed and",
+        "Hans had made his way back into Western Germany on foot. Meanwhile, his unit was lost and all records of",
+        "him had been destroyed. Hans returned to his family home, but the house had been bombed and no one in the",
+        "neighbourhood knew what had become of the inhabitants. Assuming that his family had been killed during",
+        "an air raid, Hans settled down in a village fifty miles away where he had remained ever since. "
+      ],
       "segment": [
         {
           "aStart": "00:00:13,000",
@@ -4935,7 +4986,7 @@
           "aStart": "00:00:49,733",
           "aEnd": "00:00:55,766",
           "tip": "现代读者会觉得这种天真的结局完全无法接受。",
-          "a": "Modern readers would find such naive solution totally unacceptable."
+          "a": "Modern readers would find such naive solutions totally unacceptable."
         },
         {
           "aStart": "00:00:55,866",
@@ -4953,7 +5004,7 @@
           "aStart": "00:01:21,083",
           "aEnd": "00:01:26,699",
           "tip": "一次，他与妻子徒步旅行。途中，停下来与一个工人交谈，",
-          "a": "While on a walking tour with his wife, he stooped to talk to a workman."
+          "a": "While on a walking tour with his wife, he stopped to talk to a workman."
         },
         {
           "aStart": "00:01:26,800",
@@ -4971,7 +5022,7 @@
           "aStart": "00:01:46,900",
           "aEnd": "00:01:56,549",
           "tip": "尽管巴斯曼夫人熟知这个情况，但她仍然认为自己的想法仍有百万分之一的可能性。",
-          "a": "Though Mrs. Busssman fully acquainted with this story, she thought that there was a chance in a million that she might be right."
+          "a": "Though Mrs. Bussman was fully acquainted with this story, she thought that there was a chance in a million that she might be right."
         },
         {
           "aStart": "00:01:56,650",
@@ -5031,6 +5082,31 @@
       "title": "The Westhaven Express",
       "titleStart": "00:00:01,633",
       "titleEnd": "00:00:04,666",
+      "raw": [
+        "The Westhaven Express",
+        "We have learnt to expect that trains will be punctual. After years of",
+        "conditioning, most of us have developed an unshakable faith in",
+        "railway timetables. Ships may be delayed by storms; flights may",
+        "be cancelled because of bad weather; but trains must be on time. ",
+        "Only an exceptionally heavy snowfall might temporarily dislocate",
+        "railway services. It is all too easy to blame the railway authorities",
+        "when something does go wrong. The truth is that when mistakes",
+        "occur, they are more likely to be ours than theirs. ",
+        "After consulting my railway timetable, I noted with satisfaction that there was an express train to",
+        "Westhaven. It went direct from my local station and the journey lasted a mere hour and seventeen minutes. ",
+        "When I boarded the train, I could not help noticing that a great many local people got on as well. At the time, ",
+        "this did not strike me as odd. I reflected that there must be a great many people besides myself who wished",
+        "to take advantage of this excellent service. Neither was I surprised when the train stopped at Widley, a tiny",
+        "station a few miles along the line. Even a mighty express train can be held up by signals. But when the train",
+        "dawdled at station after station, I began to wonder. It suddenly dawned on me that this express was not",
+        "roaring down the line at ninety miles an hour, but barely chugging along at thirty. One hour and seventeen",
+        "minutes passed and we had not even covered half the distance. I asked a passenger if this was the Westhaven",
+        "Express, but he had not even heard of it. I determined to lodge a complaint as soon as we arrived. Two hours",
+        "later, I was talking angrily to the station master at Westhaven. When he denied the train's existence, I",
+        "borrowed his copy of the timetable. There was a note of triumph in my voice when I told him that it was",
+        "there in black and white. Glancing at it briefly, he told me to look again. A tiny asterisk conducted me to a",
+        "footnote at the bottom of the page. It said: 'This service has been suspended.'"
+      ],
       "segment": [
         {
           "aStart": "00:00:13,533",
@@ -5054,7 +5130,7 @@
           "aStart": "00:00:28,933",
           "aEnd": "00:00:35,349",
           "tip": "飞机航班可能因恶劣天气而取消，唯有火车必然是准点的。",
-          "a": "flights may be cancelled because of bad weather, but trains must be on time."
+          "a": "flights may be cancelled because of bad weather; but trains must be on time."
         },
         {
           "aStart": "00:00:35,450",
@@ -5084,7 +5160,7 @@
           "aStart": "00:01:05,783",
           "aEnd": "00:01:13,416",
           "tip": "这是趟直达车，旅途总共才需1小时17分钟。",
-          "a": "It went direct from my local station and the journey lasted mere hour and seventeen minutes."
+          "a": "It went direct from my local station and the journey lasted a mere hour and seventeen minutes."
         },
         {
           "aStart": "00:01:13,516",
@@ -5108,7 +5184,7 @@
           "aStart": "00:01:33,300",
           "aEnd": "00:01:41,266",
           "tip": "火车开出几英里即在一个小站威德里停了下来。对此，我不觉得奇怪，",
-          "a": "Neither was I surprise when the train stopped at Widley, a tiny station a few miles along the line."
+          "a": "Neither was I surprised when the train stopped at Widley, a tiny station a few miles along the line."
         },
         {
           "aStart": "00:01:41,367",
@@ -5120,7 +5196,7 @@
           "aStart": "00:01:45,783",
           "aEnd": "00:02:02,499",
           "tip": "但是，当火车一站接着一站往前蠕动时，我便产生了怀疑。我突然感到这趟快车并没以时速90英里的速度呼啸前进，而是卟哧卟哧地向前爬行，时速仅30英里。",
-          "a": "But when the train dawdled at station after station, I began to wonder, It suddenly dawned on me that this express was not roaring down the line at ninety miles an hour, but barely chugging along at thirty."
+          "a": "But when the train dawdled at station after station, I began to wonder. It suddenly dawned on me that this express was not roaring down the line at ninety miles an hour, but barely chugging along at thirty."
         },
         {
           "aStart": "00:02:02,600",
@@ -5186,6 +5262,31 @@
       "title": "The first calender",
       "titleStart": "00:00:01,766",
       "titleEnd": "00:00:04,633",
+      "raw": [
+        "The first calender",
+        "Future historians will be in a unique position when they come to",
+        "record the history of our own times. They will hardly know which",
+        "facts to select from the great mass of evidence that steadily",
+        "accumulates. What is more, they will not have to rely solely on the",
+        "written word. Films, videos, CDs and CD-ROMs are just some of",
+        "the bewildering amount of information they will have. They will",
+        "be able, as it were, to see and hear us in action. But the historian attempting to reconstruct the distant past is",
+        "always faced with a difficult task. He has to deduce what he can from the few scanty clues available. Even",
+        "seemingly insignificant remains can shed interesting light on the history of early man. ",
+        "Up to now, historians have assumed that calendars came into being with the advent of agriculture, for",
+        "then man was faced with a real need to understand something about the seasons. Recent scientific evidence",
+        "seems to indicate that this assumption is incorrect. ",
+        "Historians have long been puzzled by dots, lines and symbols which have been engraved on walls, ",
+        "bones, and the ivory tusks of mammoths. The nomads who made these markings lived by hunting and",
+        "fishing during the last Ice Age which began about 35,000 B.C. and ended about 10,000 B.C. By correlating",
+        "markings made in various parts of the world, historians have been able to read this difficult code. They have",
+        "found that it is connected with the passage of days and the phases of the moon. It is, in fact, a primitive type",
+        "of calendar. It has long been known that the hunting scenes depicted on walls were not simply a form of",
+        "artistic expression. They had a definite meaning, for they were as near as early man could get to writing. It",
+        "is possible that there is a definite relation between these paintings and the markings that sometimes",
+        "accompany them. It seems that man was making a real effort to understand the seasons 20,000 years",
+        "earlier than has been supposed. "
+      ],
       "segment": [
         {
           "aStart": "00:00:20,033",
@@ -5209,7 +5310,7 @@
           "aStart": "00:00:42,433",
           "aEnd": "00:00:51,966",
           "tip": "电影、录像、光盘和光盘驱动器只是能为他们提供令人眼花缭乱的大量信息的几种手段。",
-          "a": "Films, videos, CDs and CD-ROMS are just some of the bewildering amount of information they will have."
+          "a": "Films, videos, CDs and CD-ROMs are just some of the bewildering amount of information they will have."
         },
         {
           "aStart": "00:00:52,067",
@@ -5311,12 +5412,37 @@
       "title": "Nothing to worry about",
       "titleStart": "00:00:01,766",
       "titleEnd": "00:00:04,466",
+      "raw": [
+        "Nothing to worry about",
+        "The rough road across the plain soon became so bad that we tried",
+        "to get Bruce to drive back to the village we had come from. Even",
+        "though the road was littered with boulders and pitted with holes, ",
+        "Bruce was not in the least perturbed. Glancing at his map, he",
+        "informed us that the next village was a mere twenty miles away. It",
+        "was not that Bruce always underestimated difficulties. He simply",
+        "had no sense of danger at all. No matter what the conditions were, he believed that a car should be driven as",
+        "fast as it could possibly go. ",
+        "As we bumped over the dusty track, we swerved to avoid large boulders. The wheels scooped up stones",
+        "which hammered ominously under the car. We felt sure that sooner or later a stone would rip a hole in our",
+        "petrol tank or damage the engine. Because of this, we kept looking back, wondering if we were leaving a",
+        "trail of oil and petrol behind us. ",
+        "What a relief it was when the boulders suddenly disappeared, giving way to a stretch of plain where the",
+        "only obstacles were clumps of bushes. But there was worse to come. Just ahead of us there was a huge",
+        "fissure. In response to renewed pleadings, Bruce stopped. Though we all got out to examine the fissure, he",
+        "remained in the car. We informed him that the fissure extended for fifty yards and was two feet wide and",
+        "four feet deep. Even this had no effect. Bruce went into a low gear and drove at a terrifying speed, keeping",
+        "the front wheels astride the crack as he followed its zigzag course. Before we had time to worry about what",
+        "might happen, we were back on the plain again. Bruce consulted the map once more and told us that the",
+        "village was now only fifteen miles away. Our next obstacle was a shallow pool of water about half a mile",
+        "across. Bruce charged at it, but in the middle, the car came to a grinding halt. A yellow light on the dashboard",
+        " flashed angrily and Bruce cheerfully announced that there was no oil in the engine!"
+      ],
       "segment": [
         {
           "aStart": "00:00:18,100",
           "aEnd": "00:00:28,033",
           "tip": "穿越平原的道路高低不平，开车走了不远，路面愈加崎岖。",
-          "a": "The rough across the plain soon became so bad that we tried to get Bruce to drive back to the village we had come from."
+          "a": "The rough road across the plain soon became so bad that we tried to get Bruce to drive back to the village we had come from."
         },
         {
           "aStart": "00:00:28,133",
@@ -5406,7 +5532,7 @@
           "aStart": "00:02:01,750",
           "aEnd": "00:02:11,116",
           "tip": "我们告诉他那个大裂缝长50码，宽2英尺，深4英尺。",
-          "a": "We informed him that the fissure extended for fifty years and was two feet wide and four feet deep."
+          "a": "We informed him that the fissure extended for fifty yards and was two feet wide and four feet deep."
         },
         {
           "aStart": "00:02:11,217",
@@ -5460,12 +5586,38 @@
       "title": "Who's who",
       "titleStart": "00:00:01,466",
       "titleEnd": "00:00:03,433",
+      "raw": [
+        "Who's who",
+        "It has never been explained why university students seem to enjoy",
+        "practical jokes more than anyone else. Students specialize in a",
+        "particular type of practical joke: the hoax. Inviting the fire brigade",
+        "to put out a nonexistent fire is a crude form of deception which no",
+        "self-respecting student would ever indulge in. Students often create",
+        "amusing situations which are funny to everyone except the victims. ",
+        "When a student recently saw two workmen using a pneumatic",
+        "drill outside his university, he immediately telephoned the police and informed them that two students",
+        "dressed up as workmen were tearing up the road with a pneumatic drill. As soon as he had hung up, he went",
+        "over to the workmen and told them that if a policeman ordered them to go away, they were not to take him",
+        "seriously. He added that a student had dressed up as a policeman and was playing all sorts of silly jokes on",
+        "people. Both the police and the workmen were grateful to the student for this piece of advance information. ",
+        "The student hid in an archway nearby where he could watch and hear everything that went on. Sure",
+        "enough, a policeman arrived on the scene and politely asked the workmen to go away. When he received a",
+        "very rude reply from one of the workmen, he threatened to remove them by force. The workmen told him to",
+        "do as he pleased and the policeman telephoned for help. Shortly afterwards, four more policemen arrived",
+        "and remonstrated with the workmen. As the men refused to stop working, the police attempted to seize the",
+        "pneumatic drill. The workmen struggled fiercely and one of them lost his temper. He threatened to call the",
+        "police. At this, the police pointed out ironically that this would hardly be necessary as the men were already",
+        "under arrest. Pretending to speak seriously, one of the workmen asked if he might make a telephone call",
+        "before being taken to the station. Permission was granted and a policeman accompanied him to a pay phone.",
+        "Only when he saw that the man was actually telephoning the police did he realize that they had all been the",
+        "victims of a hoax. "
+      ],
       "segment": [
         {
           "aStart": "00:00:13,700",
           "aEnd": "00:00:22,633",
           "tip": "谁也弄不清为什么大学生好像比任何人都更喜欢恶作剧。",
-          "a": "It has never been explained why university students seem to enjoy practical jokes more than else."
+          "a": "It has never been explained why university students seem to enjoy practical jokes more than anyone else."
         },
         {
           "aStart": "00:00:22,733",
@@ -5495,7 +5647,7 @@
           "aStart": "00:01:04,483",
           "aEnd": "00:01:14,999",
           "tip": "挂上电话后，他又马上来到工人那儿，告诉他们若有个警察来让他们走开，不要把他当回事，",
-          "a": "As soon as he had hung up, he went over to the workmen and told them that if a policeman ordered them to go away, they were not take him seriously."
+          "a": "As soon as he had hung up, he went over to the workmen and told them that if a policeman ordered them to go away, they were not to take him seriously."
         },
         {
           "aStart": "00:01:15,100",
@@ -5523,15 +5675,9 @@
         },
         {
           "aStart": "00:01:45,500",
-          "aEnd": "00:01:50,133",
-          "tip": "但其中一个工人粗鲁地回了几句。",
-          "a": "When he received a very rude reply from one of the workmen."
-        },
-        {
-          "aStart": "00:01:50,200",
           "aEnd": "00:01:53,049",
-          "tip": "于是警察威胁要强行使他们离开。",
-          "a": "He threatened to remove them by force."
+          "tip": "但其中一个工人粗鲁地回了几句, 于是警察威胁要强行使他们离开。",
+          "a": "When he received a very rude reply from one of the workmen, he threatened to remove them by force."
         },
         {
           "aStart": "00:01:53,150",
@@ -5594,9 +5740,42 @@
       "path": "/nce3/a/41.mp3",
       "hash": "6fb536f5f30abb08ed0b7a36a7d094ba61acef4a",
       "key": "nce3/41",
-      "title": "Illusions of Pastoral peace",
+      "title": "Illusions of pastoral peace",
       "titleStart": "00:00:01,866",
       "titleEnd": "00:00:06,200",
+      "raw": [
+        "Illusions of pastoral peace",
+        "The quiet life of the country has never appealed to me. City born",
+        "and city bred, I have always regarded the country as something you",
+        "look at through a train window, or something you occasionally visit",
+        "during the weekend. Most of my friends live in the city, yet they",
+        "always go into raptures at the mere mention of the country. Though",
+        "they extol the virtues of the peaceful life, only one of them has ever",
+        "gone to live in the country and he was back in town within six months. Even he still lives under the illusion",
+        "that country life is somehow superior to town life. He is forever talking about the friendly people, the clean",
+        "atmosphere, the closeness to nature and the gentle pace of living. Nothing can be compared, he maintains, ",
+        "with the first cockcrow, the twittering of birds at dawn, the sight of the rising sun glinting on the trees and",
+        "pastures. This idyllic pastoral scene is only part of the picture. My friend fails to mention the long and",
+        "friendless winter evenings in front of the TV -- virtually the only form of entertainment. He says nothing",
+        "about the poor selection of goods in the shops, or about those unfortunate people who have to travel from the",
+        "country to the city every day to get to work. Why people are prepared to tolerate a four-hour journey each",
+        "day for the dubious privilege of living in the country is beyond me. They could be saved so much misery and",
+        "expense if they chose to live in the city where they rightly belong.",
+        "If you can do without the few pastoral pleasures of the country, you will find the city can provide you",
+        "with the best that life can offer. You never have to travel miles to see your friends. They invariably live",
+        "nearby and are always available for an informal chat or an evening's entertainment. Some of my",
+        "acquaintances in the country come up to town once or twice a year to visit the theatre as a special treat. For",
+        "them this is a major operation which involves considerable planning. As the play draws to its close, they",
+        "wonder whether they will ever catch that last train home. The city dweller never experiences anxieties of this",
+        "sort. The latest exhibitions, films, or plays are only a short bus ride away. Shopping, too, is always a ",
+        "pleasure. There is so much variety that you never have to make do with second best. Country people run wild",
+        "when they go shopping in the city and stagger home loaded with as many of the exotic items as they can",
+        "carry. Nor is the city without its moments of beauty. There is something comforting about the warm glow",
+        "shed by advertisements on cold wet winter nights. Few things could be more impressive than the peace that",
+        "descends on deserted city streets at weekends when the thousands that travel to work every day are tucked",
+        "away in their homes in the country. It has always been a mystery to me why city dwellers, who appreciate all",
+        "these things, obstinately pretend that they would prefer to live in the country."
+      ],
       "segment": [
         {
           "aStart": "00:00:17,233",
@@ -5606,15 +5785,9 @@
         },
         {
           "aStart": "00:00:22,167",
-          "aEnd": "00:00:24,699",
-          "tip": "我生在城市，长在城市， bred breed 培育",
-          "a": "City born and city bred."
-        },
-        {
-          "aStart": "00:00:24,800",
           "aEnd": "00:00:35,199",
-          "tip": "总认为乡村是透过火车车窗看到的那个样了，或偶尔周末去游玩一下景象。",
-          "a": "I have always regarded the country as something you look at through a train window, or something you occasional visit during the weekend."
+          "tip": "我生在城市，长在城市，总认为乡村是透过火车车窗看到的那个样了，或偶尔周末去游玩一下景象。 ",
+          "a": "City born and city bred, I have always regarded the country as something you look at through a train window, or something you occasionally visit during the weekend. \n bred breed 培育"
         },
         {
           "aStart": "00:00:35,300",
@@ -5626,7 +5799,7 @@
           "aStart": "00:00:44,783",
           "aEnd": "00:00:56,983",
           "tip": "尽管他们都交口称赞宁静的乡村生活的种种优点，但其中只有一个人真去农村住过，而且不足6个月就回来了。",
-          "a": "Though they extol the virtues of the peaceful life, only one of hem has ever gone to live in the country and he was back in town within six months."
+          "a": "Though they extol the virtues of the peaceful life, only one of them has ever gone to live in the country and he was back in town within six months."
         },
         {
           "aStart": "00:00:57,083",
@@ -5692,7 +5865,7 @@
           "aStart": "00:02:36,000",
           "aEnd": "00:02:45,316",
           "tip": "他们都住在附近，你随时可以同他们聊天或在晚上一起娱乐。",
-          "a": "They invariably lie nearby and are always available for an informal chat or an evening's entertainment."
+          "a": "They invariably live nearby and are always available for an informal chat or an evening's entertainment."
         },
         {
           "aStart": "00:02:45,417",
@@ -5764,7 +5937,7 @@
           "aStart": "00:04:09,717",
           "aEnd": "00:04:23,433",
           "tip": "城里人对这一切心里很明白，却偏要执拗地装出他们喜欢住在乡村的样子，这对我来说一直是个谜。",
-          "a": "It has always been a mystery to me who city dwellers, who appreciate all these things, obstinately pretend that they would prefer to live in the country."
+          "a": "It has always been a mystery to me why city dwellers, who appreciate all these things, obstinately pretend that they would prefer to live in the country."
         }
       ]
     },
@@ -5776,6 +5949,40 @@
       "title": "Modern cavemen",
       "titleStart": "00:00:01,733",
       "titleEnd": "00:00:04,500",
+      "raw": [
+        "Modern cavemen",
+        "Cave exploration, or pot-holing, as it has come to be known, is a",
+        "relatively new sport. Perhaps it is the desire for solitude or the chance",
+        "of making an unexpected discovery that lures people down to the",
+        "depths of the earth. It is impossible to give a satisfactory explanation",
+        "for a pot-holer's motives. For him, caves have the same peculiar",
+        "fascination which high mountains have for the climber. They arouse",
+        "instincts which can only be dimly understood. ",
+        "Exploring really deep caves is not a task for the Sunday afternoon rambler. Such undertakings require",
+        "the precise planning and foresight of military operations. It can take as long as eight days to rig up rope",
+        "ladders and to establish supply bases before a descent can be made into a very deep cave. Precautions of this",
+        "sort are necessary, for it is impossible to foretell the exact nature of the difficulties which will confront the",
+        "pot-holer. The deepest known cave in the world is the Gouffre Berger near Grenoble. It extends to a depth of",
+        "3,723 feet. This immense chasm has been formed by an underground stream which has tunnelled a course",
+        "through a flaw in the rocks. The entrance to the cave is on a plateau in the Dauphine Alps. As it is only six",
+        "feet across, it is barely noticeable. The cave might never have been discovered had not the entrance been",
+        "spotted by the distinguished French pot-holer, Berger. Since its discovery, it has become a sort of ",
+        "pot-holers' Everest. Though a number of descents have been made, much of it still remains to be explored. ",
+        "A team of pot-holers recently went down the Gouffre Berger. After entering the narrow gap on the plateau,",
+        " they climbed down the steep sides of the cave until they came to a narrow corridor. They had to edge",
+        "their way along this, sometimes wading across shallow streams, or swimming across deep pools. Suddenly",
+        "they came to a waterfall which dropped into an underground lake at the bottom of the cave. They plunged",
+        "into the lake, and after loading their gear on an inflatable rubber dinghy, let the current carry them to the",
+        "other side. To protect themselves from the icy water, they had to wear special rubber suits. At the far end of",
+        "the lake, they came to huge piles of rubble which had been washed up by the water. In this part of the cave, ",
+        "they could hear an insistent booming sound which they found was caused by a small waterspout shooting",
+        "down into a pool from the roof of the cave. Squeezing through a cleft in the rocks, the pot-holers arrived at",
+        "an enormous cavern, the size of a huge concert hall. After switching on powerful arc lights, they saw great",
+        "stalagmites -- some of them over forty feet high -- rising up like tree-trunks to meet the stalactites suspended",
+        "from the roof. Round about, piles of limestone glistened in all the colours of the rainbow. In the eerie silence",
+        "of the cavern, the only sound that could be heard was made by water which dripped continuously from the",
+        "high dome above them. "
+      ],
       "segment": [
         {
           "aStart": "00:00:14,800",
@@ -5847,7 +6054,7 @@
           "aStart": "00:01:44,183",
           "aEnd": "00:01:53,416",
           "tip": "这个深邃的洞穴是由一条地下暗泉冲刷岩石中的缝隙并使之慢慢变大而形成的。",
-          "a": "This immense chasm has been formed by an underground stream which has tunneled a course through a flaw in the rocks."
+          "a": "This immense chasm has been formed by an underground stream which has tunnelled a course through a flaw in the rocks. \n tunnel 过去式 ： tunnelled或tunneled"
         },
         {
           "aStart": "00:01:53,517",
@@ -5865,13 +6072,13 @@
           "aStart": "00:02:05,100",
           "aEnd": "00:02:14,649",
           "tip": "若不是法国著名洞穴探险家伯杰由于偶然的机会发现了这个洞口的话，这个洞也许不会为人所知。",
-          "a": "The cave might never have been discovered has not the entrance been spotted by the distinguished French pot-holer, Berger."
+          "a": "The cave might never have been discovered had not the entrance been spotted by the distinguished French pot-holer, Berger."
         },
         {
           "aStart": "00:02:14,750",
           "aEnd": "00:02:20,299",
           "tip": "自从被发现以后，这个洞成了洞穴探险者的珠穆朗玛峰，",
-          "a": "Since its discovery, it has become a sort of potholers' Everest."
+          "a": "Since its discovery, it has become a sort of pot-holers' Everest."
         },
         {
           "aStart": "00:02:20,400",
@@ -5889,7 +6096,7 @@
           "aStart": "00:02:32,817",
           "aEnd": "00:02:43,216",
           "tip": "他们从高原上的窄缝进去，顺着笔直陡峭的洞壁往下爬。来到一条狭窄的走廊上。",
-          "a": "After entering the narrow gap on the plateau, they climbed down the steep sides of the cave until they came to narrow corridor."
+          "a": "After entering the narrow gap on the plateau, they climbed down the steep sides of the cave until they came to a narrow corridor."
         },
         {
           "aStart": "00:02:43,317",
