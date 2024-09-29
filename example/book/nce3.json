@@ -7696,6 +7696,41 @@
       "title": "New Year resolutions",
       "titleStart": "00:00:02,366",
       "titleEnd": "00:00:05,433",
+      "raw": [
+        "New Year resolutions",
+        "The New Year is a time for resolutions. Mentally, at least, most of",
+        "us could compile formidable lists of 'dos' and 'don'ts'. The same",
+        "old favourites recur year in year out with monotonous regularity. ",
+        "We resolve to get up earlier each morning, eat less, find more time",
+        "to play with the children, do a thousand and one jobs about the",
+        "house, be nice to people we don't like, drive carefully, and take the",
+        "dog for a walk every day. Past experience has taught us that certain",
+        "accomplishments are beyond attainment. If we remain inveterate smokers, it is only because we have so",
+        "often experienced the frustration that results from failure. Most of us fail in our efforts at self-improvement",
+        "because our schemes are too ambitious and we never have time to carry them out. We also make the",
+        "fundamental error of announcing our resolutions to everybody so that we look even more foolish when we",
+        "slip back into our bad old ways. Aware of these pitfalls, this year I attempted to keep my resolutions to",
+        "myself. I limited myself to two modest ambitions: to do physical exercises every morning and to read more",
+        "of an evening. An all-night party on New Year's Eve provided me with a good excuse for not carrying out",
+        "either of these new resolutions on the first day of the year, but on the second, I applied myself assiduously to",
+        "the task. ",
+        "The daily exercises lasted only eleven minutes and I proposed to do them early in the morning before",
+        "anyone had got up. The self-discipline required to drag myself out of bed eleven minutes earlier than usual",
+        "was considerable. Nevertheless, I managed to creep down into the living room for two days before anyone",
+        "found me out. After jumping about on the carpet and twisting the human frame into uncomfortable positions,",
+        " I sat down at the breakfast table in an exhausted condition. It was this that betrayed me. The next",
+        "morning the whole family trooped in to watch the performance. That was really unsettling, but I fended off",
+        "the taunts and jibes of the family good-humouredly and soon everybody got used to the idea. However, my",
+        "enthusiasm waned. The time I spent at exercises gradually diminished. Little by little the eleven minutes fell",
+        "to zero. By January 10th, I was back to where I had started from. I argued that if I spent less time exhausting",
+        "myself at exercises in the morning, I would keep my mind fresh for reading when I got home from work.",
+        "Resisting the hypnotizing effect of television, I sat in my room for a few evenings with my eyes glued to a",
+        "book. One night, however, feeling cold and lonely, I went downstairs and sat in front of the television",
+        "pretending to read. That proved to be my undoing, for I soon got back to my old bad habit of dozing off in",
+        "front of the screen. I still haven't given up my resolution to do more reading. In fact, I have just bought a",
+        "book entitled How to Read a Thousand Words a Minute. Perhaps it will solve my problem, but I just haven't",
+        "had time to read it!"
+      ],
       "segment": [
         {
           "aStart": "00:00:16,266",
@@ -7887,6 +7922,38 @@
       "title": "Predicting the future",
       "titleStart": "00:00:01,766",
       "titleEnd": "00:00:04,533",
+      "raw": [
+        "Predicting the future",
+        "Predicting the future is notoriously difficult. Who could have",
+        "imagined, in the mid 1970s, for example, that by the end of the",
+        "20th century, computers would be as common in people's homes",
+        "as TV sets? In the 1970s, computers were common enough, but",
+        "only in big business, government departments, and large",
+        "organizations. These were the so-called mainframe machines. ",
+        "Mainframe computers were very large indeed, often occupying whole air-conditioned rooms, employing",
+        "full-time technicians and run on specially-written software. Though these large machines still exist, many of",
+        "their functions have been taken over by small powerful personal computers, commonly known as PCs. ",
+        "In 1975, a primitive machine called the Altair, was launched in the USA. It can properly be described as",
+        "the first 'home computer' and it pointed the way to the future. This was followed, at the end of the 1970s, by",
+        "a machine called an Apple. In the early 1980s, the computer giant, IBM produced the world's first Personal",
+        "Computer. This ran on an 'operating system' called DOS, produced by a then small company named Microsoft. ",
+        "The IBM Personal Computer was widely copied. From those humble beginnings, we have seen the development",
+        " of the user-friendly home computers and multimedia machines which are in common use today. ",
+        "Considering how recent these developments are, it is even more remarkable that as long ago as the",
+        "1960s, an Englishman, Leon Bagrit, was able to predict some of the uses of computers which we know",
+        "today. Bagrit dismissed the idea that computers would learn to 'think' for themselves and would 'rule the",
+        "world', which people liked to believe in those days. Bagrit foresaw a time when computers would be small",
+        "enough to hold in the hand, when they would be capable of providing information about traffic jams and",
+        "suggesting alternative routes, when they would be used in hospitals to help doctors to diagnose illnesses, ",
+        "when they would relieve office workers and accountants of dull, repetitive clerical work. All these computer",
+        "uses have become commonplace. Of course, Leon Bagrit could not possibly have foreseen the development",
+        "of the Internet, the worldwide system that enables us to communicate instantly with anyone in any part of",
+        "the world by using computers linked to telephone networks. Nor could he have foreseen how we could use",
+        "the Internet to obtain information on every known subject, so we can read it on a screen in our homes and",
+        "even print it as well if we want to. Computers have become smaller and smaller, more and more powerful",
+        "and cheaper and cheaper. This is what makes Leon Bagrit's predictions particularly remarkable. If he, or",
+        "someone like him, were alive today, he might be able to tell us what to expect in the next fifty years. "
+      ],
       "segment": [
         {
           "aStart": "00:00:18,866",
@@ -7922,7 +7989,7 @@
           "aStart": "00:01:04,867",
           "aEnd": "00:01:17,566",
           "tip": "虽然这种大计算机仍然存在，但它们的许多功能已被体积小但功能齐全的个人电脑——即我们常说的PC机——所代替了。",
-          "a": "Though these large machines still exist, many of their functions have been taken over by small powerful personal computers, commonly known as PCs"
+          "a": "Though these large machines still exist, many of their functions have been taken over by small powerful personal computers, commonly known as PCs."
         },
         {
           "aStart": "00:01:17,666",
@@ -7964,7 +8031,7 @@
           "aStart": "00:02:03,567",
           "aEnd": "00:02:15,466",
           "tip": "从那些简陋的初级阶段，我们看到了现在都已普及的、使用简便的家用电脑和多媒体的微机的发展。",
-          "a": "From those humble beginnings, we have seen the development of the user-friendly home computers and multimedia machines which are in common use today"
+          "a": "From those humble beginnings, we have seen the development of the user-friendly home computers and multimedia machines which are in common use today."
         },
         {
           "aStart": "00:02:15,800",
@@ -7982,7 +8049,7 @@
           "aStart": "00:02:45,516",
           "aEnd": "00:03:12,733",
           "tip": "巴格瑞特预示有一天计算机可以小到拿在手上，计算机可以使办公室人员和会计免除那些枯燥、重复的劳动。",
-          "a": "Bagrit foresaw a time when computers would be small enough to hold in the hand, when they would be capable of providing information about traffic jams and suggesting alternative routes, when they would be used in hospitals to help doctors to diagnose illnesses when they would relieve office workers and accountants of dull, repetitive clerical work."
+          "a": "Bagrit foresaw a time when computers would be small enough to hold in the hand, when they would be capable of providing information about traffic jams and suggesting alternative routes, when they would be used in hospitals to help doctors to diagnose illnesses, when they would relieve office workers and accountants of dull, repetitive clerical work."
         },
         {
           "aStart": "00:03:13,066",
@@ -8018,7 +8085,7 @@
           "aStart": "00:04:04,716",
           "aEnd": "00:04:14,333",
           "tip": "如果他或是像他的什么人今天还活着的话，他大概可以告诉我们下一个50年后会发生什么事情。",
-          "a": "If he or someone like him, were alive today, he might be able to tell us what to expect in the next fifty years."
+          "a": "If he, or someone like him, were alive today, he might be able to tell us what to expect in the next fifty years."
         }
       ]
     },
@@ -8030,6 +8097,41 @@
       "title": "Mud is mud",
       "titleStart": "00:00:01,766",
       "titleEnd": "00:00:04,433",
+      "raw": [
+        "Mud is mud",
+        "My cousin, Harry, keeps a large curiously-shaped bottle on",
+        "permanent display in his study. Despite the fact that the bottle is",
+        "tinted a delicate shade of green, an observant visitor would soon",
+        "notice that it is filled with what looks like a thick, greyish substance.",
+        "If you were to ask Harry what was in the bottle, he would tell you",
+        "that it contained perfumed mud. If you expressed doubt or surprise, ",
+        "he would immediately invite you to smell it and then to rub some",
+        "into your skin. This brief experiment would dispel any further doubts you might have. The bottle really does",
+        "contain perfumed mud. How Harry came into the possession of this outlandish stuff makes an interesting",
+        "story which he is fond of relating. Furthermore, the acquisition of this bottle cured him of a bad habit he had",
+        "been developing for years. ",
+        "Harry used to consider it a great joke to go into expensive cosmetic shops and make outrageous requests",
+        "for goods that do not exist. He would invent fanciful names on the spot. On entering a shop, he would ask for",
+        "a new perfume called 'Scented Shadow' or for 'insoluble bath cubes'. If a shop assistant told him she had",
+        "not heard of it, he would pretend to be considerably put out. He loved to be told that one of his imaginary",
+        "products was temporarily out of stock and he would faithfully promise to call again at some future date, but",
+        "of course he never did. How Harry managed to keep a straight face during these performances is quite",
+        "beyond me. ",
+        "Harry does not need to be prompted to explain how he bought his precious bottle of mud. One day, he",
+        "went to an exclusive shop in London and asked for 'Myrolite'. The shop assistant looked puzzled and Harry",
+        "repeated the word, slowly stressing each syllable. When the woman shook her head in bewilderment, Harry",
+        "went on to explain that 'myrolite' was a hard, amber-like substance which could be used to remove freckles. ",
+        "This explanation evidently conveyed something to the woman who searched shelf after shelf. She produced",
+        "all sorts of weird concoctions, but none of them met with Harry's requirements. When Harry put on his act",
+        "of being mildly annoyed, the assistant promised to order some for him. Intoxicated by his success. Harry",
+        "then asked for perfumed mud. He expected the assistant to look at him in blank astonishment. However, it",
+        "was his turn to be surprised, for the woman's eyes immediately lit up and she fetched several bottles which",
+        "she placed on the counter for Harry to inspect. For once, Harry had to admit defeat. He picked up what",
+        "seemed to be the smallest bottle and discreetly asked the price. He was glad to get away with a mere twenty",
+        "pounds and he beat a hasty retreat, clutching the precious bottle under his arm. From then on, Harry decided",
+        "that this little game he had invented might prove to be expensive. The curious bottle, which now adorns the",
+        "bookcase in his study, was his first and last purchase of rare cosmetics."
+      ],
       "segment": [
         {
           "aStart": "00:00:14,866",
@@ -8107,7 +8209,7 @@
           "aStart": "00:01:49,217",
           "aEnd": "00:02:02,799",
           "tip": "他爱听售货员说他想像出来的那种东西暂时脱销，于是他就煞有介事地许诺改天再来光顾。当然，他再也不会来了。",
-          "a": "He loved to be told that one of his imaginary products was temporarily out of stock and he would faithfully promise to call again at some future date. but of course he never did."
+          "a": "He loved to be told that one of his imaginary products was temporarily out of stock and he would faithfully promise to call again at some future date, but of course he never did."
         },
         {
           "aStart": "00:02:02,900",
@@ -8131,7 +8233,7 @@
           "aStart": "00:02:30,850",
           "aEnd": "00:02:43,599",
           "tip": "那个女售货员还是迷惑不解地摇了摇头。哈里便进一步解释“密诺莱特”是一种质地坚硬、状似琥珀的东西，可以用来除去雀斑。",
-          "a": "When the woman shook her head in bewilderment, Harry went on to explain that 'myrolite' was a hard, amber-like substance which could be used to remove freckles"
+          "a": "When the woman shook her head in bewilderment, Harry went on to explain that 'myrolite' was a hard, amber-like substance which could be used to remove freckles."
         },
         {
           "aStart": "00:02:43,700",
@@ -8209,6 +8311,40 @@
       "title": "In the public interest",
       "titleStart": "00:00:02,100",
       "titleEnd": "00:00:04,866",
+      "raw": [
+        "In the public interest",
+        "The Scandinavian countries are much admired all over the world",
+        "for their enlightened social policies. Sweden has evolved an",
+        "excellent system for protecting the individual citizen from high-handed",
+        " or incompetent public officers. The system has worked so",
+        "well, that it has been adopted in other countries too. ",
+        "The Swedes were the first to recognize that public officials like",
+        "civil servants, police officers, health inspectors or tax-collectors",
+        "can make mistakes or act over-zealously in the belief that they are serving the public. As long ago as 1809,",
+        "the Swedish Parliament introduced a scheme to safeguard the interest of the individual. A parliamentary",
+        "committee representing all political parties appoints a person who is suitably qualified to investigate private",
+        "grievances against the State. The official title of the person is 'Justiteombudsman', but the Swedes commonly",
+        "refer to him as the 'J.O.' or 'Ombudsman'. The Ombudsman is not subject to political pressure. He investigates",
+        "complaints large and small that come to him from all levels of society. As complaints must be made in",
+        "writing, the Ombudsman receives an average of 1,200 letters a year. He has eight lawyer assistants to help",
+        "him and he examines every single letter in detail. There is nothing secretive about the Ombudsman's work, ",
+        "for his correspondence is open to public inspection. If a citizen's complaint is justified, the Ombudsman will",
+        "act on his behalf. The action he takes varies according to the nature of the complaint. He may gently reprimand",
+        "an official or even suggest to parliament that a law be altered. The following case is a typical example of the",
+        "Ombudsman's work. ",
+        "A foreigner living in a Swedish village wrote to the Ombudsman complaining that he had been ill-treated",
+        "by the police, simply because he was a foreigner. The Ombudsman immediately wrote to the Chief of Police",
+        "in the district asking him to send a record of the case. There was nothing in the record to show that the",
+        "foreigner's complaint was justified and the Chief of Police strongly denied the accusation. It was impossible",
+        "for the Ombudsman to take action, but when he received a similar complaint from another foreigner in the",
+        "same village, he immediately sent one of his lawyers to investigate the matter. The lawyer ascertained that a",
+        "policeman had indeed dealt roughly with foreigners on several occasions. The fact that the policeman was",
+        "prejudiced against foreigners could not be recorded in the official files. It was only possible for the Ombudsman",
+        "to find this out by sending one of his representatives to check the facts. The policeman in question was",
+        "severely reprimanded and was informed that if any further complaints were lodged against him, he would be",
+        "prosecuted. The Ombudsman's prompt action at once put an end to an unpleasant practice which might have",
+        "gone unnoticed. "
+      ],
       "segment": [
         {
           "aStart": "00:00:15,366",
@@ -8238,7 +8374,7 @@
           "aStart": "00:00:57,067",
           "aEnd": "00:01:06,333",
           "tip": "早在1809年，瑞典论会就建立一个保护公民利益的制度。",
-          "a": "As long ago as 1809 the Swedish Parliament introduced a scheme to safeguard the interest of the individual."
+          "a": "As long ago as 1809, the Swedish Parliament introduced a scheme to safeguard the interest of the individual."
         },
         {
           "aStart": "00:01:06,433",
@@ -8280,7 +8416,7 @@
           "aStart": "00:01:56,033",
           "aEnd": "00:02:04,033",
           "tip": "司法特派员的工作没有什么秘密可言，他的信件是公开的，",
-          "a": "There is nothing secretive about the Ombudsman's work for his correspondence is open to public inspection."
+          "a": "There is nothing secretive about the Ombudsman's work, for his correspondence is open to public inspection."
         },
         {
           "aStart": "00:02:04,133",
@@ -8370,6 +8506,40 @@
       "title": "Instinct or cleverness?",
       "titleStart": "00:00:01,733",
       "titleEnd": "00:00:05,566",
+      "raw": [
+        "Instinct or cleverness?",
+        "We have been brought up to fear insects. We regard them as",
+        "unnecessary creatures that do more harm than good. We continually",
+        "wage war on them, for they contaminate our food, carry diseases, ",
+        "or devour our crops. They sting or bite without provocation; they",
+        "fly uninvited into our rooms on summer nights, or beat against our",
+        "lighted windows. We live in dread not only of unpleasant insects",
+        "like spiders or wasps, but of quite harmless ones like moths. Reading",
+        "about them increases our understanding without dispelling our fears. Knowing that the industrious ant lives",
+        "in a highly organized society does nothing to prevent us from being filled with revulsion when we find",
+        "hordes of them crawling over a carefully prepared picnic lunch. No matter how much we like honey, or how",
+        "much we have read about the uncanny sense of direction which bees possess, we have a horror of being",
+        "stung. Most of our fears are unreasonable; but they are impossible to erase. At the same time, however, ",
+        "insects are strangely fascinating. We enjoy reading about them, especially when we find that, like the praying",
+        "mantis, they lead perfectly horrible lives. We enjoy staring at them, entranced as they go about their business, ",
+        "unaware (we hope) of our presence. Who has not stood in awe at the sight of a spider pouncing on a fly, or",
+        "a column of ants triumphantly bearing home an enormous dead beetle?",
+        "Last summer I spent days in the garden watching thousands of ants crawling up the trunk of my prize",
+        "peach tree. The tree has grown against a warm wall on a sheltered side of the house. I am especially proud of",
+        "it, not only because it has survived several severe winters, but because it occasionally produces luscious",
+        "peaches. During the summer, I noticed that the leaves of the tree were beginning to wither. Clusters of tiny",
+        "insects called aphids were to be found on the underside of the leaves. They were visited by a large colony of",
+        "ants which obtained a sort of honey from them. I immediately embarked on an experiment which, even",
+        "though it failed to get rid of the ants, kept me fascinated for twenty-four hours. I bound the base of the tree",
+        "with sticky tape, making it impossible for the ants to reach the aphids. The tape was so sticky that they did",
+        "not dare to cross it. For a long time, I watched them scurrying around the base of the tree in bewilderment. ",
+        "I even went out at midnight with a torch and noted with satisfaction (and surprise) that the ants were still",
+        "swarming around the sticky tape without being able to do anything about it. I got up early next morning",
+        "hoping to find that the ants had given up in despair. Instead, I saw that they had discovered a new route. ",
+        "They were climbing up the wall of the house and then on to the leaves of the tree. I realized sadly that I had",
+        "been completely defeated by their ingenuity. The ants had been quick to find an answer to my thoroughly",
+        "unscientific methods!"
+      ],
       "segment": [
         {
           "aStart": "00:00:17,200",
