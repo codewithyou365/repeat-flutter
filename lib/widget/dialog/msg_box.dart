@@ -24,12 +24,15 @@ class MsgBox {
   static strInputWithYesOrNo(
     RxString model,
     String title,
-    String decoration, {
+    String? decoration, {
     VoidCallback? yes,
     String? yesBtnTitle,
     VoidCallback? no,
     String? noBtnTitle,
     String? qrPagePath,
+    int? maxLines = 1,
+    int? minLines,
+    barrierDismissible = false,
   }) {
     final tec = TextEditingController(text: model.value);
     Widget? suffixIcon;
@@ -47,9 +50,11 @@ class MsgBox {
 
     Get.defaultDialog(
       title: title,
-      barrierDismissible: false,
+      barrierDismissible: barrierDismissible,
       content: TextFormField(
         controller: tec,
+        maxLines: maxLines,
+        minLines: minLines,
         decoration: InputDecoration(
           labelText: decoration,
           suffixIcon: suffixIcon,
