@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class MsgBox {
   static yesOrNo(
@@ -38,7 +40,7 @@ class MsgBox {
     Widget? suffixIcon;
     if (qrPagePath != null) {
       suffixIcon = IconButton(
-        icon: const Icon(Icons.qr_code),
+        icon: const Icon(Icons.qr_code_scanner),
         onPressed: () async {
           var value = await Get.toNamed(qrPagePath);
           if (value != null && value is String && value != "") {
@@ -132,8 +134,7 @@ class MsgBox {
   static yesWithQrCode(
     String title,
     String qrContent,
-    String desc, {
-    GestureTapCallback? tapQrCode,
+    String? desc, {
     VoidCallback? yes,
     String? yesBtnTitle,
     double? size,
@@ -147,11 +148,11 @@ class MsgBox {
       title: title,
       content: Column(
         children: [
-          InkWell(
-            onTap: tapQrCode,
-            child: SizedBox(
-              width: size,
-              height: size,
+          Container(
+            width: size,
+            height: size,
+            padding: const EdgeInsets.all(0),
+            child: Center(
               child: QrImageView(
                 data: qrContent,
                 eyeStyle: QrEyeStyle(
@@ -167,10 +168,18 @@ class MsgBox {
               ),
             ),
           ),
-          Text(desc),
+          if (desc != null) Text(desc),
         ],
       ),
       actions: [
+        TextButton(
+          onPressed: () {
+            Clipboard.setData(ClipboardData(text: qrContent));
+            Snackbar.show(I18nKey.labelQrCodeContentCopiedToClipboard.tr);
+          },
+          child: Text(I18nKey.btnCopy.tr),
+        ),
+
         TextButton(
           onPressed: () {
             if (yes != null) {
@@ -181,6 +190,8 @@ class MsgBox {
           },
           child: Text(yesBtnTitle ?? I18nKey.btnOk.tr),
         ),
+        //
+        //
       ],
     );
   }

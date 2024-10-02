@@ -51,6 +51,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelSaving, "Saving...");
     put(I18nKey.labelSelectDirectoryToSave, "Select a directory to save %s");
     put(I18nKey.labelSaveSuccess, "Save success : %s");
+    put(I18nKey.labelSaved, "Save success");
     put(I18nKey.labelSaveCancel, "Save canceled");
     put(I18nKey.labelResetLearn, "Reset Learn");
     put(I18nKey.labelResetLearnDesc, "After executing the reset function, the unfinished tasks for today will be reset. Do you want to continue?");
@@ -88,6 +89,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelSavingConfirm, "Are you sure to save?");
     put(I18nKey.labelConfigChange, "Do you want to save the changes you made?");
     put(I18nKey.labelResetConfig, "Reset Config");
+    put(I18nKey.labelDetailConfig, "Config Detail");
     put(I18nKey.labelResetConfigDesc, "After resetting the configuration, the system’s default configuration will be used.");
     put(I18nKey.labelOnTapError, "Please press and hold the button to confirm");
     put(I18nKey.labelSetMaskTips, "Swipe left to increase the height of the barrier.");
@@ -123,5 +125,6 @@ class ConfigEn extends Config {
     put(I18nKey.btnFinish, "FINISH");
     put(I18nKey.btnExport, "Export");
     put(I18nKey.btnImport, "Import");
+    put(I18nKey.btnSave, "Save");
   }
 }

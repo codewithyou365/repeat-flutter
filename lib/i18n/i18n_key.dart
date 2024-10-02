@@ -49,6 +49,7 @@ enum I18nKey {
   labelSaving,
   labelSelectDirectoryToSave,
   labelSaveSuccess,
+  labelSaved,
   labelSaveCancel,
   labelResetLearn,
   labelResetLearnDesc,
@@ -86,6 +87,7 @@ enum I18nKey {
   labelSavingConfirm,
   labelConfigChange,
   labelResetConfig,
+  labelDetailConfig,
   labelResetConfigDesc,
   labelOnTapError,
   labelSetMaskTips,
@@ -121,6 +123,7 @@ enum I18nKey {
   btnFinish,
   btnExport,
   btnImport,
+  btnSave,
   ;
 
   String trArgs([List<String> args = const []]) {

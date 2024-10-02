@@ -50,6 +50,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelExecuting, "执行中...");
     put(I18nKey.labelSaving, "保存中...");
     put(I18nKey.labelSaveSuccess, "保存成功 : %s");
+    put(I18nKey.labelSaved, "保存成功");
     put(I18nKey.labelSelectDirectoryToSave, "选择一个目录进行保存 %s");
     put(I18nKey.labelSaveCancel, "保存已取消");
     put(I18nKey.labelResetLearn, "重置学习内容");
@@ -88,6 +89,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelSavingConfirm, "是否确定保存？");
     put(I18nKey.labelConfigChange, "配置已改变是否保存？");
     put(I18nKey.labelResetConfig, "重置配置");
+    put(I18nKey.labelDetailConfig, "配置详情");
     put(I18nKey.labelResetConfigDesc, "执行重置配置后，将使用系统默认的配置？");
     put(I18nKey.labelOnTapError, "请长按按键进行确认");
     put(I18nKey.labelSetMaskTips, "向左滑动增加挡板高度");
@@ -123,5 +125,6 @@ class ConfigZh extends Config {
     put(I18nKey.btnFinish, "完成");
     put(I18nKey.btnExport, "导出");
     put(I18nKey.btnImport, "导入");
+    put(I18nKey.btnSave, "保存");
   }
 }
