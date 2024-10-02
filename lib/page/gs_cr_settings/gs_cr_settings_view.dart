@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
-import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'gs_cr_settings_logic.dart';
 
@@ -13,6 +13,7 @@ class GsCrSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final logic = Get.find<GsCrSettingsLogic>();
+    final state = logic.state;
     return Scaffold(
       appBar: AppBar(
         title: Text(I18nKey.settings.tr),
@@ -44,6 +45,32 @@ class GsCrSettingsPage extends StatelessWidget {
             },
             onTap: () {
               Nav.gsCrSettingsRel.push();
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.text_snippet),
+            title: Text(I18nKey.labelDetailConfig.tr),
+            onTap: () {
+              var value = state.configJson.obs;
+              MsgBox.strInputWithYesOrNo(
+                value,
+                I18nKey.labelDetailConfig.tr,
+                minLines: 5,
+                maxLines: 15,
+                null,
+                yes: () {
+                  state.configJson = value.value;
+                  logic.inputConfig();
+                },
+                yesBtnTitle: I18nKey.btnSave.tr,
+                no: () {
+                  Get.back();
+                  MsgBox.yesWithQrCode(I18nKey.btnShare.tr, value.value, null, size: 250.w);
+                },
+                noBtnTitle: I18nKey.btnShare.tr,
+                barrierDismissible: true,
+                qrPagePath: Nav.gsCrContentScan.path,
+              );
             },
           ),
         ],
