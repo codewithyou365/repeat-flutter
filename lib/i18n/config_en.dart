@@ -126,5 +126,6 @@ class ConfigEn extends Config {
     put(I18nKey.btnExport, "Export");
     put(I18nKey.btnImport, "Import");
     put(I18nKey.btnSave, "Save");
+    put(I18nKey.btnClose, "Close");
   }
 }

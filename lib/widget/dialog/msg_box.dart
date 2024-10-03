@@ -131,15 +131,15 @@ class MsgBox {
     );
   }
 
-  static yesWithQrCode(
+  static noWithQrCode(
     String title,
     String qrContent,
     String? desc, {
-    VoidCallback? yes,
-    String? yesBtnTitle,
+    VoidCallback? no,
+    String? noBtnTitle,
     double? size,
   }) {
-    size ??= 200.w;
+    size ??= 250.w;
     Color color = Colors.black;
     if (Get.context != null) {
       color = Theme.of(Get.context!).brightness == Brightness.dark ? color = Colors.white : Colors.black;
@@ -174,24 +174,21 @@ class MsgBox {
       actions: [
         TextButton(
           onPressed: () {
+            if (no != null) {
+              no();
+            } else {
+              Get.back();
+            }
+          },
+          child: Text(noBtnTitle ?? I18nKey.btnCancel.tr),
+        ),
+        TextButton(
+          onPressed: () {
             Clipboard.setData(ClipboardData(text: qrContent));
             Snackbar.show(I18nKey.labelQrCodeContentCopiedToClipboard.tr);
           },
           child: Text(I18nKey.btnCopy.tr),
         ),
-
-        TextButton(
-          onPressed: () {
-            if (yes != null) {
-              yes();
-            } else {
-              Get.back();
-            }
-          },
-          child: Text(yesBtnTitle ?? I18nKey.btnOk.tr),
-        ),
-        //
-        //
       ],
     );
   }

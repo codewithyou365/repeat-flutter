@@ -124,6 +124,7 @@ enum I18nKey {
   btnExport,
   btnImport,
   btnSave,
+  btnClose,
   ;
 
   String trArgs([List<String> args = const []]) {
