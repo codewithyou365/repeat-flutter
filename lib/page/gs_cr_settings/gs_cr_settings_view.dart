@@ -65,7 +65,7 @@ class GsCrSettingsPage extends StatelessWidget {
                 yesBtnTitle: I18nKey.btnSave.tr,
                 no: () {
                   Get.back();
-                  MsgBox.yesWithQrCode(I18nKey.btnShare.tr, value.value, null, size: 250.w);
+                  MsgBox.noWithQrCode(I18nKey.btnShare.tr, value.value, null);
                 },
                 noBtnTitle: I18nKey.btnShare.tr,
                 barrierDismissible: true,

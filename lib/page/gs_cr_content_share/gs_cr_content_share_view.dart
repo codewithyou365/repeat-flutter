@@ -46,7 +46,7 @@ class GsCrContentSharePage extends StatelessWidget {
     return Card(
       child: InkWell(
         onTap: () => {
-          MsgBox.yesWithQrCode(
+          MsgBox.noWithQrCode(
             itemLabel,
             desc,
             desc,

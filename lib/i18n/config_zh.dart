@@ -126,5 +126,6 @@ class ConfigZh extends Config {
     put(I18nKey.btnExport, "导出");
     put(I18nKey.btnImport, "导入");
     put(I18nKey.btnSave, "保存");
+    put(I18nKey.btnClose, "关闭");
   }
 }
