@@ -616,7 +616,9 @@ abstract class ScheduleDao {
           adjustProgress = true;
         }
       } else {
-        await insertSegmentReview([SegmentReview(Date.from(now), segmentKeyId, 0)]);
+        var todayLearnCreateDate = await intKv(Classroom.curr, CrK.todayLearnCreateDate);
+        todayLearnCreateDate ??= Date.from(now).value;
+        await insertSegmentReview([SegmentReview(Date(todayLearnCreateDate), segmentKeyId, 0)]);
         adjustProgress = true;
       }
       if (adjustProgress && schedule.next.value <= Date.from(now).value) {
