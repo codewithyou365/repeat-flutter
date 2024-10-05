@@ -50,9 +50,12 @@ class ConfigEn extends Config {
     put(I18nKey.labelExecuting, "Executing...");
     put(I18nKey.labelSaving, "Saving...");
     put(I18nKey.labelSelectDirectoryToSave, "Select a directory to save %s");
+    put(I18nKey.labelFileSaved, "The file has been saved.");
     put(I18nKey.labelSaveSuccess, "Save success : %s");
+    put(I18nKey.labelDirectoryPermissionDenied, "Please select another directory. No permission to save to this directory: %s");
     put(I18nKey.labelSaved, "Save success");
     put(I18nKey.labelSaveCancel, "Save canceled");
+    put(I18nKey.labelStoragePermissionDenied, "Storage permission has been denied. Please enable storage permission in the settings.");
     put(I18nKey.labelResetLearn, "Reset Learn");
     put(I18nKey.labelResetLearnDesc, "After executing the reset function, the unfinished tasks for today will be reset. Do you want to continue?");
     put(I18nKey.labelConfigSettingsForEl, "Learn Config");

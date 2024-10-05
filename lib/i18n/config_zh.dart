@@ -49,10 +49,13 @@ class ConfigZh extends Config {
     put(I18nKey.labelExporting, "导出中...");
     put(I18nKey.labelExecuting, "执行中...");
     put(I18nKey.labelSaving, "保存中...");
-    put(I18nKey.labelSaveSuccess, "保存成功 : %s");
-    put(I18nKey.labelSaved, "保存成功");
     put(I18nKey.labelSelectDirectoryToSave, "选择一个目录进行保存 %s");
+    put(I18nKey.labelFileSaved, "文件已保存");
+    put(I18nKey.labelSaveSuccess, "保存成功 : %s");
+    put(I18nKey.labelDirectoryPermissionDenied, "请重新选择其他目录，没有权限保存到该目录: %s");
+    put(I18nKey.labelSaved, "保存成功");
     put(I18nKey.labelSaveCancel, "保存已取消");
+    put(I18nKey.labelStoragePermissionDenied, "存储权限被拒绝，请在设置中打开存储权限");
     put(I18nKey.labelResetLearn, "重置学习内容");
     put(I18nKey.labelResetLearnDesc, "执行重置后，将重置今日未完成的任务，是否继续？");
     put(I18nKey.labelConfigSettingsForEl, "学习设置");

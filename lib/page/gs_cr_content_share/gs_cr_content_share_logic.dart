@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/url.dart';
 import 'package:repeat_flutter/common/zip.dart';
@@ -10,6 +11,7 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/constant.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -129,9 +131,14 @@ class GsCrContentShareLogic extends GetxController {
     }
   }
 
-  void onSave() {
-    showOverlay(() async {
-      await Future.delayed(const Duration(milliseconds: 500));
+  void onSave() async {
+    String? selectedDirectory;
+    await showOverlay(() async {
+      var permissionStatus = await Permission.storage.request();
+      if (permissionStatus != PermissionStatus.granted) {
+        Snackbar.show(I18nKey.labelStoragePermissionDenied.tr);
+        return;
+      }
       var rootPath = await DocPath.getContentPath();
       var repeatDocPath = rootPath.joinPath(state.lanAddressSuffix);
       var kv = await RepeatDoc.fromPath(repeatDocPath, Uri.parse(state.rawUrl));
@@ -140,6 +147,7 @@ class GsCrContentShareLogic extends GetxController {
         return;
       }
 
+      print("${DateTime.now()}");
       var name = Url.toDocName(state.rawUrl);
       List<ZipArchive> zipFiles = [ZipArchive(File(repeatDocPath), name)];
       var zipSavePath = await DocPath.getZipSavePath(clearFirst: true);
@@ -156,17 +164,24 @@ class GsCrContentShareLogic extends GetxController {
       String zipFileName = "${name.trimFormat()}.zip";
       File zipFile = File(zipSavePath.joinPath(zipFileName));
       await Zip.compress(zipFiles, zipFile);
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      String? selectedDirectory = await FilePicker.platform.getDirectoryPath(
+      selectedDirectory = await FilePicker.platform.getDirectoryPath(
         dialogTitle: I18nKey.labelSelectDirectoryToSave.trArgs([zipFileName]),
       );
       if (selectedDirectory != null) {
-        await zipFile.rename(selectedDirectory.joinPath(zipFileName));
-        Snackbar.show(I18nKey.labelSaveSuccess.trArgs([zipFileName]));
+        try {
+          zipFile.copySync(selectedDirectory!.joinPath(zipFileName));
+          Snackbar.show(I18nKey.labelSaveSuccess.trArgs([zipFileName]));
+        } catch (e) {
+          selectedDirectory = null;
+          Snackbar.show(I18nKey.labelDirectoryPermissionDenied.trArgs([selectedDirectory!]));
+        }
       } else {
         Snackbar.show(I18nKey.labelSaveCancel.tr);
       }
     }, I18nKey.labelSaving.tr);
+
+    if (selectedDirectory != null) {
+      MsgBox.yes(I18nKey.labelFileSaved.tr, selectedDirectory!);
+    }
   }
 }
