@@ -12,6 +12,7 @@ class PlayerBar extends StatefulWidget {
   final int? index;
   final List<MediaSegment> lines;
   final String path;
+  final VoidCallback? onFullScreen;
   final InitCallback? onInited;
   final VoidCallback? onPrevious;
   final VoidCallback? onReplay;
@@ -25,6 +26,7 @@ class PlayerBar extends StatefulWidget {
     this.lines,
     this.path, {
     Key? key,
+    this.onFullScreen,
     this.onInited,
     this.onPrevious,
     this.onReplay,
@@ -135,7 +137,7 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
 
   @override
   Widget build(BuildContext context) {
-    var mv = mediaView(widget.initMaskRatio, widget.setMaskRatio);
+    var mv = mediaView(widget.initMaskRatio, widget.setMaskRatio, widget.onFullScreen);
     if (mv == null) {
       return buildBar(context);
     } else {

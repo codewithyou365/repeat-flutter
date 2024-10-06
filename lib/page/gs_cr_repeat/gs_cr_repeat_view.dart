@@ -26,14 +26,12 @@ class GsCrRepeatPage extends StatelessWidget {
           currIndex = state.progress + state.fakeKnow;
         }
         return Scaffold(
-          appBar: AppBar(
-            title: Text("$currIndex/${state.total}-${state.segment.k}"),
-          ),
+          appBar: state.videoFullScreen ? null : AppBar(title: Text("$currIndex/${state.total}-${state.segment.k}")),
           body: Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.w),
             child: buildContent(context, logic, 590.h),
           ),
-          bottomNavigationBar: buildBottom(logic, 60.h),
+          bottomNavigationBar: state.videoFullScreen ? null : buildBottom(logic, 60.h, 180.w),
         );
       },
     );
@@ -51,6 +49,9 @@ class GsCrRepeatPage extends StatelessWidget {
     }
     List<ContentType> validContentType = [];
     List<Widget> listViewContent = [];
+    if (state.videoFullScreen) {
+      listViewContent.add(buildBottom(logic, 60.h, 156.w));
+    }
     for (int i = 0; i < showContent.length; i++) {
       var w = buildInnerContent(logic, context, showContent[i].contentType, state.segment);
       if (w != null) {
@@ -84,6 +85,7 @@ class GsCrRepeatPage extends StatelessWidget {
             [segment.qMediaSegments[segment.segmentIndex]],
             segment.mediaDocPath,
             key: state.questionMediaKey,
+            onFullScreen: logic.onMediaFullScreen,
             onInited: logic.onMediaInited,
             initMaskRatio: logic.getMaskRatio(),
             setMaskRatio: logic.setMaskRatio,
@@ -95,6 +97,7 @@ class GsCrRepeatPage extends StatelessWidget {
             [segment.aMediaSegments[segment.segmentIndex - 1]],
             segment.mediaDocPath,
             key: state.questionMediaKey,
+            onFullScreen: logic.onMediaFullScreen,
             onInited: logic.onMediaInited,
             initMaskRatio: logic.getMaskRatio(),
             setMaskRatio: logic.setMaskRatio,
@@ -106,6 +109,7 @@ class GsCrRepeatPage extends StatelessWidget {
             [segment.titleMediaSegment!],
             segment.mediaDocPath,
             key: state.questionMediaKey,
+            onFullScreen: logic.onMediaFullScreen,
             onInited: logic.onMediaInited,
             initMaskRatio: logic.getMaskRatio(),
             setMaskRatio: logic.setMaskRatio,
@@ -121,6 +125,7 @@ class GsCrRepeatPage extends StatelessWidget {
             segment.mediaDocPath,
             key: state.questionMediaKey,
             initMaskRatio: logic.getMaskRatio(),
+            onFullScreen: logic.onMediaFullScreen,
             onInited: logic.onMediaInited,
             onPrevious: logic.minusPnOffset,
             onReplay: logic.resetPnOffset,
@@ -134,6 +139,7 @@ class GsCrRepeatPage extends StatelessWidget {
             segment.mediaDocPath,
             key: state.questionMediaKey,
             initMaskRatio: logic.getMaskRatio(),
+            onFullScreen: logic.onMediaFullScreen,
             onInited: logic.onMediaInited,
             onPrevious: logic.minusPnOffset,
             onReplay: logic.resetPnOffset,
@@ -147,6 +153,7 @@ class GsCrRepeatPage extends StatelessWidget {
             segment.mediaDocPath,
             key: state.questionMediaKey,
             initMaskRatio: logic.getMaskRatio(),
+            onFullScreen: logic.onMediaFullScreen,
             onInited: logic.onMediaInited,
             onPrevious: logic.minusPnOffset,
             onReplay: logic.resetPnOffset,
@@ -172,6 +179,7 @@ class GsCrRepeatPage extends StatelessWidget {
             segment.aMediaSegments,
             segment.mediaDocPath,
             key: state.answerMediaKey,
+            onFullScreen: logic.onMediaFullScreen,
             onInited: logic.onMediaInited,
           );
         }
@@ -191,7 +199,7 @@ class GsCrRepeatPage extends StatelessWidget {
               }
             }
           }
-          if(curr == -1){
+          if (curr == -1) {
             return null;
           }
           return PlayerBar(
@@ -200,6 +208,7 @@ class GsCrRepeatPage extends StatelessWidget {
             segments,
             segment.mediaDocPath,
             key: state.answerMediaKey,
+            onFullScreen: logic.onMediaFullScreen,
             onInited: logic.onMediaInited,
             onPrevious: logic.minusPnOffset,
             onReplay: logic.resetPnOffset,
@@ -229,7 +238,7 @@ class GsCrRepeatPage extends StatelessWidget {
     }
   }
 
-  Widget buildBottom(GsCrRepeatLogic logic, double height) {
+  Widget buildBottom(GsCrRepeatLogic logic, double height, double width) {
     var state = logic.state;
     var leftButtonText = "";
     var rightButtonText = "";
@@ -287,13 +296,13 @@ class GsCrRepeatPage extends StatelessWidget {
       children: [
         Row(
           children: [
-            buildButton(leftButtonText, leftButtonLogic, height, width: 180.w),
+            buildButton(leftButtonText, leftButtonLogic, height, width: width),
             const Spacer(),
             buildButton(
               rightButtonText,
               rightButtonLogic,
               height,
-              width: 180.w,
+              width: width,
               onLongPress: rightButtonLongPressLogic,
             ),
           ],
@@ -302,7 +311,7 @@ class GsCrRepeatPage extends StatelessWidget {
           Row(
             children: [
               const Spacer(),
-              buildButton(I18nKey.btnTips.tr, () => logic.tip(), height, width: 180.w),
+              buildButton(I18nKey.btnTips.tr, () => logic.tip(), height, width: width),
               const Spacer(),
             ],
           )
