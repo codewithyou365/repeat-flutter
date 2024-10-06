@@ -87,9 +87,9 @@ mixin Media {
     }
   }
 
-  Widget? mediaView(double initMaskRatio, SetMaskRatioCallback? setMaskRatio) {
+  Widget? mediaView(double initMaskRatio, SetMaskRatioCallback? setMaskRatio, VoidCallback? onFullScreen) {
     if (video) {
-      return VideoMask(videoPlayer!, initMaskRatio, setMaskRatio);
+      return VideoMask(videoPlayer!, initMaskRatio, setMaskRatio, onFullScreen);
     } else {
       return null;
     }

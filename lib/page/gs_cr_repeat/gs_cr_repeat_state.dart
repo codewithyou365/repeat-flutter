@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:get/get.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
@@ -32,6 +33,8 @@ class GsCrRepeatState {
   final GlobalKey<PlayerBarState> answerMediaKey = GlobalKey<PlayerBarState>();
   var tryNeedPlayQuestion = true;
   var tryNeedPlayAnswer = true;
+
+  var videoFullScreen = false;
 
   // for logic
 

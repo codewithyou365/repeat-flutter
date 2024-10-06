@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
@@ -254,6 +255,16 @@ class GsCrRepeatLogic extends GetxController {
         state.answerMediaKey.currentState?.mediaLoad();
       }
     }
+  }
+
+  Future<void> onMediaFullScreen() async {
+    state.videoFullScreen = !state.videoFullScreen;
+    if (state.videoFullScreen) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
+    } else {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    }
+    update([GsCrRepeatLogic.id]);
   }
 
   Future<void> onMediaInited(String playerId) async {

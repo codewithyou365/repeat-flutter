@@ -8,11 +8,13 @@ class VideoMask extends StatefulWidget {
   final VideoPlayerController videoPlayer;
   final double initMaskRatio;
   final SetMaskRatioCallback? setMaskHeight;
+  final VoidCallback? onFullScreen;
 
   const VideoMask(
     this.videoPlayer,
     this.initMaskRatio,
-    this.setMaskHeight, {
+    this.setMaskHeight,
+    this.onFullScreen, {
     Key? key,
   }) : super(key: key);
 
@@ -84,28 +86,38 @@ class VideoMaskState extends State<VideoMask> {
           setState(() {});
         },
         child: Stack(
-          alignment: Alignment.bottomCenter,
+          alignment: Alignment.topRight,
           children: [
-            AspectRatio(
-              aspectRatio: video.aspectRatio,
-              child: VideoPlayer(widget.videoPlayer),
+            Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                AspectRatio(
+                  aspectRatio: video.aspectRatio,
+                  child: VideoPlayer(widget.videoPlayer),
+                ),
+                if (widget.initMaskRatio > 0)
+                  AspectRatio(
+                    aspectRatio: video.aspectRatio * maskRatio,
+                    child: Container(
+                      width: double.infinity,
+                      color: Colors.black,
+                    ),
+                  ),
+                if (widget.setMaskHeight != null && startSetting && widget.initMaskRatio > 0)
+                  Text(
+                    I18nKey.labelSetMaskTips.tr,
+                    style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).secondaryHeaderColor,
+                    ),
+                  ),
+              ],
             ),
-            if (widget.initMaskRatio > 0)
-              AspectRatio(
-                aspectRatio: video.aspectRatio * maskRatio,
-                child: Container(
-                  width: double.infinity,
-                  color: Colors.black,
-                ),
-              ),
-            if (widget.setMaskHeight != null && startSetting && widget.initMaskRatio > 0)
-              Text(
-                I18nKey.labelSetMaskTips.tr,
-                style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).secondaryHeaderColor,
-                ),
+            if (widget.onFullScreen != null && startSetting)
+              IconButton(
+                icon: const Icon(Icons.fullscreen),
+                onPressed: widget.onFullScreen,
               ),
           ],
         ),
