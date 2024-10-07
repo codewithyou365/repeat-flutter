@@ -8,7 +8,7 @@ import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 import 'gs_cr_repeat_logic.dart';
 
-class GsCrRepeatPage extends StatelessWidget {
+class GsCrRepeatPage extends StatelessWidget  {
   const GsCrRepeatPage({Key? key}) : super(key: key);
 
   @override

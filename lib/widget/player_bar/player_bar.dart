@@ -12,6 +12,7 @@ class PlayerBar extends StatefulWidget {
   final int? index;
   final List<MediaSegment> lines;
   final String path;
+  final bool fullScreen;
   final VoidCallback? onFullScreen;
   final InitCallback? onInited;
   final VoidCallback? onPrevious;
@@ -26,6 +27,7 @@ class PlayerBar extends StatefulWidget {
     this.lines,
     this.path, {
     Key? key,
+    this.fullScreen = false,
     this.onFullScreen,
     this.onInited,
     this.onPrevious,
