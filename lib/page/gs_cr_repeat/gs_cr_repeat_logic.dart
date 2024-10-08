@@ -115,8 +115,39 @@ class GsCrRepeatLogic extends GetxController {
     }
   }
 
+  void adjustProgress() async {
+    var progress = "".obs;
+    var curr = state.c[0];
+    var schedule = await Db().db.scheduleDao.getSegmentOverallPrg(curr.segmentKeyId);
+    if (schedule == null) {
+      return;
+    }
+    MsgBox.strInputWithYesOrNo(
+      progress,
+      I18nKey.labelAdjustLearnProgress.tr,
+      I18nKey.labelAdjustLearnProgressDesc.trArgs(["${schedule.progress}"]),
+      yes: () async {
+        Nav.back();
+        int pv = 0;
+        try {
+          pv = int.parse(progress.value);
+        } catch (e) {
+          Snackbar.show(I18nKey.labelPleaseInputUnSignNumber.tr);
+          return;
+        }
+        if (pv < 0) {
+          Snackbar.show(I18nKey.labelPleaseInputUnSignNumber.tr);
+          return;
+        }
+        know(autoNext: true, progress: pv);
+      },
+    );
+
+    update([GsCrRepeatLogic.id]);
+  }
+
   // TODO add device volume button
-  void know({autoNext = false}) async {
+  void know({autoNext = false, int progress = -1}) async {
     if (ticker.isStuck()) {
       return;
     }
@@ -127,7 +158,7 @@ class GsCrRepeatLogic extends GetxController {
     state.fakeKnow = 0;
     var curr = state.c[0];
     if (!state.justView) {
-      await Db().db.scheduleDao.right(curr);
+      await Db().db.scheduleDao.right(curr, progress);
     }
     if (curr.progress >= ScheduleDao.scheduleConfig.maxRepeatTime) {
       state.c.removeAt(0);

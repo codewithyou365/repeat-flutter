@@ -56,6 +56,9 @@ class ConfigEn extends Config {
     put(I18nKey.labelSaved, "Save success");
     put(I18nKey.labelSaveCancel, "Save canceled");
     put(I18nKey.labelStoragePermissionDenied, "Storage permission has been denied. Please enable storage permission in the settings.");
+    put(I18nKey.labelAdjustLearnProgress, "Adjust the learning progress.");
+    put(I18nKey.labelAdjustLearnProgressDesc, "Current progress is %s, please enter the new learning progress.");
+    put(I18nKey.labelPleaseInputUnSignNumber, "Please enter a number greater than or equal to 0.");
     put(I18nKey.labelResetLearn, "Reset Learn");
     put(I18nKey.labelResetLearnDesc, "After executing the reset function, the unfinished tasks for today will be reset. Do you want to continue?");
     put(I18nKey.labelConfigSettingsForEl, "Learn Config");
@@ -106,6 +109,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelLocalImport, "Local Import");
     put(I18nKey.labelLocalImportCancel, "Local Import is Canceled");
     put(I18nKey.labelSegmentRemoved, "The learning segment has been removed, and it is recommended that the related schedule be deleted");
+    put(I18nKey.labelDocNotBeDownloaded, "The document is not downloaded \n %s");
+    put(I18nKey.labelDocCantBeFound, "The document cannot be found \n %s");
     put(I18nKey.btnCancel, "Cancel");
     put(I18nKey.btnOk, "Ok");
     put(I18nKey.btnDelete, "Delete");

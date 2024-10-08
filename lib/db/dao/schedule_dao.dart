@@ -589,18 +589,23 @@ abstract class ScheduleDao {
   }
 
   @transaction
-  Future<void> right(SegmentTodayPrg segmentTodayPrg) async {
+  Future<void> right(SegmentTodayPrg segmentTodayPrg, int? progress) async {
     await forUpdate();
     var segmentKeyId = segmentTodayPrg.segmentKeyId;
     var now = DateTime.now();
     bool complete = false;
     var maxRepeatTime = scheduleConfig.maxRepeatTime;
-    if (segmentTodayPrg.progress == 0 && DateTime.fromMicrosecondsSinceEpoch(0).compareTo(segmentTodayPrg.viewTime) == 0) {
+    if (progress != null && progress > 0) {
+      complete = true;
+      await setPrg4Sop(segmentKeyId, progress - 1);
+      await setScheduleCurrentWithCache(segmentTodayPrg, maxRepeatTime, now);
+    }
+    if (complete == false && segmentTodayPrg.progress == 0 && DateTime.fromMicrosecondsSinceEpoch(0).compareTo(segmentTodayPrg.viewTime) == 0) {
       complete = true;
       await setScheduleCurrentWithCache(segmentTodayPrg, maxRepeatTime, now);
     }
 
-    if (segmentTodayPrg.progress + 1 >= maxRepeatTime) {
+    if (complete == false && segmentTodayPrg.progress + 1 >= maxRepeatTime) {
       complete = true;
       await setScheduleCurrentWithCache(segmentTodayPrg, maxRepeatTime, now);
     }
@@ -621,7 +626,7 @@ abstract class ScheduleDao {
         await insertSegmentReview([SegmentReview(Date(todayLearnCreateDate), segmentKeyId, 0)]);
         adjustProgress = true;
       }
-      if (adjustProgress && schedule.next.value <= Date.from(now).value) {
+      if (adjustProgress) {
         var forgettingCurve = scheduleConfig.forgettingCurve;
         if (schedule.progress + 1 >= forgettingCurve.length - 1) {
           await setPrgAndNext4Sop(segmentKeyId, schedule.progress + 1, getNext(now, forgettingCurve.last));

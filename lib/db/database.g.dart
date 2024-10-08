@@ -1065,15 +1065,18 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> right(SegmentTodayPrg segmentTodayPrg) async {
+  Future<void> right(
+    SegmentTodayPrg segmentTodayPrg,
+    int? progress,
+  ) async {
     if (database is sqflite.Transaction) {
-      await super.right(segmentTodayPrg);
+      await super.right(segmentTodayPrg, progress);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        await transactionDatabase.scheduleDao.right(segmentTodayPrg);
+        await transactionDatabase.scheduleDao.right(segmentTodayPrg, progress);
       });
     }
   }
