@@ -56,6 +56,9 @@ class ConfigZh extends Config {
     put(I18nKey.labelSaved, "保存成功");
     put(I18nKey.labelSaveCancel, "保存已取消");
     put(I18nKey.labelStoragePermissionDenied, "存储权限被拒绝，请在设置中打开存储权限");
+    put(I18nKey.labelAdjustLearnProgress, "调整学习进度");
+    put(I18nKey.labelAdjustLearnProgressDesc, "当前进度为 %s，请输入新的学习进度");
+    put(I18nKey.labelPleaseInputUnSignNumber, "请输入大于或等于 0 的数字");
     put(I18nKey.labelResetLearn, "重置学习内容");
     put(I18nKey.labelResetLearnDesc, "执行重置后，将重置今日未完成的任务，是否继续？");
     put(I18nKey.labelConfigSettingsForEl, "学习设置");
@@ -106,6 +109,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelLocalImport, "本地导入");
     put(I18nKey.labelLocalImportCancel, "本地导入取消");
     put(I18nKey.labelSegmentRemoved, "对应的学习片段已移除，建议删除相关学习规划");
+    put(I18nKey.labelDocNotBeDownloaded, "还未下载文件 \n %s");
+    put(I18nKey.labelDocCantBeFound, "无法找到文件 \n %s");
     put(I18nKey.btnCancel, "取消");
     put(I18nKey.btnOk, "确定");
     put(I18nKey.btnDelete, "删除");

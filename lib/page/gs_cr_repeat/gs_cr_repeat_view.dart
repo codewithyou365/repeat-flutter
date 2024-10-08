@@ -8,7 +8,7 @@ import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 import 'gs_cr_repeat_logic.dart';
 
-class GsCrRepeatPage extends StatelessWidget  {
+class GsCrRepeatPage extends StatelessWidget {
   const GsCrRepeatPage({Key? key}) : super(key: key);
 
   @override
@@ -243,6 +243,7 @@ class GsCrRepeatPage extends StatelessWidget  {
     var leftButtonText = "";
     var rightButtonText = "";
     void Function() leftButtonLogic = () => {};
+    void Function()? leftButtonLongPressLogic;
     void Function() rightButtonLogic = () => {};
     void Function()? rightButtonLongPressLogic;
     if (state.justView) {
@@ -269,6 +270,7 @@ class GsCrRepeatPage extends StatelessWidget  {
         case RepeatStep.recall:
           leftButtonText = I18nKey.btnKnow.tr;
           leftButtonLogic = logic.show;
+
           rightButtonText = I18nKey.btnUnknown.tr;
           rightButtonLogic = logic.tipLongPress;
           rightButtonLongPressLogic = logic.error;
@@ -276,6 +278,7 @@ class GsCrRepeatPage extends StatelessWidget  {
         case RepeatStep.evaluate:
           leftButtonText = "${I18nKey.btnNext.tr}\n${state.nextKey}";
           leftButtonLogic = () => logic.know(autoNext: true);
+          leftButtonLongPressLogic = logic.adjustProgress;
           rightButtonText = I18nKey.btnError.tr;
           rightButtonLogic = logic.tipLongPress;
           rightButtonLongPressLogic = logic.error;
@@ -296,7 +299,13 @@ class GsCrRepeatPage extends StatelessWidget  {
       children: [
         Row(
           children: [
-            buildButton(leftButtonText, leftButtonLogic, height, width: width),
+            buildButton(
+              leftButtonText,
+              leftButtonLogic,
+              height,
+              width: width,
+              onLongPress: leftButtonLongPressLogic,
+            ),
             const Spacer(),
             buildButton(
               rightButtonText,
