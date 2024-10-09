@@ -1,5 +1,7 @@
+import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
@@ -35,7 +37,7 @@ class SegmentHelp {
     mediaDocPathToVideoMaskRatio[path] = ratio;
   }
 
-  static Future<SegmentContent?> from(int segmentKeyId, {int offset = 0}) async {
+  static Future<SegmentContent?> from(int segmentKeyId, {int offset = 0, RxString? err}) async {
     if (offset < 0) {
       var id = await Db().db.scheduleDao.getPrevSegmentKeyIdWithOffset(Classroom.curr, segmentKeyId, offset.abs());
       if (id != null) {
@@ -59,6 +61,9 @@ class SegmentHelp {
     if (qa == null) {
       qa = await RepeatDoc.fromPath(ret.indexDocPath, Uri.parse(ret.indexDocUrl));
       if (qa == null) {
+        if (err != null) {
+          err.value = I18nKey.labelDocNotBeDownloaded.trArgs([ret.indexDocUrl]);
+        }
         return null;
       }
       indexDocPathToQa[ret.indexDocPath] = qa;

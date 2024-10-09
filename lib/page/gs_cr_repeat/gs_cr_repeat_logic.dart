@@ -110,7 +110,13 @@ class GsCrRepeatLogic extends GetxController {
   Future<void> tryToSetNext() async {
     if (state.c.length > 1) {
       var next = state.c[1];
-      var content = await SegmentHelp.from(next.segmentKeyId);
+      RxString err = "".obs;
+      var content = await SegmentHelp.from(next.segmentKeyId, err: err);
+      if (err.value != "") {
+        Nav.back();
+        MsgBox.yes(I18nKey.btnError.tr, err.value);
+        return;
+      }
       state.nextKey = content!.k;
     }
   }
@@ -243,7 +249,13 @@ class GsCrRepeatLogic extends GetxController {
     pnOffset ??= 0;
     state.openTip = false;
     var oldSegmentKeyId = state.segment.segmentKeyId;
-    var learnSegment = await SegmentHelp.from(curr.segmentKeyId, offset: pnOffset);
+    RxString err = "".obs;
+    var learnSegment = await SegmentHelp.from(curr.segmentKeyId, offset: pnOffset, err: err);
+    if (err.value != "") {
+      Nav.back();
+      MsgBox.yes(I18nKey.btnError.tr, err.value);
+      return null;
+    }
     if (learnSegment == null) {
       return null;
     }
