@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'media.dart';
 import 'video_mask.dart';
@@ -12,7 +11,7 @@ class PlayerBar extends StatefulWidget {
   final int? index;
   final List<MediaSegment> lines;
   final String path;
-  final bool fullScreen;
+  final bool withVideo;
   final VoidCallback? onFullScreen;
   final InitCallback? onInited;
   final VoidCallback? onPrevious;
@@ -27,7 +26,7 @@ class PlayerBar extends StatefulWidget {
     this.lines,
     this.path, {
     Key? key,
-    this.fullScreen = false,
+    this.withVideo = true,
     this.onFullScreen,
     this.onInited,
     this.onPrevious,
@@ -139,6 +138,9 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.withVideo) {
+      return buildBar(context);
+    }
     var mv = mediaView(widget.initMaskRatio, widget.setMaskRatio, widget.onFullScreen);
     if (mv == null) {
       return buildBar(context);
@@ -172,24 +174,24 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
             });
           },
           child: CustomPaint(
-            size: Size(360.w, 50.w),
+            size: const Size(360, 50),
             painter: PlayerBarPainter(_offset, widget.lines),
           ),
         ),
         SizedBox(
-          height: 50.w,
+          height: 50,
           child: Row(
             children: [
               IconButton(
                 icon: const Icon(Icons.replay_5),
-                iconSize: 20.w,
+                iconSize: 20,
                 onPressed: () {
                   move(inc: -5000);
                 },
               ),
               IconButton(
                 icon: const Icon(Icons.replay),
-                iconSize: 20.w,
+                iconSize: 20,
                 onPressed: () {
                   if (widget.onReplay != null) {
                     widget.onReplay!();
@@ -199,7 +201,7 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
               ),
               IconButton(
                 icon: const Icon(Icons.forward_5),
-                iconSize: 20.w,
+                iconSize: 20,
                 onPressed: () {
                   move(inc: 5000);
                 },
@@ -208,7 +210,7 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
               if (widget.onPrevious != null)
                 IconButton(
                   icon: const Icon(Icons.skip_previous),
-                  iconSize: 20.w,
+                  iconSize: 20,
                   onPressed: () {
                     if (widget.onPrevious != null) {
                       widget.onPrevious!();
@@ -218,7 +220,7 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
                 ),
               IconButton(
                 icon: playing ? const Icon(Icons.pause) : const Icon(Icons.play_arrow),
-                iconSize: 20.w,
+                iconSize: 20,
                 onPressed: () {
                   if (playing) {
                     stopMove();
@@ -230,7 +232,7 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
               if (widget.onNext != null)
                 IconButton(
                   icon: const Icon(Icons.skip_next),
-                  iconSize: 20.w,
+                  iconSize: 20,
                   onPressed: () {
                     if (widget.onNext != null) {
                       widget.onNext!();
@@ -289,7 +291,7 @@ class PlayerBarPainter extends CustomPainter {
     contentLine = Paint()
       ..color = Colors.blue
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 20.0.w;
+      ..strokeWidth = 20.0;
     gapLine = Paint()
       ..color = Colors.blue
       ..strokeWidth = 1.0;
@@ -297,9 +299,9 @@ class PlayerBarPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double lineWidth = 10.w;
-    final double gapWidth = 10.w;
-    final double totalWidth = lineWidth + gapWidth;
+    const double lineWidth = 10;
+    const double gapWidth = 10;
+    const double totalWidth = lineWidth + gapWidth;
 
     final double centerY = size.height / 2;
     final double centerX = size.width / 2;
@@ -333,8 +335,8 @@ class PlayerBarPainter extends CustomPainter {
         endX = size.width;
       }
       canvas.drawLine(
-        Offset(startX, 0.w),
-        Offset(endX, 0.w),
+        Offset(startX, 0),
+        Offset(endX, 0),
         gapLine,
       );
       canvas.drawLine(
