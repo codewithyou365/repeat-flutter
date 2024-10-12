@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
@@ -15,6 +14,7 @@ import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
+import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'gs_cr_repeat_state.dart';
@@ -283,47 +283,55 @@ class GsCrRepeatLogic extends GetxController {
     return true;
   }
 
-  void mediaLoad(List<ContentType> contentTypes) {
+  Future<void> onMediaFullScreen() async {}
+
+  List<MediaSegment> getSegments() {
+    List<MediaSegment> ret = [];
+    var segment = state.segment;
+    if (segment.qMediaSegments.isNotEmpty) {
+      ret = [segment.qMediaSegments[segment.segmentIndex]];
+    } else if (segment.question == "" && segment.aMediaSegments.isNotEmpty && segment.segmentIndex - 1 >= 0) {
+      ret = [segment.aMediaSegments[segment.segmentIndex - 1]];
+    } else if (segment.question == "" && segment.titleMediaSegment != null) {
+      ret = [segment.titleMediaSegment!];
+    }
+    if (state.step != RepeatStep.recall) {
+      if (segment.mediaDocPath != "" && segment.aMediaSegments.isNotEmpty) {
+        var left = 0;
+        var right = 0;
+        var curr = -1;
+        List<MediaSegment> segments = [];
+        for (var i = -left; i <= right; i++) {
+          var index = segment.segmentIndex + i;
+          if (index >= 0 && index < segment.aMediaSegments.length) {
+            segments.add(segment.aMediaSegments[index]);
+            if (i == 0) {
+              curr = segments.length - 1;
+            }
+          }
+        }
+        if (curr != -1) {
+          return segments;
+        }
+      }
+    }
+    return ret;
+  }
+
+  void mediaLoad(InitMediaCallback mediaInit) {
     if (state.skipControlMedia) {
       state.skipControlMedia = false;
       return;
     }
-    if (contentTypes.contains(ContentType.questionOrPrevAnswerOrTitleMedia) || contentTypes.contains(ContentType.questionOrPrevAnswerOrTitleMediaPncAndWom)) {
-      if (state.questionMediaKey.currentState != null) {
-        state.questionMediaKey.currentState?.mediaLoad();
-      }
-    }
-    if (contentTypes.contains(ContentType.answerMedia) || contentTypes.contains(ContentType.answerMediaPnc)) {
-      if (state.answerMediaKey.currentState != null) {
-        state.answerMediaKey.currentState?.mediaLoad();
-      }
-    }
-  }
-
-  Future<void> onMediaFullScreen() async {
-    state.videoFullScreen = !state.videoFullScreen;
-    if (state.videoFullScreen) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
-    } else {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    }
-    update([GsCrRepeatLogic.id]);
+    state.mediaKey.currentState?.mediaLoad(mediaInit);
   }
 
   Future<void> onMediaInited(String playerId) async {
-    if (playerId == state.questionMediaId) {
-      if (state.tryNeedPlayQuestion) {
-        state.questionMediaKey.currentState?.moveByIndex();
+    if (playerId == GsCrRepeatState.mediaId) {
+      if (state.tryNeedPlayQuestion || state.tryNeedPlayAnswer) {
+        state.mediaKey.currentState?.moveByIndex();
       } else {
-        state.questionMediaKey.currentState?.stopMove();
-      }
-    }
-
-    if (playerId == state.answerMediaId) {
-      if (state.tryNeedPlayAnswer) {
-        state.answerMediaKey.currentState?.moveByIndex();
-      } else {
-        state.answerMediaKey.currentState?.stopMove();
+        state.mediaKey.currentState?.stopMove();
       }
     }
   }
@@ -391,8 +399,8 @@ class GsCrRepeatLogic extends GetxController {
     }
   }
 
-  List<List<ContentTypeWithTip>> getCurrProcessShowContent() {
-    List<List<ContentTypeWithTip>> currProcessShowContent;
+  List<List<ContentArg>> getCurrProcessShowContent() {
+    List<List<ContentArg>> currProcessShowContent;
     var processIndex = state.progress;
     if (processIndex < 0) {
       currProcessShowContent = state.showContent[0];

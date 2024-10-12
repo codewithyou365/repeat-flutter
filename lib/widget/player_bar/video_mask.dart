@@ -3,15 +3,16 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:video_player/video_player.dart';
 
 typedef SetMaskRatioCallback = void Function(double height);
+typedef GetVpc = VideoPlayerController? Function();
 
 class VideoMask extends StatefulWidget {
-  final VideoPlayerController videoPlayer;
+  final GetVpc getVpc;
   final double initMaskRatio;
   final SetMaskRatioCallback? setMaskHeight;
   final VoidCallback? onFullScreen;
 
   const VideoMask(
-    this.videoPlayer,
+    this.getVpc,
     this.initMaskRatio,
     this.setMaskHeight,
     this.onFullScreen, {
@@ -45,10 +46,15 @@ class VideoMaskState extends State<VideoMask> {
     startSetting = false;
   }
 
+  void refresh() {
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
-    var video = widget.videoPlayer.value;
-    if (video.isInitialized) {
+    var videoPlayer = widget.getVpc();
+    if (videoPlayer != null && videoPlayer.value.isInitialized) {
+      var video = videoPlayer.value;
       return GestureDetector(
         onTap: () {
           if (widget.setMaskHeight != null && widget.initMaskRatio > 0) {
@@ -93,7 +99,7 @@ class VideoMaskState extends State<VideoMask> {
               children: [
                 AspectRatio(
                   aspectRatio: video.aspectRatio,
-                  child: VideoPlayer(widget.videoPlayer),
+                  child: VideoPlayer(videoPlayer),
                 ),
                 if (widget.initMaskRatio > 0)
                   AspectRatio(

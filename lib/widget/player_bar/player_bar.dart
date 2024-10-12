@@ -4,16 +4,17 @@ import 'package:flutter/material.dart';
 import 'media.dart';
 import 'video_mask.dart';
 
-typedef InitCallback = void Function(String playerId);
+typedef InitMediaCallback = void Function(String playerId);
 
 class PlayerBar extends StatefulWidget {
   final String playerId;
   final int? index;
+  final double width;
+  final double height;
   final List<MediaSegment> lines;
   final String path;
   final bool withVideo;
   final VoidCallback? onFullScreen;
-  final InitCallback? onInited;
   final VoidCallback? onPrevious;
   final VoidCallback? onReplay;
   final VoidCallback? onNext;
@@ -23,12 +24,13 @@ class PlayerBar extends StatefulWidget {
   const PlayerBar(
     this.playerId,
     this.index,
+    this.width,
+    this.height,
     this.lines,
     this.path, {
     Key? key,
     this.withVideo = true,
     this.onFullScreen,
-    this.onInited,
     this.onPrevious,
     this.onReplay,
     this.onNext,
@@ -69,10 +71,10 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
     });
   }
 
-  void mediaLoad() {
+  void mediaLoad(InitMediaCallback? onInited) {
     mediaInit(widget.path, widget.playerId).then((value) {
-      if (widget.onInited != null) {
-        widget.onInited!(widget.playerId);
+      if (onInited != null) {
+        onInited(widget.playerId);
       }
       setState(() {});
     });
@@ -141,16 +143,15 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
     if (!widget.withVideo) {
       return buildBar(context);
     }
-    var mv = mediaView(widget.initMaskRatio, widget.setMaskRatio, widget.onFullScreen);
-    if (mv == null) {
-      return buildBar(context);
-    } else {
+    if (Media.isVideo(widget.path)) {
       return Column(
         children: [
-          mv,
+          Media.mediaView(widget),
           buildBar(context),
         ],
       );
+    } else {
+      return buildBar(context);
     }
   }
 
@@ -174,12 +175,13 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
             });
           },
           child: CustomPaint(
-            size: const Size(360, 50),
+            size: Size(widget.width, widget.height),
             painter: PlayerBarPainter(_offset, widget.lines),
           ),
         ),
         SizedBox(
-          height: 50,
+          height: widget.height,
+          width: widget.width,
           child: Row(
             children: [
               IconButton(

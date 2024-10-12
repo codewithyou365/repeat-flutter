@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+import 'player_bar.dart';
 import 'video_mask.dart';
 
 class MediaCache {
@@ -20,41 +21,34 @@ mixin Media {
   bool video = false;
   String key = "";
 
-  AudioPlayer? audioPlayer;
-  VideoPlayerController? videoPlayer;
-
   Future<void> mediaInit(String path, String playerId) async {
-    if (path.endsWith("mp4")) {
-      video = true;
-    }
+    video = isVideo(path);
     key = playerId;
     if (video) {
       if (playerIdToMediaCache.containsKey(key)) {
         var cache = playerIdToMediaCache[key]!;
         if (cache.path != path) {
           await cache.videoPlayer!.dispose();
-          videoPlayer = VideoPlayerController.file(File(path));
-          await videoPlayer!.initialize();
+          var videoPlayer = VideoPlayerController.file(File(path));
           playerIdToMediaCache[key] = MediaCache(path, videoPlayer: videoPlayer);
-        } else {
-          videoPlayer = cache.videoPlayer;
+          await videoPlayer.initialize();
         }
       } else {
-        videoPlayer = VideoPlayerController.file(File(path));
-        await videoPlayer!.initialize();
+        var videoPlayer = VideoPlayerController.file(File(path));
         playerIdToMediaCache[key] = MediaCache(path, videoPlayer: videoPlayer);
+        await videoPlayer.initialize();
       }
     } else {
       if (playerIdToMediaCache.containsKey(key)) {
         var cache = playerIdToMediaCache[key]!;
-        audioPlayer = cache.audioPlayer;
+        var audioPlayer = cache.audioPlayer;
         if (cache.path != path) {
           cache.path = path;
           await audioPlayer!.setSource(DeviceFileSource(path));
         }
       } else {
-        audioPlayer = AudioPlayer(playerId: playerId);
-        await audioPlayer!.setSource(DeviceFileSource(path));
+        var audioPlayer = AudioPlayer(playerId: playerId);
+        await audioPlayer.setSource(DeviceFileSource(path));
         playerIdToMediaCache[key] = MediaCache(path, audioPlayer: audioPlayer);
       }
     }
@@ -62,36 +56,45 @@ mixin Media {
 
   mediaStop() async {
     if (video) {
-      await videoPlayer!.pause();
+      await playerIdToMediaCache[key]?.videoPlayer!.pause();
     } else {
-      await audioPlayer!.pause();
+      await playerIdToMediaCache[key]?.audioPlayer!.pause();
     }
   }
 
   Future<void> mediaPlayAndSeek(Duration position) async {
     if (video) {
-      await videoPlayer!.seekTo(position);
-      await videoPlayer!.play();
+      await playerIdToMediaCache[key]?.videoPlayer!.seekTo(position);
+      await playerIdToMediaCache[key]?.videoPlayer!.play();
     } else {
-      await audioPlayer!.seek(position);
-      await audioPlayer!.resume();
+      await playerIdToMediaCache[key]?.audioPlayer!.seek(position);
+      await playerIdToMediaCache[key]?.audioPlayer!.resume();
     }
   }
 
   mediaDispose() {
-    playerIdToMediaCache.remove(key);
     if (video) {
-      videoPlayer!.dispose();
+      playerIdToMediaCache[key]?.videoPlayer!.dispose();
     } else {
-      audioPlayer!.dispose();
+      playerIdToMediaCache[key]?.audioPlayer!.dispose();
     }
+    playerIdToMediaCache.remove(key);
   }
 
-  Widget? mediaView(double initMaskRatio, SetMaskRatioCallback? setMaskRatio, VoidCallback? onFullScreen) {
-    if (video) {
-      return VideoMask(videoPlayer!, initMaskRatio, setMaskRatio, onFullScreen);
-    } else {
+  static Widget mediaView(PlayerBar playerBar, {Key? key}) {
+    return VideoMask(() {
+      var cache = playerIdToMediaCache[playerBar.playerId];
+      if (cache == null) {
+        return null;
+      }
+      if (isVideo(playerBar.path)) {
+        return cache.videoPlayer;
+      }
       return null;
-    }
+    }, playerBar.initMaskRatio, playerBar.setMaskRatio, playerBar.onFullScreen, key: key);
+  }
+
+  static bool isVideo(String path) {
+    return path.endsWith("mp4");
   }
 }
