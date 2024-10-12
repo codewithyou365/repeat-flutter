@@ -21,7 +21,7 @@ class GsCrRepeatViewBasic {
     return Text("$currIndex/${state.total}-${state.segment.k}");
   }
 
-  static Widget buildContent(BuildContext context, GsCrRepeatLogic logic, double height, {bool? left, HideVideoPlayerBarCallback? callback}) {
+  static Widget buildContent(BuildContext context, GsCrRepeatLogic logic, {bool? left}) {
     var state = logic.state;
     state.step.index;
     var currProcessShowContent = logic.getCurrProcessShowContent();
@@ -31,154 +31,62 @@ class GsCrRepeatViewBasic {
     } else {
       showContent = currProcessShowContent[currProcessShowContent.length - 1];
     }
-    List<ContentType> validContentType = [];
     List<Widget> listViewContent = [];
     for (int i = 0; i < showContent.length; i++) {
       Widget? w;
       if (left != null) {
         if (left == showContent[i].left) {
-          w = GsCrRepeatViewBasic.buildInnerContent(logic, context, showContent[i].contentType, showContent[i].withVideo ?? false, state.segment, callback);
+          w = GsCrRepeatViewBasic.buildInnerContent(logic, context, showContent[i].contentType, state.segment);
         }
       } else {
-        w = GsCrRepeatViewBasic.buildInnerContent(logic, context, showContent[i].contentType, showContent[i].withVideo ?? false, state.segment, callback);
+        w = GsCrRepeatViewBasic.buildInnerContent(logic, context, showContent[i].contentType, state.segment);
       }
       if (w != null) {
-        if (showContent[i].tip && state.openTip) {
+        var tip = showContent[i].tip ?? false;
+        if (tip && state.openTip) {
           listViewContent.add(w);
-        } else if (!showContent[i].tip) {
+        } else if (!tip) {
           listViewContent.add(w);
         }
-        validContentType.add(showContent[i].contentType);
       }
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      logic.mediaLoad(validContentType);
-    });
-
-    return SizedBox(
-      height: height,
-      child: listViewContent.isEmpty ? const Text("") : ListView(children: listViewContent),
-    );
+    return ListView(padding: const EdgeInsets.all(0), children: listViewContent);
   }
 
-  static Widget? buildInnerContent(GsCrRepeatLogic logic, BuildContext context, ContentType t, bool? withVideo, SegmentContent segment, HideVideoPlayerBarCallback? callback) {
+  static PlayerBar? getPlayerBar(GsCrRepeatLogic logic, double width, double height) {
+    GsCrRepeatState state = logic.state;
+    VoidCallback? onPrevious;
+    VoidCallback? onReplay;
+    VoidCallback? onNext;
+    if (state.step != RepeatStep.recall) {
+      onPrevious = logic.minusPnOffset;
+      onReplay = logic.resetPnOffset;
+      onNext = logic.plusPnOffset;
+    }
+    if (state.segment.mediaDocPath != "") {
+      return PlayerBar(
+        GsCrRepeatState.mediaId,
+        0,
+        width,
+        height,
+        logic.getSegments(),
+        state.segment.mediaDocPath,
+        withVideo: false,
+        key: state.mediaKey,
+        initMaskRatio: logic.getMaskRatio(),
+        onFullScreen: logic.onMediaFullScreen,
+        onPrevious: onPrevious,
+        onReplay: onReplay,
+        onNext: onNext,
+      );
+    }
+    return null;
+  }
+
+  static Widget? buildInnerContent(GsCrRepeatLogic logic, BuildContext context, ContentType t, SegmentContent segment) {
     GsCrRepeatState state = logic.state;
     switch (t) {
-      case ContentType.questionOrPrevAnswerOrTitleMedia:
-        if (segment.mediaDocPath != "" && segment.qMediaSegments.isNotEmpty) {
-          var bar = PlayerBar(
-            state.questionMediaId,
-            0,
-            [segment.qMediaSegments[segment.segmentIndex]],
-            segment.mediaDocPath,
-            withVideo: withVideo ?? false,
-            key: state.questionMediaKey,
-            onFullScreen: logic.onMediaFullScreen,
-            onInited: logic.onMediaInited,
-            initMaskRatio: logic.getMaskRatio(),
-            setMaskRatio: logic.setMaskRatio,
-          );
-          if (callback != null && withVideo != null && withVideo == false) {
-            callback(bar);
-          }
-          return bar;
-        } else if (segment.question == "" && segment.mediaDocPath != "" && segment.aMediaSegments.isNotEmpty && segment.segmentIndex - 1 >= 0) {
-          var bar = PlayerBar(
-            state.questionMediaId,
-            0,
-            [segment.aMediaSegments[segment.segmentIndex - 1]],
-            segment.mediaDocPath,
-            withVideo: withVideo ?? false,
-            key: state.questionMediaKey,
-            onFullScreen: logic.onMediaFullScreen,
-            onInited: logic.onMediaInited,
-            initMaskRatio: logic.getMaskRatio(),
-            setMaskRatio: logic.setMaskRatio,
-          );
-          if (callback != null && withVideo != null && withVideo == false) {
-            callback(bar);
-          }
-          return bar;
-        } else if (segment.question == "" && segment.mediaDocPath != "" && segment.titleMediaSegment != null) {
-          var bar = PlayerBar(
-            state.questionMediaId,
-            0,
-            [segment.titleMediaSegment!],
-            segment.mediaDocPath,
-            withVideo: withVideo ?? false,
-            key: state.questionMediaKey,
-            onFullScreen: logic.onMediaFullScreen,
-            onInited: logic.onMediaInited,
-            initMaskRatio: logic.getMaskRatio(),
-            setMaskRatio: logic.setMaskRatio,
-          );
-          if (callback != null && withVideo != null && withVideo == false) {
-            callback(bar);
-          }
-          return bar;
-        }
-        return null;
-      case ContentType.questionOrPrevAnswerOrTitleMediaPncAndWom:
-        if (segment.mediaDocPath != "" && segment.qMediaSegments.isNotEmpty) {
-          var bar = PlayerBar(
-            state.questionMediaId,
-            0,
-            [segment.qMediaSegments[segment.segmentIndex]],
-            segment.mediaDocPath,
-            withVideo: withVideo ?? false,
-            key: state.questionMediaKey,
-            initMaskRatio: logic.getMaskRatio(),
-            onFullScreen: logic.onMediaFullScreen,
-            onInited: logic.onMediaInited,
-            onPrevious: logic.minusPnOffset,
-            onReplay: logic.resetPnOffset,
-            onNext: logic.plusPnOffset,
-          );
-          if (callback != null && withVideo != null && withVideo == false) {
-            callback(bar);
-          }
-          return bar;
-        } else if (segment.question == "" && segment.mediaDocPath != "" && segment.aMediaSegments.isNotEmpty && segment.segmentIndex - 1 >= 0) {
-          var bar = PlayerBar(
-            state.questionMediaId,
-            0,
-            [segment.aMediaSegments[segment.segmentIndex - 1]],
-            segment.mediaDocPath,
-            withVideo: withVideo ?? false,
-            key: state.questionMediaKey,
-            initMaskRatio: logic.getMaskRatio(),
-            onFullScreen: logic.onMediaFullScreen,
-            onInited: logic.onMediaInited,
-            onPrevious: logic.minusPnOffset,
-            onReplay: logic.resetPnOffset,
-            onNext: logic.plusPnOffset,
-          );
-          if (callback != null && withVideo != null && withVideo == false) {
-            callback(bar);
-          }
-          return bar;
-        } else if (segment.question == "" && segment.mediaDocPath != "" && segment.titleMediaSegment != null) {
-          var bar = PlayerBar(
-            state.questionMediaId,
-            0,
-            [segment.titleMediaSegment!],
-            segment.mediaDocPath,
-            withVideo: withVideo ?? false,
-            key: state.questionMediaKey,
-            initMaskRatio: logic.getMaskRatio(),
-            onFullScreen: logic.onMediaFullScreen,
-            onInited: logic.onMediaInited,
-            onPrevious: logic.minusPnOffset,
-            onReplay: logic.resetPnOffset,
-            onNext: logic.plusPnOffset,
-          );
-          if (callback != null && withVideo != null && withVideo == false) {
-            callback(bar);
-          }
-          return bar;
-        }
-        return null;
       case ContentType.questionOrPrevAnswerOrTitle:
         if (segment.question != "") {
           return Text(segment.question);
@@ -189,64 +97,9 @@ class GsCrRepeatViewBasic {
         } else {
           return null;
         }
-      case ContentType.answerMedia:
-        if (segment.mediaDocPath != "" && segment.aMediaSegments.isNotEmpty) {
-          var bar = PlayerBar(
-            state.answerMediaId,
-            segment.segmentIndex,
-            segment.aMediaSegments,
-            segment.mediaDocPath,
-            withVideo: withVideo ?? false,
-            key: state.answerMediaKey,
-            onFullScreen: logic.onMediaFullScreen,
-            onInited: logic.onMediaInited,
-          );
-          if (callback != null && withVideo != null && withVideo == false) {
-            callback(bar);
-          }
-          return bar;
-        }
-        return null;
-      case ContentType.answerMediaPnc:
-        if (segment.mediaDocPath != "" && segment.aMediaSegments.isNotEmpty) {
-          var left = 0;
-          var right = 0;
-          var curr = -1;
-          List<MediaSegment> segments = [];
-          for (var i = -left; i <= right; i++) {
-            var index = segment.segmentIndex + i;
-            if (index >= 0 && index < segment.aMediaSegments.length) {
-              segments.add(segment.aMediaSegments[index]);
-              if (i == 0) {
-                curr = segments.length - 1;
-              }
-            }
-          }
-          if (curr == -1) {
-            return null;
-          }
-          var bar = PlayerBar(
-            state.answerMediaId,
-            curr,
-            segments,
-            segment.mediaDocPath,
-            withVideo: withVideo ?? false,
-            key: state.answerMediaKey,
-            onFullScreen: logic.onMediaFullScreen,
-            onInited: logic.onMediaInited,
-            onPrevious: logic.minusPnOffset,
-            onReplay: logic.resetPnOffset,
-            onNext: logic.plusPnOffset,
-          );
-          if (callback != null && withVideo != null && withVideo == false) {
-            callback(bar);
-          }
-          return bar;
-        }
-        return null;
       case ContentType.answerPnController:
         if (segment.mediaDocPath != "") {
-          return buildMediaController(logic, state.answerMediaKey);
+          return buildMediaController(logic, state.mediaKey);
         }
         return null;
       case ContentType.answer:
@@ -289,7 +142,7 @@ class GsCrRepeatViewBasic {
     );
   }
 
-  static Widget buildBottom(GsCrRepeatLogic logic, double width) {
+  static Widget buildBottom(GsCrRepeatLogic logic, double width, double height) {
     var state = logic.state;
     var leftButtonText = "";
     var rightButtonText = "";
@@ -345,35 +198,39 @@ class GsCrRepeatViewBasic {
           break;
       }
     }
-
-    return Stack(
-      children: [
-        Row(
-          children: [
-            buildButton(
-              leftButtonText,
-              leftButtonLogic,
-              width: width,
-              onLongPress: leftButtonLongPressLogic,
-            ),
-            const Spacer(),
-            buildButton(
-              rightButtonText,
-              rightButtonLogic,
-              width: width,
-              onLongPress: rightButtonLongPressLogic,
-            ),
-          ],
-        ),
-        if (!state.openTip)
+    var buttonWidth = width / 2;
+    return SizedBox(
+      width: width,
+      height: height,
+      child: Stack(
+        children: [
           Row(
             children: [
+              buildButton(
+                leftButtonText,
+                leftButtonLogic,
+                width: buttonWidth,
+                onLongPress: leftButtonLongPressLogic,
+              ),
               const Spacer(),
-              buildButton(I18nKey.btnTips.tr, () => logic.tip(), width: width),
-              const Spacer(),
+              buildButton(
+                rightButtonText,
+                rightButtonLogic,
+                width: buttonWidth,
+                onLongPress: rightButtonLongPressLogic,
+              ),
             ],
-          )
-      ],
+          ),
+          if (!state.openTip)
+            Row(
+              children: [
+                const Spacer(),
+                buildButton(I18nKey.btnTips.tr, () => logic.tip(), width: buttonWidth),
+                const Spacer(),
+              ],
+            )
+        ],
+      ),
     );
   }
 

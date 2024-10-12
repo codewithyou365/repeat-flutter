@@ -1,40 +1,38 @@
 import 'package:flutter/widgets.dart';
-import 'package:get/get.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
+import 'package:repeat_flutter/widget/player_bar/video_mask.dart';
 
 enum RepeatStep { recall, evaluate, finish }
 
 enum ContentType {
-  questionOrPrevAnswerOrTitleMedia,
-  questionOrPrevAnswerOrTitleMediaPncAndWom,
   questionOrPrevAnswerOrTitle,
   tip,
-  answerMedia,
-  answerMediaPnc,
   answerPnController,
   answer,
 }
 
-class ContentTypeWithTip {
+class ContentArg {
   ContentType contentType;
-  bool tip;
+  bool? tip;
 
-  ContentTypeWithTip(this.contentType, this.tip);
+  // The attribute only works for landscape mode.
+  bool? left;
+
+  ContentArg(this.contentType, this.tip, this.left);
 }
 
 class GsCrRepeatState {
+  final GlobalKey<VideoMaskState> videoKey = GlobalKey<VideoMaskState>();
+
   // for ui
-  final String questionMediaId = "qm";
-  final String answerMediaId = "am";
-  final GlobalKey<PlayerBarState> questionMediaKey = GlobalKey<PlayerBarState>();
-  final GlobalKey<PlayerBarState> answerMediaKey = GlobalKey<PlayerBarState>();
+  static const String mediaId = "m";
+  final GlobalKey<PlayerBarState> mediaKey = GlobalKey<PlayerBarState>();
+
   var tryNeedPlayQuestion = true;
   var tryNeedPlayAnswer = true;
-
-  var videoFullScreen = false;
 
   // for logic
 
@@ -56,16 +54,13 @@ class GsCrRepeatState {
   var showContent = [
     [
       [
-        ContentTypeWithTip(ContentType.questionOrPrevAnswerOrTitleMedia, false),
-        ContentTypeWithTip(ContentType.questionOrPrevAnswerOrTitle, false),
-        ContentTypeWithTip(ContentType.tip, true),
+        ContentArg(ContentType.questionOrPrevAnswerOrTitle, false, true),
+        ContentArg(ContentType.tip, true, true),
       ],
       [
-        ContentTypeWithTip(ContentType.questionOrPrevAnswerOrTitleMediaPncAndWom, false),
-        ContentTypeWithTip(ContentType.questionOrPrevAnswerOrTitle, false),
-        ContentTypeWithTip(ContentType.answerMediaPnc, false),
-        ContentTypeWithTip(ContentType.answer, false),
-        ContentTypeWithTip(ContentType.tip, true),
+        ContentArg(ContentType.questionOrPrevAnswerOrTitle, false, true),
+        ContentArg(ContentType.tip, true, true),
+        ContentArg(ContentType.answer, false, true),
       ],
     ],
   ];
