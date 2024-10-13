@@ -132,12 +132,15 @@ class GsCrRepeatPage extends StatelessWidget {
 
   Widget buildBottom(PlayerBar? playerBar, Widget bottom, double verticalWidth, double sideWidth, bool landscape) {
     if (landscape) {
-      return Row(
-        children: [
-          if (playerBar != null) playerBar,
-          playerBar != null ? SizedBox(width: verticalWidth) : SizedBox(width: sideWidth + verticalWidth),
-          bottom,
-        ],
+      return Container(
+        color: Theme.of(Get.context!).brightness == Brightness.dark ? const Color(0x50000000) : const Color(0x50FFFFFF),
+        child: Row(
+          children: [
+            if (playerBar != null) playerBar,
+            playerBar != null ? SizedBox(width: verticalWidth) : SizedBox(width: sideWidth + verticalWidth),
+            bottom,
+          ],
+        ),
       );
     } else {
       return Column(
