@@ -40,7 +40,7 @@ class GsCrRepeatPage extends StatelessWidget {
     double sideWidth = landscape ? (screenWidth / 2) - verticalWidth / 2 - padding : screenWidth - padding * 2;
 
     PlayerBar? playerBar = GsCrRepeatViewBasic.getPlayerBar(logic, landscape ? sideWidth : screenWidth, widgetBottomHeight);
-    double appBarHeight = 40;
+    double appBarHeight = 50;
     double totalBottomHeight;
     if (landscape) {
       totalBottomHeight = 50;
@@ -75,7 +75,7 @@ class GsCrRepeatPage extends StatelessWidget {
           Stack(
             alignment: Alignment.center,
             children: [
-              GsCrRepeatViewBasic.titleWidget(logic),
+              GsCrRepeatViewBasic.titleWidget(logic, 18),
               SizedBox(
                 height: appBarHeight,
                 child: Row(

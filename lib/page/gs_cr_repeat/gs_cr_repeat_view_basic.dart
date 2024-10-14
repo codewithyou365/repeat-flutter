@@ -10,7 +10,7 @@ import 'gs_cr_repeat_state.dart';
 typedef HideVideoPlayerBarCallback = void Function(PlayerBar playerBar);
 
 class GsCrRepeatViewBasic {
-  static Widget titleWidget(GsCrRepeatLogic logic) {
+  static Widget titleWidget(GsCrRepeatLogic logic, double? fontSize) {
     var state = logic.state;
     var currIndex = 0;
     if (state.justView) {
@@ -18,7 +18,10 @@ class GsCrRepeatViewBasic {
     } else {
       currIndex = state.progress + state.fakeKnow;
     }
-    return Text("$currIndex/${state.total}-${state.segment.k}");
+    return Text(
+      "$currIndex/${state.total}-${state.segment.k}",
+      style: fontSize == null ? null : TextStyle(fontSize: fontSize),
+    );
   }
 
   static Widget buildContent(BuildContext context, GsCrRepeatLogic logic, {bool? left}) {
