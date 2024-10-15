@@ -66,10 +66,25 @@ class GsCrRepeatPage extends StatelessWidget {
         });
       });
     }
+
+    var buildTopVideoView = false;
+    var buildListVideoView = false;
+    if (playerBar != null) {
+      if (landscape) {
+        buildTopVideoView = true;
+      } else {
+        if (state.overlayVideoInPortrait) {
+          buildTopVideoView = true;
+        } else {
+          buildListVideoView = true;
+        }
+      }
+    }
+
     return Stack(
       alignment: Alignment.topCenter,
       children: [
-        if (playerBar != null) buildTop(Media.mediaView(playerBar, key: state.videoKey), appBarHeight, top, landscape),
+        if (buildTopVideoView) buildTop(Media.mediaView(playerBar!, key: state.videoKey), appBarHeight, top, landscape),
         Column(children: [
           if (!landscape) SizedBox(height: top),
           Stack(
@@ -101,6 +116,7 @@ class GsCrRepeatPage extends StatelessWidget {
             landscape,
             sideWidth,
             bodyHeight,
+            firstChild: buildListVideoView ? Media.mediaView(playerBar!, key: state.videoKey) : null,
           ),
           SizedBox(
             height: totalBottomHeight,
@@ -152,7 +168,7 @@ class GsCrRepeatPage extends StatelessWidget {
     }
   }
 
-  Widget buildBody(BuildContext context, GsCrRepeatLogic logic, double verticalWidth, double padding, bool landscape, double sideWidth, double height) {
+  Widget buildBody(BuildContext context, GsCrRepeatLogic logic, double verticalWidth, double padding, bool landscape, double sideWidth, double height, {Widget? firstChild}) {
     return SizedBox(
       height: height,
       child: Padding(
@@ -173,7 +189,7 @@ class GsCrRepeatPage extends StatelessWidget {
                   ),
                 ],
               )
-            : GsCrRepeatViewBasic.buildContent(context, logic),
+            : GsCrRepeatViewBasic.buildContent(context, logic, firstChild: firstChild),
       ),
     );
   }

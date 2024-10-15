@@ -33,6 +33,7 @@ class GsCrRepeatState {
 
   var tryNeedPlayQuestion = true;
   var tryNeedPlayAnswer = true;
+  var overlayVideoInPortrait = false;
 
   // for logic
 

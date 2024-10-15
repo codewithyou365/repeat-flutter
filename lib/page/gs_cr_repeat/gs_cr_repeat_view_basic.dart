@@ -24,7 +24,7 @@ class GsCrRepeatViewBasic {
     );
   }
 
-  static Widget buildContent(BuildContext context, GsCrRepeatLogic logic, {bool? left}) {
+  static Widget buildContent(BuildContext context, GsCrRepeatLogic logic, {bool? left, Widget? firstChild}) {
     var state = logic.state;
     state.step.index;
     var currProcessShowContent = logic.getCurrProcessShowContent();
@@ -35,6 +35,9 @@ class GsCrRepeatViewBasic {
       showContent = currProcessShowContent[currProcessShowContent.length - 1];
     }
     List<Widget> listViewContent = [];
+    if (firstChild != null) {
+      listViewContent.add(firstChild);
+    }
     for (int i = 0; i < showContent.length; i++) {
       Widget? w;
       if (left != null) {
