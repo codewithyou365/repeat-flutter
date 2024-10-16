@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:video_player/video_player.dart';
 
@@ -53,6 +54,10 @@ class VideoMaskState extends State<VideoMask> {
   @override
   Widget build(BuildContext context) {
     var videoPlayer = widget.getVpc();
+    Color maskColor = Colors.black;
+    if (Get.context != null) {
+      maskColor = Theme.of(Get.context!).brightness == Brightness.dark ? maskColor = Colors.black : Colors.white;
+    }
     if (videoPlayer != null && videoPlayer.value.isInitialized) {
       var video = videoPlayer.value;
       return GestureDetector(
@@ -106,7 +111,7 @@ class VideoMaskState extends State<VideoMask> {
                     aspectRatio: video.aspectRatio * maskRatio,
                     child: Container(
                       width: double.infinity,
-                      color: Colors.black,
+                      color: maskColor,
                     ),
                   ),
                 if (widget.setMaskHeight != null && startSetting && widget.initMaskRatio > 0)
