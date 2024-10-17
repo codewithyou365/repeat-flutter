@@ -241,6 +241,12 @@ abstract class ScheduleDao {
   @Query('DELETE FROM SegmentTodayPrg where segmentKeyId in (:ids)')
   Future<void> deleteSegmentTodayPrgByIds(List<int> ids);
 
+  @Query('DELETE FROM SegmentTodayPrg where segmentKeyId in (:ids) and reviewCreateDate!=0')
+  Future<void> deleteSegmentTodayReviewPrgByIds(List<int> ids);
+
+  @Query('DELETE FROM SegmentTodayPrg where segmentKeyId in (:ids) and reviewCreateDate=0')
+  Future<void> deleteSegmentTodayLearnPrgByIds(List<int> ids);
+
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertSegmentTodayPrg(List<SegmentTodayPrg> entities);
 
@@ -473,74 +479,17 @@ abstract class ScheduleDao {
     if (todayLearnCreateDate != null && Date.from(now).value != todayLearnCreateDate) {
       needToInsert = true;
     }
-    // init config
-    var configJsonStr = await stringKv(Classroom.curr, CrK.todayLearnScheduleConfig);
-    if (configJsonStr == null) {
-      configJsonStr = convert.json.encode(defaultScheduleConfig);
-      await insertKv(CrKv(Classroom.curr, CrK.todayLearnScheduleConfig, configJsonStr));
-    }
-    Map<String, dynamic> configJson = convert.jsonDecode(configJsonStr);
-    scheduleConfig = ScheduleConfig.fromJson(configJson);
+
+    scheduleConfig = await getScheduleConfig();
 
     if (needToInsert) {
       await insertKv(CrKv(Classroom.curr, CrK.todayLearnCreateDate, "${Date.from(now).value}"));
       var ids = await getSegmentKeyIdByCrn(Classroom.curr);
       await deleteSegmentTodayPrgByIds(ids);
       var elConfigs = scheduleConfig.elConfigs;
-
-      if (elConfigs.isNotEmpty) {
-        int minLevel = (1 << 63) - 1;
-        for (var config in elConfigs) {
-          if (config.level < minLevel) {
-            minLevel = config.level;
-          }
-        }
-        var all = await scheduleLearn(Classroom.curr, minLevel, Date.from(now));
-        for (int i = 0; i < elConfigs.length; ++i) {
-          var config = elConfigs[i];
-          if (!config.random) {
-            todayPrg.addAll(refineEl(all, i, config));
-          }
-        }
-        all.shuffle();
-        for (int i = 0; i < elConfigs.length; ++i) {
-          var config = elConfigs[i];
-          if (config.random) {
-            todayPrg.addAll(refineEl(all, i, config));
-          }
-        }
-      }
+      await initTodayEl(now, elConfigs, todayPrg);
       var relConfigs = scheduleConfig.relConfigs;
-      // review ...,1,0
-      for (int index = relConfigs.length - 1; index >= 0; --index) {
-        var relConfig = relConfigs[index];
-        if (index != relConfig.level) {
-          continue;
-        }
-        if (relConfig.before < 0) {
-          continue;
-        }
-        if (relConfig.learnCountPerGroup < 0) {
-          continue;
-        }
-        if (Date.from(now).value < relConfig.from.value) {
-          continue;
-        }
-        var shouldStartDate = Date.from(now.subtract(Duration(days: relConfig.before)));
-        if (shouldStartDate.value < relConfig.from.value) {
-          continue;
-        }
-        var startDateInt = await findReviewedMinCreateDate(Classroom.curr, index, shouldStartDate);
-        if (startDateInt == null || startDateInt == -1) {
-          continue;
-        }
-        if (startDateInt < relConfig.from.value) {
-          startDateInt = relConfig.from.value;
-        }
-        List<SegmentTodayPrgWithKey> sls = await scheduleReview(Classroom.curr, relConfig.level, Date(startDateInt));
-        SegmentTodayPrg.setType(sls, TodayPrgType.review, index, relConfig.learnCountPerGroup);
-        todayPrg.addAll(sls);
-      }
+      await initTodayRel(now, relConfigs, todayPrg);
       await insertSegmentTodayPrg(todayPrg);
       var configInUseStr = convert.json.encode(scheduleConfig);
       await insertKv(CrKv(Classroom.curr, CrK.todayLearnScheduleConfigInUse, configInUseStr));
@@ -548,6 +497,98 @@ abstract class ScheduleDao {
       todayPrg = await findSegmentTodayPrg(Classroom.curr);
     }
     return todayPrg;
+  }
+
+  @transaction
+  Future<List<SegmentTodayPrgWithKey>> forceInitToday(TodayPrgType type) async {
+    scheduleConfig = await getScheduleConfig();
+    var ids = await getSegmentKeyIdByCrn(Classroom.curr);
+    List<SegmentTodayPrgWithKey> todayPrg = [];
+    var now = DateTime.now();
+    if (type == TodayPrgType.learn || type == TodayPrgType.none) {
+      await deleteSegmentTodayLearnPrgByIds(ids);
+      var elConfigs = scheduleConfig.elConfigs;
+      await initTodayEl(now, elConfigs, todayPrg);
+    }
+    if (type == TodayPrgType.review || type == TodayPrgType.none) {
+      await deleteSegmentTodayReviewPrgByIds(ids);
+      var relConfigs = scheduleConfig.relConfigs;
+      await initTodayRel(now, relConfigs, todayPrg);
+    }
+    await insertSegmentTodayPrg(todayPrg);
+
+    var configInUseStr = convert.json.encode(scheduleConfig);
+    await insertKv(CrKv(Classroom.curr, CrK.todayLearnScheduleConfigInUse, configInUseStr));
+
+    return await findSegmentTodayPrg(Classroom.curr);
+  }
+
+  Future<ScheduleConfig> getScheduleConfig() async {
+    // init config
+    var configJsonStr = await stringKv(Classroom.curr, CrK.todayLearnScheduleConfig);
+    if (configJsonStr == null) {
+      configJsonStr = convert.json.encode(defaultScheduleConfig);
+      await insertKv(CrKv(Classroom.curr, CrK.todayLearnScheduleConfig, configJsonStr));
+    }
+    Map<String, dynamic> configJson = convert.jsonDecode(configJsonStr);
+    return ScheduleConfig.fromJson(configJson);
+  }
+
+  Future<void> initTodayEl(DateTime now, List<ElConfig> elConfigs, List<SegmentTodayPrgWithKey> todayPrg) async {
+    if (elConfigs.isNotEmpty) {
+      int minLevel = (1 << 63) - 1;
+      for (var config in elConfigs) {
+        if (config.level < minLevel) {
+          minLevel = config.level;
+        }
+      }
+      var all = await scheduleLearn(Classroom.curr, minLevel, Date.from(now));
+      for (int i = 0; i < elConfigs.length; ++i) {
+        var config = elConfigs[i];
+        if (!config.random) {
+          todayPrg.addAll(refineEl(all, i, config));
+        }
+      }
+      all.shuffle();
+      for (int i = 0; i < elConfigs.length; ++i) {
+        var config = elConfigs[i];
+        if (config.random) {
+          todayPrg.addAll(refineEl(all, i, config));
+        }
+      }
+    }
+  }
+
+  Future<void> initTodayRel(DateTime now, List<RelConfig> relConfigs, List<SegmentTodayPrgWithKey> todayPrg) async {
+    for (int index = relConfigs.length - 1; index >= 0; --index) {
+      var relConfig = relConfigs[index];
+      if (index != relConfig.level) {
+        continue;
+      }
+      if (relConfig.before < 0) {
+        continue;
+      }
+      if (relConfig.learnCountPerGroup < 0) {
+        continue;
+      }
+      if (Date.from(now).value < relConfig.from.value) {
+        continue;
+      }
+      var shouldStartDate = Date.from(now.subtract(Duration(days: relConfig.before)));
+      if (shouldStartDate.value < relConfig.from.value) {
+        continue;
+      }
+      var startDateInt = await findReviewedMinCreateDate(Classroom.curr, index, shouldStartDate);
+      if (startDateInt == null || startDateInt == -1) {
+        continue;
+      }
+      if (startDateInt < relConfig.from.value) {
+        startDateInt = relConfig.from.value;
+      }
+      List<SegmentTodayPrgWithKey> sls = await scheduleReview(Classroom.curr, relConfig.level, Date(startDateInt));
+      SegmentTodayPrg.setType(sls, TodayPrgType.review, index, relConfig.learnCountPerGroup);
+      todayPrg.addAll(sls);
+    }
   }
 
   List<SegmentTodayPrgWithKey> refineEl(List<SegmentTodayPrgWithKey> all, int index, ElConfig config) {

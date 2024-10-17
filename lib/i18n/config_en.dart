@@ -59,8 +59,10 @@ class ConfigEn extends Config {
     put(I18nKey.labelAdjustLearnProgress, "Adjust the learning progress.");
     put(I18nKey.labelAdjustLearnProgressDesc, "Current progress is %s, please enter the new learning progress.");
     put(I18nKey.labelPleaseInputUnSignNumber, "Please enter a number greater than or equal to 0.");
-    put(I18nKey.labelResetLearn, "Reset Learn");
-    put(I18nKey.labelResetLearnDesc, "After executing the reset function, the unfinished tasks for today will be reset. Do you want to continue?");
+    put(I18nKey.labelReset, "Reset");
+    put(I18nKey.labelResetAllDesc, "All tasks for today will be reset. Do you want to continue?");
+    put(I18nKey.labelResetLearnDesc, "The learning tasks for today will be reset. Do you want to continue?");
+    put(I18nKey.labelResetReviewDesc, "The review tasks for today will be reset. Do you want to continue?");
     put(I18nKey.labelConfigSettingsForEl, "Learn Config");
     put(I18nKey.labelConfigSettingsForElDesc, "Arrange study sessions according to the Ebbinghaus forgetting curve.");
     put(I18nKey.labelConfigSettingsForRel, "Review Config");
