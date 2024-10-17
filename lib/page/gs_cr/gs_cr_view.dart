@@ -82,8 +82,8 @@ class GsCrPage extends StatelessWidget {
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(Icons.settings),
-                      onPressed: () => {logic.config(element.type)},
+                      icon: const Icon(Icons.redo),
+                      onPressed: () => {logic.resetSchedule(element.type)},
                     ),
                     IconButton(
                       icon: const Icon(Icons.play_arrow),
@@ -115,7 +115,7 @@ class GsCrPage extends StatelessWidget {
                         IconButton(
                           icon: const Icon(Icons.redo),
                           onPressed: () {
-                            MsgBox.yesOrNo(I18nKey.labelResetLearn.tr, I18nKey.labelResetLearnDesc.tr, yes: logic.resetSchedule);
+                            MsgBox.yesOrNo(I18nKey.labelReset.tr, I18nKey.labelResetAllDesc.tr, yes: logic.resetAllSchedule);
                           },
                         ),
                         IconButton(
@@ -137,8 +137,8 @@ class GsCrPage extends StatelessWidget {
                           ),
                           const Spacer(),
                           IconButton(
-                            icon: const Icon(Icons.settings),
-                            onPressed: () => {logic.config(element.type)},
+                            icon: const Icon(Icons.redo),
+                            onPressed: () => {logic.resetSchedule(element.type)},
                           ),
                           IconButton(
                             icon: const Icon(Icons.play_arrow),

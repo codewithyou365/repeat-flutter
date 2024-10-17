@@ -729,6 +729,32 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
+  Future<void> deleteSegmentTodayReviewPrgByIds(List<int> ids) async {
+    const offset = 1;
+    final _sqliteVariablesForIds =
+        Iterable<String>.generate(ids.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM SegmentTodayPrg where segmentKeyId in (' +
+            _sqliteVariablesForIds +
+            ') and reviewCreateDate!=0',
+        arguments: [...ids]);
+  }
+
+  @override
+  Future<void> deleteSegmentTodayLearnPrgByIds(List<int> ids) async {
+    const offset = 1;
+    final _sqliteVariablesForIds =
+        Iterable<String>.generate(ids.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM SegmentTodayPrg where segmentKeyId in (' +
+            _sqliteVariablesForIds +
+            ') and reviewCreateDate=0',
+        arguments: [...ids]);
+  }
+
+  @override
   Future<List<SegmentTodayPrgWithKey>> findSegmentTodayPrg(String crn) async {
     return _queryAdapter.queryList(
         'SELECT SegmentTodayPrg.*,SegmentKey.k FROM SegmentTodayPrg JOIN SegmentKey on SegmentKey.id=SegmentTodayPrg.segmentKeyId AND SegmentKey.crn=?1 order by id asc',
@@ -1046,6 +1072,20 @@ class _$ScheduleDao extends ScheduleDao {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         return transactionDatabase.scheduleDao.initToday();
+      });
+    }
+  }
+
+  @override
+  Future<List<SegmentTodayPrgWithKey>> forceInitToday(TodayPrgType type) async {
+    if (database is sqflite.Transaction) {
+      return super.forceInitToday(type);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<List<SegmentTodayPrgWithKey>>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        return transactionDatabase.scheduleDao.forceInitToday(type);
       });
     }
   }

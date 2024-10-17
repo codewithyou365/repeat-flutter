@@ -14,6 +14,7 @@ import 'package:repeat_flutter/logic/constant.dart';
 import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -32,9 +33,15 @@ class GsCrLogic extends GetxController {
     init();
   }
 
-  Future<void> init() async {
+  Future<void> init({TodayPrgType? type}) async {
     var now = DateTime.now();
-    List<SegmentTodayPrgWithKey> allProgresses = await Db().db.scheduleDao.initToday();
+    List<SegmentTodayPrgWithKey> allProgresses = [];
+    if (type == null) {
+      allProgresses = await Db().db.scheduleDao.initToday();
+    } else {
+      allProgresses = await Db().db.scheduleDao.forceInitToday(type);
+    }
+
     state.all = allProgresses;
     state.review = [];
     state.learn = [];
@@ -201,20 +208,18 @@ class GsCrLogic extends GetxController {
     });
   }
 
-  void config(TodayPrgType type) async {
-    showTransparentOverlay(() async {
-      Nav.gsCrSettings.push();
-      await Future.delayed(const Duration(milliseconds: 700));
+  void resetSchedule(TodayPrgType type) async {
+    var desc = type == TodayPrgType.learn ? I18nKey.labelResetLearnDesc.tr : I18nKey.labelResetReviewDesc.tr;
+    MsgBox.yesOrNo(I18nKey.labelReset.tr, desc, yes: () {
+      showOverlay(() async {
+        await init(type: type);
+        Nav.back();
+        Snackbar.show(I18nKey.labelFinish.tr);
+      }, I18nKey.labelExecuting.tr);
     });
-    await Future.delayed(const Duration(milliseconds: 400));
-    if (type == TodayPrgType.learn) {
-      Nav.gsCrSettingsEl.push();
-    } else {
-      Nav.gsCrSettingsRel.push();
-    }
   }
 
-  void resetSchedule() {
+  void resetAllSchedule() {
     showOverlay(() async {
       await Db().db.scheduleDao.deleteKv(CrKv(Classroom.curr, CrK.todayLearnCreateDate, ""));
       await init();
