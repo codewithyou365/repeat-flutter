@@ -27,13 +27,7 @@ class GsCrRepeatViewBasic {
   static Widget buildContent(BuildContext context, GsCrRepeatLogic logic, {bool? left, Widget? firstChild}) {
     var state = logic.state;
     state.step.index;
-    var currProcessShowContent = logic.getCurrProcessShowContent();
-    List<ContentArg> showContent;
-    if (state.step.index < currProcessShowContent.length) {
-      showContent = currProcessShowContent[state.step.index];
-    } else {
-      showContent = currProcessShowContent[currProcessShowContent.length - 1];
-    }
+    var showContent = logic.getShowContent();
     List<Widget> listViewContent = [];
     if (firstChild != null) {
       listViewContent.add(firstChild);
@@ -103,11 +97,6 @@ class GsCrRepeatViewBasic {
         } else {
           return null;
         }
-      case ContentType.answerPnController:
-        if (segment.mediaDocPath != "") {
-          return buildMediaController(logic, state.mediaKey);
-        }
-        return null;
       case ContentType.answer:
         return Text(segment.answer);
       case ContentType.tip:
@@ -123,29 +112,6 @@ class GsCrRepeatViewBasic {
           padding: EdgeInsets.only(bottom: 8.w),
         );
     }
-  }
-
-  static Widget buildMediaController(GsCrRepeatLogic logic, GlobalKey<PlayerBarState> p) {
-    return Row(
-      children: [
-        IconButton(
-          icon: const Icon(Icons.replay),
-          iconSize: 20,
-          onPressed: logic.resetPnOffset,
-        ),
-        const Spacer(),
-        IconButton(
-          icon: const Icon(Icons.skip_previous),
-          iconSize: 20,
-          onPressed: logic.minusPnOffset,
-        ),
-        IconButton(
-          icon: const Icon(Icons.skip_next),
-          iconSize: 20,
-          onPressed: logic.plusPnOffset,
-        ),
-      ],
-    );
   }
 
   static Widget buildBottom(GsCrRepeatLogic logic, double width, double height) {

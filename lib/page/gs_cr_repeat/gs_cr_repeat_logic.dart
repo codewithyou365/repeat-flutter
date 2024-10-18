@@ -56,8 +56,7 @@ class GsCrRepeatLogic extends GetxController {
     state.total = todayProgresses.length;
     state.progress = state.total - state.c.length;
     state.step = RepeatStep.recall;
-    state.tryNeedPlayQuestion = true;
-    state.tryNeedPlayAnswer = false;
+    state.needToPlayMedia = true;
     state.fakeKnow = 0;
     await setCurrentLearnContentAndUpdateView();
   }
@@ -67,8 +66,7 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     state.step = RepeatStep.evaluate;
-    state.tryNeedPlayQuestion = false;
-    state.tryNeedPlayAnswer = true;
+    state.needToPlayMedia = true;
     state.fakeKnow = 1;
     update([GsCrRepeatLogic.id]);
   }
@@ -91,8 +89,7 @@ class GsCrRepeatLogic extends GetxController {
       finish();
       return;
     }
-    state.tryNeedPlayQuestion = false;
-    state.tryNeedPlayAnswer = true;
+    state.needToPlayMedia = true;
     state.fakeKnow = 0;
     var curr = state.c[0];
     if (!state.justView) {
@@ -172,12 +169,10 @@ class GsCrRepeatLogic extends GetxController {
     state.c.sort(schedulesCurrentSort);
     state.progress = state.total - state.c.length;
     if (autoNext && state.c.isNotEmpty) {
-      state.tryNeedPlayQuestion = false;
-      state.tryNeedPlayAnswer = true;
+      state.needToPlayMedia = true;
       next(fromView: false);
     } else {
-      state.tryNeedPlayQuestion = false;
-      state.tryNeedPlayAnswer = false;
+      state.needToPlayMedia = false;
       state.step = RepeatStep.finish;
       update([GsCrRepeatLogic.id]);
     }
@@ -192,8 +187,7 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     state.step = RepeatStep.recall;
-    state.tryNeedPlayQuestion = true;
-    state.tryNeedPlayAnswer = false;
+    state.needToPlayMedia = true;
     state.fakeKnow = 0;
     await setCurrentLearnContentAndUpdateView();
   }
@@ -203,8 +197,7 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     state.step = RepeatStep.evaluate;
-    state.tryNeedPlayQuestion = false;
-    state.tryNeedPlayAnswer = true;
+    state.needToPlayMedia = true;
     update([GsCrRepeatLogic.id]);
   }
 
@@ -213,8 +206,7 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     state.step = RepeatStep.recall;
-    state.tryNeedPlayQuestion = true;
-    state.tryNeedPlayAnswer = false;
+    state.needToPlayMedia = true;
     state.fakeKnow = 0;
     if (state.justViewIndex < state.c.length - 1) {
       state.justViewIndex++;
@@ -227,8 +219,7 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     state.step = RepeatStep.recall;
-    state.tryNeedPlayQuestion = true;
-    state.tryNeedPlayAnswer = false;
+    state.needToPlayMedia = true;
     state.fakeKnow = 0;
     if (state.justViewIndex > 0) {
       state.justViewIndex--;
@@ -288,30 +279,21 @@ class GsCrRepeatLogic extends GetxController {
   List<MediaSegment> getSegments() {
     List<MediaSegment> ret = [];
     var segment = state.segment;
-    if (segment.qMediaSegments.isNotEmpty) {
-      ret = [segment.qMediaSegments[segment.segmentIndex]];
-    } else if (segment.question == "" && segment.aMediaSegments.isNotEmpty && segment.segmentIndex - 1 >= 0) {
-      ret = [segment.aMediaSegments[segment.segmentIndex - 1]];
-    } else if (segment.question == "" && segment.titleMediaSegment != null) {
-      ret = [segment.titleMediaSegment!];
-    }
-    if (state.step != RepeatStep.recall) {
-      if (segment.mediaDocPath != "" && segment.aMediaSegments.isNotEmpty) {
-        var left = 0;
-        var right = 0;
-        var curr = -1;
-        List<MediaSegment> segments = [];
-        for (var i = -left; i <= right; i++) {
-          var index = segment.segmentIndex + i;
-          if (index >= 0 && index < segment.aMediaSegments.length) {
-            segments.add(segment.aMediaSegments[index]);
-            if (i == 0) {
-              curr = segments.length - 1;
-            }
-          }
+    var showContent = getShowContent();
+
+    for (int i = 0; i < showContent.length; i++) {
+      var sc = showContent[i];
+      if (sc.contentType == ContentType.questionOrPrevAnswerOrTitleMedia) {
+        if (segment.qMediaSegments.isNotEmpty) {
+          ret = [segment.qMediaSegments[segment.segmentIndex]];
+        } else if (segment.question == "" && segment.aMediaSegments.isNotEmpty && segment.segmentIndex - 1 >= 0) {
+          ret = [segment.aMediaSegments[segment.segmentIndex - 1]];
+        } else if (segment.question == "" && segment.titleMediaSegment != null) {
+          ret = [segment.titleMediaSegment!];
         }
-        if (curr != -1) {
-          return segments;
+      } else if (sc.contentType == ContentType.answerMedia) {
+        if (segment.mediaDocPath != "" && segment.aMediaSegments.isNotEmpty) {
+          ret = [segment.aMediaSegments[segment.segmentIndex]];
         }
       }
     }
@@ -328,7 +310,7 @@ class GsCrRepeatLogic extends GetxController {
 
   Future<void> onMediaInited(String playerId) async {
     if (playerId == GsCrRepeatState.mediaId) {
-      if (state.tryNeedPlayQuestion || state.tryNeedPlayAnswer) {
+      if (state.needToPlayMedia) {
         state.mediaKey.currentState?.moveByIndex();
       } else {
         state.mediaKey.currentState?.stopMove();
@@ -399,7 +381,7 @@ class GsCrRepeatLogic extends GetxController {
     }
   }
 
-  List<List<ContentArg>> getCurrProcessShowContent() {
+  List<ContentArg> getShowContent() {
     List<List<ContentArg>> currProcessShowContent;
     var processIndex = state.progress;
     if (processIndex < 0) {
@@ -409,12 +391,18 @@ class GsCrRepeatLogic extends GetxController {
     } else {
       currProcessShowContent = state.showContent[state.showContent.length - 1];
     }
-    return currProcessShowContent;
+
+    List<ContentArg> showContent;
+    if (state.step.index < currProcessShowContent.length) {
+      showContent = currProcessShowContent[state.step.index];
+    } else {
+      showContent = currProcessShowContent[currProcessShowContent.length - 1];
+    }
+    return showContent;
   }
 
   finish() {
-    state.tryNeedPlayQuestion = false;
-    state.tryNeedPlayAnswer = false;
+    state.needToPlayMedia = false;
     state.fakeKnow = 0;
     Nav.gsCrRepeatFinish.push();
   }
