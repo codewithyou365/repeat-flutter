@@ -9,9 +9,10 @@ enum RepeatStep { recall, evaluate, finish }
 
 enum ContentType {
   questionOrPrevAnswerOrTitle,
+  questionOrPrevAnswerOrTitleMedia,
   tip,
-  answerPnController,
   answer,
+  answerMedia,
 }
 
 class ContentArg {
@@ -31,8 +32,7 @@ class GsCrRepeatState {
   static const String mediaId = "m";
   final GlobalKey<PlayerBarState> mediaKey = GlobalKey<PlayerBarState>();
 
-  var tryNeedPlayQuestion = true;
-  var tryNeedPlayAnswer = true;
+  var needToPlayMedia = true;
   var overlayVideoInPortrait = false;
 
   // for logic
@@ -56,12 +56,15 @@ class GsCrRepeatState {
     [
       [
         ContentArg(ContentType.questionOrPrevAnswerOrTitle, false, true),
+        ContentArg(ContentType.questionOrPrevAnswerOrTitleMedia, null, null),
         ContentArg(ContentType.tip, true, true),
       ],
       [
         ContentArg(ContentType.questionOrPrevAnswerOrTitle, false, true),
+        ContentArg(ContentType.questionOrPrevAnswerOrTitleMedia, null, null),
         ContentArg(ContentType.tip, true, true),
         ContentArg(ContentType.answer, false, true),
+        ContentArg(ContentType.answerMedia, null, null),
       ],
     ],
   ];
