@@ -14,7 +14,6 @@ class PlayerBar extends StatefulWidget {
   final List<MediaSegment> lines;
   final String path;
   final bool withVideo;
-  final VoidCallback? onFullScreen;
   final VoidCallback? onPrevious;
   final VoidCallback? onReplay;
   final VoidCallback? onNext;
@@ -30,7 +29,6 @@ class PlayerBar extends StatefulWidget {
     this.path, {
     Key? key,
     this.withVideo = true,
-    this.onFullScreen,
     this.onPrevious,
     this.onReplay,
     this.onNext,
