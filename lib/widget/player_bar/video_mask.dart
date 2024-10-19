@@ -10,13 +10,11 @@ class VideoMask extends StatefulWidget {
   final GetVpc getVpc;
   final double initMaskRatio;
   final SetMaskRatioCallback? setMaskHeight;
-  final VoidCallback? onFullScreen;
 
   const VideoMask(
     this.getVpc,
     this.initMaskRatio,
-    this.setMaskHeight,
-    this.onFullScreen, {
+    this.setMaskHeight, {
     Key? key,
   }) : super(key: key);
 
@@ -125,11 +123,6 @@ class VideoMaskState extends State<VideoMask> {
                   ),
               ],
             ),
-            if (widget.onFullScreen != null && startSetting)
-              IconButton(
-                icon: const Icon(Icons.fullscreen),
-                onPressed: widget.onFullScreen,
-              ),
           ],
         ),
       );

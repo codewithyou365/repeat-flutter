@@ -91,7 +91,7 @@ mixin Media {
         return cache.videoPlayer;
       }
       return null;
-    }, playerBar.initMaskRatio, playerBar.setMaskRatio, playerBar.onFullScreen, key: key);
+    }, playerBar.initMaskRatio, playerBar.setMaskRatio,  key: key);
   }
 
   static bool isVideo(String path) {

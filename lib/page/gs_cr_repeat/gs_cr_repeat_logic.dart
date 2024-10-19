@@ -274,8 +274,6 @@ class GsCrRepeatLogic extends GetxController {
     return true;
   }
 
-  Future<void> onMediaFullScreen() async {}
-
   List<MediaSegment> getSegments() {
     List<MediaSegment> ret = [];
     var segment = state.segment;
