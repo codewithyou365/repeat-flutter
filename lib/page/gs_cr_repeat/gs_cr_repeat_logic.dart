@@ -412,9 +412,6 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   double getMaskRatio() {
-    if (state.justView) {
-      return 0;
-    }
     if (state.step != RepeatStep.recall) {
       return 0;
     }
