@@ -75,6 +75,7 @@ class GsCrRepeatViewBasic {
         withVideo: false,
         key: state.mediaKey,
         initMaskRatio: logic.getMaskRatio(),
+        setMaskRatio: logic.setMaskRatio,
         onPrevious: onPrevious,
         onReplay: onReplay,
         onNext: onNext,
