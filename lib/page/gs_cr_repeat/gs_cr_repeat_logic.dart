@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
@@ -34,6 +35,7 @@ class GsCrRepeatLogic extends GetxController {
   @override
   void onClose() {
     super.onClose();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     Get.find<GsCrLogic>().init();
   }
 

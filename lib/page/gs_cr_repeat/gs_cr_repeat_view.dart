@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/player_bar/media.dart';
@@ -33,6 +34,13 @@ class GsCrRepeatPage extends StatelessWidget {
     if (screenWidth > screenHeight) {
       landscape = true;
     }
+
+    if (landscape) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
+    } else {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+    }
+
     final state = logic.state;
     double widgetBottomHeight = 50;
     const double verticalWidth = 10;
