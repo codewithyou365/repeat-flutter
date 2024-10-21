@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
@@ -15,6 +16,7 @@ class GsLogic extends GetxController {
   @override
   void onInit() async {
     super.onInit();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     state.list = await Db().db.classroomDao.getAllClassroom();
     update([GsLogic.id]);
   }

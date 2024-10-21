@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'dart:convert' as convert;
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
@@ -29,8 +30,15 @@ class GsCrLogic extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     SegmentHelp.clear();
     init();
+  }
+
+  @override
+  void onClose() {
+    super.onClose();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
   }
 
   Future<void> init({TodayPrgType? type}) async {
