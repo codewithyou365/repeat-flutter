@@ -121,6 +121,7 @@ enum I18nKey {
   btnDownload,
   btnSchedule,
   btnLearn,
+  btnBrowse,
   btnReview,
   btnRepeat,
   btnShow,

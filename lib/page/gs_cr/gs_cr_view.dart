@@ -81,13 +81,22 @@ class GsCrPage extends StatelessWidget {
                       style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                     ),
                     const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.redo),
-                      onPressed: () => {logic.resetSchedule(element.type)},
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.play_arrow),
-                      onPressed: () => {logic.tryStartGroup(element.type)},
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert),
+                      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                        PopupMenuItem<String>(
+                          onTap: () => {logic.tryStartGroup(element.type, mode: Repeat.justView)},
+                          child: Text(I18nKey.btnBrowse.tr),
+                        ),
+                        PopupMenuItem<String>(
+                          onTap: () => {logic.tryStartGroup(element.type)},
+                          child: Text(I18nKey.btnLearn.tr),
+                        ),
+                        PopupMenuItem<String>(
+                          onTap: () => {logic.resetSchedule(element.type)},
+                          child: Text(I18nKey.labelReset.tr),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -112,15 +121,24 @@ class GsCrPage extends StatelessWidget {
                           style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                         ),
                         const Spacer(),
-                        IconButton(
-                          icon: const Icon(Icons.redo),
-                          onPressed: () {
-                            MsgBox.yesOrNo(I18nKey.labelReset.tr, I18nKey.labelResetAllDesc.tr, yes: logic.resetAllSchedule);
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.play_arrow),
-                          onPressed: logic.tryStartAll,
+                        PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_vert),
+                          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                            PopupMenuItem<String>(
+                              onTap: () => {logic.tryStartAll(mode: Repeat.justView)},
+                              child: Text(I18nKey.btnBrowse.tr),
+                            ),
+                            PopupMenuItem<String>(
+                              onTap: logic.tryStartAll,
+                              child: Text(I18nKey.btnLearn.tr),
+                            ),
+                            PopupMenuItem<String>(
+                              onTap: () {
+                                MsgBox.yesOrNo(I18nKey.labelReset.tr, I18nKey.labelResetAllDesc.tr, yes: logic.resetAllSchedule);
+                              },
+                              child: Text(I18nKey.labelReset.tr),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -136,13 +154,24 @@ class GsCrPage extends StatelessWidget {
                             style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                           ),
                           const Spacer(),
-                          IconButton(
-                            icon: const Icon(Icons.redo),
-                            onPressed: () => {logic.resetSchedule(element.type)},
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.play_arrow),
-                            onPressed: () => {logic.tryStartGroup(element.type)},
+                          PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_vert),
+                            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                              PopupMenuItem<String>(
+                                onTap: () => {logic.tryStartGroup(element.type, mode: Repeat.justView)},
+                                child: Text(I18nKey.btnBrowse.tr),
+                              ),
+                              PopupMenuItem<String>(
+                                onTap: () => {logic.tryStartGroup(element.type)},
+                                child: Text(I18nKey.btnLearn.tr),
+                              ),
+                              PopupMenuItem<String>(
+                                onTap: () {
+                                  logic.resetSchedule(element.type);
+                                },
+                                child: Text(I18nKey.labelReset.tr),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -163,9 +192,18 @@ class GsCrPage extends StatelessWidget {
                   children: [
                     Text(element.name),
                     const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.play_arrow),
-                      onPressed: () => {logic.tryStart(element.segments, grouping: true)},
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert),
+                      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                        PopupMenuItem<String>(
+                          onTap: () => {logic.tryStart(element.segments, mode: Repeat.justView)},
+                          child: Text(I18nKey.btnBrowse.tr),
+                        ),
+                        PopupMenuItem<String>(
+                          onTap: () => {logic.tryStart(element.segments, grouping: true)},
+                          child: Text(I18nKey.btnLearn.tr),
+                        ),
+                      ],
                     ),
                   ],
                 ),
