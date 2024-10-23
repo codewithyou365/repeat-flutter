@@ -180,6 +180,7 @@ class GsCrRepeatViewBasic {
             children: [
               buildButton(
                 leftButtonText,
+                logic.onPreClick,
                 leftButtonLogic,
                 width: buttonWidth,
                 onLongPress: leftButtonLongPressLogic,
@@ -187,6 +188,7 @@ class GsCrRepeatViewBasic {
               const Spacer(),
               buildButton(
                 rightButtonText,
+                logic.onPreClick,
                 rightButtonLogic,
                 width: buttonWidth,
                 onLongPress: rightButtonLongPressLogic,
@@ -197,7 +199,12 @@ class GsCrRepeatViewBasic {
             Row(
               children: [
                 const Spacer(),
-                buildButton(I18nKey.btnTips.tr, () => logic.tip(), width: buttonWidth),
+                buildButton(
+                  I18nKey.btnTips.tr,
+                  logic.onPreClick,
+                  () => logic.tip(),
+                  width: buttonWidth,
+                ),
                 const Spacer(),
               ],
             )
@@ -208,14 +215,23 @@ class GsCrRepeatViewBasic {
 
   static Widget buildButton(
     String text,
+    VoidCallback onPreClick,
     VoidCallback onTap, {
     double height = 60,
     double? width,
     VoidCallback? onLongPress,
   }) {
     return InkWell(
-      onTap: onTap,
-      onLongPress: onLongPress,
+      onTap: () {
+        onPreClick();
+        onTap();
+      },
+      onLongPress: () {
+        onPreClick();
+        if (onLongPress != null) {
+          onLongPress();
+        }
+      },
       child: Container(
         width: width,
         height: height,

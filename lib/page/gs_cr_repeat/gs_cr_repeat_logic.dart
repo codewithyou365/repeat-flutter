@@ -63,6 +63,10 @@ class GsCrRepeatLogic extends GetxController {
     await setCurrentLearnContentAndUpdateView();
   }
 
+  void onPreClick() {
+    state.needUpdateSystemUiMode = true;
+  }
+
   void show() {
     if (ticker.isStuck()) {
       return;

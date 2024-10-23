@@ -34,11 +34,13 @@ class GsCrRepeatPage extends StatelessWidget {
     if (screenWidth > screenHeight) {
       landscape = true;
     }
-
-    if (landscape) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
-    } else {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+    if (logic.state.needUpdateSystemUiMode) {
+      logic.state.needUpdateSystemUiMode = false;
+      if (landscape) {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
+      } else {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+      }
     }
 
     final state = logic.state;
