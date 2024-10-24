@@ -34,6 +34,10 @@ class GsCrRepeatPage extends StatelessWidget {
     if (screenWidth > screenHeight) {
       landscape = true;
     }
+    if (logic.state.lastLandscape == null || logic.state.lastLandscape != landscape) {
+      logic.state.lastLandscape = landscape;
+      logic.state.needUpdateSystemUiMode = true;
+    }
     if (logic.state.needUpdateSystemUiMode) {
       logic.state.needUpdateSystemUiMode = false;
       if (landscape) {
