@@ -29,7 +29,9 @@ class GsCrRepeatState {
   final GlobalKey<VideoMaskState> videoKey = GlobalKey<VideoMaskState>();
 
   // for ui
+  bool? lastLandscape;
   bool needUpdateSystemUiMode = true;
+
   static const String mediaId = "m";
   final GlobalKey<PlayerBarState> mediaKey = GlobalKey<PlayerBarState>();
 

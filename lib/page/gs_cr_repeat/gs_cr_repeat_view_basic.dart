@@ -85,7 +85,6 @@ class GsCrRepeatViewBasic {
   }
 
   static Widget? buildInnerContent(GsCrRepeatLogic logic, BuildContext context, ContentType t, SegmentContent segment) {
-    GsCrRepeatState state = logic.state;
     switch (t) {
       case ContentType.questionOrPrevAnswerOrTitle:
         if (segment.question != "") {
