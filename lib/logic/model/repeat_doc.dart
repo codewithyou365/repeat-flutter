@@ -10,7 +10,7 @@ class RepeatDoc {
 
   RepeatDoc(this.rootPath, this.key, this.rootUrl, this.lesson);
 
-  static Future<RepeatDoc?> fromPath(String path, Uri defaultRootUri) async {
+  static Future<Map<String, dynamic>?> toJsonMap(String path) async {
     File file = File(path);
     bool exist = await file.exists();
     if (!exist) {
@@ -18,6 +18,18 @@ class RepeatDoc {
     }
     String jsonString = await file.readAsString();
     Map<String, dynamic> jsonData = convert.jsonDecode(jsonString);
+    return jsonData;
+  }
+
+  static Future<RepeatDoc?> fromPath(String path, Uri defaultRootUri) async {
+    Map<String, dynamic>? jsonData = await toJsonMap(path);
+    return await fromJsonAndUri(jsonData, defaultRootUri);
+  }
+
+  static Future<RepeatDoc?> fromJsonAndUri(Map<String, dynamic>? jsonData, Uri defaultRootUri) async {
+    if (jsonData == null) {
+      return null;
+    }
     var kv = RepeatDoc.fromJson(jsonData);
     if (kv.rootUrl == "") {
       kv.rootUrl = "${defaultRootUri.scheme}://${defaultRootUri.host}:${defaultRootUri.port}/${defaultRootUri.pathSegments.sublist(0, defaultRootUri.pathSegments.length - 1).join('/')}/";
