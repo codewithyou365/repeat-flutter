@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:repeat_flutter/common/time.dart';
 
 import 'media.dart';
 import 'video_mask.dart';
@@ -258,21 +259,9 @@ class MediaSegment {
   MediaSegment(this.start, this.end, this.blockStart, this.blockEnd);
 
   static MediaSegment from(String startTime, String endTime) {
-    double startSeconds = parseTimeToSeconds(startTime);
-    double endSeconds = parseTimeToSeconds(endTime);
+    double startSeconds = Time.parseTimeToMilliseconds(startTime);
+    double endSeconds = Time.parseTimeToMilliseconds(endTime);
     return MediaSegment(startSeconds, endSeconds, startSeconds * factor, endSeconds * factor);
-  }
-
-  static double parseTimeToSeconds(String time) {
-    List<String> p1 = time.split(':');
-    List<String> p2 = p1[2].split(',');
-
-    double hours = double.parse(p1[0]);
-    double minutes = double.parse(p1[1]);
-    double seconds = double.parse(p2[0]);
-    double milliseconds = double.parse(p2[1]);
-    var ret = (hours * 60 * 60 * 1000) + (minutes * 60 * 1000) + seconds * 1000 + milliseconds;
-    return ret;
   }
 }
 
