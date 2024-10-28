@@ -10,6 +10,16 @@ class RepeatDoc {
 
   RepeatDoc(this.rootPath, this.key, this.rootUrl, this.lesson);
 
+  static Future<bool> writeFile(String path, Map<String, dynamic> m) async {
+    try {
+      File file = File(path);
+      String jsonString = convert.jsonEncode(m);
+      await file.writeAsString(jsonString, flush: true);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
   static Future<Map<String, dynamic>?> toJsonMap(String path) async {
     File file = File(path);
     bool exist = await file.exists();

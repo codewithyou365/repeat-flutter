@@ -91,10 +91,30 @@ mixin Media {
         return cache.videoPlayer;
       }
       return null;
-    }, playerBar.initMaskRatio, playerBar.setMaskRatio,  key: key);
+    }, playerBar.initMaskRatio, playerBar.setMaskRatio, key: key);
   }
 
   static bool isVideo(String path) {
     return path.endsWith("mp4");
+  }
+
+  Future<Duration?> getMediaCurrentPosition() async {
+    Duration? ret;
+    if (video) {
+      ret = await playerIdToMediaCache[key]?.videoPlayer!.position;
+    } else {
+      ret = await playerIdToMediaCache[key]?.audioPlayer!.getCurrentPosition();
+    }
+    return ret;
+  }
+
+  Future<Duration?> getMediaDuration() async {
+    Duration? ret;
+    if (video) {
+      ret = playerIdToMediaCache[key]?.videoPlayer!.value.duration;
+    } else {
+      ret = await playerIdToMediaCache[key]?.audioPlayer!.getDuration();
+    }
+    return ret;
   }
 }

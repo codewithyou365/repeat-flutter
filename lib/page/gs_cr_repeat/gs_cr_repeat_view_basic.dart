@@ -121,7 +121,7 @@ class GsCrRepeatViewBasic {
     void Function()? leftButtonLongPressLogic;
     void Function() rightButtonLogic = () => {};
     void Function()? rightButtonLongPressLogic;
-    if (state.justView) {
+    if (state.justView || state.edit) {
       switch (state.step) {
         case RepeatStep.recall:
           leftButtonText = I18nKey.btnShow.tr;

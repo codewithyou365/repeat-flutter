@@ -57,18 +57,10 @@ class SegmentHelp {
       return null;
     }
     var ret = SegmentContent.from(retInDb);
-    var qa = indexDocPathToQa[ret.indexDocPath];
+    var qa = await getAndCacheQa(ret, err: err);
     if (qa == null) {
-      qa = await RepeatDoc.fromPath(ret.indexDocPath, Uri.parse(ret.indexDocUrl));
-      if (qa == null) {
-        if (err != null) {
-          err.value = I18nKey.labelDocNotBeDownloaded.trArgs([ret.indexDocUrl]);
-        }
-        return null;
-      }
-      indexDocPathToQa[ret.indexDocPath] = qa;
+      return null;
     }
-
     var lesson = qa.lesson[ret.lessonIndex];
     // full title, prevQa and qa
     {
@@ -154,5 +146,20 @@ class SegmentHelp {
 
     scheduleKeyToLearnSegment[segmentKeyId] = ret;
     return ret;
+  }
+
+  static Future<RepeatDoc?> getAndCacheQa(SegmentContent ret, {RxString? err}) async {
+    var qa = indexDocPathToQa[ret.indexDocPath];
+    if (qa == null) {
+      qa = await RepeatDoc.fromPath(ret.indexDocPath, Uri.parse(ret.indexDocUrl));
+      if (qa == null) {
+        if (err != null) {
+          err.value = I18nKey.labelDocNotBeDownloaded.trArgs([ret.indexDocUrl]);
+        }
+        return null;
+      }
+      indexDocPathToQa[ret.indexDocPath] = qa;
+    }
+    return qa;
   }
 }

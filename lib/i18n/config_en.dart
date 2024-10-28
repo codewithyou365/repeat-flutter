@@ -113,6 +113,13 @@ class ConfigEn extends Config {
     put(I18nKey.labelSegmentRemoved, "The learning segment has been removed, and it is recommended that the related schedule be deleted");
     put(I18nKey.labelDocNotBeDownloaded, "The document is not downloaded \n %s");
     put(I18nKey.labelDocCantBeFound, "The document cannot be found \n %s");
+    put(I18nKey.btnSet, "Set");
+    put(I18nKey.btnSetHead, "Set head");
+    put(I18nKey.btnSetTail, "Set tail");
+    put(I18nKey.btnExtendTail, "Extend tail");
+    put(I18nKey.btnOther, "Other");
+    put(I18nKey.btnCut, "Cut and retain front and back");
+    put(I18nKey.btnDeleteCurr, "Delete current");
     put(I18nKey.btnCancel, "Cancel");
     put(I18nKey.btnOk, "Ok");
     put(I18nKey.btnDelete, "Delete");

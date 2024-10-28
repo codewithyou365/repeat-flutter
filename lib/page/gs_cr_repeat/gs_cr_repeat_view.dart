@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/segment_edit_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/player_bar/media.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
@@ -57,14 +59,17 @@ class GsCrRepeatPage extends StatelessWidget {
     double appBarHeight = 50;
     double totalBottomHeight;
     if (landscape) {
-      totalBottomHeight = 50;
+      totalBottomHeight = widgetBottomHeight;
     } else {
-      if (playerBar == null) {
-        totalBottomHeight = 50;
-      } else {
-        totalBottomHeight = 100;
+      totalBottomHeight = widgetBottomHeight;
+      if (playerBar != null) {
+        totalBottomHeight += widgetBottomHeight;
       }
     }
+    if (state.edit) {
+      totalBottomHeight += widgetBottomHeight;
+    }
+
     double bodyHeight = screenHeight - appBarHeight - totalBottomHeight;
     if (!landscape) {
       bodyHeight -= top;
@@ -120,6 +125,25 @@ class GsCrRepeatPage extends StatelessWidget {
                   ],
                 ),
               ),
+              if (state.edit == false)
+                SizedBox(
+                  height: appBarHeight,
+                  child: Row(
+                    children: [
+                      const Spacer(),
+                      PopupMenuButton<String>(
+                        icon: const Icon(Icons.more_vert),
+                        itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                          PopupMenuItem<String>(
+                            onTap: logic.openEditor,
+                            child: Text(I18nKey.btnEdit.tr),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 10),
+                    ],
+                  ),
+                ),
             ],
           ),
           buildBody(
@@ -135,6 +159,7 @@ class GsCrRepeatPage extends StatelessWidget {
           SizedBox(
             height: totalBottomHeight,
             child: buildBottom(
+              state.edit ? buildEditorBottom(logic, screenWidth, widgetBottomHeight) : null,
               playerBar,
               GsCrRepeatViewBasic.buildBottom(logic, sideWidth, widgetBottomHeight),
               verticalWidth,
@@ -160,26 +185,95 @@ class GsCrRepeatPage extends StatelessWidget {
     }
   }
 
-  Widget buildBottom(PlayerBar? playerBar, Widget bottom, double verticalWidth, double sideWidth, bool landscape) {
+  Widget buildBottom(Widget? editorBottom, PlayerBar? playerBar, Widget bottom, double verticalWidth, double sideWidth, bool landscape) {
     if (landscape) {
       return Container(
         color: Theme.of(Get.context!).brightness == Brightness.dark ? const Color(0x50000000) : const Color(0x50FFFFFF),
-        child: Row(
+        child: Column(
           children: [
-            if (playerBar != null) playerBar,
-            playerBar != null ? SizedBox(width: verticalWidth) : SizedBox(width: sideWidth + verticalWidth),
-            bottom,
+            if (editorBottom != null) editorBottom,
+            Row(
+              children: [
+                if (playerBar != null) playerBar,
+                playerBar != null ? SizedBox(width: verticalWidth) : SizedBox(width: sideWidth + verticalWidth),
+                bottom,
+              ],
+            ),
           ],
         ),
       );
     } else {
       return Column(
         children: [
+          if (editorBottom != null) editorBottom,
           if (playerBar != null) playerBar,
           bottom,
         ],
       );
     }
+  }
+
+  Widget buildEditorBottom(GsCrRepeatLogic logic, double width, double height) {
+    double buttonWidth = (width - 20) / 2;
+    return SizedBox(
+      width: width,
+      height: height,
+      child: Row(
+        children: [
+          PopupMenuButton<String>(
+            child: Container(
+              width: buttonWidth,
+              height: height,
+              alignment: Alignment.center,
+              child: Text(I18nKey.btnSet.tr),
+            ),
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              PopupMenuItem<String>(
+                onTap: () {
+                  logic.edit(EditType.setHead);
+                },
+                child: Text(I18nKey.btnSetHead.tr),
+              ),
+              PopupMenuItem<String>(
+                onTap: () {
+                  logic.edit(EditType.setTail);
+                },
+                child: Text(I18nKey.btnSetTail.tr),
+              ),
+              PopupMenuItem<String>(
+                onTap: () {
+                  logic.edit(EditType.extendTail);
+                },
+                child: Text(I18nKey.btnExtendTail.tr),
+              ),
+            ],
+          ),
+          const SizedBox(width: 10),
+          PopupMenuButton<String>(
+            child: Container(
+              width: buttonWidth,
+              height: height,
+              alignment: Alignment.center,
+              child: Text(I18nKey.btnOther.tr),
+            ),
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              PopupMenuItem<String>(
+                onTap: () {
+                  logic.edit(EditType.cut);
+                },
+                child: Text(I18nKey.btnCut.tr),
+              ),
+              PopupMenuItem<String>(
+                onTap: () {
+                  logic.edit(EditType.deleteCurr);
+                },
+                child: Text(I18nKey.btnDeleteCurr.tr),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   Widget buildBody(BuildContext context, GsCrRepeatLogic logic, double verticalWidth, double padding, bool landscape, double sideWidth, double height, {Widget? firstChild}) {
