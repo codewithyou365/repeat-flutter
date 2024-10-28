@@ -10,6 +10,7 @@ import 'package:repeat_flutter/db/entity/video_attribute.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/constant.dart';
 import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
+import 'package:repeat_flutter/logic/segment_edit_help.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
@@ -211,7 +212,12 @@ class GsCrRepeatLogic extends GetxController {
     if (ticker.isStuck()) {
       return;
     }
-    state.step = RepeatStep.recall;
+    if (state.justViewWithoutRecall) {
+      state.step = RepeatStep.evaluate;
+    } else {
+      state.step = RepeatStep.recall;
+    }
+
     state.needToPlayMedia = true;
     state.fakeKnow = 0;
     if (state.justViewIndex < state.c.length - 1) {
@@ -224,7 +230,11 @@ class GsCrRepeatLogic extends GetxController {
     if (ticker.isStuck()) {
       return;
     }
-    state.step = RepeatStep.recall;
+    if (state.justViewWithoutRecall) {
+      state.step = RepeatStep.evaluate;
+    } else {
+      state.step = RepeatStep.recall;
+    }
     state.needToPlayMedia = true;
     state.fakeKnow = 0;
     if (state.justViewIndex > 0) {
@@ -290,14 +300,18 @@ class GsCrRepeatLogic extends GetxController {
       if (sc.contentType == ContentType.questionOrPrevAnswerOrTitleMedia) {
         if (segment.qMediaSegments.isNotEmpty) {
           ret = [segment.qMediaSegments[segment.segmentIndex]];
+          state.segmentPlayType = PlayType.question;
         } else if (segment.question == "" && segment.aMediaSegments.isNotEmpty && segment.segmentIndex - 1 >= 0) {
           ret = [segment.aMediaSegments[segment.segmentIndex - 1]];
+          state.segmentPlayType = PlayType.answer;
         } else if (segment.question == "" && segment.titleMediaSegment != null) {
           ret = [segment.titleMediaSegment!];
+          state.segmentPlayType = PlayType.title;
         }
       } else if (sc.contentType == ContentType.answerMedia) {
         if (segment.mediaDocPath != "" && segment.aMediaSegments.isNotEmpty) {
           ret = [segment.aMediaSegments[segment.segmentIndex]];
+          state.segmentPlayType = PlayType.answer;
         }
       }
     }
@@ -422,5 +436,40 @@ class GsCrRepeatLogic extends GetxController {
       return 0;
     }
     return SegmentHelp.getVideoMaskRatio(state.currSegment.mediaDocPath);
+  }
+
+  openEditor() {
+    state.edit = true;
+    state.justView = true;
+    update([GsCrRepeatLogic.id]);
+  }
+
+  edit(EditType type) async {
+    if (state.mediaKey.currentState == null) {
+      return;
+    }
+    var pos = await state.mediaKey.currentState!.getMediaCurrentPosition();
+    if (pos == null) {
+      return;
+    }
+    var duration = await state.mediaKey.currentState!.getMediaDuration();
+    if (duration == null) {
+      return;
+    }
+    SegmentEditHelp.edit(state.segment, type, state.segmentPlayType, pos, duration);
+    if (state.justView) {
+      await setCurrentLearnContentAndUpdateView(
+            index: state.justViewIndex,
+            pnOffset: state.pnOffset,
+          ) ??
+          false;
+    } else {
+      await setCurrentLearnContentAndUpdateView(
+            index: state.c.indexWhere((t) => t.segmentKeyId == state.currSegment.segmentKeyId),
+            pnOffset: state.pnOffset,
+          ) ??
+          false;
+    }
+    update([GsCrRepeatLogic.id]);
   }
 }

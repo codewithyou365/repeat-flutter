@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
+import 'package:repeat_flutter/logic/segment_edit_help.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 import 'package:repeat_flutter/widget/player_bar/video_mask.dart';
 
@@ -38,6 +39,10 @@ class GsCrRepeatState {
   var needToPlayMedia = true;
   var overlayVideoInPortrait = false;
 
+  // for edit
+  var edit = false;
+  var justViewWithoutRecall = false;
+
   // for logic
 
   var nextKey = "";
@@ -46,6 +51,7 @@ class GsCrRepeatState {
   var total = 10;
 
   SegmentContent segment = SegmentContent(0, 0, 0, 0, 0, 0, Classroom.curr, "", "", "", "");
+  PlayType segmentPlayType = PlayType.none;
   SegmentContent currSegment = SegmentContent(0, 0, 0, 0, 0, 0, Classroom.curr, "", "", "", "");
   late List<SegmentTodayPrg> c;
   var justView = false;

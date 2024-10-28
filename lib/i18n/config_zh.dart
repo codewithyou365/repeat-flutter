@@ -113,6 +113,13 @@ class ConfigZh extends Config {
     put(I18nKey.labelSegmentRemoved, "对应的学习片段已移除，建议删除相关学习规划");
     put(I18nKey.labelDocNotBeDownloaded, "还未下载文件 \n %s");
     put(I18nKey.labelDocCantBeFound, "无法找到文件 \n %s");
+    put(I18nKey.btnSet, "设置");
+    put(I18nKey.btnSetHead, "设置头部");
+    put(I18nKey.btnSetTail, "设置尾部");
+    put(I18nKey.btnExtendTail, "延长尾部");
+    put(I18nKey.btnOther, "其他");
+    put(I18nKey.btnCut, "切割并保留前后");
+    put(I18nKey.btnDeleteCurr, "删除当前段");
     put(I18nKey.btnCancel, "取消");
     put(I18nKey.btnOk, "确定");
     put(I18nKey.btnDelete, "删除");
