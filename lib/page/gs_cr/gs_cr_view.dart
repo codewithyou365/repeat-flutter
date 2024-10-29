@@ -68,10 +68,9 @@ class GsCrPage extends StatelessWidget {
         return GroupedListView<SegmentTodayPrgWithKeyInView, String>(
           elements: state.segments,
           groupBy: (element) => element.type.name,
-          groupHeaderBuilder: (element) => SizedBox(
-            height: 40,
-            child: InkWell(
-              onTap: () => {logic.tryStartGroup(element.type, mode: Repeat.justView)},
+          groupHeaderBuilder: (element) => PopupMenuButton<String>(
+            child: SizedBox(
+              height: 40,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Row(
@@ -80,28 +79,24 @@ class GsCrPage extends StatelessWidget {
                       element.groupDesc,
                       style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                     ),
-                    const Spacer(),
-                    PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert),
-                      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                        PopupMenuItem<String>(
-                          onTap: () => {logic.tryStartGroup(element.type, mode: Repeat.justView)},
-                          child: Text(I18nKey.btnBrowse.tr),
-                        ),
-                        PopupMenuItem<String>(
-                          onTap: () => {logic.tryStartGroup(element.type)},
-                          child: Text(I18nKey.btnLearn.tr),
-                        ),
-                        PopupMenuItem<String>(
-                          onTap: () => {logic.resetSchedule(element.type)},
-                          child: Text(I18nKey.labelReset.tr),
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),
             ),
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              PopupMenuItem<String>(
+                onTap: () => {logic.tryStartGroup(element.type, mode: Repeat.justView)},
+                child: Text(I18nKey.btnBrowse.tr),
+              ),
+              PopupMenuItem<String>(
+                onTap: () => {logic.tryStartGroup(element.type)},
+                child: Text(I18nKey.btnLearn.tr),
+              ),
+              PopupMenuItem<String>(
+                onTap: () => {logic.resetSchedule(element.type)},
+                child: Text(I18nKey.labelReset.tr),
+              ),
+            ],
           ),
           groupStickyHeaderBuilder: (element) => Container(
             color: Theme.of(context).secondaryHeaderColor,
@@ -111,71 +106,64 @@ class GsCrPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(state.learnDeadlineTips),
-                  InkWell(
-                    onTap: () => {logic.tryStartAll(mode: Repeat.justView)},
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10.0),
+                    child: Text(state.learnDeadlineTips),
+                  ),
+                  PopupMenuButton<String>(
                     child: Row(
                       children: [
                         Text(
                           "${I18nKey.labelAll.tr}: ${state.learnedTotalCount}/${state.learnTotalCount}",
                           style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                         ),
-                        const Spacer(),
-                        PopupMenuButton<String>(
-                          icon: const Icon(Icons.more_vert),
-                          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                            PopupMenuItem<String>(
-                              onTap: () => {logic.tryStartAll(mode: Repeat.justView)},
-                              child: Text(I18nKey.btnBrowse.tr),
-                            ),
-                            PopupMenuItem<String>(
-                              onTap: logic.tryStartAll,
-                              child: Text(I18nKey.btnLearn.tr),
-                            ),
-                            PopupMenuItem<String>(
-                              onTap: () {
-                                MsgBox.yesOrNo(I18nKey.labelReset.tr, I18nKey.labelResetAllDesc.tr, yes: logic.resetAllSchedule);
-                              },
-                              child: Text(I18nKey.labelReset.tr),
-                            ),
-                          ],
-                        ),
                       ],
                     ),
+                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                      PopupMenuItem<String>(
+                        onTap: () => {logic.tryStartAll(mode: Repeat.justView)},
+                        child: Text(I18nKey.btnBrowse.tr),
+                      ),
+                      PopupMenuItem<String>(
+                        onTap: logic.tryStartAll,
+                        child: Text(I18nKey.btnLearn.tr),
+                      ),
+                      PopupMenuItem<String>(
+                        onTap: () {
+                          MsgBox.yesOrNo(I18nKey.labelReset.tr, I18nKey.labelResetAllDesc.tr, yes: logic.resetAllSchedule);
+                        },
+                        child: Text(I18nKey.labelReset.tr),
+                      ),
+                    ],
                   ),
-                  InkWell(
-                    onTap: () => {logic.tryStartGroup(element.type, mode: Repeat.justView)},
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Row(
-                        children: [
-                          Text(
+                  PopupMenuButton<String>(
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
                             element.groupDesc,
                             style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                           ),
-                          const Spacer(),
-                          PopupMenuButton<String>(
-                            icon: const Icon(Icons.more_vert),
-                            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                              PopupMenuItem<String>(
-                                onTap: () => {logic.tryStartGroup(element.type, mode: Repeat.justView)},
-                                child: Text(I18nKey.btnBrowse.tr),
-                              ),
-                              PopupMenuItem<String>(
-                                onTap: () => {logic.tryStartGroup(element.type)},
-                                child: Text(I18nKey.btnLearn.tr),
-                              ),
-                              PopupMenuItem<String>(
-                                onTap: () {
-                                  logic.resetSchedule(element.type);
-                                },
-                                child: Text(I18nKey.labelReset.tr),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
+                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                      PopupMenuItem<String>(
+                        onTap: () => {logic.tryStartGroup(element.type, mode: Repeat.justView)},
+                        child: Text(I18nKey.btnBrowse.tr),
+                      ),
+                      PopupMenuItem<String>(
+                        onTap: () => {logic.tryStartGroup(element.type)},
+                        child: Text(I18nKey.btnLearn.tr),
+                      ),
+                      PopupMenuItem<String>(
+                        onTap: () {
+                          logic.resetSchedule(element.type);
+                        },
+                        child: Text(I18nKey.labelReset.tr),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -184,31 +172,26 @@ class GsCrPage extends StatelessWidget {
           itemBuilder: (context, SegmentTodayPrgWithKeyInView element) => Card(
             elevation: 8.0,
             margin: EdgeInsets.fromLTRB(6, element.uniqIndex == 0 ? 90 : 10.0, 6.0, 10.0),
-            child: InkWell(
-              onTap: () => {logic.tryStart(element.segments, mode: Repeat.justView)},
+            child: PopupMenuButton<String>(
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
                 title: Row(
                   children: [
                     Text(element.name),
-                    const Spacer(),
-                    PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert),
-                      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                        PopupMenuItem<String>(
-                          onTap: () => {logic.tryStart(element.segments, mode: Repeat.justView)},
-                          child: Text(I18nKey.btnBrowse.tr),
-                        ),
-                        PopupMenuItem<String>(
-                          onTap: () => {logic.tryStart(element.segments, grouping: true)},
-                          child: Text(I18nKey.btnLearn.tr),
-                        ),
-                      ],
-                    ),
                   ],
                 ),
                 subtitle: Text(element.desc),
               ),
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                PopupMenuItem<String>(
+                  onTap: () => {logic.tryStart(element.segments, mode: Repeat.justView)},
+                  child: Text(I18nKey.btnBrowse.tr),
+                ),
+                PopupMenuItem<String>(
+                  onTap: () => {logic.tryStart(element.segments, grouping: true)},
+                  child: Text(I18nKey.btnLearn.tr),
+                ),
+              ],
             ),
           ),
           itemComparator: (item1, item2) => item1.index.compareTo(item2.index),
