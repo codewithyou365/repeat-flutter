@@ -113,7 +113,12 @@ class GsCrRepeatLogic extends GetxController {
 
   Future<void> tryToSetNext() async {
     if (state.c.length > 1) {
+      var curr = state.c[0];
       var next = state.c[1];
+      if (curr.sort + 1 == next.sort) {
+        state.nextKey = "";
+        return;
+      }
       RxString err = "".obs;
       var content = await SegmentHelp.from(next.segmentKeyId, err: err);
       if (err.value != "") {

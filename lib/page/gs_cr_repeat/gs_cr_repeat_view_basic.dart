@@ -130,7 +130,11 @@ class GsCrRepeatViewBasic {
           rightButtonLogic = logic.previousForJustView;
           break;
         case RepeatStep.evaluate:
-          leftButtonText = I18nKey.btnNext.tr;
+          if (state.nextKey == "") {
+            leftButtonText = I18nKey.btnNext.tr;
+          } else {
+            leftButtonText = "${I18nKey.btnNext.tr}\n${state.nextKey}";
+          }
           leftButtonLogic = logic.nextForJustView;
           rightButtonText = I18nKey.btnPrevious.tr;
           rightButtonLogic = logic.previousForJustView;
@@ -151,7 +155,11 @@ class GsCrRepeatViewBasic {
           rightButtonLongPressLogic = logic.error;
           break;
         case RepeatStep.evaluate:
-          leftButtonText = "${I18nKey.btnNext.tr}\n${state.nextKey}";
+          if (state.nextKey == "") {
+            leftButtonText = I18nKey.btnNext.tr;
+          } else {
+            leftButtonText = "${I18nKey.btnNext.tr}\n${state.nextKey}";
+          }
           leftButtonLogic = () => logic.know(autoNext: true);
           leftButtonLongPressLogic = logic.adjustProgress;
           rightButtonText = I18nKey.btnError.tr;
@@ -163,7 +171,11 @@ class GsCrRepeatViewBasic {
             leftButtonText = I18nKey.btnFinish.tr;
             leftButtonLogic = logic.next;
           } else {
-            leftButtonText = "${I18nKey.btnNext.tr}\n${state.nextKey}";
+            if (state.nextKey == "") {
+              leftButtonText = I18nKey.btnNext.tr;
+            } else {
+              leftButtonText = "${I18nKey.btnNext.tr}\n${state.nextKey}";
+            }
             leftButtonLogic = logic.next;
           }
           break;
