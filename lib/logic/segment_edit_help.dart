@@ -42,7 +42,7 @@ class SegmentEditHelp {
         switch (playType) {
           case PlayType.title:
             var millisecond = Time.parseTimeToMilliseconds(lesson['titleEnd']!).toInt();
-            if (millisecond < position.inMicroseconds) {
+            if (millisecond < position.inMilliseconds) {
               return false;
             }
             lesson['titleStart'] = Time.convertToString(position);
@@ -50,7 +50,7 @@ class SegmentEditHelp {
             break;
           case PlayType.question:
             var millisecond = Time.parseTimeToMilliseconds(segment['qEnd']!).toInt();
-            if (millisecond < position.inMicroseconds) {
+            if (millisecond < position.inMilliseconds) {
               return false;
             }
             segment['qStart'] = Time.convertToString(position);
@@ -59,7 +59,7 @@ class SegmentEditHelp {
             break;
           case PlayType.answer:
             var millisecond = Time.parseTimeToMilliseconds(segment['aEnd']!).toInt();
-            if (millisecond < position.inMicroseconds) {
+            if (millisecond < position.inMilliseconds) {
               return false;
             }
             segment['aStart'] = Time.convertToString(position);
@@ -73,7 +73,7 @@ class SegmentEditHelp {
         switch (playType) {
           case PlayType.title:
             var millisecond = Time.parseTimeToMilliseconds(lesson['titleStart']!).toInt();
-            if (position.inMicroseconds < millisecond) {
+            if (position.inMilliseconds < millisecond) {
               return false;
             }
             lesson['titleEnd'] = Time.convertToString(position);
@@ -81,7 +81,7 @@ class SegmentEditHelp {
             break;
           case PlayType.question:
             var millisecond = Time.parseTimeToMilliseconds(segment['qStart']!).toInt();
-            if (position.inMicroseconds < millisecond) {
+            if (position.inMilliseconds < millisecond) {
               return false;
             }
             segment['qEnd'] = Time.convertToString(position);
@@ -89,7 +89,7 @@ class SegmentEditHelp {
             break;
           case PlayType.answer:
             var millisecond = Time.parseTimeToMilliseconds(segment['aStart']!).toInt();
-            if (position.inMicroseconds < millisecond) {
+            if (position.inMilliseconds < millisecond) {
               return false;
             }
             segment['aEnd'] = Time.convertToString(position);
