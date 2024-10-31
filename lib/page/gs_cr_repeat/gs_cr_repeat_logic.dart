@@ -461,7 +461,7 @@ class GsCrRepeatLogic extends GetxController {
     if (duration == null) {
       return;
     }
-    SegmentEditHelp.edit(state.segment, type, state.segmentPlayType, pos, duration);
+    await SegmentEditHelp.edit(state.segment, type, state.segmentPlayType, pos, duration);
     if (state.justView) {
       await setCurrentLearnContentAndUpdateView(
             index: state.justViewIndex,
