@@ -190,13 +190,16 @@ abstract class ScheduleDao {
     12 * 60 * 60,
     3,
     [
-      ElConfig(/* title */ "", /* random */ false, /* extendLevel */ false, /* level */ 0, /* learnCount */ 2, /* learnCountPerGroup */ 2),
-      ElConfig(/* title */ "", /* random */ false, /* extendLevel */ false, /* level */ 1, /* learnCount */ 2, /* learnCountPerGroup */ 2),
-      ElConfig(/* title */ "", /* random  */ true, /* extendLevel  */ true, /* level */ 1, /* learnCount */ 2, /* learnCountPerGroup */ 2),
+      // LW: listen and write.
+      // TR: tip and recall.
+      // TW: tip and write.
+      ElConfig(/* title */ "LW1-TR4", /* random */ false, /* extendLevel */ false, /* level */ 1, /* learnCount */ 30, /* learnCountPerGroup */ 10),
+      ElConfig(/* title */ "LW2-TR4", /* random */ false, /* extendLevel */ false, /* level */ 0, /* learnCount */ 4, /* learnCountPerGroup  */ 4),
+      ElConfig(/* title */ "TR4", /* random     */ false, /* extendLevel */ false, /* level */ 2, /* learnCount */ 30, /* learnCountPerGroup */ 10),
     ],
     [
-      RelConfig(/* title */ "", /* level */ 0, /* before */ 3, /* from */ Date(20240321), /* learnCountPerGroup */ 0),
-      RelConfig(/* title */ "", /* level */ 1, /* before */ 7, /* from */ Date(20240321), /* learnCountPerGroup */ 0),
+      RelConfig(/* title */ "TR4", /* level */ 0, /* before */ 4, /* from */ Date(20240321), /* learnCountPerGroup */ 0),
+      RelConfig(/* title */ "TW3", /* level */ 1, /* before */ 7, /* from */ Date(20240321), /* learnCountPerGroup */ 0),
     ],
   );
 
