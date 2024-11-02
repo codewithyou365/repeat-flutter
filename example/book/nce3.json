@@ -2635,7 +2635,7 @@
       "key": "nce3/22",
       "title": "By heart",
       "titleStart": "00:00:02,133",
-      "titleEnd": "00:00:06,433",
+      "titleEnd": "00:00:04,778",
       "raw": [
         "By heart",
         "Some plays are so successful that they run for years on end. In",
@@ -2771,7 +2771,7 @@
       "key": "nce3/23",
       "title": "One man's meat is another man's poison",
       "titleStart": "00:00:01,900",
-      "titleEnd": "00:00:08,133",
+      "titleEnd": "00:00:06,355",
       "raw": [
         "One man's meat is another man's poison",
         "People become quite illogical when they try to decide what can be",
@@ -2884,7 +2884,7 @@
         {
           "aStart": "00:02:12,800",
           "aEnd": "00:02:20,283",
-          "tip": "我把纸袋放在门厅里， 与罗伯特一起进了起居室， 在那里聊了好几个钟头。",
+          "tip": "我把纸袋放在门厅里， 与罗伯特一起进了客厅， 在那里聊了好几个钟头。",
           "a": "I left the bag in the hall and Robert and I went into the living room where we talked for a couple of hours."
         },
         {
@@ -2902,7 +2902,7 @@
         {
           "aStart": "00:02:31,750",
           "aEnd": "00:02:37,666",
-          "tip": "我并不喜欢这个主意， 所以我勉强跟着罗伯特走进了起居室。",
+          "tip": "我并不喜欢这个主意， 所以我勉强跟着罗伯特走出了客厅。",
           "a": "I did not fancy the idea and I reluctantly followed Robert out of the room."
         },
         {
