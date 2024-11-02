@@ -335,6 +335,7 @@ class GsCrRepeatLogic extends GetxController {
     if (playerId == GsCrRepeatState.mediaId) {
       if (state.needToPlayMedia) {
         state.mediaKey.currentState?.moveByIndex();
+        state.needToPlayMedia = false;
       } else {
         state.mediaKey.currentState?.stopMove();
       }
