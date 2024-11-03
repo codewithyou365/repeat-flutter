@@ -432,6 +432,7 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   void setMaskRatio(double ratio) {
+    state.maskRatio = ratio;
     SegmentHelp.setVideoMaskRatio(state.currSegment.mediaDocPath, ratio);
     var va = VideoAttribute(state.currSegment.mediaDocPath, ratio);
     Db().db.videoAttributeDao.insertVideoAttribute(va);
@@ -441,7 +442,8 @@ class GsCrRepeatLogic extends GetxController {
     if (state.step != RepeatStep.recall) {
       return 0;
     }
-    return SegmentHelp.getVideoMaskRatio(state.currSegment.mediaDocPath);
+    state.maskRatio = SegmentHelp.getVideoMaskRatio(state.currSegment.mediaDocPath);
+    return state.maskRatio;
   }
 
   openEditor() {
