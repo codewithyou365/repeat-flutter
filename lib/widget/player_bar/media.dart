@@ -117,4 +117,12 @@ mixin Media {
     }
     return ret;
   }
+
+  double? getVideoAspectRatio() {
+    if (video) {
+      return playerIdToMediaCache[key]?.videoPlayer!.value.aspectRatio;
+    } else {
+      return null;
+    }
+  }
 }

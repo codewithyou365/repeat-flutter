@@ -57,6 +57,8 @@ class GsCrRepeatPage extends StatelessWidget {
 
     PlayerBar? playerBar = GsCrRepeatViewBasic.getPlayerBar(logic, landscape ? sideWidth : screenWidth, widgetBottomHeight);
     double appBarHeight = 50;
+    // TODO double videoAspectRatio = state.mediaKey.currentState?.getVideoAspectRatio() ?? 0.0;
+    double spaceBottomHeight = 70;
     double totalBottomHeight;
     if (landscape) {
       totalBottomHeight = widgetBottomHeight;
@@ -70,6 +72,9 @@ class GsCrRepeatPage extends StatelessWidget {
       totalBottomHeight += widgetBottomHeight;
     }
 
+    if (landscape) {
+      totalBottomHeight += spaceBottomHeight;
+    }
     double bodyHeight = screenHeight - appBarHeight - totalBottomHeight;
     if (!landscape) {
       bodyHeight -= top;
@@ -165,6 +170,7 @@ class GsCrRepeatPage extends StatelessWidget {
               verticalWidth,
               sideWidth,
               landscape,
+              spaceBottomHeight,
             ),
           ),
         ])
@@ -185,7 +191,7 @@ class GsCrRepeatPage extends StatelessWidget {
     }
   }
 
-  Widget buildBottom(Widget? editorBottom, PlayerBar? playerBar, Widget bottom, double verticalWidth, double sideWidth, bool landscape) {
+  Widget buildBottom(Widget? editorBottom, PlayerBar? playerBar, Widget bottom, double verticalWidth, double sideWidth, bool landscape, double spaceBottomHeight) {
     if (landscape) {
       return Container(
         color: Theme.of(Get.context!).brightness == Brightness.dark ? const Color(0x50000000) : const Color(0x50FFFFFF),
@@ -199,6 +205,7 @@ class GsCrRepeatPage extends StatelessWidget {
                 bottom,
               ],
             ),
+            SizedBox(height: spaceBottomHeight),
           ],
         ),
       );
