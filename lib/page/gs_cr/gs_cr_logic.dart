@@ -216,6 +216,19 @@ class GsCrLogic extends GetxController {
     });
   }
 
+  void config(TodayPrgType type) async {
+    showTransparentOverlay(() async {
+      Nav.gsCrSettings.push();
+      await Future.delayed(const Duration(milliseconds: 700));
+    });
+    await Future.delayed(const Duration(milliseconds: 400));
+    if (type == TodayPrgType.learn) {
+      Nav.gsCrSettingsEl.push();
+    } else {
+      Nav.gsCrSettingsRel.push();
+    }
+  }
+
   void resetSchedule(TodayPrgType type) async {
     var desc = type == TodayPrgType.learn ? I18nKey.labelResetLearnDesc.tr : I18nKey.labelResetReviewDesc.tr;
     MsgBox.yesOrNo(I18nKey.labelReset.tr, desc, yes: () {

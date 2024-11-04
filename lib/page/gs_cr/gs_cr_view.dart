@@ -96,6 +96,10 @@ class GsCrPage extends StatelessWidget {
                 onTap: () => {logic.resetSchedule(element.type)},
                 child: Text(I18nKey.labelReset.tr),
               ),
+              PopupMenuItem<String>(
+                onTap: () => {logic.config(element.type)},
+                child: Text(I18nKey.settings.tr),
+              ),
             ],
           ),
           groupStickyHeaderBuilder: (element) => Container(
@@ -158,10 +162,12 @@ class GsCrPage extends StatelessWidget {
                         child: Text(I18nKey.btnLearn.tr),
                       ),
                       PopupMenuItem<String>(
-                        onTap: () {
-                          logic.resetSchedule(element.type);
-                        },
+                        onTap: () => {logic.resetSchedule(element.type)},
                         child: Text(I18nKey.labelReset.tr),
+                      ),
+                      PopupMenuItem<String>(
+                        onTap: () => {logic.config(element.type)},
+                        child: Text(I18nKey.settings.tr),
                       ),
                     ],
                   ),
