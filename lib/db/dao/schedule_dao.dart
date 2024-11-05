@@ -504,34 +504,40 @@ abstract class ScheduleDao {
 
   @transaction
   Future<List<SegmentTodayPrgWithKey>> forceInitToday(TodayPrgType type) async {
-    scheduleConfig = await getScheduleConfig();
+    scheduleConfig = await getScheduleConfigByKey(CrK.todayLearnScheduleConfig);
+    var scheduleConfigInUse = await getScheduleConfigByKey(CrK.todayLearnScheduleConfigInUse);
     var ids = await getSegmentKeyIdByCrn(Classroom.curr);
     List<SegmentTodayPrgWithKey> todayPrg = [];
     var now = DateTime.now();
     if (type == TodayPrgType.learn || type == TodayPrgType.none) {
       await deleteSegmentTodayLearnPrgByIds(ids);
       var elConfigs = scheduleConfig.elConfigs;
+      scheduleConfigInUse.elConfigs = elConfigs;
       await initTodayEl(now, elConfigs, todayPrg);
     }
     if (type == TodayPrgType.review || type == TodayPrgType.none) {
       await deleteSegmentTodayReviewPrgByIds(ids);
       var relConfigs = scheduleConfig.relConfigs;
+      scheduleConfigInUse.relConfigs = relConfigs;
       await initTodayRel(now, relConfigs, todayPrg);
     }
     await insertSegmentTodayPrg(todayPrg);
 
-    var configInUseStr = convert.json.encode(scheduleConfig);
+    var configInUseStr = convert.json.encode(scheduleConfigInUse);
     await insertKv(CrKv(Classroom.curr, CrK.todayLearnScheduleConfigInUse, configInUseStr));
 
     return await findSegmentTodayPrg(Classroom.curr);
   }
 
   Future<ScheduleConfig> getScheduleConfig() async {
-    // init config
-    var configJsonStr = await stringKv(Classroom.curr, CrK.todayLearnScheduleConfig);
+    return getScheduleConfigByKey(CrK.todayLearnScheduleConfig);
+  }
+
+  Future<ScheduleConfig> getScheduleConfigByKey(CrK config) async {
+    var configJsonStr = await stringKv(Classroom.curr, config);
     if (configJsonStr == null) {
       configJsonStr = convert.json.encode(defaultScheduleConfig);
-      await insertKv(CrKv(Classroom.curr, CrK.todayLearnScheduleConfig, configJsonStr));
+      await insertKv(CrKv(Classroom.curr, config, configJsonStr));
     }
     Map<String, dynamic> configJson = convert.jsonDecode(configJsonStr);
     return ScheduleConfig.fromJson(configJson);
