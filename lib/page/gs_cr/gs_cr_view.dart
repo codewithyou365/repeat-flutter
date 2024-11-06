@@ -90,7 +90,7 @@ class GsCrPage extends StatelessWidget {
               ),
               PopupMenuItem<String>(
                 onTap: () => {logic.tryStartGroup(element.type)},
-                child: Text(I18nKey.btnLearn.tr),
+                child: Text(I18nKey.btnExamine.tr),
               ),
               PopupMenuItem<String>(
                 onTap: () => {logic.resetSchedule(element.type)},
@@ -130,7 +130,7 @@ class GsCrPage extends StatelessWidget {
                       ),
                       PopupMenuItem<String>(
                         onTap: logic.tryStartAll,
-                        child: Text(I18nKey.btnLearn.tr),
+                        child: Text(I18nKey.btnExamine.tr),
                       ),
                       PopupMenuItem<String>(
                         onTap: () {
@@ -159,7 +159,7 @@ class GsCrPage extends StatelessWidget {
                       ),
                       PopupMenuItem<String>(
                         onTap: () => {logic.tryStartGroup(element.type)},
-                        child: Text(I18nKey.btnLearn.tr),
+                        child: Text(I18nKey.btnExamine.tr),
                       ),
                       PopupMenuItem<String>(
                         onTap: () => {logic.resetSchedule(element.type)},
@@ -195,7 +195,7 @@ class GsCrPage extends StatelessWidget {
                 ),
                 PopupMenuItem<String>(
                   onTap: () => {logic.tryStart(element.segments, grouping: true)},
-                  child: Text(I18nKey.btnLearn.tr),
+                  child: Text(I18nKey.btnExamine.tr),
                 ),
               ],
             ),

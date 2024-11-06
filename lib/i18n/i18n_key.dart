@@ -129,6 +129,7 @@ enum I18nKey {
   btnSchedule,
   btnLearn,
   btnBrowse,
+  btnExamine,
   btnReview,
   btnRepeat,
   btnShow,
