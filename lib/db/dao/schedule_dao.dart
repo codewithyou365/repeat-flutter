@@ -643,6 +643,8 @@ abstract class ScheduleDao {
     await forUpdate();
     var segmentKeyId = segmentTodayPrg.segmentKeyId;
     var now = DateTime.now();
+    var todayLearnCreateDate = await intKv(Classroom.curr, CrK.todayLearnCreateDate);
+    todayLearnCreateDate ??= Date.from(now).value;
     bool complete = false;
     var maxRepeatTime = scheduleConfig.maxRepeatTime;
     if (progress != null && progress > 0) {
@@ -671,17 +673,15 @@ abstract class ScheduleDao {
           adjustProgress = true;
         }
       } else {
-        var todayLearnCreateDate = await intKv(Classroom.curr, CrK.todayLearnCreateDate);
-        todayLearnCreateDate ??= Date.from(now).value;
         await insertSegmentReview([SegmentReview(Date(todayLearnCreateDate), segmentKeyId, 0)]);
         adjustProgress = true;
       }
       if (adjustProgress) {
         var forgettingCurve = scheduleConfig.forgettingCurve;
         if (schedule.progress + 1 >= forgettingCurve.length - 1) {
-          await setPrgAndNext4Sop(segmentKeyId, schedule.progress + 1, getNext(now, forgettingCurve.last));
+          await setPrgAndNext4Sop(segmentKeyId, schedule.progress + 1, getNext(Date(todayLearnCreateDate).toDateTime(), forgettingCurve.last));
         } else {
-          await setPrgAndNext4Sop(segmentKeyId, schedule.progress + 1, getNext(now, forgettingCurve[schedule.progress + 1]));
+          await setPrgAndNext4Sop(segmentKeyId, schedule.progress + 1, getNext(Date(todayLearnCreateDate).toDateTime(), forgettingCurve[schedule.progress + 1]));
         }
       }
     } else {
