@@ -57,11 +57,9 @@ class GsCrRepeatViewBasic {
   static PlayerBar? getPlayerBar(GsCrRepeatLogic logic, double width, double height) {
     GsCrRepeatState state = logic.state;
     VoidCallback? onPrevious;
-    VoidCallback? onReplay;
     VoidCallback? onNext;
     if (state.step != RepeatStep.recall) {
       onPrevious = logic.minusPnOffset;
-      onReplay = logic.resetPnOffset;
       onNext = logic.plusPnOffset;
     }
     if (state.segment.mediaDocPath != "") {
@@ -77,7 +75,7 @@ class GsCrRepeatViewBasic {
         initMaskRatio: logic.getMaskRatio(),
         setMaskRatio: logic.setMaskRatio,
         onPrevious: onPrevious,
-        onReplay: onReplay,
+        onReplay: logic.resetPnOffset,
         onNext: onNext,
       );
     }
