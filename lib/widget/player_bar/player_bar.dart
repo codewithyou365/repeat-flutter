@@ -195,9 +195,11 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
                 iconSize: 20,
                 onPressed: () {
                   if (widget.onReplay != null) {
+                    // need to load sth, so the moveByIndex cant be called immediately
                     widget.onReplay!();
+                  } else {
+                    moveByIndex();
                   }
-                  moveByIndex();
                 },
               ),
               IconButton(
@@ -214,9 +216,11 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
                   iconSize: 20,
                   onPressed: () {
                     if (widget.onPrevious != null) {
+                      // need to load sth, so the moveByIndex cant be called immediately
                       widget.onPrevious!();
+                    } else {
+                      moveByIndex();
                     }
-                    moveByIndex();
                   },
                 ),
               IconButton(
@@ -236,9 +240,11 @@ class PlayerBarState extends State<PlayerBar> with SingleTickerProviderStateMixi
                   iconSize: 20,
                   onPressed: () {
                     if (widget.onNext != null) {
+                      // need to load sth, so the moveByIndex cant be called immediately
                       widget.onNext!();
+                    } else {
+                      moveByIndex();
                     }
-                    moveByIndex();
                   },
                 ),
             ],

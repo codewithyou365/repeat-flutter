@@ -83,8 +83,7 @@ class GsCrRepeatPage extends StatelessWidget {
     if (playerBar != null && playerBar.playerId == GsCrRepeatState.mediaId) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         logic.mediaLoad((String playerId) {
-          logic.onMediaInited(playerId);
-          if (Media.isVideo(playerBar.path)) {
+          if (logic.onMediaInited(playerId) && Media.isVideo(playerBar.path)) {
             state.videoKey.currentState?.refresh();
           }
         });

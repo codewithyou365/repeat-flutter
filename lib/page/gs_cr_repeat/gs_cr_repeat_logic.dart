@@ -59,7 +59,7 @@ class GsCrRepeatLogic extends GetxController {
     state.total = todayProgresses.length;
     state.progress = state.total - state.c.length;
     state.step = RepeatStep.recall;
-    state.needToPlayMedia = true;
+    setNeedToPlayMedia(true);
     state.fakeKnow = 0;
     await setCurrentLearnContentAndUpdateView();
   }
@@ -73,7 +73,7 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     state.step = RepeatStep.evaluate;
-    state.needToPlayMedia = true;
+    setNeedToPlayMedia(true);
     state.fakeKnow = 1;
     update([GsCrRepeatLogic.id]);
   }
@@ -96,7 +96,7 @@ class GsCrRepeatLogic extends GetxController {
       finish();
       return;
     }
-    state.needToPlayMedia = true;
+    setNeedToPlayMedia(true);
     state.fakeKnow = 0;
     var curr = state.c[0];
     if (!state.justView) {
@@ -181,10 +181,10 @@ class GsCrRepeatLogic extends GetxController {
     state.c.sort(schedulesCurrentSort);
     state.progress = state.total - state.c.length;
     if (autoNext && state.c.isNotEmpty) {
-      state.needToPlayMedia = true;
+      setNeedToPlayMedia(true);
       next(fromView: false);
     } else {
-      state.needToPlayMedia = false;
+      setNeedToPlayMedia(false);
       state.step = RepeatStep.finish;
       update([GsCrRepeatLogic.id]);
     }
@@ -199,7 +199,7 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     state.step = RepeatStep.recall;
-    state.needToPlayMedia = true;
+    setNeedToPlayMedia(true);
     state.fakeKnow = 0;
     await setCurrentLearnContentAndUpdateView();
   }
@@ -209,7 +209,7 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     state.step = RepeatStep.evaluate;
-    state.needToPlayMedia = true;
+    setNeedToPlayMedia(true);
     update([GsCrRepeatLogic.id]);
   }
 
@@ -223,7 +223,7 @@ class GsCrRepeatLogic extends GetxController {
       state.step = RepeatStep.recall;
     }
 
-    state.needToPlayMedia = true;
+    setNeedToPlayMedia(true);
     state.fakeKnow = 0;
     if (state.justViewIndex < state.c.length - 1) {
       state.justViewIndex++;
@@ -240,7 +240,7 @@ class GsCrRepeatLogic extends GetxController {
     } else {
       state.step = RepeatStep.recall;
     }
-    state.needToPlayMedia = true;
+    setNeedToPlayMedia(true);
     state.fakeKnow = 0;
     if (state.justViewIndex > 0) {
       state.justViewIndex--;
@@ -285,6 +285,7 @@ class GsCrRepeatLogic extends GetxController {
       return null;
     }
     if (learnSegment.segmentKeyId == oldSegmentKeyId && fromPn) {
+      update([GsCrRepeatLogic.id]);
       return false;
     }
     state.segment = learnSegment;
@@ -331,18 +332,24 @@ class GsCrRepeatLogic extends GetxController {
     state.mediaKey.currentState?.mediaLoad(mediaInit);
   }
 
-  Future<void> onMediaInited(String playerId) async {
+  bool onMediaInited(String playerId) {
     if (playerId == GsCrRepeatState.mediaId) {
+      if (state.ignorePlayingMedia) {
+        return false;
+      }
+      state.ignorePlayingMedia = true;
       if (state.needToPlayMedia) {
         state.mediaKey.currentState?.moveByIndex();
-        state.needToPlayMedia = false;
       } else {
         state.mediaKey.currentState?.stopMove();
       }
+      return true;
     }
+    return false;
   }
 
   Future<void> resetPnOffset() async {
+    setNeedToPlayMedia(true);
     if (state.justView) {
       await setCurrentLearnContentAndUpdateView(
         index: state.justViewIndex,
@@ -358,6 +365,7 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   Future<void> plusPnOffset() async {
+    setNeedToPlayMedia(true);
     var diff = false;
     if (state.justView) {
       diff = await setCurrentLearnContentAndUpdateView(
@@ -378,6 +386,7 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   Future<void> minusPnOffset() async {
+    setNeedToPlayMedia(true);
     var diff = false;
     if (state.justView) {
       diff = await setCurrentLearnContentAndUpdateView(
@@ -426,7 +435,7 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   finish() {
-    state.needToPlayMedia = false;
+    setNeedToPlayMedia(false);
     state.fakeKnow = 0;
     Nav.gsCrRepeatFinish.push();
   }
@@ -464,20 +473,23 @@ class GsCrRepeatLogic extends GetxController {
     if (duration == null) {
       return;
     }
+    setNeedToPlayMedia(true);
     await SegmentEditHelp.edit(state.segment, type, state.segmentPlayType, pos, duration);
     if (state.justView) {
       await setCurrentLearnContentAndUpdateView(
-            index: state.justViewIndex,
-            pnOffset: state.pnOffset,
-          ) ??
-          false;
+        index: state.justViewIndex,
+        pnOffset: state.pnOffset,
+      );
     } else {
       await setCurrentLearnContentAndUpdateView(
-            index: state.c.indexWhere((t) => t.segmentKeyId == state.currSegment.segmentKeyId),
-            pnOffset: state.pnOffset,
-          ) ??
-          false;
+        index: state.c.indexWhere((t) => t.segmentKeyId == state.currSegment.segmentKeyId),
+        pnOffset: state.pnOffset,
+      );
     }
-    update([GsCrRepeatLogic.id]);
+  }
+
+  setNeedToPlayMedia(bool v) {
+    state.needToPlayMedia = v;
+    state.ignorePlayingMedia = false;
   }
 }

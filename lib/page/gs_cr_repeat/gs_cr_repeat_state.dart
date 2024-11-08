@@ -37,6 +37,7 @@ class GsCrRepeatState {
   final GlobalKey<PlayerBarState> mediaKey = GlobalKey<PlayerBarState>();
   var maskRatio = 0.0;
   var needToPlayMedia = true;
+  var ignorePlayingMedia = false;
 
   var overlayVideoInPortrait = false;
 
