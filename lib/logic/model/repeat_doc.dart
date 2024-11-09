@@ -178,7 +178,7 @@ class Segment {
       json['q'] ?? defaultQuestion,
       json['aStart'] ?? "",
       json['aEnd'] ?? "",
-      json['a'],
+      json['a'] ?? "",
     );
   }
 
