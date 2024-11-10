@@ -40,3 +40,7 @@ enum Repeat {
   normal,
   justView;
 }
+
+class Download {
+  static const String userAgent = "B20240321";
+}

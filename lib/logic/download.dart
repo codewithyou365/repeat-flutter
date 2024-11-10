@@ -60,7 +60,7 @@ Future<bool> downloadDoc(String urlPath, Finish finish, {String hash = "", Downl
           progressCallback(startTime, count, total, false);
         }
       }
-    });
+    }, options: Options(headers: {HttpHeaders.userAgentHeader: Download.userAgent}));
     if (fileTotal == -1) {
       fileTotal = fileCount;
     }

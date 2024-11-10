@@ -20,6 +20,7 @@ class RepeatDoc {
       return false;
     }
   }
+
   static Future<Map<String, dynamic>?> toJsonMap(String path) async {
     File file = File(path);
     bool exist = await file.exists();
@@ -33,10 +34,10 @@ class RepeatDoc {
 
   static Future<RepeatDoc?> fromPath(String path, Uri defaultRootUri) async {
     Map<String, dynamic>? jsonData = await toJsonMap(path);
-    return await fromJsonAndUri(jsonData, defaultRootUri);
+    return fromJsonAndUri(jsonData, defaultRootUri);
   }
 
-  static Future<RepeatDoc?> fromJsonAndUri(Map<String, dynamic>? jsonData, Uri defaultRootUri) async {
+  static RepeatDoc? fromJsonAndUri(Map<String, dynamic>? jsonData, Uri defaultRootUri) {
     if (jsonData == null) {
       return null;
     }

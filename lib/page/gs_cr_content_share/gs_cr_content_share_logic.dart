@@ -88,7 +88,7 @@ class GsCrContentShareLogic extends GetxController {
       response.statusCode = HttpStatus.ok;
       response.write('{"message": "Hello, World!"}');
     } else {
-      await _serveFile(request.uri.pathSegments, response);
+      await _serveFile(request.uri.pathSegments, request);
     }
 
     await response.close();
@@ -106,11 +106,17 @@ class GsCrContentShareLogic extends GetxController {
     return ret; // Fallback if no LAN IP found
   }
 
-  Future<void> _serveFile(List<String> pathSegments, HttpResponse response) async {
+  Future<void> _serveFile(List<String> pathSegments, HttpRequest request) async {
+    var response = request.response;
     var path = Url.toPath(pathSegments);
     if (state.manifestJson != "" && path == state.lanAddressSuffix) {
-      response.headers.contentType = ContentType.binary;
-      response.headers.set('Content-Disposition', 'attachment; filename="${pathSegments.last}"');
+      String userAgent = request.headers.value('user-agent') ?? 'Unknown';
+      response.headers.contentType = ContentType.json;
+      if (userAgent == Download.userAgent) {
+        response.headers.set('Content-Disposition', 'attachment; filename="${pathSegments.last}"');
+      } else {
+        response.headers.set('Content-Disposition', 'inline');
+      }
       response.write(state.manifestJson);
       return;
     }
@@ -118,11 +124,8 @@ class GsCrContentShareLogic extends GetxController {
     var filePath = directory.joinPath(path);
     final file = File(filePath);
     if (await file.exists()) {
-      // Set headers for file download
       response.headers.contentType = ContentType.binary;
       response.headers.set('Content-Disposition', 'attachment; filename="${file.uri.pathSegments.last}"');
-
-      // Stream the file content to the response
       await file.openRead().pipe(response);
     } else {
       response
