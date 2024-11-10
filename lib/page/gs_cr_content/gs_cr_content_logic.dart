@@ -131,19 +131,27 @@ class GsCrContentLogic extends GetxController {
         Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
         return;
       }
-      var kv = await RepeatDoc.fromPath(doc.path, Uri.parse(model.url));
-      if (kv == null) {
+      Map<String, dynamic>? map = await RepeatDoc.toJsonMap(doc.path);
+      if (map == null) {
         Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
         return;
       }
-      var illegalLesson = kv.lesson.where((l) => l.path != l.url).toList();
-      var args = [model.url, kv.rootPath.joinPath(Url.toDocName(model.url))];
-      if (illegalLesson.isNotEmpty) {
-        for (Lesson l in kv.lesson) {
-          l.url = l.path;
-        }
-        args.add(json.encode(kv));
+
+      var repeatDoc = RepeatDoc.fromJsonAndUri(map, Uri.parse(model.url));
+      if (repeatDoc == null) {
+        Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
+        return;
       }
+      List<dynamic> lessons = List<dynamic>.from(map['lesson']);
+      map['lesson'] = lessons;
+
+      var args = [model.url, repeatDoc.rootPath.joinPath(Url.toDocName(model.url))];
+      for (int i = 0; i < lessons.length; i++) {
+        Map<String, dynamic> lesson = Map<String, dynamic>.from(lessons[i]);
+        lessons[i] = lesson;
+        lesson['url'] = lesson['path'];
+      }
+      args.add(json.encode(map));
       Nav.gsCrContentShare.push(arguments: args);
     });
   }
