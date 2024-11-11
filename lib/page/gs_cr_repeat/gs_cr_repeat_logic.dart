@@ -112,22 +112,34 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   Future<void> tryToSetNext() async {
-    if (state.c.length > 1) {
-      var curr = state.c[0];
-      var next = state.c[1];
-      if (curr.sort + 1 == next.sort) {
-        state.nextKey = "";
-        return;
+    state.nextKey = "";
+    SegmentTodayPrg? curr;
+    SegmentTodayPrg? next;
+    if (state.justView) {
+      if (state.c.length > state.justViewIndex + 1) {
+        curr = state.c[state.justViewIndex];
+        next = state.c[state.justViewIndex + 1];
       }
-      RxString err = "".obs;
-      var content = await SegmentHelp.from(next.segmentKeyId, err: err);
-      if (err.value != "") {
-        Nav.back();
-        MsgBox.yes(I18nKey.btnError.tr, err.value);
-        return;
+    } else {
+      if (state.c.length > 1) {
+        curr = state.c[0];
+        next = state.c[1];
       }
-      state.nextKey = content!.k;
     }
+    if (curr == null || next == null) {
+      return;
+    }
+    if (curr.sort + 1 == next.sort) {
+      return;
+    }
+    RxString err = "".obs;
+    var content = await SegmentHelp.from(next.segmentKeyId, err: err);
+    if (err.value != "") {
+      Nav.back();
+      MsgBox.yes(I18nKey.btnError.tr, err.value);
+      return;
+    }
+    state.nextKey = content!.k;
   }
 
   void adjustProgress() async {
