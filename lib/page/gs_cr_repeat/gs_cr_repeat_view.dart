@@ -285,10 +285,10 @@ class GsCrRepeatPage extends StatelessWidget {
   Widget buildBody(BuildContext context, GsCrRepeatLogic logic, double verticalWidth, double padding, bool landscape, double sideWidth, double height, {Widget? firstChild}) {
     return SizedBox(
       height: height,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: padding),
-        child: landscape
-            ? Row(
+      child: landscape
+          ? Padding(
+              padding: EdgeInsets.symmetric(horizontal: padding),
+              child: Row(
                 children: [
                   SizedBox(
                     width: sideWidth,
@@ -302,9 +302,9 @@ class GsCrRepeatPage extends StatelessWidget {
                     child: GsCrRepeatViewBasic.buildContent(context, logic, left: false),
                   ),
                 ],
-              )
-            : GsCrRepeatViewBasic.buildContent(context, logic, firstChild: firstChild),
-      ),
+              ),
+            )
+          : GsCrRepeatViewBasic.buildContent(context, logic, firstChild: firstChild, padding: padding),
     );
   }
 }
