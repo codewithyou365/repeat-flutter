@@ -24,7 +24,7 @@ class GsCrRepeatViewBasic {
     );
   }
 
-  static Widget buildContent(BuildContext context, GsCrRepeatLogic logic, {bool? left, Widget? firstChild}) {
+  static Widget buildContent(BuildContext context, GsCrRepeatLogic logic, {bool? left, Widget? firstChild, double? padding}) {
     var state = logic.state;
     state.step.index;
     var showContent = logic.getShowContent();
@@ -41,13 +41,22 @@ class GsCrRepeatViewBasic {
       } else {
         w = GsCrRepeatViewBasic.buildInnerContent(logic, context, showContent[i].contentType, state.segment);
       }
+      Widget? addWidget;
       if (w != null) {
         var tip = showContent[i].tip ?? false;
         if (tip && state.openTip) {
-          listViewContent.add(w);
+          addWidget = w;
         } else if (!tip) {
-          listViewContent.add(w);
+          addWidget = w;
         }
+      }
+      if (addWidget != null && padding != null) {
+        listViewContent.add(Padding(
+          padding: EdgeInsets.symmetric(horizontal: padding),
+          child: addWidget,
+        ));
+      } else if (addWidget != null) {
+        listViewContent.add(addWidget);
       }
     }
 
