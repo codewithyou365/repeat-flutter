@@ -218,8 +218,9 @@ abstract class ScheduleDao {
   Future<List<int>> getSegmentKeyId(String crn, int indexDocId);
 
   @Query('SELECT SegmentKey.id FROM SegmentKey'
+      ' JOIN SegmentTodayPrg ON SegmentTodayPrg.segmentKeyId=SegmentKey.id'
       ' WHERE SegmentKey.crn=:crn')
-  Future<List<int>> getSegmentKeyIdByCrn(String crn);
+  Future<List<int>> getSegmentKeyIdByCrnAndTp(String crn);
 
   @delete
   Future<void> deleteSegments(List<Segment> data);
@@ -487,7 +488,7 @@ abstract class ScheduleDao {
 
     if (needToInsert) {
       await insertKv(CrKv(Classroom.curr, CrK.todayLearnCreateDate, "${Date.from(now).value}"));
-      var ids = await getSegmentKeyIdByCrn(Classroom.curr);
+      var ids = await getSegmentKeyIdByCrnAndTp(Classroom.curr);
       await deleteSegmentTodayPrgByIds(ids);
       var elConfigs = scheduleConfig.elConfigs;
       await initTodayEl(now, elConfigs, todayPrg);
@@ -506,7 +507,7 @@ abstract class ScheduleDao {
   Future<List<SegmentTodayPrgWithKey>> forceInitToday(TodayPrgType type) async {
     scheduleConfig = await getScheduleConfigByKey(CrK.todayLearnScheduleConfig);
     var scheduleConfigInUse = await getScheduleConfigByKey(CrK.todayLearnScheduleConfigInUse);
-    var ids = await getSegmentKeyIdByCrn(Classroom.curr);
+    var ids = await getSegmentKeyIdByCrnAndTp(Classroom.curr);
     List<SegmentTodayPrgWithKey> todayPrg = [];
     var now = DateTime.now();
     if (type == TodayPrgType.learn || type == TodayPrgType.none) {
