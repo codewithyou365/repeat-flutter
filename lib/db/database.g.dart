@@ -676,9 +676,9 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<List<int>> getSegmentKeyIdByCrn(String crn) async {
+  Future<List<int>> getSegmentKeyIdByCrnAndTp(String crn) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentKey.id FROM SegmentKey WHERE SegmentKey.crn=?1',
+        'SELECT SegmentKey.id FROM SegmentKey JOIN SegmentTodayPrg ON SegmentTodayPrg.segmentKeyId=SegmentKey.id WHERE SegmentKey.crn=?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [crn]);
   }
