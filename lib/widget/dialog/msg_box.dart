@@ -23,6 +23,55 @@ class MsgBox {
     );
   }
 
+  static switchWithYesOrNo(
+    String title,
+    String desc,
+    RxBool select,
+    String selectDesc, {
+    VoidCallback? yes,
+    String? yesBtnTitle,
+    VoidCallback? no,
+    String? noBtnTitle,
+  }) {
+    Get.defaultDialog(
+      title: title,
+      barrierDismissible: false,
+      content: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 4.0.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              desc,
+              softWrap: true,
+              textAlign: TextAlign.left,
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Obx(() {
+                  return Switch(
+                      value: select.value,
+                      onChanged: (bool value) {
+                        select.value = value;
+                      });
+                }),
+                SizedBox(
+                  width: 180.w,
+                  child: Text(
+                    selectDesc,
+                    softWrap: true,
+                  ),
+                ), //error
+              ],
+            ),
+          ],
+        ),
+      ),
+      actions: yesOrNoAction(yes: yes, no: no, yesBtnTitle: yesBtnTitle, noBtnTitle: noBtnTitle),
+    );
+  }
+
   static strInputWithYesOrNo(
     RxString model,
     String title,
@@ -84,25 +133,33 @@ class MsgBox {
     String? noBtnTitle,
   }) {
     return [
-      TextButton(
-        child: Text(noBtnTitle ?? I18nKey.btnCancel.tr),
-        onPressed: () {
-          if (no != null) {
-            no();
-          } else {
-            Get.back();
-          }
-        },
-      ),
-      TextButton(
-        onPressed: () {
-          if (yes != null) {
-            yes();
-          } else {
-            Get.back();
-          }
-        },
-        child: Text(yesBtnTitle ?? I18nKey.btnOk.tr),
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: 24.0.w),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            TextButton(
+              child: Text(noBtnTitle ?? I18nKey.btnCancel.tr),
+              onPressed: () {
+                if (no != null) {
+                  no();
+                } else {
+                  Get.back();
+                }
+              },
+            ),
+            TextButton(
+              onPressed: () {
+                if (yes != null) {
+                  yes();
+                } else {
+                  Get.back();
+                }
+              },
+              child: Text(yesBtnTitle ?? I18nKey.btnOk.tr),
+            ),
+          ],
+        ),
       ),
     ];
   }

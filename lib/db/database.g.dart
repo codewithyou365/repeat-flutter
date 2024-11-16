@@ -684,6 +684,14 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
+  Future<List<int>> getSegmentKeyIdByCrn(String crn) async {
+    return _queryAdapter.queryList(
+        'SELECT SegmentKey.id FROM SegmentKey WHERE SegmentKey.crn=?1',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [crn]);
+  }
+
+  @override
   Future<int?> intKv(
     String crn,
     CrK k,
@@ -961,6 +969,56 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
+  Future<void> deleteSegmentByIds(List<int> ids) async {
+    const offset = 1;
+    final _sqliteVariablesForIds =
+        Iterable<String>.generate(ids.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM Segment WHERE segmentKeyId in (' +
+            _sqliteVariablesForIds +
+            ')',
+        arguments: [...ids]);
+  }
+
+  @override
+  Future<void> deleteSegmentKeyByIds(List<int> ids) async {
+    const offset = 1;
+    final _sqliteVariablesForIds =
+        Iterable<String>.generate(ids.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM SegmentKey WHERE id in (' + _sqliteVariablesForIds + ')',
+        arguments: [...ids]);
+  }
+
+  @override
+  Future<void> deleteSegmentOverallPrgByIds(List<int> ids) async {
+    const offset = 1;
+    final _sqliteVariablesForIds =
+        Iterable<String>.generate(ids.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM SegmentOverallPrg WHERE segmentKeyId in (' +
+            _sqliteVariablesForIds +
+            ')',
+        arguments: [...ids]);
+  }
+
+  @override
+  Future<void> deleteSegmentReviewByIds(List<int> ids) async {
+    const offset = 1;
+    final _sqliteVariablesForIds =
+        Iterable<String>.generate(ids.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM SegmentReview WHERE segmentKeyId in (' +
+            _sqliteVariablesForIds +
+            ')',
+        arguments: [...ids]);
+  }
+
+  @override
   Future<void> insertKv(CrKv kv) async {
     await _crKvInsertionAdapter.insert(kv, OnConflictStrategy.replace);
   }
@@ -1022,6 +1080,20 @@ class _$ScheduleDao extends ScheduleDao {
           ..database = transaction;
         await transactionDatabase.scheduleDao
             .deleteBySegmentKeyId(segmentKeyId);
+      });
+    }
+  }
+
+  @override
+  Future<void> deleteByCrn(String crn) async {
+    if (database is sqflite.Transaction) {
+      await super.deleteByCrn(crn);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        await transactionDatabase.scheduleDao.deleteByCrn(crn);
       });
     }
   }

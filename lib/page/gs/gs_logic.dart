@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
@@ -48,8 +49,11 @@ class GsLogic extends GetxController {
     Get.back();
   }
 
-  delete(String name) async {
+  delete(String name, bool all) async {
     await Db().db.classroomDao.deleteContentIndex(Classroom(name, "", 0));
+    if (all) {
+      await Db().db.scheduleDao.deleteByCrn(name);
+    }
     state.list.removeWhere((element) => element.name == name);
     update([GsLogic.id]);
   }

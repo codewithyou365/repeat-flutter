@@ -21,6 +21,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelTitle, "Title");
     put(I18nKey.labelSelectClassroom, "Select Classroom");
     put(I18nKey.labelDeleteClassroom, "Please confirm to delete \n this classroom : %s");
+    put(I18nKey.labelDeleteClassroomAll, "Meanwhile, delete the study records.");
     put(I18nKey.labelClassroomName, "Classroom Name");
     put(I18nKey.labelClassroomNameEmpty, "The classroom name cannot be empty");
     put(I18nKey.labelClassroomNameError, "The classroom name should be 3 letters or less and consist of alphanumeric characters.");

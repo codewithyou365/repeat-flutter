@@ -81,28 +81,13 @@ class GsCrContentPage extends StatelessWidget {
   }
 
   openDeleteDialog(GsCrContentLogic logic, ContentIndex model) {
-    Get.defaultDialog(
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(I18nKey.labelDeleteContentIndex.trArgs([model.url])),
-        ],
-      ),
-      actions: [
-        TextButton(
-          child: Text(I18nKey.btnCancel.tr),
-          onPressed: () {
-            Get.back();
-          },
-        ),
-        TextButton(
-          child: Text(I18nKey.btnOk.tr),
-          onPressed: () {
-            logic.delete(model.url);
-            Get.back();
-          },
-        ),
-      ],
+    MsgBox.yesOrNo(
+      I18nKey.labelTips.tr,
+      I18nKey.labelDeleteContentIndex.trArgs([model.url]),
+      yes: () {
+        logic.delete(model.url);
+        Get.back();
+      },
     );
   }
 

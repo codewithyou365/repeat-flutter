@@ -222,6 +222,10 @@ abstract class ScheduleDao {
       ' WHERE SegmentKey.crn=:crn')
   Future<List<int>> getSegmentKeyIdByCrnAndTp(String crn);
 
+  @Query('SELECT SegmentKey.id FROM SegmentKey'
+      ' WHERE SegmentKey.crn=:crn')
+  Future<List<int>> getSegmentKeyIdByCrn(String crn);
+
   @delete
   Future<void> deleteSegments(List<Segment> data);
 
@@ -415,6 +419,18 @@ abstract class ScheduleDao {
   @Query('DELETE FROM SegmentTodayPrg WHERE segmentKeyId=:segmentKeyId')
   Future<void> deleteSegmentTodayPrg(int segmentKeyId);
 
+  @Query('DELETE FROM Segment WHERE segmentKeyId in (:ids)')
+  Future<void> deleteSegmentByIds(List<int> ids);
+
+  @Query('DELETE FROM SegmentKey WHERE id in (:ids)')
+  Future<void> deleteSegmentKeyByIds(List<int> ids);
+
+  @Query('DELETE FROM SegmentOverallPrg WHERE segmentKeyId in (:ids)')
+  Future<void> deleteSegmentOverallPrgByIds(List<int> ids);
+
+  @Query('DELETE FROM SegmentReview WHERE segmentKeyId in (:ids)')
+  Future<void> deleteSegmentReviewByIds(List<int> ids);
+
   @transaction
   Future<void> deleteBySegmentKeyId(int segmentKeyId) async {
     await forUpdate();
@@ -423,6 +439,17 @@ abstract class ScheduleDao {
     await deleteSegmentOverallPrg(segmentKeyId);
     await deleteSegmentReview(segmentKeyId);
     await deleteSegmentTodayPrg(segmentKeyId);
+  }
+
+  @transaction
+  Future<void> deleteByCrn(String crn) async {
+    await forUpdate();
+    var ids = await getSegmentKeyIdByCrn(crn);
+    await deleteSegmentByIds(ids);
+    await deleteSegmentKeyByIds(ids);
+    await deleteSegmentOverallPrgByIds(ids);
+    await deleteSegmentReviewByIds(ids);
+    await deleteSegmentTodayPrgByIds(ids);
   }
 
   /// for manager
