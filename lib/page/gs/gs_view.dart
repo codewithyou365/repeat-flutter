@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
 import 'gs_logic.dart';
 
@@ -127,29 +128,16 @@ class GsPage extends StatelessWidget {
   }
 
   openDeleteDialog(GsLogic logic, Classroom model) {
-    Get.defaultDialog(
-      title: I18nKey.labelDelete.tr,
-      content: Column(
-        mainAxisSize: MainAxisSize.min, // Ensure dialog fits content
-        children: [
-          Text(I18nKey.labelDeleteClassroom.trArgs([model.name])),
-        ],
-      ),
-      actions: [
-        TextButton(
-          child: Text(I18nKey.btnCancel.tr),
-          onPressed: () {
-            Get.back();
-          },
-        ),
-        TextButton(
-          child: Text(I18nKey.btnOk.tr),
-          onPressed: () {
-            logic.delete(model.name);
-            Get.back();
-          },
-        ),
-      ],
+    RxBool deleteAll = false.obs;
+    MsgBox.switchWithYesOrNo(
+      I18nKey.labelDelete.tr,
+      I18nKey.labelDeleteClassroom.trArgs([model.name]),
+      deleteAll,
+      I18nKey.labelDeleteClassroomAll.tr,
+      yes: () {
+        logic.delete(model.name, deleteAll.value);
+        Get.back();
+      },
     );
   }
 }

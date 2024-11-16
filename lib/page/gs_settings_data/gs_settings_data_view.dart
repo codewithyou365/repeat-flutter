@@ -22,11 +22,11 @@ class GsSettingsDataPage extends StatelessWidget {
           children: <Widget>[
             ListTile(
               title: Text(I18nKey.btnExport.tr),
-              onTap: () => {openDialog(context, logic, I18nKey.btnExport.tr, state.exportUrl, null, logic.export)},
+              onTap: () => {openDialog(context, I18nKey.btnExport.tr, state.exportUrl, null, logic.export)},
             ),
             ListTile(
               title: Text(I18nKey.btnImport.tr),
-              onTap: () => {openDialog(context, logic, I18nKey.btnImport.tr, state.importUrl, I18nKey.labelImportMojoTips.tr, logic.import)},
+              onTap: () => {openDialog(context, I18nKey.btnImport.tr, state.importUrl, I18nKey.labelImportMojoTips.tr, logic.import)},
             ),
           ],
         ),
@@ -34,7 +34,7 @@ class GsSettingsDataPage extends StatelessWidget {
     );
   }
 
-  openDialog(BuildContext context, GsSettingsDataLogic logic, String title, String url, String? mojo, DialogCallback callback) {
+  openDialog(BuildContext context, String title, String url, String? mojo, DialogCallback callback) {
     final textEditingController = TextEditingController(text: url);
     TextEditingController? mojoEditingController;
     if (mojo != null) {
