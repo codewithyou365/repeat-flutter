@@ -17,14 +17,14 @@ class GsCrStatsPage extends StatelessWidget {
       body: ListView(
         children: <Widget>[
           ListTile(
-            leading: const Icon(Icons.home),
+            leading: const Icon(Icons.bar_chart),
             title: Text(I18nKey.statisticLearn.tr),
             onTap: () {
               Nav.gsCrStatsLearn.push();
             },
           ),
           ListTile(
-            leading: const Icon(Icons.settings),
+            leading: const Icon(Icons.insert_chart),
             title: Text(I18nKey.statisticReview.tr),
             onTap: () {
               Nav.gsCrStatsReview.push();

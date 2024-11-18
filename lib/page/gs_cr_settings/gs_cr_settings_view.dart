@@ -38,7 +38,7 @@ class GsCrSettingsPage extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.settings),
+            leading: const Icon(Icons.settings_applications),
             title: Text(I18nKey.labelConfigSettingsForRel.tr),
             onLongPress: () {
               MsgBox.yes(I18nKey.labelTips.tr, I18nKey.labelConfigSettingsForRelDesc.tr);
