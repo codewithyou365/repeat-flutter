@@ -18,21 +18,21 @@ class GsSettingsPage extends StatelessWidget {
         body: ListView(
           children: <Widget>[
             ListTile(
-              leading: const Icon(Icons.home),
+              leading: const Icon(Icons.language),
               title: Text(I18nKey.language.tr),
               onTap: () {
                 Nav.gsSettingsLang.push();
               },
             ),
             ListTile(
-              leading: const Icon(Icons.settings),
+              leading: const Icon(Icons.brightness_6),
               title: Text(I18nKey.theme.tr),
               onTap: () {
                 Nav.gsSettingsTheme.push();
               },
             ),
             ListTile(
-              leading: const Icon(Icons.dataset),
+              leading: const Icon(Icons.storage),
               title: Text(I18nKey.data.tr),
               onTap: () {
                 Nav.gsSettingsData.push();

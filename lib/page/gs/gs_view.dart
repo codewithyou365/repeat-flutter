@@ -21,7 +21,7 @@ class GsPage extends StatelessWidget {
           Padding(
             padding: EdgeInsets.all(8.0.w),
             child: IconButton(
-              icon: const Icon(Icons.settings),
+              icon: const Icon(Icons.more_vert),
               onPressed: () {
                 Nav.gsSettings.push();
               },
