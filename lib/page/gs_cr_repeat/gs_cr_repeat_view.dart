@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/segment_edit_help.dart';
+import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/player_bar/media.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
@@ -55,10 +56,27 @@ class GsCrRepeatPage extends StatelessWidget {
     double padding = 20;
     double sideWidth = landscape ? (screenWidth / 2) - verticalWidth / 2 - padding : screenWidth - padding * 2;
 
-    PlayerBar? playerBar = GsCrRepeatViewBasic.getPlayerBar(logic, landscape ? sideWidth : screenWidth, widgetBottomHeight);
     double appBarHeight = 50;
-    // TODO double videoAspectRatio = state.mediaKey.currentState?.getVideoAspectRatio() ?? 0.0;
-    double spaceBottomHeight = 70;
+
+    double? maskHeight;
+    double spaceBottomHeight = 200;
+    if (landscape) {
+      var screenRatio = screenWidth / screenHeight;
+      double videoAspectRatio = state.mediaKey.currentState?.getVideoAspectRatio() ?? 0.0;
+      if (screenRatio > videoAspectRatio && videoAspectRatio > 0) {
+        double videoHeight = screenHeight;
+        var videoMaskHeight = videoHeight / SegmentHelp.getVideoMaskRatio(state.currSegment.mediaDocPath);
+        if (videoMaskHeight < spaceBottomHeight) {
+          if (logic.getMaskRatio() > 0) {
+            maskHeight = videoMaskHeight;
+          }
+          spaceBottomHeight = videoMaskHeight;
+        }
+      }
+    }
+
+    PlayerBar? playerBar = GsCrRepeatViewBasic.getPlayerBar(logic, landscape ? sideWidth : screenWidth, widgetBottomHeight, maskHeight);
+
     double totalBottomHeight;
     if (landscape) {
       totalBottomHeight = widgetBottomHeight;

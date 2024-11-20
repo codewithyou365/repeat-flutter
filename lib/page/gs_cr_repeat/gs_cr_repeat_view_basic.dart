@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
+import 'package:repeat_flutter/widget/player_bar/video_mask.dart';
 
 import 'gs_cr_repeat_logic.dart';
 import 'gs_cr_repeat_state.dart';
@@ -63,13 +64,19 @@ class GsCrRepeatViewBasic {
     return ListView(padding: const EdgeInsets.all(0), children: listViewContent);
   }
 
-  static PlayerBar? getPlayerBar(GsCrRepeatLogic logic, double width, double height) {
+  static PlayerBar? getPlayerBar(GsCrRepeatLogic logic, double width, double height, double? maskHeight) {
     GsCrRepeatState state = logic.state;
     VoidCallback? onPrevious;
     VoidCallback? onNext;
     if (state.step != RepeatStep.recall) {
       onPrevious = logic.minusPnOffset;
       onNext = logic.plusPnOffset;
+    }
+    double maskRatio = 0;
+    SetMaskRatioCallback? setMaskRatio;
+    if (maskHeight == null) {
+      setMaskRatio = logic.setMaskRatio;
+      maskRatio = logic.getMaskRatio();
     }
     if (state.segment.mediaDocPath != "") {
       return PlayerBar(
@@ -81,8 +88,9 @@ class GsCrRepeatViewBasic {
         state.segment.mediaDocPath,
         withVideo: false,
         key: state.mediaKey,
-        initMaskRatio: logic.getMaskRatio(),
-        setMaskRatio: logic.setMaskRatio,
+        initMaskHeight: maskHeight ?? 0,
+        initMaskRatio: maskRatio,
+        setMaskRatio: setMaskRatio,
         onPrevious: onPrevious,
         onReplay: logic.resetPnOffset,
         onNext: onNext,

@@ -8,11 +8,13 @@ typedef GetVpc = VideoPlayerController? Function();
 
 class VideoMask extends StatefulWidget {
   final GetVpc getVpc;
+  final double initMaskHeight;
   final double initMaskRatio;
   final SetMaskRatioCallback? setMaskHeight;
 
   const VideoMask(
     this.getVpc,
+    this.initMaskHeight,
     this.initMaskRatio,
     this.setMaskHeight, {
     Key? key,
@@ -104,6 +106,14 @@ class VideoMaskState extends State<VideoMask> {
                   aspectRatio: video.aspectRatio,
                   child: VideoPlayer(videoPlayer),
                 ),
+                if (widget.initMaskHeight > 0)
+                  SizedBox(
+                    height: widget.initMaskHeight,
+                    child: Container(
+                      width: double.infinity,
+                      color: maskColor,
+                    ),
+                  ),
                 if (widget.initMaskRatio > 0)
                   AspectRatio(
                     aspectRatio: video.aspectRatio * maskRatio,

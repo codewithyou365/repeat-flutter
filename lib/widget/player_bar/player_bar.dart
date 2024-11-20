@@ -18,6 +18,7 @@ class PlayerBar extends StatefulWidget {
   final VoidCallback? onPrevious;
   final VoidCallback? onReplay;
   final VoidCallback? onNext;
+  final double initMaskHeight;
   final double initMaskRatio;
   final SetMaskRatioCallback? setMaskRatio;
 
@@ -33,6 +34,7 @@ class PlayerBar extends StatefulWidget {
     this.onPrevious,
     this.onReplay,
     this.onNext,
+    this.initMaskHeight = 0,
     this.initMaskRatio = 0,
     this.setMaskRatio,
   }) : super(key: key);
