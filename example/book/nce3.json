@@ -3033,18 +3033,18 @@
         },
         {
           "aStart": "00:01:47,967",
-                    "aEnd": "00:01:57,933",
+          "aEnd": "00:01:57,933",
           "tip": "我将衬衫、内衣放进两个空抽屉里， 然后我想把随身带来的两套西服中的一套挂到大衣柜里去。",
           "a": "After I had stacked my shirts and underclothes in two empty drawers, I decided to hang one of the two suits I had brought with me in the cupboard."
         },
         {
-                    "aStart": "00:01:57,559",
-                    "aEnd": "00:02:03,139",
+          "aStart": "00:01:57,559",
+          "aEnd": "00:02:03,139",
           "tip": "我打开柜门，站在柜门前一下惊呆了。",
-          "a": "I opened the cupboard door and then stood in front of it petrified."
+          "a": "I opened the cupboard door and then stood in front of it petrified.\n“in front of” 表示在某物或某人正前方的区域，与物体保持正面对齐。\n “at the front of”，意思是“在某物的前部”"
         },
         {
-                    "aStart": "00:02:03,121",
+          "aStart": "00:02:03,121",
           "aEnd": "00:02:06,849",
           "tip": "一具骷髅悬挂在眼前，",
           "a": "A skeleton was dangling before my eyes."
@@ -3164,7 +3164,7 @@
         },
         {
           "aStart": "00:01:07,550",
-                    "aEnd": "00:01:14,405",
+          "aEnd": "00:01:14,405",
           "tip": "这场比赛持续了整整4个月，是这类比赛中的最后一次，",
           "a": "This race, which went on for exactly four months, was the last of its kind."
         },
