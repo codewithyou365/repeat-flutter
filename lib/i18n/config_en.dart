@@ -109,7 +109,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelDataAnomaly, "Data anomaly!");
     put(I18nKey.labelDataAnomalyWithArg, "Data anomaly! %s");
     put(I18nKey.labelRemoteImport, "Remote Import");
-    put(I18nKey.labelLocalImport, "Local Import");
+    put(I18nKey.labelLocalZipImport, "Local ZIP Import");
     put(I18nKey.labelLocalImportCancel, "Local Import is Canceled");
     put(I18nKey.labelSegmentRemoved, "The learning segment has been removed, and it is recommended that the related schedule be deleted");
     put(I18nKey.labelDocNotBeDownloaded, "The document is not downloaded \n %s");

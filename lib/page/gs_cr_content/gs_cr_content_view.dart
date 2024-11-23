@@ -30,7 +30,7 @@ class GsCrContentPage extends StatelessWidget {
               ),
               PopupMenuItem<String>(
                 onTap: logic.addByZip,
-                child: Text(I18nKey.labelLocalImport.tr),
+                child: Text(I18nKey.labelLocalZipImport.tr),
               ),
             ],
           ),

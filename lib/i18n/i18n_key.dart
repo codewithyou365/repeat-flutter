@@ -107,7 +107,7 @@ enum I18nKey {
   labelDataAnomaly,
   labelDataAnomalyWithArg,
   labelRemoteImport,
-  labelLocalImport,
+  labelLocalZipImport,
   labelLocalImportCancel,
   labelSegmentRemoved,
   labelDocNotBeDownloaded,
