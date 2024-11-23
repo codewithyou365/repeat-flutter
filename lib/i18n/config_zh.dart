@@ -109,7 +109,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelDataAnomaly, "数据异常!");
     put(I18nKey.labelDataAnomalyWithArg, "数据异常! %s");
     put(I18nKey.labelRemoteImport, "远程导入");
-    put(I18nKey.labelLocalImport, "本地导入");
+    put(I18nKey.labelLocalZipImport, "本地ZIP导入");
     put(I18nKey.labelLocalImportCancel, "本地导入取消");
     put(I18nKey.labelSegmentRemoved, "对应的学习片段已移除，建议删除相关学习规划");
     put(I18nKey.labelDocNotBeDownloaded, "还未下载文件 \n %s");
