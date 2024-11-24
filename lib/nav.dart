@@ -4,6 +4,7 @@ import 'package:repeat_flutter/page/gs_cr/gs_cr_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_content/gs_cr_content_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_content_scan/gs_cr_content_scan_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_content_share/gs_cr_content_share_nav.dart';
+import 'package:repeat_flutter/page/gs_cr_content_template/gs_cr_content_template_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/gs_cr_repeat_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat_finish/gs_cr_repeat_finish_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_settings/gs_cr_settings_nav.dart';
@@ -23,6 +24,7 @@ enum Nav {
   gsCrContent("/gs/cr/content"),
   gsCrContentScan("/gs/cr/content/scan"),
   gsCrContentShare("/gs/cr/content/share"),
+  gsCrContentTemplate("/gs/cr/content/template"),
   gsCrRepeat("/gs/cr/repeat"),
   gsCrRepeatFinish("/gs/cr/repeat/finish"),
   gsCrSettings("/gs/cr/settings"),
@@ -66,6 +68,7 @@ enum Nav {
     gsCrContentNav(gsCrContent.path),
     gsCrContentScanNav(gsCrContentScan.path),
     gsCrContentShareNav(gsCrContentShare.path),
+    gsCrContentTemplateNav(gsCrContentTemplate.path),
     gsCrRepeatNav(gsCrRepeat.path),
     gsCrRepeatFinishNav(gsCrRepeatFinish.path),
     gsCrSettingsNav(gsCrSettings.path),

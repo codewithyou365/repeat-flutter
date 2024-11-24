@@ -8,7 +8,8 @@ class ConfigZh extends Config {
     put(I18nKey.appName, "重复");
     put(I18nKey.settings, "设置");
     put(I18nKey.content, "内容");
-    put(I18nKey.contentShare, "内容-分享");
+    put(I18nKey.contentShare, "内容分享");
+    put(I18nKey.mediaImportTemplate, "媒体导入模版");
     put(I18nKey.statistic, "统计");
     put(I18nKey.statisticLearn, "统计-学习");
     put(I18nKey.statisticReview, "统计-回顾");
@@ -110,11 +111,15 @@ class ConfigZh extends Config {
     put(I18nKey.labelDataAnomalyWithArg, "数据异常! %s");
     put(I18nKey.labelRemoteImport, "远程导入");
     put(I18nKey.labelLocalZipImport, "本地ZIP导入");
+    put(I18nKey.labelLocalMediaImport, "本地媒体导入");
     put(I18nKey.labelLocalImportCancel, "本地导入取消");
     put(I18nKey.labelSegmentRemoved, "对应的学习片段已移除，建议删除相关学习规划");
     put(I18nKey.labelDocNotBeDownloaded, "还未下载文件 \n %s");
     put(I18nKey.labelDocCantBeFound, "无法找到文件 \n %s");
+    put(I18nKey.labelInputPathOfTwoLevel, "请输入两个层级目录的路径");
+    put(I18nKey.labelInputPathError, "路径错误");
     put(I18nKey.btnSet, "设置");
+    put(I18nKey.btnUse, "使用");
     put(I18nKey.btnSetHead, "设置头部");
     put(I18nKey.btnSetTail, "设置尾部");
     put(I18nKey.btnExtendTail, "延长尾部");

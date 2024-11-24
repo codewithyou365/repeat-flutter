@@ -1,7 +1,10 @@
 // dao/content_index_dao.dart
 
 import 'package:floor/floor.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content_index.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 @dao
 abstract class ContentIndexDao {
@@ -24,4 +27,20 @@ abstract class ContentIndexDao {
 
   @delete
   Future<void> deleteContentIndex(ContentIndex data);
+
+  @transaction
+  Future<ContentIndex> add(String url) async {
+    var idleSortSequenceNumber = await getIdleSortSequenceNumber(Classroom.curr);
+    if (idleSortSequenceNumber == null) {
+      Snackbar.show(I18nKey.labelTooMuchData.tr);
+      return ContentIndex("", "", 0);
+    }
+    if (await count(Classroom.curr, url) != 0) {
+      Snackbar.show(I18nKey.labelDataDuplication.tr);
+      return ContentIndex("", "", 0);
+    }
+    var contentIndex = ContentIndex(Classroom.curr, url, idleSortSequenceNumber);
+    await insertContentIndex(contentIndex);
+    return contentIndex;
+  }
 }

@@ -541,6 +541,20 @@ class _$ContentIndexDao extends ContentIndexDao {
   Future<void> deleteContentIndex(ContentIndex data) async {
     await _contentIndexDeletionAdapter.delete(data);
   }
+
+  @override
+  Future<ContentIndex> add(String url) async {
+    if (database is sqflite.Transaction) {
+      return super.add(url);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<ContentIndex>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        return transactionDatabase.contentIndexDao.add(url);
+      });
+    }
+  }
 }
 
 class _$ScheduleDao extends ScheduleDao {
