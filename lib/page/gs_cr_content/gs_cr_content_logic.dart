@@ -53,7 +53,6 @@ class GsCrContentLogic extends GetxController {
       await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(Classroom.curr, url, 0));
       return;
     }
-    // TODO 删除 所有 学习记录
     await Db().db.scheduleDao.deleteContent(url, doc.id!);
     Get.find<GsCrLogic>().init();
   }
@@ -108,19 +107,12 @@ class GsCrContentLogic extends GetxController {
   }
 
   Future<bool> add(String url) async {
-    var idleSortSequenceNumber = await Db().db.contentIndexDao.getIdleSortSequenceNumber(Classroom.curr);
-    if (idleSortSequenceNumber == null) {
-      Snackbar.show(I18nKey.labelTooMuchData.tr);
+    var contentIndex = await Db().db.contentIndexDao.add(url);
+    if (contentIndex.url.isEmpty) {
       return false;
     }
-    if (await Db().db.contentIndexDao.count(Classroom.curr, url) != 0) {
-      Snackbar.show(I18nKey.labelDataDuplication.tr);
-      return false;
-    }
-    var contentIndex = ContentIndex(Classroom.curr, url, idleSortSequenceNumber);
     state.indexes.add(contentIndex);
     update([GsCrContentLogic.id]);
-    await Db().db.contentIndexDao.insertContentIndex(contentIndex);
     return true;
   }
 
