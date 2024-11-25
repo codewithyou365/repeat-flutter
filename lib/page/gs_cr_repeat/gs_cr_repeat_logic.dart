@@ -333,6 +333,14 @@ class GsCrRepeatLogic extends GetxController {
         }
       }
     }
+    return wrapSegments(ret);
+  }
+
+  List<MediaSegment> wrapSegments(List<MediaSegment> lines) {
+    List<MediaSegment> ret = [];
+    for (var line in lines) {
+      ret.add(MediaSegment.fromDoubles(line.start, line.end + state.extendTail));
+    }
     return ret;
   }
 
@@ -466,8 +474,19 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   openEditor() {
+    state.extendTail = 0;
     state.edit = true;
     state.justView = true;
+    update([GsCrRepeatLogic.id]);
+  }
+
+  extendTail() {
+    state.extendTail += 500;
+    update([GsCrRepeatLogic.id]);
+  }
+
+  resetTail() {
+    state.extendTail = 0;
     update([GsCrRepeatLogic.id]);
   }
 

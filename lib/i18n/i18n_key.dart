@@ -121,6 +121,7 @@ enum I18nKey {
   btnSetHead,
   btnSetTail,
   btnExtendTail,
+  btnResetTail,
   btnOther,
   btnCut,
   btnDeleteCurr,

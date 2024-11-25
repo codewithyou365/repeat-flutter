@@ -123,6 +123,7 @@ class ConfigEn extends Config {
     put(I18nKey.btnSetHead, "Set head");
     put(I18nKey.btnSetTail, "Set tail");
     put(I18nKey.btnExtendTail, "Extend tail");
+    put(I18nKey.btnResetTail, "Reset tail");
     put(I18nKey.btnOther, "Other");
     put(I18nKey.btnCut, "Cut and retain front and back");
     put(I18nKey.btnDeleteCurr, "Delete current");
