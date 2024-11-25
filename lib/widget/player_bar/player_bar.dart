@@ -266,6 +266,10 @@ class MediaSegment {
 
   MediaSegment(this.start, this.end, this.blockStart, this.blockEnd);
 
+  static MediaSegment fromDoubles(double start, double end) {
+    return MediaSegment(start, end, start * factor, end * factor);
+  }
+
   static MediaSegment from(String startTime, String endTime) {
     double startSeconds = Time.parseTimeToMilliseconds(startTime);
     double endSeconds = Time.parseTimeToMilliseconds(endTime);

@@ -160,6 +160,14 @@ class GsCrRepeatPage extends StatelessWidget {
                             onTap: logic.openEditor,
                             child: Text(I18nKey.btnEdit.tr),
                           ),
+                          PopupMenuItem<String>(
+                            onTap: logic.extendTail,
+                            child: Text("${I18nKey.btnExtendTail.tr}(${state.extendTail})"),
+                          ),
+                          PopupMenuItem<String>(
+                            onTap: logic.resetTail,
+                            child: Text(I18nKey.btnResetTail.tr),
+                          ),
                         ],
                       ),
                       const SizedBox(width: 10),

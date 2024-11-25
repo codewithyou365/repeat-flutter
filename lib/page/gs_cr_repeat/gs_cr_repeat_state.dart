@@ -34,6 +34,7 @@ class GsCrRepeatState {
   bool needUpdateSystemUiMode = true;
 
   static const String mediaId = "m";
+  double extendTail = 500.0;
   final GlobalKey<PlayerBarState> mediaKey = GlobalKey<PlayerBarState>();
   var needToPlayMedia = true;
   var ignorePlayingMedia = false;

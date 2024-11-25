@@ -123,6 +123,7 @@ class ConfigZh extends Config {
     put(I18nKey.btnSetHead, "设置头部");
     put(I18nKey.btnSetTail, "设置尾部");
     put(I18nKey.btnExtendTail, "延长尾部");
+    put(I18nKey.btnResetTail, "重置尾部");
     put(I18nKey.btnOther, "其他");
     put(I18nKey.btnCut, "切割并保留前后");
     put(I18nKey.btnDeleteCurr, "删除当前段");
