@@ -532,6 +532,18 @@ class _$ContentIndexDao extends ContentIndexDao {
   }
 
   @override
+  Future<ContentIndex?> one(
+    String crn,
+    String url,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT * FROM ContentIndex where crn=?1 and url=?2',
+        mapper: (Map<String, Object?> row) => ContentIndex(
+            row['crn'] as String, row['url'] as String, row['sort'] as int),
+        arguments: [crn, url]);
+  }
+
+  @override
   Future<void> insertContentIndex(ContentIndex data) async {
     await _contentIndexInsertionAdapter.insert(
         data, OnConflictStrategy.replace);
@@ -801,6 +813,18 @@ class _$ScheduleDao extends ScheduleDao {
           _dateTimeConverter.encode(viewTime),
           finish ? 1 : 0
         ]);
+  }
+
+  @override
+  Future<int?> lessonCount(
+    String crn,
+    int indexDocId,
+    int mediaDocId,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT count(Segment.segmentKeyId) FROM Segment JOIN SegmentKey on SegmentKey.id=Segment.segmentKeyId AND SegmentKey.crn=?1 WHERE Segment.indexDocId=?2 and Segment.mediaDocId=?3',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [crn, indexDocId, mediaDocId]);
   }
 
   @override

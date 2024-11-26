@@ -15,14 +15,21 @@ enum EditType {
   deleteCurr,
 }
 
+class SegmentEditHelpOutArg {
+  int segmentCount;
+
+  SegmentEditHelpOutArg(this.segmentCount);
+}
+
 class SegmentEditHelp {
   static Future<bool> edit(
     SegmentContent ret,
     EditType editType,
     PlayType playType,
     Duration position,
-    Duration duration,
-  ) async {
+    Duration duration, {
+    SegmentEditHelpOutArg? out,
+  }) async {
     Map<String, dynamic>? map = await RepeatDoc.toJsonMap(ret.indexDocPath);
     if (map == null) {
       return false;
@@ -34,6 +41,9 @@ class SegmentEditHelp {
     lessons[ret.lessonIndex] = lesson;
     List<dynamic> segments = List<dynamic>.from(lesson['segment']);
     lesson['segment'] = segments;
+    if (out != null) {
+      out.segmentCount = segments.length;
+    }
     Map<String, String> segment = Map<String, String>.from(segments[ret.segmentIndex]);
     segments[ret.segmentIndex] = segment;
 
@@ -126,13 +136,13 @@ class SegmentEditHelp {
           case PlayType.question:
             segment['qEnd'] = splitPoint;
             newSegment['qStart'] = splitPoint;
-            segments.insert(ret.segmentIndex, newSegment);
+            segments.insert(ret.segmentIndex + 1, newSegment);
             ret.qMediaSegments[ret.segmentIndex] = MediaSegment.from(segment['qStart']!, segment['qEnd']!);
             break;
           case PlayType.answer:
             segment['aEnd'] = splitPoint;
             newSegment['aStart'] = splitPoint;
-            segments.insert(ret.segmentIndex, newSegment);
+            segments.insert(ret.segmentIndex + 1, newSegment);
             ret.aMediaSegments[ret.segmentIndex] = MediaSegment.from(segment['aStart']!, segment['aEnd']!);
             break;
           default:

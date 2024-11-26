@@ -269,6 +269,13 @@ abstract class ScheduleDao {
   @Query('UPDATE SegmentTodayPrg SET progress=:progress,viewTime=:viewTime,finish=:finish WHERE segmentKeyId=:segmentKeyId and type=:type')
   Future<void> setSegmentTodayPrg(int segmentKeyId, int type, int progress, DateTime viewTime, bool finish);
 
+  @Query("SELECT count(Segment.segmentKeyId) FROM Segment"
+      " JOIN SegmentKey on SegmentKey.id=Segment.segmentKeyId"
+      " AND SegmentKey.crn=:crn"
+      " WHERE Segment.indexDocId=:indexDocId"
+      " and Segment.mediaDocId=:mediaDocId")
+  Future<int?> lessonCount(String crn, int indexDocId, int mediaDocId);
+
   @Query("SELECT ifnull(min(SegmentReview.createDate),-1) FROM SegmentReview"
       " JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId"
       " JOIN SegmentKey on SegmentKey.id=SegmentReview.segmentKeyId"
