@@ -5,11 +5,14 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/db/entity/video_attribute.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/constant.dart';
+import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
+import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/logic/segment_edit_help.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -503,7 +506,19 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     setNeedToPlayMedia(true);
-    await SegmentEditHelp.edit(state.segment, type, state.segmentPlayType, pos, duration);
+    SegmentEditHelpOutArg outArg = SegmentEditHelpOutArg(0);
+    await SegmentEditHelp.edit(state.segment, type, state.segmentPlayType, pos, duration, out: outArg);
+    if (type == EditType.cut) {
+      // database count
+      int? count = await Db().db.scheduleDao.lessonCount(Classroom.curr, state.segment.indexDocId, state.segment.mediaDocId);
+      // file count
+      if (count == null || count < outArg.segmentCount + 1) {
+        var ret = await ScheduleHelp.addToScheduleByUrl(state.segment.indexDocUrl);
+        if (ret == false) {
+          return;
+        }
+      }
+    }
     if (state.justView) {
       await setCurrentLearnContentAndUpdateView(
         index: state.justViewIndex,

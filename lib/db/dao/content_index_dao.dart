@@ -22,6 +22,9 @@ abstract class ContentIndexDao {
   @Query('SELECT count(1) FROM ContentIndex where crn=:crn and url=:url')
   Future<int?> count(String crn, String url);
 
+  @Query('SELECT * FROM ContentIndex where crn=:crn and url=:url')
+  Future<ContentIndex?> one(String crn, String url);
+
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertContentIndex(ContentIndex data);
 
