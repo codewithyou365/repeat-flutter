@@ -176,7 +176,7 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   // TODO add device volume button
-  void know({autoNext = false, int progress = -1}) async {
+  void know({autoNext = false, tryFinish = false, int progress = -1}) async {
     if (ticker.isStuck()) {
       return;
     }
@@ -200,7 +200,11 @@ class GsCrRepeatLogic extends GetxController {
     } else {
       setNeedToPlayMedia(false);
       state.step = RepeatStep.finish;
-      update([GsCrRepeatLogic.id]);
+      if (tryFinish) {
+        finish();
+      } else {
+        update([GsCrRepeatLogic.id]);
+      }
     }
   }
 
@@ -227,7 +231,7 @@ class GsCrRepeatLogic extends GetxController {
     update([GsCrRepeatLogic.id]);
   }
 
-  void nextForJustView() async {
+  void nextForJustView({tryFinish = false}) async {
     if (ticker.isStuck()) {
       return;
     }
@@ -241,6 +245,8 @@ class GsCrRepeatLogic extends GetxController {
     state.fakeKnow = 0;
     if (state.justViewIndex < state.c.length - 1) {
       state.justViewIndex++;
+    } else if (tryFinish) {
+      finish();
     }
     await setCurrentLearnContentAndUpdateView(index: state.justViewIndex);
   }
@@ -457,9 +463,7 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   finish() {
-    setNeedToPlayMedia(false);
-    state.fakeKnow = 0;
-    Nav.gsCrRepeatFinish.push();
+    Nav.gsCr.until();
   }
 
   void setMaskRatio(double ratio) {
