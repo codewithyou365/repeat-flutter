@@ -10,7 +10,6 @@ import 'package:repeat_flutter/db/dao/content_index_dao.dart';
 import 'package:repeat_flutter/db/dao/doc_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/kv_dao.dart';
-import 'package:repeat_flutter/db/dao/video_attribute_dao.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
@@ -66,8 +65,6 @@ abstract class AppDatabase extends FloorDatabase {
   KvDao get kvDao;
 
   DocDao get docDao;
-
-  VideoAttributeDao get videoAttributeDao;
 
   ClassroomDao get classroomDao;
 

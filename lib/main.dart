@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/extension.dart';
-import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 import 'package:repeat_flutter/nav.dart';
 
 import 'db/database.dart';
@@ -12,7 +12,7 @@ import 'i18n/i18n_translations.dart';
 void main() async {
   var logic = Get.put<MyAppLogic>(MyAppLogic());
   WidgetsFlutterBinding.ensureInitialized();
-  SegmentHelp.clear();
+  RepeatDocHelp.clear();
   var db = await Db().init();
   var settings = await db.kvDao.find([K.settingsI18n, K.settingsTheme]);
   if (settings.isEmpty) {

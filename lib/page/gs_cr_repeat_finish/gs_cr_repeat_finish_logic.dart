@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
-import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/gs_cr_repeat_logic.dart';
 
@@ -20,7 +20,7 @@ class GsCrRepeatFinishLogic extends GetxController {
       curr.add(segment.segmentKeyId);
     }
     for (var segmentKeyId in curr) {
-      var learnSegment = await SegmentHelp.from(segmentKeyId);
+      var learnSegment = await RepeatDocHelp.from(segmentKeyId);
       state.segments.add(learnSegment!);
     }
     update([GsCrRepeatFinishLogic.id]);

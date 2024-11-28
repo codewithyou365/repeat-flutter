@@ -75,6 +75,7 @@ class Lesson {
   String path;
   String hash;
   String key;
+  String videoMaskRatio;
   String defaultQuestion;
   String defaultTip;
   String title;
@@ -87,6 +88,7 @@ class Lesson {
     this.path,
     this.hash,
     this.key,
+    this.videoMaskRatio,
     this.defaultQuestion,
     this.defaultTip,
     this.title,
@@ -108,6 +110,7 @@ class Lesson {
       path,
       json['hash'] ?? '',
       json['key'] ?? json['path'],
+      json['videoMaskRatio'] ?? '',
       defaultQuestion,
       defaultTip,
       json['title'] ?? json['key'] ?? json['path'],

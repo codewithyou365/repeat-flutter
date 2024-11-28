@@ -76,8 +76,6 @@ class _$AppDatabase extends AppDatabase {
 
   DocDao? _docDaoInstance;
 
-  VideoAttributeDao? _videoAttributeDaoInstance;
-
   ClassroomDao? _classroomDaoInstance;
 
   ContentIndexDao? _contentIndexDaoInstance;
@@ -164,12 +162,6 @@ class _$AppDatabase extends AppDatabase {
   @override
   DocDao get docDao {
     return _docDaoInstance ??= _$DocDao(database, changeListener);
-  }
-
-  @override
-  VideoAttributeDao get videoAttributeDao {
-    return _videoAttributeDaoInstance ??=
-        _$VideoAttributeDao(database, changeListener);
   }
 
   @override
@@ -353,42 +345,6 @@ class _$DocDao extends DocDao {
         return transactionDatabase.docDao.insert(url);
       });
     }
-  }
-}
-
-class _$VideoAttributeDao extends VideoAttributeDao {
-  _$VideoAttributeDao(
-    this.database,
-    this.changeListener,
-  )   : _queryAdapter = QueryAdapter(database),
-        _videoAttributeInsertionAdapter = InsertionAdapter(
-            database,
-            'VideoAttribute',
-            (VideoAttribute item) => <String, Object?>{
-                  'path': item.path,
-                  'maskRatio': item.maskRatio
-                });
-
-  final sqflite.DatabaseExecutor database;
-
-  final StreamController<String> changeListener;
-
-  final QueryAdapter _queryAdapter;
-
-  final InsertionAdapter<VideoAttribute> _videoAttributeInsertionAdapter;
-
-  @override
-  Future<VideoAttribute?> one(String path) async {
-    return _queryAdapter.query('SELECT * FROM VideoAttribute WHERE path = ?1',
-        mapper: (Map<String, Object?> row) =>
-            VideoAttribute(row['path'] as String, row['maskRatio'] as double),
-        arguments: [path]);
-  }
-
-  @override
-  Future<void> insertVideoAttribute(VideoAttribute entity) async {
-    await _videoAttributeInsertionAdapter.insert(
-        entity, OnConflictStrategy.replace);
   }
 }
 
