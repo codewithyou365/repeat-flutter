@@ -18,7 +18,7 @@ import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/logic/schedule_help.dart';
-import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
@@ -230,6 +230,6 @@ class GsCrContentLogic extends GetxController {
         );
       }
     }
-    SegmentHelp.clear();
+    RepeatDocHelp.clear();
   }
 }

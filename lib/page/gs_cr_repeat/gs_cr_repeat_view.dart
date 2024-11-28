@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/segment_edit_help.dart';
-import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/logic/repeat_doc_edit_help.dart';
+import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/player_bar/media.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
@@ -65,7 +65,7 @@ class GsCrRepeatPage extends StatelessWidget {
       double videoAspectRatio = state.mediaKey.currentState?.getVideoAspectRatio() ?? 0.0;
       if (screenRatio > videoAspectRatio && videoAspectRatio > 0) {
         double videoHeight = screenHeight;
-        var videoMaskHeight = videoHeight / SegmentHelp.getVideoMaskRatio(state.currSegment.mediaDocPath);
+        var videoMaskHeight = videoHeight / RepeatDocHelp.getVideoMaskRatio(state.currSegment.mediaDocPath);
         if (videoMaskHeight < spaceBottomHeight) {
           if (logic.getMaskRatio() > 0) {
             maskHeight = videoMaskHeight;

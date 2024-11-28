@@ -6,7 +6,7 @@ import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
-class SegmentHelp {
+class RepeatDocHelp {
   static Map<String, RepeatDoc> indexDocPathToQa = {};
 
   static Map<String, double?> mediaDocPathToVideoMaskRatio = {};
@@ -83,13 +83,11 @@ class SegmentHelp {
     if (ret.mediaDocPath != "") {
       // for mask ratio
       var ratio = mediaDocPathToVideoMaskRatio[ret.mediaDocPath];
-      if (ratio == null) {
-        var va = await Db().db.videoAttributeDao.one(ret.mediaDocPath);
-        if (va != null) {
-          mediaDocPathToVideoMaskRatio[ret.mediaDocPath] = va.maskRatio;
-        } else {
-          mediaDocPathToVideoMaskRatio[ret.mediaDocPath] = 20;
-        }
+      if (ratio == null && lesson.videoMaskRatio != "") {
+        double va = double.parse(lesson.videoMaskRatio);
+        mediaDocPathToVideoMaskRatio[ret.mediaDocPath] = va;
+      } else {
+        mediaDocPathToVideoMaskRatio[ret.mediaDocPath] = 20;
       }
 
       var titleMediaSegment = mediaDocPathToTitleMediaSegment[ret.mediaDocPath];

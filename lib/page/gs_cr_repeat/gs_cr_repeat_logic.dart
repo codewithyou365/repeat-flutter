@@ -7,13 +7,12 @@ import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
-import 'package:repeat_flutter/db/entity/video_attribute.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/constant.dart';
 import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
 import 'package:repeat_flutter/logic/schedule_help.dart';
-import 'package:repeat_flutter/logic/segment_edit_help.dart';
-import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/logic/repeat_doc_edit_help.dart';
+import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -135,7 +134,7 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     RxString err = "".obs;
-    var content = await SegmentHelp.from(next.segmentKeyId, err: err);
+    var content = await RepeatDocHelp.from(next.segmentKeyId, err: err);
     if (err.value != "") {
       Nav.back();
       MsgBox.yes(I18nKey.btnError.tr, err.value);
@@ -282,7 +281,7 @@ class GsCrRepeatLogic extends GetxController {
     state.openTip = false;
     var oldSegmentKeyId = state.segment.segmentKeyId;
     RxString err = "".obs;
-    var learnSegment = await SegmentHelp.from(curr.segmentKeyId, offset: pnOffset, err: err);
+    var learnSegment = await RepeatDocHelp.from(curr.segmentKeyId, offset: pnOffset, err: err);
     if (err.value != "") {
       Nav.back();
       MsgBox.yes(I18nKey.btnError.tr, err.value);
@@ -467,16 +466,14 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   void setMaskRatio(double ratio) {
-    SegmentHelp.setVideoMaskRatio(state.currSegment.mediaDocPath, ratio);
-    var va = VideoAttribute(state.currSegment.mediaDocPath, ratio);
-    Db().db.videoAttributeDao.insertVideoAttribute(va);
+    RepeatDocEditHelp.setVideoMaskRatio(state.segment, ratio);
   }
 
   double getMaskRatio() {
     if (state.step != RepeatStep.recall) {
       return 0;
     }
-    return SegmentHelp.getVideoMaskRatio(state.currSegment.mediaDocPath);
+    return RepeatDocHelp.getVideoMaskRatio(state.segment.mediaDocPath);
   }
 
   openEditor() {
@@ -510,7 +507,7 @@ class GsCrRepeatLogic extends GetxController {
     }
     setNeedToPlayMedia(true);
     SegmentEditHelpOutArg outArg = SegmentEditHelpOutArg(0);
-    await SegmentEditHelp.edit(state.segment, type, state.segmentPlayType, pos, duration, out: outArg);
+    await RepeatDocEditHelp.edit(state.segment, type, state.segmentPlayType, pos, duration, out: outArg);
     if (type == EditType.cut) {
       // database count
       int? count = await Db().db.scheduleDao.lessonCount(Classroom.curr, state.segment.indexDocId, state.segment.mediaDocId);

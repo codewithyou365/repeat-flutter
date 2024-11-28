@@ -1,6 +1,6 @@
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
-import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 import 'model/repeat_doc.dart';
@@ -21,7 +21,27 @@ class SegmentEditHelpOutArg {
   SegmentEditHelpOutArg(this.segmentCount);
 }
 
-class SegmentEditHelp {
+class RepeatDocEditHelp {
+  static Future<bool> setVideoMaskRatio(
+    SegmentContent ret,
+    double ratio, {
+    SegmentEditHelpOutArg? out,
+  }) async {
+    Map<String, dynamic>? map = await RepeatDoc.toJsonMap(ret.indexDocPath);
+    if (map == null) {
+      return false;
+    }
+
+    List<dynamic> lessons = List<dynamic>.from(map['lesson']);
+    map['lesson'] = lessons;
+    Map<String, dynamic> lesson = Map<String, dynamic>.from(lessons[ret.lessonIndex]);
+    lessons[ret.lessonIndex] = lesson;
+    lesson['videoMaskRatio'] = "$ratio";
+    RepeatDoc.writeFile(ret.indexDocPath, map);
+    RepeatDocHelp.setVideoMaskRatio(ret.mediaDocPath, ratio);
+    return true;
+  }
+
   static Future<bool> edit(
     SegmentContent ret,
     EditType editType,
@@ -175,7 +195,7 @@ class SegmentEditHelp {
         return false;
     }
     RepeatDoc.writeFile(ret.indexDocPath, map);
-    SegmentHelp.clear();
+    RepeatDocHelp.clear();
     return true;
   }
 }
