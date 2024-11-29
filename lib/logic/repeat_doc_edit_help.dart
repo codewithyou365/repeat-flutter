@@ -132,15 +132,15 @@ class RepeatDocEditHelp {
       case EditType.extendTail:
         switch (playType) {
           case PlayType.title:
-            lesson['titleEnd'] = Time.extend(lesson['titleEnd'], 1000, duration);
+            lesson['titleEnd'] = Time.extend(lesson['titleEnd'], 10000, duration);
             ret.titleMediaSegment = MediaSegment.from(lesson['titleStart'], lesson['titleEnd']);
             break;
           case PlayType.question:
-            segment['qEnd'] = Time.extend(segment['qEnd']!, 1000, duration);
+            segment['qEnd'] = Time.extend(segment['qEnd']!, 10000, duration);
             ret.qMediaSegments[ret.segmentIndex] = MediaSegment.from(segment['qStart']!, segment['qEnd']!);
             break;
           case PlayType.answer:
-            segment['aEnd'] = Time.extend(segment['aEnd']!, 1000, duration);
+            segment['aEnd'] = Time.extend(segment['aEnd']!, 10000, duration);
             ret.aMediaSegments[ret.segmentIndex] = MediaSegment.from(segment['aStart']!, segment['aEnd']!);
             break;
           default:
