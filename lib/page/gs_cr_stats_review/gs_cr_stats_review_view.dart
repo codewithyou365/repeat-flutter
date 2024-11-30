@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_review_with_key.dart';
+import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 import 'gs_cr_stats_review_logic.dart';
 
 class GsCrStatsReviewPage extends StatelessWidget {
@@ -43,7 +44,7 @@ class GsCrStatsReviewPage extends StatelessWidget {
         children: [
           Text("${model.createDate.value}"),
           const Spacer(),
-          Text(model.k),
+          Text(RepeatDocHelp.getKey(model.materialName, model.lessonIndex, model.segmentIndex)),
           const Spacer(),
           Text("${model.count}"),
         ],

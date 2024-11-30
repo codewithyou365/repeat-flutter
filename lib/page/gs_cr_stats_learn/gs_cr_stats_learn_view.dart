@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_overall_prg_with_key.dart';
+import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 
 import 'gs_cr_stats_learn_logic.dart';
 
@@ -42,7 +43,7 @@ class GsCrStatsLearnPage extends StatelessWidget {
       padding: EdgeInsets.all(16.w),
       child: Row(
         children: [
-          Text(model.k),
+          Text(RepeatDocHelp.getKey(model.materialName, model.lessonIndex, model.segmentIndex)),
           const Spacer(),
           Text("${model.next.value}"),
           const Spacer(),

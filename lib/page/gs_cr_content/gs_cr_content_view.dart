@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/db/entity/content_index.dart';
+import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/material.dart' as entity;
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -29,7 +30,7 @@ class GsCrContentPage extends StatelessWidget {
                 child: Text(I18nKey.labelRemoteImport.tr),
               ),
               PopupMenuItem<String>(
-                onTap: logic.addByZip,
+                onTap: logic.todoAddByZip,
                 child: Text(I18nKey.labelLocalZipImport.tr),
               ),
               PopupMenuItem<String>(
@@ -40,35 +41,121 @@ class GsCrContentPage extends StatelessWidget {
           ),
         ],
       ),
-      body: buildList(context, logic),
+      body: GetBuilder<GsCrContentLogic>(
+        id: GsCrContentLogic.id,
+        builder: (_) => buildBody(logic),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          RxString mgn = RxString("");
+          MsgBox.strInputWithYesOrNo(mgn, I18nKey.btnAdd.tr, I18nKey.labelMaterialName.tr, yes: () {
+            logic.add(mgn.value);
+            return;
+          });
+        },
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
-  Widget buildList(BuildContext context, GsCrContentLogic logic) {
-    return GetBuilder<GsCrContentLogic>(
-      id: GsCrContentLogic.id,
-      builder: (_) => _buildList(context, logic),
-    );
-  }
-
-  Widget _buildList(BuildContext context, GsCrContentLogic logic) {
-    final state = logic.state;
-    if (state.indexes.isEmpty) {
-      if (state.loading.value) {
-        return Container(
-          alignment: Alignment.topCenter,
-          padding: EdgeInsets.only(top: 80.w),
-          child: const CircularProgressIndicator(),
-        );
-      }
-    }
-    return ListView(
-      children: List.generate(
-        state.indexes.length,
-        (index) => buildItem(context, logic, state.indexes[index]),
+  Widget buildBody(GsCrContentLogic logic) {
+    var state = logic.state;
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 28.w),
+      child: MasonryGridView.count(
+        shrinkWrap: true,
+        crossAxisCount: 2,
+        mainAxisSpacing: 28.w,
+        crossAxisSpacing: 28.w,
+        itemBuilder: (context, index) {
+          if (index != 1) {
+            return buildButton(logic, state.list[index]);
+          }
+          return Padding(
+            padding: EdgeInsets.only(top: 28.w),
+            child: buildButton(logic, state.list[index]),
+          );
+        },
+        itemCount: state.list.length,
       ),
     );
   }
+
+  Widget buildButton(GsCrContentLogic logic, entity.Material model) {
+    var menus = <PopupMenuEntry<String>>[];
+
+    if (model.docId == 0) {
+      // PopupMenuItem<String>(
+      //   onTap: () {
+      //     openEditDialog(logic, "", I18nKey.labelAddContentIndex.tr);
+      //   },
+      //   child: Text(I18nKey.labelRemoteImport.tr),
+      // ),
+      // PopupMenuItem<String>(
+      //   onTap: logic.todoAddByZip,
+      //   child: Text(I18nKey.labelLocalZipImport.tr),
+      // ),
+      menus.add(PopupMenuItem<String>(
+        onTap: () {
+          Nav.gsCrContentTemplate.push(arguments: <int>[model.id!, model.serial]);
+        },
+        child: Text(I18nKey.labelLocalMediaImport.tr),
+      ));
+    } else {
+      menus.add(PopupMenuItem<String>(
+        onTap: () {
+          openScheduleDialog(logic, model);
+        },
+        child: Text(I18nKey.btnSchedule.tr),
+      ));
+    }
+    return PopupMenuButton<String>(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16.w),
+        child: Container(
+          color: model.docId == 0 ? Colors.red : Colors.green,
+          padding: EdgeInsets.only(top: 60.h, bottom: 60.h),
+          alignment: Alignment.center,
+          child: Column(
+            children: [
+              Text(
+                model.name,
+                style: TextStyle(fontSize: 50.sp),
+              ),
+            ],
+          ),
+        ),
+      ),
+      itemBuilder: (BuildContext context) => menus,
+    );
+  }
+
+  // Widget buildList(BuildContext context, GsCrContentLogic logic) {
+  //   return GetBuilder<GsCrContentLogic>(
+  //     id: GsCrContentLogic.id,
+  //     builder: (_) => _buildList(context, logic),
+  //   );
+  // }
+  //
+  // Widget _buildList(BuildContext context, GsCrContentLogic logic) {
+  //   final state = logic.state;
+  //   if (state.list.isEmpty) {
+  //     if (state.loading.value) {
+  //       return Container(
+  //         alignment: Alignment.topCenter,
+  //         padding: EdgeInsets.only(top: 80.w),
+  //         child: const CircularProgressIndicator(),
+  //       );
+  //     }
+  //   }
+  //   return ListView(
+  //     children: List.generate(
+  //       state.list.length,
+  //       (index) => buildItem(context, logic, state.list[index]),
+  //     ),
+  //   );
+  // }
 
   openEditDialog(GsCrContentLogic logic, String url, String title) {
     var value = url.obs;
@@ -84,18 +171,18 @@ class GsCrContentPage extends StatelessWidget {
     );
   }
 
-  openDeleteDialog(GsCrContentLogic logic, ContentIndex model) {
+  openDeleteDialog(GsCrContentLogic logic, entity.Material model) {
     MsgBox.yesOrNo(
-      I18nKey.labelTips.tr,
-      I18nKey.labelDeleteContentIndex.trArgs([model.url]),
+      I18nKey.labelDelete.tr,
+      I18nKey.labelDeleteMaterial.trArgs([model.name]),
       yes: () {
-        logic.delete(model.url);
+        logic.delete(model.id!, model.serial);
         Get.back();
       },
     );
   }
 
-  openDownloadDialog(GsCrContentLogic logic, ContentIndex model) {
+  openDownloadDialog(GsCrContentLogic logic, Material model) {
     final state = logic.state;
     Get.defaultDialog(
       title: I18nKey.labelDownloadContent.tr,
@@ -125,15 +212,19 @@ class GsCrContentPage extends StatelessWidget {
         TextButton(
           child: Text(I18nKey.btnDownload.tr),
           onPressed: () {
-            logic.download(model.url);
+            // logic.download(model.mgn, model.url);
           },
         ),
       ],
     );
   }
 
-  openScheduleDialog(GsCrContentLogic logic, ContentIndex model) async {
-    var unitCount = await logic.getUnitCount(model.url);
+  openScheduleDialog(GsCrContentLogic logic, entity.Material model) async {
+    var unitCount = await logic.getUnitCount(model.docId);
+    if (unitCount == 0) {
+      logic.resetDoc(model.id!);
+      return;
+    }
     Get.defaultDialog(
       content: Column(
         mainAxisSize: MainAxisSize.min, // Ensure dialog fits content
@@ -151,7 +242,7 @@ class GsCrContentPage extends StatelessWidget {
         TextButton(
           child: Text(I18nKey.btnOk.tr),
           onPressed: () {
-            logic.addToSchedule(model.url, model.sort);
+            logic.addToSchedule(model);
             Get.back();
           },
         ),
@@ -159,58 +250,59 @@ class GsCrContentPage extends StatelessWidget {
     );
   }
 
-  Widget buildItem(BuildContext context, GsCrContentLogic logic, ContentIndex model) {
-    var textStyle = TextStyle(fontSize: 12.w);
-    return SwipeActionCell(
-      key: ObjectKey(model.url),
-      leadingActions: <SwipeAction>[
-        SwipeAction(
-          title: I18nKey.btnDelete.tr,
-          style: textStyle,
-          color: Theme.of(context).secondaryHeaderColor,
-          onTap: (CompletionHandler handler) async {
-            openDeleteDialog(logic, model);
-          },
-        ),
-        SwipeAction(
-          title: I18nKey.btnShare.tr,
-          style: textStyle,
-          color: Theme.of(context).secondaryHeaderColor,
-          onTap: (CompletionHandler handler) async {
-            logic.share(model);
-          },
-        ),
-      ],
-      trailingActions: <SwipeAction>[
-        SwipeAction(
-          title: I18nKey.btnSchedule.tr,
-          style: textStyle,
-          color: Theme.of(context).secondaryHeaderColor,
-          onTap: (CompletionHandler handler) async {
-            openScheduleDialog(logic, model);
-          },
-        ),
-        SwipeAction(
-          title: I18nKey.btnDownload.tr,
-          style: textStyle,
-          color: Theme.of(context).secondaryHeaderColor,
-          onTap: (CompletionHandler handler) async {
-            openDownloadDialog(logic, model);
-          },
-        ),
-        SwipeAction(
-          title: I18nKey.btnCopy.tr,
-          style: textStyle,
-          color: Theme.of(context).secondaryHeaderColor,
-          onTap: (CompletionHandler handler) async {
-            openEditDialog(logic, model.url, I18nKey.labelAddContentIndex.tr);
-          },
-        ),
-      ],
-      child: Padding(
-        padding: EdgeInsets.all(16.w),
-        child: Text(model.url),
-      ),
-    );
+  Widget buildItem(BuildContext context, GsCrContentLogic logic, Material model) {
+    return Container();
+    // var textStyle = TextStyle(fontSize: 12.w);
+    // return SwipeActionCell(
+    //   key: ObjectKey(model.url),
+    //   leadingActions: <SwipeAction>[
+    //     SwipeAction(
+    //       title: I18nKey.btnDelete.tr,
+    //       style: textStyle,
+    //       color: Theme.of(context).secondaryHeaderColor,
+    //       onTap: (CompletionHandler handler) async {
+    //         openDeleteDialog(logic, model);
+    //       },
+    //     ),
+    //     SwipeAction(
+    //       title: I18nKey.btnShare.tr,
+    //       style: textStyle,
+    //       color: Theme.of(context).secondaryHeaderColor,
+    //       onTap: (CompletionHandler handler) async {
+    //         logic.todoShare(model);
+    //       },
+    //     ),
+    //   ],
+    //   trailingActions: <SwipeAction>[
+    //     SwipeAction(
+    //       title: I18nKey.btnSchedule.tr,
+    //       style: textStyle,
+    //       color: Theme.of(context).secondaryHeaderColor,
+    //       onTap: (CompletionHandler handler) async {
+    //         openScheduleDialog(logic, model);
+    //       },
+    //     ),
+    //     SwipeAction(
+    //       title: I18nKey.btnDownload.tr,
+    //       style: textStyle,
+    //       color: Theme.of(context).secondaryHeaderColor,
+    //       onTap: (CompletionHandler handler) async {
+    //         openDownloadDialog(logic, model);
+    //       },
+    //     ),
+    //     SwipeAction(
+    //       title: I18nKey.btnCopy.tr,
+    //       style: textStyle,
+    //       color: Theme.of(context).secondaryHeaderColor,
+    //       onTap: (CompletionHandler handler) async {
+    //         openEditDialog(logic, model.url, I18nKey.labelAddContentIndex.tr);
+    //       },
+    //     ),
+    //   ],
+    //   child: Padding(
+    //     padding: EdgeInsets.all(16.w),
+    //     child: Text(model.url),
+    //   ),
+    // );
   }
 }

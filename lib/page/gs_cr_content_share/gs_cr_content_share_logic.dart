@@ -8,7 +8,7 @@ import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/url.dart';
 import 'package:repeat_flutter/common/zip.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/constant.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -135,6 +135,8 @@ class GsCrContentShareLogic extends GetxController {
   }
 
   void onSave() async {
+    // TODO
+    return;
     String? selectedDirectory;
     await showOverlay(() async {
       var permissionStatus = await Permission.storage.request();
@@ -144,7 +146,7 @@ class GsCrContentShareLogic extends GetxController {
       }
       var rootPath = await DocPath.getContentPath();
       var repeatDocPath = rootPath.joinPath(state.lanAddressSuffix);
-      var kv = await RepeatDoc.fromPath(repeatDocPath, Uri.parse(state.rawUrl));
+      var kv = await RepeatDoc.fromPath(repeatDocPath);
       if (kv == null) {
         Snackbar.show(I18nKey.labelDownloadFirstBeforeSaving.tr);
         return;
@@ -159,11 +161,11 @@ class GsCrContentShareLogic extends GetxController {
       var indexFile = File(indexFilePath);
       zipFiles.add(ZipArchive(await indexFile.writeAsString(json.encode(indexContent)), DocPath.zipIndexFile));
 
-      rootPath = rootPath.joinPath(kv.rootPath);
-      for (var v in kv.lesson) {
-        var targetPath = rootPath.joinPath(v.path);
-        zipFiles.add(ZipArchive(File(targetPath), v.path));
-      }
+      // rootPath = rootPath.joinPath(kv.rootPath);
+      // for (var v in kv.lesson) {
+      //   var targetPath = rootPath.joinPath(v.path);
+      //   zipFiles.add(ZipArchive(File(targetPath), v.path));
+      // }
       String zipFileName = "${name.trimFormat()}.zip";
       File zipFile = File(zipSavePath.joinPath(zipFileName));
       await Zip.compress(zipFiles, zipFile);

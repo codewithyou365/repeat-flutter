@@ -11,7 +11,7 @@ import 'gs_state.dart';
 class GsLogic extends GetxController {
   static const String id = "GsLogicId";
   final GsState state = GsState();
-  static RegExp reg = RegExp(r'^[0-9a-zA-Z]+$');
+  static RegExp reg = RegExp(r'^[0-9A-Z]+$');
 
   @override
   void onInit() async {
@@ -21,8 +21,8 @@ class GsLogic extends GetxController {
     update([GsLogic.id]);
   }
 
-  select(String crn) {
-    Classroom.curr = crn;
+  select(int classroomId) {
+    Classroom.curr = classroomId;
     Nav.gsCr.push();
   }
 
@@ -48,12 +48,12 @@ class GsLogic extends GetxController {
     Get.back();
   }
 
-  delete(String name, bool all) async {
-    await Db().db.classroomDao.deleteContentIndex(Classroom(name, "", 0));
+  delete(int classroomId, bool all) async {
+    await Db().db.classroomDao.hide(classroomId);
     if (all) {
-      await Db().db.scheduleDao.deleteByCrn(name);
+      await Db().db.scheduleDao.deleteByClassroomId(classroomId);
     }
-    state.list.removeWhere((element) => element.name == name);
+    state.list.removeWhere((element) => element.id == classroomId);
     update([GsLogic.id]);
   }
 }

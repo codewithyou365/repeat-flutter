@@ -1,30 +1,61 @@
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
+import 'package:repeat_flutter/common/num.dart';
 
 @dao
 abstract class ClassroomDao {
   @Query('SELECT * FROM Lock where id=1 for update')
   Future<void> forUpdate();
 
-  @Query('SELECT * FROM Classroom order by sort')
+  @Query('SELECT * FROM Classroom WHERE hide=false ORDER BY sort')
   Future<List<Classroom>> getAllClassroom();
 
-  @Query('SELECT Id99999.id FROM Id99999'
-      ' LEFT JOIN Classroom ON Classroom.sort = Id99999.id'
-      ' WHERE Classroom.sort IS NULL'
-      ' limit 1')
-  Future<int?> getIdleSortSequenceNumber();
+  @Query('SELECT ifnull(id,0) FROM Classroom WHERE id=:id')
+  Future<int?> existById(int id);
 
-  @Insert(onConflict: OnConflictStrategy.ignore)
+  @Query('SELECT ifnull(max(id),0) FROM Classroom')
+  Future<int?> getMaxId();
+
+  @Query('SELECT ifnull(sort,0) FROM Classroom WHERE sort=:sort')
+  Future<int?> existBySort(int sort);
+
+  @Query('SELECT ifnull(max(sort),0) FROM Classroom')
+  Future<int?> getMaxSort();
+
+  @Query('SELECT * FROM Classroom WHERE name=:name')
+  Future<Classroom?> getClassroom(String name);
+
+  @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertClassroom(Classroom entity);
 
-  @delete
-  Future<void> deleteContentIndex(Classroom data);
+  @Query('UPDATE Classroom set hide=true'
+      ' WHERE Classroom.id=:id')
+  Future<void> hide(int id);
+
+  @Query('UPDATE Classroom set hide=false'
+      ' WHERE Classroom.id=:id')
+  Future<void> showClassroom(int id);
 
   @transaction
   Future<Classroom> add(String name) async {
-    var classroom = Classroom(name, "", DateTime.now().millisecondsSinceEpoch);
-    await insertClassroom(classroom);
-    return classroom;
+    await forUpdate();
+    var ret = await getClassroom(name);
+    if (ret != null) {
+      if (ret.hide == false) {
+        Snackbar.show(I18nKey.labelDataDuplication.tr);
+        return ret;
+      }
+      await showClassroom(ret.id);
+    } else {
+      var maxId = await getMaxId();
+      var id = await Num.getNextId(maxId, existById1: existById);
+      var maxSort = await getMaxSort();
+      var sort = await Num.getNextId(maxSort, existById1: existBySort);
+      ret = Classroom(id, name, sort, false);
+      await insertClassroom(ret);
+    }
+    return ret;
   }
 }

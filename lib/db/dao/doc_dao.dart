@@ -14,8 +14,11 @@ abstract class DocDao {
   @Query('SELECT path FROM Doc WHERE id = :id')
   Future<String?> getPath(int id);
 
-  @Query('SELECT * FROM Doc WHERE url = :url')
-  Future<Doc?> one(String url);
+  @Query('SELECT * FROM Doc WHERE path=:path')
+  Future<Doc?> getByPath(String path);
+
+  @Query('SELECT * FROM Doc WHERE id=:id')
+  Future<Doc?> getById(int id);
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertDoc(Doc data);
@@ -32,13 +35,14 @@ abstract class DocDao {
   @transaction
   Future<Doc> insert(String url) async {
     await forUpdate();
-    var ret = await one(url);
-    if (ret != null) {
-      return ret;
-    }
-    var cache = Doc(url, "", "");
-    insertDoc(cache);
-    ret = await one(url);
-    return ret!;
+    return Doc(url, "", "");
+    // todo var ret = await one(url);
+    // if (ret != null) {
+    //   return ret;
+    // }
+    // var cache = Doc(url, "", "");
+    // insertDoc(cache);
+    // ret = await one(url);
+    //return ret!;
   }
 }

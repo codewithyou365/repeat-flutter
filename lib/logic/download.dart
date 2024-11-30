@@ -6,14 +6,10 @@ import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
-import 'package:repeat_flutter/logic/constant.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
 
 typedef DownloadProgressCallback = void Function(int startTime, int count, int total, bool finish);
 typedef Finish = Future<DocLocation?> Function(DocLocation fp, bool tempFile);
-
-Future<Doc?> downloadDocInfo(String url) async {
-  return await Db().db.docDao.one(url);
-}
 
 Future<bool> downloadDoc(String urlPath, Finish finish, {String hash = "", DownloadProgressCallback? progressCallback, withoutDb = false}) async {
   var id = 0;

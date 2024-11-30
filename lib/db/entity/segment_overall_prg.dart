@@ -12,12 +12,16 @@ import 'package:repeat_flutter/common/date.dart';
 class SegmentOverallPrg {
   int segmentKeyId;
 
+  final int classroomId;
+  final int materialSerial;
   final Date next;
 
   final int progress;
 
   SegmentOverallPrg(
     this.segmentKeyId,
+    this.classroomId,
+    this.materialSerial,
     this.next,
     this.progress,
   );

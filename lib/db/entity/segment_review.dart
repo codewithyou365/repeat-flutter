@@ -9,12 +9,16 @@ import 'package:repeat_flutter/common/date.dart';
 class SegmentReview {
   final Date createDate;
   final int segmentKeyId;
+  final int classroomId;
+  final int materialSerial;
 
   final int count;
 
   SegmentReview(
     this.createDate,
     this.segmentKeyId,
+    this.classroomId,
+    this.materialSerial,
     this.count,
   );
 }

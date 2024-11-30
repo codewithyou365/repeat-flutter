@@ -1,7 +1,9 @@
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
@@ -25,16 +27,21 @@ class RepeatDocHelp {
     scheduleKeyToLearnSegment = {};
   }
 
-  static double getVideoMaskRatio(String path) {
-    var ret = mediaDocPathToVideoMaskRatio[path];
+  static double getVideoMaskRatio(int materialSerial, int lessonIndex, String mediaExtension) {
+    if (mediaExtension == "") {
+      return 20;
+    }
+    var mediaDocPath = DocPath.getRelativeMediaPath(materialSerial, lessonIndex, mediaExtension);
+    var ret = mediaDocPathToVideoMaskRatio[mediaDocPath];
     if (ret != null && ret > 0) {
       return ret;
     }
     return 20;
   }
 
-  static void setVideoMaskRatio(String path, double ratio) {
-    mediaDocPathToVideoMaskRatio[path] = ratio;
+  static void setVideoMaskRatio(int materialSerial, int lessonIndex, String mediaExtension, double ratio) {
+    var mediaDocPath = DocPath.getRelativeMediaPath(materialSerial, lessonIndex, mediaExtension);
+    mediaDocPathToVideoMaskRatio[mediaDocPath] = ratio;
   }
 
   static Future<SegmentContent?> from(int segmentKeyId, {int offset = 0, RxString? err}) async {
@@ -57,6 +64,7 @@ class RepeatDocHelp {
       return null;
     }
     var ret = SegmentContent.from(retInDb);
+    ret.k = getKey(ret.materialName, ret.lessonIndex, ret.segmentIndex);
     var qa = await getAndCacheQa(ret, err: err);
     if (qa == null) {
       return null;
@@ -80,20 +88,24 @@ class RepeatDocHelp {
     }
 
     // full mediaSegments
-    if (ret.mediaDocPath != "") {
+    if (lesson.mediaExtension != "") {
+      var mediaDocPath = DocPath.getRelativeMediaPath(ret.materialSerial, ret.lessonIndex, lesson.mediaExtension);
+      ret.mediaDocPath = await DocPath.getContentPath();
+      ret.mediaDocPath = ret.mediaDocPath.joinPath(mediaDocPath);
+      ret.mediaExtension = lesson.mediaExtension;
       // for mask ratio
-      var ratio = mediaDocPathToVideoMaskRatio[ret.mediaDocPath];
+      var ratio = mediaDocPathToVideoMaskRatio[mediaDocPath];
       if (ratio == null && lesson.videoMaskRatio != "") {
         double va = double.parse(lesson.videoMaskRatio);
-        mediaDocPathToVideoMaskRatio[ret.mediaDocPath] = va;
+        mediaDocPathToVideoMaskRatio[mediaDocPath] = va;
       } else {
-        mediaDocPathToVideoMaskRatio[ret.mediaDocPath] = 20;
+        mediaDocPathToVideoMaskRatio[mediaDocPath] = 20;
       }
 
-      var titleMediaSegment = mediaDocPathToTitleMediaSegment[ret.mediaDocPath];
+      var titleMediaSegment = mediaDocPathToTitleMediaSegment[mediaDocPath];
       if (titleMediaSegment == null) {
         titleMediaSegment = MediaSegment.from(lesson.titleStart, lesson.titleEnd);
-        mediaDocPathToTitleMediaSegment[ret.mediaDocPath] = titleMediaSegment;
+        mediaDocPathToTitleMediaSegment[mediaDocPath] = titleMediaSegment;
       }
       if (titleMediaSegment.start == 0 && titleMediaSegment.start == titleMediaSegment.end) {
         ret.titleMediaSegment = null;
@@ -101,7 +113,7 @@ class RepeatDocHelp {
         ret.titleMediaSegment = titleMediaSegment;
       }
 
-      var qMediaSegments = mediaDocPathToQuestionMediaSegments[ret.mediaDocPath];
+      var qMediaSegments = mediaDocPathToQuestionMediaSegments[mediaDocPath];
       if (qMediaSegments == null) {
         qMediaSegments = [];
         var ok = true;
@@ -117,11 +129,11 @@ class RepeatDocHelp {
         if (!ok) {
           qMediaSegments = [];
         }
-        mediaDocPathToQuestionMediaSegments[ret.mediaDocPath] = qMediaSegments;
+        mediaDocPathToQuestionMediaSegments[mediaDocPath] = qMediaSegments;
       }
       ret.qMediaSegments = qMediaSegments;
 
-      var aMediaSegments = mediaDocPathToAnswerMediaSegments[ret.mediaDocPath];
+      var aMediaSegments = mediaDocPathToAnswerMediaSegments[mediaDocPath];
       if (aMediaSegments == null) {
         aMediaSegments = [];
         var ok = true;
@@ -137,7 +149,7 @@ class RepeatDocHelp {
         if (!ok) {
           aMediaSegments = [];
         }
-        mediaDocPathToAnswerMediaSegments[ret.mediaDocPath] = aMediaSegments;
+        mediaDocPathToAnswerMediaSegments[mediaDocPath] = aMediaSegments;
       }
       ret.aMediaSegments = aMediaSegments;
     }
@@ -147,17 +159,22 @@ class RepeatDocHelp {
   }
 
   static Future<RepeatDoc?> getAndCacheQa(SegmentContent ret, {RxString? err}) async {
-    var qa = indexDocPathToQa[ret.indexDocPath];
+    var path = DocPath.getRelativeIndexPath(ret.materialSerial);
+    var qa = indexDocPathToQa[path];
     if (qa == null) {
-      qa = await RepeatDoc.fromPath(ret.indexDocPath, Uri.parse(ret.indexDocUrl));
+      qa = await RepeatDoc.fromPath(path);
       if (qa == null) {
         if (err != null) {
-          err.value = I18nKey.labelDocNotBeDownloaded.trArgs([ret.indexDocUrl]);
+          err.value = I18nKey.labelDocNotBeDownloaded.trArgs([ret.materialName]);
         }
         return null;
       }
-      indexDocPathToQa[ret.indexDocPath] = qa;
+      indexDocPathToQa[path] = qa;
     }
     return qa;
+  }
+
+  static String getKey(String materialName, int lessonIndex, int segmentIndex) {
+    return '$materialName|${lessonIndex + 1}|${segmentIndex + 1}';
   }
 }

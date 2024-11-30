@@ -1,15 +1,13 @@
 class GsCrContentTemplateState {
   final List<String> items = <String>[];
+  int materialId = 0;
+  int materialSerial = 0;
   static const String defaultUrl = 'http://127.0.0.1:40321/';
   static const String prefixTemplate = '{\n'
-      '  "rootPath": "{path.0}",\n'
-      '  "key": "{path.0}",\n'
       '  "lesson": [\n'
       '    {\n'
-      '      "url": "{path.1}.{file.extension}",\n'
-      '      "path": "{path.1}.{file.extension}",\n'
+      '      "mediaExtension": "{file.extension}",\n'
       '      "hash": "{file.hash}",\n'
-      '      "key": "{path.1}",\n'
       '      "defaultQuestion": "",\n'
       '      "defaultTip": "",\n'
       '      "title": " ",\n'

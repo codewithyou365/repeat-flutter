@@ -1,4 +1,5 @@
 import 'package:repeat_flutter/common/time.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
@@ -27,7 +28,9 @@ class RepeatDocEditHelp {
     double ratio, {
     SegmentEditHelpOutArg? out,
   }) async {
-    Map<String, dynamic>? map = await RepeatDoc.toJsonMap(ret.indexDocPath);
+    var indexPath = DocPath.getRelativeIndexPath(ret.materialSerial);
+    var mediaPath = DocPath.getRelativeMediaPath(ret.materialSerial, ret.lessonIndex, ret.mediaExtension);
+    Map<String, dynamic>? map = await RepeatDoc.toJsonMap(indexPath);
     if (map == null) {
       return false;
     }
@@ -37,8 +40,8 @@ class RepeatDocEditHelp {
     Map<String, dynamic> lesson = Map<String, dynamic>.from(lessons[ret.lessonIndex]);
     lessons[ret.lessonIndex] = lesson;
     lesson['videoMaskRatio'] = "$ratio";
-    RepeatDoc.writeFile(ret.indexDocPath, map);
-    RepeatDocHelp.setVideoMaskRatio(ret.mediaDocPath, ratio);
+    RepeatDoc.writeFile(indexPath, map);
+    RepeatDocHelp.setVideoMaskRatio(ret.materialSerial, ret.lessonIndex, ret.mediaExtension, ratio);
     return true;
   }
 
@@ -50,7 +53,8 @@ class RepeatDocEditHelp {
     Duration duration, {
     SegmentEditHelpOutArg? out,
   }) async {
-    Map<String, dynamic>? map = await RepeatDoc.toJsonMap(ret.indexDocPath);
+    var indexPath = DocPath.getRelativeIndexPath(ret.materialSerial);
+    Map<String, dynamic>? map = await RepeatDoc.toJsonMap(indexPath);
     if (map == null) {
       return false;
     }
@@ -194,7 +198,7 @@ class RepeatDocEditHelp {
       default:
         return false;
     }
-    RepeatDoc.writeFile(ret.indexDocPath, map);
+    RepeatDoc.writeFile(indexPath, map);
     RepeatDocHelp.clear();
     return true;
   }

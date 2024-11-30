@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/constant.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_state.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -65,7 +65,7 @@ class GsCrPage extends StatelessWidget {
     return GetBuilder<GsCrLogic>(
       id: GsCrLogic.id,
       builder: (_) {
-        return GroupedListView<SegmentTodayPrgWithKeyInView, String>(
+        return GroupedListView<SegmentTodayPrgInView, String>(
           elements: state.segments,
           groupBy: (element) => element.type.name,
           groupHeaderBuilder: (element) => PopupMenuButton<String>(
@@ -175,7 +175,7 @@ class GsCrPage extends StatelessWidget {
               ),
             ),
           ),
-          itemBuilder: (context, SegmentTodayPrgWithKeyInView element) => Card(
+          itemBuilder: (context, SegmentTodayPrgInView element) => Card(
             elevation: 8.0,
             margin: EdgeInsets.fromLTRB(6, element.uniqIndex == 0 ? 90 : 10.0, 6.0, 10.0),
             child: PopupMenuButton<String>(

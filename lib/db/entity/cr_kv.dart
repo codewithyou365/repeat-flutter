@@ -8,14 +8,14 @@ enum CrK {
   todayLearnScheduleConfigInUse,
 }
 
-@Entity(primaryKeys: ['crn', 'k'])
+@Entity(primaryKeys: ['classroomId', 'k'])
 class CrKv {
-  final String crn;
+  final int classroomId;
   final CrK k;
   final String value;
 
   CrKv(
-    this.crn,
+    this.classroomId,
     this.k,
     this.value,
   );

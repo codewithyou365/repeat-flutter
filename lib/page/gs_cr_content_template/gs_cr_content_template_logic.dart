@@ -6,12 +6,12 @@ import 'package:repeat_flutter/common/folder.dart';
 import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/constant.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr_content/gs_cr_content_logic.dart';
-import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -25,14 +25,12 @@ class GsCrContentTemplateLogic extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    List<int> ids = Get.arguments as List<int>;
+    state.materialId = ids[0];
+    state.materialSerial = ids[1];
     state.items.add(GsCrContentTemplateState.qTemplate);
     state.items.add(GsCrContentTemplateState.aTemplate);
     state.items.add(GsCrContentTemplateState.qaTemplate);
-  }
-
-  @override
-  void onClose() {
-    super.onClose();
   }
 
   void onSave(String segmentJson) async {
@@ -40,73 +38,51 @@ class GsCrContentTemplateLogic extends GetxController {
       type: FileType.custom,
       allowedExtensions: ['mp4', 'mp3'],
     );
-    var path = "";
+    var mediaRawPath = "";
     if (result != null && result.files.single.path != null) {
-      path = result.files.single.path!;
+      mediaRawPath = result.files.single.path!;
     } else {
       Snackbar.show(I18nKey.labelLocalImportCancel.tr);
       return;
     }
+    showOverlay(() async {
+      var rootPath = await DocPath.getContentPath();
+      var relativePath = DocPath.getRelativePath(state.materialSerial);
+      var workPath = rootPath.joinPath(relativePath);
+      await Folder.ensureExists(workPath);
 
-    var savePathObs = "".obs;
-    var pathParts = path.split('/');
-    pathParts.last;
-    if (pathParts.length - 2 >= 0) {
-      var savePath = pathParts[pathParts.length - 2].joinPath(pathParts.last.split(".").first);
-      savePathObs = savePath.obs;
-    }
-    MsgBox.strInputWithYesOrNo(
-      savePathObs,
-      I18nKey.labelInputPathOfTwoLevel.tr,
-      "path/filename",
-      yes: () {
-        Nav.back();
-        var savePath = savePathObs.value;
-        var parts = savePath.split("/");
-        if (parts.length < 2 || parts[0].isEmpty || parts[1].isEmpty) {
-          Snackbar.show(I18nKey.labelInputPathError.tr);
-          return;
-        }
-        showOverlay(() async {
-          var mediaFileExtension = path.split(".").last;
-          var mediaFileUrl = GsCrContentTemplateState.defaultUrl;
-          mediaFileUrl = "$mediaFileUrl$savePath.$mediaFileExtension";
+      var mediaFileExtension = mediaRawPath.split(".").last;
+      var mediaFileUrl = GsCrContentTemplateState.defaultUrl.joinPath(relativePath).joinPath('0.$mediaFileExtension');
+      var mediaFilePathInDb = relativePath.joinPath('0.$mediaFileExtension');
+      var mediaFilePath = workPath.joinPath('0.$mediaFileExtension');
+      var mediaFileHash = await Hash.toSha1(mediaRawPath);
+      var ok = await FileUtil.copy(mediaRawPath, mediaFilePath);
+      if (!ok) {
+        return;
+      }
+      await Db().db.docDao.insertDoc(Doc(mediaFileUrl, mediaFilePathInDb, mediaFileHash));
 
-          var mediaFileHash = await Hash.toSha1(path);
+      var indexJsonContent = GsCrContentTemplateState.prefixTemplate;
+      indexJsonContent = indexJsonContent.replaceAll('{file.extension}', mediaFileExtension);
+      indexJsonContent = indexJsonContent.replaceAll('{file.hash}', mediaFileHash);
+      indexJsonContent += '$segmentJson\n';
+      indexJsonContent += GsCrContentTemplateState.suffixTemplate;
+      var indexJsonUrl = GsCrContentTemplateState.defaultUrl.joinPath(relativePath).joinPath('index.json');
+      var indexJsonPathInDb = relativePath.joinPath('index.json');
+      var indexJsonPath = workPath.joinPath('index.json');
+      File indexJsonFile = File(indexJsonPath);
+      await indexJsonFile.writeAsString(indexJsonContent, flush: true);
+      var indexJsonHash = await Hash.toSha1(indexJsonPath);
+      await Db().db.docDao.insertDoc(Doc(indexJsonUrl, indexJsonPathInDb, indexJsonHash));
+      var indexJsonDocId = await Db().db.docDao.getId(indexJsonUrl);
+      if (indexJsonDocId == null) {
+        return;
+      }
 
-          var rootAndFile = parts.length > 1 ? [parts.first, parts.sublist(1).join("/")] : [savePath, ""];
-          var root = rootAndFile[0];
-          var fileName = rootAndFile[1];
-          var indexJson = GsCrContentTemplateState.prefixTemplate.replaceAll('{path.0}', root);
-          indexJson = indexJson.replaceAll('{path.1}', fileName);
-          indexJson = indexJson.replaceAll('{file.hash}', mediaFileHash);
-          indexJson = indexJson.replaceAll('{file.extension}', mediaFileExtension);
-          indexJson += '$segmentJson\n';
-          indexJson += GsCrContentTemplateState.suffixTemplate;
-
-          var rootPath = await DocPath.getContentPath();
-          rootPath = rootPath.joinPath(root);
-          await Folder.ensureExists(rootPath);
-          var indexJsonPath = "${rootPath.joinPath(fileName)}.json";
-          var indexJsonUrl = GsCrContentTemplateState.defaultUrl;
-          indexJsonUrl = "$indexJsonUrl${root.joinPath(fileName)}.json";
-          var contentIndex = await Db().db.contentIndexDao.add(indexJsonUrl);
-          if (contentIndex.url.isEmpty) {
-            return;
-          }
-          File file = File(indexJsonPath);
-          await file.writeAsString(indexJson, flush: true);
-          var indexJsonHash = await Hash.toSha1(indexJsonPath);
-          var mediaFilePath = "${rootPath.joinPath(fileName)}.$mediaFileExtension";
-          await FileUtil.copy(path, mediaFilePath);
-
-          await Db().db.docDao.insertDoc(Doc(indexJsonUrl, indexJsonPath, indexJsonHash));
-          await Db().db.docDao.insertDoc(Doc(mediaFileUrl, mediaFilePath, mediaFileHash));
-          final logic = Get.find<GsCrContentLogic>();
-          logic.init();
-          Nav.gsCrContent.until();
-        }, I18nKey.labelSaving.tr);
-      },
-    );
+      await Db().db.materialDao.updateDocId(state.materialId, indexJsonDocId);
+      final logic = Get.find<GsCrContentLogic>();
+      logic.init();
+      Nav.gsCrContent.until();
+    }, I18nKey.labelSaving.tr);
   }
 }
