@@ -78,7 +78,7 @@ class GsCrRepeatViewBasic {
       setMaskRatio = logic.setMaskRatio;
       maskRatio = logic.getMaskRatio();
     }
-    if (state.segment.mediaDocPath != "") {
+    if (state.segment.mediaExtension != "") {
       return PlayerBar(
         GsCrRepeatState.mediaId,
         0,

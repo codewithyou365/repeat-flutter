@@ -1,4 +1,6 @@
 import 'package:repeat_flutter/common/folder.dart';
+import 'package:repeat_flutter/common/path.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 
 class DocPath {
@@ -6,6 +8,18 @@ class DocPath {
   static const String zipSave = "zs";
   static const String zipTarget = "zt";
   static const String zipIndexFile = "__index.json";
+
+  static String getRelativeMediaPath(int materialSerial, int lessonIndex, String mediaExtension) {
+    return getRelativePath(materialSerial).joinPath("$lessonIndex.$mediaExtension");
+  }
+
+  static String getRelativeIndexPath(int materialSerial) {
+    return getRelativePath(materialSerial).joinPath("index.json");
+  }
+
+  static String getRelativePath(int materialSerial) {
+    return '${Classroom.curr}'.joinPath('$materialSerial');
+  }
 
   static Future<String> getContentPath() async {
     return await _getPath(content);

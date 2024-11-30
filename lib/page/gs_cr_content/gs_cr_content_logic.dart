@@ -3,25 +3,20 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/common/folder.dart';
-import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/url.dart';
 import 'package:repeat_flutter/common/zip.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/content_index.dart';
-import 'package:repeat_flutter/db/entity/doc.dart';
+import 'package:repeat_flutter/db/entity/material.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/constant.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
-import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
-import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'gs_cr_content_state.dart';
@@ -29,6 +24,7 @@ import 'gs_cr_content_state.dart';
 class GsCrContentLogic extends GetxController {
   static const String id = "GsCrContentLogic";
   final GsCrContentState state = GsCrContentState();
+  static RegExp reg = RegExp(r'^[0-9A-Z]+$');
 
   @override
   void onInit() {
@@ -37,24 +33,26 @@ class GsCrContentLogic extends GetxController {
   }
 
   init() async {
-    state.indexes.clear();
-    state.indexes.addAll(await Db().db.contentIndexDao.findContentIndex(Classroom.curr));
+    state.list.clear();
+    state.list.addAll(await Db().db.materialDao.getAllMaterial(Classroom.curr));
     update([GsCrContentLogic.id]);
   }
 
-  delete(String url) async {
-    state.indexes.removeWhere((element) => identical(element.url, url));
-    update([GsCrContentLogic.id]);
-    var doc = await downloadDocInfo(url);
-    if (doc == null) {
-      await Db().db.contentIndexDao.deleteContentIndex(ContentIndex(Classroom.curr, url, 0));
-      return;
-    }
-    await Db().db.scheduleDao.deleteContent(url, doc.id!);
+  resetDoc(int materialId) async {
+    await Db().db.materialDao.updateDocId(materialId, 0);
+    await init();
+  }
+
+  delete(int materialId, int materialSerial) async {
+    state.list.removeWhere((element) => identical(element.id, materialId));
+    await Db().db.scheduleDao.hideMaterialAndDeleteSegment(materialId, materialSerial);
     Get.find<GsCrLogic>().init();
+    update([GsCrContentLogic.id]);
   }
 
-  addByZip() async {
+  todoAddByZip() async {
+    //TODO
+    return;
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['zip'],
@@ -75,7 +73,7 @@ class GsCrContentLogic extends GetxController {
     }
 
     var repeatDocPath = zipTargetPath.joinPath(zipIndex.file);
-    var kv = await RepeatDoc.fromPath(repeatDocPath, Uri.parse(zipIndex.url));
+    var kv = await RepeatDoc.fromPath(repeatDocPath);
     if (kv == null) {
       Snackbar.show(I18nKey.labelDataAnomalyWithArg.trArgs(['88']));
       return;
@@ -87,70 +85,77 @@ class GsCrContentLogic extends GetxController {
     var rootPath = await DocPath.getContentPath();
 
     // for repeat document
-    rootPath = rootPath.joinPath(kv.rootPath);
-    await Folder.ensureExists(rootPath);
-    var targetRepeatDocPath = rootPath.joinPath(zipIndex.file);
-    await File(repeatDocPath).rename(targetRepeatDocPath);
-    String hash = await Hash.toSha1(targetRepeatDocPath);
-    await Db().db.docDao.insertDoc(Doc(zipIndex.url, targetRepeatDocPath, hash));
-
-    // for media document
-    for (var v in kv.lesson) {
-      var targetPath = rootPath.joinPath(v.path);
-      await File(zipTargetPath.joinPath(v.path)).rename(targetPath);
-      String hash = await Hash.toSha1(targetPath);
-      await Db().db.docDao.insertDoc(Doc(kv.rootUrl.joinPath(v.url), targetPath, hash));
-    }
+    // rootPath = rootPath.joinPath(kv.rootPath);
+    // await Folder.ensureExists(rootPath);
+    // var targetRepeatDocPath = rootPath.joinPath(zipIndex.file);
+    // await File(repeatDocPath).rename(targetRepeatDocPath);
+    // String hash = await Hash.toSha1(targetRepeatDocPath);
+    // await Db().db.docDao.insertDoc(Doc(zipIndex.url, targetRepeatDocPath, hash));
+    //
+    // // for media document
+    // for (var v in kv.lesson) {
+    //   var targetPath = rootPath.joinPath(v.path);
+    //   await File(zipTargetPath.joinPath(v.path)).rename(targetPath);
+    //   String hash = await Hash.toSha1(targetPath);
+    //   await Db().db.docDao.insertDoc(Doc(kv.rootUrl.joinPath(v.url), targetPath, hash));
+    // }
   }
 
-  Future<bool> add(String url) async {
-    var contentIndex = await Db().db.contentIndexDao.add(url);
-    if (contentIndex.url.isEmpty) {
-      return false;
+  add(String name) async {
+    if (name.isEmpty) {
+      Get.back();
+      Snackbar.show(I18nKey.labelMaterialNameEmpty.tr);
+      return;
     }
-    state.indexes.add(contentIndex);
-    update([GsCrContentLogic.id]);
-    return true;
+    if (name.length > 3 || !reg.hasMatch(name)) {
+      Get.back();
+      Snackbar.show(I18nKey.labelMaterialNameError.tr);
+      return;
+    }
+    if (state.list.any((e) => e.name == name)) {
+      Get.back();
+      Snackbar.show(I18nKey.labelMaterialNameDuplicated.tr);
+      return;
+    }
+    await Db().db.materialDao.add(name);
+    await init();
+    Get.back();
   }
 
-  share(ContentIndex model) async {
-    showTransparentOverlay(() async {
-      var doc = await downloadDocInfo(model.url);
-      if (doc == null) {
-        Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
-        return;
-      }
-      Map<String, dynamic>? map = await RepeatDoc.toJsonMap(doc.path);
-      if (map == null) {
-        Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
-        return;
-      }
-
-      var repeatDoc = RepeatDoc.fromJsonAndUri(map, Uri.parse(model.url));
-      if (repeatDoc == null) {
-        Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
-        return;
-      }
-      List<dynamic> lessons = List<dynamic>.from(map['lesson']);
-      map['lesson'] = lessons;
-
-      var args = [model.url, repeatDoc.rootPath.joinPath(Url.toDocName(model.url))];
-      for (int i = 0; i < lessons.length; i++) {
-        Map<String, dynamic> lesson = Map<String, dynamic>.from(lessons[i]);
-        lessons[i] = lesson;
-        lesson['url'] = lesson['path'];
-      }
-      args.add(json.encode(map));
-      Nav.gsCrContentShare.push(arguments: args);
-    });
+  todoShare(Material model) async {
+    // showTransparentOverlay(() async {
+    //   var doc = await downloadDocInfo(model.url);
+    //   if (doc == null) {
+    //     Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
+    //     return;
+    //   }
+    //   Map<String, dynamic>? map = await RepeatDoc.toJsonMap(doc.path);
+    //   if (map == null) {
+    //     Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
+    //     return;
+    //   }
+    //
+    //   var repeatDoc = RepeatDoc.fromJsonAndUri(map, Uri.parse(model.url));
+    //   if (repeatDoc == null) {
+    //     Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
+    //     return;
+    //   }
+    //   List<dynamic> lessons = List<dynamic>.from(map['lesson']);
+    //   map['lesson'] = lessons;
+    //
+    //   var args = [model.url, Classroom.curr.joinPath(Url.toDocName(model.url))];
+    //   for (int i = 0; i < lessons.length; i++) {
+    //     Map<String, dynamic> lesson = Map<String, dynamic>.from(lessons[i]);
+    //     lessons[i] = lesson;
+    //     lesson['url'] = lesson['path'];
+    //   }
+    //   args.add(json.encode(map));
+    //   Nav.gsCrContentShare.push(arguments: args);
+    // });
   }
 
-  Future<int> getUnitCount(String url) async {
-    var doc = await downloadDocInfo(url);
-    if (doc == null) {
-      return 0;
-    }
-    var kv = await RepeatDoc.fromPath(doc.path, Uri.parse(url));
+  Future<int> getUnitCount(int materialSerial) async {
+    var kv = await RepeatDoc.fromPath(DocPath.getRelativeIndexPath(materialSerial));
     if (kv == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return 0;
@@ -162,8 +167,8 @@ class GsCrContentLogic extends GetxController {
     return total;
   }
 
-  Future<void> addToSchedule(String url, int contentIndexSort) async {
-    var ret = await ScheduleHelp.addToSchedule(url, contentIndexSort);
+  Future<void> addToSchedule(Material material) async {
+    var ret = await ScheduleHelp.addMaterialToSchedule(material);
     if (ret == false) {
       return;
     }
@@ -190,7 +195,7 @@ class GsCrContentLogic extends GetxController {
     }
   }
 
-  download(String url) async {
+  download(String mgn, String url) async {
     state.indexCount.value = 0;
     state.indexTotal.value = 1;
     RepeatDoc? kv;
@@ -198,12 +203,12 @@ class GsCrContentLogic extends GetxController {
     var success = await downloadDoc(
       url,
       (fl, tempFile) async {
-        kv = await RepeatDoc.fromPath(fl.path, Uri.parse(url));
+        kv = await RepeatDoc.fromPath(fl.path);
         if (kv == null) {
           return null;
         }
         if (tempFile) {
-          rootPath = fl.folderPath.joinPath(kv!.rootPath);
+          rootPath = fl.folderPath.joinPath('${Classroom.curr}');
         } else {
           rootPath = DocLocation.create(fl.path).folderPath;
         }
@@ -224,7 +229,7 @@ class GsCrContentLogic extends GetxController {
         }
         await downloadDoc(
           innerUrl,
-          (fl, tempFile) async => DocLocation.create(rootPath.joinPath(v.path)),
+          (fl, tempFile) async => DocLocation.create(rootPath.joinPath(mgn)),
           hash: v.hash,
           progressCallback: downloadProgress,
         );

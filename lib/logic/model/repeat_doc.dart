@@ -2,13 +2,14 @@ import 'dart:io';
 
 import 'dart:convert' as convert;
 
+import 'package:repeat_flutter/common/path.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
+
 class RepeatDoc {
-  String rootPath;
-  String key;
   String rootUrl;
   List<Lesson> lesson;
 
-  RepeatDoc(this.rootPath, this.key, this.rootUrl, this.lesson);
+  RepeatDoc(this.rootUrl, this.lesson);
 
   static Future<bool> writeFile(String path, Map<String, dynamic> m) async {
     try {
@@ -32,29 +33,22 @@ class RepeatDoc {
     return jsonData;
   }
 
-  static Future<RepeatDoc?> fromPath(String path, Uri defaultRootUri) async {
-    Map<String, dynamic>? jsonData = await toJsonMap(path);
-    return fromJsonAndUri(jsonData, defaultRootUri);
+  static Future<RepeatDoc?> fromPath(String path) async {
+    var rootPath = await DocPath.getContentPath();
+    Map<String, dynamic>? jsonData = await toJsonMap(rootPath.joinPath(path));
+    return fromJsonAndUri(jsonData);
   }
 
-  static RepeatDoc? fromJsonAndUri(Map<String, dynamic>? jsonData, Uri defaultRootUri) {
+  static RepeatDoc? fromJsonAndUri(Map<String, dynamic>? jsonData) {
     if (jsonData == null) {
       return null;
     }
     var kv = RepeatDoc.fromJson(jsonData);
-    if (kv.rootUrl == "") {
-      kv.rootUrl = "${defaultRootUri.scheme}://${defaultRootUri.host}:${defaultRootUri.port}/${defaultRootUri.pathSegments.sublist(0, defaultRootUri.pathSegments.length - 1).join('/')}/";
-    }
-    if (kv.rootPath == "") {
-      kv.rootPath = defaultRootUri.host;
-    }
     return kv;
   }
 
   factory RepeatDoc.fromJson(Map<String, dynamic> json) {
     return RepeatDoc(
-      json['rootPath'] ?? "",
-      json['key'] ?? json['rootPath'] ?? "",
       json['rootUrl'] ?? "",
       List<Lesson>.from(json['lesson'].map((dynamic d) => Lesson.fromJson(d))),
     );
@@ -62,8 +56,6 @@ class RepeatDoc {
 
   Map<String, dynamic> toJson() {
     return {
-      'rootPath': rootPath,
-      'key': key,
       'rootUrl': rootUrl,
       'lesson': lesson,
     };
@@ -72,9 +64,8 @@ class RepeatDoc {
 
 class Lesson {
   String url;
-  String path;
+  String mediaExtension;
   String hash;
-  String key;
   String videoMaskRatio;
   String defaultQuestion;
   String defaultTip;
@@ -85,9 +76,8 @@ class Lesson {
 
   Lesson(
     this.url,
-    this.path,
+    this.mediaExtension,
     this.hash,
-    this.key,
     this.videoMaskRatio,
     this.defaultQuestion,
     this.defaultTip,
@@ -98,18 +88,13 @@ class Lesson {
   );
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
-    var url = json['url'] ?? "";
-    var path = "";
-    if (url != "") {
-      path = json['path'];
-    }
+    var url = json['url'] ?? '';
     var defaultQuestion = json['defaultQuestion'] ?? '';
     var defaultTip = json['defaultTip'] ?? '';
     return Lesson(
       url,
-      path,
+      json['mediaExtension'] ?? url.split('.').last,
       json['hash'] ?? '',
-      json['key'] ?? json['path'],
       json['videoMaskRatio'] ?? '',
       defaultQuestion,
       defaultTip,
@@ -128,9 +113,7 @@ class Lesson {
   Map<String, dynamic> toJson() {
     return {
       'url': url,
-      'path': path,
       'hash': hash,
-      'key': key,
       'defaultQuestion': defaultQuestion,
       'defaultTip': defaultTip,
       'title': title,
@@ -142,7 +125,6 @@ class Lesson {
 }
 
 class Segment {
-  String key;
   String tipStart;
   String tipEnd;
   String tip;
@@ -154,7 +136,6 @@ class Segment {
   String a;
 
   Segment(
-    this.key,
     this.tipStart,
     this.tipEnd,
     this.tip,
@@ -173,7 +154,6 @@ class Segment {
     String defaultTip,
   ) {
     return Segment(
-      json['key'] ?? (index + 1).toString(),
       json['tipStart'] ?? "",
       json['tipEnd'] ?? "",
       json['tip'] ?? defaultTip,
@@ -188,7 +168,6 @@ class Segment {
 
   Map<String, dynamic> toJson() {
     return {
-      'key': key,
       'tipStart': tipStart,
       'tipEnd': tipEnd,
       'tip': tip,

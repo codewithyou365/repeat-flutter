@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/logic/repeat_doc_edit_help.dart';
@@ -52,9 +51,9 @@ class GsCrRepeatState {
   var fakeKnow = 0;
   var total = 10;
 
-  SegmentContent segment = SegmentContent(0, 0, 0, 0, 0, 0, Classroom.curr, "", "", "", "");
+  SegmentContent segment = SegmentContent(0, 0, 0, 0, 0, 0, "");
   PlayType segmentPlayType = PlayType.none;
-  SegmentContent currSegment = SegmentContent(0, 0, 0, 0, 0, 0, Classroom.curr, "", "", "", "");
+  SegmentContent currSegment = SegmentContent(0, 0, 0, 0, 0, 0, "");
   late List<SegmentTodayPrg> c;
   var justView = false;
   var justViewIndex = 0;

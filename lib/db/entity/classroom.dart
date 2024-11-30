@@ -1,23 +1,27 @@
-// entity/segment.dart
+// entity/classroom.dart
 
 import 'package:floor/floor.dart';
 
 @Entity(
-  primaryKeys: ['name'],
+  primaryKeys: ['id'],
   indices: [
+    Index(value: ['name'], unique: true),
     Index(value: ['sort'], unique: true),
   ],
 )
 class Classroom {
-  static String curr = "";
+  static int curr = 0;
 
-  final String name;
-  final String arg;
-  final int sort;
+  final int id;
+
+  String name;
+  int sort;
+  bool hide;
 
   Classroom(
+    this.id,
     this.name,
-    this.arg,
     this.sort,
+    this.hide,
   );
 }

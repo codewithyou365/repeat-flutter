@@ -25,8 +25,12 @@ class ConfigZh extends Config {
     put(I18nKey.labelDeleteClassroomAll, "同时删除学习记录");
     put(I18nKey.labelClassroomName, "课堂名称");
     put(I18nKey.labelClassroomNameEmpty, "课堂名字应不能为空");
-    put(I18nKey.labelClassroomNameError, "课堂名字应为 3 个字母或更少，并且由字母数字字符组成。");
+    put(I18nKey.labelClassroomNameError, "课堂名字应为 3 个字母或更少，并且由大写字母数字字符组成。");
     put(I18nKey.labelClassroomNameDuplicated, "课堂名字重复。");
+    put(I18nKey.labelMaterialName, "材料名称");
+    put(I18nKey.labelMaterialNameEmpty, "材料名字应不能为空");
+    put(I18nKey.labelMaterialNameError, "材料名字应为 3 个字母或更少，并且由大写字母数字字符组成。");
+    put(I18nKey.labelMaterialNameDuplicated, "材料名字重复。");
     put(I18nKey.labelDelete, "删除 ！");
     put(I18nKey.labelRemoteUrl, "远程地址");
     put(I18nKey.labelOriginalAddress, "原始地址");
@@ -35,7 +39,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelDownloadFirstBeforeSaving, "请先下载再进行保存");
     put(I18nKey.labelAddContentIndex, "新增内容索引");
     put(I18nKey.labelEditContentIndex, "编辑内容索引");
-    put(I18nKey.labelDeleteContentIndex, "请确定删除内容索引\n\n%s");
+    put(I18nKey.labelDeleteMaterial, "请确定删除材料： %s");
     put(I18nKey.labelDownloadContent, "下载内容");
     put(I18nKey.labelScheduleContent, "添加学习任务 %s 个单位");
     put(I18nKey.labelNoLearningContent, "没有学习内容");
@@ -116,7 +120,6 @@ class ConfigZh extends Config {
     put(I18nKey.labelSegmentRemoved, "对应的学习片段已移除，建议删除相关学习规划");
     put(I18nKey.labelDocNotBeDownloaded, "还未下载文件 \n %s");
     put(I18nKey.labelDocCantBeFound, "无法找到文件 \n %s");
-    put(I18nKey.labelInputPathOfTwoLevel, "请输入两个层级目录的路径");
     put(I18nKey.labelInputPathError, "路径错误");
     put(I18nKey.btnSet, "设置");
     put(I18nKey.btnUse, "使用");

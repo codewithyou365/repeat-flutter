@@ -8,8 +8,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/constant.dart';
-import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_edit_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
@@ -25,7 +24,7 @@ import 'gs_cr_repeat_state.dart';
 class GsCrRepeatLogic extends GetxController {
   static const String id = "MainRepeatLogic";
   final GsCrRepeatState state = GsCrRepeatState();
-  List<SegmentTodayPrgWithKey> todayProgresses = [];
+  List<SegmentTodayPrg> todayProgresses = [];
   Ticker ticker = Ticker(1000);
 
   @override
@@ -334,7 +333,7 @@ class GsCrRepeatLogic extends GetxController {
           state.segmentPlayType = PlayType.title;
         }
       } else if (sc.contentType == ContentType.answerMedia) {
-        if (segment.mediaDocPath != "" && segment.aMediaSegments.isNotEmpty) {
+        if (segment.mediaExtension != "" && segment.aMediaSegments.isNotEmpty) {
           ret = [segment.aMediaSegments[segment.segmentIndex]];
           state.segmentPlayType = PlayType.answer;
         }
@@ -473,7 +472,8 @@ class GsCrRepeatLogic extends GetxController {
     if (state.step != RepeatStep.recall) {
       return 0;
     }
-    return RepeatDocHelp.getVideoMaskRatio(state.segment.mediaDocPath);
+    var segment = state.segment;
+    return RepeatDocHelp.getVideoMaskRatio(segment.materialSerial, segment.lessonIndex, segment.mediaExtension);
   }
 
   openEditor() {
@@ -509,11 +509,9 @@ class GsCrRepeatLogic extends GetxController {
     SegmentEditHelpOutArg outArg = SegmentEditHelpOutArg(0);
     await RepeatDocEditHelp.edit(state.segment, type, state.segmentPlayType, pos, duration, out: outArg);
     if (type == EditType.cut) {
-      // database count
-      int? count = await Db().db.scheduleDao.lessonCount(Classroom.curr, state.segment.indexDocId, state.segment.mediaDocId);
-      // file count
+      int? count = await Db().db.scheduleDao.lessonCount(Classroom.curr, state.segment.materialSerial, state.segment.lessonIndex);
       if (count == null || count < outArg.segmentCount + 1) {
-        var ret = await ScheduleHelp.addToScheduleByUrl(state.segment.indexDocUrl);
+        var ret = await ScheduleHelp.addMaterialToScheduleByMaterialSerial(state.segment.materialSerial);
         if (ret == false) {
           return;
         }

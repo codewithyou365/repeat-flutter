@@ -25,8 +25,12 @@ class ConfigEn extends Config {
     put(I18nKey.labelDeleteClassroomAll, "Meanwhile, delete the study records.");
     put(I18nKey.labelClassroomName, "Classroom Name");
     put(I18nKey.labelClassroomNameEmpty, "The classroom name cannot be empty");
-    put(I18nKey.labelClassroomNameError, "The classroom name should be 3 letters or less and consist of alphanumeric characters.");
+    put(I18nKey.labelClassroomNameError, "The classroom name should be 3 letters or less and consist of alphanumeric characters in uppercase.");
     put(I18nKey.labelClassroomNameDuplicated, "The classroom name is duplicated.");
+    put(I18nKey.labelMaterialName, "Material Name");
+    put(I18nKey.labelMaterialNameEmpty, "The material name cannot be empty");
+    put(I18nKey.labelMaterialNameError, "The material name should be 3 letters or less and consist of alphanumeric characters in uppercase.");
+    put(I18nKey.labelMaterialNameDuplicated, "The material name is duplicated.");
     put(I18nKey.labelDelete, "Delete !");
     put(I18nKey.labelRemoteUrl, "Remote URL");
     put(I18nKey.labelOriginalAddress, "Original address");
@@ -35,7 +39,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelDownloadFirstBeforeSaving, "Please download first before saving.");
     put(I18nKey.labelAddContentIndex, "Add content index");
     put(I18nKey.labelEditContentIndex, "Edit content index");
-    put(I18nKey.labelDeleteContentIndex, "Please confirm to delete content index\n\n%s");
+    put(I18nKey.labelDeleteMaterial, "Please confirm to delete material: %s");
     put(I18nKey.labelDownloadContent, "Download content");
     put(I18nKey.labelScheduleContent, "Add learning task with %s segments.");
     put(I18nKey.labelNoLearningContent, "There is no learning content available.");
@@ -116,7 +120,6 @@ class ConfigEn extends Config {
     put(I18nKey.labelSegmentRemoved, "The learning segment has been removed, and it is recommended that the related schedule be deleted");
     put(I18nKey.labelDocNotBeDownloaded, "The document is not downloaded \n %s");
     put(I18nKey.labelDocCantBeFound, "The document cannot be found \n %s");
-    put(I18nKey.labelInputPathOfTwoLevel, "Input the path of two levels");
     put(I18nKey.labelInputPathError, "The inputting path is error");
     put(I18nKey.btnSet, "Set");
     put(I18nKey.btnUse, "Use");

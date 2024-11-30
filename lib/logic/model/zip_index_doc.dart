@@ -3,8 +3,8 @@ import 'dart:io';
 import 'dart:convert' as convert;
 
 import 'package:repeat_flutter/common/url.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
 
-import '../constant.dart';
 
 class ZipIndexDoc {
   String file;

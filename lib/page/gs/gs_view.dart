@@ -36,7 +36,10 @@ class GsPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          openAddDialog(logic, Classroom("", "", 0));
+          RxString classroomName = "".obs;
+          MsgBox.strInputWithYesOrNo(classroomName, I18nKey.btnAdd.tr, I18nKey.labelClassroomName.tr, yes: () {
+            logic.add(classroomName.value);
+          });
         },
         child: const Icon(Icons.add),
       ),
@@ -70,7 +73,7 @@ class GsPage extends StatelessWidget {
   Widget buildButton(GsLogic logic, Classroom model) {
     return GestureDetector(
       onTap: () {
-        logic.select(model.name);
+        logic.select(model.id);
       },
       onLongPress: () {
         openDeleteDialog(logic, model);
@@ -94,39 +97,6 @@ class GsPage extends StatelessWidget {
     );
   }
 
-  openAddDialog(GsLogic logic, Classroom model) async {
-    final te = TextEditingController(text: model.name);
-    Get.defaultDialog(
-      title: I18nKey.btnAdd.tr,
-      content: Column(
-        mainAxisSize: MainAxisSize.min, // Ensure dialog fits content
-        children: [
-          const SizedBox(height: 10),
-          TextFormField(
-            controller: te,
-            decoration: InputDecoration(
-              labelText: I18nKey.labelClassroomName.tr,
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          child: Text(I18nKey.btnCancel.tr),
-          onPressed: () {
-            Get.back();
-          },
-        ),
-        TextButton(
-          child: Text(I18nKey.btnOk.tr),
-          onPressed: () {
-            logic.add(te.value.text);
-          },
-        ),
-      ],
-    );
-  }
-
   openDeleteDialog(GsLogic logic, Classroom model) {
     RxBool deleteAll = false.obs;
     MsgBox.switchWithYesOrNo(
@@ -135,7 +105,7 @@ class GsPage extends StatelessWidget {
       deleteAll,
       I18nKey.labelDeleteClassroomAll.tr,
       yes: () {
-        logic.delete(model.name, deleteAll.value);
+        logic.delete(model.id, deleteAll.value);
         Get.back();
       },
     );

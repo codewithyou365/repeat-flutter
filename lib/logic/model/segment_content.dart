@@ -5,24 +5,16 @@ import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 @Entity(tableName: "")
 class SegmentContentInDb extends Segment {
   @primaryKey
-  final String crn;
-  final String k;
-  final String indexDocUrl;
-  final String indexDocPath;
-  final String mediaDocPath;
+  final String materialName;
 
   SegmentContentInDb(
     super.segmentKeyId,
-    super.indexDocId,
-    super.mediaDocId,
+    super.classroomId,
+    super.materialSerial,
     super.lessonIndex,
     super.segmentIndex,
     super.sort,
-    this.crn,
-    this.k,
-    this.indexDocUrl,
-    this.indexDocPath,
-    this.mediaDocPath,
+    this.materialName,
   );
 }
 
@@ -30,40 +22,35 @@ class SegmentContent extends SegmentContentInDb {
   List<MediaSegment> qMediaSegments = [];
   List<MediaSegment> aMediaSegments = [];
   MediaSegment? titleMediaSegment;
+  var mediaDocPath = "";
+  var mediaExtension = "";
   var title = "";
   var prevAnswer = "";
   var question = "";
   var tip = "";
   var answer = "";
+  var k = "";
   var miss = false;
 
   SegmentContent(
     super.segmentKeyId,
-    super.indexDocId,
-    super.mediaDocId,
+    super.classroomId,
+    super.materialSerial,
     super.lessonIndex,
     super.segmentIndex,
     super.sort,
-    super.crn,
-    super.k,
-    super.indexDocUrl,
-    super.indexDocPath,
-    super.mediaDocPath,
+    super.materialName,
   );
 
   static SegmentContent from(SegmentContentInDb d) {
     return SegmentContent(
       d.segmentKeyId,
-      d.indexDocId,
-      d.mediaDocId,
+      d.classroomId,
+      d.materialSerial,
       d.lessonIndex,
       d.segmentIndex,
       d.sort,
-      d.crn,
-      d.k,
-      d.indexDocUrl,
-      d.indexDocPath,
-      d.mediaDocPath,
+      d.materialName,
     );
   }
 }

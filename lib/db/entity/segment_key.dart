@@ -4,18 +4,27 @@ import 'package:floor/floor.dart';
 
 @Entity(
   indices: [
-    Index(value: ['crn', 'k'], unique: true),
+    Index(value: ['classroomId', 'materialSerial', 'lessonIndex', 'segmentIndex'], unique: true),
   ],
 )
 class SegmentKey {
   @PrimaryKey(autoGenerate: true)
   final int? id;
-  final String crn;
-  final String k;
+
+  final int classroomId;
+  final int materialSerial;
+  final int lessonIndex;
+  final int segmentIndex;
 
   SegmentKey(
-    this.crn,
-    this.k, {
+    this.classroomId,
+    this.materialSerial,
+    this.lessonIndex,
+    this.segmentIndex, {
     this.id,
   });
+
+  String toStringKey() {
+    return '$classroomId|$materialSerial|$lessonIndex|$segmentIndex';
+  }
 }

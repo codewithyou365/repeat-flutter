@@ -2,7 +2,6 @@
 
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
-import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
 
 enum TodayPrgType {
   none,
@@ -19,6 +18,8 @@ enum TodayPrgType {
 class SegmentTodayPrg {
   @PrimaryKey(autoGenerate: true)
   final int? id;
+  final int classroomId;
+  final int materialSerial;
   final int segmentKeyId;
   int type;
   final int sort;
@@ -29,6 +30,8 @@ class SegmentTodayPrg {
   bool finish;
 
   SegmentTodayPrg(
+    this.classroomId,
+    this.materialSerial,
     this.segmentKeyId,
     this.type,
     this.sort,
@@ -95,6 +98,8 @@ class SegmentTodayPrg {
     List<SegmentTodayPrg> clonedList = [];
     for (SegmentTodayPrg segment in list) {
       SegmentTodayPrg clonedSegment = SegmentTodayPrg(
+        segment.classroomId,
+        segment.materialSerial,
         segment.segmentKeyId,
         segment.type,
         segment.sort,
@@ -126,8 +131,8 @@ class SegmentTodayPrg {
     return ret;
   }
 
-  static List<SegmentTodayPrgWithKey> getFirstUnfinishedGroup(List<SegmentTodayPrgWithKey> list) {
-    Map<int, List<SegmentTodayPrgWithKey>> grouped = {};
+  static List<SegmentTodayPrg> getFirstUnfinishedGroup(List<SegmentTodayPrg> list) {
+    Map<int, List<SegmentTodayPrg>> grouped = {};
     for (var item in list) {
       if (!grouped.containsKey(item.type)) {
         grouped[item.type] = [];

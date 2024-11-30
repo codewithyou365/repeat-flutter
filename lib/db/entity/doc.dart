@@ -3,7 +3,7 @@
 import 'package:floor/floor.dart';
 
 @Entity(indices: [
-  Index(value: ['url'], unique: true),
+  Index(value: ['path'], unique: true),
 ])
 class Doc {
   @PrimaryKey(autoGenerate: true)
@@ -19,4 +19,5 @@ class Doc {
   final String hash;
 
   Doc(this.url, this.path, this.hash, {this.id, this.msg = "", this.count = 0, this.total = 1});
+
 }

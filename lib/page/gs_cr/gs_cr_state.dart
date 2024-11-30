@@ -1,8 +1,6 @@
-import 'package:get/get.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
-import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
 
-class SegmentTodayPrgWithKeyInView {
+class SegmentTodayPrgInView {
   int index;
   int uniqIndex;
   String name;
@@ -10,9 +8,9 @@ class SegmentTodayPrgWithKeyInView {
   String groupDesc;
   String desc;
 
-  List<SegmentTodayPrgWithKey> segments;
+  List<SegmentTodayPrg> segments;
 
-  SegmentTodayPrgWithKeyInView(
+  SegmentTodayPrgInView(
     this.segments, {
     this.index = 0,
     this.uniqIndex = 0,
@@ -24,10 +22,10 @@ class SegmentTodayPrgWithKeyInView {
 }
 
 class GsCrState {
-  List<SegmentTodayPrgWithKeyInView> segments = [];
-  List<SegmentTodayPrgWithKey> all = [];
-  List<SegmentTodayPrgWithKey> learn = [];
-  List<SegmentTodayPrgWithKey> review = [];
+  List<SegmentTodayPrgInView> segments = [];
+  List<SegmentTodayPrg> all = [];
+  List<SegmentTodayPrg> learn = [];
+  List<SegmentTodayPrg> review = [];
 
   var learnedTotalCount = 0;
   var learnTotalCount = 0;

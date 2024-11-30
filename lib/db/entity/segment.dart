@@ -5,14 +5,15 @@ import 'package:floor/floor.dart';
 @Entity(
   primaryKeys: ['segmentKeyId'],
   indices: [
-    Index(value: ['sort']),
+    Index(value: ['classroomId', 'sort'], unique: true),
+    Index(value: ['classroomId', 'materialSerial', 'lessonIndex', 'segmentIndex'], unique: true),
   ],
 )
 class Segment {
   int segmentKeyId;
-  final int indexDocId;
-  final int mediaDocId;
 
+  final int classroomId;
+  final int materialSerial;
   final int lessonIndex;
   final int segmentIndex;
 
@@ -20,10 +21,14 @@ class Segment {
 
   Segment(
     this.segmentKeyId,
-    this.indexDocId,
-    this.mediaDocId,
+    this.classroomId,
+    this.materialSerial,
     this.lessonIndex,
     this.segmentIndex,
     this.sort,
   );
+
+  String toStringKey() {
+    return '$classroomId|$materialSerial|$lessonIndex|$segmentIndex';
+  }
 }

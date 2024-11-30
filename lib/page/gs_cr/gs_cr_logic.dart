@@ -11,8 +11,7 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/common/date.dart';
-import 'package:repeat_flutter/logic/constant.dart';
-import 'package:repeat_flutter/logic/model/segment_today_prg_with_key.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -24,7 +23,7 @@ import 'gs_cr_state.dart';
 class GsCrLogic extends GetxController {
   static const String id = "GsCrLogic";
   final GsCrState state = GsCrState();
-  List<SegmentTodayPrgWithKey> currProgresses = [];
+  List<SegmentTodayPrg> currProgresses = [];
   Timer? timer;
 
   @override
@@ -43,7 +42,7 @@ class GsCrLogic extends GetxController {
 
   Future<void> init({TodayPrgType? type}) async {
     var now = DateTime.now();
-    List<SegmentTodayPrgWithKey> allProgresses = [];
+    List<SegmentTodayPrg> allProgresses = [];
     if (type == null) {
       allProgresses = await Db().db.scheduleDao.initToday();
     } else {
@@ -66,17 +65,17 @@ class GsCrLogic extends GetxController {
       scheduleConfig = ScheduleDao.scheduleConfig;
     }
     scheduleConfig ??= ScheduleDao.scheduleConfig;
-    List<SegmentTodayPrgWithKeyInView> learn = [];
-    List<SegmentTodayPrgWithKeyInView> review = [];
-    Map<int, SegmentTodayPrgWithKeyInView> temp = {};
+    List<SegmentTodayPrgInView> learn = [];
+    List<SegmentTodayPrgInView> review = [];
+    Map<int, SegmentTodayPrgInView> temp = {};
     for (var item in allProgresses) {
       var prgTypeAndIndex = SegmentTodayPrg.getPrgTypeAndIndex(item.type);
 
-      SegmentTodayPrgWithKeyInView view;
+      SegmentTodayPrgInView view;
       if (temp.containsKey(prgTypeAndIndex)) {
         view = temp[prgTypeAndIndex]!;
       } else {
-        view = SegmentTodayPrgWithKeyInView([]);
+        view = SegmentTodayPrgInView([]);
         temp[prgTypeAndIndex] = view;
       }
       view.segments.add(item);
@@ -86,13 +85,13 @@ class GsCrLogic extends GetxController {
       var prgTypeAndIndex = SegmentTodayPrg.toPrgTypeAndIndex(TodayPrgType.learn, index);
       var learnedTotalCount = 0;
       var learnTotalCount = 0;
-      SegmentTodayPrgWithKeyInView rule;
+      SegmentTodayPrgInView rule;
       if (temp.containsKey(prgTypeAndIndex)) {
         rule = temp[prgTypeAndIndex]!;
         learnedTotalCount = SegmentTodayPrg.getFinishedCount(rule.segments);
         learnTotalCount = rule.segments.length;
       } else {
-        rule = SegmentTodayPrgWithKeyInView([]);
+        rule = SegmentTodayPrgInView([]);
       }
       var config = scheduleConfig.elConfigs.elementAt(index);
       rule.index = index;
@@ -107,13 +106,13 @@ class GsCrLogic extends GetxController {
       var prgTypeAndIndex = SegmentTodayPrg.toPrgTypeAndIndex(TodayPrgType.review, index);
       var learnedTotalCount = 0;
       var learnTotalCount = 0;
-      SegmentTodayPrgWithKeyInView rule;
+      SegmentTodayPrgInView rule;
       if (temp.containsKey(prgTypeAndIndex)) {
         rule = temp[prgTypeAndIndex]!;
         learnedTotalCount = SegmentTodayPrg.getFinishedCount(rule.segments);
         learnTotalCount = rule.segments.length;
       } else {
-        rule = SegmentTodayPrgWithKeyInView([]);
+        rule = SegmentTodayPrgInView([]);
       }
       var config = scheduleConfig.relConfigs.elementAt(index);
       rule.index = index;
@@ -177,7 +176,7 @@ class GsCrLogic extends GetxController {
     }
   }
 
-  tryStart(List<SegmentTodayPrgWithKey> list, {bool grouping = false, Repeat mode = Repeat.normal}) {
+  tryStart(List<SegmentTodayPrg> list, {bool grouping = false, Repeat mode = Repeat.normal}) {
     if (list.isEmpty) {
       Snackbar.show(I18nKey.labelNoLearningContent.tr);
       return;
