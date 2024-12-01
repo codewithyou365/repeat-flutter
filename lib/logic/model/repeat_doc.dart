@@ -13,7 +13,8 @@ class RepeatDoc {
 
   static Future<bool> writeFile(String path, Map<String, dynamic> m) async {
     try {
-      File file = File(path);
+      var rootPath = await DocPath.getContentPath();
+      File file = File(rootPath.joinPath(path));
       String jsonString = convert.jsonEncode(m);
       await file.writeAsString(jsonString, flush: true);
       return true;
@@ -23,7 +24,8 @@ class RepeatDoc {
   }
 
   static Future<Map<String, dynamic>?> toJsonMap(String path) async {
-    File file = File(path);
+    var rootPath = await DocPath.getContentPath();
+    File file = File(rootPath.joinPath(path));
     bool exist = await file.exists();
     if (!exist) {
       return null;
@@ -34,8 +36,7 @@ class RepeatDoc {
   }
 
   static Future<RepeatDoc?> fromPath(String path) async {
-    var rootPath = await DocPath.getContentPath();
-    Map<String, dynamic>? jsonData = await toJsonMap(rootPath.joinPath(path));
+    Map<String, dynamic>? jsonData = await toJsonMap(path);
     return fromJsonAndUri(jsonData);
   }
 
