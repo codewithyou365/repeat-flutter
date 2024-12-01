@@ -29,7 +29,6 @@ class RepeatDocEditHelp {
     SegmentEditHelpOutArg? out,
   }) async {
     var indexPath = DocPath.getRelativeIndexPath(ret.materialSerial);
-    var mediaPath = DocPath.getRelativeMediaPath(ret.materialSerial, ret.lessonIndex, ret.mediaExtension);
     Map<String, dynamic>? map = await RepeatDoc.toJsonMap(indexPath);
     if (map == null) {
       return false;
