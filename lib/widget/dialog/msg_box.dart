@@ -84,6 +84,7 @@ class MsgBox {
     int? maxLines = 1,
     int? minLines,
     barrierDismissible = false,
+    List<Widget>? nextChildren,
   }) {
     final tec = TextEditingController(text: model.value);
     Widget? suffixIcon;
@@ -98,11 +99,8 @@ class MsgBox {
         },
       );
     }
-
-    Get.defaultDialog(
-      title: title,
-      barrierDismissible: barrierDismissible,
-      content: TextFormField(
+    var children = <Widget>[
+      TextFormField(
         controller: tec,
         maxLines: maxLines,
         minLines: minLines,
@@ -110,6 +108,16 @@ class MsgBox {
           labelText: decoration,
           suffixIcon: suffixIcon,
         ),
+      ),
+    ];
+    if (nextChildren != null) {
+      children.addAll(nextChildren);
+    }
+    Get.defaultDialog(
+      title: title,
+      barrierDismissible: barrierDismissible,
+      content: Column(
+        children: children,
       ),
       actions: yesOrNoAction(
           yes: () {

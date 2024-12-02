@@ -278,10 +278,10 @@ class _$DocDao extends DocDao {
   }
 
   @override
-  Future<int?> getId(String url) async {
-    return _queryAdapter.query('SELECT id FROM Doc WHERE url = ?1',
+  Future<int?> getIdByPath(String path) async {
+    return _queryAdapter.query('SELECT id FROM Doc WHERE path=?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [url]);
+        arguments: [path]);
   }
 
   @override
@@ -339,12 +339,13 @@ class _$DocDao extends DocDao {
   @override
   Future<void> updateFinish(
     int id,
+    String url,
     String path,
     String hash,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE OR ABORT Doc SET count=total,path=?2,hash=?3 WHERE id = ?1',
-        arguments: [id, path, hash]);
+        'UPDATE OR ABORT Doc SET count=total,url=?2,path=?3,hash=?4 WHERE id = ?1',
+        arguments: [id, url, path, hash]);
   }
 
   @override
@@ -353,15 +354,15 @@ class _$DocDao extends DocDao {
   }
 
   @override
-  Future<Doc> insert(String url) async {
+  Future<Doc> insertByPath(String path) async {
     if (database is sqflite.Transaction) {
-      return super.insert(url);
+      return super.insertByPath(path);
     } else {
       return (database as sqflite.Database)
           .transaction<Doc>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        return transactionDatabase.docDao.insert(url);
+        return transactionDatabase.docDao.insertByPath(path);
       });
     }
   }

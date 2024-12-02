@@ -74,7 +74,7 @@ class GsCrContentTemplateLogic extends GetxController {
       await indexJsonFile.writeAsString(indexJsonContent, flush: true);
       var indexJsonHash = await Hash.toSha1(indexJsonPath);
       await Db().db.docDao.insertDoc(Doc(indexJsonUrl, indexJsonPathInDb, indexJsonHash));
-      var indexJsonDocId = await Db().db.docDao.getId(indexJsonUrl);
+      var indexJsonDocId = await Db().db.docDao.getIdByPath(indexJsonPathInDb);
       if (indexJsonDocId == null) {
         return;
       }

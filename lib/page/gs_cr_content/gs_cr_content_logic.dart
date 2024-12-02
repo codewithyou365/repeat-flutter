@@ -16,6 +16,7 @@ import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
+import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -195,46 +196,49 @@ class GsCrContentLogic extends GetxController {
     }
   }
 
-  download(String mgn, String url) async {
+  download(int materialId, int materialSerial, String url) async {
     state.indexCount.value = 0;
     state.indexTotal.value = 1;
-    RepeatDoc? kv;
-    late String rootPath;
+    var indexPath = DocPath.getRelativeIndexPath(materialSerial);
     var success = await downloadDoc(
       url,
-      (fl, tempFile) async {
-        kv = await RepeatDoc.fromPath(fl.path);
-        if (kv == null) {
-          return null;
-        }
-        if (tempFile) {
-          rootPath = fl.folderPath.joinPath('${Classroom.curr}');
-        } else {
-          rootPath = DocLocation.create(fl.path).folderPath;
-        }
-        return DocLocation(rootPath, Url.toDocName(url));
-      },
+      indexPath,
       progressCallback: downloadProgress,
     );
-    if (success && kv != null) {
-      state.indexTotal.value = state.indexTotal.value + kv!.lesson.length;
-      for (var v in kv!.lesson) {
-        var innerUrl = v.url;
-        if (innerUrl == "") {
-          downloadProgress(0, 0, 0, true);
-          continue;
-        }
-        if (!innerUrl.startsWith("http")) {
-          innerUrl = kv!.rootUrl.joinPath(v.url);
-        }
-        await downloadDoc(
-          innerUrl,
-          (fl, tempFile) async => DocLocation.create(rootPath.joinPath(mgn)),
-          hash: v.hash,
-          progressCallback: downloadProgress,
-        );
-      }
+    if (!success) {
+      return;
     }
+    RepeatDoc? kv = await RepeatDoc.fromPath(indexPath, rootUri: Uri.parse(url));
+    if (kv == null) {
+      return;
+    }
+
+    state.indexTotal.value = state.indexTotal.value + kv.lesson.length;
+    for (int i = 0; i < kv.lesson.length; i++) {
+      var v = kv.lesson[i];
+      var innerUrl = v.url;
+      if (innerUrl == "") {
+        downloadProgress(0, 0, 0, true);
+        continue;
+      }
+      if (!innerUrl.startsWith("http")) {
+        innerUrl = kv.rootUrl.joinPath(v.url);
+      }
+      await downloadDoc(
+        innerUrl,
+        DocPath.getRelativeMediaPath(materialSerial, i, v.mediaExtension),
+        hash: v.hash,
+        progressCallback: downloadProgress,
+      );
+    }
+    var indexJsonDocId = await Db().db.docDao.getIdByPath(indexPath);
+    if (indexJsonDocId == null) {
+      return;
+    }
+
+    await Db().db.materialDao.updateDocId(materialId, indexJsonDocId);
+    Nav.back();
+    init();
     RepeatDocHelp.clear();
   }
 }

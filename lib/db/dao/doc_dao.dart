@@ -8,8 +8,8 @@ abstract class DocDao {
   @Query('SELECT * FROM Lock where id=1 for update')
   Future<void> forUpdate();
 
-  @Query('SELECT id FROM Doc WHERE url = :url')
-  Future<int?> getId(String url);
+  @Query('SELECT id FROM Doc WHERE path=:path')
+  Future<int?> getIdByPath(String path);
 
   @Query('SELECT path FROM Doc WHERE id = :id')
   Future<String?> getPath(int id);
@@ -29,20 +29,19 @@ abstract class DocDao {
   @Query('UPDATE OR ABORT Doc SET count=:count,total=:total WHERE id = :id')
   Future<void> updateProgressById(int id, int count, int total);
 
-  @Query('UPDATE OR ABORT Doc SET count=total,path=:path,hash=:hash WHERE id = :id')
-  Future<void> updateFinish(int id, String path, String hash);
+  @Query("UPDATE OR ABORT Doc SET msg='',count=total,url=:url,path=:path,hash=:hash WHERE id=:id")
+  Future<void> updateFinish(int id, String url, String path, String hash);
 
   @transaction
-  Future<Doc> insert(String url) async {
+  Future<Doc> insertByPath(String path) async {
     await forUpdate();
-    return Doc(url, "", "");
-    // todo var ret = await one(url);
-    // if (ret != null) {
-    //   return ret;
-    // }
-    // var cache = Doc(url, "", "");
-    // insertDoc(cache);
-    // ret = await one(url);
-    //return ret!;
+    var ret = await getByPath(path);
+    if (ret != null) {
+      return ret;
+    }
+    var cache = Doc("", path, "");
+    insertDoc(cache);
+    ret = await getByPath(path);
+    return ret!;
   }
 }
