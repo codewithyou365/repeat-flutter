@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/material.dart' as entity;
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -23,12 +22,6 @@ class GsCrContentPage extends StatelessWidget {
           PopupMenuButton<String>(
             icon: const Icon(Icons.add),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                onTap: () {
-                  openEditDialog(logic, "", I18nKey.labelAddContentIndex.tr);
-                },
-                child: Text(I18nKey.labelRemoteImport.tr),
-              ),
               PopupMenuItem<String>(
                 onTap: logic.todoAddByZip,
                 child: Text(I18nKey.labelLocalZipImport.tr),
@@ -87,15 +80,15 @@ class GsCrContentPage extends StatelessWidget {
 
     if (model.docId == 0) {
       // PopupMenuItem<String>(
-      //   onTap: () {
-      //     openEditDialog(logic, "", I18nKey.labelAddContentIndex.tr);
-      //   },
-      //   child: Text(I18nKey.labelRemoteImport.tr),
-      // ),
-      // PopupMenuItem<String>(
       //   onTap: logic.todoAddByZip,
       //   child: Text(I18nKey.labelLocalZipImport.tr),
       // ),
+      menus.add(PopupMenuItem<String>(
+        onTap: () {
+          openDownloadDialog(logic, model);
+        },
+        child: Text(I18nKey.labelRemoteImport.tr),
+      ));
       menus.add(PopupMenuItem<String>(
         onTap: () {
           Nav.gsCrContentTemplate.push(arguments: <int>[model.id!, model.serial]);
@@ -157,20 +150,6 @@ class GsCrContentPage extends StatelessWidget {
   //   );
   // }
 
-  openEditDialog(GsCrContentLogic logic, String url, String title) {
-    var value = url.obs;
-    MsgBox.strInputWithYesOrNo(
-      value,
-      title,
-      I18nKey.labelRemoteUrl.tr,
-      yes: () {
-        logic.add(value.value);
-        Get.back();
-      },
-      qrPagePath: Nav.gsCrContentScan.path,
-    );
-  }
-
   openDeleteDialog(GsCrContentLogic logic, entity.Material model) {
     MsgBox.yesOrNo(
       I18nKey.labelDelete.tr,
@@ -182,45 +161,39 @@ class GsCrContentPage extends StatelessWidget {
     );
   }
 
-  openDownloadDialog(GsCrContentLogic logic, Material model) {
+  openDownloadDialog(GsCrContentLogic logic, entity.Material model) {
     final state = logic.state;
-    Get.defaultDialog(
-      title: I18nKey.labelDownloadContent.tr,
-      content: Obx(() {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            LinearProgressIndicator(
-              value: state.indexCount.value / state.indexTotal.value,
-              semanticsLabel: "${(state.indexCount.value / state.indexTotal.value * 100).toStringAsFixed(1)}%",
-            ),
-            const SizedBox(height: 10),
-            LinearProgressIndicator(
-              value: state.contentProgress.value,
-              semanticsLabel: "${(state.contentProgress.value * 100).toStringAsFixed(1)}%",
-            ),
-          ],
-        );
-      }),
-      actions: [
-        TextButton(
-          child: Text(I18nKey.btnCancel.tr),
-          onPressed: () {
-            Get.back();
-          },
-        ),
-        TextButton(
-          child: Text(I18nKey.btnDownload.tr),
-          onPressed: () {
-            // logic.download(model.mgn, model.url);
-          },
-        ),
+    RxString downloadUrl = "".obs;
+    MsgBox.strInputWithYesOrNo(
+      downloadUrl,
+      I18nKey.labelDownloadContent.tr,
+      I18nKey.labelRemoteUrl.tr,
+      nextChildren: [
+        const SizedBox(height: 20),
+        Obx(() {
+          return LinearProgressIndicator(
+            value: state.indexCount.value / state.indexTotal.value,
+            semanticsLabel: "${(state.indexCount.value / state.indexTotal.value * 100).toStringAsFixed(1)}%",
+          );
+        }),
+        const SizedBox(height: 20),
+        Obx(() {
+          return LinearProgressIndicator(
+            value: state.contentProgress.value,
+            semanticsLabel: "${(state.contentProgress.value * 100).toStringAsFixed(1)}%",
+          );
+        }),
       ],
+      yes: () {
+        logic.download(model.id!, model.serial, downloadUrl.value);
+      },
+      yesBtnTitle: I18nKey.btnDownload.tr,
+      noBtnTitle: I18nKey.btnClose.tr,
     );
   }
 
   openScheduleDialog(GsCrContentLogic logic, entity.Material model) async {
-    var unitCount = await logic.getUnitCount(model.docId);
+    var unitCount = await logic.getUnitCount(model.serial);
     if (unitCount == 0) {
       logic.resetDoc(model.id!);
       return;

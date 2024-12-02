@@ -35,16 +35,19 @@ class RepeatDoc {
     return jsonData;
   }
 
-  static Future<RepeatDoc?> fromPath(String path) async {
+  static Future<RepeatDoc?> fromPath(String path, {Uri? rootUri}) async {
     Map<String, dynamic>? jsonData = await toJsonMap(path);
-    return fromJsonAndUri(jsonData);
+    return fromJsonAndUri(jsonData, rootUri);
   }
 
-  static RepeatDoc? fromJsonAndUri(Map<String, dynamic>? jsonData) {
+  static RepeatDoc? fromJsonAndUri(Map<String, dynamic>? jsonData, Uri? rootUri) {
     if (jsonData == null) {
       return null;
     }
     var kv = RepeatDoc.fromJson(jsonData);
+    if (kv.rootUrl == "" && rootUri != null) {
+      kv.rootUrl = "${rootUri.scheme}://${rootUri.host}:${rootUri.port}/${rootUri.pathSegments.sublist(0, rootUri.pathSegments.length - 1).join('/')}/";
+    }
     return kv;
   }
 
