@@ -11,8 +11,9 @@ enum TodayPrgType {
 
 @Entity(
   indices: [
-    Index(value: ['segmentKeyId', 'type'], unique: true),
-    Index(value: ['sort']),
+    Index(value: ['classroomId', 'segmentKeyId', 'type'], unique: true),
+    Index(value: ['classroomId', 'sort']),
+    Index(value: ['classroomId', 'materialSerial']),
   ],
 )
 class SegmentTodayPrg {

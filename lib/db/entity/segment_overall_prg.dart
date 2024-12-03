@@ -6,7 +6,8 @@ import 'package:repeat_flutter/common/date.dart';
 @Entity(
   primaryKeys: ['segmentKeyId'],
   indices: [
-    Index(value: ['next', 'progress']),
+    Index(value: ['classroomId', 'next', 'progress']),
+    Index(value: ['classroomId', 'materialSerial']),
   ],
 )
 class SegmentOverallPrg {

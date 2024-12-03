@@ -5,6 +5,10 @@ import 'package:repeat_flutter/common/date.dart';
 
 @Entity(
   primaryKeys: ['createDate', 'segmentKeyId'],
+  indices: [
+    Index(value: ['classroomId', 'materialSerial']),
+    Index(value: ['classroomId', 'createDate']),
+  ],
 )
 class SegmentReview {
   final Date createDate;
