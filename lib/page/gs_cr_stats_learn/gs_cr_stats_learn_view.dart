@@ -43,7 +43,7 @@ class GsCrStatsLearnPage extends StatelessWidget {
       padding: EdgeInsets.all(16.w),
       child: Row(
         children: [
-          Text(RepeatDocHelp.getKey(model.materialName, model.lessonIndex, model.segmentIndex)),
+          Text(RepeatDocHelp.getKey(model.contentName, model.lessonIndex, model.segmentIndex)),
           const Spacer(),
           Text("${model.next.value}"),
           const Spacer(),

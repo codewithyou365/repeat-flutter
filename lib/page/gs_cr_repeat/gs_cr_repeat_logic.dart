@@ -473,7 +473,7 @@ class GsCrRepeatLogic extends GetxController {
       return 0;
     }
     var segment = state.segment;
-    return RepeatDocHelp.getVideoMaskRatio(segment.materialSerial, segment.lessonIndex, segment.mediaExtension);
+    return RepeatDocHelp.getVideoMaskRatio(segment.contentSerial, segment.lessonIndex, segment.mediaExtension);
   }
 
   openEditor() {
@@ -509,9 +509,9 @@ class GsCrRepeatLogic extends GetxController {
     SegmentEditHelpOutArg outArg = SegmentEditHelpOutArg(0);
     await RepeatDocEditHelp.edit(state.segment, type, state.segmentPlayType, pos, duration, out: outArg);
     if (type == EditType.cut) {
-      int? count = await Db().db.scheduleDao.lessonCount(Classroom.curr, state.segment.materialSerial, state.segment.lessonIndex);
+      int? count = await Db().db.scheduleDao.lessonCount(Classroom.curr, state.segment.contentSerial, state.segment.lessonIndex);
       if (count == null || count < outArg.segmentCount + 1) {
-        var ret = await ScheduleHelp.addMaterialToScheduleByMaterialSerial(state.segment.materialSerial);
+        var ret = await ScheduleHelp.addMaterialToScheduleByContentSerial(state.segment.contentSerial);
         if (ret == false) {
           return;
         }

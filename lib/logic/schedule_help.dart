@@ -2,7 +2,7 @@ import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/material.dart';
+import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/db/entity/segment.dart' as entity;
 import 'package:repeat_flutter/db/entity/segment_key.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
@@ -12,16 +12,16 @@ import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class ScheduleHelp {
-  static Future<bool> addMaterialToScheduleByMaterialSerial(int materialSerial) async {
-    Material? ci = await Db().db.materialDao.getMaterialBySerial(Classroom.curr, materialSerial);
+  static Future<bool> addMaterialToScheduleByContentSerial(int contentSerial) async {
+    Content? ci = await Db().db.materialDao.getContentBySerial(Classroom.curr, contentSerial);
     if (ci == null) {
       return false;
     }
-    var ret = await addMaterialToSchedule(ci);
+    var ret = await addContentToSchedule(ci);
     return ret;
   }
 
-  static Future<bool> addMaterialToSchedule(Material material) async {
+  static Future<bool> addContentToSchedule(Content material) async {
     var doc = await Db().db.docDao.getById(material.docId);
     if (doc == null) {
       return false;

@@ -13,14 +13,14 @@ enum TodayPrgType {
   indices: [
     Index(value: ['classroomId', 'segmentKeyId', 'type'], unique: true),
     Index(value: ['classroomId', 'sort']),
-    Index(value: ['classroomId', 'materialSerial']),
+    Index(value: ['classroomId', 'contentSerial']),
   ],
 )
 class SegmentTodayPrg {
   @PrimaryKey(autoGenerate: true)
   final int? id;
   final int classroomId;
-  final int materialSerial;
+  final int contentSerial;
   final int segmentKeyId;
   int type;
   final int sort;
@@ -32,7 +32,7 @@ class SegmentTodayPrg {
 
   SegmentTodayPrg(
     this.classroomId,
-    this.materialSerial,
+    this.contentSerial,
     this.segmentKeyId,
     this.type,
     this.sort,
@@ -100,7 +100,7 @@ class SegmentTodayPrg {
     for (SegmentTodayPrg segment in list) {
       SegmentTodayPrg clonedSegment = SegmentTodayPrg(
         segment.classroomId,
-        segment.materialSerial,
+        segment.contentSerial,
         segment.segmentKeyId,
         segment.type,
         segment.sort,

@@ -44,7 +44,7 @@ class GsCrStatsReviewPage extends StatelessWidget {
         children: [
           Text("${model.createDate.value}"),
           const Spacer(),
-          Text(RepeatDocHelp.getKey(model.materialName, model.lessonIndex, model.segmentIndex)),
+          Text(RepeatDocHelp.getKey(model.contentName, model.lessonIndex, model.segmentIndex)),
           const Spacer(),
           Text("${model.count}"),
         ],

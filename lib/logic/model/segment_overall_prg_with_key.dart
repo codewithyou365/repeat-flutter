@@ -4,17 +4,17 @@ import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 @Entity(tableName: "")
 class SegmentOverallPrgWithKey extends SegmentOverallPrg {
   @primaryKey
-  String materialName;
+  String contentName;
   int lessonIndex;
   int segmentIndex;
 
   SegmentOverallPrgWithKey(
     super.segmentKeyId,
     super.classroomId,
-    super.materialSerial,
+    super.contentSerial,
     super.next,
     super.progress,
-    this.materialName,
+    this.contentName,
     this.lessonIndex,
     this.segmentIndex,
   );

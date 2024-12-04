@@ -7,14 +7,14 @@ import 'package:repeat_flutter/common/date.dart';
   primaryKeys: ['segmentKeyId'],
   indices: [
     Index(value: ['classroomId', 'next', 'progress']),
-    Index(value: ['classroomId', 'materialSerial']),
+    Index(value: ['classroomId', 'contentSerial']),
   ],
 )
 class SegmentOverallPrg {
   int segmentKeyId;
 
   final int classroomId;
-  final int materialSerial;
+  final int contentSerial;
   final Date next;
 
   final int progress;
@@ -22,7 +22,7 @@ class SegmentOverallPrg {
   SegmentOverallPrg(
     this.segmentKeyId,
     this.classroomId,
-    this.materialSerial,
+    this.contentSerial,
     this.next,
     this.progress,
   );
