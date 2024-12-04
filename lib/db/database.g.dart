@@ -78,7 +78,7 @@ class _$AppDatabase extends AppDatabase {
 
   ClassroomDao? _classroomDaoInstance;
 
-  MaterialDao? _materialDaoInstance;
+  ContentDao? _materialDaoInstance;
 
   ScheduleDao? _scheduleDaoInstance;
 
@@ -114,19 +114,19 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Classroom` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Material` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `serial` INTEGER NOT NULL, `name` TEXT NOT NULL, `desc` TEXT NOT NULL, `docId` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `Content` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `serial` INTEGER NOT NULL, `name` TEXT NOT NULL, `desc` TEXT NOT NULL, `docId` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `CrKv` (`classroomId` INTEGER NOT NULL, `k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`classroomId`, `k`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Segment` (`segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `materialSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`))');
+            'CREATE TABLE IF NOT EXISTS `Segment` (`segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentKey` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `materialSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `SegmentKey` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentOverallPrg` (`segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `materialSerial` INTEGER NOT NULL, `next` INTEGER NOT NULL, `progress` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`))');
+            'CREATE TABLE IF NOT EXISTS `SegmentOverallPrg` (`segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `next` INTEGER NOT NULL, `progress` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentReview` (`createDate` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `materialSerial` INTEGER NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY (`createDate`, `segmentKeyId`))');
+            'CREATE TABLE IF NOT EXISTS `SegmentReview` (`createDate` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY (`createDate`, `segmentKeyId`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentTodayPrg` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `materialSerial` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `reviewCount` INTEGER NOT NULL, `reviewCreateDate` INTEGER NOT NULL, `finish` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `SegmentTodayPrg` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `reviewCount` INTEGER NOT NULL, `reviewCreateDate` INTEGER NOT NULL, `finish` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Lock` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database
@@ -136,25 +136,33 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE UNIQUE INDEX `index_Classroom_sort` ON `Classroom` (`sort`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_Material_classroomId_name` ON `Material` (`classroomId`, `name`)');
+            'CREATE UNIQUE INDEX `index_Content_classroomId_name` ON `Content` (`classroomId`, `name`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_Material_classroomId_serial` ON `Material` (`classroomId`, `serial`)');
+            'CREATE UNIQUE INDEX `index_Content_classroomId_serial` ON `Content` (`classroomId`, `serial`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_Material_classroomId_sort` ON `Material` (`classroomId`, `sort`)');
+            'CREATE UNIQUE INDEX `index_Content_classroomId_sort` ON `Content` (`classroomId`, `sort`)');
         await database.execute(
-            'CREATE INDEX `index_Material_sort_id` ON `Material` (`sort`, `id`)');
+            'CREATE INDEX `index_Content_sort_id` ON `Content` (`sort`, `id`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_Segment_classroomId_sort` ON `Segment` (`classroomId`, `sort`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_Segment_classroomId_materialSerial_lessonIndex_segmentIndex` ON `Segment` (`classroomId`, `materialSerial`, `lessonIndex`, `segmentIndex`)');
+            'CREATE UNIQUE INDEX `index_Segment_classroomId_contentSerial_lessonIndex_segmentIndex` ON `Segment` (`classroomId`, `contentSerial`, `lessonIndex`, `segmentIndex`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_SegmentKey_classroomId_materialSerial_lessonIndex_segmentIndex` ON `SegmentKey` (`classroomId`, `materialSerial`, `lessonIndex`, `segmentIndex`)');
+            'CREATE UNIQUE INDEX `index_SegmentKey_classroomId_contentSerial_lessonIndex_segmentIndex` ON `SegmentKey` (`classroomId`, `contentSerial`, `lessonIndex`, `segmentIndex`)');
         await database.execute(
-            'CREATE INDEX `index_SegmentOverallPrg_next_progress` ON `SegmentOverallPrg` (`next`, `progress`)');
+            'CREATE INDEX `index_SegmentOverallPrg_classroomId_next_progress` ON `SegmentOverallPrg` (`classroomId`, `next`, `progress`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_SegmentTodayPrg_segmentKeyId_type` ON `SegmentTodayPrg` (`segmentKeyId`, `type`)');
+            'CREATE INDEX `index_SegmentOverallPrg_classroomId_contentSerial` ON `SegmentOverallPrg` (`classroomId`, `contentSerial`)');
         await database.execute(
-            'CREATE INDEX `index_SegmentTodayPrg_sort` ON `SegmentTodayPrg` (`sort`)');
+            'CREATE INDEX `index_SegmentReview_classroomId_contentSerial` ON `SegmentReview` (`classroomId`, `contentSerial`)');
+        await database.execute(
+            'CREATE INDEX `index_SegmentReview_classroomId_createDate` ON `SegmentReview` (`classroomId`, `createDate`)');
+        await database.execute(
+            'CREATE UNIQUE INDEX `index_SegmentTodayPrg_classroomId_segmentKeyId_type` ON `SegmentTodayPrg` (`classroomId`, `segmentKeyId`, `type`)');
+        await database.execute(
+            'CREATE INDEX `index_SegmentTodayPrg_classroomId_sort` ON `SegmentTodayPrg` (`classroomId`, `sort`)');
+        await database.execute(
+            'CREATE INDEX `index_SegmentTodayPrg_classroomId_contentSerial` ON `SegmentTodayPrg` (`classroomId`, `contentSerial`)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -178,8 +186,8 @@ class _$AppDatabase extends AppDatabase {
   }
 
   @override
-  MaterialDao get materialDao {
-    return _materialDaoInstance ??= _$MaterialDao(database, changeListener);
+  ContentDao get materialDao {
+    return _materialDaoInstance ??= _$ContentDao(database, changeListener);
   }
 
   @override
@@ -344,7 +352,7 @@ class _$DocDao extends DocDao {
     String hash,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE OR ABORT Doc SET count=total,url=?2,path=?3,hash=?4 WHERE id = ?1',
+        'UPDATE OR ABORT Doc SET msg=\'\',count=total,url=?2,path=?3,hash=?4 WHERE id=?1',
         arguments: [id, url, path, hash]);
   }
 
@@ -480,15 +488,15 @@ class _$ClassroomDao extends ClassroomDao {
   }
 }
 
-class _$MaterialDao extends MaterialDao {
-  _$MaterialDao(
+class _$ContentDao extends ContentDao {
+  _$ContentDao(
     this.database,
     this.changeListener,
   )   : _queryAdapter = QueryAdapter(database),
-        _materialInsertionAdapter = InsertionAdapter(
+        _contentInsertionAdapter = InsertionAdapter(
             database,
-            'Material',
-            (Material item) => <String, Object?>{
+            'Content',
+            (Content item) => <String, Object?>{
                   'id': item.id,
                   'classroomId': item.classroomId,
                   'serial': item.serial,
@@ -505,7 +513,7 @@ class _$MaterialDao extends MaterialDao {
 
   final QueryAdapter _queryAdapter;
 
-  final InsertionAdapter<Material> _materialInsertionAdapter;
+  final InsertionAdapter<Content> _contentInsertionAdapter;
 
   @override
   Future<void> forUpdate() async {
@@ -514,17 +522,17 @@ class _$MaterialDao extends MaterialDao {
   }
 
   @override
-  Future<List<Material>> getAllMaterial(int classroomId) async {
+  Future<List<Content>> getAllContent(int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM Material where classroomId=?1 and hide=false ORDER BY sort',
-        mapper: (Map<String, Object?> row) => Material(row['classroomId'] as int, row['serial'] as int, row['name'] as String, row['desc'] as String, row['docId'] as int, row['sort'] as int, (row['hide'] as int) != 0, id: row['id'] as int?),
+        'SELECT * FROM Content where classroomId=?1 and hide=false ORDER BY sort',
+        mapper: (Map<String, Object?> row) => Content(row['classroomId'] as int, row['serial'] as int, row['name'] as String, row['desc'] as String, row['docId'] as int, row['sort'] as int, (row['hide'] as int) != 0, id: row['id'] as int?),
         arguments: [classroomId]);
   }
 
   @override
   Future<int?> getMaxSerial(int classroomId) async {
     return _queryAdapter.query(
-        'SELECT ifnull(max(serial),0) FROM Material WHERE classroomId=?1',
+        'SELECT ifnull(max(serial),0) FROM Content WHERE classroomId=?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId]);
   }
@@ -535,7 +543,7 @@ class _$MaterialDao extends MaterialDao {
     int serial,
   ) async {
     return _queryAdapter.query(
-        'SELECT ifnull(serial,0) FROM Material WHERE classroomId=?1 and serial=?2',
+        'SELECT ifnull(serial,0) FROM Content WHERE classroomId=?1 and serial=?2',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId, serial]);
   }
@@ -543,7 +551,7 @@ class _$MaterialDao extends MaterialDao {
   @override
   Future<int?> getMaxSort(int classroomId) async {
     return _queryAdapter.query(
-        'SELECT ifnull(max(sort),0) FROM Material WHERE classroomId=?1',
+        'SELECT ifnull(max(sort),0) FROM Content WHERE classroomId=?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId]);
   }
@@ -554,19 +562,19 @@ class _$MaterialDao extends MaterialDao {
     int sort,
   ) async {
     return _queryAdapter.query(
-        'SELECT ifnull(sort,0) FROM Material WHERE classroomId=?1 and sort=?2',
+        'SELECT ifnull(sort,0) FROM Content WHERE classroomId=?1 and sort=?2',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId, sort]);
   }
 
   @override
-  Future<Material?> getMaterialByName(
+  Future<Content?> getContentByName(
     int classroomId,
     String name,
   ) async {
     return _queryAdapter.query(
-        'SELECT * FROM Material WHERE classroomId=?1 and name=?2',
-        mapper: (Map<String, Object?> row) => Material(
+        'SELECT * FROM Content WHERE classroomId=?1 and name=?2',
+        mapper: (Map<String, Object?> row) => Content(
             row['classroomId'] as int,
             row['serial'] as int,
             row['name'] as String,
@@ -579,13 +587,13 @@ class _$MaterialDao extends MaterialDao {
   }
 
   @override
-  Future<Material?> getMaterialBySerial(
+  Future<Content?> getContentBySerial(
     int classroomId,
     int serial,
   ) async {
     return _queryAdapter.query(
-        'SELECT * FROM Material WHERE classroomId=?1 and serial=?2',
-        mapper: (Map<String, Object?> row) => Material(
+        'SELECT * FROM Content WHERE classroomId=?1 and serial=?2',
+        mapper: (Map<String, Object?> row) => Content(
             row['classroomId'] as int,
             row['serial'] as int,
             row['name'] as String,
@@ -598,13 +606,13 @@ class _$MaterialDao extends MaterialDao {
   }
 
   @override
-  Future<Material?> getMaterialBySort(
+  Future<Content?> getContentBySort(
     int classroomId,
     int sort,
   ) async {
     return _queryAdapter.query(
-        'SELECT * FROM Material WHERE classroomId=?1 and sort=?2',
-        mapper: (Map<String, Object?> row) => Material(
+        'SELECT * FROM Content WHERE classroomId=?1 and sort=?2',
+        mapper: (Map<String, Object?> row) => Content(
             row['classroomId'] as int,
             row['serial'] as int,
             row['name'] as String,
@@ -619,14 +627,14 @@ class _$MaterialDao extends MaterialDao {
   @override
   Future<void> hide(int id) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Material set hide=true WHERE Material.id=?1',
+        'UPDATE Content set hide=true WHERE Content.id=?1',
         arguments: [id]);
   }
 
   @override
-  Future<void> showMaterial(int id) async {
+  Future<void> showContent(int id) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Material set hide=false WHERE Material.id=?1',
+        'UPDATE Content set hide=false WHERE Content.id=?1',
         arguments: [id]);
   }
 
@@ -636,22 +644,22 @@ class _$MaterialDao extends MaterialDao {
     int docId,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Material set docId=?2 WHERE Material.id=?1',
+        'UPDATE Content set docId=?2 WHERE Content.id=?1',
         arguments: [id, docId]);
   }
 
   @override
-  Future<void> insertMaterial(Material entity) async {
-    await _materialInsertionAdapter.insert(entity, OnConflictStrategy.fail);
+  Future<void> insertContent(Content entity) async {
+    await _contentInsertionAdapter.insert(entity, OnConflictStrategy.fail);
   }
 
   @override
-  Future<Material> add(String name) async {
+  Future<Content> add(String name) async {
     if (database is sqflite.Transaction) {
       return super.add(name);
     } else {
       return (database as sqflite.Database)
-          .transaction<Material>((transaction) async {
+          .transaction<Content>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         return transactionDatabase.materialDao.add(name);
@@ -679,7 +687,7 @@ class _$ScheduleDao extends ScheduleDao {
             (SegmentTodayPrg item) => <String, Object?>{
                   'id': item.id,
                   'classroomId': item.classroomId,
-                  'materialSerial': item.materialSerial,
+                  'contentSerial': item.contentSerial,
                   'segmentKeyId': item.segmentKeyId,
                   'type': item.type,
                   'sort': item.sort,
@@ -697,7 +705,7 @@ class _$ScheduleDao extends ScheduleDao {
                   'createDate': _dateConverter.encode(item.createDate),
                   'segmentKeyId': item.segmentKeyId,
                   'classroomId': item.classroomId,
-                  'materialSerial': item.materialSerial,
+                  'contentSerial': item.contentSerial,
                   'count': item.count
                 }),
         _segmentKeyInsertionAdapter = InsertionAdapter(
@@ -706,7 +714,7 @@ class _$ScheduleDao extends ScheduleDao {
             (SegmentKey item) => <String, Object?>{
                   'id': item.id,
                   'classroomId': item.classroomId,
-                  'materialSerial': item.materialSerial,
+                  'contentSerial': item.contentSerial,
                   'lessonIndex': item.lessonIndex,
                   'segmentIndex': item.segmentIndex
                 }),
@@ -716,7 +724,7 @@ class _$ScheduleDao extends ScheduleDao {
             (Segment item) => <String, Object?>{
                   'segmentKeyId': item.segmentKeyId,
                   'classroomId': item.classroomId,
-                  'materialSerial': item.materialSerial,
+                  'contentSerial': item.contentSerial,
                   'lessonIndex': item.lessonIndex,
                   'segmentIndex': item.segmentIndex,
                   'sort': item.sort
@@ -727,7 +735,7 @@ class _$ScheduleDao extends ScheduleDao {
             (SegmentOverallPrg item) => <String, Object?>{
                   'segmentKeyId': item.segmentKeyId,
                   'classroomId': item.classroomId,
-                  'materialSerial': item.materialSerial,
+                  'contentSerial': item.contentSerial,
                   'next': _dateConverter.encode(item.next),
                   'progress': item.progress
                 }),
@@ -770,7 +778,7 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<void> hideMaterial(int id) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Material set hide=true WHERE Material.id=?1',
+        'UPDATE Content set hide=true WHERE Content.id=?1',
         arguments: [id]);
   }
 
@@ -834,7 +842,7 @@ class _$ScheduleDao extends ScheduleDao {
         'SELECT * FROM SegmentTodayPrg WHERE classroomId=?1 order by id asc',
         mapper: (Map<String, Object?> row) => SegmentTodayPrg(
             row['classroomId'] as int,
-            row['materialSerial'] as int,
+            row['contentSerial'] as int,
             row['segmentKeyId'] as int,
             row['type'] as int,
             row['sort'] as int,
@@ -869,13 +877,13 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<int?> lessonCount(
     int classroomId,
-    int materialSerial,
+    int contentSerial,
     int lessonIndex,
   ) async {
     return _queryAdapter.query(
-        'SELECT count(Segment.segmentKeyId) FROM Segment AND Segment.classroomId=?1 WHERE Segment.materialSerial=?2 and Segment.lessonIndex=?3',
+        'SELECT count(Segment.segmentKeyId) FROM Segment AND Segment.classroomId=?1 WHERE Segment.contentSerial=?2 and Segment.lessonIndex=?3',
         mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [classroomId, materialSerial, lessonIndex]);
+        arguments: [classroomId, contentSerial, lessonIndex]);
   }
 
   @override
@@ -898,7 +906,7 @@ class _$ScheduleDao extends ScheduleDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT SegmentReview.classroomId,SegmentReview.segmentKeyId,0 type,Segment.sort,0 progress,0 viewTime,SegmentReview.count reviewCount,SegmentReview.createDate reviewCreateDate,0 finish FROM SegmentReview JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId WHERE SegmentReview.classroomId=?1 AND SegmentReview.count=?2 AND SegmentReview.createDate=?3 ORDER BY Segment.sort',
-        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['classroomId'] as int, row['materialSerial'] as int, row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['classroomId'] as int, row['contentSerial'] as int, row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
         arguments: [
           classroomId,
           reviewCount,
@@ -913,8 +921,8 @@ class _$ScheduleDao extends ScheduleDao {
     Date now,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM ( SELECT Segment.classroomId,Segment.materialSerial,SegmentOverallPrg.segmentKeyId,0 type,Segment.sort,SegmentOverallPrg.progress progress,0 viewTime,0 reviewCount,0 reviewCreateDate,0 finish FROM SegmentOverallPrg JOIN Segment ON Segment.segmentKeyId=SegmentOverallPrg.segmentKeyId AND Segment.classroomId=?1 WHERE SegmentOverallPrg.next<=?3 AND SegmentOverallPrg.progress>=?2 ORDER BY SegmentOverallPrg.progress,Segment.sort ) Segment order by Segment.sort',
-        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['classroomId'] as int, row['materialSerial'] as int, row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
+        'SELECT * FROM ( SELECT Segment.classroomId,Segment.contentSerial,SegmentOverallPrg.segmentKeyId,0 type,Segment.sort,SegmentOverallPrg.progress progress,0 viewTime,0 reviewCount,0 reviewCreateDate,0 finish FROM SegmentOverallPrg JOIN Segment ON Segment.segmentKeyId=SegmentOverallPrg.segmentKeyId AND Segment.classroomId=?1 WHERE SegmentOverallPrg.next<=?3 AND SegmentOverallPrg.progress>=?2 ORDER BY SegmentOverallPrg.progress,Segment.sort ) Segment order by Segment.sort',
+        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['classroomId'] as int, row['contentSerial'] as int, row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
         arguments: [classroomId, minProgress, _dateConverter.encode(now)]);
   }
 
@@ -946,7 +954,7 @@ class _$ScheduleDao extends ScheduleDao {
         mapper: (Map<String, Object?> row) => SegmentOverallPrg(
             row['segmentKeyId'] as int,
             row['classroomId'] as int,
-            row['materialSerial'] as int,
+            row['contentSerial'] as int,
             _dateConverter.decode(row['next'] as int),
             row['progress'] as int),
         arguments: [segmentKeyId]);
@@ -956,8 +964,8 @@ class _$ScheduleDao extends ScheduleDao {
   Future<List<SegmentOverallPrgWithKey>> getAllSegmentOverallPrg(
       int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentOverallPrg.*,Material.name materialName,Segment.lessonIndex,Segment.segmentIndex FROM Segment JOIN SegmentOverallPrg on SegmentOverallPrg.segmentKeyId=Segment.classroomId JOIN Material ON Material.classroomId=Segment.classroomId AND Material.serial=Segment.materialSerial WHERE Segment.classroomId=?1 ORDER BY Segment.sort asc',
-        mapper: (Map<String, Object?> row) => SegmentOverallPrgWithKey(row['segmentKeyId'] as int, row['classroomId'] as int, row['materialSerial'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, row['materialName'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int),
+        'SELECT SegmentOverallPrg.*,Content.name contentName,Segment.lessonIndex,Segment.segmentIndex FROM Segment JOIN SegmentOverallPrg on SegmentOverallPrg.segmentKeyId=Segment.classroomId JOIN Content ON Content.classroomId=Segment.classroomId AND Content.serial=Segment.contentSerial WHERE Segment.classroomId=?1 ORDER BY Segment.sort asc',
+        mapper: (Map<String, Object?> row) => SegmentOverallPrgWithKey(row['segmentKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, row['contentName'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int),
         arguments: [classroomId]);
   }
 
@@ -965,8 +973,8 @@ class _$ScheduleDao extends ScheduleDao {
   Future<List<SegmentReviewWithKey>> getAllSegmentReview(
       int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentReview.*,Material.name materialName,Segment.lessonIndex,Segment.segmentIndex FROM Segment JOIN SegmentReview on SegmentReview.segmentKeyId=Segment.classroomId JOIN Material ON Material.classroomId=Segment.classroomId AND Material.serial=Segment.materialSerial WHERE Segment.classroomId=?1 ORDER BY SegmentReview.createDate desc,Segment.sort asc',
-        mapper: (Map<String, Object?> row) => SegmentReviewWithKey(_dateConverter.decode(row['createDate'] as int), row['segmentKeyId'] as int, row['classroomId'] as int, row['materialSerial'] as int, row['count'] as int, row['materialName'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int),
+        'SELECT SegmentReview.*,Content.name contentName,Segment.lessonIndex,Segment.segmentIndex FROM Segment JOIN SegmentReview on SegmentReview.segmentKeyId=Segment.classroomId JOIN Content ON Content.classroomId=Segment.classroomId AND Content.serial=Segment.contentSerial WHERE Segment.classroomId=?1 ORDER BY SegmentReview.createDate desc,Segment.sort asc',
+        mapper: (Map<String, Object?> row) => SegmentReviewWithKey(_dateConverter.decode(row['createDate'] as int), row['segmentKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, row['count'] as int, row['contentName'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int),
         arguments: [classroomId]);
   }
 
@@ -984,8 +992,8 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<SegmentContentInDb?> getSegmentContent(int segmentKeyId) async {
     return _queryAdapter.query(
-        'SELECT Segment.segmentKeyId,Segment.classroomId,Segment.materialSerial,Segment.lessonIndex,Segment.segmentIndex,Segment.sort sort,Material.name materialName FROM Segment JOIN Material ON Material.classroomId=Segment.classroomId AND Material.serial=Segment.materialSerial WHERE Segment.segmentKeyId=?1',
-        mapper: (Map<String, Object?> row) => SegmentContentInDb(row['segmentKeyId'] as int, row['classroomId'] as int, row['materialSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['sort'] as int, row['materialName'] as String),
+        'SELECT Segment.segmentKeyId,Segment.classroomId,Segment.contentSerial,Segment.lessonIndex,Segment.segmentIndex,Segment.sort sort,Content.name contentName FROM Segment JOIN Content ON Content.classroomId=Segment.classroomId AND Content.serial=Segment.contentSerial WHERE Segment.segmentKeyId=?1',
+        mapper: (Map<String, Object?> row) => SegmentContentInDb(row['segmentKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['sort'] as int, row['contentName'] as String),
         arguments: [segmentKeyId]);
   }
 
@@ -1016,22 +1024,22 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<List<SegmentKey>> getSegmentKey(
     int classroomId,
-    int materialSerial,
+    int contentSerial,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentKey.* FROM SegmentKey WHERE SegmentKey.classroomId=?1 and SegmentKey.materialSerial=?2',
-        mapper: (Map<String, Object?> row) => SegmentKey(row['classroomId'] as int, row['materialSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, id: row['id'] as int?),
-        arguments: [classroomId, materialSerial]);
+        'SELECT SegmentKey.* FROM SegmentKey WHERE SegmentKey.classroomId=?1 and SegmentKey.contentSerial=?2',
+        mapper: (Map<String, Object?> row) => SegmentKey(row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, id: row['id'] as int?),
+        arguments: [classroomId, contentSerial]);
   }
 
   @override
-  Future<void> deleteSegmentByMaterialSerial(
+  Future<void> deleteSegmentByContentSerial(
     int classroomId,
-    int materialSerial,
+    int contentSerial,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM Segment WHERE Segment.classroomId=?1 and Segment.materialSerial=?2',
-        arguments: [classroomId, materialSerial]);
+        'DELETE FROM Segment WHERE Segment.classroomId=?1 and Segment.contentSerial=?2',
+        arguments: [classroomId, contentSerial]);
   }
 
   @override
@@ -1187,18 +1195,18 @@ class _$ScheduleDao extends ScheduleDao {
 
   @override
   Future<void> hideMaterialAndDeleteSegment(
-    int materialId,
-    int materialSerial,
+    int contentId,
+    int contentSerial,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.hideMaterialAndDeleteSegment(materialId, materialSerial);
+      await super.hideMaterialAndDeleteSegment(contentId, contentSerial);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         await transactionDatabase.scheduleDao
-            .hideMaterialAndDeleteSegment(materialId, materialSerial);
+            .hideMaterialAndDeleteSegment(contentId, contentSerial);
       });
     }
   }

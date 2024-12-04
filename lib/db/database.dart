@@ -6,14 +6,14 @@ import 'dart:developer';
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/dao/classroom_dao.dart';
-import 'package:repeat_flutter/db/dao/material_dao.dart';
+import 'package:repeat_flutter/db/dao/content_dao.dart';
 import 'package:repeat_flutter/db/dao/doc_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/kv_dao.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
-import 'package:repeat_flutter/db/entity/material.dart';
+import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/db/entity/lock.dart';
 import 'package:repeat_flutter/db/entity/segment.dart';
 import 'package:repeat_flutter/db/entity/segment_key.dart';
@@ -39,7 +39,7 @@ part 'database.g.dart'; // the generated code will be there
   Doc,
   VideoAttribute,
   Classroom,
-  Material,
+  Content,
   CrKv,
   Segment,
   SegmentKey,
@@ -64,7 +64,7 @@ abstract class AppDatabase extends FloorDatabase {
 
   ClassroomDao get classroomDao;
 
-  MaterialDao get materialDao;
+  ContentDao get materialDao;
 
   ScheduleDao get scheduleDao;
 

@@ -27,11 +27,11 @@ class RepeatDocHelp {
     scheduleKeyToLearnSegment = {};
   }
 
-  static double getVideoMaskRatio(int materialSerial, int lessonIndex, String mediaExtension) {
+  static double getVideoMaskRatio(int contentSerial, int lessonIndex, String mediaExtension) {
     if (mediaExtension == "") {
       return 20;
     }
-    var mediaDocPath = DocPath.getRelativeMediaPath(materialSerial, lessonIndex, mediaExtension);
+    var mediaDocPath = DocPath.getRelativeMediaPath(contentSerial, lessonIndex, mediaExtension);
     var ret = mediaDocPathToVideoMaskRatio[mediaDocPath];
     if (ret != null && ret > 0) {
       return ret;
@@ -39,8 +39,8 @@ class RepeatDocHelp {
     return 20;
   }
 
-  static void setVideoMaskRatio(int materialSerial, int lessonIndex, String mediaExtension, double ratio) {
-    var mediaDocPath = DocPath.getRelativeMediaPath(materialSerial, lessonIndex, mediaExtension);
+  static void setVideoMaskRatio(int contentSerial, int lessonIndex, String mediaExtension, double ratio) {
+    var mediaDocPath = DocPath.getRelativeMediaPath(contentSerial, lessonIndex, mediaExtension);
     mediaDocPathToVideoMaskRatio[mediaDocPath] = ratio;
   }
 
@@ -64,7 +64,7 @@ class RepeatDocHelp {
       return null;
     }
     var ret = SegmentContent.from(retInDb);
-    ret.k = getKey(ret.materialName, ret.lessonIndex, ret.segmentIndex);
+    ret.k = getKey(ret.contentName, ret.lessonIndex, ret.segmentIndex);
     var qa = await getAndCacheQa(ret, err: err);
     if (qa == null) {
       return null;
@@ -89,7 +89,7 @@ class RepeatDocHelp {
 
     // full mediaSegments
     if (lesson.mediaExtension != "") {
-      var mediaDocPath = DocPath.getRelativeMediaPath(ret.materialSerial, ret.lessonIndex, lesson.mediaExtension);
+      var mediaDocPath = DocPath.getRelativeMediaPath(ret.contentSerial, ret.lessonIndex, lesson.mediaExtension);
       ret.mediaDocPath = await DocPath.getContentPath();
       ret.mediaDocPath = ret.mediaDocPath.joinPath(mediaDocPath);
       ret.mediaExtension = lesson.mediaExtension;
@@ -159,13 +159,13 @@ class RepeatDocHelp {
   }
 
   static Future<RepeatDoc?> getAndCacheQa(SegmentContent ret, {RxString? err}) async {
-    var path = DocPath.getRelativeIndexPath(ret.materialSerial);
+    var path = DocPath.getRelativeIndexPath(ret.contentSerial);
     var qa = indexDocPathToQa[path];
     if (qa == null) {
       qa = await RepeatDoc.fromPath(path);
       if (qa == null) {
         if (err != null) {
-          err.value = I18nKey.labelDocNotBeDownloaded.trArgs([ret.materialName]);
+          err.value = I18nKey.labelDocNotBeDownloaded.trArgs([ret.contentName]);
         }
         return null;
       }
@@ -174,7 +174,7 @@ class RepeatDocHelp {
     return qa;
   }
 
-  static String getKey(String materialName, int lessonIndex, int segmentIndex) {
-    return '$materialName|${lessonIndex + 1}|${segmentIndex + 1}';
+  static String getKey(String contentName, int lessonIndex, int segmentIndex) {
+    return '$contentName|${lessonIndex + 1}|${segmentIndex + 1}';
   }
 }

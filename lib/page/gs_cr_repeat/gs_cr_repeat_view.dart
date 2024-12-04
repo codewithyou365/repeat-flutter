@@ -66,7 +66,7 @@ class GsCrRepeatPage extends StatelessWidget {
       if (screenRatio > videoAspectRatio && videoAspectRatio > 0) {
         double videoHeight = screenHeight;
         var segment = state.currSegment;
-        var videoMaskHeight = videoHeight / RepeatDocHelp.getVideoMaskRatio(segment.materialSerial, segment.lessonIndex, segment.mediaExtension);
+        var videoMaskHeight = videoHeight / RepeatDocHelp.getVideoMaskRatio(segment.contentSerial, segment.lessonIndex, segment.mediaExtension);
         if (videoMaskHeight < spaceBottomHeight) {
           if (logic.getMaskRatio() > 0) {
             maskHeight = videoMaskHeight;

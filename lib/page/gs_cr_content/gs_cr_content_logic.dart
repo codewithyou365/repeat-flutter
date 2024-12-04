@@ -8,7 +8,7 @@ import 'package:repeat_flutter/common/url.dart';
 import 'package:repeat_flutter/common/zip.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/material.dart';
+import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/download.dart';
@@ -35,18 +35,18 @@ class GsCrContentLogic extends GetxController {
 
   init() async {
     state.list.clear();
-    state.list.addAll(await Db().db.materialDao.getAllMaterial(Classroom.curr));
+    state.list.addAll(await Db().db.materialDao.getAllContent(Classroom.curr));
     update([GsCrContentLogic.id]);
   }
 
-  resetDoc(int materialId) async {
-    await Db().db.materialDao.updateDocId(materialId, 0);
+  resetDoc(int contentId) async {
+    await Db().db.materialDao.updateDocId(contentId, 0);
     await init();
   }
 
-  delete(int materialId, int materialSerial) async {
-    state.list.removeWhere((element) => identical(element.id, materialId));
-    await Db().db.scheduleDao.hideMaterialAndDeleteSegment(materialId, materialSerial);
+  delete(int contentId, int contentSerial) async {
+    state.list.removeWhere((element) => identical(element.id, contentId));
+    await Db().db.scheduleDao.hideMaterialAndDeleteSegment(contentId, contentSerial);
     Get.find<GsCrLogic>().init();
     update([GsCrContentLogic.id]);
   }
@@ -105,17 +105,17 @@ class GsCrContentLogic extends GetxController {
   add(String name) async {
     if (name.isEmpty) {
       Get.back();
-      Snackbar.show(I18nKey.labelMaterialNameEmpty.tr);
+      Snackbar.show(I18nKey.labelContentNameEmpty.tr);
       return;
     }
     if (name.length > 3 || !reg.hasMatch(name)) {
       Get.back();
-      Snackbar.show(I18nKey.labelMaterialNameError.tr);
+      Snackbar.show(I18nKey.labelContentNameError.tr);
       return;
     }
     if (state.list.any((e) => e.name == name)) {
       Get.back();
-      Snackbar.show(I18nKey.labelMaterialNameDuplicated.tr);
+      Snackbar.show(I18nKey.labelContentNameDuplicated.tr);
       return;
     }
     await Db().db.materialDao.add(name);
@@ -123,7 +123,7 @@ class GsCrContentLogic extends GetxController {
     Get.back();
   }
 
-  todoShare(Material model) async {
+  todoShare(Content model) async {
     // showTransparentOverlay(() async {
     //   var doc = await downloadDocInfo(model.url);
     //   if (doc == null) {
@@ -155,8 +155,8 @@ class GsCrContentLogic extends GetxController {
     // });
   }
 
-  Future<int> getUnitCount(int materialSerial) async {
-    var kv = await RepeatDoc.fromPath(DocPath.getRelativeIndexPath(materialSerial));
+  Future<int> getUnitCount(int contentSerial) async {
+    var kv = await RepeatDoc.fromPath(DocPath.getRelativeIndexPath(contentSerial));
     if (kv == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return 0;
@@ -168,8 +168,8 @@ class GsCrContentLogic extends GetxController {
     return total;
   }
 
-  Future<void> addToSchedule(Material material) async {
-    var ret = await ScheduleHelp.addMaterialToSchedule(material);
+  Future<void> addToSchedule(Content content) async {
+    var ret = await ScheduleHelp.addContentToSchedule(content);
     if (ret == false) {
       return;
     }
@@ -196,10 +196,10 @@ class GsCrContentLogic extends GetxController {
     }
   }
 
-  download(int materialId, int materialSerial, String url) async {
+  download(int contentId, int contentSerial, String url) async {
     state.indexCount.value = 0;
     state.indexTotal.value = 1;
-    var indexPath = DocPath.getRelativeIndexPath(materialSerial);
+    var indexPath = DocPath.getRelativeIndexPath(contentSerial);
     var success = await downloadDoc(
       url,
       indexPath,
@@ -226,7 +226,7 @@ class GsCrContentLogic extends GetxController {
       }
       await downloadDoc(
         innerUrl,
-        DocPath.getRelativeMediaPath(materialSerial, i, v.mediaExtension),
+        DocPath.getRelativeMediaPath(contentSerial, i, v.mediaExtension),
         hash: v.hash,
         progressCallback: downloadProgress,
       );
@@ -236,7 +236,7 @@ class GsCrContentLogic extends GetxController {
       return;
     }
 
-    await Db().db.materialDao.updateDocId(materialId, indexJsonDocId);
+    await Db().db.materialDao.updateDocId(contentId, indexJsonDocId);
     Nav.back();
     init();
     RepeatDocHelp.clear();

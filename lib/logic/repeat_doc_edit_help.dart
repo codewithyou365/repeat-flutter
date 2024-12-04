@@ -28,7 +28,7 @@ class RepeatDocEditHelp {
     double ratio, {
     SegmentEditHelpOutArg? out,
   }) async {
-    var indexPath = DocPath.getRelativeIndexPath(ret.materialSerial);
+    var indexPath = DocPath.getRelativeIndexPath(ret.contentSerial);
     Map<String, dynamic>? map = await RepeatDoc.toJsonMap(indexPath);
     if (map == null) {
       return false;
@@ -40,7 +40,7 @@ class RepeatDocEditHelp {
     lessons[ret.lessonIndex] = lesson;
     lesson['videoMaskRatio'] = "$ratio";
     RepeatDoc.writeFile(indexPath, map);
-    RepeatDocHelp.setVideoMaskRatio(ret.materialSerial, ret.lessonIndex, ret.mediaExtension, ratio);
+    RepeatDocHelp.setVideoMaskRatio(ret.contentSerial, ret.lessonIndex, ret.mediaExtension, ratio);
     return true;
   }
 
@@ -52,7 +52,7 @@ class RepeatDocEditHelp {
     Duration duration, {
     SegmentEditHelpOutArg? out,
   }) async {
-    var indexPath = DocPath.getRelativeIndexPath(ret.materialSerial);
+    var indexPath = DocPath.getRelativeIndexPath(ret.contentSerial);
     Map<String, dynamic>? map = await RepeatDoc.toJsonMap(indexPath);
     if (map == null) {
       return false;

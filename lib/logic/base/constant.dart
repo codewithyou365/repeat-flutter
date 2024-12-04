@@ -9,12 +9,12 @@ class DocPath {
   static const String zipTarget = "zt";
   static const String zipIndexFile = "__index.json";
 
-  static String getRelativeMediaPath(int materialSerial, int lessonIndex, String mediaExtension) {
-    return getRelativePath(materialSerial).joinPath(getMediaFileName(lessonIndex, mediaExtension));
+  static String getRelativeMediaPath(int contentSerial, int lessonIndex, String mediaExtension) {
+    return getRelativePath(contentSerial).joinPath(getMediaFileName(lessonIndex, mediaExtension));
   }
 
-  static String getRelativeIndexPath(int materialSerial) {
-    return getRelativePath(materialSerial).joinPath(getIndexFileName());
+  static String getRelativeIndexPath(int contentSerial) {
+    return getRelativePath(contentSerial).joinPath(getIndexFileName());
   }
 
   static String getMediaFileName(int lessonIndex, String mediaExtension) {
@@ -25,8 +25,8 @@ class DocPath {
     return "index.json";
   }
 
-  static String getRelativePath(int materialSerial) {
-    return '${Classroom.curr}'.joinPath('$materialSerial');
+  static String getRelativePath(int contentSerial) {
+    return '${Classroom.curr}'.joinPath('$contentSerial');
   }
 
   static Future<String> getContentPath() async {

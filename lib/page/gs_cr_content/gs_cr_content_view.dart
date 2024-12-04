@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/db/entity/material.dart' as entity;
+import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -41,7 +41,7 @@ class GsCrContentPage extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           RxString mgn = RxString("");
-          MsgBox.strInputWithYesOrNo(mgn, I18nKey.btnAdd.tr, I18nKey.labelMaterialName.tr, yes: () {
+          MsgBox.strInputWithYesOrNo(mgn, I18nKey.btnAdd.tr, I18nKey.labelContentName.tr, yes: () {
             logic.add(mgn.value);
             return;
           });
@@ -75,7 +75,7 @@ class GsCrContentPage extends StatelessWidget {
     );
   }
 
-  Widget buildButton(GsCrContentLogic logic, entity.Material model) {
+  Widget buildButton(GsCrContentLogic logic, Content model) {
     var menus = <PopupMenuEntry<String>>[];
 
     if (model.docId == 0) {
@@ -150,7 +150,7 @@ class GsCrContentPage extends StatelessWidget {
   //   );
   // }
 
-  openDeleteDialog(GsCrContentLogic logic, entity.Material model) {
+  openDeleteDialog(GsCrContentLogic logic, Content model) {
     MsgBox.yesOrNo(
       I18nKey.labelDelete.tr,
       I18nKey.labelDeleteMaterial.trArgs([model.name]),
@@ -161,7 +161,7 @@ class GsCrContentPage extends StatelessWidget {
     );
   }
 
-  openDownloadDialog(GsCrContentLogic logic, entity.Material model) {
+  openDownloadDialog(GsCrContentLogic logic, Content model) {
     final state = logic.state;
     RxString downloadUrl = "".obs;
     MsgBox.strInputWithYesOrNo(
@@ -192,7 +192,7 @@ class GsCrContentPage extends StatelessWidget {
     );
   }
 
-  openScheduleDialog(GsCrContentLogic logic, entity.Material model) async {
+  openScheduleDialog(GsCrContentLogic logic, Content model) async {
     var unitCount = await logic.getUnitCount(model.serial);
     if (unitCount == 0) {
       logic.resetDoc(model.id!);
@@ -223,7 +223,7 @@ class GsCrContentPage extends StatelessWidget {
     );
   }
 
-  Widget buildItem(BuildContext context, GsCrContentLogic logic, Material model) {
+  Widget buildItem(BuildContext context, GsCrContentLogic logic, Content model) {
     return Container();
     // var textStyle = TextStyle(fontSize: 12.w);
     // return SwipeActionCell(

@@ -1,4 +1,4 @@
-// entity/material.dart
+// entity/content.dart
 
 import 'package:floor/floor.dart';
 
@@ -10,7 +10,7 @@ import 'package:floor/floor.dart';
     Index(value: ['sort', 'id']),
   ],
 )
-class Material {
+class Content {
   @PrimaryKey(autoGenerate: true)
   final int? id;
 
@@ -25,7 +25,7 @@ class Material {
   int sort;
   bool hide;
 
-  Material(
+  Content(
     this.classroomId,
     this.serial,
     this.name,

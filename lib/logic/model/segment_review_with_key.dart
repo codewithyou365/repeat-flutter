@@ -4,7 +4,7 @@ import 'package:repeat_flutter/db/entity/segment_review.dart';
 @Entity(tableName: "")
 class SegmentReviewWithKey extends SegmentReview {
   @primaryKey
-  String materialName;
+  String contentName;
   int lessonIndex;
   int segmentIndex;
 
@@ -12,9 +12,9 @@ class SegmentReviewWithKey extends SegmentReview {
     super.createDate,
     super.segmentKeyId,
     super.classroomId,
-    super.materialSerial,
+    super.contentSerial,
     super.count,
-    this.materialName,
+    this.contentName,
     this.lessonIndex,
     this.segmentIndex,
   );

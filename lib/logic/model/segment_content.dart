@@ -5,16 +5,16 @@ import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 @Entity(tableName: "")
 class SegmentContentInDb extends Segment {
   @primaryKey
-  final String materialName;
+  final String contentName;
 
   SegmentContentInDb(
     super.segmentKeyId,
     super.classroomId,
-    super.materialSerial,
+    super.contentSerial,
     super.lessonIndex,
     super.segmentIndex,
     super.sort,
-    this.materialName,
+    this.contentName,
   );
 }
 
@@ -35,22 +35,22 @@ class SegmentContent extends SegmentContentInDb {
   SegmentContent(
     super.segmentKeyId,
     super.classroomId,
-    super.materialSerial,
+    super.contentSerial,
     super.lessonIndex,
     super.segmentIndex,
     super.sort,
-    super.materialName,
+    super.contentName,
   );
 
   static SegmentContent from(SegmentContentInDb d) {
     return SegmentContent(
       d.segmentKeyId,
       d.classroomId,
-      d.materialSerial,
+      d.contentSerial,
       d.lessonIndex,
       d.segmentIndex,
       d.sort,
-      d.materialName,
+      d.contentName,
     );
   }
 }

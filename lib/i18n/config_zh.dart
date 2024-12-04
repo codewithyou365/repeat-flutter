@@ -27,10 +27,10 @@ class ConfigZh extends Config {
     put(I18nKey.labelClassroomNameEmpty, "课堂名字应不能为空");
     put(I18nKey.labelClassroomNameError, "课堂名字应为 3 个字母或更少，并且由大写字母数字字符组成。");
     put(I18nKey.labelClassroomNameDuplicated, "课堂名字重复。");
-    put(I18nKey.labelMaterialName, "材料名称");
-    put(I18nKey.labelMaterialNameEmpty, "材料名字应不能为空");
-    put(I18nKey.labelMaterialNameError, "材料名字应为 3 个字母或更少，并且由大写字母数字字符组成。");
-    put(I18nKey.labelMaterialNameDuplicated, "材料名字重复。");
+    put(I18nKey.labelContentName, "内容名称");
+    put(I18nKey.labelContentNameEmpty, "内容名字应不能为空");
+    put(I18nKey.labelContentNameError, "内容名字应为 3 个字母或更少，并且由大写字母数字字符组成。");
+    put(I18nKey.labelContentNameDuplicated, "内容名字重复。");
     put(I18nKey.labelDelete, "删除 ！");
     put(I18nKey.labelRemoteUrl, "远程地址");
     put(I18nKey.labelOriginalAddress, "原始地址");

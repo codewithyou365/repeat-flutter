@@ -26,8 +26,8 @@ class GsCrContentTemplateLogic extends GetxController {
   void onInit() {
     super.onInit();
     List<int> ids = Get.arguments as List<int>;
-    state.materialId = ids[0];
-    state.materialSerial = ids[1];
+    state.contentId = ids[0];
+    state.contentSerial = ids[1];
     state.items.add(GsCrContentTemplateState.qTemplate);
     state.items.add(GsCrContentTemplateState.aTemplate);
     state.items.add(GsCrContentTemplateState.qaTemplate);
@@ -47,7 +47,7 @@ class GsCrContentTemplateLogic extends GetxController {
     }
     showOverlay(() async {
       var rootPath = await DocPath.getContentPath();
-      var relativePath = DocPath.getRelativePath(state.materialSerial);
+      var relativePath = DocPath.getRelativePath(state.contentSerial);
       var workPath = rootPath.joinPath(relativePath);
       await Folder.ensureExists(workPath);
 
@@ -79,7 +79,7 @@ class GsCrContentTemplateLogic extends GetxController {
         return;
       }
 
-      await Db().db.materialDao.updateDocId(state.materialId, indexJsonDocId);
+      await Db().db.materialDao.updateDocId(state.contentId, indexJsonDocId);
       final logic = Get.find<GsCrContentLogic>();
       logic.init();
       Nav.gsCrContent.until();

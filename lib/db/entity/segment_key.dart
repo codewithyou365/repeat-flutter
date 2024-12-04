@@ -4,7 +4,7 @@ import 'package:floor/floor.dart';
 
 @Entity(
   indices: [
-    Index(value: ['classroomId', 'materialSerial', 'lessonIndex', 'segmentIndex'], unique: true),
+    Index(value: ['classroomId', 'contentSerial', 'lessonIndex', 'segmentIndex'], unique: true),
   ],
 )
 class SegmentKey {
@@ -12,19 +12,19 @@ class SegmentKey {
   final int? id;
 
   final int classroomId;
-  final int materialSerial;
+  final int contentSerial;
   final int lessonIndex;
   final int segmentIndex;
 
   SegmentKey(
     this.classroomId,
-    this.materialSerial,
+    this.contentSerial,
     this.lessonIndex,
     this.segmentIndex, {
     this.id,
   });
 
   String toStringKey() {
-    return '$classroomId|$materialSerial|$lessonIndex|$segmentIndex';
+    return '$classroomId|$contentSerial|$lessonIndex|$segmentIndex';
   }
 }

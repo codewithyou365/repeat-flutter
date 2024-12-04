@@ -6,14 +6,14 @@ import 'package:floor/floor.dart';
   primaryKeys: ['segmentKeyId'],
   indices: [
     Index(value: ['classroomId', 'sort'], unique: true),
-    Index(value: ['classroomId', 'materialSerial', 'lessonIndex', 'segmentIndex'], unique: true),
+    Index(value: ['classroomId', 'contentSerial', 'lessonIndex', 'segmentIndex'], unique: true),
   ],
 )
 class Segment {
   int segmentKeyId;
 
   final int classroomId;
-  final int materialSerial;
+  final int contentSerial;
   final int lessonIndex;
   final int segmentIndex;
 
@@ -22,13 +22,13 @@ class Segment {
   Segment(
     this.segmentKeyId,
     this.classroomId,
-    this.materialSerial,
+    this.contentSerial,
     this.lessonIndex,
     this.segmentIndex,
     this.sort,
   );
 
   String toStringKey() {
-    return '$classroomId|$materialSerial|$lessonIndex|$segmentIndex';
+    return '$classroomId|$contentSerial|$lessonIndex|$segmentIndex';
   }
 }
