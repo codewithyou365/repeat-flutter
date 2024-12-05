@@ -78,7 +78,7 @@ class _$AppDatabase extends AppDatabase {
 
   ClassroomDao? _classroomDaoInstance;
 
-  ContentDao? _materialDaoInstance;
+  ContentDao? _contentDaoInstance;
 
   ScheduleDao? _scheduleDaoInstance;
 
@@ -114,7 +114,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Classroom` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Content` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `serial` INTEGER NOT NULL, `name` TEXT NOT NULL, `desc` TEXT NOT NULL, `docId` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `Content` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `serial` INTEGER NOT NULL, `name` TEXT NOT NULL, `desc` TEXT NOT NULL, `docId` INTEGER NOT NULL, `url` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `CrKv` (`classroomId` INTEGER NOT NULL, `k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`classroomId`, `k`))');
         await database.execute(
@@ -186,8 +186,8 @@ class _$AppDatabase extends AppDatabase {
   }
 
   @override
-  ContentDao get materialDao {
-    return _materialDaoInstance ??= _$ContentDao(database, changeListener);
+  ContentDao get contentDao {
+    return _contentDaoInstance ??= _$ContentDao(database, changeListener);
   }
 
   @override
@@ -503,6 +503,7 @@ class _$ContentDao extends ContentDao {
                   'name': item.name,
                   'desc': item.desc,
                   'docId': item.docId,
+                  'url': item.url,
                   'sort': item.sort,
                   'hide': item.hide ? 1 : 0
                 });
@@ -525,7 +526,7 @@ class _$ContentDao extends ContentDao {
   Future<List<Content>> getAllContent(int classroomId) async {
     return _queryAdapter.queryList(
         'SELECT * FROM Content where classroomId=?1 and hide=false ORDER BY sort',
-        mapper: (Map<String, Object?> row) => Content(row['classroomId'] as int, row['serial'] as int, row['name'] as String, row['desc'] as String, row['docId'] as int, row['sort'] as int, (row['hide'] as int) != 0, id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => Content(row['classroomId'] as int, row['serial'] as int, row['name'] as String, row['desc'] as String, row['docId'] as int, row['url'] as String, row['sort'] as int, (row['hide'] as int) != 0, id: row['id'] as int?),
         arguments: [classroomId]);
   }
 
@@ -568,6 +569,22 @@ class _$ContentDao extends ContentDao {
   }
 
   @override
+  Future<Content?> getContentById(int id) async {
+    return _queryAdapter.query('SELECT * FROM Content WHERE id=?1',
+        mapper: (Map<String, Object?> row) => Content(
+            row['classroomId'] as int,
+            row['serial'] as int,
+            row['name'] as String,
+            row['desc'] as String,
+            row['docId'] as int,
+            row['url'] as String,
+            row['sort'] as int,
+            (row['hide'] as int) != 0,
+            id: row['id'] as int?),
+        arguments: [id]);
+  }
+
+  @override
   Future<Content?> getContentByName(
     int classroomId,
     String name,
@@ -580,6 +597,7 @@ class _$ContentDao extends ContentDao {
             row['name'] as String,
             row['desc'] as String,
             row['docId'] as int,
+            row['url'] as String,
             row['sort'] as int,
             (row['hide'] as int) != 0,
             id: row['id'] as int?),
@@ -599,6 +617,7 @@ class _$ContentDao extends ContentDao {
             row['name'] as String,
             row['desc'] as String,
             row['docId'] as int,
+            row['url'] as String,
             row['sort'] as int,
             (row['hide'] as int) != 0,
             id: row['id'] as int?),
@@ -618,6 +637,7 @@ class _$ContentDao extends ContentDao {
             row['name'] as String,
             row['desc'] as String,
             row['docId'] as int,
+            row['url'] as String,
             row['sort'] as int,
             (row['hide'] as int) != 0,
             id: row['id'] as int?),
@@ -636,6 +656,17 @@ class _$ContentDao extends ContentDao {
     await _queryAdapter.queryNoReturn(
         'UPDATE Content set hide=false WHERE Content.id=?1',
         arguments: [id]);
+  }
+
+  @override
+  Future<void> updateFinish(
+    int id,
+    int docId,
+    String url,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE Content set docId=?2,url=?3 WHERE Content.id=?1',
+        arguments: [id, docId, url]);
   }
 
   @override
@@ -662,7 +693,7 @@ class _$ContentDao extends ContentDao {
           .transaction<Content>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        return transactionDatabase.materialDao.add(name);
+        return transactionDatabase.contentDao.add(name);
       });
     }
   }
@@ -776,9 +807,9 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> hideMaterial(int id) async {
+  Future<void> hideContent(int id) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Content set hide=true WHERE Content.id=?1',
+        'UPDATE Content set hide=true,docId=0 WHERE Content.id=?1',
         arguments: [id]);
   }
 
@@ -998,6 +1029,14 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
+  Future<String?> getContentName(int segmentKeyId) async {
+    return _queryAdapter.query(
+        'SELECT Content.name contentName FROM SegmentKey JOIN Content ON Content.classroomId=SegmentKey.classroomId AND Content.serial=SegmentKey.contentSerial WHERE SegmentKey.id=?1',
+        mapper: (Map<String, Object?> row) => row.values.first as String,
+        arguments: [segmentKeyId]);
+  }
+
+  @override
   Future<int?> getPrevSegmentKeyIdWithOffset(
     int classroomId,
     int segmentKeyId,
@@ -1194,19 +1233,19 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> hideMaterialAndDeleteSegment(
+  Future<void> hideContentAndDeleteSegment(
     int contentId,
     int contentSerial,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.hideMaterialAndDeleteSegment(contentId, contentSerial);
+      await super.hideContentAndDeleteSegment(contentId, contentSerial);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         await transactionDatabase.scheduleDao
-            .hideMaterialAndDeleteSegment(contentId, contentSerial);
+            .hideContentAndDeleteSegment(contentId, contentSerial);
       });
     }
   }

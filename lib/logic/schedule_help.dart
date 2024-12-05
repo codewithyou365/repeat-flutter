@@ -13,7 +13,7 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class ScheduleHelp {
   static Future<bool> addMaterialToScheduleByContentSerial(int contentSerial) async {
-    Content? ci = await Db().db.materialDao.getContentBySerial(Classroom.curr, contentSerial);
+    Content? ci = await Db().db.contentDao.getContentBySerial(Classroom.curr, contentSerial);
     if (ci == null) {
       return false;
     }

@@ -37,9 +37,9 @@ class ConfigEn extends Config {
     put(I18nKey.labelLanAddress, "LAN address");
     put(I18nKey.labelDownloadFirstBeforeSharing, "Please download first before sharing.");
     put(I18nKey.labelDownloadFirstBeforeSaving, "Please download first before saving.");
-    put(I18nKey.labelAddContentIndex, "Add content index");
+    put(I18nKey.labelAddContent, "Add content");
     put(I18nKey.labelEditContentIndex, "Edit content index");
-    put(I18nKey.labelDeleteMaterial, "Please confirm to delete material: %s");
+    put(I18nKey.labelDeleteContent, "Please confirm to delete content: %s");
     put(I18nKey.labelDownloadContent, "Download content");
     put(I18nKey.labelScheduleContent, "Add learning task with %s segments.");
     put(I18nKey.labelNoLearningContent, "There is no learning content available.");
@@ -118,8 +118,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelLocalMediaImport, "Local media import");
     put(I18nKey.labelLocalImportCancel, "Local Import is Canceled");
     put(I18nKey.labelSegmentRemoved, "The learning segment has been removed, and it is recommended that the related schedule be deleted");
-    put(I18nKey.labelDocNotBeDownloaded, "The document is not downloaded \n %s");
-    put(I18nKey.labelDocCantBeFound, "The document cannot be found \n %s");
+    put(I18nKey.labelDocNotBeDownloaded, "The content (%s) is not downloaded");
+    put(I18nKey.labelDocCantBeFound, "The content (%s) cannot be found");
     put(I18nKey.labelInputPathError, "The inputting path is error");
     put(I18nKey.btnSet, "Set");
     put(I18nKey.btnUse, "Use");

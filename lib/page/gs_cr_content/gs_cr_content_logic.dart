@@ -1,10 +1,8 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/path.dart';
-import 'package:repeat_flutter/common/url.dart';
 import 'package:repeat_flutter/common/zip.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
@@ -35,18 +33,18 @@ class GsCrContentLogic extends GetxController {
 
   init() async {
     state.list.clear();
-    state.list.addAll(await Db().db.materialDao.getAllContent(Classroom.curr));
+    state.list.addAll(await Db().db.contentDao.getAllContent(Classroom.curr));
     update([GsCrContentLogic.id]);
   }
 
   resetDoc(int contentId) async {
-    await Db().db.materialDao.updateDocId(contentId, 0);
+    await Db().db.contentDao.updateDocId(contentId, 0);
     await init();
   }
 
   delete(int contentId, int contentSerial) async {
     state.list.removeWhere((element) => identical(element.id, contentId));
-    await Db().db.scheduleDao.hideMaterialAndDeleteSegment(contentId, contentSerial);
+    await Db().db.scheduleDao.hideContentAndDeleteSegment(contentId, contentSerial);
     Get.find<GsCrLogic>().init();
     update([GsCrContentLogic.id]);
   }
@@ -118,7 +116,7 @@ class GsCrContentLogic extends GetxController {
       Snackbar.show(I18nKey.labelContentNameDuplicated.tr);
       return;
     }
-    await Db().db.materialDao.add(name);
+    await Db().db.contentDao.add(name);
     await init();
     Get.back();
   }
@@ -166,14 +164,6 @@ class GsCrContentLogic extends GetxController {
       total += d.segment.length;
     }
     return total;
-  }
-
-  Future<void> addToSchedule(Content content) async {
-    var ret = await ScheduleHelp.addContentToSchedule(content);
-    if (ret == false) {
-      return;
-    }
-    Get.find<GsCrLogic>().init();
   }
 
   downloadProgress(int startTime, int count, int total, bool finish) {
@@ -236,8 +226,16 @@ class GsCrContentLogic extends GetxController {
       return;
     }
 
-    await Db().db.materialDao.updateDocId(contentId, indexJsonDocId);
+    await schedule(contentId, indexJsonDocId, url);
+
     Nav.back();
+  }
+
+  Future<void> schedule(int contentId, int indexJsonDocId, String url) async {
+    await Db().db.contentDao.updateFinish(contentId, indexJsonDocId, url);
+    var content = await Db().db.contentDao.getContentById(contentId);
+    await ScheduleHelp.addContentToSchedule(content!);
+    Get.find<GsCrLogic>().init();
     init();
     RepeatDocHelp.clear();
   }

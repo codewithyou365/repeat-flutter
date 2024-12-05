@@ -206,9 +206,9 @@ abstract class ScheduleDao {
   @Query('SELECT * FROM Lock where id=1 for update')
   Future<void> forUpdate();
 
-  @Query('UPDATE Content set hide=true'
+  @Query('UPDATE Content set hide=true,docId=0'
       ' WHERE Content.id=:id')
-  Future<void> hideMaterial(int id);
+  Future<void> hideContent(int id);
 
   /// --- SegmentTodayPrg ---
 
@@ -351,6 +351,13 @@ abstract class ScheduleDao {
       " WHERE Segment.segmentKeyId=:segmentKeyId")
   Future<SegmentContentInDb?> getSegmentContent(int segmentKeyId);
 
+  @Query("SELECT"
+      " Content.name contentName"
+      " FROM SegmentKey"
+      " JOIN Content ON Content.classroomId=SegmentKey.classroomId AND Content.serial=SegmentKey.contentSerial"
+      " WHERE SegmentKey.id=:segmentKeyId")
+  Future<String?> getContentName(int segmentKeyId);
+
   @Query("SELECT LimitSegment.segmentKeyId"
       " FROM (SELECT sort,segmentKeyId"
       "  FROM Segment"
@@ -475,9 +482,9 @@ abstract class ScheduleDao {
   }
 
   @transaction
-  Future<void> hideMaterialAndDeleteSegment(int contentId, int contentSerial) async {
+  Future<void> hideContentAndDeleteSegment(int contentId, int contentSerial) async {
     await forUpdate();
-    await hideMaterial(contentId);
+    await hideContent(contentId);
     await deleteSegmentByContentSerial(Classroom.curr, contentSerial);
   }
 
