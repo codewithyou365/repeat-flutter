@@ -22,6 +22,7 @@ class Content {
   String name;
   String desc;
   int docId;
+  String url;
   int sort;
   bool hide;
 
@@ -31,6 +32,7 @@ class Content {
     this.name,
     this.desc,
     this.docId,
+    this.url,
     this.sort,
     this.hide, {
     this.id,

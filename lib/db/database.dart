@@ -64,7 +64,7 @@ abstract class AppDatabase extends FloorDatabase {
 
   ClassroomDao get classroomDao;
 
-  ContentDao get materialDao;
+  ContentDao get contentDao;
 
   ScheduleDao get scheduleDao;
 

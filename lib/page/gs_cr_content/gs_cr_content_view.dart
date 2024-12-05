@@ -95,14 +95,13 @@ class GsCrContentPage extends StatelessWidget {
         },
         child: Text(I18nKey.labelLocalMediaImport.tr),
       ));
-    } else {
-      menus.add(PopupMenuItem<String>(
-        onTap: () {
-          openScheduleDialog(logic, model);
-        },
-        child: Text(I18nKey.btnSchedule.tr),
-      ));
-    }
+    } else {}
+    menus.add(PopupMenuItem<String>(
+      onTap: () {
+        openDeleteDialog(logic, model);
+      },
+      child: Text(I18nKey.btnDelete.tr),
+    ));
     return PopupMenuButton<String>(
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16.w),
@@ -153,7 +152,7 @@ class GsCrContentPage extends StatelessWidget {
   openDeleteDialog(GsCrContentLogic logic, Content model) {
     MsgBox.yesOrNo(
       I18nKey.labelDelete.tr,
-      I18nKey.labelDeleteMaterial.trArgs([model.name]),
+      I18nKey.labelDeleteContent.trArgs([model.name]),
       yes: () {
         logic.delete(model.id!, model.serial);
         Get.back();
@@ -163,7 +162,7 @@ class GsCrContentPage extends StatelessWidget {
 
   openDownloadDialog(GsCrContentLogic logic, Content model) {
     final state = logic.state;
-    RxString downloadUrl = "".obs;
+    RxString downloadUrl = model.url.obs;
     MsgBox.strInputWithYesOrNo(
       downloadUrl,
       I18nKey.labelDownloadContent.tr,
@@ -189,37 +188,6 @@ class GsCrContentPage extends StatelessWidget {
       },
       yesBtnTitle: I18nKey.btnDownload.tr,
       noBtnTitle: I18nKey.btnClose.tr,
-    );
-  }
-
-  openScheduleDialog(GsCrContentLogic logic, Content model) async {
-    var unitCount = await logic.getUnitCount(model.serial);
-    if (unitCount == 0) {
-      logic.resetDoc(model.id!);
-      return;
-    }
-    Get.defaultDialog(
-      content: Column(
-        mainAxisSize: MainAxisSize.min, // Ensure dialog fits content
-        children: [
-          Text(I18nKey.labelScheduleContent.trArgs([unitCount.toString()])),
-        ],
-      ),
-      actions: [
-        TextButton(
-          child: Text(I18nKey.btnCancel.tr),
-          onPressed: () {
-            Get.back();
-          },
-        ),
-        TextButton(
-          child: Text(I18nKey.btnOk.tr),
-          onPressed: () {
-            logic.addToSchedule(model);
-            Get.back();
-          },
-        ),
-      ],
     );
   }
 

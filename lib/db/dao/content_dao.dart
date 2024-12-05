@@ -27,6 +27,9 @@ abstract class ContentDao {
   @Query('SELECT ifnull(sort,0) FROM Content WHERE classroomId=:classroomId and sort=:sort')
   Future<int?> existBySort(int classroomId, int sort);
 
+  @Query('SELECT * FROM Content WHERE id=:id')
+  Future<Content?> getContentById(int id);
+
   @Query('SELECT * FROM Content WHERE classroomId=:classroomId and name=:name')
   Future<Content?> getContentByName(int classroomId, String name);
 
@@ -46,6 +49,10 @@ abstract class ContentDao {
   @Query('UPDATE Content set hide=false'
       ' WHERE Content.id=:id')
   Future<void> showContent(int id);
+
+  @Query('UPDATE Content set docId=:docId,url=:url'
+      ' WHERE Content.id=:id')
+  Future<void> updateFinish(int id, int docId, String url);
 
   @Query('UPDATE Content set docId=:docId'
       ' WHERE Content.id=:id')
@@ -67,7 +74,7 @@ abstract class ContentDao {
 
       var maxSort = await getMaxSort(Classroom.curr);
       var sort = await Num.getNextId(maxSort, id: Classroom.curr, existById2: existBySort);
-      ret = Content(Classroom.curr, serial, name, '', 0, sort, false);
+      ret = Content(Classroom.curr, serial, name, '', 0, '', sort, false);
       await insertContent(ret);
     }
     return ret;

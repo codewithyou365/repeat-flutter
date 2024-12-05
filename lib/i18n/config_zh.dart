@@ -37,9 +37,9 @@ class ConfigZh extends Config {
     put(I18nKey.labelLanAddress, "局域网地址");
     put(I18nKey.labelDownloadFirstBeforeSharing, "请先下载再进行分享");
     put(I18nKey.labelDownloadFirstBeforeSaving, "请先下载再进行保存");
-    put(I18nKey.labelAddContentIndex, "新增内容索引");
+    put(I18nKey.labelAddContent, "新增内容");
     put(I18nKey.labelEditContentIndex, "编辑内容索引");
-    put(I18nKey.labelDeleteMaterial, "请确定删除材料： %s");
+    put(I18nKey.labelDeleteContent, "请确定删除内容： %s");
     put(I18nKey.labelDownloadContent, "下载内容");
     put(I18nKey.labelScheduleContent, "添加学习任务 %s 个单位");
     put(I18nKey.labelNoLearningContent, "没有学习内容");
@@ -118,8 +118,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelLocalMediaImport, "本地媒体导入");
     put(I18nKey.labelLocalImportCancel, "本地导入取消");
     put(I18nKey.labelSegmentRemoved, "对应的学习片段已移除，建议删除相关学习规划");
-    put(I18nKey.labelDocNotBeDownloaded, "还未下载文件 \n %s");
-    put(I18nKey.labelDocCantBeFound, "无法找到文件 \n %s");
+    put(I18nKey.labelDocNotBeDownloaded, "还未下载文件:%s");
+    put(I18nKey.labelDocCantBeFound, "无法找到文件:%s");
     put(I18nKey.labelInputPathError, "路径错误");
     put(I18nKey.btnSet, "设置");
     put(I18nKey.btnUse, "使用");

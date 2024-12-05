@@ -61,6 +61,10 @@ class RepeatDocHelp {
     }
     var retInDb = await Db().db.scheduleDao.getSegmentContent(segmentKeyId);
     if (retInDb == null) {
+      if (err != null) {
+        var name = await Db().db.scheduleDao.getContentName(segmentKeyId);
+        err.value = I18nKey.labelDocCantBeFound.trArgs([name ?? '']);
+      }
       return null;
     }
     var ret = SegmentContent.from(retInDb);

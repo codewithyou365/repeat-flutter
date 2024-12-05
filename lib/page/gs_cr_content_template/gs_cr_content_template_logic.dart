@@ -79,9 +79,8 @@ class GsCrContentTemplateLogic extends GetxController {
         return;
       }
 
-      await Db().db.materialDao.updateDocId(state.contentId, indexJsonDocId);
       final logic = Get.find<GsCrContentLogic>();
-      logic.init();
+      await logic.schedule(state.contentId, indexJsonDocId, indexJsonUrl);
       Nav.gsCrContent.until();
     }, I18nKey.labelSaving.tr);
   }
