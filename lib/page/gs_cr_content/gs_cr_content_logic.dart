@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -16,6 +17,7 @@ import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
+import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'gs_cr_content_state.dart';
@@ -121,36 +123,35 @@ class GsCrContentLogic extends GetxController {
     Get.back();
   }
 
-  todoShare(Content model) async {
-    // showTransparentOverlay(() async {
-    //   var doc = await downloadDocInfo(model.url);
-    //   if (doc == null) {
-    //     Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
-    //     return;
-    //   }
-    //   Map<String, dynamic>? map = await RepeatDoc.toJsonMap(doc.path);
-    //   if (map == null) {
-    //     Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
-    //     return;
-    //   }
-    //
-    //   var repeatDoc = RepeatDoc.fromJsonAndUri(map, Uri.parse(model.url));
-    //   if (repeatDoc == null) {
-    //     Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
-    //     return;
-    //   }
-    //   List<dynamic> lessons = List<dynamic>.from(map['lesson']);
-    //   map['lesson'] = lessons;
-    //
-    //   var args = [model.url, Classroom.curr.joinPath(Url.toDocName(model.url))];
-    //   for (int i = 0; i < lessons.length; i++) {
-    //     Map<String, dynamic> lesson = Map<String, dynamic>.from(lessons[i]);
-    //     lessons[i] = lesson;
-    //     lesson['url'] = lesson['path'];
-    //   }
-    //   args.add(json.encode(map));
-    //   Nav.gsCrContentShare.push(arguments: args);
-    // });
+  share(Content model) async {
+    showTransparentOverlay(() async {
+      var doc = await Db().db.docDao.getById(model.docId);
+      if (doc == null) {
+        Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
+        return;
+      }
+      Map<String, dynamic>? map = await RepeatDoc.toJsonMap(doc.path);
+      if (map == null) {
+        Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
+        return;
+      }
+
+      List<dynamic> lessons = List<dynamic>.from(map['lesson']);
+      map['lesson'] = lessons;
+
+      var args = <dynamic>[model];
+      for (int i = 0; i < lessons.length; i++) {
+        Map<String, dynamic> lesson = Map<String, dynamic>.from(lessons[i]);
+        lessons[i] = lesson;
+        String url = lesson['url'];
+        if (lesson['mediaExtension'] == null || lesson['mediaExtension'] == '') {
+          lesson['mediaExtension'] = url.split('.').last;
+        }
+        lesson['url'] = '';
+      }
+      args.add(json.encode(map));
+      Nav.gsCrContentShare.push(arguments: args);
+    });
   }
 
   Future<int> getUnitCount(int contentSerial) async {
@@ -208,11 +209,9 @@ class GsCrContentLogic extends GetxController {
       var v = kv.lesson[i];
       var innerUrl = v.url;
       if (innerUrl == "") {
-        downloadProgress(0, 0, 0, true);
-        continue;
-      }
-      if (!innerUrl.startsWith("http")) {
-        innerUrl = kv.rootUrl.joinPath(v.url);
+        innerUrl = kv.rootUrl.joinPath(DocPath.getMediaFileName(i, v.mediaExtension));
+      } else if (!innerUrl.startsWith("http")) {
+        innerUrl = kv.rootUrl.joinPath(innerUrl);
       }
       await downloadDoc(
         innerUrl,

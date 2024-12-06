@@ -26,10 +26,6 @@ class GsCrContentPage extends StatelessWidget {
                 onTap: logic.todoAddByZip,
                 child: Text(I18nKey.labelLocalZipImport.tr),
               ),
-              PopupMenuItem<String>(
-                onTap: Nav.gsCrContentTemplate.push,
-                child: Text(I18nKey.labelLocalMediaImport.tr),
-              ),
             ],
           ),
         ],
@@ -95,7 +91,14 @@ class GsCrContentPage extends StatelessWidget {
         },
         child: Text(I18nKey.labelLocalMediaImport.tr),
       ));
-    } else {}
+    } else {
+      menus.add(PopupMenuItem<String>(
+        onTap: () {
+          logic.share(model);
+        },
+        child: Text(I18nKey.btnShare.tr),
+      ));
+    }
     menus.add(PopupMenuItem<String>(
       onTap: () {
         openDeleteDialog(logic, model);
@@ -191,59 +194,4 @@ class GsCrContentPage extends StatelessWidget {
     );
   }
 
-  Widget buildItem(BuildContext context, GsCrContentLogic logic, Content model) {
-    return Container();
-    // var textStyle = TextStyle(fontSize: 12.w);
-    // return SwipeActionCell(
-    //   key: ObjectKey(model.url),
-    //   leadingActions: <SwipeAction>[
-    //     SwipeAction(
-    //       title: I18nKey.btnDelete.tr,
-    //       style: textStyle,
-    //       color: Theme.of(context).secondaryHeaderColor,
-    //       onTap: (CompletionHandler handler) async {
-    //         openDeleteDialog(logic, model);
-    //       },
-    //     ),
-    //     SwipeAction(
-    //       title: I18nKey.btnShare.tr,
-    //       style: textStyle,
-    //       color: Theme.of(context).secondaryHeaderColor,
-    //       onTap: (CompletionHandler handler) async {
-    //         logic.todoShare(model);
-    //       },
-    //     ),
-    //   ],
-    //   trailingActions: <SwipeAction>[
-    //     SwipeAction(
-    //       title: I18nKey.btnSchedule.tr,
-    //       style: textStyle,
-    //       color: Theme.of(context).secondaryHeaderColor,
-    //       onTap: (CompletionHandler handler) async {
-    //         openScheduleDialog(logic, model);
-    //       },
-    //     ),
-    //     SwipeAction(
-    //       title: I18nKey.btnDownload.tr,
-    //       style: textStyle,
-    //       color: Theme.of(context).secondaryHeaderColor,
-    //       onTap: (CompletionHandler handler) async {
-    //         openDownloadDialog(logic, model);
-    //       },
-    //     ),
-    //     SwipeAction(
-    //       title: I18nKey.btnCopy.tr,
-    //       style: textStyle,
-    //       color: Theme.of(context).secondaryHeaderColor,
-    //       onTap: (CompletionHandler handler) async {
-    //         openEditDialog(logic, model.url, I18nKey.labelAddContentIndex.tr);
-    //       },
-    //     ),
-    //   ],
-    //   child: Padding(
-    //     padding: EdgeInsets.all(16.w),
-    //     child: Text(model.url),
-    //   ),
-    // );
-  }
 }
