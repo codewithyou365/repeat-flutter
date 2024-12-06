@@ -23,14 +23,21 @@ class RepeatDoc {
     }
   }
 
-  static Future<Map<String, dynamic>?> toJsonMap(String path) async {
+  static Future<String?> toJsonString(String path) async {
     var rootPath = await DocPath.getContentPath();
     File file = File(rootPath.joinPath(path));
     bool exist = await file.exists();
     if (!exist) {
       return null;
     }
-    String jsonString = await file.readAsString();
+    return await file.readAsString();
+  }
+
+  static Future<Map<String, dynamic>?> toJsonMap(String path) async {
+    String? jsonString = await toJsonString(path);
+    if (jsonString == null) {
+      return null;
+    }
     Map<String, dynamic> jsonData = convert.jsonDecode(jsonString);
     return jsonData;
   }
@@ -45,7 +52,7 @@ class RepeatDoc {
       return null;
     }
     var kv = RepeatDoc.fromJson(jsonData);
-    if (kv.rootUrl == "" && rootUri != null) {
+    if (rootUri != null) {
       kv.rootUrl = "${rootUri.scheme}://${rootUri.host}:${rootUri.port}/${rootUri.pathSegments.sublist(0, rootUri.pathSegments.length - 1).join('/')}/";
     }
     return kv;

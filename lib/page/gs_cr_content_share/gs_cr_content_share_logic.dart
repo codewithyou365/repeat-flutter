@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/url.dart';
 import 'package:repeat_flutter/common/zip.dart';
+import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
@@ -25,19 +26,11 @@ class GsCrContentShareLogic extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    List<String> arguments = Get.arguments as List<String>;
-    state.rawUrl = arguments[0];
-    state.addresses.add(Address(I18nKey.labelOriginalAddress.tr, state.rawUrl));
-
-    if (arguments.length > 1) {
-      state.lanAddressSuffix = "/${arguments[1].replaceAll(RegExp(r'^/+'), '')}";
-    }
-    if (arguments.length > 2) {
-      state.manifestJson = arguments[2];
-    }
-    if (state.lanAddressSuffix.isNotEmpty) {
-      _startHttpService();
-    }
+    state.content = Get.arguments[0] as Content;
+    state.manifestJson = Get.arguments[1] as String;
+    state.addresses.add(Address(I18nKey.labelOriginalAddress.tr, state.content.url));
+    state.lanAddressSuffix = "/${DocPath.getIndexFileName()}";
+    _startHttpService();
   }
 
   @override
@@ -137,56 +130,56 @@ class GsCrContentShareLogic extends GetxController {
   void onSave() async {
     // TODO
     return;
-    String? selectedDirectory;
-    await showOverlay(() async {
-      var permissionStatus = await Permission.storage.request();
-      if (permissionStatus != PermissionStatus.granted) {
-        Snackbar.show(I18nKey.labelStoragePermissionDenied.tr);
-        return;
-      }
-      var rootPath = await DocPath.getContentPath();
-      var repeatDocPath = rootPath.joinPath(state.lanAddressSuffix);
-      var kv = await RepeatDoc.fromPath(repeatDocPath);
-      if (kv == null) {
-        Snackbar.show(I18nKey.labelDownloadFirstBeforeSaving.tr);
-        return;
-      }
-
-      print("${DateTime.now()}");
-      var name = Url.toDocName(state.rawUrl);
-      List<ZipArchive> zipFiles = [ZipArchive(File(repeatDocPath), name)];
-      var zipSavePath = await DocPath.getZipSavePath(clearFirst: true);
-      var indexFilePath = zipSavePath.joinPath(DocPath.zipIndexFile);
-      var indexContent = ZipIndexDoc(name, state.rawUrl);
-      var indexFile = File(indexFilePath);
-      zipFiles.add(ZipArchive(await indexFile.writeAsString(json.encode(indexContent)), DocPath.zipIndexFile));
-
-      // rootPath = rootPath.joinPath(kv.rootPath);
-      // for (var v in kv.lesson) {
-      //   var targetPath = rootPath.joinPath(v.path);
-      //   zipFiles.add(ZipArchive(File(targetPath), v.path));
-      // }
-      String zipFileName = "${name.trimFormat()}.zip";
-      File zipFile = File(zipSavePath.joinPath(zipFileName));
-      await Zip.compress(zipFiles, zipFile);
-      selectedDirectory = await FilePicker.platform.getDirectoryPath(
-        dialogTitle: I18nKey.labelSelectDirectoryToSave.trArgs([zipFileName]),
-      );
-      if (selectedDirectory != null) {
-        try {
-          zipFile.copySync(selectedDirectory!.joinPath(zipFileName));
-          Snackbar.show(I18nKey.labelSaveSuccess.trArgs([zipFileName]));
-        } catch (e) {
-          selectedDirectory = null;
-          Snackbar.show(I18nKey.labelDirectoryPermissionDenied.trArgs([selectedDirectory!]));
-        }
-      } else {
-        Snackbar.show(I18nKey.labelSaveCancel.tr);
-      }
-    }, I18nKey.labelSaving.tr);
-
-    if (selectedDirectory != null) {
-      MsgBox.yes(I18nKey.labelFileSaved.tr, selectedDirectory!);
-    }
+    // String? selectedDirectory;
+    // await showOverlay(() async {
+    //   var permissionStatus = await Permission.storage.request();
+    //   if (permissionStatus != PermissionStatus.granted) {
+    //     Snackbar.show(I18nKey.labelStoragePermissionDenied.tr);
+    //     return;
+    //   }
+    //   var rootPath = await DocPath.getContentPath();
+    //   var repeatDocPath = rootPath.joinPath(state.lanAddressSuffix);
+    //   var kv = await RepeatDoc.fromPath(repeatDocPath);
+    //   if (kv == null) {
+    //     Snackbar.show(I18nKey.labelDownloadFirstBeforeSaving.tr);
+    //     return;
+    //   }
+    //
+    //   print("${DateTime.now()}");
+    //   var name = Url.toDocName(state.rawUrl);
+    //   List<ZipArchive> zipFiles = [ZipArchive(File(repeatDocPath), name)];
+    //   var zipSavePath = await DocPath.getZipSavePath(clearFirst: true);
+    //   var indexFilePath = zipSavePath.joinPath(DocPath.zipIndexFile);
+    //   var indexContent = ZipIndexDoc(name, state.rawUrl);
+    //   var indexFile = File(indexFilePath);
+    //   zipFiles.add(ZipArchive(await indexFile.writeAsString(json.encode(indexContent)), DocPath.zipIndexFile));
+    //
+    //   // rootPath = rootPath.joinPath(kv.rootPath);
+    //   // for (var v in kv.lesson) {
+    //   //   var targetPath = rootPath.joinPath(v.path);
+    //   //   zipFiles.add(ZipArchive(File(targetPath), v.path));
+    //   // }
+    //   String zipFileName = "${name.trimFormat()}.zip";
+    //   File zipFile = File(zipSavePath.joinPath(zipFileName));
+    //   await Zip.compress(zipFiles, zipFile);
+    //   selectedDirectory = await FilePicker.platform.getDirectoryPath(
+    //     dialogTitle: I18nKey.labelSelectDirectoryToSave.trArgs([zipFileName]),
+    //   );
+    //   if (selectedDirectory != null) {
+    //     try {
+    //       zipFile.copySync(selectedDirectory!.joinPath(zipFileName));
+    //       Snackbar.show(I18nKey.labelSaveSuccess.trArgs([zipFileName]));
+    //     } catch (e) {
+    //       selectedDirectory = null;
+    //       Snackbar.show(I18nKey.labelDirectoryPermissionDenied.trArgs([selectedDirectory!]));
+    //     }
+    //   } else {
+    //     Snackbar.show(I18nKey.labelSaveCancel.tr);
+    //   }
+    // }, I18nKey.labelSaving.tr);
+    //
+    // if (selectedDirectory != null) {
+    //   MsgBox.yes(I18nKey.labelFileSaved.tr, selectedDirectory!);
+    // }
   }
 }

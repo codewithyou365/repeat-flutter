@@ -15,15 +15,15 @@ class GsCrContentSharePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(I18nKey.contentShare.tr),
-        actions: <Widget>[
-          Padding(
-            padding: EdgeInsets.all(8.0.w),
-            child: IconButton(
-              icon: const Icon(Icons.save),
-              onPressed: logic.onSave,
-            ),
-          ),
-        ],
+        // actions: <Widget>[
+        //   Padding(
+        //     padding: EdgeInsets.all(8.0.w),
+        //     child: IconButton(
+        //       icon: const Icon(Icons.save),
+        //       onPressed: logic.onSave,
+        //     ),
+        //   ),
+        // ],
       ),
       body: GetBuilder<GsCrContentShareLogic>(
         id: GsCrContentShareLogic.id,
@@ -43,20 +43,23 @@ class GsCrContentSharePage extends StatelessWidget {
   }
 
   Widget buildItem(String itemLabel, String desc) {
-    return Card(
-      child: InkWell(
-        onTap: () => {
-          MsgBox.noWithQrCode(
-            itemLabel,
-            desc,
-            desc,
-          )
-        },
-        child: ListTile(
-          title: Text(itemLabel),
-          subtitle: Padding(
-            padding: EdgeInsets.all(16.w),
-            child: Text(desc),
+    return Padding(
+      padding: const EdgeInsets.all(4.0),
+      child: Card(
+        child: InkWell(
+          onTap: () => {
+            MsgBox.noWithQrCode(
+              itemLabel,
+              desc,
+              desc,
+            )
+          },
+          child: ListTile(
+            title: Text(itemLabel),
+            subtitle: Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Text(desc),
+            ),
           ),
         ),
       ),
