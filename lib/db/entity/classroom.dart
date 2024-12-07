@@ -11,6 +11,7 @@ import 'package:floor/floor.dart';
 )
 class Classroom {
   static int curr = 0;
+  static String currName = '';
 
   final int id;
 

@@ -357,6 +357,19 @@ class _$DocDao extends DocDao {
   }
 
   @override
+  Future<List<Doc>> getAllDoc(String prefixPath) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM Doc WHERE path LIKE ?1 || \'%\'',
+        mapper: (Map<String, Object?> row) => Doc(
+            row['url'] as String, row['path'] as String, row['hash'] as String,
+            id: row['id'] as int?,
+            msg: row['msg'] as String,
+            count: row['count'] as int,
+            total: row['total'] as int),
+        arguments: [prefixPath]);
+  }
+
+  @override
   Future<void> insertDoc(Doc data) async {
     await _docInsertionAdapter.insert(data, OnConflictStrategy.replace);
   }
