@@ -5,9 +5,8 @@ import 'package:sqflite/sqflite.dart' as sqflite;
 
 class DocPath {
   static const String content = "c";
-  static const String zipSave = "zs";
   static const String zipTarget = "zt";
-  static const String zipIndexFile = "__index.json";
+  static const String zipRootFile = "__root.json";
 
   static String getRelativeMediaPath(int contentSerial, int lessonIndex, String mediaExtension) {
     return getRelativePath(contentSerial).joinPath(getMediaFileName(lessonIndex, mediaExtension));
@@ -33,10 +32,6 @@ class DocPath {
     return await _getPath(content);
   }
 
-  static Future<String> getZipSavePath({clearFirst = false}) async {
-    return await _getPath(zipSave, clearFirst: clearFirst);
-  }
-
   static Future<String> getZipTargetPath({clearFirst = false}) async {
     return await _getPath(zipTarget, clearFirst: clearFirst);
   }
@@ -53,7 +48,7 @@ class DocPath {
 
   static Future<String> getZipIndexFilePath() async {
     var directory = await sqflite.getDatabasesPath();
-    var path = "$directory/$zipTarget/$zipIndexFile";
+    var path = "$directory/$zipTarget/$zipRootFile";
     return path;
   }
 }

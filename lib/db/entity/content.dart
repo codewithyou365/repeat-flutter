@@ -37,4 +37,5 @@ class Content {
     this.hide, {
     this.id,
   });
+
 }

@@ -32,6 +32,9 @@ abstract class DocDao {
   @Query("UPDATE OR ABORT Doc SET msg='',count=total,url=:url,path=:path,hash=:hash WHERE id=:id")
   Future<void> updateFinish(int id, String url, String path, String hash);
 
+  @Query("SELECT * FROM Doc WHERE path LIKE :prefixPath || '%'")
+  Future<List<Doc>> getAllDoc(String prefixPath);
+
   @transaction
   Future<Doc> insertByPath(String path) async {
     await forUpdate();

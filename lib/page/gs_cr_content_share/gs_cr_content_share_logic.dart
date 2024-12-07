@@ -4,10 +4,14 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:repeat_flutter/common/file_util.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/url.dart';
 import 'package:repeat_flutter/common/zip.dart';
+import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content.dart';
+import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
@@ -128,58 +132,70 @@ class GsCrContentShareLogic extends GetxController {
   }
 
   void onSave() async {
-    // TODO
-    return;
-    // String? selectedDirectory;
-    // await showOverlay(() async {
-    //   var permissionStatus = await Permission.storage.request();
-    //   if (permissionStatus != PermissionStatus.granted) {
-    //     Snackbar.show(I18nKey.labelStoragePermissionDenied.tr);
-    //     return;
-    //   }
-    //   var rootPath = await DocPath.getContentPath();
-    //   var repeatDocPath = rootPath.joinPath(state.lanAddressSuffix);
-    //   var kv = await RepeatDoc.fromPath(repeatDocPath);
-    //   if (kv == null) {
-    //     Snackbar.show(I18nKey.labelDownloadFirstBeforeSaving.tr);
-    //     return;
-    //   }
-    //
-    //   print("${DateTime.now()}");
-    //   var name = Url.toDocName(state.rawUrl);
-    //   List<ZipArchive> zipFiles = [ZipArchive(File(repeatDocPath), name)];
-    //   var zipSavePath = await DocPath.getZipSavePath(clearFirst: true);
-    //   var indexFilePath = zipSavePath.joinPath(DocPath.zipIndexFile);
-    //   var indexContent = ZipIndexDoc(name, state.rawUrl);
-    //   var indexFile = File(indexFilePath);
-    //   zipFiles.add(ZipArchive(await indexFile.writeAsString(json.encode(indexContent)), DocPath.zipIndexFile));
-    //
-    //   // rootPath = rootPath.joinPath(kv.rootPath);
-    //   // for (var v in kv.lesson) {
-    //   //   var targetPath = rootPath.joinPath(v.path);
-    //   //   zipFiles.add(ZipArchive(File(targetPath), v.path));
-    //   // }
-    //   String zipFileName = "${name.trimFormat()}.zip";
-    //   File zipFile = File(zipSavePath.joinPath(zipFileName));
-    //   await Zip.compress(zipFiles, zipFile);
-    //   selectedDirectory = await FilePicker.platform.getDirectoryPath(
-    //     dialogTitle: I18nKey.labelSelectDirectoryToSave.trArgs([zipFileName]),
-    //   );
-    //   if (selectedDirectory != null) {
-    //     try {
-    //       zipFile.copySync(selectedDirectory!.joinPath(zipFileName));
-    //       Snackbar.show(I18nKey.labelSaveSuccess.trArgs([zipFileName]));
-    //     } catch (e) {
-    //       selectedDirectory = null;
-    //       Snackbar.show(I18nKey.labelDirectoryPermissionDenied.trArgs([selectedDirectory!]));
-    //     }
-    //   } else {
-    //     Snackbar.show(I18nKey.labelSaveCancel.tr);
-    //   }
-    // }, I18nKey.labelSaving.tr);
-    //
-    // if (selectedDirectory != null) {
-    //   MsgBox.yes(I18nKey.labelFileSaved.tr, selectedDirectory!);
-    // }
+    String? selectedDirectory;
+    await showOverlay(() async {
+      var permissionStatus = await Permission.storage.request();
+      if (permissionStatus != PermissionStatus.granted) {
+        Snackbar.show(I18nKey.labelStoragePermissionDenied.tr);
+        return;
+      }
+      String indexPath = DocPath.getRelativeIndexPath(state.content.serial);
+      var kv = await RepeatDoc.fromPath(indexPath);
+      if (kv == null) {
+        Snackbar.show(I18nKey.labelDownloadFirstBeforeSaving.tr);
+        return;
+      }
+
+      var rootPath = await DocPath.getContentPath();
+      String indexFilePath = rootPath.joinPath(indexPath);
+
+      // for root file
+      String relativePath = DocPath.getRelativePath(state.content.serial);
+      List<Doc> docs = await Db().db.docDao.getAllDoc("$relativePath/");
+      Doc indexDoc = docs.firstWhere((doc) => doc.path == indexPath, orElse: () => Doc('', '', ''));
+      if (indexDoc.hash == "") {
+        Snackbar.show(I18nKey.labelDataAnomaly.tr);
+        return;
+      }
+      String zipFileName = "${indexDoc.hash}.zip";
+      File zipFile = File(rootPath.joinPath(relativePath).joinPath(zipFileName));
+      bool zipFileExist = await zipFile.exists();
+      if (!zipFileExist) {
+        var rootFilePath = rootPath.joinPath(relativePath).joinPath(DocPath.zipRootFile);
+        var rootFileContent = ZipRootDoc(docs, state.content.url);
+        var rootFile = File(rootFilePath);
+        rootFile = await rootFile.writeAsString(json.encode(rootFileContent));
+
+        List<ZipArchive> zipFiles = [];
+        zipFiles.add(ZipArchive(File(indexFilePath), FileUtil.toFileName(indexFilePath)));
+        zipFiles.add(ZipArchive(File(rootFilePath), FileUtil.toFileName(rootFilePath)));
+        for (var lessonIndex = 0; lessonIndex < kv.lesson.length; lessonIndex++) {
+          var v = kv.lesson[lessonIndex];
+          var mediaFileName = DocPath.getMediaFileName(lessonIndex, v.mediaExtension);
+          zipFiles.add(ZipArchive(File(rootPath.joinPath(relativePath).joinPath(mediaFileName)), mediaFileName));
+        }
+        await Zip.compress(zipFiles, zipFile);
+      }
+
+      selectedDirectory = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: I18nKey.labelSelectDirectoryToSave.trArgs([zipFileName]),
+      );
+      if (selectedDirectory != null) {
+        try {
+          String targetZipName = "${Classroom.currName}-${state.content.name}.zip";
+          zipFile.copySync(selectedDirectory!.joinPath(targetZipName));
+          Snackbar.show(I18nKey.labelSaveSuccess.trArgs([targetZipName]));
+        } catch (e) {
+          selectedDirectory = null;
+          Snackbar.show(I18nKey.labelDirectoryPermissionDenied.trArgs([selectedDirectory!]));
+        }
+      } else {
+        Snackbar.show(I18nKey.labelSaveCancel.tr);
+      }
+    }, I18nKey.labelSaving.tr);
+
+    if (selectedDirectory != null) {
+      MsgBox.yes(I18nKey.labelFileSaved.tr, selectedDirectory!);
+    }
   }
 }

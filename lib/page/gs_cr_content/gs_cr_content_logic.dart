@@ -67,23 +67,23 @@ class GsCrContentLogic extends GetxController {
     }
     var zipTargetPath = await DocPath.getZipTargetPath(clearFirst: true);
     await Zip.uncompress(File(path), zipTargetPath);
-    ZipIndexDoc? zipIndex = await ZipIndexDoc.fromPath();
+    ZipRootDoc? zipIndex = await ZipRootDoc.fromPath();
     if (zipIndex == null) {
       Snackbar.show(I18nKey.labelDataAnomalyWithArg.trArgs(['81']));
       return;
     }
 
-    var repeatDocPath = zipTargetPath.joinPath(zipIndex.file);
-    var kv = await RepeatDoc.fromPath(repeatDocPath);
-    if (kv == null) {
-      Snackbar.show(I18nKey.labelDataAnomalyWithArg.trArgs(['88']));
-      return;
-    }
-    var success = await add(zipIndex.url);
-    if (!success) {
-      return;
-    }
-    var rootPath = await DocPath.getContentPath();
+    // var repeatDocPath = zipTargetPath.joinPath(zipIndex.file);
+    // var kv = await RepeatDoc.fromPath(repeatDocPath);
+    // if (kv == null) {
+    //   Snackbar.show(I18nKey.labelDataAnomalyWithArg.trArgs(['88']));
+    //   return;
+    // }
+    // var success = await add(zipIndex.url);
+    // if (!success) {
+    //   return;
+    // }
+    // var rootPath = await DocPath.getContentPath();
 
     // for repeat document
     // rootPath = rootPath.joinPath(kv.rootPath);
