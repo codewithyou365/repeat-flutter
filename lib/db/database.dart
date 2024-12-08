@@ -20,7 +20,6 @@ import 'package:repeat_flutter/db/entity/segment_key.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment_review.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
-import 'package:repeat_flutter/db/entity/video_attribute.dart';
 import 'package:repeat_flutter/db/migration/m1_2.dart';
 import 'package:repeat_flutter/db/migration/m2_3.dart';
 import 'package:repeat_flutter/db/type_converter.dart';
@@ -37,7 +36,6 @@ part 'database.g.dart'; // the generated code will be there
 @Database(version: 3, entities: [
   Kv,
   Doc,
-  VideoAttribute,
   Classroom,
   Content,
   CrKv,
