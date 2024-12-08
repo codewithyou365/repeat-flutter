@@ -1,8 +1,10 @@
+import 'package:repeat_flutter/logic/base/constant.dart';
+
 class GsCrContentTemplateState {
   final List<String> items = <String>[];
   int contentId = 0;
   int contentSerial = 0;
-  static const String defaultUrl = 'http://127.0.0.1:40321/';
+  static const String defaultUrl = Download.defaultUrl;
   static const String prefixTemplate = '{\n'
       '  "lesson": [\n'
       '    {\n'

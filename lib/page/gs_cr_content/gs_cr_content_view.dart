@@ -18,17 +18,6 @@ class GsCrContentPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(I18nKey.content.tr),
-        actions: <Widget>[
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.add),
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                onTap: logic.todoAddByZip,
-                child: Text(I18nKey.labelLocalZipImport.tr),
-              ),
-            ],
-          ),
-        ],
       ),
       body: GetBuilder<GsCrContentLogic>(
         id: GsCrContentLogic.id,
@@ -75,15 +64,15 @@ class GsCrContentPage extends StatelessWidget {
     var menus = <PopupMenuEntry<String>>[];
 
     if (model.docId == 0) {
-      // PopupMenuItem<String>(
-      //   onTap: logic.todoAddByZip,
-      //   child: Text(I18nKey.labelLocalZipImport.tr),
-      // ),
       menus.add(PopupMenuItem<String>(
         onTap: () {
           openDownloadDialog(logic, model);
         },
         child: Text(I18nKey.labelRemoteImport.tr),
+      ));
+      menus.add(PopupMenuItem<String>(
+        onTap: () => logic.addByZip(model.id!, model.serial),
+        child: Text(I18nKey.labelLocalZipImport.tr),
       ));
       menus.add(PopupMenuItem<String>(
         onTap: () {
@@ -126,32 +115,6 @@ class GsCrContentPage extends StatelessWidget {
     );
   }
 
-  // Widget buildList(BuildContext context, GsCrContentLogic logic) {
-  //   return GetBuilder<GsCrContentLogic>(
-  //     id: GsCrContentLogic.id,
-  //     builder: (_) => _buildList(context, logic),
-  //   );
-  // }
-  //
-  // Widget _buildList(BuildContext context, GsCrContentLogic logic) {
-  //   final state = logic.state;
-  //   if (state.list.isEmpty) {
-  //     if (state.loading.value) {
-  //       return Container(
-  //         alignment: Alignment.topCenter,
-  //         padding: EdgeInsets.only(top: 80.w),
-  //         child: const CircularProgressIndicator(),
-  //       );
-  //     }
-  //   }
-  //   return ListView(
-  //     children: List.generate(
-  //       state.list.length,
-  //       (index) => buildItem(context, logic, state.list[index]),
-  //     ),
-  //   );
-  // }
-
   openDeleteDialog(GsCrContentLogic logic, Content model) {
     MsgBox.yesOrNo(
       I18nKey.labelDelete.tr,
@@ -193,5 +156,4 @@ class GsCrContentPage extends StatelessWidget {
       noBtnTitle: I18nKey.btnClose.tr,
     );
   }
-
 }

@@ -7,7 +7,7 @@ import Foundation
 
 import audioplayers_darwin
 import path_provider_foundation
-import sqflite
+import sqflite_darwin
 import video_player_avfoundation
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {

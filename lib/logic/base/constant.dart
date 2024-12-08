@@ -5,7 +5,6 @@ import 'package:sqflite/sqflite.dart' as sqflite;
 
 class DocPath {
   static const String content = "c";
-  static const String zipTarget = "zt";
   static const String zipRootFile = "__root.json";
 
   static String getRelativeMediaPath(int contentSerial, int lessonIndex, String mediaExtension) {
@@ -32,10 +31,6 @@ class DocPath {
     return await _getPath(content);
   }
 
-  static Future<String> getZipTargetPath({clearFirst = false}) async {
-    return await _getPath(zipTarget, clearFirst: clearFirst);
-  }
-
   static Future<String> _getPath(String dir, {clearFirst = false}) async {
     var directory = await sqflite.getDatabasesPath();
     var path = "$directory/$dir";
@@ -43,12 +38,6 @@ class DocPath {
       await Folder.delete(path);
     }
     await Folder.ensureExists(path);
-    return path;
-  }
-
-  static Future<String> getZipIndexFilePath() async {
-    var directory = await sqflite.getDatabasesPath();
-    var path = "$directory/$zipTarget/$zipRootFile";
     return path;
   }
 }
@@ -60,4 +49,5 @@ enum Repeat {
 
 class Download {
   static const String userAgent = "B20240321";
+  static const String defaultUrl = 'http://127.0.0.1:40321/';
 }

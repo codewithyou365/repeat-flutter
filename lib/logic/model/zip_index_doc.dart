@@ -13,8 +13,7 @@ class ZipRootDoc {
 
   ZipRootDoc(this.docs, this.url);
 
-  static Future<ZipRootDoc?> fromPath() async {
-    var path = await DocPath.getZipIndexFilePath();
+  static Future<ZipRootDoc?> fromPath(String path) async {
     File file = File(path);
     bool exist = await file.exists();
     if (!exist) {

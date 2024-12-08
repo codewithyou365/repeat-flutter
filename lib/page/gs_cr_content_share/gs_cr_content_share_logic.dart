@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:repeat_flutter/common/file_util.dart';
+import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/url.dart';
 import 'package:repeat_flutter/common/zip.dart';
@@ -152,12 +153,8 @@ class GsCrContentShareLogic extends GetxController {
       // for root file
       String relativePath = DocPath.getRelativePath(state.content.serial);
       List<Doc> docs = await Db().db.docDao.getAllDoc("$relativePath/");
-      Doc indexDoc = docs.firstWhere((doc) => doc.path == indexPath, orElse: () => Doc('', '', ''));
-      if (indexDoc.hash == "") {
-        Snackbar.show(I18nKey.labelDataAnomaly.tr);
-        return;
-      }
-      String zipFileName = "${indexDoc.hash}.zip";
+      String indexHash = await Hash.toSha1(indexPath);
+      String zipFileName = "$indexHash.zip";
       File zipFile = File(rootPath.joinPath(relativePath).joinPath(zipFileName));
       bool zipFileExist = await zipFile.exists();
       if (!zipFileExist) {
