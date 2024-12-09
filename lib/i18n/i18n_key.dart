@@ -133,6 +133,7 @@ enum I18nKey {
   btnDelete,
   btnShare,
   btnEdit,
+  btnConcentration,
   btnAdd,
   btnCopy,
   btnDownload,

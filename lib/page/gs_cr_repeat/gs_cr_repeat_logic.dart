@@ -480,6 +480,12 @@ class GsCrRepeatLogic extends GetxController {
     state.extendTail = 0;
     state.edit = true;
     state.justView = true;
+    state.concentrationMode = false;
+    update([GsCrRepeatLogic.id]);
+  }
+
+  switchConcentrationMode() {
+    state.concentrationMode = !state.concentrationMode;
     update([GsCrRepeatLogic.id]);
   }
 

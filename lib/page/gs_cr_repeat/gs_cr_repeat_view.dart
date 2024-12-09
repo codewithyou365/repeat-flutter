@@ -46,7 +46,11 @@ class GsCrRepeatPage extends StatelessWidget {
       if (landscape) {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
       } else {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+        if (logic.state.concentrationMode) {
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
+        } else {
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+        }
       }
     }
 
@@ -160,6 +164,10 @@ class GsCrRepeatPage extends StatelessWidget {
                           PopupMenuItem<String>(
                             onTap: logic.openEditor,
                             child: Text(I18nKey.btnEdit.tr),
+                          ),
+                          PopupMenuItem<String>(
+                            onTap: logic.switchConcentrationMode,
+                            child: Text("${I18nKey.btnConcentration.tr}(${state.concentrationMode})"),
                           ),
                           PopupMenuItem<String>(
                             onTap: logic.extendTail,
