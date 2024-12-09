@@ -135,6 +135,7 @@ class ConfigZh extends Config {
     put(I18nKey.btnDelete, "删除");
     put(I18nKey.btnShare, "分享");
     put(I18nKey.btnEdit, "编辑");
+    put(I18nKey.btnConcentration, "专注");
     put(I18nKey.btnAdd, "新增");
     put(I18nKey.btnCopy, "复制");
     put(I18nKey.btnDownload, "下载");

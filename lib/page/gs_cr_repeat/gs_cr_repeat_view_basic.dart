@@ -19,8 +19,12 @@ class GsCrRepeatViewBasic {
     } else {
       currIndex = state.progress + state.fakeKnow;
     }
+    String prefix = '$currIndex/${state.total}-';
+    if (state.concentrationMode) {
+      prefix = '';
+    }
     return Text(
-      "$currIndex/${state.total}-${state.segment.k}",
+      "$prefix${state.segment.k}",
       style: fontSize == null ? null : TextStyle(fontSize: fontSize),
     );
   }

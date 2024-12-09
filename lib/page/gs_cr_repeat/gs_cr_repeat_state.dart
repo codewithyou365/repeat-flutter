@@ -39,6 +39,7 @@ class GsCrRepeatState {
   var ignorePlayingMedia = false;
 
   var overlayVideoInPortrait = false;
+  var concentrationMode = true;
 
   // for edit
   var edit = false;
