@@ -3450,8 +3450,8 @@
       ],
       "segment": [
         {
-          "aStart": "00:00:16,433",
-          "aEnd": "00:00:20,883",
+          "aStart": "00:00:16,487",
+          "aEnd": "00:00:21,064",
           "tip": "据说每个人都靠出售某种东西来维持生活。",
           "a": "It has been said that everyone lives by selling something."
         },
@@ -3553,7 +3553,7 @@
         },
         {
           "aStart": "00:02:21,800",
-          "aEnd": "00:02:26,616",
+          "aEnd": "00:02:26,664",
           "tip": "确实需要的时候，他甚至可能干一点儿活，",
           "a": "he may even, in times of real need, do a little work;"
         },
@@ -3829,9 +3829,15 @@
         },
         {
           "aStart": "00:01:22,567",
+          "aEnd": "00:01:26,757",
+          "tip": "许多人认为这种笑话是低级庸俗的。",
+          "a": "Many people find this sort of joke distasteful."
+        },
+        {
+          "aStart": "00:01:26,757",
           "aEnd": "00:01:33,249",
-          "tip": "许多人认为这种笑话是低级庸俗的。下面是个“病态幽默”的实例，你可据此自己作出判断。",
-          "a": "Many people find this sort of joke distasteful The following example of 'sick humour' will enable you to judge for yourself."
+          "tip": "下面是个“病态幽默”的实例，你可据此自己作出判断。",
+          "a": "The following example of 'sick humour' will enable you to judge for yourself."
         },
         {
           "aStart": "00:01:33,350",
