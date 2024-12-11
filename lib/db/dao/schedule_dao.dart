@@ -263,6 +263,7 @@ abstract class ScheduleDao {
 
   @Query("SELECT"
       " SegmentReview.classroomId"
+      ",Segment.contentSerial"
       ",SegmentReview.segmentKeyId"
       ",0 type"
       ",Segment.sort"
@@ -313,7 +314,7 @@ abstract class ScheduleDao {
       ",Segment.lessonIndex"
       ",Segment.segmentIndex"
       " FROM Segment"
-      " JOIN SegmentOverallPrg on SegmentOverallPrg.segmentKeyId=Segment.classroomId"
+      " JOIN SegmentOverallPrg on SegmentOverallPrg.segmentKeyId=Segment.segmentKeyId"
       " JOIN Content ON Content.classroomId=Segment.classroomId AND Content.serial=Segment.contentSerial"
       " WHERE Segment.classroomId=:classroomId"
       " ORDER BY Segment.sort asc")
@@ -326,7 +327,7 @@ abstract class ScheduleDao {
       ",Segment.lessonIndex"
       ",Segment.segmentIndex"
       " FROM Segment"
-      " JOIN SegmentReview on SegmentReview.segmentKeyId=Segment.classroomId"
+      " JOIN SegmentReview on SegmentReview.segmentKeyId=Segment.segmentKeyId"
       " JOIN Content ON Content.classroomId=Segment.classroomId AND Content.serial=Segment.contentSerial"
       " WHERE Segment.classroomId=:classroomId"
       " ORDER BY SegmentReview.createDate desc,Segment.sort asc")
