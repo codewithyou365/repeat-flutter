@@ -119,6 +119,7 @@ enum I18nKey {
   labelDocNotBeDownloaded,
   labelDocCantBeFound,
   labelInputPathError,
+  btnSetConfig,
   btnSet,
   btnUse,
   btnSetHead,

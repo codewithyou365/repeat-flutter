@@ -20,11 +20,16 @@ class GsCrPage extends StatelessWidget {
         actions: <Widget>[
           Padding(
             padding: EdgeInsets.all(8.0.w),
-            child: IconButton(
+            child: PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert),
-              onPressed: () {
-                Nav.gsCrSettings.push();
-              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                PopupMenuItem<String>(
+                  onTap: () {
+                    Nav.gsCrSettings.push();
+                  },
+                  child: Text(I18nKey.btnSetConfig.tr),
+                ),
+              ],
             ),
           ),
         ],

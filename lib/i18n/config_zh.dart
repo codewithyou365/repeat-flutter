@@ -100,6 +100,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelLearnCountPerGroup, "每组数量");
     put(I18nKey.labelFinish, "完成");
     put(I18nKey.labelAll, "全部");
+
     put(I18nKey.labelSavingConfirm, "是否确定保存？");
     put(I18nKey.labelConfigChange, "配置已改变是否保存？");
     put(I18nKey.labelResetConfig, "重置配置");
@@ -121,6 +122,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelDocNotBeDownloaded, "还未下载文件:%s");
     put(I18nKey.labelDocCantBeFound, "无法找到文件:%s");
     put(I18nKey.labelInputPathError, "路径错误");
+    put(I18nKey.btnSetConfig, "配置设置");
     put(I18nKey.btnSet, "设置");
     put(I18nKey.btnUse, "使用");
     put(I18nKey.btnSetHead, "设置头部");
