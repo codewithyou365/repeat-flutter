@@ -122,7 +122,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelDocNotBeDownloaded, "还未下载文件:%s");
     put(I18nKey.labelDocCantBeFound, "无法找到文件:%s");
     put(I18nKey.labelInputPathError, "路径错误");
-    put(I18nKey.btnSetConfig, "配置设置");
+    put(I18nKey.btnConfigSettings, "配置设置");
     put(I18nKey.btnSet, "设置");
     put(I18nKey.btnUse, "使用");
     put(I18nKey.btnSetHead, "设置头部");
