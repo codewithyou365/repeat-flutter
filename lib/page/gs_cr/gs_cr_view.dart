@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -25,9 +26,15 @@ class GsCrPage extends StatelessWidget {
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                 PopupMenuItem<String>(
                   onTap: () {
+                    add(context);
+                  },
+                  child: Text(I18nKey.btnAddSchedule.tr),
+                ),
+                PopupMenuItem<String>(
+                  onTap: () {
                     Nav.gsCrSettings.push();
                   },
-                  child: Text(I18nKey.btnSetConfig.tr),
+                  child: Text(I18nKey.btnConfigSettings.tr),
                 ),
               ],
             ),
@@ -212,6 +219,80 @@ class GsCrPage extends StatelessWidget {
           floatingHeader: false,
           // optional
           order: GroupedListOrder.ASC, // optional
+        );
+      },
+    );
+  }
+
+  Widget CupertinoItem(String title) {
+    return Column(
+      children: [
+        Text(title),
+        const SizedBox(height: 3),
+        SizedBox(
+          width: 80.w,
+          height: 64,
+          child: CupertinoPicker(
+            itemExtent: 32.0, // Height of each item
+            onSelectedItemChanged: (index) {
+              print('Selected: ${index + 1}');
+            },
+            children: List.generate(10, (index) {
+              return Center(child: Text('${index + 1}'));
+            }),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void add(BuildContext context) {
+    final Size screenSize = MediaQuery.of(context).size;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return SizedBox(
+          width: screenSize.width,
+          height: screenSize.height / 2.5,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.0.w, vertical: 20.0),
+            child: ListView(
+              children: [
+                Row(
+                  children: [
+                    const Text('Max: 100'),
+                    const Spacer(),
+                    Text(I18nKey.btnSave.tr),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Text('From:'),
+                const SizedBox(height: 5),
+                Row(
+                  children: [
+                    CupertinoItem("Content"),
+                    const Spacer(),
+                    CupertinoItem("Lesion"),
+                    const Spacer(),
+                    CupertinoItem("Segment"),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Text('To:'),
+                const SizedBox(height: 5),
+                Row(
+                  children: [
+                    CupertinoItem("Content"),
+                    const Spacer(),
+                    CupertinoItem("Lesion"),
+                    const Spacer(),
+                    CupertinoItem("Segment"),
+                  ],
+                ),
+              ],
+            ),
+          ),
         );
       },
     );

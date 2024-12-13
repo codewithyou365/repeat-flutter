@@ -121,7 +121,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelDocNotBeDownloaded, "The content (%s) is not downloaded");
     put(I18nKey.labelDocCantBeFound, "The content (%s) cannot be found");
     put(I18nKey.labelInputPathError, "The inputting path is error");
-    put(I18nKey.btnSetConfig, "Config Settings");
+    put(I18nKey.btnConfigSettings, "Config Settings");
     put(I18nKey.btnSet, "Set");
     put(I18nKey.btnUse, "Use");
     put(I18nKey.btnSetHead, "Set head");
