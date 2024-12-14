@@ -1,3 +1,4 @@
+import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 
 class SegmentTodayPrgInView {
@@ -21,11 +22,25 @@ class SegmentTodayPrgInView {
   });
 }
 
+class ForAdd {
+  List<Content> contents = [];
+  List<String> contentNames = [];
+  int maxLesson = 1;
+  int maxSegment = 1;
+
+  Content? fromContent;
+ int fromContentIndex = 0;
+  int fromLessonIndex = 0;
+  int fromSegmentIndex = 0;
+}
+
 class GsCrState {
   List<SegmentTodayPrgInView> segments = [];
   List<SegmentTodayPrg> all = [];
   List<SegmentTodayPrg> learn = [];
   List<SegmentTodayPrg> review = [];
+
+  ForAdd forAdd = ForAdd();
 
   var learnedTotalCount = 0;
   var learnTotalCount = 0;
