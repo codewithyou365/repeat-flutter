@@ -427,6 +427,17 @@ abstract class ScheduleDao {
   @Query('DELETE FROM SegmentReview WHERE classroomId=:classroomId')
   Future<void> deleteSegmentReviewByClassroomId(int classroomId);
 
+  @Query('SELECT ifnull(max(Segment.lessonIndex),0) FROM Segment'
+      ' WHERE Segment.classroomId=:classroomId'
+      ' AND Segment.contentSerial=:contentSerial')
+  Future<int?> getMaxLessonIndex(int classroomId, int contentSerial);
+
+  @Query('SELECT ifnull(max(Segment.segmentIndex),0) FROM Segment'
+      ' WHERE Segment.classroomId=:classroomId'
+      ' AND Segment.contentSerial=:contentSerial'
+      ' AND Segment.lessonIndex=:lessonIndex')
+  Future<int?> getMaxSegmentIndex(int classroomId, int contentSerial, int lessonIndex);
+
   @transaction
   Future<void> deleteBySegmentKeyId(int segmentKeyId) async {
     await forUpdate();

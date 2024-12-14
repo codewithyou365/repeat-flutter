@@ -1155,6 +1155,29 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
+  Future<int?> getMaxLessonIndex(
+    int classroomId,
+    int contentSerial,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT ifnull(max(Segment.lessonIndex),0) FROM Segment WHERE Segment.classroomId=?1 AND Segment.contentSerial=?2',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [classroomId, contentSerial]);
+  }
+
+  @override
+  Future<int?> getMaxSegmentIndex(
+    int classroomId,
+    int contentSerial,
+    int lessonIndex,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT ifnull(max(Segment.segmentIndex),0) FROM Segment WHERE Segment.classroomId=?1 AND Segment.contentSerial=?2 AND Segment.lessonIndex=?3',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [classroomId, contentSerial, lessonIndex]);
+  }
+
+  @override
   Future<void> insertKv(CrKv kv) async {
     await _crKvInsertionAdapter.insert(kv, OnConflictStrategy.replace);
   }

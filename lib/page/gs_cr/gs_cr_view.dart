@@ -16,6 +16,8 @@ class GsCrPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final logic = Get.find<GsCrLogic>();
+    final state = logic.state;
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
@@ -26,7 +28,7 @@ class GsCrPage extends StatelessWidget {
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                 PopupMenuItem<String>(
                   onTap: () {
-                    add(context);
+                    add(context, logic);
                   },
                   child: Text(I18nKey.btnAddSchedule.tr),
                 ),
@@ -224,29 +226,32 @@ class GsCrPage extends StatelessWidget {
     );
   }
 
-  Widget CupertinoItem(String title) {
+  Widget CupertinoItem(List<String> titles, ValueChanged<int> changed, int initValue, {List<String>? select, int? count}) {
     return Column(
       children: [
-        Text(title),
+        for (var title in titles) Text(title),
         const SizedBox(height: 3),
         SizedBox(
           width: 80.w,
           height: 64,
           child: CupertinoPicker(
-            itemExtent: 32.0, // Height of each item
-            onSelectedItemChanged: (index) {
-              print('Selected: ${index + 1}');
-            },
-            children: List.generate(10, (index) {
-              return Center(child: Text('${index + 1}'));
-            }),
+            scrollController: FixedExtentScrollController(initialItem: initValue),
+            itemExtent: 32.0,
+            onSelectedItemChanged: changed,
+            children: count != null
+                ? List.generate(count, (index) {
+                    return Center(child: Text("${index + 1}"));
+                  })
+                : List.generate(select!.length, (index) {
+                    return Center(child: Text(select[index]));
+                  }),
           ),
         ),
       ],
     );
   }
 
-  void add(BuildContext context) {
+  void add(BuildContext context, GsCrLogic logic) {
     final Size screenSize = MediaQuery.of(context).size;
     showModalBottomSheet(
       context: context,
@@ -254,42 +259,43 @@ class GsCrPage extends StatelessWidget {
       builder: (BuildContext context) {
         return SizedBox(
           width: screenSize.width,
-          height: screenSize.height / 2.5,
+          height: screenSize.height / 3.5,
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.0.w, vertical: 20.0),
+            padding: EdgeInsets.symmetric(horizontal: 10.0.w, vertical: 20.0),
             child: ListView(
               children: [
                 Row(
                   children: [
-                    const Text('Max: 100'),
                     const Spacer(),
-                    Text(I18nKey.btnSave.tr),
+                    TextButton(
+                      child: Text(I18nKey.btnOk.tr),
+                      onPressed: () {},
+                    ),
+                    SizedBox(width: 5.w),
                   ],
                 ),
                 const SizedBox(height: 20),
-                const Text('From:'),
-                const SizedBox(height: 5),
-                Row(
-                  children: [
-                    CupertinoItem("Content"),
-                    const Spacer(),
-                    CupertinoItem("Lesion"),
-                    const Spacer(),
-                    CupertinoItem("Segment"),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                const Text('To:'),
-                const SizedBox(height: 5),
-                Row(
-                  children: [
-                    CupertinoItem("Content"),
-                    const Spacer(),
-                    CupertinoItem("Lesion"),
-                    const Spacer(),
-                    CupertinoItem("Segment"),
-                  ],
-                ),
+                GetBuilder<GsCrLogic>(
+                    id: GsCrLogic.idForAdd,
+                    builder: (_) {
+                      return Row(
+                        children: [
+                          Card(
+                            elevation: 8.0,
+                            color: Theme.of(context).secondaryHeaderColor,
+                            child: Row(
+                              children: [
+                                CupertinoItem(['', "Content"], logic.selectContent, logic.state.forAdd.fromContentIndex, select: logic.state.forAdd.contentNames),
+                                CupertinoItem(['From', "Lesion"], logic.selectLesson, logic.state.forAdd.fromLessonIndex, count: logic.state.forAdd.maxLesson),
+                                CupertinoItem(['', "Segment"], logic.selectSegment, logic.state.forAdd.fromSegmentIndex, count: logic.state.forAdd.maxSegment),
+                              ],
+                            ),
+                          ),
+                          const Spacer(),
+                          CupertinoItem(['To', "Count"], logic.selectContent, 0, count: 100),
+                        ],
+                      );
+                    })
               ],
             ),
           ),
