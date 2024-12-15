@@ -122,6 +122,10 @@ class ConfigZh extends Config {
     put(I18nKey.labelDocNotBeDownloaded, "还未下载文件:%s");
     put(I18nKey.labelDocCantBeFound, "无法找到文件:%s");
     put(I18nKey.labelInputPathError, "路径错误");
+    put(I18nKey.labelFrom, "来自");
+    put(I18nKey.labelLesson, "节");
+    put(I18nKey.labelSegment, "段");
+    put(I18nKey.btnAddSchedule, "添加规划");
     put(I18nKey.btnConfigSettings, "配置设置");
     put(I18nKey.btnSet, "设置");
     put(I18nKey.btnUse, "使用");
