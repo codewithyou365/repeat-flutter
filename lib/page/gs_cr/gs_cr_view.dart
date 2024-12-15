@@ -17,7 +17,6 @@ class GsCrPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final logic = Get.find<GsCrLogic>();
-    final state = logic.state;
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
@@ -226,7 +225,10 @@ class GsCrPage extends StatelessWidget {
     );
   }
 
-  Widget CupertinoItem(List<String> titles, ValueChanged<int> changed, int initValue, {List<String>? select, int? count}) {
+  Widget cupertinoItem(List<String> titles, ValueChanged<int> changed, GestureTapCallback? tap, {List<String>? select, int? count}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (tap != null) tap();
+    });
     return Column(
       children: [
         for (var title in titles) Text(title),
@@ -234,18 +236,25 @@ class GsCrPage extends StatelessWidget {
         SizedBox(
           width: 80.w,
           height: 64,
-          child: CupertinoPicker(
-            scrollController: FixedExtentScrollController(initialItem: initValue),
-            itemExtent: 32.0,
-            onSelectedItemChanged: changed,
-            children: count != null
-                ? List.generate(count, (index) {
+          child: count != null && count < 0
+              ? CupertinoPicker(
+                  itemExtent: 32.0,
+                  onSelectedItemChanged: changed,
+                  children: List.generate(1, (index) {
                     return Center(child: Text("${index + 1}"));
-                  })
-                : List.generate(select!.length, (index) {
-                    return Center(child: Text(select[index]));
                   }),
-          ),
+                )
+              : CupertinoPicker(
+                  itemExtent: 32.0,
+                  onSelectedItemChanged: changed,
+                  children: count != null
+                      ? List.generate(count, (index) {
+                          return Center(child: Text("${index + 1}"));
+                        })
+                      : List.generate(select!.length, (index) {
+                          return Center(child: Text(select[index]));
+                        }),
+                ),
         ),
       ],
     );
@@ -268,8 +277,11 @@ class GsCrPage extends StatelessWidget {
                   children: [
                     const Spacer(),
                     TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        logic.addSchedule();
+                      },
                       child: Text(I18nKey.btnOk.tr),
-                      onPressed: () {},
                     ),
                     SizedBox(width: 5.w),
                   ],
@@ -285,14 +297,14 @@ class GsCrPage extends StatelessWidget {
                             color: Theme.of(context).secondaryHeaderColor,
                             child: Row(
                               children: [
-                                CupertinoItem(['', "Content"], logic.selectContent, logic.state.forAdd.fromContentIndex, select: logic.state.forAdd.contentNames),
-                                CupertinoItem(['From', "Lesion"], logic.selectLesson, logic.state.forAdd.fromLessonIndex, count: logic.state.forAdd.maxLesson),
-                                CupertinoItem(['', "Segment"], logic.selectSegment, logic.state.forAdd.fromSegmentIndex, count: logic.state.forAdd.maxSegment),
+                                cupertinoItem(['', I18nKey.content.tr], logic.selectContent, null, select: logic.state.forAdd.contentNames),
+                                cupertinoItem([I18nKey.labelFrom.tr, I18nKey.labelLesson.tr], logic.selectLesson, logic.initLesson, count: logic.state.forAdd.maxLesson),
+                                cupertinoItem(['', I18nKey.labelSegment.tr], logic.selectSegment, logic.initSegment, count: logic.state.forAdd.maxSegment),
                               ],
                             ),
                           ),
                           const Spacer(),
-                          CupertinoItem(['To', "Count"], logic.selectContent, 0, count: 100),
+                          cupertinoItem([I18nKey.btnAdd.tr, "Count"], logic.selectCount, null, count: 100),
                         ],
                       );
                     })

@@ -7,7 +7,6 @@ import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
@@ -253,25 +252,43 @@ class GsCrLogic extends GetxController {
     }, I18nKey.labelExecuting.tr);
   }
 
+  // for add schedule
+
+  void initLesson() async {
+    if (state.forAdd.maxLesson < 0) {
+      var contentSerial = state.forAdd.fromContent!.serial;
+      var maxLesson = await Db().db.scheduleDao.getMaxLessonIndex(Classroom.curr, contentSerial);
+      state.forAdd.maxLesson = (maxLesson ?? 1) + 1;
+      update([GsCrLogic.idForAdd]);
+    }
+  }
+
+  void initSegment() async {
+    if (state.forAdd.maxLesson < 0) {
+      return;
+    }
+    if (state.forAdd.maxSegment < 0) {
+      var contentSerial = state.forAdd.fromContent!.serial;
+      var maxSegment = await Db().db.scheduleDao.getMaxSegmentIndex(Classroom.curr, contentSerial, state.forAdd.fromLessonIndex);
+      state.forAdd.maxSegment = (maxSegment ?? 1) + 1;
+      update([GsCrLogic.idForAdd]);
+    }
+  }
+
   void selectContent(int contentIndex) async {
     var content = state.forAdd.contents[contentIndex];
-    var contentSerial = content.serial;
-    var maxLesson = await Db().db.scheduleDao.getMaxLessonIndex(Classroom.curr, contentSerial);
-    state.forAdd.maxLesson = (maxLesson ?? 1) + 1;
-    var maxSegment = await Db().db.scheduleDao.getMaxSegmentIndex(Classroom.curr, contentSerial, 0);
-    state.forAdd.maxSegment = (maxSegment ?? 1) + 1;
+    state.forAdd.maxLesson = -1;
+    state.forAdd.maxSegment = -1;
     state.forAdd.fromContent = content;
     state.forAdd.fromContentIndex = contentIndex;
     state.forAdd.fromLessonIndex = 0;
     state.forAdd.fromSegmentIndex = 0;
+
     update([GsCrLogic.idForAdd]);
   }
 
   void selectLesson(int lessonIndex) async {
-    var contentSerial = state.forAdd.fromContent!.serial;
-    var maxSegment = await Db().db.scheduleDao.getMaxSegmentIndex(Classroom.curr, contentSerial, lessonIndex);
-    state.forAdd.maxSegment = (maxSegment ?? 1) + 1;
-
+    state.forAdd.maxSegment = -1;
     state.forAdd.fromLessonIndex = lessonIndex;
     state.forAdd.fromSegmentIndex = 0;
     update([GsCrLogic.idForAdd]);
@@ -279,19 +296,13 @@ class GsCrLogic extends GetxController {
 
   void selectSegment(int segmentIndex) async {
     state.forAdd.fromSegmentIndex = segmentIndex;
-    update([GsCrLogic.idForAdd]);
   }
 
-  void selectSegment1(int segmentIndex) async {
-    state.forAdd.fromSegmentIndex = segmentIndex;
+  void selectCount(int count) async {
+    state.forAdd.count = count + 1;
   }
 
-  void shou() {
-    showOverlay(() async {
-      await Db().db.scheduleDao.deleteKv(CrKv(Classroom.curr, CrK.todayLearnCreateDate, ""));
-      await init();
-      Nav.back();
-      Snackbar.show(I18nKey.labelFinish.tr);
-    }, I18nKey.labelExecuting.tr);
+  void addSchedule() async {
+
   }
 }

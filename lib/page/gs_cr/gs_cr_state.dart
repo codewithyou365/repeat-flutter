@@ -29,9 +29,10 @@ class ForAdd {
   int maxSegment = 1;
 
   Content? fromContent;
- int fromContentIndex = 0;
+  int fromContentIndex = 0;
   int fromLessonIndex = 0;
   int fromSegmentIndex = 0;
+  int count = 1;
 }
 
 class GsCrState {
