@@ -40,6 +40,7 @@ class GsCrState {
   List<SegmentTodayPrg> all = [];
   List<SegmentTodayPrg> learn = [];
   List<SegmentTodayPrg> review = [];
+  List<SegmentTodayPrg> fullCustom = [];
 
   ForAdd forAdd = ForAdd();
 

@@ -122,7 +122,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelDocNotBeDownloaded, "还未下载文件:%s");
     put(I18nKey.labelDocCantBeFound, "无法找到文件:%s");
     put(I18nKey.labelInputPathError, "路径错误");
-    put(I18nKey.labelFrom, "来自");
+    put(I18nKey.labelScheduleCount, "规划数量");
+    put(I18nKey.labelFrom, "开始于");
     put(I18nKey.labelLesson, "节");
     put(I18nKey.labelSegment, "段");
     put(I18nKey.btnAddSchedule, "添加规划");
@@ -149,6 +150,7 @@ class ConfigZh extends Config {
     put(I18nKey.btnBrowse, "浏览");
     put(I18nKey.btnExamine, "考查");
     put(I18nKey.btnReview, "回顾");
+    put(I18nKey.btnFullCustom, "自定义");
     put(I18nKey.btnRepeat, "重复");
     put(I18nKey.btnSchedule, "安排");
     put(I18nKey.btnShow, "展示");

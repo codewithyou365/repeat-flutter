@@ -230,7 +230,7 @@ abstract class ScheduleDao {
   @Query('DELETE FROM SegmentTodayPrg WHERE classroomId=:classroomId')
   Future<void> deleteSegmentTodayPrgByClassroomId(int classroomId);
 
-  @Query('DELETE FROM SegmentTodayPrg where classroomId=:classroomId and reviewCreateDate!=0')
+  @Query('DELETE FROM SegmentTodayPrg where classroomId=:classroomId and reviewCreateDate>100')
   Future<void> deleteSegmentTodayReviewPrgByClassroomId(int classroomId);
 
   @Query('DELETE FROM SegmentTodayPrg where classroomId=:classroomId and reviewCreateDate=0')
@@ -299,6 +299,30 @@ abstract class ScheduleDao {
       " ORDER BY SegmentOverallPrg.progress,Segment.sort"
       " ) Segment order by Segment.sort")
   Future<List<SegmentTodayPrg>> scheduleLearn(int classroomId, int minProgress, Date now);
+
+  @Query("SELECT"
+      " Segment.classroomId"
+      ",Segment.contentSerial"
+      ",Segment.segmentKeyId"
+      ",0 type"
+      ",Segment.sort"
+      ",0 progress"
+      ",0 viewTime"
+      ",0 reviewCount"
+      ",1 reviewCreateDate"
+      ",0 finish"
+      " FROM Segment"
+      " WHERE Segment.classroomId=:classroomId"
+      " AND Segment.sort>=("
+      "  SELECT Segment.sort FROM Segment"
+      "  WHERE Segment.contentSerial=:contentSerial"
+      "  AND Segment.lessonIndex=:lessonIndex"
+      "  AND Segment.segmentIndex=:segmentIndex"
+      ")"
+      " ORDER BY Segment.sort"
+      " limit :limit"
+      "")
+  Future<List<SegmentTodayPrg>> scheduleFullCustom(int classroomId, int contentSerial, int lessonIndex, int segmentIndex, int limit);
 
   @Query('UPDATE SegmentOverallPrg SET progress=:progress,next=:next WHERE segmentKeyId=:segmentKeyId')
   Future<void> setPrgAndNext4Sop(int segmentKeyId, int progress, Date next);
@@ -507,7 +531,7 @@ abstract class ScheduleDao {
     List<SegmentTodayPrg> todayPrg = [];
     var now = DateTime.now();
     var needToInsert = false;
-    var todayLearnCreateDate = await intKv(Classroom.curr, CrK.todayLearnCreateDate);
+    var todayLearnCreateDate = await intKv(Classroom.curr, CrK.todayScheduleCreateDate);
     if (todayLearnCreateDate == null) {
       needToInsert = true;
     }
@@ -518,7 +542,7 @@ abstract class ScheduleDao {
     scheduleConfig = await getScheduleConfig();
 
     if (needToInsert) {
-      await insertKv(CrKv(Classroom.curr, CrK.todayLearnCreateDate, "${Date.from(now).value}"));
+      await insertKv(CrKv(Classroom.curr, CrK.todayScheduleCreateDate, "${Date.from(now).value}"));
       await deleteSegmentTodayPrgByClassroomId(Classroom.curr);
       var elConfigs = scheduleConfig.elConfigs;
       await initTodayEl(now, elConfigs, todayPrg);
@@ -526,7 +550,7 @@ abstract class ScheduleDao {
       await initTodayRel(now, relConfigs, todayPrg);
       await insertSegmentTodayPrg(todayPrg);
       var configInUseStr = convert.json.encode(scheduleConfig);
-      await insertKv(CrKv(Classroom.curr, CrK.todayLearnScheduleConfigInUse, configInUseStr));
+      await insertKv(CrKv(Classroom.curr, CrK.todayScheduleConfigInUse, configInUseStr));
     } else {
       todayPrg = await findSegmentTodayPrg(Classroom.curr);
     }
@@ -535,8 +559,8 @@ abstract class ScheduleDao {
 
   @transaction
   Future<List<SegmentTodayPrg>> forceInitToday(TodayPrgType type) async {
-    scheduleConfig = await getScheduleConfigByKey(CrK.todayLearnScheduleConfig);
-    var scheduleConfigInUse = await getScheduleConfigByKey(CrK.todayLearnScheduleConfigInUse);
+    scheduleConfig = await getScheduleConfigByKey(CrK.todayScheduleConfig);
+    var scheduleConfigInUse = await getScheduleConfigByKey(CrK.todayScheduleConfigInUse);
     List<SegmentTodayPrg> todayPrg = [];
     var now = DateTime.now();
     if (type == TodayPrgType.learn || type == TodayPrgType.none) {
@@ -554,13 +578,13 @@ abstract class ScheduleDao {
     await insertSegmentTodayPrg(todayPrg);
 
     var configInUseStr = convert.json.encode(scheduleConfigInUse);
-    await insertKv(CrKv(Classroom.curr, CrK.todayLearnScheduleConfigInUse, configInUseStr));
+    await insertKv(CrKv(Classroom.curr, CrK.todayScheduleConfigInUse, configInUseStr));
 
     return await findSegmentTodayPrg(Classroom.curr);
   }
 
   Future<ScheduleConfig> getScheduleConfig() async {
-    return getScheduleConfigByKey(CrK.todayLearnScheduleConfig);
+    return getScheduleConfigByKey(CrK.todayScheduleConfig);
   }
 
   Future<ScheduleConfig> getScheduleConfigByKey(CrK config) async {
@@ -660,6 +684,18 @@ abstract class ScheduleDao {
   }
 
   @transaction
+  Future<void> addFullCustom(int contentSerial, int lessonIndex, int segmentIndex, int limit) async {
+    List<SegmentTodayPrg> ret;
+    ret = await scheduleFullCustom(Classroom.curr, contentSerial, lessonIndex, segmentIndex, limit);
+    var count = await intKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount);
+    count = count ?? 0;
+    insertKv(CrKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount, "${count + 1}"));
+    SegmentTodayPrg.setType(ret, TodayPrgType.fullCustom, count + 1, 0);
+
+    await insertSegmentTodayPrg(ret);
+  }
+
+  @transaction
   Future<void> error(SegmentTodayPrg scheduleCurrent) async {
     await forUpdate();
     var segmentKeyId = scheduleCurrent.segmentKeyId;
@@ -673,7 +709,7 @@ abstract class ScheduleDao {
     await forUpdate();
     var segmentKeyId = segmentTodayPrg.segmentKeyId;
     var now = DateTime.now();
-    var todayLearnCreateDate = await intKv(Classroom.curr, CrK.todayLearnCreateDate);
+    var todayLearnCreateDate = await intKv(Classroom.curr, CrK.todayScheduleCreateDate);
     todayLearnCreateDate ??= Date.from(now).value;
     bool complete = false;
     var maxRepeatTime = scheduleConfig.maxRepeatTime;
@@ -697,7 +733,7 @@ abstract class ScheduleDao {
         return;
       }
       var adjustProgress = false;
-      if (segmentTodayPrg.reviewCreateDate.value != 0) {
+      if (segmentTodayPrg.reviewCreateDate.value > 100) {
         await setSegmentReviewCount(segmentTodayPrg.reviewCreateDate, segmentKeyId, segmentTodayPrg.reviewCount + 1);
         if (schedule.progress == 0) {
           adjustProgress = true;

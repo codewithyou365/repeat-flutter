@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
+import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -80,7 +81,7 @@ class GsCrPage extends StatelessWidget {
       builder: (_) {
         return GroupedListView<SegmentTodayPrgInView, String>(
           elements: state.segments,
-          groupBy: (element) => element.type.name,
+          groupBy: (element) => "${element.type.index}",
           groupHeaderBuilder: (element) => PopupMenuButton<String>(
             child: SizedBox(
               height: 40,
@@ -109,10 +110,11 @@ class GsCrPage extends StatelessWidget {
                 onTap: () => {logic.resetSchedule(element.type)},
                 child: Text(I18nKey.labelReset.tr),
               ),
-              PopupMenuItem<String>(
-                onTap: () => {logic.config(element.type)},
-                child: Text(I18nKey.settings.tr),
-              ),
+              if (element.type != TodayPrgType.fullCustom)
+                PopupMenuItem<String>(
+                  onTap: () => {logic.config(element.type)},
+                  child: Text(I18nKey.settings.tr),
+                ),
             ],
           ),
           groupStickyHeaderBuilder: (element) => Container(
@@ -178,10 +180,11 @@ class GsCrPage extends StatelessWidget {
                         onTap: () => {logic.resetSchedule(element.type)},
                         child: Text(I18nKey.labelReset.tr),
                       ),
-                      PopupMenuItem<String>(
-                        onTap: () => {logic.config(element.type)},
-                        child: Text(I18nKey.settings.tr),
-                      ),
+                      if (element.type != TodayPrgType.fullCustom)
+                        PopupMenuItem<String>(
+                          onTap: () => {logic.config(element.type)},
+                          child: Text(I18nKey.settings.tr),
+                        ),
                     ],
                   ),
                 ],
@@ -304,7 +307,7 @@ class GsCrPage extends StatelessWidget {
                             ),
                           ),
                           const Spacer(),
-                          cupertinoItem([I18nKey.btnAdd.tr, "Count"], logic.selectCount, null, count: 100),
+                          cupertinoItem([I18nKey.btnAdd.tr, I18nKey.labelScheduleCount.tr], logic.selectCount, null, count: 100),
                         ],
                       );
                     })

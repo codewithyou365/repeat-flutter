@@ -57,7 +57,7 @@ class GsCrSettingsLogic extends GetxController {
 
   void resetConfig() {
     showTransparentOverlay(() async {
-      await Db().db.scheduleDao.deleteKv(CrKv(Classroom.curr, CrK.todayLearnScheduleConfig, ""));
+      await Db().db.scheduleDao.deleteKv(CrKv(Classroom.curr, CrK.todayScheduleConfig, ""));
       ScheduleDao.scheduleConfig = ScheduleDao.defaultScheduleConfig;
       Nav.back();
       Snackbar.show(I18nKey.labelFinish.tr);
@@ -77,7 +77,7 @@ class GsCrSettingsLogic extends GetxController {
       );
       ScheduleDao.scheduleConfig = config;
       String value = json.encode(ScheduleDao.scheduleConfig);
-      Db().db.scheduleDao.updateKv(Classroom.curr, CrK.todayLearnScheduleConfig, value);
+      Db().db.scheduleDao.updateKv(Classroom.curr, CrK.todayScheduleConfig, value);
       Get.back();
       Snackbar.show(I18nKey.labelSaved.tr);
     });

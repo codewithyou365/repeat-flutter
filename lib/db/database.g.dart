@@ -867,7 +867,7 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<void> deleteSegmentTodayReviewPrgByClassroomId(int classroomId) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM SegmentTodayPrg where classroomId=?1 and reviewCreateDate!=0',
+        'DELETE FROM SegmentTodayPrg where classroomId=?1 and reviewCreateDate>100',
         arguments: [classroomId]);
   }
 
@@ -966,6 +966,26 @@ class _$ScheduleDao extends ScheduleDao {
         'SELECT * FROM ( SELECT Segment.classroomId,Segment.contentSerial,SegmentOverallPrg.segmentKeyId,0 type,Segment.sort,SegmentOverallPrg.progress progress,0 viewTime,0 reviewCount,0 reviewCreateDate,0 finish FROM SegmentOverallPrg JOIN Segment ON Segment.segmentKeyId=SegmentOverallPrg.segmentKeyId AND Segment.classroomId=?1 WHERE SegmentOverallPrg.next<=?3 AND SegmentOverallPrg.progress>=?2 ORDER BY SegmentOverallPrg.progress,Segment.sort ) Segment order by Segment.sort',
         mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['classroomId'] as int, row['contentSerial'] as int, row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
         arguments: [classroomId, minProgress, _dateConverter.encode(now)]);
+  }
+
+  @override
+  Future<List<SegmentTodayPrg>> scheduleFullCustom(
+    int classroomId,
+    int contentSerial,
+    int lessonIndex,
+    int segmentIndex,
+    int limit,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT Segment.classroomId,Segment.contentSerial,Segment.segmentKeyId,0 type,Segment.sort,0 progress,0 viewTime,0 reviewCount,1 reviewCreateDate,0 finish FROM Segment WHERE Segment.classroomId=?1 AND Segment.sort>=(  SELECT Segment.sort FROM Segment  WHERE Segment.contentSerial=?2  AND Segment.lessonIndex=?3  AND Segment.segmentIndex=?4) ORDER BY Segment.sort limit ?5',
+        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['classroomId'] as int, row['contentSerial'] as int, row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
+        arguments: [
+          classroomId,
+          contentSerial,
+          lessonIndex,
+          segmentIndex,
+          limit
+        ]);
   }
 
   @override
@@ -1308,6 +1328,27 @@ class _$ScheduleDao extends ScheduleDao {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         return transactionDatabase.scheduleDao.forceInitToday(type);
+      });
+    }
+  }
+
+  @override
+  Future<void> addFullCustom(
+    int contentSerial,
+    int lessonIndex,
+    int segmentIndex,
+    int limit,
+  ) async {
+    if (database is sqflite.Transaction) {
+      await super
+          .addFullCustom(contentSerial, lessonIndex, segmentIndex, limit);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        await transactionDatabase.scheduleDao
+            .addFullCustom(contentSerial, lessonIndex, segmentIndex, limit);
       });
     }
   }
