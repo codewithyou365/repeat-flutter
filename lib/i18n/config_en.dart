@@ -121,6 +121,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelDocNotBeDownloaded, "The content (%s) is not downloaded");
     put(I18nKey.labelDocCantBeFound, "The content (%s) cannot be found");
     put(I18nKey.labelInputPathError, "The inputting path is error");
+    put(I18nKey.labelScheduleCount, "Count");
     put(I18nKey.labelFrom, "From");
     put(I18nKey.labelLesson, "Lesson");
     put(I18nKey.labelSegment, "Segment");
@@ -148,6 +149,7 @@ class ConfigEn extends Config {
     put(I18nKey.btnBrowse, "Browse");
     put(I18nKey.btnExamine, "Examine");
     put(I18nKey.btnReview, "Review");
+    put(I18nKey.btnFullCustom, "Full Custom");
     put(I18nKey.btnRepeat, "Repeat");
     put(I18nKey.btnSchedule, "Schedule");
     put(I18nKey.btnShow, "SHOW");

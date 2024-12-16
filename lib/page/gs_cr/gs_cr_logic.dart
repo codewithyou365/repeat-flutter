@@ -58,7 +58,9 @@ class GsCrLogic extends GetxController {
     state.learn = [];
     state.segments = [];
 
-    var configInUseJsonStr = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.todayLearnScheduleConfigInUse);
+    var fullCustomCount = await Db().db.scheduleDao.intKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount);
+    fullCustomCount = fullCustomCount ?? 0;
+    var configInUseJsonStr = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.todayScheduleConfigInUse);
     ScheduleConfig? scheduleConfig;
     if (configInUseJsonStr != null) {
       try {
@@ -71,16 +73,17 @@ class GsCrLogic extends GetxController {
     scheduleConfig ??= ScheduleDao.scheduleConfig;
     List<SegmentTodayPrgInView> learn = [];
     List<SegmentTodayPrgInView> review = [];
-    Map<int, SegmentTodayPrgInView> temp = {};
+    List<SegmentTodayPrgInView> fullCustom = [];
+    Map<int, SegmentTodayPrgInView> typeToSegment = {};
     for (var item in allProgresses) {
       var prgTypeAndIndex = SegmentTodayPrg.getPrgTypeAndIndex(item.type);
 
       SegmentTodayPrgInView view;
-      if (temp.containsKey(prgTypeAndIndex)) {
-        view = temp[prgTypeAndIndex]!;
+      if (typeToSegment.containsKey(prgTypeAndIndex)) {
+        view = typeToSegment[prgTypeAndIndex]!;
       } else {
         view = SegmentTodayPrgInView([]);
-        temp[prgTypeAndIndex] = view;
+        typeToSegment[prgTypeAndIndex] = view;
       }
       view.segments.add(item);
     }
@@ -90,8 +93,8 @@ class GsCrLogic extends GetxController {
       var learnedTotalCount = 0;
       var learnTotalCount = 0;
       SegmentTodayPrgInView rule;
-      if (temp.containsKey(prgTypeAndIndex)) {
-        rule = temp[prgTypeAndIndex]!;
+      if (typeToSegment.containsKey(prgTypeAndIndex)) {
+        rule = typeToSegment[prgTypeAndIndex]!;
         learnedTotalCount = SegmentTodayPrg.getFinishedCount(rule.segments);
         learnTotalCount = rule.segments.length;
       } else {
@@ -111,8 +114,8 @@ class GsCrLogic extends GetxController {
       var learnedTotalCount = 0;
       var learnTotalCount = 0;
       SegmentTodayPrgInView rule;
-      if (temp.containsKey(prgTypeAndIndex)) {
-        rule = temp[prgTypeAndIndex]!;
+      if (typeToSegment.containsKey(prgTypeAndIndex)) {
+        rule = typeToSegment[prgTypeAndIndex]!;
         learnedTotalCount = SegmentTodayPrg.getFinishedCount(rule.segments);
         learnTotalCount = rule.segments.length;
       } else {
@@ -127,10 +130,31 @@ class GsCrLogic extends GetxController {
       review.add(rule);
       state.review.addAll(rule.segments);
     }
+    for (var index = 0; index < fullCustomCount; index++) {
+      var prgTypeAndIndex = SegmentTodayPrg.toPrgTypeAndIndex(TodayPrgType.fullCustom, index);
+      var learnedTotalCount = 0;
+      var learnTotalCount = 0;
+      SegmentTodayPrgInView rule;
+      if (typeToSegment.containsKey(prgTypeAndIndex)) {
+        rule = typeToSegment[prgTypeAndIndex]!;
+        learnedTotalCount = SegmentTodayPrg.getFinishedCount(rule.segments);
+        learnTotalCount = rule.segments.length;
+      } else {
+        rule = SegmentTodayPrgInView([]);
+      }
+      rule.index = index;
+      rule.uniqIndex = uniqIndex++;
+      rule.type = TodayPrgType.fullCustom;
+      rule.name = "$index: $learnedTotalCount/$learnTotalCount";
+      rule.desc = "";
+      fullCustom.add(rule);
+      state.fullCustom.addAll(rule.segments);
+    }
     state.segments.addAll(learn);
     state.segments.addAll(review);
+    state.segments.addAll(fullCustom);
 
-    var todayLearnCreateDate = await Db().db.scheduleDao.intKv(Classroom.curr, CrK.todayLearnCreateDate) ?? 0;
+    var todayLearnCreateDate = await Db().db.scheduleDao.intKv(Classroom.curr, CrK.todayScheduleCreateDate) ?? 0;
     var next = Db().db.scheduleDao.getNext(now, ScheduleDao.scheduleConfig.intervalSeconds);
     if (todayLearnCreateDate != 0 && next.value - todayLearnCreateDate > 0 && todayLearnCreateDate == Date.from(now).value) {
       state.learnDeadline = next.toDateTime().millisecondsSinceEpoch;
@@ -152,9 +176,16 @@ class GsCrLogic extends GetxController {
       l.groupDesc = toGroupName(TodayPrgType.review) + ": $learnedTotalCount/$learnTotalCount";
     }
 
+    for (var l in fullCustom) {
+      var learnedTotalCount = SegmentTodayPrg.getFinishedCount(state.fullCustom);
+      var learnTotalCount = state.fullCustom.length;
+      l.groupDesc = toGroupName(TodayPrgType.fullCustom) + ": $learnedTotalCount/$learnTotalCount";
+    }
+
     state.all.sort((a, b) => a.sort.compareTo(b.sort));
     state.learn.sort((a, b) => a.sort.compareTo(b.sort));
     state.review.sort((a, b) => a.sort.compareTo(b.sort));
+    state.fullCustom.sort((a, b) => a.sort.compareTo(b.sort));
 
     startTimer();
     update([GsCrLogic.id]);
@@ -169,14 +200,18 @@ class GsCrLogic extends GetxController {
       tryStart(state.learn, mode: mode);
     } else if (type == TodayPrgType.review) {
       tryStart(state.review, mode: mode);
+    } else if (type == TodayPrgType.fullCustom) {
+      tryStart(state.fullCustom, mode: mode);
     }
   }
 
   toGroupName(TodayPrgType type) {
     if (type == TodayPrgType.learn) {
       return I18nKey.btnLearn.tr;
-    } else {
+    } else if (type == TodayPrgType.review) {
       return I18nKey.btnReview.tr;
+    } else {
+      return I18nKey.btnFullCustom.tr;
     }
   }
 
@@ -220,6 +255,9 @@ class GsCrLogic extends GetxController {
   }
 
   void config(TodayPrgType type) async {
+    if (type == TodayPrgType.fullCustom) {
+      return;
+    }
     showTransparentOverlay(() async {
       Nav.gsCrSettings.push();
       await Future.delayed(const Duration(milliseconds: 700));
@@ -245,7 +283,7 @@ class GsCrLogic extends GetxController {
 
   void resetAllSchedule() {
     showOverlay(() async {
-      await Db().db.scheduleDao.deleteKv(CrKv(Classroom.curr, CrK.todayLearnCreateDate, ""));
+      await Db().db.scheduleDao.deleteKv(CrKv(Classroom.curr, CrK.todayScheduleCreateDate, ""));
       await init();
       Nav.back();
       Snackbar.show(I18nKey.labelFinish.tr);
@@ -303,6 +341,18 @@ class GsCrLogic extends GetxController {
   }
 
   void addSchedule() async {
-
+    if (state.forAdd.maxLesson < 0) {
+      return;
+    }
+    if (state.forAdd.maxSegment < 0) {
+      return;
+    }
+    await Db().db.scheduleDao.addFullCustom(
+          state.forAdd.fromContent!.serial,
+          state.forAdd.fromLessonIndex,
+          state.forAdd.fromSegmentIndex,
+          state.forAdd.count,
+        );
+    await init();
   }
 }

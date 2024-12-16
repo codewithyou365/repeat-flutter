@@ -3,9 +3,10 @@
 import 'package:floor/floor.dart';
 
 enum CrK {
-  todayLearnCreateDate,
-  todayLearnScheduleConfig,
-  todayLearnScheduleConfigInUse,
+  todayScheduleCreateDate,
+  todayScheduleConfig,
+  todayScheduleConfigInUse,
+  todayFullCustomScheduleConfigCount,
 }
 
 @Entity(primaryKeys: ['classroomId', 'k'])

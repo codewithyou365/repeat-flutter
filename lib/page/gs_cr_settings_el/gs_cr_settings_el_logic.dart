@@ -111,6 +111,6 @@ class GsCrSettingsElLogic extends GetxController {
     }
     ScheduleDao.scheduleConfig.elConfigs = newElConfigs;
     String value = json.encode(ScheduleDao.scheduleConfig);
-    Db().db.scheduleDao.updateKv(Classroom.curr, CrK.todayLearnScheduleConfig, value);
+    Db().db.scheduleDao.updateKv(Classroom.curr, CrK.todayScheduleConfig, value);
   }
 }
