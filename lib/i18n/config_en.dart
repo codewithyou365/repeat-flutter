@@ -67,8 +67,9 @@ class ConfigEn extends Config {
     put(I18nKey.labelPleaseInputUnSignNumber, "Please enter a number greater than or equal to 0.");
     put(I18nKey.labelReset, "Reset");
     put(I18nKey.labelResetAllDesc, "All tasks for today will be reset. Do you want to continue?");
-    put(I18nKey.labelResetLearnDesc, "The learning tasks for today will be reset. Do you want to continue?");
-    put(I18nKey.labelResetReviewDesc, "The review tasks for today will be reset. Do you want to continue?");
+    put(I18nKey.labelResetLearnDesc, "The learning tasks will be reset. Do you want to continue?");
+    put(I18nKey.labelResetReviewDesc, "The review tasks will be reset. Do you want to continue?");
+    put(I18nKey.labelResetFullCustomDesc, "The full custom tasks will be deleted. Do you want to continue?");
     put(I18nKey.labelConfigSettingsForEl, "Learn Config");
     put(I18nKey.labelConfigSettingsForElDesc, "Arrange study sessions according to the Ebbinghaus forgetting curve.");
     put(I18nKey.labelConfigSettingsForRel, "Review Config");
@@ -91,6 +92,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelElConfig1111, "Randomly organize Level %s and subsequent quantities: %s (%s per group)");
     put(I18nKey.labelRelConfig0, "The %sth review will cover the content from %s days ago, starting from %s. (unlimited per group)");
     put(I18nKey.labelRelConfig1, "The %sth review will cover the content from %s days ago, starting from %s. (%s per group)");
+    put(I18nKey.labelFullCustomConfig, "Start from segment @1, lesson @2 of the content @0, and plan @3 segment (unlimited per group).");
     put(I18nKey.labelElRandom, "Random");
     put(I18nKey.labelElExtend, "And subsequent");
     put(I18nKey.labelElLevel, "Level");

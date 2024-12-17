@@ -879,6 +879,14 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
+  Future<void> deleteSegmentTodayFullCustomPrgByClassroomId(
+      int classroomId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM SegmentTodayPrg where classroomId=?1 and reviewCreateDate=1',
+        arguments: [classroomId]);
+  }
+
+  @override
   Future<List<SegmentTodayPrg>> findSegmentTodayPrg(int classroomId) async {
     return _queryAdapter.queryList(
         'SELECT * FROM SegmentTodayPrg WHERE classroomId=?1 order by id asc',
@@ -1029,6 +1037,17 @@ class _$ScheduleDao extends ScheduleDao {
         'SELECT SegmentOverallPrg.*,Content.name contentName,Segment.lessonIndex,Segment.segmentIndex FROM Segment JOIN SegmentOverallPrg on SegmentOverallPrg.segmentKeyId=Segment.segmentKeyId JOIN Content ON Content.classroomId=Segment.classroomId AND Content.serial=Segment.contentSerial WHERE Segment.classroomId=?1 ORDER BY Segment.sort asc',
         mapper: (Map<String, Object?> row) => SegmentOverallPrgWithKey(row['segmentKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, row['contentName'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int),
         arguments: [classroomId]);
+  }
+
+  @override
+  Future<String?> getContentNameBySerial(
+    int classroomId,
+    int contentSerial,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT Content.name FROM Content WHERE Content.classroomId=?1 AND Content.serial=?2',
+        mapper: (Map<String, Object?> row) => row.values.first as String,
+        arguments: [classroomId, contentSerial]);
   }
 
   @override
