@@ -67,8 +67,9 @@ class ConfigZh extends Config {
     put(I18nKey.labelPleaseInputUnSignNumber, "请输入大于或等于 0 的数字");
     put(I18nKey.labelReset, "重置内容");
     put(I18nKey.labelResetAllDesc, "将重置今日所有的任务，是否继续？");
-    put(I18nKey.labelResetLearnDesc, "将重置今日学习的任务，是否继续？");
-    put(I18nKey.labelResetReviewDesc, "将重置今日回顾的任务，是否继续？");
+    put(I18nKey.labelResetLearnDesc, "将重置学习的任务，是否继续？");
+    put(I18nKey.labelResetReviewDesc, "将重置回顾的任务，是否继续？");
+    put(I18nKey.labelResetFullCustomDesc, "将删除自定义任务，是否继续？");
     put(I18nKey.labelConfigSettingsForEl, "学习设置");
     put(I18nKey.labelConfigSettingsForElDesc, "以艾宾浩斯遗忘曲线进行安排学习。");
     put(I18nKey.labelConfigSettingsForRel, "回顾设置");
@@ -91,6 +92,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelElConfig1111, "随机安排%s级及以后数量: %s (每组%s个)");
     put(I18nKey.labelRelConfig0, "第%s次回顾%s天以前的内容，从%s开始 (每组不限)");
     put(I18nKey.labelRelConfig1, "第%s次回顾%s天以前的内容，从%s开始 (每组%s个)");
+    put(I18nKey.labelFullCustomConfig, "从内容@0的@1节@2段开始 规划@3个段 (每组不限)");
     put(I18nKey.labelElRandom, "是否随机");
     put(I18nKey.labelElExtend, "以后");
     put(I18nKey.labelElLevel, "等级");

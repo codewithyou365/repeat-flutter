@@ -3,6 +3,7 @@
 import 'dart:convert' as convert;
 
 import 'package:floor/floor.dart';
+import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/segment.dart';
@@ -236,6 +237,9 @@ abstract class ScheduleDao {
   @Query('DELETE FROM SegmentTodayPrg where classroomId=:classroomId and reviewCreateDate=0')
   Future<void> deleteSegmentTodayLearnPrgByClassroomId(int classroomId);
 
+  @Query('DELETE FROM SegmentTodayPrg where classroomId=:classroomId and reviewCreateDate=1')
+  Future<void> deleteSegmentTodayFullCustomPrgByClassroomId(int classroomId);
+
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertSegmentTodayPrg(List<SegmentTodayPrg> entities);
 
@@ -345,6 +349,8 @@ abstract class ScheduleDao {
   Future<List<SegmentOverallPrgWithKey>> getAllSegmentOverallPrg(int classroomId);
 
   /// --- SegmentReview
+  @Query("SELECT Content.name FROM Content WHERE Content.classroomId=:classroomId AND Content.serial=:contentSerial")
+  Future<String?> getContentNameBySerial(int classroomId, int contentSerial);
 
   @Query("SELECT SegmentReview.*"
       ",Content.name contentName"
@@ -542,6 +548,7 @@ abstract class ScheduleDao {
     scheduleConfig = await getScheduleConfig();
 
     if (needToInsert) {
+      await deleteKv(CrKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount, ""));
       await insertKv(CrKv(Classroom.curr, CrK.todayScheduleCreateDate, "${Date.from(now).value}"));
       await deleteSegmentTodayPrgByClassroomId(Classroom.curr);
       var elConfigs = scheduleConfig.elConfigs;
@@ -575,8 +582,13 @@ abstract class ScheduleDao {
       scheduleConfigInUse.relConfigs = relConfigs;
       await initTodayRel(now, relConfigs, todayPrg);
     }
-    await insertSegmentTodayPrg(todayPrg);
-
+    if (type == TodayPrgType.fullCustom || type == TodayPrgType.none) {
+      await deleteKv(CrKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount, ""));
+      await deleteSegmentTodayFullCustomPrgByClassroomId(Classroom.curr);
+    }
+    if (todayPrg.isNotEmpty) {
+      await insertSegmentTodayPrg(todayPrg);
+    }
     var configInUseStr = convert.json.encode(scheduleConfigInUse);
     await insertKv(CrKv(Classroom.curr, CrK.todayScheduleConfigInUse, configInUseStr));
 
@@ -687,10 +699,17 @@ abstract class ScheduleDao {
   Future<void> addFullCustom(int contentSerial, int lessonIndex, int segmentIndex, int limit) async {
     List<SegmentTodayPrg> ret;
     ret = await scheduleFullCustom(Classroom.curr, contentSerial, lessonIndex, segmentIndex, limit);
-    var count = await intKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount);
-    count = count ?? 0;
-    insertKv(CrKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount, "${count + 1}"));
-    SegmentTodayPrg.setType(ret, TodayPrgType.fullCustom, count + 1, 0);
+    String? fullCustomJsonStr = await stringKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount);
+    List<List<String>> fullCustomConfigs = ListUtil.toListList(fullCustomJsonStr);
+    var contentName = await getContentNameBySerial(Classroom.curr, contentSerial);
+    List<String> args = [];
+    args.add(contentName ?? '-');
+    args.add('${lessonIndex + 1}');
+    args.add('${segmentIndex + 1}');
+    args.add('$limit');
+    fullCustomConfigs.add(args);
+    insertKv(CrKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount, convert.jsonEncode(fullCustomConfigs)));
+    SegmentTodayPrg.setType(ret, TodayPrgType.fullCustom, fullCustomConfigs.length-1, 0);
 
     await insertSegmentTodayPrg(ret);
   }

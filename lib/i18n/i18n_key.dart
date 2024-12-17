@@ -67,6 +67,7 @@ enum I18nKey {
   labelResetAllDesc,
   labelResetLearnDesc,
   labelResetReviewDesc,
+  labelResetFullCustomDesc,
   labelConfigSettingsForEl,
   labelConfigSettingsForElDesc,
   labelConfigSettingsForRel,
@@ -89,6 +90,7 @@ enum I18nKey {
   labelElConfig1111,
   labelRelConfig0,
   labelRelConfig1,
+  labelFullCustomConfig,
   labelElRandom,
   labelElExtend,
   labelElLevel,
@@ -166,6 +168,14 @@ enum I18nKey {
 
   String trArgs([List<String> args = const []]) {
     return name.trArgs(args);
+  }
+
+  String trParams([List<String> args = const []]) {
+    Map<String, String> params = {};
+    for (int i = 0; i < args.length; i++) {
+      params['$i'] = args[i];
+    }
+    return name.trParams(params);
   }
 }
 

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert' as convert;
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
@@ -54,12 +55,12 @@ class GsCrLogic extends GetxController {
     }
 
     state.all = allProgresses;
+    state.fullCustom = [];
     state.review = [];
     state.learn = [];
     state.segments = [];
-
-    var fullCustomCount = await Db().db.scheduleDao.intKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount);
-    fullCustomCount = fullCustomCount ?? 0;
+    String? fullCustomJsonStr = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount);
+    List<List<String>> fullCustomConfigs = ListUtil.toListList(fullCustomJsonStr);
     var configInUseJsonStr = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.todayScheduleConfigInUse);
     ScheduleConfig? scheduleConfig;
     if (configInUseJsonStr != null) {
@@ -130,7 +131,7 @@ class GsCrLogic extends GetxController {
       review.add(rule);
       state.review.addAll(rule.segments);
     }
-    for (var index = 0; index < fullCustomCount; index++) {
+    for (var index = 0; index < fullCustomConfigs.length; index++) {
       var prgTypeAndIndex = SegmentTodayPrg.toPrgTypeAndIndex(TodayPrgType.fullCustom, index);
       var learnedTotalCount = 0;
       var learnTotalCount = 0;
@@ -146,7 +147,7 @@ class GsCrLogic extends GetxController {
       rule.uniqIndex = uniqIndex++;
       rule.type = TodayPrgType.fullCustom;
       rule.name = "$index: $learnedTotalCount/$learnTotalCount";
-      rule.desc = "";
+      rule.desc = I18nKey.labelFullCustomConfig.trParams(fullCustomConfigs[index]);
       fullCustom.add(rule);
       state.fullCustom.addAll(rule.segments);
     }
@@ -271,7 +272,20 @@ class GsCrLogic extends GetxController {
   }
 
   void resetSchedule(TodayPrgType type) async {
-    var desc = type == TodayPrgType.learn ? I18nKey.labelResetLearnDesc.tr : I18nKey.labelResetReviewDesc.tr;
+    var desc = '';
+    switch (type) {
+      case TodayPrgType.learn:
+        desc = I18nKey.labelResetLearnDesc.tr;
+        break;
+      case TodayPrgType.review:
+        desc = I18nKey.labelResetReviewDesc.tr;
+        break;
+      case TodayPrgType.fullCustom:
+        desc = I18nKey.labelResetFullCustomDesc.tr;
+        break;
+      default:
+        break;
+    }
     MsgBox.yesOrNo(I18nKey.labelReset.tr, desc, yes: () {
       showOverlay(() async {
         await init(type: type);
