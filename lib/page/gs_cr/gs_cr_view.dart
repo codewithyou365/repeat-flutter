@@ -265,6 +265,9 @@ class GsCrPage extends StatelessWidget {
 
   void add(BuildContext context, GsCrLogic logic) {
     final Size screenSize = MediaQuery.of(context).size;
+    if (!logic.initForAdd()) {
+      return;
+    }
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

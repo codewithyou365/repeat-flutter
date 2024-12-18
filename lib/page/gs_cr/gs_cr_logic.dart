@@ -306,6 +306,21 @@ class GsCrLogic extends GetxController {
 
   // for add schedule
 
+  bool initForAdd() {
+    if (state.forAdd.contents.isEmpty) {
+      Snackbar.show(I18nKey.labelNoContent.tr);
+      return false;
+    }
+    state.forAdd.maxLesson = 1;
+    state.forAdd.maxSegment = 1;
+    state.forAdd.fromContent = state.forAdd.contents[0];
+    state.forAdd.fromContentIndex = 0;
+    state.forAdd.fromLessonIndex = 0;
+    state.forAdd.fromSegmentIndex = 0;
+    state.forAdd.count = 1;
+    return true;
+  }
+
   void initLesson() async {
     if (state.forAdd.maxLesson < 0) {
       var contentSerial = state.forAdd.fromContent!.serial;
