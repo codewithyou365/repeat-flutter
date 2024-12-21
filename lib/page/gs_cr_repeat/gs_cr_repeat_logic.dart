@@ -318,22 +318,18 @@ class GsCrRepeatLogic extends GetxController {
     List<MediaSegment> ret = [];
     var segment = state.segment;
     var showContent = getShowContent();
-
+    if (segment.mediaExtension == "") {
+      return ret;
+    }
     for (int i = 0; i < showContent.length; i++) {
       var sc = showContent[i];
-      if (sc.contentType == ContentType.questionOrPrevAnswerOrTitleMedia) {
+      if (sc.contentType == ContentType.questionMedia) {
         if (segment.qMediaSegments.isNotEmpty) {
           ret = [segment.qMediaSegments[segment.segmentIndex]];
           state.segmentPlayType = PlayType.question;
-        } else if (segment.question == "" && segment.aMediaSegments.isNotEmpty && segment.segmentIndex - 1 >= 0) {
-          ret = [segment.aMediaSegments[segment.segmentIndex - 1]];
-          state.segmentPlayType = PlayType.answer;
-        } else if (segment.question == "" && segment.titleMediaSegment != null) {
-          ret = [segment.titleMediaSegment!];
-          state.segmentPlayType = PlayType.title;
         }
       } else if (sc.contentType == ContentType.answerMedia) {
-        if (segment.mediaExtension != "" && segment.aMediaSegments.isNotEmpty) {
+        if (segment.aMediaSegments.isNotEmpty) {
           ret = [segment.aMediaSegments[segment.segmentIndex]];
           state.segmentPlayType = PlayType.answer;
         }

@@ -8,8 +8,8 @@ import 'package:repeat_flutter/widget/player_bar/video_mask.dart';
 enum RepeatStep { recall, evaluate, finish }
 
 enum ContentType {
-  questionOrPrevAnswerOrTitle,
-  questionOrPrevAnswerOrTitleMedia,
+  question,
+  questionMedia,
   tip,
   answer,
   answerMedia,
@@ -45,8 +45,10 @@ class GsCrRepeatState {
   var edit = false;
   var justViewWithoutRecall = false;
 
-  // for logic
+  // for game
+  var gameMode = true;
 
+  // for logic
   var nextKey = "";
   var progress = -1;
   var fakeKnow = 0;
@@ -66,16 +68,16 @@ class GsCrRepeatState {
   var showContent = [
     [
       [
-        ContentArg(ContentType.questionOrPrevAnswerOrTitle, false, true),
-        ContentArg(ContentType.questionOrPrevAnswerOrTitleMedia, null, null),
+        ContentArg(ContentType.question, false, true),
+        ContentArg(ContentType.questionMedia, null, null),
         ContentArg(ContentType.tip, true, true),
       ],
       [
-        ContentArg(ContentType.questionOrPrevAnswerOrTitle, false, true),
-        ContentArg(ContentType.questionOrPrevAnswerOrTitleMedia, null, null),
-        ContentArg(ContentType.tip, true, true),
+        ContentArg(ContentType.question, false, true),
+        ContentArg(ContentType.questionMedia, null, null),
         ContentArg(ContentType.answer, false, true),
         ContentArg(ContentType.answerMedia, null, null),
+        ContentArg(ContentType.tip, true, true),
       ],
     ],
   ];

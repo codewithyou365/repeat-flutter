@@ -41,10 +41,10 @@ class GsCrRepeatViewBasic {
       Widget? w;
       if (left != null) {
         if (left == showContent[i].left) {
-          w = GsCrRepeatViewBasic.buildInnerContent(logic, context, showContent[i].contentType, state.segment);
+          w = GsCrRepeatViewBasic.buildInnerContent(context, showContent[i].contentType, state.segment, state.gameMode);
         }
       } else {
-        w = GsCrRepeatViewBasic.buildInnerContent(logic, context, showContent[i].contentType, state.segment);
+        w = GsCrRepeatViewBasic.buildInnerContent(context, showContent[i].contentType, state.segment, state.gameMode);
       }
       Widget? addWidget;
       if (w != null) {
@@ -103,20 +103,20 @@ class GsCrRepeatViewBasic {
     return null;
   }
 
-  static Widget? buildInnerContent(GsCrRepeatLogic logic, BuildContext context, ContentType t, SegmentContent segment) {
+  static Widget? buildInnerContent(BuildContext context, ContentType t, SegmentContent segment, bool gameMode) {
     switch (t) {
-      case ContentType.questionOrPrevAnswerOrTitle:
+      case ContentType.question:
         if (segment.question != "") {
           return Text(segment.question);
-        } else if (segment.prevAnswer != "") {
-          return Text(segment.prevAnswer);
-        } else if (segment.title != "") {
-          return Text(segment.title);
         } else {
           return null;
         }
       case ContentType.answer:
-        return Text(segment.answer);
+        if (segment.answer != "") {
+          return Text(segment.answer);
+        } else {
+          return null;
+        }
       case ContentType.tip:
         if (segment.tip != "") {
           return Text(
