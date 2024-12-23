@@ -6,6 +6,25 @@ import 'package:repeat/common/ws/message.dart';
 import 'package:repeat/common/ws/server.dart';
 import 'dart:isolate';
 
+import 'package:sqlite3/sqlite3.dart';
+
+void main() async {
+  final db = sqlite3.open('app_database.db');
+  db.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, age INTEGER)');
+
+  db.execute('BEGIN TRANSACTION;');
+  db.execute('INSERT INTO users (name, age) VALUES ("Alice", 30)');
+  db.execute('INSERT INTO users (name, age) VALUES ("Alice", 31)');
+  db.execute('COMMIT;');
+
+  final result = db.select('SELECT * FROM users');
+  for (final row in result) {
+    print('User: id=${row['id']}, name=${row['name']}, age=${row['age']}');
+  }
+
+  db.dispose();
+}
+
 String replaceChar = '_';
 
 String processWord(String input, String display, String original) {
@@ -50,7 +69,7 @@ String innerProcessChar(List<String> inputChars, String currentDisplay, String o
   return currentDisplay;
 }
 
-void main() {
+void main2() {
   // Prompt the user for input
   //String original = "This is an apple.";
   String original = "A sample command-line application with an entrypoint in `bin/`, library code.";
@@ -78,7 +97,7 @@ void main() {
   }
 }
 
-void main3() async {
+void main1() async {
   final receivePort = ReceivePort();
   Server s = Server();
   s.start(8089);
