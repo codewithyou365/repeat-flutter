@@ -426,9 +426,21 @@
         },
         {
           "aStart": "00:01:28,783",
-          "aEnd": "00:01:47,249",
-          "tip": "两年多以来，艾尔弗一直这样，他的同事也为他保守秘密。艾尔弗的妻子一直不知道她嫁给了一个清洁工，而且她永远也不会知道了，因为艾尔弗已找到薪职，不久就要坐办公室里工作了。",
-          "a": "Alf did this for over two years and his fellow dustmen kept his secret. Alf's wife has never discovered that she married a dustman and she never will, for Alf has just found another job. He will soon be working in an office."
+          "aEnd": "00:01:35,119",
+          "tip": "两年多以来，艾尔弗一直这样，他的同事也为他保守秘密。",
+          "a": "Alf did this for over two years and his fellow dustmen kept his secret. "
+        },
+        {
+          "aStart": "00:01:35,217",
+          "aEnd": "00:01:44,280",
+          "tip": "艾尔弗的妻子一直不知道她嫁给了一个清洁工，而且她永远也不会知道了，因为艾尔弗已找到薪职。",
+          "a": "Alf's wife has never discovered that she married a dustman and she never will, for Alf has just found another job."
+        },
+        {
+          "aStart": "00:01:44,280",
+          "aEnd": "00:01:47,247",
+          "tip": "他不久就要坐办公室里工作了。",
+          "a": "He will soon be working in an office."
         },
         {
           "aStart": "00:01:47,350",
@@ -3914,7 +3926,7 @@
       "key": "nce3/30",
       "title": "The death of a ghost",
       "titleStart": "00:00:01,633",
-      "titleEnd": "00:00:06,766",
+      "titleEnd": "00:00:04,709",
       "raw": [
         "The death of a ghost",
         "For years, villagers believed that Endley Farm was haunted. The",
