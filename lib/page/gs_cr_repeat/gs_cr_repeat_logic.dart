@@ -295,7 +295,7 @@ class GsCrRepeatLogic extends GetxController {
         I18nKey.labelSegmentRemoved.tr,
         yes: () {
           showOverlay(() async {
-            await Db().db.scheduleDao.deleteBySegmentKeyId(curr.segmentKeyId);
+            await Db().db.scheduleDao.deleteBySegmentKeyId(learnSegment.segmentKeyId);
             Nav.gsCr.until();
           }, I18nKey.labelExecuting.tr);
         },
