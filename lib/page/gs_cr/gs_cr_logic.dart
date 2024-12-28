@@ -43,9 +43,8 @@ class GsCrLogic extends GetxController {
   }
 
   Future<void> init({TodayPrgType? type}) async {
-    state.forAdd.contents = await Db().db.contentDao.getAllContent(Classroom.curr);
+    state.forAdd.contents = await Db().db.contentDao.getAllEnableContent(Classroom.curr);
     state.forAdd.contentNames = state.forAdd.contents.map((e) => e.name).toList();
-    selectContent(0);
     var now = DateTime.now();
     List<SegmentTodayPrg> allProgresses = [];
     if (type == null) {
@@ -306,31 +305,37 @@ class GsCrLogic extends GetxController {
 
   // for add schedule
 
-  bool initForAdd() {
+  Future<bool> initForAdd() async {
     if (state.forAdd.contents.isEmpty) {
       Snackbar.show(I18nKey.labelNoContent.tr);
       return false;
     }
-    state.forAdd.maxLesson = 1;
-    state.forAdd.maxSegment = 1;
-    state.forAdd.fromContent = state.forAdd.contents[0];
-    state.forAdd.fromContentIndex = 0;
-    state.forAdd.fromLessonIndex = 0;
-    state.forAdd.fromSegmentIndex = 0;
-    state.forAdd.count = 1;
+    await showTransparentOverlay(() async {
+      state.forAdd.maxLesson = -1;
+      state.forAdd.maxSegment = -1;
+      await initLesson(updateView: false);
+      await initSegment(updateView: false);
+      state.forAdd.fromContent = state.forAdd.contents[0];
+      state.forAdd.fromContentIndex = 0;
+      state.forAdd.fromLessonIndex = 0;
+      state.forAdd.fromSegmentIndex = 0;
+      state.forAdd.count = 1;
+    });
     return true;
   }
 
-  void initLesson() async {
+  Future<void> initLesson({bool updateView = true}) async {
     if (state.forAdd.maxLesson < 0) {
       var contentSerial = state.forAdd.fromContent!.serial;
       var maxLesson = await Db().db.scheduleDao.getMaxLessonIndex(Classroom.curr, contentSerial);
       state.forAdd.maxLesson = (maxLesson ?? 1) + 1;
-      update([GsCrLogic.idForAdd]);
+      if (updateView) {
+        update([GsCrLogic.idForAdd]);
+      }
     }
   }
 
-  void initSegment() async {
+  Future<void> initSegment({bool updateView = true}) async {
     if (state.forAdd.maxLesson < 0) {
       return;
     }
@@ -338,7 +343,9 @@ class GsCrLogic extends GetxController {
       var contentSerial = state.forAdd.fromContent!.serial;
       var maxSegment = await Db().db.scheduleDao.getMaxSegmentIndex(Classroom.curr, contentSerial, state.forAdd.fromLessonIndex);
       state.forAdd.maxSegment = (maxSegment ?? 1) + 1;
-      update([GsCrLogic.idForAdd]);
+      if (updateView) {
+        update([GsCrLogic.idForAdd]);
+      }
     }
   }
 

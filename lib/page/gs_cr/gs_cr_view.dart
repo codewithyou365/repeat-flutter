@@ -263,9 +263,10 @@ class GsCrPage extends StatelessWidget {
     );
   }
 
-  void add(BuildContext context, GsCrLogic logic) {
+  void add(BuildContext context, GsCrLogic logic) async {
     final Size screenSize = MediaQuery.of(context).size;
-    if (!logic.initForAdd()) {
+    var ok = await logic.initForAdd();
+    if (!ok) {
       return;
     }
     showModalBottomSheet(

@@ -542,6 +542,14 @@ class _$ContentDao extends ContentDao {
   }
 
   @override
+  Future<List<Content>> getAllEnableContent(int classroomId) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM Content where classroomId=?1 and docId!=0 and hide=false ORDER BY sort',
+        mapper: (Map<String, Object?> row) => Content(row['classroomId'] as int, row['serial'] as int, row['name'] as String, row['desc'] as String, row['docId'] as int, row['url'] as String, row['sort'] as int, (row['hide'] as int) != 0, id: row['id'] as int?),
+        arguments: [classroomId]);
+  }
+
+  @override
   Future<int?> getMaxSerial(int classroomId) async {
     return _queryAdapter.query(
         'SELECT ifnull(max(serial),0) FROM Content WHERE classroomId=?1',
