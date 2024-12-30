@@ -1,28 +1,18 @@
 <template>
-  <div class="content">
-    <h1>Rsbuild with Vue</h1>
-    <p>Start building amazing things with Rsbuild.</p>
-  </div>
+  <nut-config-provider :theme="store.getters.currentTheme">
+    <router-view/>
+  </nut-config-provider>
 </template>
 
-<style scoped>
-.content {
-  display: flex;
-  min-height: 100vh;
-  line-height: 1.1;
-  text-align: center;
-  flex-direction: column;
-  justify-content: center;
-}
+<script setup>
+import {useStore} from 'vuex';
+import {onMounted} from 'vue';
+import {useI18n} from "vue-i18n";
 
-.content h1 {
-  font-size: 3.6rem;
-  font-weight: 700;
-}
-
-.content p {
-  font-size: 1.2rem;
-  font-weight: 400;
-  opacity: 0.5;
-}
-</style>
+const {locale} = useI18n();
+const store = useStore();
+onMounted(() => {
+  store.dispatch('updateTheme', store.getters.currentTheme);
+  locale.value = store.getters.currentLanguage;
+});
+</script>
