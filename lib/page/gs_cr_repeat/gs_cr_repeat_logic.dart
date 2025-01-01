@@ -1,14 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/date.dart';
+import 'package:repeat_flutter/common/ip.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/game_server/game_server.dart';
 import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_edit_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
@@ -20,11 +25,13 @@ import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'gs_cr_repeat_state.dart';
+import 'gs_cr_repeat_view_basic.dart';
 
 class GsCrRepeatLogic extends GetxController {
   static const String id = "MainRepeatLogic";
   final GsCrRepeatState state = GsCrRepeatState();
   List<SegmentTodayPrg> todayProgresses = [];
+  GameServer server = GameServer();
   Ticker ticker = Ticker(1000);
 
   @override
@@ -36,6 +43,7 @@ class GsCrRepeatLogic extends GetxController {
   @override
   void onClose() {
     super.onClose();
+    server.stop();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     Get.find<GsCrLogic>().init();
   }
@@ -307,6 +315,7 @@ class GsCrRepeatLogic extends GetxController {
       return false;
     }
     state.segment = learnSegment;
+    state.segmentTodayPrg = curr;
     if (!fromPn) {
       state.currSegment = learnSegment;
     }
@@ -470,6 +479,48 @@ class GsCrRepeatLogic extends GetxController {
     }
     var segment = state.segment;
     return RepeatDocHelp.getVideoMaskRatio(segment.contentSerial, segment.lessonIndex, segment.mediaExtension);
+  }
+
+  openGameMode(BuildContext context) async {
+    if (state.step != RepeatStep.recall) {
+      Snackbar.show(I18nKey.labelGameStartNeedRecallStop.tr);
+      return;
+    }
+    if (state.gameMode == false) {
+      state.gamePort = await server.start();
+      state.gameMode = true;
+      var now = DateTime.now();
+
+      var stp = state.segmentTodayPrg;
+      var game = Game(
+        stp.id!,
+        state.segment.mediaHash,
+        state.segment.aStart,
+        state.segment.aEnd,
+        state.segment.word,
+        state.segment.segmentKeyId,
+        state.segment.classroomId,
+        state.segment.contentSerial,
+        state.segment.lessonIndex,
+        state.segment.segmentIndex,
+        false,
+        now.millisecondsSinceEpoch,
+        Date.from(now),
+      );
+      await Db().db.gameDao.tryInsertGame(game);
+    }
+    try {
+      state.gameAddress = [];
+      final ips = await Ip.getLanIps();
+      for (var i = 0; i < ips.length; i++) {
+        String ip = ips[i];
+        state.gameAddress.add('http://$ip:${state.gamePort}');
+      }
+    } catch (e) {
+      Snackbar.show('Error getting LAN IP : $e');
+      return;
+    }
+    GsCrRepeatViewBasic.showGameAddress(context, state.gameAddress);
   }
 
   openEditor() {

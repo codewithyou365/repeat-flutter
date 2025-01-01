@@ -1,3 +1,5 @@
+import 'dart:math';
+
 class StringUtil {
   static List<String> fields(String rawText) {
     return rawText.split(RegExp(r'\s+')).where((element) => element.isNotEmpty).toList();
@@ -10,4 +12,9 @@ class StringUtil {
 
     return normalize(str1) == normalize(str2);
   }
+
+  static const _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+  static final Random _rnd = Random();
+
+ static String generateRandomString(int length) => String.fromCharCodes(Iterable.generate(length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
 }

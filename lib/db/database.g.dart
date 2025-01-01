@@ -72,6 +72,10 @@ class _$AppDatabase extends AppDatabase {
     changeListener = listener ?? StreamController<String>.broadcast();
   }
 
+  GameUserDao? _gameUserDaoInstance;
+
+  GameDao? _gameDaoInstance;
+
   KvDao? _kvDaoInstance;
 
   DocDao? _docDaoInstance;
@@ -126,6 +130,12 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentTodayPrg` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `reviewCount` INTEGER NOT NULL, `reviewCreateDate` INTEGER NOT NULL, `finish` INTEGER NOT NULL)');
         await database.execute(
+            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `mediaHash` TEXT NOT NULL, `aStart` TEXT NOT NULL, `aEnd` TEXT NOT NULL, `w` TEXT NOT NULL, `segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL)');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `GameUser` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `password` TEXT NOT NULL, `nonce` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `token` TEXT NOT NULL, `tokenExpiredDate` INTEGER NOT NULL)');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `GameUserInput` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `gameId` INTEGER NOT NULL, `gameUserId` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `input` TEXT NOT NULL, `output` TEXT NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL)');
+        await database.execute(
             'CREATE TABLE IF NOT EXISTS `Lock` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database
             .execute('CREATE UNIQUE INDEX `index_Doc_path` ON `Doc` (`path`)');
@@ -161,11 +171,39 @@ class _$AppDatabase extends AppDatabase {
             'CREATE INDEX `index_SegmentTodayPrg_classroomId_sort` ON `SegmentTodayPrg` (`classroomId`, `sort`)');
         await database.execute(
             'CREATE INDEX `index_SegmentTodayPrg_classroomId_contentSerial` ON `SegmentTodayPrg` (`classroomId`, `contentSerial`)');
+        await database.execute(
+            'CREATE INDEX `index_Game_classroomId_contentSerial_lessonIndex_segmentIndex` ON `Game` (`classroomId`, `contentSerial`, `lessonIndex`, `segmentIndex`)');
+        await database.execute(
+            'CREATE INDEX `index_Game_segmentKeyId` ON `Game` (`segmentKeyId`)');
+        await database.execute(
+            'CREATE INDEX `index_Game_createDate` ON `Game` (`createDate`)');
+        await database.execute(
+            'CREATE UNIQUE INDEX `index_GameUser_name` ON `GameUser` (`name`)');
+        await database.execute(
+            'CREATE UNIQUE INDEX `index_GameUser_token` ON `GameUser` (`token`)');
+        await database.execute(
+            'CREATE INDEX `index_GameUserInput_classroomId_contentSerial_lessonIndex_segmentIndex` ON `GameUserInput` (`classroomId`, `contentSerial`, `lessonIndex`, `segmentIndex`)');
+        await database.execute(
+            'CREATE INDEX `index_GameUserInput_segmentKeyId` ON `GameUserInput` (`segmentKeyId`)');
+        await database.execute(
+            'CREATE INDEX `index_GameUserInput_createDate` ON `GameUserInput` (`createDate`)');
+        await database.execute(
+            'CREATE INDEX `index_GameUserInput_gameId_gameUserId` ON `GameUserInput` (`gameId`, `gameUserId`)');
 
         await callback?.onCreate?.call(database, version);
       },
     );
     return sqfliteDatabaseFactory.openDatabase(path, options: databaseOptions);
+  }
+
+  @override
+  GameUserDao get gameUserDao {
+    return _gameUserDaoInstance ??= _$GameUserDao(database, changeListener);
+  }
+
+  @override
+  GameDao get gameDao {
+    return _gameDaoInstance ??= _$GameDao(database, changeListener);
   }
 
   @override
@@ -196,6 +234,284 @@ class _$AppDatabase extends AppDatabase {
   @override
   BaseDao get baseDao {
     return _baseDaoInstance ??= _$BaseDao(database, changeListener);
+  }
+}
+
+class _$GameUserDao extends GameUserDao {
+  _$GameUserDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _gameUserInsertionAdapter = InsertionAdapter(
+            database,
+            'GameUser',
+            (GameUser item) => <String, Object?>{
+                  'id': item.id,
+                  'name': item.name,
+                  'password': item.password,
+                  'nonce': item.nonce,
+                  'createDate': _dateConverter.encode(item.createDate),
+                  'token': item.token,
+                  'tokenExpiredDate':
+                      _dateConverter.encode(item.tokenExpiredDate)
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<GameUser> _gameUserInsertionAdapter;
+
+  @override
+  Future<GameUser?> findUserByName(String name) async {
+    return _queryAdapter.query('SELECT * FROM GameUser WHERE name = ?1',
+        mapper: (Map<String, Object?> row) => GameUser(
+            row['name'] as String,
+            row['password'] as String,
+            row['nonce'] as String,
+            _dateConverter.decode(row['createDate'] as int),
+            row['token'] as String,
+            _dateConverter.decode(row['tokenExpiredDate'] as int),
+            id: row['id'] as int?),
+        arguments: [name]);
+  }
+
+  @override
+  Future<int?> count(Date createDate) async {
+    return _queryAdapter.query(
+        'SELECT count(id) FROM GameUser WHERE createDate = ?1',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [_dateConverter.encode(createDate)]);
+  }
+
+  @override
+  Future<void> updateUserToken(
+    int id,
+    String token,
+    Date tokenExpiredDate,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE GameUser SET token=?2,tokenExpiredDate=?3 WHERE id = ?1',
+        arguments: [id, token, _dateConverter.encode(tokenExpiredDate)]);
+  }
+
+  @override
+  Future<GameUser?> findUserByToken(String token) async {
+    return _queryAdapter.query('SELECT * FROM GameUser WHERE token = ?1',
+        mapper: (Map<String, Object?> row) => GameUser(
+            row['name'] as String,
+            row['password'] as String,
+            row['nonce'] as String,
+            _dateConverter.decode(row['createDate'] as int),
+            row['token'] as String,
+            _dateConverter.decode(row['tokenExpiredDate'] as int),
+            id: row['id'] as int?),
+        arguments: [token]);
+  }
+
+  @override
+  Future<int> registerUser(GameUser user) {
+    return _gameUserInsertionAdapter.insertAndReturnId(
+        user, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<String> loginOrRegister(
+    String name,
+    String password,
+  ) async {
+    if (database is sqflite.Transaction) {
+      return super.loginOrRegister(name, password);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<String>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        return transactionDatabase.gameUserDao.loginOrRegister(name, password);
+      });
+    }
+  }
+
+  @override
+  Future<GameUser> loginByToken(String token) async {
+    if (database is sqflite.Transaction) {
+      return super.loginByToken(token);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<GameUser>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        return transactionDatabase.gameUserDao.loginByToken(token);
+      });
+    }
+  }
+}
+
+class _$GameDao extends GameDao {
+  _$GameDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _gameInsertionAdapter = InsertionAdapter(
+            database,
+            'Game',
+            (Game item) => <String, Object?>{
+                  'id': item.id,
+                  'mediaHash': item.mediaHash,
+                  'aStart': item.aStart,
+                  'aEnd': item.aEnd,
+                  'w': item.w,
+                  'segmentKeyId': item.segmentKeyId,
+                  'classroomId': item.classroomId,
+                  'contentSerial': item.contentSerial,
+                  'lessonIndex': item.lessonIndex,
+                  'segmentIndex': item.segmentIndex,
+                  'finish': item.finish ? 1 : 0,
+                  'createTime': item.createTime,
+                  'createDate': _dateConverter.encode(item.createDate)
+                }),
+        _gameUserInputInsertionAdapter = InsertionAdapter(
+            database,
+            'GameUserInput',
+            (GameUserInput item) => <String, Object?>{
+                  'id': item.id,
+                  'gameId': item.gameId,
+                  'gameUserId': item.gameUserId,
+                  'segmentKeyId': item.segmentKeyId,
+                  'classroomId': item.classroomId,
+                  'contentSerial': item.contentSerial,
+                  'lessonIndex': item.lessonIndex,
+                  'segmentIndex': item.segmentIndex,
+                  'input': item.input,
+                  'output': item.output,
+                  'createTime': item.createTime,
+                  'createDate': _dateConverter.encode(item.createDate)
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<Game> _gameInsertionAdapter;
+
+  final InsertionAdapter<GameUserInput> _gameUserInputInsertionAdapter;
+
+  @override
+  Future<Game?> getLatestOne() async {
+    return _queryAdapter.query(
+        'SELECT * FROM Game where finish=false ORDER BY createTime desc LIMIT 1',
+        mapper: (Map<String, Object?> row) => Game(
+            row['id'] as int,
+            row['mediaHash'] as String,
+            row['aStart'] as String,
+            row['aEnd'] as String,
+            row['w'] as String,
+            row['segmentKeyId'] as int,
+            row['classroomId'] as int,
+            row['contentSerial'] as int,
+            row['lessonIndex'] as int,
+            row['segmentIndex'] as int,
+            (row['finish'] as int) != 0,
+            row['createTime'] as int,
+            _dateConverter.decode(row['createDate'] as int)));
+  }
+
+  @override
+  Future<List<int>> getAllEnableGameIds() async {
+    return _queryAdapter.queryList('SELECT id FROM Game where finish=false',
+        mapper: (Map<String, Object?> row) => row.values.first as int);
+  }
+
+  @override
+  Future<List<int>> disableGames(List<int> gameIds) async {
+    const offset = 1;
+    final _sqliteVariablesForGameIds =
+        Iterable<String>.generate(gameIds.length, (i) => '?${i + offset}')
+            .join(',');
+    return _queryAdapter.queryList(
+        'UPDATE Game set finish=true where id in (' +
+            _sqliteVariablesForGameIds +
+            ')',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [...gameIds]);
+  }
+
+  @override
+  Future<Game?> one(int gameId) async {
+    return _queryAdapter.query('SELECT * FROM Game WHERE id=?1',
+        mapper: (Map<String, Object?> row) => Game(
+            row['id'] as int,
+            row['mediaHash'] as String,
+            row['aStart'] as String,
+            row['aEnd'] as String,
+            row['w'] as String,
+            row['segmentKeyId'] as int,
+            row['classroomId'] as int,
+            row['contentSerial'] as int,
+            row['lessonIndex'] as int,
+            row['segmentIndex'] as int,
+            (row['finish'] as int) != 0,
+            row['createTime'] as int,
+            _dateConverter.decode(row['createDate'] as int)),
+        arguments: [gameId]);
+  }
+
+  @override
+  Future<GameUserInput?> lastUserInput(
+    int gameId,
+    int gameUserId,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT * FROM GameUserInput WHERE gameId=?1 and gameUserId=?2 order by createTime desc limit 1',
+        mapper: (Map<String, Object?> row) => GameUserInput(row['gameId'] as int, row['gameUserId'] as int, row['segmentKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['input'] as String, row['output'] as String, row['createTime'] as int, _dateConverter.decode(row['createDate'] as int), id: row['id'] as int?),
+        arguments: [gameId, gameUserId]);
+  }
+
+  @override
+  Future<void> insertGame(Game game) async {
+    await _gameInsertionAdapter.insert(game, OnConflictStrategy.fail);
+  }
+
+  @override
+  Future<void> insertGameUserInput(GameUserInput gameUserInput) async {
+    await _gameUserInputInsertionAdapter.insert(
+        gameUserInput, OnConflictStrategy.fail);
+  }
+
+  @override
+  Future<Game> tryInsertGame(Game game) async {
+    if (database is sqflite.Transaction) {
+      return super.tryInsertGame(game);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<Game>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        return transactionDatabase.gameDao.tryInsertGame(game);
+      });
+    }
+  }
+
+  @override
+  Future<List<List<String>>> submit(
+    Game game,
+    int gameUserId,
+    String userInput,
+  ) async {
+    if (database is sqflite.Transaction) {
+      return super.submit(game, gameUserId, userInput);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<List<List<String>>>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        return transactionDatabase.gameDao.submit(game, gameUserId, userInput);
+      });
+    }
   }
 }
 

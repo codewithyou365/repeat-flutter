@@ -12,4 +12,16 @@ class ListUtil {
     }
     return [];
   }
+
+  static List<String> toList(String? json) {
+    try {
+      var decodedJson = convert.jsonDecode(json ?? "[]");
+      if (decodedJson is List) {
+        return decodedJson.map((e) => e.toString()).toList();
+      }
+    } catch (_) {
+      print('Failed to decode JSON.');
+    }
+    return [];
+  }
 }

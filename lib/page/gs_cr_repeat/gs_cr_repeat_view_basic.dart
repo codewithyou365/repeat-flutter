@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 import 'package:repeat_flutter/widget/player_bar/video_mask.dart';
 
@@ -276,6 +277,69 @@ class GsCrRepeatViewBasic {
         alignment: Alignment.center,
         child: Text(text),
       ),
+    );
+  }
+
+  static void showGameAddress(BuildContext context, List<String> address) {
+    final Size screenSize = MediaQuery.of(context).size;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return SizedBox(
+          width: screenSize.width,
+          height: screenSize.height / 2,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10.0.w, vertical: 20.0),
+            child: ListView(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Card(
+                    child: ListTile(
+                      title: Text(I18nKey.settings.tr),
+                      subtitle: Padding(
+                        padding: EdgeInsets.all(4.w),
+                        child: Row(
+                          children: [
+                            TextButton(onPressed: () {}, child: Text(I18nKey.btnStart.tr)),
+                            Text("xx"),
+                            Text("xx"),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                ...List.generate(
+                  address.length,
+                  (index) => Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Card(
+                      child: InkWell(
+                        onTap: () => {
+                          MsgBox.noWithQrCode(
+                            I18nKey.labelLanAddress.tr,
+                            address[index],
+                            address[index],
+                          )
+                        },
+                        child: ListTile(
+                          title: Text('${I18nKey.labelLanAddress.tr}-${index + 1}'),
+                          subtitle: Padding(
+                            padding: EdgeInsets.all(16.w),
+                            child: Text(address[index]),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

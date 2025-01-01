@@ -128,6 +128,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelFrom, "开始于");
     put(I18nKey.labelLesson, "节");
     put(I18nKey.labelSegment, "段");
+    put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");
     put(I18nKey.btnConfigSettings, "配置设置");
     put(I18nKey.btnSet, "设置");
@@ -144,6 +145,7 @@ class ConfigZh extends Config {
     put(I18nKey.btnDelete, "删除");
     put(I18nKey.btnShare, "分享");
     put(I18nKey.btnEdit, "编辑");
+    put(I18nKey.btnGameMode, "游戏模式");
     put(I18nKey.btnConcentration, "专注");
     put(I18nKey.btnAdd, "新增");
     put(I18nKey.btnCopy, "复制");

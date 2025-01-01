@@ -23,12 +23,16 @@ class SegmentContent extends SegmentContentInDb {
   List<MediaSegment> aMediaSegments = [];
   MediaSegment? titleMediaSegment;
   var mediaDocPath = "";
+  var mediaHash = "";
   var mediaExtension = "";
   var title = "";
   var prevAnswer = "";
   var question = "";
   var tip = "";
   var answer = "";
+  var aStart = "";
+  var aEnd = "";
+  var word = "";
   var k = "";
   var miss = false;
 

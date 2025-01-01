@@ -145,6 +145,7 @@ class Segment {
   String aStart;
   String aEnd;
   String a;
+  String w;
 
   Segment(
     this.tipStart,
@@ -156,6 +157,7 @@ class Segment {
     this.aStart,
     this.aEnd,
     this.a,
+    this.w,
   );
 
   factory Segment.fromJson(
@@ -174,6 +176,7 @@ class Segment {
       json['aStart'] ?? "",
       json['aEnd'] ?? "",
       json['a'] ?? "",
+      json['w'] ?? "",
     );
   }
 
@@ -188,6 +191,7 @@ class Segment {
       'aStart': aStart,
       'aEnd': aEnd,
       'a': a,
+      'w': w,
     };
   }
 }

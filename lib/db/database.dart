@@ -8,6 +8,8 @@ import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/dao/classroom_dao.dart';
 import 'package:repeat_flutter/db/dao/content_dao.dart';
 import 'package:repeat_flutter/db/dao/doc_dao.dart';
+import 'package:repeat_flutter/db/dao/game_dao.dart';
+import 'package:repeat_flutter/db/dao/game_user_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/kv_dao.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
@@ -20,6 +22,9 @@ import 'package:repeat_flutter/db/entity/segment_key.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment_review.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/db/entity/game.dart';
+import 'package:repeat_flutter/db/entity/game_user.dart';
+import 'package:repeat_flutter/db/entity/game_user_input.dart';
 import 'package:repeat_flutter/db/migration/m1_2.dart';
 import 'package:repeat_flutter/db/migration/m2_3.dart';
 import 'package:repeat_flutter/db/type_converter.dart';
@@ -47,6 +52,9 @@ part 'database.g.dart'; // the generated code will be there
   SegmentReviewWithKey,
   SegmentTodayPrg,
   SegmentContentInDb,
+  Game,
+  GameUser,
+  GameUserInput,
   Lock,
 ])
 @TypeConverters([
@@ -56,6 +64,10 @@ part 'database.g.dart'; // the generated code will be there
   DateConverter,
 ])
 abstract class AppDatabase extends FloorDatabase {
+  GameUserDao get gameUserDao;
+
+  GameDao get gameDao;
+
   KvDao get kvDao;
 
   DocDao get docDao;
