@@ -46,7 +46,9 @@ class GsCrRepeatState {
   var justViewWithoutRecall = false;
 
   // for game
-  var gameMode = true;
+  var gamePort = 0;
+  var gameMode = false;
+  List<String> gameAddress = [];
 
   // for logic
   var nextKey = "";
@@ -55,6 +57,7 @@ class GsCrRepeatState {
   var total = 10;
 
   SegmentContent segment = SegmentContent(0, 0, 0, 0, 0, 0, "");
+  SegmentTodayPrg segmentTodayPrg = SegmentTodayPrg.empty();
   PlayType segmentPlayType = PlayType.none;
   SegmentContent currSegment = SegmentContent(0, 0, 0, 0, 0, 0, "");
   late List<SegmentTodayPrg> c;

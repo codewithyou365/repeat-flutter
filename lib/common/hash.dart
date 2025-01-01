@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'dart:async';
@@ -15,6 +16,12 @@ class Hash {
 
     var sha1Hash = await sha1Stream.first;
 
+    return sha1Hash.bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
+  }
+
+  static Future<String> toSha1ForString(String s) async {
+    final bytes = utf8.encode(s);
+    final sha1Hash = sha1.convert(bytes);
     return sha1Hash.bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
   }
 }

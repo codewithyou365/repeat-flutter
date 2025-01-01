@@ -4,6 +4,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
@@ -86,6 +87,13 @@ class RepeatDocHelp {
         ret.question = segment.q;
         ret.tip = segment.tip;
         ret.answer = segment.a;
+        ret.aStart = segment.aStart;
+        ret.aEnd = segment.aEnd;
+        var words = segment.w;
+        if (words == "") {
+          words = segment.a;
+        }
+        ret.word = words.replaceAll(PlaceholderToken.using, PlaceholderToken.replace);
       } else {
         ret.miss = true;
       }
@@ -96,6 +104,7 @@ class RepeatDocHelp {
       var mediaDocPath = DocPath.getRelativeMediaPath(ret.contentSerial, ret.lessonIndex, lesson.mediaExtension);
       ret.mediaDocPath = await DocPath.getContentPath();
       ret.mediaDocPath = ret.mediaDocPath.joinPath(mediaDocPath);
+      ret.mediaHash = lesson.hash;
       ret.mediaExtension = lesson.mediaExtension;
       // for mask ratio
       var ratio = mediaDocPathToVideoMaskRatio[mediaDocPath];

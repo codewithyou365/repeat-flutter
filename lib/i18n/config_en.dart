@@ -127,6 +127,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelFrom, "From");
     put(I18nKey.labelLesson, "Lesson");
     put(I18nKey.labelSegment, "Segment");
+    put(I18nKey.btnStart, "Start");
     put(I18nKey.btnAddSchedule, "Add Schedule");
     put(I18nKey.btnConfigSettings, "Config Settings");
     put(I18nKey.btnSet, "Set");
@@ -143,6 +144,7 @@ class ConfigEn extends Config {
     put(I18nKey.btnDelete, "Delete");
     put(I18nKey.btnShare, "Share");
     put(I18nKey.btnEdit, "Edit");
+    put(I18nKey.btnGameMode, "Game Mode");
     put(I18nKey.btnConcentration, "Concentration");
     put(I18nKey.btnAdd, "Add");
     put(I18nKey.btnCopy, "Copy");

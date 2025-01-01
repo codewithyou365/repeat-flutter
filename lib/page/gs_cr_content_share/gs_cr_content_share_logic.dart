@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:repeat_flutter/common/file_util.dart';
 import 'package:repeat_flutter/common/hash.dart';
+import 'package:repeat_flutter/common/ip.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/url.dart';
 import 'package:repeat_flutter/common/zip.dart';
@@ -50,7 +51,7 @@ class GsCrContentShareLogic extends GetxController {
     var port = 40321;
     List<String> ips = [];
     try {
-      ips = await getLanIps();
+      ips = await Ip.getLanIps();
     } catch (e) {
       Snackbar.show('Error getting LAN IP : $e');
       return;
@@ -90,18 +91,6 @@ class GsCrContentShareLogic extends GetxController {
     }
 
     await response.close();
-  }
-
-  Future<List<String>> getLanIps() async {
-    List<String> ret = [];
-    for (var interface in await NetworkInterface.list()) {
-      for (var addr in interface.addresses) {
-        if (addr.type == InternetAddressType.IPv4 && !addr.isLoopback) {
-          ret.add(addr.address);
-        }
-      }
-    }
-    return ret; // Fallback if no LAN IP found
   }
 
   Future<void> _serveFile(List<String> pathSegments, HttpRequest request) async {

@@ -558,9 +558,8 @@ abstract class ScheduleDao {
       await insertSegmentTodayPrg(todayPrg);
       var configInUseStr = convert.json.encode(scheduleConfig);
       await insertKv(CrKv(Classroom.curr, CrK.todayScheduleConfigInUse, configInUseStr));
-    } else {
-      todayPrg = await findSegmentTodayPrg(Classroom.curr);
     }
+    todayPrg = await findSegmentTodayPrg(Classroom.curr);
     return todayPrg;
   }
 
@@ -709,7 +708,7 @@ abstract class ScheduleDao {
     args.add('$limit');
     fullCustomConfigs.add(args);
     insertKv(CrKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount, convert.jsonEncode(fullCustomConfigs)));
-    SegmentTodayPrg.setType(ret, TodayPrgType.fullCustom, fullCustomConfigs.length-1, 0);
+    SegmentTodayPrg.setType(ret, TodayPrgType.fullCustom, fullCustomConfigs.length - 1, 0);
 
     await insertSegmentTodayPrg(ret);
   }

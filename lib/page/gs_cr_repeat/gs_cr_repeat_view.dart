@@ -162,9 +162,14 @@ class GsCrRepeatPage extends StatelessWidget {
                         icon: const Icon(Icons.more_vert),
                         itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                           PopupMenuItem<String>(
-                            onTap: logic.openEditor,
-                            child: Text(I18nKey.btnEdit.tr),
+                            onTap: () => logic.openGameMode(context),
+                            child: Text("${I18nKey.btnGameMode.tr}(${state.gameMode})"),
                           ),
+                          if (!state.gameMode)
+                            PopupMenuItem<String>(
+                              onTap: logic.openEditor,
+                              child: Text(I18nKey.btnEdit.tr),
+                            ),
                           PopupMenuItem<String>(
                             onTap: logic.switchConcentrationMode,
                             child: Text("${I18nKey.btnConcentration.tr}(${state.concentrationMode})"),

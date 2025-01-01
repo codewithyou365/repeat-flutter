@@ -45,6 +45,10 @@ class SegmentTodayPrg {
     this.id,
   });
 
+  static SegmentTodayPrg empty() {
+    return SegmentTodayPrg(0, 0, 0, TodayPrgType.none.index, 0, 0, DateTime.now(), 0, Date(0), false);
+  }
+
   static void setType(List<SegmentTodayPrg> list, TodayPrgType todayPrgType, int index, int limit) {
     if (limit <= 0) {
       for (SegmentTodayPrg sl in list) {
