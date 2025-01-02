@@ -427,16 +427,15 @@ class _$GameDao extends GameDao {
   }
 
   @override
-  Future<List<int>> disableGames(List<int> gameIds) async {
+  Future<void> disableGames(List<int> gameIds) async {
     const offset = 1;
     final _sqliteVariablesForGameIds =
         Iterable<String>.generate(gameIds.length, (i) => '?${i + offset}')
             .join(',');
-    return _queryAdapter.queryList(
+    await _queryAdapter.queryNoReturn(
         'UPDATE Game set finish=true where id in (' +
             _sqliteVariablesForGameIds +
             ')',
-        mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [...gameIds]);
   }
 

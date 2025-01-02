@@ -1,16 +1,18 @@
 <template>
   <nut-navbar :title="t('settings')" left-show @click-back="onClickBack"></nut-navbar>
-  <nut-cell title="Language">
-    <nut-radio-group v-model="language" direction="horizontal" @change="updateLanguage">
-      <nut-radio label="en">English</nut-radio>
-      <nut-radio label="zh">中文</nut-radio>
-    </nut-radio-group>
-  </nut-cell>
-  <nut-cell :title="t('dartMode')">
-    <template #link>
-      <nut-switch v-model="theme" @change="changeTheme"/>
-    </template>
-  </nut-cell>
+  <div style="margin: 8px">
+    <nut-cell title="Language">
+      <nut-radio-group v-model="language" direction="horizontal" @change="updateLanguage">
+        <nut-radio label="en">English</nut-radio>
+        <nut-radio label="zh">中文</nut-radio>
+      </nut-radio-group>
+    </nut-cell>
+    <nut-cell :title="t('dartMode')">
+      <template #link>
+        <nut-switch v-model="theme" @change="changeTheme"/>
+      </template>
+    </nut-cell>
+  </div>
 </template>
 
 <script setup>
