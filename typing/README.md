@@ -5,7 +5,7 @@
 Prepare the project:
 ```bash
 pnpm add vuex@next vue-router@4 vue-i18n@10 -D
-pnpm add @nutui/nutui -D
+pnpm add @nutui/nutui @nutui/icons-vue -D
 ```
 
 Install the dependencies:

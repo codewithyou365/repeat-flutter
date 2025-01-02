@@ -21,7 +21,7 @@ abstract class GameDao {
   Future<List<int>> getAllEnableGameIds();
 
   @Query('UPDATE Game set finish=true where id in (:gameIds)')
-  Future<List<int>> disableGames(List<int> gameIds);
+  Future<void> disableGames(List<int> gameIds);
 
   @Query('SELECT * FROM Game WHERE id=:gameId')
   Future<Game?> one(int gameId);
