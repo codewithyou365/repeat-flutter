@@ -4,13 +4,15 @@ import 'dart:io';
 
 import 'message.dart';
 
-class Node {
+class Node<User> {
   int sendId = 0;
+  User? user;
   final Map<int, Completer<Response>> sendId2Res = {};
   final WebSocket webSocket;
 
   Node(
     this.webSocket,
+    this.user,
   );
 
   void receive(Message msg) {

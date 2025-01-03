@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'node.dart';
+
 typedef Logger = void Function(String msg);
 
 typedef Controller = Future<Response?> Function(Request req);
+typedef Convert = Future<dynamic> Function(String req);
 
 Future<void> responseHandler(
   Map<String, Controller> controllers,

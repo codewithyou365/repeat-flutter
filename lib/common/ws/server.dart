@@ -6,21 +6,40 @@ import 'node.dart';
 
 import 'message.dart';
 
-class Server {
+class Server<User> {
   Logger? logger;
   HttpServer? server;
   final Map<String, Controller> controllers = {};
-  final Map<int, Node> nodes = {};
+  final Map<String, Convert> converts = {};
+  final Map<int, Node<User>> nodes = {};
 
-  Future<void> start(int port, Future<void> Function(HttpRequest request) handleHttpRequest) async {
+  Future<void> start(int port, Future<User?> Function(HttpRequest request) auth, Future<void> Function(HttpRequest request) handleHttpRequest) async {
     try {
       server = await HttpServer.bind(InternetAddress.anyIPv4, port);
 
       server!.listen((HttpRequest request) async {
         if (WebSocketTransformer.isUpgradeRequest(request)) {
+          User? user = await auth(request);
+          if (user == null) {
+            return;
+          }
           WebSocket socket = await WebSocketTransformer.upgrade(request);
-          handleWebSocket(socket);
+          handleWebSocket(socket, user);
         } else {
+          if (controllers.containsKey(request.uri.path) && converts.containsKey(request.uri.path)) {
+            var controller = controllers[request.uri.path];
+            Request req = Request();
+            req.path = request.uri.path;
+            Map<String, String> headers = {};
+            request.headers.forEach((name, values) {
+              headers[name] = values.first;
+            });
+            req.headers = headers;
+            String body = await utf8.decoder.bind(request).join();
+            req.data = converts[request.uri.path]!(body);
+            controller!(req);
+            return;
+          }
           await handleHttpRequest(request);
         }
       });
@@ -51,9 +70,9 @@ class Server {
     await Future.wait(futures);
   }
 
-  void handleWebSocket(WebSocket socket) {
+  void handleWebSocket(WebSocket socket, User user) {
     final hashCode = socket.hashCode;
-    final node = Node(socket);
+    final node = Node(socket, user);
     nodes[hashCode] = node;
     socket.listen(
       (message) async {
