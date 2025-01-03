@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 
 class LatestGameRes {
@@ -25,9 +26,8 @@ class LatestGameRes {
   }
 }
 
-Future<message.Response?> latestGame(message.Request req) async {
-  final user = await Db().db.gameUserDao.loginByToken(req.headers['token'] ?? '');
-  if (user.isEmpty()) {
+Future<message.Response?> latestGame(message.Request req, GameUser? user) async {
+  if (user == null) {
     return message.Response(error: GameServerError.tokenExpired.name);
   }
   final game = await Db().db.gameDao.getLatestOne();

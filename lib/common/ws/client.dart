@@ -24,7 +24,7 @@ class Client {
     var socket = await WebSocket.connect(
       url,
     );
-    node = Node(socket);
+    node = Node(socket, null);
     socket.listen(
       (message) async {
         try {
@@ -34,19 +34,19 @@ class Client {
           } else if (msg.type == MessageType.request) {
             responseHandler(controllers, msg, socket);
           } else {
-            logger??('Unknown message type: ${msg.type}');
+            logger ?? ('Unknown message type: ${msg.type}');
           }
         } catch (e) {
-          logger??('Error handling WebSocket message: $e');
+          logger ?? ('Error handling WebSocket message: $e');
         }
       },
       onDone: () {
         node = null;
-        logger??('Client disconnected: ');
+        logger ?? ('Client disconnected: ');
       },
       onError: (error) {
         node = null;
-        logger??('Client disconnected: . Error: $error');
+        logger ?? ('Client disconnected: . Error: $error');
       },
     );
     return true;
