@@ -26,8 +26,8 @@
     <nut-button
         type="primary"
         block
-        @click="handleLogin"
-    >
+        :loading="isLoading"
+        @click="handleLogin">
       {{ t('login') }}
     </nut-button>
   </div>
@@ -35,9 +35,14 @@
 
 <script setup>
 import {Setting} from '@nutui/icons-vue'
-import {ref, reactive, computed} from 'vue';
+import {ref, reactive} from 'vue';
 import {useI18n} from 'vue-i18n';
 import {useRouter} from 'vue-router';
+import http from '../api/http';
+import {showDialog} from '@nutui/nutui';
+import {useStore} from 'vuex';
+
+const store = useStore();
 
 const router = useRouter();
 const {t, locale} = useI18n();
@@ -57,12 +62,37 @@ const customBlurValidate = (prop) => {
   formRef.value?.validate(prop);
 }
 
+const token = ref('');
+
+const onCancel = () => {
+  console.log('event cancel')
+}
+const onOk = () => {
+  console.log('event ok')
+}
+const isLoading = ref(false)
 const handleLogin = () => {
-  formRef.value?.validate().then(({valid, errors}) => {
+  formRef.value?.validate().then(async ({valid, errors}) => {
     if (valid) {
-      router.push("/home");
-      console.log('Logging in with:', form);
-    } else {
+      isLoading.value = true;
+      const responsePromise = http.post('/api/loginOrRegister', {
+        userName: form.userName,
+        password: form.password
+      });
+      const response = await responsePromise;
+      isLoading.value = false;
+      if (response.data === '') {
+        showDialog({
+          title: t('tips'),
+          content: t('userNameOrPasswordError'),
+          noCancelBtn: true,
+          onCancel,
+          onOk
+        })
+        return;
+      }
+      await store.dispatch('updateToken', response.data);
+      await router.push("/home");
     }
   })
 };

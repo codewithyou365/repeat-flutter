@@ -1,6 +1,7 @@
 const state = {
     theme: localStorage.getItem('theme') || 'dart',
     language: localStorage.getItem('language') || 'en',
+    token: localStorage.getItem('token') || '',
 };
 const mutations = {
     setTheme(state: any, theme: string) {
@@ -21,6 +22,10 @@ const mutations = {
         state.language = language;
         localStorage.setItem('language', language);
     },
+    setToken(state: any, token: string) {
+        state.token = token;
+        localStorage.setItem('token', token);
+    },
 };
 
 const actions = {
@@ -30,11 +35,15 @@ const actions = {
     updateLanguage({commit}: any, language: string) {
         commit('setLanguage', language);
     },
+    updateToken({commit}: any, token: string) {
+        commit('setToken', token);
+    },
 };
 
 const getters = {
     currentTheme: (state: any) => state.theme,
     currentLanguage: (state: any) => state.language,
+    currentToken: (state: any) => state.token,
 };
 
 export default {

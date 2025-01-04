@@ -7,10 +7,10 @@ import 'node.dart';
 import 'message.dart';
 
 class Server<User> {
+  final cors = true;
   Logger? logger;
   HttpServer? server;
   final Map<String, Controller> controllers = {};
-  final Map<String, Convert> converts = {};
   final Map<int, Node<User>> nodes = {};
 
   Future<void> start(int port, Future<User?> Function(HttpRequest request) auth, Future<void> Function(HttpRequest request) handleHttpRequest) async {
@@ -26,7 +26,15 @@ class Server<User> {
           WebSocket socket = await WebSocketTransformer.upgrade(request);
           handleWebSocket(socket, user);
         } else {
-          if (controllers.containsKey(request.uri.path) && converts.containsKey(request.uri.path)) {
+          if (cors) {
+            request.response.headers
+              ..add("Access-Control-Allow-Origin", "*")
+              ..add("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+              ..add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+          }
+          if (request.method == "OPTIONS") {
+            await request.response.close();
+          } else if (controllers.containsKey(request.uri.path)) {
             var controller = controllers[request.uri.path];
             Request req = Request();
             req.path = request.uri.path;
@@ -36,11 +44,16 @@ class Server<User> {
             });
             req.headers = headers;
             String body = await utf8.decoder.bind(request).join();
-            req.data = converts[request.uri.path]!(body);
-            controller!(req);
+            req.data = jsonDecode(body);
+            Response? res = await controller!(req);
+            res ??= Response();
+            String resStr = jsonEncode(res.toJson());
+            request.response.write(resStr);
+            await request.response.close();
             return;
+          } else {
+            await handleHttpRequest(request);
           }
-          await handleHttpRequest(request);
         }
       });
     } catch (e) {
