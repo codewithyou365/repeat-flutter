@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:flutter/services.dart';
@@ -28,9 +27,7 @@ class GameServer {
       server.start(port, authByToken, _serveFile);
       server.logger = Snackbar.show;
       server.controllers["/api/loginOrRegister"] = loginOrRegister;
-      server.converts["/api/loginOrRegister"] = (data) => jsonDecode(data);
       server.controllers["/api/latestGame"] = (request) => withGameUser(request, latestGame);
-
       server.controllers["/api/userOneGameHistory"] = userOneGameHistory;
       server.controllers["/api/submit"] = submit;
     } catch (e) {
