@@ -1266,7 +1266,7 @@ class _$ScheduleDao extends ScheduleDao {
     Date now,
   ) async {
     return _queryAdapter.query(
-        'SELECT IFNULL(MIN(createDate),-1) FROM SegmentReview WHERE classroomId=?1 AND count=?2 and createDate<=?3 order by createDate',
+        'SELECT IFNULL(MIN(SegmentReview.createDate),-1) FROM SegmentReview JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId WHERE SegmentReview.classroomId=?1 AND SegmentReview.count=?2 and SegmentReview.createDate<=?3 order by SegmentReview.createDate',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId, reviewCount, _dateConverter.encode(now)]);
   }
