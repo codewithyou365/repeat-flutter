@@ -258,11 +258,12 @@ abstract class ScheduleDao {
       " and Segment.lessonIndex=:lessonIndex")
   Future<int?> lessonCount(int classroomId, int contentSerial, int lessonIndex);
 
-  @Query("SELECT IFNULL(MIN(createDate),-1) FROM SegmentReview"
-      " WHERE classroomId=:classroomId"
-      " AND count=:reviewCount"
-      " and createDate<=:now"
-      " order by createDate")
+  @Query("SELECT IFNULL(MIN(SegmentReview.createDate),-1) FROM SegmentReview"
+      " JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId"
+      " WHERE SegmentReview.classroomId=:classroomId"
+      " AND SegmentReview.count=:reviewCount"
+      " and SegmentReview.createDate<=:now"
+      " order by SegmentReview.createDate")
   Future<int?> findReviewedMinCreateDate(int classroomId, int reviewCount, Date now);
 
   @Query("SELECT"
