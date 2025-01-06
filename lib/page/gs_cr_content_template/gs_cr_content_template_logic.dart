@@ -6,7 +6,6 @@ import 'package:repeat_flutter/common/folder.dart';
 import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
@@ -29,7 +28,6 @@ class GsCrContentTemplateLogic extends GetxController {
     state.contentId = ids[0];
     state.contentSerial = ids[1];
     state.items.add(GsCrContentTemplateState.qTemplate);
-    state.items.add(GsCrContentTemplateState.aTemplate);
     state.items.add(GsCrContentTemplateState.qaTemplate);
   }
 
