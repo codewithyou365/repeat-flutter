@@ -26,11 +26,6 @@ class GsCrContentTemplateState {
       '          "qStart": "00:00:05,000",\n'
       '          "qEnd": "00:00:10,000"\n'
       '        }';
-  static const String aTemplate = ''
-      '        {\n'
-      '          "aStart": "00:00:05,000",\n'
-      '          "aEnd": "00:00:10,000"\n'
-      '        }';
   static const String qaTemplate = ''
       '        {\n'
       '          "qStart": "00:00:05,000",\n'
