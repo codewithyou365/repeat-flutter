@@ -505,13 +505,26 @@ abstract class ScheduleDao {
       contentSerial = segmentKey.contentSerial;
     }
     // The segmentKey data cant be delete
-    await insertSegmentKeys(rawSegmentKeys);
     List<SegmentKey> segmentKeys = await getSegmentKey(Classroom.curr, contentSerial);
     Map<String, SegmentKey> keyToSegmentKey = {};
     for (var segmentKey in segmentKeys) {
       keyToSegmentKey[segmentKey.toStringKey()] = segmentKey;
     }
 
+    List<SegmentKey> needToInsert = [];
+    for (var segmentKey in rawSegmentKeys) {
+      if (!keyToSegmentKey.containsKey(segmentKey.toStringKey())) {
+        needToInsert.add(segmentKey);
+      }
+    }
+    if (needToInsert.isNotEmpty) {
+      await insertSegmentKeys(needToInsert);
+      segmentKeys = await getSegmentKey(Classroom.curr, contentSerial);
+      keyToSegmentKey = {};
+      for (var segmentKey in segmentKeys) {
+        keyToSegmentKey[segmentKey.toStringKey()] = segmentKey;
+      }
+    }
     await deleteSegmentByContentSerial(Classroom.curr, contentSerial);
     for (var i = 0; i < rawSegmentKeys.length; i++) {
       var rawSegmentKey = rawSegmentKeys[i];
