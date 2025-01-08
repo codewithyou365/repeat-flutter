@@ -120,7 +120,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelLocalZipImport, "本地ZIP导入");
     put(I18nKey.labelLocalMediaImport, "本地媒体导入");
     put(I18nKey.labelLocalImportCancel, "本地导入取消");
-    put(I18nKey.labelSegmentRemoved, "对应的学习片段已移除，建议删除相关学习规划");
+    put(I18nKey.labelSegmentRemoved, "对应的学习片段已移除，建议先备份你的数据，再点击确定进行删除相关数据。");
     put(I18nKey.labelDocNotBeDownloaded, "还未下载文件:%s");
     put(I18nKey.labelDocCantBeFound, "无法找到文件:%s");
     put(I18nKey.labelInputPathError, "路径错误");
