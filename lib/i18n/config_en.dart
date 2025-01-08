@@ -119,7 +119,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelLocalZipImport, "Local ZIP import");
     put(I18nKey.labelLocalMediaImport, "Local media import");
     put(I18nKey.labelLocalImportCancel, "Local Import is Canceled");
-    put(I18nKey.labelSegmentRemoved, "The learning segment has been removed, and it is recommended that the related schedule be deleted");
+    put(I18nKey.labelSegmentRemoved, "The corresponding learning segment has been removed. It is recommended to back up your data first, then click “Confirm” to delete the related data.");
     put(I18nKey.labelDocNotBeDownloaded, "The content (%s) is not downloaded");
     put(I18nKey.labelDocCantBeFound, "The content (%s) cannot be found");
     put(I18nKey.labelInputPathError, "The inputting path is error");
