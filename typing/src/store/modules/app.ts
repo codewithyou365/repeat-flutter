@@ -2,6 +2,7 @@ const state = {
     theme: localStorage.getItem('theme') || 'dart',
     language: localStorage.getItem('language') || 'en',
     token: localStorage.getItem('token') || '',
+    wsConnected: false,
 };
 const mutations = {
     setTheme(state: any, theme: string) {
@@ -13,9 +14,11 @@ const mutations = {
         if (dart) {
             root.style.setProperty('--nut-cell-box-shadow', 'none');
             root.style.setProperty('--nut-navbar-box-shadow', 'none');
+            root.style.setProperty('--nut-grid-border-color', '#5a5a5a');
         } else {
             root.style.removeProperty('--nut-cell-box-shadow');
             root.style.removeProperty('--nut-navbar-box-shadow');
+            root.style.removeProperty('--nut-grid-border-color');
         }
     },
     setLanguage(state: any, language: string) {
@@ -25,6 +28,9 @@ const mutations = {
     setToken(state: any, token: string) {
         state.token = token;
         localStorage.setItem('token', token);
+    },
+    setWsConnected(state: any, wsConnected: boolean) {
+        state.wsConnected = wsConnected;
     },
 };
 
@@ -38,12 +44,16 @@ const actions = {
     updateToken({commit}: any, token: string) {
         commit('setToken', token);
     },
+    updateWsConnected({commit}: any, wsConnected: boolean) {
+        commit('setWsConnected', wsConnected);
+    },
 };
 
 const getters = {
     currentTheme: (state: any) => state.theme,
     currentLanguage: (state: any) => state.language,
     currentToken: (state: any) => state.token,
+    currentWsConnected: (state: any) => state.wsConnected,
 };
 
 export default {
