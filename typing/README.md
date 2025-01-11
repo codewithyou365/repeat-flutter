@@ -7,6 +7,7 @@ Prepare the project:
 pnpm add vuex@next vue-router@4 vue-i18n@10 -D
 pnpm add @nutui/nutui @nutui/icons-vue -D
 pnpm add axios -D
+pnpm add mitt -D
 ```
 
 Install the dependencies:

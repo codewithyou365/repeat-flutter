@@ -1,5 +1,6 @@
 enum GameServerError {
   tokenExpired,
+  serviceStopped,
   gameNotFound,
 }
 

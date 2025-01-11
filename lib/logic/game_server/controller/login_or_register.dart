@@ -31,5 +31,5 @@ Future<message.Response?> loginOrRegister(message.Request req) async {
   if (token != "") {
     return message.Response(data: token);
   }
-  return message.Response(error: GameServerError.tokenExpired.name);
+  return message.Response(error: GameServerError.serviceStopped.name);
 }

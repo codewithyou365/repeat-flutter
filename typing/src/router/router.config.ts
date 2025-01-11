@@ -1,7 +1,7 @@
 export const routes = [
     {
-        path: '/',
-        redirect: '/login',
+        path: '/loading',
+        component: () => import('../view/loading.vue'),
     },
     {
         path: '/login',
