@@ -49,7 +49,7 @@ class SubmitRes {
 Future<message.Response?> userOneGameHistory(message.Request req) async {
   final user = await Db().db.gameUserDao.loginByToken(req.headers['token'] ?? '');
   if (user.isEmpty()) {
-    return message.Response(error: GameServerError.tokenExpired.name);
+    return message.Response(error: GameServerError.serviceStopped.name);
   }
   return message.Response(data: "");
 }

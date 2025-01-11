@@ -26,17 +26,13 @@ import {useI18n} from 'vue-i18n';
 import {onMounted} from "vue";
 
 const {t} = useI18n();
-import {useStore} from 'vuex';
 
-const store = useStore();
 onMounted(() => {
 
 });
 
 const onA = () => {
-  store.dispatch('updateWsConnected', true);
 }
 const onB = () => {
-  store.dispatch('updateWsConnected', false);
 }
 </script>

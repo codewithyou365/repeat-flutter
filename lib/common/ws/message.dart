@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'node.dart';
-
 typedef Logger = void Function(String msg);
 
 typedef Controller = Future<Response?> Function(Request req);
@@ -15,10 +13,11 @@ Future<void> responseHandler(
 ) async {
   Response? res;
   final req = msg.request!;
+  req.headers[Header.age.name] = msg.age.toString();
   final controller = controllers[req.path];
   if (controller != null) {
     try {
-      res = await controller(msg.request!) ?? Response(status: 501);
+      res = await controller(req) ?? Response(status: 501);
     } catch (e) {
       res = Response(status: 500, error: e.toString());
     }
@@ -26,7 +25,7 @@ Future<void> responseHandler(
     res = Response(status: 404);
   }
   final body = jsonEncode(
-    Message(id: msg.id, type: MessageType.response, response: res).toJson(),
+    Message(id: msg.id, age: msg.age, type: MessageType.response, response: res).toJson(),
   );
 
   webSocket.add(body);
@@ -34,6 +33,7 @@ Future<void> responseHandler(
 
 enum Header {
   wsHashCode,
+  age,
 }
 
 enum MessageType {
@@ -44,12 +44,14 @@ enum MessageType {
 class Message {
   MessageType type = MessageType.request;
   int id = 0;
+  int age = 0;
   Request? request;
   Response? response;
 
   Message({
     this.type = MessageType.request,
     this.id = 0,
+    this.age = 0,
     this.request,
     this.response,
   });
@@ -58,6 +60,7 @@ class Message {
     return Message(
       type: MessageType.values[json['type'] ?? MessageType.request.index],
       id: json['id'] ?? 0,
+      age: json['age'] ?? 0,
       request: json['request'] != null ? Request.fromJson(json['request']) : null,
       response: json['response'] != null ? Response.fromJson(json['response']) : null,
     );
@@ -67,6 +70,7 @@ class Message {
     return {
       'type': type.index,
       'id': id,
+      'age': age,
       'request': request?.toJson(),
       'response': response?.toJson(),
     };

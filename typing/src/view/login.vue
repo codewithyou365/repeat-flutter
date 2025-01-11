@@ -92,7 +92,7 @@ const handleLogin = () => {
         return;
       }
       await store.dispatch('updateToken', response.data);
-      await router.push("/home");
+      await router.push("/loading");
     }
   })
 };

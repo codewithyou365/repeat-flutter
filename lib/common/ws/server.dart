@@ -6,23 +6,28 @@ import 'node.dart';
 
 import 'message.dart';
 
+enum ServerStatus {
+  stopped,
+  working,
+}
+
 class Server<User> {
   final cors = true;
+  var status = ServerStatus.working;
   Logger? logger;
   HttpServer? server;
   final Map<String, Controller> controllers = {};
   final Map<int, Node<User>> nodes = {};
 
   Future<void> start(int port, Future<User?> Function(HttpRequest request) auth, Future<void> Function(HttpRequest request) handleHttpRequest) async {
+    status = ServerStatus.working;
     try {
       server = await HttpServer.bind(InternetAddress.anyIPv4, port);
 
       server!.listen((HttpRequest request) async {
+        if (status == ServerStatus.stopped) return;
         if (WebSocketTransformer.isUpgradeRequest(request)) {
           User? user = await auth(request);
-          if (user == null) {
-            return;
-          }
           WebSocket socket = await WebSocketTransformer.upgrade(request);
           handleWebSocket(socket, user);
         } else {
@@ -62,7 +67,11 @@ class Server<User> {
   }
 
   Future<void> stop() async {
+    status = ServerStatus.stopped;
     if (server != null) {
+      for (final node in nodes.values) {
+        await node.webSocket.close();
+      }
       await server!.close();
       nodes.clear();
       logger ?? ('HTTP server stopped');
@@ -83,10 +92,18 @@ class Server<User> {
     await Future.wait(futures);
   }
 
-  void handleWebSocket(WebSocket socket, User user) {
+  void handleWebSocket(WebSocket socket, User? user) {
     final hashCode = socket.hashCode;
     final node = Node(socket, user);
+    if (user == null) {
+      Request req = Request();
+      req.path = "/api/kick";
+      node.send(req, true);
+      node.webSocket.close();
+      return;
+    }
     nodes[hashCode] = node;
+    node.tryCloseAfterTimeout();
     socket.listen(
       (message) async {
         try {
@@ -98,6 +115,7 @@ class Server<User> {
             req.headers[Header.wsHashCode.name] = hashCode.toString();
             responseHandler(controllers, msg, socket);
           }
+          node.tryCloseAfterTimeout();
         } catch (e) {
           logger ?? ('Error handling WebSocket message: $e');
         }

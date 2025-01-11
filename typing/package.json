@@ -15,6 +15,7 @@
     "@nutui/nutui": "^4.3.13",
     "@rsbuild/core": "^1.1.8",
     "@rsbuild/plugin-vue": "^1.0.5",
+    "mitt": "^3.0.1",
     "typescript": "^5.7.2",
     "vue-i18n": "10",
     "vue-router": "^4.5.0",

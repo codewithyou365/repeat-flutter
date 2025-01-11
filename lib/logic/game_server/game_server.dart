@@ -8,6 +8,7 @@ import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
+import 'controller/heart.dart';
 import 'controller/user_one_game_history.dart';
 import 'controller/latest_game.dart';
 import 'controller/login_or_register.dart';
@@ -28,6 +29,7 @@ class GameServer {
       server.logger = Snackbar.show;
       server.controllers["/api/loginOrRegister"] = loginOrRegister;
       server.controllers["/api/latestGame"] = (request) => withGameUser(request, latestGame);
+      server.controllers["/api/heart"] = (request) => withGameUser(request, heart);
       server.controllers["/api/userOneGameHistory"] = userOneGameHistory;
       server.controllers["/api/submit"] = submit;
     } catch (e) {
@@ -87,11 +89,10 @@ class GameServer {
   }
 
   Future<GameUser?> authByToken(HttpRequest request) async {
-    var tokenHeader = request.headers['token'];
-    if (tokenHeader == null) {
+    var token = request.uri.queryParameters['token'];
+    if (token == null) {
       return null;
     }
-    String token = tokenHeader.first;
     final user = await Db().db.gameUserDao.loginByToken(token);
     if (user.isEmpty()) {
       return null;

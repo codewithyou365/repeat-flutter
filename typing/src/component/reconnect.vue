@@ -7,14 +7,30 @@
 </template>
 
 <script setup lang="ts">
-import {computed, CSSProperties} from 'vue';
+import {computed, onMounted, onBeforeUnmount, CSSProperties} from 'vue';
 import {useI18n} from 'vue-i18n';
 import {useStore} from 'vuex';
+import {bus} from '../api/bus';
+import {ClientStatus, client} from "../api/ws.ts";
 
 const store = useStore();
 const {t} = useI18n();
 const height = '18px';
+const changeStatus = (status: number) => {
+  const isConnected = status === ClientStatus.CONNECT_FINISH;
+  store.dispatch('updateWsConnected', isConnected);
+}
 
+onMounted(() => {
+  changeStatus(client.status);
+  bus().on('wsStatus', (status: number) => {
+    changeStatus(status);
+  });
+});
+
+onBeforeUnmount(() => {
+  bus().off('wsStatus');
+})
 const normalStyle = computed<CSSProperties>(() => ({
   height: height,
 }));
