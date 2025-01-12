@@ -11,9 +11,10 @@ import 'package:repeat_flutter/common/date.dart';
   ],
 )
 class Game {
-  @PrimaryKey(autoGenerate: true)
+  @primaryKey
   final int id;
 
+  final int time;
   final String mediaHash;
   final String aStart;
   final String aEnd;
@@ -31,6 +32,7 @@ class Game {
 
   Game(
     this.id,
+    this.time,
     this.mediaHash,
     this.aStart,
     this.aEnd,

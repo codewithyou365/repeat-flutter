@@ -1,7 +1,7 @@
 const state = {
-    theme: localStorage.getItem('theme') || 'dart',
-    language: localStorage.getItem('language') || 'en',
-    token: localStorage.getItem('token') || '',
+    theme: localStorage.getItem('theme') ?? 'dart',
+    language: localStorage.getItem('language') ?? 'en',
+    token: localStorage.getItem('token') ?? '',
     wsConnected: false,
 };
 const mutations = {
@@ -15,10 +15,19 @@ const mutations = {
             root.style.setProperty('--nut-cell-box-shadow', 'none');
             root.style.setProperty('--nut-navbar-box-shadow', 'none');
             root.style.setProperty('--nut-grid-border-color', '#5a5a5a');
+            root.style.setProperty('--history-background-color', '#000000');
+            root.style.setProperty('--history-finish-color', '#53b9ff');
+            root.style.setProperty('--history-normal-color', 'wheat');
+            root.style.setProperty('--history-input-right-color', '#5fff67');
         } else {
             root.style.removeProperty('--nut-cell-box-shadow');
             root.style.removeProperty('--nut-navbar-box-shadow');
             root.style.removeProperty('--nut-grid-border-color');
+            root.style.removeProperty('--history-background-color');
+            root.style.removeProperty('--history-finish-color');
+            root.style.removeProperty('--history-normal-color');
+            root.style.removeProperty('--history-input-right-color');
+
         }
     },
     setLanguage(state: any, language: string) {

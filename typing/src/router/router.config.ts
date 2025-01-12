@@ -1,5 +1,9 @@
 export const routes = [
     {
+        path: '/settings',
+        component: () => import('../view/settings.vue'),
+    },
+    {
         path: '/loading',
         component: () => import('../view/loading.vue'),
     },
@@ -12,7 +16,8 @@ export const routes = [
         component: () => import('../view/home.vue'),
     },
     {
-        path: '/settings',
-        component: () => import('../view/settings.vue'),
+        path: '/game',
+        component: () => import('../view/game.vue'),
     },
+
 ];

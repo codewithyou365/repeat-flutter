@@ -5,30 +5,34 @@
 <script setup lang="ts">
 import {client, url, Request, Response, ClientStatus} from '../api/ws';
 import {onMounted} from 'vue';
-import {busReset, bus} from '../api/bus';
+import {busReset, bus, EventName, RefreshGameType} from '../api/bus';
 import {useRouter} from "vue-router";
 
 const router = useRouter();
 import {useStore} from 'vuex';
+import {Path} from "../utils/constant.ts";
 
 const store = useStore();
 
 onMounted(() => {
   busReset();
   client.status = ClientStatus.INIT;
-  client.controllers.set("/api/kick", async (_: Request) => {
+  client.controllers.set(Path.kick, async (_: Request) => {
     client.stop(false, "kicked by server");
     await router.push("/login");
     return new Response();
   });
+  client.controllers.set(Path.refreshGame, async (req: Request) => {
+    bus().emit(EventName.RefreshGame, RefreshGameType.from(req.data));
+    return new Response();
+  });
+
   client.start(url + `?token=${store.getters.currentToken}`, (status: number) => {
-    bus().emit('wsStatus', status);
+    bus().emit(EventName.WsStatus, status);
   }, async () => {
-    const req = new Request();
-    req.path = "/api/heart";
     if (client.node) {
       try {
-        return await client.node.send(req);
+        return await client.node.send(new Request({path: Path.heart}), false);
       } catch (error) {
         console.error('Error sending heartbeat:', error);
         throw error;

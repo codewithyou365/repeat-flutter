@@ -15,6 +15,10 @@ const messages = {
         tips: 'Tips',
         userNameOrPasswordError: 'The user name or password is incorrect',
         reconnect: 'Reconnecting...',
+        pleaseInputGameNumber: 'Please enter the game number.',
+        confirm: 'Confirm',
+        cancel: 'Cancel',
+        gameEntryCodeError: 'Please enter the right game number.',
     },
     zh: {
         dartMode: '深色模式',
@@ -30,6 +34,10 @@ const messages = {
         tips: '提示',
         userNameOrPasswordError: '用户名或密码错误',
         reconnect: '重连中...',
+        pleaseInputGameNumber: '请输入游戏编号',
+        confirm: '确定',
+        cancel: '取消',
+        gameEntryCodeError: '请输入正确的游戏编号',
     },
 };
 

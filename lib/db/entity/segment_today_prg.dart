@@ -23,6 +23,7 @@ class SegmentTodayPrg {
   final int classroomId;
   final int contentSerial;
   final int segmentKeyId;
+  int time;
   int type;
   final int sort;
   int progress;
@@ -35,6 +36,7 @@ class SegmentTodayPrg {
     this.classroomId,
     this.contentSerial,
     this.segmentKeyId,
+    this.time,
     this.type,
     this.sort,
     this.progress,
@@ -46,7 +48,7 @@ class SegmentTodayPrg {
   });
 
   static SegmentTodayPrg empty() {
-    return SegmentTodayPrg(0, 0, 0, TodayPrgType.none.index, 0, 0, DateTime.now(), 0, Date(0), false);
+    return SegmentTodayPrg(0, 0, 0, 0, TodayPrgType.none.index, 0, 0, DateTime.now(), 0, Date(0), false);
   }
 
   static void setType(List<SegmentTodayPrg> list, TodayPrgType todayPrgType, int index, int limit) {
@@ -107,6 +109,7 @@ class SegmentTodayPrg {
         segment.classroomId,
         segment.contentSerial,
         segment.segmentKeyId,
+        segment.time,
         segment.type,
         segment.sort,
         segment.progress,

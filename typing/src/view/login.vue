@@ -2,7 +2,7 @@
   <nut-navbar :title="t('login')">
     <template #right>
       <router-link to="/settings">
-        <Setting width="16px" to="/settings"></Setting>
+        <Setting width="16px"></Setting>
       </router-link>
     </template>
   </nut-navbar>
@@ -41,6 +41,7 @@ import {useRouter} from 'vue-router';
 import http from '../api/http';
 import {showDialog} from '@nutui/nutui';
 import {useStore} from 'vuex';
+import {Path} from "../utils/constant";
 
 const store = useStore();
 
@@ -75,7 +76,7 @@ const handleLogin = () => {
   formRef.value?.validate().then(async ({valid, errors}) => {
     if (valid) {
       isLoading.value = true;
-      const responsePromise = http.post('/api/loginOrRegister', {
+      const responsePromise = http.post(Path.loginOrRegister, {
         userName: form.userName,
         password: form.password
       });
@@ -86,6 +87,7 @@ const handleLogin = () => {
           title: t('tips'),
           content: t('userNameOrPasswordError'),
           noCancelBtn: true,
+          okText: t('confirm'),
           onCancel,
           onOk
         })

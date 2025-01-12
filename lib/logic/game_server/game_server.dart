@@ -9,8 +9,8 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'controller/heart.dart';
-import 'controller/user_one_game_history.dart';
-import 'controller/latest_game.dart';
+import 'controller/game_user_history.dart';
+import 'controller/entry_game.dart';
 import 'controller/login_or_register.dart';
 import 'controller/submit.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -18,8 +18,7 @@ import 'package:path/path.dart' as path;
 
 class GameServer {
   Server<GameUser> server = Server();
-  Map<int, WebSocket> clients = {};
-  Map<int, WebSocket> realClients = {};
+  Map<String, String> keyToLocalPath = {};
   List<String> ips = [];
 
   Future<int> start() async {
@@ -27,11 +26,11 @@ class GameServer {
     try {
       server.start(port, authByToken, _serveFile);
       server.logger = Snackbar.show;
-      server.controllers["/api/loginOrRegister"] = loginOrRegister;
-      server.controllers["/api/latestGame"] = (request) => withGameUser(request, latestGame);
-      server.controllers["/api/heart"] = (request) => withGameUser(request, heart);
-      server.controllers["/api/userOneGameHistory"] = userOneGameHistory;
-      server.controllers["/api/submit"] = submit;
+      server.controllers[Path.loginOrRegister] = loginOrRegister;
+      server.controllers[Path.entryGame] = (request) => withGameUser(request, entryGame);
+      server.controllers[Path.heart] = (request) => withGameUser(request, heart);
+      server.controllers[Path.gameUserHistory] = (request) => withGameUser(request, gameUserHistory);
+      server.controllers[Path.submit] = (request) => withGameUser(request, submit);
     } catch (e) {
       Snackbar.show('Error starting HTTP service: $e');
       return 0;
@@ -41,7 +40,7 @@ class GameServer {
 
   Future<void> stop() async {
     try {
-      server.stop();
+      await server.stop();
     } catch (e) {
       Snackbar.show('Error starting HTTP service: $e');
       return;
@@ -50,7 +49,12 @@ class GameServer {
 
   Future<void> _serveFile(HttpRequest request) async {
     final requestedPath = request.uri.path == '/' ? '/index.html' : request.uri.path;
-    final filePath = GameServerPath.assetsPath.joinPath(requestedPath);
+    // If it is necessary to access a local file, use a random key to map the local file path.
+    if (keyToLocalPath.containsKey(requestedPath)) {
+      var localPath = keyToLocalPath[requestedPath];
+      // TODO...
+    }
+    final filePath = GameConstant.assetsPath.joinPath(requestedPath);
     try {
       ByteData content = await rootBundle.load(filePath);
       request.response

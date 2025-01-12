@@ -280,7 +280,7 @@ class GsCrRepeatViewBasic {
     );
   }
 
-  static void showGameAddress(BuildContext context, List<String> address) {
+  static void showGameAddress(BuildContext context, List<String> address, int id) {
     final Size screenSize = MediaQuery.of(context).size;
     showModalBottomSheet(
       context: context,
@@ -302,9 +302,7 @@ class GsCrRepeatViewBasic {
                         padding: EdgeInsets.all(4.w),
                         child: Row(
                           children: [
-                            TextButton(onPressed: () {}, child: Text(I18nKey.btnStart.tr)),
-                            Text("xx"),
-                            Text("xx"),
+                            Text("Game ID: ${id}"),
                           ],
                         ),
                       ),

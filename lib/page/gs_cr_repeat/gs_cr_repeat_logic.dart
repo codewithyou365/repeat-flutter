@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/common/ip.dart';
 import 'package:repeat_flutter/common/time.dart';
+import 'package:repeat_flutter/common/ws/message.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
@@ -13,6 +14,7 @@ import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/game_server/game_server.dart';
 import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_edit_help.dart';
@@ -226,6 +228,7 @@ class GsCrRepeatLogic extends GetxController {
     setNeedToPlayMedia(true);
     state.fakeKnow = 0;
     await setCurrentLearnContentAndUpdateView();
+    await tryRefreshGame();
   }
 
   void showForJustView() {
@@ -255,6 +258,7 @@ class GsCrRepeatLogic extends GetxController {
       finish();
     }
     await setCurrentLearnContentAndUpdateView(index: state.justViewIndex);
+    await tryRefreshGame();
   }
 
   void previousForJustView() async {
@@ -272,6 +276,7 @@ class GsCrRepeatLogic extends GetxController {
       state.justViewIndex--;
     }
     await setCurrentLearnContentAndUpdateView(index: state.justViewIndex);
+    await tryRefreshGame();
   }
 
   Future<bool?> setCurrentLearnContentAndUpdateView({int index = 0, int? pnOffset}) async {
@@ -489,25 +494,7 @@ class GsCrRepeatLogic extends GetxController {
     if (state.gameMode == false) {
       state.gamePort = await server.start();
       state.gameMode = true;
-      var now = DateTime.now();
-
-      var stp = state.segmentTodayPrg;
-      var game = Game(
-        stp.id!,
-        state.segment.mediaHash,
-        state.segment.aStart,
-        state.segment.aEnd,
-        state.segment.word,
-        state.segment.segmentKeyId,
-        state.segment.classroomId,
-        state.segment.contentSerial,
-        state.segment.lessonIndex,
-        state.segment.segmentIndex,
-        false,
-        now.millisecondsSinceEpoch,
-        Date.from(now),
-      );
-      await Db().db.gameDao.tryInsertGame(game);
+      tryRefreshGame();
     }
     try {
       state.gameAddress = [];
@@ -520,7 +507,34 @@ class GsCrRepeatLogic extends GetxController {
       Snackbar.show('Error getting LAN IP : $e');
       return;
     }
-    GsCrRepeatViewBasic.showGameAddress(context, state.gameAddress);
+    GsCrRepeatViewBasic.showGameAddress(context, state.gameAddress, state.segmentTodayPrg.id!);
+  }
+
+  tryRefreshGame() async {
+    if (!state.gameMode) {
+      return;
+    }
+    var now = DateTime.now();
+    var stp = state.segmentTodayPrg;
+    stp.time += 1;
+    var game = Game(
+      stp.id!,
+      stp.time,
+      state.segment.mediaHash,
+      state.segment.aStart,
+      state.segment.aEnd,
+      state.segment.word,
+      state.segment.segmentKeyId,
+      state.segment.classroomId,
+      state.segment.contentSerial,
+      state.segment.lessonIndex,
+      state.segment.segmentIndex,
+      false,
+      now.millisecondsSinceEpoch,
+      Date.from(now),
+    );
+    await Db().db.gameDao.tryInsertGame(game);
+    server.server.broadcast(Request(path: Path.refreshGame, data: {"id": stp.id, "time": stp.time}));
   }
 
   openEditor() {

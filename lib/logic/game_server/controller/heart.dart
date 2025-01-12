@@ -32,6 +32,5 @@ Future<message.Response?> heart(message.Request req, GameUser? user) async {
   if (user == null) {
     return message.Response(error: GameServerError.serviceStopped.name);
   }
-  int age = int.parse(req.headers[Header.age.name]!);
-  return message.Response(data: age);
+  return message.Response();
 }

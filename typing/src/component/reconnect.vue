@@ -10,7 +10,7 @@
 import {computed, onMounted, onBeforeUnmount, CSSProperties} from 'vue';
 import {useI18n} from 'vue-i18n';
 import {useStore} from 'vuex';
-import {bus} from '../api/bus';
+import {bus, EventName} from '../api/bus';
 import {ClientStatus, client} from "../api/ws.ts";
 
 const store = useStore();
@@ -23,13 +23,13 @@ const changeStatus = (status: number) => {
 
 onMounted(() => {
   changeStatus(client.status);
-  bus().on('wsStatus', (status: number) => {
+  bus().on(EventName.WsStatus, (status: number) => {
     changeStatus(status);
   });
 });
 
 onBeforeUnmount(() => {
-  bus().off('wsStatus');
+  bus().off(EventName.WsStatus);
 })
 const normalStyle = computed<CSSProperties>(() => ({
   height: height,

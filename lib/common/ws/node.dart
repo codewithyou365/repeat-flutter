@@ -10,6 +10,7 @@ class Node<User> {
   final Map<int, Completer<Response>> sendId2Res = {};
   final WebSocket webSocket;
   Timer? closeTimer;
+  DateTime closeTime = DateTime.now();
 
   Node(
     this.webSocket,
@@ -44,10 +45,21 @@ class Node<User> {
     }
   }
 
-  tryCloseAfterTimeout() {
+  close() async {
     closeTimer?.cancel();
-    closeTimer = Timer(const Duration(seconds: 10), () {
-      webSocket.close();
+    closeTimer = null;
+    await webSocket.close();
+  }
+
+  startCloseTimer() {
+    closeTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (closeTime.isBefore(DateTime.now())) {
+        close();
+      }
     });
+  }
+
+  resetCloseTime() {
+    closeTime = DateTime.now().add(const Duration(seconds: 10));
   }
 }

@@ -1,8 +1,7 @@
 import axios, {AxiosInstance} from 'axios';
 
 const http: AxiosInstance = axios.create({
-    //baseURL: 'http://' + window.location.hostname + ':' + window.location.port,
-    baseURL: 'http://127.0.0.1:40321',
+    baseURL: `http://${window.location.hostname}:${window.location.port}`,
     timeout: 5000, // 请求超时时间
     headers: {
         'Content-Type': 'application/json',
@@ -20,7 +19,7 @@ http.interceptors.request.use(
         return config;
     },
     (error) => {
-        return Promise.reject(error);
+        return Promise.reject(new Error(error.toString()));
     }
 );
 
@@ -30,7 +29,7 @@ http.interceptors.response.use(
     (error) => {
         // 处理错误信息
         console.error('HTTP Error:', error);
-        return Promise.reject(error);
+        return Promise.reject(new Error(error.toString()));
     }
 );
 

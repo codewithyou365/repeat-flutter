@@ -4,18 +4,21 @@ import 'dart:convert';
 
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
-import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/list_util.dart';
-import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
-import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/db/entity/game_user_input.dart';
 import 'package:repeat_flutter/logic/game_server/game_logic.dart';
 
 @dao
 abstract class GameDao {
-  @Query('SELECT * FROM Game where finish=false ORDER BY createTime desc LIMIT 1')
-  Future<Game?> getLatestOne();
+  @Query('SELECT * FROM Game where finish=false')
+  Future<Game?> getOne();
+
+  @Query('UPDATE Game set time=:time,finish=false where id=:gameId')
+  Future<void> refreshGame(int gameId, int time);
+
+  @Query('UPDATE SegmentTodayPrg set time=:time where id=:gameId')
+  Future<void> refreshSegmentTodayPrg(int gameId, int time);
 
   @Query('SELECT id FROM Game where finish=false')
   Future<List<int>> getAllEnableGameIds();
@@ -26,8 +29,11 @@ abstract class GameDao {
   @Query('SELECT * FROM Game WHERE id=:gameId')
   Future<Game?> one(int gameId);
 
-  @Query('SELECT * FROM GameUserInput WHERE gameId=:gameId and gameUserId=:gameUserId order by createTime desc limit 1')
-  Future<GameUserInput?> lastUserInput(int gameId, int gameUserId);
+  @Query('SELECT * FROM GameUserInput WHERE gameId=:gameId and gameUserId=:gameUserId and time=:time order by id desc limit 1')
+  Future<GameUserInput?> lastUserInput(int gameId, int gameUserId, int time);
+
+  @Query('SELECT * FROM GameUserInput WHERE gameId=:gameId and gameUserId=:gameUserId and time=:time')
+  Future<List<GameUserInput>> gameUserInput(int gameId, int gameUserId, int time);
 
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertGame(Game game);
@@ -42,8 +48,10 @@ abstract class GameDao {
     if (needDisableGameIds.isNotEmpty) {
       await disableGames(needDisableGameIds);
     }
+    await refreshSegmentTodayPrg(game.id, game.time);
     var curr = await one(game.id);
     if (curr != null) {
+      await refreshGame(game.id, game.time);
       return curr;
     }
     await insertGame(game);
@@ -51,8 +59,45 @@ abstract class GameDao {
   }
 
   @transaction
-  Future<List<List<String>>> submit(Game game, int gameUserId, String userInput) async {
-    GameUserInput? gameUserInput = await lastUserInput(game.id!, gameUserId);
+  Future<GameUserInput> submit(Game game, int preGameUserInputId, int gameUserId, String userInput, List<String> obtainInput, List<String> obtainOutput) async {
+    GameUserInput? gameUserInput = await lastUserInput(game.id, gameUserId, game.time);
+    if (gameUserInput == null && preGameUserInputId != 0) {
+      return GameUserInput.empty();
+    }
+    if (gameUserInput != null && preGameUserInputId != gameUserInput.id) {
+      return GameUserInput.empty();
+    }
+    List<String> prevOutput = [];
+    if (gameUserInput != null) {
+      prevOutput = ListUtil.toList(gameUserInput.output);
+    }
+    final now = DateTime.now();
+    List<String> input = GameLogic.processWord(game.w, userInput, obtainOutput, prevOutput);
+    await insertGameUserInput(GameUserInput(
+      game.id,
+      gameUserId,
+      game.time,
+      game.segmentKeyId,
+      game.classroomId,
+      game.contentSerial,
+      game.lessonIndex,
+      game.segmentIndex,
+      jsonEncode(input),
+      jsonEncode(obtainOutput),
+      now.millisecondsSinceEpoch,
+      Date.from(now),
+    ));
+    obtainInput.addAll(input);
+    final ret = await lastUserInput(game.id, gameUserId, game.time);
+    if (ret == null) {
+      return GameUserInput.empty();
+    }
+    return ret;
+  }
+
+  @transaction
+  Future<List<List<String>>> get(Game game, int gameUserId, String userInput) async {
+    GameUserInput? gameUserInput = await lastUserInput(game.id, gameUserId, game.time);
     List<String> prevOutput = [];
     if (gameUserInput != null) {
       prevOutput = ListUtil.toList(gameUserInput.output);
@@ -61,8 +106,9 @@ abstract class GameDao {
     List<String> output = [];
     List<String> input = GameLogic.processWord(game.w, userInput, output, prevOutput);
     insertGameUserInput(GameUserInput(
-      game.id!,
+      game.id,
       gameUserId,
+      game.time,
       game.segmentKeyId,
       game.classroomId,
       game.contentSerial,

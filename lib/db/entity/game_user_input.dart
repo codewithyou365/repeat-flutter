@@ -8,7 +8,7 @@ import 'package:repeat_flutter/common/date.dart';
     Index(value: ['classroomId', 'contentSerial', 'lessonIndex', 'segmentIndex']),
     Index(value: ['segmentKeyId']),
     Index(value: ['createDate']),
-    Index(value: ['gameId', 'gameUserId']),
+    Index(value: ['gameId', 'gameUserId', 'time']),
   ],
 )
 class GameUserInput {
@@ -16,7 +16,7 @@ class GameUserInput {
   final int? id;
   final int gameId;
   final int gameUserId;
-
+  final int time;
   final int segmentKeyId;
   final int classroomId;
   final int contentSerial;
@@ -31,6 +31,7 @@ class GameUserInput {
   GameUserInput(
     this.gameId,
     this.gameUserId,
+    this.time,
     this.segmentKeyId,
     this.classroomId,
     this.contentSerial,
@@ -42,4 +43,8 @@ class GameUserInput {
     this.createDate, {
     this.id,
   });
+
+  static empty() => GameUserInput(0, 0, 0, 0, 0, 0, 0, 0, '', '', 0, Date(0));
+
+  isEmpty() => gameId == 0;
 }

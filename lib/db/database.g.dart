@@ -128,13 +128,13 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentReview` (`createDate` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY (`createDate`, `segmentKeyId`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentTodayPrg` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `reviewCount` INTEGER NOT NULL, `reviewCreateDate` INTEGER NOT NULL, `finish` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `SegmentTodayPrg` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `type` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `reviewCount` INTEGER NOT NULL, `reviewCreateDate` INTEGER NOT NULL, `finish` INTEGER NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `mediaHash` TEXT NOT NULL, `aStart` TEXT NOT NULL, `aEnd` TEXT NOT NULL, `w` TEXT NOT NULL, `segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER NOT NULL, `time` INTEGER NOT NULL, `mediaHash` TEXT NOT NULL, `aStart` TEXT NOT NULL, `aEnd` TEXT NOT NULL, `w` TEXT NOT NULL, `segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `GameUser` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `password` TEXT NOT NULL, `nonce` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `token` TEXT NOT NULL, `tokenExpiredDate` INTEGER NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `GameUserInput` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `gameId` INTEGER NOT NULL, `gameUserId` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `input` TEXT NOT NULL, `output` TEXT NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `GameUserInput` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `gameId` INTEGER NOT NULL, `gameUserId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `input` TEXT NOT NULL, `output` TEXT NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Lock` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database
@@ -188,7 +188,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE INDEX `index_GameUserInput_createDate` ON `GameUserInput` (`createDate`)');
         await database.execute(
-            'CREATE INDEX `index_GameUserInput_gameId_gameUserId` ON `GameUserInput` (`gameId`, `gameUserId`)');
+            'CREATE INDEX `index_GameUserInput_gameId_gameUserId_time` ON `GameUserInput` (`gameId`, `gameUserId`, `time`)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -359,6 +359,7 @@ class _$GameDao extends GameDao {
             'Game',
             (Game item) => <String, Object?>{
                   'id': item.id,
+                  'time': item.time,
                   'mediaHash': item.mediaHash,
                   'aStart': item.aStart,
                   'aEnd': item.aEnd,
@@ -379,6 +380,7 @@ class _$GameDao extends GameDao {
                   'id': item.id,
                   'gameId': item.gameId,
                   'gameUserId': item.gameUserId,
+                  'time': item.time,
                   'segmentKeyId': item.segmentKeyId,
                   'classroomId': item.classroomId,
                   'contentSerial': item.contentSerial,
@@ -401,11 +403,11 @@ class _$GameDao extends GameDao {
   final InsertionAdapter<GameUserInput> _gameUserInputInsertionAdapter;
 
   @override
-  Future<Game?> getLatestOne() async {
-    return _queryAdapter.query(
-        'SELECT * FROM Game where finish=false ORDER BY createTime desc LIMIT 1',
+  Future<Game?> getOne() async {
+    return _queryAdapter.query('SELECT * FROM Game where finish=false',
         mapper: (Map<String, Object?> row) => Game(
             row['id'] as int,
+            row['time'] as int,
             row['mediaHash'] as String,
             row['aStart'] as String,
             row['aEnd'] as String,
@@ -418,6 +420,26 @@ class _$GameDao extends GameDao {
             (row['finish'] as int) != 0,
             row['createTime'] as int,
             _dateConverter.decode(row['createDate'] as int)));
+  }
+
+  @override
+  Future<void> refreshGame(
+    int gameId,
+    int time,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE Game set time=?2,finish=false where id=?1',
+        arguments: [gameId, time]);
+  }
+
+  @override
+  Future<void> refreshSegmentTodayPrg(
+    int gameId,
+    int time,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE SegmentTodayPrg set time=?2 where id=?1',
+        arguments: [gameId, time]);
   }
 
   @override
@@ -444,6 +466,7 @@ class _$GameDao extends GameDao {
     return _queryAdapter.query('SELECT * FROM Game WHERE id=?1',
         mapper: (Map<String, Object?> row) => Game(
             row['id'] as int,
+            row['time'] as int,
             row['mediaHash'] as String,
             row['aStart'] as String,
             row['aEnd'] as String,
@@ -463,11 +486,24 @@ class _$GameDao extends GameDao {
   Future<GameUserInput?> lastUserInput(
     int gameId,
     int gameUserId,
+    int time,
   ) async {
     return _queryAdapter.query(
-        'SELECT * FROM GameUserInput WHERE gameId=?1 and gameUserId=?2 order by createTime desc limit 1',
-        mapper: (Map<String, Object?> row) => GameUserInput(row['gameId'] as int, row['gameUserId'] as int, row['segmentKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['input'] as String, row['output'] as String, row['createTime'] as int, _dateConverter.decode(row['createDate'] as int), id: row['id'] as int?),
-        arguments: [gameId, gameUserId]);
+        'SELECT * FROM GameUserInput WHERE gameId=?1 and gameUserId=?2 and time=?3 order by id desc limit 1',
+        mapper: (Map<String, Object?> row) => GameUserInput(row['gameId'] as int, row['gameUserId'] as int, row['time'] as int, row['segmentKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['input'] as String, row['output'] as String, row['createTime'] as int, _dateConverter.decode(row['createDate'] as int), id: row['id'] as int?),
+        arguments: [gameId, gameUserId, time]);
+  }
+
+  @override
+  Future<List<GameUserInput>> gameUserInput(
+    int gameId,
+    int gameUserId,
+    int time,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM GameUserInput WHERE gameId=?1 and gameUserId=?2 and time=?3',
+        mapper: (Map<String, Object?> row) => GameUserInput(row['gameId'] as int, row['gameUserId'] as int, row['time'] as int, row['segmentKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['input'] as String, row['output'] as String, row['createTime'] as int, _dateConverter.decode(row['createDate'] as int), id: row['id'] as int?),
+        arguments: [gameId, gameUserId, time]);
   }
 
   @override
@@ -496,19 +532,42 @@ class _$GameDao extends GameDao {
   }
 
   @override
-  Future<List<List<String>>> submit(
+  Future<GameUserInput> submit(
+    Game game,
+    int preGameUserInputId,
+    int gameUserId,
+    String userInput,
+    List<String> obtainInput,
+    List<String> obtainOutput,
+  ) async {
+    if (database is sqflite.Transaction) {
+      return super.submit(game, preGameUserInputId, gameUserId, userInput,
+          obtainInput, obtainOutput);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<GameUserInput>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        return transactionDatabase.gameDao.submit(game, preGameUserInputId,
+            gameUserId, userInput, obtainInput, obtainOutput);
+      });
+    }
+  }
+
+  @override
+  Future<List<List<String>>> get(
     Game game,
     int gameUserId,
     String userInput,
   ) async {
     if (database is sqflite.Transaction) {
-      return super.submit(game, gameUserId, userInput);
+      return super.get(game, gameUserId, userInput);
     } else {
       return (database as sqflite.Database)
           .transaction<List<List<String>>>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        return transactionDatabase.gameDao.submit(game, gameUserId, userInput);
+        return transactionDatabase.gameDao.get(game, gameUserId, userInput);
       });
     }
   }
@@ -1054,6 +1113,7 @@ class _$ScheduleDao extends ScheduleDao {
                   'classroomId': item.classroomId,
                   'contentSerial': item.contentSerial,
                   'segmentKeyId': item.segmentKeyId,
+                  'time': item.time,
                   'type': item.type,
                   'sort': item.sort,
                   'progress': item.progress,
@@ -1217,6 +1277,7 @@ class _$ScheduleDao extends ScheduleDao {
             row['classroomId'] as int,
             row['contentSerial'] as int,
             row['segmentKeyId'] as int,
+            row['time'] as int,
             row['type'] as int,
             row['sort'] as int,
             row['progress'] as int,
@@ -1278,8 +1339,8 @@ class _$ScheduleDao extends ScheduleDao {
     Date startDate,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentReview.classroomId,Segment.contentSerial,SegmentReview.segmentKeyId,0 type,Segment.sort,0 progress,0 viewTime,SegmentReview.count reviewCount,SegmentReview.createDate reviewCreateDate,0 finish FROM SegmentReview JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId WHERE SegmentReview.classroomId=?1 AND SegmentReview.count=?2 AND SegmentReview.createDate=?3 ORDER BY Segment.sort',
-        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['classroomId'] as int, row['contentSerial'] as int, row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
+        'SELECT SegmentReview.classroomId,Segment.contentSerial,SegmentReview.segmentKeyId,0 time,0 type,Segment.sort,0 progress,0 viewTime,SegmentReview.count reviewCount,SegmentReview.createDate reviewCreateDate,0 finish FROM SegmentReview JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId WHERE SegmentReview.classroomId=?1 AND SegmentReview.count=?2 AND SegmentReview.createDate=?3 ORDER BY Segment.sort',
+        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['classroomId'] as int, row['contentSerial'] as int, row['segmentKeyId'] as int, row['time'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
         arguments: [
           classroomId,
           reviewCount,
@@ -1294,8 +1355,8 @@ class _$ScheduleDao extends ScheduleDao {
     Date now,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM ( SELECT Segment.classroomId,Segment.contentSerial,SegmentOverallPrg.segmentKeyId,0 type,Segment.sort,SegmentOverallPrg.progress progress,0 viewTime,0 reviewCount,0 reviewCreateDate,0 finish FROM SegmentOverallPrg JOIN Segment ON Segment.segmentKeyId=SegmentOverallPrg.segmentKeyId AND Segment.classroomId=?1 WHERE SegmentOverallPrg.next<=?3 AND SegmentOverallPrg.progress>=?2 ORDER BY SegmentOverallPrg.progress,Segment.sort ) Segment order by Segment.sort',
-        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['classroomId'] as int, row['contentSerial'] as int, row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
+        'SELECT * FROM ( SELECT Segment.classroomId,Segment.contentSerial,SegmentOverallPrg.segmentKeyId,0 time,0 type,Segment.sort,SegmentOverallPrg.progress progress,0 viewTime,0 reviewCount,0 reviewCreateDate,0 finish FROM SegmentOverallPrg JOIN Segment ON Segment.segmentKeyId=SegmentOverallPrg.segmentKeyId AND Segment.classroomId=?1 WHERE SegmentOverallPrg.next<=?3 AND SegmentOverallPrg.progress>=?2 ORDER BY SegmentOverallPrg.progress,Segment.sort ) Segment order by Segment.sort',
+        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['classroomId'] as int, row['contentSerial'] as int, row['segmentKeyId'] as int, row['time'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
         arguments: [classroomId, minProgress, _dateConverter.encode(now)]);
   }
 
@@ -1309,7 +1370,7 @@ class _$ScheduleDao extends ScheduleDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT Segment.classroomId,Segment.contentSerial,Segment.segmentKeyId,0 type,Segment.sort,0 progress,0 viewTime,0 reviewCount,1 reviewCreateDate,0 finish FROM Segment WHERE Segment.classroomId=?1 AND Segment.sort>=(  SELECT Segment.sort FROM Segment  WHERE Segment.contentSerial=?2  AND Segment.lessonIndex=?3  AND Segment.segmentIndex=?4) ORDER BY Segment.sort limit ?5',
-        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['classroomId'] as int, row['contentSerial'] as int, row['segmentKeyId'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['classroomId'] as int, row['contentSerial'] as int, row['segmentKeyId'] as int, row['time'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
         arguments: [
           classroomId,
           contentSerial,

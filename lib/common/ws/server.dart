@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:repeat_flutter/logic/game_server/constant.dart';
+
 import 'node.dart';
 
 import 'message.dart';
@@ -70,7 +72,7 @@ class Server<User> {
     status = ServerStatus.stopped;
     if (server != null) {
       for (final node in nodes.values) {
-        await node.webSocket.close();
+        await node.close();
       }
       await server!.close();
       nodes.clear();
@@ -96,14 +98,13 @@ class Server<User> {
     final hashCode = socket.hashCode;
     final node = Node(socket, user);
     if (user == null) {
-      Request req = Request();
-      req.path = "/api/kick";
+      Request req = Request(path: Path.kick);
       node.send(req, true);
-      node.webSocket.close();
+      node.close();
       return;
     }
     nodes[hashCode] = node;
-    node.tryCloseAfterTimeout();
+    node.startCloseTimer();
     socket.listen(
       (message) async {
         try {
@@ -115,7 +116,7 @@ class Server<User> {
             req.headers[Header.wsHashCode.name] = hashCode.toString();
             responseHandler(controllers, msg, socket);
           }
-          node.tryCloseAfterTimeout();
+          node.resetCloseTime();
         } catch (e) {
           logger ?? ('Error handling WebSocket message: $e');
         }

@@ -1,5 +1,4 @@
-//export const url: 'ws://' + window.location.hostname + ':' + window.location.port,
-export const url = 'ws://127.0.0.1:40321';
+export const url = `ws://${window.location.hostname}:${window.location.port}`;
 
 export const MessageType = {
     REQUEST: 0,
@@ -23,9 +22,9 @@ export class Request {
 
     static fromJson(json: Partial<Request>): Request {
         return new Request({
-            path: json.path || '',
+            path: json.path ?? '',
             headers: json.headers || new Map(),
-            data: json.data || '',
+            data: json.data ?? '',
         });
     }
 }
@@ -46,9 +45,9 @@ export class Response {
     static fromJson(json: Partial<Response>): Response {
         return new Response({
             headers: json.headers || new Map(),
-            data: json.data || '',
-            error: json.error || '',
-            status: json.status || 200,
+            data: json.data ?? '',
+            error: json.error ?? '',
+            status: json.status ?? 200,
         });
     }
 }
@@ -89,12 +88,14 @@ export class Message {
 export class Node {
     sendId: number;
     sendId2Res: Map<number, { resolve: (value: any) => void; reject: (reason?: any) => void }>;
+    sendId2Log: Map<number, boolean>;
     webSocket: WebSocket;
     age: number;
 
     constructor(webSocket: WebSocket, age: number) {
         this.sendId = 0;
         this.sendId2Res = new Map();
+        this.sendId2Log = new Map();
         this.webSocket = webSocket;
         this.age = age;
     }
@@ -108,9 +109,13 @@ export class Node {
             completer.resolve(msg.response);
             this.sendId2Res.delete(msg.id);
         }
+        if (this.sendId2Log.get(msg.id)) {
+            console.log('[ws] recv :', msg);
+            this.sendId2Log.delete(msg.id);
+        }
     }
 
-    async send(req: Request): Promise<Response> {
+    async send(req: Request, log: boolean = true): Promise<Response> {
         this.sendId++;
         const msg = new Message({
             id: this.sendId,
@@ -118,14 +123,18 @@ export class Node {
             type: MessageType.REQUEST,
             request: req,
         });
-        console.log('[ws] send :', msg);
+        if (log) {
+            console.log('[ws] send :', msg);
+        }
         this.webSocket.send(JSON.stringify(msg));
 
         const completer = this._createCompleter();
         this.sendId2Res.set(this.sendId, completer);
+        this.sendId2Log.set(this.sendId, log);
 
         const timeout = setTimeout(() => {
             if (this.sendId2Res.delete(this.sendId)) {
+                this.sendId2Log.delete(this.sendId);
                 const headers = new Map<string, string>();
                 headers.set(Header.age, `${this.age}`);
                 completer.resolve(new Response({headers: headers, error: 'timeout', status: 504}));
@@ -137,6 +146,7 @@ export class Node {
         } finally {
             clearTimeout(timeout);
             this.sendId2Res.delete(this.sendId);
+            this.sendId2Log.delete(this.sendId);
         }
     }
 
@@ -185,12 +195,12 @@ type ClientStatusRelationship = Map<
 
 const clientStatusProperties: ClientStatusRelationship = new Map();
 
-function add(to: number, incLife: boolean, from: number[]): void {
+function add(to: number, incAge: boolean, from: number[]): void {
     const froms = new Map<number, boolean>();
     for (const f of from) {
         froms.set(f, true);
     }
-    clientStatusProperties.set(to, {to, incLife: incLife, from: froms});
+    clientStatusProperties.set(to, {to, incLife: incAge, from: froms});
 }
 
 
@@ -241,15 +251,13 @@ class Client {
         let age = -1;
         try {
             const res = await this.heartSender();
-            age = parseInt(res.headers.get(Header.age) || '-1');
+            age = parseInt(res.headers.get(Header.age) ?? '-1');
             if (res.status === 200 && res.error === '') {
                 this.heart = setTimeout(() => {
                     this._loopHeart();
                 }, 2000);
-            } else {
-                if (age === this.age) {
-                    this.stop(true, 'heart error:' + res.error);
-                }
+            } else if (age === this.age) {
+                this.stop(true, 'heart error:' + res.error);
             }
         } catch (e) {
             if (age === this.age) {
@@ -321,15 +329,17 @@ class Client {
             try {
                 const message = event.data;
                 const msg = Message.fromJson(JSON.parse(message));
-                console.log('[ws] recv :', msg);
                 if (msg.type === MessageType.RESPONSE) {
                     if (msg.age !== this.age) {
                         return;
                     }
                     this.node!.receive(msg);
+
                 } else if (msg.type === MessageType.REQUEST) {
+                    console.log('[ws] recv :', msg);
                     await this._responseHandler(this.controllers, msg, socket);
                 } else {
+                    console.log('[ws] recv :', msg);
                     this.logger(`Unknown message type: ${msg.type}`);
                 }
             } catch (e) {
@@ -370,7 +380,7 @@ class Client {
     private setStatus(toStatus: number, arg: Arg | null) {
         const toStatusProperties = clientStatusProperties.get(toStatus);
         if (toStatusProperties === undefined) throw new Error(`Unknown status: ${toStatus}`);
-        const from = toStatusProperties!.from;
+        const from = toStatusProperties.from;
         if (!from.get(this.status)) {
             this.logger(`[ws] status error : cant from ${ClientStatusName.get(this.status)} to ${ClientStatusName.get(toStatus)} ${arg?.reason}`);
             return;

@@ -44,7 +44,7 @@ class GameLogic {
     return ret;
   }
 
-  static String replaceChar = PlaceholderToken.replace;
+  static String replaceChar = PlaceholderToken.using;
 
   static String processChar(String original, String input) {
     List<String> originalChars = original.split('');
