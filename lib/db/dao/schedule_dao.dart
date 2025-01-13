@@ -311,6 +311,7 @@ abstract class ScheduleDao {
       " Segment.classroomId"
       ",Segment.contentSerial"
       ",Segment.segmentKeyId"
+      ",0 time"
       ",0 type"
       ",Segment.sort"
       ",0 progress"
