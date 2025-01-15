@@ -65,8 +65,8 @@ Future<message.Response?> submit(message.Request req, GameUser? user) async {
   }
   List<String> input = [];
   List<String> output = [];
-  GameUserInput? gameUserInput = await Db().db.gameDao.submit(game, reqBody.prevId, user.id!, reqBody.input, input, output);
-  if (gameUserInput == null) {
+  GameUserInput gameUserInput = await Db().db.gameDao.submit(game, reqBody.prevId, user.id!, reqBody.input, input, output);
+  if (gameUserInput.isEmpty()) {
     return message.Response(error: GameServerError.gameSyncError.name);
   }
   final res = SubmitRes(gameUserInput.id!, input, output);

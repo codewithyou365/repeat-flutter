@@ -5,12 +5,23 @@ import 'dart:convert';
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/common/list_util.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/game_user_input.dart';
 import 'package:repeat_flutter/logic/game_server/game_logic.dart';
 
 @dao
 abstract class GameDao {
+  @Query("SELECT CAST(value as INTEGER) FROM CrKv WHERE classroomId=:classroomId and k=:k")
+  Future<int?> intKv(int classroomId, CrK k);
+
+  @Query("SELECT value FROM CrKv WHERE classroomId=:classroomId and k=:k")
+  Future<String?> stringKv(int classroomId, CrK k);
+
+  @Query('UPDATE CrKv SET value=:value WHERE classroomId=:classroomId and k=:k')
+  Future<void> updateKv(int classroomId, CrK k, String value);
+
   @Query('SELECT * FROM Game where finish=false')
   Future<Game?> getOne();
 
@@ -59,7 +70,14 @@ abstract class GameDao {
   }
 
   @transaction
-  Future<GameUserInput> submit(Game game, int preGameUserInputId, int gameUserId, String userInput, List<String> obtainInput, List<String> obtainOutput) async {
+  Future<GameUserInput> submit(
+    Game game,
+    int preGameUserInputId,
+    int gameUserId,
+    String userInput,
+    List<String> obtainInput,
+    List<String> obtainOutput,
+  ) async {
     GameUserInput? gameUserInput = await lastUserInput(game.id, gameUserId, game.time);
     if (gameUserInput == null && preGameUserInputId != 0) {
       return GameUserInput.empty();
@@ -68,11 +86,17 @@ abstract class GameDao {
       return GameUserInput.empty();
     }
     List<String> prevOutput = [];
+    List<String> input = [];
     if (gameUserInput != null) {
       prevOutput = ListUtil.toList(gameUserInput.output);
+    } else {
+      int typingGame = await intKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame) ?? 0;
+      if (typingGame == 1) {
+        prevOutput = GameLogic.processWord(game.w, game.w.replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), ''), obtainOutput, []);
+      }
     }
     final now = DateTime.now();
-    List<String> input = GameLogic.processWord(game.w, userInput, obtainOutput, prevOutput);
+    input = GameLogic.processWord(game.w, userInput, obtainOutput, prevOutput);
     await insertGameUserInput(GameUserInput(
       game.id,
       gameUserId,
@@ -93,32 +117,5 @@ abstract class GameDao {
       return GameUserInput.empty();
     }
     return ret;
-  }
-
-  @transaction
-  Future<List<List<String>>> get(Game game, int gameUserId, String userInput) async {
-    GameUserInput? gameUserInput = await lastUserInput(game.id, gameUserId, game.time);
-    List<String> prevOutput = [];
-    if (gameUserInput != null) {
-      prevOutput = ListUtil.toList(gameUserInput.output);
-    }
-    final now = DateTime.now();
-    List<String> output = [];
-    List<String> input = GameLogic.processWord(game.w, userInput, output, prevOutput);
-    insertGameUserInput(GameUserInput(
-      game.id,
-      gameUserId,
-      game.time,
-      game.segmentKeyId,
-      game.classroomId,
-      game.contentSerial,
-      game.lessonIndex,
-      game.segmentIndex,
-      jsonEncode(input),
-      jsonEncode(output),
-      now.millisecondsSinceEpoch,
-      Date.from(now),
-    ));
-    return [input, output];
   }
 }

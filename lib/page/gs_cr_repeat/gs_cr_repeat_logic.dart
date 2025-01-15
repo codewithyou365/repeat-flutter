@@ -10,6 +10,7 @@ import 'package:repeat_flutter/common/ws/message.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
@@ -71,6 +72,8 @@ class GsCrRepeatLogic extends GetxController {
     state.step = RepeatStep.recall;
     setNeedToPlayMedia(true);
     state.fakeKnow = 0;
+    var ignoringPunctuation = await Db().db.scheduleDao.intKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame) ?? 0;
+    state.ignoringPunctuation.value = ignoringPunctuation == 1;
     await setCurrentLearnContentAndUpdateView();
   }
 
@@ -507,7 +510,7 @@ class GsCrRepeatLogic extends GetxController {
       Snackbar.show('Error getting LAN IP : $e');
       return;
     }
-    GsCrRepeatViewBasic.showGameAddress(context, state.gameAddress, state.segmentTodayPrg.id!);
+    GsCrRepeatViewBasic.showGameAddress(context, this);
   }
 
   tryRefreshGame() async {
@@ -535,6 +538,11 @@ class GsCrRepeatLogic extends GetxController {
     );
     await Db().db.gameDao.tryInsertGame(game);
     server.server.broadcast(Request(path: Path.refreshGame, data: {"id": stp.id, "time": stp.time}));
+  }
+
+  setIgnoringPunctuation(bool ignorePunctuation) {
+    state.ignoringPunctuation.value = ignorePunctuation;
+    Db().db.scheduleDao.insertKv(CrKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame, ignorePunctuation ? '1' : '0'));
   }
 
   openEditor() {

@@ -403,6 +403,39 @@ class _$GameDao extends GameDao {
   final InsertionAdapter<GameUserInput> _gameUserInputInsertionAdapter;
 
   @override
+  Future<int?> intKv(
+    int classroomId,
+    CrK k,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT CAST(value as INTEGER) FROM CrKv WHERE classroomId=?1 and k=?2',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [classroomId, _crKConverter.encode(k)]);
+  }
+
+  @override
+  Future<String?> stringKv(
+    int classroomId,
+    CrK k,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT value FROM CrKv WHERE classroomId=?1 and k=?2',
+        mapper: (Map<String, Object?> row) => row.values.first as String,
+        arguments: [classroomId, _crKConverter.encode(k)]);
+  }
+
+  @override
+  Future<void> updateKv(
+    int classroomId,
+    CrK k,
+    String value,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE CrKv SET value=?3 WHERE classroomId=?1 and k=?2',
+        arguments: [classroomId, _crKConverter.encode(k), value]);
+  }
+
+  @override
   Future<Game?> getOne() async {
     return _queryAdapter.query('SELECT * FROM Game where finish=false',
         mapper: (Map<String, Object?> row) => Game(
@@ -550,24 +583,6 @@ class _$GameDao extends GameDao {
           ..database = transaction;
         return transactionDatabase.gameDao.submit(game, preGameUserInputId,
             gameUserId, userInput, obtainInput, obtainOutput);
-      });
-    }
-  }
-
-  @override
-  Future<List<List<String>>> get(
-    Game game,
-    int gameUserId,
-    String userInput,
-  ) async {
-    if (database is sqflite.Transaction) {
-      return super.get(game, gameUserId, userInput);
-    } else {
-      return (database as sqflite.Database)
-          .transaction<List<List<String>>>((transaction) async {
-        final transactionDatabase = _$AppDatabase(changeListener)
-          ..database = transaction;
-        return transactionDatabase.gameDao.get(game, gameUserId, userInput);
       });
     }
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -280,8 +281,11 @@ class GsCrRepeatViewBasic {
     );
   }
 
-  static void showGameAddress(BuildContext context, List<String> address, int id) {
+  static void showGameAddress(BuildContext context, GsCrRepeatLogic logic) {
     final Size screenSize = MediaQuery.of(context).size;
+    var state = logic.state;
+    List<String> address = state.gameAddress;
+    int id = state.segmentTodayPrg.id!;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -306,6 +310,22 @@ class GsCrRepeatViewBasic {
                           ],
                         ),
                       ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Card(
+                    child: ListTile(
+                      title: Text(I18nKey.settings.tr),
+                      subtitle: Padding(
+                          padding: EdgeInsets.all(4.w),
+                          child: Obx(() {
+                            return Switch(
+                              value: state.ignoringPunctuation.value,
+                              onChanged: logic.setIgnoringPunctuation,
+                            );
+                          })),
                     ),
                   ),
                 ),
