@@ -7,7 +7,7 @@
     </template>
   </nut-navbar>
   <reconnect/>
-  <div style="margin: 8px">
+  <div class="container">
     <div v-for="(item, index) in record" :key="index" class="history-item">
       <div v-for="(element, subIndex) in item.input" :key="subIndex" class="history-word">
         <div v-for="(char, subCharIndex) in element" :key="subCharIndex" class="history-char">
@@ -22,6 +22,7 @@
     </div>
     <nut-input
         v-model="gameInput"
+        :disabled="!inputEnable"
         clearable
         @keyup.enter="onGameInput"
         type="text"/>
@@ -50,7 +51,7 @@ type History = Array<
 import reconnect from '../component/reconnect.vue';
 import {Setting, Loading1} from '@nutui/icons-vue';
 import {useI18n} from 'vue-i18n';
-import {onBeforeUnmount, onMounted, ref, nextTick} from 'vue';
+import {onBeforeUnmount, onMounted, ref, nextTick, computed} from 'vue';
 import {client, ClientStatus, Request} from "../api/ws.ts";
 import {showDialog} from "@nutui/nutui";
 
@@ -61,6 +62,7 @@ const overlayVisible = ref(false);
 const {t} = useI18n();
 let refreshGame: RefreshGameType;
 let lastGameUserId: number = 0;
+const lastOutput = ref<Array<string>>([]);
 import {useRoute, useRouter} from 'vue-router';
 
 const route = useRoute();
@@ -87,30 +89,36 @@ onBeforeUnmount(() => {
 });
 
 const refresh = async (refreshGame: RefreshGameType) => {
-  overlayVisible.value = true;
-  const data: GameUserHistoryReq = {
-    gameId: refreshGame.id,
-    time: refreshGame.time,
-  };
-  lastGameUserId = 0;
-  const req = new Request({path: Path.gameUserHistory, data: data});
-  const res0 = await client.node!.send(req)
-  const res = GameUserHistoryRes.from(res0.data);
-  record.value.splice(0, record.value.length);
-  for (const element of res.list) {
-    record.value.push({
+  try {
+    overlayVisible.value = true;
+    const data: GameUserHistoryReq = {
+      gameId: refreshGame.id,
+      time: refreshGame.time,
+    };
+
+    const req = new Request({path: Path.gameUserHistory, data});
+    const res0 = await client.node!.send(req);
+    const res = GameUserHistoryRes.from(res0.data);
+
+    record.value = res.list.map((element) => ({
       input: element.input,
       output: element.output,
+    }));
+
+    lastGameUserId = res.list.length ? res.list[res.list.length - 1].id : 0;
+    lastOutput.value = res.list.length ? res.list[res.list.length - 1].output : [];
+
+    await router.replace({
+      query: {
+        id: refreshGame.id,
+        time: refreshGame.time,
+      },
     });
-    lastGameUserId = element.id;
+  } catch (error) {
+    console.error('Failed to refresh game:', error);
+  } finally {
+    overlayVisible.value = false;
   }
-  await router.replace({
-    query: {
-      id: refreshGame.id,
-      time: refreshGame.time,
-    },
-  });
-  overlayVisible.value = false;
 }
 
 const onCancel = () => {
@@ -144,13 +152,22 @@ const onGameInput = async () => {
     input: res.input,
     output: res.output,
   });
+  lastOutput.value = res.output;
   await nextTick(() => {
     window.scrollTo(0, document.body.scrollHeight);
   });
   gameInput.value = '';
   overlayVisible.value = false;
 };
-
+const inputEnable = computed(() => {
+  console.log(lastOutput.value.join(''));
+  console.log(lastOutput.value.join('').indexOf(replaceChar));
+  const outputStr = lastOutput.value.join('');
+  if (outputStr.length === 0) {
+    return true;
+  }
+  return outputStr.indexOf(replaceChar) !== -1;
+});
 const finish = (word: string) => {
   for (const element of word) {
     if (element === replaceChar) {
@@ -162,6 +179,10 @@ const finish = (word: string) => {
 const onClickBack = () => history.back();
 </script>
 <style>
+.container {
+  margin: 8px;
+}
+
 :root {
   --history-background-color: wheat;
   --history-finish-color: blue;
