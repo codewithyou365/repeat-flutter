@@ -490,10 +490,6 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   openGameMode(BuildContext context) async {
-    if (state.step != RepeatStep.recall) {
-      Snackbar.show(I18nKey.labelGameStartNeedRecallStop.tr);
-      return;
-    }
     if (state.gameMode == false) {
       state.gamePort = await server.start();
       state.gameMode = true;
