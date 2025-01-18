@@ -28,6 +28,9 @@ abstract class GameDao {
   @Query('UPDATE Game set time=:time,finish=false where id=:gameId')
   Future<void> refreshGame(int gameId, int time);
 
+  @Query('UPDATE Game set aStart=:aStart,aEnd=:aEnd,w=:w where id=:gameId')
+  Future<void> refreshGameContent(int gameId, String aStart, String aEnd, String w);
+
   @Query('UPDATE SegmentTodayPrg set time=:time where id=:gameId')
   Future<void> refreshSegmentTodayPrg(int gameId, int time);
 
@@ -52,6 +55,9 @@ abstract class GameDao {
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertGameUserInput(GameUserInput gameUserInput);
 
+  @Query('DELETE FROM GameUserInput WHERE gameId=:gameId and gameUserId=:gameUserId and time=:time')
+  Future<void> clearGameUser(int gameId, int gameUserId, int time);
+
   @transaction
   Future<Game> tryInsertGame(Game game) async {
     var ids = await getAllEnableGameIds();
@@ -67,6 +73,17 @@ abstract class GameDao {
     }
     await insertGame(game);
     return game;
+  }
+
+  @transaction
+  Future<void> clearGame(int gameId, int userId, String aStart, String aEnd, String w) async {
+    var game = await one(gameId);
+    if (game == null) {
+      return;
+    }
+
+    await clearGameUser(game.id, userId, game.time);
+    await refreshGameContent(game.id, aStart, aEnd, w);
   }
 
   @transaction

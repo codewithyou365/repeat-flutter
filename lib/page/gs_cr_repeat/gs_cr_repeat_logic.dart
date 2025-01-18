@@ -318,9 +318,9 @@ class GsCrRepeatLogic extends GetxController {
       );
       return null;
     }
+    bool ret = true;
     if (learnSegment.segmentKeyId == oldSegmentKeyId && fromPn) {
-      update([GsCrRepeatLogic.id]);
-      return false;
+      ret = false;
     }
     state.segment = learnSegment;
     state.segmentTodayPrg = curr;
@@ -328,7 +328,7 @@ class GsCrRepeatLogic extends GetxController {
       state.currSegment = learnSegment;
     }
     update([GsCrRepeatLogic.id]);
-    return true;
+    return ret;
   }
 
   List<MediaSegment> getSegments() {
@@ -588,6 +588,10 @@ class GsCrRepeatLogic extends GetxController {
         }
       }
     }
+    await refreshView();
+  }
+
+  refreshView() async {
     if (state.justView) {
       await setCurrentLearnContentAndUpdateView(
         index: state.justViewIndex,

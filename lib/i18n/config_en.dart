@@ -127,6 +127,9 @@ class ConfigEn extends Config {
     put(I18nKey.labelFrom, "From");
     put(I18nKey.labelLesson, "Lesson");
     put(I18nKey.labelSegment, "Segment");
+    put(I18nKey.labelIgnorePunctuation, "Ignore punctuation");
+    put(I18nKey.labelEditInGame, "Enable edit");
+    put(I18nKey.labelGameId, "Game ID");
     put(I18nKey.btnStart, "Start");
     put(I18nKey.btnAddSchedule, "Add Schedule");
     put(I18nKey.btnConfigSettings, "Config Settings");

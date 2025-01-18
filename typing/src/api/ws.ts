@@ -187,7 +187,7 @@ const ClientStatusName: Map<number, string> = new Map<number, string>([
 type ClientStatusRelationship = Map<
     number,
     {
-        incLife: boolean;
+        incAge: boolean;
         to: number;
         from: Map<number, boolean>;
     }
@@ -200,7 +200,7 @@ function add(to: number, incAge: boolean, from: number[]): void {
     for (const f of from) {
         froms.set(f, true);
     }
-    clientStatusProperties.set(to, {to, incLife: incAge, from: froms});
+    clientStatusProperties.set(to, {to, incAge: incAge, from: froms});
 }
 
 
@@ -385,7 +385,7 @@ class Client {
             this.logger(`[ws] status error : cant from ${ClientStatusName.get(this.status)} to ${ClientStatusName.get(toStatus)} ${arg?.reason}`);
             return;
         }
-        if (toStatusProperties.incLife) {
+        if (toStatusProperties.incAge) {
             this.age++;
         }
         this.logger(`[ws] status from ${ClientStatusName.get(this.status)} to ${ClientStatusName.get(toStatus)} ${arg?.reason}`);

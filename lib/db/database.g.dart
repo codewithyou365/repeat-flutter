@@ -466,6 +466,18 @@ class _$GameDao extends GameDao {
   }
 
   @override
+  Future<void> refreshGameContent(
+    int gameId,
+    String aStart,
+    String aEnd,
+    String w,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE Game set aStart=?2,aEnd=?3,w=?4 where id=?1',
+        arguments: [gameId, aStart, aEnd, w]);
+  }
+
+  @override
   Future<void> refreshSegmentTodayPrg(
     int gameId,
     int time,
@@ -540,6 +552,17 @@ class _$GameDao extends GameDao {
   }
 
   @override
+  Future<void> clearGameUser(
+    int gameId,
+    int gameUserId,
+    int time,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM GameUserInput WHERE gameId=?1 and gameUserId=?2 and time=?3',
+        arguments: [gameId, gameUserId, time]);
+  }
+
+  @override
   Future<void> insertGame(Game game) async {
     await _gameInsertionAdapter.insert(game, OnConflictStrategy.fail);
   }
@@ -560,6 +583,27 @@ class _$GameDao extends GameDao {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         return transactionDatabase.gameDao.tryInsertGame(game);
+      });
+    }
+  }
+
+  @override
+  Future<void> clearGame(
+    int gameId,
+    int userId,
+    String aStart,
+    String aEnd,
+    String w,
+  ) async {
+    if (database is sqflite.Transaction) {
+      await super.clearGame(gameId, userId, aStart, aEnd, w);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        await transactionDatabase.gameDao
+            .clearGame(gameId, userId, aStart, aEnd, w);
       });
     }
   }

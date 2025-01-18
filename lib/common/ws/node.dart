@@ -45,16 +45,21 @@ class Node<User> {
     }
   }
 
-  close() async {
+  cancelTimer() {
     closeTimer?.cancel();
     closeTimer = null;
+  }
+
+  stop() async {
+    cancelTimer();
     await webSocket.close();
   }
 
-  startCloseTimer() {
+  void start() {
+    cancelTimer();
     closeTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       if (closeTime.isBefore(DateTime.now())) {
-        close();
+        stop();
       }
     });
   }

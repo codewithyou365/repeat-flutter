@@ -128,6 +128,9 @@ class ConfigZh extends Config {
     put(I18nKey.labelFrom, "开始于");
     put(I18nKey.labelLesson, "节");
     put(I18nKey.labelSegment, "段");
+    put(I18nKey.labelIgnorePunctuation, "忽略标点符号");
+    put(I18nKey.labelEditInGame, "启用编辑");
+    put(I18nKey.labelGameId, "游戏ID");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");
     put(I18nKey.btnConfigSettings, "配置设置");

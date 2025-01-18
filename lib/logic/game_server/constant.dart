@@ -4,6 +4,8 @@ enum GameServerError {
   gameNotFound,
   gameSyncError,
   gameEntryCodeError,
+  contentNotFound,
+  editModeDisabled,
 }
 
 class GameConstant {
@@ -24,4 +26,7 @@ class Path {
   static const heart = '/api/heart';
   static const gameUserHistory = '/api/gameUserHistory';
   static const submit = '/api/submit';
+  static const getEditStatus = '/api/getEditStatus';
+  static const getSegmentContent = '/api/getSegmentContent';
+  static const setSegmentContent = '/api/setSegmentContent';
 }

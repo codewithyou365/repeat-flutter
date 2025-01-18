@@ -28,8 +28,7 @@ class RepeatDocEditHelp {
     double ratio, {
     SegmentEditHelpOutArg? out,
   }) async {
-    var indexPath = DocPath.getRelativeIndexPath(ret.contentSerial);
-    Map<String, dynamic>? map = await RepeatDoc.toJsonMap(indexPath);
+    Map<String, dynamic>? map = await RepeatDocHelp.getAndCacheJsonQa(ret.contentSerial);
     if (map == null) {
       return false;
     }
@@ -39,7 +38,8 @@ class RepeatDocEditHelp {
     Map<String, dynamic> lesson = Map<String, dynamic>.from(lessons[ret.lessonIndex]);
     lessons[ret.lessonIndex] = lesson;
     lesson['videoMaskRatio'] = "$ratio";
-    RepeatDoc.writeFile(indexPath, map);
+    var indexPath = DocPath.getRelativeIndexPath(ret.contentSerial);
+    await RepeatDoc.writeFile(indexPath, map);
     RepeatDocHelp.setVideoMaskRatio(ret.contentSerial, ret.lessonIndex, ret.mediaExtension, ratio);
     return true;
   }
@@ -53,7 +53,7 @@ class RepeatDocEditHelp {
     SegmentEditHelpOutArg? out,
   }) async {
     var indexPath = DocPath.getRelativeIndexPath(ret.contentSerial);
-    Map<String, dynamic>? map = await RepeatDoc.toJsonMap(indexPath);
+    Map<String, dynamic>? map = await RepeatDocHelp.getAndCacheJsonQa(ret.contentSerial);
     if (map == null) {
       return false;
     }
@@ -197,7 +197,7 @@ class RepeatDocEditHelp {
       default:
         return false;
     }
-    RepeatDoc.writeFile(indexPath, map);
+    await RepeatDoc.writeFile(indexPath, map);
     RepeatDocHelp.clear();
     return true;
   }

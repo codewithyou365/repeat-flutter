@@ -9,6 +9,9 @@ export const Path = {
     entryGame: '/api/entryGame',
     gameUserHistory: '/api/gameUserHistory',
     submit: '/api/submit',
+    getEditStatus: '/api/getEditStatus',
+    getSegmentContent: '/api/getSegmentContent',
+    setSegmentContent: '/api/setSegmentContent',
 
 }
 
@@ -83,4 +86,51 @@ export class SubmitRes {
     }
 }
 
+
+export class GetSegmentContentReq {
+    gameId: number;
+
+    constructor() {
+        this.gameId = 0;
+    }
+
+    static from(other: any): GetSegmentContentReq {
+        const ret = new GetSegmentContentReq();
+        ret.gameId = other.gameId || 0;
+        return ret;
+    }
+}
+
+
+export class GetSegmentContentRes {
+    content: string;
+
+    constructor() {
+        this.content = '';
+    }
+
+    static from(other: any): GetSegmentContentRes {
+        const ret = new GetSegmentContentRes();
+        ret.content = other.content || 0;
+        return ret;
+    }
+}
+
+
+export class SetSegmentContentReq {
+    gameId: number;
+    content: string;
+
+    constructor() {
+        this.gameId = 0;
+        this.content = '';
+    }
+
+    static from(other: any): SetSegmentContentReq {
+        const ret = new SetSegmentContentReq();
+        ret.gameId = other.gameId || 0;
+        ret.content = other.content || 0;
+        return ret;
+    }
+}
 

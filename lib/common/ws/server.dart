@@ -31,7 +31,7 @@ class Server<User> {
         if (WebSocketTransformer.isUpgradeRequest(request)) {
           User? user = await auth(request);
           WebSocket socket = await WebSocketTransformer.upgrade(request);
-          handleWebSocket(socket, user);
+          await handleWebSocket(socket, user);
         } else {
           if (cors) {
             request.response.headers
@@ -71,11 +71,8 @@ class Server<User> {
   Future<void> stop() async {
     status = ServerStatus.stopped;
     if (server != null) {
-      for (final node in nodes.values) {
-        await node.close();
-      }
+      await removeAllNode();
       await server!.close();
-      nodes.clear();
       logger ?? ('HTTP server stopped');
       server = null;
     }
@@ -94,17 +91,17 @@ class Server<User> {
     await Future.wait(futures);
   }
 
-  void handleWebSocket(WebSocket socket, User? user) {
+  Future<void> handleWebSocket(WebSocket socket, User? user) async {
     final hashCode = socket.hashCode;
+    await removeNode(hashCode);
     final node = Node(socket, user);
     if (user == null) {
       Request req = Request(path: Path.kick);
       node.send(req, true);
-      node.close();
+      node.stop();
       return;
     }
-    nodes[hashCode] = node;
-    node.startCloseTimer();
+    addNode(hashCode, node);
     socket.listen(
       (message) async {
         try {
@@ -116,19 +113,37 @@ class Server<User> {
             req.headers[Header.wsHashCode.name] = hashCode.toString();
             responseHandler(controllers, msg, socket);
           }
-          node.resetCloseTime();
         } catch (e) {
           logger ?? ('Error handling WebSocket message: $e');
+        } finally {
+          node.resetCloseTime();
         }
       },
       onDone: () {
-        nodes.remove(hashCode);
+        removeNode(hashCode);
         logger ?? ('Client disconnected: $hashCode');
       },
       onError: (error) {
-        nodes.remove(hashCode);
+        removeNode(hashCode);
         logger ?? ('Client disconnected: $hashCode. Error: $error');
       },
     );
+  }
+
+  Future<void> removeAllNode() async {
+    for (final node in nodes.values) {
+      await node.stop();
+    }
+    nodes.clear();
+  }
+
+  Future<void> removeNode(int hashCode) async {
+    final n = nodes.remove(hashCode);
+    await n?.stop();
+  }
+
+  void addNode(int hashCode, Node<User> node) {
+    nodes[hashCode] = node;
+    node.start();
   }
 }

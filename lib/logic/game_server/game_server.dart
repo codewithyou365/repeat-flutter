@@ -8,6 +8,9 @@ import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
+import 'package:repeat_flutter/logic/game_server/controller/get_edit_status.dart';
+import 'package:repeat_flutter/logic/game_server/controller/get_segment_content.dart';
+import 'package:repeat_flutter/logic/game_server/controller/set_segment_content.dart';
 import 'controller/heart.dart';
 import 'controller/game_user_history.dart';
 import 'controller/entry_game.dart';
@@ -31,6 +34,9 @@ class GameServer {
       server.controllers[Path.heart] = (request) => withGameUser(request, heart);
       server.controllers[Path.gameUserHistory] = (request) => withGameUser(request, gameUserHistory);
       server.controllers[Path.submit] = (request) => withGameUser(request, submit);
+      server.controllers[Path.getEditStatus] = (request) => withGameUser(request, getEditStatus);
+      server.controllers[Path.getSegmentContent] = (request) => withGameUser(request, getSegmentContent);
+      server.controllers[Path.setSegmentContent] = (request) => withGameUserAndServer(request, setSegmentContent);
     } catch (e) {
       Snackbar.show('Error starting HTTP service: $e');
       return 0;
@@ -104,21 +110,25 @@ class GameServer {
     return user;
   }
 
-  withGameUser(message.Request req, Future<message.Response?> Function(message.Request req, GameUser? user) handle) {
+  GameUser? getGameUser(message.Request req) {
     String? hashCodeStr = req.headers[Header.wsHashCode.name];
     if (hashCodeStr == null) {
-      return handle(req, null);
+      return null;
     }
     int hashCodeInt = int.parse(hashCodeStr);
     Node<GameUser>? node = server.nodes[hashCodeInt];
     if (node == null) {
-      return handle(req, null);
+      return null;
     }
     GameUser? user = node.user;
-    if (user == null) {
-      return handle(req, null);
-    } else {
-      return handle(req, user);
-    }
+    return user;
+  }
+
+  withGameUser(message.Request req, Future<message.Response?> Function(message.Request req, GameUser? user) handle) {
+    return handle(req, getGameUser(req));
+  }
+
+  withGameUserAndServer(message.Request req, Future<message.Response?> Function(message.Request req, GameUser? user, Server<GameUser> server) handle) {
+    return handle(req, getGameUser(req), server);
   }
 }

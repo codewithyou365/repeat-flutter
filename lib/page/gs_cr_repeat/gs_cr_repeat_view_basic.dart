@@ -6,6 +6,7 @@ import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 import 'package:repeat_flutter/widget/player_bar/video_mask.dart';
+import 'package:repeat_flutter/widget/row/row_widget.dart';
 
 import 'gs_cr_repeat_logic.dart';
 import 'gs_cr_repeat_state.dart';
@@ -297,38 +298,22 @@ class GsCrRepeatViewBasic {
             padding: EdgeInsets.symmetric(horizontal: 10.0.w, vertical: 20.0),
             child: ListView(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Card(
-                    child: ListTile(
-                      title: Text(I18nKey.settings.tr),
-                      subtitle: Padding(
-                        padding: EdgeInsets.all(4.w),
-                        child: Row(
-                          children: [
-                            Text("Game ID: ${id}"),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                RowWidget.buildText(
+                  I18nKey.labelGameId.tr,
+                  "$id",
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Card(
-                    child: ListTile(
-                      title: Text(I18nKey.settings.tr),
-                      subtitle: Padding(
-                          padding: EdgeInsets.all(4.w),
-                          child: Obx(() {
-                            return Switch(
-                              value: state.ignoringPunctuation.value,
-                              onChanged: logic.setIgnoringPunctuation,
-                            );
-                          })),
-                    ),
-                  ),
+                const Divider(color: Colors.grey),
+                RowWidget.buildSwitch(
+                  I18nKey.labelIgnorePunctuation.tr,
+                  state.ignoringPunctuation,
+                  logic.setIgnoringPunctuation,
                 ),
+                const Divider(color: Colors.grey),
+                RowWidget.buildSwitch(
+                  I18nKey.labelEditInGame.tr,
+                  state.editInGame,
+                ),
+                const Divider(color: Colors.grey),
                 ...List.generate(
                   address.length,
                   (index) => Padding(

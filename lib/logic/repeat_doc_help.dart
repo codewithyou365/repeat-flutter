@@ -10,6 +10,7 @@ import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 class RepeatDocHelp {
+  static Map<String, Map<String, dynamic>> indexDocPathToJsonQa = {};
   static Map<String, RepeatDoc> indexDocPathToQa = {};
 
   static Map<String, double?> mediaDocPathToVideoMaskRatio = {};
@@ -21,6 +22,7 @@ class RepeatDocHelp {
   static Map<int, SegmentContent> scheduleKeyToLearnSegment = {};
 
   static clear() {
+    indexDocPathToJsonQa = {};
     indexDocPathToQa = {};
     mediaDocPathToVideoMaskRatio = {};
     mediaDocPathToAnswerMediaSegments = {};
@@ -70,7 +72,7 @@ class RepeatDocHelp {
     }
     var ret = SegmentContent.from(retInDb);
     ret.k = getKey(ret.contentName, ret.lessonIndex, ret.segmentIndex);
-    var qa = await getAndCacheQa(ret, err: err);
+    var qa = await getAndCacheQa(ret.contentSerial, contentName: ret.contentName, err: err);
     if (qa == null) {
       return null;
     }
@@ -171,20 +173,35 @@ class RepeatDocHelp {
     return ret;
   }
 
-  static Future<RepeatDoc?> getAndCacheQa(SegmentContent ret, {RxString? err}) async {
-    var path = DocPath.getRelativeIndexPath(ret.contentSerial);
+  static Future<RepeatDoc?> getAndCacheQa(int contentSerial, {String contentName = '', RxString? err}) async {
+    var path = DocPath.getRelativeIndexPath(contentSerial);
     var qa = indexDocPathToQa[path];
     if (qa == null) {
-      qa = await RepeatDoc.fromPath(path);
+      var jsonQa = await RepeatDoc.toJsonMap(path);
+      if (jsonQa == null) {
+        if (err != null) {
+          err.value = I18nKey.labelDocNotBeDownloaded.trArgs([contentName]);
+        }
+        return null;
+      }
+      qa = RepeatDoc.fromJsonAndUri(jsonQa, null);
       if (qa == null) {
         if (err != null) {
-          err.value = I18nKey.labelDocNotBeDownloaded.trArgs([ret.contentName]);
+          err.value = I18nKey.labelDocNotBeDownloaded.trArgs([contentName]);
         }
         return null;
       }
       indexDocPathToQa[path] = qa;
+      indexDocPathToJsonQa[path] = jsonQa;
     }
     return qa;
+  }
+
+  static Future<Map<String, dynamic>?> getAndCacheJsonQa(int contentSerial, {String contentName = '', RxString? err}) async {
+    RepeatDoc? rd = await getAndCacheQa(contentSerial);
+    if (rd == null) return null;
+    var path = DocPath.getRelativeIndexPath(contentSerial);
+    return indexDocPathToJsonQa[path];
   }
 
   static String getKey(String contentName, int lessonIndex, int segmentIndex) {

@@ -51,6 +51,7 @@ class GsCrRepeatState {
   var gameMode = false;
   List<String> gameAddress = [];
   RxBool ignoringPunctuation = RxBool(false);
+  RxBool editInGame = RxBool(false);
 
   // for logic
   var nextKey = "";

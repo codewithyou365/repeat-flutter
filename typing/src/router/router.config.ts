@@ -19,5 +19,9 @@ export const routes = [
         path: '/game',
         component: () => import('../view/game.vue'),
     },
+    {
+        path: '/game-editor',
+        component: () => import('../view/game-editor.vue'),
+    },
 
 ];

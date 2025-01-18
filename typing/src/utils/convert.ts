@@ -8,3 +8,16 @@ export function toNumber(input: any): number {
         return 0;
     }
 }
+
+export function toBool(input: any): boolean {
+    if (typeof input === 'boolean') {
+        return input;
+    } else if (typeof input === 'number') {
+        return input !== 0;
+    } else if (typeof input === 'string') {
+        return input.trim().toLowerCase() === 'true';
+    } else {
+        return false;
+    }
+}
+

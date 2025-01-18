@@ -1,6 +1,7 @@
 <template>
   <nut-navbar left-show @click-back="onClickBack">
     <template #right>
+      <Edit v-if="enableEdit" class="nav-bar" width="16px" @click="onClickEditor"></Edit>
       <router-link to="/settings">
         <Setting width="16px"></Setting>
       </router-link>
@@ -24,6 +25,7 @@
         v-model="gameInput"
         :disabled="!inputEnable"
         clearable
+        :placeholder="inputEnable?t('pleaseInput'):t('finish')"
         @keyup.enter="onGameInput"
         type="text"/>
   </div>
@@ -49,7 +51,7 @@ type History = Array<
 >;
 
 import reconnect from '../component/reconnect.vue';
-import {Setting, Loading1} from '@nutui/icons-vue';
+import {Setting, Loading1, Edit} from '@nutui/icons-vue';
 import {useI18n} from 'vue-i18n';
 import {onBeforeUnmount, onMounted, ref, nextTick, computed} from 'vue';
 import {client, ClientStatus, Request} from "../api/ws.ts";
@@ -58,6 +60,7 @@ import {showDialog} from "@nutui/nutui";
 const record = ref<History>([]);
 const replaceChar = '•';
 const gameInput = ref('');
+const enableEdit = ref(false);
 const overlayVisible = ref(false);
 const {t} = useI18n();
 let refreshGame: RefreshGameType;
@@ -72,6 +75,7 @@ onMounted(async () => {
   refreshGame = RefreshGameType.from(route.query);
 
   await refresh(refreshGame);
+  await refreshEnableEdit();
   bus().on(EventName.RefreshGame, (data: RefreshGameType) => {
     refreshGame = data;
     refresh(data);
@@ -87,6 +91,20 @@ onBeforeUnmount(() => {
   bus().off(EventName.RefreshGame);
   bus().off(EventName.WsStatus);
 });
+
+const refreshEnableEdit = async () => {
+  try {
+    overlayVisible.value = true;
+
+    const req = new Request({path: Path.getEditStatus});
+    const res = await client.node!.send(req);
+    enableEdit.value = res.data;
+  } catch (error) {
+    console.error('Failed to refreshEnableEdit:', error);
+  } finally {
+    overlayVisible.value = false;
+  }
+}
 
 const refresh = async (refreshGame: RefreshGameType) => {
   try {
@@ -160,8 +178,6 @@ const onGameInput = async () => {
   overlayVisible.value = false;
 };
 const inputEnable = computed(() => {
-  console.log(lastOutput.value.join(''));
-  console.log(lastOutput.value.join('').indexOf(replaceChar));
   const outputStr = lastOutput.value.join('');
   if (outputStr.length === 0) {
     return true;
@@ -177,10 +193,23 @@ const finish = (word: string) => {
   return true;
 };
 const onClickBack = () => history.back();
+
+const onClickEditor = async () => {
+  await router.push({
+    path: "/game-editor", query: {
+      id: refreshGame.id,
+      time: refreshGame.time,
+    }
+  });
+}
 </script>
 <style>
 .container {
   margin: 8px;
+}
+
+.nav-bar {
+  margin: 0 10px;
 }
 
 :root {

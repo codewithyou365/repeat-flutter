@@ -19,6 +19,12 @@ const messages = {
         confirm: 'Confirm',
         cancel: 'Cancel',
         gameEntryCodeError: 'Please enter the right game number.',
+        pleaseInput: 'Please enter',
+        finish: 'Finish',
+        success: 'Success',
+        confirmSegmentContent: 'Do you want to modify the content?',
+        editModeDisabled: 'The edit mode is disabled.',
+        edit: 'Edit',
     },
     zh: {
         dartMode: '深色模式',
@@ -38,6 +44,12 @@ const messages = {
         confirm: '确定',
         cancel: '取消',
         gameEntryCodeError: '请输入正确的游戏编号',
+        pleaseInput: '请输入',
+        finish: '完成',
+        success: '成功',
+        confirmSegmentContent: '是否修改内容?',
+        editModeDisabled: '编辑模式已禁用',
+        edit: '编辑',
     },
 };
 
