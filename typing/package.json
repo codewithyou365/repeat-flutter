@@ -11,10 +11,16 @@
     "vue": "^3.5.13"
   },
   "devDependencies": {
+    "@codemirror/lang-json": "^6.0.1",
+    "@codemirror/theme-one-dark": "^6.1.2",
     "@nutui/icons-vue": "^0.1.1",
     "@nutui/nutui": "^4.3.13",
+    "@replit/codemirror-vim": "^6.2.1",
     "@rsbuild/core": "^1.1.8",
     "@rsbuild/plugin-vue": "^1.0.5",
+    "@uiw/codemirror-extensions-line-numbers-relative": "^4.23.7",
+    "codemirror": "^6.0.1",
+    "codemirror-indent-wrapped-line": "^1.0.3",
     "mitt": "^3.0.1",
     "typescript": "^5.7.2",
     "vue-i18n": "10",

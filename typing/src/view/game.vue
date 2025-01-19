@@ -21,15 +21,13 @@
         </div>
       </div>
     </div>
-    <nut-input
-        v-model="gameInput"
-        :disabled="!inputEnable"
-        clearable
-        :placeholder="inputEnable?t('pleaseInput'):t('finish')"
-        @keyup.enter="onGameInput"
-        type="text"/>
   </div>
-
+  <dev v-if="inputEnable">
+    <editor type="txt" :save="onGameInput" ref="editorComponent"/>
+    <div class="container">
+      <nut-button size="large" type="info" @click="onGameInput">{{ t('confirm') }}</nut-button>
+    </div>
+  </dev>
   <nut-overlay v-model:visible="overlayVisible">
     <div class="overlay-body">
       <div class="overlay-content">
@@ -42,6 +40,13 @@
 <script setup lang="ts">
 import {bus, EventName, RefreshGameType} from "../api/bus.ts";
 import {GameUserHistoryReq, GameUserHistoryRes, Path, SubmitReq, SubmitRes} from "../utils/constant.ts";
+import editor from '../component/editor.vue';
+import reconnect from '../component/reconnect.vue';
+import {Setting, Loading1, Edit} from '@nutui/icons-vue';
+import {useI18n} from 'vue-i18n';
+import {onBeforeUnmount, onMounted, ref, nextTick, computed} from 'vue';
+import {client, ClientStatus, Request} from "../api/ws.ts";
+import {showDialog} from "@nutui/nutui";
 
 type History = Array<
     {
@@ -50,16 +55,9 @@ type History = Array<
     }
 >;
 
-import reconnect from '../component/reconnect.vue';
-import {Setting, Loading1, Edit} from '@nutui/icons-vue';
-import {useI18n} from 'vue-i18n';
-import {onBeforeUnmount, onMounted, ref, nextTick, computed} from 'vue';
-import {client, ClientStatus, Request} from "../api/ws.ts";
-import {showDialog} from "@nutui/nutui";
-
+const editorComponent = ref<InstanceType<typeof editor> | null>(null);
 const record = ref<History>([]);
 const replaceChar = '•';
-const gameInput = ref('');
 const enableEdit = ref(false);
 const overlayVisible = ref(false);
 const {t} = useI18n();
@@ -147,11 +145,19 @@ const onOk = () => {
 }
 
 const onGameInput = async () => {
+  let gameInput = '';
+  let editorView;
+  if (editorComponent.value) {
+    editorView = editorComponent.value.getEditorView();
+    if (editorView) {
+      gameInput = editorView.state.doc.toString();
+    }
+  }
   overlayVisible.value = true;
   const req = new SubmitReq();
   req.gameId = refreshGame.id;
   req.prevId = lastGameUserId;
-  req.input = gameInput.value;
+  req.input = gameInput;
   const res0 = await client.node!.send(new Request({path: Path.submit, data: req}));
   if (res0.error) {
     showDialog({
@@ -174,7 +180,9 @@ const onGameInput = async () => {
   await nextTick(() => {
     window.scrollTo(0, document.body.scrollHeight);
   });
-  gameInput.value = '';
+  editorView?.dispatch({
+    changes: {from: 0, to: editorView?.state.doc.length, insert: ""},
+  });
   overlayVisible.value = false;
 };
 const inputEnable = computed(() => {

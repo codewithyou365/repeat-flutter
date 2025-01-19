@@ -3,6 +3,7 @@ import {createI18n} from 'vue-i18n';
 const messages = {
     en: {
         dartMode: 'Dart Mode',
+        enableVimMode: 'Enable VIM Mode',
         settings: 'Settings',
         login: 'Login',
         home: 'Home',
@@ -28,6 +29,7 @@ const messages = {
     },
     zh: {
         dartMode: '深色模式',
+        enableVimMode: '启用VIM模式',
         settings: '设置',
         login: '登录',
         home: '首页',

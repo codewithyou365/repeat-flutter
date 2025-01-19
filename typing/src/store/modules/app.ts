@@ -2,6 +2,7 @@ const state = {
     theme: localStorage.getItem('theme') ?? 'dart',
     language: localStorage.getItem('language') ?? 'en',
     token: localStorage.getItem('token') ?? '',
+    enableVim: localStorage.getItem('enableVim') === 'true',
     wsConnected: false,
 };
 const mutations = {
@@ -41,6 +42,10 @@ const mutations = {
     setWsConnected(state: any, wsConnected: boolean) {
         state.wsConnected = wsConnected;
     },
+    setEnableVim(state: any, enableVim: boolean) {
+        state.enableVim = enableVim;
+        localStorage.setItem('enableVim', String(enableVim));
+    },
 };
 
 const actions = {
@@ -56,6 +61,9 @@ const actions = {
     updateWsConnected({commit}: any, wsConnected: boolean) {
         commit('setWsConnected', wsConnected);
     },
+    updateEnableVim({commit}: any, enableVim: boolean) {
+        commit('setEnableVim', enableVim);
+    },
 };
 
 const getters = {
@@ -63,6 +71,7 @@ const getters = {
     currentLanguage: (state: any) => state.language,
     currentToken: (state: any) => state.token,
     currentWsConnected: (state: any) => state.wsConnected,
+    currentEnableVim: (state: any) => state.enableVim,
 };
 
 export default {

@@ -12,6 +12,11 @@
         <nut-switch v-model="theme" @change="changeTheme"/>
       </template>
     </nut-cell>
+    <nut-cell :title="t('enableVimMode')">
+      <template #link>
+        <nut-switch v-model="enableVim" @change="changeEnableVim"/>
+      </template>
+    </nut-cell>
   </div>
 </template>
 
@@ -24,12 +29,18 @@ const store = useStore();
 const {t, locale} = useI18n();
 
 const theme = ref(store.getters.currentTheme === 'dark');
+const enableVim = ref(store.getters.currentEnableVim);
 const language = ref(store.getters.currentLanguage);
 
 const changeTheme = (value) => {
   theme.value = value;
   const newTheme = value ? 'dark' : 'light';
   store.dispatch('updateTheme', newTheme);
+};
+
+const changeEnableVim = (value) => {
+  enableVim.value = value;
+  store.dispatch('updateEnableVim', value);
 };
 
 const updateLanguage = (value) => {
