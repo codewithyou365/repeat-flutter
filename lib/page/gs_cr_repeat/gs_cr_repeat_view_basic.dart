@@ -22,12 +22,12 @@ class GsCrRepeatViewBasic {
     } else {
       currIndex = state.progress + state.fakeKnow;
     }
-    String prefix = '$currIndex/${state.total}-';
-    if (state.concentrationMode) {
-      prefix = '';
+    String text = '';
+    if (!state.concentrationMode) {
+      text = '$currIndex/${state.total}-${state.segment.k}';
     }
     return Text(
-      "$prefix${state.segment.k}",
+      text,
       style: fontSize == null ? null : TextStyle(fontSize: fontSize),
     );
   }
