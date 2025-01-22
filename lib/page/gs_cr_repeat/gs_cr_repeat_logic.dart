@@ -92,7 +92,13 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   void tip() {
-    state.openTip = true;
+    state.openTip = [TipLevel.tip1];
+    state.skipControlMedia = true;
+    update([GsCrRepeatLogic.id]);
+  }
+
+  void tipWithAnswer() {
+    state.openTip = [TipLevel.tip1, TipLevel.tip2];
     state.skipControlMedia = true;
     update([GsCrRepeatLogic.id]);
   }
@@ -293,7 +299,7 @@ class GsCrRepeatLogic extends GetxController {
       fromPn = true;
     }
     pnOffset ??= 0;
-    state.openTip = false;
+    state.openTip = [];
     var oldSegmentKeyId = state.segment.segmentKeyId;
     RxString err = "".obs;
     var learnSegment = await RepeatDocHelp.from(curr.segmentKeyId, offset: pnOffset, err: err);
@@ -483,6 +489,9 @@ class GsCrRepeatLogic extends GetxController {
 
   double getMaskRatio() {
     if (state.step != RepeatStep.recall) {
+      return 0;
+    }
+    if (state.openTip.contains(TipLevel.tip2)) {
       return 0;
     }
     var segment = state.segment;

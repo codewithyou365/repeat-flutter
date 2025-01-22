@@ -8,6 +8,8 @@ import 'package:repeat_flutter/widget/player_bar/video_mask.dart';
 
 enum RepeatStep { recall, evaluate, finish }
 
+enum TipLevel { none, tip1, tip2 }
+
 enum ContentType {
   question,
   questionMedia,
@@ -18,7 +20,7 @@ enum ContentType {
 
 class ContentArg {
   ContentType contentType;
-  bool? tip;
+  TipLevel tip;
 
   // The attribute only works for landscape mode.
   bool? left;
@@ -67,23 +69,24 @@ class GsCrRepeatState {
   var justView = false;
   var justViewIndex = 0;
   var step = RepeatStep.recall;
-  var openTip = false;
+  List<TipLevel> openTip = [];
   var skipControlMedia = false;
   var pnOffset = 0;
 
   var showContent = [
     [
       [
-        ContentArg(ContentType.question, false, true),
-        ContentArg(ContentType.questionMedia, null, null),
-        ContentArg(ContentType.tip, true, true),
+        ContentArg(ContentType.question, TipLevel.none, true),
+        ContentArg(ContentType.questionMedia, TipLevel.none, null),
+        ContentArg(ContentType.answer, TipLevel.tip2, true),
+        ContentArg(ContentType.tip, TipLevel.tip1, true),
       ],
       [
-        ContentArg(ContentType.question, false, true),
-        ContentArg(ContentType.questionMedia, null, null),
-        ContentArg(ContentType.answer, false, true),
-        ContentArg(ContentType.answerMedia, null, null),
-        ContentArg(ContentType.tip, true, true),
+        ContentArg(ContentType.question, TipLevel.none, true),
+        ContentArg(ContentType.questionMedia, TipLevel.none, null),
+        ContentArg(ContentType.answer, TipLevel.none, true),
+        ContentArg(ContentType.answerMedia, TipLevel.none, null),
+        ContentArg(ContentType.tip, TipLevel.tip1, true),
       ],
     ],
   ];

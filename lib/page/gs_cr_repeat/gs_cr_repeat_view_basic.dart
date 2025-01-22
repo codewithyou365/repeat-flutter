@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -51,10 +50,9 @@ class GsCrRepeatViewBasic {
       }
       Widget? addWidget;
       if (w != null) {
-        var tip = showContent[i].tip ?? false;
-        if (tip && state.openTip) {
+        if (state.openTip.contains(showContent[i].tip)) {
           addWidget = w;
-        } else if (!tip) {
+        } else if (showContent[i].tip == TipLevel.none) {
           addWidget = w;
         }
       }
@@ -236,15 +234,16 @@ class GsCrRepeatViewBasic {
               ),
             ],
           ),
-          if (!state.openTip)
+          if (state.openTip.isEmpty)
             Row(
               children: [
                 const Spacer(),
                 buildButton(
                   I18nKey.btnTips.tr,
                   logic.onPreClick,
-                  () => logic.tip(),
+                  logic.tip,
                   width: buttonWidth,
+                  onLongPress: logic.tipWithAnswer,
                 ),
                 const Spacer(),
               ],
