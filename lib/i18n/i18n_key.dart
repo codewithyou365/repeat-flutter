@@ -108,6 +108,7 @@ enum I18nKey {
   labelOnTapError,
   labelSetMaskTips,
   labelQrCodeContentCopiedToClipboard,
+  labelCopiedToClipboard,
   labelShouldLinkToTheContentBeAdded,
   labelTooMuchData,
   labelDataDuplication,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
@@ -6,6 +7,7 @@ import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 import 'package:repeat_flutter/widget/player_bar/video_mask.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'gs_cr_repeat_logic.dart';
 import 'gs_cr_repeat_state.dart';
@@ -104,25 +106,43 @@ class GsCrRepeatViewBasic {
     return null;
   }
 
+  static Widget buildText(String text, [TextStyle? style]) {
+    return TextButton(
+      onPressed: () {
+        Clipboard.setData(ClipboardData(text: text));
+        Snackbar.show(I18nKey.labelCopiedToClipboard.tr);
+      },
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start, // 左对齐
+        children: [
+          Text(
+            text,
+            style: style,
+          ),
+        ],
+      ),
+    );
+  }
+
   static Widget? buildInnerContent(BuildContext context, ContentType t, SegmentContent segment, bool gameMode) {
     switch (t) {
       case ContentType.question:
         if (segment.question != "") {
-          return Text(segment.question);
+          return buildText(segment.question);
         } else {
           return null;
         }
       case ContentType.answer:
         if (segment.answer != "") {
-          return Text(segment.answer);
+          return buildText(segment.answer);
         } else {
           return null;
         }
       case ContentType.tip:
         if (segment.tip != "") {
-          return Text(
+          return buildText(
             segment.tip,
-            style: TextStyle(color: Theme.of(context).hintColor),
+            TextStyle(color: Theme.of(context).hintColor),
           );
         }
         return null;
