@@ -113,11 +113,13 @@ class GsCrRepeatViewBasic {
         Snackbar.show(I18nKey.labelCopiedToClipboard.tr);
       },
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start, // 左对齐
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Text(
-            text,
-            style: style,
+          Expanded(
+            child: Text(
+              text,
+              style: style,
+            ),
           ),
         ],
       ),
