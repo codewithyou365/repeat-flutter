@@ -58,7 +58,7 @@ mixin Media {
     if (video) {
       await playerIdToMediaCache[key]?.videoPlayer!.pause();
     } else {
-      await playerIdToMediaCache[key]?.audioPlayer!.pause();
+      await playerIdToMediaCache[key]?.audioPlayer!.stop();
     }
   }
 
