@@ -106,6 +106,9 @@ class ConfigEn extends Config {
     put(I18nKey.labelConfigChange, "Do you want to save the changes you made?");
     put(I18nKey.labelResetConfig, "Reset Config");
     put(I18nKey.labelDetailConfig, "Config Detail");
+    put(I18nKey.labelCopyConfig, "Copy Config");
+    put(I18nKey.labelDeleteConfig, "Delete Config");
+    put(I18nKey.labelCopyText, "Copy Text");
     put(I18nKey.labelResetConfigDesc, "After resetting the configuration, the system’s default configuration will be used.");
     put(I18nKey.labelOnTapError, "Please press and hold the button to confirm");
     put(I18nKey.labelSetMaskTips, "Swipe left to increase the height of the barrier.");

@@ -9,6 +9,7 @@ import 'package:repeat_flutter/widget/player_bar/video_mask.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
+import 'copy_template.dart';
 import 'gs_cr_repeat_logic.dart';
 import 'gs_cr_repeat_state.dart';
 
@@ -45,10 +46,10 @@ class GsCrRepeatViewBasic {
       Widget? w;
       if (left != null) {
         if (left == showContent[i].left) {
-          w = GsCrRepeatViewBasic.buildInnerContent(context, showContent[i].contentType, state.segment, state.gameMode);
+          w = GsCrRepeatViewBasic.buildInnerContent(context, showContent[i].contentType, state.segment, state.gameMode, logic.copyLogic);
         }
       } else {
-        w = GsCrRepeatViewBasic.buildInnerContent(context, showContent[i].contentType, state.segment, state.gameMode);
+        w = GsCrRepeatViewBasic.buildInnerContent(context, showContent[i].contentType, state.segment, state.gameMode, logic.copyLogic);
       }
       Widget? addWidget;
       if (w != null) {
@@ -106,9 +107,10 @@ class GsCrRepeatViewBasic {
     return null;
   }
 
-  static Widget buildText(String text, [TextStyle? style]) {
+  static Widget buildText(CopyLogic copyLogic, BuildContext context, String text, [TextStyle? style]) {
     return TextButton(
       onPressed: () {
+        copyLogic.show(context, text);
         Clipboard.setData(ClipboardData(text: text));
         Snackbar.show(I18nKey.labelCopiedToClipboard.tr);
       },
@@ -126,23 +128,25 @@ class GsCrRepeatViewBasic {
     );
   }
 
-  static Widget? buildInnerContent(BuildContext context, ContentType t, SegmentContent segment, bool gameMode) {
+  static Widget? buildInnerContent(BuildContext context, ContentType t, SegmentContent segment, bool gameMode, CopyLogic copyLogic) {
     switch (t) {
       case ContentType.question:
         if (segment.question != "") {
-          return buildText(segment.question);
+          return buildText(copyLogic, context, segment.question);
         } else {
           return null;
         }
       case ContentType.answer:
         if (segment.answer != "") {
-          return buildText(segment.answer);
+          return buildText(copyLogic, context, segment.answer);
         } else {
           return null;
         }
       case ContentType.tip:
         if (segment.tip != "") {
           return buildText(
+            copyLogic,
+            context,
             segment.tip,
             TextStyle(color: Theme.of(context).hintColor),
           );

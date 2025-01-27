@@ -8,6 +8,7 @@ enum CrK {
   todayScheduleConfigInUse,
   todayFullCustomScheduleConfigCount,
   ignoringPunctuationInTypingGame,
+  copyTemplate,
 }
 
 @Entity(primaryKeys: ['classroomId', 'k'])

@@ -22,6 +22,7 @@ import 'package:repeat_flutter/logic/repeat_doc_edit_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
+import 'package:repeat_flutter/page/gs_cr_repeat/copy_template.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
@@ -35,6 +36,7 @@ class GsCrRepeatLogic extends GetxController {
   final GsCrRepeatState state = GsCrRepeatState();
   List<SegmentTodayPrg> todayProgresses = [];
   GameServer server = GameServer();
+  CopyLogic copyLogic = CopyLogic();
   Ticker ticker = Ticker(1000);
 
   @override
@@ -52,6 +54,7 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   init() async {
+    await copyLogic.init();
     var all = Get.find<GsCrLogic>().currProgresses;
     state.justView = false;
     if (Get.arguments == Repeat.justView) {
