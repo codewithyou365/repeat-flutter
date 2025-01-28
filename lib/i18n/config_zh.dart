@@ -46,6 +46,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelResetLearningContent, "在 %s 后，将重置学习内容");
     put(I18nKey.labelTips, "提示");
     put(I18nKey.labelNoContent, "暂无内容");
+    put(I18nKey.labelJsonErrorSaveFailed, "JSON格式错误，保存失败");
     put(I18nKey.labelImportFailed, "导入失败");
     put(I18nKey.labelImportSuccess, "导入成功");
     put(I18nKey.labelImportMojo, "导入新数据将清除所有现有数据");

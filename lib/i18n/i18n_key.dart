@@ -44,6 +44,7 @@ enum I18nKey {
   labelResetLearningContent,
   labelTips,
   labelNoContent,
+  labelJsonErrorSaveFailed,
   labelImportFailed,
   labelImportSuccess,
   labelImportMojo,

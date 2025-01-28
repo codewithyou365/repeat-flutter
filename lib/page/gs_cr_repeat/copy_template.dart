@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -33,11 +35,41 @@ class CopyTemplate {
 class CopyLogic {
   List<CopyTemplate> copyTemplates = [];
 
-  Future<void> init() async {
-    var copyTemplateStr = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.copyTemplate);
+  Future<bool> trySave(int index, String json) async {
+    try {
+      Map<String, dynamic> jsonMap = jsonDecode(json);
+      var ct = CopyTemplate.fromJson(jsonMap);
+      copyTemplates[index] = ct;
+    } catch (e) {
+      MsgBox.yes(I18nKey.labelTips.tr, I18nKey.labelJsonErrorSaveFailed.tr);
+      return false;
+    }
+    await write(copyTemplates);
 
-    copyTemplates.add(CopyTemplate("asdfasfasdf asdflaksdfjalskdjfa sdfalsdkjfalsdk f", " "));
-    copyTemplates.add(CopyTemplate("xxx,xxx,xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxyyyyyyyyyynxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxyyyyyyyyyyxxxxxxx\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxyyyyyyyyyynxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxyyyyyyyyyy", " "));
+    return true;
+  }
+
+  Future<List<CopyTemplate>> read() async {
+    String? json = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.copyTemplate);
+    if (json == null) {
+      return [];
+    }
+    List<dynamic> jsonList = jsonDecode(json);
+    return jsonList.map((item) => CopyTemplate.fromJson(item as Map<String, dynamic>)).toList();
+  }
+
+  Future<void> write(List<CopyTemplate> list) async {
+    List<Map<String, dynamic>> jsonList = list.map((template) => template.toJson()).toList();
+    var str = jsonEncode(jsonList);
+    await Db().db.scheduleDao.insertKv(CrKv(Classroom.curr, CrK.copyTemplate, str));
+  }
+
+  Future<void> init() async {
+    copyTemplates = await read();
+    if (copyTemplates.isEmpty) {
+      copyTemplates.add(CopyTemplate("prefix", "suffix"));
+      await write(copyTemplates);
+    }
     return;
   }
 
@@ -88,7 +120,9 @@ class CopyLogic {
                                 minLines: 5,
                                 maxLines: 15,
                                 null,
-                                yes: () {},
+                                yes: () {
+                                  trySave(index, value.value);
+                                },
                                 yesBtnTitle: I18nKey.btnSave.tr,
                                 no: () {
                                   Get.back();

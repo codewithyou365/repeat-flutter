@@ -46,6 +46,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelResetLearningContent, "The learning content will be reset in %s");
     put(I18nKey.labelTips, "Tips");
     put(I18nKey.labelNoContent, "No content yet");
+    put(I18nKey.labelJsonErrorSaveFailed, "JSON format error, failed to save.");
     put(I18nKey.labelImportFailed, "Import failed");
     put(I18nKey.labelImportSuccess, "Import success");
     put(I18nKey.labelImportMojo, "Importing new data will clear all existing data");
