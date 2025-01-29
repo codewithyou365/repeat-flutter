@@ -7,9 +7,8 @@ import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 import 'package:repeat_flutter/widget/player_bar/video_mask.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
-import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
-import 'copy_template.dart';
+import '../../logic/widget/copy_template.dart';
 import 'gs_cr_repeat_logic.dart';
 import 'gs_cr_repeat_state.dart';
 
@@ -111,8 +110,6 @@ class GsCrRepeatViewBasic {
     return TextButton(
       onPressed: () {
         copyLogic.show(context, text);
-        Clipboard.setData(ClipboardData(text: text));
-        Snackbar.show(I18nKey.labelCopiedToClipboard.tr);
       },
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
