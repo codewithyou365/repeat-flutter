@@ -213,6 +213,10 @@ class GsCrPage extends StatelessWidget {
                   onTap: () => {logic.tryStart(element.segments, grouping: true)},
                   child: Text(I18nKey.btnExamine.tr),
                 ),
+                PopupMenuItem<String>(
+                  onTap: () => {logic.copy(context, element.segments)},
+                  child: Text(I18nKey.btnCopy.tr),
+                ),
               ],
             ),
           ),

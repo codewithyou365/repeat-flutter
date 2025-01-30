@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'dart:convert' as convert;
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/time.dart';
@@ -13,7 +14,9 @@ import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
+import 'package:repeat_flutter/logic/widget/copy_template.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
@@ -25,6 +28,7 @@ class GsCrLogic extends GetxController {
   static const String id = "GsCrLogic";
   static const String idForAdd = "GsCrLogicForAdd";
   final GsCrState state = GsCrState();
+  late CopyLogic copyLogic = CopyLogic<GsCrLogic>(CrK.copyListTemplate, this);
   List<SegmentTodayPrg> currProgresses = [];
   Timer? timer;
 
@@ -390,5 +394,20 @@ class GsCrLogic extends GetxController {
           state.forAdd.count,
         );
     await init();
+  }
+
+  // for copy
+  void copy(BuildContext context, List<SegmentTodayPrg> segments) async {
+    List<String> ret = [];
+    for (int i = 0; i < segments.length; i++) {
+      final segment = segments[i];
+      SegmentContent? segmentContent = await RepeatDocHelp.from(segment.segmentKeyId);
+      if (segmentContent != null) {
+        ret.add(segmentContent.answer);
+      }
+    }
+    if (!copyLogic.show(context, ret, isList: true)) {
+      Snackbar.show(I18nKey.labelNoContent.tr);
+    }
   }
 }

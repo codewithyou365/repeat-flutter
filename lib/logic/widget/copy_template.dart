@@ -103,10 +103,23 @@ class CopyLogic<T extends GetxController> {
     return ret;
   }
 
-  void show(BuildContext context, String text) {
+  bool show(BuildContext context, List<String> list, {bool isList = false}) {
     final Size screenSize = MediaQuery.of(context).size;
     if (copyTemplates.isEmpty) {
       copyTemplates.add(CopyTemplate("prefix\n", "\nsuffix"));
+    }
+    if (list.isEmpty) {
+      return false;
+    }
+    String text = list[0];
+    if (isList) {
+      for (int i = 0; i < list.length; i++) {
+        if (i == 0) {
+          text = "${i + 1}. ${list[i]}";
+        } else {
+          text += "\n${i + 1}. ${list[i]}";
+        }
+      }
     }
     showModalBottomSheet(
       context: context,
@@ -192,5 +205,6 @@ class CopyLogic<T extends GetxController> {
         );
       },
     );
+    return true;
   }
 }
