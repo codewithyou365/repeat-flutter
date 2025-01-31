@@ -136,6 +136,10 @@ class ConfigZh extends Config {
     put(I18nKey.labelIgnorePunctuation, "忽略标点符号");
     put(I18nKey.labelEditInGame, "启用编辑");
     put(I18nKey.labelGameId, "游戏ID");
+    put(I18nKey.labelQuestion, "问题");
+    put(I18nKey.labelAnswer, "答案");
+    put(I18nKey.labelQuestionAndAnswer, "问与答");
+    put(I18nKey.labelCopyMode, "复制模式");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");
     put(I18nKey.btnConfigSettings, "配置设置");

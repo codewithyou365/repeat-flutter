@@ -9,8 +9,10 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
+import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class CopyTemplate {
@@ -41,6 +43,7 @@ class CopyLogic<T extends GetxController> {
   List<CopyTemplate> copyTemplates = [];
   final CrK key;
   final T parentLogic;
+  String text = "";
 
   CopyLogic(this.key, this.parentLogic);
 
@@ -103,23 +106,11 @@ class CopyLogic<T extends GetxController> {
     return ret;
   }
 
-  bool show(BuildContext context, List<String> list, {bool isList = false}) {
+  void show(BuildContext context, String text, {List<Widget>? prefixList}) {
     final Size screenSize = MediaQuery.of(context).size;
+    this.text = text;
     if (copyTemplates.isEmpty) {
       copyTemplates.add(CopyTemplate("prefix\n", "\nsuffix"));
-    }
-    if (list.isEmpty) {
-      return false;
-    }
-    String text = list[0];
-    if (isList) {
-      for (int i = 0; i < list.length; i++) {
-        if (i == 0) {
-          text = "${i + 1}. ${list[i]}";
-        } else {
-          text += "\n${i + 1}. ${list[i]}";
-        }
-      }
     }
     showModalBottomSheet(
       context: context,
@@ -134,10 +125,11 @@ class CopyLogic<T extends GetxController> {
             child: GetBuilder<T>(
               id: CopyLogic.id,
               builder: (_) {
-                final copyText = toShowText(text);
-                final showText = toShowText(StringUtil.limit(text, 255));
+                final copyText = toShowText(this.text);
+                final showText = toShowText(StringUtil.limit(this.text, 255));
                 return ListView(
                   children: [
+                    if (prefixList != null) ...prefixList,
                     ...List.generate(
                       showText.length,
                       (index) => Padding(
@@ -205,6 +197,44 @@ class CopyLogic<T extends GetxController> {
         );
       },
     );
+  }
+
+  bool showQaList(BuildContext context, List<SegmentContent> list) {
+    if (list.isEmpty) {
+      return false;
+    }
+    var copyMode = [I18nKey.labelQuestionAndAnswer.tr, I18nKey.labelAnswer.tr, I18nKey.labelQuestion.tr];
+    List<Widget> prefixList = [];
+    prefixList.add(RowWidget.buildCupertinoPicker(
+      I18nKey.labelCopyMode.tr,
+      copyMode,
+      (i) {
+        this.text = getQaCopyMode(copyMode[i], list);
+        this.parentLogic.update([CopyLogic.id]);
+      },
+    ));
+
+    prefixList.add(const Divider(color: Colors.grey));
+    show(context, getQaCopyMode(copyMode[0], list), prefixList: prefixList);
     return true;
+  }
+
+  getQaCopyMode(String copyMode, List<SegmentContent> list) {
+    String result = '';
+    for (int i = 0; i < list.length; i++) {
+      if (i != 0) {
+        result += "\n";
+      }
+      final v = list[i];
+      if (copyMode == I18nKey.labelQuestionAndAnswer.tr) {
+        result += 'q${i + 1}. ${v.question}';
+        result += '\na${i + 1}. ${v.answer}';
+      } else if (copyMode == I18nKey.labelAnswer.tr) {
+        result += 'a${i + 1}. ${v.answer}';
+      } else if (copyMode == I18nKey.labelQuestion.tr) {
+        result += 'q${i + 1}. ${v.question}';
+      }
+    }
+    return result;
   }
 }

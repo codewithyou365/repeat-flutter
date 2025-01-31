@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 class RowWidget {
@@ -21,6 +23,39 @@ class RowWidget {
             Text(
               title,
               style: ts,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Widget buildCupertinoPicker(String title, List<String> options, [ValueChanged<int>? changed]) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(paddingHorizontal, 0, 0, 0),
+      child: SizedBox(
+        height: rowHeight,
+        child: Row(
+          children: [
+            Text(
+              title,
+              style: const TextStyle(fontSize: titleFontSize),
+            ),
+            const Spacer(),
+            SizedBox(
+              width: 80.w,
+              height: 64,
+              child: CupertinoPicker(
+                itemExtent: 32.0,
+                onSelectedItemChanged: changed,
+                children: List.generate(options.length, (index) {
+                  return Center(
+                      child: Text(
+                    options[index],
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.normal),
+                  ));
+                }),
+              ),
             ),
           ],
         ),

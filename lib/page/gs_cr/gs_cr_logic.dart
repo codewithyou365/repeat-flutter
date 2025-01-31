@@ -398,15 +398,15 @@ class GsCrLogic extends GetxController {
 
   // for copy
   void copy(BuildContext context, List<SegmentTodayPrg> segments) async {
-    List<String> ret = [];
+    List<SegmentContent> ret = [];
     for (int i = 0; i < segments.length; i++) {
       final segment = segments[i];
       SegmentContent? segmentContent = await RepeatDocHelp.from(segment.segmentKeyId);
       if (segmentContent != null) {
-        ret.add(segmentContent.answer);
+        ret.add(segmentContent);
       }
     }
-    if (!copyLogic.show(context, ret, isList: true)) {
+    if (!copyLogic.showQaList(context, ret)) {
       Snackbar.show(I18nKey.labelNoContent.tr);
     }
   }
