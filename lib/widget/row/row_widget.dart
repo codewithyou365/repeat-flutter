@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
 class RowWidget {
   static const double titleFontSize = 17;
@@ -104,6 +105,40 @@ class RowWidget {
               return Switch(value: value.value, onChanged: set != null ? (v) => set(v) : (v) => {value.value = v});
             }),
           ],
+        ),
+      ),
+    );
+  }
+
+  static Widget buildDivider() {
+    return const Divider(color: Colors.grey);
+  }
+
+  static Widget buildTextWithEdit(String title, RxString value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
+      child: SizedBox(
+        height: rowHeight,
+        child: InkWell(
+          onTap: () {
+            MsgBox.strInputWithYesOrNo(value, title, "");
+          },
+          child: Row(
+            children: [
+              Text(
+                title,
+                style: const TextStyle(fontSize: titleFontSize),
+              ),
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
+                child: Text(
+                  value.value.toString(),
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -213,8 +213,7 @@ class CopyLogic<T extends GetxController> {
         this.parentLogic.update([CopyLogic.id]);
       },
     ));
-
-    prefixList.add(const Divider(color: Colors.grey));
+    prefixList.add(RowWidget.buildDivider());
     show(context, getQaCopyMode(copyMode[0], list), prefixList: prefixList);
     return true;
   }
