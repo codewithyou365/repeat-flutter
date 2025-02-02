@@ -119,26 +119,37 @@ class RowWidget {
       padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
       child: SizedBox(
         height: rowHeight,
-        child: InkWell(
-          onTap: () {
-            MsgBox.strInputWithYesOrNo(value, title, "");
-          },
-          child: Row(
-            children: [
-              Text(
-                title,
-                style: const TextStyle(fontSize: titleFontSize),
-              ),
-              const Spacer(),
-              Padding(
+        child: Row(
+          children: [
+            Text(
+              title,
+              style: const TextStyle(fontSize: titleFontSize),
+            ),
+            const Spacer(),
+            InkWell(
+              onTap: () {
+                MsgBox.strInputWithYesOrNo(value, title, "");
+              },
+              child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
-                child: Text(
-                  value.value.toString(),
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                decoration: const BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: Colors.grey, width: 2.0),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      value.value.toString(),
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(width: 5),
+                    const Icon(Icons.edit),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
