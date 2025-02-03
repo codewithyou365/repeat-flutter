@@ -61,6 +61,12 @@ class GameServer {
       // TODO...
     }
     final filePath = GameConstant.assetsPath.joinPath(requestedPath);
+    var contentType = _getContentType(filePath);
+    if (contentType.isEmpty) {
+      request.response.redirect(Uri(path: "/"));
+      await request.response.close();
+      return;
+    }
     try {
       ByteData content = await rootBundle.load(filePath);
       request.response
@@ -93,8 +99,10 @@ class GameServer {
         return 'image/jpeg';
       case '.gif':
         return 'image/gif';
+      case '.bin':
+        return 'application/octet-stream';
       default:
-        return 'application/octet-stream'; // Default binary content type
+        return '';
     }
   }
 
