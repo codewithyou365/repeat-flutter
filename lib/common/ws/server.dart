@@ -8,18 +8,72 @@ import 'node.dart';
 
 import 'message.dart';
 
+abstract class UserId {
+  int getId();
+}
+
 enum ServerStatus {
   stopped,
   working,
 }
 
-class Server<User> {
+class Nodes<User extends UserId> {
+  final Map<int, Node<User>> hashCode2Node = {};
+  final Map<int, Node<User>> userId2Node = {};
+
+  Future<void> removeAll() async {
+    for (final node in hashCode2Node.values) {
+      await node.stop();
+    }
+    hashCode2Node.clear();
+    userId2Node.clear();
+  }
+
+  Future<void> remove(int hashCode) async {
+    final node = hashCode2Node.remove(hashCode);
+    if (node != null) {
+      int userId = node.user!.getId();
+      userId2Node.remove(userId);
+      await node.stop();
+    }
+  }
+
+  Future<void> add(int hashCode, Node<User> node) async {
+    var userId = node.user!.getId();
+    var oldNode = userId2Node[userId];
+    if (oldNode != null) {
+      await remove(oldNode.webSocket.hashCode);
+    }
+    hashCode2Node[hashCode] = node;
+    userId2Node[node.user!.getId()] = node;
+    node.start();
+  }
+
+  Node<User>? get(int hashCode) {
+    return hashCode2Node[hashCode];
+  }
+
+  Future<Response?> send(int hashCode, Request req) async {
+    final node = hashCode2Node[hashCode];
+    if (node == null) {
+      return null;
+    }
+    return await node.send(req);
+  }
+
+  Future<void> broadcast(Request req) async {
+    final futures = hashCode2Node.values.map((client) => client.send(req));
+    await Future.wait(futures);
+  }
+}
+
+class Server<User extends UserId> {
   final cors = true;
   var status = ServerStatus.working;
   Logger? logger;
   HttpServer? server;
   final Map<String, Controller> controllers = {};
-  final Map<int, Node<User>> nodes = {};
+  final Nodes<User> nodes = Nodes();
 
   Future<void> start(int port, Future<User?> Function(HttpRequest request) auth, Future<void> Function(HttpRequest request) handleHttpRequest) async {
     status = ServerStatus.working;
@@ -71,7 +125,7 @@ class Server<User> {
   Future<void> stop() async {
     status = ServerStatus.stopped;
     if (server != null) {
-      await removeAllNode();
+      await nodes.removeAll();
       await server!.close();
       logger ?? ('HTTP server stopped');
       server = null;
@@ -79,21 +133,15 @@ class Server<User> {
   }
 
   Future<Response?> send(int hashCode, Request req) async {
-    final node = nodes[hashCode];
-    if (node == null) {
-      return null;
-    }
-    return await node.send(req);
+    return nodes.send(hashCode, req);
   }
 
-  void broadcast(Request req) async {
-    final futures = nodes.values.map((client) => client.send(req));
-    await Future.wait(futures);
+  Future<void> broadcast(Request req) async {
+    return nodes.broadcast(req);
   }
 
   Future<void> handleWebSocket(WebSocket socket, User? user) async {
     final hashCode = socket.hashCode;
-    await removeNode(hashCode);
     final node = Node(socket, user);
     if (user == null) {
       Request req = Request(path: Path.kick);
@@ -101,7 +149,7 @@ class Server<User> {
       node.stop();
       return;
     }
-    addNode(hashCode, node);
+    await nodes.add(hashCode, node);
     socket.listen(
       (message) async {
         try {
@@ -120,30 +168,13 @@ class Server<User> {
         }
       },
       onDone: () {
-        removeNode(hashCode);
+        nodes.remove(hashCode);
         logger ?? ('Client disconnected: $hashCode');
       },
       onError: (error) {
-        removeNode(hashCode);
+        nodes.remove(hashCode);
         logger ?? ('Client disconnected: $hashCode. Error: $error');
       },
     );
-  }
-
-  Future<void> removeAllNode() async {
-    for (final node in nodes.values) {
-      await node.stop();
-    }
-    nodes.clear();
-  }
-
-  Future<void> removeNode(int hashCode) async {
-    final n = nodes.remove(hashCode);
-    await n?.stop();
-  }
-
-  void addNode(int hashCode, Node<User> node) {
-    nodes[hashCode] = node;
-    node.start();
   }
 }

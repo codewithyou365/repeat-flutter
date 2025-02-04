@@ -124,7 +124,7 @@ class GameServer {
       return null;
     }
     int hashCodeInt = int.parse(hashCodeStr);
-    Node<GameUser>? node = server.nodes[hashCodeInt];
+    Node<GameUser>? node = server.nodes.get(hashCodeInt);
     if (node == null) {
       return null;
     }

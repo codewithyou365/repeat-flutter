@@ -51,6 +51,9 @@ class Node<User> {
   }
 
   stop() async {
+    print('${this.hashCode}:stop');
+    final stackTrace = StackTrace.current;
+    print('Calling stack: $stackTrace');
     cancelTimer();
     await webSocket.close();
   }
@@ -66,5 +69,6 @@ class Node<User> {
 
   resetCloseTime() {
     closeTime = DateTime.now().add(const Duration(seconds: 10));
+    print('${this.hashCode}:$closeTime');
   }
 }

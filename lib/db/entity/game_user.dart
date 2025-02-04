@@ -2,6 +2,7 @@
 
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
+import 'package:repeat_flutter/common/ws/server.dart';
 
 @Entity(
   indices: [
@@ -9,7 +10,7 @@ import 'package:repeat_flutter/common/date.dart';
     Index(value: ['token'], unique: true),
   ],
 )
-class GameUser {
+class GameUser extends UserId {
   @PrimaryKey(autoGenerate: true)
   final int? id;
   String name;
@@ -33,4 +34,9 @@ class GameUser {
   static empty() => GameUser('', '', '', Date(0), '', Date(0));
 
   isEmpty() => name.isEmpty;
+
+  @override
+  int getId() {
+    return id!;
+  }
 }
