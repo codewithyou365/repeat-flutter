@@ -109,7 +109,10 @@ abstract class GameDao {
     } else {
       int typingGame = await intKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame) ?? 0;
       if (typingGame == 1) {
-        prevOutput = GameLogic.processWord(game.w, game.w.replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), ''), obtainOutput, []);
+        var punctuation = game.w.replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), '').trim();
+        if (punctuation.isNotEmpty) {
+          prevOutput = GameLogic.processWord(game.w, punctuation, [], []);
+        }
       }
     }
     final now = DateTime.now();
