@@ -114,7 +114,6 @@ class CopyLogic<T extends GetxController> {
     }
     showModalBottomSheet(
       context: context,
-      backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white,
       isScrollControlled: true,
       builder: (BuildContext context) {
         return SizedBox(
@@ -135,6 +134,7 @@ class CopyLogic<T extends GetxController> {
                       (index) => Padding(
                         padding: const EdgeInsets.all(4.0),
                         child: Card(
+                          color: Theme.of(context).secondaryHeaderColor,
                           child: PopupMenuButton<String>(
                             child: Padding(
                               padding: EdgeInsets.all(12.w),

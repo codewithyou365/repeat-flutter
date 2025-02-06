@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -336,11 +337,21 @@ class GsCrRepeatViewBasic {
                   state.editInGame,
                 ),
                 const Divider(color: Colors.grey),
+                RowWidget.buildTextWithEdit(
+                  I18nKey.labelOnlineUserNumber.tr,
+                  RxString("${logic.server.server.nodes.userId2Node.length} / ${logic.userManager.allowRegisterNumber}"),
+                  onTap: () {
+                    Get.back();
+                    logic.userManager.show(context);
+                  },
+                ),
+                const Divider(color: Colors.grey),
                 ...List.generate(
                   address.length,
                   (index) => Padding(
                     padding: const EdgeInsets.all(4.0),
                     child: Card(
+                      color: Theme.of(context).secondaryHeaderColor,
                       child: InkWell(
                         onTap: () => {
                           MsgBox.noWithQrCode(

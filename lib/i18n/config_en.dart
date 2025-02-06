@@ -110,6 +110,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelCopyConfig, "Copy Config");
     put(I18nKey.labelDeleteConfig, "Delete Config");
     put(I18nKey.labelCopyText, "Copy Text");
+    put(I18nKey.labelResetPassword, "Reset Password");
     put(I18nKey.labelResetConfigDesc, "After resetting the configuration, the system’s default configuration will be used.");
     put(I18nKey.labelOnTapError, "Please press and hold the button to confirm");
     put(I18nKey.labelSetMaskTips, "Swipe left to increase the height of the barrier.");
@@ -135,6 +136,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelIgnorePunctuation, "Ignore punctuation");
     put(I18nKey.labelEditInGame, "Enable edit");
     put(I18nKey.labelGameId, "Game ID");
+    put(I18nKey.labelOnlineUserNumber, "OUN");
+    put(I18nKey.labelAllowRegisterNumber, "Allow Reg Number");
     put(I18nKey.labelQuestion, "Question");
     put(I18nKey.labelAnswer, "Answer");
     put(I18nKey.labelQuestionAndAnswer, "Q&A");

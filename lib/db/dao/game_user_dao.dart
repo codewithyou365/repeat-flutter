@@ -5,21 +5,26 @@ import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
+import 'package:repeat_flutter/db/entity/kv.dart';
 
 @dao
 abstract class GameUserDao {
-  static const int maxDailyRegistrations = 1;
-
   // Query to find a user by name.
   @Query('SELECT * FROM GameUser WHERE name = :name')
   Future<GameUser?> findUserByName(String name);
+
+  @Query('SELECT * FROM GameUser')
+  Future<List<GameUser>> getAllUser();
+
+  @Query("SELECT CAST(value as INTEGER) FROM Kv where `k`=:k")
+  Future<int?> intKv(K k);
 
   // Insert a new user into the database.
   @Insert(onConflict: OnConflictStrategy.abort)
   Future<int> registerUser(GameUser user);
 
-  @Query('SELECT count(id) FROM GameUser WHERE createDate = :createDate')
-  Future<int?> count(Date createDate);
+  @Query('SELECT count(id) FROM GameUser')
+  Future<int?> count();
 
   @Query('UPDATE GameUser SET token=:token,tokenExpiredDate=:tokenExpiredDate WHERE id = :id')
   Future<void> updateUserToken(int id, String token, Date tokenExpiredDate);
@@ -34,9 +39,10 @@ abstract class GameUserDao {
     if (existingUser == null) {
       final nonce = StringUtil.generateRandomString(32);
       final passwordHash = await Hash.toSha1ForString(password + nonce);
-      int? dailyRegistrations = await count(Date.from(now));
-      dailyRegistrations ??= 0;
-      if (dailyRegistrations >= maxDailyRegistrations) {
+      int? registrations = await count();
+      registrations ??= 0;
+      int allowRegisterNumber = await intKv(K.allowRegisterNumber) ?? 1;
+      if (registrations >= allowRegisterNumber) {
         return '';
       }
       final newUser = GameUser(

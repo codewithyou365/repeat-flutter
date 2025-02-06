@@ -111,6 +111,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelCopyConfig, "复制配置");
     put(I18nKey.labelDeleteConfig, "删除配置");
     put(I18nKey.labelCopyText, "复制文本");
+    put(I18nKey.labelResetPassword, "重置密码");
     put(I18nKey.labelResetConfigDesc, "执行重置配置后，将使用系统默认的配置？");
     put(I18nKey.labelOnTapError, "请长按按键进行确认");
     put(I18nKey.labelSetMaskTips, "向左滑动增加挡板高度");
@@ -136,6 +137,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelIgnorePunctuation, "忽略标点符号");
     put(I18nKey.labelEditInGame, "启用编辑");
     put(I18nKey.labelGameId, "游戏ID");
+    put(I18nKey.labelOnlineUserNumber, "在线人数");
+    put(I18nKey.labelAllowRegisterNumber, "允许注册人数");
     put(I18nKey.labelQuestion, "问题");
     put(I18nKey.labelAnswer, "答案");
     put(I18nKey.labelQuestionAndAnswer, "问与答");

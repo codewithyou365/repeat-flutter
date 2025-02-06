@@ -114,7 +114,13 @@ class RowWidget {
     return const Divider(color: Colors.grey);
   }
 
-  static Widget buildTextWithEdit(String title, RxString value) {
+  static Widget buildTextWithEdit(
+    String title,
+    RxString value, {
+    GestureTapCallback? onTap,
+    InputType inputType = InputType.normal,
+    VoidCallback? yes,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
       child: SizedBox(
@@ -128,7 +134,11 @@ class RowWidget {
             const Spacer(),
             InkWell(
               onTap: () {
-                MsgBox.strInputWithYesOrNo(value, title, "");
+                if (onTap == null) {
+                  MsgBox.strInputWithYesOrNo(value, title, "", inputType: inputType, yes: yes);
+                } else {
+                  onTap();
+                }
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),

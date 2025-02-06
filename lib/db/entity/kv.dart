@@ -7,6 +7,7 @@ enum K {
   settingsTheme,
   exportUrl,
   importUrl,
+  allowRegisterNumber,
 }
 
 @Entity(primaryKeys: ['k'])

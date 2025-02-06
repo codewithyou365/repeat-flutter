@@ -279,11 +279,30 @@ class _$GameUserDao extends GameUserDao {
   }
 
   @override
-  Future<int?> count(Date createDate) async {
+  Future<List<GameUser>> getAllUser() async {
+    return _queryAdapter.queryList('SELECT * FROM GameUser',
+        mapper: (Map<String, Object?> row) => GameUser(
+            row['name'] as String,
+            row['password'] as String,
+            row['nonce'] as String,
+            _dateConverter.decode(row['createDate'] as int),
+            row['token'] as String,
+            _dateConverter.decode(row['tokenExpiredDate'] as int),
+            id: row['id'] as int?));
+  }
+
+  @override
+  Future<int?> intKv(K k) async {
     return _queryAdapter.query(
-        'SELECT count(id) FROM GameUser WHERE createDate = ?1',
+        'SELECT CAST(value as INTEGER) FROM Kv where `k`=?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [_dateConverter.encode(createDate)]);
+        arguments: [_kConverter.encode(k)]);
+  }
+
+  @override
+  Future<int?> count() async {
+    return _queryAdapter.query('SELECT count(id) FROM GameUser',
+        mapper: (Map<String, Object?> row) => row.values.first as int);
   }
 
   @override

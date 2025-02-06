@@ -6,6 +6,11 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
+enum InputType {
+  number,
+  normal,
+}
+
 class MsgBox {
   static yesOrNo(
     String title,
@@ -76,6 +81,7 @@ class MsgBox {
     RxString model,
     String title,
     String? decoration, {
+    InputType inputType = InputType.normal,
     VoidCallback? yes,
     String? yesBtnTitle,
     VoidCallback? no,
@@ -99,11 +105,19 @@ class MsgBox {
         },
       );
     }
+    TextInputType? keyboardType;
+    List<TextInputFormatter>? inputFormatters;
+    if (inputType == InputType.number) {
+      keyboardType = TextInputType.number;
+      inputFormatters = <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly];
+    }
     var children = <Widget>[
       TextFormField(
         controller: tec,
         maxLines: maxLines,
         minLines: minLines,
+        keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
         decoration: InputDecoration(
           labelText: decoration,
           suffixIcon: suffixIcon,

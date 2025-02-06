@@ -20,6 +20,7 @@ import 'package:repeat_flutter/logic/game_server/game_server.dart';
 import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_edit_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
+import 'package:repeat_flutter/logic/widget/user_manager.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
@@ -37,6 +38,7 @@ class GsCrRepeatLogic extends GetxController {
   List<SegmentTodayPrg> todayProgresses = [];
   GameServer server = GameServer();
   late CopyLogic copyLogic = CopyLogic<GsCrRepeatLogic>(CrK.copyTemplate, this);
+  late UserManager userManager = UserManager<GsCrRepeatLogic>(this);
   Ticker ticker = Ticker(1000);
 
   @override
@@ -55,6 +57,7 @@ class GsCrRepeatLogic extends GetxController {
 
   init() async {
     await copyLogic.init();
+    await userManager.init();
     var all = Get.find<GsCrLogic>().currProgresses;
     state.justView = false;
     if (Get.arguments == Repeat.justView) {
