@@ -190,19 +190,18 @@ abstract class ScheduleDao {
     3,
     [
       // LW: listen and write.
+      // LR: listen and recall.
       // TR: tip and recall.
       // TW: tip and write.
-      ElConfig(/* title */ "LW1-TR4", /* random */ false, /* extendLevel */ false, /* level */ 1, /* learnCount */ 30, /* learnCountPerGroup */ 10),
-      ElConfig(/* title */ "LW2-TR4", /* random */ false, /* extendLevel */ false, /* level */ 0, /* learnCount */ 4, /* learnCountPerGroup  */ 4),
-      ElConfig(/* title */ "TR4", /* random     */ false, /* extendLevel */ false, /* level */ 2, /* learnCount */ 30, /* learnCountPerGroup */ 10),
+      ElConfig(/* title */ "LW1", /* random */ false, /* extendLevel */ false, /* level */ 0, /* learnCount */ 10, /* learnCountPerGroup  */ 0),
+      ElConfig(/* title */ "LR2", /* random */ false, /* extendLevel */ false, /* level */ 1, /* learnCount */ 10, /* learnCountPerGroup  */ 0),
+      ElConfig(/* title */ "LR2", /* random */ false, /* extendLevel */ false, /* level */ 2, /* learnCount */ 10, /* learnCountPerGroup  */ 0),
+      ElConfig(/* title */ "LR2", /* random */ false, /* extendLevel */ false, /* level */ 3, /* learnCount */ 10, /* learnCountPerGroup  */ 0),
+      ElConfig(/* title */ "LR2", /* random */ false, /* extendLevel */ false, /* level */ 4, /* learnCount */ 10, /* learnCountPerGroup  */ 0),
+      ElConfig(/* title */ "LR2", /* random */ false, /* extendLevel */ false, /* level */ 5, /* learnCount */ 10, /* learnCountPerGroup  */ 0),
     ],
-    [
-      RelConfig(/* title */ "TR4", /* level */ 0, /* before */ 4, /* from */ Date(20240321), /* learnCountPerGroup */ 0),
-      RelConfig(/* title */ "TW3", /* level */ 1, /* before */ 7, /* from */ Date(20240321), /* learnCountPerGroup */ 0),
-    ],
+    [],
   );
-
-  //static List<int> review = [0, 30];
 
   @Query('SELECT * FROM Lock where id=1 for update')
   Future<void> forUpdate();
