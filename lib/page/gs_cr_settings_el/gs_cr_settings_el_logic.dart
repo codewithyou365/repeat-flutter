@@ -26,8 +26,8 @@ class GsCrSettingsElLogic extends GetxController {
           ElConfig(
             value.title,
             value.random,
-            value.extend,
             value.level,
+            value.toLevel,
             value.learnCount,
             value.learnCountPerGroup,
           )));
@@ -40,8 +40,8 @@ class GsCrSettingsElLogic extends GetxController {
     state.currElConfigIndex = index;
     state.currElConfig.title.value = config.title;
     state.currElConfig.random.value = config.random;
-    state.currElConfig.extend.value = config.extend;
     state.currElConfig.level.value = config.level;
+    state.currElConfig.toLevel.value = config.toLevel;
     state.currElConfig.learnCount.value = config.learnCount;
     state.currElConfig.learnCountPerGroup.value = config.learnCountPerGroup;
   }
@@ -59,8 +59,8 @@ class GsCrSettingsElLogic extends GetxController {
     var config = ElConfig(
       state.currElConfig.title.value,
       state.currElConfig.random.value,
-      state.currElConfig.extend.value,
       state.currElConfig.level.value,
+      state.currElConfig.toLevel.value,
       state.currElConfig.learnCount.value,
       state.currElConfig.learnCountPerGroup.value,
     );
@@ -79,8 +79,8 @@ class GsCrSettingsElLogic extends GetxController {
     var config = state.elConfigs[index];
     config.config.title = state.currElConfig.title.value;
     config.config.random = state.currElConfig.random.value;
-    config.config.extend = state.currElConfig.extend.value;
     config.config.level = state.currElConfig.level.value;
+    config.config.toLevel = state.currElConfig.toLevel.value;
     config.config.learnCount = state.currElConfig.learnCount.value;
     config.config.learnCountPerGroup = state.currElConfig.learnCountPerGroup.value;
     updateIndexAndView();

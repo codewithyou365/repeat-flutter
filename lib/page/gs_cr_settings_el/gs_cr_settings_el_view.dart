@@ -54,8 +54,8 @@ class GsCrSettingsElPage extends StatelessWidget {
           children: [
             buildStringItem(I18nKey.labelTitle.tr, config.title),
             buildSwitch(I18nKey.labelElRandom.tr, config.random),
-            buildSwitch(I18nKey.labelElExtend.tr, config.extend),
             buildNumberItem(I18nKey.labelElLevel.tr, config.level),
+            buildNumberItem(I18nKey.labelElToLevel.tr, config.toLevel),
             buildNumberItem(I18nKey.labelElLearnCount.tr, config.learnCount),
             buildNumberItem(I18nKey.labelLearnCountPerGroup.tr, config.learnCountPerGroup),
             const Divider(),
@@ -63,8 +63,8 @@ class GsCrSettingsElPage extends StatelessWidget {
               return Text(ElConfig(
                 config.title.value,
                 config.random.value,
-                config.extend.value,
                 config.level.value,
+                config.toLevel.value,
                 config.learnCount.value,
                 config.learnCountPerGroup.value,
               ).trWithTitle());

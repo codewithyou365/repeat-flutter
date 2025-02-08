@@ -93,7 +93,7 @@ enum I18nKey {
   labelRelConfig1,
   labelFullCustomConfig,
   labelElRandom,
-  labelElExtend,
+  labelElToLevel,
   labelElLevel,
   labelElLearnCount,
   labelRelBefore,

@@ -21,19 +21,19 @@ import 'package:repeat_flutter/logic/model/segment_review_with_key.dart';
 class ElConfig {
   String title;
   bool random;
-  bool extend;
   int level;
+  int toLevel;
   int learnCount;
   int learnCountPerGroup;
 
-  ElConfig(this.title, this.random, this.extend, this.level, this.learnCount, this.learnCountPerGroup);
+  ElConfig(this.title, this.random, this.level, this.toLevel, this.learnCount, this.learnCountPerGroup);
 
   Map<String, dynamic> toJson() {
     return {
       'title': title,
       'random': random,
-      'extend': extend,
       'level': level,
+      'toLevel': toLevel,
       'learnCount': learnCount,
       'learnCountPerGroup': learnCountPerGroup,
     };
@@ -43,8 +43,8 @@ class ElConfig {
     return ElConfig(
       json['title'],
       json['random'],
-      json['extend'],
       json['level'],
+      json['toLevel'] ?? 0,
       json['learnCount'],
       json['learnCountPerGroup'],
     );
@@ -54,7 +54,8 @@ class ElConfig {
     var key = "labelElConfig";
     List<String> args = [level.toString()];
     key += random ? "1" : "0";
-    key += extend ? "1" : "0";
+    key += level != toLevel ? "1" : "0";
+    if (level != toLevel) args.add(toLevel.toString());
     key += learnCount > 0 ? "1" : "0";
     if (learnCount > 0) args.add(learnCount.toString());
     key += learnCountPerGroup > 0 ? "1" : "0";
@@ -193,12 +194,8 @@ abstract class ScheduleDao {
       // LR: listen and recall.
       // TR: tip and recall.
       // TW: tip and write.
-      ElConfig(/* title */ "LW1", /* random */ false, /* extendLevel */ false, /* level */ 0, /* learnCount */ 10, /* learnCountPerGroup  */ 0),
-      ElConfig(/* title */ "LR2", /* random */ false, /* extendLevel */ false, /* level */ 1, /* learnCount */ 10, /* learnCountPerGroup  */ 0),
-      ElConfig(/* title */ "LR2", /* random */ false, /* extendLevel */ false, /* level */ 2, /* learnCount */ 10, /* learnCountPerGroup  */ 0),
-      ElConfig(/* title */ "LR2", /* random */ false, /* extendLevel */ false, /* level */ 3, /* learnCount */ 10, /* learnCountPerGroup  */ 0),
-      ElConfig(/* title */ "LR2", /* random */ false, /* extendLevel */ false, /* level */ 4, /* learnCount */ 10, /* learnCountPerGroup  */ 0),
-      ElConfig(/* title */ "LR2", /* random */ false, /* extendLevel */ false, /* level */ 5, /* learnCount */ 10, /* learnCountPerGroup  */ 0),
+      ElConfig(/* title */ "LW1", /* random */ false, /* level */ 0, /* toLevel */ 0, /* learnCount */ 10, /* learnCountPerGroup  */ 0),
+      ElConfig(/* title */ "LR2", /* random */ false, /* level */ 1, /* toLevel */ 5, /* learnCount */ 90, /* learnCountPerGroup  */ 0),
     ],
     [],
   );
@@ -683,9 +680,9 @@ abstract class ScheduleDao {
 
   List<SegmentTodayPrg> refineEl(List<SegmentTodayPrg> all, int index, ElConfig config) {
     List<SegmentTodayPrg> curr;
-    if (config.extend) {
+    if (config.level != config.toLevel) {
       curr = all.where((sl) {
-        return sl.progress >= config.level;
+        return config.level <= sl.progress && sl.progress <= config.toLevel;
       }).toList();
     } else {
       curr = all.where((sl) {
