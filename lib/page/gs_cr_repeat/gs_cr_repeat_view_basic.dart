@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -204,7 +205,12 @@ class GsCrRepeatViewBasic {
           break;
         case RepeatStep.evaluate:
           var tryFinish = false;
+          var finish = false;
           if (state.c.length == 1) {
+            var curr = state.c[0];
+            finish = curr.progress >= ScheduleDao.scheduleConfig.maxRepeatTime;
+          }
+          if (finish) {
             tryFinish = true;
             leftButtonText = I18nKey.btnFinish.tr;
           } else if (state.nextKey == "") {
