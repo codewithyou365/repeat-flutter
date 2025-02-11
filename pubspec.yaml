@@ -49,7 +49,7 @@ dependencies:
   grouped_list: ^6.0.0
   video_player: ^2.9.1
   qr_flutter: ^4.1.0
-  qr_code_scanner: ^1.0.1
+  qr_code_scanner_plus: ^2.0.9+1
   archive: ^3.6.1
   file_picker: ^8.1.2
   logger: ^2.5.0
