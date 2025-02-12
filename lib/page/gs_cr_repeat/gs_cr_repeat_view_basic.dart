@@ -331,18 +331,24 @@ class GsCrRepeatViewBasic {
                   I18nKey.labelGameId.tr,
                   "$id",
                 ),
-                const Divider(color: Colors.grey),
+                RowWidget.buildDivider(),
                 RowWidget.buildSwitch(
                   I18nKey.labelIgnorePunctuation.tr,
                   state.ignoringPunctuation,
                   logic.setIgnoringPunctuation,
                 ),
-                const Divider(color: Colors.grey),
+                RowWidget.buildDivider(),
                 RowWidget.buildSwitch(
                   I18nKey.labelEditInGame.tr,
                   state.editInGame,
                 ),
-                const Divider(color: Colors.grey),
+                RowWidget.buildDivider(),
+                RowWidget.buildSwitch(
+                  I18nKey.labelMatchSingleCharacter.tr,
+                  state.matchSingleCharacter,
+                  logic.setMatchSingleCharacter,
+                ),
+                RowWidget.buildDivider(),
                 RowWidget.buildTextWithEdit(
                   I18nKey.labelOnlineUserNumber.tr,
                   RxString("${logic.server.server.nodes.userId2Node.length} / ${logic.userManager.allowRegisterNumber}"),
@@ -351,7 +357,7 @@ class GsCrRepeatViewBasic {
                     logic.userManager.show(context);
                   },
                 ),
-                const Divider(color: Colors.grey),
+                RowWidget.buildDivider(),
                 ...List.generate(
                   address.length,
                   (index) => Padding(

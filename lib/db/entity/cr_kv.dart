@@ -8,6 +8,7 @@ enum CrK {
   todayScheduleConfigInUse,
   todayFullCustomScheduleConfigCount,
   ignoringPunctuationInTypingGame,
+  matchSingleCharacterInTypingGame,
   copyTemplate,
   copyListTemplate,
 }

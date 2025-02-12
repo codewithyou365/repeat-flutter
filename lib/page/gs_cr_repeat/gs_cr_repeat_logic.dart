@@ -556,6 +556,11 @@ class GsCrRepeatLogic extends GetxController {
     Db().db.scheduleDao.insertKv(CrKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame, ignorePunctuation ? '1' : '0'));
   }
 
+  setMatchSingleCharacter(bool matchSingleCharacter) {
+    state.matchSingleCharacter.value = matchSingleCharacter;
+    Db().db.scheduleDao.insertKv(CrKv(Classroom.curr, CrK.matchSingleCharacterInTypingGame, matchSingleCharacter ? '1' : '0'));
+  }
+
   openEditor() {
     state.extendTail = 0;
     state.edit = true;

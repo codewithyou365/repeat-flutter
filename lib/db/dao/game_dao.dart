@@ -104,6 +104,8 @@ abstract class GameDao {
     }
     List<String> prevOutput = [];
     List<String> input = [];
+    int matchSingleCharacterInt = await intKv(Classroom.curr, CrK.matchSingleCharacterInTypingGame) ?? 1;
+    bool matchSingleCharacter = matchSingleCharacterInt == 1;
     if (gameUserInput != null) {
       prevOutput = ListUtil.toList(gameUserInput.output);
     } else {
@@ -111,12 +113,12 @@ abstract class GameDao {
       if (typingGame == 1) {
         var punctuation = game.w.replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), '').trim();
         if (punctuation.isNotEmpty) {
-          prevOutput = GameLogic.processWord(game.w, punctuation, [], []);
+          prevOutput = GameLogic.processWord(game.w, punctuation, [], [], matchSingleCharacter);
         }
       }
     }
     final now = DateTime.now();
-    input = GameLogic.processWord(game.w, userInput, obtainOutput, prevOutput);
+    input = GameLogic.processWord(game.w, userInput, obtainOutput, prevOutput, matchSingleCharacter);
     await insertGameUserInput(GameUserInput(
       game.id,
       gameUserId,
