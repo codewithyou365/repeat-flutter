@@ -47,6 +47,7 @@ class GsCrLogic extends GetxController {
   }
 
   Future<void> init({TodayPrgType? type}) async {
+    await copyLogic.init();
     state.forAdd.contents = await Db().db.contentDao.getAllEnableContent(Classroom.curr);
     state.forAdd.contentNames = state.forAdd.contents.map((e) => e.name).toList();
     var now = DateTime.now();

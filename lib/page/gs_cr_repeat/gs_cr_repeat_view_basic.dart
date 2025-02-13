@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
@@ -111,7 +110,7 @@ class GsCrRepeatViewBasic {
   static Widget buildText(CopyLogic copyLogic, BuildContext context, String text, [TextStyle? style]) {
     return TextButton(
       onPressed: () {
-        copyLogic.show(context, text);
+        copyLogic.show(context, "{{text}}", text);
       },
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,

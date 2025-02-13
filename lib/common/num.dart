@@ -36,4 +36,16 @@ class Num {
     }
     return spareId;
   }
+
+  static String toBase26(int value) {
+    const base26Chars = 'abcdefghijklmnopqrstuvwxyz';
+    const base26Length = 26;
+    if (value == 0) return '0';
+    String result = '';
+    while (value > 0) {
+      result = base26Chars[value % base26Length] + result;
+      value ~/= base26Length;
+    }
+    return result;
+  }
 }
