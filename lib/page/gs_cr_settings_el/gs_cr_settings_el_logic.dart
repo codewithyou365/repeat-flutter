@@ -55,6 +55,19 @@ class GsCrSettingsElLogic extends GetxController {
     updateIndexAndView();
   }
 
+  void addItem() {
+    var config = ElConfig(
+      "LR",
+      false,
+      1,
+      1,
+      10,
+      10,
+    );
+    state.elConfigs.add(ElConfigView(0, ValueKey(valueKey++), config));
+    updateIndexAndView();
+  }
+
   void copyItem() {
     var config = ElConfig(
       state.currElConfig.title.value,

@@ -5,6 +5,7 @@ import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:board_datetime_picker/board_datetime_picker.dart';
+import 'package:repeat_flutter/widget/app_bar/app_bar_widget.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'gs_cr_settings_rel_logic.dart';
 
@@ -16,6 +17,12 @@ class GsCrSettingsRelPage extends StatelessWidget {
     final logic = Get.find<GsCrSettingsRelLogic>();
     return Scaffold(
       appBar: AppBar(
+        actions: AppBarWidget.buildAppBarAction([
+          PopupMenuItem<String>(
+            onTap: logic.addItem,
+            child: Text(I18nKey.btnAdd.tr),
+          ),
+        ]),
         title: Text(I18nKey.labelConfigSettingsForRel.tr),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),

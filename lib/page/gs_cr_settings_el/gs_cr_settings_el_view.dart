@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/widget/app_bar/app_bar_widget.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
 import 'gs_cr_settings_el_logic.dart';
@@ -15,6 +16,12 @@ class GsCrSettingsElPage extends StatelessWidget {
     final logic = Get.find<GsCrSettingsElLogic>();
     return Scaffold(
       appBar: AppBar(
+        actions: AppBarWidget.buildAppBarAction([
+          PopupMenuItem<String>(
+            onTap: logic.addItem,
+            child: Text(I18nKey.btnAdd.tr),
+          ),
+        ]),
         title: Text(I18nKey.labelConfigSettingsForEl.tr),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),

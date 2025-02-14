@@ -54,6 +54,18 @@ class GsCrSettingsRelLogic extends GetxController {
     updateIndexAndView();
   }
 
+  void addItem() {
+    var config = RelConfig(
+      "LR",
+      0,
+      4,
+      Date(20240321),
+      0,
+    );
+    state.relConfigs.add(RelConfigView(0, ValueKey(valueKey++), config));
+    updateIndexAndView();
+  }
+
   void copyItem() {
     var config = RelConfig(
       state.currRelConfig.title.value,
