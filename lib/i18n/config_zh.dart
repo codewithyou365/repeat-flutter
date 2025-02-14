@@ -106,7 +106,7 @@ class ConfigZh extends Config {
 
     put(I18nKey.labelSavingConfirm, "是否确定保存？");
     put(I18nKey.labelConfigChange, "配置已改变是否保存？");
-    put(I18nKey.labelResetConfig, "重置配置");
+    put(I18nKey.labelResetConfig, "配置将被重置。确定吗？");
     put(I18nKey.labelDetailConfig, "配置详情");
     put(I18nKey.labelCopyConfig, "复制配置");
     put(I18nKey.labelDeleteConfig, "删除配置");
@@ -164,6 +164,7 @@ class ConfigZh extends Config {
     put(I18nKey.btnGameMode, "游戏模式");
     put(I18nKey.btnConcentration, "专注");
     put(I18nKey.btnAdd, "新增");
+    put(I18nKey.btnReset, "重置");
     put(I18nKey.btnCopy, "复制");
     put(I18nKey.btnDownload, "下载");
     put(I18nKey.btnLearn, "学习");

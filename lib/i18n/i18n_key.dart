@@ -163,6 +163,7 @@ enum I18nKey {
   btnGameMode,
   btnConcentration,
   btnAdd,
+  btnReset,
   btnCopy,
   btnDownload,
   btnSchedule,

@@ -55,15 +55,6 @@ class GsCrSettingsLogic extends GetxController {
     state.configJson = const JsonEncoder.withIndent(' ').convert(config);
   }
 
-  void resetConfig() {
-    showTransparentOverlay(() async {
-      await Db().db.scheduleDao.deleteKv(CrKv(Classroom.curr, CrK.todayScheduleConfig, ""));
-      ScheduleDao.scheduleConfig = ScheduleDao.defaultScheduleConfig;
-      Nav.back();
-      Snackbar.show(I18nKey.labelFinish.tr);
-    });
-  }
-
   void inputConfig() {
     showTransparentOverlay(() async {
       Map<String, dynamic> configJson = json.decode(state.configJson);

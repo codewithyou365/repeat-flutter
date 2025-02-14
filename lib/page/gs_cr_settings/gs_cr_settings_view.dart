@@ -20,13 +20,6 @@ class GsCrSettingsPage extends StatelessWidget {
       body: ListView(
         children: <Widget>[
           ListTile(
-            leading: const Icon(Icons.redo),
-            title: Text(I18nKey.labelResetConfig.tr),
-            onTap: () {
-              MsgBox.yesOrNo(I18nKey.labelResetConfig.tr, I18nKey.labelResetConfigDesc.tr, yes: logic.resetConfig);
-            },
-          ),
-          ListTile(
             leading: const Icon(Icons.settings),
             title: Text(I18nKey.labelConfigSettingsForEl.tr),
             onLongPress: () {

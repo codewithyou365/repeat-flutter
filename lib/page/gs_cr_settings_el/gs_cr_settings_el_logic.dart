@@ -6,6 +6,8 @@ import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
 import 'gs_cr_settings_el_state.dart';
 
@@ -21,16 +23,17 @@ class GsCrSettingsElLogic extends GetxController {
     for (var index = 0; index < ScheduleDao.scheduleConfig.elConfigs.length; index++) {
       var value = ScheduleDao.scheduleConfig.elConfigs[index];
       state.elConfigs.add(ElConfigView(
-          index,
-          ValueKey(valueKey++),
-          ElConfig(
-            value.title,
-            value.random,
-            value.level,
-            value.toLevel,
-            value.learnCount,
-            value.learnCountPerGroup,
-          )));
+        index,
+        ValueKey(valueKey++),
+        ElConfig(
+          value.title,
+          value.random,
+          value.level,
+          value.toLevel,
+          value.learnCount,
+          value.learnCountPerGroup,
+        ),
+      ));
     }
   }
 
@@ -53,6 +56,34 @@ class GsCrSettingsElLogic extends GetxController {
     final item = state.elConfigs.removeAt(oldIndex);
     state.elConfigs.insert(newIndex, item);
     updateIndexAndView();
+  }
+
+  void reset() {
+    MsgBox.yesOrNo(
+      I18nKey.labelTips.tr,
+      I18nKey.labelResetConfig.tr,
+      yes: () {
+        valueKey = 0;
+        state.elConfigs = [];
+        for (var index = 0; index < ScheduleDao.defaultScheduleConfig.elConfigs.length; index++) {
+          var value = ScheduleDao.defaultScheduleConfig.elConfigs[index];
+          state.elConfigs.add(ElConfigView(
+            index,
+            ValueKey(valueKey++),
+            ElConfig(
+              value.title,
+              value.random,
+              value.level,
+              value.toLevel,
+              value.learnCount,
+              value.learnCountPerGroup,
+            ),
+          ));
+        }
+        updateIndexAndView();
+        Get.back();
+      },
+    );
   }
 
   void addItem() {

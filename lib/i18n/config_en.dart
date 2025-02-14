@@ -105,7 +105,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelAll, "ALL");
     put(I18nKey.labelSavingConfirm, "Are you sure to save?");
     put(I18nKey.labelConfigChange, "Do you want to save the changes you made?");
-    put(I18nKey.labelResetConfig, "Reset Config");
+    put(I18nKey.labelResetConfig, "The config will be reset. Are you sure?");
     put(I18nKey.labelDetailConfig, "Config Detail");
     put(I18nKey.labelCopyConfig, "Copy Config");
     put(I18nKey.labelDeleteConfig, "Delete Config");
@@ -163,6 +163,7 @@ class ConfigEn extends Config {
     put(I18nKey.btnGameMode, "Game Mode");
     put(I18nKey.btnConcentration, "Concentration");
     put(I18nKey.btnAdd, "Add");
+    put(I18nKey.btnReset, "Reset");
     put(I18nKey.btnCopy, "Copy");
     put(I18nKey.btnDownload, "Download");
     put(I18nKey.btnLearn, "Learn");

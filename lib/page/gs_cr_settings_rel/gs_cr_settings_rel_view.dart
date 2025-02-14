@@ -22,6 +22,10 @@ class GsCrSettingsRelPage extends StatelessWidget {
             onTap: logic.addItem,
             child: Text(I18nKey.btnAdd.tr),
           ),
+          PopupMenuItem<String>(
+            onTap: logic.reset,
+            child: Text(I18nKey.btnReset.tr),
+          ),
         ]),
         title: Text(I18nKey.labelConfigSettingsForRel.tr),
         leading: IconButton(

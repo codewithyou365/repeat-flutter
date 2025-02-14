@@ -7,6 +7,8 @@ import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
 import 'gs_cr_settings_rel_state.dart';
 
@@ -22,15 +24,16 @@ class GsCrSettingsRelLogic extends GetxController {
     for (var index = 0; index < ScheduleDao.scheduleConfig.relConfigs.length; index++) {
       var value = ScheduleDao.scheduleConfig.relConfigs[index];
       state.relConfigs.add(RelConfigView(
-          index,
-          ValueKey(valueKey++),
-          RelConfig(
-            value.title,
-            value.level,
-            value.before,
-            value.from,
-            value.learnCountPerGroup,
-          )));
+        index,
+        ValueKey(valueKey++),
+        RelConfig(
+          value.title,
+          value.level,
+          value.before,
+          value.from,
+          value.learnCountPerGroup,
+        ),
+      ));
     }
   }
 
@@ -52,6 +55,33 @@ class GsCrSettingsRelLogic extends GetxController {
     final item = state.relConfigs.removeAt(oldIndex);
     state.relConfigs.insert(newIndex, item);
     updateIndexAndView();
+  }
+
+  void reset() {
+    MsgBox.yesOrNo(
+      I18nKey.labelTips.tr,
+      I18nKey.labelResetConfig.tr,
+      yes: () {
+        valueKey = 0;
+        state.relConfigs = [];
+        for (var index = 0; index < ScheduleDao.defaultScheduleConfig.relConfigs.length; index++) {
+          var value = ScheduleDao.defaultScheduleConfig.relConfigs[index];
+          state.relConfigs.add(RelConfigView(
+            index,
+            ValueKey(valueKey++),
+            RelConfig(
+              value.title,
+              value.level,
+              value.before,
+              value.from,
+              value.learnCountPerGroup,
+            ),
+          ));
+        }
+        updateIndexAndView();
+        Get.back();
+      },
+    );
   }
 
   void addItem() {
