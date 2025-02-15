@@ -7,6 +7,7 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -45,14 +46,31 @@ class InputScheduleConfig {
 class GsCrSettingsLogic extends GetxController {
   final GsCrSettingsState state = GsCrSettingsState();
 
-  @override
-  Future<void> onInit() async {
-    super.onInit();
-    InputScheduleConfig config = InputScheduleConfig(
+  void openConfig() {
+    state.configJson = const JsonEncoder.withIndent(' ').convert(InputScheduleConfig(
       ScheduleDao.scheduleConfig.elConfigs,
       ScheduleDao.scheduleConfig.relConfigs,
+    ));
+    var value = state.configJson.obs;
+    MsgBox.strInputWithYesOrNo(
+      value,
+      I18nKey.labelDetailConfig.tr,
+      minLines: 5,
+      maxLines: 15,
+      null,
+      yes: () {
+        state.configJson = value.value;
+        inputConfig();
+      },
+      yesBtnTitle: I18nKey.btnSave.tr,
+      no: () {
+        Get.back();
+        MsgBox.noWithQrCode(I18nKey.btnShare.tr, value.value, null);
+      },
+      noBtnTitle: I18nKey.btnShare.tr,
+      barrierDismissible: true,
+      qrPagePath: Nav.gsCrContentScan.path,
     );
-    state.configJson = const JsonEncoder.withIndent(' ').convert(config);
   }
 
   void inputConfig() {

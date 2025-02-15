@@ -1,7 +1,9 @@
+import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
 class RowWidget {
@@ -15,18 +17,10 @@ class RowWidget {
       ts = const TextStyle(fontSize: titleFontSize, color: Colors.grey);
     }
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
-      child: SizedBox(
-        height: rowHeight,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              title,
-              style: ts,
-            ),
-          ],
-        ),
+      padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: paddingHorizontal),
+      child: Text(
+        title,
+        style: ts,
       ),
     );
   }
@@ -110,17 +104,48 @@ class RowWidget {
     );
   }
 
+  static Widget buildDividerWithoutColor() {
+    return const Divider();
+  }
+
   static Widget buildDivider() {
     return const Divider(color: Colors.grey);
   }
 
+  static Widget buildDateWithEdit(String title, RxInt value, BuildContext context) {
+    return buildTextWithEdit(
+      title,
+      value,
+      onTap: () async {
+        var result = await showBoardDateTimePicker(
+          initialDate: Date(value.value).toDateTime(),
+          context: context,
+          pickerType: DateTimePickerType.date,
+          options: const BoardDateTimeOptions(showDateButton: false),
+        );
+        if (result == null) {
+          return;
+        }
+        value.value = Date.from(result).value;
+      },
+      format: (Rx value) {
+        return Date(value.value).format();
+      },
+    );
+  }
+
   static Widget buildTextWithEdit(
     String title,
-    RxString value, {
+    Rx value, {
     GestureTapCallback? onTap,
-    InputType inputType = InputType.normal,
+    InputType? inputType,
     VoidCallback? yes,
+    String Function(Rx)? format,
   }) {
+    var showValue = value.value.toString();
+    if (format != null) {
+      showValue = format(value);
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
       child: SizedBox(
@@ -150,7 +175,7 @@ class RowWidget {
                 child: Row(
                   children: [
                     Text(
-                      value.value.toString(),
+                      showValue,
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(width: 5),

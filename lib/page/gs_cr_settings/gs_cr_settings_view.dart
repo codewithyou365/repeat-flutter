@@ -12,7 +12,6 @@ class GsCrSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final logic = Get.find<GsCrSettingsLogic>();
-    final state = logic.state;
     return Scaffold(
       appBar: AppBar(
         title: Text(I18nKey.settings.tr),
@@ -42,28 +41,7 @@ class GsCrSettingsPage extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.text_snippet),
             title: Text(I18nKey.labelDetailConfig.tr),
-            onTap: () {
-              var value = state.configJson.obs;
-              MsgBox.strInputWithYesOrNo(
-                value,
-                I18nKey.labelDetailConfig.tr,
-                minLines: 5,
-                maxLines: 15,
-                null,
-                yes: () {
-                  state.configJson = value.value;
-                  logic.inputConfig();
-                },
-                yesBtnTitle: I18nKey.btnSave.tr,
-                no: () {
-                  Get.back();
-                  MsgBox.noWithQrCode(I18nKey.btnShare.tr, value.value, null);
-                },
-                noBtnTitle: I18nKey.btnShare.tr,
-                barrierDismissible: true,
-                qrPagePath: Nav.gsCrContentScan.path,
-              );
-            },
+            onTap: logic.openConfig,
           ),
         ],
       ),

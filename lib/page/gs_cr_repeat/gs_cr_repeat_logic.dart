@@ -319,7 +319,7 @@ class GsCrRepeatLogic extends GetxController {
     }
     if (learnSegment.miss) {
       MsgBox.yesOrNo(
-        I18nKey.btnTips.tr,
+        I18nKey.labelTips.tr,
         I18nKey.labelSegmentRemoved.tr,
         yes: () {
           showOverlay(() async {

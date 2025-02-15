@@ -78,10 +78,10 @@ class MsgBox {
   }
 
   static strInputWithYesOrNo(
-    RxString model,
+    Rx model,
     String title,
     String? decoration, {
-    InputType inputType = InputType.normal,
+    InputType? inputType,
     VoidCallback? yes,
     String? yesBtnTitle,
     VoidCallback? no,
@@ -92,7 +92,14 @@ class MsgBox {
     barrierDismissible = false,
     List<Widget>? nextChildren,
   }) {
-    final tec = TextEditingController(text: model.value);
+    if (inputType == null) {
+      if (model is RxString) {
+        inputType = InputType.normal;
+      } else {
+        inputType = InputType.number;
+      }
+    }
+    final tec = TextEditingController(text: model.value.toString());
     Widget? suffixIcon;
     if (qrPagePath != null) {
       suffixIcon = IconButton(
@@ -135,7 +142,19 @@ class MsgBox {
       ),
       actions: yesOrNoAction(
           yes: () {
-            model.value = tec.text.trim();
+            var t = tec.text.trim();
+            if (model is RxString) {
+              model.value = t;
+            } else if (model is RxInt) {
+              model.value = int.tryParse(t) ?? 0;
+            } else if (model is RxDouble) {
+              model.value = double.tryParse(t) ?? 0.0;
+            } else if (model is RxBool) {
+              model.value = (t.toLowerCase() == 'true');
+            } else {
+              print("Unsupported Rx type");
+            }
+
             if (yes != null) {
               yes();
             } else {
