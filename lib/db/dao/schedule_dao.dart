@@ -665,14 +665,17 @@ abstract class ScheduleDao {
       if (shouldStartDate.value < relConfig.from.value) {
         continue;
       }
-      var startDateInt = await findReviewedMinCreateDate(Classroom.curr, index, shouldStartDate);
-      if (startDateInt == null || startDateInt == -1) {
-        continue;
+      List<SegmentTodayPrg> sls = await scheduleReview(Classroom.curr, relConfig.level, shouldStartDate);
+      if (sls.isEmpty) {
+        var startDateInt = await findReviewedMinCreateDate(Classroom.curr, index, shouldStartDate);
+        if (startDateInt == null || startDateInt == -1) {
+          continue;
+        }
+        if (startDateInt < relConfig.from.value) {
+          startDateInt = relConfig.from.value;
+        }
+        sls = await scheduleReview(Classroom.curr, relConfig.level, Date(startDateInt));
       }
-      if (startDateInt < relConfig.from.value) {
-        startDateInt = relConfig.from.value;
-      }
-      List<SegmentTodayPrg> sls = await scheduleReview(Classroom.curr, relConfig.level, Date(startDateInt));
       SegmentTodayPrg.setType(sls, TodayPrgType.review, index, relConfig.learnCountPerGroup);
       todayPrg.addAll(sls);
     }
