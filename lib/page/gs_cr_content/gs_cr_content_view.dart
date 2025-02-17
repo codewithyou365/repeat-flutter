@@ -154,6 +154,7 @@ class GsCrContentPage extends StatelessWidget {
       },
       yesBtnTitle: I18nKey.btnDownload.tr,
       noBtnTitle: I18nKey.btnClose.tr,
+      qrPagePath: Nav.gsCrContentScan.path,
     );
   }
 }
