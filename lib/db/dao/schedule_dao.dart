@@ -358,10 +358,11 @@ abstract class ScheduleDao {
       ",Segment.segmentIndex"
       " FROM Segment"
       " JOIN SegmentReview on SegmentReview.segmentKeyId=Segment.segmentKeyId"
+      " AND SegmentReview.createDate>=:start AND SegmentReview.createDate<=:end"
       " JOIN Content ON Content.classroomId=Segment.classroomId AND Content.serial=Segment.contentSerial"
       " WHERE Segment.classroomId=:classroomId"
       " ORDER BY SegmentReview.createDate desc,Segment.sort asc")
-  Future<List<SegmentReviewWithKey>> getAllSegmentReview(int classroomId);
+  Future<List<SegmentReviewWithKey>> getAllSegmentReview(int classroomId, Date start, Date end);
 
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertSegmentReview(List<SegmentReview> review);

@@ -45,6 +45,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelNoLearningContent, "没有学习内容");
     put(I18nKey.labelResetLearningContent, "在 %s 后，将重置学习内容");
     put(I18nKey.labelTips, "提示");
+    put(I18nKey.labelExamineCount, "考核次数");
+    put(I18nKey.labelSegmentNumber, "片段数量");
     put(I18nKey.labelNoContent, "暂无内容");
     put(I18nKey.labelJsonErrorSaveFailed, "JSON格式错误，保存失败");
     put(I18nKey.labelImportFailed, "导入失败");

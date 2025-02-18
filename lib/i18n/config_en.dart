@@ -45,6 +45,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelNoLearningContent, "There is no learning content available.");
     put(I18nKey.labelResetLearningContent, "The learning content will be reset in %s");
     put(I18nKey.labelTips, "Tips");
+    put(I18nKey.labelExamineCount, "Examine Count");
+    put(I18nKey.labelSegmentNumber, "Segment Count");
     put(I18nKey.labelNoContent, "No content yet");
     put(I18nKey.labelJsonErrorSaveFailed, "JSON format error, failed to save.");
     put(I18nKey.labelImportFailed, "Import failed");

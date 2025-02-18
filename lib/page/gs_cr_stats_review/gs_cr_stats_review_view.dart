@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/model/segment_review_with_key.dart';
-import 'package:repeat_flutter/logic/repeat_doc_help.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
+import 'package:table_calendar/table_calendar.dart';
 import 'gs_cr_stats_review_logic.dart';
 
 class GsCrStatsReviewPage extends StatelessWidget {
@@ -29,25 +29,45 @@ class GsCrStatsReviewPage extends StatelessWidget {
 
   Widget _buildList(BuildContext context, GsCrStatsReviewLogic logic) {
     final state = logic.state;
-    if (state.progress.isEmpty) {
-      return Text(I18nKey.labelNoContent.tr);
-    }
-    return ListView(
-      children: List.generate(state.progress.length, (index) => buildItem(context, logic, state.progress[index])),
-    );
-  }
-
-  Widget buildItem(BuildContext context, GsCrStatsReviewLogic logic, SegmentReviewWithKey model) {
-    return Padding(
-      padding: EdgeInsets.all(16.w),
-      child: Row(
-        children: [
-          Text("${model.createDate.value}"),
-          const Spacer(),
-          Text(RepeatDocHelp.getKey(model.contentName, model.lessonIndex, model.segmentIndex)),
-          const Spacer(),
-          Text("${model.count}"),
-        ],
+    return TableCalendar(
+      firstDay: DateTime.utc(2024, 3, 21),
+      lastDay: DateTime.utc(2100, 3, 14),
+      focusedDay: state.focusedDay,
+      headerStyle: const HeaderStyle(
+        formatButtonVisible: false,
+      ),
+      onPageChanged: logic.onPageChanged,
+      calendarBuilders: CalendarBuilders(
+        defaultBuilder: (context, day, focusedDay) {
+          var value = Date.from(day).value;
+          final num = state.number[value];
+          final min = state.minCount[value];
+          if (num == null) {
+            return null;
+          }
+          return Center(
+            child: InkWell(
+              onTap: () {
+                MsgBox.yes(
+                  I18nKey.labelTips.tr,
+                  '${I18nKey.labelExamineCount.tr}:$min\n${I18nKey.labelSegmentNumber.tr}:$num',
+                );
+              },
+              child: Column(
+                children: [
+                  Text('${day.day}'),
+                  Text(
+                    '$min/$num',
+                    style: const TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
