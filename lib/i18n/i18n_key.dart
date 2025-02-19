@@ -135,6 +135,7 @@ enum I18nKey {
   labelSegment,
   labelIgnorePunctuation,
   labelMatchSingleCharacter,
+  labelSkipCharacter,
   labelEditInGame,
   labelGameId,
   labelOnlineUserNumber,

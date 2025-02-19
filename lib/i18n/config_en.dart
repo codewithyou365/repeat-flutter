@@ -137,9 +137,10 @@ class ConfigEn extends Config {
     put(I18nKey.labelSegment, "Segment");
     put(I18nKey.labelIgnorePunctuation, "Ignore punctuation");
     put(I18nKey.labelMatchSingleCharacter, "Match single character");
+    put(I18nKey.labelSkipCharacter, "Enter this char to skip");
     put(I18nKey.labelEditInGame, "Enable edit");
     put(I18nKey.labelGameId, "Game ID");
-    put(I18nKey.labelOnlineUserNumber, "OUN");
+    put(I18nKey.labelOnlineUserNumber, "Online user number");
     put(I18nKey.labelAllowRegisterNumber, "Allow Reg Number");
     put(I18nKey.labelQuestion, "Question");
     put(I18nKey.labelAnswer, "Answer");

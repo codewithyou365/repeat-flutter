@@ -54,6 +54,7 @@ class GsCrRepeatState {
   List<String> gameAddress = [];
   RxBool ignoringPunctuation = RxBool(false);
   RxBool matchSingleCharacter = RxBool(true);
+  RxString skipChar = RxString("");
   RxBool editInGame = RxBool(false);
 
   // for logic

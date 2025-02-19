@@ -80,6 +80,7 @@ class GsCrRepeatLogic extends GetxController {
     state.fakeKnow = 0;
     var ignoringPunctuation = await Db().db.scheduleDao.intKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame) ?? 0;
     state.ignoringPunctuation.value = ignoringPunctuation == 1;
+    state.skipChar.value = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.skipCharacterInTypingGame) ?? '';
     await setCurrentLearnContentAndUpdateView();
   }
 
@@ -559,6 +560,15 @@ class GsCrRepeatLogic extends GetxController {
   setMatchSingleCharacter(bool matchSingleCharacter) {
     state.matchSingleCharacter.value = matchSingleCharacter;
     Db().db.scheduleDao.insertKv(CrKv(Classroom.curr, CrK.matchSingleCharacterInTypingGame, matchSingleCharacter ? '1' : '0'));
+  }
+
+  setSkipChar(String skipChar) {
+    if (skipChar.isNotEmpty) {
+      state.skipChar.value = skipChar[0];
+    } else {
+      state.skipChar.value = '';
+    }
+    Db().db.scheduleDao.insertKv(CrKv(Classroom.curr, CrK.skipCharacterInTypingGame, skipChar));
   }
 
   openEditor() {

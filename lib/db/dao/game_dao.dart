@@ -113,12 +113,16 @@ abstract class GameDao {
       if (typingGame == 1) {
         var punctuation = game.w.replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), '').trim();
         if (punctuation.isNotEmpty) {
-          prevOutput = GameLogic.processWord(game.w, punctuation, [], [], matchSingleCharacter);
+          prevOutput = GameLogic.processWord(game.w, punctuation, [], [], matchSingleCharacter, null);
         }
       }
     }
     final now = DateTime.now();
-    input = GameLogic.processWord(game.w, userInput, obtainOutput, prevOutput, matchSingleCharacter);
+    String? skipChar = await stringKv(Classroom.curr, CrK.skipCharacterInTypingGame);
+    if (skipChar != null && skipChar.isEmpty) {
+      skipChar = null;
+    }
+    input = GameLogic.processWord(game.w, userInput, obtainOutput, prevOutput, matchSingleCharacter, skipChar);
     await insertGameUserInput(GameUserInput(
       game.id,
       gameUserId,

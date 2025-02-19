@@ -330,24 +330,35 @@ class GsCrRepeatViewBasic {
                   I18nKey.labelGameId.tr,
                   "$id",
                 ),
-                RowWidget.buildDivider(),
+                RowWidget.buildDividerWithoutColor(),
                 RowWidget.buildSwitch(
                   I18nKey.labelIgnorePunctuation.tr,
                   state.ignoringPunctuation,
                   logic.setIgnoringPunctuation,
                 ),
-                RowWidget.buildDivider(),
+                RowWidget.buildDividerWithoutColor(),
                 RowWidget.buildSwitch(
                   I18nKey.labelEditInGame.tr,
                   state.editInGame,
                 ),
-                RowWidget.buildDivider(),
+                RowWidget.buildDividerWithoutColor(),
                 RowWidget.buildSwitch(
                   I18nKey.labelMatchSingleCharacter.tr,
                   state.matchSingleCharacter,
                   logic.setMatchSingleCharacter,
                 ),
-                RowWidget.buildDivider(),
+                RowWidget.buildDividerWithoutColor(),
+                Obx(() {
+                  return RowWidget.buildTextWithEdit(
+                    I18nKey.labelSkipCharacter.tr,
+                    state.skipChar,
+                    yes: () {
+                      Get.back();
+                      logic.setSkipChar(state.skipChar.value);
+                    },
+                  );
+                }),
+                RowWidget.buildDividerWithoutColor(),
                 RowWidget.buildTextWithEdit(
                   I18nKey.labelOnlineUserNumber.tr,
                   RxString("${logic.server.server.nodes.userId2Node.length} / ${logic.userManager.allowRegisterNumber}"),
@@ -356,7 +367,7 @@ class GsCrRepeatViewBasic {
                     logic.userManager.show(context);
                   },
                 ),
-                RowWidget.buildDivider(),
+                RowWidget.buildDividerWithoutColor(),
                 ...List.generate(
                   address.length,
                   (index) => Padding(

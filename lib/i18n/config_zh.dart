@@ -138,6 +138,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelSegment, "段");
     put(I18nKey.labelIgnorePunctuation, "忽略标点符号");
     put(I18nKey.labelMatchSingleCharacter, "匹配单个字符");
+    put(I18nKey.labelSkipCharacter, "输入该字符便跳过");
     put(I18nKey.labelEditInGame, "启用编辑");
     put(I18nKey.labelGameId, "游戏ID");
     put(I18nKey.labelOnlineUserNumber, "在线人数");
