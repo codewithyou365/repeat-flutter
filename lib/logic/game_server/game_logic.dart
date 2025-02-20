@@ -1,9 +1,10 @@
 import 'package:repeat_flutter/common/string_util.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
 
 import 'constant.dart';
 
 class GameLogic {
-  static List<String> processWord(String original, String input, List<String> next, List<String> prev, bool matchSingleCharacter, String? skipChar) {
+  static List<String> processWord(String original, String input, List<String> next, List<String> prev, MatchType matchType, String? skipChar) {
     List<String> originalFields = StringUtil.fields(original);
     List<String> inputFields = StringUtil.fields(input);
     List<String> ret = [];
@@ -18,8 +19,8 @@ class GameLogic {
       var original = originalFields[i];
       String prevAnswer = prev[i];
       String failed = replaceChar * original.length;
-      if (prevAnswer.replaceAll(replaceChar, '').length != prevAnswer.length && inputFields.isNotEmpty) {
-        String answer = processChar(original, inputFields[0], prevAnswer, matchSingleCharacter, skipChar);
+      if (matchType == MatchType.all || (prevAnswer.replaceAll(replaceChar, '').length != prevAnswer.length && inputFields.isNotEmpty)) {
+        String answer = processChar(original, inputFields[0], prevAnswer, matchType, skipChar);
         ret.add(answer);
 
         List<String> nextChars = [];
@@ -46,7 +47,7 @@ class GameLogic {
 
   static String replaceChar = PlaceholderToken.using;
 
-  static String processChar(String original, String input, String preAnswer, bool matchSingleCharacter, String? skipChar) {
+  static String processChar(String original, String input, String preAnswer, MatchType matchType, String? skipChar) {
     List<String> originalChars = original.split('');
     List<String> inputChars = input.split('');
     List<String> outputChars = (replaceChar * original.length).split('');
@@ -54,7 +55,7 @@ class GameLogic {
     for (int i = 0; i < originalChars.length; i++) {
       var hit = false;
       var needMatched = true;
-      if (matchSingleCharacter) {
+      if (matchType == MatchType.single) {
         needMatched = preAnswer[i] == replaceChar;
       }
       if (needMatched && inputChars.isNotEmpty && originalChars[i].toLowerCase() == inputChars.first.toLowerCase()) {

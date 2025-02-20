@@ -1,10 +1,13 @@
-import 'dart:convert';
-
+import 'package:get/get.dart';
 import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/db/entity/game_user_input.dart';
+import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
+import 'package:repeat_flutter/page/gs_cr_repeat/gs_cr_repeat_logic.dart';
 
 class SubmitReq {
   int gameId;
@@ -34,14 +37,15 @@ class SubmitRes {
   int id;
   List<String> input;
   List<String> output;
-
-  SubmitRes(this.id, this.input, this.output);
+  int matchType;
+  SubmitRes(this.id, this.input, this.output, this.matchType);
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'input': input,
       'output': output,
+      'matchType': matchType,
     };
   }
 
@@ -50,6 +54,7 @@ class SubmitRes {
       json['id'] as int,
       List<String>.from(json['input'] ?? []),
       List<String>.from(json['output'] ?? []),
+      json['matchType'] as int,
     );
   }
 }
@@ -58,17 +63,23 @@ Future<message.Response?> submit(message.Request req, GameUser? user) async {
   if (user == null) {
     return message.Response(error: GameServerError.serviceStopped.name);
   }
+  final logic = Get.find<GsCrRepeatLogic>();
+  SegmentTodayPrg curr = logic.getCurr();
   final reqBody = SubmitReq.fromJson(req.data);
   final game = await Db().db.gameDao.one(reqBody.gameId);
   if (game == null) {
     return message.Response(error: GameServerError.gameNotFound.name);
   }
+  if (curr.id != reqBody.gameId) {
+    return message.Response(error: GameServerError.gameNotFound.name);
+  }
+  int matchTypeInt = await Db().db.gameDao.intKv(Classroom.curr, CrK.matchTypeInTypingGame) ?? 1;
   List<String> input = [];
   List<String> output = [];
-  GameUserInput gameUserInput = await Db().db.gameDao.submit(game, reqBody.prevId, user.id!, reqBody.input, input, output);
+  GameUserInput gameUserInput = await Db().db.gameDao.submit(game, matchTypeInt, reqBody.prevId, user.id!, reqBody.input, input, output);
   if (gameUserInput.isEmpty()) {
     return message.Response(error: GameServerError.gameSyncError.name);
   }
-  final res = SubmitRes(gameUserInput.id!, input, output);
+  final res = SubmitRes(gameUserInput.id!, input, output, matchTypeInt);
   return message.Response(data: res);
 }

@@ -104,7 +104,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelRelFrom, "Start from");
     put(I18nKey.labelLearnCountPerGroup, "Number per group");
     put(I18nKey.labelFinish, "Finish");
-    put(I18nKey.labelAll, "ALL");
+    put(I18nKey.labelALL, "ALL");
     put(I18nKey.labelSavingConfirm, "Are you sure to save?");
     put(I18nKey.labelConfigChange, "Do you want to save the changes you made?");
     put(I18nKey.labelResetConfig, "The config will be reset. Are you sure?");
@@ -136,7 +136,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelLesson, "Lesson");
     put(I18nKey.labelSegment, "Segment");
     put(I18nKey.labelIgnorePunctuation, "Ignore punctuation");
-    put(I18nKey.labelMatchSingleCharacter, "Match single character");
+    put(I18nKey.labelMatchType, "Match type");
     put(I18nKey.labelSkipCharacter, "Enter this char to skip");
     put(I18nKey.labelEditInGame, "Enable edit");
     put(I18nKey.labelGameId, "Game ID");
@@ -146,6 +146,9 @@ class ConfigEn extends Config {
     put(I18nKey.labelAnswer, "Answer");
     put(I18nKey.labelQuestionAndAnswer, "Q&A");
     put(I18nKey.labelCopyMode, "Copy Mode");
+    put(I18nKey.labelWord, "Word");
+    put(I18nKey.labelSingle, "Single");
+    put(I18nKey.labelAll, "All");
     put(I18nKey.btnStart, "Start");
     put(I18nKey.btnAddSchedule, "Add Schedule");
     put(I18nKey.btnConfigSettings, "Config Settings");

@@ -104,8 +104,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelRelFrom, "开始时间");
     put(I18nKey.labelLearnCountPerGroup, "每组数量");
     put(I18nKey.labelFinish, "完成");
-    put(I18nKey.labelAll, "全部");
-
+    put(I18nKey.labelALL, "全部");
     put(I18nKey.labelSavingConfirm, "是否确定保存？");
     put(I18nKey.labelConfigChange, "配置已改变是否保存？");
     put(I18nKey.labelResetConfig, "配置将被重置。确定吗？");
@@ -137,7 +136,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelLesson, "节");
     put(I18nKey.labelSegment, "段");
     put(I18nKey.labelIgnorePunctuation, "忽略标点符号");
-    put(I18nKey.labelMatchSingleCharacter, "匹配单个字符");
+    put(I18nKey.labelMatchType, "匹配类型");
     put(I18nKey.labelSkipCharacter, "输入该字符便跳过");
     put(I18nKey.labelEditInGame, "启用编辑");
     put(I18nKey.labelGameId, "游戏ID");
@@ -147,6 +146,9 @@ class ConfigZh extends Config {
     put(I18nKey.labelAnswer, "答案");
     put(I18nKey.labelQuestionAndAnswer, "问与答");
     put(I18nKey.labelCopyMode, "复制模式");
+    put(I18nKey.labelWord, "单词");
+    put(I18nKey.labelSingle, "单字");
+    put(I18nKey.labelAll, "全部");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");
     put(I18nKey.btnConfigSettings, "配置设置");

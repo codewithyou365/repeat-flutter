@@ -81,6 +81,8 @@ class GsCrRepeatLogic extends GetxController {
     var ignoringPunctuation = await Db().db.scheduleDao.intKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame) ?? 0;
     state.ignoringPunctuation.value = ignoringPunctuation == 1;
     state.skipChar.value = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.skipCharacterInTypingGame) ?? '';
+    var matchTypeInt = await Db().db.scheduleDao.intKv(Classroom.curr, CrK.matchTypeInTypingGame) ?? 1;
+    state.matchType.value = matchTypeInt;
     await setCurrentLearnContentAndUpdateView();
   }
 
@@ -134,6 +136,14 @@ class GsCrRepeatLogic extends GetxController {
     } else {
       state.step = RepeatStep.finish;
       update([GsCrRepeatLogic.id]);
+    }
+  }
+
+  SegmentTodayPrg getCurr() {
+    if (state.justView) {
+      return state.c[state.justViewIndex];
+    } else {
+      return state.c[0];
     }
   }
 
@@ -557,9 +567,17 @@ class GsCrRepeatLogic extends GetxController {
     Db().db.scheduleDao.insertKv(CrKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame, ignorePunctuation ? '1' : '0'));
   }
 
-  setMatchSingleCharacter(bool matchSingleCharacter) {
-    state.matchSingleCharacter.value = matchSingleCharacter;
-    Db().db.scheduleDao.insertKv(CrKv(Classroom.curr, CrK.matchSingleCharacterInTypingGame, matchSingleCharacter ? '1' : '0'));
+  List<String> getAllMatchType() {
+    return [
+      I18nKey.labelWord.tr,
+      I18nKey.labelSingle.tr,
+      I18nKey.labelAll.tr,
+    ];
+  }
+
+  setMatchType(int matchType) {
+    state.matchType.value = matchType;
+    Db().db.scheduleDao.insertKv(CrKv(Classroom.curr, CrK.matchTypeInTypingGame, '$matchType'));
   }
 
   setSkipChar(String skipChar) {

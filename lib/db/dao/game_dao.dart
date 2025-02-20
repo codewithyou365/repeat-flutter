@@ -9,6 +9,7 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/game_user_input.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/game_server/game_logic.dart';
 
 @dao
@@ -87,14 +88,41 @@ abstract class GameDao {
   }
 
   @transaction
+  Future<List<String>> getTip(
+    int gameId,
+    int gameUserId,
+  ) async {
+    Game? game = await getOne();
+    if (game == null) {
+      return GameUserInput.empty();
+    }
+    GameUserInput? gameUserInput = await lastUserInput(game.id, gameUserId, game.time);
+    if (gameUserInput != null) {
+      return ListUtil.toList(gameUserInput.output);
+    }
+    int matchTypeInt = await intKv(Classroom.curr, CrK.matchTypeInTypingGame) ?? 1;
+    MatchType matchType = MatchType.values[matchTypeInt];
+    int typingGame = await intKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame) ?? 0;
+    if (typingGame == 1) {
+      var punctuation = game.w.replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), '').trim();
+      if (punctuation.isNotEmpty) {
+        return GameLogic.processWord(game.w, punctuation, [], [], matchType, null);
+      }
+    }
+    return GameLogic.processWord(game.w, "", [], [], matchType, null);
+  }
+
+  @transaction
   Future<GameUserInput> submit(
     Game game,
+    int matchTypeInt,
     int preGameUserInputId,
     int gameUserId,
     String userInput,
     List<String> obtainInput,
     List<String> obtainOutput,
   ) async {
+    MatchType matchType = MatchType.values[matchTypeInt];
     GameUserInput? gameUserInput = await lastUserInput(game.id, gameUserId, game.time);
     if (gameUserInput == null && preGameUserInputId != 0) {
       return GameUserInput.empty();
@@ -104,8 +132,7 @@ abstract class GameDao {
     }
     List<String> prevOutput = [];
     List<String> input = [];
-    int matchSingleCharacterInt = await intKv(Classroom.curr, CrK.matchSingleCharacterInTypingGame) ?? 1;
-    bool matchSingleCharacter = matchSingleCharacterInt == 1;
+
     if (gameUserInput != null) {
       prevOutput = ListUtil.toList(gameUserInput.output);
     } else {
@@ -113,7 +140,7 @@ abstract class GameDao {
       if (typingGame == 1) {
         var punctuation = game.w.replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), '').trim();
         if (punctuation.isNotEmpty) {
-          prevOutput = GameLogic.processWord(game.w, punctuation, [], [], matchSingleCharacter, null);
+          prevOutput = GameLogic.processWord(game.w, punctuation, [], [], matchType, null);
         }
       }
     }
@@ -122,7 +149,7 @@ abstract class GameDao {
     if (skipChar != null && skipChar.isEmpty) {
       skipChar = null;
     }
-    input = GameLogic.processWord(game.w, userInput, obtainOutput, prevOutput, matchSingleCharacter, skipChar);
+    input = GameLogic.processWord(game.w, userInput, obtainOutput, prevOutput, matchType, skipChar);
     await insertGameUserInput(GameUserInput(
       game.id,
       gameUserId,

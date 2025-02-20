@@ -342,11 +342,14 @@ class GsCrRepeatViewBasic {
                   state.editInGame,
                 ),
                 RowWidget.buildDividerWithoutColor(),
-                RowWidget.buildSwitch(
-                  I18nKey.labelMatchSingleCharacter.tr,
-                  state.matchSingleCharacter,
-                  logic.setMatchSingleCharacter,
-                ),
+                Obx(() {
+                  return RowWidget.buildCupertinoPicker(
+                    I18nKey.labelMatchType.tr,
+                    logic.getAllMatchType(),
+                    state.matchType,
+                    logic.setMatchType,
+                  );
+                }),
                 RowWidget.buildDividerWithoutColor(),
                 Obx(() {
                   return RowWidget.buildTextWithEdit(

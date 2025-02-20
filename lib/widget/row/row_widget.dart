@@ -25,7 +25,7 @@ class RowWidget {
     );
   }
 
-  static Widget buildCupertinoPicker(String title, List<String> options, [ValueChanged<int>? changed]) {
+  static Widget buildCupertinoPicker(String title, List<String> options, RxInt initialValue, [ValueChanged<int>? changed]) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(paddingHorizontal, 0, 0, 0),
       child: SizedBox(
@@ -41,6 +41,7 @@ class RowWidget {
               width: 80.w,
               height: 64,
               child: CupertinoPicker(
+                scrollController: FixedExtentScrollController(initialItem: initialValue.value),
                 itemExtent: 32.0,
                 onSelectedItemChanged: changed,
                 children: List.generate(options.length, (index) {

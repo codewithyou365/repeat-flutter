@@ -133,7 +133,7 @@ class GsCrPage extends StatelessWidget {
                     child: Row(
                       children: [
                         Text(
-                          "${I18nKey.labelAll.tr}: ${state.learnedTotalCount}/${state.learnTotalCount}",
+                          "${I18nKey.labelALL.tr}: ${state.learnedTotalCount}/${state.learnTotalCount}",
                           style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                         ),
                       ],

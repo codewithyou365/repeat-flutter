@@ -628,8 +628,26 @@ class _$GameDao extends GameDao {
   }
 
   @override
+  Future<List<String>> getTip(
+    int gameId,
+    int gameUserId,
+  ) async {
+    if (database is sqflite.Transaction) {
+      return super.getTip(gameId, gameUserId);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<List<String>>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        return transactionDatabase.gameDao.getTip(gameId, gameUserId);
+      });
+    }
+  }
+
+  @override
   Future<GameUserInput> submit(
     Game game,
+    int matchTypeInt,
     int preGameUserInputId,
     int gameUserId,
     String userInput,
@@ -637,15 +655,21 @@ class _$GameDao extends GameDao {
     List<String> obtainOutput,
   ) async {
     if (database is sqflite.Transaction) {
-      return super.submit(game, preGameUserInputId, gameUserId, userInput,
-          obtainInput, obtainOutput);
+      return super.submit(game, matchTypeInt, preGameUserInputId, gameUserId,
+          userInput, obtainInput, obtainOutput);
     } else {
       return (database as sqflite.Database)
           .transaction<GameUserInput>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        return transactionDatabase.gameDao.submit(game, preGameUserInputId,
-            gameUserId, userInput, obtainInput, obtainOutput);
+        return transactionDatabase.gameDao.submit(
+            game,
+            matchTypeInt,
+            preGameUserInputId,
+            gameUserId,
+            userInput,
+            obtainInput,
+            obtainOutput);
       });
     }
   }

@@ -1,4 +1,4 @@
-import {toNumber} from './convert.ts';
+import { toNumber } from './convert.ts';
 
 export const Path = {
     kick: '/api/kick',
@@ -34,14 +34,17 @@ export class GameUserHistoryReq {
 
 export class GameUserHistoryRes {
     list: SubmitRes[];
+    tips: string[];
 
     constructor() {
         this.list = [];
+        this.tips = [];
     }
 
     static from(other: any): GameUserHistoryRes {
         const ret = new GameUserHistoryRes();
         ret.list = other.list;
+        ret.tips = other.tips;
         return ret;
     }
 }
@@ -65,16 +68,24 @@ export class SubmitReq {
         return ret;
     }
 }
+export enum MatchType {
+    word = 0,
+    single = 1,
+    all = 2,
+}
 
 export class SubmitRes {
     id: number;
     input: string[];
     output: string[];
+    matchType: number;
+
 
     constructor() {
         this.id = 0;
         this.input = [];
         this.output = [];
+        this.matchType = 0;
     }
 
     static from(json: any): SubmitRes {
@@ -82,6 +93,7 @@ export class SubmitRes {
         ret.id = toNumber(json.id);
         ret.input = json.input || [];
         ret.output = json.output || [];
+        ret.matchType = toNumber(json.matchType);
         return ret;
     }
 }

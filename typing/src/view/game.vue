@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import {bus, EventName, RefreshGameType} from "../api/bus.ts";
-import {GameUserHistoryReq, GameUserHistoryRes, Path, SubmitReq, SubmitRes} from "../utils/constant.ts";
+import {GameUserHistoryReq, GameUserHistoryRes, MatchType, Path, SubmitReq, SubmitRes} from "../utils/constant.ts";
 import editor from '../component/editor.vue';
 import reconnect from '../component/reconnect.vue';
 import {Setting, Loading1, Edit} from '@nutui/icons-vue';
@@ -68,7 +68,6 @@ import {useRoute, useRouter} from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
-
 onMounted(async () => {
   refreshGame = RefreshGameType.from(route.query);
 
@@ -130,6 +129,12 @@ const refresh = async (refreshGame: RefreshGameType) => {
         time: refreshGame.time,
       },
     });
+    if (editorComponent.value && res.tips.length > 0) {
+      const editorView = editorComponent.value.getEditorView();
+      editorView?.dispatch({
+        changes: {from: 0, to: editorView?.state.doc.length, insert: res.tips.join(" ")},
+      });
+    }
   } catch (error) {
     console.error('Failed to refresh game:', error);
   } finally {
@@ -180,9 +185,16 @@ const onGameInput = async () => {
   await nextTick(() => {
     window.scrollTo(0, document.body.scrollHeight);
   });
+  let insert = "";
+  if (res.matchType === MatchType.all) {
+    insert = res.output.join(" ");
+  } else {
+    insert = "";
+  }
   editorView?.dispatch({
-    changes: {from: 0, to: editorView?.state.doc.length, insert: ""},
+    changes: {from: 0, to: editorView?.state.doc.length, insert: insert},
   });
+
   overlayVisible.value = false;
 };
 const inputEnable = computed(() => {

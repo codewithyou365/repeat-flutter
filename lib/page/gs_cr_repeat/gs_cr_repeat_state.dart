@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/logic/repeat_doc_edit_help.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
@@ -53,7 +54,7 @@ class GsCrRepeatState {
   var gameMode = false;
   List<String> gameAddress = [];
   RxBool ignoringPunctuation = RxBool(false);
-  RxBool matchSingleCharacter = RxBool(true);
+  RxInt matchType = RxInt(MatchType.word.index);
   RxString skipChar = RxString("");
   RxBool editInGame = RxBool(false);
 
