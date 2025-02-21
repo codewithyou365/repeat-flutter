@@ -22,7 +22,7 @@ class GsCrRepeatViewBasic {
     if (state.justView) {
       currIndex = state.justViewIndex + 1;
     } else {
-      currIndex = state.progress + state.fakeKnow;
+      currIndex = state.progress;
     }
     String text = '';
     if (!state.concentrationMode) {
@@ -195,7 +195,7 @@ class GsCrRepeatViewBasic {
     } else {
       switch (state.step) {
         case RepeatStep.recall:
-          leftButtonText = I18nKey.btnKnow.tr;
+          leftButtonText = I18nKey.btnCheck.tr;
           leftButtonLogic = logic.show;
 
           rightButtonText = I18nKey.btnUnknown.tr;
@@ -218,7 +218,6 @@ class GsCrRepeatViewBasic {
             leftButtonText = "${I18nKey.btnNext.tr}\n${state.nextKey}";
           }
           leftButtonLogic = () => logic.know(autoNext: true, tryFinish: tryFinish);
-          leftButtonLongPressLogic = logic.adjustProgress;
           rightButtonText = I18nKey.btnError.tr;
           rightButtonLogic = logic.tipLongPress;
           rightButtonLongPressLogic = logic.error;

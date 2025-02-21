@@ -148,6 +148,8 @@ enum I18nKey {
   labelWord,
   labelSingle,
   labelAll,
+  labelSetLevel,
+  labelSetNextLearnDate,
   btnStart,
   btnStop,
   btnAddSchedule,
@@ -191,6 +193,7 @@ enum I18nKey {
   btnImport,
   btnSave,
   btnClose,
+  btnCheck,
   ;
 
   String trArgs([List<String> args = const []]) {

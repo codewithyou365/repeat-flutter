@@ -149,15 +149,12 @@ class GsCrRepeatPage extends StatelessWidget {
                       },
                     ),
                     const Spacer(),
-                  ],
-                ),
-              ),
-              if (state.edit == false)
-                SizedBox(
-                  height: appBarHeight,
-                  child: Row(
-                    children: [
-                      const Spacer(),
+                    if (state.step == RepeatStep.evaluate)
+                      IconButton(
+                        icon: const Icon(Icons.assistant_photo),
+                        onPressed: logic.adjustProgress,
+                      ),
+                    if (state.edit == false)
                       PopupMenuButton<String>(
                         icon: const Icon(Icons.more_vert),
                         itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -184,10 +181,10 @@ class GsCrRepeatPage extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(width: 10),
-                    ],
-                  ),
+                    const SizedBox(width: 10),
+                  ],
                 ),
+              ),
             ],
           ),
           buildBody(

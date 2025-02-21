@@ -4,12 +4,46 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/date.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
 class RowWidget {
   static const double titleFontSize = 17;
   static const double rowHeight = 50;
   static const double paddingHorizontal = 8;
+
+  static Widget buildYesOrNo({
+    VoidCallback? yes,
+    String? yesBtnTitle,
+    VoidCallback? no,
+    String? noBtnTitle,
+  }) {
+    return Row(
+      children: [
+        TextButton(
+          child: Text(noBtnTitle ?? I18nKey.btnCancel.tr),
+          onPressed: () {
+            if (no != null) {
+              no();
+            } else {
+              Get.back();
+            }
+          },
+        ),
+        const Spacer(),
+        TextButton(
+          onPressed: () {
+            if (yes != null) {
+              yes();
+            } else {
+              Get.back();
+            }
+          },
+          child: Text(yesBtnTitle ?? I18nKey.btnOk.tr),
+        ),
+      ],
+    );
+  }
 
   static Widget buildMiddleText(String title, {bool main = true}) {
     var ts = const TextStyle(fontSize: titleFontSize);

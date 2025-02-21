@@ -27,6 +27,8 @@ import 'package:repeat_flutter/logic/widget/copy_template.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
+import 'package:repeat_flutter/widget/row/row_widget.dart';
+import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'gs_cr_repeat_state.dart';
@@ -77,7 +79,6 @@ class GsCrRepeatLogic extends GetxController {
     state.progress = state.total - state.c.length;
     state.step = RepeatStep.recall;
     setNeedToPlayMedia(true);
-    state.fakeKnow = 0;
     var ignoringPunctuation = await Db().db.scheduleDao.intKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame) ?? 0;
     state.ignoringPunctuation.value = ignoringPunctuation == 1;
     state.skipChar.value = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.skipCharacterInTypingGame) ?? '';
@@ -96,7 +97,6 @@ class GsCrRepeatLogic extends GetxController {
     }
     state.step = RepeatStep.evaluate;
     setNeedToPlayMedia(true);
-    state.fakeKnow = 1;
     update([GsCrRepeatLogic.id]);
   }
 
@@ -125,7 +125,6 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     setNeedToPlayMedia(true);
-    state.fakeKnow = 0;
     var curr = state.c[0];
     if (!state.justView) {
       await Db().db.scheduleDao.error(curr);
@@ -139,11 +138,19 @@ class GsCrRepeatLogic extends GetxController {
     }
   }
 
-  SegmentTodayPrg getCurr() {
-    if (state.justView) {
-      return state.c[state.justViewIndex];
+  SegmentTodayPrg? getCurr() {
+    if (state.justView || state.edit) {
+      if (state.c.isNotEmpty && state.justViewIndex >= 0 && state.justViewIndex < state.c.length) {
+        return state.c[state.justViewIndex];
+      } else {
+        return null;
+      }
     } else {
-      return state.c[0];
+      if (state.c.isNotEmpty) {
+        return state.c[0];
+      } else {
+        return null;
+      }
     }
   }
 
@@ -179,50 +186,61 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   void adjustProgress() async {
-    var progress = "".obs;
-    var curr = state.c[0];
+    var curr = getCurr();
+    if (curr == null) {
+      return;
+    }
     var schedule = await Db().db.scheduleDao.getSegmentOverallPrg(curr.segmentKeyId);
     if (schedule == null) {
       return;
     }
-    MsgBox.strInputWithYesOrNo(
-      progress,
-      I18nKey.labelAdjustLearnProgress.tr,
-      I18nKey.labelAdjustLearnProgressDesc.trArgs(["${schedule.progress}"]),
-      yes: () async {
-        Nav.back();
-        int pv = 0;
-        try {
-          pv = int.parse(progress.value);
-        } catch (e) {
-          Snackbar.show(I18nKey.labelPleaseInputUnSignNumber.tr);
-          return;
-        }
-        if (pv < 0) {
-          Snackbar.show(I18nKey.labelPleaseInputUnSignNumber.tr);
-          return;
-        }
-        know(autoNext: true, progress: pv);
-      },
-    );
+    var progress = (schedule.progress + 1).obs;
+    var nextDay = ScheduleDao.getNextByProgress(DateTime.now(), progress.value).value.obs;
+    Sheet.showBottomSheet(Get.context!, Obx(() {
+      return ListView(
+        children: [
+          RowWidget.buildYesOrNo(yes: () {
+            Get.back();
+            know(autoNext: true, progress: progress.value, nextDay: nextDay.value);
+          }),
+          RowWidget.buildMiddleText(I18nKey.labelAdjustLearnProgressDesc.trArgs(["${schedule.progress}"])),
+          RowWidget.buildDivider(),
+          RowWidget.buildTextWithEdit(I18nKey.labelSetLevel.tr, progress, yes: () {
+            Get.back();
+            nextDay.value = ScheduleDao.getNextByProgress(DateTime.now(), progress.value).value;
+          }),
+          RowWidget.buildDividerWithoutColor(),
+          RowWidget.buildDateWithEdit(I18nKey.labelSetNextLearnDate.tr, nextDay, Get.context!),
+        ],
+      );
+    }));
 
     update([GsCrRepeatLogic.id]);
   }
 
   // TODO add device volume button
-  void know({autoNext = false, tryFinish = false, int progress = -1}) async {
+  void know({autoNext = false, tryFinish = false, int? progress, int? nextDay}) async {
     if (ticker.isStuck()) {
       return;
     }
-    if (state.c.isEmpty) {
+    var curr = getCurr();
+    if (curr == null) {
       finish();
       return;
     }
-    state.fakeKnow = 0;
-    var curr = state.c[0];
-    if (!state.justView) {
-      await Db().db.scheduleDao.right(curr, progress);
+    await Db().db.scheduleDao.right(
+          curr,
+          progress,
+          nextDay,
+          !state.justView && !state.edit,
+        );
+    if (state.justView || state.edit) {
+      if (autoNext) {
+        nextForJustView(fromView: false);
+      }
+      return;
     }
+
     if (curr.progress >= ScheduleDao.scheduleConfig.maxRepeatTime) {
       state.c.removeAt(0);
     }
@@ -252,7 +270,6 @@ class GsCrRepeatLogic extends GetxController {
     }
     state.step = RepeatStep.recall;
     setNeedToPlayMedia(true);
-    state.fakeKnow = 0;
     await setCurrentLearnContentAndUpdateView();
     await tryRefreshGame();
   }
@@ -266,8 +283,8 @@ class GsCrRepeatLogic extends GetxController {
     update([GsCrRepeatLogic.id]);
   }
 
-  void nextForJustView({tryFinish = false}) async {
-    if (ticker.isStuck()) {
+  void nextForJustView({fromView = true, tryFinish = false}) async {
+    if (fromView && ticker.isStuck()) {
       return;
     }
     if (state.justViewWithoutRecall) {
@@ -277,7 +294,6 @@ class GsCrRepeatLogic extends GetxController {
     }
 
     setNeedToPlayMedia(true);
-    state.fakeKnow = 0;
     if (state.justViewIndex < state.c.length - 1) {
       state.justViewIndex++;
     } else if (tryFinish) {
@@ -297,7 +313,6 @@ class GsCrRepeatLogic extends GetxController {
       state.step = RepeatStep.recall;
     }
     setNeedToPlayMedia(true);
-    state.fakeKnow = 0;
     if (state.justViewIndex > 0) {
       state.justViewIndex--;
     }

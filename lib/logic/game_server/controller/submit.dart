@@ -64,7 +64,10 @@ Future<message.Response?> submit(message.Request req, GameUser? user) async {
     return message.Response(error: GameServerError.serviceStopped.name);
   }
   final logic = Get.find<GsCrRepeatLogic>();
-  SegmentTodayPrg curr = logic.getCurr();
+  SegmentTodayPrg? curr = logic.getCurr();
+  if (curr == null) {
+    return message.Response(error: GameServerError.gameNotFound.name);
+  }
   final reqBody = SubmitReq.fromJson(req.data);
   final game = await Db().db.gameDao.one(reqBody.gameId);
   if (game == null) {

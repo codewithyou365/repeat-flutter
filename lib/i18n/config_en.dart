@@ -113,7 +113,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelDeleteConfig, "Delete Config");
     put(I18nKey.labelCopyText, "Copy Text");
     put(I18nKey.labelResetPassword, "Reset Password");
-    put(I18nKey.labelResetConfigDesc, "After resetting the configuration, the system’s default configuration will be used.");
+    put(I18nKey.labelResetConfigDesc, "After resetting the configuration, the system's default configuration will be used.");
     put(I18nKey.labelOnTapError, "Please press and hold the button to confirm");
     put(I18nKey.labelSetMaskTips, "Swipe left to increase the height of the barrier.");
     put(I18nKey.labelQrCodeContentCopiedToClipboard, "QR code content copied to clipboard");
@@ -127,7 +127,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelLocalZipImport, "Local ZIP import");
     put(I18nKey.labelLocalMediaImport, "Local media import");
     put(I18nKey.labelLocalImportCancel, "Local Import is Canceled");
-    put(I18nKey.labelSegmentRemoved, "The corresponding learning segment has been removed. It is recommended to back up your data first, then click “Confirm” to delete the related data.");
+    put(I18nKey.labelSegmentRemoved, "The corresponding learning segment has been removed. It is recommended to back up your data first, then click \"Confirm\" to delete the related data.");
     put(I18nKey.labelDocNotBeDownloaded, "The content (%s) is not downloaded");
     put(I18nKey.labelDocCantBeFound, "The content (%s) cannot be found");
     put(I18nKey.labelInputPathError, "The inputting path is error");
@@ -149,6 +149,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelWord, "Word");
     put(I18nKey.labelSingle, "Single");
     put(I18nKey.labelAll, "All");
+    put(I18nKey.labelSetLevel, "Set level");
+    put(I18nKey.labelSetNextLearnDate, "Set next learn date");
     put(I18nKey.btnStart, "Start");
     put(I18nKey.btnAddSchedule, "Add Schedule");
     put(I18nKey.btnConfigSettings, "Config Settings");
@@ -191,5 +193,6 @@ class ConfigEn extends Config {
     put(I18nKey.btnImport, "Import");
     put(I18nKey.btnSave, "Save");
     put(I18nKey.btnClose, "Close");
+    put(I18nKey.btnCheck, "CHECK");
   }
 }

@@ -149,6 +149,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelWord, "单词");
     put(I18nKey.labelSingle, "单字");
     put(I18nKey.labelAll, "全部");
+    put(I18nKey.labelSetLevel, "设置等级");
+    put(I18nKey.labelSetNextLearnDate, "设置下次学习时间");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");
     put(I18nKey.btnConfigSettings, "配置设置");
@@ -191,5 +193,6 @@ class ConfigZh extends Config {
     put(I18nKey.btnImport, "导入");
     put(I18nKey.btnSave, "保存");
     put(I18nKey.btnClose, "关闭");
+    put(I18nKey.btnCheck, "检查");
   }
 }
