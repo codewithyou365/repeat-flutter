@@ -1,28 +1,42 @@
 import 'package:get/get.dart';
-import 'package:repeat_flutter/i18n/i18n_key.dart';
+
+import 'package:flutter/material.dart';
 
 class Snackbar {
-  static List<SnackbarController> snackbar = [];
-  static int finishCount = 0;
-
-  static show(String content) {
-    if (finishCount == snackbar.length) {
-      finishCount = 0;
-      snackbar = [];
-    } else {
-      snackbar[snackbar.length - 1].close(withAnimations: false);
+  static void show(String content) {
+    var context = Get.context;
+    if (context == null) {
+      return;
     }
-    var sb = Get.snackbar(
-      I18nKey.labelTips.tr,
-      content,
+    double marginWidth = 40;
+    if (content.length < 10) {
+      marginWidth = 80;
+    }
+    var isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Center(
+          child: Text(
+            content,
+            style: TextStyle(
+              fontSize: 18,
+              color: isDarkMode ? Colors.white : Colors.black,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: isDarkMode ? Colors.black : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: EdgeInsets.only(
+          left: marginWidth,
+          right: marginWidth,
+          bottom: MediaQuery.of(context).size.height / 2 - 28,
+        ),
+        elevation: 10000000,
+      ),
     );
-    sb.future.whenComplete(() {
-      finishCount++;
-      if (finishCount == snackbar.length) {
-        finishCount = 0;
-        snackbar = [];
-      }
-    });
-    snackbar.add(sb);
   }
 }
