@@ -199,16 +199,27 @@ class GsCrRepeatLogic extends GetxController {
     Sheet.showBottomSheet(Get.context!, Obx(() {
       return ListView(
         children: [
-          RowWidget.buildYesOrNo(yes: () {
-            Get.back();
-            know(autoNext: true, progress: progress.value, nextDay: nextDay.value);
-          }),
+          RowWidget.buildYesOrNo(
+            yesBtnTitle: I18nKey.btnCancel.tr,
+            noBtnTitle: I18nKey.btnNext.tr,
+            no: () {
+              Get.back();
+              know(autoNext: true, progress: progress.value, nextDay: nextDay.value);
+            },
+          ),
           RowWidget.buildMiddleText(I18nKey.labelAdjustLearnProgressDesc.trArgs(["${schedule.progress}"])),
           RowWidget.buildDivider(),
-          RowWidget.buildTextWithEdit(I18nKey.labelSetLevel.tr, progress, yes: () {
-            Get.back();
-            nextDay.value = ScheduleDao.getNextByProgress(DateTime.now(), progress.value).value;
-          }),
+          RowWidget.buildCupertinoPicker(
+            I18nKey.labelSetLevel.tr,
+            List.generate(schedule.progress + ScheduleDao.scheduleConfig.forgettingCurve.length, (i) {
+              return '$i';
+            }),
+            progress,
+            (value) {
+              progress.value = value;
+              nextDay.value = ScheduleDao.getNextByProgress(DateTime.now(), value).value;
+            },
+          ),
           RowWidget.buildDividerWithoutColor(),
           RowWidget.buildDateWithEdit(I18nKey.labelSetNextLearnDate.tr, nextDay, Get.context!),
         ],

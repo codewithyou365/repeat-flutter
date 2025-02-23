@@ -66,7 +66,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelSaveCancel, "Save canceled");
     put(I18nKey.labelStoragePermissionDenied, "Storage permission has been denied. Please enable storage permission in the settings.");
     put(I18nKey.labelAdjustLearnProgress, "Adjust the learning progress.");
-    put(I18nKey.labelAdjustLearnProgressDesc, "Current progress is %s, please enter the new learning progress.");
+    put(I18nKey.labelAdjustLearnProgressDesc, "Current progress is %s, please adjust your learning progress.");
     put(I18nKey.labelPleaseInputUnSignNumber, "Please enter a number greater than or equal to 0.");
     put(I18nKey.labelReset, "Reset");
     put(I18nKey.labelResetAllDesc, "All tasks for today will be reset. Do you want to continue?");
@@ -149,8 +149,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelWord, "Word");
     put(I18nKey.labelSingle, "Single");
     put(I18nKey.labelAll, "All");
-    put(I18nKey.labelSetLevel, "Set level");
-    put(I18nKey.labelSetNextLearnDate, "Set next learn date");
+    put(I18nKey.labelSetLevel, "Level");
+    put(I18nKey.labelSetNextLearnDate, "Next Learning Date");
     put(I18nKey.btnStart, "Start");
     put(I18nKey.btnAddSchedule, "Add Schedule");
     put(I18nKey.btnConfigSettings, "Config Settings");

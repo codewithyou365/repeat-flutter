@@ -760,7 +760,6 @@ abstract class ScheduleDao {
     } else if (segmentTodayPrg.progress == 0 && DateTime.fromMicrosecondsSinceEpoch(0).compareTo(segmentTodayPrg.viewTime) == 0) {
       complete = true;
       if (prgType == TodayPrgType.learn) {
-        // 只有学习 调整进度
         var schedule = await getSegmentOverallPrg(segmentKeyId);
         if (schedule == null) {
           return;

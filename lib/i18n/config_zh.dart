@@ -66,7 +66,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelSaveCancel, "保存已取消");
     put(I18nKey.labelStoragePermissionDenied, "存储权限被拒绝，请在设置中打开存储权限");
     put(I18nKey.labelAdjustLearnProgress, "调整学习进度");
-    put(I18nKey.labelAdjustLearnProgressDesc, "当前进度为 %s，请输入新的学习进度");
+    put(I18nKey.labelAdjustLearnProgressDesc, "当前进度为 %s，请调整您的学习进度");
     put(I18nKey.labelPleaseInputUnSignNumber, "请输入大于或等于 0 的数字");
     put(I18nKey.labelReset, "重置内容");
     put(I18nKey.labelResetAllDesc, "将重置今日所有的任务，是否继续？");
@@ -149,8 +149,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelWord, "单词");
     put(I18nKey.labelSingle, "单字");
     put(I18nKey.labelAll, "全部");
-    put(I18nKey.labelSetLevel, "设置等级");
-    put(I18nKey.labelSetNextLearnDate, "设置下次学习时间");
+    put(I18nKey.labelSetLevel, "等级");
+    put(I18nKey.labelSetNextLearnDate, "下次学习时间");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");
     put(I18nKey.btnConfigSettings, "配置设置");

@@ -162,7 +162,6 @@ class GsCrRepeatViewBasic {
     var leftButtonText = "";
     var rightButtonText = "";
     void Function() leftButtonLogic = () => {};
-    void Function()? leftButtonLongPressLogic;
     void Function() rightButtonLogic = () => {};
     void Function()? rightButtonLongPressLogic;
     if (state.justView || state.edit) {
@@ -250,7 +249,6 @@ class GsCrRepeatViewBasic {
                 logic.onPreClick,
                 leftButtonLogic,
                 width: buttonWidth,
-                onLongPress: leftButtonLongPressLogic,
               ),
               const Spacer(),
               buildButton(
