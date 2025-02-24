@@ -88,6 +88,8 @@ class _$AppDatabase extends AppDatabase {
 
   BaseDao? _baseDaoInstance;
 
+  StatsDao? _statsDaoInstance;
+
   Future<sqflite.Database> open(
     String path,
     List<Migration> migrations, [
@@ -130,6 +132,8 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentTodayPrg` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `type` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `reviewCount` INTEGER NOT NULL, `reviewCreateDate` INTEGER NOT NULL, `finish` INTEGER NOT NULL)');
         await database.execute(
+            'CREATE TABLE IF NOT EXISTS `SegmentStats` (`segmentKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`, `type`, `createDate`))');
+        await database.execute(
             'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER NOT NULL, `time` INTEGER NOT NULL, `mediaHash` TEXT NOT NULL, `aStart` TEXT NOT NULL, `aEnd` TEXT NOT NULL, `w` TEXT NOT NULL, `segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `GameUser` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `password` TEXT NOT NULL, `nonce` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `token` TEXT NOT NULL, `tokenExpiredDate` INTEGER NOT NULL)');
@@ -171,6 +175,10 @@ class _$AppDatabase extends AppDatabase {
             'CREATE INDEX `index_SegmentTodayPrg_classroomId_sort` ON `SegmentTodayPrg` (`classroomId`, `sort`)');
         await database.execute(
             'CREATE INDEX `index_SegmentTodayPrg_classroomId_contentSerial` ON `SegmentTodayPrg` (`classroomId`, `contentSerial`)');
+        await database.execute(
+            'CREATE INDEX `index_SegmentStats_classroomId_contentSerial` ON `SegmentStats` (`classroomId`, `contentSerial`)');
+        await database.execute(
+            'CREATE INDEX `index_SegmentStats_classroomId_createDate` ON `SegmentStats` (`classroomId`, `createDate`)');
         await database.execute(
             'CREATE INDEX `index_Game_classroomId_contentSerial_lessonIndex_segmentIndex` ON `Game` (`classroomId`, `contentSerial`, `lessonIndex`, `segmentIndex`)');
         await database.execute(
@@ -234,6 +242,11 @@ class _$AppDatabase extends AppDatabase {
   @override
   BaseDao get baseDao {
     return _baseDaoInstance ??= _$BaseDao(database, changeListener);
+  }
+
+  @override
+  StatsDao get statsDao {
+    return _statsDaoInstance ??= _$StatsDao(database, changeListener);
   }
 }
 
@@ -1266,6 +1279,17 @@ class _$ScheduleDao extends ScheduleDao {
                   'next': _dateConverter.encode(item.next),
                   'progress': item.progress
                 }),
+        _segmentStatsInsertionAdapter = InsertionAdapter(
+            database,
+            'SegmentStats',
+            (SegmentStats item) => <String, Object?>{
+                  'segmentKeyId': item.segmentKeyId,
+                  'type': item.type,
+                  'createDate': _dateConverter.encode(item.createDate),
+                  'createTime': item.createTime,
+                  'classroomId': item.classroomId,
+                  'contentSerial': item.contentSerial
+                }),
         _crKvDeletionAdapter = DeletionAdapter(
             database,
             'CrKv',
@@ -1293,6 +1317,8 @@ class _$ScheduleDao extends ScheduleDao {
   final InsertionAdapter<Segment> _segmentInsertionAdapter;
 
   final InsertionAdapter<SegmentOverallPrg> _segmentOverallPrgInsertionAdapter;
+
+  final InsertionAdapter<SegmentStats> _segmentStatsInsertionAdapter;
 
   final DeletionAdapter<CrKv> _crKvDeletionAdapter;
 
@@ -1746,6 +1772,12 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
+  Future<void> insertSegmentStats(SegmentStats stats) async {
+    await _segmentStatsInsertionAdapter.insert(
+        stats, OnConflictStrategy.replace);
+  }
+
+  @override
   Future<void> deleteKv(CrKv kv) async {
     await _crKvDeletionAdapter.delete(kv);
   }
@@ -1925,6 +1957,75 @@ class _$BaseDao extends BaseDao {
   @override
   Future<void> insertLock(Lock entity) async {
     await _lockInsertionAdapter.insert(entity, OnConflictStrategy.replace);
+  }
+}
+
+class _$StatsDao extends StatsDao {
+  _$StatsDao(
+    this.database,
+    this.changeListener,
+  ) : _queryAdapter = QueryAdapter(database);
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  @override
+  Future<List<SegmentStats>> getStatsByDate(
+    int classroomId,
+    Date date,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM SegmentStats WHERE classroomId = ?1 AND createDate = ?2',
+        mapper: (Map<String, Object?> row) => SegmentStats(
+            row['segmentKeyId'] as int,
+            row['type'] as int,
+            _dateConverter.decode(row['createDate'] as int),
+            row['createTime'] as int,
+            row['classroomId'] as int,
+            row['contentSerial'] as int),
+        arguments: [classroomId, _dateConverter.encode(date)]);
+  }
+
+  @override
+  Future<List<SegmentStats>> getStatsByDateRange(
+    int classroomId,
+    Date start,
+    Date end,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM SegmentStats WHERE classroomId = ?1 AND createDate >= ?2 AND createDate <= ?3',
+        mapper: (Map<String, Object?> row) => SegmentStats(row['segmentKeyId'] as int, row['type'] as int, _dateConverter.decode(row['createDate'] as int), row['createTime'] as int, row['classroomId'] as int, row['contentSerial'] as int),
+        arguments: [
+          classroomId,
+          _dateConverter.encode(start),
+          _dateConverter.encode(end)
+        ]);
+  }
+
+  @override
+  Future<int?> getCountByType(
+    int classroomId,
+    int type,
+    Date date,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT COUNT(*) FROM SegmentStats WHERE classroomId = ?1 AND type = ?2 AND createDate = ?3',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [classroomId, type, _dateConverter.encode(date)]);
+  }
+
+  @override
+  Future<List<int>> getDistinctSegmentKeyIds(
+    int classroomId,
+    Date date,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT DISTINCT segmentKeyId FROM SegmentStats WHERE classroomId = ?1 AND createDate = ?2',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [classroomId, _dateConverter.encode(date)]);
   }
 }
 

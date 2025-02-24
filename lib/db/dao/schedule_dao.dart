@@ -16,6 +16,7 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/logic/model/segment_overall_prg_with_key.dart';
 import 'package:repeat_flutter/logic/model/segment_review_with_key.dart';
+import 'package:repeat_flutter/db/entity/segment_stats.dart';
 
 // ebbinghaus learning config
 class ElConfig {
@@ -469,6 +470,9 @@ abstract class ScheduleDao {
       ' AND Segment.lessonIndex=:lessonIndex')
   Future<int?> getMaxSegmentIndex(int classroomId, int contentSerial, int lessonIndex);
 
+  @Insert(onConflict: OnConflictStrategy.replace)
+  Future<void> insertSegmentStats(SegmentStats stats);
+
   @transaction
   Future<void> deleteBySegmentKeyId(int segmentKeyId) async {
     await forUpdate();
@@ -791,6 +795,7 @@ abstract class ScheduleDao {
         todayNextProgress = segmentTodayPrg.progress + 1;
       }
       await setScheduleCurrentWithCache(segmentTodayPrg, todayNextProgress, now);
+      await insertSegmentStats(SegmentStats(segmentKeyId, prgType.index, Date(todayLearnCreateDate), now.millisecondsSinceEpoch, Classroom.curr, segmentTodayPrg.contentSerial));
     }
 
     if (nextProgress != null) {

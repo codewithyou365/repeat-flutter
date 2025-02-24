@@ -12,6 +12,7 @@ import 'package:repeat_flutter/db/dao/game_dao.dart';
 import 'package:repeat_flutter/db/dao/game_user_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/kv_dao.dart';
+import 'package:repeat_flutter/db/dao/stats_dao.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
@@ -21,6 +22,7 @@ import 'package:repeat_flutter/db/entity/segment.dart';
 import 'package:repeat_flutter/db/entity/segment_key.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment_review.dart';
+import 'package:repeat_flutter/db/entity/segment_stats.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
@@ -52,6 +54,7 @@ part 'database.g.dart'; // the generated code will be there
   SegmentReviewWithKey,
   SegmentTodayPrg,
   SegmentContentInDb,
+  SegmentStats,
   Game,
   GameUser,
   GameUserInput,
@@ -79,6 +82,8 @@ abstract class AppDatabase extends FloorDatabase {
   ScheduleDao get scheduleDao;
 
   BaseDao get baseDao;
+
+  StatsDao get statsDao;
 }
 
 class Db {
