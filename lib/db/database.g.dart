@@ -1569,7 +1569,7 @@ class _$ScheduleDao extends ScheduleDao {
     Date end,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentReview.*,Content.name contentName,Segment.lessonIndex,Segment.segmentIndex FROM Segment JOIN SegmentReview on SegmentReview.segmentKeyId=Segment.segmentKeyId AND SegmentReview.createDate>=?2 AND SegmentReview.createDate<=?3 JOIN Content ON Content.classroomId=Segment.classroomId AND Content.serial=Segment.contentSerial WHERE Segment.classroomId=?1 ORDER BY SegmentReview.createDate desc,Segment.sort asc',
+        'SELECT SegmentReview.*,Content.name contentName,Segment.lessonIndex,Segment.segmentIndex FROM SegmentReview JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId JOIN Content ON Content.classroomId=SegmentReview.classroomId AND Content.serial=SegmentReview.contentSerial WHERE SegmentReview.classroomId=?1 AND SegmentReview.createDate>=?2 AND SegmentReview.createDate<=?3 ORDER BY SegmentReview.createDate desc,Segment.sort asc',
         mapper: (Map<String, Object?> row) => SegmentReviewWithKey(_dateConverter.decode(row['createDate'] as int), row['segmentKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, row['count'] as int, row['contentName'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int),
         arguments: [
           classroomId,

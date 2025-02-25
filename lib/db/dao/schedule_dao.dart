@@ -357,11 +357,11 @@ abstract class ScheduleDao {
       ",Content.name contentName"
       ",Segment.lessonIndex"
       ",Segment.segmentIndex"
-      " FROM Segment"
-      " JOIN SegmentReview on SegmentReview.segmentKeyId=Segment.segmentKeyId"
+      " FROM SegmentReview"
+      " JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId"
+      " JOIN Content ON Content.classroomId=SegmentReview.classroomId AND Content.serial=SegmentReview.contentSerial"
+      " WHERE SegmentReview.classroomId=:classroomId"
       " AND SegmentReview.createDate>=:start AND SegmentReview.createDate<=:end"
-      " JOIN Content ON Content.classroomId=Segment.classroomId AND Content.serial=Segment.contentSerial"
-      " WHERE Segment.classroomId=:classroomId"
       " ORDER BY SegmentReview.createDate desc,Segment.sort asc")
   Future<List<SegmentReviewWithKey>> getAllSegmentReview(int classroomId, Date start, Date end);
 

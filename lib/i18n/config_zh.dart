@@ -45,8 +45,10 @@ class ConfigZh extends Config {
     put(I18nKey.labelNoLearningContent, "没有学习内容");
     put(I18nKey.labelResetLearningContent, "在 %s 后，将重置学习内容");
     put(I18nKey.labelTips, "提示");
-    put(I18nKey.labelExamineCount, "考核次数");
-    put(I18nKey.labelSegmentNumber, "片段数量");
+    put(I18nKey.labelReviewThisCount, "回顾该内容次数");
+    put(I18nKey.labelLearnCount, "学习次数");
+    put(I18nKey.labelReviewCount, "回顾次数");
+    put(I18nKey.labelFullCustomCount, "自定义次数");
     put(I18nKey.labelNoContent, "暂无内容");
     put(I18nKey.labelJsonErrorSaveFailed, "JSON格式错误，保存失败");
     put(I18nKey.labelImportFailed, "导入失败");
@@ -109,6 +111,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelConfigChange, "配置已改变是否保存？");
     put(I18nKey.labelResetConfig, "配置将被重置。确定吗？");
     put(I18nKey.labelDetailConfig, "配置详情");
+    put(I18nKey.labelDetail, "详情");
     put(I18nKey.labelCopyConfig, "复制配置");
     put(I18nKey.labelDeleteConfig, "删除配置");
     put(I18nKey.labelCopyText, "复制文本");

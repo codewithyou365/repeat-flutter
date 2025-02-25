@@ -34,19 +34,19 @@ class Client {
           } else if (msg.type == MessageType.request) {
             responseHandler(controllers, msg, socket);
           } else {
-            logger ?? ('Unknown message type: ${msg.type}');
+            logger?.call('Unknown message type: ${msg.type}');
           }
         } catch (e) {
-          logger ?? ('Error handling WebSocket message: $e');
+          logger ?.call ('Error handling WebSocket message: $e');
         }
       },
       onDone: () {
         node = null;
-        logger ?? ('Client disconnected: ');
+        logger ?.call ('Client disconnected: ');
       },
       onError: (error) {
         node = null;
-        logger ?? ('Client disconnected: . Error: $error');
+        logger ?.call ('Client disconnected: . Error: $error');
       },
     );
     return true;

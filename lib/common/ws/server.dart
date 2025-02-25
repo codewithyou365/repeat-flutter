@@ -118,7 +118,7 @@ class Server<User extends UserId> {
         }
       });
     } catch (e) {
-      logger ?? ('Error starting HTTP server: $e');
+      logger?.call('Error starting HTTP server: $e');
     }
   }
 
@@ -127,7 +127,7 @@ class Server<User extends UserId> {
     if (server != null) {
       await nodes.removeAll();
       await server!.close();
-      logger ?? ('HTTP server stopped');
+      logger?.call('HTTP server stopped');
       server = null;
     }
   }
@@ -162,18 +162,18 @@ class Server<User extends UserId> {
             responseHandler(controllers, msg, socket);
           }
         } catch (e) {
-          logger ?? ('Error handling WebSocket message: $e');
+          logger?.call('Error handling WebSocket message: $e');
         } finally {
           node.resetCloseTime();
         }
       },
       onDone: () {
         nodes.remove(hashCode);
-        logger ?? ('Client disconnected: $hashCode');
+        logger?.call('Client disconnected: $hashCode');
       },
       onError: (error) {
         nodes.remove(hashCode);
-        logger ?? ('Client disconnected: $hashCode. Error: $error');
+        logger?.call('Client disconnected: $hashCode. Error: $error');
       },
     );
   }

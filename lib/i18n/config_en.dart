@@ -45,8 +45,10 @@ class ConfigEn extends Config {
     put(I18nKey.labelNoLearningContent, "There is no learning content available.");
     put(I18nKey.labelResetLearningContent, "The learning content will be reset in %s");
     put(I18nKey.labelTips, "Tips");
-    put(I18nKey.labelExamineCount, "Examine Count");
-    put(I18nKey.labelSegmentNumber, "Segment Count");
+    put(I18nKey.labelReviewThisCount, "Review These Segments Count");
+    put(I18nKey.labelLearnCount, "Learn Count");
+    put(I18nKey.labelReviewCount, "Review Count");
+    put(I18nKey.labelFullCustomCount, "Full Custom Count");
     put(I18nKey.labelNoContent, "No content yet");
     put(I18nKey.labelJsonErrorSaveFailed, "JSON format error, failed to save.");
     put(I18nKey.labelImportFailed, "Import failed");
@@ -109,6 +111,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelConfigChange, "Do you want to save the changes you made?");
     put(I18nKey.labelResetConfig, "The config will be reset. Are you sure?");
     put(I18nKey.labelDetailConfig, "Config Detail");
+    put(I18nKey.labelDetail, "Detail");
     put(I18nKey.labelCopyConfig, "Copy Config");
     put(I18nKey.labelDeleteConfig, "Delete Config");
     put(I18nKey.labelCopyText, "Copy Text");

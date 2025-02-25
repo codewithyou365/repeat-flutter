@@ -30,6 +30,13 @@ class GsCrStatsPage extends StatelessWidget {
               Nav.gsCrStatsReview.push();
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.query_stats),
+            title: Text(I18nKey.labelDetail.tr),
+            onTap: () {
+              Nav.gsCrStatsDetail.push();
+            },
+          ),
         ],
       ),
     );

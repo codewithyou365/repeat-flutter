@@ -5,30 +5,31 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/widget/date/calendar_widget.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
-import 'gs_cr_stats_review_logic.dart';
 
-class GsCrStatsReviewPage extends StatelessWidget {
-  const GsCrStatsReviewPage({Key? key}) : super(key: key);
+import 'gs_cr_stats_detail_logic.dart';
+
+class GsCrStatsDetailPage extends StatelessWidget {
+  const GsCrStatsDetailPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final logic = Get.find<GsCrStatsReviewLogic>();
+    final logic = Get.find<GsCrStatsDetailLogic>();
     return Scaffold(
       appBar: AppBar(
-        title: Text(I18nKey.statisticReview.tr),
+        title: Text(I18nKey.labelDetail.tr),
       ),
       body: buildWidget(context, logic),
     );
   }
 
-  Widget buildWidget(BuildContext context, GsCrStatsReviewLogic logic) {
-    return GetBuilder<GsCrStatsReviewLogic>(
-      id: GsCrStatsReviewLogic.id,
+  Widget buildWidget(BuildContext context, GsCrStatsDetailLogic logic) {
+    return GetBuilder<GsCrStatsDetailLogic>(
+      id: GsCrStatsDetailLogic.id,
       builder: (_) => _buildWidget(context, logic),
     );
   }
 
-  Widget _buildWidget(BuildContext context, GsCrStatsReviewLogic logic) {
+  Widget _buildWidget(BuildContext context, GsCrStatsDetailLogic logic) {
     var state = logic.state;
     return ListView(
       children: [
@@ -39,6 +40,7 @@ class GsCrStatsReviewPage extends StatelessWidget {
             var value = Date.from(day).value;
             final learnCount = state.learnCount[value] ?? 0;
             final reviewCount = state.reviewCount[value] ?? 0;
+            final fullCustomCount = state.fullCustomCount[value] ?? 0;
             Sheet.showBottomSheet(
               context,
               ListView(
@@ -48,7 +50,9 @@ class GsCrStatsReviewPage extends StatelessWidget {
                     children: [
                       RowWidget.buildText(I18nKey.labelLearnCount.tr, '$learnCount'),
                       RowWidget.buildDividerWithoutColor(),
-                      RowWidget.buildText(I18nKey.labelReviewThisCount.tr, '$reviewCount'),
+                      RowWidget.buildText(I18nKey.labelReviewCount.tr, '$reviewCount'),
+                      RowWidget.buildDividerWithoutColor(),
+                      RowWidget.buildText(I18nKey.labelFullCustomCount.tr, '$fullCustomCount'),
                     ],
                   )
                 ],
@@ -58,11 +62,13 @@ class GsCrStatsReviewPage extends StatelessWidget {
           },
           getDayDescribe: (day) {
             var value = Date.from(day).value;
-            final minCount = state.minCount[value] ?? -1;
-            if (minCount == -1) {
+            final learnCount = state.learnCount[value] ?? 0;
+            final reviewCount = state.reviewCount[value] ?? 0;
+            final fullCustomCount = state.fullCustomCount[value] ?? 0;
+            if (learnCount == 0 && reviewCount == 0 && fullCustomCount == 0) {
               return '';
             }
-            return '$minCount';
+            return fullCustomCount > 0 ? '$learnCount/$reviewCount/$fullCustomCount' : '$learnCount/$reviewCount';
           },
         ),
       ],

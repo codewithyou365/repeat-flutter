@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class Sheet {
-  static void showBottomSheet(BuildContext context, Widget w) {
+  static void showBottomSheet(BuildContext context, Widget w, {double? rate}) {
     final Size screenSize = MediaQuery.of(context).size;
     showModalBottomSheet(
       context: context,
@@ -11,7 +11,7 @@ class Sheet {
       builder: (BuildContext context) {
         return SizedBox(
           width: screenSize.width,
-          height: screenSize.height * 2 / 3,
+          height: screenSize.height * (rate ?? 2 / 3),
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 10.0.w, vertical: 20.0),
             child: w,
