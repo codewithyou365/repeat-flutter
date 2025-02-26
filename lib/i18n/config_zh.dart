@@ -13,6 +13,7 @@ class ConfigZh extends Config {
     put(I18nKey.statistic, "统计");
     put(I18nKey.statisticLearn, "统计-学习");
     put(I18nKey.statisticReview, "统计-回顾");
+    put(I18nKey.statisticDetail, "统计-详情");
     put(I18nKey.language, "语言");
     put(I18nKey.theme, "主题");
     put(I18nKey.data, "数据");

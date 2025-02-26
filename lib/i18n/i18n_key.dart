@@ -11,6 +11,7 @@ enum I18nKey {
   statistic,
   statisticLearn,
   statisticReview,
+  statisticDetail,
   language,
   theme,
   data,

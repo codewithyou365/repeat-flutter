@@ -16,7 +16,7 @@ class GsCrStatsDetailPage extends StatelessWidget {
     final logic = Get.find<GsCrStatsDetailLogic>();
     return Scaffold(
       appBar: AppBar(
-        title: Text(I18nKey.labelDetail.tr),
+        title: Text(I18nKey.statisticDetail.tr),
       ),
       body: buildWidget(context, logic),
     );

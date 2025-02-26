@@ -32,7 +32,7 @@ class GsCrStatsPage extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.query_stats),
-            title: Text(I18nKey.labelDetail.tr),
+            title: Text(I18nKey.statisticDetail.tr),
             onTap: () {
               Nav.gsCrStatsDetail.push();
             },

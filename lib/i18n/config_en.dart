@@ -13,6 +13,7 @@ class ConfigEn extends Config {
     put(I18nKey.statistic, "Stats");
     put(I18nKey.statisticLearn, "Stats-Learn");
     put(I18nKey.statisticReview, "Stats-Review");
+    put(I18nKey.statisticDetail, "Stats-Detail");
     put(I18nKey.language, "Language");
     put(I18nKey.theme, "Theme");
     put(I18nKey.data, "Data");
