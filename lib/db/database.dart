@@ -27,6 +27,7 @@ import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/db/entity/game_user_input.dart';
+import 'package:repeat_flutter/db/entity/time_stats.dart';
 import 'package:repeat_flutter/db/migration/m1_2.dart';
 import 'package:repeat_flutter/db/migration/m2_3.dart';
 import 'package:repeat_flutter/db/type_converter.dart';
@@ -55,6 +56,7 @@ part 'database.g.dart'; // the generated code will be there
   SegmentTodayPrg,
   SegmentContentInDb,
   SegmentStats,
+  TimeStats,
   Game,
   GameUser,
   GameUserInput,

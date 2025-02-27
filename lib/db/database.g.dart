@@ -134,6 +134,8 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentStats` (`segmentKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`, `type`, `createDate`))');
         await database.execute(
+            'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
+        await database.execute(
             'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER NOT NULL, `time` INTEGER NOT NULL, `mediaHash` TEXT NOT NULL, `aStart` TEXT NOT NULL, `aEnd` TEXT NOT NULL, `w` TEXT NOT NULL, `segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `GameUser` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `password` TEXT NOT NULL, `nonce` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `token` TEXT NOT NULL, `tokenExpiredDate` INTEGER NOT NULL)');
@@ -2026,6 +2028,48 @@ class _$StatsDao extends StatsDao {
         'SELECT DISTINCT segmentKeyId FROM SegmentStats WHERE classroomId = ?1 AND createDate = ?2',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId, _dateConverter.encode(date)]);
+  }
+
+  @override
+  Future<TimeStats?> getTimeStatsByDate(
+    int classroomId,
+    Date date,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT * FROM TimeStats WHERE classroomId = ?1 AND createDate = ?2',
+        mapper: (Map<String, Object?> row) => TimeStats(
+            row['classroomId'] as int,
+            _dateConverter.decode(row['createDate'] as int),
+            row['createTime'] as int,
+            row['duration'] as int),
+        arguments: [classroomId, _dateConverter.encode(date)]);
+  }
+
+  @override
+  Future<List<TimeStats>> getTimeStatsByDateRange(
+    int classroomId,
+    Date start,
+    Date end,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM TimeStats WHERE classroomId = ?1 AND createDate >= ?2 AND createDate <= ?3',
+        mapper: (Map<String, Object?> row) => TimeStats(row['classroomId'] as int, _dateConverter.decode(row['createDate'] as int), row['createTime'] as int, row['duration'] as int),
+        arguments: [
+          classroomId,
+          _dateConverter.encode(start),
+          _dateConverter.encode(end)
+        ]);
+  }
+
+  @override
+  Future<void> updateTimeStats(
+    int classroomId,
+    Date date,
+    int time,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE TimeStats set duration=?3+duration WHERE classroomId=?1 AND createDate=?2',
+        arguments: [classroomId, _dateConverter.encode(date), time]);
   }
 }
 
