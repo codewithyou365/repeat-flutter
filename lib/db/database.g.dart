@@ -1966,13 +1966,24 @@ class _$StatsDao extends StatsDao {
   _$StatsDao(
     this.database,
     this.changeListener,
-  ) : _queryAdapter = QueryAdapter(database);
+  )   : _queryAdapter = QueryAdapter(database),
+        _timeStatsInsertionAdapter = InsertionAdapter(
+            database,
+            'TimeStats',
+            (TimeStats item) => <String, Object?>{
+                  'classroomId': item.classroomId,
+                  'createDate': _dateConverter.encode(item.createDate),
+                  'createTime': item.createTime,
+                  'duration': item.duration
+                });
 
   final sqflite.DatabaseExecutor database;
 
   final StreamController<String> changeListener;
 
   final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<TimeStats> _timeStatsInsertionAdapter;
 
   @override
   Future<List<SegmentStats>> getStatsByDate(
@@ -2070,6 +2081,26 @@ class _$StatsDao extends StatsDao {
     await _queryAdapter.queryNoReturn(
         'UPDATE TimeStats set duration=?3+duration WHERE classroomId=?1 AND createDate=?2',
         arguments: [classroomId, _dateConverter.encode(date), time]);
+  }
+
+  @override
+  Future<void> insertTimeStats(TimeStats timeStats) async {
+    await _timeStatsInsertionAdapter.insert(
+        timeStats, OnConflictStrategy.replace);
+  }
+
+  @override
+  Future<void> tryInsertTimeStats(TimeStats newTimeStats) async {
+    if (database is sqflite.Transaction) {
+      await super.tryInsertTimeStats(newTimeStats);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        await transactionDatabase.statsDao.tryInsertTimeStats(newTimeStats);
+      });
+    }
   }
 }
 

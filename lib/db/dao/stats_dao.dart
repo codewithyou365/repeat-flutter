@@ -26,4 +26,15 @@ abstract class StatsDao {
   @Query('UPDATE TimeStats set duration=:time+duration'
       ' WHERE classroomId=:classroomId AND createDate=:date')
   Future<void> updateTimeStats(int classroomId, Date date, int time);
+
+  @Insert(onConflict: OnConflictStrategy.replace)
+  Future<void> insertTimeStats(TimeStats timeStats);
+
+  @transaction
+  Future<void> tryInsertTimeStats(TimeStats newTimeStats) async {
+    var oldTimeStats = await getTimeStatsByDate(newTimeStats.classroomId, newTimeStats.createDate);
+    if (oldTimeStats == null) {
+      insertTimeStats(newTimeStats);
+    }
+  }
 }

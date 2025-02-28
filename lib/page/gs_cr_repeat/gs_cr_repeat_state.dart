@@ -71,6 +71,7 @@ class GsCrRepeatState {
   var justView = false;
   var justViewIndex = 0;
   var step = RepeatStep.recall;
+  var lastRecallTime = 0;
   List<TipLevel> openTip = [];
   var skipControlMedia = false;
   var pnOffset = 0;

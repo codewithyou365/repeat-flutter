@@ -13,6 +13,7 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/db/entity/time_stats.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
@@ -53,6 +54,7 @@ class GsCrRepeatLogic extends GetxController {
   void onClose() {
     super.onClose();
     server.stop();
+    updateTimeStats();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     Get.find<GsCrLogic>().init();
   }
@@ -78,6 +80,7 @@ class GsCrRepeatLogic extends GetxController {
     state.total = todayProgresses.length;
     state.progress = state.total - state.c.length;
     state.step = RepeatStep.recall;
+    tryInsertTimeStats();
     setNeedToPlayMedia(true);
     var ignoringPunctuation = await Db().db.scheduleDao.intKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame) ?? 0;
     state.ignoringPunctuation.value = ignoringPunctuation == 1;
@@ -280,6 +283,7 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     state.step = RepeatStep.recall;
+    updateTimeStats();
     setNeedToPlayMedia(true);
     await setCurrentLearnContentAndUpdateView();
     await tryRefreshGame();
@@ -302,6 +306,7 @@ class GsCrRepeatLogic extends GetxController {
       state.step = RepeatStep.evaluate;
     } else {
       state.step = RepeatStep.recall;
+      updateTimeStats();
     }
 
     setNeedToPlayMedia(true);
@@ -322,6 +327,7 @@ class GsCrRepeatLogic extends GetxController {
       state.step = RepeatStep.evaluate;
     } else {
       state.step = RepeatStep.recall;
+      updateTimeStats();
     }
     setNeedToPlayMedia(true);
     if (state.justViewIndex > 0) {
@@ -682,5 +688,25 @@ class GsCrRepeatLogic extends GetxController {
   setNeedToPlayMedia(bool v) {
     state.needToPlayMedia = v;
     state.ignorePlayingMedia = false;
+  }
+
+  tryInsertTimeStats() {
+    var now = DateTime.now();
+    var nowMs = now.millisecondsSinceEpoch;
+    state.lastRecallTime = nowMs;
+    Db().db.statsDao.tryInsertTimeStats(TimeStats(Classroom.curr, Date.from(now), nowMs, 0));
+  }
+
+  updateTimeStats() {
+    var now = DateTime.now();
+    var nowMs = now.millisecondsSinceEpoch;
+    var duration = nowMs - state.lastRecallTime;
+    if (duration > 2000) {
+      if (duration > 60000) {
+        duration = 60000;
+      }
+      state.lastRecallTime = nowMs;
+      Db().db.statsDao.updateTimeStats(Classroom.curr, Date.from(now), duration);
+    }
   }
 }
