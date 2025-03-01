@@ -80,7 +80,7 @@ class GsCrRepeatLogic extends GetxController {
     state.total = todayProgresses.length;
     state.progress = state.total - state.c.length;
     state.step = RepeatStep.recall;
-    tryInsertTimeStats();
+    await tryInsertTimeStats();
     setNeedToPlayMedia(true);
     var ignoringPunctuation = await Db().db.scheduleDao.intKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame) ?? 0;
     state.ignoringPunctuation.value = ignoringPunctuation == 1;
@@ -690,11 +690,11 @@ class GsCrRepeatLogic extends GetxController {
     state.ignorePlayingMedia = false;
   }
 
-  tryInsertTimeStats() {
+  tryInsertTimeStats() async {
     var now = DateTime.now();
     var nowMs = now.millisecondsSinceEpoch;
     state.lastRecallTime = nowMs;
-    Db().db.statsDao.tryInsertTimeStats(TimeStats(Classroom.curr, Date.from(now), nowMs, 0));
+    await Db().db.statsDao.tryInsertTimeStats(TimeStats(Classroom.curr, Date.from(now), nowMs, 0));
   }
 
   updateTimeStats() {
