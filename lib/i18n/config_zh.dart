@@ -68,10 +68,13 @@ class ConfigZh extends Config {
     put(I18nKey.labelSaved, "保存成功");
     put(I18nKey.labelSaveCancel, "保存已取消");
     put(I18nKey.labelStoragePermissionDenied, "存储权限被拒绝，请在设置中打开存储权限");
+    put(I18nKey.labelLearned, "已学习: %s");
+    put(I18nKey.labelTotal, "总数: %s");
+    put(I18nKey.labelProgress, "进度");
     put(I18nKey.labelAdjustLearnProgress, "调整学习进度");
     put(I18nKey.labelAdjustLearnProgressDesc, "当前进度为 %s，请调整您的学习进度");
     put(I18nKey.labelPleaseInputUnSignNumber, "请输入大于或等于 0 的数字");
-    put(I18nKey.labelReset, "重置内容");
+    put(I18nKey.labelReset, "重置");
     put(I18nKey.labelResetAllDesc, "将重置今日所有的任务，是否继续？");
     put(I18nKey.labelResetLearnDesc, "将重置学习的任务，是否继续？");
     put(I18nKey.labelResetReviewDesc, "将重置回顾的任务，是否继续？");

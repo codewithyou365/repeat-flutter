@@ -14,31 +14,29 @@ class GsCrStatsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(I18nKey.statistic.tr),
       ),
-      body: ListView(
-        children: <Widget>[
-          ListTile(
-            leading: const Icon(Icons.bar_chart),
-            title: Text(I18nKey.statisticLearn.tr),
-            onTap: () {
-              Nav.gsCrStatsLearn.push();
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.insert_chart),
-            title: Text(I18nKey.statisticReview.tr),
-            onTap: () {
-              Nav.gsCrStatsReview.push();
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.query_stats),
-            title: Text(I18nKey.statisticDetail.tr),
-            onTap: () {
-              Nav.gsCrStatsDetail.push();
-            },
-          ),
-        ],
-      ),
+      body: GetBuilder<GsCrStatsLogic>(
+          id: GsCrStatsLogic.id,
+          builder: (logic) {
+            return ListView(
+              children: <Widget>[
+                logic.progressLogic.build(context),
+                ListTile(
+                  leading: const Icon(Icons.bar_chart),
+                  title: Text(I18nKey.statisticReview.tr),
+                  onTap: () {
+                    Nav.gsCrStatsReview.push();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.query_stats),
+                  title: Text(I18nKey.statisticDetail.tr),
+                  onTap: () {
+                    Nav.gsCrStatsDetail.push();
+                  },
+                ),
+              ],
+            );
+          }),
     );
   }
 }

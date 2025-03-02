@@ -68,6 +68,9 @@ class ConfigEn extends Config {
     put(I18nKey.labelSaved, "Save success");
     put(I18nKey.labelSaveCancel, "Save canceled");
     put(I18nKey.labelStoragePermissionDenied, "Storage permission has been denied. Please enable storage permission in the settings.");
+    put(I18nKey.labelLearned, "Learned: %s");
+    put(I18nKey.labelTotal, "Total: %s");
+    put(I18nKey.labelProgress, "Progress");
     put(I18nKey.labelAdjustLearnProgress, "Adjust the learning progress.");
     put(I18nKey.labelAdjustLearnProgressDesc, "Current progress is %s, please adjust your learning progress.");
     put(I18nKey.labelPleaseInputUnSignNumber, "Please enter a number greater than or equal to 0.");
@@ -96,8 +99,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelElConfig1101, "Randomly organize Level from %s to %s, quantity is unlimited (%s per group)");
     put(I18nKey.labelElConfig1110, "Randomly organize Level from %s to %s, quantity is %s (unlimited per group)");
     put(I18nKey.labelElConfig1111, "Randomly organize Level from %s to %s, quantity is %s (%s per group)");
-    put(I18nKey.labelRelConfig0, "The %sth review will cover the content from %s days ago, starting from %s. (unlimited per group)");
-    put(I18nKey.labelRelConfig1, "The %sth review will cover the content from %s days ago, starting from %s. (%s per group)");
+    put(I18nKey.labelRelConfig0, "The %sth review covers the content from %s days ago, starting from %s. (unlimited per group)");
+    put(I18nKey.labelRelConfig1, "The %sth review covers the content from %s days ago, starting from %s. (%s per group)");
     put(I18nKey.labelFullCustomConfig, "Start from segment @1, lesson @2 of the content @0, and plan @3 segment (unlimited per group).");
     put(I18nKey.labelElRandom, "Random");
     put(I18nKey.labelElToLevel, "End Level");
