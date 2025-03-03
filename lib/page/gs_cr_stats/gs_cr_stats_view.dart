@@ -20,6 +20,8 @@ class GsCrStatsPage extends StatelessWidget {
             return ListView(
               children: <Widget>[
                 logic.progressLogic.build(context),
+                const SizedBox(height: 24),
+                logic.summaryLogic.build(context),
                 ListTile(
                   leading: const Icon(Icons.bar_chart),
                   title: Text(I18nKey.statisticReview.tr),

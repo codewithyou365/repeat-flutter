@@ -1975,6 +1975,14 @@ class _$StatsDao extends StatsDao {
                   'createDate': _dateConverter.encode(item.createDate),
                   'createTime': item.createTime,
                   'duration': item.duration
+                }),
+        _crKvInsertionAdapter = InsertionAdapter(
+            database,
+            'CrKv',
+            (CrKv item) => <String, Object?>{
+                  'classroomId': item.classroomId,
+                  'k': _crKConverter.encode(item.k),
+                  'value': item.value
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -1984,6 +1992,8 @@ class _$StatsDao extends StatsDao {
   final QueryAdapter _queryAdapter;
 
   final InsertionAdapter<TimeStats> _timeStatsInsertionAdapter;
+
+  final InsertionAdapter<CrKv> _crKvInsertionAdapter;
 
   @override
   Future<List<SegmentStats>> getStatsByDate(
@@ -2011,6 +2021,22 @@ class _$StatsDao extends StatsDao {
     return _queryAdapter.queryList(
         'SELECT * FROM SegmentStats WHERE classroomId = ?1 AND createDate >= ?2 AND createDate <= ?3',
         mapper: (Map<String, Object?> row) => SegmentStats(row['segmentKeyId'] as int, row['type'] as int, _dateConverter.decode(row['createDate'] as int), row['createTime'] as int, row['classroomId'] as int, row['contentSerial'] as int),
+        arguments: [
+          classroomId,
+          _dateConverter.encode(start),
+          _dateConverter.encode(end)
+        ]);
+  }
+
+  @override
+  Future<int?> getCountByDateRange(
+    int classroomId,
+    Date start,
+    Date end,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT COALESCE(COUNT(*), 0) FROM SegmentStats WHERE classroomId = ?1 AND createDate >= ?2 AND createDate <= ?3',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [
           classroomId,
           _dateConverter.encode(start),
@@ -2073,6 +2099,22 @@ class _$StatsDao extends StatsDao {
   }
 
   @override
+  Future<int?> getTimeByDateRange(
+    int classroomId,
+    Date start,
+    Date end,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT COALESCE(sum(duration), 0) FROM TimeStats WHERE classroomId = ?1 AND createDate >= ?2 AND createDate <= ?3',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [
+          classroomId,
+          _dateConverter.encode(start),
+          _dateConverter.encode(end)
+        ]);
+  }
+
+  @override
   Future<void> updateTimeStats(
     int classroomId,
     Date date,
@@ -2084,9 +2126,25 @@ class _$StatsDao extends StatsDao {
   }
 
   @override
+  Future<int?> intKv(
+    int classroomId,
+    CrK k,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT CAST(value as INTEGER) FROM CrKv WHERE classroomId=?1 and k=?2',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [classroomId, _crKConverter.encode(k)]);
+  }
+
+  @override
   Future<void> insertTimeStats(TimeStats timeStats) async {
     await _timeStatsInsertionAdapter.insert(
         timeStats, OnConflictStrategy.replace);
+  }
+
+  @override
+  Future<void> insertKv(CrKv kv) async {
+    await _crKvInsertionAdapter.insert(kv, OnConflictStrategy.replace);
   }
 
   @override
@@ -2099,6 +2157,20 @@ class _$StatsDao extends StatsDao {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         await transactionDatabase.statsDao.tryInsertTimeStats(newTimeStats);
+      });
+    }
+  }
+
+  @override
+  Future<List<int>> collectAll() async {
+    if (database is sqflite.Transaction) {
+      return super.collectAll();
+    } else {
+      return (database as sqflite.Database)
+          .transaction<List<int>>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        return transactionDatabase.statsDao.collectAll();
       });
     }
   }

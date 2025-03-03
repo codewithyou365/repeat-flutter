@@ -158,6 +158,13 @@ class ConfigEn extends Config {
     put(I18nKey.labelAll, "All");
     put(I18nKey.labelSetLevel, "Level");
     put(I18nKey.labelSetNextLearnDate, "Next Learning Date");
+    put(I18nKey.labelSummary, "Summary");
+    put(I18nKey.labelTodayLearning, "Today Learning");
+    put(I18nKey.labelTotalLearning, "Total Learning");
+    put(I18nKey.labelTodayTime, "Today Time");
+    put(I18nKey.labelTotalTime, "Total Time");
+    put(I18nKey.labelMin, "Min");
+    put(I18nKey.labelSeg, "Seg");
     put(I18nKey.btnStart, "Start");
     put(I18nKey.btnAddSchedule, "Add Schedule");
     put(I18nKey.btnConfigSettings, "Config Settings");

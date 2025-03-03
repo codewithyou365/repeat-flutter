@@ -6,13 +6,13 @@ cd ./lib || exit 1
   OUTPUT_FILE="nav.dart"
 
   echo "import 'package:get/get.dart';" >$OUTPUT_FILE
-  for dir in $(find ./page -type d -not -path '*/\.*' -not -path '.' -not -path './page' | sort | sed 's/^\.\/page\///'); do
+  for dir in $(find ./page -type d -depth 1 -not -path '*/\.*' -not -path '.' -not -path './page' | sort | sed 's/^\.\/page\///'); do
     echo "import 'package:repeat_flutter/page/$dir/$dir""_nav.dart';" >>$OUTPUT_FILE
   done
   echo "" >>$OUTPUT_FILE
   echo "enum Nav {" >>$OUTPUT_FILE
 
-  for dir in $(find ./page -type d -not -path '*/\.*' -not -path '.' -not -path './page' | sort | sed 's/^\.\/page\///'); do
+  for dir in $(find ./page -type d -depth 1 -not -path '*/\.*' -not -path '.' -not -path './page' | sort | sed 's/^\.\/page\///'); do
     camelCaseDir=$(echo "$dir" | perl -pe 's/_([a-z])/uc($1)/ge')
     path=$(echo "$dir" | sed "s/_/\//g")
     echo "  $camelCaseDir(\"/$path\")," >>$OUTPUT_FILE
@@ -45,7 +45,7 @@ cd ./lib || exit 1
   echo "" >>$OUTPUT_FILE
   echo "  static final List<GetPage> getPages = [" >>$OUTPUT_FILE
 
-  for dir in $(find ./page -type d -not -path '*/\.*' -not -path '.' -not -path './page' | sort | sed 's/^\.\/page\///'); do
+  for dir in $(find ./page -type d -depth 1 -not -path '*/\.*' -not -path '.' -not -path './page' | sort | sed 's/^\.\/page\///'); do
     camelCaseDir=$(echo "$dir" | perl -pe 's/_([a-z])/uc($1)/ge')
     echo "    $camelCaseDir""Nav($camelCaseDir.path)," >>$OUTPUT_FILE
   done

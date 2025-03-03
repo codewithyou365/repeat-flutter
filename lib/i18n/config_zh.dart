@@ -158,6 +158,13 @@ class ConfigZh extends Config {
     put(I18nKey.labelAll, "全部");
     put(I18nKey.labelSetLevel, "等级");
     put(I18nKey.labelSetNextLearnDate, "下次学习时间");
+    put(I18nKey.labelSummary, "概要");
+    put(I18nKey.labelTodayLearning, "今日学习");
+    put(I18nKey.labelTotalLearning, "总计学习");
+    put(I18nKey.labelTodayTime, "今日时长");
+    put(I18nKey.labelTotalTime, "总计时长");
+    put(I18nKey.labelMin, "分钟");
+    put(I18nKey.labelSeg, "段");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");
     put(I18nKey.btnConfigSettings, "配置设置");

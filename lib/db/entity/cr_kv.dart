@@ -12,6 +12,10 @@ enum CrK {
   skipCharacterInTypingGame,
   copyTemplate,
   copyListTemplate,
+  lastRecordCreateDate4StatsTotalTime,
+  lastRecordCreateDate4StatsTotalLearning,
+  statsTotalTime,
+  statsTotalLearning,
 }
 
 @Entity(primaryKeys: ['classroomId', 'k'])
