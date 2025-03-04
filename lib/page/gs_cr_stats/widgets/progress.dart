@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_overall_prg_with_key.dart';
@@ -18,6 +17,14 @@ class ProgressLogic {
   }
 
   Widget build(BuildContext context) {
+    double viewProgress = progress;
+    double minViewValue = 0.03;
+    if (progress < minViewValue) {
+      viewProgress = minViewValue;
+    }
+    if (progress != 1 && progress > 1 - minViewValue) {
+      viewProgress = 1 - minViewValue;
+    }
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -50,14 +57,13 @@ class ProgressLogic {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: LinearProgressIndicator(
-                    value: progress < 0.03 ? 0.03 : progress,
+                    value: viewProgress,
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     color: Colors.green,
                     minHeight: 10,
                   ),
                 ),
                 const SizedBox(height: 16),
-                // 数字统计
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
