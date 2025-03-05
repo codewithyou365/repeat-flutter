@@ -20,22 +20,10 @@ class GsCrStatsPage extends StatelessWidget {
             return ListView(
               children: <Widget>[
                 logic.progressLogic.build(context),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
                 logic.summaryLogic.build(context),
-                ListTile(
-                  leading: const Icon(Icons.bar_chart),
-                  title: Text(I18nKey.statisticReview.tr),
-                  onTap: () {
-                    Nav.gsCrStatsReview.push();
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.query_stats),
-                  title: Text(I18nKey.statisticDetail.tr),
-                  onTap: () {
-                    Nav.gsCrStatsDetail.push();
-                  },
-                ),
+                const SizedBox(height: 16),
+                logic.calendarLogic.build(context),
               ],
             );
           }),

@@ -164,6 +164,7 @@ enum I18nKey {
   labelTotalTime,
   labelMin,
   labelSeg,
+  labelCalendar,
   btnStart,
   btnStop,
   btnAddSchedule,

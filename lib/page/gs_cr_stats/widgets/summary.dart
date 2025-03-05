@@ -22,7 +22,7 @@ class SummaryLogic {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 18.0),
+            padding: const EdgeInsets.only(left: 18.0, top: 8),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -33,10 +33,10 @@ class SummaryLogic {
                       ),
                 ),
                 const Spacer(),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.arrow_forward_ios),
-                ),
+                // IconButton(
+                //   onPressed: () {},
+                //   icon: const Icon(Icons.arrow_forward_ios),
+                // ),
               ],
             ),
           ),

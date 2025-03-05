@@ -165,6 +165,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelTotalTime, "总计时长");
     put(I18nKey.labelMin, "分钟");
     put(I18nKey.labelSeg, "段");
+    put(I18nKey.labelCalendar, "日历");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");
     put(I18nKey.btnConfigSettings, "配置设置");
