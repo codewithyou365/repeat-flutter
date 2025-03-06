@@ -12,6 +12,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
+import 'package:repeat_flutter/db/entity/segment_note.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/db/entity/time_stats.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
@@ -21,6 +22,7 @@ import 'package:repeat_flutter/logic/game_server/game_server.dart';
 import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_edit_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
+import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/logic/widget/user_manager.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
@@ -186,6 +188,24 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     state.nextKey = content!.k;
+  }
+
+  void openNoteEditor() async {
+    var curr = getCurr();
+    if (curr == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.tr);
+      return;
+    }
+    SegmentNote? note = await Db().db.segmentNoteDao.getBySegmentKeyId(curr.segmentKeyId);
+    Editor.show(
+      Get.context!,
+      I18nKey.labelEditNote.tr,
+      note?.note ?? "",
+      (str) async {
+        await Db().db.segmentNoteDao.insert(SegmentNote(curr.segmentKeyId, str));
+      },
+      qrPagePath: Nav.gsCrContentScan.path,
+    );
   }
 
   void adjustProgress() async {

@@ -113,6 +113,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelALL, "全部");
     put(I18nKey.labelSavingConfirm, "是否确定保存？");
     put(I18nKey.labelConfigChange, "配置已改变是否保存？");
+    put(I18nKey.labelTextChange, "文本已改变是否保存？");
     put(I18nKey.labelResetConfig, "配置将被重置。确定吗？");
     put(I18nKey.labelDetailConfig, "配置详情");
     put(I18nKey.labelDetail, "详情");
@@ -165,6 +166,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelTotalTime, "总计时长");
     put(I18nKey.labelMin, "分钟");
     put(I18nKey.labelSeg, "段");
+    put(I18nKey.labelEditNote, "请编辑你的笔记：");
+    put(I18nKey.labelShare, "分享");
     put(I18nKey.labelCalendar, "日历");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");
@@ -182,6 +185,7 @@ class ConfigZh extends Config {
     put(I18nKey.btnOk, "确定");
     put(I18nKey.btnDelete, "删除");
     put(I18nKey.btnShare, "分享");
+    put(I18nKey.btnScan, "扫描");
     put(I18nKey.btnEdit, "编辑");
     put(I18nKey.btnGameMode, "游戏模式");
     put(I18nKey.btnConcentration, "专注");

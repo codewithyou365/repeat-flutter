@@ -154,6 +154,10 @@ class GsCrRepeatPage extends StatelessWidget {
                         icon: const Icon(Icons.assistant_photo),
                         onPressed: logic.adjustProgress,
                       ),
+                    IconButton(
+                      icon: const Icon(Icons.note_alt),
+                      onPressed: logic.openNoteEditor,
+                    ),
                     if (state.edit == false)
                       PopupMenuButton<String>(
                         icon: const Icon(Icons.more_vert),

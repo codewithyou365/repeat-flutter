@@ -86,6 +86,8 @@ class _$AppDatabase extends AppDatabase {
 
   ScheduleDao? _scheduleDaoInstance;
 
+  SegmentNoteDao? _segmentNoteDaoInstance;
+
   BaseDao? _baseDaoInstance;
 
   StatsDao? _statsDaoInstance;
@@ -125,6 +127,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE TABLE IF NOT EXISTS `Segment` (`segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentKey` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL)');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `SegmentNote` (`segmentKeyId` INTEGER NOT NULL, `note` TEXT NOT NULL, PRIMARY KEY (`segmentKeyId`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentOverallPrg` (`segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `next` INTEGER NOT NULL, `progress` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`))');
         await database.execute(
@@ -239,6 +243,12 @@ class _$AppDatabase extends AppDatabase {
   @override
   ScheduleDao get scheduleDao {
     return _scheduleDaoInstance ??= _$ScheduleDao(database, changeListener);
+  }
+
+  @override
+  SegmentNoteDao get segmentNoteDao {
+    return _segmentNoteDaoInstance ??=
+        _$SegmentNoteDao(database, changeListener);
   }
 
   @override
@@ -1931,6 +1941,43 @@ class _$ScheduleDao extends ScheduleDao {
             .right(segmentTodayPrg, progress, nextDayValue, record);
       });
     }
+  }
+}
+
+class _$SegmentNoteDao extends SegmentNoteDao {
+  _$SegmentNoteDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _segmentNoteInsertionAdapter = InsertionAdapter(
+            database,
+            'SegmentNote',
+            (SegmentNote item) => <String, Object?>{
+                  'segmentKeyId': item.segmentKeyId,
+                  'note': item.note
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<SegmentNote> _segmentNoteInsertionAdapter;
+
+  @override
+  Future<SegmentNote?> getBySegmentKeyId(int segmentKeyId) async {
+    return _queryAdapter.query(
+        'SELECT * FROM SegmentNote WHERE segmentKeyId=?1',
+        mapper: (Map<String, Object?> row) =>
+            SegmentNote(row['segmentKeyId'] as int, row['note'] as String),
+        arguments: [segmentKeyId]);
+  }
+
+  @override
+  Future<void> insert(SegmentNote segmentNote) async {
+    await _segmentNoteInsertionAdapter.insert(
+        segmentNote, OnConflictStrategy.replace);
   }
 }
 

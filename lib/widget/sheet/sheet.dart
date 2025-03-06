@@ -1,21 +1,49 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 
 class Sheet {
-  static void showBottomSheet(BuildContext context, Widget w, {double? rate}) {
+  static const double paddingHorizontal = 10;
+
+  static void showBottomSheet(BuildContext context, Widget w, {double? rate, GestureTapCallback? onTapBlack}) {
     final Size screenSize = MediaQuery.of(context).size;
+    rate ??= 2 / 3;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      isDismissible: false,
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        return SizedBox(
-          width: screenSize.width,
-          height: screenSize.height * (rate ?? 2 / 3),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10.0.w, vertical: 20.0),
-            child: w,
-          ),
+        return Column(
+          mainAxisSize: MainAxisSize.min, // Prevents unnecessary expansion
+          children: [
+            GestureDetector(
+              onTap: () {
+                if (onTapBlack != null) {
+                  onTapBlack();
+                } else {
+                  Get.back();
+                }
+              },
+              child: Container(
+                width: screenSize.width,
+                height: screenSize.height * (1 - rate!),
+                color: Colors.transparent,
+              ),
+            ),
+            Container(
+              width: screenSize.width,
+              height: screenSize.height * rate,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: 20.0),
+                child: w,
+              ),
+            ),
+          ],
         );
       },
     );

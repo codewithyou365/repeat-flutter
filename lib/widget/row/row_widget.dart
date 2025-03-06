@@ -3,14 +3,55 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
+
+class Button {
+  VoidCallback? onPressed;
+  final String title;
+  RxBool enable = true.obs;
+
+  Button(this.title, [this.onPressed]);
+}
 
 class RowWidget {
   static const double titleFontSize = 17;
   static const double rowHeight = 50;
   static const double paddingHorizontal = 8;
+
+  static Widget buildButtons(
+    List<Button> buttons,
+  ) {
+    List<Widget> children = [];
+    for (var i = 0; i < buttons.length; i++) {
+      if (i != 0) {
+        children.add(const Spacer());
+      }
+      children.add(Obx(() {
+        final theme = Theme.of(Get.context!);
+        return TextButton(
+          onPressed: buttons[i].enable.value
+              ? (buttons[i].onPressed ??
+                  () {
+                    Get.back();
+                  })
+              : null,
+          child: Text(
+            buttons[i].title,
+            style: TextStyle(
+              fontSize: 16,
+              color: buttons[i].enable.value ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.38),
+            ),
+          ),
+        );
+      }));
+    }
+    return Row(
+      children: children,
+    );
+  }
 
   static Widget buildYesOrNo({
     VoidCallback? yes,
@@ -55,6 +96,51 @@ class RowWidget {
       child: Text(
         title,
         style: ts,
+      ),
+    );
+  }
+
+  static Widget buildEditText(TextEditingController textController, {int? maxLines, int? minLines, String? decoration}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: paddingHorizontal),
+      child: TextFormField(
+        controller: textController,
+        maxLines: maxLines,
+        minLines: minLines,
+        autofocus: true,
+        decoration: InputDecoration(
+          labelText: decoration,
+        ),
+      ),
+    );
+  }
+
+  static Widget buildQrCode(String value, [double? width]) {
+    Color color = Colors.black;
+    double size = 280.w;
+    if (width != null) {
+      size = width;
+    }
+    if (Get.context != null) {
+      color = Theme.of(Get.context!).brightness == Brightness.dark ? color = Colors.white : Colors.black;
+    }
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Center(
+        child: QrImageView(
+          data: value,
+          eyeStyle: QrEyeStyle(
+            eyeShape: QrEyeShape.square,
+            color: color,
+          ),
+          dataModuleStyle: QrDataModuleStyle(
+            dataModuleShape: QrDataModuleShape.square,
+            color: color,
+          ),
+          version: QrVersions.auto,
+          size: size,
+        ),
       ),
     );
   }

@@ -113,6 +113,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelALL, "ALL");
     put(I18nKey.labelSavingConfirm, "Are you sure to save?");
     put(I18nKey.labelConfigChange, "Do you want to save the changes you made?");
+    put(I18nKey.labelTextChange, "The text changed, do you want to save?");
     put(I18nKey.labelResetConfig, "The config will be reset. Are you sure?");
     put(I18nKey.labelDetailConfig, "Config Detail");
     put(I18nKey.labelDetail, "Detail");
@@ -165,6 +166,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelTotalTime, "Total Time");
     put(I18nKey.labelMin, "Min");
     put(I18nKey.labelSeg, "Seg");
+    put(I18nKey.labelEditNote, "Please edit your note:");
+    put(I18nKey.labelShare, "Share");
     put(I18nKey.labelCalendar, "Calendar");
     put(I18nKey.btnStart, "Start");
     put(I18nKey.btnAddSchedule, "Add Schedule");
@@ -182,6 +185,7 @@ class ConfigEn extends Config {
     put(I18nKey.btnOk, "Ok");
     put(I18nKey.btnDelete, "Delete");
     put(I18nKey.btnShare, "Share");
+    put(I18nKey.btnScan, "Scan");
     put(I18nKey.btnEdit, "Edit");
     put(I18nKey.btnGameMode, "Game Mode");
     put(I18nKey.btnConcentration, "Concentration");
