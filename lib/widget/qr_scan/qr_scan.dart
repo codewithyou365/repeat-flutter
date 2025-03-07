@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 typedef OnResultCallback = void Function(String content);
 
@@ -66,9 +67,7 @@ class QrScanState extends State<QrScan> {
   void _onPermissionSet(BuildContext context, QRViewController ctrl, bool p) {
     log('${DateTime.now().toIso8601String()}_onPermissionSet $p');
     if (!p) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('no Permission')),
-      );
+      Snackbar.show("no permission");
     }
   }
 

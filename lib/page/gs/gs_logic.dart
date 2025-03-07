@@ -29,17 +29,14 @@ class GsLogic extends GetxController {
 
   add(String name) async {
     if (name.isEmpty) {
-      Get.back();
       Snackbar.show(I18nKey.labelClassroomNameEmpty.tr);
       return;
     }
     if (name.length > 3 || !reg.hasMatch(name)) {
-      Get.back();
       Snackbar.show(I18nKey.labelClassroomNameError.tr);
       return;
     }
     if (state.list.any((e) => e.name == name)) {
-      Get.back();
       Snackbar.show(I18nKey.labelClassroomNameDuplicated.tr);
       return;
     }
