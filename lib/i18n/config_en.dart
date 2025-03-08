@@ -146,7 +146,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelIgnorePunctuation, "Ignore punctuation");
     put(I18nKey.labelMatchType, "Match type");
     put(I18nKey.labelSkipCharacter, "Enter this char to skip");
-    put(I18nKey.labelEditInGame, "Enable edit");
+    put(I18nKey.labelEditInGame, "Enable track & QA edit");
     put(I18nKey.labelGameId, "Game ID");
     put(I18nKey.labelOnlineUserNumber, "Online user number");
     put(I18nKey.labelAllowRegisterNumber, "Allow Reg Number");
@@ -186,7 +186,8 @@ class ConfigEn extends Config {
     put(I18nKey.btnDelete, "Delete");
     put(I18nKey.btnShare, "Share");
     put(I18nKey.btnScan, "Scan");
-    put(I18nKey.btnEdit, "Edit");
+    put(I18nKey.btnTrackEdit, "Track Edit");
+    put(I18nKey.btnNoteEdit, "Note Edit");
     put(I18nKey.btnGameMode, "Game Mode");
     put(I18nKey.btnConcentration, "Concentration");
     put(I18nKey.btnAdd, "Add");

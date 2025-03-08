@@ -146,7 +146,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelIgnorePunctuation, "忽略标点符号");
     put(I18nKey.labelMatchType, "匹配类型");
     put(I18nKey.labelSkipCharacter, "输入该字符便跳过");
-    put(I18nKey.labelEditInGame, "启用编辑");
+    put(I18nKey.labelEditInGame, "启用音轨和QA编辑");
     put(I18nKey.labelGameId, "游戏ID");
     put(I18nKey.labelOnlineUserNumber, "在线人数");
     put(I18nKey.labelAllowRegisterNumber, "允许注册人数");
@@ -186,7 +186,8 @@ class ConfigZh extends Config {
     put(I18nKey.btnDelete, "删除");
     put(I18nKey.btnShare, "分享");
     put(I18nKey.btnScan, "扫描");
-    put(I18nKey.btnEdit, "编辑");
+    put(I18nKey.btnTrackEdit, "音轨编辑");
+    put(I18nKey.btnNoteEdit, "笔记编辑");
     put(I18nKey.btnGameMode, "游戏模式");
     put(I18nKey.btnConcentration, "专注");
     put(I18nKey.btnAdd, "新增");
