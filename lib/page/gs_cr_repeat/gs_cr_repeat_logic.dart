@@ -199,7 +199,7 @@ class GsCrRepeatLogic extends GetxController {
     SegmentNote? note = await Db().db.segmentNoteDao.getBySegmentKeyId(curr.segmentKeyId);
     Editor.show(
       Get.context!,
-      I18nKey.labelEditNote.tr,
+      I18nKey.labelNote.tr,
       note?.note ?? "",
       (str) async {
         await Db().db.segmentNoteDao.insert(SegmentNote(curr.segmentKeyId, str));

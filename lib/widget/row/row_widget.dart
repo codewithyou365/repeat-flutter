@@ -100,7 +100,7 @@ class RowWidget {
     );
   }
 
-  static Widget buildEditText(TextEditingController textController, {int? maxLines, int? minLines, String? decoration}) {
+  static Widget buildEditText(TextEditingController textController, {FocusNode? focusNode, int? maxLines, int? minLines, String? decoration}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: paddingHorizontal),
       child: TextFormField(
@@ -108,6 +108,7 @@ class RowWidget {
         maxLines: maxLines,
         minLines: minLines,
         autofocus: true,
+        focusNode: focusNode,
         decoration: InputDecoration(
           labelText: decoration,
         ),

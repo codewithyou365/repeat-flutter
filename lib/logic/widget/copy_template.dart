@@ -17,6 +17,8 @@ import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:mustache_template/mustache_template.dart';
 
+import 'editor.dart';
+
 class CopyLogic<T extends GetxController> {
   static const String id = "CopyLogic";
 
@@ -156,23 +158,13 @@ class CopyLogic<T extends GetxController> {
                               ),
                               PopupMenuItem<String>(
                                 onTap: () {
-                                  var value = RxString(read(index));
-                                  MsgBox.strInputWithYesOrNo(
-                                    value,
+                                  Editor.show(
+                                    Get.context!,
                                     I18nKey.labelDetailConfig.tr,
-                                    minLines: 5,
-                                    maxLines: 15,
-                                    null,
-                                    yes: () {
-                                      write(index, value.value);
+                                    read(index),
+                                    (str) async {
+                                      write(index, str);
                                     },
-                                    yesBtnTitle: I18nKey.btnSave.tr,
-                                    no: () {
-                                      Get.back();
-                                      MsgBox.noWithQrCode(I18nKey.btnShare.tr, value.value, null);
-                                    },
-                                    noBtnTitle: I18nKey.btnShare.tr,
-                                    barrierDismissible: true,
                                     qrPagePath: Nav.gsCrContentScan.path,
                                   );
                                 },

@@ -166,7 +166,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelTotalTime, "总计时长");
     put(I18nKey.labelMin, "分钟");
     put(I18nKey.labelSeg, "段");
-    put(I18nKey.labelEditNote, "请编辑你的笔记：");
+    put(I18nKey.labelNote, "笔记");
     put(I18nKey.labelShare, "分享");
     put(I18nKey.labelCalendar, "日历");
     put(I18nKey.btnStart, "开始");

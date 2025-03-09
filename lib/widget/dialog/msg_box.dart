@@ -19,10 +19,11 @@ class MsgBox {
     String? yesBtnTitle,
     VoidCallback? no,
     String? noBtnTitle,
+    bool barrierDismissible = false,
   }) {
     Get.defaultDialog(
       title: title,
-      barrierDismissible: false,
+      barrierDismissible: barrierDismissible,
       content: Text(desc),
       actions: yesOrNoAction(yes: yes, no: no, yesBtnTitle: yesBtnTitle, noBtnTitle: noBtnTitle),
     );

@@ -4,11 +4,11 @@ import 'package:get/get.dart';
 class Sheet {
   static const double paddingHorizontal = 10;
 
-  static void showBottomSheet(BuildContext context, Widget w, {double? rate, GestureTapCallback? onTapBlack}) {
+  static Future<T?> showBottomSheet<T>(BuildContext context, Widget w, {double? rate, GestureTapCallback? onTapBlack}) {
     final Size screenSize = MediaQuery.of(context).size;
     rate ??= 2 / 3;
 
-    showModalBottomSheet(
+    return showModalBottomSheet<T>(
       context: context,
       isScrollControlled: true,
       isDismissible: false,

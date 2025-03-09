@@ -44,6 +44,7 @@ class Editor {
             Get.back();
             save(textController.text);
           },
+          barrierDismissible: true,
         );
       } else {
         Get.back();
@@ -51,7 +52,12 @@ class Editor {
     }
 
     textController.addListener(textChange);
-
+    FocusNode focusNode = FocusNode();
+    focusNode.addListener(() {
+      if (focusNode.hasFocus) {
+        textController.selection = const TextSelection.collapsed(offset: 0);
+      }
+    });
     Sheet.showBottomSheet(
       context,
       ListView(
@@ -60,7 +66,7 @@ class Editor {
             Button(I18nKey.btnCancel.tr, onCancel),
             shareBtn,
             if (qrPagePath != null) scanBtn,
-            Button(I18nKey.btnOk.tr, () async {
+            Button(I18nKey.btnSave.tr, () async {
               await save(textController.text);
               dbValue = textController.text;
               textChange();
@@ -68,13 +74,16 @@ class Editor {
             }),
           ]),
           RowWidget.buildDivider(),
-          RowWidget.buildMiddleText(title),
-          RowWidget.buildEditText(textController, maxLines: 40, minLines: 32),
+          RowWidget.buildMiddleText("$title :"),
+          RowWidget.buildEditText(textController, focusNode: focusNode, maxLines: 40, minLines: 32),
         ],
       ),
       rate: rate,
       onTapBlack: onCancel,
-    );
+    ).then((_) {
+      textController.dispose();
+      focusNode.dispose();
+    });
   }
 
   static void showQrCode(BuildContext context, String value, {double? rate}) {
@@ -96,20 +105,6 @@ class Editor {
         ],
       ),
       rate: rate,
-    );
-  }
-
-  static void trySave(BuildContext context, String newText, void Function(String) save, VoidCallback next) {
-    MsgBox.yesOrNo(
-      I18nKey.labelTips.tr,
-      I18nKey.labelTextChange.tr,
-      no: () {
-        next();
-      },
-      yes: () {
-        save(newText);
-        next();
-      },
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
@@ -51,24 +52,14 @@ class GsCrSettingsLogic extends GetxController {
       ScheduleDao.scheduleConfig.elConfigs,
       ScheduleDao.scheduleConfig.relConfigs,
     ));
-    var value = state.configJson.obs;
-    MsgBox.strInputWithYesOrNo(
-      value,
+    Editor.show(
+      Get.context!,
       I18nKey.labelDetailConfig.tr,
-      minLines: 5,
-      maxLines: 15,
-      null,
-      yes: () {
-        state.configJson = value.value;
+      state.configJson,
+      (str) async {
+        state.configJson = str;
         inputConfig();
       },
-      yesBtnTitle: I18nKey.btnSave.tr,
-      no: () {
-        Get.back();
-        MsgBox.noWithQrCode(I18nKey.btnShare.tr, value.value, null);
-      },
-      noBtnTitle: I18nKey.btnShare.tr,
-      barrierDismissible: true,
       qrPagePath: Nav.gsCrContentScan.path,
     );
   }
