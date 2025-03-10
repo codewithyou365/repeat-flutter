@@ -20,6 +20,7 @@ class RowWidget {
   static const double titleFontSize = 17;
   static const double rowHeight = 50;
   static const double paddingHorizontal = 8;
+  static const double paddingVertical = 4;
 
   static Widget buildButtons(
     List<Button> buttons,
@@ -92,7 +93,7 @@ class RowWidget {
       ts = const TextStyle(fontSize: titleFontSize, color: Colors.grey);
     }
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: paddingHorizontal),
+      padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: paddingVertical),
       child: Text(
         title,
         style: ts,
@@ -100,9 +101,19 @@ class RowWidget {
     );
   }
 
+  static Widget buildCard(Widget w) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: paddingVertical),
+      child: Card(
+        color: Theme.of(Get.context!).secondaryHeaderColor,
+        child: w,
+      ),
+    );
+  }
+
   static Widget buildEditText(TextEditingController textController, {FocusNode? focusNode, int? maxLines, int? minLines, String? decoration}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: paddingHorizontal),
+      padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: paddingVertical),
       child: TextFormField(
         controller: textController,
         maxLines: maxLines,

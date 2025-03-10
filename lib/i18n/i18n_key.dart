@@ -168,6 +168,7 @@ enum I18nKey {
   labelNote,
   labelShare,
   labelCalendar,
+  labelCopyTemplateCount,
   btnStart,
   btnStop,
   btnAddSchedule,

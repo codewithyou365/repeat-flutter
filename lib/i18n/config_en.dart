@@ -169,6 +169,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelNote, "Note");
     put(I18nKey.labelShare, "Share");
     put(I18nKey.labelCalendar, "Calendar");
+    put(I18nKey.labelCopyTemplateCount, "Copy Template Count");
     put(I18nKey.btnStart, "Start");
     put(I18nKey.btnAddSchedule, "Add Schedule");
     put(I18nKey.btnConfigSettings, "Config Settings");

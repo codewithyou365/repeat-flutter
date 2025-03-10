@@ -14,6 +14,8 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
+import 'package:repeat_flutter/widget/row/row_widget.dart';
+import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:mustache_template/mustache_template.dart';
 
@@ -25,6 +27,8 @@ class CopyLogic<T extends GetxController> {
   List<String> copyTemplates = [];
   final CrK key;
   final T parentLogic;
+  final GlobalKey topColumn = GlobalKey();
+  double listViewHeight = 50;
 
   CopyLogic(this.key, this.parentLogic);
 
@@ -108,92 +112,84 @@ class CopyLogic<T extends GetxController> {
   }
 
   void show(BuildContext context, String defaultTemplate, Object data) {
-    final Size screenSize = MediaQuery.of(context).size;
     if (copyTemplates.isEmpty) {
       copyTemplates.add(defaultTemplate);
     }
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (BuildContext context) {
-        return SizedBox(
-          width: screenSize.width,
-          height: screenSize.height / 2,
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10.0.w, vertical: 20.0),
-            child: GetBuilder<T>(
-              id: CopyLogic.id,
-              builder: (_) {
-                List<String> copyText = [];
-                if (data is String) {
-                  copyText = getShowText(data);
-                } else {
-                  copyText = getShowSegments(data as List<SegmentContent>);
-                }
-                List<String> showText = [];
-                for (var v in copyText) {
-                  showText.add(StringUtil.limit(v, 255));
-                }
 
-                return ListView(
-                  children: [
-                    ...List.generate(
-                      showText.length,
-                      (index) => Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Card(
-                          color: Theme.of(context).secondaryHeaderColor,
-                          child: PopupMenuButton<String>(
-                            child: Padding(
-                              padding: EdgeInsets.all(12.w),
-                              child: Text(showText[index]),
-                            ),
-                            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                              PopupMenuItem<String>(
-                                onTap: () {
-                                  Clipboard.setData(ClipboardData(text: copyText[index]));
-                                  Snackbar.show(I18nKey.labelCopiedToClipboard.tr);
-                                },
-                                child: Text(I18nKey.labelCopyText.tr),
-                              ),
-                              PopupMenuItem<String>(
-                                onTap: () {
-                                  Editor.show(
-                                    Get.context!,
-                                    I18nKey.labelDetailConfig.tr,
-                                    read(index),
-                                    (str) async {
-                                      write(index, str);
-                                    },
-                                    qrPagePath: Nav.gsCrContentScan.path,
-                                  );
-                                },
-                                child: Text(I18nKey.labelDetailConfig.tr),
-                              ),
-                              PopupMenuItem<String>(
-                                onTap: () {
-                                  copy(index);
-                                },
-                                child: Text(I18nKey.labelCopyConfig.tr),
-                              ),
-                              PopupMenuItem<String>(
-                                onTap: () {
-                                  delete(index);
-                                },
-                                child: Text(I18nKey.labelDeleteConfig.tr),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    )
+    Sheet.withHeaderAndBody(
+      context,
+      [
+        GetBuilder<T>(
+          id: CopyLogic.id,
+          builder: (_) {
+            return RowWidget.buildText(I18nKey.labelCopyTemplateCount.tr, '${copyTemplates.length}');
+          },
+        ),
+        RowWidget.buildDivider(),
+      ],
+      GetBuilder<T>(
+        id: CopyLogic.id,
+        builder: (_) {
+          List<String> copyText = [];
+          if (data is String) {
+            copyText = getShowText(data);
+          } else {
+            copyText = getShowSegments(data as List<SegmentContent>);
+          }
+          List<String> showText = [];
+          for (var v in copyText) {
+            showText.add(StringUtil.limit(v, 255));
+          }
+          return ListView(children: [
+            ...List.generate(
+              showText.length,
+              (index) => RowWidget.buildCard(
+                PopupMenuButton<String>(
+                  child: Padding(
+                    padding: EdgeInsets.all(12.w),
+                    child: Text(showText[index]),
+                  ),
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    PopupMenuItem<String>(
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: copyText[index]));
+                        Snackbar.show(I18nKey.labelCopiedToClipboard.tr);
+                      },
+                      child: Text(I18nKey.labelCopyText.tr),
+                    ),
+                    PopupMenuItem<String>(
+                      onTap: () {
+                        Editor.show(
+                          Get.context!,
+                          I18nKey.labelDetailConfig.tr,
+                          read(index),
+                          (str) async {
+                            write(index, str);
+                          },
+                          qrPagePath: Nav.gsCrContentScan.path,
+                        );
+                      },
+                      child: Text(I18nKey.labelDetailConfig.tr),
+                    ),
+                    PopupMenuItem<String>(
+                      onTap: () {
+                        copy(index);
+                      },
+                      child: Text(I18nKey.labelCopyConfig.tr),
+                    ),
+                    PopupMenuItem<String>(
+                      onTap: () {
+                        delete(index);
+                      },
+                      child: Text(I18nKey.labelDeleteConfig.tr),
+                    ),
                   ],
-                );
-              },
-            ),
-          ),
-        );
-      },
+                ),
+              ),
+            )
+          ]);
+        },
+      ),
     );
   }
 

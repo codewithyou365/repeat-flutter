@@ -169,6 +169,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelNote, "笔记");
     put(I18nKey.labelShare, "分享");
     put(I18nKey.labelCalendar, "日历");
+    put(I18nKey.labelCopyTemplateCount, "复制模版数量");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");
     put(I18nKey.btnConfigSettings, "配置设置");
