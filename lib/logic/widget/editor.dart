@@ -52,38 +52,31 @@ class Editor {
     }
 
     textController.addListener(textChange);
-    FocusNode focusNode = FocusNode();
-    focusNode.addListener(() {
-      if (focusNode.hasFocus) {
-        textController.selection = const TextSelection.collapsed(offset: 0);
-      }
-    });
-    Sheet.showBottomSheet(
+    Sheet.withHeaderAndBody(
       context,
+      [
+        RowWidget.buildButtons([
+          Button(I18nKey.btnCancel.tr, onCancel),
+          shareBtn,
+          if (qrPagePath != null) scanBtn,
+          Button(I18nKey.btnSave.tr, () async {
+            await save(textController.text);
+            dbValue = textController.text;
+            textChange();
+            Snackbar.show(I18nKey.labelSaved.tr);
+          }),
+        ]),
+        RowWidget.buildDivider(),
+        RowWidget.buildText("$title :", ""),
+      ],
       ListView(
         children: [
-          RowWidget.buildButtons([
-            Button(I18nKey.btnCancel.tr, onCancel),
-            shareBtn,
-            if (qrPagePath != null) scanBtn,
-            Button(I18nKey.btnSave.tr, () async {
-              await save(textController.text);
-              dbValue = textController.text;
-              textChange();
-              Snackbar.show(I18nKey.labelSaved.tr);
-            }),
-          ]),
-          RowWidget.buildDivider(),
-          RowWidget.buildMiddleText("$title :"),
-          RowWidget.buildEditText(textController, focusNode: focusNode, maxLines: 40, minLines: 32),
+          RowWidget.buildEditText(textController, maxLines: 40, minLines: 32),
         ],
       ),
       rate: rate,
       onTapBlack: onCancel,
-    ).then((_) {
-      textController.dispose();
-      focusNode.dispose();
-    });
+    );
   }
 
   static void showQrCode(BuildContext context, String value, {double? rate}) {
