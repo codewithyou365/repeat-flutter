@@ -54,21 +54,25 @@ class Editor {
     textController.addListener(textChange);
     Sheet.withHeaderAndBody(
       context,
-      [
-        RowWidget.buildButtons([
-          Button(I18nKey.btnCancel.tr, onCancel),
-          shareBtn,
-          if (qrPagePath != null) scanBtn,
-          Button(I18nKey.btnSave.tr, () async {
-            await save(textController.text);
-            dbValue = textController.text;
-            textChange();
-            Snackbar.show(I18nKey.labelSaved.tr);
-          }),
-        ]),
-        RowWidget.buildDivider(),
-        RowWidget.buildText("$title :", ""),
-      ],
+      Column(
+        key: GlobalKey(),
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          RowWidget.buildButtons([
+            Button(I18nKey.btnCancel.tr, onCancel),
+            shareBtn,
+            if (qrPagePath != null) scanBtn,
+            Button(I18nKey.btnSave.tr, () async {
+              await save(textController.text);
+              dbValue = textController.text;
+              textChange();
+              Snackbar.show(I18nKey.labelSaved.tr);
+            }),
+          ]),
+          RowWidget.buildDivider(),
+          RowWidget.buildText("$title :", ""),
+        ],
+      ),
       ListView(
         children: [
           RowWidget.buildEditText(textController, maxLines: 40, minLines: 32),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:logger/logger.dart';
 
 class Sheet {
   static const double paddingHorizontal = 10;
   static const double paddingVertical = 20;
+  static final Logger logger = Logger();
 
   static Future<T?> showBottomSheet<T>(BuildContext context, Widget w, {double? rate, GestureTapCallback? onTapBlack}) {
     final Size screenSize = MediaQuery.of(context).size;
@@ -50,14 +52,18 @@ class Sheet {
     );
   }
 
-  static Future<T?> withHeaderAndBody<T>(BuildContext context, List<Widget> headerInColumn, Widget body, {double? rate, GestureTapCallback? onTapBlack}) {
+  static Future<T?> withHeaderAndBody<T>(BuildContext context, Widget header, Widget body, {double? rate, GestureTapCallback? onTapBlack}) {
     rate ??= 2 / 3;
-    final GlobalKey topColumn = GlobalKey();
+    GlobalKey? headerKey = header.key as GlobalKey<State<StatefulWidget>>?;
+    if (headerKey == null) {
+      logger.e("Error: header widget must have a GlobalKey");
+      headerKey = GlobalKey<State<StatefulWidget>>();
+    }
     return showBottomSheet<T>(
       context,
       Column(children: [
-        Column(key: topColumn, children: headerInColumn),
-        SheetBody(topColumn, rate, body),
+        header,
+        SheetBody(headerKey, rate, body),
       ]),
       rate: rate,
       onTapBlack: onTapBlack,

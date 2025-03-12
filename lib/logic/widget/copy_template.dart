@@ -118,15 +118,19 @@ class CopyLogic<T extends GetxController> {
 
     Sheet.withHeaderAndBody(
       context,
-      [
-        GetBuilder<T>(
-          id: CopyLogic.id,
-          builder: (_) {
-            return RowWidget.buildText(I18nKey.labelCopyTemplateCount.tr, '${copyTemplates.length}');
-          },
-        ),
-        RowWidget.buildDivider(),
-      ],
+      Column(
+        key: GlobalKey(),
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GetBuilder<T>(
+            id: CopyLogic.id,
+            builder: (_) {
+              return RowWidget.buildText(I18nKey.labelCopyTemplateCount.tr, '${copyTemplates.length}');
+            },
+          ),
+          RowWidget.buildDivider(),
+        ],
+      ),
       GetBuilder<T>(
         id: CopyLogic.id,
         builder: (_) {
