@@ -335,7 +335,7 @@ class GsCrRepeatViewBasic {
                 ),
                 RowWidget.buildDividerWithoutColor(),
                 RowWidget.buildSwitch(
-                  I18nKey.labelEditInGame.tr,
+                  I18nKey.labelEnableEditSegment.tr,
                   state.editInGame,
                 ),
                 RowWidget.buildDividerWithoutColor(),

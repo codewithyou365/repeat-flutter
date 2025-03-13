@@ -156,7 +156,7 @@ class GsCrRepeatPage extends StatelessWidget {
                       ),
                     IconButton(
                       icon: const Icon(Icons.note_alt),
-                      tooltip: I18nKey.btnNoteEdit.tr,
+                      tooltip: I18nKey.btnEditNote.tr,
                       onPressed: logic.openNoteEditor,
                     ),
                     if (state.edit == false)
@@ -170,7 +170,7 @@ class GsCrRepeatPage extends StatelessWidget {
                           if (!state.gameMode)
                             PopupMenuItem<String>(
                               onTap: logic.openEditor,
-                              child: Text(I18nKey.btnTrackEdit.tr),
+                              child: Text(I18nKey.btnEditTrack.tr),
                             ),
                           PopupMenuItem<String>(
                             onTap: logic.switchConcentrationMode,
@@ -320,6 +320,10 @@ class GsCrRepeatPage extends StatelessWidget {
                   logic.edit(EditType.deleteCurr);
                 },
                 child: Text(I18nKey.btnDeleteCurr.tr),
+              ),
+              PopupMenuItem<String>(
+                onTap: logic.editQa,
+                child: Text(I18nKey.btnEditSegment.tr),
               ),
             ],
           ),

@@ -73,11 +73,7 @@ class Editor {
           RowWidget.buildText("$title :", ""),
         ],
       ),
-      ListView(
-        children: [
-          RowWidget.buildEditText(textController, maxLines: 40, minLines: 32),
-        ],
-      ),
+      RowWidget.buildEditText(textController, maxLines: 40, minLines: 32),
       rate: rate,
       onTapBlack: onCancel,
     );

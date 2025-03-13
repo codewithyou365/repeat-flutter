@@ -39,7 +39,6 @@ class ConfigZh extends Config {
     put(I18nKey.labelDownloadFirstBeforeSharing, "请先下载再进行分享");
     put(I18nKey.labelDownloadFirstBeforeSaving, "请先下载再进行保存");
     put(I18nKey.labelAddContent, "新增内容");
-    put(I18nKey.labelEditContentIndex, "编辑内容索引");
     put(I18nKey.labelDeleteContent, "请确定删除内容： %s");
     put(I18nKey.labelDownloadContent, "下载内容");
     put(I18nKey.labelScheduleContent, "添加学习任务 %s 个单位");
@@ -143,10 +142,11 @@ class ConfigZh extends Config {
     put(I18nKey.labelFrom, "开始于");
     put(I18nKey.labelLesson, "节");
     put(I18nKey.labelSegment, "段");
+    put(I18nKey.labelSegmentName, "段落");
     put(I18nKey.labelIgnorePunctuation, "忽略标点符号");
     put(I18nKey.labelMatchType, "匹配类型");
     put(I18nKey.labelSkipCharacter, "输入该字符便跳过");
-    put(I18nKey.labelEditInGame, "启用音轨和QA编辑");
+    put(I18nKey.labelEnableEditSegment, "启用编辑段落");
     put(I18nKey.labelGameId, "游戏ID");
     put(I18nKey.labelOnlineUserNumber, "在线人数");
     put(I18nKey.labelAllowRegisterNumber, "允许注册人数");
@@ -187,8 +187,8 @@ class ConfigZh extends Config {
     put(I18nKey.btnDelete, "删除");
     put(I18nKey.btnShare, "分享");
     put(I18nKey.btnScan, "扫描");
-    put(I18nKey.btnTrackEdit, "音轨编辑");
-    put(I18nKey.btnNoteEdit, "笔记编辑");
+    put(I18nKey.btnEditTrack, "编辑音轨");
+    put(I18nKey.btnEditNote, "编辑笔记");
     put(I18nKey.btnGameMode, "游戏模式");
     put(I18nKey.btnConcentration, "专注");
     put(I18nKey.btnAdd, "新增");
@@ -215,5 +215,6 @@ class ConfigZh extends Config {
     put(I18nKey.btnSave, "保存");
     put(I18nKey.btnClose, "关闭");
     put(I18nKey.btnCheck, "检查");
+    put(I18nKey.btnEditSegment, "编辑段落");
   }
 }

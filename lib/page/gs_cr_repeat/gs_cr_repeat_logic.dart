@@ -33,7 +33,7 @@ import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
-
+import 'package:logger/logger.dart' as log;
 import 'gs_cr_repeat_state.dart';
 import 'gs_cr_repeat_view_basic.dart';
 
@@ -45,6 +45,7 @@ class GsCrRepeatLogic extends GetxController {
   late CopyLogic copyLogic = CopyLogic<GsCrRepeatLogic>(CrK.copyTemplate, this);
   late UserManager userManager = UserManager<GsCrRepeatLogic>(this);
   Ticker ticker = Ticker(1000);
+  static final log.Logger logger = log.Logger();
 
   @override
   Future<void> onInit() async {
@@ -689,6 +690,27 @@ class GsCrRepeatLogic extends GetxController {
       }
     }
     await refreshView();
+  }
+
+  editQa() async {
+    var s = state.segment;
+    var contentSerial = s.contentSerial;
+    var lessonIndex = s.lessonIndex;
+    var segmentIndex = s.segmentIndex;
+    var segmentContent = await RepeatDocEditHelp.getSegment(contentSerial, lessonIndex, segmentIndex, true);
+    if (segmentContent == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.tr);
+      return;
+    }
+    Editor.show(
+      Get.context!,
+      I18nKey.labelSegmentName.tr,
+      segmentContent,
+      (str) async {
+        await RepeatDocEditHelp.setSegment(contentSerial, lessonIndex, segmentIndex, str);
+      },
+      qrPagePath: Nav.gsCrContentScan.path,
+    );
   }
 
   refreshView() async {

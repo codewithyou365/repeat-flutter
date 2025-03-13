@@ -1,7 +1,11 @@
+import 'dart:convert';
+
+import 'package:get/get.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
+import 'package:repeat_flutter/page/gs_cr_repeat/gs_cr_repeat_logic.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 import 'model/repeat_doc.dart';
@@ -199,6 +203,49 @@ class RepeatDocEditHelp {
     }
     await RepeatDoc.writeFile(indexPath, map);
     RepeatDocHelp.clear();
+    return true;
+  }
+
+  static Future<String?> getSegment(int contentSerial, int lessonIndex, int segmentIndex, [format = false]) async {
+    var map = await RepeatDocHelp.getAndCacheJsonQa(contentSerial);
+    if (map == null) {
+      return null;
+    }
+    List<dynamic> lessons = List<dynamic>.from(map['lesson']);
+    if (lessonIndex >= lessons.length) {
+      return null;
+    }
+    List<dynamic> segments = List<dynamic>.from(lessons[lessonIndex]['segment']);
+    if (segmentIndex >= segments.length) {
+      return null;
+    }
+    if (format) {
+      return const JsonEncoder.withIndent(' ').convert(segments[segmentIndex]);
+    } else {
+      return jsonEncode(segments[segmentIndex]);
+    }
+  }
+
+  static Future<bool> setSegment(int contentSerial, int lessonIndex, int segmentIndex, String body) async {
+    var map = await RepeatDocHelp.getAndCacheJsonQa(contentSerial);
+    if (map == null) {
+      return false;
+    }
+    List<dynamic> lessons = List<dynamic>.from(map['lesson']);
+    if (lessonIndex >= lessons.length) {
+      return false;
+    }
+    map['lesson'] = lessons;
+    List<dynamic> segments = List<dynamic>.from(lessons[lessonIndex]['segment']);
+    if (segmentIndex >= segments.length) {
+      return false;
+    }
+    lessons[lessonIndex]['segment'] = segments;
+    segments[segmentIndex] = jsonDecode(body);
+    var indexPath = DocPath.getRelativeIndexPath(contentSerial);
+    await RepeatDoc.writeFile(indexPath, map);
+    RepeatDocHelp.clear();
+    await Get.find<GsCrRepeatLogic>().refreshView();
     return true;
   }
 }

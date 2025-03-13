@@ -39,7 +39,6 @@ class ConfigEn extends Config {
     put(I18nKey.labelDownloadFirstBeforeSharing, "Please download first before sharing.");
     put(I18nKey.labelDownloadFirstBeforeSaving, "Please download first before saving.");
     put(I18nKey.labelAddContent, "Add content");
-    put(I18nKey.labelEditContentIndex, "Edit content index");
     put(I18nKey.labelDeleteContent, "Please confirm to delete content: %s");
     put(I18nKey.labelDownloadContent, "Download content");
     put(I18nKey.labelScheduleContent, "Add learning task with %s segments.");
@@ -143,12 +142,13 @@ class ConfigEn extends Config {
     put(I18nKey.labelFrom, "From");
     put(I18nKey.labelLesson, "Lesson");
     put(I18nKey.labelSegment, "Segment");
-    put(I18nKey.labelIgnorePunctuation, "Ignore punctuation");
-    put(I18nKey.labelMatchType, "Match type");
-    put(I18nKey.labelSkipCharacter, "Enter this char to skip");
-    put(I18nKey.labelEditInGame, "Enable track & QA edit");
+    put(I18nKey.labelSegmentName, "Segment");
+    put(I18nKey.labelIgnorePunctuation, "Ignore Punctuation");
+    put(I18nKey.labelMatchType, "Match Type");
+    put(I18nKey.labelSkipCharacter, "Enter This Char To Skip");
+    put(I18nKey.labelEnableEditSegment, "Enable Edit Segment");
     put(I18nKey.labelGameId, "Game ID");
-    put(I18nKey.labelOnlineUserNumber, "Online user number");
+    put(I18nKey.labelOnlineUserNumber, "Online User Number");
     put(I18nKey.labelAllowRegisterNumber, "Allow Reg Number");
     put(I18nKey.labelQuestion, "Question");
     put(I18nKey.labelAnswer, "Answer");
@@ -187,8 +187,8 @@ class ConfigEn extends Config {
     put(I18nKey.btnDelete, "Delete");
     put(I18nKey.btnShare, "Share");
     put(I18nKey.btnScan, "Scan");
-    put(I18nKey.btnTrackEdit, "Track Edit");
-    put(I18nKey.btnNoteEdit, "Note Edit");
+    put(I18nKey.btnEditTrack, "Edit Track");
+    put(I18nKey.btnEditNote, "Edit Note");
     put(I18nKey.btnGameMode, "Game Mode");
     put(I18nKey.btnConcentration, "Concentration");
     put(I18nKey.btnAdd, "Add");
@@ -215,5 +215,6 @@ class ConfigEn extends Config {
     put(I18nKey.btnSave, "Save");
     put(I18nKey.btnClose, "Close");
     put(I18nKey.btnCheck, "CHECK");
+    put(I18nKey.btnEditSegment, "Edit Segment");
   }
 }
