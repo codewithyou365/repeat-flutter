@@ -1,15 +1,9 @@
 {
-  "rootPath": "book",
-  "key": "book",
+  "rootUrl": "https://online2.tingclass.net/lesson/shi0529/0008/8426/",
   "lesson": [
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/01_499.mp3",
-      "path": "/nce3/a/01.mp3",
+      "url": "01_499.mp3",
       "hash": "47235681209e463559e12c7fb02eef8479db95bc",
-      "key": "nce3/01",
-      "defaultQuestion": "A puma at large",
-      "titleStart": "00:00:01,833",
-      "titleEnd": "00:00:04,466",
       "raw": [
         "A puma at large",
         "Pumas are large, cat-like animals which are found in America. When",
@@ -31,6 +25,11 @@
         "not caught. It is disturbing to think that a dangerous wild animal is still at large in the quiet countryside."
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,833",
+          "qEnd": "00:00:04,466",
+          "a": "A puma at large"
+        },
         {
           "qStart": "00:00:13,966",
           "qEnd": "00:00:18,866",
@@ -112,13 +111,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/02_226.mp3",
-      "path": "/nce3/a/02.mp3",
+      "url": "02_226.mp3",
       "hash": "7291b5f132581b9e9bd092f09d917955f1dd97e5",
-      "key": "nce3/02",
-      "defaultQuestion": "Thirteen equals one",
-      "titleStart": "00:00:01,633",
-      "titleEnd": "00:00:04,400",
       "raw": [
         "Thirteen equals one",
         "Our vicar is always raising money for one cause or another, but he",
@@ -141,6 +135,11 @@
         "Now let's go downstairs and have a cup of tea.'"
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,633",
+          "qEnd": "00:00:04,400",
+          "a": "Thirteen equals one"
+        },
         {
           "qStart": "00:00:16,133",
           "qEnd": "00:00:26,116",
@@ -210,13 +209,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/03_122.mp3",
-      "path": "/nce3/a/03.mp3",
+      "url": "03_122.mp3",
       "hash": "dc427681f4d711fefe5bff42c7da498a916644be",
-      "key": "nce3/03",
-      "defaultQuestion": "An unknown goddess",
-      "titleStart": "00:00:01,866",
-      "titleEnd": "00:00:05,033",
       "raw": [
         "An unknown goddess",
         "Some time ago, an interesting discovery was made by archaeologists",
@@ -238,6 +232,11 @@
         "was very graceful indeed, but, so far, the archaeologists have been unable to discover her identity. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,866",
+          "qEnd": "00:00:05,033",
+          "a": "An unknown goddess"
+        },
         {
           "qStart": "00:00:15,733",
           "qEnd": "00:00:23,899",
@@ -343,13 +342,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/04_182.mp3",
-      "path": "/nce3/a/04.mp3",
+      "url": "04_182.mp3",
       "hash": "571a3d26eb5239d919ff38d685710b83c076129f",
-      "key": "nce3/04",
-      "defaultQuestion": "The double life of Alfred Bloggs",
-      "titleStart": "00:00:01,966",
-      "titleEnd": "00:00:06,033",
       "raw": [
         "The double life of Alfred Bloggs",
         "These days, people who do manual work often receive far more",
@@ -370,6 +364,11 @@
         "him 'Mr. Bloggs', not 'Alf'."
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,966",
+          "qEnd": "00:00:06,033",
+          "a": "The double life of Alfred Bloggs"
+        },
         {
           "qStart": "00:00:16,366",
           "qEnd": "00:00:24,416",
@@ -457,13 +456,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/05_131.mp3",
-      "path": "/nce3/a/05.mp3",
+      "url": "05_131.mp3",
       "hash": "5ce0edf2ad4b4976dfc1365803c889a2efff6e3d",
-      "key": "nce3/05",
-      "defaultQuestion": "The facts",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,400",
       "raw": [
         "The facts",
         "Editors of newspapers and magazines often go to extremes to",
@@ -484,6 +478,11 @@
         "steps leading to the fifteen-foot wall which surrounded the president's palace. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,666",
+          "qEnd": "00:00:04,400",
+          "a": "The facts"
+        },
         {
           "qStart": "00:00:16,166",
           "qEnd": "00:00:24,783",
@@ -559,13 +558,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/06_344.mp3",
-      "path": "/nce3/a/06.mp3",
+      "url": "06_344.mp3",
       "hash": "bd12f3d9ed81911e6c5b2b3adf858399332f2418",
-      "key": "nce3/06",
-      "defaultQuestion": "Smash-and-grab",
-      "titleStart": "00:00:01,766",
-      "titleEnd": "00:00:04,366",
       "raw": [
         "Smash-and-grab",
         "The expensive shops in a famous arcade near Piccadilly were just",
@@ -587,6 +581,11 @@
         "thousands of pounds worth of diamonds. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,766",
+          "qEnd": "00:00:04,366",
+          "a": "Smash-and-grab"
+        },
         {
           "qStart": "00:00:13,400",
           "qEnd": "00:00:19,566",
@@ -674,13 +673,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/07_038.mp3",
-      "path": "/nce3/a/07.mp3",
+      "url": "07_038.mp3",
       "hash": "094f1b60fd3cbe298573ef215588ed5cb95801ab",
-      "key": "nce3/07",
-      "defaultQuestion": "Mutilated ladies",
-      "titleStart": "00:00:01,433",
-      "titleEnd": "00:00:03,900",
       "raw": [
         "Mutilated ladies",
         "Has it ever happened to you? Have you ever put your trousers in",
@@ -701,6 +695,11 @@
         "people their money back, 'said a spokeswoman for the Bank. 'Last year, we paid ￡1.5m on 21,000 claims.'"
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,433",
+          "qEnd": "00:00:03,900",
+          "a": "Mutilated ladies"
+        },
         {
           "qStart": "00:00:12,300",
           "qEnd": "00:00:14,833",
@@ -788,13 +787,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/08_535.mp3",
-      "path": "/nce3/a/08.mp3",
+      "url": "08_535.mp3",
       "hash": "107e2a57f96aa9f70f20458a7b66387e8f2496ae",
-      "key": "nce3/08",
-      "defaultQuestion": "A famous monastery",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,633",
       "raw": [
         "A famous monastery",
         "The Great St. Bernard Pass connects Switzerland to Italy. At 2,473",
@@ -816,6 +810,11 @@
         "peace of the mountains, always receive a warm welcome at St. Bernard's monastery. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,666",
+          "qEnd": "00:00:04,633",
+          "a": "A famous monastery"
+        },
         {
           "qStart": "00:00:14,533",
           "qEnd": "00:00:20,233",
@@ -909,13 +908,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/09_609.mp3",
-      "path": "/nce3/a/09.mp3",
+      "url": "09_609.mp3",
       "hash": "53bf72af9de3e2720e3918000107fa0c31478fe5",
-      "key": "nce3/09",
-      "defaultQuestion": "Flying cats",
-      "titleStart": "00:00:02,333",
-      "titleEnd": "00:00:04,833",
       "raw": [
         "Flying cats",
         "Cats never fail to fascinate human beings. They can be friendly and",
@@ -936,6 +930,11 @@
         "flying squirrels. This increases their air-resistance and reduces the shock of impact when they hit the ground. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:02,333",
+          "qEnd": "00:00:04,833",
+          "a": "Flying cats"
+        },
         {
           "qStart": "00:00:16,800",
           "qEnd": "00:00:21,366",
@@ -1047,13 +1046,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/10_289.mp3",
-      "path": "/nce3/a/10.mp3",
+      "url": "10_289.mp3",
       "hash": "950022158070d4caeb888ab6d97328c7d9bbb55e",
-      "key": "nce3/10",
-      "defaultQuestion": "The loss of the Titanic",
-      "titleStart": "00:00:02,433",
-      "titleEnd": "00:00:05,700",
       "raw": [
         "The loss of the Titanic",
         "The great ship, Titanic, sailed for New York from Southampton on",
@@ -1075,6 +1069,11 @@
         "everybody, 1,500 lives were lost. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:02,433",
+          "qEnd": "00:00:05,700",
+          "a": "The loss of the Titanic"
+        },
         {
           "qStart": "00:00:18,766",
           "qEnd": "00:00:26,833",
@@ -1162,13 +1161,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/11_509.mp3",
-      "path": "/nce3/a/11.mp3",
+      "url": "11_509.mp3",
       "hash": "aad95e0c435761df3b1a7acb9e4eb828f6b33bd8",
-      "key": "nce3/11",
-      "defaultQuestion": "Not guilty",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,066",
       "raw": [
         "Not guilty",
         "Customs Officers are quite tolerant these days, but they can still",
@@ -1197,6 +1191,11 @@
         "chalk marks on my baggage. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,666",
+          "qEnd": "00:00:04,066",
+          "a": "Not guilty"
+        },
         {
           "qStart": "00:00:12,666",
           "qEnd": "00:00:22,666",
@@ -1326,13 +1325,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/12_459.mp3",
-      "path": "/nce3/a/12.mp3",
+      "url": "12_459.mp3",
       "hash": "d3e4a55335f098784aff702c226a8a290d9d53a5",
-      "key": "nce3/12",
-      "defaultQuestion": "Life on a desert island",
-      "titleStart": "00:00:01,866",
-      "titleEnd": "00:00:04,866",
       "raw": [
         "Life on a desert island",
         "Most of us have formed an unrealistic picture of life on a desert",
@@ -1353,6 +1347,11 @@
         "them five days later, both men were genuinely sorry that they had to leave. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,866",
+          "qEnd": "00:00:04,866",
+          "a": "Life on a desert island"
+        },
         {
           "qStart": "00:00:15,733",
           "qEnd": "00:00:21,783",
@@ -1458,13 +1457,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/13_310.mp3",
-      "path": "/nce3/a/13.mp3",
+      "url": "13_310.mp3",
       "hash": "b3883c552763c6a85bbfabd11194eb4c0654b811",
-      "key": "nce3/13",
-      "defaultQuestion": "'It's only me'",
-      "titleStart": "00:00:02,300",
-      "titleEnd": "00:00:04,733",
       "raw": [
         "'It's only me'",
         "After her husband had gone to work, Mrs. Richards sent her children",
@@ -1485,6 +1479,11 @@
         "towards him, he fled, slamming the door behind him. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:02,300",
+          "qEnd": "00:00:04,733",
+          "a": "'It's only me'"
+        },
         {
           "qStart": "00:00:15,900",
           "qEnd": "00:00:24,583",
@@ -1584,13 +1583,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/14_813.mp3",
-      "path": "/nce3/a/14.mp3",
+      "url": "14_813.mp3",
       "hash": "f7f38f858a1319d94a113e8108f03351ed803f41",
-      "key": "nce3/14",
-      "defaultQuestion": "A noble gangster",
-      "titleStart": "00:00:02,000",
-      "titleEnd": "00:00:04,400",
       "raw": [
         "A noble gangster",
         "There was a time when the owners of shops and businesses in",
@@ -1612,6 +1606,11 @@
         "notable leader, Signor Giovanni Haukodue'. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:02,000",
+          "qEnd": "00:00:04,400",
+          "a": "A noble gangster"
+        },
         {
           "qStart": "00:00:14,766",
           "qEnd": "00:00:25,949",
@@ -1681,13 +1680,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/15_747.mp3",
-      "path": "/nce3/a/15.mp3",
+      "url": "15_747.mp3",
       "hash": "28ec474cf070527b190f4a4ac780e4878c813872",
-      "key": "nce3/15",
-      "defaultQuestion": "Fifty pence worth of trouble",
-      "titleStart": "00:00:02,133",
-      "titleEnd": "00:00:05,400",
       "raw": [
         "Fifty pence worth of trouble",
         "Children always appreciate small gifts of money. Mum or dad, of",
@@ -1709,6 +1703,11 @@
         "large box of chocolates. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:02,133",
+          "qEnd": "00:00:05,400",
+          "a": "Fifty pence worth of trouble"
+        },
         {
           "qStart": "00:00:16,166",
           "qEnd": "00:00:20,433",
@@ -1808,13 +1807,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/16_317.mp3",
-      "path": "/nce3/a/16.mp3",
+      "url": "16_317.mp3",
       "hash": "e9c128c8e034d15cd7162379e7159425572d32d8",
-      "key": "nce3/16",
-      "defaultQuestion": "Mary had a little lamb",
-      "titleStart": "00:00:02,160",
-      "titleEnd": "00:00:05,233",
       "raw": [
         "Mary had a little lamb",
         "Mary and her husband Dimitri lived in the tiny village of Perachora",
@@ -1835,6 +1829,11 @@
         "which had been dyed black, had been washed clean by the rain!"
       ],
       "segment": [
+        {
+          "qStart": "00:00:02,160",
+          "qEnd": "00:00:05,233",
+          "a": "Mary had a little lamb"
+        },
         {
           "qStart": "00:00:16,800",
           "qEnd": "00:00:24,650",
@@ -1940,13 +1939,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/17_129.mp3",
-      "path": "/nce3/a/17.mp3",
+      "url": "17_129.mp3",
       "hash": "be2903b89c3d4158b44182f98b0e9fb8368ce0fd",
-      "key": "nce3/17",
-      "defaultQuestion": "The longest suspension bridge in the world",
-      "titleStart": "00:00:02,366",
-      "titleEnd": "00:00:07,500",
       "raw": [
         "The longest suspension bridge in the world",
         "Verrazano, an Italian about whom little is known, sailed into New",
@@ -1968,6 +1962,11 @@
         "object drawn as faintly as possible'. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:02,366",
+          "qEnd": "00:00:07,500",
+          "a": "The longest suspension bridge in the world"
+        },
         {
           "qStart": "00:00:16,166",
           "qEnd": "00:00:27,816",
@@ -2067,13 +2066,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/18_733.mp3",
-      "path": "/nce3/a/18.mp3",
+      "url": "18_733.mp3",
       "hash": "7fa437e0f4d5b533ec4b0b57ae3ce97ab49c1c5b",
-      "key": "nce3/18",
-      "defaultQuestion": "Electric currents in modern art",
-      "titleStart": "00:00:01,733",
-      "titleEnd": "00:00:05,366",
       "raw": [
         "Electric currents in modern art",
         "Modern sculpture rarely surprises us any more. The idea that modern",
@@ -2096,6 +2090,11 @@
         "shocks as well!"
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,733",
+          "qEnd": "00:00:05,366",
+          "a": "Electric currents in modern art"
+        },
         {
           "qStart": "00:00:15,166",
           "qEnd": "00:00:19,283",
@@ -2201,13 +2200,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/19_571.mp3",
-      "path": "/nce3/a/19.mp3",
+      "url": "19_571.mp3",
       "hash": "a9988549b4a14cfcc17659ec221554ed827776e4",
-      "key": "nce3/19",
-      "defaultQuestion": "A very dear cat",
-      "titleStart": "00:00:01,866",
-      "titleEnd": "00:00:05,133",
       "raw": [
         "A very dear cat",
         "Kidnappers are rarely interested in animals, but they recently took",
@@ -2230,6 +2224,11 @@
         "amount she paid, he was dear in more ways than one!"
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,866",
+          "qEnd": "00:00:05,133",
+          "a": "A very dear cat"
+        },
         {
           "qStart": "00:00:16,333",
           "qEnd": "00:00:25,799",
@@ -2341,13 +2340,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/20_959.mp3",
-      "path": "/nce3/a/20.mp3",
+      "url": "20_959.mp3",
       "hash": "bded7f20b6020f0cda13df6a944c7c5986860208",
-      "key": "nce3/20",
-      "defaultQuestion": "Pioneer pilots",
-      "titleStart": "00:00:01,600",
-      "titleEnd": "00:00:04,366",
       "raw": [
         "Pioneer pilots",
         "In 1908 Lord Northcliffe offered a prize of ￡1,000 to the first man",
@@ -2368,6 +2362,11 @@
         "and he landed on the sea for the second time."
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,600",
+          "qEnd": "00:00:04,366",
+          "a": "Pioneer pilots"
+        },
         {
           "qStart": "00:00:15,233",
           "qEnd": "00:00:26,633",
@@ -2467,13 +2466,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/21_042.mp3",
-      "path": "/nce3/a/21.mp3",
+      "url": "21_042.mp3",
       "hash": "5e929f090df012d11bc0867469e52349dc1b3055",
-      "key": "nce3/21",
-      "defaultQuestion": "Daniel Mendoza",
-      "titleStart": "00:00:01,833",
-      "titleEnd": "00:00:04,600",
       "raw": [
         "Daniel Mendoza",
         "Boxing matches were very popular in England two hundred years",
@@ -2500,6 +2494,11 @@
         "poverty in 1836. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,833",
+          "qEnd": "00:00:04,600",
+          "a": "Daniel Mendoza"
+        },
         {
           "qStart": "00:00:18,166",
           "qEnd": "00:00:23,149",
@@ -2641,13 +2640,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/22_147.mp3",
-      "path": "/nce3/a/22.mp3",
+      "url": "22_147.mp3",
       "hash": "ee74266a995d5ab6c29c4e1dadf0396f1a4ac484",
-      "key": "nce3/22",
-      "defaultQuestion": "By heart",
-      "titleStart": "00:00:02,133",
-      "titleEnd": "00:00:04,778",
       "raw": [
         "By heart",
         "Some plays are so successful that they run for years on end. In",
@@ -2672,6 +2666,11 @@
         "and the usual copy of the letter which he proceeded to read to the prisoner. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:02,133",
+          "qEnd": "00:00:04,778",
+          "a": "By heart"
+        },
         {
           "qStart": "00:00:16,900",
           "qEnd": "00:00:32,549",
@@ -2777,13 +2776,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/23_495.mp3",
-      "path": "/nce3/a/23.mp3",
+      "url": "23_495.mp3",
       "hash": "c5084cfd4d58c552317f2743ec92c2dc1028026e",
-      "key": "nce3/23",
-      "defaultQuestion": "One man's meat is another man's poison",
-      "titleStart": "00:00:01,900",
-      "titleEnd": "00:00:06,355",
       "raw": [
         "One man's meat is another man's poison",
         "People become quite illogical when they try to decide what can be",
@@ -2809,6 +2803,11 @@
         "the hall! I have never been able to look at a snail since then. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,900",
+          "qEnd": "00:00:06,355",
+          "a": "One man's meat is another man's poison"
+        },
         {
           "qStart": "00:00:19,766",
           "qEnd": "00:00:28,066",
@@ -2932,13 +2931,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/24_015.mp3",
-      "path": "/nce3/a/24.mp3",
+      "url": "24_015.mp3",
       "hash": "2d9aa765e2cbd607719a47f2421353738aec5702",
-      "key": "nce3/24",
-      "defaultQuestion": "A skeleton in the cupboard",
-      "titleStart": "00:00:01,900",
-      "titleEnd": "00:00:04,733",
       "raw": [
         "A skeleton in the cupboard",
         "We often read in novels how a seemingly respectable person or",
@@ -2965,6 +2959,11 @@
         "You forget that I was a medical student once upon a time.' "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,900",
+          "qEnd": "00:00:04,733",
+          "a": "A skeleton in the cupboard"
+        },
         {
           "qStart": "00:00:11,500",
           "qEnd": "00:00:24,433",
@@ -3100,13 +3099,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/25_133.mp3",
-      "path": "/nce3/a/25.mp3",
+      "url": "25_133.mp3",
       "hash": "50713a897cf0918d3203259e3adde787f1cf9ff4",
-      "key": "nce3/25",
-      "defaultQuestion": "The Cutty Sark",
-      "titleStart": "00:00:01,933",
-      "titleEnd": "00:00:04,366",
       "raw": [
         "The Cutty Sark",
         "One of the most famous sailing ships of the nineteenth century, the",
@@ -3132,6 +3126,11 @@
         "delays. There is no doubt that if she had not lost her rudder she would have won the race easily. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,933",
+          "qEnd": "00:00:04,366",
+          "a": "The Cutty Sark"
+        },
         {
           "qStart": "00:00:15,666",
           "qEnd": "00:00:24,200",
@@ -3261,13 +3260,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/26_549.mp3",
-      "path": "/nce3/a/26.mp3",
+      "url": "26_549.mp3",
       "hash": "528abc053e2b64d510e76ee57e8f1881983703e6",
-      "key": "nce3/26",
-      "defaultQuestion": "Wanted: a large biscuit tin",
-      "titleStart": "00:00:02,000",
-      "titleEnd": "00:00:05,900",
       "raw": [
         "Wanted: a large biscuit tin",
         "No one can avoid being influenced by advertisements. Much as we ",
@@ -3294,6 +3288,11 @@
         "for they bought the biscuit from the student for $24,000."
       ],
       "segment": [
+        {
+          "qStart": "00:00:02,000",
+          "qEnd": "00:00:05,900",
+          "a": "Wanted: a large biscuit tin"
+        },
         {
           "qStart": "00:00:15,000",
           "qEnd": "00:00:19,416",
@@ -3429,13 +3428,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/27_369.mp3",
-      "path": "/nce3/a/27.mp3",
+      "url": "27_369.mp3",
       "hash": "a93abd44a63f56a34b342a6328d3aa55d7d68c8f",
-      "key": "nce3/27",
-      "defaultQuestion": "Nothing to sell and nothing to buy",
-      "titleStart": "00:00:01,933",
-      "titleEnd": "00:00:05,766",
       "raw": [
         "Nothing to sell and nothing to buy",
         "It has been said that everyone lives by selling something. In the",
@@ -3461,6 +3455,11 @@
         "we have not felt a little envious of their simple way of life and their freedom from care?"
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,933",
+          "qEnd": "00:00:05,766",
+          "a": "Nothing to sell and nothing to buy"
+        },
         {
           "qStart": "00:00:16,487",
           "qEnd": "00:00:21,064",
@@ -3584,13 +3583,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/28_070.mp3",
-      "path": "/nce3/a/28.mp3",
+      "url": "28_070.mp3",
       "hash": "7e45d75f48cdedb6236334555f6495dcd3017115",
-      "key": "nce3/28",
-      "defaultQuestion": "Five pounds too dear",
-      "titleStart": "00:00:02,166",
-      "titleEnd": "00:00:05,400",
       "raw": [
         "Five pounds too dear",
         "Small boats loaded with wares sped to the great liner as she was",
@@ -3617,6 +3611,11 @@
         "impossible to fill this beautiful pen with ink and to this day it has never written a single word!"
       ],
       "segment": [
+        {
+          "qStart": "00:00:02,166",
+          "qEnd": "00:00:05,400",
+          "a": "Five pounds too dear"
+        },
         {
           "qStart": "00:00:16,533",
           "qEnd": "00:00:23,333",
@@ -3746,13 +3745,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/29_404.mp3",
-      "path": "/nce3/a/29.mp3",
+      "url": "29_404.mp3",
       "hash": "e360580f5b6894a44737468267f67dfb3702c442",
-      "key": "nce3/29",
-      "defaultQuestion": "Funny or not?",
-      "titleStart": "00:00:01,766",
-      "titleEnd": "00:00:04,000",
       "raw": [
         "Funny or not?",
         "Whether we find a joke funny or not largely depends on where we",
@@ -3779,6 +3773,11 @@
         " about hospitals at the end of the party when he slipped on a piece of ice and broke his left leg. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,766",
+          "qEnd": "00:00:04,000",
+          "a": "Funny or not?"
+        },
         {
           "qStart": "00:00:14,000",
           "qEnd": "00:00:20,766",
@@ -3920,13 +3919,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/30_343.mp3",
-      "path": "/nce3/a/30.mp3",
+      "url": "30_343.mp3",
       "hash": "8d7c96cfe450a0ea0364757986326adc083a9511",
-      "key": "nce3/30",
-      "defaultQuestion": "The death of a ghost",
-      "titleStart": "00:00:01,633",
-      "titleEnd": "00:00:04,709",
       "raw": [
         "The death of a ghost",
         "For years, villagers believed that Endley Farm was haunted. The",
@@ -3954,6 +3948,11 @@
         "longer. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,633",
+          "qEnd": "00:00:04,709",
+          "a": "The death of a ghost"
+        },
         {
           "qStart": "00:00:13,266",
           "qEnd": "00:00:18,533",
@@ -4107,13 +4106,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/31_715.mp3",
-      "path": "/nce3/a/31.mp3",
+      "url": "31_715.mp3",
       "hash": "3b7d9d009d03b7812c1914f253852aba26ad5144",
-      "key": "nce3/31",
-      "defaultQuestion": "A lovable eccentric",
-      "titleStart": "00:00:01,966",
-      "titleEnd": "00:00:05,133",
       "raw": [
         "A lovable eccentric",
         "True eccentrics never deliberately set out to draw attention to",
@@ -4140,6 +4134,11 @@
         "to stage this elaborate joke simply to prove that critics do not always know what they are talking about. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,966",
+          "qEnd": "00:00:05,133",
+          "a": "A lovable eccentric"
+        },
         {
           "qStart": "00:00:15,900",
           "qEnd": "00:00:21,983",
@@ -4269,13 +4268,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/32_767.mp3",
-      "path": "/nce3/a/32.mp3",
+      "url": "32_767.mp3",
       "hash": "ed42b6484706b26b606f40ddf9af0fa2cf237cc7",
-      "key": "nce3/32",
-      "defaultQuestion": "A lost ship",
-      "titleStart": "00:00:01,666",
-      "titleEnd": "00:00:04,233",
       "raw": [
         "A lost ship",
         "The salvage operation had been a complete failure. The small ship, ",
@@ -4302,6 +4296,11 @@
         "Defence after the Elkor had returned home. All the items that were found were sent to the War Museum."
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,666",
+          "qEnd": "00:00:04,233",
+          "a": "A lost ship"
+        },
         {
           "qStart": "00:00:14,933",
           "qEnd": "00:00:18,999",
@@ -4425,13 +4424,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/33_515.mp3",
-      "path": "/nce3/a/33.mp3",
+      "url": "33_515.mp3",
       "hash": "8e920ea0db309e213c767d84427e032f3ea25ae2",
-      "key": "nce3/33",
-      "defaultQuestion": "A day to remember",
-      "titleStart": "00:00:01,900",
-      "titleEnd": "00:00:04,433",
       "raw": [
         "A day to remember",
         "We have all experienced days when everything goes wrong. A day",
@@ -4458,6 +4452,11 @@
         "devoured what was left of the cake. It was just one of those days!"
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,900",
+          "qEnd": "00:00:04,433",
+          "a": "A day to remember"
+        },
         {
           "qStart": "00:00:14,966",
           "qEnd": "00:00:19,533",
@@ -4611,13 +4610,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/34_218.mp3",
-      "path": "/nce3/a/34.mp3",
+      "url": "34_218.mp3",
       "hash": "a18d1de69f70fe577c0321a0e0471e1867dba8f5",
-      "key": "nce3/34",
-      "defaultQuestion": "A happy discovery",
-      "titleStart": "00:00:01,866",
-      "titleEnd": "00:00:04,700",
       "raw": [
         "A happy discovery",
         "Antique shops exert a peculiar fascination on a great many people. ",
@@ -4645,6 +4639,11 @@
         "pounds. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,866",
+          "qEnd": "00:00:04,700",
+          "a": "A happy discovery"
+        },
         {
           "qStart": "00:00:13,933",
           "qEnd": "00:00:20,333",
@@ -4780,13 +4779,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/35_076.mp3",
-      "path": "/nce3/a/35.mp3",
+      "url": "35_076.mp3",
       "hash": "d26b56e55fe2ba9b9818b8e6b6d31084f812e550",
-      "key": "nce3/35",
-      "defaultQuestion": "Justice was done",
-      "titleStart": "00:00:02,166",
-      "titleEnd": "00:00:04,766",
       "raw": [
         "Justice was done",
         "The word justice is usually associated with courts of law. We might",
@@ -4813,6 +4807,11 @@
         "done even before the man was handed over to the police. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:02,166",
+          "qEnd": "00:00:04,766",
+          "a": "Justice was done"
+        },
         {
           "qStart": "00:00:19,333",
           "qEnd": "00:00:25,183",
@@ -4936,13 +4935,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/36_573.mp3",
-      "path": "/nce3/a/36.mp3",
+      "url": "36_573.mp3",
       "hash": "8a47ea3a92c4cce8083dff48c0ba22b153882fd6",
-      "key": "nce3/36",
-      "defaultQuestion": "A chance in a million",
-      "titleStart": "00:00:01,566",
-      "titleEnd": "00:00:04,566",
       "raw": [
         "A chance in a million",
         "We are less credulous than we used to be. In the nineteenth century, ",
@@ -4970,6 +4964,11 @@
         "an air raid, Hans settled down in a village fifty miles away where he had remained ever since. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,566",
+          "qEnd": "00:00:04,566",
+          "a": "A chance in a million"
+        },
         {
           "qStart": "00:00:13,000",
           "qEnd": "00:00:16,766",
@@ -5093,13 +5092,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/37_381.mp3",
-      "path": "/nce3/a/37.mp3",
+      "url": "37_381.mp3",
       "hash": "ab83090c16f89c01c0684e98a95dab21db15d10f",
-      "key": "nce3/37",
-      "defaultQuestion": "The Westhaven Express",
-      "titleStart": "00:00:01,633",
-      "titleEnd": "00:00:04,666",
       "raw": [
         "The Westhaven Express",
         "We have learnt to expect that trains will be punctual. After years of",
@@ -5126,6 +5120,11 @@
         "footnote at the bottom of the page. It said: 'This service has been suspended.'"
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,633",
+          "qEnd": "00:00:04,666",
+          "a": "The Westhaven Express"
+        },
         {
           "qStart": "00:00:13,533",
           "qEnd": "00:00:18,183",
@@ -5273,13 +5272,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/38_807.mp3",
-      "path": "/nce3/a/38.mp3",
+      "url": "38_807.mp3",
       "hash": "438d8427d7c0f4719c62f15afe3980321420977b",
-      "key": "nce3/38",
-      "defaultQuestion": "The first calender",
-      "titleStart": "00:00:01,766",
-      "titleEnd": "00:00:04,633",
       "raw": [
         "The first calender",
         "Future historians will be in a unique position when they come to",
@@ -5306,6 +5300,11 @@
         "earlier than has been supposed. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,766",
+          "qEnd": "00:00:04,633",
+          "a": "The first calender"
+        },
         {
           "qStart": "00:00:20,033",
           "qEnd": "00:00:28,233",
@@ -5423,13 +5422,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/39_657.mp3",
-      "path": "/nce3/a/39.mp3",
+      "url": "39_657.mp3",
       "hash": "31c47a3a7055cbd9dd57d534b019773ae1331d41",
-      "key": "nce3/39",
-      "defaultQuestion": "Nothing to worry about",
-      "titleStart": "00:00:01,766",
-      "titleEnd": "00:00:04,466",
       "raw": [
         "Nothing to worry about",
         "The rough road across the plain soon became so bad that we tried",
@@ -5456,6 +5450,11 @@
         " flashed angrily and Bruce cheerfully announced that there was no oil in the engine!"
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,766",
+          "qEnd": "00:00:04,466",
+          "a": "Nothing to worry about"
+        },
         {
           "qStart": "00:00:18,100",
           "qEnd": "00:00:28,033",
@@ -5597,13 +5596,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/40_526.mp3",
-      "path": "/nce3/a/40.mp3",
+      "url": "40_526.mp3",
       "hash": "e158215e0fc0c935c91bb7141726be565c26e9d7",
-      "key": "nce3/40",
-      "defaultQuestion": "Who's who",
-      "titleStart": "00:00:01,466",
-      "titleEnd": "00:00:03,433",
       "raw": [
         "Who's who",
         "It has never been explained why university students seem to enjoy",
@@ -5631,6 +5625,11 @@
         "victims of a hoax. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,466",
+          "qEnd": "00:00:03,433",
+          "a": "Who's who"
+        },
         {
           "qStart": "00:00:13,700",
           "qEnd": "00:00:22,633",
@@ -5754,13 +5753,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/41_561.mp3",
-      "path": "/nce3/a/41.mp3",
+      "url": "41_561.mp3",
       "hash": "6fb536f5f30abb08ed0b7a36a7d094ba61acef4a",
-      "key": "nce3/41",
-      "defaultQuestion": "Illusions of pastoral peace",
-      "titleStart": "00:00:01,866",
-      "titleEnd": "00:00:06,200",
       "raw": [
         "Illusions of pastoral peace",
         "The quiet life of the country has never appealed to me. City born",
@@ -5795,6 +5789,11 @@
         "these things, obstinately pretend that they would prefer to live in the country."
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,866",
+          "qEnd": "00:00:06,200",
+          "a": "Illusions of pastoral peace"
+        },
         {
           "qStart": "00:00:17,233",
           "qEnd": "00:00:22,066",
@@ -5960,13 +5959,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/42_586.mp3",
-      "path": "/nce3/a/42.mp3",
+      "url": "42_586.mp3",
       "hash": "79241e7643137c61da34eecb39f5d2c720aa58bf",
-      "key": "nce3/42",
-      "defaultQuestion": "Modern cavemen",
-      "titleStart": "00:00:01,733",
-      "titleEnd": "00:00:04,500",
       "raw": [
         "Modern cavemen",
         "Cave exploration, or pot-holing, as it has come to be known, is a",
@@ -6002,6 +5996,11 @@
         "high dome above them. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,733",
+          "qEnd": "00:00:04,500",
+          "a": "Modern cavemen"
+        },
         {
           "qStart": "00:00:14,800",
           "qEnd": "00:00:23,100",
@@ -6179,13 +6178,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/43_681.mp3",
-      "path": "/nce3/a/43.mp3",
+      "url": "43_681.mp3",
       "hash": "92b7be9dcbaf882b08ebc7ee7df6b51639676a39",
-      "key": "nce3/43",
-      "defaultQuestion": "Fully insured",
-      "titleStart": "00:00:02,533",
-      "titleEnd": "00:00:05,233",
       "raw": [
         "Fully insured",
         "Insurance companies are normally willing to insure anything.",
@@ -6220,6 +6214,11 @@
         "the wave returned. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:02,533",
+          "qEnd": "00:00:05,233",
+          "a": "Fully insured"
+        },
         {
           "qStart": "00:00:15,000",
           "qEnd": "00:00:20,200",
@@ -6385,13 +6384,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/44_412.mp3",
-      "path": "/nce3/a/44.mp3",
+      "url": "44_412.mp3",
       "hash": "8083506db46a07474fa361e1b7e61c904e7737d5",
-      "key": "nce3/44",
-      "defaultQuestion": "Speed and comfort",
-      "titleStart": "00:00:01,866",
-      "titleEnd": "00:00:04,633",
       "raw": [
         "Speed and comfort",
         "People travelling long distances frequently have to decide whether",
@@ -6426,6 +6420,11 @@
         "not have to spend the next few days recovering from a long and arduous journey. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,866",
+          "qEnd": "00:00:04,633",
+          "a": "Speed and comfort"
+        },
         {
           "qStart": "00:00:14,533",
           "qEnd": "00:00:23,550",
@@ -6621,13 +6620,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/45_128.mp3",
-      "path": "/nce3/a/45.mp3",
+      "url": "45_128.mp3",
       "hash": "c7eaf0423ad619a29877b08b5bfa60fe6e547458",
-      "key": "nce3/45",
-      "defaultQuestion": "The power of the press",
-      "titleStart": "00:00:01,800",
-      "titleEnd": "00:00:04,600",
       "raw": [
         "The power of the press",
         "In democratic countries any efforts to restrict the freedom of the",
@@ -6658,6 +6652,11 @@
         "value. Instead of being five new family members, these children had immediately become a commodity. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,800",
+          "qEnd": "00:00:04,600",
+          "a": "The power of the press"
+        },
         {
           "qStart": "00:00:19,400",
           "qEnd": "00:00:28,333",
@@ -6805,13 +6804,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/46_483.mp3",
-      "path": "/nce3/a/46.mp3",
+      "url": "46_483.mp3",
       "hash": "6fee96901326a2ea9a747bc20f6a916e2c6f68d1",
-      "key": "nce3/46",
-      "defaultQuestion": "Do it yourself",
-      "titleStart": "00:00:02,100",
-      "titleEnd": "00:00:04,500",
       "raw": [
         "Do it yourself",
         "So great is our passion for doing things for ourselves, that we are",
@@ -6848,6 +6842,11 @@
         " to repair one day. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:02,100",
+          "qEnd": "00:00:04,500",
+          "a": "Do it yourself"
+        },
         {
           "qStart": "00:00:16,533",
           "qEnd": "00:00:26,816",
@@ -7037,13 +7036,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/47_073.mp3",
-      "path": "/nce3/a/47.mp3",
+      "url": "47_073.mp3",
       "hash": "539f71955991139fa22cc64cff1de4e6b1e20911",
-      "key": "nce3/47",
-      "defaultQuestion": "Too high a price?",
-      "titleStart": "00:00:01,966",
-      "titleEnd": "00:00:04,533",
       "raw": [
         "Too high a price?",
         "Pollution is the price we pay for an overpopulated, over-industrialized",
@@ -7079,6 +7073,11 @@
         "it seems, has become a golden memory. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,966",
+          "qEnd": "00:00:04,533",
+          "a": "Too high a price?"
+        },
         {
           "qStart": "00:00:18,133",
           "qEnd": "00:00:25,149",
@@ -7244,13 +7243,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/48_857.mp3",
-      "path": "/nce3/a/48.mp3",
+      "url": "48_857.mp3",
       "hash": "ba471ca4af12c29222ee941eda5926b971f68938",
-      "key": "nce3/48",
-      "defaultQuestion": "The silent village",
-      "titleStart": "00:00:01,966",
-      "titleEnd": "00:00:04,800",
       "raw": [
         "The silent village",
         "In this much-travelled world, there are still thousands of places",
@@ -7286,6 +7280,11 @@
         "pace and made our way rapidly towards the stream where we hoped the boatman was waiting."
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,966",
+          "qEnd": "00:00:04,800",
+          "a": "The silent village"
+        },
         {
           "qStart": "00:00:14,100",
           "qEnd": "00:00:22,749",
@@ -7493,13 +7492,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/49_339.mp3",
-      "path": "/nce3/a/49.mp3",
+      "url": "49_339.mp3",
       "hash": "34b725d499b282b5ce2048e7d8cfffe383a4bfad",
-      "key": "nce3/49",
-      "defaultQuestion": "The ideal servant",
-      "titleStart": "00:00:01,900",
-      "titleEnd": "00:00:05,066",
       "raw": [
         "The ideal servant",
         "It is a good thing my aunt Harriet died years ago. If she were alive",
@@ -7536,6 +7530,11 @@
         "mysteriously found their way there from the wine cellar!"
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,900",
+          "qEnd": "00:00:05,066",
+          "a": "The ideal servant"
+        },
         {
           "qStart": "00:00:14,400",
           "qEnd": "00:00:18,799",
@@ -7707,13 +7706,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/50_600.mp3",
-      "path": "/nce3/a/50.mp3",
+      "url": "50_600.mp3",
       "hash": "6e1eb7eb69fe84221b1f450c21e4fbed1981eced",
-      "key": "nce3/50",
-      "defaultQuestion": "New Year resolutions",
-      "titleStart": "00:00:02,366",
-      "titleEnd": "00:00:05,433",
       "raw": [
         "New Year resolutions",
         "The New Year is a time for resolutions. Mentally, at least, most of",
@@ -7750,6 +7744,11 @@
         "had time to read it!"
       ],
       "segment": [
+        {
+          "qStart": "00:00:02,366",
+          "qEnd": "00:00:05,433",
+          "a": "New Year resolutions"
+        },
         {
           "qStart": "00:00:16,266",
           "qEnd": "00:00:19,716",
@@ -7933,13 +7932,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/51_563.mp3",
-      "path": "/nce3/a/51.mp3",
+      "url": "51_563.mp3",
       "hash": "93d4036349c462ee1763ca05db06834976dae425",
-      "key": "nce3/51",
-      "defaultQuestion": "Predicting the future",
-      "titleStart": "00:00:01,766",
-      "titleEnd": "00:00:04,533",
       "raw": [
         "Predicting the future",
         "Predicting the future is notoriously difficult. Who could have",
@@ -7973,6 +7967,11 @@
         "someone like him, were alive today, he might be able to tell us what to expect in the next fifty years. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,766",
+          "qEnd": "00:00:04,533",
+          "a": "Predicting the future"
+        },
         {
           "qStart": "00:00:18,866",
           "qEnd": "00:00:22,966",
@@ -8108,13 +8107,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/52_513.mp3",
-      "path": "/nce3/a/52.mp3",
+      "url": "52_513.mp3",
       "hash": "ccc67e3e2e45ec9e20f3410e8c96fb26b693f923",
-      "key": "nce3/52",
-      "defaultQuestion": "Mud is mud",
-      "titleStart": "00:00:01,766",
-      "titleEnd": "00:00:04,433",
       "raw": [
         "Mud is mud",
         "My cousin, Harry, keeps a large curiously-shaped bottle on",
@@ -8151,6 +8145,11 @@
         "bookcase in his study, was his first and last purchase of rare cosmetics."
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,766",
+          "qEnd": "00:00:04,433",
+          "a": "Mud is mud"
+        },
         {
           "qStart": "00:00:14,866",
           "qEnd": "00:00:23,116",
@@ -8322,13 +8321,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/53_727.mp3",
-      "path": "/nce3/a/53.mp3",
+      "url": "53_727.mp3",
       "hash": "2e5b8f7fde1e2fefe740aec2a532822efb76fd04",
-      "key": "nce3/53",
-      "defaultQuestion": "In the public interest",
-      "titleStart": "00:00:02,100",
-      "titleEnd": "00:00:04,866",
       "raw": [
         "In the public interest",
         "The Scandinavian countries are much admired all over the world",
@@ -8364,6 +8358,11 @@
         "gone unnoticed. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:02,100",
+          "qEnd": "00:00:04,866",
+          "a": "In the public interest"
+        },
         {
           "qStart": "00:00:15,366",
           "qEnd": "00:00:22,983",
@@ -8517,13 +8516,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/54_697.mp3",
-      "path": "/nce3/a/54.mp3",
+      "url": "54_697.mp3",
       "hash": "32c51c295c54ecd08061273b342bb92d3e58aa3e",
-      "key": "nce3/54",
-      "defaultQuestion": "Instinct or cleverness?",
-      "titleStart": "00:00:01,733",
-      "titleEnd": "00:00:05,566",
       "raw": [
         "Instinct or cleverness?",
         "We have been brought up to fear insects. We regard them as",
@@ -8559,6 +8553,11 @@
         "unscientific methods!"
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,733",
+          "qEnd": "00:00:05,566",
+          "a": "Instinct or cleverness?"
+        },
         {
           "qStart": "00:00:17,200",
           "qEnd": "00:00:20,666",
@@ -8742,13 +8741,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/55_867.mp3",
-      "path": "/nce3/a/55.mp3",
+      "url": "55_867.mp3",
       "hash": "b84bd5ae820214e71a50ffd93b44c9fbb4190633",
-      "key": "nce3/55",
-      "defaultQuestion": "From the earth: Greetings",
-      "titleStart": "00:00:02,033",
-      "titleEnd": "00:00:05,700",
       "raw": [
         "From the earth: Greetings",
         "Recent developments in astronomy have made it possible to detect",
@@ -8784,6 +8778,11 @@
         "be unchanged by it.' "
       ],
       "segment": [
+        {
+          "qStart": "00:00:02,033",
+          "qEnd": "00:00:05,700",
+          "a": "From the earth: Greetings"
+        },
         {
           "qStart": "00:00:16,900",
           "qEnd": "00:00:26,299",
@@ -8943,13 +8942,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/56_544.mp3",
-      "path": "/nce3/a/56.mp3",
+      "url": "56_544.mp3",
       "hash": "575cac1c8e2d88e750c5f90460c789201429ee30",
-      "key": "nce3/56",
-      "defaultQuestion": "Our neighbour, the river",
-      "titleStart": "00:00:01,966",
-      "titleEnd": "00:00:05,100",
       "raw": [
         "Our neighbour, the river",
         "The river which forms the eastern boundary of our farm has always",
@@ -8984,6 +8978,11 @@
         "able to do so. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,966",
+          "qEnd": "00:00:05,100",
+          "a": "Our neighbour, the river"
+        },
         {
           "qStart": "00:00:13,466",
           "qEnd": "00:00:21,250",
@@ -9125,13 +9124,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/57_865.mp3",
-      "path": "/nce3/a/57.mp3",
+      "url": "57_865.mp3",
       "hash": "3c7048a7719d8000d35d677a59f7dd944ddfb5c4",
-      "key": "nce3/57",
-      "defaultQuestion": "Back in the old country",
-      "titleStart": "00:00:01,900",
-      "titleEnd": "00:00:04,833",
       "raw": [
         "Back in the old country",
         "I stopped to let the car cool off and to study the map. I had expected",
@@ -9166,6 +9160,11 @@
         "lake was not a natural one, but a man-made reservoir. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,900",
+          "qEnd": "00:00:04,833",
+          "a": "Back in the old country"
+        },
         {
           "qStart": "00:00:13,466",
           "qEnd": "00:00:17,999",
@@ -9361,13 +9360,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/58_721.mp3",
-      "path": "/nce3/a/58.mp3",
+      "url": "58_721.mp3",
       "hash": "4ed54ff7165640cebcc0b78b9ea444b5db8f965e",
-      "key": "nce3/58",
-      "defaultQuestion": "A spot of bother",
-      "titleStart": "00:00:01,933",
-      "titleEnd": "00:00:04,833",
       "raw": [
         "A spot of bother",
         "The old lady was glad to be back at the block of flats where she",
@@ -9401,6 +9395,11 @@
         "asked for her help in what she described as a little spot of bother. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,933",
+          "qEnd": "00:00:04,833",
+          "a": "A spot of bother"
+        },
         {
           "qStart": "00:00:14,166",
           "qEnd": "00:00:20,516",
@@ -9524,13 +9523,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/59_476.mp3",
-      "path": "/nce3/a/59.mp3",
+      "url": "59_476.mp3",
       "hash": "1acc08b4d73b131b5523774048ae22d3ce135ce9",
-      "key": "nce3/59",
-      "defaultQuestion": "Collecting",
-      "titleStart": "00:00:01,900",
-      "titleEnd": "00:00:03,866",
       "raw": [
         "Collecting",
         "People tend to amass possessions, sometimes without being aware",
@@ -9566,6 +9560,11 @@
         "contented, with no time for boredom. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,900",
+          "qEnd": "00:00:03,866",
+          "a": "Collecting"
+        },
         {
           "qStart": "00:00:16,566",
           "qEnd": "00:00:22,633",
@@ -9719,13 +9718,8 @@
       ]
     },
     {
-      "url": "https://online2.tingclass.net/lesson/shi0529/0008/8426/60_579.mp3",
-      "path": "/nce3/a/60.mp3",
+      "url": "60_579.mp3",
       "hash": "9b5837bdc07121246a45112835eec10cd7e16279",
-      "key": "nce3/60",
-      "defaultQuestion": "Too early and too late",
-      "titleStart": "00:00:01,900",
-      "titleEnd": "00:00:05,266",
       "raw": [
         "Too early and too late",
         "Punctuality is a necessary habit in all public affairs in civilized",
@@ -9763,6 +9757,11 @@
         "And she had to watch that train disappear towards her destination while she was left behind. "
       ],
       "segment": [
+        {
+          "qStart": "00:00:01,900",
+          "qEnd": "00:00:05,266",
+          "a": "Too early and too late"
+        },
         {
           "qStart": "00:00:15,300",
           "qEnd": "00:00:23,133",

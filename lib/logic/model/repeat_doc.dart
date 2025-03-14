@@ -80,9 +80,6 @@ class Lesson {
   String videoMaskRatio;
   String defaultQuestion;
   String defaultTip;
-  String title;
-  String titleStart;
-  String titleEnd;
   List<Segment> segment;
 
   Lesson(
@@ -92,9 +89,6 @@ class Lesson {
     this.videoMaskRatio,
     this.defaultQuestion,
     this.defaultTip,
-    this.title,
-    this.titleStart,
-    this.titleEnd,
     this.segment,
   );
 
@@ -109,9 +103,6 @@ class Lesson {
       json['videoMaskRatio'] ?? '',
       defaultQuestion,
       defaultTip,
-      json['title'] ?? json['key'] ?? json['path'],
-      json['titleStart'] ?? "00:00:00,000",
-      json['titleEnd'] ?? "00:00:00,000",
       List<Segment>.from(json['segment'].map((dynamic s) => Segment.fromJson(
             s,
             json['segment'].indexOf(s),
@@ -127,9 +118,6 @@ class Lesson {
       'hash': hash,
       'defaultQuestion': defaultQuestion,
       'defaultTip': defaultTip,
-      'title': title,
-      'titleStart': titleStart,
-      'titleEnd': titleEnd,
       'segment': segment,
     };
   }

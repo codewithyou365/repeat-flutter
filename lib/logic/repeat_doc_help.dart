@@ -15,7 +15,6 @@ class RepeatDocHelp {
 
   static Map<String, double?> mediaDocPathToVideoMaskRatio = {};
 
-  static Map<String, MediaSegment> mediaDocPathToTitleMediaSegment = {};
   static Map<String, List<MediaSegment>> mediaDocPathToQuestionMediaSegments = {};
   static Map<String, List<MediaSegment>> mediaDocPathToAnswerMediaSegments = {};
 
@@ -79,7 +78,6 @@ class RepeatDocHelp {
     var lesson = qa.lesson[ret.lessonIndex];
     // full title, prevQa and qa
     {
-      ret.title = lesson.title;
       if (ret.segmentIndex < lesson.segment.length) {
         var segment = lesson.segment[ret.segmentIndex];
         if (ret.segmentIndex != 0) {
@@ -115,17 +113,6 @@ class RepeatDocHelp {
         mediaDocPathToVideoMaskRatio[mediaDocPath] = va;
       } else {
         mediaDocPathToVideoMaskRatio[mediaDocPath] = 20;
-      }
-
-      var titleMediaSegment = mediaDocPathToTitleMediaSegment[mediaDocPath];
-      if (titleMediaSegment == null) {
-        titleMediaSegment = MediaSegment.from(lesson.titleStart, lesson.titleEnd);
-        mediaDocPathToTitleMediaSegment[mediaDocPath] = titleMediaSegment;
-      }
-      if (titleMediaSegment.start == 0 && titleMediaSegment.start == titleMediaSegment.end) {
-        ret.titleMediaSegment = null;
-      } else {
-        ret.titleMediaSegment = titleMediaSegment;
       }
 
       var qMediaSegments = mediaDocPathToQuestionMediaSegments[mediaDocPath];

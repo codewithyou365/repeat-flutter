@@ -10,7 +10,7 @@ import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 import 'model/repeat_doc.dart';
 
-enum PlayType { none, question, answer, title }
+enum PlayType { none, question, answer }
 
 enum EditType {
   setHead,
@@ -77,14 +77,6 @@ class RepeatDocEditHelp {
     switch (editType) {
       case EditType.setHead:
         switch (playType) {
-          case PlayType.title:
-            var millisecond = Time.parseTimeToMilliseconds(lesson['titleEnd']!).toInt();
-            if (millisecond < position.inMilliseconds) {
-              return false;
-            }
-            lesson['titleStart'] = Time.convertToString(position);
-            ret.titleMediaSegment = MediaSegment.from(lesson['titleStart'], lesson['titleEnd']);
-            break;
           case PlayType.question:
             var millisecond = Time.parseTimeToMilliseconds(segment['qEnd']!).toInt();
             if (millisecond < position.inMilliseconds) {
@@ -108,14 +100,6 @@ class RepeatDocEditHelp {
         break;
       case EditType.setTail:
         switch (playType) {
-          case PlayType.title:
-            var millisecond = Time.parseTimeToMilliseconds(lesson['titleStart']!).toInt();
-            if (position.inMilliseconds < millisecond) {
-              return false;
-            }
-            lesson['titleEnd'] = Time.convertToString(position);
-            ret.titleMediaSegment = MediaSegment.from(lesson['titleStart'], lesson['titleEnd']);
-            break;
           case PlayType.question:
             var millisecond = Time.parseTimeToMilliseconds(segment['qStart']!).toInt();
             if (position.inMilliseconds < millisecond) {
@@ -138,10 +122,6 @@ class RepeatDocEditHelp {
         break;
       case EditType.extendTail:
         switch (playType) {
-          case PlayType.title:
-            lesson['titleEnd'] = Time.extend(lesson['titleEnd'], 10000, duration);
-            ret.titleMediaSegment = MediaSegment.from(lesson['titleStart'], lesson['titleEnd']);
-            break;
           case PlayType.question:
             segment['qEnd'] = Time.extend(segment['qEnd']!, 10000, duration);
             ret.qMediaSegments[ret.segmentIndex] = MediaSegment.from(segment['qStart']!, segment['qEnd']!);
@@ -158,8 +138,6 @@ class RepeatDocEditHelp {
         var splitPoint = Time.convertToString(position);
         Map<String, String> newSegment = Map.from(segment);
         switch (playType) {
-          case PlayType.title:
-            return false;
           case PlayType.question:
             segment['qEnd'] = splitPoint;
             newSegment['qStart'] = splitPoint;
@@ -178,8 +156,6 @@ class RepeatDocEditHelp {
         break;
       case EditType.deleteCurr:
         switch (playType) {
-          case PlayType.title:
-            return false;
           case PlayType.question:
             if (segments.length == 1) {
               return false;

@@ -21,11 +21,9 @@ class SegmentContentInDb extends Segment {
 class SegmentContent extends SegmentContentInDb {
   List<MediaSegment> qMediaSegments = [];
   List<MediaSegment> aMediaSegments = [];
-  MediaSegment? titleMediaSegment;
   var mediaDocPath = "";
   var mediaHash = "";
   var mediaExtension = "";
-  var title = "";
   var prevAnswer = "";
   var question = "";
   var tip = "";
