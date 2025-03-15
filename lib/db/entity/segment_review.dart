@@ -4,7 +4,7 @@ import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
 
 @Entity(
-  primaryKeys: ['createDate', 'segmentKeyId'],
+  primaryKeys: ['createDate', 'classroomId', 'segmentHash'],
   indices: [
     Index(value: ['classroomId', 'contentSerial']),
     Index(value: ['classroomId', 'createDate']),
@@ -12,16 +12,17 @@ import 'package:repeat_flutter/common/date.dart';
 )
 class SegmentReview {
   final Date createDate;
-  final int segmentKeyId;
   final int classroomId;
+  final String segmentHash;
+
   final int contentSerial;
 
   final int count;
 
   SegmentReview(
     this.createDate,
-    this.segmentKeyId,
     this.classroomId,
+    this.segmentHash,
     this.contentSerial,
     this.count,
   );

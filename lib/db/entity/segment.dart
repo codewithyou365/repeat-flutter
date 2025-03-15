@@ -3,16 +3,16 @@
 import 'package:floor/floor.dart';
 
 @Entity(
-  primaryKeys: ['segmentKeyId'],
+  primaryKeys: ['classroomId', 'segmentHash'],
   indices: [
     Index(value: ['classroomId', 'sort'], unique: true),
     Index(value: ['classroomId', 'contentSerial', 'lessonIndex', 'segmentIndex'], unique: true),
   ],
 )
 class Segment {
-  int segmentKeyId;
-
   final int classroomId;
+  String segmentHash;
+
   final int contentSerial;
   final int lessonIndex;
   final int segmentIndex;
@@ -20,8 +20,8 @@ class Segment {
   final int sort;
 
   Segment(
-    this.segmentKeyId,
     this.classroomId,
+    this.segmentHash,
     this.contentSerial,
     this.lessonIndex,
     this.segmentIndex,

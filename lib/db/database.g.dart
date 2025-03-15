@@ -124,27 +124,27 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `CrKv` (`classroomId` INTEGER NOT NULL, `k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`classroomId`, `k`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Segment` (`segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`))');
+            'CREATE TABLE IF NOT EXISTS `Segment` (`classroomId` INTEGER NOT NULL, `segmentHash` TEXT NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `segmentHash`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentKey` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `SegmentKey` (`classroomId` INTEGER NOT NULL, `segmentHash` TEXT NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `segmentContent` TEXT NOT NULL, PRIMARY KEY (`classroomId`, `segmentHash`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentNote` (`segmentKeyId` INTEGER NOT NULL, `note` TEXT NOT NULL, PRIMARY KEY (`segmentKeyId`))');
+            'CREATE TABLE IF NOT EXISTS `SegmentNote` (`classroomId` INTEGER NOT NULL, `segmentHash` TEXT NOT NULL, `note` TEXT NOT NULL, PRIMARY KEY (`segmentHash`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentOverallPrg` (`segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `next` INTEGER NOT NULL, `progress` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`))');
+            'CREATE TABLE IF NOT EXISTS `SegmentOverallPrg` (`classroomId` INTEGER NOT NULL, `segmentHash` TEXT NOT NULL, `contentSerial` INTEGER NOT NULL, `next` INTEGER NOT NULL, `progress` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `segmentHash`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentReview` (`createDate` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY (`createDate`, `segmentKeyId`))');
+            'CREATE TABLE IF NOT EXISTS `SegmentReview` (`createDate` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `segmentHash` TEXT NOT NULL, `contentSerial` INTEGER NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY (`createDate`, `classroomId`, `segmentHash`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentTodayPrg` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `type` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `reviewCount` INTEGER NOT NULL, `reviewCreateDate` INTEGER NOT NULL, `finish` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `SegmentTodayPrg` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `segmentHash` TEXT NOT NULL, `time` INTEGER NOT NULL, `type` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `reviewCount` INTEGER NOT NULL, `reviewCreateDate` INTEGER NOT NULL, `finish` INTEGER NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentStats` (`segmentKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`, `type`, `createDate`))');
+            'CREATE TABLE IF NOT EXISTS `SegmentStats` (`classroomId` INTEGER NOT NULL, `segmentHash` TEXT NOT NULL, `type` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, PRIMARY KEY (`segmentHash`, `type`, `createDate`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER NOT NULL, `time` INTEGER NOT NULL, `mediaHash` TEXT NOT NULL, `aStart` TEXT NOT NULL, `aEnd` TEXT NOT NULL, `w` TEXT NOT NULL, `segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER NOT NULL, `time` INTEGER NOT NULL, `mediaHash` TEXT NOT NULL, `aStart` TEXT NOT NULL, `aEnd` TEXT NOT NULL, `w` TEXT NOT NULL, `segmentHash` TEXT NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `GameUser` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `password` TEXT NOT NULL, `nonce` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `token` TEXT NOT NULL, `tokenExpiredDate` INTEGER NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `GameUserInput` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `gameId` INTEGER NOT NULL, `gameUserId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `input` TEXT NOT NULL, `output` TEXT NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `GameUserInput` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `gameId` INTEGER NOT NULL, `gameUserId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `segmentHash` TEXT NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `input` TEXT NOT NULL, `output` TEXT NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Lock` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database
@@ -176,7 +176,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE INDEX `index_SegmentReview_classroomId_createDate` ON `SegmentReview` (`classroomId`, `createDate`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_SegmentTodayPrg_classroomId_segmentKeyId_type` ON `SegmentTodayPrg` (`classroomId`, `segmentKeyId`, `type`)');
+            'CREATE UNIQUE INDEX `index_SegmentTodayPrg_classroomId_segmentHash_type` ON `SegmentTodayPrg` (`classroomId`, `segmentHash`, `type`)');
         await database.execute(
             'CREATE INDEX `index_SegmentTodayPrg_classroomId_sort` ON `SegmentTodayPrg` (`classroomId`, `sort`)');
         await database.execute(
@@ -188,7 +188,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE INDEX `index_Game_classroomId_contentSerial_lessonIndex_segmentIndex` ON `Game` (`classroomId`, `contentSerial`, `lessonIndex`, `segmentIndex`)');
         await database.execute(
-            'CREATE INDEX `index_Game_segmentKeyId` ON `Game` (`segmentKeyId`)');
+            'CREATE INDEX `index_Game_segmentHash` ON `Game` (`segmentHash`)');
         await database.execute(
             'CREATE INDEX `index_Game_createDate` ON `Game` (`createDate`)');
         await database.execute(
@@ -198,7 +198,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE INDEX `index_GameUserInput_classroomId_contentSerial_lessonIndex_segmentIndex` ON `GameUserInput` (`classroomId`, `contentSerial`, `lessonIndex`, `segmentIndex`)');
         await database.execute(
-            'CREATE INDEX `index_GameUserInput_segmentKeyId` ON `GameUserInput` (`segmentKeyId`)');
+            'CREATE INDEX `index_GameUserInput_segmentHash` ON `GameUserInput` (`segmentHash`)');
         await database.execute(
             'CREATE INDEX `index_GameUserInput_createDate` ON `GameUserInput` (`createDate`)');
         await database.execute(
@@ -408,7 +408,7 @@ class _$GameDao extends GameDao {
                   'aStart': item.aStart,
                   'aEnd': item.aEnd,
                   'w': item.w,
-                  'segmentKeyId': item.segmentKeyId,
+                  'segmentHash': item.segmentHash,
                   'classroomId': item.classroomId,
                   'contentSerial': item.contentSerial,
                   'lessonIndex': item.lessonIndex,
@@ -425,7 +425,7 @@ class _$GameDao extends GameDao {
                   'gameId': item.gameId,
                   'gameUserId': item.gameUserId,
                   'time': item.time,
-                  'segmentKeyId': item.segmentKeyId,
+                  'segmentHash': item.segmentHash,
                   'classroomId': item.classroomId,
                   'contentSerial': item.contentSerial,
                   'lessonIndex': item.lessonIndex,
@@ -489,7 +489,7 @@ class _$GameDao extends GameDao {
             row['aStart'] as String,
             row['aEnd'] as String,
             row['w'] as String,
-            row['segmentKeyId'] as int,
+            row['segmentHash'] as String,
             row['classroomId'] as int,
             row['contentSerial'] as int,
             row['lessonIndex'] as int,
@@ -560,7 +560,7 @@ class _$GameDao extends GameDao {
             row['aStart'] as String,
             row['aEnd'] as String,
             row['w'] as String,
-            row['segmentKeyId'] as int,
+            row['segmentHash'] as String,
             row['classroomId'] as int,
             row['contentSerial'] as int,
             row['lessonIndex'] as int,
@@ -579,7 +579,7 @@ class _$GameDao extends GameDao {
   ) async {
     return _queryAdapter.query(
         'SELECT * FROM GameUserInput WHERE gameId=?1 and gameUserId=?2 and time=?3 order by id desc limit 1',
-        mapper: (Map<String, Object?> row) => GameUserInput(row['gameId'] as int, row['gameUserId'] as int, row['time'] as int, row['segmentKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['input'] as String, row['output'] as String, row['createTime'] as int, _dateConverter.decode(row['createDate'] as int), id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => GameUserInput(row['gameId'] as int, row['gameUserId'] as int, row['time'] as int, row['segmentHash'] as String, row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['input'] as String, row['output'] as String, row['createTime'] as int, _dateConverter.decode(row['createDate'] as int), id: row['id'] as int?),
         arguments: [gameId, gameUserId, time]);
   }
 
@@ -591,7 +591,7 @@ class _$GameDao extends GameDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT * FROM GameUserInput WHERE gameId=?1 and gameUserId=?2 and time=?3',
-        mapper: (Map<String, Object?> row) => GameUserInput(row['gameId'] as int, row['gameUserId'] as int, row['time'] as int, row['segmentKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['input'] as String, row['output'] as String, row['createTime'] as int, _dateConverter.decode(row['createDate'] as int), id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => GameUserInput(row['gameId'] as int, row['gameUserId'] as int, row['time'] as int, row['segmentHash'] as String, row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['input'] as String, row['output'] as String, row['createTime'] as int, _dateConverter.decode(row['createDate'] as int), id: row['id'] as int?),
         arguments: [gameId, gameUserId, time]);
   }
 
@@ -1239,7 +1239,7 @@ class _$ScheduleDao extends ScheduleDao {
                   'id': item.id,
                   'classroomId': item.classroomId,
                   'contentSerial': item.contentSerial,
-                  'segmentKeyId': item.segmentKeyId,
+                  'segmentHash': item.segmentHash,
                   'time': item.time,
                   'type': item.type,
                   'sort': item.sort,
@@ -1255,8 +1255,8 @@ class _$ScheduleDao extends ScheduleDao {
             'SegmentReview',
             (SegmentReview item) => <String, Object?>{
                   'createDate': _dateConverter.encode(item.createDate),
-                  'segmentKeyId': item.segmentKeyId,
                   'classroomId': item.classroomId,
+                  'segmentHash': item.segmentHash,
                   'contentSerial': item.contentSerial,
                   'count': item.count
                 }),
@@ -1264,18 +1264,19 @@ class _$ScheduleDao extends ScheduleDao {
             database,
             'SegmentKey',
             (SegmentKey item) => <String, Object?>{
-                  'id': item.id,
                   'classroomId': item.classroomId,
+                  'segmentHash': item.segmentHash,
                   'contentSerial': item.contentSerial,
                   'lessonIndex': item.lessonIndex,
-                  'segmentIndex': item.segmentIndex
+                  'segmentIndex': item.segmentIndex,
+                  'segmentContent': item.segmentContent
                 }),
         _segmentInsertionAdapter = InsertionAdapter(
             database,
             'Segment',
             (Segment item) => <String, Object?>{
-                  'segmentKeyId': item.segmentKeyId,
                   'classroomId': item.classroomId,
+                  'segmentHash': item.segmentHash,
                   'contentSerial': item.contentSerial,
                   'lessonIndex': item.lessonIndex,
                   'segmentIndex': item.segmentIndex,
@@ -1285,8 +1286,8 @@ class _$ScheduleDao extends ScheduleDao {
             database,
             'SegmentOverallPrg',
             (SegmentOverallPrg item) => <String, Object?>{
-                  'segmentKeyId': item.segmentKeyId,
                   'classroomId': item.classroomId,
+                  'segmentHash': item.segmentHash,
                   'contentSerial': item.contentSerial,
                   'next': _dateConverter.encode(item.next),
                   'progress': item.progress
@@ -1295,11 +1296,11 @@ class _$ScheduleDao extends ScheduleDao {
             database,
             'SegmentStats',
             (SegmentStats item) => <String, Object?>{
-                  'segmentKeyId': item.segmentKeyId,
+                  'classroomId': item.classroomId,
+                  'segmentHash': item.segmentHash,
                   'type': item.type,
                   'createDate': _dateConverter.encode(item.createDate),
                   'createTime': item.createTime,
-                  'classroomId': item.classroomId,
                   'contentSerial': item.contentSerial
                 }),
         _crKvDeletionAdapter = DeletionAdapter(
@@ -1416,7 +1417,7 @@ class _$ScheduleDao extends ScheduleDao {
         mapper: (Map<String, Object?> row) => SegmentTodayPrg(
             row['classroomId'] as int,
             row['contentSerial'] as int,
-            row['segmentKeyId'] as int,
+            row['segmentHash'] as String,
             row['time'] as int,
             row['type'] as int,
             row['sort'] as int,
@@ -1431,16 +1432,18 @@ class _$ScheduleDao extends ScheduleDao {
 
   @override
   Future<void> setSegmentTodayPrg(
-    int segmentKeyId,
+    int classroomId,
+    String segmentHash,
     int type,
     int progress,
     DateTime viewTime,
     bool finish,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE SegmentTodayPrg SET progress=?3,viewTime=?4,finish=?5 WHERE segmentKeyId=?1 and type=?2',
+        'UPDATE SegmentTodayPrg SET progress=?4,viewTime=?5,finish=?6 WHERE classroomId=?1 AND segmentHash=?2 AND type=?3',
         arguments: [
-          segmentKeyId,
+          classroomId,
+          segmentHash,
           type,
           progress,
           _dateTimeConverter.encode(viewTime),
@@ -1455,7 +1458,7 @@ class _$ScheduleDao extends ScheduleDao {
     int lessonIndex,
   ) async {
     return _queryAdapter.query(
-        'SELECT count(Segment.segmentKeyId) FROM Segment AND Segment.classroomId=?1 WHERE Segment.contentSerial=?2 and Segment.lessonIndex=?3',
+        'SELECT count(Segment.segmentHash) FROM Segment AND Segment.classroomId=?1 WHERE Segment.contentSerial=?2 and Segment.lessonIndex=?3',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId, contentSerial, lessonIndex]);
   }
@@ -1467,7 +1470,7 @@ class _$ScheduleDao extends ScheduleDao {
     Date now,
   ) async {
     return _queryAdapter.query(
-        'SELECT IFNULL(MIN(SegmentReview.createDate),-1) FROM SegmentReview JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId WHERE SegmentReview.classroomId=?1 AND SegmentReview.count=?2 and SegmentReview.createDate<=?3 order by SegmentReview.createDate',
+        'SELECT IFNULL(MIN(SegmentReview.createDate),-1) FROM SegmentReview JOIN Segment ON Segment.classroomId=?1 AND Segment.segmentHash=SegmentReview.segmentHash WHERE SegmentReview.classroomId=?1 AND SegmentReview.count=?2 and SegmentReview.createDate<=?3 order by SegmentReview.createDate',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId, reviewCount, _dateConverter.encode(now)]);
   }
@@ -1479,8 +1482,8 @@ class _$ScheduleDao extends ScheduleDao {
     Date startDate,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentReview.classroomId,Segment.contentSerial,SegmentReview.segmentKeyId,0 time,0 type,Segment.sort,0 progress,0 viewTime,SegmentReview.count reviewCount,SegmentReview.createDate reviewCreateDate,0 finish FROM SegmentReview JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId WHERE SegmentReview.classroomId=?1 AND SegmentReview.count=?2 AND SegmentReview.createDate=?3 ORDER BY Segment.sort',
-        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['classroomId'] as int, row['contentSerial'] as int, row['segmentKeyId'] as int, row['time'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
+        'SELECT SegmentReview.classroomId,Segment.contentSerial,SegmentReview.segmentHash,0 time,0 type,Segment.sort,0 progress,0 viewTime,SegmentReview.count reviewCount,SegmentReview.createDate reviewCreateDate,0 finish FROM SegmentReview JOIN Segment ON Segment.classroomId=?1 AND Segment.segmentHash=SegmentReview.segmentHash WHERE SegmentReview.classroomId=?1 AND SegmentReview.count=?2 AND SegmentReview.createDate=?3 ORDER BY Segment.sort',
+        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['classroomId'] as int, row['contentSerial'] as int, row['segmentHash'] as String, row['time'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
         arguments: [
           classroomId,
           reviewCount,
@@ -1495,8 +1498,8 @@ class _$ScheduleDao extends ScheduleDao {
     Date now,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM ( SELECT Segment.classroomId,Segment.contentSerial,SegmentOverallPrg.segmentKeyId,0 time,0 type,Segment.sort,SegmentOverallPrg.progress progress,0 viewTime,0 reviewCount,0 reviewCreateDate,0 finish FROM SegmentOverallPrg JOIN Segment ON Segment.segmentKeyId=SegmentOverallPrg.segmentKeyId AND Segment.classroomId=?1 WHERE SegmentOverallPrg.next<=?3 AND SegmentOverallPrg.progress>=?2 ORDER BY SegmentOverallPrg.progress,Segment.sort ) Segment order by Segment.sort',
-        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['classroomId'] as int, row['contentSerial'] as int, row['segmentKeyId'] as int, row['time'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
+        'SELECT * FROM ( SELECT Segment.classroomId,Segment.contentSerial,SegmentOverallPrg.segmentHash,0 time,0 type,Segment.sort,SegmentOverallPrg.progress progress,0 viewTime,0 reviewCount,0 reviewCreateDate,0 finish FROM SegmentOverallPrg JOIN Segment ON Segment.classroomId=?1 AND Segment.segmentHash=SegmentOverallPrg.segmentHash WHERE SegmentOverallPrg.next<=?3 AND SegmentOverallPrg.progress>=?2 ORDER BY SegmentOverallPrg.progress,Segment.sort ) Segment order by Segment.sort',
+        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['classroomId'] as int, row['contentSerial'] as int, row['segmentHash'] as String, row['time'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
         arguments: [classroomId, minProgress, _dateConverter.encode(now)]);
   }
 
@@ -1509,8 +1512,8 @@ class _$ScheduleDao extends ScheduleDao {
     int limit,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT Segment.classroomId,Segment.contentSerial,Segment.segmentKeyId,0 time,0 type,Segment.sort,0 progress,0 viewTime,0 reviewCount,1 reviewCreateDate,0 finish FROM Segment WHERE Segment.classroomId=?1 AND Segment.sort>=(  SELECT Segment.sort FROM Segment  WHERE Segment.contentSerial=?2  AND Segment.lessonIndex=?3  AND Segment.segmentIndex=?4) ORDER BY Segment.sort limit ?5',
-        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['classroomId'] as int, row['contentSerial'] as int, row['segmentKeyId'] as int, row['time'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
+        'SELECT Segment.classroomId,Segment.contentSerial,Segment.segmentHash,0 time,0 type,Segment.sort,0 progress,0 viewTime,0 reviewCount,1 reviewCreateDate,0 finish FROM Segment WHERE Segment.classroomId=?1 AND Segment.sort>=(  SELECT Segment.sort FROM Segment  WHERE Segment.contentSerial=?2  AND Segment.lessonIndex=?3  AND Segment.segmentIndex=?4) ORDER BY Segment.sort limit ?5',
+        mapper: (Map<String, Object?> row) => SegmentTodayPrg(row['classroomId'] as int, row['contentSerial'] as int, row['segmentHash'] as String, row['time'] as int, row['type'] as int, row['sort'] as int, row['progress'] as int, _dateTimeConverter.decode(row['viewTime'] as int), row['reviewCount'] as int, _dateConverter.decode(row['reviewCreateDate'] as int), (row['finish'] as int) != 0, id: row['id'] as int?),
         arguments: [
           classroomId,
           contentSerial,
@@ -1522,44 +1525,49 @@ class _$ScheduleDao extends ScheduleDao {
 
   @override
   Future<void> setPrgAndNext4Sop(
-    int segmentKeyId,
+    int classroomId,
+    String segmentHash,
     int progress,
     Date next,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE SegmentOverallPrg SET progress=?2,next=?3 WHERE segmentKeyId=?1',
-        arguments: [segmentKeyId, progress, _dateConverter.encode(next)]);
+        'UPDATE SegmentOverallPrg SET progress=?3,next=?4 WHERE classroomId=?1 AND segmentHash=?2',
+        arguments: [
+          classroomId,
+          segmentHash,
+          progress,
+          _dateConverter.encode(next)
+        ]);
   }
 
   @override
   Future<void> setPrg4Sop(
-    int segmentKeyId,
+    int classroomId,
+    String segmentHash,
     int progress,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE SegmentOverallPrg SET progress=?2 WHERE segmentKeyId=?1',
-        arguments: [segmentKeyId, progress]);
+        'UPDATE SegmentOverallPrg SET progress=?3 WHERE classroomId=?1 AND segmentHash=?2',
+        arguments: [classroomId, segmentHash, progress]);
   }
 
   @override
-  Future<SegmentOverallPrg?> getSegmentOverallPrg(int segmentKeyId) async {
+  Future<SegmentOverallPrg?> getSegmentOverallPrg(
+    int classroomId,
+    String segmentHash,
+  ) async {
     return _queryAdapter.query(
-        'SELECT * FROM SegmentOverallPrg WHERE segmentKeyId=?1',
-        mapper: (Map<String, Object?> row) => SegmentOverallPrg(
-            row['segmentKeyId'] as int,
-            row['classroomId'] as int,
-            row['contentSerial'] as int,
-            _dateConverter.decode(row['next'] as int),
-            row['progress'] as int),
-        arguments: [segmentKeyId]);
+        'SELECT * FROM SegmentOverallPrg WHERE classroomId=?1 AND segmentHash=?2',
+        mapper: (Map<String, Object?> row) => SegmentOverallPrg(row['classroomId'] as int, row['segmentHash'] as String, row['contentSerial'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int),
+        arguments: [classroomId, segmentHash]);
   }
 
   @override
   Future<List<SegmentOverallPrgWithKey>> getAllSegmentOverallPrg(
       int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentOverallPrg.*,Content.name contentName,Segment.lessonIndex,Segment.segmentIndex FROM Segment JOIN SegmentOverallPrg on SegmentOverallPrg.segmentKeyId=Segment.segmentKeyId JOIN Content ON Content.classroomId=Segment.classroomId AND Content.serial=Segment.contentSerial WHERE Segment.classroomId=?1 ORDER BY Segment.sort asc',
-        mapper: (Map<String, Object?> row) => SegmentOverallPrgWithKey(row['segmentKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, row['contentName'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int),
+        'SELECT SegmentOverallPrg.*,Content.name contentName,Segment.lessonIndex,Segment.segmentIndex FROM Segment JOIN SegmentOverallPrg ON SegmentOverallPrg.classroomId=Segment.classroomId AND SegmentOverallPrg.segmentHash=Segment.segmentHash JOIN Content ON Content.classroomId=Segment.classroomId AND Content.serial=Segment.contentSerial WHERE Segment.classroomId=?1 ORDER BY Segment.sort asc',
+        mapper: (Map<String, Object?> row) => SegmentOverallPrgWithKey(row['segmentHash'] as int, row['classroomId'] as String, row['contentSerial'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, row['contentName'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int),
         arguments: [classroomId]);
   }
 
@@ -1581,8 +1589,8 @@ class _$ScheduleDao extends ScheduleDao {
     Date end,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentReview.*,Content.name contentName,Segment.lessonIndex,Segment.segmentIndex FROM SegmentReview JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId JOIN Content ON Content.classroomId=SegmentReview.classroomId AND Content.serial=SegmentReview.contentSerial WHERE SegmentReview.classroomId=?1 AND SegmentReview.createDate>=?2 AND SegmentReview.createDate<=?3 ORDER BY SegmentReview.createDate desc,Segment.sort asc',
-        mapper: (Map<String, Object?> row) => SegmentReviewWithKey(_dateConverter.decode(row['createDate'] as int), row['segmentKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, row['count'] as int, row['contentName'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int),
+        'SELECT SegmentReview.*,Content.name contentName,Segment.lessonIndex,Segment.segmentIndex FROM SegmentReview JOIN Segment ON Segment.classroomId=SegmentReview.classroomId AND Segment.segmentHash=SegmentReview.segmentHash JOIN Content ON Content.classroomId=SegmentReview.classroomId AND Content.serial=SegmentReview.contentSerial WHERE SegmentReview.classroomId=?1 AND SegmentReview.createDate>=?2 AND SegmentReview.createDate<=?3 ORDER BY SegmentReview.createDate desc,Segment.sort asc',
+        mapper: (Map<String, Object?> row) => SegmentReviewWithKey(_dateConverter.decode(row['createDate'] as int), row['segmentHash'] as int, row['classroomId'] as String, row['contentSerial'] as int, row['count'] as int, row['contentName'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int),
         arguments: [
           classroomId,
           _dateConverter.encode(start),
@@ -1592,53 +1600,65 @@ class _$ScheduleDao extends ScheduleDao {
 
   @override
   Future<void> setSegmentReviewCount(
+    int classroomId,
     Date createDate,
-    int segmentKeyId,
+    String segmentHash,
     int count,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE SegmentReview SET count=?3 WHERE createDate=?1 and `segmentKeyId`=?2',
-        arguments: [_dateConverter.encode(createDate), segmentKeyId, count]);
+        'UPDATE SegmentReview SET count=?4 WHERE createDate=?2 and classroomId=?1 and segmentHash=?3',
+        arguments: [
+          classroomId,
+          _dateConverter.encode(createDate),
+          segmentHash,
+          count
+        ]);
   }
 
   @override
-  Future<SegmentContentInDb?> getSegmentContent(int segmentKeyId) async {
+  Future<SegmentContentInDb?> getSegmentContent(
+    int classroomId,
+    String segmentHash,
+  ) async {
     return _queryAdapter.query(
-        'SELECT Segment.segmentKeyId,Segment.classroomId,Segment.contentSerial,Segment.lessonIndex,Segment.segmentIndex,Segment.sort sort,Content.name contentName FROM Segment JOIN Content ON Content.classroomId=Segment.classroomId AND Content.serial=Segment.contentSerial WHERE Segment.segmentKeyId=?1',
-        mapper: (Map<String, Object?> row) => SegmentContentInDb(row['segmentKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['sort'] as int, row['contentName'] as String),
-        arguments: [segmentKeyId]);
+        'SELECT Segment.segmentHash,Segment.classroomId,Segment.contentSerial,Segment.lessonIndex,Segment.segmentIndex,Segment.sort sort,Content.name contentName FROM Segment JOIN Content ON Content.classroomId=?1 AND Content.serial=Segment.contentSerial WHERE Segment.classroomId=?1 AND Segment.segmentHash=?2',
+        mapper: (Map<String, Object?> row) => SegmentContentInDb(row['classroomId'] as int, row['segmentHash'] as String, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['sort'] as int, row['contentName'] as String),
+        arguments: [classroomId, segmentHash]);
   }
 
   @override
-  Future<String?> getContentName(int segmentKeyId) async {
+  Future<String?> getContentName(
+    int classroomId,
+    String segmentHash,
+  ) async {
     return _queryAdapter.query(
-        'SELECT Content.name contentName FROM SegmentKey JOIN Content ON Content.classroomId=SegmentKey.classroomId AND Content.serial=SegmentKey.contentSerial WHERE SegmentKey.id=?1',
+        'SELECT Content.name contentName FROM SegmentKey JOIN Content ON Content.classroomId=SegmentKey.classroomId AND Content.serial=SegmentKey.contentSerial WHERE SegmentKey.classroomId=?1 AND SegmentKey.segmentHash=?2',
         mapper: (Map<String, Object?> row) => row.values.first as String,
-        arguments: [segmentKeyId]);
+        arguments: [classroomId, segmentHash]);
   }
 
   @override
-  Future<int?> getPrevSegmentKeyIdWithOffset(
+  Future<String?> getPrevsegmentHashWithOffset(
     int classroomId,
-    int segmentKeyId,
+    String segmentHash,
     int offset,
   ) async {
     return _queryAdapter.query(
-        'SELECT LimitSegment.segmentKeyId FROM (SELECT sort,segmentKeyId  FROM Segment  WHERE classroomId=?1  AND sort<(SELECT Segment.sort FROM Segment WHERE Segment.segmentKeyId=?2)  ORDER BY sort desc  LIMIT ?3) LimitSegment  ORDER BY LimitSegment.sort LIMIT 1',
-        mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [classroomId, segmentKeyId, offset]);
+        'SELECT LimitSegment.segmentHash FROM (SELECT sort,segmentHash  FROM Segment  WHERE classroomId=?1  AND sort<(SELECT Segment.sort FROM Segment WHERE Segment.classroomId=?1 AND Segment.segmentHash=?2)  ORDER BY sort desc  LIMIT ?3) LimitSegment  ORDER BY LimitSegment.sort LIMIT 1',
+        mapper: (Map<String, Object?> row) => row.values.first as String,
+        arguments: [classroomId, segmentHash, offset]);
   }
 
   @override
-  Future<int?> getNextSegmentKeyIdWithOffset(
+  Future<String?> getNextsegmentHashWithOffset(
     int classroomId,
-    int segmentKeyId,
+    String segmentHash,
     int offset,
   ) async {
     return _queryAdapter.query(
-        'SELECT LimitSegment.segmentKeyId FROM (SELECT sort,segmentKeyId  FROM Segment  WHERE classroomId=?1  AND sort>(SELECT Segment.sort FROM Segment WHERE Segment.segmentKeyId=?2)  ORDER BY sort  LIMIT ?3) LimitSegment  ORDER BY LimitSegment.sort desc LIMIT 1',
-        mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [classroomId, segmentKeyId, offset]);
+        'SELECT LimitSegment.segmentHash FROM (SELECT sort,segmentHash  FROM Segment  WHERE classroomId=?1  AND sort>(SELECT Segment.sort FROM Segment WHERE Segment.classroomId=?1 AND Segment.segmentHash=?2)  ORDER BY sort  LIMIT ?3) LimitSegment  ORDER BY LimitSegment.sort desc LIMIT 1',
+        mapper: (Map<String, Object?> row) => row.values.first as String,
+        arguments: [classroomId, segmentHash, offset]);
   }
 
   @override
@@ -1648,7 +1668,7 @@ class _$ScheduleDao extends ScheduleDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT SegmentKey.* FROM SegmentKey WHERE SegmentKey.classroomId=?1 and SegmentKey.contentSerial=?2',
-        mapper: (Map<String, Object?> row) => SegmentKey(row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => SegmentKey(row['classroomId'] as int, row['segmentHash'] as String, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['segmentContent'] as String),
         arguments: [classroomId, contentSerial]);
   }
 
@@ -1658,42 +1678,58 @@ class _$ScheduleDao extends ScheduleDao {
     int contentSerial,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM Segment WHERE Segment.classroomId=?1 and Segment.contentSerial=?2',
+        'DELETE FROM Segment WHERE Segment.classroomId=?1 AND Segment.contentSerial=?2',
         arguments: [classroomId, contentSerial]);
   }
 
   @override
-  Future<void> deleteSegment(int segmentKeyId) async {
+  Future<void> deleteSegment(
+    int classroomId,
+    String segmentHash,
+  ) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM Segment WHERE segmentKeyId=?1',
-        arguments: [segmentKeyId]);
+        'DELETE FROM Segment WHERE classroomId=?1 AND segmentHash=?2',
+        arguments: [classroomId, segmentHash]);
   }
 
   @override
-  Future<void> deleteSegmentKey(int segmentKeyId) async {
-    await _queryAdapter.queryNoReturn('DELETE FROM SegmentKey WHERE id=?1',
-        arguments: [segmentKeyId]);
+  Future<void> deleteSegmentKey(
+    int classroomId,
+    String segmentHash,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM SegmentKey WHERE classroomId=?1 AND segmentHash=?2',
+        arguments: [classroomId, segmentHash]);
   }
 
   @override
-  Future<void> deleteSegmentOverallPrg(int segmentKeyId) async {
+  Future<void> deleteSegmentOverallPrg(
+    int classroomId,
+    String segmentHash,
+  ) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM SegmentOverallPrg WHERE segmentKeyId=?1',
-        arguments: [segmentKeyId]);
+        'DELETE FROM SegmentOverallPrg WHERE classroomId=?1 AND segmentHash=?2',
+        arguments: [classroomId, segmentHash]);
   }
 
   @override
-  Future<void> deleteSegmentReview(int segmentKeyId) async {
+  Future<void> deleteSegmentReview(
+    int classroomId,
+    String segmentHash,
+  ) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM SegmentReview WHERE segmentKeyId=?1',
-        arguments: [segmentKeyId]);
+        'DELETE FROM SegmentReview WHERE classroomId=?1 AND segmentHash=?2',
+        arguments: [classroomId, segmentHash]);
   }
 
   @override
-  Future<void> deleteSegmentTodayPrg(int segmentKeyId) async {
+  Future<void> deleteSegmentTodayPrg(
+    int classroomId,
+    String segmentHash,
+  ) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM SegmentTodayPrg WHERE segmentKeyId=?1',
-        arguments: [segmentKeyId]);
+        'DELETE FROM SegmentTodayPrg WHERE classroomId=?1 AND segmentHash=?2',
+        arguments: [classroomId, segmentHash]);
   }
 
   @override
@@ -1795,16 +1831,19 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> deleteBySegmentKeyId(int segmentKeyId) async {
+  Future<void> deleteBysegmentHash(
+    int classroomId,
+    String segmentHash,
+  ) async {
     if (database is sqflite.Transaction) {
-      await super.deleteBySegmentKeyId(segmentKeyId);
+      await super.deleteBysegmentHash(classroomId, segmentHash);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         await transactionDatabase.scheduleDao
-            .deleteBySegmentKeyId(segmentKeyId);
+            .deleteBysegmentHash(classroomId, segmentHash);
       });
     }
   }
@@ -1953,7 +1992,8 @@ class _$SegmentNoteDao extends SegmentNoteDao {
             database,
             'SegmentNote',
             (SegmentNote item) => <String, Object?>{
-                  'segmentKeyId': item.segmentKeyId,
+                  'classroomId': item.classroomId,
+                  'segmentHash': item.segmentHash,
                   'note': item.note
                 });
 
@@ -1966,12 +2006,17 @@ class _$SegmentNoteDao extends SegmentNoteDao {
   final InsertionAdapter<SegmentNote> _segmentNoteInsertionAdapter;
 
   @override
-  Future<SegmentNote?> getBySegmentKeyId(int segmentKeyId) async {
+  Future<SegmentNote?> getBySegmentHash(
+    int classroomId,
+    String segmentHash,
+  ) async {
     return _queryAdapter.query(
-        'SELECT * FROM SegmentNote WHERE segmentKeyId=?1',
-        mapper: (Map<String, Object?> row) =>
-            SegmentNote(row['segmentKeyId'] as int, row['note'] as String),
-        arguments: [segmentKeyId]);
+        'SELECT * FROM SegmentNote WHERE classroomId=?1 AND segmentHash=?2',
+        mapper: (Map<String, Object?> row) => SegmentNote(
+            row['classroomId'] as int,
+            row['segmentHash'] as String,
+            row['note'] as String),
+        arguments: [classroomId, segmentHash]);
   }
 
   @override
@@ -2050,11 +2095,11 @@ class _$StatsDao extends StatsDao {
     return _queryAdapter.queryList(
         'SELECT * FROM SegmentStats WHERE classroomId = ?1 AND createDate = ?2',
         mapper: (Map<String, Object?> row) => SegmentStats(
-            row['segmentKeyId'] as int,
+            row['classroomId'] as int,
+            row['segmentHash'] as String,
             row['type'] as int,
             _dateConverter.decode(row['createDate'] as int),
             row['createTime'] as int,
-            row['classroomId'] as int,
             row['contentSerial'] as int),
         arguments: [classroomId, _dateConverter.encode(date)]);
   }
@@ -2067,7 +2112,7 @@ class _$StatsDao extends StatsDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT * FROM SegmentStats WHERE classroomId = ?1 AND createDate >= ?2 AND createDate <= ?3',
-        mapper: (Map<String, Object?> row) => SegmentStats(row['segmentKeyId'] as int, row['type'] as int, _dateConverter.decode(row['createDate'] as int), row['createTime'] as int, row['classroomId'] as int, row['contentSerial'] as int),
+        mapper: (Map<String, Object?> row) => SegmentStats(row['classroomId'] as int, row['segmentHash'] as String, row['type'] as int, _dateConverter.decode(row['createDate'] as int), row['createTime'] as int, row['contentSerial'] as int),
         arguments: [
           classroomId,
           _dateConverter.encode(start),
@@ -2104,12 +2149,12 @@ class _$StatsDao extends StatsDao {
   }
 
   @override
-  Future<List<int>> getDistinctSegmentKeyIds(
+  Future<List<int>> getDistinctsegmentHashs(
     int classroomId,
     Date date,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT DISTINCT segmentKeyId FROM SegmentStats WHERE classroomId = ?1 AND createDate = ?2',
+        'SELECT DISTINCT segmentHash FROM SegmentStats WHERE classroomId = ?1 AND createDate = ?2',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId, _dateConverter.encode(date)]);
   }

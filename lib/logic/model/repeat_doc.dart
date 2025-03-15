@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'dart:convert' as convert;
 
+import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 
@@ -124,6 +125,8 @@ class Lesson {
 }
 
 class Segment {
+  String content;
+  String hash;
   String tipStart;
   String tipEnd;
   String tip;
@@ -136,6 +139,8 @@ class Segment {
   String w;
 
   Segment(
+    this.content,
+    this.hash,
     this.tipStart,
     this.tipEnd,
     this.tip,
@@ -154,7 +159,11 @@ class Segment {
     String defaultQuestion,
     String defaultTip,
   ) {
+    String content = convert.jsonEncode(json);
+    String hash = Hash.toSha1ForString(content);
     return Segment(
+      content,
+      hash,
       json['tipStart'] ?? "",
       json['tipEnd'] ?? "",
       json['tip'] ?? defaultTip,

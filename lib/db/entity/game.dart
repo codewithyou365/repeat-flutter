@@ -6,7 +6,7 @@ import 'package:repeat_flutter/common/date.dart';
 @Entity(
   indices: [
     Index(value: ['classroomId', 'contentSerial', 'lessonIndex', 'segmentIndex']),
-    Index(value: ['segmentKeyId']),
+    Index(value: ['segmentHash']),
     Index(value: ['createDate']),
   ],
 )
@@ -20,7 +20,7 @@ class Game {
   final String aEnd;
   final String w;
 
-  final int segmentKeyId;
+  final String segmentHash;
   final int classroomId;
   final int contentSerial;
   final int lessonIndex;
@@ -37,7 +37,7 @@ class Game {
     this.aStart,
     this.aEnd,
     this.w,
-    this.segmentKeyId,
+    this.segmentHash,
     this.classroomId,
     this.contentSerial,
     this.lessonIndex,

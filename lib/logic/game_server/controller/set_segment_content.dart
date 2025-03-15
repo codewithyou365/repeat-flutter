@@ -47,7 +47,7 @@ Future<message.Response?> setSegmentContent(message.Request req, GameUser? user,
   if (!ok) {
     return message.Response(error: GameServerError.contentNotFound.name);
   }
-  var segmentContent = await RepeatDocHelp.from(game.segmentKeyId);
+  var segmentContent = await RepeatDocHelp.from(game.segmentHash);
   if (segmentContent != null) {
     await Db().db.gameDao.clearGame(reqBody.gameId, user.id!, segmentContent.aStart, segmentContent.aEnd, segmentContent.word);
   }

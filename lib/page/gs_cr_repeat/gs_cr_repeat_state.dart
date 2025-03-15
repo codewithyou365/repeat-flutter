@@ -63,10 +63,10 @@ class GsCrRepeatState {
   var progress = -1;
   var total = 10;
 
-  SegmentContent segment = SegmentContent(0, 0, 0, 0, 0, 0, "");
+  SegmentContent segment = SegmentContent(0, '', 0, 0, 0, 0, "");
   SegmentTodayPrg segmentTodayPrg = SegmentTodayPrg.empty();
   PlayType segmentPlayType = PlayType.none;
-  SegmentContent currSegment = SegmentContent(0, 0, 0, 0, 0, 0, "");
+  SegmentContent currSegment = SegmentContent(0, '', 0, 0, 0, 0, "");
   late List<SegmentTodayPrg> c;
   var justView = false;
   var justViewIndex = 0;
@@ -82,6 +82,7 @@ class GsCrRepeatState {
         ContentArg(ContentType.question, TipLevel.none, true),
         ContentArg(ContentType.questionMedia, TipLevel.none, null),
         ContentArg(ContentType.answer, TipLevel.tip2, true),
+        ContentArg(ContentType.answerMedia, TipLevel.none, null),
         ContentArg(ContentType.tip, TipLevel.tip1, true),
       ],
       [

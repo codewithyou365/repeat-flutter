@@ -19,7 +19,7 @@ class Hash {
     return sha1Hash.bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
   }
 
-  static Future<String> toSha1ForString(String s) async {
+  static String toSha1ForString(String s) {
     final bytes = utf8.encode(s);
     final sha1Hash = sha1.convert(bytes);
     return sha1Hash.bytes.map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();

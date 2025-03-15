@@ -3,15 +3,17 @@
 import 'package:floor/floor.dart';
 
 @Entity(
-  primaryKeys: ['segmentKeyId'],
+  primaryKeys: ['segmentHash'],
 )
 class SegmentNote {
-  int segmentKeyId;
+  final int classroomId;
+  final String segmentHash;
 
   final String note;
 
   SegmentNote(
-    this.segmentKeyId,
+    this.classroomId,
+    this.segmentHash,
     this.note,
   );
 }

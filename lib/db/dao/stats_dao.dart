@@ -19,8 +19,8 @@ abstract class StatsDao {
   @Query('SELECT COUNT(*) FROM SegmentStats WHERE classroomId = :classroomId AND type = :type AND createDate = :date')
   Future<int?> getCountByType(int classroomId, int type, Date date);
 
-  @Query('SELECT DISTINCT segmentKeyId FROM SegmentStats WHERE classroomId = :classroomId AND createDate = :date')
-  Future<List<int>> getDistinctSegmentKeyIds(int classroomId, Date date);
+  @Query('SELECT DISTINCT segmentHash FROM SegmentStats WHERE classroomId = :classroomId AND createDate = :date')
+  Future<List<int>> getDistinctsegmentHashs(int classroomId, Date date);
 
   @Query('SELECT * FROM TimeStats WHERE classroomId = :classroomId AND createDate = :date')
   Future<TimeStats?> getTimeStatsByDate(int classroomId, Date date);

@@ -10,7 +10,7 @@ class SegmentReviewWithKey extends SegmentReview {
 
   SegmentReviewWithKey(
     super.createDate,
-    super.segmentKeyId,
+    super.segmentHash,
     super.classroomId,
     super.contentSerial,
     super.count,

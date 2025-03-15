@@ -38,7 +38,7 @@ abstract class GameUserDao {
     final existingUser = await findUserByName(name);
     if (existingUser == null) {
       final nonce = StringUtil.generateRandomString(32);
-      final passwordHash = await Hash.toSha1ForString(password + nonce);
+      final passwordHash = Hash.toSha1ForString(password + nonce);
       int? registrations = await count();
       registrations ??= 0;
       int allowRegisterNumber = await intKv(K.allowRegisterNumber) ?? 1;

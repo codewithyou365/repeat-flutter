@@ -182,7 +182,7 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     RxString err = "".obs;
-    var content = await RepeatDocHelp.from(next.segmentKeyId, err: err);
+    var content = await RepeatDocHelp.from(next.segmentHash, err: err);
     if (err.value != "") {
       Nav.back();
       MsgBox.yes(I18nKey.btnError.tr, err.value);
@@ -197,13 +197,13 @@ class GsCrRepeatLogic extends GetxController {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
-    SegmentNote? note = await Db().db.segmentNoteDao.getBySegmentKeyId(curr.segmentKeyId);
+    SegmentNote? note = await Db().db.segmentNoteDao.getBySegmentHash(Classroom.curr, curr.segmentHash);
     Editor.show(
       Get.context!,
       I18nKey.labelNote.tr,
       note?.note ?? "",
       (str) async {
-        await Db().db.segmentNoteDao.insert(SegmentNote(curr.segmentKeyId, str));
+        await Db().db.segmentNoteDao.insert(SegmentNote(Classroom.curr, curr.segmentHash, str));
       },
       qrPagePath: Nav.gsCrContentScan.path,
     );
@@ -214,7 +214,7 @@ class GsCrRepeatLogic extends GetxController {
     if (curr == null) {
       return;
     }
-    var schedule = await Db().db.scheduleDao.getSegmentOverallPrg(curr.segmentKeyId);
+    var schedule = await Db().db.scheduleDao.getSegmentOverallPrg(Classroom.curr, curr.segmentHash);
     if (schedule == null) {
       return;
     }
@@ -370,9 +370,9 @@ class GsCrRepeatLogic extends GetxController {
     }
     pnOffset ??= 0;
     state.openTip = [];
-    var oldSegmentKeyId = state.segment.segmentKeyId;
+    var oldSegmentHash = state.segment.segmentHash;
     RxString err = "".obs;
-    var learnSegment = await RepeatDocHelp.from(curr.segmentKeyId, offset: pnOffset, err: err);
+    var learnSegment = await RepeatDocHelp.from(curr.segmentHash, offset: pnOffset, err: err);
     if (err.value != "") {
       Nav.back();
       MsgBox.yes(I18nKey.btnError.tr, err.value);
@@ -387,7 +387,7 @@ class GsCrRepeatLogic extends GetxController {
         I18nKey.labelSegmentRemoved.tr,
         yes: () {
           showOverlay(() async {
-            await Db().db.scheduleDao.deleteBySegmentKeyId(learnSegment.segmentKeyId);
+            await Db().db.scheduleDao.deleteBysegmentHash(Classroom.curr, learnSegment.segmentHash);
             Nav.gsCr.until();
           }, I18nKey.labelExecuting.tr);
         },
@@ -395,7 +395,7 @@ class GsCrRepeatLogic extends GetxController {
       return null;
     }
     bool ret = true;
-    if (learnSegment.segmentKeyId == oldSegmentKeyId && fromPn) {
+    if (learnSegment.segmentHash == oldSegmentHash && fromPn) {
       ret = false;
     }
     state.segment = learnSegment;
@@ -472,7 +472,7 @@ class GsCrRepeatLogic extends GetxController {
       );
     } else {
       await setCurrentLearnContentAndUpdateView(
-        index: state.c.indexWhere((t) => t.segmentKeyId == state.currSegment.segmentKeyId),
+        index: state.c.indexWhere((t) => t.segmentHash == state.currSegment.segmentHash),
         pnOffset: 0,
       );
     }
@@ -490,7 +490,7 @@ class GsCrRepeatLogic extends GetxController {
           false;
     } else {
       diff = await setCurrentLearnContentAndUpdateView(
-            index: state.c.indexWhere((t) => t.segmentKeyId == state.currSegment.segmentKeyId),
+            index: state.c.indexWhere((t) => t.segmentHash == state.currSegment.segmentHash),
             pnOffset: state.pnOffset + 1,
           ) ??
           false;
@@ -511,7 +511,7 @@ class GsCrRepeatLogic extends GetxController {
           false;
     } else {
       diff = await setCurrentLearnContentAndUpdateView(
-            index: state.c.indexWhere((t) => t.segmentKeyId == state.currSegment.segmentKeyId),
+            index: state.c.indexWhere((t) => t.segmentHash == state.currSegment.segmentHash),
             pnOffset: state.pnOffset - 1,
           ) ??
           false;
@@ -602,7 +602,7 @@ class GsCrRepeatLogic extends GetxController {
       state.segment.aStart,
       state.segment.aEnd,
       state.segment.word,
-      state.segment.segmentKeyId,
+      state.segment.segmentHash,
       state.segment.classroomId,
       state.segment.contentSerial,
       state.segment.lessonIndex,
@@ -721,7 +721,7 @@ class GsCrRepeatLogic extends GetxController {
       );
     } else {
       await setCurrentLearnContentAndUpdateView(
-        index: state.c.indexWhere((t) => t.segmentKeyId == state.currSegment.segmentKeyId),
+        index: state.c.indexWhere((t) => t.segmentHash == state.currSegment.segmentHash),
         pnOffset: state.pnOffset,
       );
     }

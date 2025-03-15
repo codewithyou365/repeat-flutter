@@ -246,17 +246,18 @@ abstract class ScheduleDao {
       ' order by id asc')
   Future<List<SegmentTodayPrg>> findSegmentTodayPrg(int classroomId);
 
-  @Query('UPDATE SegmentTodayPrg SET progress=:progress,viewTime=:viewTime,finish=:finish WHERE segmentKeyId=:segmentKeyId and type=:type')
-  Future<void> setSegmentTodayPrg(int segmentKeyId, int type, int progress, DateTime viewTime, bool finish);
+  @Query('UPDATE SegmentTodayPrg SET progress=:progress,viewTime=:viewTime,finish=:finish WHERE classroomId=:classroomId AND segmentHash=:segmentHash AND type=:type')
+  Future<void> setSegmentTodayPrg(int classroomId, String segmentHash, int type, int progress, DateTime viewTime, bool finish);
 
-  @Query("SELECT count(Segment.segmentKeyId) FROM Segment"
+  @Query("SELECT count(Segment.segmentHash) FROM Segment"
       " AND Segment.classroomId=:classroomId"
       " WHERE Segment.contentSerial=:contentSerial"
       " and Segment.lessonIndex=:lessonIndex")
   Future<int?> lessonCount(int classroomId, int contentSerial, int lessonIndex);
 
   @Query("SELECT IFNULL(MIN(SegmentReview.createDate),-1) FROM SegmentReview"
-      " JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId"
+      " JOIN Segment ON Segment.classroomId=:classroomId"
+      " AND Segment.segmentHash=SegmentReview.segmentHash"
       " WHERE SegmentReview.classroomId=:classroomId"
       " AND SegmentReview.count=:reviewCount"
       " and SegmentReview.createDate<=:now"
@@ -266,7 +267,7 @@ abstract class ScheduleDao {
   @Query("SELECT"
       " SegmentReview.classroomId"
       ",Segment.contentSerial"
-      ",SegmentReview.segmentKeyId"
+      ",SegmentReview.segmentHash"
       ",0 time"
       ",0 type"
       ",Segment.sort"
@@ -276,7 +277,8 @@ abstract class ScheduleDao {
       ",SegmentReview.createDate reviewCreateDate"
       ",0 finish"
       " FROM SegmentReview"
-      " JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId"
+      " JOIN Segment ON Segment.classroomId=:classroomId"
+      " AND Segment.segmentHash=SegmentReview.segmentHash"
       " WHERE SegmentReview.classroomId=:classroomId"
       " AND SegmentReview.count=:reviewCount"
       " AND SegmentReview.createDate=:startDate"
@@ -287,7 +289,7 @@ abstract class ScheduleDao {
       " SELECT"
       " Segment.classroomId"
       ",Segment.contentSerial"
-      ",SegmentOverallPrg.segmentKeyId"
+      ",SegmentOverallPrg.segmentHash"
       ",0 time"
       ",0 type"
       ",Segment.sort"
@@ -297,7 +299,8 @@ abstract class ScheduleDao {
       ",0 reviewCreateDate"
       ",0 finish"
       " FROM SegmentOverallPrg"
-      " JOIN Segment ON Segment.segmentKeyId=SegmentOverallPrg.segmentKeyId AND Segment.classroomId=:classroomId"
+      " JOIN Segment ON Segment.classroomId=:classroomId"
+      " AND Segment.segmentHash=SegmentOverallPrg.segmentHash"
       " WHERE SegmentOverallPrg.next<=:now"
       " AND SegmentOverallPrg.progress>=:minProgress"
       " ORDER BY SegmentOverallPrg.progress,Segment.sort"
@@ -307,7 +310,7 @@ abstract class ScheduleDao {
   @Query("SELECT"
       " Segment.classroomId"
       ",Segment.contentSerial"
-      ",Segment.segmentKeyId"
+      ",Segment.segmentHash"
       ",0 time"
       ",0 type"
       ",Segment.sort"
@@ -329,21 +332,22 @@ abstract class ScheduleDao {
       "")
   Future<List<SegmentTodayPrg>> scheduleFullCustom(int classroomId, int contentSerial, int lessonIndex, int segmentIndex, int limit);
 
-  @Query('UPDATE SegmentOverallPrg SET progress=:progress,next=:next WHERE segmentKeyId=:segmentKeyId')
-  Future<void> setPrgAndNext4Sop(int segmentKeyId, int progress, Date next);
+  @Query('UPDATE SegmentOverallPrg SET progress=:progress,next=:next WHERE classroomId=:classroomId AND segmentHash=:segmentHash')
+  Future<void> setPrgAndNext4Sop(int classroomId, String segmentHash, int progress, Date next);
 
-  @Query('UPDATE SegmentOverallPrg SET progress=:progress WHERE segmentKeyId=:segmentKeyId')
-  Future<void> setPrg4Sop(int segmentKeyId, int progress);
+  @Query('UPDATE SegmentOverallPrg SET progress=:progress WHERE classroomId=:classroomId AND segmentHash=:segmentHash')
+  Future<void> setPrg4Sop(int classroomId, String segmentHash, int progress);
 
-  @Query("SELECT * FROM SegmentOverallPrg WHERE segmentKeyId=:segmentKeyId")
-  Future<SegmentOverallPrg?> getSegmentOverallPrg(int segmentKeyId);
+  @Query("SELECT * FROM SegmentOverallPrg WHERE classroomId=:classroomId AND segmentHash=:segmentHash")
+  Future<SegmentOverallPrg?> getSegmentOverallPrg(int classroomId, String segmentHash);
 
   @Query("SELECT SegmentOverallPrg.*"
       ",Content.name contentName"
       ",Segment.lessonIndex"
       ",Segment.segmentIndex"
       " FROM Segment"
-      " JOIN SegmentOverallPrg on SegmentOverallPrg.segmentKeyId=Segment.segmentKeyId"
+      " JOIN SegmentOverallPrg ON SegmentOverallPrg.classroomId=Segment.classroomId"
+      " AND SegmentOverallPrg.segmentHash=Segment.segmentHash"
       " JOIN Content ON Content.classroomId=Segment.classroomId AND Content.serial=Segment.contentSerial"
       " WHERE Segment.classroomId=:classroomId"
       " ORDER BY Segment.sort asc")
@@ -358,7 +362,8 @@ abstract class ScheduleDao {
       ",Segment.lessonIndex"
       ",Segment.segmentIndex"
       " FROM SegmentReview"
-      " JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId"
+      " JOIN Segment ON Segment.classroomId=SegmentReview.classroomId"
+      " AND Segment.segmentHash=SegmentReview.segmentHash"
       " JOIN Content ON Content.classroomId=SegmentReview.classroomId AND Content.serial=SegmentReview.contentSerial"
       " WHERE SegmentReview.classroomId=:classroomId"
       " AND SegmentReview.createDate>=:start AND SegmentReview.createDate<=:end"
@@ -368,11 +373,11 @@ abstract class ScheduleDao {
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertSegmentReview(List<SegmentReview> review);
 
-  @Query('UPDATE SegmentReview SET count=:count WHERE createDate=:createDate and `segmentKeyId`=:segmentKeyId')
-  Future<void> setSegmentReviewCount(Date createDate, int segmentKeyId, int count);
+  @Query('UPDATE SegmentReview SET count=:count WHERE createDate=:createDate and classroomId=:classroomId and segmentHash=:segmentHash')
+  Future<void> setSegmentReviewCount(int classroomId, Date createDate, String segmentHash, int count);
 
   @Query("SELECT"
-      " Segment.segmentKeyId"
+      " Segment.segmentHash"
       ",Segment.classroomId"
       ",Segment.contentSerial"
       ",Segment.lessonIndex"
@@ -380,38 +385,40 @@ abstract class ScheduleDao {
       ",Segment.sort sort"
       ",Content.name contentName"
       " FROM Segment"
-      " JOIN Content ON Content.classroomId=Segment.classroomId AND Content.serial=Segment.contentSerial"
-      " WHERE Segment.segmentKeyId=:segmentKeyId")
-  Future<SegmentContentInDb?> getSegmentContent(int segmentKeyId);
+      " JOIN Content ON Content.classroomId=:classroomId AND Content.serial=Segment.contentSerial"
+      " WHERE Segment.classroomId=:classroomId"
+      " AND Segment.segmentHash=:segmentHash")
+  Future<SegmentContentInDb?> getSegmentContent(int classroomId, String segmentHash);
 
   @Query("SELECT"
       " Content.name contentName"
       " FROM SegmentKey"
       " JOIN Content ON Content.classroomId=SegmentKey.classroomId AND Content.serial=SegmentKey.contentSerial"
-      " WHERE SegmentKey.id=:segmentKeyId")
-  Future<String?> getContentName(int segmentKeyId);
+      " WHERE SegmentKey.classroomId=:classroomId"
+      " AND SegmentKey.segmentHash=:segmentHash")
+  Future<String?> getContentName(int classroomId, String segmentHash);
 
-  @Query("SELECT LimitSegment.segmentKeyId"
-      " FROM (SELECT sort,segmentKeyId"
+  @Query("SELECT LimitSegment.segmentHash"
+      " FROM (SELECT sort,segmentHash"
       "  FROM Segment"
       "  WHERE classroomId=:classroomId"
-      "  AND sort<(SELECT Segment.sort FROM Segment WHERE Segment.segmentKeyId=:segmentKeyId)"
+      "  AND sort<(SELECT Segment.sort FROM Segment WHERE Segment.classroomId=:classroomId AND Segment.segmentHash=:segmentHash)"
       "  ORDER BY sort desc"
       "  LIMIT :offset) LimitSegment"
       "  ORDER BY LimitSegment.sort"
       " LIMIT 1")
-  Future<int?> getPrevSegmentKeyIdWithOffset(int classroomId, int segmentKeyId, int offset);
+  Future<String?> getPrevsegmentHashWithOffset(int classroomId, String segmentHash, int offset);
 
-  @Query("SELECT LimitSegment.segmentKeyId"
-      " FROM (SELECT sort,segmentKeyId"
+  @Query("SELECT LimitSegment.segmentHash"
+      " FROM (SELECT sort,segmentHash"
       "  FROM Segment"
       "  WHERE classroomId=:classroomId"
-      "  AND sort>(SELECT Segment.sort FROM Segment WHERE Segment.segmentKeyId=:segmentKeyId)"
+      "  AND sort>(SELECT Segment.sort FROM Segment WHERE Segment.classroomId=:classroomId AND Segment.segmentHash=:segmentHash)"
       "  ORDER BY sort"
       "  LIMIT :offset) LimitSegment"
       "  ORDER BY LimitSegment.sort desc"
       " LIMIT 1")
-  Future<int?> getNextSegmentKeyIdWithOffset(int classroomId, int segmentKeyId, int offset);
+  Future<String?> getNextsegmentHashWithOffset(int classroomId, String segmentHash, int offset);
 
   @Insert(onConflict: OnConflictStrategy.ignore)
   Future<void> insertSegmentKeys(List<SegmentKey> entities);
@@ -429,23 +436,23 @@ abstract class ScheduleDao {
 
   @Query('DELETE FROM Segment'
       ' WHERE Segment.classroomId=:classroomId'
-      ' and Segment.contentSerial=:contentSerial')
+      ' AND Segment.contentSerial=:contentSerial')
   Future<void> deleteSegmentByContentSerial(int classroomId, int contentSerial);
 
-  @Query('DELETE FROM Segment WHERE segmentKeyId=:segmentKeyId')
-  Future<void> deleteSegment(int segmentKeyId);
+  @Query('DELETE FROM Segment WHERE classroomId=:classroomId AND segmentHash=:segmentHash')
+  Future<void> deleteSegment(int classroomId, String segmentHash);
 
-  @Query('DELETE FROM SegmentKey WHERE id=:segmentKeyId')
-  Future<void> deleteSegmentKey(int segmentKeyId);
+  @Query('DELETE FROM SegmentKey WHERE classroomId=:classroomId AND segmentHash=:segmentHash')
+  Future<void> deleteSegmentKey(int classroomId, String segmentHash);
 
-  @Query('DELETE FROM SegmentOverallPrg WHERE segmentKeyId=:segmentKeyId')
-  Future<void> deleteSegmentOverallPrg(int segmentKeyId);
+  @Query('DELETE FROM SegmentOverallPrg WHERE classroomId=:classroomId AND segmentHash=:segmentHash')
+  Future<void> deleteSegmentOverallPrg(int classroomId, String segmentHash);
 
-  @Query('DELETE FROM SegmentReview WHERE segmentKeyId=:segmentKeyId')
-  Future<void> deleteSegmentReview(int segmentKeyId);
+  @Query('DELETE FROM SegmentReview WHERE classroomId=:classroomId AND segmentHash=:segmentHash')
+  Future<void> deleteSegmentReview(int classroomId, String segmentHash);
 
-  @Query('DELETE FROM SegmentTodayPrg WHERE segmentKeyId=:segmentKeyId')
-  Future<void> deleteSegmentTodayPrg(int segmentKeyId);
+  @Query('DELETE FROM SegmentTodayPrg WHERE classroomId=:classroomId AND segmentHash=:segmentHash')
+  Future<void> deleteSegmentTodayPrg(int classroomId, String segmentHash);
 
   @Query('DELETE FROM Segment WHERE classroomId=:classroomId')
   Future<void> deleteSegmentByClassroomId(int classroomId);
@@ -474,13 +481,13 @@ abstract class ScheduleDao {
   Future<void> insertSegmentStats(SegmentStats stats);
 
   @transaction
-  Future<void> deleteBySegmentKeyId(int segmentKeyId) async {
+  Future<void> deleteBysegmentHash(int classroomId, String segmentHash) async {
     await forUpdate();
-    await deleteSegment(segmentKeyId);
-    await deleteSegmentKey(segmentKeyId);
-    await deleteSegmentOverallPrg(segmentKeyId);
-    await deleteSegmentReview(segmentKeyId);
-    await deleteSegmentTodayPrg(segmentKeyId);
+    await deleteSegment(classroomId, segmentHash);
+    await deleteSegmentKey(classroomId, segmentHash);
+    await deleteSegmentOverallPrg(classroomId, segmentHash);
+    await deleteSegmentReview(classroomId, segmentHash);
+    await deleteSegmentTodayPrg(classroomId, segmentHash);
   }
 
   @transaction
@@ -510,33 +517,26 @@ abstract class ScheduleDao {
     }
     // The segmentKey data cant be delete
     List<SegmentKey> segmentKeys = await getSegmentKey(Classroom.curr, contentSerial);
-    Map<String, SegmentKey> keyToSegmentKey = {};
+    Map<String, SegmentKey> hashToSegmentKey = {};
     for (var segmentKey in segmentKeys) {
-      keyToSegmentKey[segmentKey.toStringKey()] = segmentKey;
+      hashToSegmentKey[segmentKey.segmentHash] = segmentKey;
     }
 
     List<SegmentKey> needToInsert = [];
     for (var segmentKey in rawSegmentKeys) {
-      if (!keyToSegmentKey.containsKey(segmentKey.toStringKey())) {
+      if (!hashToSegmentKey.containsKey(segmentKey.segmentHash)) {
         needToInsert.add(segmentKey);
       }
     }
     if (needToInsert.isNotEmpty) {
       await insertSegmentKeys(needToInsert);
       segmentKeys = await getSegmentKey(Classroom.curr, contentSerial);
-      keyToSegmentKey = {};
+      hashToSegmentKey = {};
       for (var segmentKey in segmentKeys) {
-        keyToSegmentKey[segmentKey.toStringKey()] = segmentKey;
+        hashToSegmentKey[segmentKey.toStringKey()] = segmentKey;
       }
     }
     await deleteSegmentByContentSerial(Classroom.curr, contentSerial);
-    for (var i = 0; i < rawSegmentKeys.length; i++) {
-      var rawSegmentKey = rawSegmentKeys[i];
-      var segmentKeyWithId = keyToSegmentKey[rawSegmentKey.toStringKey()];
-      var id = segmentKeyWithId!.id!;
-      segments[i].segmentKeyId = id;
-      segmentOverallPrgs[i].segmentKeyId = id;
-    }
     await insertSegments(segments);
     await insertSegmentOverallPrgs(segmentOverallPrgs);
   }
@@ -706,7 +706,7 @@ abstract class ScheduleDao {
     } else {
       ret = curr.sublist(0, curr.length < config.learnCount ? curr.length : config.learnCount);
     }
-    all.removeWhere((a) => ret.any((b) => a.segmentKeyId == b.segmentKeyId));
+    all.removeWhere((a) => ret.any((b) => a.segmentHash == b.segmentHash));
 
     for (int i = 0; i < ret.length; i++) {
       ret[i].progress = 0;
@@ -737,16 +737,16 @@ abstract class ScheduleDao {
   @transaction
   Future<void> error(SegmentTodayPrg scheduleCurrent) async {
     await forUpdate();
-    var segmentKeyId = scheduleCurrent.segmentKeyId;
+    var segmentHash = scheduleCurrent.segmentHash;
     var now = DateTime.now();
-    await setPrg4Sop(segmentKeyId, 0);
+    await setPrg4Sop(scheduleCurrent.classroomId, segmentHash, 0);
     await setScheduleCurrentWithCache(scheduleCurrent, 0, now);
   }
 
   @transaction
   Future<void> right(SegmentTodayPrg segmentTodayPrg, int? progress, int? nextDayValue, bool record) async {
     await forUpdate();
-    var segmentKeyId = segmentTodayPrg.segmentKeyId;
+    var segmentHash = segmentTodayPrg.segmentHash;
     bool complete = false;
     int? nextProgress;
     TodayPrgType prgType;
@@ -764,7 +764,7 @@ abstract class ScheduleDao {
     } else if (segmentTodayPrg.progress == 0 && DateTime.fromMicrosecondsSinceEpoch(0).compareTo(segmentTodayPrg.viewTime) == 0) {
       complete = true;
       if (prgType == TodayPrgType.learn) {
-        var schedule = await getSegmentOverallPrg(segmentKeyId);
+        var schedule = await getSegmentOverallPrg(segmentTodayPrg.classroomId, segmentHash);
         if (schedule == null) {
           return;
         }
@@ -776,7 +776,7 @@ abstract class ScheduleDao {
     }
 
     var now = DateTime.now();
-    var todayLearnCreateDate = await intKv(Classroom.curr, CrK.todayScheduleCreateDate);
+    var todayLearnCreateDate = await intKv(segmentTodayPrg.classroomId, CrK.todayScheduleCreateDate);
     todayLearnCreateDate ??= Date.from(now).value;
     if (record) {
       int todayNextProgress;
@@ -784,10 +784,10 @@ abstract class ScheduleDao {
         todayNextProgress = maxRepeatTime;
         switch (prgType) {
           case TodayPrgType.learn:
-            await insertSegmentReview([SegmentReview(Date(todayLearnCreateDate), segmentKeyId, Classroom.curr, segmentTodayPrg.contentSerial, 0)]);
+            await insertSegmentReview([SegmentReview(Date(todayLearnCreateDate), segmentTodayPrg.classroomId, segmentHash, segmentTodayPrg.contentSerial, 0)]);
             break;
           case TodayPrgType.review:
-            await setSegmentReviewCount(segmentTodayPrg.reviewCreateDate, segmentKeyId, segmentTodayPrg.reviewCount + 1);
+            await setSegmentReviewCount(segmentTodayPrg.classroomId, segmentTodayPrg.reviewCreateDate, segmentHash, segmentTodayPrg.reviewCount + 1);
           default:
             break;
         }
@@ -795,7 +795,7 @@ abstract class ScheduleDao {
         todayNextProgress = segmentTodayPrg.progress + 1;
       }
       await setScheduleCurrentWithCache(segmentTodayPrg, todayNextProgress, now);
-      await insertSegmentStats(SegmentStats(segmentKeyId, prgType.index, Date(todayLearnCreateDate), now.millisecondsSinceEpoch, Classroom.curr, segmentTodayPrg.contentSerial));
+      await insertSegmentStats(SegmentStats(segmentTodayPrg.classroomId, segmentHash, prgType.index, Date(todayLearnCreateDate), now.millisecondsSinceEpoch, segmentTodayPrg.contentSerial));
     }
 
     if (nextProgress != null) {
@@ -805,7 +805,7 @@ abstract class ScheduleDao {
       } else {
         nextDay = getNextByProgress(Date(todayLearnCreateDate).toDateTime(), nextProgress);
       }
-      await setPrgAndNext4Sop(segmentKeyId, nextProgress, nextDay);
+      await setPrgAndNext4Sop(segmentTodayPrg.classroomId, segmentHash, nextProgress, nextDay);
     }
   }
 
@@ -815,7 +815,8 @@ abstract class ScheduleDao {
       finish = true;
     }
     await setSegmentTodayPrg(
-      segmentTodayPrg.segmentKeyId,
+      segmentTodayPrg.classroomId,
+      segmentTodayPrg.segmentHash,
       segmentTodayPrg.type,
       progress,
       now,
