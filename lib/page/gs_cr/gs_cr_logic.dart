@@ -402,7 +402,7 @@ class GsCrLogic extends GetxController {
     List<SegmentContent> ret = [];
     for (int i = 0; i < segments.length; i++) {
       final segment = segments[i];
-      SegmentContent? segmentContent = await RepeatDocHelp.from(segment.segmentHash);
+      SegmentContent? segmentContent = await RepeatDocHelp.from(segment.segmentKeyId);
       if (segmentContent != null) {
         ret.add(segmentContent);
       }

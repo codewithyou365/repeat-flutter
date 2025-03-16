@@ -126,7 +126,6 @@ class Lesson {
 
 class Segment {
   String content;
-  String hash;
   String tipStart;
   String tipEnd;
   String tip;
@@ -140,7 +139,6 @@ class Segment {
 
   Segment(
     this.content,
-    this.hash,
     this.tipStart,
     this.tipEnd,
     this.tip,
@@ -160,10 +158,8 @@ class Segment {
     String defaultTip,
   ) {
     String content = convert.jsonEncode(json);
-    String hash = Hash.toSha1ForString(content);
     return Segment(
       content,
-      hash,
       json['tipStart'] ?? "",
       json['tipEnd'] ?? "",
       json['tip'] ?? defaultTip,

@@ -50,25 +50,25 @@ class ScheduleHelp {
         var segment = lesson.segment[segmentIndex];
         segmentKeys.add(SegmentKey(
           material.classroomId,
-          segment.hash,
           material.serial,
           lessonIndex,
           segmentIndex,
+          0,
           segment.content,
         ));
         segments.add(entity.Segment(
+          0,
           material.classroomId,
-          segment.hash,
           material.serial,
           lessonIndex,
           segmentIndex,
           //4611686118427387904-(99999*10000000000+99999*100000+99999)
           material.sort * 10000000000 + lessonIndex * 100000 + segmentIndex,
         ));
-        segmentOverallPrgs.add(SegmentOverallPrg(material.classroomId, segment.hash, material.serial, Date.from(now), 0));
+        segmentOverallPrgs.add(SegmentOverallPrg(0, material.classroomId, material.serial, Date.from(now), 0));
       }
     }
-    await Db().db.scheduleDao.importSegment(segmentKeys, segments, segmentOverallPrgs);
+    await Db().db.scheduleDao.importSegment(segmentKeys, segments, segmentOverallPrgs, ['a']);
     return true;
   }
 }

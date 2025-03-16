@@ -18,7 +18,7 @@ class RepeatDocHelp {
   static Map<String, List<MediaSegment>> mediaDocPathToQuestionMediaSegments = {};
   static Map<String, List<MediaSegment>> mediaDocPathToAnswerMediaSegments = {};
 
-  static Map<String, SegmentContent> scheduleKeyToLearnSegment = {};
+  static Map<int, SegmentContent> scheduleKeyToLearnSegment = {};
 
   static clear() {
     indexDocPathToJsonQa = {};
@@ -46,25 +46,25 @@ class RepeatDocHelp {
     mediaDocPathToVideoMaskRatio[mediaDocPath] = ratio;
   }
 
-  static Future<SegmentContent?> from(String segmentHash, {int offset = 0, RxString? err}) async {
+  static Future<SegmentContent?> from(int segmentKeyId, {int offset = 0, RxString? err}) async {
     if (offset < 0) {
-      var hash = await Db().db.scheduleDao.getPrevsegmentHashWithOffset(Classroom.curr, segmentHash, offset.abs());
-      if (hash != null) {
-        segmentHash = hash;
+      var id = await Db().db.scheduleDao.getPrevSegmentKeyIdWithOffset(Classroom.curr, segmentKeyId, offset.abs());
+      if (id != null) {
+        segmentKeyId = id;
       }
     } else if (offset > 0) {
-      var hash = await Db().db.scheduleDao.getNextsegmentHashWithOffset(Classroom.curr, segmentHash, offset.abs());
-      if (hash != null) {
-        segmentHash = hash;
+      var id = await Db().db.scheduleDao.getNextSegmentKeyIdWithOffset(Classroom.curr, segmentKeyId, offset.abs());
+      if (id != null) {
+        segmentKeyId = id;
       }
     }
-    if (scheduleKeyToLearnSegment.containsKey(segmentHash)) {
-      return scheduleKeyToLearnSegment[segmentHash]!;
+    if (scheduleKeyToLearnSegment.containsKey(segmentKeyId)) {
+      return scheduleKeyToLearnSegment[segmentKeyId]!;
     }
-    var retInDb = await Db().db.scheduleDao.getSegmentContent(Classroom.curr, segmentHash);
+    var retInDb = await Db().db.scheduleDao.getSegmentContent(segmentKeyId);
     if (retInDb == null) {
       if (err != null) {
-        var name = await Db().db.scheduleDao.getContentName(Classroom.curr, segmentHash);
+        var name = await Db().db.scheduleDao.getContentName(segmentKeyId);
         err.value = I18nKey.labelDocCantBeFound.trArgs([name ?? '']);
       }
       return null;
@@ -156,7 +156,7 @@ class RepeatDocHelp {
       ret.aMediaSegments = aMediaSegments;
     }
 
-    scheduleKeyToLearnSegment[segmentHash] = ret;
+    scheduleKeyToLearnSegment[segmentKeyId] = ret;
     return ret;
   }
 

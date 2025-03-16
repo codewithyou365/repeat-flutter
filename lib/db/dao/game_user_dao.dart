@@ -56,7 +56,7 @@ abstract class GameUserDao {
       await registerUser(newUser);
       return newUser.token;
     } else {
-      final passwordHash = await Hash.toSha1ForString(password + existingUser.nonce);
+      final passwordHash = Hash.toSha1ForString(password + existingUser.nonce);
       if (existingUser.password != passwordHash) {
         return '';
       }

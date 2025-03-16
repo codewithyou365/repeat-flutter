@@ -8,8 +8,8 @@ class SegmentContentInDb extends Segment {
   final String contentName;
 
   SegmentContentInDb(
+    super.segmentKeyId,
     super.classroomId,
-    super.segmentHash,
     super.contentSerial,
     super.lessonIndex,
     super.segmentIndex,
@@ -35,8 +35,8 @@ class SegmentContent extends SegmentContentInDb {
   var miss = false;
 
   SegmentContent(
+    super.segmentKeyId,
     super.classroomId,
-    super.segmentHash,
     super.contentSerial,
     super.lessonIndex,
     super.segmentIndex,
@@ -46,8 +46,8 @@ class SegmentContent extends SegmentContentInDb {
 
   static SegmentContent from(SegmentContentInDb d) {
     return SegmentContent(
+      d.segmentKeyId,
       d.classroomId,
-      d.segmentHash,
       d.contentSerial,
       d.lessonIndex,
       d.segmentIndex,

@@ -154,7 +154,7 @@ abstract class GameDao {
       game.id,
       gameUserId,
       game.time,
-      game.segmentHash,
+      game.segmentKeyId,
       game.classroomId,
       game.contentSerial,
       game.lessonIndex,

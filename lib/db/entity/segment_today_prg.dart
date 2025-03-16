@@ -12,7 +12,7 @@ enum TodayPrgType {
 
 @Entity(
   indices: [
-    Index(value: ['classroomId', 'segmentHash', 'type'], unique: true),
+    Index(value: ['classroomId', 'segmentKeyId', 'type'], unique: true),
     Index(value: ['classroomId', 'sort']),
     Index(value: ['classroomId', 'contentSerial']),
   ],
@@ -22,7 +22,7 @@ class SegmentTodayPrg {
   final int? id;
   final int classroomId;
   final int contentSerial;
-  final String segmentHash;
+  final int segmentKeyId;
   int time;
   int type;
   final int sort;
@@ -35,7 +35,7 @@ class SegmentTodayPrg {
   SegmentTodayPrg(
     this.classroomId,
     this.contentSerial,
-    this.segmentHash,
+    this.segmentKeyId,
     this.time,
     this.type,
     this.sort,
@@ -48,7 +48,7 @@ class SegmentTodayPrg {
   });
 
   static SegmentTodayPrg empty() {
-    return SegmentTodayPrg(0, 0, '', 0, TodayPrgType.none.index, 0, 0, DateTime.now(), 0, Date(0), false);
+    return SegmentTodayPrg(0, 0, 0, 0, TodayPrgType.none.index, 0, 0, DateTime.now(), 0, Date(0), false);
   }
 
   static void setType(List<SegmentTodayPrg> list, TodayPrgType todayPrgType, int index, int limit) {
@@ -108,7 +108,7 @@ class SegmentTodayPrg {
       SegmentTodayPrg clonedSegment = SegmentTodayPrg(
         segment.classroomId,
         segment.contentSerial,
-        segment.segmentHash,
+        segment.segmentKeyId,
         segment.time,
         segment.type,
         segment.sort,

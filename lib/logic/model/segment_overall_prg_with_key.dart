@@ -9,7 +9,7 @@ class SegmentOverallPrgWithKey extends SegmentOverallPrg {
   int segmentIndex;
 
   SegmentOverallPrgWithKey(
-    super.segmentHash,
+    super.segmentKeyId,
     super.classroomId,
     super.contentSerial,
     super.next,
