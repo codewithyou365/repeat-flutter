@@ -12,10 +12,10 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class ScheduleHelp {
   static Future<bool> addContentToScheduleByContentSerial(int contentSerial) async {
-    return await Db().db.scheduleDao.importSegment(contentSerial: contentSerial);
+    return await Db().db.scheduleDao.importSegment(0, contentSerial);
   }
 
   static Future<bool> addContentToSchedule(int contentId) async {
-    return await Db().db.scheduleDao.importSegment(contentId: contentId);
+    return await Db().db.scheduleDao.importSegment(contentId, 0);
   }
 }

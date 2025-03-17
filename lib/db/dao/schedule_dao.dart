@@ -612,10 +612,10 @@ abstract class ScheduleDao {
 
   /// for manager
   @transaction
-  Future<bool> importSegment({
-    int contentId = 0,
-    int contentSerial = 0,
-  }) async {
+  Future<bool> importSegment(
+    int contentId,
+    int contentSerial,
+  ) async {
     await forUpdate();
     List<SegmentKey> newSegmentKeys = [];
     List<Segment> segments = [];
