@@ -5,7 +5,9 @@ import 'dart:convert' as convert;
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
+import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/db/entity/segment.dart';
 import 'package:repeat_flutter/db/entity/segment_key.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
@@ -13,10 +15,13 @@ import 'package:repeat_flutter/db/entity/segment_review.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/model/repeat_doc.dart' as rd;
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/logic/model/segment_overall_prg_with_key.dart';
 import 'package:repeat_flutter/logic/model/segment_review_with_key.dart';
 import 'package:repeat_flutter/db/entity/segment_stats.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 // ebbinghaus learning config
 class ElConfig {
@@ -200,6 +205,15 @@ abstract class ScheduleDao {
     ],
     [],
   );
+
+  @Query('SELECT * FROM Content WHERE id=:id')
+  Future<Content?> getContentById(int id);
+
+  @Query('SELECT * FROM Content WHERE classroomId=:classroomId and serial=:serial')
+  Future<Content?> getContentBySerial(int classroomId, int serial);
+
+  @Query('SELECT * FROM Doc WHERE id=:id')
+  Future<Doc?> getDocById(int id);
 
   @Query('SELECT * FROM Lock where id=1 for update')
   Future<void> forUpdate();
@@ -496,46 +510,152 @@ abstract class ScheduleDao {
     await deleteSegmentTodayPrgByClassroomId(classroomId);
   }
 
+  Map<String, String>? checkAndGenPos2Key(rd.RepeatDoc kv) {
+    Map<String, bool> key2Exist = {};
+    Map<String, String> pos2Key = {};
+    for (var lessonIndex = 0; lessonIndex < kv.lesson.length; lessonIndex++) {
+      var lesson = kv.lesson[lessonIndex];
+      for (var segmentIndex = 0; segmentIndex < lesson.segment.length; segmentIndex++) {
+        var segment = lesson.segment[segmentIndex];
+        if (segment.a.isEmpty) {
+          Snackbar.show(I18nKey.labelSegmentNeedToContainAnswer.tr);
+          return null;
+        }
+        var key = "";
+        if (segment.key.isNotEmpty) {
+          key = segment.key;
+        }
+        if (key.isEmpty) {
+          key = segment.a;
+        }
+        if (key2Exist.containsKey(key)) {
+          Snackbar.show(I18nKey.labelSegmentKeyDuplicated.trArgs([key]));
+          return null;
+        }
+        key2Exist[key] = true;
+        pos2Key['$lessonIndex,$segmentIndex'] = key;
+      }
+    }
+    return pos2Key;
+  }
+
+  Future<bool> prepareImportSegment(
+    List<SegmentKey> segmentKeys,
+    List<Segment> segments,
+    List<SegmentOverallPrg> segmentOverallPrgs, {
+    int contentId = 0,
+    int contentSerial = 0,
+  }) async {
+    Content? content;
+    if (contentId != 0) {
+      content = await getContentById(contentId);
+    } else if (contentSerial != 0) {
+      content = await getContentBySerial(Classroom.curr, contentSerial);
+    }
+    if (content == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["content"]));
+      return false;
+    }
+    var doc = await getDocById(content.docId);
+    if (doc == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["doc"]));
+      return false;
+    }
+    var kv = await rd.RepeatDoc.fromPath(DocPath.getRelativeIndexPath(content.serial));
+    if (kv == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["kv"]));
+      return false;
+    }
+    if (kv.lesson.length >= 100000) {
+      Snackbar.show(I18nKey.labelTooMuchData.trArgs(["lesson"]));
+      return false;
+    }
+    for (var d in kv.lesson) {
+      if (d.segment.length >= 100000) {
+        Snackbar.show(I18nKey.labelTooMuchData.trArgs(["segment"]));
+        return false;
+      }
+    }
+
+    Map<String, String>? pos2Key = checkAndGenPos2Key(kv);
+    if (pos2Key == null) {
+      return false;
+    }
+    var now = DateTime.now();
+    for (var lessonIndex = 0; lessonIndex < kv.lesson.length; lessonIndex++) {
+      var lesson = kv.lesson[lessonIndex];
+      for (var segmentIndex = 0; segmentIndex < lesson.segment.length; segmentIndex++) {
+        var segment = lesson.segment[segmentIndex];
+        segmentKeys.add(SegmentKey(
+          content.classroomId,
+          content.serial,
+          lessonIndex,
+          segmentIndex,
+          0,
+          pos2Key['$lessonIndex,$segmentIndex']!,
+          segment.content,
+        ));
+        segments.add(Segment(
+          0,
+          content.classroomId,
+          content.serial,
+          lessonIndex,
+          segmentIndex,
+          //4611686118427387904-(99999*10000000000+99999*100000+99999)
+          content.sort * 10000000000 + lessonIndex * 100000 + segmentIndex,
+        ));
+        segmentOverallPrgs.add(SegmentOverallPrg(0, content.classroomId, content.serial, Date.from(now), 0));
+      }
+    }
+    return true;
+  }
+
   /// for manager
   @transaction
-  Future<void> importSegment(
-    List<SegmentKey> newSegmentKeys,
-    List<Segment> segments,
-    List<SegmentOverallPrg> segmentOverallPrgs,
-    List<String> compareFields,
-  ) async {
+  Future<bool> importSegment({
+    int contentId = 0,
+    int contentSerial = 0,
+  }) async {
     await forUpdate();
-    int contentSerial = 0;
-    for (var segmentKey in newSegmentKeys) {
-      if (segmentKey.classroomId != Classroom.curr) {
-        return;
+    List<SegmentKey> newSegmentKeys = [];
+    List<Segment> segments = [];
+    List<SegmentOverallPrg> segmentOverallPrgs = [];
+    bool success = await prepareImportSegment(
+      newSegmentKeys,
+      segments,
+      segmentOverallPrgs,
+      contentId: contentId,
+      contentSerial: contentSerial,
+    );
+    if (!success) {
+      return false;
+    }
+    if (contentSerial == 0) {
+      for (var segmentKey in newSegmentKeys) {
+        contentSerial = segmentKey.contentSerial;
+        break;
       }
-      contentSerial = segmentKey.contentSerial;
     }
-    // TODO checking the answer field is unique.
-    // TODO fix the fields.
 
-    // The segmentKey data cant be delete
     List<SegmentKey> oldSegmentKeys = await getSegmentKey(Classroom.curr, contentSerial);
-    // TODO get max the version from the db.
-    var version = 0;
-    if (oldSegmentKeys.isNotEmpty) {
-      version = oldSegmentKeys[0].version+1;
-    }
+    var maxVersion = 0;
     Map<String, SegmentKey> keyToOldSegmentKey = {};
     for (var oldSegmentKey in oldSegmentKeys) {
-      keyToOldSegmentKey[getKey(oldSegmentKey.segmentContent, compareFields)] = oldSegmentKey;
+      if (oldSegmentKey.version > maxVersion) {
+        maxVersion = oldSegmentKey.version;
+      }
+      keyToOldSegmentKey[oldSegmentKey.key] = oldSegmentKey;
     }
 
     List<SegmentKey> needToInsert = [];
     List<SegmentKey> needToModify = [];
     for (var newSegmentKey in newSegmentKeys) {
-      newSegmentKey.version = version;
-      SegmentKey? oldSegmentKey = keyToOldSegmentKey[getKey(newSegmentKey.segmentContent, compareFields)];
+      newSegmentKey.version = maxVersion;
+      SegmentKey? oldSegmentKey = keyToOldSegmentKey[newSegmentKey.key];
       if (oldSegmentKey == null) {
         needToInsert.add(newSegmentKey);
       } else {
-        if (getKey(oldSegmentKey.segmentContent, compareFields) == getKey(newSegmentKey.segmentContent, compareFields)) {
+        if (oldSegmentKey.key == newSegmentKey.key) {
           if (oldSegmentKey.lessonIndex != newSegmentKey.lessonIndex || oldSegmentKey.segmentIndex != newSegmentKey.segmentIndex) {
             var modifyOne = newSegmentKey.clone();
             modifyOne.id = oldSegmentKey.id;
@@ -554,35 +674,20 @@ abstract class ScheduleDao {
       oldSegmentKeys = await getSegmentKey(Classroom.curr, contentSerial);
       keyToOldSegmentKey = {};
       for (var oldSegmentKey in oldSegmentKeys) {
-        keyToOldSegmentKey[getKey(oldSegmentKey.segmentContent, compareFields)] = oldSegmentKey;
+        keyToOldSegmentKey[oldSegmentKey.key] = oldSegmentKey;
       }
     }
     await deleteSegmentByContentSerial(Classroom.curr, contentSerial);
     for (var i = 0; i < newSegmentKeys.length; i++) {
       SegmentKey? newSegmentKey = newSegmentKeys[i];
-      SegmentKey? oldSegmentKey = keyToOldSegmentKey[getKey(newSegmentKey.segmentContent, compareFields)];
+      SegmentKey? oldSegmentKey = keyToOldSegmentKey[newSegmentKey.key];
       var id = oldSegmentKey!.id!;
       segments[i].segmentKeyId = id;
       segmentOverallPrgs[i].segmentKeyId = id;
     }
     await insertSegments(segments);
     await insertSegmentOverallPrgs(segmentOverallPrgs);
-  }
-
-  String getKey(String json, List<String> field) {
-    if (field.isEmpty) {
-      return json;
-    }
-    Map<String, dynamic> decodedJson = convert.jsonDecode(json);
-
-    List<String> values = [];
-    for (var key in field) {
-      if (decodedJson.containsKey(key)) {
-        values.add(decodedJson[key].toString());
-      }
-    }
-
-    return values.join(',');
+    return true;
   }
 
   @transaction

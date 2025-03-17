@@ -683,7 +683,7 @@ class GsCrRepeatLogic extends GetxController {
     if (type == EditType.cut) {
       int? count = await Db().db.scheduleDao.lessonCount(Classroom.curr, state.segment.contentSerial, state.segment.lessonIndex);
       if (count == null || count < outArg.segmentCount + 1) {
-        var ret = await ScheduleHelp.addMaterialToScheduleByContentSerial(state.segment.contentSerial);
+        var ret = await ScheduleHelp.addContentToScheduleByContentSerial(state.segment.contentSerial);
         if (ret == false) {
           return;
         }

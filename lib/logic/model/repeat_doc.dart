@@ -125,6 +125,7 @@ class Lesson {
 }
 
 class Segment {
+  String key;
   String content;
   String tipStart;
   String tipEnd;
@@ -138,6 +139,7 @@ class Segment {
   String w;
 
   Segment(
+    this.key,
     this.content,
     this.tipStart,
     this.tipEnd,
@@ -159,6 +161,7 @@ class Segment {
   ) {
     String content = convert.jsonEncode(json);
     return Segment(
+      json['key'] ?? "",
       content,
       json['tipStart'] ?? "",
       json['tipEnd'] ?? "",

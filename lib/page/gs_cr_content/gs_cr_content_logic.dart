@@ -244,12 +244,15 @@ class GsCrContentLogic extends GetxController {
     Nav.back();
   }
 
-  Future<void> schedule(int contentId, int indexJsonDocId, String url) async {
+  Future<bool> schedule(int contentId, int indexJsonDocId, String url) async {
+    var success = await ScheduleHelp.addContentToSchedule(contentId);
+    if (!success) {
+      return false;
+    }
     await Db().db.contentDao.updateFinish(contentId, indexJsonDocId, url);
-    var content = await Db().db.contentDao.getContentById(contentId);
-    await ScheduleHelp.addContentToSchedule(content!);
     Get.find<GsCrLogic>().init();
     init();
     RepeatDocHelp.clear();
+    return true;
   }
 }

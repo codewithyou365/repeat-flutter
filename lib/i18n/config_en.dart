@@ -126,9 +126,9 @@ class ConfigEn extends Config {
     put(I18nKey.labelQrCodeContentCopiedToClipboard, "QR code content copied to clipboard");
     put(I18nKey.labelCopiedToClipboard, "Copied to clipboard");
     put(I18nKey.labelShouldLinkToTheContentBeAdded, "Should the link to the content be added?");
-    put(I18nKey.labelTooMuchData, "Too much data!");
+    put(I18nKey.labelTooMuchData, "Too much data! %s");
     put(I18nKey.labelDataDuplication, "Data duplication!");
-    put(I18nKey.labelDataAnomaly, "Data anomaly!");
+    put(I18nKey.labelDataAnomaly, "Data anomaly! %s");
     put(I18nKey.labelDataAnomalyWithArg, "Data anomaly! %s");
     put(I18nKey.labelRemoteImport, "Remote import");
     put(I18nKey.labelLocalZipImport, "Local ZIP import");
@@ -170,6 +170,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelShare, "Share");
     put(I18nKey.labelCalendar, "Calendar");
     put(I18nKey.labelCopyTemplateCount, "Copy Template Count");
+    put(I18nKey.labelSegmentNeedToContainAnswer, "Segment Need To Contain Answer");
+    put(I18nKey.labelSegmentKeyDuplicated, "Segment Key Duplicated: %s");
     put(I18nKey.btnStart, "Start");
     put(I18nKey.btnAddSchedule, "Add Schedule");
     put(I18nKey.btnConfigSettings, "Config Settings");

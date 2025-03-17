@@ -169,6 +169,8 @@ enum I18nKey {
   labelShare,
   labelCalendar,
   labelCopyTemplateCount,
+  labelSegmentNeedToContainAnswer,
+  labelSegmentKeyDuplicated,
   btnStart,
   btnStop,
   btnAddSchedule,

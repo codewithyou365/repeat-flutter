@@ -126,9 +126,9 @@ class ConfigZh extends Config {
     put(I18nKey.labelQrCodeContentCopiedToClipboard, "二维码内容已拷贝到剪切板中");
     put(I18nKey.labelCopiedToClipboard, "已拷贝到剪切板中");
     put(I18nKey.labelShouldLinkToTheContentBeAdded, "是否添加改内容链接");
-    put(I18nKey.labelTooMuchData, "数据过多!");
+    put(I18nKey.labelTooMuchData, "数据过多! %s");
     put(I18nKey.labelDataDuplication, "数据重复!");
-    put(I18nKey.labelDataAnomaly, "数据异常!");
+    put(I18nKey.labelDataAnomaly, "数据异常! %s");
     put(I18nKey.labelDataAnomalyWithArg, "数据异常! %s");
     put(I18nKey.labelRemoteImport, "远程导入");
     put(I18nKey.labelLocalZipImport, "本地ZIP导入");
@@ -170,6 +170,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelShare, "分享");
     put(I18nKey.labelCalendar, "日历");
     put(I18nKey.labelCopyTemplateCount, "复制模版数量");
+    put(I18nKey.labelSegmentNeedToContainAnswer, "段落需要包含答案字段");
+    put(I18nKey.labelSegmentKeyDuplicated, "段落KEY重复： %s");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");
     put(I18nKey.btnConfigSettings, "配置设置");

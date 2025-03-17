@@ -82,7 +82,6 @@ class GsCrRepeatState {
         ContentArg(ContentType.question, TipLevel.none, true),
         ContentArg(ContentType.questionMedia, TipLevel.none, null),
         ContentArg(ContentType.answer, TipLevel.tip2, true),
-        ContentArg(ContentType.answerMedia, TipLevel.none, null),
         ContentArg(ContentType.tip, TipLevel.tip1, true),
       ],
       [

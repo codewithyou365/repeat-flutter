@@ -126,7 +126,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Segment` (`segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentKey` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `version` INTEGER NOT NULL, `segmentContent` TEXT NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `SegmentKey` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `version` INTEGER NOT NULL, `key` TEXT NOT NULL, `segmentContent` TEXT NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentNote` (`segmentKeyId` INTEGER NOT NULL, `note` TEXT NOT NULL, PRIMARY KEY (`segmentKeyId`))');
         await database.execute(
@@ -1270,6 +1270,7 @@ class _$ScheduleDao extends ScheduleDao {
                   'lessonIndex': item.lessonIndex,
                   'segmentIndex': item.segmentIndex,
                   'version': item.version,
+                  'key': item.key,
                   'segmentContent': item.segmentContent
                 }),
         _segmentInsertionAdapter = InsertionAdapter(
@@ -1315,6 +1316,7 @@ class _$ScheduleDao extends ScheduleDao {
                   'lessonIndex': item.lessonIndex,
                   'segmentIndex': item.segmentIndex,
                   'version': item.version,
+                  'key': item.key,
                   'segmentContent': item.segmentContent
                 }),
         _crKvDeletionAdapter = DeletionAdapter(
@@ -1665,7 +1667,7 @@ class _$ScheduleDao extends ScheduleDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT SegmentKey.* FROM SegmentKey WHERE SegmentKey.classroomId=?1 and SegmentKey.contentSerial=?2',
-        mapper: (Map<String, Object?> row) => SegmentKey(row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['version'] as int, row['segmentContent'] as String, id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => SegmentKey(row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['version'] as int, row['key'] as String, row['segmentContent'] as String, id: row['id'] as int?),
         arguments: [classroomId, contentSerial]);
   }
 
@@ -1851,18 +1853,16 @@ class _$ScheduleDao extends ScheduleDao {
     List<SegmentKey> newSegmentKeys,
     List<Segment> segments,
     List<SegmentOverallPrg> segmentOverallPrgs,
-    List<String> compareFields,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.importSegment(
-          newSegmentKeys, segments, segmentOverallPrgs, compareFields);
+      await super.importSegment(newSegmentKeys, segments, segmentOverallPrgs);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        await transactionDatabase.scheduleDao.importSegment(
-            newSegmentKeys, segments, segmentOverallPrgs, compareFields);
+        await transactionDatabase.scheduleDao
+            .importSegment(newSegmentKeys, segments, segmentOverallPrgs);
       });
     }
   }
