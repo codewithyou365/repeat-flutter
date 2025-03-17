@@ -1354,6 +1354,54 @@ class _$ScheduleDao extends ScheduleDao {
   final DeletionAdapter<CrKv> _crKvDeletionAdapter;
 
   @override
+  Future<Content?> getContentById(int id) async {
+    return _queryAdapter.query('SELECT * FROM Content WHERE id=?1',
+        mapper: (Map<String, Object?> row) => Content(
+            row['classroomId'] as int,
+            row['serial'] as int,
+            row['name'] as String,
+            row['desc'] as String,
+            row['docId'] as int,
+            row['url'] as String,
+            row['sort'] as int,
+            (row['hide'] as int) != 0,
+            id: row['id'] as int?),
+        arguments: [id]);
+  }
+
+  @override
+  Future<Content?> getContentBySerial(
+    int classroomId,
+    int serial,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT * FROM Content WHERE classroomId=?1 and serial=?2',
+        mapper: (Map<String, Object?> row) => Content(
+            row['classroomId'] as int,
+            row['serial'] as int,
+            row['name'] as String,
+            row['desc'] as String,
+            row['docId'] as int,
+            row['url'] as String,
+            row['sort'] as int,
+            (row['hide'] as int) != 0,
+            id: row['id'] as int?),
+        arguments: [classroomId, serial]);
+  }
+
+  @override
+  Future<Doc?> getDocById(int id) async {
+    return _queryAdapter.query('SELECT * FROM Doc WHERE id=?1',
+        mapper: (Map<String, Object?> row) => Doc(
+            row['url'] as String, row['path'] as String, row['hash'] as String,
+            id: row['id'] as int?,
+            msg: row['msg'] as String,
+            count: row['count'] as int,
+            total: row['total'] as int),
+        arguments: [id]);
+  }
+
+  @override
   Future<void> forUpdate() async {
     await _queryAdapter
         .queryNoReturn('SELECT * FROM Lock where id=1 for update');
@@ -1849,20 +1897,19 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> importSegment(
-    List<SegmentKey> newSegmentKeys,
-    List<Segment> segments,
-    List<SegmentOverallPrg> segmentOverallPrgs,
+  Future<bool> importSegment(
+    int contentId,
+    int contentSerial,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.importSegment(newSegmentKeys, segments, segmentOverallPrgs);
+      return super.importSegment(contentId, contentSerial);
     } else {
-      await (database as sqflite.Database)
-          .transaction<void>((transaction) async {
+      return (database as sqflite.Database)
+          .transaction<bool>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        await transactionDatabase.scheduleDao
-            .importSegment(newSegmentKeys, segments, segmentOverallPrgs);
+        return transactionDatabase.scheduleDao
+            .importSegment(contentId, contentSerial);
       });
     }
   }
