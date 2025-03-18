@@ -59,6 +59,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelImporting, "Importing...");
     put(I18nKey.labelExporting, "Exporting...");
     put(I18nKey.labelExecuting, "Executing...");
+    put(I18nKey.labelDeleting, "Deleting...");
     put(I18nKey.labelSaving, "Saving...");
     put(I18nKey.labelSelectDirectoryToSave, "Select a directory to save %s");
     put(I18nKey.labelFileSaved, "The file has been saved.");

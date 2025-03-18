@@ -59,6 +59,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelImporting, "导入中...");
     put(I18nKey.labelExporting, "导出中...");
     put(I18nKey.labelExecuting, "执行中...");
+    put(I18nKey.labelDeleting, "删除中...");
     put(I18nKey.labelSaving, "保存中...");
     put(I18nKey.labelSelectDirectoryToSave, "选择一个目录进行保存 %s");
     put(I18nKey.labelFileSaved, "文件已保存");

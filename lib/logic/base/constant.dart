@@ -52,6 +52,11 @@ enum MatchType {
   single,
   all;
 }
+enum ImportResult {
+  success,
+  error,
+  successButSomeSegmentsAreSurplus,
+}
 
 class Download {
   static const String userAgent = "B20240321";

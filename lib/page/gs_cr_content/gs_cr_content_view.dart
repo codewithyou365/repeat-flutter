@@ -97,18 +97,25 @@ class GsCrContentPage extends StatelessWidget {
     return PopupMenuButton<String>(
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16.w),
-        child: Container(
-          color: model.docId == 0 ? Colors.red : Colors.green,
-          padding: EdgeInsets.only(top: 60.h, bottom: 60.h),
-          alignment: Alignment.center,
-          child: Column(
-            children: [
-              Text(
+        child: Stack(
+          alignment: Alignment.topRight,
+          children: [
+            Container(
+              color: model.docId == 0 ? Colors.red : Colors.green,
+              padding: const EdgeInsets.only(top: 70, bottom: 70),
+              alignment: Alignment.center,
+              child: Text(
                 model.name,
                 style: TextStyle(fontSize: 50.sp),
               ),
-            ],
-          ),
+            ),
+            if (model.warning)
+              IconButton(
+                onPressed: () {},
+                color: Colors.yellow,
+                icon: const Icon(Icons.warning),
+              ),
+          ],
         ),
       ),
       itemBuilder: (BuildContext context) => menus,

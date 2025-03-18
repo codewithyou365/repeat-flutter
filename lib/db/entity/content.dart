@@ -25,6 +25,7 @@ class Content {
   String url;
   int sort;
   bool hide;
+  bool warning;
 
   Content(
     this.classroomId,
@@ -34,8 +35,8 @@ class Content {
     this.docId,
     this.url,
     this.sort,
-    this.hide, {
+    this.hide,
+    this.warning, {
     this.id,
   });
-
 }

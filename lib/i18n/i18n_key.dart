@@ -57,6 +57,7 @@ enum I18nKey {
   labelImporting,
   labelExporting,
   labelExecuting,
+  labelDeleting,
   labelSaving,
   labelSelectDirectoryToSave,
   labelFileSaved,

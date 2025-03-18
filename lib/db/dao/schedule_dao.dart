@@ -18,6 +18,7 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart' as rd;
 import 'package:repeat_flutter/logic/model/segment_content.dart';
+import 'package:repeat_flutter/logic/model/segment_key_id.dart';
 import 'package:repeat_flutter/logic/model/segment_overall_prg_with_key.dart';
 import 'package:repeat_flutter/logic/model/segment_review_with_key.dart';
 import 'package:repeat_flutter/db/entity/segment_stats.dart';
@@ -433,6 +434,12 @@ abstract class ScheduleDao {
   @Update()
   Future<void> updateSegmentKeys(List<SegmentKey> entities);
 
+  @Query('SELECT SegmentKey.id'
+      ',SegmentKey.key FROM SegmentKey'
+      ' WHERE SegmentKey.classroomId=:classroomId'
+      ' and SegmentKey.contentSerial=:contentSerial')
+  Future<List<SegmentKeyId>> getSegmentKeyId(int classroomId, int contentSerial);
+
   @Query('SELECT SegmentKey.* FROM SegmentKey'
       ' WHERE SegmentKey.classroomId=:classroomId'
       ' and SegmentKey.contentSerial=:contentSerial')
@@ -510,6 +517,7 @@ abstract class ScheduleDao {
     await deleteSegmentTodayPrgByClassroomId(classroomId);
   }
 
+  /// for content
   Map<String, String>? checkAndGenPos2Key(rd.RepeatDoc kv) {
     Map<String, bool> key2Exist = {};
     Map<String, String> pos2Key = {};
@@ -610,9 +618,8 @@ abstract class ScheduleDao {
     return true;
   }
 
-  /// for manager
   @transaction
-  Future<bool> importSegment(
+  Future<int> importSegment(
     int contentId,
     int contentSerial,
   ) async {
@@ -628,7 +635,7 @@ abstract class ScheduleDao {
       contentSerial: contentSerial,
     );
     if (!success) {
-      return false;
+      return ImportResult.error.index;
     }
     if (contentSerial == 0) {
       for (var segmentKey in newSegmentKeys) {
@@ -638,56 +645,59 @@ abstract class ScheduleDao {
     }
 
     List<SegmentKey> oldSegmentKeys = await getSegmentKey(Classroom.curr, contentSerial);
-    var maxVersion = 0;
+    var maxVersion = -1;
     Map<String, SegmentKey> keyToOldSegmentKey = {};
+    Map<String, int> keyToId = {};
     for (var oldSegmentKey in oldSegmentKeys) {
       if (oldSegmentKey.version > maxVersion) {
         maxVersion = oldSegmentKey.version;
       }
       keyToOldSegmentKey[oldSegmentKey.key] = oldSegmentKey;
+      keyToId[oldSegmentKey.key] = oldSegmentKey.id!;
     }
+    var nextVersion = maxVersion + 1;
 
     List<SegmentKey> needToInsert = [];
     List<SegmentKey> needToModify = [];
     for (var newSegmentKey in newSegmentKeys) {
-      newSegmentKey.version = maxVersion;
+      newSegmentKey.version = nextVersion;
       SegmentKey? oldSegmentKey = keyToOldSegmentKey[newSegmentKey.key];
       if (oldSegmentKey == null) {
         needToInsert.add(newSegmentKey);
-      } else {
-        if (oldSegmentKey.key == newSegmentKey.key) {
-          if (oldSegmentKey.lessonIndex != newSegmentKey.lessonIndex || oldSegmentKey.segmentIndex != newSegmentKey.segmentIndex) {
-            var modifyOne = newSegmentKey.clone();
-            modifyOne.id = oldSegmentKey.id;
-            needToModify.add(modifyOne);
-          }
-        }
+      } else if (oldSegmentKey.lessonIndex != newSegmentKey.lessonIndex || //
+          oldSegmentKey.segmentIndex != newSegmentKey.segmentIndex || //
+          oldSegmentKey.segmentContent != newSegmentKey.segmentContent) {
+        var modifyOne = newSegmentKey.clone();
+        modifyOne.id = oldSegmentKey.id;
+        needToModify.add(modifyOne);
       }
     }
-    if (needToInsert.isNotEmpty) {
-      await insertSegmentKeys(needToInsert);
-    }
+
     if (needToModify.isNotEmpty) {
       await updateSegmentKeys(needToModify);
     }
-    if (needToInsert.isNotEmpty || needToModify.isNotEmpty) {
-      oldSegmentKeys = await getSegmentKey(Classroom.curr, contentSerial);
-      keyToOldSegmentKey = {};
-      for (var oldSegmentKey in oldSegmentKeys) {
-        keyToOldSegmentKey[oldSegmentKey.key] = oldSegmentKey;
+    if (needToInsert.isNotEmpty) {
+      await insertSegmentKeys(needToInsert);
+      var keyIds = await getSegmentKeyId(Classroom.curr, contentSerial);
+      keyToId = {};
+      for (var keyId in keyIds) {
+        keyToId[keyId.key] = keyId.id;
       }
     }
+
     await deleteSegmentByContentSerial(Classroom.curr, contentSerial);
     for (var i = 0; i < newSegmentKeys.length; i++) {
       SegmentKey? newSegmentKey = newSegmentKeys[i];
-      SegmentKey? oldSegmentKey = keyToOldSegmentKey[newSegmentKey.key];
-      var id = oldSegmentKey!.id!;
+      int id = keyToId[newSegmentKey.key]!;
       segments[i].segmentKeyId = id;
       segmentOverallPrgs[i].segmentKeyId = id;
     }
     await insertSegments(segments);
     await insertSegmentOverallPrgs(segmentOverallPrgs);
-    return true;
+    if (segments.length < keyToId.length) {
+      return ImportResult.successButSomeSegmentsAreSurplus.index;
+    }
+    return ImportResult.success.index;
   }
 
   @transaction

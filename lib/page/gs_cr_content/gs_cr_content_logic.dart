@@ -47,10 +47,12 @@ class GsCrContentLogic extends GetxController {
   }
 
   delete(int contentId, int contentSerial) async {
-    state.list.removeWhere((element) => identical(element.id, contentId));
-    await Db().db.scheduleDao.hideContentAndDeleteSegment(contentId, contentSerial);
-    Get.find<GsCrLogic>().init();
-    update([GsCrContentLogic.id]);
+    showOverlay(() async {
+      state.list.removeWhere((element) => identical(element.id, contentId));
+      await Db().db.scheduleDao.hideContentAndDeleteSegment(contentId, contentSerial);
+      Get.find<GsCrLogic>().init();
+      update([GsCrContentLogic.id]);
+    }, I18nKey.labelDeleting.tr);
   }
 
   addByZip(int contentId, int contentSerial) async {
@@ -245,11 +247,12 @@ class GsCrContentLogic extends GetxController {
   }
 
   Future<bool> schedule(int contentId, int indexJsonDocId, String url) async {
-    var success = await ScheduleHelp.addContentToSchedule(contentId);
-    if (!success) {
+    var ir = await ScheduleHelp.addContentToSchedule(contentId);
+    if (ir == ImportResult.error) {
       return false;
     }
-    await Db().db.contentDao.updateFinish(contentId, indexJsonDocId, url);
+    var warning = ir == ImportResult.successButSomeSegmentsAreSurplus;
+    await Db().db.contentDao.updateFinish(contentId, indexJsonDocId, url, warning);
     Get.find<GsCrLogic>().init();
     init();
     RepeatDocHelp.clear();

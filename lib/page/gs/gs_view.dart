@@ -82,15 +82,11 @@ class GsPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.w),
         child: Container(
           color: Colors.blue,
-          padding: EdgeInsets.only(top: 60.h, bottom: 60.h),
+          padding: const EdgeInsets.only(top: 70, bottom: 70),
           alignment: Alignment.center,
-          child: Column(
-            children: [
-              Text(
-                model.name,
-                style: TextStyle(fontSize: 50.sp),
-              ),
-            ],
+          child: Text(
+            model.name,
+            style: TextStyle(fontSize: 50.sp),
           ),
         ),
       ),
