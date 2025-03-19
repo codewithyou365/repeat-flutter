@@ -1400,6 +1400,28 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
+  Future<void> updateContent(
+    int id,
+    int docId,
+    String url,
+    bool warning,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE Content set docId=?2,url=?3,warning=?4 WHERE Content.id=?1',
+        arguments: [id, docId, url, warning ? 1 : 0]);
+  }
+
+  @override
+  Future<void> updateContentWarning(
+    int id,
+    bool warning,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE Content set warning=?2 WHERE Content.id=?1',
+        arguments: [id, warning ? 1 : 0]);
+  }
+
+  @override
   Future<Doc?> getDocById(int id) async {
     return _queryAdapter.query('SELECT * FROM Doc WHERE id=?1',
         mapper: (Map<String, Object?> row) => Doc(
@@ -1921,16 +1943,18 @@ class _$ScheduleDao extends ScheduleDao {
   Future<int> importSegment(
     int contentId,
     int contentSerial,
+    int? indexJsonDocId,
+    String? url,
   ) async {
     if (database is sqflite.Transaction) {
-      return super.importSegment(contentId, contentSerial);
+      return super.importSegment(contentId, contentSerial, indexJsonDocId, url);
     } else {
       return (database as sqflite.Database)
           .transaction<int>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         return transactionDatabase.scheduleDao
-            .importSegment(contentId, contentSerial);
+            .importSegment(contentId, contentSerial, indexJsonDocId, url);
       });
     }
   }

@@ -247,12 +247,10 @@ class GsCrContentLogic extends GetxController {
   }
 
   Future<bool> schedule(int contentId, int indexJsonDocId, String url) async {
-    var ir = await ScheduleHelp.addContentToSchedule(contentId);
-    if (ir == ImportResult.error) {
+    var result = await ScheduleHelp.addContentToSchedule(contentId, indexJsonDocId, url);
+    if (!result) {
       return false;
     }
-    var warning = ir == ImportResult.successButSomeSegmentsAreSurplus;
-    await Db().db.contentDao.updateFinish(contentId, indexJsonDocId, url, warning);
     Get.find<GsCrLogic>().init();
     init();
     RepeatDocHelp.clear();

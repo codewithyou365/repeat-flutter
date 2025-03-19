@@ -213,6 +213,12 @@ abstract class ScheduleDao {
   @Query('SELECT * FROM Content WHERE classroomId=:classroomId and serial=:serial')
   Future<Content?> getContentBySerial(int classroomId, int serial);
 
+  @Query('UPDATE Content set docId=:docId,url=:url,warning=:warning WHERE Content.id=:id')
+  Future<void> updateContent(int id, int docId, String url, bool warning);
+
+  @Query('UPDATE Content set warning=:warning WHERE Content.id=:id')
+  Future<void> updateContentWarning(int id, bool warning);
+
   @Query('SELECT * FROM Doc WHERE id=:id')
   Future<Doc?> getDocById(int id);
 
@@ -553,6 +559,8 @@ abstract class ScheduleDao {
     List<SegmentOverallPrg> segmentOverallPrgs, {
     int contentId = 0,
     int contentSerial = 0,
+    int? indexJsonDocId,
+    String? url,
   }) async {
     Content? content;
     if (contentId != 0) {
@@ -564,7 +572,7 @@ abstract class ScheduleDao {
       Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["content"]));
       return false;
     }
-    var doc = await getDocById(content.docId);
+    var doc = await getDocById(indexJsonDocId ?? content.docId);
     if (doc == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["doc"]));
       return false;
@@ -622,6 +630,8 @@ abstract class ScheduleDao {
   Future<int> importSegment(
     int contentId,
     int contentSerial,
+    int? indexJsonDocId,
+    String? url,
   ) async {
     await forUpdate();
     List<SegmentKey> newSegmentKeys = [];
@@ -633,6 +643,8 @@ abstract class ScheduleDao {
       segmentOverallPrgs,
       contentId: contentId,
       contentSerial: contentSerial,
+      indexJsonDocId: indexJsonDocId,
+      url: url,
     );
     if (!success) {
       return ImportResult.error.index;
@@ -694,10 +706,20 @@ abstract class ScheduleDao {
     }
     await insertSegments(segments);
     await insertSegmentOverallPrgs(segmentOverallPrgs);
+    var warning = false;
     if (segments.length < keyToId.length) {
-      return ImportResult.successButSomeSegmentsAreSurplus.index;
+      warning = true;
     }
-    return ImportResult.success.index;
+    if (indexJsonDocId != null && url != null) {
+      await updateContent(contentId, indexJsonDocId, url, warning);
+    } else {
+      await updateContentWarning(contentId, warning);
+    }
+    if (warning) {
+      return ImportResult.successButSomeSegmentsAreSurplus.index;
+    } else {
+      return ImportResult.success.index;
+    }
   }
 
   @transaction
