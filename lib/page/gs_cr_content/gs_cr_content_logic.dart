@@ -10,6 +10,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
+import 'package:repeat_flutter/db/entity/segment_key.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/download.dart';
@@ -19,7 +20,9 @@ import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
+import 'package:repeat_flutter/page/gs_cr_content/widget/warning_segment.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
+import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'gs_cr_content_state.dart';
@@ -27,6 +30,7 @@ import 'gs_cr_content_state.dart';
 class GsCrContentLogic extends GetxController {
   static const String id = "GsCrContentLogic";
   final GsCrContentState state = GsCrContentState();
+  final WarningSegment warningSegment = WarningSegment();
   static RegExp reg = RegExp(r'^[0-9A-Z]+$');
 
   @override
@@ -52,6 +56,13 @@ class GsCrContentLogic extends GetxController {
       await Db().db.scheduleDao.hideContentAndDeleteSegment(contentId, contentSerial);
       Get.find<GsCrLogic>().init();
       update([GsCrContentLogic.id]);
+    }, I18nKey.labelDeleting.tr);
+  }
+
+  showWarning(int contentId, int contentSerial) async {
+    showOverlay(() async {
+      List<SegmentKey> sk = await Db().db.scheduleDao.getSurplusSegmentKey(contentId, contentSerial);
+      warningSegment.show(sk);
     }, I18nKey.labelDeleting.tr);
   }
 

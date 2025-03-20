@@ -173,6 +173,9 @@ class ConfigEn extends Config {
     put(I18nKey.labelCopyTemplateCount, "Copy Template Count");
     put(I18nKey.labelSegmentNeedToContainAnswer, "Segment Need To Contain Answer");
     put(I18nKey.labelSegmentKeyDuplicated, "Segment Key Duplicated: %s");
+    put(I18nKey.labelKey, "Key");
+    put(I18nKey.labelContent, "Content");
+    put(I18nKey.labelPosition, "Position");
     put(I18nKey.btnStart, "Start");
     put(I18nKey.btnAddSchedule, "Add Schedule");
     put(I18nKey.btnConfigSettings, "Config Settings");

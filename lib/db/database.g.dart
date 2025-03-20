@@ -1757,7 +1757,18 @@ class _$ScheduleDao extends ScheduleDao {
     int contentSerial,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentKey.* FROM SegmentKey WHERE SegmentKey.classroomId=?1 and SegmentKey.contentSerial=?2',
+        'SELECT SegmentKey.* FROM SegmentKey WHERE SegmentKey.classroomId=?1 AND SegmentKey.contentSerial=?2',
+        mapper: (Map<String, Object?> row) => SegmentKey(row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['version'] as int, row['key'] as String, row['segmentContent'] as String, id: row['id'] as int?),
+        arguments: [classroomId, contentSerial]);
+  }
+
+  @override
+  Future<List<SegmentKey>> getSurplusSegmentKey(
+    int classroomId,
+    int contentSerial,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT SegmentKey.* FROM SegmentKey LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id WHERE Segment.segmentKeyId is null AND SegmentKey.classroomId=?1 AND SegmentKey.contentSerial=?2',
         mapper: (Map<String, Object?> row) => SegmentKey(row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['version'] as int, row['key'] as String, row['segmentContent'] as String, id: row['id'] as int?),
         arguments: [classroomId, contentSerial]);
   }

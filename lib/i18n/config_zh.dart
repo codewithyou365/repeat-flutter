@@ -173,6 +173,9 @@ class ConfigZh extends Config {
     put(I18nKey.labelCopyTemplateCount, "复制模版数量");
     put(I18nKey.labelSegmentNeedToContainAnswer, "段落需要包含答案字段");
     put(I18nKey.labelSegmentKeyDuplicated, "段落KEY重复： %s");
+    put(I18nKey.labelKey, "键");
+    put(I18nKey.labelContent, "内容");
+    put(I18nKey.labelPosition, "位置");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");
     put(I18nKey.btnConfigSettings, "配置设置");

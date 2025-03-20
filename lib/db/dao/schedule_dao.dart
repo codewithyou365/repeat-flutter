@@ -448,8 +448,15 @@ abstract class ScheduleDao {
 
   @Query('SELECT SegmentKey.* FROM SegmentKey'
       ' WHERE SegmentKey.classroomId=:classroomId'
-      ' and SegmentKey.contentSerial=:contentSerial')
+      ' AND SegmentKey.contentSerial=:contentSerial')
   Future<List<SegmentKey>> getSegmentKey(int classroomId, int contentSerial);
+
+  @Query('SELECT SegmentKey.* FROM SegmentKey'
+      ' LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id'
+      ' WHERE Segment.segmentKeyId is null'
+      ' AND SegmentKey.classroomId=:classroomId'
+      ' AND SegmentKey.contentSerial=:contentSerial')
+  Future<List<SegmentKey>> getSurplusSegmentKey(int classroomId, int contentSerial);
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertSegments(List<Segment> entities);

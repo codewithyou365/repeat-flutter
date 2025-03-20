@@ -111,7 +111,9 @@ class GsCrContentPage extends StatelessWidget {
             ),
             if (model.warning)
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  logic.showWarning(model.id!, model.serial);
+                },
                 color: Colors.yellow,
                 icon: const Icon(Icons.warning),
               ),

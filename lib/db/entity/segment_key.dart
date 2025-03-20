@@ -32,8 +32,8 @@ class SegmentKey {
     this.id,
   });
 
-  String toPos() {
-    return '$classroomId|$contentSerial|$lessonIndex|$segmentIndex';
+  String toShortPos() {
+    return '$lessonIndex|$segmentIndex';
   }
 
   SegmentKey clone() {
