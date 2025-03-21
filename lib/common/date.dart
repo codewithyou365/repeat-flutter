@@ -35,6 +35,15 @@ class Date {
     return '$year-$month-$day';
   }
 
+  String formatYm() {
+    String stringValue = _value.toString();
+    var md = stringValue.substring(stringValue.length - 4);
+    int year = int.parse(stringValue.substring(0, stringValue.length - 4));
+    int month = int.parse(md.substring(0, 2));
+
+    return '$year-$month';
+  }
+
   DateTime toDateTime() {
     String stringValue = _value.toString();
     var md = stringValue.substring(stringValue.length - 4);

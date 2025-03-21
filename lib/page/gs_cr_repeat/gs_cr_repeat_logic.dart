@@ -239,7 +239,7 @@ class GsCrRepeatLogic extends GetxController {
               return '$i';
             }),
             progress,
-            (value) {
+            changed: (value) {
               progress.value = value;
               nextDay.value = ScheduleDao.getNextByProgress(DateTime.now(), value).value;
             },

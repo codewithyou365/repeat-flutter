@@ -6,6 +6,7 @@ import 'package:repeat_flutter/common/date.dart';
   indices: [
     Index(value: ['classroomId', 'contentSerial']),
     Index(value: ['classroomId', 'createDate']),
+    Index(value: ['classroomId', 'createTime']),
   ],
 )
 class SegmentStats {

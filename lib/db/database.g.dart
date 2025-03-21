@@ -188,6 +188,8 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE INDEX `index_SegmentStats_classroomId_createDate` ON `SegmentStats` (`classroomId`, `createDate`)');
         await database.execute(
+            'CREATE INDEX `index_SegmentStats_classroomId_createTime` ON `SegmentStats` (`classroomId`, `createTime`)');
+        await database.execute(
             'CREATE INDEX `index_Game_classroomId_contentSerial_lessonIndex_segmentIndex` ON `Game` (`classroomId`, `contentSerial`, `lessonIndex`, `segmentIndex`)');
         await database.execute(
             'CREATE INDEX `index_Game_segmentKeyId` ON `Game` (`segmentKeyId`)');
@@ -1763,13 +1765,24 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<List<SegmentKey>> getSurplusSegmentKey(
+  Future<List<SegmentShow>> getAllSegment(
     int classroomId,
     int contentSerial,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentKey.* FROM SegmentKey LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id WHERE Segment.segmentKeyId is null AND SegmentKey.classroomId=?1 AND SegmentKey.contentSerial=?2',
-        mapper: (Map<String, Object?> row) => SegmentKey(row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['version'] as int, row['key'] as String, row['segmentContent'] as String, id: row['id'] as int?),
+        'SELECT SegmentKey.key,SegmentKey.segmentContent,SegmentKey.lessonIndex,SegmentKey.segmentIndex,SegmentOverallPrg.next,SegmentOverallPrg.progress,Segment.segmentKeyId is null missing FROM SegmentKey LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id AND SegmentKey.classroomId=?1 AND SegmentKey.contentSerial=?2',
+        mapper: (Map<String, Object?> row) => SegmentShow(row['key'] as String, row['segmentContent'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, (row['missing'] as int) != 0),
+        arguments: [classroomId, contentSerial]);
+  }
+
+  @override
+  Future<List<SegmentShow>> getSegment(
+    int classroomId,
+    int contentSerial,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT SegmentKey.key,SegmentKey.segmentContent,Segment.lessonIndex,Segment.segmentIndex,SegmentOverallPrg.next,SegmentOverallPrg.progress,Segment.segmentKeyId is null missing FROM Segment JOIN SegmentKey ON SegmentKey.id=Segment.segmentKeyId JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=Segment.segmentKeyId WHERE Segment.classroomId=?1 AND Segment.contentSerial=?2',
+        mapper: (Map<String, Object?> row) => SegmentShow(row['key'] as String, row['segmentContent'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, (row['missing'] as int) != 0),
         arguments: [classroomId, contentSerial]);
   }
 

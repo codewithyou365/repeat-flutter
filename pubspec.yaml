@@ -55,6 +55,7 @@ dependencies:
   logger: ^2.5.0
   mustache_template: ^2.0.0
   table_calendar: ^3.2.0
+  scrollable_positioned_list: ^0.3.8
 dev_dependencies:
   floor_generator: ^1.4.2
   build_runner: ^2.1.2

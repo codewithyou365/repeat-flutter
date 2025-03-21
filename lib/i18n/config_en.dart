@@ -176,6 +176,14 @@ class ConfigEn extends Config {
     put(I18nKey.labelKey, "Key");
     put(I18nKey.labelContent, "Content");
     put(I18nKey.labelPosition, "Position");
+    put(I18nKey.labelSortBy, "Sort by");
+    put(I18nKey.labelSortProgressAsc, "Progress (Asc)");
+    put(I18nKey.labelSortProgressDesc, "Progress (Desc)");
+    put(I18nKey.labelSortPositionAsc, "Position (Asc)");
+    put(I18nKey.labelSortPositionDesc, "Position (Desc)");
+    put(I18nKey.labelSortNextLearnDateAsc, "Next Learning Date (Asc)");
+    put(I18nKey.labelSortNextLearnDateDesc, "Next Learning Date (Desc)");
+    put(I18nKey.labelFindUnnecessarySegments, "Find Unnecessary Segments");
     put(I18nKey.btnStart, "Start");
     put(I18nKey.btnAddSchedule, "Add Schedule");
     put(I18nKey.btnConfigSettings, "Config Settings");

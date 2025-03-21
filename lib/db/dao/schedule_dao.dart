@@ -22,6 +22,7 @@ import 'package:repeat_flutter/logic/model/segment_key_id.dart';
 import 'package:repeat_flutter/logic/model/segment_overall_prg_with_key.dart';
 import 'package:repeat_flutter/logic/model/segment_review_with_key.dart';
 import 'package:repeat_flutter/db/entity/segment_stats.dart';
+import 'package:repeat_flutter/logic/model/segment_show.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 // ebbinghaus learning config
@@ -451,12 +452,33 @@ abstract class ScheduleDao {
       ' AND SegmentKey.contentSerial=:contentSerial')
   Future<List<SegmentKey>> getSegmentKey(int classroomId, int contentSerial);
 
-  @Query('SELECT SegmentKey.* FROM SegmentKey'
+  @Query('SELECT SegmentKey.key'
+      ',SegmentKey.segmentContent'
+      ',SegmentKey.lessonIndex'
+      ',SegmentKey.segmentIndex'
+      ',SegmentOverallPrg.next'
+      ',SegmentOverallPrg.progress'
+      ',Segment.segmentKeyId is null missing'
+      ' FROM SegmentKey'
       ' LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id'
-      ' WHERE Segment.segmentKeyId is null'
+      ' LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id'
       ' AND SegmentKey.classroomId=:classroomId'
       ' AND SegmentKey.contentSerial=:contentSerial')
-  Future<List<SegmentKey>> getSurplusSegmentKey(int classroomId, int contentSerial);
+  Future<List<SegmentShow>> getAllSegment(int classroomId, int contentSerial);
+
+  @Query('SELECT SegmentKey.key'
+      ',SegmentKey.segmentContent'
+      ',Segment.lessonIndex'
+      ',Segment.segmentIndex'
+      ',SegmentOverallPrg.next'
+      ',SegmentOverallPrg.progress'
+      ',Segment.segmentKeyId is null missing'
+      ' FROM Segment'
+      ' JOIN SegmentKey ON SegmentKey.id=Segment.segmentKeyId'
+      ' JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=Segment.segmentKeyId'
+      ' WHERE Segment.classroomId=:classroomId'
+      ' AND Segment.contentSerial=:contentSerial')
+  Future<List<SegmentShow>> getSegment(int classroomId, int contentSerial);
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertSegments(List<Segment> entities);

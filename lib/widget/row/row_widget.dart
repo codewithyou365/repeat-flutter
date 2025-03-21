@@ -157,7 +157,7 @@ class RowWidget {
     );
   }
 
-  static Widget buildCupertinoPicker(String title, List<String> options, RxInt initialValue, [ValueChanged<int>? changed]) {
+  static Widget buildCupertinoPicker(String title, List<String> options, RxInt initialValue, {ValueChanged<int>? changed, double? pickWidth}) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(paddingHorizontal, 0, 0, 0),
       child: SizedBox(
@@ -170,7 +170,7 @@ class RowWidget {
             ),
             const Spacer(),
             SizedBox(
-              width: 80.w,
+              width: pickWidth ?? 80.w,
               height: 64,
               child: CupertinoPicker(
                 scrollController: FixedExtentScrollController(initialItem: initialValue.value),
@@ -231,6 +231,25 @@ class RowWidget {
             Obx(() {
               return Switch(value: value.value, onChanged: set != null ? (v) => set(v) : (v) => {value.value = v});
             }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Widget buildWidgetsWithTitle(String title, List<Widget> buttons) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
+      child: SizedBox(
+        height: rowHeight,
+        child: Row(
+          children: [
+            Text(
+              title,
+              style: const TextStyle(fontSize: titleFontSize),
+            ),
+            const Spacer(),
+            ...buttons,
           ],
         ),
       ),

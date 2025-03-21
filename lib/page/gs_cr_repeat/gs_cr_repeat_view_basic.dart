@@ -344,7 +344,7 @@ class GsCrRepeatViewBasic {
                     I18nKey.labelMatchType.tr,
                     logic.getAllMatchType(),
                     state.matchType,
-                    logic.setMatchType,
+                    changed: logic.setMatchType,
                   );
                 }),
                 RowWidget.buildDividerWithoutColor(),

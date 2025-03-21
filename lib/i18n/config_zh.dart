@@ -176,6 +176,14 @@ class ConfigZh extends Config {
     put(I18nKey.labelKey, "键");
     put(I18nKey.labelContent, "内容");
     put(I18nKey.labelPosition, "位置");
+    put(I18nKey.labelSortBy, "排序方式");
+    put(I18nKey.labelSortProgressAsc, "进度 (升序)");
+    put(I18nKey.labelSortProgressDesc, "进度 (降序)");
+    put(I18nKey.labelSortPositionAsc, "位置 (升序)");
+    put(I18nKey.labelSortPositionDesc, "位置 (降序)");
+    put(I18nKey.labelSortNextLearnDateAsc, "下次学习时间 (升序)");
+    put(I18nKey.labelSortNextLearnDateDesc, "下次学习时间 (降序)");
+    put(I18nKey.labelFindUnnecessarySegments, "查找多余段落");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");
     put(I18nKey.btnConfigSettings, "配置设置");

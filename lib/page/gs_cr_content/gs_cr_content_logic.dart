@@ -15,12 +15,13 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
+import 'package:repeat_flutter/logic/model/segment_show.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
-import 'package:repeat_flutter/page/gs_cr_content/widget/warning_segment.dart';
+import 'package:repeat_flutter/logic/widget/segment_show_logic.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -30,7 +31,7 @@ import 'gs_cr_content_state.dart';
 class GsCrContentLogic extends GetxController {
   static const String id = "GsCrContentLogic";
   final GsCrContentState state = GsCrContentState();
-  final WarningSegment warningSegment = WarningSegment();
+  late SegmentShowLogic segmentShowLogic = SegmentShowLogic<GsCrContentLogic>(this);
   static RegExp reg = RegExp(r'^[0-9A-Z]+$');
 
   @override
@@ -60,10 +61,10 @@ class GsCrContentLogic extends GetxController {
   }
 
   showWarning(int contentId, int contentSerial) async {
-    showOverlay(() async {
-      List<SegmentKey> sk = await Db().db.scheduleDao.getSurplusSegmentKey(contentId, contentSerial);
-      warningSegment.show(sk);
-    }, I18nKey.labelDeleting.tr);
+    showTransparentOverlay(() async {
+      List<SegmentShow> segmentShow = await Db().db.scheduleDao.getAllSegment(contentId, contentSerial);
+      segmentShowLogic.show(segmentShow);
+    });
   }
 
   addByZip(int contentId, int contentSerial) async {

@@ -37,6 +37,7 @@ import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/logic/model/segment_key_id.dart';
 import 'package:repeat_flutter/logic/model/segment_overall_prg_with_key.dart';
 import 'package:repeat_flutter/logic/model/segment_review_with_key.dart';
+import 'package:repeat_flutter/logic/model/segment_show.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 
 import 'dao/base_dao.dart';
@@ -53,6 +54,7 @@ part 'database.g.dart'; // the generated code will be there
   Segment,
   SegmentKey,
   SegmentKeyId,
+  SegmentShow,
   SegmentNote,
   SegmentOverallPrg,
   SegmentOverallPrgWithKey,
