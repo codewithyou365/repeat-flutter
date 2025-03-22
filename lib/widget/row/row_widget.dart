@@ -191,6 +191,75 @@ class RowWidget {
     );
   }
 
+  static Widget buildSearch(RxString value, {VoidCallback? onClose, VoidCallback? onSearch}) {
+    final TextEditingController controller = TextEditingController(text: value.value);
+    final FocusNode focusNode = FocusNode();
+
+    controller.addListener(() {
+      value.value = controller.text;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      focusNode.requestFocus();
+    });
+
+    return SizedBox(
+      height: rowHeight,
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: onClose,
+            icon: const Icon(Icons.close_rounded),
+          ),
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(Get.context!).secondaryHeaderColor,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: TextField(
+                controller: controller,
+                focusNode: focusNode,
+                textAlignVertical: TextAlignVertical.center,
+                onSubmitted: (_) {
+                  if (onSearch != null) {
+                    onSearch();
+                    focusNode.requestFocus();
+                  }
+                },
+                decoration: InputDecoration(
+                  hintText: I18nKey.labelSearch.tr,
+                  isCollapsed: true,
+                  contentPadding: const EdgeInsets.only(bottom: 3),
+                  border: InputBorder.none,
+                  suffix: Obx(() {
+                    return value.value.isNotEmpty
+                        ? GestureDetector(
+                            child: const Text("×", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                            onTap: () {
+                              value.value = '';
+                              if (onSearch != null) {
+                                onSearch();
+                              }
+                              controller.clear();
+                            },
+                          )
+                        : const SizedBox(height: 24);
+                  }),
+                ),
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: onSearch,
+            icon: const Icon(Icons.search_rounded),
+          ),
+        ],
+      ),
+    );
+  }
+
   static Widget buildText(String title, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),

@@ -7,10 +7,10 @@ class Sheet {
   static const double paddingVertical = 20;
   static final Logger logger = Logger();
 
-  static Future<T?> showBottomSheet<T>(BuildContext context, Widget w, {double? rate, GestureTapCallback? onTapBlack}) {
+  static Future<T?> showBottomSheet<T>(BuildContext context, Widget w, {double? rate, double? height, GestureTapCallback? onTapBlack}) {
     final Size screenSize = MediaQuery.of(context).size;
     rate ??= 2 / 3;
-
+    height ??= screenSize.height * rate - MediaQuery.of(context).padding.top;
     return showModalBottomSheet<T>(
       context: context,
       isScrollControlled: true,
@@ -18,7 +18,7 @@ class Sheet {
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return Column(
-          mainAxisSize: MainAxisSize.min, // Prevents unnecessary expansion
+          mainAxisSize: MainAxisSize.min,
           children: [
             GestureDetector(
               onTap: () {
@@ -30,13 +30,13 @@ class Sheet {
               },
               child: Container(
                 width: screenSize.width,
-                height: screenSize.height * (1 - rate!),
+                height: screenSize.height - height!,
                 color: Colors.transparent,
               ),
             ),
             Container(
               width: screenSize.width,
-              height: screenSize.height * rate,
+              height: height,
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
@@ -52,8 +52,10 @@ class Sheet {
     );
   }
 
-  static Future<T?> withHeaderAndBody<T>(BuildContext context, Widget header, Widget body, {double? rate, GestureTapCallback? onTapBlack}) {
+  static Future<T?> withHeaderAndBody<T>(BuildContext context, Widget header, Widget body, {double? rate, double? height, GestureTapCallback? onTapBlack}) {
+    final Size screenSize = MediaQuery.of(context).size;
     rate ??= 2 / 3;
+    height ??= screenSize.height * rate - MediaQuery.of(context).padding.top;
     GlobalKey? headerKey = header.key as GlobalKey<State<StatefulWidget>>?;
     if (headerKey == null) {
       logger.e("Error: header widget must have a GlobalKey");
@@ -63,9 +65,9 @@ class Sheet {
       context,
       Column(children: [
         header,
-        SheetBody(headerKey, rate, body),
+        SheetBody(headerKey, screenSize.width, height, body),
       ]),
-      rate: rate,
+      height: height,
       onTapBlack: onTapBlack,
     );
   }
@@ -73,12 +75,14 @@ class Sheet {
 
 class SheetBody extends StatefulWidget {
   final GlobalKey topColumn;
-  final double rate;
+  final double totalWidth;
+  final double totalHeight;
   final Widget child;
 
   const SheetBody(
     this.topColumn,
-    this.rate,
+    this.totalWidth,
+    this.totalHeight,
     this.child, {
     Key? key,
   }) : super(key: key);
@@ -92,12 +96,10 @@ class SheetBodyState extends State<SheetBody> {
 
   @override
   Widget build(BuildContext context) {
-    var screenSize = MediaQuery.of(context).size;
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final RenderBox? renderBox = widget.topColumn.currentContext?.findRenderObject() as RenderBox?;
       if (renderBox != null) {
-        final height = screenSize.height * widget.rate - renderBox.size.height - Sheet.paddingVertical * 2;
+        final height = widget.totalHeight - renderBox.size.height - Sheet.paddingVertical * 2;
         if (height != viewHeight) {
           setState(() {
             viewHeight = height;
@@ -106,7 +108,7 @@ class SheetBodyState extends State<SheetBody> {
       }
     });
     return SizedBox(
-      width: screenSize.width,
+      width: widget.totalWidth,
       height: viewHeight,
       child: widget.child,
     );

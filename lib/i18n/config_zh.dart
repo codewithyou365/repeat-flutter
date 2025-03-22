@@ -184,6 +184,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelSortNextLearnDateAsc, "下次学习时间 (升序)");
     put(I18nKey.labelSortNextLearnDateDesc, "下次学习时间 (降序)");
     put(I18nKey.labelFindUnnecessarySegments, "查找多余段落");
+    put(I18nKey.labelSearch, "搜索...");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");
     put(I18nKey.btnConfigSettings, "配置设置");
