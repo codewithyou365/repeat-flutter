@@ -191,7 +191,7 @@ class RowWidget {
     );
   }
 
-  static Widget buildSearch(RxString value, {VoidCallback? onClose, VoidCallback? onSearch}) {
+  static Widget buildSearch(RxString value, {Widget? prefix, VoidCallback? onClose, VoidCallback? onSearch}) {
     final TextEditingController controller = TextEditingController(text: value.value);
     final FocusNode focusNode = FocusNode();
 
@@ -211,6 +211,7 @@ class RowWidget {
             onPressed: onClose,
             icon: const Icon(Icons.close_rounded),
           ),
+          if (prefix != null) prefix,
           Expanded(
             child: Container(
               decoration: BoxDecoration(

@@ -52,7 +52,7 @@ class Sheet {
     );
   }
 
-  static Future<T?> withHeaderAndBody<T>(BuildContext context, Widget header, Widget body, {double? rate, double? height, GestureTapCallback? onTapBlack}) {
+  static Future<T?> withHeaderAndBody<T>(BuildContext context, Widget header, Widget body, {double? rate, double? height, GestureTapCallback? onTapBlack, GlobalKey<SheetBodyState>? sheetBodyKey}) {
     final Size screenSize = MediaQuery.of(context).size;
     rate ??= 2 / 3;
     height ??= screenSize.height * rate - MediaQuery.of(context).padding.top;
@@ -65,7 +65,7 @@ class Sheet {
       context,
       Column(children: [
         header,
-        SheetBody(headerKey, screenSize.width, height, body),
+        SheetBody(headerKey, screenSize.width, height, body,key: sheetBodyKey),
       ]),
       height: height,
       onTapBlack: onTapBlack,
@@ -93,6 +93,12 @@ class SheetBody extends StatefulWidget {
 
 class SheetBodyState extends State<SheetBody> {
   double viewHeight = 50;
+
+  void refresh() {
+    setState(() {
+      viewHeight = 50;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
