@@ -14,19 +14,57 @@ class SegmentShowLogic<T extends GetxController> {
 
   final T parentLogic;
 
-  int missingSegmentOffset = -1;
-  List<int> missingSegmentIndex = [];
-
   SegmentShowLogic(this.parentLogic);
 
-  refreshMissingSegmentIndex(List<SegmentShow> segmentShow) {
-    missingSegmentIndex = [];
+  void collectDataFromSegments(
+    List<int> missingSegmentIndex,
+    List<SegmentShow> segmentShow, {
+    List<String>? contentName,
+    List<int>? lesson,
+    List<int>? progress,
+    List<int>? nextMonth,
+  }) {
+    if (contentName != null) {
+      contentName.add(I18nKey.labelAll.tr);
+    }
+    if (lesson != null) {
+      lesson.add(-1);
+    }
+    if (progress != null) {
+      progress.add(-1);
+    }
+    if (nextMonth != null) {
+      nextMonth.add(-1);
+    }
+
+    missingSegmentIndex.clear();
     for (int i = 0; i < segmentShow.length; i++) {
-      if (segmentShow[i].missing) {
+      var v = segmentShow[i];
+      if (v.missing) {
         missingSegmentIndex.add(i);
+        if (contentName != null) {
+          if (!contentName.contains(v.contentName)) {
+            contentName.add(v.contentName);
+          }
+        }
+      }
+      if (lesson != null) {
+        if (!lesson.contains(v.lessonIndex)) {
+          lesson.add(v.lessonIndex);
+        }
+      }
+      if (progress != null) {
+        if (!progress.contains(v.progress)) {
+          progress.add(v.progress);
+        }
+      }
+      if (nextMonth != null) {
+        int month = v.next.value ~/ 100;
+        if (!nextMonth.contains(month)) {
+          nextMonth.add(month);
+        }
       }
     }
-    parentLogic.update([SegmentShowLogic.headerId]);
   }
 
   sort(List<SegmentShow> segmentShow, I18nKey key) {
@@ -66,19 +104,70 @@ class SegmentShowLogic<T extends GetxController> {
     }
   }
 
-  double getBodyViewHeight(double baseBodyViewHeight) {
+  double getBodyViewHeight(List<int> missingSegmentIndex, double baseBodyViewHeight) {
     if (missingSegmentIndex.isNotEmpty) {
-      return baseBodyViewHeight - RowWidget.rowHeight;
+      return baseBodyViewHeight - RowWidget.rowHeight - RowWidget.dividerHeight;
     } else {
       return baseBodyViewHeight;
     }
   }
 
   show(List<SegmentShow> originalSegmentShow) {
+    // for search and controls
     RxString search = RxString("");
+    RxBool showSearchDetailPanel = false.obs;
+    final TextEditingController controller = TextEditingController(text: search.value);
+    final focusNode = FocusNode();
+    focusNode.addListener(() {
+      if (focusNode.hasFocus) {
+        showSearchDetailPanel.value = true;
+      } else {
+        showSearchDetailPanel.value = false;
+      }
+    });
+
+    // for collect search data, and missing segment
+    int missingSegmentOffset = -1;
+    List<int> missingSegmentIndex = [];
+    List<String> contentNameOptions = [];
+    List<int> lesson = [];
+    List<int> progress = [];
+    List<int> nextMonth = [];
+    collectDataFromSegments(
+      missingSegmentIndex,
+      contentName: contentNameOptions,
+      lesson: lesson,
+      progress: progress,
+      nextMonth: nextMonth,
+      originalSegmentShow,
+    );
+    RxInt contentNameSelect = 0.obs;
+    RxInt lessonSelect = 0.obs;
+    RxInt progressSelect = 0.obs;
+    RxInt nextMonthSelect = 0.obs;
+    List<String> lessonOptions = lesson.map((k) {
+      if (k == -1) {
+        return I18nKey.labelAll.tr;
+      }
+      return '${k + 1}';
+    }).toList();
+    List<String> progressOptions = progress.map((k) {
+      if (k == -1) {
+        return I18nKey.labelAll.tr;
+      }
+      return k.toString();
+    }).toList();
+    List<String> nextMonthOptions = nextMonth.map((k) {
+      if (k == -1) {
+        return I18nKey.labelAll.tr;
+      }
+      return '${k.toString().substring(0, 4)}-${k.toString().substring(4, 6)}';
+    }).toList();
+    final ItemScrollController itemScrollController = ItemScrollController();
+    final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
+
+    // for sorting and content
     List<SegmentShow> segmentShow = List.from(originalSegmentShow);
-    final GlobalKey topColumn = GlobalKey();
-    double bodyViewHeight = 0;
     RxInt selectedSortIndex = 0.obs;
     List<I18nKey> sortOptionKeys = [
       I18nKey.labelSortPositionAsc,
@@ -88,55 +177,64 @@ class SegmentShowLogic<T extends GetxController> {
       I18nKey.labelSortNextLearnDateAsc,
       I18nKey.labelSortNextLearnDateDesc,
     ];
-
     List<String> sortOptions = sortOptionKeys.map((key) => key.tr).toList();
     sort(segmentShow, sortOptionKeys[selectedSortIndex.value]);
-    refreshMissingSegmentIndex(segmentShow);
-    final ItemScrollController itemScrollController = ItemScrollController();
-    final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
 
+    // for height
     var mediaQueryData = MediaQuery.of(Get.context!);
+    double bodyViewHeight = 0;
     final Size screenSize = mediaQueryData.size;
     final totalHeight = screenSize.height - mediaQueryData.padding.top;
-    final baseBodyViewHeight = totalHeight - 2 * RowWidget.rowHeight - 2 * 16 - Sheet.paddingVertical * 2;
-    bodyViewHeight = getBodyViewHeight(baseBodyViewHeight);
-    RxBool extendSearch = false.obs;
+    final baseBodyViewHeight = totalHeight - RowWidget.rowHeight - RowWidget.dividerHeight - Sheet.paddingVertical * 2;
+    bodyViewHeight = getBodyViewHeight(missingSegmentIndex, baseBodyViewHeight);
+
     Sheet.showBottomSheet(
-        Get.context!,
+      Get.context!,
+      Stack(children: [
         Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Column(
-              key: topColumn,
-              children: [
-                RowWidget.buildSearch(search,
-                    prefix: Obx(() {
-                      return IconButton(
-                        onPressed: () {
-                          extendSearch.value = !extendSearch.value;
-                        },
-                        icon: extendSearch.value ? const Icon(Icons.expand_more) : const Icon(Icons.expand_less),
-                      );
-                    }),
-                    onClose: Get.back,
-                    onSearch: () {
-                      if (search.value.isNotEmpty) {
-                        segmentShow = originalSegmentShow.where((e) => e.segmentContent.contains(search.value)).toList();
-                      } else {
-                        segmentShow = List.from(originalSegmentShow);
-                      }
-                      sort(segmentShow, sortOptionKeys[selectedSortIndex.value]);
-                      refreshMissingSegmentIndex(segmentShow);
-                      bodyViewHeight = getBodyViewHeight(baseBodyViewHeight);
-                      print("123");
-                      parentLogic.update([SegmentShowLogic.id]);
-                    }),
-                if (missingSegmentIndex.isNotEmpty)
-                  GetBuilder<T>(
-                      id: SegmentShowLogic.headerId,
-                      builder: (_) {
-                        if (missingSegmentIndex.isNotEmpty) {
-                          return RowWidget.buildWidgetsWithTitle(I18nKey.labelFindUnnecessarySegments.tr, [
+            RowWidget.buildSearch(search, controller, focusNode: focusNode, onClose: Get.back, onSearch: () {
+              if (search.value.isNotEmpty || contentNameSelect.value != 0 || lessonSelect.value != 0 || progressSelect.value != 0 || nextMonthSelect.value != 0) {
+                segmentShow = originalSegmentShow.where((e) {
+                  bool ret = true;
+                  if (ret && search.value.isNotEmpty) {
+                    ret = e.segmentContent.contains(search.value);
+                  }
+                  if (ret && contentNameSelect.value != 0) {
+                    ret = e.contentName == contentNameOptions[contentNameSelect.value];
+                  }
+                  if (ret && lessonSelect.value != 0) {
+                    ret = e.lessonIndex == lesson[lessonSelect.value];
+                  }
+                  if (ret && progressSelect.value != 0) {
+                    ret = e.progress == progress[progressSelect.value];
+                  }
+                  if (ret && nextMonthSelect.value != 0) {
+                    int min = nextMonth[nextMonthSelect.value] * 100;
+                    int max = min + 99;
+                    ret = min < e.next.value && e.next.value < max;
+                  }
+                  return ret;
+                }).toList();
+              } else {
+                segmentShow = List.from(originalSegmentShow);
+              }
+              sort(segmentShow, sortOptionKeys[selectedSortIndex.value]);
+              collectDataFromSegments(missingSegmentIndex, segmentShow);
+              parentLogic.update([SegmentShowLogic.headerId]);
+
+              bodyViewHeight = getBodyViewHeight(missingSegmentIndex, baseBodyViewHeight);
+              parentLogic.update([SegmentShowLogic.id]);
+            }),
+            RowWidget.buildDividerWithoutColor(),
+            if (missingSegmentIndex.isNotEmpty)
+              GetBuilder<T>(
+                  id: SegmentShowLogic.headerId,
+                  builder: (_) {
+                    if (missingSegmentIndex.isNotEmpty) {
+                      return Column(
+                        children: [
+                          RowWidget.buildWidgetsWithTitle(I18nKey.labelFindUnnecessarySegments.tr, [
                             IconButton(
                                 onPressed: () {
                                   if (missingSegmentOffset - 1 < 0) {
@@ -165,28 +263,14 @@ class SegmentShowLogic<T extends GetxController> {
                                   );
                                 },
                                 icon: const Icon(Icons.arrow_forward)),
-                          ]);
-                        } else {
-                          return const SizedBox.shrink();
-                        }
-                      }),
-                RowWidget.buildDividerWithoutColor(),
-                RowWidget.buildCupertinoPicker(
-                  I18nKey.labelSortBy.tr,
-                  sortOptions,
-                  selectedSortIndex,
-                  changed: (index) {
-                    selectedSortIndex.value = index;
-                    I18nKey key = sortOptionKeys[index];
-                    sort(segmentShow, key);
-                    refreshMissingSegmentIndex(segmentShow);
-                    parentLogic.update([SegmentShowLogic.id]);
-                  },
-                  pickWidth: 210.w,
-                ),
-                RowWidget.buildDividerWithoutColor(),
-              ],
-            ),
+                          ]),
+                          RowWidget.buildDividerWithoutColor(),
+                        ],
+                      );
+                    } else {
+                      return const SizedBox.shrink();
+                    }
+                  }),
             GetBuilder<T>(
               id: SegmentShowLogic.id,
               builder: (_) {
@@ -289,6 +373,87 @@ class SegmentShowLogic<T extends GetxController> {
             ),
           ],
         ),
-        height: totalHeight);
+        Obx(() {
+          if (showSearchDetailPanel.value) {
+            double searchViewHeight = 4.5 * (RowWidget.rowHeight + RowWidget.dividerHeight);
+            return SizedBox(
+              height: searchViewHeight,
+              child: Column(
+                children: [
+                  const SizedBox(height: RowWidget.rowHeight + RowWidget.dividerHeight),
+                  Container(
+                    height: searchViewHeight - RowWidget.rowHeight - RowWidget.dividerHeight,
+                    padding: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(Get.context!).scaffoldBackgroundColor,
+                      border: Border(bottom: BorderSide(color: Colors.grey)),
+                    ),
+                    child: ListView(
+                      children: [
+                        RowWidget.buildCupertinoPicker(
+                          I18nKey.labelContent.tr,
+                          contentNameOptions,
+                          contentNameSelect,
+                          changed: (index) {
+                            contentNameSelect.value = index;
+                          },
+                        ),
+                        RowWidget.buildDividerWithoutColor(),
+                        RowWidget.buildCupertinoPicker(
+                          I18nKey.labelLesson.tr,
+                          lessonOptions,
+                          lessonSelect,
+                          changed: (index) {
+                            lessonSelect.value = index;
+                          },
+                        ),
+                        RowWidget.buildDividerWithoutColor(),
+                        RowWidget.buildCupertinoPicker(
+                          I18nKey.labelProgress.tr,
+                          progressOptions,
+                          progressSelect,
+                          changed: (index) {
+                            progressSelect.value = index;
+                          },
+                        ),
+                        RowWidget.buildDividerWithoutColor(),
+                        RowWidget.buildCupertinoPicker(
+                          I18nKey.labelMonth.tr,
+                          nextMonthOptions,
+                          nextMonthSelect,
+                          changed: (index) {
+                            nextMonthSelect.value = index;
+                          },
+                        ),
+                        RowWidget.buildDividerWithoutColor(),
+                        RowWidget.buildCupertinoPicker(
+                          I18nKey.labelSortBy.tr,
+                          sortOptions,
+                          selectedSortIndex,
+                          changed: (index) {
+                            selectedSortIndex.value = index;
+                            I18nKey key = sortOptionKeys[index];
+                            sort(segmentShow, key);
+                            parentLogic.update([SegmentShowLogic.id]);
+                          },
+                          pickWidth: 210.w,
+                        ),
+                        RowWidget.buildDividerWithoutColor(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            return const SizedBox.shrink();
+          }
+        }),
+      ]),
+      height: totalHeight,
+    ).then((_) {
+      controller.dispose();
+      focusNode.dispose();
+    });
   }
 }

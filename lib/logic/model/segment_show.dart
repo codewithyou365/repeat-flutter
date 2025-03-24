@@ -6,6 +6,7 @@ class SegmentShow {
   @primaryKey
   final String key;
   final String segmentContent;
+  final String contentName;
   final int lessonIndex;
   final int segmentIndex;
   final Date next;
@@ -14,6 +15,7 @@ class SegmentShow {
 
   SegmentShow(
     this.key,
+    this.contentName,
     this.segmentContent,
     this.lessonIndex,
     this.segmentIndex,

@@ -69,6 +69,7 @@ enum I18nKey {
   labelLearned,
   labelTotal,
   labelProgress,
+  labelMonth,
   labelAdjustLearnProgress,
   labelAdjustLearnProgressDesc,
   labelPleaseInputUnSignNumber,

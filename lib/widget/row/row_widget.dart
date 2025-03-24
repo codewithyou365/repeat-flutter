@@ -19,6 +19,7 @@ class Button {
 class RowWidget {
   static const double titleFontSize = 17;
   static const double rowHeight = 50;
+  static const double dividerHeight = 16;
   static const double paddingHorizontal = 8;
   static const double paddingVertical = 4;
 
@@ -191,16 +192,13 @@ class RowWidget {
     );
   }
 
-  static Widget buildSearch(RxString value, {Widget? prefix, VoidCallback? onClose, VoidCallback? onSearch}) {
-    final TextEditingController controller = TextEditingController(text: value.value);
-    final FocusNode focusNode = FocusNode();
-
+  static Widget buildSearch(RxString value, TextEditingController controller, {FocusNode? focusNode, VoidCallback? onClose, VoidCallback? onSearch}) {
     controller.addListener(() {
       value.value = controller.text;
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      focusNode.requestFocus();
+      focusNode?.requestFocus();
     });
 
     return SizedBox(
@@ -211,7 +209,6 @@ class RowWidget {
             onPressed: onClose,
             icon: const Icon(Icons.close_rounded),
           ),
-          if (prefix != null) prefix,
           Expanded(
             child: Container(
               decoration: BoxDecoration(
@@ -226,7 +223,6 @@ class RowWidget {
                 onSubmitted: (_) {
                   if (onSearch != null) {
                     onSearch();
-                    focusNode.requestFocus();
                   }
                 },
                 decoration: InputDecoration(
@@ -251,10 +247,6 @@ class RowWidget {
                 ),
               ),
             ),
-          ),
-          IconButton(
-            onPressed: onSearch,
-            icon: const Icon(Icons.search_rounded),
           ),
         ],
       ),

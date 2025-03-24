@@ -71,6 +71,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelLearned, "Learned: %s");
     put(I18nKey.labelTotal, "Total: %s");
     put(I18nKey.labelProgress, "Progress");
+    put(I18nKey.labelMonth, "Month");
     put(I18nKey.labelAdjustLearnProgress, "Adjust the learning progress.");
     put(I18nKey.labelAdjustLearnProgressDesc, "Current progress is %s, please adjust your learning progress.");
     put(I18nKey.labelPleaseInputUnSignNumber, "Please enter a number greater than or equal to 0.");

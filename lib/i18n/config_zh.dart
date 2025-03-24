@@ -71,6 +71,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelLearned, "已学习: %s");
     put(I18nKey.labelTotal, "总数: %s");
     put(I18nKey.labelProgress, "进度");
+    put(I18nKey.labelMonth, "月份");
     put(I18nKey.labelAdjustLearnProgress, "调整学习进度");
     put(I18nKey.labelAdjustLearnProgressDesc, "当前进度为 %s，请调整您的学习进度");
     put(I18nKey.labelPleaseInputUnSignNumber, "请输入大于或等于 0 的数字");

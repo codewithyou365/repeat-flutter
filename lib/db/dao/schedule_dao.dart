@@ -454,12 +454,14 @@ abstract class ScheduleDao {
 
   @Query('SELECT SegmentKey.key'
       ',SegmentKey.segmentContent'
+      ',Content.name contentName'
       ',SegmentKey.lessonIndex'
       ',SegmentKey.segmentIndex'
       ',SegmentOverallPrg.next'
       ',SegmentOverallPrg.progress'
       ',Segment.segmentKeyId is null missing'
       ' FROM SegmentKey'
+      " JOIN Content ON Content.classroomId=:classroomId AND Content.serial=SegmentKey.contentSerial"
       ' LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id'
       ' LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id'
       ' AND SegmentKey.classroomId=:classroomId'
@@ -468,12 +470,14 @@ abstract class ScheduleDao {
 
   @Query('SELECT SegmentKey.key'
       ',SegmentKey.segmentContent'
+      ',Content.name contentName'
       ',Segment.lessonIndex'
       ',Segment.segmentIndex'
       ',SegmentOverallPrg.next'
       ',SegmentOverallPrg.progress'
       ',Segment.segmentKeyId is null missing'
       ' FROM Segment'
+      " JOIN Content ON Content.classroomId=:classroomId AND Content.serial=Segment.contentSerial"
       ' JOIN SegmentKey ON SegmentKey.id=Segment.segmentKeyId'
       ' JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=Segment.segmentKeyId'
       ' WHERE Segment.classroomId=:classroomId'
