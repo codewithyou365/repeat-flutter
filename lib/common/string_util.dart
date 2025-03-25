@@ -20,6 +20,17 @@ class StringUtil {
     return str;
   }
 
+  static List<String> splitN(String str, String delimiter, int limit) {
+    if (limit <= 0) return [];
+
+    List<String> parts = str.split(delimiter);
+    if (parts.length <= limit) return parts;
+
+    List<String> result = parts.sublist(0, limit - 1);
+    result.add(parts.sublist(limit - 1).join(delimiter));
+    return result;
+  }
+
   static const _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
   static final Random _rnd = Random();
 

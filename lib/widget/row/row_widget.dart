@@ -197,10 +197,6 @@ class RowWidget {
       value.value = controller.text;
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      focusNode?.requestFocus();
-    });
-
     return SizedBox(
       height: rowHeight,
       child: Row(
