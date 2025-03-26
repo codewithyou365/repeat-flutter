@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/string_util.dart';
+import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_show.dart';
+import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/text/expandable_text.dart';
@@ -112,7 +115,23 @@ class SegmentShowLogic<T extends GetxController> {
     }
   }
 
-  show(List<SegmentShow> originalSegmentShow) {
+  show({bool all = false, String? initContentNameSelect, int? initLessonSelect}) async {
+    showTransparentOverlay(() async {
+      List<SegmentShow> segmentShow = [];
+      if (all) {
+        segmentShow = await Db().db.scheduleDao.getAllSegment(Classroom.curr);
+      } else {
+        segmentShow = await Db().db.scheduleDao.getSegment(Classroom.curr);
+      }
+      showSheet(
+        segmentShow,
+        initContentNameSelect: initContentNameSelect,
+        initLessonSelect: initLessonSelect,
+      );
+    });
+  }
+
+  showSheet(List<SegmentShow> originalSegmentShow, {String? initContentNameSelect, int? initLessonSelect}) {
     // for search and controls
     RxString search = RxString("");
     bool showSearchDetailPanel = false;
@@ -235,6 +254,23 @@ class SegmentShowLogic<T extends GetxController> {
       bodyViewHeight = getBodyViewHeight(missingSegmentIndex, baseBodyViewHeight);
       parentLogic.update([SegmentShowLogic.bodyId]);
     }
+
+    // init select
+    if (initContentNameSelect != null) {
+      int index = contentNameOptions.indexOf(initContentNameSelect);
+      if (index != -1) {
+        contentNameSelect.value = index;
+      }
+    }
+    if (initLessonSelect != null) {
+      int index = lessonOptions.indexOf('${initLessonSelect + 1}');
+      if (index != -1) {
+        lessonSelect.value = index;
+      }
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      trySearch();
+    });
 
     Sheet.showBottomSheet(
       Get.context!,

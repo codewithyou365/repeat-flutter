@@ -61,10 +61,12 @@ class GsCrContentLogic extends GetxController {
   }
 
   showWarning(int contentId, int contentSerial) async {
-    showTransparentOverlay(() async {
-      List<SegmentShow> segmentShow = await Db().db.scheduleDao.getAllSegment(contentId, contentSerial);
-      segmentShowLogic.show(segmentShow);
-    });
+    var content = await Db().db.scheduleDao.getContentBySerial(contentId, contentSerial);
+    if (content == null) {
+      Snackbar.show(I18nKey.labelNoContent.tr);
+      return;
+    }
+    segmentShowLogic.show(all: true, initContentNameSelect: content.name);
   }
 
   addByZip(int contentId, int contentSerial) async {

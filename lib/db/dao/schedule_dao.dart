@@ -461,12 +461,11 @@ abstract class ScheduleDao {
       ',SegmentOverallPrg.progress'
       ',Segment.segmentKeyId is null missing'
       ' FROM SegmentKey'
-      " JOIN Content ON Content.classroomId=:classroomId AND Content.serial=SegmentKey.contentSerial"
+      " JOIN Content ON Content.classroomId=:classroomId AND Content.docId!=0"
       ' LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id'
       ' LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id'
-      ' AND SegmentKey.classroomId=:classroomId'
-      ' AND SegmentKey.contentSerial=:contentSerial')
-  Future<List<SegmentShow>> getAllSegment(int classroomId, int contentSerial);
+      ' AND SegmentKey.classroomId=:classroomId')
+  Future<List<SegmentShow>> getAllSegment(int classroomId);
 
   @Query('SELECT SegmentKey.key'
       ',SegmentKey.segmentContent'
@@ -477,12 +476,11 @@ abstract class ScheduleDao {
       ',SegmentOverallPrg.progress'
       ',Segment.segmentKeyId is null missing'
       ' FROM Segment'
-      " JOIN Content ON Content.classroomId=:classroomId AND Content.serial=Segment.contentSerial"
+      " JOIN Content ON Content.classroomId=:classroomId AND Content.docId!=0"
       ' JOIN SegmentKey ON SegmentKey.id=Segment.segmentKeyId'
       ' JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=Segment.segmentKeyId'
-      ' WHERE Segment.classroomId=:classroomId'
-      ' AND Segment.contentSerial=:contentSerial')
-  Future<List<SegmentShow>> getSegment(int classroomId, int contentSerial);
+      ' WHERE Segment.classroomId=:classroomId')
+  Future<List<SegmentShow>> getSegment(int classroomId);
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertSegments(List<Segment> entities);

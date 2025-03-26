@@ -1765,25 +1765,19 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<List<SegmentShow>> getAllSegment(
-    int classroomId,
-    int contentSerial,
-  ) async {
+  Future<List<SegmentShow>> getAllSegment(int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentKey.key,SegmentKey.segmentContent,Content.name contentName,SegmentKey.lessonIndex,SegmentKey.segmentIndex,SegmentOverallPrg.next,SegmentOverallPrg.progress,Segment.segmentKeyId is null missing FROM SegmentKey JOIN Content ON Content.classroomId=?1 AND Content.serial=SegmentKey.contentSerial LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id AND SegmentKey.classroomId=?1 AND SegmentKey.contentSerial=?2',
+        'SELECT SegmentKey.key,SegmentKey.segmentContent,Content.name contentName,SegmentKey.lessonIndex,SegmentKey.segmentIndex,SegmentOverallPrg.next,SegmentOverallPrg.progress,Segment.segmentKeyId is null missing FROM SegmentKey JOIN Content ON Content.classroomId=?1 AND Content.docId!=0 LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id AND SegmentKey.classroomId=?1',
         mapper: (Map<String, Object?> row) => SegmentShow(row['key'] as String, row['contentName'] as String, row['segmentContent'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, (row['missing'] as int) != 0),
-        arguments: [classroomId, contentSerial]);
+        arguments: [classroomId]);
   }
 
   @override
-  Future<List<SegmentShow>> getSegment(
-    int classroomId,
-    int contentSerial,
-  ) async {
+  Future<List<SegmentShow>> getSegment(int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentKey.key,SegmentKey.segmentContent,Content.name contentName,Segment.lessonIndex,Segment.segmentIndex,SegmentOverallPrg.next,SegmentOverallPrg.progress,Segment.segmentKeyId is null missing FROM Segment JOIN Content ON Content.classroomId=?1 AND Content.serial=Segment.contentSerial JOIN SegmentKey ON SegmentKey.id=Segment.segmentKeyId JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=Segment.segmentKeyId WHERE Segment.classroomId=?1 AND Segment.contentSerial=?2',
+        'SELECT SegmentKey.key,SegmentKey.segmentContent,Content.name contentName,Segment.lessonIndex,Segment.segmentIndex,SegmentOverallPrg.next,SegmentOverallPrg.progress,Segment.segmentKeyId is null missing FROM Segment JOIN Content ON Content.classroomId=?1 AND Content.docId!=0 JOIN SegmentKey ON SegmentKey.id=Segment.segmentKeyId JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=Segment.segmentKeyId WHERE Segment.classroomId=?1',
         mapper: (Map<String, Object?> row) => SegmentShow(row['key'] as String, row['contentName'] as String, row['segmentContent'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, (row['missing'] as int) != 0),
-        arguments: [classroomId, contentSerial]);
+        arguments: [classroomId]);
   }
 
   @override
