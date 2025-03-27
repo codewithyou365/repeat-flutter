@@ -87,6 +87,12 @@ class GsCrContentPage extends StatelessWidget {
         },
         child: Text(I18nKey.btnShare.tr),
       ));
+      menus.add(PopupMenuItem<String>(
+        onTap: () {
+          logic.show(model.id!, model.serial);
+        },
+        child: Text(I18nKey.btnBrowse.tr),
+      ));
     }
     menus.add(PopupMenuItem<String>(
       onTap: () {

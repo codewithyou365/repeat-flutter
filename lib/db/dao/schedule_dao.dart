@@ -531,6 +531,10 @@ abstract class ScheduleDao {
       ' AND Segment.lessonIndex=:lessonIndex')
   Future<int?> getMaxSegmentIndex(int classroomId, int contentSerial, int lessonIndex);
 
+  @Query('SELECT ifnull(max(SegmentStats.createTime),0) FROM SegmentStats'
+      ' WHERE SegmentStats.classroomId=:classroomId')
+  Future<int?> getMaxSegmentStats(int classroomId);
+
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertSegmentStats(SegmentStats stats);
 
@@ -1008,6 +1012,8 @@ abstract class ScheduleDao {
       }
       await setScheduleCurrentWithCache(segmentTodayPrg, todayNextProgress, now);
       await insertSegmentStats(SegmentStats(segmentKeyId, prgType.index, Date(todayLearnCreateDate), now.millisecondsSinceEpoch, Classroom.curr, segmentTodayPrg.contentSerial));
+    } else if (nextProgress != null) {
+      await insertSegmentStats(SegmentStats(segmentKeyId, TodayPrgType.none.index, Date(todayLearnCreateDate), now.millisecondsSinceEpoch, Classroom.curr, segmentTodayPrg.contentSerial));
     }
 
     if (nextProgress != null) {

@@ -37,7 +37,10 @@ class _ExpandableTextState extends State<ExpandableText> {
     final displayTextStartIndex = displayText.indexOf(selectText);
 
     List<TextSpan> spans;
-
+    String suffix = "";
+    if (displayText != fullText) {
+      suffix = "...";
+    }
     if (selectText.isNotEmpty && startIndex != -1) {
       if (displayTextStartIndex != -1) {
         spans = [
@@ -50,7 +53,7 @@ class _ExpandableTextState extends State<ExpandableText> {
             style: widget.selectedStyle ?? widget.style?.copyWith(fontWeight: FontWeight.bold),
           ),
           TextSpan(
-            text: displayText.substring(displayTextStartIndex + selectText.length),
+            text: displayText.substring(displayTextStartIndex + selectText.length) + suffix,
             style: widget.style,
           ),
         ];
@@ -67,10 +70,6 @@ class _ExpandableTextState extends State<ExpandableText> {
         ];
       }
     } else {
-      String suffix = "";
-      if (displayText != fullText) {
-        suffix = "...";
-      }
       spans = [
         TextSpan(
           text: displayText + suffix,

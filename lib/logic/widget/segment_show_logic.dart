@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/string_util.dart';
-import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_show.dart';
+import 'package:repeat_flutter/logic/segment_show_help.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
@@ -119,9 +118,9 @@ class SegmentShowLogic<T extends GetxController> {
     showTransparentOverlay(() async {
       List<SegmentShow> segmentShow = [];
       if (all) {
-        segmentShow = await Db().db.scheduleDao.getAllSegment(Classroom.curr);
+        segmentShow = await SegmentShowHelp.getAllSegment();
       } else {
-        segmentShow = await Db().db.scheduleDao.getSegment(Classroom.curr);
+        segmentShow = await SegmentShowHelp.getSegment();
       }
       showSheet(
         segmentShow,

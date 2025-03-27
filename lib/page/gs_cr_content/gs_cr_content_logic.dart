@@ -10,12 +10,10 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
-import 'package:repeat_flutter/db/entity/segment_key.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
-import 'package:repeat_flutter/logic/model/segment_show.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
@@ -23,7 +21,6 @@ import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/logic/widget/segment_show_logic.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
-import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'gs_cr_content_state.dart';
@@ -58,6 +55,15 @@ class GsCrContentLogic extends GetxController {
       Get.find<GsCrLogic>().init();
       update([GsCrContentLogic.id]);
     }, I18nKey.labelDeleting.tr);
+  }
+
+  show(int contentId, int contentSerial) async {
+    var content = await Db().db.scheduleDao.getContentBySerial(contentId, contentSerial);
+    if (content == null) {
+      Snackbar.show(I18nKey.labelNoContent.tr);
+      return;
+    }
+    segmentShowLogic.show(all: false, initContentNameSelect: content.name);
   }
 
   showWarning(int contentId, int contentSerial) async {
