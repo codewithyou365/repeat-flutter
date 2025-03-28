@@ -7,6 +7,7 @@ import 'package:floor/floor.dart';
     Index(value: ['classroomId', 'name'], unique: true),
     Index(value: ['classroomId', 'serial'], unique: true),
     Index(value: ['classroomId', 'sort'], unique: true),
+    Index(value: ['classroomId', 'updateTime']),
     Index(value: ['sort', 'id']),
   ],
 )
@@ -26,6 +27,8 @@ class Content {
   int sort;
   bool hide;
   bool warning;
+  int createTime;
+  int updateTime;
 
   Content(
     this.classroomId,
@@ -36,7 +39,9 @@ class Content {
     this.url,
     this.sort,
     this.hide,
-    this.warning, {
+    this.warning,
+    this.createTime,
+    this.updateTime, {
     this.id,
   });
 }

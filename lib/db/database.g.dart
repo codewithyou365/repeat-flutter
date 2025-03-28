@@ -120,7 +120,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Classroom` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Content` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `serial` INTEGER NOT NULL, `name` TEXT NOT NULL, `desc` TEXT NOT NULL, `docId` INTEGER NOT NULL, `url` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, `warning` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `Content` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `serial` INTEGER NOT NULL, `name` TEXT NOT NULL, `desc` TEXT NOT NULL, `docId` INTEGER NOT NULL, `url` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, `warning` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `updateTime` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `CrKv` (`classroomId` INTEGER NOT NULL, `k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`classroomId`, `k`))');
         await database.execute(
@@ -136,7 +136,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentTodayPrg` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `type` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `reviewCount` INTEGER NOT NULL, `reviewCreateDate` INTEGER NOT NULL, `finish` INTEGER NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentStats` (`segmentKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`, `type`, `createDate`))');
+            'CREATE TABLE IF NOT EXISTS `SegmentStats` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `segmentKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
         await database.execute(
@@ -159,6 +159,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE UNIQUE INDEX `index_Content_classroomId_serial` ON `Content` (`classroomId`, `serial`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_Content_classroomId_sort` ON `Content` (`classroomId`, `sort`)');
+        await database.execute(
+            'CREATE UNIQUE INDEX `index_Content_classroomId_updateTime` ON `Content` (`classroomId`, `updateTime`)');
         await database.execute(
             'CREATE INDEX `index_Content_sort_id` ON `Content` (`sort`, `id`)');
         await database.execute(
@@ -1022,7 +1024,9 @@ class _$ContentDao extends ContentDao {
                   'url': item.url,
                   'sort': item.sort,
                   'hide': item.hide ? 1 : 0,
-                  'warning': item.warning ? 1 : 0
+                  'warning': item.warning ? 1 : 0,
+                  'createTime': item.createTime,
+                  'updateTime': item.updateTime
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -1043,7 +1047,7 @@ class _$ContentDao extends ContentDao {
   Future<List<Content>> getAllContent(int classroomId) async {
     return _queryAdapter.queryList(
         'SELECT * FROM Content where classroomId=?1 and hide=false ORDER BY sort',
-        mapper: (Map<String, Object?> row) => Content(row['classroomId'] as int, row['serial'] as int, row['name'] as String, row['desc'] as String, row['docId'] as int, row['url'] as String, row['sort'] as int, (row['hide'] as int) != 0, (row['warning'] as int) != 0, id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => Content(row['classroomId'] as int, row['serial'] as int, row['name'] as String, row['desc'] as String, row['docId'] as int, row['url'] as String, row['sort'] as int, (row['hide'] as int) != 0, (row['warning'] as int) != 0, row['createTime'] as int, row['updateTime'] as int, id: row['id'] as int?),
         arguments: [classroomId]);
   }
 
@@ -1051,7 +1055,7 @@ class _$ContentDao extends ContentDao {
   Future<List<Content>> getAllEnableContent(int classroomId) async {
     return _queryAdapter.queryList(
         'SELECT * FROM Content where classroomId=?1 and docId!=0 and hide=false ORDER BY sort',
-        mapper: (Map<String, Object?> row) => Content(row['classroomId'] as int, row['serial'] as int, row['name'] as String, row['desc'] as String, row['docId'] as int, row['url'] as String, row['sort'] as int, (row['hide'] as int) != 0, (row['warning'] as int) != 0, id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => Content(row['classroomId'] as int, row['serial'] as int, row['name'] as String, row['desc'] as String, row['docId'] as int, row['url'] as String, row['sort'] as int, (row['hide'] as int) != 0, (row['warning'] as int) != 0, row['createTime'] as int, row['updateTime'] as int, id: row['id'] as int?),
         arguments: [classroomId]);
   }
 
@@ -1106,6 +1110,8 @@ class _$ContentDao extends ContentDao {
             row['sort'] as int,
             (row['hide'] as int) != 0,
             (row['warning'] as int) != 0,
+            row['createTime'] as int,
+            row['updateTime'] as int,
             id: row['id'] as int?),
         arguments: [id]);
   }
@@ -1127,6 +1133,8 @@ class _$ContentDao extends ContentDao {
             row['sort'] as int,
             (row['hide'] as int) != 0,
             (row['warning'] as int) != 0,
+            row['createTime'] as int,
+            row['updateTime'] as int,
             id: row['id'] as int?),
         arguments: [classroomId, name]);
   }
@@ -1148,6 +1156,8 @@ class _$ContentDao extends ContentDao {
             row['sort'] as int,
             (row['hide'] as int) != 0,
             (row['warning'] as int) != 0,
+            row['createTime'] as int,
+            row['updateTime'] as int,
             id: row['id'] as int?),
         arguments: [classroomId, serial]);
   }
@@ -1169,6 +1179,8 @@ class _$ContentDao extends ContentDao {
             row['sort'] as int,
             (row['hide'] as int) != 0,
             (row['warning'] as int) != 0,
+            row['createTime'] as int,
+            row['updateTime'] as int,
             id: row['id'] as int?),
         arguments: [classroomId, sort]);
   }
@@ -1185,18 +1197,6 @@ class _$ContentDao extends ContentDao {
     await _queryAdapter.queryNoReturn(
         'UPDATE Content set hide=false WHERE Content.id=?1',
         arguments: [id]);
-  }
-
-  @override
-  Future<void> updateFinish(
-    int id,
-    int docId,
-    String url,
-    bool warning,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'UPDATE Content set docId=?2,url=?3,warning=?4 WHERE Content.id=?1',
-        arguments: [id, docId, url, warning ? 1 : 0]);
   }
 
   @override
@@ -1308,6 +1308,7 @@ class _$ScheduleDao extends ScheduleDao {
             database,
             'SegmentStats',
             (SegmentStats item) => <String, Object?>{
+                  'id': item.id,
                   'segmentKeyId': item.segmentKeyId,
                   'type': item.type,
                   'createDate': _dateConverter.encode(item.createDate),
@@ -1376,6 +1377,8 @@ class _$ScheduleDao extends ScheduleDao {
             row['sort'] as int,
             (row['hide'] as int) != 0,
             (row['warning'] as int) != 0,
+            row['createTime'] as int,
+            row['updateTime'] as int,
             id: row['id'] as int?),
         arguments: [id]);
   }
@@ -1397,6 +1400,8 @@ class _$ScheduleDao extends ScheduleDao {
             row['sort'] as int,
             (row['hide'] as int) != 0,
             (row['warning'] as int) != 0,
+            row['createTime'] as int,
+            row['updateTime'] as int,
             id: row['id'] as int?),
         arguments: [classroomId, serial]);
   }
@@ -1407,20 +1412,22 @@ class _$ScheduleDao extends ScheduleDao {
     int docId,
     String url,
     bool warning,
+    int updateTime,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Content set docId=?2,url=?3,warning=?4 WHERE Content.id=?1',
-        arguments: [id, docId, url, warning ? 1 : 0]);
+        'UPDATE Content set docId=?2,url=?3,warning=?4,updateTime=?5 WHERE Content.id=?1',
+        arguments: [id, docId, url, warning ? 1 : 0, updateTime]);
   }
 
   @override
   Future<void> updateContentWarning(
     int id,
     bool warning,
+    int updateTime,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Content set warning=?2 WHERE Content.id=?1',
-        arguments: [id, warning ? 1 : 0]);
+        'UPDATE Content set warning=?2,updateTime=?3 WHERE Content.id=?1',
+        arguments: [id, warning ? 1 : 0, updateTime]);
   }
 
   @override
@@ -1876,9 +1883,17 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<int?> getMaxSegmentStats(int classroomId) async {
+  Future<int?> getMaxSegmentStatsId(int classroomId) async {
     return _queryAdapter.query(
-        'SELECT ifnull(max(SegmentStats.createTime),0) FROM SegmentStats WHERE SegmentStats.classroomId=?1',
+        'SELECT ifnull(max(SegmentStats.id),0) FROM SegmentStats WHERE SegmentStats.classroomId=?1',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [classroomId]);
+  }
+
+  @override
+  Future<int?> getMaxContentUpdateTime(int classroomId) async {
+    return _queryAdapter.query(
+        'SELECT ifnull(max(Content.updateTime),0) FROM Content WHERE Content.classroomId=?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId]);
   }
@@ -2198,7 +2213,8 @@ class _$StatsDao extends StatsDao {
             _dateConverter.decode(row['createDate'] as int),
             row['createTime'] as int,
             row['classroomId'] as int,
-            row['contentSerial'] as int),
+            row['contentSerial'] as int,
+            id: row['id'] as int?),
         arguments: [classroomId, _dateConverter.encode(date)]);
   }
 
@@ -2210,7 +2226,7 @@ class _$StatsDao extends StatsDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT * FROM SegmentStats WHERE classroomId = ?1 AND createDate >= ?2 AND createDate <= ?3',
-        mapper: (Map<String, Object?> row) => SegmentStats(row['segmentKeyId'] as int, row['type'] as int, _dateConverter.decode(row['createDate'] as int), row['createTime'] as int, row['classroomId'] as int, row['contentSerial'] as int),
+        mapper: (Map<String, Object?> row) => SegmentStats(row['segmentKeyId'] as int, row['type'] as int, _dateConverter.decode(row['createDate'] as int), row['createTime'] as int, row['classroomId'] as int, row['contentSerial'] as int, id: row['id'] as int?),
         arguments: [
           classroomId,
           _dateConverter.encode(start),

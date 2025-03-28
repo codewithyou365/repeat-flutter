@@ -9,7 +9,7 @@ class Address {
 
 class GsCrContentShareState {
   final List<Address> addresses = <Address>[];
-  Content content = Content(0, 0, '', '', 0, '', 0, false, false);
+  Content content = Content(0, 0, '', '', 0, '', 0, false, false, 0, 0);
   var lanAddressSuffix = "";
   var manifestJson = "";
 }

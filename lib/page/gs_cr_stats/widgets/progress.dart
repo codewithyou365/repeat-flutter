@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/model/segment_overall_prg_with_key.dart';
-import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/logic/model/segment_show.dart';
+import 'package:repeat_flutter/logic/segment_help.dart';
 
 class ProgressLogic {
   double progress = 0;
@@ -10,9 +13,23 @@ class ProgressLogic {
 
   ProgressLogic();
 
-  void init(List<SegmentOverallPrgWithKey> progressRawData) {
-    learnedCount = progressRawData.where((e) => e.progress != 0).length;
-    totalCount = progressRawData.length;
+  Future<void> init() async {
+    learnedCount = 0;
+    totalCount = 0;
+    var key = await SegmentHelp.getSegmentKey(Classroom.curr);
+
+    var cache = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.lastCache4ProgressStats) ?? ',0,0';
+    var values = cache.split(",");
+    var currKey = values[0];
+    if (currKey == key) {
+      learnedCount = int.parse(values[1]);
+      totalCount = int.parse(values[2]);
+    } else {
+      List<SegmentShow> progressRawData = await SegmentHelp.getSegment();
+      learnedCount = progressRawData.where((e) => e.progress != 0).length;
+      totalCount = progressRawData.length;
+      await Db().db.scheduleDao.insertKv(CrKv(Classroom.curr, CrK.lastCache4ProgressStats, '$key,$learnedCount,$totalCount'));
+    }
     progress = learnedCount / (totalCount == 0 ? 1 : totalCount);
   }
 

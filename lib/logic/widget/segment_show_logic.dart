@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_show.dart';
-import 'package:repeat_flutter/logic/segment_show_help.dart';
+import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
@@ -118,9 +118,9 @@ class SegmentShowLogic<T extends GetxController> {
     showTransparentOverlay(() async {
       List<SegmentShow> segmentShow = [];
       if (all) {
-        segmentShow = await SegmentShowHelp.getAllSegment();
+        segmentShow = await SegmentHelp.getAllSegment();
       } else {
-        segmentShow = await SegmentShowHelp.getSegment();
+        segmentShow = await SegmentHelp.getSegment();
       }
       showSheet(
         segmentShow,

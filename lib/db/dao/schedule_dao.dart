@@ -214,11 +214,11 @@ abstract class ScheduleDao {
   @Query('SELECT * FROM Content WHERE classroomId=:classroomId and serial=:serial')
   Future<Content?> getContentBySerial(int classroomId, int serial);
 
-  @Query('UPDATE Content set docId=:docId,url=:url,warning=:warning WHERE Content.id=:id')
-  Future<void> updateContent(int id, int docId, String url, bool warning);
+  @Query('UPDATE Content set docId=:docId,url=:url,warning=:warning,updateTime=:updateTime WHERE Content.id=:id')
+  Future<void> updateContent(int id, int docId, String url, bool warning, int updateTime);
 
-  @Query('UPDATE Content set warning=:warning WHERE Content.id=:id')
-  Future<void> updateContentWarning(int id, bool warning);
+  @Query('UPDATE Content set warning=:warning,updateTime=:updateTime WHERE Content.id=:id')
+  Future<void> updateContentWarning(int id, bool warning, int updateTime);
 
   @Query('SELECT * FROM Doc WHERE id=:id')
   Future<Doc?> getDocById(int id);
@@ -531,9 +531,13 @@ abstract class ScheduleDao {
       ' AND Segment.lessonIndex=:lessonIndex')
   Future<int?> getMaxSegmentIndex(int classroomId, int contentSerial, int lessonIndex);
 
-  @Query('SELECT ifnull(max(SegmentStats.createTime),0) FROM SegmentStats'
+  @Query('SELECT ifnull(max(SegmentStats.id),0) FROM SegmentStats'
       ' WHERE SegmentStats.classroomId=:classroomId')
-  Future<int?> getMaxSegmentStats(int classroomId);
+  Future<int?> getMaxSegmentStatsId(int classroomId);
+
+  @Query('SELECT ifnull(max(Content.updateTime),0) FROM Content'
+      ' WHERE Content.classroomId=:classroomId')
+  Future<int?> getMaxContentUpdateTime(int classroomId);
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertSegmentStats(SegmentStats stats);
@@ -746,9 +750,9 @@ abstract class ScheduleDao {
       warning = true;
     }
     if (indexJsonDocId != null && url != null) {
-      await updateContent(contentId, indexJsonDocId, url, warning);
+      await updateContent(contentId, indexJsonDocId, url, warning, DateTime.now().millisecondsSinceEpoch);
     } else {
-      await updateContentWarning(contentId, warning);
+      await updateContentWarning(contentId, warning, DateTime.now().millisecondsSinceEpoch);
     }
     if (warning) {
       return ImportResult.successButSomeSegmentsAreSurplus.index;

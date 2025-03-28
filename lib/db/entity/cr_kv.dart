@@ -16,6 +16,7 @@ enum CrK {
   lastRecordCreateDate4StatsTotalLearning,
   statsTotalTime,
   statsTotalLearning,
+  lastCache4ProgressStats,
 }
 
 @Entity(primaryKeys: ['classroomId', 'k'])

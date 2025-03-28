@@ -53,10 +53,6 @@ abstract class ContentDao {
       ' WHERE Content.id=:id')
   Future<void> showContent(int id);
 
-  @Query('UPDATE Content set docId=:docId,url=:url,warning=:warning'
-      ' WHERE Content.id=:id')
-  Future<void> updateFinish(int id, int docId, String url, bool warning);
-
   @Query('UPDATE Content set docId=:docId'
       ' WHERE Content.id=:id')
   Future<void> updateDocId(int id, int docId);
@@ -77,7 +73,9 @@ abstract class ContentDao {
 
       var maxSort = await getMaxSort(Classroom.curr);
       var sort = await Num.getNextId(maxSort, id: Classroom.curr, existById2: existBySort);
-      ret = Content(Classroom.curr, serial, name, '', 0, '', sort, false, false);
+
+      var now = DateTime.now().millisecondsSinceEpoch;
+      ret = Content(Classroom.curr, serial, name, '', 0, '', sort, false, false, now, now);
       await insertContent(ret);
     }
     return ret;
