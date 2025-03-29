@@ -136,7 +136,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentTodayPrg` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `type` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `reviewCount` INTEGER NOT NULL, `reviewCreateDate` INTEGER NOT NULL, `finish` INTEGER NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentStats` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `segmentKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `SegmentStats` (`segmentKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`, `type`, `createDate`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
         await database.execute(
@@ -160,7 +160,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE UNIQUE INDEX `index_Content_classroomId_sort` ON `Content` (`classroomId`, `sort`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_Content_classroomId_updateTime` ON `Content` (`classroomId`, `updateTime`)');
+            'CREATE INDEX `index_Content_classroomId_updateTime` ON `Content` (`classroomId`, `updateTime`)');
         await database.execute(
             'CREATE INDEX `index_Content_sort_id` ON `Content` (`sort`, `id`)');
         await database.execute(
@@ -1308,7 +1308,6 @@ class _$ScheduleDao extends ScheduleDao {
             database,
             'SegmentStats',
             (SegmentStats item) => <String, Object?>{
-                  'id': item.id,
                   'segmentKeyId': item.segmentKeyId,
                   'type': item.type,
                   'createDate': _dateConverter.encode(item.createDate),
@@ -1650,15 +1649,10 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<SegmentOverallPrg?> getSegmentOverallPrg(int segmentKeyId) async {
+  Future<int?> getSegmentProgress(int segmentKeyId) async {
     return _queryAdapter.query(
-        'SELECT * FROM SegmentOverallPrg WHERE segmentKeyId=?1',
-        mapper: (Map<String, Object?> row) => SegmentOverallPrg(
-            row['segmentKeyId'] as int,
-            row['classroomId'] as int,
-            row['contentSerial'] as int,
-            _dateConverter.decode(row['next'] as int),
-            row['progress'] as int),
+        'SELECT progress FROM SegmentOverallPrg WHERE segmentKeyId=?1',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [segmentKeyId]);
   }
 
@@ -2068,35 +2062,68 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> error(SegmentTodayPrg scheduleCurrent) async {
-    if (database is sqflite.Transaction) {
-      await super.error(scheduleCurrent);
-    } else {
-      await (database as sqflite.Database)
-          .transaction<void>((transaction) async {
-        final transactionDatabase = _$AppDatabase(changeListener)
-          ..database = transaction;
-        await transactionDatabase.scheduleDao.error(scheduleCurrent);
-      });
-    }
-  }
-
-  @override
-  Future<void> right(
-    SegmentTodayPrg segmentTodayPrg,
-    int? progress,
-    int? nextDayValue,
-    bool record,
+  Future<void> jumpDirectly(
+    int contentSerial,
+    int segmentKeyId,
+    int progress,
+    int nextDayValue,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.right(segmentTodayPrg, progress, nextDayValue, record);
+      await super
+          .jumpDirectly(contentSerial, segmentKeyId, progress, nextDayValue);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         await transactionDatabase.scheduleDao
-            .right(segmentTodayPrg, progress, nextDayValue, record);
+            .jumpDirectly(contentSerial, segmentKeyId, progress, nextDayValue);
+      });
+    }
+  }
+
+  @override
+  Future<void> jump(
+    SegmentTodayPrg stp,
+    int progress,
+    int nextDayValue,
+  ) async {
+    if (database is sqflite.Transaction) {
+      await super.jump(stp, progress, nextDayValue);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        await transactionDatabase.scheduleDao.jump(stp, progress, nextDayValue);
+      });
+    }
+  }
+
+  @override
+  Future<void> error(SegmentTodayPrg stp) async {
+    if (database is sqflite.Transaction) {
+      await super.error(stp);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        await transactionDatabase.scheduleDao.error(stp);
+      });
+    }
+  }
+
+  @override
+  Future<void> right(SegmentTodayPrg stp) async {
+    if (database is sqflite.Transaction) {
+      await super.right(stp);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        await transactionDatabase.scheduleDao.right(stp);
       });
     }
   }
@@ -2213,8 +2240,7 @@ class _$StatsDao extends StatsDao {
             _dateConverter.decode(row['createDate'] as int),
             row['createTime'] as int,
             row['classroomId'] as int,
-            row['contentSerial'] as int,
-            id: row['id'] as int?),
+            row['contentSerial'] as int),
         arguments: [classroomId, _dateConverter.encode(date)]);
   }
 
@@ -2226,7 +2252,7 @@ class _$StatsDao extends StatsDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT * FROM SegmentStats WHERE classroomId = ?1 AND createDate >= ?2 AND createDate <= ?3',
-        mapper: (Map<String, Object?> row) => SegmentStats(row['segmentKeyId'] as int, row['type'] as int, _dateConverter.decode(row['createDate'] as int), row['createTime'] as int, row['classroomId'] as int, row['contentSerial'] as int, id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => SegmentStats(row['segmentKeyId'] as int, row['type'] as int, _dateConverter.decode(row['createDate'] as int), row['createTime'] as int, row['classroomId'] as int, row['contentSerial'] as int),
         arguments: [
           classroomId,
           _dateConverter.encode(start),

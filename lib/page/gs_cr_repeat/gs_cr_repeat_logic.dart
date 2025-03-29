@@ -214,11 +214,11 @@ class GsCrRepeatLogic extends GetxController {
     if (curr == null) {
       return;
     }
-    var schedule = await Db().db.scheduleDao.getSegmentOverallPrg(curr.segmentKeyId);
-    if (schedule == null) {
+    var segmentProgress = await Db().db.scheduleDao.getSegmentProgress(curr.segmentKeyId);
+    if (segmentProgress == null) {
       return;
     }
-    var progress = (schedule.progress + 1).obs;
+    var progress = (segmentProgress + 1).obs;
     var nextDay = ScheduleDao.getNextByProgress(DateTime.now(), progress.value).value.obs;
     Sheet.showBottomSheet(Get.context!, Obx(() {
       return ListView(
@@ -231,11 +231,11 @@ class GsCrRepeatLogic extends GetxController {
               know(autoNext: true, progress: progress.value, nextDay: nextDay.value);
             },
           ),
-          RowWidget.buildMiddleText(I18nKey.labelAdjustLearnProgressDesc.trArgs(["${schedule.progress}"])),
+          RowWidget.buildMiddleText(I18nKey.labelAdjustLearnProgressDesc.trArgs(["$segmentProgress"])),
           RowWidget.buildDivider(),
           RowWidget.buildCupertinoPicker(
             I18nKey.labelSetLevel.tr,
-            List.generate(schedule.progress + ScheduleDao.scheduleConfig.forgettingCurve.length, (i) {
+            List.generate(segmentProgress + ScheduleDao.scheduleConfig.forgettingCurve.length, (i) {
               return '$i';
             }),
             progress,
@@ -263,12 +263,14 @@ class GsCrRepeatLogic extends GetxController {
       finish();
       return;
     }
-    await Db().db.scheduleDao.right(
-          curr,
-          progress,
-          nextDay,
-          !state.justView && !state.edit,
-        );
+
+    if (state.justView || state.edit) {
+      await Db().db.scheduleDao.jumpDirectly(curr.contentSerial, curr.segmentKeyId, progress!, nextDay!);
+    } else if (progress != null && nextDay != null) {
+      await Db().db.scheduleDao.jump(curr, progress, nextDay);
+    } else {
+      await Db().db.scheduleDao.right(curr);
+    }
     if (state.justView || state.edit) {
       if (autoNext) {
         nextForJustView(fromView: false);

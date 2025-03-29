@@ -42,6 +42,13 @@ class DocPath {
   }
 }
 
+
+enum ProgressState {
+  unfinished,
+  familiar,
+  unfamiliar;
+}
+
 enum Repeat {
   normal,
   justView;
@@ -52,6 +59,7 @@ enum MatchType {
   single,
   all;
 }
+
 enum ImportResult {
   success,
   error,

@@ -357,8 +357,8 @@ abstract class ScheduleDao {
   @Query('UPDATE SegmentOverallPrg SET progress=:progress WHERE segmentKeyId=:segmentKeyId')
   Future<void> setPrg4Sop(int segmentKeyId, int progress);
 
-  @Query("SELECT * FROM SegmentOverallPrg WHERE segmentKeyId=:segmentKeyId")
-  Future<SegmentOverallPrg?> getSegmentOverallPrg(int segmentKeyId);
+  @Query("SELECT progress FROM SegmentOverallPrg WHERE segmentKeyId=:segmentKeyId")
+  Future<int?> getSegmentProgress(int segmentKeyId);
 
   @Query("SELECT SegmentOverallPrg.*"
       ",Content.name contentName"
@@ -954,22 +954,20 @@ abstract class ScheduleDao {
     await insertSegmentTodayPrg(ret);
   }
 
-  @transaction
-  Future<void> error(SegmentTodayPrg scheduleCurrent) async {
-    await forUpdate();
-    var segmentKeyId = scheduleCurrent.segmentKeyId;
-    var now = DateTime.now();
-    await setPrg4Sop(segmentKeyId, 0);
-    await setScheduleCurrentWithCache(scheduleCurrent, 0, now);
+  /// adjust progress start
+
+  Future<Date> getTodayLearnCreateDate(DateTime now) async {
+    var todayLearnCreateDate = await intKv(Classroom.curr, CrK.todayScheduleCreateDate);
+    todayLearnCreateDate ??= Date.from(now).value;
+    return Date(todayLearnCreateDate);
   }
 
-  @transaction
-  Future<void> right(SegmentTodayPrg segmentTodayPrg, int? progress, int? nextDayValue, bool record) async {
-    await forUpdate();
-    var segmentKeyId = segmentTodayPrg.segmentKeyId;
-    bool complete = false;
-    int? nextProgress;
-    TodayPrgType prgType;
+  int getPrgTypeInt(SegmentTodayPrg segmentTodayPrg) {
+    return getPrgType(segmentTodayPrg).index;
+  }
+
+  TodayPrgType getPrgType(SegmentTodayPrg segmentTodayPrg) {
+    TodayPrgType prgType = TodayPrgType.none;
     if (segmentTodayPrg.reviewCreateDate.value == 0) {
       prgType = TodayPrgType.learn;
     } else if (segmentTodayPrg.reviewCreateDate.value == 1) {
@@ -977,61 +975,92 @@ abstract class ScheduleDao {
     } else {
       prgType = TodayPrgType.review;
     }
-    var maxRepeatTime = scheduleConfig.maxRepeatTime;
-    if (progress != null && progress >= 0 && nextDayValue != null && nextDayValue > 0) {
-      complete = true;
-      nextProgress = progress;
-    } else if (segmentTodayPrg.progress == 0 && DateTime.fromMicrosecondsSinceEpoch(0).compareTo(segmentTodayPrg.viewTime) == 0) {
-      complete = true;
-      if (prgType == TodayPrgType.learn) {
-        var schedule = await getSegmentOverallPrg(segmentKeyId);
-        if (schedule == null) {
-          return;
-        }
-        nextProgress = schedule.progress + 1;
-      }
-    } else if (segmentTodayPrg.progress + 1 >= maxRepeatTime) {
-      complete = true;
-      nextProgress = 0;
+    return prgType;
+  }
+
+  Future<void> setPrg(int segmentKeyId, int progress, Date? next) async {
+    if (next != null) {
+      await setPrgAndNext4Sop(segmentKeyId, progress, next);
+    } else {
+      await setPrg4Sop(segmentKeyId, progress);
+    }
+    var now = DateTime.now();
+    await insertKv(CrKv(Classroom.curr, CrK.updateProgressTime, now.millisecondsSinceEpoch.toString()));
+  }
+
+  @transaction
+  Future<void> error(SegmentTodayPrg stp) async {
+    await forUpdate();
+    var now = DateTime.now();
+    await setTodayPrgWithCache(stp, 0, now);
+    await setPrg(stp.segmentKeyId, 0, null);
+  }
+
+  @transaction
+  Future<void> jumpDirectly(int contentSerial, int segmentKeyId, int progress, int nextDayValue) async {
+    await forUpdate();
+    await setPrg(segmentKeyId, progress, Date(nextDayValue));
+  }
+
+  @transaction
+  Future<void> jump(SegmentTodayPrg stp, int progress, int nextDayValue) async {
+    await forUpdate();
+
+    TodayPrgType prgType = getPrgType(stp);
+
+    var now = DateTime.now();
+    var todayLearnCreateDate = await getTodayLearnCreateDate(now);
+
+    if (prgType == TodayPrgType.learn) {
+      await insertSegmentReview([SegmentReview(todayLearnCreateDate, stp.segmentKeyId, Classroom.curr, stp.contentSerial, 0)]);
+    } else if (prgType == TodayPrgType.review) {
+      await setSegmentReviewCount(stp.reviewCreateDate, stp.segmentKeyId, stp.reviewCount + 1);
+    }
+
+    await setPrg(stp.segmentKeyId, progress, Date(nextDayValue));
+    await setTodayPrgWithCache(stp, scheduleConfig.maxRepeatTime, now);
+    await insertSegmentStats(SegmentStats(stp.segmentKeyId, getPrgTypeInt(stp), todayLearnCreateDate, now.millisecondsSinceEpoch, Classroom.curr, stp.contentSerial));
+  }
+
+  @transaction
+  Future<void> right(SegmentTodayPrg stp) async {
+    await forUpdate();
+
+    TodayPrgType prgType = getPrgType(stp);
+
+    ProgressState state = ProgressState.unfinished;
+    if (stp.progress == 0 && DateTime.fromMicrosecondsSinceEpoch(0).compareTo(stp.viewTime) == 0) {
+      state = ProgressState.familiar;
+    } else if (stp.progress + 1 >= scheduleConfig.maxRepeatTime) {
+      state = ProgressState.unfamiliar;
     }
 
     var now = DateTime.now();
-    var todayLearnCreateDate = await intKv(Classroom.curr, CrK.todayScheduleCreateDate);
-    todayLearnCreateDate ??= Date.from(now).value;
-    if (record) {
-      int todayNextProgress;
-      if (complete) {
-        todayNextProgress = maxRepeatTime;
-        switch (prgType) {
-          case TodayPrgType.learn:
-            await insertSegmentReview([SegmentReview(Date(todayLearnCreateDate), segmentKeyId, Classroom.curr, segmentTodayPrg.contentSerial, 0)]);
-            break;
-          case TodayPrgType.review:
-            await setSegmentReviewCount(segmentTodayPrg.reviewCreateDate, segmentKeyId, segmentTodayPrg.reviewCount + 1);
-          default:
-            break;
-        }
-      } else {
-        todayNextProgress = segmentTodayPrg.progress + 1;
-      }
-      await setScheduleCurrentWithCache(segmentTodayPrg, todayNextProgress, now);
-      await insertSegmentStats(SegmentStats(segmentKeyId, prgType.index, Date(todayLearnCreateDate), now.millisecondsSinceEpoch, Classroom.curr, segmentTodayPrg.contentSerial));
-    } else if (nextProgress != null) {
-      await insertSegmentStats(SegmentStats(segmentKeyId, TodayPrgType.none.index, Date(todayLearnCreateDate), now.millisecondsSinceEpoch, Classroom.curr, segmentTodayPrg.contentSerial));
-    }
+    Date todayLearnCreateDate = await getTodayLearnCreateDate(now);
 
-    if (nextProgress != null) {
-      Date nextDay;
-      if (nextDayValue != null) {
-        nextDay = Date(nextDayValue);
-      } else {
-        nextDay = getNextByProgress(Date(todayLearnCreateDate).toDateTime(), nextProgress);
+    if (state == ProgressState.unfinished) {
+      await setTodayPrgWithCache(stp, stp.progress + 1, now);
+    } else {
+      if (prgType == TodayPrgType.learn) {
+        int nextProgress = 0;
+        if (state == ProgressState.familiar) {
+          var segmentProgress = await getSegmentProgress(stp.segmentKeyId);
+          if (segmentProgress == null) {
+            return;
+          }
+          nextProgress = segmentProgress + 1;
+        }
+        await setPrg(stp.segmentKeyId, nextProgress, getNextByProgress(todayLearnCreateDate.toDateTime(), nextProgress));
+        await insertSegmentReview([SegmentReview(todayLearnCreateDate, stp.segmentKeyId, Classroom.curr, stp.contentSerial, 0)]);
+      } else if (prgType == TodayPrgType.review) {
+        await setSegmentReviewCount(stp.reviewCreateDate, stp.segmentKeyId, stp.reviewCount + 1);
       }
-      await setPrgAndNext4Sop(segmentKeyId, nextProgress, nextDay);
+      await setTodayPrgWithCache(stp, scheduleConfig.maxRepeatTime, now);
+      await insertSegmentStats(SegmentStats(stp.segmentKeyId, prgType.index, todayLearnCreateDate, now.millisecondsSinceEpoch, Classroom.curr, stp.contentSerial));
     }
   }
 
-  Future<void> setScheduleCurrentWithCache(SegmentTodayPrg segmentTodayPrg, int progress, DateTime now) async {
+  Future<void> setTodayPrgWithCache(SegmentTodayPrg segmentTodayPrg, int progress, DateTime now) async {
     var finish = false;
     if (progress >= scheduleConfig.maxRepeatTime) {
       finish = true;
@@ -1066,4 +1095,6 @@ abstract class ScheduleDao {
       return b;
     }
   }
+
+  /// adjust progress end
 }

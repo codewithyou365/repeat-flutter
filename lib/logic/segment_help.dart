@@ -1,5 +1,6 @@
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/entity/cr_kv.dart';
 
 import 'model/segment_show.dart';
 
@@ -11,9 +12,9 @@ class SegmentHelp {
   static List<SegmentShow> allCache = [];
 
   static Future<String> getSegmentKey(int classroomId) async {
-    var currMaxId = await Db().db.scheduleDao.getMaxSegmentStatsId(Classroom.curr) ?? 0;
-    var currMaxUpdateTime = await Db().db.scheduleDao.getMaxContentUpdateTime(Classroom.curr) ?? 0;
-    return '$currMaxId-$currMaxUpdateTime';
+    var progressUpdateTime = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.updateProgressTime) ?? '';
+    var contentUpdateTime = await Db().db.scheduleDao.getMaxContentUpdateTime(Classroom.curr) ?? 0;
+    return '$progressUpdateTime-$contentUpdateTime';
   }
 
   static Future<List<SegmentShow>> getAllSegment() async {
