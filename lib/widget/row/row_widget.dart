@@ -23,6 +23,26 @@ class RowWidget {
   static const double paddingHorizontal = 8;
   static const double paddingVertical = 4;
 
+  static Widget buildTabs(List<String> tabTitles, TabController? tabController, {Function(int)? onTap}) {
+    if (tabController == null) {
+      return const SizedBox(); // Prevent rendering if controller is null
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
+      child: SizedBox(
+        height: rowHeight,
+        child: TabBar(
+          controller: tabController,
+          onTap: onTap,
+          tabs: tabTitles.map((title) => Tab(text: title)).toList(),
+          labelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          unselectedLabelStyle: const TextStyle(fontSize: 15),
+          indicatorSize: TabBarIndicatorSize.tab,
+        ),
+      ),
+    );
+  }
+
   static Widget buildButtons(
     List<Button> buttons,
   ) {

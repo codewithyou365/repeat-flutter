@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 class ExpandableText extends StatefulWidget {
   final String text;
@@ -6,6 +6,7 @@ class ExpandableText extends StatefulWidget {
   final int limit;
   final TextStyle? style;
   final TextStyle? selectedStyle;
+  final VoidCallback? onEdit;
 
   const ExpandableText({
     Key? key,
@@ -14,6 +15,7 @@ class ExpandableText extends StatefulWidget {
     required this.limit,
     this.style,
     this.selectedStyle,
+    this.onEdit,
   }) : super(key: key);
 
   @override
@@ -29,18 +31,25 @@ class _ExpandableTextState extends State<ExpandableText> {
     final selectText = widget.selectText;
 
     String displayText = fullText;
-    if (!isExpanded && fullText.length > widget.limit) {
-      displayText = fullText.substring(0, widget.limit);
+    if (!isExpanded) {
+      int newLineIndex = displayText.indexOf('\n');
+      if (newLineIndex != -1) {
+        displayText = displayText.substring(0, newLineIndex);
+      }
+      if (displayText.length > widget.limit) {
+        displayText = displayText.substring(0, widget.limit);
+      }
     }
 
     final startIndex = fullText.indexOf(selectText);
     final displayTextStartIndex = displayText.indexOf(selectText);
 
-    List<TextSpan> spans;
+    List<InlineSpan> spans;
     String suffix = "";
     if (displayText != fullText) {
       suffix = "...";
     }
+
     if (selectText.isNotEmpty && startIndex != -1) {
       if (displayTextStartIndex != -1) {
         spans = [
@@ -76,6 +85,27 @@ class _ExpandableTextState extends State<ExpandableText> {
           style: widget.style,
         ),
       ];
+    }
+
+    if (widget.onEdit != null && displayText == fullText) {
+      spans.add(
+        WidgetSpan(
+          child: GestureDetector(
+            onTap: widget.onEdit,
+            child: Container(
+              width: 25,
+              decoration: const BoxDecoration(
+                border: Border(bottom: BorderSide(color: Color(0xFF007BFF), width: 1)),
+              ),
+              child: const Icon(
+                Icons.edit,
+                color: Color(0xFF007BFF),
+                size: 16, // Adjusted icon size
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
     return GestureDetector(

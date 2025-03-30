@@ -5,8 +5,9 @@ import 'package:repeat_flutter/common/date.dart';
 class SegmentShow {
   @primaryKey
   final String key;
-  final String segmentContent;
   final String contentName;
+  final String segmentContent;
+  final String segmentNote;
   final int lessonIndex;
   final int segmentIndex;
   final Date next;
@@ -17,6 +18,7 @@ class SegmentShow {
     this.key,
     this.contentName,
     this.segmentContent,
+    this.segmentNote,
     this.lessonIndex,
     this.segmentIndex,
     this.next,

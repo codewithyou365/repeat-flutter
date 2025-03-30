@@ -19,7 +19,8 @@ class SegmentKey {
   final int segmentIndex;
   int version;
   final String key;
-  final String segmentContent;
+  final String content;
+  final String note;
 
   SegmentKey(
     this.classroomId,
@@ -28,7 +29,8 @@ class SegmentKey {
     this.segmentIndex,
     this.version,
     this.key,
-    this.segmentContent, {
+    this.content,
+    this.note, {
     this.id,
   });
 
@@ -44,7 +46,8 @@ class SegmentKey {
       segmentIndex,
       version,
       key,
-      segmentContent,
+      content,
+      note,
       id: id,
     );
     return ret;

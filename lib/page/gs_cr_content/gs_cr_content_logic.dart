@@ -19,7 +19,7 @@ import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
-import 'package:repeat_flutter/logic/widget/segment_show_logic.dart';
+import 'package:repeat_flutter/logic/widget/segment_list.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -28,7 +28,7 @@ import 'gs_cr_content_state.dart';
 class GsCrContentLogic extends GetxController {
   static const String id = "GsCrContentLogic";
   final GsCrContentState state = GsCrContentState();
-  late SegmentShowLogic segmentShowLogic = SegmentShowLogic<GsCrContentLogic>(this);
+  late SegmentList segmentList = SegmentList<GsCrContentLogic>(this);
   static RegExp reg = RegExp(r'^[0-9A-Z]+$');
 
   @override
@@ -63,7 +63,7 @@ class GsCrContentLogic extends GetxController {
       Snackbar.show(I18nKey.labelNoContent.tr);
       return;
     }
-    segmentShowLogic.show(all: false, initContentNameSelect: content.name);
+    segmentList.show(all: false, initContentNameSelect: content.name);
   }
 
   showWarning(int contentId, int contentSerial) async {
@@ -72,7 +72,7 @@ class GsCrContentLogic extends GetxController {
       Snackbar.show(I18nKey.labelNoContent.tr);
       return;
     }
-    segmentShowLogic.show(all: true, initContentNameSelect: content.name);
+    segmentList.show(all: true, initContentNameSelect: content.name);
   }
 
   addByZip(int contentId, int contentSerial) async {

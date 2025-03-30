@@ -230,7 +230,7 @@ abstract class ScheduleDao {
       ' WHERE Content.id=:id')
   Future<void> hideContent(int id);
 
-  /// --- SegmentTodayPrg ---
+  /// --- CrKv ---
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertKv(CrKv kv);
@@ -246,6 +246,21 @@ abstract class ScheduleDao {
 
   @Query('UPDATE CrKv SET value=:value WHERE classroomId=:classroomId and k=:k')
   Future<void> updateKv(int classroomId, CrK k, String value);
+
+  /// --- Update SegmentKey ---
+  @Query('UPDATE SegmentKey set note=:note,content=:content WHERE id=:id')
+  Future<void> updateSegmentNoteAndContent(int id, String note, String content);
+
+  @Query('UPDATE SegmentKey set note=:note WHERE id=:id')
+  Future<void> updateSegmentNote(int id, String note);
+
+  @Query('UPDATE SegmentKey set content=:content WHERE id=:id')
+  Future<void> updateSegmentContent(int id, String content);
+
+  @Query('SELECT note FROM SegmentKey WHERE id=:id')
+  Future<String?> getSegmentNote(int id);
+
+  /// --- SegmentTodayPrg ---
 
   @Query('DELETE FROM SegmentTodayPrg WHERE classroomId=:classroomId')
   Future<void> deleteSegmentTodayPrgByClassroomId(int classroomId);
@@ -453,8 +468,9 @@ abstract class ScheduleDao {
   Future<List<SegmentKey>> getSegmentKey(int classroomId, int contentSerial);
 
   @Query('SELECT SegmentKey.key'
-      ',SegmentKey.segmentContent'
       ',Content.name contentName'
+      ',SegmentKey.content segmentContent'
+      ',SegmentKey.note segmentNote'
       ',SegmentKey.lessonIndex'
       ',SegmentKey.segmentIndex'
       ',SegmentOverallPrg.next'
@@ -468,8 +484,9 @@ abstract class ScheduleDao {
   Future<List<SegmentShow>> getAllSegment(int classroomId);
 
   @Query('SELECT SegmentKey.key'
-      ',SegmentKey.segmentContent'
       ',Content.name contentName'
+      ',SegmentKey.content segmentContent'
+      ',SegmentKey.note segmentNote'
       ',Segment.lessonIndex'
       ',Segment.segmentIndex'
       ',SegmentOverallPrg.next'
@@ -649,6 +666,7 @@ abstract class ScheduleDao {
           0,
           pos2Key['$lessonIndex,$segmentIndex']!,
           segment.content,
+          '',
         ));
         segments.add(Segment(
           0,
@@ -717,7 +735,7 @@ abstract class ScheduleDao {
         needToInsert.add(newSegmentKey);
       } else if (oldSegmentKey.lessonIndex != newSegmentKey.lessonIndex || //
           oldSegmentKey.segmentIndex != newSegmentKey.segmentIndex || //
-          oldSegmentKey.segmentContent != newSegmentKey.segmentContent) {
+          oldSegmentKey.content != newSegmentKey.content) {
         var modifyOne = newSegmentKey.clone();
         modifyOne.id = oldSegmentKey.id;
         needToModify.add(modifyOne);
@@ -952,6 +970,21 @@ abstract class ScheduleDao {
     SegmentTodayPrg.setType(ret, TodayPrgType.fullCustom, fullCustomConfigs.length - 1, 0);
 
     await insertSegmentTodayPrg(ret);
+  }
+
+  @transaction
+  Future<void> updateSegment(int segmentKeyId, String? note, String? content, bool updateKey) async {
+    if (note != null && content != null) {
+      await updateSegmentNoteAndContent(segmentKeyId, note, content);
+    } else if (note != null) {
+      await updateSegmentNote(segmentKeyId, note);
+    } else if (content != null) {
+      await updateSegmentContent(segmentKeyId, content);
+    }
+    if (updateKey) {
+      var now = DateTime.now();
+      await insertKv(CrKv(Classroom.curr, CrK.updateProgressTime, now.millisecondsSinceEpoch.toString()));
+    }
   }
 
   /// adjust progress start

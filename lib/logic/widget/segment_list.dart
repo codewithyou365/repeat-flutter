@@ -11,108 +11,14 @@ import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/text/expandable_text.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-class SegmentShowLogic<T extends GetxController> {
-  static const String bodyId = "SegmentShowLogic.bodyId";
-  static const String findUnnecessarySegmentsId = "SegmentShowLogic.findUnnecessarySegmentsId";
-  static const String detailSearchId = "SegmentShowLogic.searchId";
+class SegmentList<T extends GetxController> {
+  static const String bodyId = "SegmentList.bodyId";
+  static const String findUnnecessarySegmentsId = "SegmentList.findUnnecessarySegmentsId";
+  static const String detailSearchId = "SegmentList.searchId";
 
   final T parentLogic;
 
-  SegmentShowLogic(this.parentLogic);
-
-  void refreshMissingSegmentIndex(
-    List<int> missingSegmentIndex,
-    List<SegmentShow> segmentShow,
-  ) {
-    missingSegmentIndex.clear();
-    for (int i = 0; i < segmentShow.length; i++) {
-      var v = segmentShow[i];
-      if (v.missing) {
-        missingSegmentIndex.add(i);
-      }
-    }
-  }
-
-  void collectDataFromSegments(
-    List<int> missingSegmentIndex,
-    List<String> contentName,
-    List<int> lesson,
-    List<int> progress,
-    List<int> nextMonth,
-    List<SegmentShow> segmentShow,
-  ) {
-    for (int i = 0; i < segmentShow.length; i++) {
-      var v = segmentShow[i];
-      if (v.missing) {
-        missingSegmentIndex.add(i);
-      }
-      if (!contentName.contains(v.contentName)) {
-        contentName.add(v.contentName);
-      }
-      if (!lesson.contains(v.lessonIndex)) {
-        lesson.add(v.lessonIndex);
-      }
-      if (!progress.contains(v.progress)) {
-        progress.add(v.progress);
-      }
-      int month = v.next.value ~/ 100;
-      if (!nextMonth.contains(month)) {
-        nextMonth.add(month);
-      }
-    }
-    lesson.sort();
-    progress.sort();
-    nextMonth.sort();
-    contentName.insert(0, I18nKey.labelAll.tr);
-    lesson.insert(0, -1);
-    progress.insert(0, -1);
-    nextMonth.insert(0, -1);
-  }
-
-  sort(List<SegmentShow> segmentShow, I18nKey key) {
-    switch (key) {
-      case I18nKey.labelSortProgressAsc:
-        segmentShow.sort((a, b) {
-          int progressComparison = a.progress.compareTo(b.progress);
-          return progressComparison != 0 ? progressComparison : a.toSort().compareTo(b.toSort());
-        });
-        break;
-      case I18nKey.labelSortProgressDesc:
-        segmentShow.sort((a, b) {
-          int progressComparison = b.progress.compareTo(a.progress);
-          return progressComparison != 0 ? progressComparison : a.toSort().compareTo(b.toSort());
-        });
-        break;
-      case I18nKey.labelSortPositionAsc:
-        segmentShow.sort((a, b) => a.toSort().compareTo(b.toSort()));
-        break;
-      case I18nKey.labelSortPositionDesc:
-        segmentShow.sort((a, b) => b.toSort().compareTo(a.toSort()));
-        break;
-      case I18nKey.labelSortNextLearnDateAsc:
-        segmentShow.sort((a, b) {
-          int nextComparison = a.next.value.compareTo(b.next.value);
-          return nextComparison != 0 ? nextComparison : a.toSort().compareTo(b.toSort());
-        });
-        break;
-      case I18nKey.labelSortNextLearnDateDesc:
-        segmentShow.sort((a, b) {
-          int nextComparison = b.next.value.compareTo(a.next.value);
-          return nextComparison != 0 ? nextComparison : a.toSort().compareTo(b.toSort());
-        });
-        break;
-      default:
-        break;
-    }
-  }
-
-  double getBodyViewHeight(List<int> missingSegmentIndex, double baseBodyViewHeight) {
-    if (missingSegmentIndex.isNotEmpty) {
-      return baseBodyViewHeight - RowWidget.rowHeight - RowWidget.dividerHeight;
-    } else {
-      return baseBodyViewHeight;
-    }
-  }
+  SegmentList(this.parentLogic);
 
   show({bool all = false, String? initContentNameSelect, int? initLessonSelect}) async {
     showTransparentOverlay(() async {
@@ -142,7 +48,7 @@ class SegmentShowLogic<T extends GetxController> {
       } else {
         showSearchDetailPanel = false;
       }
-      parentLogic.update([SegmentShowLogic.detailSearchId]);
+      parentLogic.update([SegmentList.detailSearchId]);
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       focusNode.requestFocus();
@@ -226,6 +132,9 @@ class SegmentShowLogic<T extends GetxController> {
           bool ret = true;
           if (ret && search.value.isNotEmpty) {
             ret = e.segmentContent.contains(search.value);
+            if (ret == false) {
+              ret = e.segmentNote.contains(search.value);
+            }
           }
           if (ret && contentNameSelect.value != 0) {
             ret = e.contentName == contentNameOptions[contentNameSelect.value];
@@ -248,10 +157,10 @@ class SegmentShowLogic<T extends GetxController> {
       }
       sort(segmentShow, sortOptionKeys[selectedSortIndex.value]);
       refreshMissingSegmentIndex(missingSegmentIndex, segmentShow);
-      parentLogic.update([SegmentShowLogic.findUnnecessarySegmentsId]);
+      parentLogic.update([SegmentList.findUnnecessarySegmentsId]);
 
       bodyViewHeight = getBodyViewHeight(missingSegmentIndex, baseBodyViewHeight);
-      parentLogic.update([SegmentShowLogic.bodyId]);
+      parentLogic.update([SegmentList.bodyId]);
     }
 
     // init select
@@ -280,7 +189,7 @@ class SegmentShowLogic<T extends GetxController> {
             RowWidget.buildDividerWithoutColor(),
             if (missingSegmentIndex.isNotEmpty)
               GetBuilder<T>(
-                  id: SegmentShowLogic.findUnnecessarySegmentsId,
+                  id: SegmentList.findUnnecessarySegmentsId,
                   builder: (_) {
                     if (missingSegmentIndex.isNotEmpty) {
                       return Column(
@@ -323,7 +232,7 @@ class SegmentShowLogic<T extends GetxController> {
                     }
                   }),
             GetBuilder<T>(
-              id: SegmentShowLogic.bodyId,
+              id: SegmentList.bodyId,
               builder: (_) {
                 var list = segmentShow;
                 return SizedBox(
@@ -382,7 +291,7 @@ class SegmentShowLogic<T extends GetxController> {
                                     const SizedBox(height: 8),
                                     ExpandableText(
                                       text: '${I18nKey.labelKey.tr}: ${segment.key}',
-                                      limit: 40,
+                                      limit: 30,
                                       style: const TextStyle(fontWeight: FontWeight.bold),
                                       selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
                                       selectText: search.value,
@@ -390,10 +299,20 @@ class SegmentShowLogic<T extends GetxController> {
                                     const SizedBox(height: 8),
                                     ExpandableText(
                                       text: '${I18nKey.labelSegmentName.tr}: ${segment.segmentContent}',
-                                      limit: 80,
+                                      limit: 30,
                                       style: const TextStyle(fontSize: 14),
                                       selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
                                       selectText: search.value,
+                                      onEdit: () {},
+                                    ),
+                                    const SizedBox(height: 8),
+                                    ExpandableText(
+                                      text: '${I18nKey.labelNote.tr}: ${segment.segmentNote}',
+                                      limit: 30,
+                                      style: const TextStyle(fontSize: 14),
+                                      selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                                      selectText: search.value,
+                                      onEdit: () {},
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
@@ -427,7 +346,9 @@ class SegmentShowLogic<T extends GetxController> {
                                 ),
                               ),
                               IconButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  //segmentDetail.play(segment);
+                                },
                                 icon: const Icon(
                                   Icons.more_vert,
                                 ),
@@ -444,7 +365,7 @@ class SegmentShowLogic<T extends GetxController> {
           ],
         ),
         GetBuilder<T>(
-            id: SegmentShowLogic.detailSearchId,
+            id: SegmentList.detailSearchId,
             builder: (_) {
               if (showSearchDetailPanel) {
                 double searchViewHeight = 4.5 * (RowWidget.rowHeight + RowWidget.dividerHeight);
@@ -506,7 +427,7 @@ class SegmentShowLogic<T extends GetxController> {
                                 selectedSortIndex.value = index;
                                 I18nKey key = sortOptionKeys[index];
                                 sort(segmentShow, key);
-                                parentLogic.update([SegmentShowLogic.bodyId]);
+                                parentLogic.update([SegmentList.bodyId]);
                               },
                               pickWidth: 210.w,
                             ),
@@ -527,5 +448,99 @@ class SegmentShowLogic<T extends GetxController> {
       searchController.dispose();
       focusNode.dispose();
     });
+  }
+
+  static void refreshMissingSegmentIndex(
+    List<int> missingSegmentIndex,
+    List<SegmentShow> segmentShow,
+  ) {
+    missingSegmentIndex.clear();
+    for (int i = 0; i < segmentShow.length; i++) {
+      var v = segmentShow[i];
+      if (v.missing) {
+        missingSegmentIndex.add(i);
+      }
+    }
+  }
+
+  static void collectDataFromSegments(
+    List<int> missingSegmentIndex,
+    List<String> contentName,
+    List<int> lesson,
+    List<int> progress,
+    List<int> nextMonth,
+    List<SegmentShow> segmentShow,
+  ) {
+    for (int i = 0; i < segmentShow.length; i++) {
+      var v = segmentShow[i];
+      if (v.missing) {
+        missingSegmentIndex.add(i);
+      }
+      if (!contentName.contains(v.contentName)) {
+        contentName.add(v.contentName);
+      }
+      if (!lesson.contains(v.lessonIndex)) {
+        lesson.add(v.lessonIndex);
+      }
+      if (!progress.contains(v.progress)) {
+        progress.add(v.progress);
+      }
+      int month = v.next.value ~/ 100;
+      if (!nextMonth.contains(month)) {
+        nextMonth.add(month);
+      }
+    }
+    lesson.sort();
+    progress.sort();
+    nextMonth.sort();
+    contentName.insert(0, I18nKey.labelAll.tr);
+    lesson.insert(0, -1);
+    progress.insert(0, -1);
+    nextMonth.insert(0, -1);
+  }
+
+  static sort(List<SegmentShow> segmentShow, I18nKey key) {
+    switch (key) {
+      case I18nKey.labelSortProgressAsc:
+        segmentShow.sort((a, b) {
+          int progressComparison = a.progress.compareTo(b.progress);
+          return progressComparison != 0 ? progressComparison : a.toSort().compareTo(b.toSort());
+        });
+        break;
+      case I18nKey.labelSortProgressDesc:
+        segmentShow.sort((a, b) {
+          int progressComparison = b.progress.compareTo(a.progress);
+          return progressComparison != 0 ? progressComparison : a.toSort().compareTo(b.toSort());
+        });
+        break;
+      case I18nKey.labelSortPositionAsc:
+        segmentShow.sort((a, b) => a.toSort().compareTo(b.toSort()));
+        break;
+      case I18nKey.labelSortPositionDesc:
+        segmentShow.sort((a, b) => b.toSort().compareTo(a.toSort()));
+        break;
+      case I18nKey.labelSortNextLearnDateAsc:
+        segmentShow.sort((a, b) {
+          int nextComparison = a.next.value.compareTo(b.next.value);
+          return nextComparison != 0 ? nextComparison : a.toSort().compareTo(b.toSort());
+        });
+        break;
+      case I18nKey.labelSortNextLearnDateDesc:
+        segmentShow.sort((a, b) {
+          int nextComparison = b.next.value.compareTo(a.next.value);
+          return nextComparison != 0 ? nextComparison : a.toSort().compareTo(b.toSort());
+        });
+        break;
+      default:
+        break;
+    }
+  }
+
+  static double getBodyViewHeight(List<int> missingSegmentIndex, double baseBodyViewHeight) {
+    if (missingSegmentIndex.isNotEmpty) {
+      return baseBodyViewHeight - RowWidget.rowHeight - RowWidget.dividerHeight;
+    } else {
+      return baseBodyViewHeight;
+    }
   }
 }
