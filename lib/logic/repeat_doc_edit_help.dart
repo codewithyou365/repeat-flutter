@@ -1,11 +1,9 @@
 import 'dart:convert';
 
-import 'package:get/get.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
-import 'package:repeat_flutter/page/gs_cr_repeat/gs_cr_repeat_logic.dart';
 import 'package:repeat_flutter/widget/player_bar/player_bar.dart';
 
 import 'model/repeat_doc.dart';
@@ -221,7 +219,7 @@ class RepeatDocEditHelp {
     var indexPath = DocPath.getRelativeIndexPath(contentSerial);
     await RepeatDoc.writeFile(indexPath, map);
     RepeatDocHelp.clear();
-    await Get.find<GsCrRepeatLogic>().refreshView();
+    //await Get.find<GsCrRepeatLogic>().refreshView();
     return true;
   }
 }

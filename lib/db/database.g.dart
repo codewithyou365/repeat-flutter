@@ -1480,14 +1480,15 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> updateSegmentNoteAndContent(
+  Future<void> updateSegmentNoteAndKeyAndContent(
     int id,
     String note,
+    String key,
     String content,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE SegmentKey set note=?2,content=?3 WHERE id=?1',
-        arguments: [id, note, content]);
+        'UPDATE SegmentKey set note=?2,key=?3,content=?4 WHERE id=?1',
+        arguments: [id, note, key, content]);
   }
 
   @override
@@ -1501,13 +1502,14 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> updateSegmentContent(
+  Future<void> updateSegmentKeyAndContent(
     int id,
+    String key,
     String content,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE SegmentKey set content=?2 WHERE id=?1',
-        arguments: [id, content]);
+        'UPDATE SegmentKey set key=?2,content=?3 WHERE id=?1',
+        arguments: [id, key, content]);
   }
 
   @override
@@ -1796,18 +1798,39 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<List<SegmentShow>> getAllSegment(int classroomId) async {
-    return _queryAdapter.queryList(
-        'SELECT SegmentKey.key,Content.name contentName,SegmentKey.content segmentContent,SegmentKey.note segmentNote,SegmentKey.lessonIndex,SegmentKey.segmentIndex,SegmentOverallPrg.next,SegmentOverallPrg.progress,Segment.segmentKeyId is null missing FROM SegmentKey JOIN Content ON Content.classroomId=?1 AND Content.docId!=0 LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id AND SegmentKey.classroomId=?1',
-        mapper: (Map<String, Object?> row) => SegmentShow(row['key'] as String, row['contentName'] as String, row['segmentContent'] as String, row['segmentNote'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, (row['missing'] as int) != 0),
-        arguments: [classroomId]);
+  Future<SegmentKey?> getSegmentKeyById(int id) async {
+    return _queryAdapter.query(
+        'SELECT SegmentKey.* FROM SegmentKey WHERE SegmentKey.id=?1',
+        mapper: (Map<String, Object?> row) => SegmentKey(
+            row['classroomId'] as int,
+            row['contentSerial'] as int,
+            row['lessonIndex'] as int,
+            row['segmentIndex'] as int,
+            row['version'] as int,
+            row['key'] as String,
+            row['content'] as String,
+            row['note'] as String,
+            id: row['id'] as int?),
+        arguments: [id]);
   }
 
   @override
-  Future<List<SegmentShow>> getSegment(int classroomId) async {
+  Future<SegmentKey?> getSegmentKeyByKey(
+    int classroomId,
+    int contentSerial,
+    String key,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT SegmentKey.* FROM SegmentKey WHERE SegmentKey.classroomId=?1 AND SegmentKey.contentSerial=?2 AND SegmentKey.key=?3',
+        mapper: (Map<String, Object?> row) => SegmentKey(row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['version'] as int, row['key'] as String, row['content'] as String, row['note'] as String, id: row['id'] as int?),
+        arguments: [classroomId, contentSerial, key]);
+  }
+
+  @override
+  Future<List<SegmentShow>> getAllSegment(int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentKey.key,Content.name contentName,SegmentKey.content segmentContent,SegmentKey.note segmentNote,Segment.lessonIndex,Segment.segmentIndex,SegmentOverallPrg.next,SegmentOverallPrg.progress,Segment.segmentKeyId is null missing FROM Segment JOIN Content ON Content.classroomId=?1 AND Content.docId!=0 JOIN SegmentKey ON SegmentKey.id=Segment.segmentKeyId JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=Segment.segmentKeyId WHERE Segment.classroomId=?1',
-        mapper: (Map<String, Object?> row) => SegmentShow(row['key'] as String, row['contentName'] as String, row['segmentContent'] as String, row['segmentNote'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, (row['missing'] as int) != 0),
+        'SELECT SegmentKey.id segmentKeyId,SegmentKey.key,Content.name contentName,SegmentKey.content segmentContent,SegmentKey.note segmentNote,SegmentKey.lessonIndex,SegmentKey.segmentIndex,SegmentOverallPrg.next,SegmentOverallPrg.progress,Segment.segmentKeyId is null missing FROM SegmentKey JOIN Content ON Content.classroomId=?1 AND Content.docId!=0 LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id AND SegmentKey.classroomId=?1',
+        mapper: (Map<String, Object?> row) => SegmentShow(row['segmentKeyId'] as int, row['key'] as String, row['contentName'] as String, row['segmentContent'] as String, row['segmentNote'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, (row['missing'] as int) != 0),
         arguments: [classroomId]);
   }
 
@@ -2096,17 +2119,16 @@ class _$ScheduleDao extends ScheduleDao {
     int segmentKeyId,
     String? note,
     String? content,
-    bool updateKey,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.updateSegment(segmentKeyId, note, content, updateKey);
+      await super.updateSegment(segmentKeyId, note, content);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         await transactionDatabase.scheduleDao
-            .updateSegment(segmentKeyId, note, content, updateKey);
+            .updateSegment(segmentKeyId, note, content);
       });
     }
   }

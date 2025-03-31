@@ -196,13 +196,14 @@ class GsCrRepeatLogic extends GetxController {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
+    // TODO
     String? note = await Db().db.scheduleDao.getSegmentNote(curr.segmentKeyId);
     Editor.show(
       Get.context!,
       I18nKey.labelNote.tr,
       note ?? "",
       (str) async {
-        await Db().db.scheduleDao.updateSegmentNote(curr.segmentKeyId, str);
+        // TODO await Db().db.scheduleDao.updateSegmentNote(curr.segmentKeyId, str);
       },
       qrPagePath: Nav.gsCrContentScan.path,
     );
@@ -708,6 +709,7 @@ class GsCrRepeatLogic extends GetxController {
       I18nKey.labelSegmentName.tr,
       segmentContent,
       (str) async {
+        //TODO
         await RepeatDocEditHelp.setSegment(contentSerial, lessonIndex, segmentIndex, str);
       },
       qrPagePath: Nav.gsCrContentScan.path,

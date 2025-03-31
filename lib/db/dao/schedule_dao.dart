@@ -23,6 +23,7 @@ import 'package:repeat_flutter/logic/model/segment_overall_prg_with_key.dart';
 import 'package:repeat_flutter/logic/model/segment_review_with_key.dart';
 import 'package:repeat_flutter/db/entity/segment_stats.dart';
 import 'package:repeat_flutter/logic/model/segment_show.dart';
+import 'package:repeat_flutter/logic/repeat_doc_edit_help.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 // ebbinghaus learning config
@@ -180,6 +181,7 @@ class ScheduleConfig {
 
 @dao
 abstract class ScheduleDao {
+  static SegmentShow? currSegmentShow;
   static ScheduleConfig scheduleConfig = ScheduleConfig([], 0, 0, [], []);
 
   static ScheduleConfig defaultScheduleConfig = ScheduleConfig(
@@ -248,14 +250,14 @@ abstract class ScheduleDao {
   Future<void> updateKv(int classroomId, CrK k, String value);
 
   /// --- Update SegmentKey ---
-  @Query('UPDATE SegmentKey set note=:note,content=:content WHERE id=:id')
-  Future<void> updateSegmentNoteAndContent(int id, String note, String content);
+  @Query('UPDATE SegmentKey set note=:note,key=:key,content=:content WHERE id=:id')
+  Future<void> updateSegmentNoteAndKeyAndContent(int id, String note, String key, String content);
 
   @Query('UPDATE SegmentKey set note=:note WHERE id=:id')
   Future<void> updateSegmentNote(int id, String note);
 
-  @Query('UPDATE SegmentKey set content=:content WHERE id=:id')
-  Future<void> updateSegmentContent(int id, String content);
+  @Query('UPDATE SegmentKey set key=:key,content=:content WHERE id=:id')
+  Future<void> updateSegmentKeyAndContent(int id, String key, String content);
 
   @Query('SELECT note FROM SegmentKey WHERE id=:id')
   Future<String?> getSegmentNote(int id);
@@ -467,7 +469,18 @@ abstract class ScheduleDao {
       ' AND SegmentKey.contentSerial=:contentSerial')
   Future<List<SegmentKey>> getSegmentKey(int classroomId, int contentSerial);
 
-  @Query('SELECT SegmentKey.key'
+  @Query('SELECT SegmentKey.* FROM SegmentKey'
+      ' WHERE SegmentKey.id=:id')
+  Future<SegmentKey?> getSegmentKeyById(int id);
+
+  @Query('SELECT SegmentKey.* FROM SegmentKey'
+      ' WHERE SegmentKey.classroomId=:classroomId'
+      ' AND SegmentKey.contentSerial=:contentSerial'
+      ' AND SegmentKey.key=:key')
+  Future<SegmentKey?> getSegmentKeyByKey(int classroomId, int contentSerial, String key);
+
+  @Query('SELECT SegmentKey.id segmentKeyId'
+      ',SegmentKey.key'
       ',Content.name contentName'
       ',SegmentKey.content segmentContent'
       ',SegmentKey.note segmentNote'
@@ -482,22 +495,6 @@ abstract class ScheduleDao {
       ' LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id'
       ' AND SegmentKey.classroomId=:classroomId')
   Future<List<SegmentShow>> getAllSegment(int classroomId);
-
-  @Query('SELECT SegmentKey.key'
-      ',Content.name contentName'
-      ',SegmentKey.content segmentContent'
-      ',SegmentKey.note segmentNote'
-      ',Segment.lessonIndex'
-      ',Segment.segmentIndex'
-      ',SegmentOverallPrg.next'
-      ',SegmentOverallPrg.progress'
-      ',Segment.segmentKeyId is null missing'
-      ' FROM Segment'
-      " JOIN Content ON Content.classroomId=:classroomId AND Content.docId!=0"
-      ' JOIN SegmentKey ON SegmentKey.id=Segment.segmentKeyId'
-      ' JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=Segment.segmentKeyId'
-      ' WHERE Segment.classroomId=:classroomId')
-  Future<List<SegmentShow>> getSegment(int classroomId);
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertSegments(List<Segment> entities);
@@ -580,6 +577,17 @@ abstract class ScheduleDao {
   }
 
   /// for content
+  String getKey(String? key, String answer) {
+    var ret = "";
+    if (key != null && key.isNotEmpty) {
+      ret = key;
+    }
+    if (ret.isEmpty) {
+      ret = answer;
+    }
+    return ret;
+  }
+
   Map<String, String>? checkAndGenPos2Key(rd.RepeatDoc kv) {
     Map<String, bool> key2Exist = {};
     Map<String, String> pos2Key = {};
@@ -591,13 +599,7 @@ abstract class ScheduleDao {
           Snackbar.show(I18nKey.labelSegmentNeedToContainAnswer.tr);
           return null;
         }
-        var key = "";
-        if (segment.key.isNotEmpty) {
-          key = segment.key;
-        }
-        if (key.isEmpty) {
-          key = segment.a;
-        }
+        var key = getKey(segment.key, segment.a);
         if (key2Exist.containsKey(key)) {
           Snackbar.show(I18nKey.labelSegmentKeyDuplicated.trArgs([key]));
           return null;
@@ -973,18 +975,56 @@ abstract class ScheduleDao {
   }
 
   @transaction
-  Future<void> updateSegment(int segmentKeyId, String? note, String? content, bool updateKey) async {
+  Future<void> updateSegment(int segmentKeyId, String? note, String? content) async {
+    SegmentKey? segmentKey = await getSegmentKeyById(segmentKeyId);
+    if (segmentKey == null) {
+      Snackbar.show(I18nKey.labelNotFoundSegment.trArgs([segmentKeyId.toString()]));
+      return;
+    }
+    String? key;
+
+    if (content != null) {
+      var contentM = convert.jsonDecode(content);
+      try {
+        rd.BaseSegment segment = rd.BaseSegment.fromJson(contentM);
+        key = getKey(segment.key, segment.a);
+      } catch (e) {
+        Snackbar.show(e.toString());
+        return;
+      }
+      var ok = await RepeatDocEditHelp.setSegment(segmentKey.contentSerial, segmentKey.lessonIndex, segmentKey.segmentIndex, content);
+      if (!ok) {
+        Snackbar.show(I18nKey.labelDataAnomaly.trArgs(['997']));
+        return;
+      }
+      content = convert.jsonEncode(contentM);
+    }
+
+    if (key != null) {
+      var otherSegmentKey = await getSegmentKeyByKey(segmentKey.classroomId, segmentKey.contentSerial, key);
+      if (otherSegmentKey != null && otherSegmentKey.id != segmentKey.id) {
+        Snackbar.show(I18nKey.labelSegmentKeyDuplicated.trArgs([key]));
+        return;
+      }
+    }
     if (note != null && content != null) {
-      await updateSegmentNoteAndContent(segmentKeyId, note, content);
+      await updateSegmentNoteAndKeyAndContent(segmentKeyId, note, key!, content);
     } else if (note != null) {
       await updateSegmentNote(segmentKeyId, note);
     } else if (content != null) {
-      await updateSegmentContent(segmentKeyId, content);
+      await updateSegmentKeyAndContent(segmentKeyId, key!, content);
     }
-    if (updateKey) {
-      var now = DateTime.now();
-      await insertKv(CrKv(Classroom.curr, CrK.updateProgressTime, now.millisecondsSinceEpoch.toString()));
+    if (currSegmentShow != null) {
+      if (note != null) {
+        currSegmentShow!.segmentNote = note;
+      }
+      if (content != null) {
+        currSegmentShow!.segmentContent = content;
+        currSegmentShow!.key = key!;
+      }
     }
+    var now = DateTime.now();
+    await insertKv(CrKv(Classroom.curr, CrK.updateSegmentShowTime, now.millisecondsSinceEpoch.toString()));
   }
 
   /// adjust progress start
@@ -1018,7 +1058,13 @@ abstract class ScheduleDao {
       await setPrg4Sop(segmentKeyId, progress);
     }
     var now = DateTime.now();
-    await insertKv(CrKv(Classroom.curr, CrK.updateProgressTime, now.millisecondsSinceEpoch.toString()));
+    if (currSegmentShow != null) {
+      currSegmentShow!.progress = progress;
+      if (next != null) {
+        currSegmentShow!.next = next;
+      }
+    }
+    await insertKv(CrKv(Classroom.curr, CrK.updateSegmentShowTime, now.millisecondsSinceEpoch.toString()));
   }
 
   @transaction

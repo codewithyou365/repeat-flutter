@@ -1,15 +1,22 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/string_util.dart';
+import 'package:repeat_flutter/db/dao/schedule_dao.dart';
+import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_show.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/text/expandable_text.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+
+import 'editor.dart';
 
 class SegmentList<T extends GetxController> {
   static const String bodyId = "SegmentList.bodyId";
@@ -20,14 +27,10 @@ class SegmentList<T extends GetxController> {
 
   SegmentList(this.parentLogic);
 
-  show({bool all = false, String? initContentNameSelect, int? initLessonSelect}) async {
+  show({String? initContentNameSelect, int? initLessonSelect}) async {
     showTransparentOverlay(() async {
       List<SegmentShow> segmentShow = [];
-      if (all) {
-        segmentShow = await SegmentHelp.getAllSegment();
-      } else {
-        segmentShow = await SegmentHelp.getSegment();
-      }
+      segmentShow = await SegmentHelp.getSegments();
       showSheet(
         segmentShow,
         initContentNameSelect: initContentNameSelect,
@@ -40,15 +43,22 @@ class SegmentList<T extends GetxController> {
     // for search and controls
     RxString search = RxString("");
     bool showSearchDetailPanel = false;
+
+    void tryUpdateDetailSearchPanel(bool newShow) {
+      if (showSearchDetailPanel != newShow) {
+        showSearchDetailPanel = newShow;
+        parentLogic.update([SegmentList.detailSearchId]);
+      }
+    }
+
     final TextEditingController searchController = TextEditingController(text: search.value);
     final focusNode = FocusNode();
     focusNode.addListener(() {
       if (focusNode.hasFocus) {
-        showSearchDetailPanel = true;
+        tryUpdateDetailSearchPanel(true);
       } else {
-        showSearchDetailPanel = false;
+        tryUpdateDetailSearchPanel(false);
       }
-      parentLogic.update([SegmentList.detailSearchId]);
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       focusNode.requestFocus();
@@ -291,7 +301,7 @@ class SegmentList<T extends GetxController> {
                                     const SizedBox(height: 8),
                                     ExpandableText(
                                       text: '${I18nKey.labelKey.tr}: ${segment.key}',
-                                      limit: 30,
+                                      limit: 50,
                                       style: const TextStyle(fontWeight: FontWeight.bold),
                                       selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
                                       selectText: search.value,
@@ -299,20 +309,48 @@ class SegmentList<T extends GetxController> {
                                     const SizedBox(height: 8),
                                     ExpandableText(
                                       text: '${I18nKey.labelSegmentName.tr}: ${segment.segmentContent}',
-                                      limit: 30,
+                                      limit: 60,
                                       style: const TextStyle(fontSize: 14),
                                       selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
                                       selectText: search.value,
-                                      onEdit: () {},
+                                      onEdit: () {
+                                        focusNode.unfocus();
+                                        var contentM = jsonDecode(segment.segmentContent);
+                                        var content = const JsonEncoder.withIndent(' ').convert(contentM);
+                                        Editor.show(
+                                          Get.context!,
+                                          I18nKey.labelNote.tr,
+                                          content,
+                                          (str) async {
+                                            ScheduleDao.currSegmentShow = segment;
+                                            await Db().db.scheduleDao.updateSegment(segment.segmentKeyId, null, str);
+                                            parentLogic.update([SegmentList.bodyId]);
+                                          },
+                                          qrPagePath: Nav.gsCrContentScan.path,
+                                        );
+                                      },
                                     ),
                                     const SizedBox(height: 8),
                                     ExpandableText(
                                       text: '${I18nKey.labelNote.tr}: ${segment.segmentNote}',
-                                      limit: 30,
+                                      limit: 60,
                                       style: const TextStyle(fontSize: 14),
                                       selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
                                       selectText: search.value,
-                                      onEdit: () {},
+                                      onEdit: () {
+                                        focusNode.unfocus();
+                                        Editor.show(
+                                          Get.context!,
+                                          I18nKey.labelNote.tr,
+                                          segment.segmentNote,
+                                          (str) async {
+                                            ScheduleDao.currSegmentShow = segment;
+                                            await Db().db.scheduleDao.updateSegment(segment.segmentKeyId, str, null);
+                                            parentLogic.update([SegmentList.bodyId]);
+                                          },
+                                          qrPagePath: Nav.gsCrContentScan.path,
+                                        );
+                                      },
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
@@ -345,14 +383,14 @@ class SegmentList<T extends GetxController> {
                                   ],
                                 ),
                               ),
-                              IconButton(
-                                onPressed: () {
-                                  //segmentDetail.play(segment);
-                                },
-                                icon: const Icon(
-                                  Icons.more_vert,
-                                ),
-                              ),
+                              // TODO IconButton(
+                              //   onPressed: () {
+                              //     //segmentDetail.play(segment);
+                              //   },
+                              //   icon: const Icon(
+                              //     Icons.more_vert,
+                              //   ),
+                              // ),
                             ],
                           ),
                         );

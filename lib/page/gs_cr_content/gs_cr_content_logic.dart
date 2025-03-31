@@ -63,16 +63,7 @@ class GsCrContentLogic extends GetxController {
       Snackbar.show(I18nKey.labelNoContent.tr);
       return;
     }
-    segmentList.show(all: false, initContentNameSelect: content.name);
-  }
-
-  showWarning(int contentId, int contentSerial) async {
-    var content = await Db().db.scheduleDao.getContentBySerial(contentId, contentSerial);
-    if (content == null) {
-      Snackbar.show(I18nKey.labelNoContent.tr);
-      return;
-    }
-    segmentList.show(all: true, initContentNameSelect: content.name);
+    segmentList.show(initContentNameSelect: content.name);
   }
 
   addByZip(int contentId, int contentSerial) async {

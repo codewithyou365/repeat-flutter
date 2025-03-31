@@ -4,17 +4,19 @@ import 'package:repeat_flutter/common/date.dart';
 @Entity(tableName: "")
 class SegmentShow {
   @primaryKey
-  final String key;
+  final int segmentKeyId;
+  String key;
   final String contentName;
-  final String segmentContent;
-  final String segmentNote;
-  final int lessonIndex;
-  final int segmentIndex;
-  final Date next;
-  final int progress;
+  String segmentContent;
+  String segmentNote;
+  int lessonIndex;
+  int segmentIndex;
+  Date next;
+  int progress;
   final bool missing;
 
   SegmentShow(
+    this.segmentKeyId,
     this.key,
     this.contentName,
     this.segmentContent,

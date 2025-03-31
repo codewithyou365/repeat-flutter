@@ -124,6 +124,27 @@ class Lesson {
   }
 }
 
+class BaseSegment {
+  String key;
+  String a;
+
+  BaseSegment(this.key, this.a);
+
+  factory BaseSegment.fromJson(Map<String, dynamic> json) {
+    return BaseSegment(
+      json['key'] ?? "",
+      json['a'] ?? "",
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'key': key,
+      'a': a,
+    };
+  }
+}
+
 class Segment {
   String key;
   String content;

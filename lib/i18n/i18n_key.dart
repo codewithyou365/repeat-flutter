@@ -184,6 +184,7 @@ enum I18nKey {
   labelSortNextLearnDateDesc,
   labelFindUnnecessarySegments,
   labelSearch,
+  labelNotFoundSegment,
   btnStart,
   btnStop,
   btnAddSchedule,

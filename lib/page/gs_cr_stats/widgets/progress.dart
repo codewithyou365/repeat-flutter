@@ -25,7 +25,7 @@ class ProgressLogic {
       learnedCount = int.parse(values[1]);
       totalCount = int.parse(values[2]);
     } else {
-      List<SegmentShow> progressRawData = await SegmentHelp.getSegment();
+      List<SegmentShow> progressRawData = await SegmentHelp.getSegments();
       learnedCount = progressRawData.where((e) => e.progress != 0).length;
       totalCount = progressRawData.length;
       await Db().db.scheduleDao.insertKv(CrKv(Classroom.curr, CrK.lastCache4ProgressStats, '$key,$learnedCount,$totalCount'));
