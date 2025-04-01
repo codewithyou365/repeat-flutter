@@ -18,10 +18,13 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/game_server/game_server.dart';
+import 'package:repeat_flutter/logic/model/segment_show.dart';
 import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_edit_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
+import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/logic/widget/editor.dart';
+import 'package:repeat_flutter/logic/widget/segment_list.dart';
 import 'package:repeat_flutter/logic/widget/user_manager.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
@@ -43,6 +46,7 @@ class GsCrRepeatLogic extends GetxController {
   GameServer server = GameServer();
   late CopyLogic copyLogic = CopyLogic<GsCrRepeatLogic>(CrK.copyTemplate, this);
   late UserManager userManager = UserManager<GsCrRepeatLogic>(this);
+  late SegmentList segmentList = SegmentList<GsCrRepeatLogic>(this);
   Ticker ticker = Ticker(1000);
   static final log.Logger logger = log.Logger();
 
@@ -190,23 +194,14 @@ class GsCrRepeatLogic extends GetxController {
     state.nextKey = content!.k;
   }
 
-  void openNoteEditor() async {
+  void openSegmentList() async {
     var curr = getCurr();
     if (curr == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
-    // TODO
-    String? note = await Db().db.scheduleDao.getSegmentNote(curr.segmentKeyId);
-    Editor.show(
-      Get.context!,
-      I18nKey.labelNote.tr,
-      note ?? "",
-      (str) async {
-        // TODO await Db().db.scheduleDao.updateSegmentNote(curr.segmentKeyId, str);
-      },
-      qrPagePath: Nav.gsCrContentScan.path,
-    );
+    await segmentList.show(selectSegmentKeyId: curr.segmentKeyId, focus: false);
+    refreshView();
   }
 
   void adjustProgress() async {

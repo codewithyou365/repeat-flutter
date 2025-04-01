@@ -27,19 +27,22 @@ class SegmentList<T extends GetxController> {
 
   SegmentList(this.parentLogic);
 
-  show({String? initContentNameSelect, int? initLessonSelect}) async {
+  show({String? initContentNameSelect, int? initLessonSelect, int? selectSegmentKeyId, bool focus = true}) async {
     showTransparentOverlay(() async {
       List<SegmentShow> segmentShow = [];
       segmentShow = await SegmentHelp.getSegments();
+
       showSheet(
         segmentShow,
         initContentNameSelect: initContentNameSelect,
         initLessonSelect: initLessonSelect,
+        selectSegmentKeyId: selectSegmentKeyId,
+        focus: focus,
       );
     });
   }
 
-  showSheet(List<SegmentShow> originalSegmentShow, {String? initContentNameSelect, int? initLessonSelect}) {
+  showSheet(List<SegmentShow> originalSegmentShow, {String? initContentNameSelect, int? initLessonSelect, int? selectSegmentKeyId, bool focus = true}) {
     // for search and controls
     RxString search = RxString("");
     bool showSearchDetailPanel = false;
@@ -61,7 +64,9 @@ class SegmentList<T extends GetxController> {
       }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      focusNode.requestFocus();
+      if (focus) {
+        focusNode.requestFocus();
+      }
     });
 
     // for sorting and content
@@ -188,6 +193,20 @@ class SegmentList<T extends GetxController> {
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       trySearch();
+      int? selectedIndex;
+      if (selectSegmentKeyId != null) {
+        SegmentShow? ss = SegmentHelp.segmentKeyIdToShow[selectSegmentKeyId];
+        if (ss != null) {
+          selectedIndex = segmentShow.indexOf(ss);
+        }
+      }
+      if (selectedIndex != null) {
+        itemScrollController.scrollTo(
+          index: selectedIndex,
+          duration: const Duration(milliseconds: 10),
+          curve: Curves.easeInOut,
+        );
+      }
     });
 
     Sheet.showBottomSheet(
