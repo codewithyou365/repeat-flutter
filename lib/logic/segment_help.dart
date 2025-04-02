@@ -14,8 +14,8 @@ class SegmentHelp {
     return '$progressUpdateTime-$contentUpdateTime';
   }
 
-  static tryGen() async {
-    if (cache.isEmpty) {
+  static tryGen({force = false}) async {
+    if (cache.isEmpty || force) {
       cache = await Db().db.scheduleDao.getAllSegment(Classroom.curr);
       segmentKeyIdToShow = {for (var segment in cache) segment.segmentKeyId: segment};
     }

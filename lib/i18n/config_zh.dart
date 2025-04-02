@@ -187,6 +187,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelFindUnnecessarySegments, "查找多余段落");
     put(I18nKey.labelSearch, "搜索...");
     put(I18nKey.labelNotFoundSegment, "未找到段落(%s)");
+    put(I18nKey.labelSettingLearningProgressWarning, "在此处设置学习进度将不会有学习记录");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");
     put(I18nKey.btnConfigSettings, "配置设置");
@@ -200,6 +201,7 @@ class ConfigZh extends Config {
     put(I18nKey.btnCut, "切割并保留前后");
     put(I18nKey.btnDeleteCurr, "删除当前段");
     put(I18nKey.btnCancel, "取消");
+    put(I18nKey.btnContinue, "继续");
     put(I18nKey.btnOk, "确定");
     put(I18nKey.btnDelete, "删除");
     put(I18nKey.btnShare, "分享");

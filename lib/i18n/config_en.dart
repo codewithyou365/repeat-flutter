@@ -187,6 +187,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelFindUnnecessarySegments, "Find Unnecessary Segments");
     put(I18nKey.labelSearch, "Search...");
     put(I18nKey.labelNotFoundSegment, "not found segment (%s)");
+    put(I18nKey.labelSettingLearningProgressWarning, "Setting the learning progress here will not create a learning record");
     put(I18nKey.btnStart, "Start");
     put(I18nKey.btnAddSchedule, "Add Schedule");
     put(I18nKey.btnConfigSettings, "Config Settings");
@@ -200,6 +201,7 @@ class ConfigEn extends Config {
     put(I18nKey.btnCut, "Cut and retain front and back");
     put(I18nKey.btnDeleteCurr, "Delete current");
     put(I18nKey.btnCancel, "Cancel");
+    put(I18nKey.btnContinue, "Continue");
     put(I18nKey.btnOk, "Ok");
     put(I18nKey.btnDelete, "Delete");
     put(I18nKey.btnShare, "Share");

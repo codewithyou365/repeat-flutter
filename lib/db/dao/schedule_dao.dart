@@ -1076,7 +1076,7 @@ abstract class ScheduleDao {
   }
 
   @transaction
-  Future<void> jumpDirectly(int contentSerial, int segmentKeyId, int progress, int nextDayValue) async {
+  Future<void> jumpDirectly(int segmentKeyId, int progress, int nextDayValue) async {
     await forUpdate();
     await setPrg(segmentKeyId, progress, Date(nextDayValue));
   }

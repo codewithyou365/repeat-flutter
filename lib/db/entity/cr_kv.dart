@@ -18,6 +18,7 @@ enum CrK {
   statsTotalLearning,
   updateSegmentShowTime,
   lastCache4ProgressStats,
+  nextTimeForSettingLearningProgressWarning,
 }
 
 @Entity(primaryKeys: ['classroomId', 'k'])

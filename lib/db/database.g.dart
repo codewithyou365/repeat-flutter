@@ -2149,21 +2149,19 @@ class _$ScheduleDao extends ScheduleDao {
 
   @override
   Future<void> jumpDirectly(
-    int contentSerial,
     int segmentKeyId,
     int progress,
     int nextDayValue,
   ) async {
     if (database is sqflite.Transaction) {
-      await super
-          .jumpDirectly(contentSerial, segmentKeyId, progress, nextDayValue);
+      await super.jumpDirectly(segmentKeyId, progress, nextDayValue);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         await transactionDatabase.scheduleDao
-            .jumpDirectly(contentSerial, segmentKeyId, progress, nextDayValue);
+            .jumpDirectly(segmentKeyId, progress, nextDayValue);
       });
     }
   }

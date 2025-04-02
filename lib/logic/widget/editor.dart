@@ -94,7 +94,7 @@ class Editor {
           ]),
           RowWidget.buildDivider(),
           RowWidget.buildQrCode(value, screenSize.width - Sheet.paddingHorizontal * 2),
-          RowWidget.buildMiddleText(StringUtil.limit(value.replaceAll("\n", "\\n"), 64), main: false),
+          RowWidget.buildMiddleText(StringUtil.limit(value.replaceAll("\n", "\\n"), 64)),
         ],
       ),
       rate: rate,

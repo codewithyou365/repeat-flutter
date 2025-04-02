@@ -6,10 +6,14 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_show.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
@@ -380,9 +384,14 @@ class SegmentList<T extends GetxController> {
                                             color: Colors.blue.withValues(alpha: 0.1),
                                             borderRadius: BorderRadius.circular(4),
                                           ),
-                                          child: Text(
-                                            '${I18nKey.labelProgress.tr}: ${segment.progress}',
-                                            style: const TextStyle(fontSize: 12, color: Colors.green),
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              editProgressWithMsgBox(segment);
+                                            },
+                                            child: Text(
+                                              '${I18nKey.labelProgress.tr}: ${segment.progress}',
+                                              style: const TextStyle(fontSize: 12, color: Colors.green),
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(width: 8),
@@ -392,9 +401,14 @@ class SegmentList<T extends GetxController> {
                                             color: Colors.blue.withValues(alpha: 0.1),
                                             borderRadius: BorderRadius.circular(4),
                                           ),
-                                          child: Text(
-                                            '${I18nKey.labelSetNextLearnDate.tr}: ${segment.next.format()}',
-                                            style: const TextStyle(fontSize: 12, color: Colors.blue),
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              editProgressWithMsgBox(segment);
+                                            },
+                                            child: Text(
+                                              '${I18nKey.labelSetNextLearnDate.tr}: ${segment.next.format()}',
+                                              style: const TextStyle(fontSize: 12, color: Colors.blue),
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -599,5 +613,33 @@ class SegmentList<T extends GetxController> {
     } else {
       return baseBodyViewHeight;
     }
+  }
+
+  Future<void> editProgressWithMsgBox(SegmentShow segment) async {
+    var nextTimeForWarning = await Db().db.scheduleDao.intKv(Classroom.curr, CrK.nextTimeForSettingLearningProgressWarning) ?? 0;
+    var now = DateTime.now();
+    if (nextTimeForWarning <= now.millisecondsSinceEpoch) {
+      MsgBox.yesOrNo(
+        I18nKey.labelTips.tr,
+        I18nKey.labelSettingLearningProgressWarning.tr,
+        yesBtnTitle: I18nKey.btnContinue.tr,
+        yes: () async {
+          var after3Days = now.add(const Duration(days: 3)).millisecondsSinceEpoch.toString();
+          await Db().db.scheduleDao.insertKv(CrKv(Classroom.curr, CrK.nextTimeForSettingLearningProgressWarning, after3Days));
+          Get.back();
+          await editProgress(segment);
+        },
+      );
+    } else {
+      await editProgress(segment);
+    }
+  }
+
+  Future<void> editProgress(SegmentShow segment) async {
+    EditProgress.show(segment.segmentKeyId, warning: I18nKey.labelSettingLearningProgressWarning.tr, title: I18nKey.btnOk.tr, callback: (p, n) async {
+      await Db().db.scheduleDao.jumpDirectly(segment.segmentKeyId, p, n);
+      Get.back();
+      parentLogic.update([SegmentList.bodyId]);
+    });
   }
 }

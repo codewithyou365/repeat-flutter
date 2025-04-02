@@ -108,11 +108,8 @@ class RowWidget {
     );
   }
 
-  static Widget buildMiddleText(String title, {bool main = true}) {
-    var ts = const TextStyle(fontSize: titleFontSize);
-    if (!main) {
-      ts = const TextStyle(fontSize: titleFontSize, color: Colors.grey);
-    }
+  static Widget buildMiddleText(String title, {TextStyle? ts}) {
+    ts ??= const TextStyle(fontSize: titleFontSize);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: paddingVertical),
       child: Text(

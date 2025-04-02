@@ -23,6 +23,7 @@ import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_edit_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/logic/widget/segment_list.dart';
 import 'package:repeat_flutter/logic/widget/user_manager.dart';
@@ -209,47 +210,16 @@ class GsCrRepeatLogic extends GetxController {
     if (curr == null) {
       return;
     }
-    var segmentProgress = await Db().db.scheduleDao.getSegmentProgress(curr.segmentKeyId);
-    if (segmentProgress == null) {
-      return;
-    }
-    var progress = (segmentProgress + 1).obs;
-    var nextDay = ScheduleDao.getNextByProgress(DateTime.now(), progress.value).value.obs;
-    Sheet.showBottomSheet(Get.context!, Obx(() {
-      return ListView(
-        children: [
-          RowWidget.buildYesOrNo(
-            yesBtnTitle: I18nKey.btnCancel.tr,
-            noBtnTitle: I18nKey.btnNext.tr,
-            no: () {
-              Get.back();
-              know(autoNext: true, progress: progress.value, nextDay: nextDay.value);
-            },
-          ),
-          RowWidget.buildMiddleText(I18nKey.labelAdjustLearnProgressDesc.trArgs(["$segmentProgress"])),
-          RowWidget.buildDivider(),
-          RowWidget.buildCupertinoPicker(
-            I18nKey.labelSetLevel.tr,
-            List.generate(segmentProgress + ScheduleDao.scheduleConfig.forgettingCurve.length, (i) {
-              return '$i';
-            }),
-            progress,
-            changed: (value) {
-              progress.value = value;
-              nextDay.value = ScheduleDao.getNextByProgress(DateTime.now(), value).value;
-            },
-          ),
-          RowWidget.buildDividerWithoutColor(),
-          RowWidget.buildDateWithEdit(I18nKey.labelSetNextLearnDate.tr, nextDay, Get.context!),
-        ],
-      );
-    }));
+    EditProgress.show(curr.segmentKeyId, title: I18nKey.btnNext.tr, callback: (p, n) async {
+      await know(autoNext: true, progress: p, nextDay: n);
+      Get.back();
+    });
 
     update([GsCrRepeatLogic.id]);
   }
 
   // TODO add device volume button
-  void know({autoNext = false, tryFinish = false, int? progress, int? nextDay}) async {
+  Future<void> know({autoNext = false, tryFinish = false, int? progress, int? nextDay}) async {
     if (ticker.isStuck()) {
       return;
     }
@@ -258,9 +228,12 @@ class GsCrRepeatLogic extends GetxController {
       finish();
       return;
     }
-
+    SegmentShow? ss = SegmentHelp.segmentKeyIdToShow[curr.segmentKeyId];
+    if (ss != null) {
+      ScheduleDao.currSegmentShow = ss;
+    }
     if (state.justView || state.edit) {
-      await Db().db.scheduleDao.jumpDirectly(curr.contentSerial, curr.segmentKeyId, progress!, nextDay!);
+      await Db().db.scheduleDao.jumpDirectly(curr.segmentKeyId, progress!, nextDay!);
     } else if (progress != null && nextDay != null) {
       await Db().db.scheduleDao.jump(curr, progress, nextDay);
     } else {
