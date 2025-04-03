@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/string_util.dart';
-import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
@@ -31,7 +30,13 @@ class SegmentList<T extends GetxController> {
 
   SegmentList(this.parentLogic);
 
-  show({String? initContentNameSelect, int? initLessonSelect, int? selectSegmentKeyId, bool focus = true}) async {
+  show({
+    String? initContentNameSelect,
+    int? initLessonSelect,
+    int? selectSegmentKeyId,
+    bool focus = true,
+    Future<void> Function()? removeWarning,
+  }) async {
     showTransparentOverlay(() async {
       List<SegmentShow> segmentShow = [];
       segmentShow = await SegmentHelp.getSegments();
@@ -42,11 +47,19 @@ class SegmentList<T extends GetxController> {
         initLessonSelect: initLessonSelect,
         selectSegmentKeyId: selectSegmentKeyId,
         focus: focus,
+        removeWarning: removeWarning,
       );
     });
   }
 
-  showSheet(List<SegmentShow> originalSegmentShow, {String? initContentNameSelect, int? initLessonSelect, int? selectSegmentKeyId, bool focus = true}) {
+  showSheet(
+    List<SegmentShow> originalSegmentShow, {
+    String? initContentNameSelect,
+    int? initLessonSelect,
+    int? selectSegmentKeyId,
+    bool focus = true,
+    Future<void> Function()? removeWarning,
+  }) {
     // for search and controls
     RxString search = RxString("");
     bool showSearchDetailPanel = false;
@@ -176,10 +189,9 @@ class SegmentList<T extends GetxController> {
       }
       sort(segmentShow, sortOptionKeys[selectedSortIndex.value]);
       refreshMissingSegmentIndex(missingSegmentIndex, segmentShow);
-      parentLogic.update([SegmentList.findUnnecessarySegmentsId]);
 
       bodyViewHeight = getBodyViewHeight(missingSegmentIndex, baseBodyViewHeight);
-      parentLogic.update([SegmentList.bodyId]);
+      parentLogic.update([SegmentList.findUnnecessarySegmentsId, SegmentList.bodyId]);
     }
 
     // init select
@@ -199,10 +211,7 @@ class SegmentList<T extends GetxController> {
       trySearch();
       int? selectedIndex;
       if (selectSegmentKeyId != null) {
-        SegmentShow? ss = SegmentHelp.segmentKeyIdToShow[selectSegmentKeyId];
-        if (ss != null) {
-          selectedIndex = segmentShow.indexOf(ss);
-        }
+        selectedIndex = SegmentHelp.getCacheIndex(selectSegmentKeyId);
       }
       if (selectedIndex != null) {
         itemScrollController.scrollTo(
@@ -317,7 +326,7 @@ class SegmentList<T extends GetxController> {
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
-                                        '${I18nKey.labelPosition.tr}: ${segment.toShortPos()}',
+                                        '${I18nKey.labelPosition.tr}: ${segment.toPos()}',
                                         style: const TextStyle(fontSize: 12, color: Colors.grey),
                                       ),
                                     ),
@@ -345,7 +354,6 @@ class SegmentList<T extends GetxController> {
                                           I18nKey.labelNote.tr,
                                           content,
                                           (str) async {
-                                            ScheduleDao.currSegmentShow = segment;
                                             await Db().db.scheduleDao.updateSegment(segment.segmentKeyId, null, str);
                                             parentLogic.update([SegmentList.bodyId]);
                                           },
@@ -367,7 +375,6 @@ class SegmentList<T extends GetxController> {
                                           I18nKey.labelNote.tr,
                                           segment.segmentNote,
                                           (str) async {
-                                            ScheduleDao.currSegmentShow = segment;
                                             await Db().db.scheduleDao.updateSegment(segment.segmentKeyId, str, null);
                                             parentLogic.update([SegmentList.bodyId]);
                                           },
@@ -416,14 +423,50 @@ class SegmentList<T extends GetxController> {
                                   ],
                                 ),
                               ),
-                              // TODO IconButton(
-                              //   onPressed: () {
-                              //     //segmentDetail.play(segment);
-                              //   },
-                              //   icon: const Icon(
-                              //     Icons.more_vert,
-                              //   ),
-                              // ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  if (segment.missing)
+                                    IconButton(
+                                      onPressed: () {
+                                        MsgBox.yesOrNo(
+                                          I18nKey.labelDelete.tr,
+                                          I18nKey.labelDeleteSegment.tr,
+                                          yes: () {
+                                            showTransparentOverlay(() async {
+                                              await Db().db.scheduleDao.deleteBySegmentKeyId(segment.segmentKeyId);
+
+                                              SegmentHelp.deleteCache(segment.segmentKeyId);
+                                              segmentShow.removeWhere((element) => element.segmentKeyId == segment.segmentKeyId);
+
+                                              var contentId2Missing = refreshMissingSegmentIndex(missingSegmentIndex, segmentShow);
+                                              var warning = contentId2Missing[segment.contentId] ?? false;
+                                              if (warning == false) {
+                                                await Db().db.scheduleDao.updateContentWarning(segment.contentId, warning, DateTime.now().millisecondsSinceEpoch);
+                                                if (removeWarning != null) {
+                                                  await removeWarning();
+                                                }
+                                              }
+                                              parentLogic.update([SegmentList.findUnnecessarySegmentsId, SegmentList.bodyId]);
+                                              Get.back();
+                                            });
+                                          },
+                                        );
+                                      },
+                                      icon: const Icon(
+                                        Icons.delete_forever,
+                                      ),
+                                    ),
+                                  // TODO IconButton(
+                                  //   onPressed: () {
+                                  //     //segmentDetail.play(segment);
+                                  //   },
+                                  //   icon: const Icon(
+                                  //     Icons.more_vert,
+                                  //   ),
+                                  // ),
+                                ],
+                              ),
                             ],
                           ),
                         );
@@ -521,17 +564,21 @@ class SegmentList<T extends GetxController> {
     });
   }
 
-  static void refreshMissingSegmentIndex(
+  static Map<int, bool> refreshMissingSegmentIndex(
     List<int> missingSegmentIndex,
     List<SegmentShow> segmentShow,
   ) {
     missingSegmentIndex.clear();
+
+    Map<int, bool> contentId2Missing = {};
     for (int i = 0; i < segmentShow.length; i++) {
       var v = segmentShow[i];
       if (v.missing) {
+        contentId2Missing[v.contentId] = true;
         missingSegmentIndex.add(i);
       }
     }
+    return contentId2Missing;
   }
 
   static void collectDataFromSegments(

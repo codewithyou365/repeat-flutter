@@ -32,7 +32,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelContentNameEmpty, "The content name cannot be empty");
     put(I18nKey.labelContentNameError, "The content name should be 3 letters or less and consist of alphanumeric characters in uppercase.");
     put(I18nKey.labelContentNameDuplicated, "The content name is duplicated.");
-    put(I18nKey.labelDelete, "Delete !");
+    put(I18nKey.labelDelete, "Delete");
     put(I18nKey.labelRemoteUrl, "Remote URL");
     put(I18nKey.labelOriginalAddress, "Original address");
     put(I18nKey.labelLanAddress, "LAN address");
@@ -40,6 +40,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelDownloadFirstBeforeSaving, "Please download first before saving.");
     put(I18nKey.labelAddContent, "Add content");
     put(I18nKey.labelDeleteContent, "Please confirm to delete content: %s");
+    put(I18nKey.labelDeleteSegment, "Please confirm to delete the segment");
     put(I18nKey.labelDownloadContent, "Download content");
     put(I18nKey.labelScheduleContent, "Add learning task with %s segments.");
     put(I18nKey.labelNoLearningContent, "There is no learning content available.");

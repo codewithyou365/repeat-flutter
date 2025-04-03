@@ -38,6 +38,7 @@ enum I18nKey {
   labelDownloadFirstBeforeSaving,
   labelAddContent,
   labelDeleteContent,
+  labelDeleteSegment,
   labelDownloadContent,
   labelScheduleContent,
   labelNoLearningContent,

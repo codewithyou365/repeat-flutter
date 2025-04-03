@@ -6,6 +6,7 @@ class SegmentShow {
   @primaryKey
   final int segmentKeyId;
   String key;
+  final int contentId;
   final String contentName;
   String segmentContent;
   String segmentNote;
@@ -18,6 +19,7 @@ class SegmentShow {
   SegmentShow(
     this.segmentKeyId,
     this.key,
+    this.contentId,
     this.contentName,
     this.segmentContent,
     this.segmentNote,
@@ -28,8 +30,8 @@ class SegmentShow {
     this.missing,
   );
 
-  String toShortPos() {
-    return '${lessonIndex + 1}|${segmentIndex + 1}';
+  String toPos() {
+    return '$contentName-${lessonIndex + 1}|${segmentIndex + 1}';
   }
 
   int toSort() {

@@ -181,7 +181,7 @@ class ScheduleConfig {
 
 @dao
 abstract class ScheduleDao {
-  static SegmentShow? currSegmentShow;
+  static SegmentShow? Function(int segmentKeyId)? getSegmentShow;
   static ScheduleConfig scheduleConfig = ScheduleConfig([], 0, 0, [], []);
 
   static ScheduleConfig defaultScheduleConfig = ScheduleConfig(
@@ -481,6 +481,7 @@ abstract class ScheduleDao {
 
   @Query('SELECT SegmentKey.id segmentKeyId'
       ',SegmentKey.key'
+      ',Content.id contentId'
       ',Content.name contentName'
       ',SegmentKey.content segmentContent'
       ',SegmentKey.note segmentNote'
@@ -1014,17 +1015,20 @@ abstract class ScheduleDao {
     } else if (content != null) {
       await updateSegmentKeyAndContent(segmentKeyId, key!, content);
     }
-    if (currSegmentShow != null) {
-      if (note != null) {
-        currSegmentShow!.segmentNote = note;
-      }
-      if (content != null) {
-        currSegmentShow!.segmentContent = content;
-        currSegmentShow!.key = key!;
-      }
-    }
     var now = DateTime.now();
     await insertKv(CrKv(Classroom.curr, CrK.updateSegmentShowTime, now.millisecondsSinceEpoch.toString()));
+    if (getSegmentShow != null) {
+      SegmentShow? currSegmentShow = getSegmentShow!(segmentKeyId);
+      if (currSegmentShow != null) {
+        if (note != null) {
+          currSegmentShow.segmentNote = note;
+        }
+        if (content != null) {
+          currSegmentShow.segmentContent = content;
+          currSegmentShow.key = key!;
+        }
+      }
+    }
   }
 
   /// adjust progress start
@@ -1058,13 +1062,16 @@ abstract class ScheduleDao {
       await setPrg4Sop(segmentKeyId, progress);
     }
     var now = DateTime.now();
-    if (currSegmentShow != null) {
-      currSegmentShow!.progress = progress;
-      if (next != null) {
-        currSegmentShow!.next = next;
+    await insertKv(CrKv(Classroom.curr, CrK.updateSegmentShowTime, now.millisecondsSinceEpoch.toString()));
+    if (getSegmentShow != null) {
+      SegmentShow? currSegmentShow = getSegmentShow!(segmentKeyId);
+      if (currSegmentShow != null) {
+        currSegmentShow.progress = progress;
+        if (next != null) {
+          currSegmentShow.next = next;
+        }
       }
     }
-    await insertKv(CrKv(Classroom.curr, CrK.updateSegmentShowTime, now.millisecondsSinceEpoch.toString()));
   }
 
   @transaction

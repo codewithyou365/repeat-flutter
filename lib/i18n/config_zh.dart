@@ -32,7 +32,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelContentNameEmpty, "内容名字应不能为空");
     put(I18nKey.labelContentNameError, "内容名字应为 3 个字母或更少，并且由大写字母数字字符组成。");
     put(I18nKey.labelContentNameDuplicated, "内容名字重复。");
-    put(I18nKey.labelDelete, "删除 ！");
+    put(I18nKey.labelDelete, "删除");
     put(I18nKey.labelRemoteUrl, "远程地址");
     put(I18nKey.labelOriginalAddress, "原始地址");
     put(I18nKey.labelLanAddress, "局域网地址");
@@ -40,6 +40,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelDownloadFirstBeforeSaving, "请先下载再进行保存");
     put(I18nKey.labelAddContent, "新增内容");
     put(I18nKey.labelDeleteContent, "请确定删除内容： %s");
+    put(I18nKey.labelDeleteSegment, "请确定该段落");
     put(I18nKey.labelDownloadContent, "下载内容");
     put(I18nKey.labelScheduleContent, "添加学习任务 %s 个单位");
     put(I18nKey.labelNoLearningContent, "没有学习内容");

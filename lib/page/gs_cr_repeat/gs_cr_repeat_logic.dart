@@ -228,10 +228,7 @@ class GsCrRepeatLogic extends GetxController {
       finish();
       return;
     }
-    SegmentShow? ss = SegmentHelp.segmentKeyIdToShow[curr.segmentKeyId];
-    if (ss != null) {
-      ScheduleDao.currSegmentShow = ss;
-    }
+
     if (state.justView || state.edit) {
       await Db().db.scheduleDao.jumpDirectly(curr.segmentKeyId, progress!, nextDay!);
     } else if (progress != null && nextDay != null) {

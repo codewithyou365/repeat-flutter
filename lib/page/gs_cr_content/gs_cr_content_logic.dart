@@ -63,7 +63,12 @@ class GsCrContentLogic extends GetxController {
       Snackbar.show(I18nKey.labelNoContent.tr);
       return;
     }
-    segmentList.show(initContentNameSelect: content.name);
+    segmentList.show(
+      initContentNameSelect: content.name,
+      removeWarning: () async {
+        await init();
+      },
+    );
   }
 
   addByZip(int contentId, int contentSerial) async {

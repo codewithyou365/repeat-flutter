@@ -26,8 +26,20 @@ class SegmentHelp {
     return cache;
   }
 
-  static Future<SegmentShow?> getSegmentById(int segmentKeyId) async {
-    await tryGen();
-    return segmentKeyIdToShow[segmentKeyId];
+  static SegmentShow? getCache(int segmentKeyId) {
+    return SegmentHelp.segmentKeyIdToShow[segmentKeyId];
+  }
+
+  static void deleteCache(int segmentKeyId) {
+    cache.removeWhere((element) => element.segmentKeyId == segmentKeyId);
+    segmentKeyIdToShow.remove(segmentKeyId);
+  }
+
+  static int? getCacheIndex(int segmentKeyId) {
+    SegmentShow? ss = SegmentHelp.segmentKeyIdToShow[segmentKeyId];
+    if (ss != null) {
+      return cache.indexOf(ss);
+    }
+    return null;
   }
 }

@@ -1829,8 +1829,8 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<List<SegmentShow>> getAllSegment(int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentKey.id segmentKeyId,SegmentKey.key,Content.name contentName,SegmentKey.content segmentContent,SegmentKey.note segmentNote,SegmentKey.lessonIndex,SegmentKey.segmentIndex,SegmentOverallPrg.next,SegmentOverallPrg.progress,Segment.segmentKeyId is null missing FROM SegmentKey JOIN Content ON Content.classroomId=?1 AND Content.docId!=0 LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id AND SegmentKey.classroomId=?1',
-        mapper: (Map<String, Object?> row) => SegmentShow(row['segmentKeyId'] as int, row['key'] as String, row['contentName'] as String, row['segmentContent'] as String, row['segmentNote'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, (row['missing'] as int) != 0),
+        'SELECT SegmentKey.id segmentKeyId,SegmentKey.key,Content.id contentId,Content.name contentName,SegmentKey.content segmentContent,SegmentKey.note segmentNote,SegmentKey.lessonIndex,SegmentKey.segmentIndex,SegmentOverallPrg.next,SegmentOverallPrg.progress,Segment.segmentKeyId is null missing FROM SegmentKey JOIN Content ON Content.classroomId=?1 AND Content.docId!=0 LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id AND SegmentKey.classroomId=?1',
+        mapper: (Map<String, Object?> row) => SegmentShow(row['segmentKeyId'] as int, row['key'] as String, row['contentId'] as int, row['contentName'] as String, row['segmentContent'] as String, row['segmentNote'] as String, row['lessonIndex'] as int, row['segmentIndex'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, (row['missing'] as int) != 0),
         arguments: [classroomId]);
   }
 

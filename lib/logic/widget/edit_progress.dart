@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/model/segment_show.dart';
-import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
@@ -26,10 +23,6 @@ class EditProgress {
             noBtnTitle: title,
             no: () {
               showTransparentOverlay(() async {
-                SegmentShow? ss = SegmentHelp.segmentKeyIdToShow[segmentKeyId];
-                if (ss != null) {
-                  ScheduleDao.currSegmentShow = ss;
-                }
                 if (callback != null) {
                   await callback(progress.value, nextDay.value);
                 }

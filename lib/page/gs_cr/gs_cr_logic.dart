@@ -16,6 +16,7 @@ import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
+import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -37,7 +38,11 @@ class GsCrLogic extends GetxController {
     super.onInit();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     RepeatDocHelp.clear();
-    init();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showTransparentOverlay(() async {
+        await init();
+      });
+    });
   }
 
   @override
@@ -48,6 +53,8 @@ class GsCrLogic extends GetxController {
 
   Future<void> init({TodayPrgType? type}) async {
     await copyLogic.init();
+    await SegmentHelp.tryGen(force: true);
+    ScheduleDao.getSegmentShow = SegmentHelp.getCache;
     state.forAdd.contents = await Db().db.contentDao.getAllEnableContent(Classroom.curr);
     state.forAdd.contentNames = state.forAdd.contents.map((e) => e.name).toList();
     var now = DateTime.now();
