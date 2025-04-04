@@ -15,6 +15,9 @@ abstract class ContentDao {
   @Query('SELECT * FROM Content where classroomId=:classroomId and hide=false ORDER BY sort')
   Future<List<Content>> getAllContent(int classroomId);
 
+  @Query('SELECT max(warning) FROM Content where classroomId=:classroomId and docId!=0 and hide=false')
+  Future<bool?> hasWarning(int classroomId);
+
   @Query('SELECT * FROM Content where classroomId=:classroomId and docId!=0 and hide=false ORDER BY sort')
   Future<List<Content>> getAllEnableContent(int classroomId);
 

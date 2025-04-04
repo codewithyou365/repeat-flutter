@@ -189,6 +189,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelSearch, "Search...");
     put(I18nKey.labelNotFoundSegment, "not found segment (%s)");
     put(I18nKey.labelSettingLearningProgressWarning, "Setting the learning progress here will not create a learning record");
+    put(I18nKey.labelContentsHaveUnnecessarySegments, "Contents have unnecessary segments");
+    put(I18nKey.btnHandleNow, "Handle Now");
     put(I18nKey.btnStart, "Start");
     put(I18nKey.btnAddSchedule, "Add Schedule");
     put(I18nKey.btnConfigSettings, "Config Settings");

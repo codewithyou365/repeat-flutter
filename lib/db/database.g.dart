@@ -1042,6 +1042,14 @@ class _$ContentDao extends ContentDao {
   }
 
   @override
+  Future<bool?> hasWarning(int classroomId) async {
+    return _queryAdapter.query(
+        'SELECT max(warning) FROM Content where classroomId=?1 and docId!=0 and hide=false',
+        mapper: (Map<String, Object?> row) => (row.values.first as int) != 0,
+        arguments: [classroomId]);
+  }
+
+  @override
   Future<List<Content>> getAllEnableContent(int classroomId) async {
     return _queryAdapter.queryList(
         'SELECT * FROM Content where classroomId=?1 and docId!=0 and hide=false ORDER BY sort',

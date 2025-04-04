@@ -189,6 +189,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelSearch, "搜索...");
     put(I18nKey.labelNotFoundSegment, "未找到段落(%s)");
     put(I18nKey.labelSettingLearningProgressWarning, "在此处设置学习进度将不会有学习记录");
+    put(I18nKey.labelContentsHaveUnnecessarySegments, "内容中存在多余的段落");
+    put(I18nKey.btnHandleNow, "现在处理");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");
     put(I18nKey.btnConfigSettings, "配置设置");

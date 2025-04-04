@@ -187,6 +187,8 @@ enum I18nKey {
   labelSearch,
   labelNotFoundSegment,
   labelSettingLearningProgressWarning,
+  labelContentsHaveUnnecessarySegments,
+  btnHandleNow,
   btnStart,
   btnStop,
   btnAddSchedule,

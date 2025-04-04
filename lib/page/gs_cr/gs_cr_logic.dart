@@ -227,7 +227,20 @@ class GsCrLogic extends GetxController {
     }
   }
 
-  tryStart(List<SegmentTodayPrg> list, {bool grouping = false, Repeat mode = Repeat.normal}) {
+  tryStart(List<SegmentTodayPrg> list, {bool grouping = false, Repeat mode = Repeat.normal}) async {
+    var warning = await Db().db.contentDao.hasWarning(Classroom.curr);
+    if (warning ?? false) {
+      MsgBox.yesOrNo(
+        I18nKey.labelTips.tr,
+        I18nKey.labelContentsHaveUnnecessarySegments.tr,
+        yesBtnTitle: I18nKey.btnHandleNow.tr,
+        yes: () {
+          Get.back();
+          Nav.gsCrContent.push();
+        },
+      );
+      return;
+    }
     if (list.isEmpty) {
       Snackbar.show(I18nKey.labelNoLearningContent.tr);
       return;
