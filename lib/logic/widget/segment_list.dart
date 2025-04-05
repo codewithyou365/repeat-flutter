@@ -457,14 +457,6 @@ class SegmentList<T extends GetxController> {
                                         Icons.delete_forever,
                                       ),
                                     ),
-                                  // TODO IconButton(
-                                  //   onPressed: () {
-                                  //     //segmentDetail.play(segment);
-                                  //   },
-                                  //   icon: const Icon(
-                                  //     Icons.more_vert,
-                                  //   ),
-                                  // ),
                                 ],
                               ),
                             ],
@@ -487,13 +479,21 @@ class SegmentList<T extends GetxController> {
                   height: searchViewHeight,
                   child: Column(
                     children: [
-                      const SizedBox(height: RowWidget.rowHeight + RowWidget.dividerHeight),
+                      const SizedBox(height: RowWidget.rowHeight + RowWidget.dividerHeight / 2 + 1),
                       Container(
                         height: searchViewHeight - RowWidget.rowHeight - RowWidget.dividerHeight,
                         padding: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
                           color: Theme.of(Get.context!).scaffoldBackgroundColor,
-                          border: const Border(bottom: BorderSide(color: Colors.grey)),
+                          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              spreadRadius: 1,
+                              blurRadius: 4,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: ListView(
                           children: [
