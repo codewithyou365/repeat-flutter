@@ -20,7 +20,9 @@ class SegmentKey {
   int version;
   final String key;
   final String content;
+  int contentVersion;
   final String note;
+  int noteVersion;
 
   SegmentKey(
     this.classroomId,
@@ -30,7 +32,9 @@ class SegmentKey {
     this.version,
     this.key,
     this.content,
-    this.note, {
+    this.contentVersion,
+    this.note,
+    this.noteVersion, {
     this.id,
   });
 
@@ -47,7 +51,9 @@ class SegmentKey {
       version,
       key,
       content,
+      contentVersion,
       note,
+      noteVersion,
       id: id,
     );
     return ret;

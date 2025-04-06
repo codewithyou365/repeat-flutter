@@ -9,7 +9,9 @@ class SegmentShow {
   final int contentId;
   final String contentName;
   String segmentContent;
+  int segmentContentVersion;
   String segmentNote;
+  int segmentNoteVersion;
   int lessonIndex;
   int segmentIndex;
   Date next;
@@ -22,7 +24,9 @@ class SegmentShow {
     this.contentId,
     this.contentName,
     this.segmentContent,
+    this.segmentContentVersion,
     this.segmentNote,
+    this.segmentNoteVersion,
     this.lessonIndex,
     this.segmentIndex,
     this.next,

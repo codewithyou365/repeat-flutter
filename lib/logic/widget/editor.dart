@@ -9,7 +9,11 @@ import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class Editor {
-  static void show(BuildContext context, String title, String dbValue, Future<void> Function(String) save, {double? rate, String? qrPagePath, String? initShowValue}) {
+  static void show(BuildContext context, String title, String dbValue, Future<void> Function(String) save, {double? rate, double? height, String? qrPagePath, String? initShowValue}) {
+    showWithTitleWidget(context, RowWidget.buildText("$title :", ""), dbValue, save, rate: rate, height: height, qrPagePath: qrPagePath, initShowValue: initShowValue);
+  }
+
+  static void showWithTitleWidget(BuildContext context, Widget titleWidget, String dbValue, Future<void> Function(String) save, {double? rate, double? height, String? qrPagePath, String? initShowValue}) {
     initShowValue ??= dbValue;
     final textController = TextEditingController(text: initShowValue.toString());
     final shareBtn = Button(I18nKey.btnShare.tr, () {
@@ -22,7 +26,7 @@ class Editor {
       var v = await Get.toNamed(qrPagePath);
       if (v != null && v is String && v != "") {
         Get.back();
-        show(context, title, dbValue, save, rate: rate, qrPagePath: qrPagePath, initShowValue: v);
+        showWithTitleWidget(context, titleWidget, dbValue, save, rate: rate, height: height, qrPagePath: qrPagePath, initShowValue: v);
       }
     });
     void textChange() {
@@ -70,11 +74,12 @@ class Editor {
             }),
           ]),
           RowWidget.buildDivider(),
-          RowWidget.buildText("$title :", ""),
+          titleWidget,
         ],
       ),
       RowWidget.buildEditText(textController, maxLines: 40, minLines: 32),
       rate: rate,
+      height: height,
       onTapBlack: onCancel,
     );
   }

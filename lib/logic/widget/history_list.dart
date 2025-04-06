@@ -7,6 +7,7 @@ import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
+import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_show.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
@@ -21,14 +22,14 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'editor.dart';
 
-class SegmentList<T extends GetxController> {
-  static const String bodyId = "SegmentList.bodyId";
-  static const String findUnnecessarySegmentsId = "SegmentList.findUnnecessarySegmentsId";
-  static const String detailSearchId = "SegmentList.searchId";
+class HistoryList<T extends GetxController> {
+  static const String bodyId = "HistoryList.bodyId";
+  static const String findUnnecessarySegmentsId = "HistoryList.findUnnecessarySegmentsId";
+  static const String detailSearchId = "HistoryList.searchId";
 
   final T parentLogic;
 
-  SegmentList(this.parentLogic);
+  HistoryList(this.parentLogic);
 
   show({
     String? initContentNameSelect,
@@ -38,17 +39,7 @@ class SegmentList<T extends GetxController> {
     Future<void> Function()? removeWarning,
   }) async {
     showTransparentOverlay(() async {
-      List<SegmentShow> segmentShow = [];
-      segmentShow = await SegmentHelp.getSegments();
-
-      showSheet(
-        segmentShow,
-        initContentNameSelect: initContentNameSelect,
-        initLessonSelect: initLessonSelect,
-        selectSegmentKeyId: selectSegmentKeyId,
-        focus: focus,
-        removeWarning: removeWarning,
-      );
+      List<TextVersion> segmentShow = [];
     });
   }
 
@@ -67,7 +58,7 @@ class SegmentList<T extends GetxController> {
     void tryUpdateDetailSearchPanel(bool newShow) {
       if (showSearchDetailPanel != newShow) {
         showSearchDetailPanel = newShow;
-        parentLogic.update([SegmentList.detailSearchId]);
+        parentLogic.update([HistoryList.detailSearchId]);
       }
     }
 
@@ -90,12 +81,8 @@ class SegmentList<T extends GetxController> {
     List<SegmentShow> segmentShow = List.from(originalSegmentShow);
     RxInt selectedSortIndex = 0.obs;
     List<I18nKey> sortOptionKeys = [
-      I18nKey.labelSortPositionAsc,
-      I18nKey.labelSortPositionDesc,
-      I18nKey.labelSortProgressAsc,
-      I18nKey.labelSortProgressDesc,
-      I18nKey.labelSortNextLearnDateAsc,
-      I18nKey.labelSortNextLearnDateDesc,
+      I18nKey.labelSortCreateDateAsc,
+      I18nKey.labelSortCreateDateDesc,
     ];
     List<String> sortOptions = sortOptionKeys.map((key) => key.tr).toList();
     sort(segmentShow, sortOptionKeys[selectedSortIndex.value]);
@@ -191,7 +178,7 @@ class SegmentList<T extends GetxController> {
       refreshMissingSegmentIndex(missingSegmentIndex, segmentShow);
 
       bodyViewHeight = getBodyViewHeight(missingSegmentIndex, baseBodyViewHeight);
-      parentLogic.update([SegmentList.findUnnecessarySegmentsId, SegmentList.bodyId]);
+      parentLogic.update([HistoryList.findUnnecessarySegmentsId, HistoryList.bodyId]);
     }
 
     // init select
@@ -231,7 +218,7 @@ class SegmentList<T extends GetxController> {
             RowWidget.buildDividerWithoutColor(),
             if (missingSegmentIndex.isNotEmpty)
               GetBuilder<T>(
-                  id: SegmentList.findUnnecessarySegmentsId,
+                  id: HistoryList.findUnnecessarySegmentsId,
                   builder: (_) {
                     if (missingSegmentIndex.isNotEmpty) {
                       return Column(
@@ -274,7 +261,7 @@ class SegmentList<T extends GetxController> {
                     }
                   }),
             GetBuilder<T>(
-              id: SegmentList.bodyId,
+              id: HistoryList.bodyId,
               builder: (_) {
                 var list = segmentShow;
                 return SizedBox(
@@ -359,7 +346,7 @@ class SegmentList<T extends GetxController> {
                                           content,
                                           (str) async {
                                             await Db().db.scheduleDao.updateSegment(segment.segmentKeyId, null, str);
-                                            parentLogic.update([SegmentList.bodyId]);
+                                            parentLogic.update([HistoryList.bodyId]);
                                           },
                                           qrPagePath: Nav.gsCrContentScan.path,
                                           height: totalHeight,
@@ -384,7 +371,7 @@ class SegmentList<T extends GetxController> {
                                           segment.segmentNote,
                                           (str) async {
                                             await Db().db.scheduleDao.updateSegment(segment.segmentKeyId, str, null);
-                                            parentLogic.update([SegmentList.bodyId]);
+                                            parentLogic.update([HistoryList.bodyId]);
                                           },
                                           qrPagePath: Nav.gsCrContentScan.path,
                                           height: totalHeight,
@@ -456,7 +443,7 @@ class SegmentList<T extends GetxController> {
                                                   await removeWarning();
                                                 }
                                               }
-                                              parentLogic.update([SegmentList.findUnnecessarySegmentsId, SegmentList.bodyId]);
+                                              parentLogic.update([HistoryList.findUnnecessarySegmentsId, HistoryList.bodyId]);
                                               Get.back();
                                             });
                                           },
@@ -480,7 +467,7 @@ class SegmentList<T extends GetxController> {
           ],
         ),
         GetBuilder<T>(
-            id: SegmentList.detailSearchId,
+            id: HistoryList.detailSearchId,
             builder: (_) {
               if (showSearchDetailPanel) {
                 double searchViewHeight = 4.5 * (RowWidget.rowHeight + RowWidget.dividerHeight);
@@ -550,7 +537,7 @@ class SegmentList<T extends GetxController> {
                                 selectedSortIndex.value = index;
                                 I18nKey key = sortOptionKeys[index];
                                 sort(segmentShow, key);
-                                parentLogic.update([SegmentList.bodyId]);
+                                parentLogic.update([HistoryList.bodyId]);
                               },
                               pickWidth: 210.w,
                             ),
@@ -695,7 +682,7 @@ class SegmentList<T extends GetxController> {
     EditProgress.show(segment.segmentKeyId, warning: I18nKey.labelSettingLearningProgressWarning.tr, title: I18nKey.btnOk.tr, callback: (p, n) async {
       await Db().db.scheduleDao.jumpDirectly(segment.segmentKeyId, p, n);
       Get.back();
-      parentLogic.update([SegmentList.bodyId]);
+      parentLogic.update([HistoryList.bodyId]);
     });
   }
 }

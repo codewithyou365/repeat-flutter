@@ -12,6 +12,7 @@ import 'package:repeat_flutter/db/entity/segment.dart';
 import 'package:repeat_flutter/db/entity/segment_key.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment_review.dart';
+import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
@@ -484,7 +485,9 @@ abstract class ScheduleDao {
       ',Content.id contentId'
       ',Content.name contentName'
       ',SegmentKey.content segmentContent'
+      ',SegmentKey.contentVersion segmentContentVersion'
       ',SegmentKey.note segmentNote'
+      ',SegmentKey.noteVersion segmentNoteVersion'
       ',SegmentKey.lessonIndex'
       ',SegmentKey.segmentIndex'
       ',SegmentOverallPrg.next'
@@ -553,6 +556,29 @@ abstract class ScheduleDao {
   @Query('SELECT ifnull(max(Content.updateTime),0) FROM Content'
       ' WHERE Content.classroomId=:classroomId')
   Future<int?> getMaxContentUpdateTime(int classroomId);
+
+  /// SegmentText start
+
+  @Query('SELECT TextVersion.* '
+      ' FROM SegmentKey'
+      ' JOIN TextVersion ON TextVersion.type=0'
+      '  AND TextVersion.id=SegmentKey.id'
+      '  AND TextVersion.version=SegmentKey.contentVersion'
+      ' WHERE SegmentKey.id in (:ids)')
+  Future<List<TextVersion>> getSegmentTextForContent(List<int> ids);
+
+  @Query('SELECT TextVersion.* '
+      ' FROM SegmentKey'
+      ' JOIN TextVersion ON TextVersion.type=1'
+      '  AND TextVersion.id=SegmentKey.id'
+      '  AND TextVersion.version=SegmentKey.noteVersion'
+      ' WHERE SegmentKey.id in (:ids)')
+  Future<List<TextVersion>> getSegmentTextForNote(List<int> ids);
+
+  @Insert(onConflict: OnConflictStrategy.ignore)
+  Future<void> insertSegmentTextVersion(List<TextVersion> entities);
+
+  /// SegmentText end
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertSegmentStats(SegmentStats stats);
@@ -669,7 +695,9 @@ abstract class ScheduleDao {
           0,
           pos2Key['$lessonIndex,$segmentIndex']!,
           segment.content,
+          1,
           '',
+          1,
         ));
         segments.add(Segment(
           0,
@@ -684,6 +712,36 @@ abstract class ScheduleDao {
       }
     }
     return true;
+  }
+
+  List<TextVersion> toNeedToInsertSegmentText(
+    List<SegmentKey> newSegmentKeys,
+    TextVersionType segmentTextVersionType,
+    Map<int, TextVersion> segmentKeyIdToVersion,
+    String Function(SegmentKey) getText,
+  ) {
+    List<TextVersion> needToInsert = [];
+
+    for (var v in newSegmentKeys) {
+      TextVersion? version = segmentKeyIdToVersion[v.id!];
+      String text = getText(v);
+      if (version == null || version.text != text) {
+        int currVersionNumber = 1;
+        if (version != null) {
+          currVersionNumber = version.version + 1;
+        }
+        var stv = TextVersion(
+          segmentTextVersionType,
+          v.id!,
+          currVersionNumber,
+          TextVersionReason.import,
+          text,
+          DateTime.now(),
+        );
+        needToInsert.add(stv);
+      }
+    }
+    return needToInsert;
   }
 
   @transaction
@@ -720,52 +778,84 @@ abstract class ScheduleDao {
     var maxVersion = -1;
     Map<String, SegmentKey> keyToOldSegmentKey = {};
     Map<String, int> keyToId = {};
+    List<int> oldSegmentKeyIds = [];
     for (var oldSegmentKey in oldSegmentKeys) {
       if (oldSegmentKey.version > maxVersion) {
         maxVersion = oldSegmentKey.version;
       }
       keyToOldSegmentKey[oldSegmentKey.key] = oldSegmentKey;
       keyToId[oldSegmentKey.key] = oldSegmentKey.id!;
+      oldSegmentKeyIds.add(oldSegmentKey.id!);
     }
     var nextVersion = maxVersion + 1;
-
+    Map<int, SegmentKey> needToModifyMap = {};
     List<SegmentKey> needToInsert = [];
-    List<SegmentKey> needToModify = [];
     for (var newSegmentKey in newSegmentKeys) {
       newSegmentKey.version = nextVersion;
       SegmentKey? oldSegmentKey = keyToOldSegmentKey[newSegmentKey.key];
       if (oldSegmentKey == null) {
         needToInsert.add(newSegmentKey);
-      } else if (oldSegmentKey.lessonIndex != newSegmentKey.lessonIndex || //
-          oldSegmentKey.segmentIndex != newSegmentKey.segmentIndex || //
-          oldSegmentKey.content != newSegmentKey.content) {
-        var modifyOne = newSegmentKey.clone();
-        modifyOne.id = oldSegmentKey.id;
-        needToModify.add(modifyOne);
+      } else {
+        newSegmentKey.id = oldSegmentKey.id;
+        newSegmentKey.contentVersion = oldSegmentKey.contentVersion;
+        newSegmentKey.noteVersion = oldSegmentKey.noteVersion;
+        if (oldSegmentKey.lessonIndex != newSegmentKey.lessonIndex || //
+            oldSegmentKey.segmentIndex != newSegmentKey.segmentIndex || //
+            oldSegmentKey.content != newSegmentKey.content || //
+            oldSegmentKey.note != newSegmentKey.note) {
+          needToModifyMap[oldSegmentKey.id!] = newSegmentKey;
+        }
       }
-    }
-
-    if (needToModify.isNotEmpty) {
-      await updateSegmentKeys(needToModify);
     }
     if (needToInsert.isNotEmpty) {
       await insertSegmentKeys(needToInsert);
       var keyIds = await getSegmentKeyId(Classroom.curr, contentSerial);
-      keyToId = {};
-      for (var keyId in keyIds) {
-        keyToId[keyId.key] = keyId.id;
+      keyToId = {for (var keyId in keyIds) keyId.key: keyId.id};
+      for (var newSegmentKey in newSegmentKeys) {
+        int? id = keyToId[newSegmentKey.key];
+        if (id != null) {
+          newSegmentKey.id = id;
+        }
       }
     }
 
-    await deleteSegmentByContentSerial(Classroom.curr, contentSerial);
+    List<TextVersion> oldContentVersion = await getSegmentTextForContent(oldSegmentKeyIds);
+    Map<int, TextVersion> oldSegmentKeyIdToContentVersion = {for (var v in oldContentVersion) v.id: v};
+    var needToInsertSegmentContent = toNeedToInsertSegmentText(newSegmentKeys, TextVersionType.segmentContent, oldSegmentKeyIdToContentVersion, (v) => v.content);
+    Map<int, TextVersion> newSegmentKeyIdToContentVersion = {for (var v in needToInsertSegmentContent) v.id: v};
+    List<TextVersion> oldNoteVersion = await getSegmentTextForNote(oldSegmentKeyIds);
+    Map<int, TextVersion> oldSegmentKeyIdToNoteVersion = {for (var v in oldNoteVersion) v.id: v};
+    var needToInsertSegmentNote = toNeedToInsertSegmentText(newSegmentKeys, TextVersionType.segmentNote, oldSegmentKeyIdToNoteVersion, (v) => v.note);
+    Map<int, TextVersion> newSegmentKeyIdToNoteVersion = {for (var v in needToInsertSegmentNote) v.id: v};
     for (var i = 0; i < newSegmentKeys.length; i++) {
-      SegmentKey? newSegmentKey = newSegmentKeys[i];
-      int id = keyToId[newSegmentKey.key]!;
+      SegmentKey newSegmentKey = newSegmentKeys[i];
+      var id = keyToId[newSegmentKey.key]!;
+      var contentVersion = newSegmentKeyIdToContentVersion[id];
+      if (contentVersion != null && newSegmentKey.contentVersion != contentVersion.version) {
+        newSegmentKey.contentVersion = contentVersion.version;
+        needToModifyMap[newSegmentKey.id!] = newSegmentKey;
+      }
+      var noteVersion = newSegmentKeyIdToNoteVersion[id];
+      if (noteVersion != null && newSegmentKey.noteVersion != noteVersion.version) {
+        newSegmentKey.noteVersion = noteVersion.version;
+        needToModifyMap[newSegmentKey.id!] = newSegmentKey;
+      }
       segments[i].segmentKeyId = id;
       segmentOverallPrgs[i].segmentKeyId = id;
     }
+    await deleteSegmentByContentSerial(Classroom.curr, contentSerial);
     await insertSegments(segments);
     await insertSegmentOverallPrgs(segmentOverallPrgs);
+    if (needToInsertSegmentContent.isNotEmpty) {
+      await insertSegmentTextVersion(needToInsertSegmentContent);
+    }
+    if (needToInsertSegmentNote.isNotEmpty) {
+      await insertSegmentTextVersion(needToInsertSegmentNote);
+    }
+    if (needToModifyMap.isNotEmpty) {
+      await updateSegmentKeys(needToModifyMap.values.toList());
+    }
+
     var warning = false;
     if (segments.length < keyToId.length) {
       warning = true;

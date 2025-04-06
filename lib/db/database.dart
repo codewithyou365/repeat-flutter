@@ -23,6 +23,7 @@ import 'package:repeat_flutter/db/entity/segment_key.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment_review.dart';
 import 'package:repeat_flutter/db/entity/segment_stats.dart';
+import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
@@ -60,6 +61,7 @@ part 'database.g.dart'; // the generated code will be there
   SegmentTodayPrg,
   SegmentContentInDb,
   SegmentStats,
+  TextVersion,
   TimeStats,
   Game,
   GameUser,
@@ -71,6 +73,8 @@ part 'database.g.dart'; // the generated code will be there
   CrKConverter,
   DateTimeConverter,
   DateConverter,
+  SegmentTextVersionTypeConverter,
+  SegmentTextVersionReasonConverter,
 ])
 abstract class AppDatabase extends FloorDatabase {
   GameUserDao get gameUserDao;
