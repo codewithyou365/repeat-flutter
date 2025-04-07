@@ -4,10 +4,10 @@ import 'package:floor/floor.dart';
 class SegmentKeyId {
   @primaryKey
   final int id;
-  final String key;
+  final String k;
 
   SegmentKeyId(
     this.id,
-    this.key,
+    this.k,
   );
 }

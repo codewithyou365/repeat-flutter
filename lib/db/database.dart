@@ -13,6 +13,7 @@ import 'package:repeat_flutter/db/dao/game_user_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/kv_dao.dart';
 import 'package:repeat_flutter/db/dao/stats_dao.dart';
+import 'package:repeat_flutter/db/dao/text_version_dao.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
@@ -86,6 +87,8 @@ abstract class AppDatabase extends FloorDatabase {
   DocDao get docDao;
 
   ClassroomDao get classroomDao;
+
+  TextVersionDao get textVersionDao;
 
   ContentDao get contentDao;
 

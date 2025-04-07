@@ -34,12 +34,4 @@ class SegmentHelp {
     cache.removeWhere((element) => element.segmentKeyId == segmentKeyId);
     segmentKeyIdToShow.remove(segmentKeyId);
   }
-
-  static int? getCacheIndex(int segmentKeyId) {
-    SegmentShow? ss = SegmentHelp.segmentKeyIdToShow[segmentKeyId];
-    if (ss != null) {
-      return cache.indexOf(ss);
-    }
-    return null;
-  }
 }

@@ -7,10 +7,12 @@ import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
+import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_show.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
+import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
@@ -30,29 +32,27 @@ class SegmentList<T extends GetxController> {
 
   SegmentList(this.parentLogic);
 
-  show({
+  late HistoryList historyList = HistoryList<T>(parentLogic);
+
+  Future<void> show({
     String? initContentNameSelect,
     int? initLessonSelect,
     int? selectSegmentKeyId,
-    bool focus = true,
+    bool focus = false,
     Future<void> Function()? removeWarning,
   }) async {
-    showTransparentOverlay(() async {
-      List<SegmentShow> segmentShow = [];
-      segmentShow = await SegmentHelp.getSegments();
-
-      showSheet(
-        segmentShow,
-        initContentNameSelect: initContentNameSelect,
-        initLessonSelect: initLessonSelect,
-        selectSegmentKeyId: selectSegmentKeyId,
-        focus: focus,
-        removeWarning: removeWarning,
-      );
-    });
+    List<SegmentShow> segmentShow = await SegmentHelp.getSegments();
+    return await showSheet(
+      segmentShow,
+      initContentNameSelect: initContentNameSelect,
+      initLessonSelect: initLessonSelect,
+      selectSegmentKeyId: selectSegmentKeyId,
+      focus: focus,
+      removeWarning: removeWarning,
+    );
   }
 
-  showSheet(
+  Future<void> showSheet(
     List<SegmentShow> originalSegmentShow, {
     String? initContentNameSelect,
     int? initLessonSelect,
@@ -211,7 +211,10 @@ class SegmentList<T extends GetxController> {
       trySearch();
       int? selectedIndex;
       if (selectSegmentKeyId != null) {
-        selectedIndex = SegmentHelp.getCacheIndex(selectSegmentKeyId);
+        SegmentShow? ss = SegmentHelp.getCache(selectSegmentKeyId);
+        if (ss != null) {
+          selectedIndex = segmentShow.indexOf(ss);
+        }
       }
       if (selectedIndex != null) {
         itemScrollController.scrollTo(
@@ -222,7 +225,7 @@ class SegmentList<T extends GetxController> {
       }
     });
 
-    Sheet.showBottomSheet(
+    return Sheet.showBottomSheet(
       Get.context!,
       Stack(children: [
         Column(
@@ -333,7 +336,7 @@ class SegmentList<T extends GetxController> {
                                     const SizedBox(height: 8),
                                     ExpandableText(
                                       title: I18nKey.labelKey.tr,
-                                      text: ': ${segment.key}',
+                                      text: ': ${segment.k}',
                                       limit: 50,
                                       style: const TextStyle(fontWeight: FontWeight.bold),
                                       selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
@@ -355,14 +358,16 @@ class SegmentList<T extends GetxController> {
                                         var content = const JsonEncoder.withIndent(' ').convert(contentM);
                                         Editor.show(
                                           Get.context!,
-                                          I18nKey.labelNote.tr,
+                                          I18nKey.labelSegmentName.tr,
                                           content,
                                           (str) async {
-                                            await Db().db.scheduleDao.updateSegment(segment.segmentKeyId, null, str);
+                                            await Db().db.scheduleDao.tUpdateSegmentContent(segment.segmentKeyId, str);
                                             parentLogic.update([SegmentList.bodyId]);
                                           },
                                           qrPagePath: Nav.gsCrContentScan.path,
-                                          height: totalHeight,
+                                          onHistory: () {
+                                            historyList.show(TextVersionType.segmentContent, segment.segmentKeyId);
+                                          },
                                         );
                                       },
                                     ),
@@ -383,11 +388,13 @@ class SegmentList<T extends GetxController> {
                                           I18nKey.labelNote.tr,
                                           segment.segmentNote,
                                           (str) async {
-                                            await Db().db.scheduleDao.updateSegment(segment.segmentKeyId, str, null);
+                                            await Db().db.scheduleDao.tUpdateSegmentNote(segment.segmentKeyId, str);
                                             parentLogic.update([SegmentList.bodyId]);
                                           },
                                           qrPagePath: Nav.gsCrContentScan.path,
-                                          height: totalHeight,
+                                          onHistory: () {
+                                            historyList.show(TextVersionType.segmentNote, segment.segmentKeyId);
+                                          },
                                         );
                                       },
                                     ),

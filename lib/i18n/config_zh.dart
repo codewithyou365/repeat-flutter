@@ -175,7 +175,9 @@ class ConfigZh extends Config {
     put(I18nKey.labelCopyTemplateCount, "复制模版数量");
     put(I18nKey.labelSegmentNeedToContainAnswer, "段落需要包含答案字段");
     put(I18nKey.labelSegmentKeyDuplicated, "段落KEY重复： %s");
+    put(I18nKey.labelSegmentKeyCantBeEmpty, "段落KEY不能为空");
     put(I18nKey.labelKey, "键");
+    put(I18nKey.labelCreateTime, "创建时间");
     put(I18nKey.labelContent, "内容");
     put(I18nKey.labelPosition, "位置");
     put(I18nKey.labelSortBy, "排序方式");
@@ -204,6 +206,7 @@ class ConfigZh extends Config {
     put(I18nKey.btnCut, "切割并保留前后");
     put(I18nKey.btnDeleteCurr, "删除当前段");
     put(I18nKey.btnCancel, "取消");
+    put(I18nKey.btnHistory, "历史");
     put(I18nKey.btnContinue, "继续");
     put(I18nKey.btnOk, "确定");
     put(I18nKey.btnDelete, "删除");

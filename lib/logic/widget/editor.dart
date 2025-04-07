@@ -1,7 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -9,11 +8,15 @@ import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class Editor {
-  static void show(BuildContext context, String title, String dbValue, Future<void> Function(String) save, {double? rate, double? height, String? qrPagePath, String? initShowValue}) {
-    showWithTitleWidget(context, RowWidget.buildText("$title :", ""), dbValue, save, rate: rate, height: height, qrPagePath: qrPagePath, initShowValue: initShowValue);
-  }
-
-  static void showWithTitleWidget(BuildContext context, Widget titleWidget, String dbValue, Future<void> Function(String) save, {double? rate, double? height, String? qrPagePath, String? initShowValue}) {
+  static void show(
+    BuildContext context,
+    String title,
+    String dbValue,
+    Future<void> Function(String) save, {
+    VoidCallback? onHistory,
+    String? qrPagePath,
+    String? initShowValue,
+  }) {
     initShowValue ??= dbValue;
     final textController = TextEditingController(text: initShowValue.toString());
     final shareBtn = Button(I18nKey.btnShare.tr, () {
@@ -26,7 +29,7 @@ class Editor {
       var v = await Get.toNamed(qrPagePath);
       if (v != null && v is String && v != "") {
         Get.back();
-        showWithTitleWidget(context, titleWidget, dbValue, save, rate: rate, height: height, qrPagePath: qrPagePath, initShowValue: v);
+        show(context, title, dbValue, save, onHistory: onHistory, qrPagePath: qrPagePath, initShowValue: v);
       }
     });
     void textChange() {
@@ -39,6 +42,7 @@ class Editor {
         MsgBox.yesOrNo(
           I18nKey.labelTips.tr,
           I18nKey.labelTextChange.tr,
+          yesBtnTitle: I18nKey.btnSave.tr,
           no: () {
             Get.back();
             Get.back();
@@ -64,6 +68,7 @@ class Editor {
         children: [
           RowWidget.buildButtons([
             Button(I18nKey.btnCancel.tr, onCancel),
+            if (onHistory != null) Button(I18nKey.btnHistory.tr, onHistory),
             shareBtn,
             if (qrPagePath != null) scanBtn,
             Button(I18nKey.btnSave.tr, () async {
@@ -74,17 +79,16 @@ class Editor {
             }),
           ]),
           RowWidget.buildDivider(),
-          titleWidget,
+          RowWidget.buildText("$title :", ""),
         ],
       ),
       RowWidget.buildEditText(textController, maxLines: 40, minLines: 32),
-      rate: rate,
-      height: height,
+      rate: 1,
       onTapBlack: onCancel,
     );
   }
 
-  static void showQrCode(BuildContext context, String value, {double? rate}) {
+  static void showQrCode(BuildContext context, String value) {
     final Size screenSize = MediaQuery.of(context).size;
     Sheet.showBottomSheet(
       context,
@@ -99,10 +103,10 @@ class Editor {
           ]),
           RowWidget.buildDivider(),
           RowWidget.buildQrCode(value, screenSize.width - Sheet.paddingHorizontal * 2),
-          RowWidget.buildMiddleText(StringUtil.limit(value.replaceAll("\n", "\\n"), 64)),
+          RowWidget.buildMiddleText(value),
         ],
       ),
-      rate: rate,
+      rate: 1,
     );
   }
 }

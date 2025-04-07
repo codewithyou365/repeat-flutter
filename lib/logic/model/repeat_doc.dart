@@ -125,28 +125,28 @@ class Lesson {
 }
 
 class BaseSegment {
-  String key;
+  String k;
   String a;
 
-  BaseSegment(this.key, this.a);
+  BaseSegment(this.k, this.a);
 
   factory BaseSegment.fromJson(Map<String, dynamic> json) {
     return BaseSegment(
-      json['key'] ?? "",
+      json['k'] ?? "",
       json['a'] ?? "",
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'key': key,
+      'k': k,
       'a': a,
     };
   }
 }
 
 class Segment {
-  String key;
+  String k;
   String content;
   String tipStart;
   String tipEnd;
@@ -160,7 +160,7 @@ class Segment {
   String w;
 
   Segment(
-    this.key,
+    this.k,
     this.content,
     this.tipStart,
     this.tipEnd,
@@ -182,7 +182,7 @@ class Segment {
   ) {
     String content = convert.jsonEncode(json);
     return Segment(
-      json['key'] ?? "",
+      json['k'] ?? "",
       content,
       json['tipStart'] ?? "",
       json['tipEnd'] ?? "",

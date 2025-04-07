@@ -174,8 +174,10 @@ class ConfigEn extends Config {
     put(I18nKey.labelCalendar, "Calendar");
     put(I18nKey.labelCopyTemplateCount, "Copy Template Count");
     put(I18nKey.labelSegmentNeedToContainAnswer, "Segment Need To Contain Answer");
-    put(I18nKey.labelSegmentKeyDuplicated, "Segment Key Duplicated: %s");
+    put(I18nKey.labelSegmentKeyDuplicated, "Segment Key duplicated: %s");
+    put(I18nKey.labelSegmentKeyCantBeEmpty, "Segment Key can't be empty");
     put(I18nKey.labelKey, "Key");
+    put(I18nKey.labelCreateTime, "Create Time");
     put(I18nKey.labelContent, "Content");
     put(I18nKey.labelPosition, "Position");
     put(I18nKey.labelSortBy, "Sort by");
@@ -204,6 +206,7 @@ class ConfigEn extends Config {
     put(I18nKey.btnCut, "Cut and retain front and back");
     put(I18nKey.btnDeleteCurr, "Delete current");
     put(I18nKey.btnCancel, "Cancel");
+    put(I18nKey.btnHistory, "History");
     put(I18nKey.btnContinue, "Continue");
     put(I18nKey.btnOk, "Ok");
     put(I18nKey.btnDelete, "Delete");

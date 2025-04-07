@@ -251,14 +251,11 @@ abstract class ScheduleDao {
   Future<void> updateKv(int classroomId, CrK k, String value);
 
   /// --- Update SegmentKey ---
-  @Query('UPDATE SegmentKey set note=:note,key=:key,content=:content WHERE id=:id')
-  Future<void> updateSegmentNoteAndKeyAndContent(int id, String note, String key, String content);
+  @Query('UPDATE SegmentKey set note=:note,noteVersion=:noteVersion WHERE id=:id')
+  Future<void> updateSegmentNote(int id, String note, int noteVersion);
 
-  @Query('UPDATE SegmentKey set note=:note WHERE id=:id')
-  Future<void> updateSegmentNote(int id, String note);
-
-  @Query('UPDATE SegmentKey set key=:key,content=:content WHERE id=:id')
-  Future<void> updateSegmentKeyAndContent(int id, String key, String content);
+  @Query('UPDATE SegmentKey set k=:key,content=:content,contentVersion=:contentVersion WHERE id=:id')
+  Future<void> updateSegmentKeyAndContent(int id, String key, String content, int contentVersion);
 
   @Query('SELECT note FROM SegmentKey WHERE id=:id')
   Future<String?> getSegmentNote(int id);
@@ -460,7 +457,7 @@ abstract class ScheduleDao {
   Future<void> updateSegmentKeys(List<SegmentKey> entities);
 
   @Query('SELECT SegmentKey.id'
-      ',SegmentKey.key FROM SegmentKey'
+      ',SegmentKey.k FROM SegmentKey'
       ' WHERE SegmentKey.classroomId=:classroomId'
       ' and SegmentKey.contentSerial=:contentSerial')
   Future<List<SegmentKeyId>> getSegmentKeyId(int classroomId, int contentSerial);
@@ -477,11 +474,11 @@ abstract class ScheduleDao {
   @Query('SELECT SegmentKey.* FROM SegmentKey'
       ' WHERE SegmentKey.classroomId=:classroomId'
       ' AND SegmentKey.contentSerial=:contentSerial'
-      ' AND SegmentKey.key=:key')
+      ' AND SegmentKey.k=:key')
   Future<SegmentKey?> getSegmentKeyByKey(int classroomId, int contentSerial, String key);
 
   @Query('SELECT SegmentKey.id segmentKeyId'
-      ',SegmentKey.key'
+      ',SegmentKey.k'
       ',Content.id contentId'
       ',Content.name contentName'
       ',SegmentKey.content segmentContent'
@@ -561,7 +558,7 @@ abstract class ScheduleDao {
 
   @Query('SELECT TextVersion.* '
       ' FROM SegmentKey'
-      ' JOIN TextVersion ON TextVersion.type=0'
+      ' JOIN TextVersion ON TextVersion.t=0'
       '  AND TextVersion.id=SegmentKey.id'
       '  AND TextVersion.version=SegmentKey.contentVersion'
       ' WHERE SegmentKey.id in (:ids)')
@@ -569,14 +566,17 @@ abstract class ScheduleDao {
 
   @Query('SELECT TextVersion.* '
       ' FROM SegmentKey'
-      ' JOIN TextVersion ON TextVersion.type=1'
+      ' JOIN TextVersion ON TextVersion.t=1'
       '  AND TextVersion.id=SegmentKey.id'
       '  AND TextVersion.version=SegmentKey.noteVersion'
       ' WHERE SegmentKey.id in (:ids)')
   Future<List<TextVersion>> getSegmentTextForNote(List<int> ids);
 
   @Insert(onConflict: OnConflictStrategy.ignore)
-  Future<void> insertSegmentTextVersion(List<TextVersion> entities);
+  Future<void> insertSegmentTextVersions(List<TextVersion> entities);
+
+  @Insert(onConflict: OnConflictStrategy.ignore)
+  Future<void> insertSegmentTextVersion(TextVersion entity);
 
   /// SegmentText end
 
@@ -626,7 +626,7 @@ abstract class ScheduleDao {
           Snackbar.show(I18nKey.labelSegmentNeedToContainAnswer.tr);
           return null;
         }
-        var key = getKey(segment.key, segment.a);
+        var key = getKey(segment.k, segment.a);
         if (key2Exist.containsKey(key)) {
           Snackbar.show(I18nKey.labelSegmentKeyDuplicated.trArgs([key]));
           return null;
@@ -783,8 +783,8 @@ abstract class ScheduleDao {
       if (oldSegmentKey.version > maxVersion) {
         maxVersion = oldSegmentKey.version;
       }
-      keyToOldSegmentKey[oldSegmentKey.key] = oldSegmentKey;
-      keyToId[oldSegmentKey.key] = oldSegmentKey.id!;
+      keyToOldSegmentKey[oldSegmentKey.k] = oldSegmentKey;
+      keyToId[oldSegmentKey.k] = oldSegmentKey.id!;
       oldSegmentKeyIds.add(oldSegmentKey.id!);
     }
     var nextVersion = maxVersion + 1;
@@ -792,7 +792,7 @@ abstract class ScheduleDao {
     List<SegmentKey> needToInsert = [];
     for (var newSegmentKey in newSegmentKeys) {
       newSegmentKey.version = nextVersion;
-      SegmentKey? oldSegmentKey = keyToOldSegmentKey[newSegmentKey.key];
+      SegmentKey? oldSegmentKey = keyToOldSegmentKey[newSegmentKey.k];
       if (oldSegmentKey == null) {
         needToInsert.add(newSegmentKey);
       } else {
@@ -810,9 +810,9 @@ abstract class ScheduleDao {
     if (needToInsert.isNotEmpty) {
       await insertSegmentKeys(needToInsert);
       var keyIds = await getSegmentKeyId(Classroom.curr, contentSerial);
-      keyToId = {for (var keyId in keyIds) keyId.key: keyId.id};
+      keyToId = {for (var keyId in keyIds) keyId.k: keyId.id};
       for (var newSegmentKey in newSegmentKeys) {
-        int? id = keyToId[newSegmentKey.key];
+        int? id = keyToId[newSegmentKey.k];
         if (id != null) {
           newSegmentKey.id = id;
         }
@@ -829,7 +829,7 @@ abstract class ScheduleDao {
     Map<int, TextVersion> newSegmentKeyIdToNoteVersion = {for (var v in needToInsertSegmentNote) v.id: v};
     for (var i = 0; i < newSegmentKeys.length; i++) {
       SegmentKey newSegmentKey = newSegmentKeys[i];
-      var id = keyToId[newSegmentKey.key]!;
+      var id = keyToId[newSegmentKey.k]!;
       var contentVersion = newSegmentKeyIdToContentVersion[id];
       if (contentVersion != null && newSegmentKey.contentVersion != contentVersion.version) {
         newSegmentKey.contentVersion = contentVersion.version;
@@ -847,10 +847,10 @@ abstract class ScheduleDao {
     await insertSegments(segments);
     await insertSegmentOverallPrgs(segmentOverallPrgs);
     if (needToInsertSegmentContent.isNotEmpty) {
-      await insertSegmentTextVersion(needToInsertSegmentContent);
+      await insertSegmentTextVersions(needToInsertSegmentContent);
     }
     if (needToInsertSegmentNote.isNotEmpty) {
-      await insertSegmentTextVersion(needToInsertSegmentNote);
+      await insertSegmentTextVersions(needToInsertSegmentNote);
     }
     if (needToModifyMap.isNotEmpty) {
       await updateSegmentKeys(needToModifyMap.values.toList());
@@ -1066,57 +1066,81 @@ abstract class ScheduleDao {
   }
 
   @transaction
-  Future<void> updateSegment(int segmentKeyId, String? note, String? content) async {
+  Future<void> tUpdateSegmentContent(int segmentKeyId, String content) async {
     SegmentKey? segmentKey = await getSegmentKeyById(segmentKeyId);
     if (segmentKey == null) {
       Snackbar.show(I18nKey.labelNotFoundSegment.trArgs([segmentKeyId.toString()]));
       return;
     }
-    String? key;
-
-    if (content != null) {
-      var contentM = convert.jsonDecode(content);
-      try {
-        rd.BaseSegment segment = rd.BaseSegment.fromJson(contentM);
-        key = getKey(segment.key, segment.a);
-      } catch (e) {
-        Snackbar.show(e.toString());
-        return;
-      }
-      var ok = await RepeatDocEditHelp.setSegment(segmentKey.contentSerial, segmentKey.lessonIndex, segmentKey.segmentIndex, content);
-      if (!ok) {
-        Snackbar.show(I18nKey.labelDataAnomaly.trArgs(['997']));
-        return;
-      }
+    dynamic contentM;
+    try {
+      contentM = convert.jsonDecode(content);
       content = convert.jsonEncode(contentM);
+    } catch (e) {
+      Snackbar.show(e.toString());
+      return;
     }
 
-    if (key != null) {
-      var otherSegmentKey = await getSegmentKeyByKey(segmentKey.classroomId, segmentKey.contentSerial, key);
-      if (otherSegmentKey != null && otherSegmentKey.id != segmentKey.id) {
-        Snackbar.show(I18nKey.labelSegmentKeyDuplicated.trArgs([key]));
-        return;
-      }
+    if (segmentKey.content == content) {
+      return;
     }
-    if (note != null && content != null) {
-      await updateSegmentNoteAndKeyAndContent(segmentKeyId, note, key!, content);
-    } else if (note != null) {
-      await updateSegmentNote(segmentKeyId, note);
-    } else if (content != null) {
-      await updateSegmentKeyAndContent(segmentKeyId, key!, content);
+    String key;
+    try {
+      rd.BaseSegment segment = rd.BaseSegment.fromJson(contentM);
+      key = getKey(segment.k, segment.a);
+    } catch (e) {
+      Snackbar.show(e.toString());
+      return;
+    }
+    if (key.isEmpty) {
+      Snackbar.show(I18nKey.labelSegmentKeyCantBeEmpty.tr);
+      return;
+    }
+
+    var otherSegmentKey = await getSegmentKeyByKey(segmentKey.classroomId, segmentKey.contentSerial, key);
+    if (otherSegmentKey != null && otherSegmentKey.id != segmentKey.id) {
+      Snackbar.show(I18nKey.labelSegmentKeyDuplicated.trArgs([key]));
+      return;
+    }
+    // TODO the repeat doc is only used to import
+    var ok = await RepeatDocEditHelp.setSegment(segmentKey.contentSerial, segmentKey.lessonIndex, segmentKey.segmentIndex, content);
+    if (!ok) {
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(['997']));
+      return;
     }
     var now = DateTime.now();
+    await updateSegmentKeyAndContent(segmentKeyId, key, content, segmentKey.contentVersion + 1);
+    await insertSegmentTextVersion(TextVersion(TextVersionType.segmentContent, segmentKeyId, segmentKey.contentVersion + 1, TextVersionReason.editor, content, now));
     await insertKv(CrKv(Classroom.curr, CrK.updateSegmentShowTime, now.millisecondsSinceEpoch.toString()));
     if (getSegmentShow != null) {
       SegmentShow? currSegmentShow = getSegmentShow!(segmentKeyId);
       if (currSegmentShow != null) {
-        if (note != null) {
-          currSegmentShow.segmentNote = note;
-        }
-        if (content != null) {
-          currSegmentShow.segmentContent = content;
-          currSegmentShow.key = key!;
-        }
+        currSegmentShow.segmentContent = content;
+        currSegmentShow.k = key;
+        currSegmentShow.segmentContentVersion++;
+      }
+    }
+  }
+
+  @transaction
+  Future<void> tUpdateSegmentNote(int segmentKeyId, String note) async {
+    SegmentKey? segmentKey = await getSegmentKeyById(segmentKeyId);
+    if (segmentKey == null) {
+      Snackbar.show(I18nKey.labelNotFoundSegment.trArgs([segmentKeyId.toString()]));
+      return;
+    }
+    if (segmentKey.note == note) {
+      return;
+    }
+    var now = DateTime.now();
+    await updateSegmentNote(segmentKeyId, note, segmentKey.noteVersion + 1);
+    await insertSegmentTextVersion(TextVersion(TextVersionType.segmentNote, segmentKeyId, segmentKey.noteVersion + 1, TextVersionReason.editor, note, now));
+    await insertKv(CrKv(Classroom.curr, CrK.updateSegmentShowTime, now.millisecondsSinceEpoch.toString()));
+    if (getSegmentShow != null) {
+      SegmentShow? currSegmentShow = getSegmentShow!(segmentKeyId);
+      if (currSegmentShow != null) {
+        currSegmentShow.segmentNote = note;
+        currSegmentShow.segmentNoteVersion++;
       }
     }
   }

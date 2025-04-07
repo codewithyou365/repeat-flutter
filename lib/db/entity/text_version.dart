@@ -13,10 +13,10 @@ enum TextVersionReason {
 }
 
 @Entity(
-  primaryKeys: ['type', 'id', 'version'],
+  primaryKeys: ['t', 'id', 'version'],
 )
 class TextVersion {
-  final TextVersionType type;
+  final TextVersionType t;
   final int id;
   final int version;
   final TextVersionReason reason;
@@ -24,7 +24,7 @@ class TextVersion {
   final DateTime createTime;
 
   TextVersion(
-    this.type,
+    this.t,
     this.id,
     this.version,
     this.reason,

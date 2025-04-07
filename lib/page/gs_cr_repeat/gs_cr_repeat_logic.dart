@@ -201,7 +201,7 @@ class GsCrRepeatLogic extends GetxController {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
-    await segmentList.show(selectSegmentKeyId: curr.segmentKeyId, focus: false);
+    await segmentList.show(selectSegmentKeyId: curr.segmentKeyId);
     refreshView();
   }
 

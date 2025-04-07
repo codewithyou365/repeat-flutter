@@ -82,6 +82,8 @@ class _$AppDatabase extends AppDatabase {
 
   ClassroomDao? _classroomDaoInstance;
 
+  TextVersionDao? _textVersionDaoInstance;
+
   ContentDao? _contentDaoInstance;
 
   ScheduleDao? _scheduleDaoInstance;
@@ -124,7 +126,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Segment` (`segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `SegmentKey` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `version` INTEGER NOT NULL, `key` TEXT NOT NULL, `content` TEXT NOT NULL, `contentVersion` INTEGER NOT NULL, `note` TEXT NOT NULL, `noteVersion` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `SegmentKey` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `version` INTEGER NOT NULL, `k` TEXT NOT NULL, `content` TEXT NOT NULL, `contentVersion` INTEGER NOT NULL, `note` TEXT NOT NULL, `noteVersion` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentOverallPrg` (`segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `next` INTEGER NOT NULL, `progress` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`))');
         await database.execute(
@@ -134,7 +136,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `SegmentStats` (`segmentKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, PRIMARY KEY (`segmentKeyId`, `type`, `createDate`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `TextVersion` (`type` INTEGER NOT NULL, `id` INTEGER NOT NULL, `version` INTEGER NOT NULL, `reason` INTEGER NOT NULL, `text` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`type`, `id`, `version`))');
+            'CREATE TABLE IF NOT EXISTS `TextVersion` (`t` INTEGER NOT NULL, `id` INTEGER NOT NULL, `version` INTEGER NOT NULL, `reason` INTEGER NOT NULL, `text` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`t`, `id`, `version`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
         await database.execute(
@@ -168,7 +170,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE UNIQUE INDEX `index_SegmentKey_classroomId_contentSerial_lessonIndex_segmentIndex_version` ON `SegmentKey` (`classroomId`, `contentSerial`, `lessonIndex`, `segmentIndex`, `version`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_SegmentKey_classroomId_contentSerial_key` ON `SegmentKey` (`classroomId`, `contentSerial`, `key`)');
+            'CREATE UNIQUE INDEX `index_SegmentKey_classroomId_contentSerial_k` ON `SegmentKey` (`classroomId`, `contentSerial`, `k`)');
         await database.execute(
             'CREATE INDEX `index_SegmentOverallPrg_classroomId_next_progress` ON `SegmentOverallPrg` (`classroomId`, `next`, `progress`)');
         await database.execute(
@@ -237,6 +239,12 @@ class _$AppDatabase extends AppDatabase {
   @override
   ClassroomDao get classroomDao {
     return _classroomDaoInstance ??= _$ClassroomDao(database, changeListener);
+  }
+
+  @override
+  TextVersionDao get textVersionDao {
+    return _textVersionDaoInstance ??=
+        _$TextVersionDao(database, changeListener);
   }
 
   @override
@@ -998,6 +1006,36 @@ class _$ClassroomDao extends ClassroomDao {
   }
 }
 
+class _$TextVersionDao extends TextVersionDao {
+  _$TextVersionDao(
+    this.database,
+    this.changeListener,
+  ) : _queryAdapter = QueryAdapter(database);
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  @override
+  Future<List<TextVersion>> list(
+    TextVersionType type,
+    int id,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM TextVersion WHERE t=?1 AND id=?2',
+        mapper: (Map<String, Object?> row) => TextVersion(
+            _segmentTextVersionTypeConverter.decode(row['t'] as int),
+            row['id'] as int,
+            row['version'] as int,
+            _segmentTextVersionReasonConverter.decode(row['reason'] as int),
+            row['text'] as String,
+            _dateTimeConverter.decode(row['createTime'] as int)),
+        arguments: [_segmentTextVersionTypeConverter.encode(type), id]);
+  }
+}
+
 class _$ContentDao extends ContentDao {
   _$ContentDao(
     this.database,
@@ -1280,7 +1318,7 @@ class _$ScheduleDao extends ScheduleDao {
                   'lessonIndex': item.lessonIndex,
                   'segmentIndex': item.segmentIndex,
                   'version': item.version,
-                  'key': item.key,
+                  'k': item.k,
                   'content': item.content,
                   'contentVersion': item.contentVersion,
                   'note': item.note,
@@ -1311,7 +1349,7 @@ class _$ScheduleDao extends ScheduleDao {
             database,
             'TextVersion',
             (TextVersion item) => <String, Object?>{
-                  'type': _segmentTextVersionTypeConverter.encode(item.type),
+                  't': _segmentTextVersionTypeConverter.encode(item.t),
                   'id': item.id,
                   'version': item.version,
                   'reason':
@@ -1341,7 +1379,7 @@ class _$ScheduleDao extends ScheduleDao {
                   'lessonIndex': item.lessonIndex,
                   'segmentIndex': item.segmentIndex,
                   'version': item.version,
-                  'key': item.key,
+                  'k': item.k,
                   'content': item.content,
                   'contentVersion': item.contentVersion,
                   'note': item.note,
@@ -1508,25 +1546,14 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> updateSegmentNoteAndKeyAndContent(
-    int id,
-    String note,
-    String key,
-    String content,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'UPDATE SegmentKey set note=?2,key=?3,content=?4 WHERE id=?1',
-        arguments: [id, note, key, content]);
-  }
-
-  @override
   Future<void> updateSegmentNote(
     int id,
     String note,
+    int noteVersion,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE SegmentKey set note=?2 WHERE id=?1',
-        arguments: [id, note]);
+        'UPDATE SegmentKey set note=?2,noteVersion=?3 WHERE id=?1',
+        arguments: [id, note, noteVersion]);
   }
 
   @override
@@ -1534,10 +1561,11 @@ class _$ScheduleDao extends ScheduleDao {
     int id,
     String key,
     String content,
+    int contentVersion,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE SegmentKey set key=?2,content=?3 WHERE id=?1',
-        arguments: [id, key, content]);
+        'UPDATE SegmentKey set k=?2,content=?3,contentVersion=?4 WHERE id=?1',
+        arguments: [id, key, content, contentVersion]);
   }
 
   @override
@@ -1809,8 +1837,8 @@ class _$ScheduleDao extends ScheduleDao {
     int contentSerial,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentKey.id,SegmentKey.key FROM SegmentKey WHERE SegmentKey.classroomId=?1 and SegmentKey.contentSerial=?2',
-        mapper: (Map<String, Object?> row) => SegmentKeyId(row['id'] as int, row['key'] as String),
+        'SELECT SegmentKey.id,SegmentKey.k FROM SegmentKey WHERE SegmentKey.classroomId=?1 and SegmentKey.contentSerial=?2',
+        mapper: (Map<String, Object?> row) => SegmentKeyId(row['id'] as int, row['k'] as String),
         arguments: [classroomId, contentSerial]);
   }
 
@@ -1821,7 +1849,7 @@ class _$ScheduleDao extends ScheduleDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT SegmentKey.* FROM SegmentKey WHERE SegmentKey.classroomId=?1 AND SegmentKey.contentSerial=?2',
-        mapper: (Map<String, Object?> row) => SegmentKey(row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['version'] as int, row['key'] as String, row['content'] as String, row['contentVersion'] as int, row['note'] as String, row['noteVersion'] as int, id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => SegmentKey(row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['version'] as int, row['k'] as String, row['content'] as String, row['contentVersion'] as int, row['note'] as String, row['noteVersion'] as int, id: row['id'] as int?),
         arguments: [classroomId, contentSerial]);
   }
 
@@ -1835,7 +1863,7 @@ class _$ScheduleDao extends ScheduleDao {
             row['lessonIndex'] as int,
             row['segmentIndex'] as int,
             row['version'] as int,
-            row['key'] as String,
+            row['k'] as String,
             row['content'] as String,
             row['contentVersion'] as int,
             row['note'] as String,
@@ -1851,16 +1879,16 @@ class _$ScheduleDao extends ScheduleDao {
     String key,
   ) async {
     return _queryAdapter.query(
-        'SELECT SegmentKey.* FROM SegmentKey WHERE SegmentKey.classroomId=?1 AND SegmentKey.contentSerial=?2 AND SegmentKey.key=?3',
-        mapper: (Map<String, Object?> row) => SegmentKey(row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['version'] as int, row['key'] as String, row['content'] as String, row['contentVersion'] as int, row['note'] as String, row['noteVersion'] as int, id: row['id'] as int?),
+        'SELECT SegmentKey.* FROM SegmentKey WHERE SegmentKey.classroomId=?1 AND SegmentKey.contentSerial=?2 AND SegmentKey.k=?3',
+        mapper: (Map<String, Object?> row) => SegmentKey(row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['version'] as int, row['k'] as String, row['content'] as String, row['contentVersion'] as int, row['note'] as String, row['noteVersion'] as int, id: row['id'] as int?),
         arguments: [classroomId, contentSerial, key]);
   }
 
   @override
   Future<List<SegmentShow>> getAllSegment(int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentKey.id segmentKeyId,SegmentKey.key,Content.id contentId,Content.name contentName,SegmentKey.content segmentContent,SegmentKey.contentVersion segmentContentVersion,SegmentKey.note segmentNote,SegmentKey.noteVersion segmentNoteVersion,SegmentKey.lessonIndex,SegmentKey.segmentIndex,SegmentOverallPrg.next,SegmentOverallPrg.progress,Segment.segmentKeyId is null missing FROM SegmentKey JOIN Content ON Content.classroomId=?1 AND Content.docId!=0 LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id AND SegmentKey.classroomId=?1',
-        mapper: (Map<String, Object?> row) => SegmentShow(row['segmentKeyId'] as int, row['key'] as String, row['contentId'] as int, row['contentName'] as String, row['segmentContent'] as String, row['segmentContentVersion'] as int, row['segmentNote'] as String, row['segmentNoteVersion'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, (row['missing'] as int) != 0),
+        'SELECT SegmentKey.id segmentKeyId,SegmentKey.k,Content.id contentId,Content.name contentName,SegmentKey.content segmentContent,SegmentKey.contentVersion segmentContentVersion,SegmentKey.note segmentNote,SegmentKey.noteVersion segmentNoteVersion,SegmentKey.lessonIndex,SegmentKey.segmentIndex,SegmentOverallPrg.next,SegmentOverallPrg.progress,Segment.segmentKeyId is null missing FROM SegmentKey JOIN Content ON Content.classroomId=?1 AND Content.docId!=0 LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id AND SegmentKey.classroomId=?1',
+        mapper: (Map<String, Object?> row) => SegmentShow(row['segmentKeyId'] as int, row['k'] as String, row['contentId'] as int, row['contentName'] as String, row['segmentContent'] as String, row['segmentContentVersion'] as int, row['segmentNote'] as String, row['segmentNoteVersion'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, (row['missing'] as int) != 0),
         arguments: [classroomId]);
   }
 
@@ -1982,10 +2010,10 @@ class _$ScheduleDao extends ScheduleDao {
         Iterable<String>.generate(ids.length, (i) => '?${i + offset}')
             .join(',');
     return _queryAdapter.queryList(
-        'SELECT TextVersion.*  FROM SegmentKey JOIN TextVersion ON TextVersion.type=0  AND TextVersion.id=SegmentKey.id  AND TextVersion.version=SegmentKey.contentVersion WHERE SegmentKey.id in (' +
+        'SELECT TextVersion.*  FROM SegmentKey JOIN TextVersion ON TextVersion.t=0  AND TextVersion.id=SegmentKey.id  AND TextVersion.version=SegmentKey.contentVersion WHERE SegmentKey.id in (' +
             _sqliteVariablesForIds +
             ')',
-        mapper: (Map<String, Object?> row) => TextVersion(_segmentTextVersionTypeConverter.decode(row['type'] as int), row['id'] as int, row['version'] as int, _segmentTextVersionReasonConverter.decode(row['reason'] as int), row['text'] as String, _dateTimeConverter.decode(row['createTime'] as int)),
+        mapper: (Map<String, Object?> row) => TextVersion(_segmentTextVersionTypeConverter.decode(row['t'] as int), row['id'] as int, row['version'] as int, _segmentTextVersionReasonConverter.decode(row['reason'] as int), row['text'] as String, _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [...ids]);
   }
 
@@ -1996,10 +2024,10 @@ class _$ScheduleDao extends ScheduleDao {
         Iterable<String>.generate(ids.length, (i) => '?${i + offset}')
             .join(',');
     return _queryAdapter.queryList(
-        'SELECT TextVersion.*  FROM SegmentKey JOIN TextVersion ON TextVersion.type=1  AND TextVersion.id=SegmentKey.id  AND TextVersion.version=SegmentKey.noteVersion WHERE SegmentKey.id in (' +
+        'SELECT TextVersion.*  FROM SegmentKey JOIN TextVersion ON TextVersion.t=1  AND TextVersion.id=SegmentKey.id  AND TextVersion.version=SegmentKey.noteVersion WHERE SegmentKey.id in (' +
             _sqliteVariablesForIds +
             ')',
-        mapper: (Map<String, Object?> row) => TextVersion(_segmentTextVersionTypeConverter.decode(row['type'] as int), row['id'] as int, row['version'] as int, _segmentTextVersionReasonConverter.decode(row['reason'] as int), row['text'] as String, _dateTimeConverter.decode(row['createTime'] as int)),
+        mapper: (Map<String, Object?> row) => TextVersion(_segmentTextVersionTypeConverter.decode(row['t'] as int), row['id'] as int, row['version'] as int, _segmentTextVersionReasonConverter.decode(row['reason'] as int), row['text'] as String, _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [...ids]);
   }
 
@@ -2040,9 +2068,15 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> insertSegmentTextVersion(List<TextVersion> entities) async {
+  Future<void> insertSegmentTextVersions(List<TextVersion> entities) async {
     await _textVersionInsertionAdapter.insertList(
         entities, OnConflictStrategy.ignore);
+  }
+
+  @override
+  Future<void> insertSegmentTextVersion(TextVersion entity) async {
+    await _textVersionInsertionAdapter.insert(
+        entity, OnConflictStrategy.ignore);
   }
 
   @override
@@ -2179,20 +2213,37 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> updateSegment(
+  Future<void> tUpdateSegmentContent(
     int segmentKeyId,
-    String? note,
-    String? content,
+    String content,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.updateSegment(segmentKeyId, note, content);
+      await super.tUpdateSegmentContent(segmentKeyId, content);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         await transactionDatabase.scheduleDao
-            .updateSegment(segmentKeyId, note, content);
+            .tUpdateSegmentContent(segmentKeyId, content);
+      });
+    }
+  }
+
+  @override
+  Future<void> tUpdateSegmentNote(
+    int segmentKeyId,
+    String note,
+  ) async {
+    if (database is sqflite.Transaction) {
+      await super.tUpdateSegmentNote(segmentKeyId, note);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        await transactionDatabase.scheduleDao
+            .tUpdateSegmentNote(segmentKeyId, note);
       });
     }
   }
