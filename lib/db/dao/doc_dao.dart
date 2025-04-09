@@ -1,10 +1,13 @@
 // dao/doc_dao.dart
 
 import 'package:floor/floor.dart';
+import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
 
 @dao
 abstract class DocDao {
+  late AppDatabase db;
+
   @Query('SELECT * FROM Lock where id=1 for update')
   Future<void> forUpdate();
 

@@ -1,5 +1,6 @@
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
+import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/segment_stats.dart';
@@ -7,6 +8,8 @@ import 'package:repeat_flutter/db/entity/time_stats.dart';
 
 @dao
 abstract class StatsDao {
+  late AppDatabase db;
+
   @Query('SELECT * FROM SegmentStats WHERE classroomId = :classroomId AND createDate = :date')
   Future<List<SegmentStats>> getStatsByDate(int classroomId, Date date);
 

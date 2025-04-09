@@ -1,10 +1,13 @@
 // dao/Kv_dao.dart
 
 import 'package:floor/floor.dart';
+import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 
 @dao
 abstract class KvDao {
+  late AppDatabase db;
+
   @Query('SELECT * FROM Kv where `k` in (:k)')
   Future<List<Kv>> find(List<K> k);
 

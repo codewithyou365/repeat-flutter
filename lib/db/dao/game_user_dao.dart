@@ -4,11 +4,14 @@ import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/string_util.dart';
+import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 
 @dao
 abstract class GameUserDao {
+  late AppDatabase db;
+
   // Query to find a user by name.
   @Query('SELECT * FROM GameUser WHERE name = :name')
   Future<GameUser?> findUserByName(String name);

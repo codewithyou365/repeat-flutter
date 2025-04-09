@@ -4,6 +4,7 @@ import 'dart:convert' as convert;
 
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/list_util.dart';
+import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
@@ -182,6 +183,8 @@ class ScheduleConfig {
 
 @dao
 abstract class ScheduleDao {
+  late AppDatabase db;
+
   static SegmentShow? Function(int segmentKeyId)? getSegmentShow;
   static ScheduleConfig scheduleConfig = ScheduleConfig([], 0, 0, [], []);
 

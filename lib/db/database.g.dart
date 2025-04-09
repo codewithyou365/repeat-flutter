@@ -72,6 +72,8 @@ class _$AppDatabase extends AppDatabase {
     changeListener = listener ?? StreamController<String>.broadcast();
   }
 
+  TableLockDao? _tableLockDaoInstance;
+
   GameUserDao? _gameUserDaoInstance;
 
   GameDao? _gameDaoInstance;
@@ -87,8 +89,6 @@ class _$AppDatabase extends AppDatabase {
   ContentDao? _contentDaoInstance;
 
   ScheduleDao? _scheduleDaoInstance;
-
-  BaseDao? _baseDaoInstance;
 
   StatsDao? _statsDaoInstance;
 
@@ -217,6 +217,11 @@ class _$AppDatabase extends AppDatabase {
   }
 
   @override
+  TableLockDao get tableLockDao {
+    return _tableLockDaoInstance ??= _$TableLockDao(database, changeListener);
+  }
+
+  @override
   GameUserDao get gameUserDao {
     return _gameUserDaoInstance ??= _$GameUserDao(database, changeListener);
   }
@@ -258,13 +263,42 @@ class _$AppDatabase extends AppDatabase {
   }
 
   @override
-  BaseDao get baseDao {
-    return _baseDaoInstance ??= _$BaseDao(database, changeListener);
+  StatsDao get statsDao {
+    return _statsDaoInstance ??= _$StatsDao(database, changeListener);
+  }
+}
+
+class _$TableLockDao extends TableLockDao {
+  _$TableLockDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _lockInsertionAdapter = InsertionAdapter(
+            database, 'Lock', (Lock item) => <String, Object?>{'id': item.id});
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<Lock> _lockInsertionAdapter;
+
+  @override
+  Future<void> forUpdate() async {
+    await _queryAdapter
+        .queryNoReturn('SELECT * FROM Lock where id=1 for update');
   }
 
   @override
-  StatsDao get statsDao {
-    return _statsDaoInstance ??= _$StatsDao(database, changeListener);
+  Future<Lock?> getLock() async {
+    return _queryAdapter.query('SELECT * FROM Lock limit 1',
+        mapper: (Map<String, Object?> row) => Lock(row['id'] as int));
+  }
+
+  @override
+  Future<void> insertLock(Lock entity) async {
+    await _lockInsertionAdapter.insert(entity, OnConflictStrategy.ignore);
   }
 }
 
@@ -379,6 +413,7 @@ class _$GameUserDao extends GameUserDao {
           .transaction<String>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.gameUserDao.db = transactionDatabase;
         return transactionDatabase.gameUserDao.loginOrRegister(name, password);
       });
     }
@@ -393,6 +428,7 @@ class _$GameUserDao extends GameUserDao {
           .transaction<GameUser>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.gameUserDao.db = transactionDatabase;
         return transactionDatabase.gameUserDao.loginByToken(token);
       });
     }
@@ -632,6 +668,7 @@ class _$GameDao extends GameDao {
           .transaction<Game>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.gameDao.db = transactionDatabase;
         return transactionDatabase.gameDao.tryInsertGame(game);
       });
     }
@@ -652,6 +689,7 @@ class _$GameDao extends GameDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.gameDao.db = transactionDatabase;
         await transactionDatabase.gameDao
             .clearGame(gameId, userId, aStart, aEnd, w);
       });
@@ -670,6 +708,7 @@ class _$GameDao extends GameDao {
           .transaction<List<String>>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.gameDao.db = transactionDatabase;
         return transactionDatabase.gameDao.getTip(gameId, gameUserId);
       });
     }
@@ -693,6 +732,7 @@ class _$GameDao extends GameDao {
           .transaction<GameUserInput>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.gameDao.db = transactionDatabase;
         return transactionDatabase.gameDao.submit(
             game,
             matchTypeInt,
@@ -888,6 +928,7 @@ class _$DocDao extends DocDao {
           .transaction<Doc>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.docDao.db = transactionDatabase;
         return transactionDatabase.docDao.insertByPath(path);
       });
     }
@@ -1000,6 +1041,7 @@ class _$ClassroomDao extends ClassroomDao {
           .transaction<Classroom>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.classroomDao.db = transactionDatabase;
         return transactionDatabase.classroomDao.add(name);
       });
     }
@@ -1261,6 +1303,7 @@ class _$ContentDao extends ContentDao {
           .transaction<Content>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.contentDao.db = transactionDatabase;
         return transactionDatabase.contentDao.add(name);
       });
     }
@@ -2105,6 +2148,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.scheduleDao.db = transactionDatabase;
         await transactionDatabase.scheduleDao
             .deleteBySegmentKeyId(segmentKeyId);
       });
@@ -2120,6 +2164,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.scheduleDao.db = transactionDatabase;
         await transactionDatabase.scheduleDao.deleteByClassroomId(classroomId);
       });
     }
@@ -2139,6 +2184,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<int>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.scheduleDao.db = transactionDatabase;
         return transactionDatabase.scheduleDao
             .importSegment(contentId, contentSerial, indexJsonDocId, url);
       });
@@ -2157,6 +2203,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.scheduleDao.db = transactionDatabase;
         await transactionDatabase.scheduleDao
             .hideContentAndDeleteSegment(contentId, contentSerial);
       });
@@ -2172,6 +2219,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<List<SegmentTodayPrg>>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.scheduleDao.db = transactionDatabase;
         return transactionDatabase.scheduleDao.initToday();
       });
     }
@@ -2186,6 +2234,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<List<SegmentTodayPrg>>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.scheduleDao.db = transactionDatabase;
         return transactionDatabase.scheduleDao.forceInitToday(type);
       });
     }
@@ -2206,6 +2255,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.scheduleDao.db = transactionDatabase;
         await transactionDatabase.scheduleDao
             .addFullCustom(contentSerial, lessonIndex, segmentIndex, limit);
       });
@@ -2224,6 +2274,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.scheduleDao.db = transactionDatabase;
         await transactionDatabase.scheduleDao
             .tUpdateSegmentContent(segmentKeyId, content);
       });
@@ -2242,6 +2293,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.scheduleDao.db = transactionDatabase;
         await transactionDatabase.scheduleDao
             .tUpdateSegmentNote(segmentKeyId, note);
       });
@@ -2257,6 +2309,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.scheduleDao.db = transactionDatabase;
         await transactionDatabase.scheduleDao.error(stp);
       });
     }
@@ -2275,6 +2328,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.scheduleDao.db = transactionDatabase;
         await transactionDatabase.scheduleDao
             .jumpDirectly(segmentKeyId, progress, nextDayValue);
       });
@@ -2294,6 +2348,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.scheduleDao.db = transactionDatabase;
         await transactionDatabase.scheduleDao.jump(stp, progress, nextDayValue);
       });
     }
@@ -2308,37 +2363,10 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.scheduleDao.db = transactionDatabase;
         await transactionDatabase.scheduleDao.right(stp);
       });
     }
-  }
-}
-
-class _$BaseDao extends BaseDao {
-  _$BaseDao(
-    this.database,
-    this.changeListener,
-  )   : _queryAdapter = QueryAdapter(database),
-        _lockInsertionAdapter = InsertionAdapter(
-            database, 'Lock', (Lock item) => <String, Object?>{'id': item.id});
-
-  final sqflite.DatabaseExecutor database;
-
-  final StreamController<String> changeListener;
-
-  final QueryAdapter _queryAdapter;
-
-  final InsertionAdapter<Lock> _lockInsertionAdapter;
-
-  @override
-  Future<Lock?> getLock() async {
-    return _queryAdapter.query('SELECT * FROM Lock limit 1',
-        mapper: (Map<String, Object?> row) => Lock(row['id'] as int));
-  }
-
-  @override
-  Future<void> insertLock(Lock entity) async {
-    await _lockInsertionAdapter.insert(entity, OnConflictStrategy.replace);
   }
 }
 
@@ -2536,6 +2564,7 @@ class _$StatsDao extends StatsDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.statsDao.db = transactionDatabase;
         await transactionDatabase.statsDao.tryInsertTimeStats(newTimeStats);
       });
     }
@@ -2550,6 +2579,7 @@ class _$StatsDao extends StatsDao {
           .transaction<List<int>>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
+        transactionDatabase.statsDao.db = transactionDatabase;
         return transactionDatabase.statsDao.collectAll();
       });
     }

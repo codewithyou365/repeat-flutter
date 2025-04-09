@@ -14,6 +14,7 @@ import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/kv_dao.dart';
 import 'package:repeat_flutter/db/dao/stats_dao.dart';
 import 'package:repeat_flutter/db/dao/text_version_dao.dart';
+import 'package:repeat_flutter/db/dao/table/table_lock_dao.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
@@ -40,7 +41,6 @@ import 'package:repeat_flutter/logic/model/segment_review_with_key.dart';
 import 'package:repeat_flutter/logic/model/segment_show.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 
-import 'dao/base_dao.dart';
 import 'entity/kv.dart';
 
 part 'database.g.dart'; // the generated code will be there
@@ -78,6 +78,8 @@ part 'database.g.dart'; // the generated code will be there
   SegmentTextVersionReasonConverter,
 ])
 abstract class AppDatabase extends FloorDatabase {
+  TableLockDao get tableLockDao;
+
   GameUserDao get gameUserDao;
 
   GameDao get gameDao;
@@ -93,8 +95,6 @@ abstract class AppDatabase extends FloorDatabase {
   ContentDao get contentDao;
 
   ScheduleDao get scheduleDao;
-
-  BaseDao get baseDao;
 
   StatsDao get statsDao;
 }
@@ -119,6 +119,7 @@ class Db {
       ]).build();
       log("Database path: ${await sqflite.getDatabasesPath()}");
     }
+    db.tableLockDao.insertLock(Lock(1));
     return db;
   }
 }
