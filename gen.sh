@@ -67,10 +67,8 @@ if [ "$start" == "y" ]; then
   allLines=$(grep -nE 'transactionDatabase\.(\w+)' ./lib/db/database.g.dart)
   echo "$allLines" | tail -r | while read -r match_line; do
       line_number=$(echo "$match_line" | cut -d: -f1)
-      match=$(echo "$match_line" | grep -oE 'transactionDatabase\.(\w+)' | cut -d. -f2)
-
       sed -i '' "${line_number}i\\
-        transactionDatabase.${match}.db = transactionDatabase;
+        prepareDb(transactionDatabase);
 " ./lib/db/database.g.dart
   done
 fi

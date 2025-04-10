@@ -10,16 +10,20 @@ import 'package:repeat_flutter/db/dao/content_dao.dart';
 import 'package:repeat_flutter/db/dao/doc_dao.dart';
 import 'package:repeat_flutter/db/dao/game_dao.dart';
 import 'package:repeat_flutter/db/dao/game_user_dao.dart';
+import 'package:repeat_flutter/db/dao/lesson_dao.dart';
+import 'package:repeat_flutter/db/dao/lesson_key_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/kv_dao.dart';
 import 'package:repeat_flutter/db/dao/stats_dao.dart';
 import 'package:repeat_flutter/db/dao/text_version_dao.dart';
-import 'package:repeat_flutter/db/dao/table/table_lock_dao.dart';
+import 'package:repeat_flutter/db/dao/lock_dao.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/db/entity/lock.dart';
+import 'package:repeat_flutter/db/entity/lesson.dart';
+import 'package:repeat_flutter/db/entity/lesson_key.dart';
 import 'package:repeat_flutter/db/entity/segment.dart';
 import 'package:repeat_flutter/db/entity/segment_key.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
@@ -47,13 +51,15 @@ part 'database.g.dart'; // the generated code will be there
 
 @Database(version: 3, entities: [
   Kv,
+  Lesson,
+  LessonKey,
   Doc,
   Classroom,
   Content,
   CrKv,
   Segment,
   SegmentKey,
-  SegmentKeyId,
+  KeyId,
   SegmentShow,
   SegmentOverallPrg,
   SegmentOverallPrgWithKey,
@@ -78,13 +84,17 @@ part 'database.g.dart'; // the generated code will be there
   SegmentTextVersionReasonConverter,
 ])
 abstract class AppDatabase extends FloorDatabase {
-  TableLockDao get tableLockDao;
+  LockDao get lockDao;
 
   GameUserDao get gameUserDao;
 
   GameDao get gameDao;
 
   KvDao get kvDao;
+
+  LessonDao get lessonDao;
+
+  LessonKeyDao get lessonKeyDao;
 
   DocDao get docDao;
 
@@ -119,7 +129,19 @@ class Db {
       ]).build();
       log("Database path: ${await sqflite.getDatabasesPath()}");
     }
-    db.tableLockDao.insertLock(Lock(1));
+    db.lockDao.insertLock(Lock(1));
     return db;
   }
+}
+
+prepareDb(AppDatabase db) {
+  db.gameUserDao.db = db;
+  db.gameDao.db = db;
+  db.kvDao.db = db;
+  db.lessonKeyDao.db = db;
+  db.docDao.db = db;
+  db.classroomDao.db = db;
+  db.contentDao.db = db;
+  db.scheduleDao.db = db;
+  db.statsDao.db = db;
 }

@@ -144,6 +144,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelScheduleCount, "Count");
     put(I18nKey.labelFrom, "From");
     put(I18nKey.labelLesson, "Lesson");
+    put(I18nKey.labelLessonName, "Lesson");
     put(I18nKey.labelSegment, "Segment");
     put(I18nKey.labelSegmentName, "Segment");
     put(I18nKey.labelIgnorePunctuation, "Ignore Punctuation");
@@ -192,6 +193,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelNotFoundSegment, "not found segment (%s)");
     put(I18nKey.labelSettingLearningProgressWarning, "Setting the learning progress here will not create a learning record");
     put(I18nKey.labelContentsHaveUnnecessarySegments, "Contents have unnecessary segments");
+    put(I18nKey.labelLessonKeyCantBeEmpty, "Lesson key cannot be empty");
+    put(I18nKey.labelLessonKeyDuplicated, "Lesson key is duplicated");
     put(I18nKey.btnHandleNow, "Handle Now");
     put(I18nKey.btnStart, "Start");
     put(I18nKey.btnAddSchedule, "Add Schedule");

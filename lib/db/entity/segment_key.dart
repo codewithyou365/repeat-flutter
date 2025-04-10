@@ -24,38 +24,17 @@ class SegmentKey {
   final String note;
   int noteVersion;
 
-  SegmentKey(
-    this.classroomId,
-    this.contentSerial,
-    this.lessonIndex,
-    this.segmentIndex,
-    this.version,
-    this.k,
-    this.content,
-    this.contentVersion,
-    this.note,
-    this.noteVersion, {
+  SegmentKey({
+    required this.classroomId,
+    required this.contentSerial,
+    required this.lessonIndex,
+    required this.segmentIndex,
+    required this.version,
+    required this.k,
+    required this.content,
+    required this.contentVersion,
+    required this.note,
+    required this.noteVersion,
     this.id,
   });
-
-  String toShortPos() {
-    return '$lessonIndex|$segmentIndex';
-  }
-
-  SegmentKey clone() {
-    SegmentKey ret = SegmentKey(
-      classroomId,
-      contentSerial,
-      lessonIndex,
-      segmentIndex,
-      version,
-      k,
-      content,
-      contentVersion,
-      note,
-      noteVersion,
-      id: id,
-    );
-    return ret;
-  }
 }

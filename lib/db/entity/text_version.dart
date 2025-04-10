@@ -5,6 +5,7 @@ import 'package:floor/floor.dart';
 enum TextVersionType {
   segmentContent,
   segmentNote,
+  lessonContent,
 }
 
 enum TextVersionReason {

@@ -1,12 +1,12 @@
 import 'package:floor/floor.dart';
 
 @Entity(tableName: "")
-class SegmentKeyId {
+class KeyId {
   @primaryKey
   final int id;
   final String k;
 
-  SegmentKeyId(
+  KeyId(
     this.id,
     this.k,
   );

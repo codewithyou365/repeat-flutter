@@ -12,9 +12,6 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 abstract class ContentDao {
   late AppDatabase db;
 
-  @Query('SELECT * FROM Lock where id=1 for update')
-  Future<void> forUpdate();
-
   @Query('SELECT * FROM Content where classroomId=:classroomId and hide=false ORDER BY sort')
   Future<List<Content>> getAllContent(int classroomId);
 
@@ -37,16 +34,16 @@ abstract class ContentDao {
   Future<int?> existBySort(int classroomId, int sort);
 
   @Query('SELECT * FROM Content WHERE id=:id')
-  Future<Content?> getContentById(int id);
+  Future<Content?> one(int id);
 
   @Query('SELECT * FROM Content WHERE classroomId=:classroomId and name=:name')
   Future<Content?> getContentByName(int classroomId, String name);
 
-  @Query('SELECT * FROM Content WHERE classroomId=:classroomId and serial=:serial')
-  Future<Content?> getContentBySerial(int classroomId, int serial);
+  @Query('UPDATE Content set docId=:docId,url=:url,warning=:warning,updateTime=:updateTime WHERE Content.id=:id')
+  Future<void> updateContent(int id, int docId, String url, WarningType warning, int updateTime);
 
-  @Query('SELECT * FROM Content WHERE classroomId=:classroomId and sort=:sort')
-  Future<Content?> getContentBySort(int classroomId, int sort);
+  @Query('UPDATE Content set warning=:warning,updateTime=:updateTime WHERE Content.id=:id')
+  Future<void> updateContentWarning(int id, WarningType warning, int updateTime);
 
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertContent(Content entity);
@@ -65,7 +62,7 @@ abstract class ContentDao {
 
   @transaction
   Future<Content> add(String name) async {
-    await forUpdate();
+    await db.lockDao.forUpdate();
     var ret = await getContentByName(Classroom.curr, name);
     if (ret != null) {
       if (ret.hide == false) {
@@ -81,7 +78,19 @@ abstract class ContentDao {
       var sort = await Num.getNextId(maxSort, id: Classroom.curr, existById2: existBySort);
 
       var now = DateTime.now().millisecondsSinceEpoch;
-      ret = Content(Classroom.curr, serial, name, '', 0, '', sort, false, false, now, now);
+      ret = Content(
+        classroomId: Classroom.curr,
+        serial: serial,
+        name: name,
+        desc: '',
+        docId: 0,
+        url: '',
+        sort: sort,
+        hide: false,
+        warning: WarningType.none,
+        createTime: now,
+        updateTime: now,
+      );
       await insertContent(ret);
     }
     return ret;

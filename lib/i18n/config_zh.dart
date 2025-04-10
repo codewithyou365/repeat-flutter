@@ -103,7 +103,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelElConfig1111, "随机安排%s级到%s级，数量%s (每组%s个)");
     put(I18nKey.labelRelConfig0, "第%s次回顾%s天以前的内容，从%s开始 (每组不限)");
     put(I18nKey.labelRelConfig1, "第%s次回顾%s天以前的内容，从%s开始 (每组%s个)");
-    put(I18nKey.labelFullCustomConfig, "从内容@0的@1节@2段开始 规划@3个段 (每组不限)");
+    put(I18nKey.labelFullCustomConfig, "从内容@0的@1课@2段开始 规划@3个段 (每组不限)");
     put(I18nKey.labelElRandom, "是否随机");
     put(I18nKey.labelElToLevel, "结束等级");
     put(I18nKey.labelElLevel, "开始等级");
@@ -143,7 +143,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelInputPathError, "路径错误");
     put(I18nKey.labelScheduleCount, "规划数量");
     put(I18nKey.labelFrom, "开始于");
-    put(I18nKey.labelLesson, "节");
+    put(I18nKey.labelLesson, "课");
+    put(I18nKey.labelLessonName, "课程");
     put(I18nKey.labelSegment, "段");
     put(I18nKey.labelSegmentName, "段落");
     put(I18nKey.labelIgnorePunctuation, "忽略标点符号");
@@ -192,6 +193,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelNotFoundSegment, "未找到段落(%s)");
     put(I18nKey.labelSettingLearningProgressWarning, "在此处设置学习进度将不会有学习记录");
     put(I18nKey.labelContentsHaveUnnecessarySegments, "内容中存在多余的段落");
+    put(I18nKey.labelLessonKeyCantBeEmpty, "课程键不能为空");
+    put(I18nKey.labelLessonKeyDuplicated, "课程键重复");
     put(I18nKey.btnHandleNow, "现在处理");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");

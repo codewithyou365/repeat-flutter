@@ -115,7 +115,7 @@ class GsCrContentPage extends StatelessWidget {
                 style: TextStyle(fontSize: 50.sp),
               ),
             ),
-            if (model.warning && model.docId != 0)
+            if (model.warning != WarningType.none && model.docId != 0)
               IconButton(
                 onPressed: () {
                   logic.show(model.id!, model.serial);

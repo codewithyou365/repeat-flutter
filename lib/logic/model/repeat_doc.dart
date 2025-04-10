@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'dart:convert' as convert;
 
-import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 
@@ -75,6 +74,8 @@ class RepeatDoc {
 }
 
 class Lesson {
+  String k;
+  String content;
   String url;
   String mediaExtension;
   String hash;
@@ -84,6 +85,8 @@ class Lesson {
   List<Segment> segment;
 
   Lesson(
+    this.k,
+    this.content,
     this.url,
     this.mediaExtension,
     this.hash,
@@ -95,9 +98,21 @@ class Lesson {
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
     var url = json['url'] ?? '';
+    var key = json['k'] ?? '';
     var defaultQuestion = json['defaultQuestion'] ?? '';
     var defaultTip = json['defaultTip'] ?? '';
+
+    Map<String, dynamic> excludeSegment = {};
+    json.forEach((k, v) {
+      if (k != 'segment') {
+        excludeSegment[k] = v;
+      }
+    });
+    String content = convert.jsonEncode(excludeSegment);
+
     return Lesson(
+      key,
+      content,
       url,
       json['mediaExtension'] ?? url.split('.').last,
       json['hash'] ?? '',

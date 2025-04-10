@@ -10,6 +10,8 @@ import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/db/entity/segment.dart';
+import 'package:repeat_flutter/db/entity/lesson.dart';
+import 'package:repeat_flutter/db/entity/lesson_key.dart';
 import 'package:repeat_flutter/db/entity/segment_key.dart';
 import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/segment_review.dart';
@@ -219,12 +221,6 @@ abstract class ScheduleDao {
 
   @Query('SELECT * FROM Content WHERE classroomId=:classroomId and serial=:serial')
   Future<Content?> getContentBySerial(int classroomId, int serial);
-
-  @Query('UPDATE Content set docId=:docId,url=:url,warning=:warning,updateTime=:updateTime WHERE Content.id=:id')
-  Future<void> updateContent(int id, int docId, String url, bool warning, int updateTime);
-
-  @Query('UPDATE Content set warning=:warning,updateTime=:updateTime WHERE Content.id=:id')
-  Future<void> updateContentWarning(int id, bool warning, int updateTime);
 
   @Query('SELECT * FROM Doc WHERE id=:id')
   Future<Doc?> getDocById(int id);
@@ -463,7 +459,7 @@ abstract class ScheduleDao {
       ',SegmentKey.k FROM SegmentKey'
       ' WHERE SegmentKey.classroomId=:classroomId'
       ' and SegmentKey.contentSerial=:contentSerial')
-  Future<List<SegmentKeyId>> getSegmentKeyId(int classroomId, int contentSerial);
+  Future<List<KeyId>> getSegmentKeyId(int classroomId, int contentSerial);
 
   @Query('SELECT SegmentKey.* FROM SegmentKey'
       ' WHERE SegmentKey.classroomId=:classroomId'
@@ -618,30 +614,9 @@ abstract class ScheduleDao {
     return ret;
   }
 
-  Map<String, String>? checkAndGenPos2Key(rd.RepeatDoc kv) {
-    Map<String, bool> key2Exist = {};
-    Map<String, String> pos2Key = {};
-    for (var lessonIndex = 0; lessonIndex < kv.lesson.length; lessonIndex++) {
-      var lesson = kv.lesson[lessonIndex];
-      for (var segmentIndex = 0; segmentIndex < lesson.segment.length; segmentIndex++) {
-        var segment = lesson.segment[segmentIndex];
-        if (segment.a.isEmpty) {
-          Snackbar.show(I18nKey.labelSegmentNeedToContainAnswer.tr);
-          return null;
-        }
-        var key = getKey(segment.k, segment.a);
-        if (key2Exist.containsKey(key)) {
-          Snackbar.show(I18nKey.labelSegmentKeyDuplicated.trArgs([key]));
-          return null;
-        }
-        key2Exist[key] = true;
-        pos2Key['$lessonIndex,$segmentIndex'] = key;
-      }
-    }
-    return pos2Key;
-  }
-
   Future<bool> prepareImportSegment(
+    List<Lesson> lessons,
+    List<LessonKey> lessonKeys,
     List<SegmentKey> segmentKeys,
     List<Segment> segments,
     List<SegmentOverallPrg> segmentOverallPrgs, {
@@ -674,33 +649,62 @@ abstract class ScheduleDao {
       Snackbar.show(I18nKey.labelTooMuchData.trArgs(["lesson"]));
       return false;
     }
+    Map<String, bool> lessonKey = {};
     for (var d in kv.lesson) {
+      if (d.k.isEmpty) {
+        Snackbar.show(I18nKey.labelLessonKeyCantBeEmpty.tr);
+        return false;
+      }
+      if (lessonKey.containsKey(d.k)) {
+        Snackbar.show(I18nKey.labelLessonKeyDuplicated.trArgs([d.k]));
+        return false;
+      }
       if (d.segment.length >= 100000) {
         Snackbar.show(I18nKey.labelTooMuchData.trArgs(["segment"]));
         return false;
       }
     }
-
-    Map<String, String>? pos2Key = checkAndGenPos2Key(kv);
-    if (pos2Key == null) {
-      return false;
-    }
+    Map<String, bool> segmentKey = {};
     var now = DateTime.now();
     for (var lessonIndex = 0; lessonIndex < kv.lesson.length; lessonIndex++) {
       var lesson = kv.lesson[lessonIndex];
+      lessons.add(Lesson(
+        classroomId: content.classroomId,
+        contentSerial: content.serial,
+        lessonIndex: lessonIndex,
+      ));
+      lessonKeys.add(LessonKey(
+        classroomId: content.classroomId,
+        contentSerial: content.serial,
+        lessonIndex: lessonIndex,
+        version: 1,
+        k: lesson.k,
+        content: lesson.content,
+        contentVersion: 1,
+      ));
       for (var segmentIndex = 0; segmentIndex < lesson.segment.length; segmentIndex++) {
         var segment = lesson.segment[segmentIndex];
+        if (segment.a.isEmpty) {
+          Snackbar.show(I18nKey.labelSegmentNeedToContainAnswer.tr);
+          return false;
+        }
+        var key = getKey(segment.k, segment.a);
+        if (segmentKey.containsKey(key)) {
+          Snackbar.show(I18nKey.labelSegmentKeyDuplicated.trArgs([key]));
+          return false;
+        }
+        segmentKey[key] = true;
         segmentKeys.add(SegmentKey(
-          content.classroomId,
-          content.serial,
-          lessonIndex,
-          segmentIndex,
-          0,
-          pos2Key['$lessonIndex,$segmentIndex']!,
-          segment.content,
-          1,
-          '',
-          1,
+          classroomId: content.classroomId,
+          contentSerial: content.serial,
+          lessonIndex: lessonIndex,
+          segmentIndex: segmentIndex,
+          version: 1,
+          k: key,
+          content: segment.content,
+          contentVersion: 1,
+          note: '',
+          noteVersion: 1,
         ));
         segments.add(Segment(
           0,
@@ -755,10 +759,14 @@ abstract class ScheduleDao {
     String? url,
   ) async {
     await forUpdate();
+    List<Lesson> newLessons = [];
+    List<LessonKey> newLessonKeys = [];
     List<SegmentKey> newSegmentKeys = [];
     List<Segment> segments = [];
     List<SegmentOverallPrg> segmentOverallPrgs = [];
     bool success = await prepareImportSegment(
+      newLessons,
+      newLessonKeys,
       newSegmentKeys,
       segments,
       segmentOverallPrgs,
@@ -778,7 +786,7 @@ abstract class ScheduleDao {
     }
 
     List<SegmentKey> oldSegmentKeys = await getSegmentKey(Classroom.curr, contentSerial);
-    var maxVersion = -1;
+    var maxVersion = 0;
     Map<String, SegmentKey> keyToOldSegmentKey = {};
     Map<String, int> keyToId = {};
     List<int> oldSegmentKeyIds = [];
@@ -859,16 +867,22 @@ abstract class ScheduleDao {
       await updateSegmentKeys(needToModifyMap.values.toList());
     }
 
-    var warning = false;
-    if (segments.length < keyToId.length) {
-      warning = true;
+    var warningInLesson = await db.lessonKeyDao.import(newLessons, newLessonKeys, contentSerial);
+    var warningInSegment = segments.length < keyToId.length;
+    WarningType warningType = WarningType.none;
+    if (warningInLesson && warningInLesson) {
+      warningType = WarningType.lessonSegmentWarning;
+    } else if (warningInSegment) {
+      warningType = WarningType.segmentWarning;
+    } else {
+      warningType = WarningType.lessonWarning;
     }
     if (indexJsonDocId != null && url != null) {
-      await updateContent(contentId, indexJsonDocId, url, warning, DateTime.now().millisecondsSinceEpoch);
+      await db.contentDao.updateContent(contentId, indexJsonDocId, url, warningType, DateTime.now().millisecondsSinceEpoch);
     } else {
-      await updateContentWarning(contentId, warning, DateTime.now().millisecondsSinceEpoch);
+      await db.contentDao.updateContentWarning(contentId, warningType, DateTime.now().millisecondsSinceEpoch);
     }
-    if (warning) {
+    if (warningInLesson == true || warningInSegment == true) {
       return ImportResult.successButSomeSegmentsAreSurplus.index;
     } else {
       return ImportResult.success.index;

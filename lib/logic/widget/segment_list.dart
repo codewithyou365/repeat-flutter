@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
@@ -458,7 +459,9 @@ class SegmentList<T extends GetxController> {
                                               var contentId2Missing = refreshMissingSegmentIndex(missingSegmentIndex, segmentShow);
                                               var warning = contentId2Missing[segment.contentId] ?? false;
                                               if (warning == false) {
-                                                await Db().db.scheduleDao.updateContentWarning(segment.contentId, warning, DateTime.now().millisecondsSinceEpoch);
+                                                var missingCount = await Db().db.lessonKeyDao.getMissingCount(segment.contentId) ?? 0;
+                                                var warningType = missingCount == 0 ? WarningType.none : WarningType.lessonWarning;
+                                                await Db().db.contentDao.updateContentWarning(segment.contentId, warningType, DateTime.now().millisecondsSinceEpoch);
                                                 if (removeWarning != null) {
                                                   await removeWarning();
                                                 }

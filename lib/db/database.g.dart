@@ -72,13 +72,17 @@ class _$AppDatabase extends AppDatabase {
     changeListener = listener ?? StreamController<String>.broadcast();
   }
 
-  TableLockDao? _tableLockDaoInstance;
+  LockDao? _lockDaoInstance;
 
   GameUserDao? _gameUserDaoInstance;
 
   GameDao? _gameDaoInstance;
 
   KvDao? _kvDaoInstance;
+
+  LessonDao? _lessonDaoInstance;
+
+  LessonKeyDao? _lessonKeyDaoInstance;
 
   DocDao? _docDaoInstance;
 
@@ -116,6 +120,10 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Kv` (`k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`k`))');
         await database.execute(
+            'CREATE TABLE IF NOT EXISTS `Lesson` (`lessonKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, PRIMARY KEY (`lessonKeyId`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `LessonKey` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `version` INTEGER NOT NULL, `k` TEXT NOT NULL, `content` TEXT NOT NULL, `contentVersion` INTEGER NOT NULL)');
+        await database.execute(
             'CREATE TABLE IF NOT EXISTS `Doc` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `url` TEXT NOT NULL, `path` TEXT NOT NULL, `count` INTEGER NOT NULL, `total` INTEGER NOT NULL, `msg` TEXT NOT NULL, `hash` TEXT NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Classroom` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, PRIMARY KEY (`id`))');
@@ -147,6 +155,12 @@ class _$AppDatabase extends AppDatabase {
             'CREATE TABLE IF NOT EXISTS `GameUserInput` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `gameId` INTEGER NOT NULL, `gameUserId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `input` TEXT NOT NULL, `output` TEXT NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Lock` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+        await database.execute(
+            'CREATE UNIQUE INDEX `index_Lesson_classroomId_contentSerial_lessonIndex` ON `Lesson` (`classroomId`, `contentSerial`, `lessonIndex`)');
+        await database.execute(
+            'CREATE UNIQUE INDEX `index_LessonKey_classroomId_contentSerial_lessonIndex_version` ON `LessonKey` (`classroomId`, `contentSerial`, `lessonIndex`, `version`)');
+        await database.execute(
+            'CREATE UNIQUE INDEX `index_LessonKey_classroomId_contentSerial_k` ON `LessonKey` (`classroomId`, `contentSerial`, `k`)');
         await database
             .execute('CREATE UNIQUE INDEX `index_Doc_path` ON `Doc` (`path`)');
         await database.execute(
@@ -217,8 +231,8 @@ class _$AppDatabase extends AppDatabase {
   }
 
   @override
-  TableLockDao get tableLockDao {
-    return _tableLockDaoInstance ??= _$TableLockDao(database, changeListener);
+  LockDao get lockDao {
+    return _lockDaoInstance ??= _$LockDao(database, changeListener);
   }
 
   @override
@@ -234,6 +248,16 @@ class _$AppDatabase extends AppDatabase {
   @override
   KvDao get kvDao {
     return _kvDaoInstance ??= _$KvDao(database, changeListener);
+  }
+
+  @override
+  LessonDao get lessonDao {
+    return _lessonDaoInstance ??= _$LessonDao(database, changeListener);
+  }
+
+  @override
+  LessonKeyDao get lessonKeyDao {
+    return _lessonKeyDaoInstance ??= _$LessonKeyDao(database, changeListener);
   }
 
   @override
@@ -268,8 +292,8 @@ class _$AppDatabase extends AppDatabase {
   }
 }
 
-class _$TableLockDao extends TableLockDao {
-  _$TableLockDao(
+class _$LockDao extends LockDao {
+  _$LockDao(
     this.database,
     this.changeListener,
   )   : _queryAdapter = QueryAdapter(database),
@@ -413,7 +437,7 @@ class _$GameUserDao extends GameUserDao {
           .transaction<String>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.gameUserDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         return transactionDatabase.gameUserDao.loginOrRegister(name, password);
       });
     }
@@ -428,7 +452,7 @@ class _$GameUserDao extends GameUserDao {
           .transaction<GameUser>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.gameUserDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         return transactionDatabase.gameUserDao.loginByToken(token);
       });
     }
@@ -668,7 +692,7 @@ class _$GameDao extends GameDao {
           .transaction<Game>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.gameDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         return transactionDatabase.gameDao.tryInsertGame(game);
       });
     }
@@ -689,7 +713,7 @@ class _$GameDao extends GameDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.gameDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         await transactionDatabase.gameDao
             .clearGame(gameId, userId, aStart, aEnd, w);
       });
@@ -708,7 +732,7 @@ class _$GameDao extends GameDao {
           .transaction<List<String>>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.gameDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         return transactionDatabase.gameDao.getTip(gameId, gameUserId);
       });
     }
@@ -732,7 +756,7 @@ class _$GameDao extends GameDao {
           .transaction<GameUserInput>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.gameDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         return transactionDatabase.gameDao.submit(
             game,
             matchTypeInt,
@@ -795,6 +819,154 @@ class _$KvDao extends KvDao {
   @override
   Future<void> insertKvs(List<Kv> kv) async {
     await _kvInsertionAdapter.insertList(kv, OnConflictStrategy.replace);
+  }
+}
+
+class _$LessonDao extends LessonDao {
+  _$LessonDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _lessonInsertionAdapter = InsertionAdapter(
+            database,
+            'Lesson',
+            (Lesson item) => <String, Object?>{
+                  'lessonKeyId': item.lessonKeyId,
+                  'classroomId': item.classroomId,
+                  'contentSerial': item.contentSerial,
+                  'lessonIndex': item.lessonIndex
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<Lesson> _lessonInsertionAdapter;
+
+  @override
+  Future<List<Lesson>> find(
+    int classroomId,
+    int contentSerial,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM Lesson WHERE classroomId=?1 and contentSerial=?2',
+        mapper: (Map<String, Object?> row) => Lesson(
+            lessonKeyId: row['lessonKeyId'] as int,
+            classroomId: row['classroomId'] as int,
+            contentSerial: row['contentSerial'] as int,
+            lessonIndex: row['lessonIndex'] as int),
+        arguments: [classroomId, contentSerial]);
+  }
+
+  @override
+  Future<void> delete(
+    int classroomId,
+    int contentSerial,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM Lesson WHERE Lesson.classroomId=?1 and Lesson.contentSerial=?2',
+        arguments: [classroomId, contentSerial]);
+  }
+
+  @override
+  Future<void> insertOrFail(List<Lesson> entities) async {
+    await _lessonInsertionAdapter.insertList(entities, OnConflictStrategy.fail);
+  }
+}
+
+class _$LessonKeyDao extends LessonKeyDao {
+  _$LessonKeyDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _lessonKeyInsertionAdapter = InsertionAdapter(
+            database,
+            'LessonKey',
+            (LessonKey item) => <String, Object?>{
+                  'id': item.id,
+                  'classroomId': item.classroomId,
+                  'contentSerial': item.contentSerial,
+                  'lessonIndex': item.lessonIndex,
+                  'version': item.version,
+                  'k': item.k,
+                  'content': item.content,
+                  'contentVersion': item.contentVersion
+                }),
+        _lessonKeyUpdateAdapter = UpdateAdapter(
+            database,
+            'LessonKey',
+            ['id'],
+            (LessonKey item) => <String, Object?>{
+                  'id': item.id,
+                  'classroomId': item.classroomId,
+                  'contentSerial': item.contentSerial,
+                  'lessonIndex': item.lessonIndex,
+                  'version': item.version,
+                  'k': item.k,
+                  'content': item.content,
+                  'contentVersion': item.contentVersion
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<LessonKey> _lessonKeyInsertionAdapter;
+
+  final UpdateAdapter<LessonKey> _lessonKeyUpdateAdapter;
+
+  @override
+  Future<int?> getMissingCount(int contentId) async {
+    return _queryAdapter.query(
+        'SELECT ifnull(sum(Lesson.lessonKeyId is null),0) missingCount FROM LessonKey JOIN Content ON Content.id=?1 LEFT JOIN Lesson ON Lesson.lessonKeyId=LessonKey.id',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [contentId]);
+  }
+
+  @override
+  Future<List<LessonKey>> find(
+    int classroomId,
+    int contentSerial,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM LessonKey WHERE classroomId=?1 and contentSerial=?2',
+        mapper: (Map<String, Object?> row) => LessonKey(
+            id: row['id'] as int?,
+            classroomId: row['classroomId'] as int,
+            contentSerial: row['contentSerial'] as int,
+            lessonIndex: row['lessonIndex'] as int,
+            version: row['version'] as int,
+            k: row['k'] as String,
+            content: row['content'] as String,
+            contentVersion: row['contentVersion'] as int),
+        arguments: [classroomId, contentSerial]);
+  }
+
+  @override
+  Future<List<KeyId>> findKeyId(
+    int classroomId,
+    int contentSerial,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT id,k FROM LessonKey WHERE classroomId=?1 and contentSerial=?2',
+        mapper: (Map<String, Object?> row) =>
+            KeyId(row['id'] as int, row['k'] as String),
+        arguments: [classroomId, contentSerial]);
+  }
+
+  @override
+  Future<void> insertOrFail(List<LessonKey> entities) async {
+    await _lessonKeyInsertionAdapter.insertList(
+        entities, OnConflictStrategy.fail);
+  }
+
+  @override
+  Future<void> updateOrFail(List<LessonKey> entities) async {
+    await _lessonKeyUpdateAdapter.updateList(entities, OnConflictStrategy.fail);
   }
 }
 
@@ -928,7 +1100,7 @@ class _$DocDao extends DocDao {
           .transaction<Doc>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.docDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         return transactionDatabase.docDao.insertByPath(path);
       });
     }
@@ -1041,7 +1213,7 @@ class _$ClassroomDao extends ClassroomDao {
           .transaction<Classroom>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.classroomDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         return transactionDatabase.classroomDao.add(name);
       });
     }
@@ -1076,6 +1248,20 @@ class _$TextVersionDao extends TextVersionDao {
             _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [_segmentTextVersionTypeConverter.encode(type), id]);
   }
+
+  @override
+  Future<List<TextVersion>> getTextForLessonContent(List<int> ids) async {
+    const offset = 1;
+    final _sqliteVariablesForIds =
+        Iterable<String>.generate(ids.length, (i) => '?${i + offset}')
+            .join(',');
+    return _queryAdapter.queryList(
+        'SELECT TextVersion.*  FROM LessonKey JOIN TextVersion ON TextVersion.t=2  AND TextVersion.id=LessonKey.id  AND TextVersion.version=LessonKey.contentVersion WHERE LessonKey.id in (' +
+            _sqliteVariablesForIds +
+            ')',
+        mapper: (Map<String, Object?> row) => TextVersion(_segmentTextVersionTypeConverter.decode(row['t'] as int), row['id'] as int, row['version'] as int, _segmentTextVersionReasonConverter.decode(row['reason'] as int), row['text'] as String, _dateTimeConverter.decode(row['createTime'] as int)),
+        arguments: [...ids]);
+  }
 }
 
 class _$ContentDao extends ContentDao {
@@ -1096,7 +1282,7 @@ class _$ContentDao extends ContentDao {
                   'url': item.url,
                   'sort': item.sort,
                   'hide': item.hide ? 1 : 0,
-                  'warning': item.warning ? 1 : 0,
+                  'warning': item.warning.index,
                   'createTime': item.createTime,
                   'updateTime': item.updateTime
                 });
@@ -1110,16 +1296,10 @@ class _$ContentDao extends ContentDao {
   final InsertionAdapter<Content> _contentInsertionAdapter;
 
   @override
-  Future<void> forUpdate() async {
-    await _queryAdapter
-        .queryNoReturn('SELECT * FROM Lock where id=1 for update');
-  }
-
-  @override
   Future<List<Content>> getAllContent(int classroomId) async {
     return _queryAdapter.queryList(
         'SELECT * FROM Content where classroomId=?1 and hide=false ORDER BY sort',
-        mapper: (Map<String, Object?> row) => Content(row['classroomId'] as int, row['serial'] as int, row['name'] as String, row['desc'] as String, row['docId'] as int, row['url'] as String, row['sort'] as int, (row['hide'] as int) != 0, (row['warning'] as int) != 0, row['createTime'] as int, row['updateTime'] as int, id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => Content(id: row['id'] as int?, classroomId: row['classroomId'] as int, serial: row['serial'] as int, name: row['name'] as String, desc: row['desc'] as String, docId: row['docId'] as int, url: row['url'] as String, sort: row['sort'] as int, hide: (row['hide'] as int) != 0, warning: WarningType.values[row['warning'] as int], createTime: row['createTime'] as int, updateTime: row['updateTime'] as int),
         arguments: [classroomId]);
   }
 
@@ -1135,7 +1315,7 @@ class _$ContentDao extends ContentDao {
   Future<List<Content>> getAllEnableContent(int classroomId) async {
     return _queryAdapter.queryList(
         'SELECT * FROM Content where classroomId=?1 and docId!=0 and hide=false ORDER BY sort',
-        mapper: (Map<String, Object?> row) => Content(row['classroomId'] as int, row['serial'] as int, row['name'] as String, row['desc'] as String, row['docId'] as int, row['url'] as String, row['sort'] as int, (row['hide'] as int) != 0, (row['warning'] as int) != 0, row['createTime'] as int, row['updateTime'] as int, id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => Content(id: row['id'] as int?, classroomId: row['classroomId'] as int, serial: row['serial'] as int, name: row['name'] as String, desc: row['desc'] as String, docId: row['docId'] as int, url: row['url'] as String, sort: row['sort'] as int, hide: (row['hide'] as int) != 0, warning: WarningType.values[row['warning'] as int], createTime: row['createTime'] as int, updateTime: row['updateTime'] as int),
         arguments: [classroomId]);
   }
 
@@ -1178,21 +1358,21 @@ class _$ContentDao extends ContentDao {
   }
 
   @override
-  Future<Content?> getContentById(int id) async {
+  Future<Content?> one(int id) async {
     return _queryAdapter.query('SELECT * FROM Content WHERE id=?1',
         mapper: (Map<String, Object?> row) => Content(
-            row['classroomId'] as int,
-            row['serial'] as int,
-            row['name'] as String,
-            row['desc'] as String,
-            row['docId'] as int,
-            row['url'] as String,
-            row['sort'] as int,
-            (row['hide'] as int) != 0,
-            (row['warning'] as int) != 0,
-            row['createTime'] as int,
-            row['updateTime'] as int,
-            id: row['id'] as int?),
+            id: row['id'] as int?,
+            classroomId: row['classroomId'] as int,
+            serial: row['serial'] as int,
+            name: row['name'] as String,
+            desc: row['desc'] as String,
+            docId: row['docId'] as int,
+            url: row['url'] as String,
+            sort: row['sort'] as int,
+            hide: (row['hide'] as int) != 0,
+            warning: WarningType.values[row['warning'] as int],
+            createTime: row['createTime'] as int,
+            updateTime: row['updateTime'] as int),
         arguments: [id]);
   }
 
@@ -1204,65 +1384,43 @@ class _$ContentDao extends ContentDao {
     return _queryAdapter.query(
         'SELECT * FROM Content WHERE classroomId=?1 and name=?2',
         mapper: (Map<String, Object?> row) => Content(
-            row['classroomId'] as int,
-            row['serial'] as int,
-            row['name'] as String,
-            row['desc'] as String,
-            row['docId'] as int,
-            row['url'] as String,
-            row['sort'] as int,
-            (row['hide'] as int) != 0,
-            (row['warning'] as int) != 0,
-            row['createTime'] as int,
-            row['updateTime'] as int,
-            id: row['id'] as int?),
+            id: row['id'] as int?,
+            classroomId: row['classroomId'] as int,
+            serial: row['serial'] as int,
+            name: row['name'] as String,
+            desc: row['desc'] as String,
+            docId: row['docId'] as int,
+            url: row['url'] as String,
+            sort: row['sort'] as int,
+            hide: (row['hide'] as int) != 0,
+            warning: WarningType.values[row['warning'] as int],
+            createTime: row['createTime'] as int,
+            updateTime: row['updateTime'] as int),
         arguments: [classroomId, name]);
   }
 
   @override
-  Future<Content?> getContentBySerial(
-    int classroomId,
-    int serial,
+  Future<void> updateContent(
+    int id,
+    int docId,
+    String url,
+    WarningType warning,
+    int updateTime,
   ) async {
-    return _queryAdapter.query(
-        'SELECT * FROM Content WHERE classroomId=?1 and serial=?2',
-        mapper: (Map<String, Object?> row) => Content(
-            row['classroomId'] as int,
-            row['serial'] as int,
-            row['name'] as String,
-            row['desc'] as String,
-            row['docId'] as int,
-            row['url'] as String,
-            row['sort'] as int,
-            (row['hide'] as int) != 0,
-            (row['warning'] as int) != 0,
-            row['createTime'] as int,
-            row['updateTime'] as int,
-            id: row['id'] as int?),
-        arguments: [classroomId, serial]);
+    await _queryAdapter.queryNoReturn(
+        'UPDATE Content set docId=?2,url=?3,warning=?4,updateTime=?5 WHERE Content.id=?1',
+        arguments: [id, docId, url, warning.index, updateTime]);
   }
 
   @override
-  Future<Content?> getContentBySort(
-    int classroomId,
-    int sort,
+  Future<void> updateContentWarning(
+    int id,
+    WarningType warning,
+    int updateTime,
   ) async {
-    return _queryAdapter.query(
-        'SELECT * FROM Content WHERE classroomId=?1 and sort=?2',
-        mapper: (Map<String, Object?> row) => Content(
-            row['classroomId'] as int,
-            row['serial'] as int,
-            row['name'] as String,
-            row['desc'] as String,
-            row['docId'] as int,
-            row['url'] as String,
-            row['sort'] as int,
-            (row['hide'] as int) != 0,
-            (row['warning'] as int) != 0,
-            row['createTime'] as int,
-            row['updateTime'] as int,
-            id: row['id'] as int?),
-        arguments: [classroomId, sort]);
+    await _queryAdapter.queryNoReturn(
+        'UPDATE Content set warning=?2,updateTime=?3 WHERE Content.id=?1',
+        arguments: [id, warning.index, updateTime]);
   }
 
   @override
@@ -1303,7 +1461,7 @@ class _$ContentDao extends ContentDao {
           .transaction<Content>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.contentDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         return transactionDatabase.contentDao.add(name);
       });
     }
@@ -1468,18 +1626,18 @@ class _$ScheduleDao extends ScheduleDao {
   Future<Content?> getContentById(int id) async {
     return _queryAdapter.query('SELECT * FROM Content WHERE id=?1',
         mapper: (Map<String, Object?> row) => Content(
-            row['classroomId'] as int,
-            row['serial'] as int,
-            row['name'] as String,
-            row['desc'] as String,
-            row['docId'] as int,
-            row['url'] as String,
-            row['sort'] as int,
-            (row['hide'] as int) != 0,
-            (row['warning'] as int) != 0,
-            row['createTime'] as int,
-            row['updateTime'] as int,
-            id: row['id'] as int?),
+            id: row['id'] as int?,
+            classroomId: row['classroomId'] as int,
+            serial: row['serial'] as int,
+            name: row['name'] as String,
+            desc: row['desc'] as String,
+            docId: row['docId'] as int,
+            url: row['url'] as String,
+            sort: row['sort'] as int,
+            hide: (row['hide'] as int) != 0,
+            warning: WarningType.values[row['warning'] as int],
+            createTime: row['createTime'] as int,
+            updateTime: row['updateTime'] as int),
         arguments: [id]);
   }
 
@@ -1491,43 +1649,19 @@ class _$ScheduleDao extends ScheduleDao {
     return _queryAdapter.query(
         'SELECT * FROM Content WHERE classroomId=?1 and serial=?2',
         mapper: (Map<String, Object?> row) => Content(
-            row['classroomId'] as int,
-            row['serial'] as int,
-            row['name'] as String,
-            row['desc'] as String,
-            row['docId'] as int,
-            row['url'] as String,
-            row['sort'] as int,
-            (row['hide'] as int) != 0,
-            (row['warning'] as int) != 0,
-            row['createTime'] as int,
-            row['updateTime'] as int,
-            id: row['id'] as int?),
+            id: row['id'] as int?,
+            classroomId: row['classroomId'] as int,
+            serial: row['serial'] as int,
+            name: row['name'] as String,
+            desc: row['desc'] as String,
+            docId: row['docId'] as int,
+            url: row['url'] as String,
+            sort: row['sort'] as int,
+            hide: (row['hide'] as int) != 0,
+            warning: WarningType.values[row['warning'] as int],
+            createTime: row['createTime'] as int,
+            updateTime: row['updateTime'] as int),
         arguments: [classroomId, serial]);
-  }
-
-  @override
-  Future<void> updateContent(
-    int id,
-    int docId,
-    String url,
-    bool warning,
-    int updateTime,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'UPDATE Content set docId=?2,url=?3,warning=?4,updateTime=?5 WHERE Content.id=?1',
-        arguments: [id, docId, url, warning ? 1 : 0, updateTime]);
-  }
-
-  @override
-  Future<void> updateContentWarning(
-    int id,
-    bool warning,
-    int updateTime,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'UPDATE Content set warning=?2,updateTime=?3 WHERE Content.id=?1',
-        arguments: [id, warning ? 1 : 0, updateTime]);
   }
 
   @override
@@ -1875,13 +2009,13 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<List<SegmentKeyId>> getSegmentKeyId(
+  Future<List<KeyId>> getSegmentKeyId(
     int classroomId,
     int contentSerial,
   ) async {
     return _queryAdapter.queryList(
         'SELECT SegmentKey.id,SegmentKey.k FROM SegmentKey WHERE SegmentKey.classroomId=?1 and SegmentKey.contentSerial=?2',
-        mapper: (Map<String, Object?> row) => SegmentKeyId(row['id'] as int, row['k'] as String),
+        mapper: (Map<String, Object?> row) => KeyId(row['id'] as int, row['k'] as String),
         arguments: [classroomId, contentSerial]);
   }
 
@@ -1892,7 +2026,7 @@ class _$ScheduleDao extends ScheduleDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT SegmentKey.* FROM SegmentKey WHERE SegmentKey.classroomId=?1 AND SegmentKey.contentSerial=?2',
-        mapper: (Map<String, Object?> row) => SegmentKey(row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['version'] as int, row['k'] as String, row['content'] as String, row['contentVersion'] as int, row['note'] as String, row['noteVersion'] as int, id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => SegmentKey(classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, lessonIndex: row['lessonIndex'] as int, segmentIndex: row['segmentIndex'] as int, version: row['version'] as int, k: row['k'] as String, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, id: row['id'] as int?),
         arguments: [classroomId, contentSerial]);
   }
 
@@ -1901,16 +2035,16 @@ class _$ScheduleDao extends ScheduleDao {
     return _queryAdapter.query(
         'SELECT SegmentKey.* FROM SegmentKey WHERE SegmentKey.id=?1',
         mapper: (Map<String, Object?> row) => SegmentKey(
-            row['classroomId'] as int,
-            row['contentSerial'] as int,
-            row['lessonIndex'] as int,
-            row['segmentIndex'] as int,
-            row['version'] as int,
-            row['k'] as String,
-            row['content'] as String,
-            row['contentVersion'] as int,
-            row['note'] as String,
-            row['noteVersion'] as int,
+            classroomId: row['classroomId'] as int,
+            contentSerial: row['contentSerial'] as int,
+            lessonIndex: row['lessonIndex'] as int,
+            segmentIndex: row['segmentIndex'] as int,
+            version: row['version'] as int,
+            k: row['k'] as String,
+            content: row['content'] as String,
+            contentVersion: row['contentVersion'] as int,
+            note: row['note'] as String,
+            noteVersion: row['noteVersion'] as int,
             id: row['id'] as int?),
         arguments: [id]);
   }
@@ -1923,7 +2057,7 @@ class _$ScheduleDao extends ScheduleDao {
   ) async {
     return _queryAdapter.query(
         'SELECT SegmentKey.* FROM SegmentKey WHERE SegmentKey.classroomId=?1 AND SegmentKey.contentSerial=?2 AND SegmentKey.k=?3',
-        mapper: (Map<String, Object?> row) => SegmentKey(row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['version'] as int, row['k'] as String, row['content'] as String, row['contentVersion'] as int, row['note'] as String, row['noteVersion'] as int, id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => SegmentKey(classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, lessonIndex: row['lessonIndex'] as int, segmentIndex: row['segmentIndex'] as int, version: row['version'] as int, k: row['k'] as String, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, id: row['id'] as int?),
         arguments: [classroomId, contentSerial, key]);
   }
 
@@ -2148,7 +2282,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.scheduleDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         await transactionDatabase.scheduleDao
             .deleteBySegmentKeyId(segmentKeyId);
       });
@@ -2164,7 +2298,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.scheduleDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         await transactionDatabase.scheduleDao.deleteByClassroomId(classroomId);
       });
     }
@@ -2184,7 +2318,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<int>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.scheduleDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         return transactionDatabase.scheduleDao
             .importSegment(contentId, contentSerial, indexJsonDocId, url);
       });
@@ -2203,7 +2337,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.scheduleDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         await transactionDatabase.scheduleDao
             .hideContentAndDeleteSegment(contentId, contentSerial);
       });
@@ -2219,7 +2353,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<List<SegmentTodayPrg>>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.scheduleDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         return transactionDatabase.scheduleDao.initToday();
       });
     }
@@ -2234,7 +2368,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<List<SegmentTodayPrg>>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.scheduleDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         return transactionDatabase.scheduleDao.forceInitToday(type);
       });
     }
@@ -2255,7 +2389,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.scheduleDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         await transactionDatabase.scheduleDao
             .addFullCustom(contentSerial, lessonIndex, segmentIndex, limit);
       });
@@ -2274,7 +2408,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.scheduleDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         await transactionDatabase.scheduleDao
             .tUpdateSegmentContent(segmentKeyId, content);
       });
@@ -2293,7 +2427,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.scheduleDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         await transactionDatabase.scheduleDao
             .tUpdateSegmentNote(segmentKeyId, note);
       });
@@ -2309,7 +2443,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.scheduleDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         await transactionDatabase.scheduleDao.error(stp);
       });
     }
@@ -2328,7 +2462,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.scheduleDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         await transactionDatabase.scheduleDao
             .jumpDirectly(segmentKeyId, progress, nextDayValue);
       });
@@ -2348,7 +2482,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.scheduleDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         await transactionDatabase.scheduleDao.jump(stp, progress, nextDayValue);
       });
     }
@@ -2363,7 +2497,7 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.scheduleDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         await transactionDatabase.scheduleDao.right(stp);
       });
     }
@@ -2564,7 +2698,7 @@ class _$StatsDao extends StatsDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.statsDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         await transactionDatabase.statsDao.tryInsertTimeStats(newTimeStats);
       });
     }
@@ -2579,7 +2713,7 @@ class _$StatsDao extends StatsDao {
           .transaction<List<int>>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        transactionDatabase.statsDao.db = transactionDatabase;
+        prepareDb(transactionDatabase);
         return transactionDatabase.statsDao.collectAll();
       });
     }

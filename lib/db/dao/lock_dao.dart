@@ -2,7 +2,7 @@ import 'package:floor/floor.dart';
 import 'package:repeat_flutter/db/entity/lock.dart';
 
 @dao
-abstract class TableLockDao {
+abstract class LockDao {
   @Query('SELECT * FROM Lock where id=1 for update')
   Future<void> forUpdate();
 
