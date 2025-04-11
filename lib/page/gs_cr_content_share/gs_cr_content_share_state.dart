@@ -18,7 +18,8 @@ class GsCrContentShareState {
     url: '',
     sort: 0,
     hide: false,
-    warning: WarningType.none,
+    lessonWarning: false,
+    segmentWarning: false,
     createTime: 0,
     updateTime: 0,
   );

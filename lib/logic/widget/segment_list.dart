@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
@@ -14,6 +13,7 @@ import 'package:repeat_flutter/logic/model/segment_show.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
+import 'package:repeat_flutter/logic/widget/lesson_list.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
@@ -34,6 +34,7 @@ class SegmentList<T extends GetxController> {
   SegmentList(this.parentLogic);
 
   late HistoryList historyList = HistoryList<T>(parentLogic);
+  late LessonList lessonList = LessonList<T>(parentLogic);
 
   Future<void> show({
     String? initContentNameSelect,
@@ -324,14 +325,30 @@ class SegmentList<T extends GetxController> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                                       decoration: BoxDecoration(
                                         color: Colors.grey.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
-                                      child: Text(
-                                        '${I18nKey.labelPosition.tr}: ${segment.toPos()}',
-                                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                      child: GestureDetector(
+                                        onTap: () async {
+                                          var lesson = await Db().db.lessonDao.one(Classroom.curr, segment.contentSerial, segment.lessonIndex);
+                                          if (lesson != null) {
+                                            lessonList.show(initContentNameSelect: initContentNameSelect, selectLessonKeyId: lesson.lessonKeyId);
+                                          }
+                                        },
+                                        child: Text.rich(
+                                          TextSpan(children: [
+                                            TextSpan(
+                                              text: '${I18nKey.labelLessonName.tr}: ${segment.toLessonPos()}',
+                                              style: const TextStyle(fontSize: 12, color: Colors.blue),
+                                            ),
+                                            TextSpan(
+                                              text: segment.toSegmentPos(),
+                                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                            ),
+                                          ]),
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(height: 8),
@@ -431,7 +448,7 @@ class SegmentList<T extends GetxController> {
                                             },
                                             child: Text(
                                               '${I18nKey.labelSetNextLearnDate.tr}: ${segment.next.format()}',
-                                              style: const TextStyle(fontSize: 12, color: Colors.blue),
+                                              style: const TextStyle(fontSize: 12, color: Colors.green),
                                             ),
                                           ),
                                         ),
@@ -459,9 +476,7 @@ class SegmentList<T extends GetxController> {
                                               var contentId2Missing = refreshMissingSegmentIndex(missingSegmentIndex, segmentShow);
                                               var warning = contentId2Missing[segment.contentId] ?? false;
                                               if (warning == false) {
-                                                var missingCount = await Db().db.lessonKeyDao.getMissingCount(segment.contentId) ?? 0;
-                                                var warningType = missingCount == 0 ? WarningType.none : WarningType.lessonWarning;
-                                                await Db().db.contentDao.updateContentWarning(segment.contentId, warningType, DateTime.now().millisecondsSinceEpoch);
+                                                await Db().db.contentDao.updateContentWarningForSegment(segment.contentId, warning, DateTime.now().millisecondsSinceEpoch);
                                                 if (removeWarning != null) {
                                                   await removeWarning();
                                                 }
@@ -526,7 +541,7 @@ class SegmentList<T extends GetxController> {
                             ),
                             RowWidget.buildDividerWithoutColor(),
                             RowWidget.buildCupertinoPicker(
-                              I18nKey.labelLesson.tr,
+                              I18nKey.labelLessonName.tr,
                               lessonOptions,
                               lessonSelect,
                               changed: (index) {

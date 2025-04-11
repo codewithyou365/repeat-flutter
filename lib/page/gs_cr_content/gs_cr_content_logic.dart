@@ -17,6 +17,7 @@ import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
+import 'package:repeat_flutter/logic/widget/lesson_list.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/logic/widget/segment_list.dart';
@@ -28,6 +29,7 @@ import 'gs_cr_content_state.dart';
 class GsCrContentLogic extends GetxController {
   static const String id = "GsCrContentLogic";
   final GsCrContentState state = GsCrContentState();
+  late LessonList lessonList = LessonList<GsCrContentLogic>(this);
   late SegmentList segmentList = SegmentList<GsCrContentLogic>(this);
   static RegExp reg = RegExp(r'^[0-9A-Z]+$');
 
@@ -57,7 +59,21 @@ class GsCrContentLogic extends GetxController {
     }, I18nKey.labelDeleting.tr);
   }
 
-  show(int contentId, int contentSerial) async {
+  showLesson(int contentId, int contentSerial) async {
+    var content = await Db().db.scheduleDao.getContentBySerial(contentId, contentSerial);
+    if (content == null) {
+      Snackbar.show(I18nKey.labelNoContent.tr);
+      return;
+    }
+    lessonList.show(
+      initContentNameSelect: content.name,
+      removeWarning: () async {
+        await init();
+      },
+    );
+  }
+
+  showSegment(int contentId, int contentSerial) async {
     var content = await Db().db.scheduleDao.getContentBySerial(contentId, contentSerial);
     if (content == null) {
       Snackbar.show(I18nKey.labelNoContent.tr);

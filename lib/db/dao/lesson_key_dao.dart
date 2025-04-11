@@ -1,16 +1,32 @@
 // dao/lesson_key_dao.dart
 
+import 'dart:convert' as convert;
+
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/lesson.dart';
 import 'package:repeat_flutter/db/entity/lesson_key.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/text_version.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/model/lesson_show.dart';
 import 'package:repeat_flutter/logic/model/segment_key_id.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 @dao
 abstract class LessonKeyDao {
   late AppDatabase db;
+  static LessonShow? Function(int lessonKeyId)? getLessonShow;
+
+  @Query('SELECT *'
+      ' FROM LessonKey'
+      ' WHERE LessonKey.id=:id')
+  Future<LessonKey?> getById(int id);
+
+  @Query('SELECT *'
+      ' FROM LessonKey'
+      ' WHERE classroomId=:classroomId and contentSerial=:contentSerial and k=:k')
+  Future<LessonKey?> getByKey(int classroomId, int contentSerial, String k);
 
   @Query('SELECT ifnull(sum(Lesson.lessonKeyId is null),0) missingCount'
       ' FROM LessonKey'
@@ -18,11 +34,32 @@ abstract class LessonKeyDao {
       ' LEFT JOIN Lesson ON Lesson.lessonKeyId=LessonKey.id')
   Future<int?> getMissingCount(int contentId);
 
+  @Query('SELECT LessonKey.id lessonKeyId'
+      ',LessonKey.k'
+      ',Content.id contentId'
+      ',Content.name contentName'
+      ',Content.sort contentSort'
+      ',LessonKey.content lessonContent'
+      ',LessonKey.contentVersion lessonContentVersion'
+      ',LessonKey.lessonIndex'
+      ',Lesson.lessonKeyId is null missing'
+      ' FROM LessonKey'
+      " JOIN Content ON Content.classroomId=:classroomId AND Content.docId!=0"
+      ' LEFT JOIN Lesson ON Lesson.lessonKeyId=LessonKey.id'
+      ' WHERE LessonKey.classroomId=:classroomId')
+  Future<List<LessonShow>> getAllLesson(int classroomId);
+
+  @Query('UPDATE LessonKey set k=:key,content=:content,contentVersion=:contentVersion WHERE id=:id')
+  Future<void> updateKeyAndContent(int id, String key, String content, int contentVersion);
+
   @Query('SELECT * FROM LessonKey WHERE classroomId=:classroomId and contentSerial=:contentSerial')
   Future<List<LessonKey>> find(int classroomId, int contentSerial);
 
   @Query('SELECT id,k FROM LessonKey WHERE classroomId=:classroomId and contentSerial=:contentSerial')
   Future<List<KeyId>> findKeyId(int classroomId, int contentSerial);
+
+  @Query('DELETE FROM LessonKey WHERE id=:id')
+  Future<void> deleteById(int id);
 
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertOrFail(List<LessonKey> entities);
@@ -95,6 +132,69 @@ abstract class LessonKeyDao {
     if (needToModifyMap.isNotEmpty) {
       await updateOrFail(needToModifyMap.values.toList());
     }
+    if (needToInsertTextVersion.isNotEmpty) {
+      await db.textVersionDao.insertsOrIgnore(needToInsertTextVersion);
+    }
     return newLessonKeys.length < keyToId.length;
+  }
+
+  @transaction
+  Future<void> updateLessonContent(int lessonKeyId, String content) async {
+    LessonKey? lessonKey = await getById(lessonKeyId);
+    if (lessonKey == null) {
+      Snackbar.show(I18nKey.labelNotFoundSegment.trArgs([lessonKeyId.toString()]));
+      return;
+    }
+    Map<String, dynamic> contentM;
+    try {
+      contentM = convert.jsonDecode(content);
+      content = convert.jsonEncode(contentM);
+    } catch (e) {
+      Snackbar.show(e.toString());
+      return;
+    }
+
+    if (lessonKey.content == content) {
+      return;
+    }
+    String key = contentM["k"] ?? '';
+    if (key.isEmpty) {
+      Snackbar.show(I18nKey.labelLessonKeyCantBeEmpty.tr);
+      return;
+    }
+
+    var otherLessonKey = await getByKey(lessonKey.classroomId, lessonKey.contentSerial, key);
+    if (otherLessonKey != null && otherLessonKey.id != lessonKey.id) {
+      Snackbar.show(I18nKey.labelLessonKeyDuplicated.trArgs([key]));
+      return;
+    }
+
+    var now = DateTime.now();
+    await updateKeyAndContent(lessonKeyId, key, content, lessonKey.contentVersion + 1);
+    await db.textVersionDao.insertOrIgnore(TextVersion(TextVersionType.lessonContent, lessonKeyId, lessonKey.contentVersion + 1, TextVersionReason.editor, content, now));
+    if (getLessonShow != null) {
+      LessonShow? lessonShow = getLessonShow!(lessonKeyId);
+      if (lessonShow != null) {
+        lessonShow.lessonContent = content;
+        lessonShow.k = key;
+        lessonShow.lessonContentVersion++;
+      }
+    }
+  }
+
+  @transaction
+  Future<bool> delete(int lessonKeyId) async {
+    LessonKey? lessonKey = await getById(lessonKeyId);
+    if (lessonKey == null) {
+      return true;
+    }
+    int segmentKeyDaoCount = await db.segmentKeyDao.count(lessonKey.classroomId, lessonKey.contentSerial, lessonKey.lessonIndex) ?? 0;
+    if (segmentKeyDaoCount != 0) {
+      Snackbar.show(I18nKey.labelLessonHasSegmentsAndCantBeDeleted.tr);
+      return false;
+    }
+    await db.lessonDao.deleteById(lessonKeyId);
+    await deleteById(lessonKeyId);
+    return true;
   }
 }

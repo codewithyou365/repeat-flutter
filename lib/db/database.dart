@@ -7,6 +7,7 @@ import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/dao/classroom_dao.dart';
 import 'package:repeat_flutter/db/dao/content_dao.dart';
+import 'package:repeat_flutter/db/dao/cr_kv_dao.dart';
 import 'package:repeat_flutter/db/dao/doc_dao.dart';
 import 'package:repeat_flutter/db/dao/game_dao.dart';
 import 'package:repeat_flutter/db/dao/game_user_dao.dart';
@@ -14,6 +15,7 @@ import 'package:repeat_flutter/db/dao/lesson_dao.dart';
 import 'package:repeat_flutter/db/dao/lesson_key_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/kv_dao.dart';
+import 'package:repeat_flutter/db/dao/segment_key_dao.dart';
 import 'package:repeat_flutter/db/dao/stats_dao.dart';
 import 'package:repeat_flutter/db/dao/text_version_dao.dart';
 import 'package:repeat_flutter/db/dao/lock_dao.dart';
@@ -38,6 +40,7 @@ import 'package:repeat_flutter/db/entity/time_stats.dart';
 import 'package:repeat_flutter/db/migration/m1_2.dart';
 import 'package:repeat_flutter/db/migration/m2_3.dart';
 import 'package:repeat_flutter/db/type_converter.dart';
+import 'package:repeat_flutter/logic/model/lesson_show.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/logic/model/segment_key_id.dart';
 import 'package:repeat_flutter/logic/model/segment_overall_prg_with_key.dart';
@@ -74,6 +77,7 @@ part 'database.g.dart'; // the generated code will be there
   GameUser,
   GameUserInput,
   Lock,
+  LessonShow,
 ])
 @TypeConverters([
   KConverter,
@@ -104,7 +108,11 @@ abstract class AppDatabase extends FloorDatabase {
 
   ContentDao get contentDao;
 
+  CrKvDao get crKvDao;
+
   ScheduleDao get scheduleDao;
+
+  SegmentKeyDao get segmentKeyDao;
 
   StatsDao get statsDao;
 }

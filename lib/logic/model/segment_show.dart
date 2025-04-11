@@ -8,6 +8,8 @@ class SegmentShow {
   String k;
   final int contentId;
   final String contentName;
+  final int contentSerial;
+  final int contentSort;
   String segmentContent;
   int segmentContentVersion;
   String segmentNote;
@@ -18,27 +20,32 @@ class SegmentShow {
   int progress;
   final bool missing;
 
-  SegmentShow(
-    this.segmentKeyId,
-    this.k,
-    this.contentId,
-    this.contentName,
-    this.segmentContent,
-    this.segmentContentVersion,
-    this.segmentNote,
-    this.segmentNoteVersion,
-    this.lessonIndex,
-    this.segmentIndex,
-    this.next,
-    this.progress,
-    this.missing,
-  );
+  SegmentShow({
+    required this.segmentKeyId,
+    required this.k,
+    required this.contentId,
+    required this.contentName,
+    required this.contentSerial,
+    required this.contentSort,
+    required this.segmentContent,
+    required this.segmentContentVersion,
+    required this.segmentNote,
+    required this.segmentNoteVersion,
+    required this.lessonIndex,
+    required this.segmentIndex,
+    required this.next,
+    required this.progress,
+    required this.missing,
+  });
 
-  String toPos() {
-    return '$contentName-${lessonIndex + 1}|${segmentIndex + 1}';
+  String toLessonPos() {
+    return '$contentName-${lessonIndex + 1}';
+  }
+  String toSegmentPos() {
+    return '-${segmentIndex + 1}';
   }
 
   int toSort() {
-    return lessonIndex * 100000 + segmentIndex;
+    return contentSort * 10000000000 + lessonIndex * 100000 + segmentIndex;
   }
 }

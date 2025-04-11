@@ -15,7 +15,7 @@ abstract class ContentDao {
   @Query('SELECT * FROM Content where classroomId=:classroomId and hide=false ORDER BY sort')
   Future<List<Content>> getAllContent(int classroomId);
 
-  @Query('SELECT max(warning) FROM Content where classroomId=:classroomId and docId!=0 and hide=false')
+  @Query('SELECT max(segmentWarning) FROM Content where classroomId=:classroomId and docId!=0 and hide=false')
   Future<bool?> hasWarning(int classroomId);
 
   @Query('SELECT * FROM Content where classroomId=:classroomId and docId!=0 and hide=false ORDER BY sort')
@@ -39,11 +39,17 @@ abstract class ContentDao {
   @Query('SELECT * FROM Content WHERE classroomId=:classroomId and name=:name')
   Future<Content?> getContentByName(int classroomId, String name);
 
-  @Query('UPDATE Content set docId=:docId,url=:url,warning=:warning,updateTime=:updateTime WHERE Content.id=:id')
-  Future<void> updateContent(int id, int docId, String url, WarningType warning, int updateTime);
+  @Query('UPDATE Content set docId=:docId,url=:url,lessonWarning=:lessonWarning,segmentWarning=:segmentWarning,updateTime=:updateTime WHERE Content.id=:id')
+  Future<void> updateContent(int id, int docId, String url, bool lessonWarning, bool segmentWarning, int updateTime);
 
-  @Query('UPDATE Content set warning=:warning,updateTime=:updateTime WHERE Content.id=:id')
-  Future<void> updateContentWarning(int id, WarningType warning, int updateTime);
+  @Query('UPDATE Content set lessonWarning=:lessonWarning,segmentWarning=:segmentWarning,updateTime=:updateTime WHERE Content.id=:id')
+  Future<void> updateContentWarning(int id, bool lessonWarning, bool segmentWarning, int updateTime);
+
+  @Query('UPDATE Content set lessonWarning=:lessonWarning,updateTime=:updateTime WHERE Content.id=:id')
+  Future<void> updateContentWarningForLesson(int id, bool lessonWarning, int updateTime);
+
+  @Query('UPDATE Content set segmentWarning=:segmentWarning,updateTime=:updateTime WHERE Content.id=:id')
+  Future<void> updateContentWarningForSegment(int id, bool segmentWarning, int updateTime);
 
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertContent(Content entity);
@@ -87,7 +93,8 @@ abstract class ContentDao {
         url: '',
         sort: sort,
         hide: false,
-        warning: WarningType.none,
+        lessonWarning: false,
+        segmentWarning: false,
         createTime: now,
         updateTime: now,
       );

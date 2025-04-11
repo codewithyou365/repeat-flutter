@@ -480,6 +480,8 @@ abstract class ScheduleDao {
       ',SegmentKey.k'
       ',Content.id contentId'
       ',Content.name contentName'
+      ',Content.serial contentSerial'
+      ',Content.sort contentSort'
       ',SegmentKey.content segmentContent'
       ',SegmentKey.contentVersion segmentContentVersion'
       ',SegmentKey.note segmentNote'
@@ -493,7 +495,7 @@ abstract class ScheduleDao {
       " JOIN Content ON Content.classroomId=:classroomId AND Content.docId!=0"
       ' LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id'
       ' LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id'
-      ' AND SegmentKey.classroomId=:classroomId')
+      ' WHERE SegmentKey.classroomId=:classroomId')
   Future<List<SegmentShow>> getAllSegment(int classroomId);
 
   @Insert(onConflict: OnConflictStrategy.replace)
@@ -590,6 +592,8 @@ abstract class ScheduleDao {
     await deleteSegmentOverallPrg(segmentKeyId);
     await deleteSegmentReview(segmentKeyId);
     await deleteSegmentTodayPrg(segmentKeyId);
+    await db.textVersionDao.delete(TextVersionType.segmentContent, segmentKeyId);
+    await db.textVersionDao.delete(TextVersionType.segmentNote, segmentKeyId);
   }
 
   @transaction
@@ -869,18 +873,11 @@ abstract class ScheduleDao {
 
     var warningInLesson = await db.lessonKeyDao.import(newLessons, newLessonKeys, contentSerial);
     var warningInSegment = segments.length < keyToId.length;
-    WarningType warningType = WarningType.none;
-    if (warningInLesson && warningInLesson) {
-      warningType = WarningType.lessonSegmentWarning;
-    } else if (warningInSegment) {
-      warningType = WarningType.segmentWarning;
-    } else {
-      warningType = WarningType.lessonWarning;
-    }
+
     if (indexJsonDocId != null && url != null) {
-      await db.contentDao.updateContent(contentId, indexJsonDocId, url, warningType, DateTime.now().millisecondsSinceEpoch);
+      await db.contentDao.updateContent(contentId, indexJsonDocId, url, warningInLesson, warningInSegment, DateTime.now().millisecondsSinceEpoch);
     } else {
-      await db.contentDao.updateContentWarning(contentId, warningType, DateTime.now().millisecondsSinceEpoch);
+      await db.contentDao.updateContentWarning(contentId, warningInLesson, warningInSegment, DateTime.now().millisecondsSinceEpoch);
     }
     if (warningInLesson == true || warningInSegment == true) {
       return ImportResult.successButSomeSegmentsAreSurplus.index;

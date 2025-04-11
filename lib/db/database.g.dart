@@ -92,7 +92,11 @@ class _$AppDatabase extends AppDatabase {
 
   ContentDao? _contentDaoInstance;
 
+  CrKvDao? _crKvDaoInstance;
+
   ScheduleDao? _scheduleDaoInstance;
+
+  SegmentKeyDao? _segmentKeyDaoInstance;
 
   StatsDao? _statsDaoInstance;
 
@@ -128,7 +132,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Classroom` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Content` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `serial` INTEGER NOT NULL, `name` TEXT NOT NULL, `desc` TEXT NOT NULL, `docId` INTEGER NOT NULL, `url` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, `warning` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `updateTime` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `Content` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `serial` INTEGER NOT NULL, `name` TEXT NOT NULL, `desc` TEXT NOT NULL, `docId` INTEGER NOT NULL, `url` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, `lessonWarning` INTEGER NOT NULL, `segmentWarning` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `updateTime` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `CrKv` (`classroomId` INTEGER NOT NULL, `k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`classroomId`, `k`))');
         await database.execute(
@@ -282,8 +286,18 @@ class _$AppDatabase extends AppDatabase {
   }
 
   @override
+  CrKvDao get crKvDao {
+    return _crKvDaoInstance ??= _$CrKvDao(database, changeListener);
+  }
+
+  @override
   ScheduleDao get scheduleDao {
     return _scheduleDaoInstance ??= _$ScheduleDao(database, changeListener);
+  }
+
+  @override
+  SegmentKeyDao get segmentKeyDao {
+    return _segmentKeyDaoInstance ??= _$SegmentKeyDao(database, changeListener);
   }
 
   @override
@@ -861,6 +875,18 @@ class _$LessonDao extends LessonDao {
   }
 
   @override
+  Future<Lesson?> one(
+    int classroomId,
+    int contentSerial,
+    int lessonIndex,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT * FROM Lesson WHERE classroomId=?1 and contentSerial=?2 and lessonIndex=?3',
+        mapper: (Map<String, Object?> row) => Lesson(lessonKeyId: row['lessonKeyId'] as int, classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, lessonIndex: row['lessonIndex'] as int),
+        arguments: [classroomId, contentSerial, lessonIndex]);
+  }
+
+  @override
   Future<void> delete(
     int classroomId,
     int contentSerial,
@@ -868,6 +894,12 @@ class _$LessonDao extends LessonDao {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM Lesson WHERE Lesson.classroomId=?1 and Lesson.contentSerial=?2',
         arguments: [classroomId, contentSerial]);
+  }
+
+  @override
+  Future<void> deleteById(int id) async {
+    await _queryAdapter
+        .queryNoReturn('DELETE FROM LessonKey WHERE id=?1', arguments: [id]);
   }
 
   @override
@@ -920,11 +952,58 @@ class _$LessonKeyDao extends LessonKeyDao {
   final UpdateAdapter<LessonKey> _lessonKeyUpdateAdapter;
 
   @override
+  Future<LessonKey?> getById(int id) async {
+    return _queryAdapter.query('SELECT * FROM LessonKey WHERE LessonKey.id=?1',
+        mapper: (Map<String, Object?> row) => LessonKey(
+            id: row['id'] as int?,
+            classroomId: row['classroomId'] as int,
+            contentSerial: row['contentSerial'] as int,
+            lessonIndex: row['lessonIndex'] as int,
+            version: row['version'] as int,
+            k: row['k'] as String,
+            content: row['content'] as String,
+            contentVersion: row['contentVersion'] as int),
+        arguments: [id]);
+  }
+
+  @override
+  Future<LessonKey?> getByKey(
+    int classroomId,
+    int contentSerial,
+    String k,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT * FROM LessonKey WHERE classroomId=?1 and contentSerial=?2 and k=?3',
+        mapper: (Map<String, Object?> row) => LessonKey(id: row['id'] as int?, classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, lessonIndex: row['lessonIndex'] as int, version: row['version'] as int, k: row['k'] as String, content: row['content'] as String, contentVersion: row['contentVersion'] as int),
+        arguments: [classroomId, contentSerial, k]);
+  }
+
+  @override
   Future<int?> getMissingCount(int contentId) async {
     return _queryAdapter.query(
         'SELECT ifnull(sum(Lesson.lessonKeyId is null),0) missingCount FROM LessonKey JOIN Content ON Content.id=?1 LEFT JOIN Lesson ON Lesson.lessonKeyId=LessonKey.id',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [contentId]);
+  }
+
+  @override
+  Future<List<LessonShow>> getAllLesson(int classroomId) async {
+    return _queryAdapter.queryList(
+        'SELECT LessonKey.id lessonKeyId,LessonKey.k,Content.id contentId,Content.name contentName,Content.sort contentSort,LessonKey.content lessonContent,LessonKey.contentVersion lessonContentVersion,LessonKey.lessonIndex,Lesson.lessonKeyId is null missing FROM LessonKey JOIN Content ON Content.classroomId=?1 AND Content.docId!=0 LEFT JOIN Lesson ON Lesson.lessonKeyId=LessonKey.id WHERE LessonKey.classroomId=?1',
+        mapper: (Map<String, Object?> row) => LessonShow(lessonKeyId: row['lessonKeyId'] as int, k: row['k'] as String, contentId: row['contentId'] as int, contentName: row['contentName'] as String, contentSort: row['contentSort'] as int, lessonContent: row['lessonContent'] as String, lessonContentVersion: row['lessonContentVersion'] as int, lessonIndex: row['lessonIndex'] as int, missing: (row['missing'] as int) != 0),
+        arguments: [classroomId]);
+  }
+
+  @override
+  Future<void> updateKeyAndContent(
+    int id,
+    String key,
+    String content,
+    int contentVersion,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE LessonKey set k=?2,content=?3,contentVersion=?4 WHERE id=?1',
+        arguments: [id, key, content, contentVersion]);
   }
 
   @override
@@ -959,6 +1038,12 @@ class _$LessonKeyDao extends LessonKeyDao {
   }
 
   @override
+  Future<void> deleteById(int id) async {
+    await _queryAdapter
+        .queryNoReturn('DELETE FROM LessonKey WHERE id=?1', arguments: [id]);
+  }
+
+  @override
   Future<void> insertOrFail(List<LessonKey> entities) async {
     await _lessonKeyInsertionAdapter.insertList(
         entities, OnConflictStrategy.fail);
@@ -967,6 +1052,40 @@ class _$LessonKeyDao extends LessonKeyDao {
   @override
   Future<void> updateOrFail(List<LessonKey> entities) async {
     await _lessonKeyUpdateAdapter.updateList(entities, OnConflictStrategy.fail);
+  }
+
+  @override
+  Future<void> updateLessonContent(
+    int lessonKeyId,
+    String content,
+  ) async {
+    if (database is sqflite.Transaction) {
+      await super.updateLessonContent(lessonKeyId, content);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        await transactionDatabase.lessonKeyDao
+            .updateLessonContent(lessonKeyId, content);
+      });
+    }
+  }
+
+  @override
+  Future<bool> delete(int lessonKeyId) async {
+    if (database is sqflite.Transaction) {
+      return super.delete(lessonKeyId);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<bool>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        return transactionDatabase.lessonKeyDao.delete(lessonKeyId);
+      });
+    }
   }
 }
 
@@ -1224,13 +1343,27 @@ class _$TextVersionDao extends TextVersionDao {
   _$TextVersionDao(
     this.database,
     this.changeListener,
-  ) : _queryAdapter = QueryAdapter(database);
+  )   : _queryAdapter = QueryAdapter(database),
+        _textVersionInsertionAdapter = InsertionAdapter(
+            database,
+            'TextVersion',
+            (TextVersion item) => <String, Object?>{
+                  't': _segmentTextVersionTypeConverter.encode(item.t),
+                  'id': item.id,
+                  'version': item.version,
+                  'reason':
+                      _segmentTextVersionReasonConverter.encode(item.reason),
+                  'text': item.text,
+                  'createTime': _dateTimeConverter.encode(item.createTime)
+                });
 
   final sqflite.DatabaseExecutor database;
 
   final StreamController<String> changeListener;
 
   final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<TextVersion> _textVersionInsertionAdapter;
 
   @override
   Future<List<TextVersion>> list(
@@ -1262,6 +1395,28 @@ class _$TextVersionDao extends TextVersionDao {
         mapper: (Map<String, Object?> row) => TextVersion(_segmentTextVersionTypeConverter.decode(row['t'] as int), row['id'] as int, row['version'] as int, _segmentTextVersionReasonConverter.decode(row['reason'] as int), row['text'] as String, _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [...ids]);
   }
+
+  @override
+  Future<void> delete(
+    TextVersionType type,
+    int id,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM TextVersion WHERE t=?1 AND id=?2',
+        arguments: [_segmentTextVersionTypeConverter.encode(type), id]);
+  }
+
+  @override
+  Future<void> insertOrIgnore(TextVersion entity) async {
+    await _textVersionInsertionAdapter.insert(
+        entity, OnConflictStrategy.ignore);
+  }
+
+  @override
+  Future<void> insertsOrIgnore(List<TextVersion> entities) async {
+    await _textVersionInsertionAdapter.insertList(
+        entities, OnConflictStrategy.ignore);
+  }
 }
 
 class _$ContentDao extends ContentDao {
@@ -1282,7 +1437,8 @@ class _$ContentDao extends ContentDao {
                   'url': item.url,
                   'sort': item.sort,
                   'hide': item.hide ? 1 : 0,
-                  'warning': item.warning.index,
+                  'lessonWarning': item.lessonWarning ? 1 : 0,
+                  'segmentWarning': item.segmentWarning ? 1 : 0,
                   'createTime': item.createTime,
                   'updateTime': item.updateTime
                 });
@@ -1299,14 +1455,14 @@ class _$ContentDao extends ContentDao {
   Future<List<Content>> getAllContent(int classroomId) async {
     return _queryAdapter.queryList(
         'SELECT * FROM Content where classroomId=?1 and hide=false ORDER BY sort',
-        mapper: (Map<String, Object?> row) => Content(id: row['id'] as int?, classroomId: row['classroomId'] as int, serial: row['serial'] as int, name: row['name'] as String, desc: row['desc'] as String, docId: row['docId'] as int, url: row['url'] as String, sort: row['sort'] as int, hide: (row['hide'] as int) != 0, warning: WarningType.values[row['warning'] as int], createTime: row['createTime'] as int, updateTime: row['updateTime'] as int),
+        mapper: (Map<String, Object?> row) => Content(id: row['id'] as int?, classroomId: row['classroomId'] as int, serial: row['serial'] as int, name: row['name'] as String, desc: row['desc'] as String, docId: row['docId'] as int, url: row['url'] as String, sort: row['sort'] as int, hide: (row['hide'] as int) != 0, lessonWarning: (row['lessonWarning'] as int) != 0, segmentWarning: (row['segmentWarning'] as int) != 0, createTime: row['createTime'] as int, updateTime: row['updateTime'] as int),
         arguments: [classroomId]);
   }
 
   @override
   Future<bool?> hasWarning(int classroomId) async {
     return _queryAdapter.query(
-        'SELECT max(warning) FROM Content where classroomId=?1 and docId!=0 and hide=false',
+        'SELECT max(segmentWarning) FROM Content where classroomId=?1 and docId!=0 and hide=false',
         mapper: (Map<String, Object?> row) => (row.values.first as int) != 0,
         arguments: [classroomId]);
   }
@@ -1315,7 +1471,7 @@ class _$ContentDao extends ContentDao {
   Future<List<Content>> getAllEnableContent(int classroomId) async {
     return _queryAdapter.queryList(
         'SELECT * FROM Content where classroomId=?1 and docId!=0 and hide=false ORDER BY sort',
-        mapper: (Map<String, Object?> row) => Content(id: row['id'] as int?, classroomId: row['classroomId'] as int, serial: row['serial'] as int, name: row['name'] as String, desc: row['desc'] as String, docId: row['docId'] as int, url: row['url'] as String, sort: row['sort'] as int, hide: (row['hide'] as int) != 0, warning: WarningType.values[row['warning'] as int], createTime: row['createTime'] as int, updateTime: row['updateTime'] as int),
+        mapper: (Map<String, Object?> row) => Content(id: row['id'] as int?, classroomId: row['classroomId'] as int, serial: row['serial'] as int, name: row['name'] as String, desc: row['desc'] as String, docId: row['docId'] as int, url: row['url'] as String, sort: row['sort'] as int, hide: (row['hide'] as int) != 0, lessonWarning: (row['lessonWarning'] as int) != 0, segmentWarning: (row['segmentWarning'] as int) != 0, createTime: row['createTime'] as int, updateTime: row['updateTime'] as int),
         arguments: [classroomId]);
   }
 
@@ -1370,7 +1526,8 @@ class _$ContentDao extends ContentDao {
             url: row['url'] as String,
             sort: row['sort'] as int,
             hide: (row['hide'] as int) != 0,
-            warning: WarningType.values[row['warning'] as int],
+            lessonWarning: (row['lessonWarning'] as int) != 0,
+            segmentWarning: (row['segmentWarning'] as int) != 0,
             createTime: row['createTime'] as int,
             updateTime: row['updateTime'] as int),
         arguments: [id]);
@@ -1393,7 +1550,8 @@ class _$ContentDao extends ContentDao {
             url: row['url'] as String,
             sort: row['sort'] as int,
             hide: (row['hide'] as int) != 0,
-            warning: WarningType.values[row['warning'] as int],
+            lessonWarning: (row['lessonWarning'] as int) != 0,
+            segmentWarning: (row['segmentWarning'] as int) != 0,
             createTime: row['createTime'] as int,
             updateTime: row['updateTime'] as int),
         arguments: [classroomId, name]);
@@ -1404,23 +1562,59 @@ class _$ContentDao extends ContentDao {
     int id,
     int docId,
     String url,
-    WarningType warning,
+    bool lessonWarning,
+    bool segmentWarning,
     int updateTime,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Content set docId=?2,url=?3,warning=?4,updateTime=?5 WHERE Content.id=?1',
-        arguments: [id, docId, url, warning.index, updateTime]);
+        'UPDATE Content set docId=?2,url=?3,lessonWarning=?4,segmentWarning=?5,updateTime=?6 WHERE Content.id=?1',
+        arguments: [
+          id,
+          docId,
+          url,
+          lessonWarning ? 1 : 0,
+          segmentWarning ? 1 : 0,
+          updateTime
+        ]);
   }
 
   @override
   Future<void> updateContentWarning(
     int id,
-    WarningType warning,
+    bool lessonWarning,
+    bool segmentWarning,
     int updateTime,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Content set warning=?2,updateTime=?3 WHERE Content.id=?1',
-        arguments: [id, warning.index, updateTime]);
+        'UPDATE Content set lessonWarning=?2,segmentWarning=?3,updateTime=?4 WHERE Content.id=?1',
+        arguments: [
+          id,
+          lessonWarning ? 1 : 0,
+          segmentWarning ? 1 : 0,
+          updateTime
+        ]);
+  }
+
+  @override
+  Future<void> updateContentWarningForLesson(
+    int id,
+    bool lessonWarning,
+    int updateTime,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE Content set lessonWarning=?2,updateTime=?3 WHERE Content.id=?1',
+        arguments: [id, lessonWarning ? 1 : 0, updateTime]);
+  }
+
+  @override
+  Future<void> updateContentWarningForSegment(
+    int id,
+    bool segmentWarning,
+    int updateTime,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE Content set segmentWarning=?2,updateTime=?3 WHERE Content.id=?1',
+        arguments: [id, segmentWarning ? 1 : 0, updateTime]);
   }
 
   @override
@@ -1465,6 +1659,59 @@ class _$ContentDao extends ContentDao {
         return transactionDatabase.contentDao.add(name);
       });
     }
+  }
+}
+
+class _$CrKvDao extends CrKvDao {
+  _$CrKvDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _crKvInsertionAdapter = InsertionAdapter(
+            database,
+            'CrKv',
+            (CrKv item) => <String, Object?>{
+                  'classroomId': item.classroomId,
+                  'k': _crKConverter.encode(item.k),
+                  'value': item.value
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<CrKv> _crKvInsertionAdapter;
+
+  @override
+  Future<List<CrKv>> find(List<CrK> k) async {
+    const offset = 1;
+    final _sqliteVariablesForK =
+        Iterable<String>.generate(k.length, (i) => '?${i + offset}').join(',');
+    return _queryAdapter.queryList(
+        'SELECT * FROM CrKv where `k` in (' + _sqliteVariablesForK + ')',
+        mapper: (Map<String, Object?> row) => CrKv(row['classroomId'] as int,
+            _crKConverter.decode(row['k'] as String), row['value'] as String),
+        arguments: [...k.map((element) => _crKConverter.encode(element))]);
+  }
+
+  @override
+  Future<CrKv?> one(CrK k) async {
+    return _queryAdapter.query('SELECT * FROM CrKv where `k`=?1',
+        mapper: (Map<String, Object?> row) => CrKv(row['classroomId'] as int,
+            _crKConverter.decode(row['k'] as String), row['value'] as String),
+        arguments: [_crKConverter.encode(k)]);
+  }
+
+  @override
+  Future<void> insertOrReplace(CrKv kv) async {
+    await _crKvInsertionAdapter.insert(kv, OnConflictStrategy.replace);
+  }
+
+  @override
+  Future<void> insertsOrReplace(List<CrKv> kv) async {
+    await _crKvInsertionAdapter.insertList(kv, OnConflictStrategy.replace);
   }
 }
 
@@ -1635,7 +1882,8 @@ class _$ScheduleDao extends ScheduleDao {
             url: row['url'] as String,
             sort: row['sort'] as int,
             hide: (row['hide'] as int) != 0,
-            warning: WarningType.values[row['warning'] as int],
+            lessonWarning: (row['lessonWarning'] as int) != 0,
+            segmentWarning: (row['segmentWarning'] as int) != 0,
             createTime: row['createTime'] as int,
             updateTime: row['updateTime'] as int),
         arguments: [id]);
@@ -1658,7 +1906,8 @@ class _$ScheduleDao extends ScheduleDao {
             url: row['url'] as String,
             sort: row['sort'] as int,
             hide: (row['hide'] as int) != 0,
-            warning: WarningType.values[row['warning'] as int],
+            lessonWarning: (row['lessonWarning'] as int) != 0,
+            segmentWarning: (row['segmentWarning'] as int) != 0,
             createTime: row['createTime'] as int,
             updateTime: row['updateTime'] as int),
         arguments: [classroomId, serial]);
@@ -2064,8 +2313,8 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<List<SegmentShow>> getAllSegment(int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT SegmentKey.id segmentKeyId,SegmentKey.k,Content.id contentId,Content.name contentName,SegmentKey.content segmentContent,SegmentKey.contentVersion segmentContentVersion,SegmentKey.note segmentNote,SegmentKey.noteVersion segmentNoteVersion,SegmentKey.lessonIndex,SegmentKey.segmentIndex,SegmentOverallPrg.next,SegmentOverallPrg.progress,Segment.segmentKeyId is null missing FROM SegmentKey JOIN Content ON Content.classroomId=?1 AND Content.docId!=0 LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id AND SegmentKey.classroomId=?1',
-        mapper: (Map<String, Object?> row) => SegmentShow(row['segmentKeyId'] as int, row['k'] as String, row['contentId'] as int, row['contentName'] as String, row['segmentContent'] as String, row['segmentContentVersion'] as int, row['segmentNote'] as String, row['segmentNoteVersion'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, (row['missing'] as int) != 0),
+        'SELECT SegmentKey.id segmentKeyId,SegmentKey.k,Content.id contentId,Content.name contentName,Content.serial contentSerial,Content.sort contentSort,SegmentKey.content segmentContent,SegmentKey.contentVersion segmentContentVersion,SegmentKey.note segmentNote,SegmentKey.noteVersion segmentNoteVersion,SegmentKey.lessonIndex,SegmentKey.segmentIndex,SegmentOverallPrg.next,SegmentOverallPrg.progress,Segment.segmentKeyId is null missing FROM SegmentKey JOIN Content ON Content.classroomId=?1 AND Content.docId!=0 LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id WHERE SegmentKey.classroomId=?1',
+        mapper: (Map<String, Object?> row) => SegmentShow(segmentKeyId: row['segmentKeyId'] as int, k: row['k'] as String, contentId: row['contentId'] as int, contentName: row['contentName'] as String, contentSerial: row['contentSerial'] as int, contentSort: row['contentSort'] as int, segmentContent: row['segmentContent'] as String, segmentContentVersion: row['segmentContentVersion'] as int, segmentNote: row['segmentNote'] as String, segmentNoteVersion: row['segmentNoteVersion'] as int, lessonIndex: row['lessonIndex'] as int, segmentIndex: row['segmentIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int, missing: (row['missing'] as int) != 0),
         arguments: [classroomId]);
   }
 
@@ -2501,6 +2750,31 @@ class _$ScheduleDao extends ScheduleDao {
         await transactionDatabase.scheduleDao.right(stp);
       });
     }
+  }
+}
+
+class _$SegmentKeyDao extends SegmentKeyDao {
+  _$SegmentKeyDao(
+    this.database,
+    this.changeListener,
+  ) : _queryAdapter = QueryAdapter(database);
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  @override
+  Future<int?> count(
+    int classroomId,
+    int contentSerial,
+    int lessonIndex,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT count(id) FROM SegmentKey where classroomId=?1 and contentSerial=?2 lessonIndex=?3',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [classroomId, contentSerial, lessonIndex]);
   }
 }
 

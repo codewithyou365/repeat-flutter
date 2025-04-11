@@ -41,6 +41,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelAddContent, "新增内容");
     put(I18nKey.labelDeleteContent, "请确定删除内容： %s");
     put(I18nKey.labelDeleteSegment, "请确定该段落");
+    put(I18nKey.labelDeleteLesson, "请确定该课程");
     put(I18nKey.labelDownloadContent, "下载内容");
     put(I18nKey.labelScheduleContent, "添加学习任务 %s 个单位");
     put(I18nKey.labelNoLearningContent, "没有学习内容");
@@ -177,6 +178,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelSegmentNeedToContainAnswer, "段落需要包含答案字段");
     put(I18nKey.labelSegmentKeyDuplicated, "段落KEY重复： %s");
     put(I18nKey.labelSegmentKeyCantBeEmpty, "段落KEY不能为空");
+    put(I18nKey.labelLessonHasSegmentsAndCantBeDeleted, "该课程中存在段落，不能删除该课程");
     put(I18nKey.labelKey, "键");
     put(I18nKey.labelCreateTime, "创建时间");
     put(I18nKey.labelContent, "内容");
@@ -189,6 +191,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelSortNextLearnDateAsc, "下次学习时间 (升序)");
     put(I18nKey.labelSortNextLearnDateDesc, "下次学习时间 (降序)");
     put(I18nKey.labelFindUnnecessarySegments, "查找多余段落");
+    put(I18nKey.labelFindUnnecessaryLessons, "查找多余课程");
     put(I18nKey.labelSearch, "搜索...");
     put(I18nKey.labelNotFoundSegment, "未找到段落(%s)");
     put(I18nKey.labelSettingLearningProgressWarning, "在此处设置学习进度将不会有学习记录");

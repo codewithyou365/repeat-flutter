@@ -2,12 +2,6 @@
 
 import 'package:floor/floor.dart';
 
-enum WarningType {
-  none,
-  lessonWarning,
-  segmentWarning,
-  lessonSegmentWarning,
-}
 
 @Entity(
   indices: [
@@ -33,7 +27,8 @@ class Content {
   String url;
   int sort;
   bool hide;
-  WarningType warning;
+  bool lessonWarning;
+  bool segmentWarning;
   int createTime;
   int updateTime;
 
@@ -47,7 +42,8 @@ class Content {
     required this.url,
     required this.sort,
     required this.hide,
-    required this.warning,
+    required this.lessonWarning,
+    required this.segmentWarning,
     required this.createTime,
     required this.updateTime,
   });

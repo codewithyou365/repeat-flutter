@@ -14,6 +14,15 @@ abstract class TextVersionDao {
       ' WHERE LessonKey.id in (:ids)')
   Future<List<TextVersion>> getTextForLessonContent(List<int> ids);
 
+  @Query('DELETE FROM TextVersion WHERE t=:type AND id=:id')
+  Future<void> delete(TextVersionType type, int id);
+
+  @Insert(onConflict: OnConflictStrategy.ignore)
+  Future<void> insertOrIgnore(TextVersion entity);
+
+  @Insert(onConflict: OnConflictStrategy.ignore)
+  Future<void> insertsOrIgnore(List<TextVersion> entities);
+
   List<TextVersion> toNeedToInsert<T>(
     TextVersionType textVersionType,
     List<T> list,

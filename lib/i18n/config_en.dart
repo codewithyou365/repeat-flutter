@@ -41,6 +41,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelAddContent, "Add content");
     put(I18nKey.labelDeleteContent, "Please confirm to delete content: %s");
     put(I18nKey.labelDeleteSegment, "Please confirm to delete the segment");
+    put(I18nKey.labelDeleteLesson, "Please confirm to delete the lesson");
     put(I18nKey.labelDownloadContent, "Download content");
     put(I18nKey.labelScheduleContent, "Add learning task with %s segments.");
     put(I18nKey.labelNoLearningContent, "There is no learning content available.");
@@ -177,6 +178,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelSegmentNeedToContainAnswer, "Segment Need To Contain Answer");
     put(I18nKey.labelSegmentKeyDuplicated, "Segment Key duplicated: %s");
     put(I18nKey.labelSegmentKeyCantBeEmpty, "Segment Key can't be empty");
+    put(I18nKey.labelLessonHasSegmentsAndCantBeDeleted, "This lesson has segments, the lesson cannot be deleted.");
     put(I18nKey.labelKey, "Key");
     put(I18nKey.labelCreateTime, "Create Time");
     put(I18nKey.labelContent, "Content");
