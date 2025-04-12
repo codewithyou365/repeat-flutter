@@ -5,7 +5,6 @@ import 'package:floor/floor.dart';
 @Entity(
   indices: [
     Index(value: ['classroomId', 'contentSerial', 'lessonIndex', 'version'], unique: true),
-    Index(value: ['classroomId', 'contentSerial', 'k'], unique: true),
   ],
 )
 class LessonKey {
@@ -16,7 +15,6 @@ class LessonKey {
   late final int contentSerial;
   late final int lessonIndex;
   late int version;
-  late final String k;
   late final String content;
   late int contentVersion;
 
@@ -26,8 +24,11 @@ class LessonKey {
     required this.contentSerial,
     required this.lessonIndex,
     required this.version,
-    required this.k,
     required this.content,
     required this.contentVersion,
   });
+
+  String get k {
+    return "$classroomId-$contentSerial-$lessonIndex";
+  }
 }

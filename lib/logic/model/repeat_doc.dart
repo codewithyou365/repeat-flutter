@@ -74,7 +74,6 @@ class RepeatDoc {
 }
 
 class Lesson {
-  String k;
   String content;
   String url;
   String mediaExtension;
@@ -85,7 +84,6 @@ class Lesson {
   List<Segment> segment;
 
   Lesson(
-    this.k,
     this.content,
     this.url,
     this.mediaExtension,
@@ -98,7 +96,6 @@ class Lesson {
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
     var url = json['url'] ?? '';
-    var key = json['k'] ?? '';
     var defaultQuestion = json['defaultQuestion'] ?? '';
     var defaultTip = json['defaultTip'] ?? '';
 
@@ -111,7 +108,6 @@ class Lesson {
     String content = convert.jsonEncode(excludeSegment);
 
     return Lesson(
-      key,
       content,
       url,
       json['mediaExtension'] ?? url.split('.').last,

@@ -298,15 +298,6 @@ class LessonList<T extends GetxController> {
                                     ),
                                     const SizedBox(height: 8),
                                     ExpandableText(
-                                      title: I18nKey.labelKey.tr,
-                                      text: ': ${lesson.k}',
-                                      limit: 50,
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
-                                      selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                                      selectText: search.value,
-                                    ),
-                                    const SizedBox(height: 8),
-                                    ExpandableText(
                                       title: I18nKey.labelLessonName.tr,
                                       text: ': ${lesson.lessonContent}',
                                       version: lesson.lessonContentVersion,

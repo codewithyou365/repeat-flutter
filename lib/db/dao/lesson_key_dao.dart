@@ -10,7 +10,6 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/lesson_show.dart';
-import 'package:repeat_flutter/logic/model/segment_key_id.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 @dao
@@ -23,11 +22,6 @@ abstract class LessonKeyDao {
       ' WHERE LessonKey.id=:id')
   Future<LessonKey?> getById(int id);
 
-  @Query('SELECT *'
-      ' FROM LessonKey'
-      ' WHERE classroomId=:classroomId and contentSerial=:contentSerial and k=:k')
-  Future<LessonKey?> getByKey(int classroomId, int contentSerial, String k);
-
   @Query('SELECT ifnull(sum(Lesson.lessonKeyId is null),0) missingCount'
       ' FROM LessonKey'
       ' JOIN Content ON Content.id=:contentId'
@@ -35,7 +29,6 @@ abstract class LessonKeyDao {
   Future<int?> getMissingCount(int contentId);
 
   @Query('SELECT LessonKey.id lessonKeyId'
-      ',LessonKey.k'
       ',Content.id contentId'
       ',Content.name contentName'
       ',Content.sort contentSort'
@@ -49,14 +42,11 @@ abstract class LessonKeyDao {
       ' WHERE LessonKey.classroomId=:classroomId')
   Future<List<LessonShow>> getAllLesson(int classroomId);
 
-  @Query('UPDATE LessonKey set k=:key,content=:content,contentVersion=:contentVersion WHERE id=:id')
-  Future<void> updateKeyAndContent(int id, String key, String content, int contentVersion);
+  @Query('UPDATE LessonKey set content=:content,contentVersion=:contentVersion WHERE id=:id')
+  Future<void> updateKeyAndContent(int id, String content, int contentVersion);
 
   @Query('SELECT * FROM LessonKey WHERE classroomId=:classroomId and contentSerial=:contentSerial')
   Future<List<LessonKey>> find(int classroomId, int contentSerial);
-
-  @Query('SELECT id,k FROM LessonKey WHERE classroomId=:classroomId and contentSerial=:contentSerial')
-  Future<List<KeyId>> findKeyId(int classroomId, int contentSerial);
 
   @Query('DELETE FROM LessonKey WHERE id=:id')
   Future<void> deleteById(int id);
@@ -100,14 +90,8 @@ abstract class LessonKeyDao {
     }
     if (needToInsert.isNotEmpty) {
       await insertOrFail(needToInsert);
-      var keyIds = await findKeyId(Classroom.curr, contentSerial);
-      keyToId = {for (var keyId in keyIds) keyId.k: keyId.id};
-      for (var newLesson in newLessonKeys) {
-        int? id = keyToId[newLesson.k];
-        if (id != null) {
-          newLesson.id = id;
-        }
-      }
+      newLessonKeys = await find(Classroom.curr, contentSerial);
+      keyToId = {for (var lessonKey in newLessonKeys) lessonKey.k: lessonKey.id!};
     }
 
     List<TextVersion> oldContentVersion = await db.textVersionDao.getTextForLessonContent(oldLessonIds);
@@ -145,9 +129,9 @@ abstract class LessonKeyDao {
       Snackbar.show(I18nKey.labelNotFoundSegment.trArgs([lessonKeyId.toString()]));
       return;
     }
-    Map<String, dynamic> contentM;
+
     try {
-      contentM = convert.jsonDecode(content);
+      Map<String, dynamic> contentM = convert.jsonDecode(content);
       content = convert.jsonEncode(contentM);
     } catch (e) {
       Snackbar.show(e.toString());
@@ -157,26 +141,14 @@ abstract class LessonKeyDao {
     if (lessonKey.content == content) {
       return;
     }
-    String key = contentM["k"] ?? '';
-    if (key.isEmpty) {
-      Snackbar.show(I18nKey.labelLessonKeyCantBeEmpty.tr);
-      return;
-    }
-
-    var otherLessonKey = await getByKey(lessonKey.classroomId, lessonKey.contentSerial, key);
-    if (otherLessonKey != null && otherLessonKey.id != lessonKey.id) {
-      Snackbar.show(I18nKey.labelLessonKeyDuplicated.trArgs([key]));
-      return;
-    }
 
     var now = DateTime.now();
-    await updateKeyAndContent(lessonKeyId, key, content, lessonKey.contentVersion + 1);
+    await updateKeyAndContent(lessonKeyId, content, lessonKey.contentVersion + 1);
     await db.textVersionDao.insertOrIgnore(TextVersion(TextVersionType.lessonContent, lessonKeyId, lessonKey.contentVersion + 1, TextVersionReason.editor, content, now));
     if (getLessonShow != null) {
       LessonShow? lessonShow = getLessonShow!(lessonKeyId);
       if (lessonShow != null) {
         lessonShow.lessonContent = content;
-        lessonShow.k = key;
         lessonShow.lessonContentVersion++;
       }
     }

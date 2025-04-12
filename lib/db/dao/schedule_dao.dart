@@ -653,16 +653,7 @@ abstract class ScheduleDao {
       Snackbar.show(I18nKey.labelTooMuchData.trArgs(["lesson"]));
       return false;
     }
-    Map<String, bool> lessonKey = {};
     for (var d in kv.lesson) {
-      if (d.k.isEmpty) {
-        Snackbar.show(I18nKey.labelLessonKeyCantBeEmpty.tr);
-        return false;
-      }
-      if (lessonKey.containsKey(d.k)) {
-        Snackbar.show(I18nKey.labelLessonKeyDuplicated.trArgs([d.k]));
-        return false;
-      }
       if (d.segment.length >= 100000) {
         Snackbar.show(I18nKey.labelTooMuchData.trArgs(["segment"]));
         return false;
@@ -682,7 +673,6 @@ abstract class ScheduleDao {
         contentSerial: content.serial,
         lessonIndex: lessonIndex,
         version: 1,
-        k: lesson.k,
         content: lesson.content,
         contentVersion: 1,
       ));

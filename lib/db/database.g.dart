@@ -126,7 +126,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Lesson` (`lessonKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, PRIMARY KEY (`lessonKeyId`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `LessonKey` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `version` INTEGER NOT NULL, `k` TEXT NOT NULL, `content` TEXT NOT NULL, `contentVersion` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `LessonKey` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `version` INTEGER NOT NULL, `content` TEXT NOT NULL, `contentVersion` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Doc` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `url` TEXT NOT NULL, `path` TEXT NOT NULL, `count` INTEGER NOT NULL, `total` INTEGER NOT NULL, `msg` TEXT NOT NULL, `hash` TEXT NOT NULL)');
         await database.execute(
@@ -163,8 +163,6 @@ class _$AppDatabase extends AppDatabase {
             'CREATE UNIQUE INDEX `index_Lesson_classroomId_contentSerial_lessonIndex` ON `Lesson` (`classroomId`, `contentSerial`, `lessonIndex`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_LessonKey_classroomId_contentSerial_lessonIndex_version` ON `LessonKey` (`classroomId`, `contentSerial`, `lessonIndex`, `version`)');
-        await database.execute(
-            'CREATE UNIQUE INDEX `index_LessonKey_classroomId_contentSerial_k` ON `LessonKey` (`classroomId`, `contentSerial`, `k`)');
         await database
             .execute('CREATE UNIQUE INDEX `index_Doc_path` ON `Doc` (`path`)');
         await database.execute(
@@ -922,7 +920,6 @@ class _$LessonKeyDao extends LessonKeyDao {
                   'contentSerial': item.contentSerial,
                   'lessonIndex': item.lessonIndex,
                   'version': item.version,
-                  'k': item.k,
                   'content': item.content,
                   'contentVersion': item.contentVersion
                 }),
@@ -936,7 +933,6 @@ class _$LessonKeyDao extends LessonKeyDao {
                   'contentSerial': item.contentSerial,
                   'lessonIndex': item.lessonIndex,
                   'version': item.version,
-                  'k': item.k,
                   'content': item.content,
                   'contentVersion': item.contentVersion
                 });
@@ -960,22 +956,9 @@ class _$LessonKeyDao extends LessonKeyDao {
             contentSerial: row['contentSerial'] as int,
             lessonIndex: row['lessonIndex'] as int,
             version: row['version'] as int,
-            k: row['k'] as String,
             content: row['content'] as String,
             contentVersion: row['contentVersion'] as int),
         arguments: [id]);
-  }
-
-  @override
-  Future<LessonKey?> getByKey(
-    int classroomId,
-    int contentSerial,
-    String k,
-  ) async {
-    return _queryAdapter.query(
-        'SELECT * FROM LessonKey WHERE classroomId=?1 and contentSerial=?2 and k=?3',
-        mapper: (Map<String, Object?> row) => LessonKey(id: row['id'] as int?, classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, lessonIndex: row['lessonIndex'] as int, version: row['version'] as int, k: row['k'] as String, content: row['content'] as String, contentVersion: row['contentVersion'] as int),
-        arguments: [classroomId, contentSerial, k]);
   }
 
   @override
@@ -989,21 +972,20 @@ class _$LessonKeyDao extends LessonKeyDao {
   @override
   Future<List<LessonShow>> getAllLesson(int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT LessonKey.id lessonKeyId,LessonKey.k,Content.id contentId,Content.name contentName,Content.sort contentSort,LessonKey.content lessonContent,LessonKey.contentVersion lessonContentVersion,LessonKey.lessonIndex,Lesson.lessonKeyId is null missing FROM LessonKey JOIN Content ON Content.classroomId=?1 AND Content.docId!=0 LEFT JOIN Lesson ON Lesson.lessonKeyId=LessonKey.id WHERE LessonKey.classroomId=?1',
-        mapper: (Map<String, Object?> row) => LessonShow(lessonKeyId: row['lessonKeyId'] as int, k: row['k'] as String, contentId: row['contentId'] as int, contentName: row['contentName'] as String, contentSort: row['contentSort'] as int, lessonContent: row['lessonContent'] as String, lessonContentVersion: row['lessonContentVersion'] as int, lessonIndex: row['lessonIndex'] as int, missing: (row['missing'] as int) != 0),
+        'SELECT LessonKey.id lessonKeyId,Content.id contentId,Content.name contentName,Content.sort contentSort,LessonKey.content lessonContent,LessonKey.contentVersion lessonContentVersion,LessonKey.lessonIndex,Lesson.lessonKeyId is null missing FROM LessonKey JOIN Content ON Content.classroomId=?1 AND Content.docId!=0 LEFT JOIN Lesson ON Lesson.lessonKeyId=LessonKey.id WHERE LessonKey.classroomId=?1',
+        mapper: (Map<String, Object?> row) => LessonShow(lessonKeyId: row['lessonKeyId'] as int, contentId: row['contentId'] as int, contentName: row['contentName'] as String, contentSort: row['contentSort'] as int, lessonContent: row['lessonContent'] as String, lessonContentVersion: row['lessonContentVersion'] as int, lessonIndex: row['lessonIndex'] as int, missing: (row['missing'] as int) != 0),
         arguments: [classroomId]);
   }
 
   @override
   Future<void> updateKeyAndContent(
     int id,
-    String key,
     String content,
     int contentVersion,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE LessonKey set k=?2,content=?3,contentVersion=?4 WHERE id=?1',
-        arguments: [id, key, content, contentVersion]);
+        'UPDATE LessonKey set content=?2,contentVersion=?3 WHERE id=?1',
+        arguments: [id, content, contentVersion]);
   }
 
   @override
@@ -1019,21 +1001,8 @@ class _$LessonKeyDao extends LessonKeyDao {
             contentSerial: row['contentSerial'] as int,
             lessonIndex: row['lessonIndex'] as int,
             version: row['version'] as int,
-            k: row['k'] as String,
             content: row['content'] as String,
             contentVersion: row['contentVersion'] as int),
-        arguments: [classroomId, contentSerial]);
-  }
-
-  @override
-  Future<List<KeyId>> findKeyId(
-    int classroomId,
-    int contentSerial,
-  ) async {
-    return _queryAdapter.queryList(
-        'SELECT id,k FROM LessonKey WHERE classroomId=?1 and contentSerial=?2',
-        mapper: (Map<String, Object?> row) =>
-            KeyId(row['id'] as int, row['k'] as String),
         arguments: [classroomId, contentSerial]);
   }
 
