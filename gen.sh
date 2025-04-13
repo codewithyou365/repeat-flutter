@@ -64,11 +64,13 @@ if [ "$start" == "y" ]; then
     sed -i '' "$((lineNumber - 1)),${lineNumber}d" ./lib/db/database.g.dart
   done
 
-  allLines=$(grep -nE 'transactionDatabase\.(\w+)' ./lib/db/database.g.dart)
-  echo "$allLines" | tail -r | while read -r match_line; do
-      line_number=$(echo "$match_line" | cut -d: -f1)
-      sed -i '' "${line_number}i\\
+  if ! grep -q 'prepareDb(transactionDatabase);' ./lib/db/database.g.dart; then
+    allLines=$(grep -nE 'transactionDatabase\.(\w+)' ./lib/db/database.g.dart)
+    echo "$allLines" | tail -r | while read -r match_line; do
+        line_number=$(echo "$match_line" | cut -d: -f1)
+        sed -i '' "${line_number}i\\
         prepareDb(transactionDatabase);
 " ./lib/db/database.g.dart
-  done
+    done
+  fi
 fi

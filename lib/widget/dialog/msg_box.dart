@@ -21,15 +21,18 @@ class MsgBox {
     String? noBtnTitle,
     bool barrierDismissible = false,
   }) {
-    Get.defaultDialog(
+    myDialog(
       title: title,
       barrierDismissible: barrierDismissible,
-      content: Text(desc),
-      actions: yesOrNoAction(yes: yes, no: no, yesBtnTitle: yesBtnTitle, noBtnTitle: noBtnTitle),
+      content: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text(desc),
+      ),
+      action: yesOrNoAction(yes: yes, no: no, yesBtnTitle: yesBtnTitle, noBtnTitle: noBtnTitle),
     );
   }
 
-  static switchWithYesOrNo(
+  static checkboxWithYesOrNo(
     String title,
     String desc,
     RxBool select,
@@ -39,42 +42,47 @@ class MsgBox {
     VoidCallback? no,
     String? noBtnTitle,
   }) {
-    Get.defaultDialog(
+    myDialog(
       title: title,
       barrierDismissible: false,
-      content: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 4.0.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: Text(
               desc,
               softWrap: true,
               textAlign: TextAlign.left,
+              style: const TextStyle(
+                fontSize: 15,
+              ),
             ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Obx(() {
-                  return Switch(
-                      value: select.value,
-                      onChanged: (bool value) {
-                        select.value = value;
-                      });
-                }),
-                SizedBox(
-                  width: 180.w,
-                  child: Text(
-                    selectDesc,
-                    softWrap: true,
+          ),
+          Row(
+            children: [
+              Obx(() {
+                return Checkbox(
+                    value: select.value,
+                    onChanged: (value) {
+                      select.value = value ?? false;
+                    });
+              }),
+              SizedBox(
+                width: 180,
+                child: Text(
+                  selectDesc,
+                  softWrap: true,
+                  style: const TextStyle(
+                    fontSize: 15,
                   ),
-                ), //error
-              ],
-            ),
-          ],
-        ),
+                ),
+              ), //error
+            ],
+          ),
+        ],
       ),
-      actions: yesOrNoAction(yes: yes, no: no, yesBtnTitle: yesBtnTitle, noBtnTitle: noBtnTitle),
+      action: yesOrNoAction(yes: yes, no: no, yesBtnTitle: yesBtnTitle, noBtnTitle: noBtnTitle),
     );
   }
 
@@ -120,28 +128,31 @@ class MsgBox {
       inputFormatters = <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly];
     }
     var children = <Widget>[
-      TextFormField(
-        controller: tec,
-        maxLines: maxLines,
-        minLines: minLines,
-        keyboardType: keyboardType,
-        inputFormatters: inputFormatters,
-        decoration: InputDecoration(
-          labelText: decoration,
-          suffixIcon: suffixIcon,
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        child: TextFormField(
+          controller: tec,
+          maxLines: maxLines,
+          minLines: minLines,
+          keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          decoration: InputDecoration(
+            labelText: decoration,
+            suffixIcon: suffixIcon,
+          ),
         ),
       ),
     ];
     if (nextChildren != null) {
       children.addAll(nextChildren);
     }
-    Get.defaultDialog(
+    myDialog(
       title: title,
       barrierDismissible: barrierDismissible,
       content: Column(
         children: children,
       ),
-      actions: yesOrNoAction(
+      action: yesOrNoAction(
           yes: () {
             var t = tec.text.trim();
             if (model is RxString) {
@@ -168,42 +179,34 @@ class MsgBox {
     );
   }
 
-  static List<Widget> yesOrNoAction({
+  static Widget yesOrNoAction({
     VoidCallback? yes,
     String? yesBtnTitle,
     VoidCallback? no,
     String? noBtnTitle,
   }) {
-    return [
-      Padding(
-        padding: EdgeInsets.symmetric(horizontal: 24.0.w),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            TextButton(
-              child: Text(noBtnTitle ?? I18nKey.btnCancel.tr),
-              onPressed: () {
-                if (no != null) {
-                  no();
-                } else {
-                  Get.back();
-                }
-              },
-            ),
-            TextButton(
-              onPressed: () {
-                if (yes != null) {
-                  yes();
-                } else {
-                  Get.back();
-                }
-              },
-              child: Text(yesBtnTitle ?? I18nKey.btnOk.tr),
-            ),
-          ],
-        ),
+    return buttonsWithDivider(buttons: [
+      button(
+        text: noBtnTitle ?? I18nKey.btnCancel.tr,
+        onPressed: () {
+          if (no != null) {
+            no();
+          } else {
+            Get.back();
+          }
+        },
       ),
-    ];
+      button(
+        text: yesBtnTitle ?? I18nKey.btnOk.tr,
+        onPressed: () {
+          if (yes != null) {
+            yes();
+          } else {
+            Get.back();
+          }
+        },
+      )
+    ]);
   }
 
   static yes(
@@ -212,21 +215,26 @@ class MsgBox {
     VoidCallback? yes,
     String? yesBtnTitle,
   }) {
-    Get.defaultDialog(
+    myDialog(
       title: title,
-      content: Text(desc),
-      actions: [
-        TextButton(
-          onPressed: () {
-            if (yes != null) {
-              yes();
-            } else {
-              Get.back();
-            }
-          },
-          child: Text(yesBtnTitle ?? I18nKey.btnOk.tr),
-        ),
-      ],
+      content: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(desc),
+      ),
+      action: buttonsWithDivider(
+        buttons: [
+          button(
+            text: yesBtnTitle ?? I18nKey.btnOk.tr,
+            onPressed: () {
+              if (yes != null) {
+                yes();
+              } else {
+                Get.back();
+              }
+            },
+          )
+        ],
+      ),
     );
   }
 
@@ -243,7 +251,7 @@ class MsgBox {
     if (Get.context != null) {
       color = Theme.of(Get.context!).brightness == Brightness.dark ? color = Colors.white : Colors.black;
     }
-    Get.defaultDialog(
+    myDialog(
       title: title,
       content: Column(
         children: [
@@ -267,28 +275,118 @@ class MsgBox {
               ),
             ),
           ),
-          if (desc != null) Text(desc),
+          if (desc != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+              child: Text(desc),
+            ),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            if (no != null) {
-              no();
-            } else {
-              Get.back();
-            }
-          },
-          child: Text(noBtnTitle ?? I18nKey.btnCancel.tr),
+      action: buttonsWithDivider(
+        buttons: [
+          button(
+            text: noBtnTitle ?? I18nKey.btnCancel.tr,
+            onPressed: () {
+              if (no != null) {
+                no();
+              } else {
+                Get.back();
+              }
+            },
+          ),
+          button(
+            text: I18nKey.btnCopy.tr,
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: qrContent));
+              Snackbar.show(I18nKey.labelQrCodeContentCopiedToClipboard.tr);
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  static void myDialog({
+    required title,
+    required Widget content,
+    required Widget action,
+    bool barrierDismissible = true,
+  }) {
+    if (Get.context == null) {
+      return;
+    }
+    const borderRadius = 20.0;
+
+    showDialog(
+      context: Get.context!,
+      barrierDismissible: barrierDismissible,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: Material(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                  child: Column(
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      content,
+                    ],
+                  ),
+                ),
+                Divider(height: 1, color: Colors.grey[300]),
+                SizedBox(
+                  height: 48,
+                  child: action,
+                ),
+              ],
+            ),
+          ),
         ),
-        TextButton(
-          onPressed: () {
-            Clipboard.setData(ClipboardData(text: qrContent));
-            Snackbar.show(I18nKey.labelQrCodeContentCopiedToClipboard.tr);
-          },
-          child: Text(I18nKey.btnCopy.tr),
+      ),
+    );
+  }
+
+  static Widget buttonsWithDivider({
+    required List<Widget> buttons,
+  }) {
+    List<Widget> separated = [];
+
+    for (int i = 0; i < buttons.length; i++) {
+      separated.add(buttons[i]);
+      if (i != buttons.length - 1) {
+        separated.add(Container(width: 1, color: Colors.grey[300]));
+      }
+    }
+
+    return Row(children: separated);
+  }
+
+  static Widget button({required String text, required VoidCallback onPressed}) {
+    return Expanded(
+      child: InkWell(
+        onTap: onPressed,
+        splashColor: Colors.blue.withValues(alpha: 0.1),
+        highlightColor: Colors.transparent,
+        child: Center(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
-      ],
+      ),
     );
   }
 }

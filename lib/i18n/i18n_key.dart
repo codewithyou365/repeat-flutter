@@ -198,6 +198,7 @@ enum I18nKey {
   labelContentsHaveUnnecessarySegments,
   labelLessonKeyCantBeEmpty,
   labelLessonKeyDuplicated,
+  labelEdit,
   btnHandleNow,
   btnStart,
   btnStop,
