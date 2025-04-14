@@ -1,12 +1,14 @@
 import 'dart:io';
 
 import 'package:archive/archive.dart';
+import 'package:flutter/foundation.dart';
 
 class ZipArchive {
-  final File file;
   final String path;
+  File? file;
+  Uint8List? bytes;
 
-  ZipArchive(this.file, this.path);
+  ZipArchive({required this.path, this.file, this.bytes});
 }
 
 class Zip {
@@ -40,7 +42,7 @@ class Zip {
     final archive = Archive();
 
     for (var file in files) {
-      final bytes = await file.file.readAsBytes();
+      final bytes = file.bytes ?? await file.file!.readAsBytes();
       final archiveFile = ArchiveFile(file.path, bytes.length, bytes);
       archive.addFile(archiveFile);
     }

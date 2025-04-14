@@ -198,6 +198,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelLessonKeyCantBeEmpty, "Lesson key cannot be empty");
     put(I18nKey.labelLessonKeyDuplicated, "Lesson key is duplicated");
     put(I18nKey.labelEdit, "Edit");
+    put(I18nKey.labelDoYourShareTheNotes, "Do you share your notes?");
+    put(I18nKey.labelSharingNotes, "Sharing notes");
     put(I18nKey.btnHandleNow, "Handle Now");
     put(I18nKey.btnStart, "Start");
     put(I18nKey.btnAddSchedule, "Add Schedule");

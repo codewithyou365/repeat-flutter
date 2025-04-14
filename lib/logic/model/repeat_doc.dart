@@ -159,6 +159,7 @@ class BaseSegment {
 class Segment {
   String k;
   String content;
+  String n;
   String tipStart;
   String tipEnd;
   String tip;
@@ -170,20 +171,21 @@ class Segment {
   String a;
   String w;
 
-  Segment(
-    this.k,
-    this.content,
-    this.tipStart,
-    this.tipEnd,
-    this.tip,
-    this.qStart,
-    this.qEnd,
-    this.q,
-    this.aStart,
-    this.aEnd,
-    this.a,
-    this.w,
-  );
+  Segment({
+    required this.k,
+    required this.content,
+    required this.n,
+    required this.tipStart,
+    required this.tipEnd,
+    required this.tip,
+    required this.qStart,
+    required this.qEnd,
+    required this.q,
+    required this.aStart,
+    required this.aEnd,
+    required this.a,
+    required this.w,
+  });
 
   factory Segment.fromJson(
     Map<String, dynamic> json,
@@ -191,20 +193,27 @@ class Segment {
     String defaultQuestion,
     String defaultTip,
   ) {
-    String content = convert.jsonEncode(json);
+    Map<String, dynamic> excludeNote = {};
+    json.forEach((k, v) {
+      if (k != 'n') {
+        excludeNote[k] = v;
+      }
+    });
+    String content = convert.jsonEncode(excludeNote);
     return Segment(
-      json['k'] ?? "",
-      content,
-      json['tipStart'] ?? "",
-      json['tipEnd'] ?? "",
-      json['tip'] ?? defaultTip,
-      json['qStart'] ?? "",
-      json['qEnd'] ?? "",
-      json['q'] ?? defaultQuestion,
-      json['aStart'] ?? "",
-      json['aEnd'] ?? "",
-      json['a'] ?? "",
-      json['w'] ?? "",
+      k: json['k'] ?? "",
+      content: content,
+      n: json['n'] ?? "",
+      tipStart: json['tipStart'] ?? "",
+      tipEnd: json['tipEnd'] ?? "",
+      tip: json['tip'] ?? defaultTip,
+      qStart: json['qStart'] ?? "",
+      qEnd: json['qEnd'] ?? "",
+      q: json['q'] ?? defaultQuestion,
+      aStart: json['aStart'] ?? "",
+      aEnd: json['aEnd'] ?? "",
+      a: json['a'] ?? "",
+      w: json['w'] ?? "",
     );
   }
 

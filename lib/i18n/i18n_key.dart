@@ -199,6 +199,8 @@ enum I18nKey {
   labelLessonKeyCantBeEmpty,
   labelLessonKeyDuplicated,
   labelEdit,
+  labelDoYourShareTheNotes,
+  labelSharingNotes,
   btnHandleNow,
   btnStart,
   btnStop,

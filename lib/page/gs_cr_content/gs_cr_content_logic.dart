@@ -178,26 +178,7 @@ class GsCrContentLogic extends GetxController {
         Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
         return;
       }
-      Map<String, dynamic>? map = await RepeatDoc.toJsonMap(doc.path);
-      if (map == null) {
-        Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
-        return;
-      }
-
-      List<dynamic> lessons = List<dynamic>.from(map['lesson']);
-      map['lesson'] = lessons;
-
       var args = <dynamic>[model];
-      for (int i = 0; i < lessons.length; i++) {
-        Map<String, dynamic> lesson = Map<String, dynamic>.from(lessons[i]);
-        lessons[i] = lesson;
-        String url = lesson['url'];
-        if (lesson['mediaExtension'] == null || lesson['mediaExtension'] == '') {
-          lesson['mediaExtension'] = url.split('.').last;
-        }
-        lesson['url'] = '';
-      }
-      args.add(json.encode(map));
       Nav.gsCrContentShare.push(arguments: args);
     });
   }

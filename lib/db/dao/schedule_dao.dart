@@ -697,7 +697,7 @@ abstract class ScheduleDao {
           k: key,
           content: segment.content,
           contentVersion: 1,
-          note: '',
+          note: segment.n,
           noteVersion: 1,
         ));
         segments.add(Segment(

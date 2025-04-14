@@ -194,7 +194,7 @@ class HistoryList<T extends GetxController> {
                                         style: const TextStyle(fontSize: 12, color: Colors.grey),
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
+                                    SizedBox(height: 8, width: screenSize.width),
                                     ExpandableText(
                                       title: "",
                                       text: version.text,

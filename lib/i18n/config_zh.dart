@@ -199,6 +199,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelLessonKeyCantBeEmpty, "课程键不能为空");
     put(I18nKey.labelLessonKeyDuplicated, "课程键重复");
     put(I18nKey.labelEdit, "编辑");
+    put(I18nKey.labelDoYourShareTheNotes, "是否分享你的笔记");
+    put(I18nKey.labelSharingNotes, "分享笔记");
     put(I18nKey.btnHandleNow, "现在处理");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");

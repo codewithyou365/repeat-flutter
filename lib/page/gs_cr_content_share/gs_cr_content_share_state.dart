@@ -1,3 +1,4 @@
+import 'package:get/get.dart';
 import 'package:repeat_flutter/db/entity/content.dart';
 
 class Address {
@@ -24,5 +25,5 @@ class GsCrContentShareState {
     updateTime: 0,
   );
   var lanAddressSuffix = "";
-  var manifestJson = "";
+  RxBool shareNote = false.obs;
 }

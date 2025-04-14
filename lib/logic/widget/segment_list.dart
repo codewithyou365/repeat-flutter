@@ -351,7 +351,7 @@ class SegmentList<T extends GetxController> {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
+                                    SizedBox(height: 8, width: screenSize.width),
                                     ExpandableText(
                                       title: I18nKey.labelKey.tr,
                                       text: ': ${segment.k}',

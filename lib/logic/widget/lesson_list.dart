@@ -296,7 +296,7 @@ class LessonList<T extends GetxController> {
                                         style: const TextStyle(fontSize: 12, color: Colors.blue),
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
+                                    SizedBox(height: 8, width: screenSize.width),
                                     ExpandableText(
                                       title: I18nKey.labelLessonName.tr,
                                       text: ': ${lesson.lessonContent}',

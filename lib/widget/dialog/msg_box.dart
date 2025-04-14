@@ -34,7 +34,7 @@ class MsgBox {
 
   static checkboxWithYesOrNo(
     String title,
-    String desc,
+    String? desc,
     RxBool select,
     String selectDesc, {
     VoidCallback? yes,
@@ -48,34 +48,34 @@ class MsgBox {
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            child: Text(
-              desc,
-              softWrap: true,
-              textAlign: TextAlign.left,
-              style: const TextStyle(
-                fontSize: 15,
+          if (desc != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: Text(
+                desc,
+                softWrap: true,
+                textAlign: TextAlign.left,
+                style: const TextStyle(
+                  fontSize: 15,
+                ),
               ),
             ),
-          ),
+          if (desc == null) const SizedBox(height: 8),
           Row(
             children: [
               Obx(() {
                 return Checkbox(
-                    value: select.value,
-                    onChanged: (value) {
-                      select.value = value ?? false;
-                    });
+                  value: select.value,
+                  onChanged: (value) {
+                    select.value = value ?? false;
+                  },
+                );
               }),
-              SizedBox(
-                width: 180,
-                child: Text(
-                  selectDesc,
-                  softWrap: true,
-                  style: const TextStyle(
-                    fontSize: 15,
-                  ),
+              Text(
+                selectDesc,
+                softWrap: true,
+                style: const TextStyle(
+                  fontSize: 15,
                 ),
               ), //error
             ],
