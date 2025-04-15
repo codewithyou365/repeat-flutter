@@ -17,6 +17,7 @@ import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/lesson_help.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
+import 'package:repeat_flutter/logic/model/segment_show.dart';
 import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
@@ -39,7 +40,6 @@ class GsCrLogic extends GetxController {
   void onInit() {
     super.onInit();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
-    RepeatDocHelp.clear();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showTransparentOverlay(() async {
         await init();
@@ -423,12 +423,12 @@ class GsCrLogic extends GetxController {
 
   // for copy
   void copy(BuildContext context, List<SegmentTodayPrg> segments) async {
-    List<SegmentContent> ret = [];
+    List<SegmentShow> ret = [];
     for (int i = 0; i < segments.length; i++) {
       final segment = segments[i];
-      SegmentContent? segmentContent = await RepeatDocHelp.from(segment.segmentKeyId);
-      if (segmentContent != null) {
-        ret.add(segmentContent);
+      SegmentShow? segmentShow = SegmentHelp.getCache(segment.segmentKeyId);
+      if (segmentShow != null) {
+        ret.add(segmentShow);
       }
     }
     if (!copyLogic.showQaList(context, ret)) {

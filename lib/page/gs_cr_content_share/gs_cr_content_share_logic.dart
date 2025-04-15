@@ -19,6 +19,7 @@ import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
+import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
@@ -100,7 +101,7 @@ class GsCrContentShareLogic extends GetxController {
     if (path == state.lanAddressSuffix) {
       String userAgent = request.headers.value('user-agent') ?? 'Unknown';
       response.headers.contentType = ContentType.json;
-      if (userAgent == Download.userAgent) {
+      if (userAgent == DownloadConstant.userAgent) {
         response.headers.set('Content-Disposition', 'attachment; filename="${pathSegments.last}"');
       } else {
         response.headers.set('Content-Disposition', 'inline');
@@ -165,13 +166,14 @@ class GsCrContentShareLogic extends GetxController {
 
         if (!zipFileExist) {
           List<Doc> docs = await Db().db.docDao.getAllDoc("$relativePath/");
+          var downloads = DocHelp.getDownloads(RepeatDoc.fromJson(docMap));
           final receivePort = ReceivePort();
           await Isolate.spawn(
             _createZipFileInIsolate,
             {
               'sendPort': receivePort.sendPort,
               'docs': docs,
-              'docMap': docMap,
+              'downloads': downloads,
               'docBytes': utf8.encode(docText),
               'zipFilePath': zipFilePath,
               'indexFilePath': rootPath.joinPath(relativeIndexPath),
@@ -215,7 +217,7 @@ class GsCrContentShareLogic extends GetxController {
     SendPort sendPort = message['sendPort'];
     try {
       List<Doc> docs = message['docs'];
-      Map<String, dynamic> docMap = message['docMap'];
+      List<Download> downloads = message['docMap'];
       Uint8List docBytes = message['docBytes'];
       String zipFilePath = message['zipFilePath'];
       String indexFilePath = message['indexFilePath'];
@@ -239,16 +241,12 @@ class GsCrContentShareLogic extends GetxController {
         path: FileUtil.toFileName(rootFilePath),
         file: File(rootFilePath),
       ));
-
-      DocHelp.walkLessonMedia(
-        map: docMap,
-        walker: (mediaFileName) {
-          zipFiles.add(ZipArchive(
-            path: mediaFileName,
-            file: File(rootPath.joinPath(relativePath).joinPath(mediaFileName)),
-          ));
-        },
-      );
+      for (var download in downloads) {
+        zipFiles.add(ZipArchive(
+          path: download.path,
+          file: File(rootPath.joinPath(relativePath).joinPath(download.path)),
+        ));
+      }
 
       // Compress zip file
       await Zip.compress(zipFiles, zipFile);

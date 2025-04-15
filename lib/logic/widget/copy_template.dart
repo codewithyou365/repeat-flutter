@@ -12,6 +12,7 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
+import 'package:repeat_flutter/logic/model/segment_show.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -197,7 +198,7 @@ class CopyLogic<T extends GetxController> {
     );
   }
 
-  bool showQaList(BuildContext context, List<SegmentContent> list) {
+  bool showQaList(BuildContext context, List<SegmentShow> list) {
     if (list.isEmpty) {
       return false;
     }

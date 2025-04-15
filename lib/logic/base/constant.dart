@@ -7,16 +7,8 @@ class DocPath {
   static const String content = "c";
   static const String zipRootFile = "__root.json";
 
-  static String getRelativeMediaPath(int contentSerial, int lessonIndex, String mediaExtension) {
-    return getRelativePath(contentSerial).joinPath(getMediaFileName(lessonIndex, mediaExtension));
-  }
-
   static String getRelativeIndexPath(int contentSerial) {
     return getRelativePath(contentSerial).joinPath(getIndexFileName());
-  }
-
-  static String getMediaFileName(int lessonIndex, String mediaExtension) {
-    return "$lessonIndex.$mediaExtension";
   }
 
   static String getIndexFileName() {
@@ -42,7 +34,6 @@ class DocPath {
   }
 }
 
-
 enum ProgressState {
   unfinished,
   familiar,
@@ -66,7 +57,7 @@ enum ImportResult {
   successButSomeSegmentsAreSurplus,
 }
 
-class Download {
+class DownloadConstant {
   static const String userAgent = "B20240321";
   static const String defaultUrl = 'http://127.0.0.1:40321/';
 }

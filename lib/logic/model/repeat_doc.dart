@@ -1,234 +1,143 @@
-import 'dart:io';
-
-import 'dart:convert' as convert;
-
 import 'package:repeat_flutter/common/path.dart';
-import 'package:repeat_flutter/logic/base/constant.dart';
 
 class RepeatDoc {
-  String rootUrl;
+  String? view;
+  String? rootUrl;
+  List<Download>? download;
   List<Lesson> lesson;
 
-  RepeatDoc(this.rootUrl, this.lesson);
-
-  static Future<bool> writeFile(String path, Map<String, dynamic> m) async {
-    try {
-      var rootPath = await DocPath.getContentPath();
-      File file = File(rootPath.joinPath(path));
-      String jsonString = convert.jsonEncode(m);
-      await file.writeAsString(jsonString, flush: true);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  static Future<String?> toJsonString(String path) async {
-    var rootPath = await DocPath.getContentPath();
-    File file = File(rootPath.joinPath(path));
-    bool exist = await file.exists();
-    if (!exist) {
-      return null;
-    }
-    return await file.readAsString();
-  }
-
-  static Future<Map<String, dynamic>?> toJsonMap(String path) async {
-    String? jsonString = await toJsonString(path);
-    if (jsonString == null) {
-      return null;
-    }
-    Map<String, dynamic> jsonData = convert.jsonDecode(jsonString);
-    return jsonData;
-  }
-
-  static Future<RepeatDoc?> fromPath(String path, {Uri? rootUri}) async {
-    Map<String, dynamic>? jsonData = await toJsonMap(path);
-    return fromJsonAndUri(jsonData, rootUri);
-  }
-
-  static RepeatDoc? fromJsonAndUri(Map<String, dynamic>? jsonData, Uri? rootUri) {
-    if (jsonData == null) {
-      return null;
-    }
-    var kv = RepeatDoc.fromJson(jsonData);
-    if (rootUri != null) {
-      kv.rootUrl = "${rootUri.scheme}://${rootUri.host}:${rootUri.port}/${rootUri.pathSegments.sublist(0, rootUri.pathSegments.length - 1).join('/')}/";
-    }
-    return kv;
-  }
+  RepeatDoc({
+    required this.view,
+    required this.rootUrl,
+    required this.download,
+    required this.lesson,
+  });
 
   factory RepeatDoc.fromJson(Map<String, dynamic> json) {
     return RepeatDoc(
-      json['rootUrl'] ?? "",
-      List<Lesson>.from(json['lesson'].map((dynamic d) => Lesson.fromJson(d))),
+      view: json['v'] as String?,
+      rootUrl: json['r'] as String?,
+      download: json['d'] != null ? (json['d'] as List).map((e) => Download.fromJson(e as Map<String, dynamic>)).toList() : null,
+      lesson: (json['l'] as List).map((e) => Lesson.fromJson(e as Map<String, dynamic>)).toList(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'rootUrl': rootUrl,
-      'lesson': lesson,
+      'v': view,
+      'r': rootUrl,
+      'd': download?.map((e) => e.toJson()).toList(),
+      'l': lesson.map((e) => e.toJson()).toList(),
+    };
+  }
+}
+
+class Download {
+  String url;
+  String hash;
+
+  String get path => hash.substring(0, 2).joinPath("${hash.substring(2)}.${url.split('.').last}");
+
+  Download({
+    required this.url,
+    required this.hash,
+  });
+
+  factory Download.fromJson(Map<String, dynamic> json) {
+    return Download(
+      url: json['u'] as String,
+      hash: json['h'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'u': url,
+      'h': hash,
     };
   }
 }
 
 class Lesson {
-  String content;
-  String url;
-  String mediaExtension;
-  String hash;
-  String videoMaskRatio;
-  String defaultQuestion;
-  String defaultTip;
+  String? view;
+  String? rootUrl;
+  List<Download>? download;
   List<Segment> segment;
 
-  Lesson(
-    this.content,
-    this.url,
-    this.mediaExtension,
-    this.hash,
-    this.videoMaskRatio,
-    this.defaultQuestion,
-    this.defaultTip,
-    this.segment,
-  );
+  Lesson({
+    required this.view,
+    required this.rootUrl,
+    required this.download,
+    required this.segment,
+  });
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
-    var url = json['url'] ?? '';
-    var defaultQuestion = json['defaultQuestion'] ?? '';
-    var defaultTip = json['defaultTip'] ?? '';
-
-    Map<String, dynamic> excludeSegment = {};
-    json.forEach((k, v) {
-      if (k != 'segment') {
-        excludeSegment[k] = v;
-      }
-    });
-    String content = convert.jsonEncode(excludeSegment);
-
     return Lesson(
-      content,
-      url,
-      json['mediaExtension'] ?? url.split('.').last,
-      json['hash'] ?? '',
-      json['videoMaskRatio'] ?? '',
-      defaultQuestion,
-      defaultTip,
-      List<Segment>.from(json['segment'].map((dynamic s) => Segment.fromJson(
-            s,
-            json['segment'].indexOf(s),
-            defaultQuestion,
-            defaultTip,
-          ))),
+      view: json['v'] as String?,
+      rootUrl: json['r'] as String?,
+      download: json['d'] != null ? (json['d'] as List).map((e) => Download.fromJson(e as Map<String, dynamic>)).toList() : null,
+      segment: (json['s'] as List).map((e) => Segment.fromJson(e as Map<String, dynamic>)).toList(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'url': url,
-      'hash': hash,
-      'defaultQuestion': defaultQuestion,
-      'defaultTip': defaultTip,
-      'segment': segment,
-    };
-  }
-}
-
-class BaseSegment {
-  String k;
-  String a;
-
-  BaseSegment(this.k, this.a);
-
-  factory BaseSegment.fromJson(Map<String, dynamic> json) {
-    return BaseSegment(
-      json['k'] ?? "",
-      json['a'] ?? "",
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'k': k,
-      'a': a,
+      'v': view,
+      'r': rootUrl,
+      'd': download?.map((e) => e.toJson()).toList(),
+      's': segment.map((e) => e.toJson()).toList(),
     };
   }
 }
 
 class Segment {
-  String k;
-  String content;
-  String n;
-  String tipStart;
-  String tipEnd;
-  String tip;
-  String qStart;
-  String qEnd;
-  String q;
-  String aStart;
-  String aEnd;
-  String a;
-  String w;
+  String? view;
+  String? rootUrl;
+  List<Download>? download;
+  String? key;
+  String? write;
+  String? note;
+  String? tip;
+  String? question;
+  String answer;
 
   Segment({
-    required this.k,
-    required this.content,
-    required this.n,
-    required this.tipStart,
-    required this.tipEnd,
+    required this.view,
+    required this.rootUrl,
+    required this.download,
+    required this.key,
+    required this.write,
+    required this.note,
     required this.tip,
-    required this.qStart,
-    required this.qEnd,
-    required this.q,
-    required this.aStart,
-    required this.aEnd,
-    required this.a,
-    required this.w,
+    required this.question,
+    required this.answer,
   });
 
-  factory Segment.fromJson(
-    Map<String, dynamic> json,
-    int index,
-    String defaultQuestion,
-    String defaultTip,
-  ) {
-    Map<String, dynamic> excludeNote = {};
-    json.forEach((k, v) {
-      if (k != 'n') {
-        excludeNote[k] = v;
-      }
-    });
-    String content = convert.jsonEncode(excludeNote);
+  factory Segment.fromJson(Map<String, dynamic> json) {
     return Segment(
-      k: json['k'] ?? "",
-      content: content,
-      n: json['n'] ?? "",
-      tipStart: json['tipStart'] ?? "",
-      tipEnd: json['tipEnd'] ?? "",
-      tip: json['tip'] ?? defaultTip,
-      qStart: json['qStart'] ?? "",
-      qEnd: json['qEnd'] ?? "",
-      q: json['q'] ?? defaultQuestion,
-      aStart: json['aStart'] ?? "",
-      aEnd: json['aEnd'] ?? "",
-      a: json['a'] ?? "",
-      w: json['w'] ?? "",
+      view: json['v'] as String?,
+      rootUrl: json['r'] as String?,
+      download: json['d'] != null ? (json['d'] as List).map((e) => Download.fromJson(e as Map<String, dynamic>)).toList() : null,
+      key: json['k'] as String?,
+      write: json['w'] as String?,
+      note: json['n'] as String?,
+      tip: json['t'] as String?,
+      question: json['q'] as String?,
+      answer: json['a'] as String,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'tipStart': tipStart,
-      'tipEnd': tipEnd,
-      'tip': tip,
-      'qStart': qStart,
-      'qEnd': qEnd,
-      'q': q,
-      'aStart': aStart,
-      'aEnd': aEnd,
-      'a': a,
-      'w': w,
+      'v': view,
+      'r': rootUrl,
+      'd': download?.map((e) => e.toJson()).toList(),
+      'k': key,
+      'w': write,
+      'n': note,
+      't': tip,
+      'q': question,
+      'a': answer,
     };
   }
 }

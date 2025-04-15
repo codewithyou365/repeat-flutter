@@ -12,7 +12,6 @@ import 'i18n/i18n_translations.dart';
 void main() async {
   var logic = Get.put<MyAppLogic>(MyAppLogic());
   WidgetsFlutterBinding.ensureInitialized();
-  RepeatDocHelp.clear();
   var db = await Db().init();
   var settings = await db.kvDao.find([K.settingsI18n, K.settingsTheme]);
   if (settings.isEmpty) {

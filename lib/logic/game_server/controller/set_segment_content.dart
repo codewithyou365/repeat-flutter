@@ -1,4 +1,3 @@
-
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/common/ws/message.dart';
@@ -32,26 +31,6 @@ class SetSegmentContentReq {
 }
 
 Future<message.Response?> setSegmentContent(message.Request req, GameUser? user, Server<GameUser> server) async {
-  if (user == null) {
-    return message.Response(error: GameServerError.serviceStopped.name);
-  }
-  if (!Get.find<GsCrRepeatLogic>().state.editInGame.value) {
-    return message.Response(error: GameServerError.editModeDisabled.name);
-  }
-  final reqBody = SetSegmentContentReq.fromJson(req.data);
-  final game = await Db().db.gameDao.one(reqBody.gameId);
-  if (game == null) {
-    return message.Response(error: GameServerError.gameNotFound.name);
-  }
   // TODO
-  var ok = await RepeatDocEditHelp.setSegment(game.contentSerial, game.lessonIndex, game.segmentIndex, reqBody.content);
-  if (!ok) {
-    return message.Response(error: GameServerError.contentNotFound.name);
-  }
-  var segmentContent = await RepeatDocHelp.from(game.segmentKeyId);
-  if (segmentContent != null) {
-    await Db().db.gameDao.clearGame(reqBody.gameId, user.id!, segmentContent.aStart, segmentContent.aEnd, segmentContent.word);
-  }
-  server.broadcast(Request(path: Path.refreshGame, data: {"id": game.id, "time": game.time}));
   return message.Response();
 }

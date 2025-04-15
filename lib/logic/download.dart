@@ -68,7 +68,7 @@ Future<bool> downloadDoc(
           progressCallback(startTime, count, total, false);
         }
       }
-    }, options: Options(headers: {HttpHeaders.userAgentHeader: Download.userAgent}));
+    }, options: Options(headers: {HttpHeaders.userAgentHeader: DownloadConstant.userAgent}));
     if (fileTotal == -1) {
       fileTotal = fileCount;
     }

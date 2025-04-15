@@ -159,7 +159,6 @@ class GsCrContentPage extends StatelessWidget {
       I18nKey.labelDownloadContent.tr,
       I18nKey.labelRemoteUrl.tr,
       nextChildren: [
-        const SizedBox(height: 20),
         Obx(() {
           return LinearProgressIndicator(
             value: state.indexCount.value / state.indexTotal.value,
@@ -173,6 +172,7 @@ class GsCrContentPage extends StatelessWidget {
             semanticsLabel: "${(state.contentProgress.value * 100).toStringAsFixed(1)}%",
           );
         }),
+        const SizedBox(height: 10),
       ],
       yes: () {
         logic.download(model.id!, model.serial, downloadUrl.value);

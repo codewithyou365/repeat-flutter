@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -16,7 +15,6 @@ import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/logic/schedule_help.dart';
-import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 import 'package:repeat_flutter/logic/widget/lesson_list.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
@@ -24,6 +22,7 @@ import 'package:repeat_flutter/logic/widget/segment_list.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
+import '../../logic/doc_help.dart' show DocHelp;
 import 'gs_cr_content_state.dart';
 
 class GsCrContentLogic extends GetxController {
@@ -109,30 +108,18 @@ class GsCrContentLogic extends GetxController {
         return;
       }
 
-      var kv = await RepeatDoc.fromPath(DocPath.getRelativeIndexPath(contentSerial));
+      var kv = await DocHelp.fromPath(DocPath.getRelativeIndexPath(contentSerial));
       if (kv == null) {
         Snackbar.show(I18nKey.labelDataAnomalyWithArg.trArgs(['88']));
         return;
       }
-
+      var allDownloads = DocHelp.getDownloads(kv);
       // for media document
-      for (var lessonIndex = 0; lessonIndex < kv.lesson.length; lessonIndex++) {
-        var v = kv.lesson[lessonIndex];
-        var mediaFileName = DocPath.getMediaFileName(lessonIndex, v.mediaExtension);
-        var relativeMediaPath = DocPath.getRelativeMediaPath(contentSerial, lessonIndex, v.mediaExtension);
-
-        var url = "";
-        String hash = "";
-        var currDoc = zipRoot.docs.where((e) => e.path.endsWith('/'.joinPath(mediaFileName))).firstOrNull;
-        if (currDoc != null) {
-          url = currDoc.url;
-          hash = currDoc.hash;
-        } else {
-          url = Download.defaultUrl.joinPath(relativeMediaPath);
-          var targetPath = rootPath.joinPath(relativeMediaPath);
-          hash = await Hash.toSha1(targetPath);
-        }
-
+      for (var i = 0; i < allDownloads.length; i++) {
+        var v = allDownloads[i];
+        var relativeMediaPath = DocPath.getRelativePath(contentSerial).joinPath(v.path);
+        var url = v.url;
+        String hash = v.hash;
         await Db().db.docDao.insertDoc(Doc(url, relativeMediaPath, hash));
       }
 
@@ -184,7 +171,7 @@ class GsCrContentLogic extends GetxController {
   }
 
   Future<int> getUnitCount(int contentSerial) async {
-    var kv = await RepeatDoc.fromPath(DocPath.getRelativeIndexPath(contentSerial));
+    RepeatDoc? kv = await DocHelp.fromPath(DocPath.getRelativeIndexPath(contentSerial));
     if (kv == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return 0;
@@ -228,23 +215,18 @@ class GsCrContentLogic extends GetxController {
     if (!success) {
       return;
     }
-    RepeatDoc? kv = await RepeatDoc.fromPath(indexPath, rootUri: Uri.parse(url));
+    RepeatDoc? kv = await DocHelp.fromPath(indexPath);
     if (kv == null) {
       return;
     }
+    var allDownloads = DocHelp.getDownloads(kv);
 
     state.indexTotal.value = state.indexTotal.value + kv.lesson.length;
-    for (int i = 0; i < kv.lesson.length; i++) {
-      var v = kv.lesson[i];
-      var innerUrl = v.url;
-      if (innerUrl == "") {
-        innerUrl = kv.rootUrl.joinPath(DocPath.getMediaFileName(i, v.mediaExtension));
-      } else if (!innerUrl.startsWith("http")) {
-        innerUrl = kv.rootUrl.joinPath(innerUrl);
-      }
+    for (int i = 0; i < allDownloads.length; i++) {
+      var v = allDownloads[i];
       await downloadDoc(
-        innerUrl,
-        DocPath.getRelativeMediaPath(contentSerial, i, v.mediaExtension),
+        v.url,
+        DocPath.getRelativePath(contentSerial).joinPath(v.path),
         hash: v.hash,
         progressCallback: downloadProgress,
       );
@@ -266,7 +248,6 @@ class GsCrContentLogic extends GetxController {
     }
     Get.find<GsCrLogic>().init();
     init();
-    RepeatDocHelp.clear();
     return true;
   }
 }

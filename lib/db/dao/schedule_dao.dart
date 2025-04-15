@@ -20,6 +20,7 @@ import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart' as rd;
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/logic/model/segment_key_id.dart';
@@ -644,11 +645,12 @@ abstract class ScheduleDao {
       Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["doc"]));
       return false;
     }
-    var kv = await rd.RepeatDoc.fromPath(DocPath.getRelativeIndexPath(content.serial));
-    if (kv == null) {
-      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["kv"]));
+    Map<String, dynamic>? jsonData = await DocHelp.toJsonMap(DocPath.getRelativeIndexPath(content.serial));
+    if (jsonData == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["jsonData"]));
       return false;
     }
+    var kv = rd.RepeatDoc.fromJson(jsonData);
     if (kv.lesson.length >= 100000) {
       Snackbar.show(I18nKey.labelTooMuchData.trArgs(["lesson"]));
       return false;
@@ -661,7 +663,17 @@ abstract class ScheduleDao {
     }
     Map<String, bool> segmentKey = {};
     var now = DateTime.now();
+    List<dynamic> rawLessons = jsonData['l'] as List<dynamic>;
     for (var lessonIndex = 0; lessonIndex < kv.lesson.length; lessonIndex++) {
+      Map<String, dynamic> rawLesson = rawLessons[lessonIndex] as Map<String, dynamic>;
+      Map<String, dynamic> excludeSegment = {};
+      rawLesson.forEach((k, v) {
+        if (k != 's') {
+          excludeSegment[k] = v;
+        }
+      });
+      String lessonContent = convert.jsonEncode(excludeSegment);
+
       var lesson = kv.lesson[lessonIndex];
       lessons.add(Lesson(
         classroomId: content.classroomId,
@@ -673,21 +685,30 @@ abstract class ScheduleDao {
         contentSerial: content.serial,
         lessonIndex: lessonIndex,
         version: 1,
-        content: lesson.content,
+        content: lessonContent,
         contentVersion: 1,
       ));
+      List<dynamic> rawSegments = rawLesson['s'] as List<dynamic>;
       for (var segmentIndex = 0; segmentIndex < lesson.segment.length; segmentIndex++) {
+        var rawSegment = rawSegments[segmentIndex] as Map<String, dynamic>;
         var segment = lesson.segment[segmentIndex];
-        if (segment.a.isEmpty) {
+        if (segment.answer.isEmpty) {
           Snackbar.show(I18nKey.labelSegmentNeedToContainAnswer.tr);
           return false;
         }
-        var key = getKey(segment.k, segment.a);
+        var key = getKey(segment.key, segment.answer);
         if (segmentKey.containsKey(key)) {
           Snackbar.show(I18nKey.labelSegmentKeyDuplicated.trArgs([key]));
           return false;
         }
         segmentKey[key] = true;
+        Map<String, dynamic> excludeNote = {};
+        rawSegment.forEach((k, v) {
+          if (k != 'n') {
+            excludeNote[k] = v;
+          }
+        });
+        String segmentContent = convert.jsonEncode(excludeNote);
         segmentKeys.add(SegmentKey(
           classroomId: content.classroomId,
           contentSerial: content.serial,
@@ -695,9 +716,9 @@ abstract class ScheduleDao {
           segmentIndex: segmentIndex,
           version: 1,
           k: key,
-          content: segment.content,
+          content: segmentContent,
           contentVersion: 1,
-          note: segment.n,
+          note: segment.note ?? '',
           noteVersion: 1,
         ));
         segments.add(Segment(
@@ -1090,8 +1111,8 @@ abstract class ScheduleDao {
     }
     String key;
     try {
-      rd.BaseSegment segment = rd.BaseSegment.fromJson(contentM);
-      key = getKey(segment.k, segment.a);
+      rd.Segment segment = rd.Segment.fromJson(contentM);
+      key = getKey(segment.key, segment.answer);
     } catch (e) {
       Snackbar.show(e.toString());
       return;

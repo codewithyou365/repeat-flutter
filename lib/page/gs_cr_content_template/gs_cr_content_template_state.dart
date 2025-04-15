@@ -4,7 +4,7 @@ class GsCrContentTemplateState {
   final List<String> items = <String>[];
   int contentId = 0;
   int contentSerial = 0;
-  static const String defaultUrl = Download.defaultUrl;
+  static const String defaultUrl = DownloadConstant.defaultUrl;
   static const String prefixTemplate = '{\n'
       '  "lesson": [\n'
       '    {\n'

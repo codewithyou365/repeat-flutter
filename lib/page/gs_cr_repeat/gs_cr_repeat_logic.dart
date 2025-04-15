@@ -186,7 +186,8 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     RxString err = "".obs;
-    var content = await RepeatDocHelp.from(next.segmentKeyId, err: err);
+    var content = null;//TODO await RepeatDocHelp.from(next.segmentKeyId, err: err);
+    return;
     if (err.value != "") {
       Nav.back();
       MsgBox.yes(I18nKey.btnError.tr, err.value);
@@ -339,7 +340,7 @@ class GsCrRepeatLogic extends GetxController {
     state.openTip = [];
     var oldSegmentKeyId = state.segment.segmentKeyId;
     RxString err = "".obs;
-    var learnSegment = await RepeatDocHelp.from(curr.segmentKeyId, offset: pnOffset, err: err);
+    var learnSegment = null;//TODO await RepeatDocHelp.from(curr.segmentKeyId, offset: pnOffset, err: err);
     if (err.value != "") {
       Nav.back();
       MsgBox.yes(I18nKey.btnError.tr, err.value);
@@ -532,7 +533,8 @@ class GsCrRepeatLogic extends GetxController {
       return 0;
     }
     var segment = state.segment;
-    return RepeatDocHelp.getVideoMaskRatio(segment.contentSerial, segment.lessonIndex, segment.mediaExtension);
+    //TODO
+    return 0;
   }
 
   openGameMode(BuildContext context) async {

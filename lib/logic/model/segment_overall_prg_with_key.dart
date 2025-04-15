@@ -18,4 +18,8 @@ class SegmentOverallPrgWithKey extends SegmentOverallPrg {
     this.lessonIndex,
     this.segmentIndex,
   );
+
+  String toKey() {
+    return '$contentName-${lessonIndex + 1}-${segmentIndex + 1}';
+  }
 }

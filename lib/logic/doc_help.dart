@@ -1,25 +1,81 @@
 import 'dart:convert';
+import 'dart:convert' as convert;
+import 'dart:io';
 
+import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/logic/base/constant.dart' show DocPath;
 import 'package:repeat_flutter/logic/lesson_help.dart';
+import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/segment_show.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class DocHelp {
-  static void walkLessonMedia({
-    required Map<String, dynamic> map,
-    required Function(String filename) walker,
-  }) {
-    List<Map<String, dynamic>> lessons = map["lesson"] as List<Map<String, dynamic>>;
-    for (int lessonIndex = 0; lessonIndex < lessons.length; lessonIndex++) {
-      var lesson = lessons[lessonIndex];
-      String? url = lesson["url"];
-      if (url != null) {
-        var extension = url.split('.').last;
-        walker(DocPath.getMediaFileName(lessonIndex, extension));
+  static Future<String?> toJsonString(String path) async {
+    var rootPath = await DocPath.getContentPath();
+    File file = File(rootPath.joinPath(path));
+    bool exist = await file.exists();
+    if (!exist) {
+      return null;
+    }
+    return await file.readAsString();
+  }
+
+  static Future<Map<String, dynamic>?> toJsonMap(String path) async {
+    String? jsonString = await toJsonString(path);
+    if (jsonString == null) {
+      return null;
+    }
+    Map<String, dynamic> jsonData = convert.jsonDecode(jsonString);
+    return jsonData;
+  }
+
+  static Future<RepeatDoc?> fromPath(String path) async {
+    Map<String, dynamic>? jsonData = await toJsonMap(path);
+    if (jsonData != null) {
+      return RepeatDoc.fromJson(jsonData);
+    }
+    return null;
+  }
+
+  static List<Download> getDownloads(RepeatDoc kv) {
+    List<Download> ret = [];
+    Map<String, Download> hashToDownloads = {};
+    void tryAppendDownload(Download d, String? rootUrl) {
+      if (hashToDownloads[d.hash] == null) {
+        Download? curr;
+        if (d.url.startsWith("http")) {
+          curr = d;
+        } else if (rootUrl != null) {
+          curr = Download(url: rootUrl.joinPath(d.url), hash: d.hash);
+        }
+        if (curr != null) {
+          ret.add(curr);
+          hashToDownloads[curr.hash] = curr;
+        }
       }
     }
+
+    if (kv.download != null) {
+      for (var d in kv.download!) {
+        tryAppendDownload(d, kv.rootUrl);
+      }
+    }
+    for (var lesson in kv.lesson) {
+      if (lesson.download != null) {
+        for (var d in lesson.download!) {
+          tryAppendDownload(d, lesson.rootUrl ?? kv.rootUrl);
+        }
+      }
+      for (var segment in lesson.segment) {
+        if (segment.download != null) {
+          for (var d in segment.download!) {
+            tryAppendDownload(d, segment.rootUrl ?? lesson.rootUrl ?? kv.rootUrl);
+          }
+        }
+      }
+    }
+    return ret;
   }
 
   static Future<bool> getDocMapFromDb({
@@ -88,14 +144,14 @@ class DocHelp {
           if (lessonData['mediaExtension'] == null || lessonData['mediaExtension'] == '') {
             lessonData['mediaExtension'] = url.split('.').last;
           }
-          lessonData["url"] = '';
+          lessonData["u"] = '';
         }
-        lessonData["segment"] = segmentsList;
+        lessonData["s"] = segmentsList;
         lessonsList.add(lessonData);
       }
     }
 
-    ret["lesson"] = lessonsList;
+    ret["l"] = lessonsList;
 
     return true;
   }
