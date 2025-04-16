@@ -620,6 +620,7 @@ abstract class ScheduleDao {
   }
 
   Future<bool> prepareImportSegment(
+    List<String> contentJson,
     List<Lesson> lessons,
     List<LessonKey> lessonKeys,
     List<SegmentKey> segmentKeys,
@@ -663,6 +664,15 @@ abstract class ScheduleDao {
     }
     Map<String, bool> segmentKey = {};
     var now = DateTime.now();
+
+    Map<String, dynamic> excludeLesson = {};
+    jsonData.forEach((k, v) {
+      if (k != 'l') {
+        excludeLesson[k] = v;
+      }
+    });
+    contentJson.add(convert.jsonEncode(excludeLesson));
+
     List<dynamic> rawLessons = jsonData['l'] as List<dynamic>;
     for (var lessonIndex = 0; lessonIndex < kv.lesson.length; lessonIndex++) {
       Map<String, dynamic> rawLesson = rawLessons[lessonIndex] as Map<String, dynamic>;
@@ -753,12 +763,12 @@ abstract class ScheduleDao {
           currVersionNumber = version.version + 1;
         }
         var stv = TextVersion(
-          segmentTextVersionType,
-          v.id!,
-          currVersionNumber,
-          TextVersionReason.import,
-          text,
-          DateTime.now(),
+          t: segmentTextVersionType,
+          id: v.id!,
+          version: currVersionNumber,
+          reason: TextVersionReason.import,
+          text: text,
+          createTime: DateTime.now(),
         );
         needToInsert.add(stv);
       }
@@ -774,12 +784,14 @@ abstract class ScheduleDao {
     String? url,
   ) async {
     await forUpdate();
+    List<String> newContents = [];
     List<Lesson> newLessons = [];
     List<LessonKey> newLessonKeys = [];
     List<SegmentKey> newSegmentKeys = [];
     List<Segment> segments = [];
     List<SegmentOverallPrg> segmentOverallPrgs = [];
     bool success = await prepareImportSegment(
+      newContents,
       newLessons,
       newLessonKeys,
       newSegmentKeys,
@@ -881,7 +893,7 @@ abstract class ScheduleDao {
     if (needToModifyMap.isNotEmpty) {
       await updateSegmentKeys(needToModifyMap.values.toList());
     }
-
+    await db.contentDao.import(contentSerial, newContents[0]);
     var warningInLesson = await db.lessonKeyDao.import(newLessons, newLessonKeys, contentSerial);
     var warningInSegment = segments.length < keyToId.length;
 
@@ -1135,7 +1147,14 @@ abstract class ScheduleDao {
     }
     var now = DateTime.now();
     await updateSegmentKeyAndContent(segmentKeyId, key, content, segmentKey.contentVersion + 1);
-    await insertSegmentTextVersion(TextVersion(TextVersionType.segmentContent, segmentKeyId, segmentKey.contentVersion + 1, TextVersionReason.editor, content, now));
+    await insertSegmentTextVersion(TextVersion(
+      t: TextVersionType.segmentContent,
+      id: segmentKeyId,
+      version: segmentKey.contentVersion + 1,
+      reason: TextVersionReason.editor,
+      text: content,
+      createTime: now,
+    ));
     await insertKv(CrKv(Classroom.curr, CrK.updateSegmentShowTime, now.millisecondsSinceEpoch.toString()));
     if (getSegmentShow != null) {
       SegmentShow? currSegmentShow = getSegmentShow!(segmentKeyId);
@@ -1159,7 +1178,14 @@ abstract class ScheduleDao {
     }
     var now = DateTime.now();
     await updateSegmentNote(segmentKeyId, note, segmentKey.noteVersion + 1);
-    await insertSegmentTextVersion(TextVersion(TextVersionType.segmentNote, segmentKeyId, segmentKey.noteVersion + 1, TextVersionReason.editor, note, now));
+    await insertSegmentTextVersion(TextVersion(
+      t: TextVersionType.segmentNote,
+      id: segmentKeyId,
+      version: segmentKey.noteVersion + 1,
+      reason: TextVersionReason.editor,
+      text: note,
+      createTime: now,
+    ));
     await insertKv(CrKv(Classroom.curr, CrK.updateSegmentShowTime, now.millisecondsSinceEpoch.toString()));
     if (getSegmentShow != null) {
       SegmentShow? currSegmentShow = getSegmentShow!(segmentKeyId);

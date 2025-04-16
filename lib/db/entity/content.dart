@@ -2,7 +2,6 @@
 
 import 'package:floor/floor.dart';
 
-
 @Entity(
   indices: [
     Index(value: ['classroomId', 'name'], unique: true),
@@ -25,6 +24,8 @@ class Content {
   String desc;
   int docId;
   String url;
+  String content;
+  int contentVersion;
   int sort;
   bool hide;
   bool lessonWarning;
@@ -40,6 +41,8 @@ class Content {
     required this.desc,
     required this.docId,
     required this.url,
+    required this.content,
+    required this.contentVersion,
     required this.sort,
     required this.hide,
     required this.lessonWarning,

@@ -17,6 +17,8 @@ class GsCrContentShareState {
     desc: '',
     docId: 0,
     url: '',
+    content: '',
+    contentVersion: 0,
     sort: 0,
     hide: false,
     lessonWarning: false,

@@ -3,6 +3,7 @@ import 'dart:convert' as convert;
 import 'dart:io';
 
 import 'package:repeat_flutter/common/path.dart';
+import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/logic/base/constant.dart' show DocPath;
 import 'package:repeat_flutter/logic/lesson_help.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
@@ -78,6 +79,17 @@ class DocHelp {
     return ret;
   }
 
+  static void fixDownloadInfo(Map<String, dynamic> json) {
+    json.remove('u');
+    if (json['d'] != null) {
+      List<Download> list = Download.toList(json['d']) ?? [];
+      for (Download v in list) {
+        v.url = v.path;
+      }
+      json['d'] = list;
+    }
+  }
+
   static Future<bool> getDocMapFromDb({
     required int contentId,
     required Map<String, dynamic> ret,
@@ -86,9 +98,20 @@ class DocHelp {
   }) async {
     await SegmentHelp.tryGen(force: true);
     await LessonHelp.tryGen(force: true);
-
+    var content = await Db().db.contentDao.getById(contentId);
     var segmentCache = SegmentHelp.cache;
     var lessonCache = LessonHelp.cache;
+
+    Map<String, dynamic> contentJson = jsonDecode(content!.content);
+    contentJson.forEach((k, v) {
+      if (k != 'l') {
+        ret[k] = v;
+      }
+    });
+
+    if (rootUrl != null) {
+      fixDownloadInfo(ret);
+    }
 
     Map<int, List<SegmentShow>> lessonToSegmentShow = {};
 
@@ -117,7 +140,7 @@ class DocHelp {
         try {
           lessonData = jsonDecode(lesson.lessonContent);
         } catch (e) {
-          Snackbar.show("Error parsing lesson content: $e");
+          Snackbar.show('Error parsing lesson content: $e');
           return false;
         }
 
@@ -129,29 +152,29 @@ class DocHelp {
           try {
             segmentData = jsonDecode(segment.segmentContent);
           } catch (e) {
-            Snackbar.show("Error parsing segment content: $e");
+            Snackbar.show('Error parsing segment content: $e');
             return false;
           }
 
           if (shareNote && segment.segmentNote.isNotEmpty) {
-            segmentData["n"] = segment.segmentNote;
+            segmentData['n'] = segment.segmentNote;
           }
-
+          if (rootUrl != null) {
+            fixDownloadInfo(segmentData);
+          }
           segmentsList.add(segmentData);
         }
         if (rootUrl != null) {
-          String url = lessonData['url'];
-          if (lessonData['mediaExtension'] == null || lessonData['mediaExtension'] == '') {
-            lessonData['mediaExtension'] = url.split('.').last;
-          }
-          lessonData["u"] = '';
+          fixDownloadInfo(lessonData);
         }
-        lessonData["s"] = segmentsList;
+        lessonData['s'] = segmentsList;
         lessonsList.add(lessonData);
       }
     }
-
-    ret["l"] = lessonsList;
+    if (rootUrl != null) {
+      ret['r'] = rootUrl;
+    }
+    ret['l'] = lessonsList;
 
     return true;
   }

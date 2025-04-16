@@ -5,6 +5,7 @@ import 'package:repeat_flutter/common/num.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content.dart';
+import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -34,10 +35,16 @@ abstract class ContentDao {
   Future<int?> existBySort(int classroomId, int sort);
 
   @Query('SELECT * FROM Content WHERE id=:id')
-  Future<Content?> one(int id);
+  Future<Content?> getById(int id);
+
+  @Query('SELECT * FROM Content WHERE classroomId=:classroomId and serial=:serial')
+  Future<Content?> getBySerial(int classroomId, int serial);
 
   @Query('SELECT * FROM Content WHERE classroomId=:classroomId and name=:name')
   Future<Content?> getContentByName(int classroomId, String name);
+
+  @Query('UPDATE Content set content=:content,contentVersion=:contentVersion WHERE Content.id=:id')
+  Future<void> updateContentVersion(int id, String content, int contentVersion);
 
   @Query('UPDATE Content set docId=:docId,url=:url,lessonWarning=:lessonWarning,segmentWarning=:segmentWarning,updateTime=:updateTime WHERE Content.id=:id')
   Future<void> updateContent(int id, int docId, String url, bool lessonWarning, bool segmentWarning, int updateTime);
@@ -91,6 +98,8 @@ abstract class ContentDao {
         desc: '',
         docId: 0,
         url: '',
+        content: '',
+        contentVersion: 0,
         sort: sort,
         hide: false,
         lessonWarning: false,
@@ -101,5 +110,25 @@ abstract class ContentDao {
       await insertContent(ret);
     }
     return ret;
+  }
+
+  Future<void> import(int contentSerial, String content) async {
+    Content? oldContent = await getBySerial(Classroom.curr, contentSerial);
+    TextVersion? oldContentVersion = await db.textVersionDao.getTextForContent(contentSerial, oldContent!.contentVersion);
+
+    if (oldContentVersion == null || oldContentVersion.text != content) {
+      var maxVersion = oldContent.contentVersion;
+      var nextVersion = maxVersion + 1;
+      TextVersion insertContentVersion = TextVersion(
+        t: TextVersionType.rootContent,
+        id: oldContent.serial,
+        version: nextVersion,
+        reason: TextVersionReason.import,
+        text: content,
+        createTime: DateTime.now(),
+      );
+      await db.textVersionDao.insertOrIgnore(insertContentVersion);
+      await updateContentVersion(oldContent.id!, content, nextVersion);
+    }
   }
 }

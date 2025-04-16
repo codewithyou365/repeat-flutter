@@ -17,7 +17,7 @@ class RepeatDoc {
     return RepeatDoc(
       view: json['v'] as String?,
       rootUrl: json['r'] as String?,
-      download: json['d'] != null ? (json['d'] as List).map((e) => Download.fromJson(e as Map<String, dynamic>)).toList() : null,
+      download: Download.toList(json['d']),
       lesson: (json['l'] as List).map((e) => Lesson.fromJson(e as Map<String, dynamic>)).toList(),
     );
   }
@@ -42,6 +42,13 @@ class Download {
     required this.url,
     required this.hash,
   });
+
+  static List<Download>? toList(dynamic json) {
+    if (json != null) {
+      return (json as List).map((e) => Download.fromJson(e as Map<String, dynamic>)).toList();
+    }
+    return null;
+  }
 
   factory Download.fromJson(Map<String, dynamic> json) {
     return Download(
@@ -75,7 +82,7 @@ class Lesson {
     return Lesson(
       view: json['v'] as String?,
       rootUrl: json['r'] as String?,
-      download: json['d'] != null ? (json['d'] as List).map((e) => Download.fromJson(e as Map<String, dynamic>)).toList() : null,
+      download: Download.toList(json['d']),
       segment: (json['s'] as List).map((e) => Segment.fromJson(e as Map<String, dynamic>)).toList(),
     );
   }
@@ -117,7 +124,7 @@ class Segment {
     return Segment(
       view: json['v'] as String?,
       rootUrl: json['r'] as String?,
-      download: json['d'] != null ? (json['d'] as List).map((e) => Download.fromJson(e as Map<String, dynamic>)).toList() : null,
+      download: Download.toList(json['d']),
       key: json['k'] as String?,
       write: json['w'] as String?,
       note: json['n'] as String?,

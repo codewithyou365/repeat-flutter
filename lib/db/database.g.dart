@@ -132,7 +132,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Classroom` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Content` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `serial` INTEGER NOT NULL, `name` TEXT NOT NULL, `desc` TEXT NOT NULL, `docId` INTEGER NOT NULL, `url` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, `lessonWarning` INTEGER NOT NULL, `segmentWarning` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `updateTime` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `Content` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `serial` INTEGER NOT NULL, `name` TEXT NOT NULL, `desc` TEXT NOT NULL, `docId` INTEGER NOT NULL, `url` TEXT NOT NULL, `content` TEXT NOT NULL, `contentVersion` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, `lessonWarning` INTEGER NOT NULL, `segmentWarning` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `updateTime` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `CrKv` (`classroomId` INTEGER NOT NULL, `k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`classroomId`, `k`))');
         await database.execute(
@@ -1342,17 +1342,18 @@ class _$TextVersionDao extends TextVersionDao {
     return _queryAdapter.queryList(
         'SELECT * FROM TextVersion WHERE t=?1 AND id=?2',
         mapper: (Map<String, Object?> row) => TextVersion(
-            _segmentTextVersionTypeConverter.decode(row['t'] as int),
-            row['id'] as int,
-            row['version'] as int,
-            _segmentTextVersionReasonConverter.decode(row['reason'] as int),
-            row['text'] as String,
-            _dateTimeConverter.decode(row['createTime'] as int)),
+            t: _segmentTextVersionTypeConverter.decode(row['t'] as int),
+            id: row['id'] as int,
+            version: row['version'] as int,
+            reason:
+                _segmentTextVersionReasonConverter.decode(row['reason'] as int),
+            text: row['text'] as String,
+            createTime: _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [_segmentTextVersionTypeConverter.encode(type), id]);
   }
 
   @override
-  Future<List<TextVersion>> getTextForLessonContent(List<int> ids) async {
+  Future<List<TextVersion>> getTextForLesson(List<int> ids) async {
     const offset = 1;
     final _sqliteVariablesForIds =
         Iterable<String>.generate(ids.length, (i) => '?${i + offset}')
@@ -1361,8 +1362,19 @@ class _$TextVersionDao extends TextVersionDao {
         'SELECT TextVersion.*  FROM LessonKey JOIN TextVersion ON TextVersion.t=2  AND TextVersion.id=LessonKey.id  AND TextVersion.version=LessonKey.contentVersion WHERE LessonKey.id in (' +
             _sqliteVariablesForIds +
             ')',
-        mapper: (Map<String, Object?> row) => TextVersion(_segmentTextVersionTypeConverter.decode(row['t'] as int), row['id'] as int, row['version'] as int, _segmentTextVersionReasonConverter.decode(row['reason'] as int), row['text'] as String, _dateTimeConverter.decode(row['createTime'] as int)),
+        mapper: (Map<String, Object?> row) => TextVersion(t: _segmentTextVersionTypeConverter.decode(row['t'] as int), id: row['id'] as int, version: row['version'] as int, reason: _segmentTextVersionReasonConverter.decode(row['reason'] as int), text: row['text'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [...ids]);
+  }
+
+  @override
+  Future<TextVersion?> getTextForContent(
+    int contentSerial,
+    int version,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT TextVersion.*  FROM TextVersion WHERE TextVersion.t=3  AND TextVersion.id=?1  AND TextVersion.version=?2',
+        mapper: (Map<String, Object?> row) => TextVersion(t: _segmentTextVersionTypeConverter.decode(row['t'] as int), id: row['id'] as int, version: row['version'] as int, reason: _segmentTextVersionReasonConverter.decode(row['reason'] as int), text: row['text'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
+        arguments: [contentSerial, version]);
   }
 
   @override
@@ -1404,6 +1416,8 @@ class _$ContentDao extends ContentDao {
                   'desc': item.desc,
                   'docId': item.docId,
                   'url': item.url,
+                  'content': item.content,
+                  'contentVersion': item.contentVersion,
                   'sort': item.sort,
                   'hide': item.hide ? 1 : 0,
                   'lessonWarning': item.lessonWarning ? 1 : 0,
@@ -1424,7 +1438,7 @@ class _$ContentDao extends ContentDao {
   Future<List<Content>> getAllContent(int classroomId) async {
     return _queryAdapter.queryList(
         'SELECT * FROM Content where classroomId=?1 and hide=false ORDER BY sort',
-        mapper: (Map<String, Object?> row) => Content(id: row['id'] as int?, classroomId: row['classroomId'] as int, serial: row['serial'] as int, name: row['name'] as String, desc: row['desc'] as String, docId: row['docId'] as int, url: row['url'] as String, sort: row['sort'] as int, hide: (row['hide'] as int) != 0, lessonWarning: (row['lessonWarning'] as int) != 0, segmentWarning: (row['segmentWarning'] as int) != 0, createTime: row['createTime'] as int, updateTime: row['updateTime'] as int),
+        mapper: (Map<String, Object?> row) => Content(id: row['id'] as int?, classroomId: row['classroomId'] as int, serial: row['serial'] as int, name: row['name'] as String, desc: row['desc'] as String, docId: row['docId'] as int, url: row['url'] as String, content: row['content'] as String, contentVersion: row['contentVersion'] as int, sort: row['sort'] as int, hide: (row['hide'] as int) != 0, lessonWarning: (row['lessonWarning'] as int) != 0, segmentWarning: (row['segmentWarning'] as int) != 0, createTime: row['createTime'] as int, updateTime: row['updateTime'] as int),
         arguments: [classroomId]);
   }
 
@@ -1440,7 +1454,7 @@ class _$ContentDao extends ContentDao {
   Future<List<Content>> getAllEnableContent(int classroomId) async {
     return _queryAdapter.queryList(
         'SELECT * FROM Content where classroomId=?1 and docId!=0 and hide=false ORDER BY sort',
-        mapper: (Map<String, Object?> row) => Content(id: row['id'] as int?, classroomId: row['classroomId'] as int, serial: row['serial'] as int, name: row['name'] as String, desc: row['desc'] as String, docId: row['docId'] as int, url: row['url'] as String, sort: row['sort'] as int, hide: (row['hide'] as int) != 0, lessonWarning: (row['lessonWarning'] as int) != 0, segmentWarning: (row['segmentWarning'] as int) != 0, createTime: row['createTime'] as int, updateTime: row['updateTime'] as int),
+        mapper: (Map<String, Object?> row) => Content(id: row['id'] as int?, classroomId: row['classroomId'] as int, serial: row['serial'] as int, name: row['name'] as String, desc: row['desc'] as String, docId: row['docId'] as int, url: row['url'] as String, content: row['content'] as String, contentVersion: row['contentVersion'] as int, sort: row['sort'] as int, hide: (row['hide'] as int) != 0, lessonWarning: (row['lessonWarning'] as int) != 0, segmentWarning: (row['segmentWarning'] as int) != 0, createTime: row['createTime'] as int, updateTime: row['updateTime'] as int),
         arguments: [classroomId]);
   }
 
@@ -1483,7 +1497,7 @@ class _$ContentDao extends ContentDao {
   }
 
   @override
-  Future<Content?> one(int id) async {
+  Future<Content?> getById(int id) async {
     return _queryAdapter.query('SELECT * FROM Content WHERE id=?1',
         mapper: (Map<String, Object?> row) => Content(
             id: row['id'] as int?,
@@ -1493,6 +1507,8 @@ class _$ContentDao extends ContentDao {
             desc: row['desc'] as String,
             docId: row['docId'] as int,
             url: row['url'] as String,
+            content: row['content'] as String,
+            contentVersion: row['contentVersion'] as int,
             sort: row['sort'] as int,
             hide: (row['hide'] as int) != 0,
             lessonWarning: (row['lessonWarning'] as int) != 0,
@@ -1500,6 +1516,32 @@ class _$ContentDao extends ContentDao {
             createTime: row['createTime'] as int,
             updateTime: row['updateTime'] as int),
         arguments: [id]);
+  }
+
+  @override
+  Future<Content?> getBySerial(
+    int classroomId,
+    int serial,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT * FROM Content WHERE classroomId=?1 and serial=?2',
+        mapper: (Map<String, Object?> row) => Content(
+            id: row['id'] as int?,
+            classroomId: row['classroomId'] as int,
+            serial: row['serial'] as int,
+            name: row['name'] as String,
+            desc: row['desc'] as String,
+            docId: row['docId'] as int,
+            url: row['url'] as String,
+            content: row['content'] as String,
+            contentVersion: row['contentVersion'] as int,
+            sort: row['sort'] as int,
+            hide: (row['hide'] as int) != 0,
+            lessonWarning: (row['lessonWarning'] as int) != 0,
+            segmentWarning: (row['segmentWarning'] as int) != 0,
+            createTime: row['createTime'] as int,
+            updateTime: row['updateTime'] as int),
+        arguments: [classroomId, serial]);
   }
 
   @override
@@ -1517,6 +1559,8 @@ class _$ContentDao extends ContentDao {
             desc: row['desc'] as String,
             docId: row['docId'] as int,
             url: row['url'] as String,
+            content: row['content'] as String,
+            contentVersion: row['contentVersion'] as int,
             sort: row['sort'] as int,
             hide: (row['hide'] as int) != 0,
             lessonWarning: (row['lessonWarning'] as int) != 0,
@@ -1524,6 +1568,17 @@ class _$ContentDao extends ContentDao {
             createTime: row['createTime'] as int,
             updateTime: row['updateTime'] as int),
         arguments: [classroomId, name]);
+  }
+
+  @override
+  Future<void> updateContentVersion(
+    int id,
+    String content,
+    int contentVersion,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE Content set content=?2,contentVersion=?3 WHERE Content.id=?1',
+        arguments: [id, content, contentVersion]);
   }
 
   @override
@@ -1849,6 +1904,8 @@ class _$ScheduleDao extends ScheduleDao {
             desc: row['desc'] as String,
             docId: row['docId'] as int,
             url: row['url'] as String,
+            content: row['content'] as String,
+            contentVersion: row['contentVersion'] as int,
             sort: row['sort'] as int,
             hide: (row['hide'] as int) != 0,
             lessonWarning: (row['lessonWarning'] as int) != 0,
@@ -1873,6 +1930,8 @@ class _$ScheduleDao extends ScheduleDao {
             desc: row['desc'] as String,
             docId: row['docId'] as int,
             url: row['url'] as String,
+            content: row['content'] as String,
+            contentVersion: row['contentVersion'] as int,
             sort: row['sort'] as int,
             hide: (row['hide'] as int) != 0,
             lessonWarning: (row['lessonWarning'] as int) != 0,
@@ -2408,7 +2467,7 @@ class _$ScheduleDao extends ScheduleDao {
         'SELECT TextVersion.*  FROM SegmentKey JOIN TextVersion ON TextVersion.t=0  AND TextVersion.id=SegmentKey.id  AND TextVersion.version=SegmentKey.contentVersion WHERE SegmentKey.id in (' +
             _sqliteVariablesForIds +
             ')',
-        mapper: (Map<String, Object?> row) => TextVersion(_segmentTextVersionTypeConverter.decode(row['t'] as int), row['id'] as int, row['version'] as int, _segmentTextVersionReasonConverter.decode(row['reason'] as int), row['text'] as String, _dateTimeConverter.decode(row['createTime'] as int)),
+        mapper: (Map<String, Object?> row) => TextVersion(t: _segmentTextVersionTypeConverter.decode(row['t'] as int), id: row['id'] as int, version: row['version'] as int, reason: _segmentTextVersionReasonConverter.decode(row['reason'] as int), text: row['text'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [...ids]);
   }
 
@@ -2422,7 +2481,7 @@ class _$ScheduleDao extends ScheduleDao {
         'SELECT TextVersion.*  FROM SegmentKey JOIN TextVersion ON TextVersion.t=1  AND TextVersion.id=SegmentKey.id  AND TextVersion.version=SegmentKey.noteVersion WHERE SegmentKey.id in (' +
             _sqliteVariablesForIds +
             ')',
-        mapper: (Map<String, Object?> row) => TextVersion(_segmentTextVersionTypeConverter.decode(row['t'] as int), row['id'] as int, row['version'] as int, _segmentTextVersionReasonConverter.decode(row['reason'] as int), row['text'] as String, _dateTimeConverter.decode(row['createTime'] as int)),
+        mapper: (Map<String, Object?> row) => TextVersion(t: _segmentTextVersionTypeConverter.decode(row['t'] as int), id: row['id'] as int, version: row['version'] as int, reason: _segmentTextVersionReasonConverter.decode(row['reason'] as int), text: row['text'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [...ids]);
   }
 

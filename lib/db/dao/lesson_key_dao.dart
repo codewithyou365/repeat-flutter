@@ -94,7 +94,7 @@ abstract class LessonKeyDao {
       keyToId = {for (var lessonKey in newLessonKeys) lessonKey.k: lessonKey.id!};
     }
 
-    List<TextVersion> oldContentVersion = await db.textVersionDao.getTextForLessonContent(oldLessonIds);
+    List<TextVersion> oldContentVersion = await db.textVersionDao.getTextForLesson(oldLessonIds);
     Map<int, TextVersion> oldIdToContentVersion = {for (var v in oldContentVersion) v.id: v};
     var needToInsertTextVersion = db.textVersionDao.toNeedToInsert<LessonKey>(TextVersionType.lessonContent, newLessonKeys, (v) => v.id!, (v) => v.content, oldIdToContentVersion);
     Map<int, TextVersion> newIdToLessonVersion = {for (var v in needToInsertTextVersion) v.id: v};
@@ -144,7 +144,14 @@ abstract class LessonKeyDao {
 
     var now = DateTime.now();
     await updateKeyAndContent(lessonKeyId, content, lessonKey.contentVersion + 1);
-    await db.textVersionDao.insertOrIgnore(TextVersion(TextVersionType.lessonContent, lessonKeyId, lessonKey.contentVersion + 1, TextVersionReason.editor, content, now));
+    await db.textVersionDao.insertOrIgnore(TextVersion(
+       t: TextVersionType.lessonContent,
+       id:lessonKeyId,
+       version:lessonKey.contentVersion + 1,
+       reason:TextVersionReason.editor,
+       text:content,
+       createTime:now,
+    ));
     if (getLessonShow != null) {
       LessonShow? lessonShow = getLessonShow!(lessonKeyId);
       if (lessonShow != null) {

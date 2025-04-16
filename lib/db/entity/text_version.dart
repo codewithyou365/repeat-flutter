@@ -6,6 +6,7 @@ enum TextVersionType {
   segmentContent,
   segmentNote,
   lessonContent,
+  rootContent,
 }
 
 enum TextVersionReason {
@@ -24,12 +25,12 @@ class TextVersion {
   final String text;
   final DateTime createTime;
 
-  TextVersion(
-    this.t,
-    this.id,
-    this.version,
-    this.reason,
-    this.text,
-    this.createTime,
-  );
+  TextVersion({
+    required this.t,
+    required this.id,
+    required this.version,
+    required this.reason,
+    required this.text,
+    required this.createTime,
+  });
 }

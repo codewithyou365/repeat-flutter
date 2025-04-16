@@ -28,6 +28,7 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'gs_cr_content_share_state.dart';
 
 class GsCrContentShareLogic extends GetxController {
+  static const int port = 40321;
   static const String id = "GsCrContentLogic";
   final GsCrContentShareState state = GsCrContentShareState();
   HttpServer? _httpServer;
@@ -50,7 +51,6 @@ class GsCrContentShareLogic extends GetxController {
   }
 
   Future<void> _startHttpService() async {
-    var port = 40321;
     List<String> ips = [];
     try {
       ips = await Ip.getLanIps();
@@ -106,11 +106,16 @@ class GsCrContentShareLogic extends GetxController {
       } else {
         response.headers.set('Content-Disposition', 'inline');
       }
+      var rootIndex =  request.requestedUri.toString().lastIndexOf('/');
+      var url = request.requestedUri.toString().substring(0, rootIndex);
+      url = url.joinPath(Classroom.curr.toString());
+      url = url.joinPath(state.content.serial.toString());
       Map<String, dynamic> docMap = {};
       bool success = await DocHelp.getDocMapFromDb(
         contentId: state.content.id!,
         ret: docMap,
         shareNote: state.shareNote.value,
+        rootUrl: url,
       );
       if (success == false) {
         return;

@@ -36,7 +36,11 @@ class GsCrContentSharePage extends StatelessWidget {
   Widget _buildList(BuildContext context, GsCrContentShareLogic logic) {
     final state = logic.state;
     return ListView(children: [
-      buildItem(state.addresses[0].title, state.addresses[0].address, false.obs),
+      buildItem(
+        state.addresses[0].title,
+        state.addresses[0].address,
+        false.obs,
+      ),
       if (state.addresses.length > 1)
         Padding(
           padding: const EdgeInsets.all(8.0),
@@ -45,7 +49,11 @@ class GsCrContentSharePage extends StatelessWidget {
       if (state.addresses.length > 1)
         ...List.generate(
           state.addresses.length - 1,
-          (index) => buildItem(state.addresses[index + 1].title, state.addresses[index + 1].address, state.shareNote),
+          (index) => buildItem(
+            state.addresses[index + 1].title,
+            state.addresses[index + 1].address,
+            state.shareNote,
+          ),
         )
     ]);
   }
@@ -55,12 +63,12 @@ class GsCrContentSharePage extends StatelessWidget {
       padding: const EdgeInsets.all(4.0),
       child: Card(
         child: InkWell(
-          onTap: () => {
+          onTap: () {
             MsgBox.noWithQrCode(
               itemLabel,
               desc,
               desc,
-            )
+            );
           },
           child: ListTile(
             title: Obx(() {

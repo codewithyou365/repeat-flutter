@@ -12,7 +12,14 @@ abstract class TextVersionDao {
       '  AND TextVersion.id=LessonKey.id'
       '  AND TextVersion.version=LessonKey.contentVersion'
       ' WHERE LessonKey.id in (:ids)')
-  Future<List<TextVersion>> getTextForLessonContent(List<int> ids);
+  Future<List<TextVersion>> getTextForLesson(List<int> ids);
+
+  @Query('SELECT TextVersion.* '
+      ' FROM TextVersion'
+      ' WHERE TextVersion.t=3'
+      '  AND TextVersion.id=:contentSerial'
+      '  AND TextVersion.version=:version')
+  Future<TextVersion?> getTextForContent(int contentSerial, int version);
 
   @Query('DELETE FROM TextVersion WHERE t=:type AND id=:id')
   Future<void> delete(TextVersionType type, int id);
@@ -42,12 +49,12 @@ abstract class TextVersionDao {
           currVersionNumber = version.version + 1;
         }
         var tv = TextVersion(
-          textVersionType,
-          id,
-          currVersionNumber,
-          TextVersionReason.import,
-          text,
-          DateTime.now(),
+          t: textVersionType,
+          id: id,
+          version: currVersionNumber,
+          reason: TextVersionReason.import,
+          text: text,
+          createTime: DateTime.now(),
         );
         needToInsert.add(tv);
       }
