@@ -1894,54 +1894,6 @@ class _$ScheduleDao extends ScheduleDao {
   final DeletionAdapter<CrKv> _crKvDeletionAdapter;
 
   @override
-  Future<Content?> getContentById(int id) async {
-    return _queryAdapter.query('SELECT * FROM Content WHERE id=?1',
-        mapper: (Map<String, Object?> row) => Content(
-            id: row['id'] as int?,
-            classroomId: row['classroomId'] as int,
-            serial: row['serial'] as int,
-            name: row['name'] as String,
-            desc: row['desc'] as String,
-            docId: row['docId'] as int,
-            url: row['url'] as String,
-            content: row['content'] as String,
-            contentVersion: row['contentVersion'] as int,
-            sort: row['sort'] as int,
-            hide: (row['hide'] as int) != 0,
-            lessonWarning: (row['lessonWarning'] as int) != 0,
-            segmentWarning: (row['segmentWarning'] as int) != 0,
-            createTime: row['createTime'] as int,
-            updateTime: row['updateTime'] as int),
-        arguments: [id]);
-  }
-
-  @override
-  Future<Content?> getContentBySerial(
-    int classroomId,
-    int serial,
-  ) async {
-    return _queryAdapter.query(
-        'SELECT * FROM Content WHERE classroomId=?1 and serial=?2',
-        mapper: (Map<String, Object?> row) => Content(
-            id: row['id'] as int?,
-            classroomId: row['classroomId'] as int,
-            serial: row['serial'] as int,
-            name: row['name'] as String,
-            desc: row['desc'] as String,
-            docId: row['docId'] as int,
-            url: row['url'] as String,
-            content: row['content'] as String,
-            contentVersion: row['contentVersion'] as int,
-            sort: row['sort'] as int,
-            hide: (row['hide'] as int) != 0,
-            lessonWarning: (row['lessonWarning'] as int) != 0,
-            segmentWarning: (row['segmentWarning'] as int) != 0,
-            createTime: row['createTime'] as int,
-            updateTime: row['updateTime'] as int),
-        arguments: [classroomId, serial]);
-  }
-
-  @override
   Future<Doc?> getDocById(int id) async {
     return _queryAdapter.query('SELECT * FROM Doc WHERE id=?1',
         mapper: (Map<String, Object?> row) => Doc(

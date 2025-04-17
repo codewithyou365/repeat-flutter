@@ -222,7 +222,7 @@ class GsCrContentShareLogic extends GetxController {
     SendPort sendPort = message['sendPort'];
     try {
       List<Doc> docs = message['docs'];
-      List<Download> downloads = message['docMap'];
+      List<Download> downloads = message['downloads'];
       Uint8List docBytes = message['docBytes'];
       String zipFilePath = message['zipFilePath'];
       String indexFilePath = message['indexFilePath'];

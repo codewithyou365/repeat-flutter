@@ -217,12 +217,6 @@ abstract class ScheduleDao {
     [],
   );
 
-  @Query('SELECT * FROM Content WHERE id=:id')
-  Future<Content?> getContentById(int id);
-
-  @Query('SELECT * FROM Content WHERE classroomId=:classroomId and serial=:serial')
-  Future<Content?> getContentBySerial(int classroomId, int serial);
-
   @Query('SELECT * FROM Doc WHERE id=:id')
   Future<Doc?> getDocById(int id);
 
@@ -633,9 +627,9 @@ abstract class ScheduleDao {
   }) async {
     Content? content;
     if (contentId != 0) {
-      content = await getContentById(contentId);
+      content = await db.contentDao.getById(contentId);
     } else if (contentSerial != 0) {
-      content = await getContentBySerial(Classroom.curr, contentSerial);
+      content = await db.contentDao.getBySerial(Classroom.curr, contentSerial);
     }
     if (content == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["content"]));

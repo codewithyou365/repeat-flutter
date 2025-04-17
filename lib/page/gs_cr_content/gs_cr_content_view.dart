@@ -89,13 +89,13 @@ class GsCrContentPage extends StatelessWidget {
       ));
       menus.add(PopupMenuItem<String>(
         onTap: () {
-          logic.showLesson(model.id!, model.serial);
+          logic.showLesson(model.id!);
         },
         child: Text(I18nKey.labelLessonName.tr),
       ));
       menus.add(PopupMenuItem<String>(
         onTap: () {
-          logic.showSegment(model.id!, model.serial);
+          logic.showSegment(model.id!);
         },
         child: Text(I18nKey.labelSegmentName.tr),
       ));
@@ -125,9 +125,9 @@ class GsCrContentPage extends StatelessWidget {
               IconButton(
                 onPressed: () {
                   if (model.segmentWarning) {
-                    logic.showSegment(model.id!, model.serial);
+                    logic.showSegment(model.id!);
                   } else if (model.lessonWarning) {
-                    logic.showLesson(model.id!, model.serial);
+                    logic.showLesson(model.id!);
                   }
                 },
                 color: Colors.yellow,

@@ -58,8 +58,8 @@ class GsCrContentLogic extends GetxController {
     }, I18nKey.labelDeleting.tr);
   }
 
-  showLesson(int contentId, int contentSerial) async {
-    var content = await Db().db.scheduleDao.getContentBySerial(contentId, contentSerial);
+  showLesson(int contentId) async {
+    var content = await Db().db.contentDao.getById(contentId);
     if (content == null) {
       Snackbar.show(I18nKey.labelNoContent.tr);
       return;
@@ -72,8 +72,8 @@ class GsCrContentLogic extends GetxController {
     );
   }
 
-  showSegment(int contentId, int contentSerial) async {
-    var content = await Db().db.scheduleDao.getContentBySerial(contentId, contentSerial);
+  showSegment(int contentId) async {
+    var content = await Db().db.contentDao.getById(contentId);
     if (content == null) {
       Snackbar.show(I18nKey.labelNoContent.tr);
       return;
