@@ -10,22 +10,7 @@ class Address {
 
 class GsCrContentShareState {
   final List<Address> addresses = <Address>[];
-  Content content = Content(
-    classroomId: 0,
-    serial: 0,
-    name: '',
-    desc: '',
-    docId: 0,
-    url: '',
-    content: '',
-    contentVersion: 0,
-    sort: 0,
-    hide: false,
-    lessonWarning: false,
-    segmentWarning: false,
-    createTime: 0,
-    updateTime: 0,
-  );
+  Content content = Content.empty();
   var lanAddressSuffix = "";
   RxBool shareNote = false.obs;
 }

@@ -50,4 +50,24 @@ class Content {
     required this.createTime,
     required this.updateTime,
   });
+
+  static Content empty() {
+    return Content(
+      id: null,
+      classroomId: 0,
+      serial: 0,
+      name: '',
+      desc: '',
+      docId: 0,
+      url: '',
+      content: '',
+      contentVersion: 0,
+      sort: 0,
+      hide: false,
+      lessonWarning: false,
+      segmentWarning: false,
+      createTime: 0,
+      updateTime: 0,
+    );
+  }
 }

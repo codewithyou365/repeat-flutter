@@ -30,6 +30,14 @@ class SegmentHelp {
     return SegmentHelp.segmentKeyIdToShow[segmentKeyId];
   }
 
+  static String getSegmentPos(int segmentKeyId) {
+    var segment = SegmentHelp.segmentKeyIdToShow[segmentKeyId];
+    if (segment != null) {
+      return "${segment.toLessonPos()}${segment.toSegmentPos()}";
+    }
+    return "";
+  }
+
   static void deleteCache(int segmentKeyId) {
     cache.removeWhere((element) => element.segmentKeyId == segmentKeyId);
     segmentKeyIdToShow.remove(segmentKeyId);

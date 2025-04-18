@@ -47,9 +47,9 @@ Future<message.Response?> getSegmentContent(message.Request req, GameUser? user)
   if (user == null) {
     return message.Response(error: GameServerError.serviceStopped.name);
   }
-  if (!Get.find<GsCrRepeatLogic>().state.editInGame.value) {
-    return message.Response(error: GameServerError.editModeDisabled.name);
-  }
+  //TODO if (!Get.find<GsCrRepeatLogic>().state.editInGame.value) {
+  //   return message.Response(error: GameServerError.editModeDisabled.name);
+  // }
   final reqBody = GetSegmentContentReq.fromJson(req.data);
   final game = await Db().db.gameDao.one(reqBody.gameId);
   if (game == null) {

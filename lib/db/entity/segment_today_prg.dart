@@ -22,6 +22,7 @@ class SegmentTodayPrg {
   final int? id;
   final int classroomId;
   final int contentSerial;
+  final int lessonKeyId;
   final int segmentKeyId;
   int time;
   int type;
@@ -32,23 +33,37 @@ class SegmentTodayPrg {
   final Date reviewCreateDate;
   bool finish;
 
-  SegmentTodayPrg(
-    this.classroomId,
-    this.contentSerial,
-    this.segmentKeyId,
-    this.time,
-    this.type,
-    this.sort,
-    this.progress,
-    this.viewTime,
-    this.reviewCount,
-    this.reviewCreateDate,
-    this.finish, {
+  SegmentTodayPrg({
+    required this.classroomId,
+    required this.contentSerial,
+    required this.lessonKeyId,
+    required this.segmentKeyId,
+    required this.time,
+    required this.type,
+    required this.sort,
+    required this.progress,
+    required this.viewTime,
+    required this.reviewCount,
+    required this.reviewCreateDate,
+    required this.finish,
     this.id,
   });
 
   static SegmentTodayPrg empty() {
-    return SegmentTodayPrg(0, 0, 0, 0, TodayPrgType.none.index, 0, 0, DateTime.now(), 0, Date(0), false);
+    return SegmentTodayPrg(
+      classroomId: 0,
+      contentSerial: 0,
+      lessonKeyId: 0,
+      segmentKeyId: 0,
+      time: 0,
+      type: TodayPrgType.none.index,
+      sort: 0,
+      progress: 0,
+      viewTime: DateTime.now(),
+      reviewCount: 0,
+      reviewCreateDate: Date(0),
+      finish: false,
+    );
   }
 
   static void setType(List<SegmentTodayPrg> list, TodayPrgType todayPrgType, int index, int limit) {
@@ -106,17 +121,19 @@ class SegmentTodayPrg {
     List<SegmentTodayPrg> clonedList = [];
     for (SegmentTodayPrg segment in list) {
       SegmentTodayPrg clonedSegment = SegmentTodayPrg(
-        segment.classroomId,
-        segment.contentSerial,
-        segment.segmentKeyId,
-        segment.time,
-        segment.type,
-        segment.sort,
-        segment.progress,
-        segment.viewTime,
-        segment.reviewCount,
-        segment.reviewCreateDate,
-        segment.finish,
+        classroomId: segment.classroomId,
+        contentSerial: segment.contentSerial,
+        lessonKeyId: segment.lessonKeyId,
+        segmentKeyId: segment.segmentKeyId,
+        time: segment.time,
+        type: segment.type,
+        sort: segment.sort,
+        progress: segment.progress,
+        viewTime: segment.viewTime,
+        reviewCount: segment.reviewCount,
+        reviewCreateDate: segment.reviewCreateDate,
+        finish: segment.finish,
+        id: segment.id,
       );
       clonedList.add(clonedSegment);
     }

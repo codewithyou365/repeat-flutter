@@ -9,5 +9,6 @@ Future<message.Response?> getEditStatus(message.Request req, GameUser? user) asy
   if (user == null) {
     return message.Response(error: GameServerError.serviceStopped.name);
   }
-  return message.Response(data: Get.find<GsCrRepeatLogic>().state.editInGame.value);
+  //TODO return message.Response(data: Get.find<GsCrRepeatLogic>().state.editInGame.value);
+  return message.Response(data: false);
 }
