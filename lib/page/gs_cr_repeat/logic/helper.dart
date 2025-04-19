@@ -20,6 +20,8 @@ class Helper {
   double topBarHeight;
   bool landscape;
   Map<int, RepeatDoc> docCache = {};
+  Map<int, Map<String, dynamic>> docMapCache = {};
+  Map<int, Map<String, dynamic>> segmentMapCache = {};
   Map<int, List<String>> pathCache = {};
 
   Helper({
@@ -70,11 +72,28 @@ class Helper {
     return ret.content;
   }
 
-  RepeatDoc? getCurrRepeatDoc() {
+  Map<String, dynamic>? getCurrSegmentMap() {
     if (logic.currSegment == null) {
       return null;
     }
-    RepeatDoc? ret = docCache[logic.currSegment!.segmentKeyId];
+    Map<String, dynamic>? ret = segmentMapCache[logic.currSegment!.segmentKeyId];
+    String? segmentContent = getCurrSegmentContent();
+    if (segmentContent == null) {
+      return null;
+    }
+    ret = jsonDecode(segmentContent);
+    if (ret is! Map<String, dynamic>) {
+      return null;
+    }
+    segmentMapCache[logic.currSegment!.segmentKeyId] = ret;
+    return ret;
+  }
+
+  Map<String, dynamic>? getCurrRepeatDocMap() {
+    if (logic.currSegment == null) {
+      return null;
+    }
+    Map<String, dynamic>? ret = docMapCache[logic.currSegment!.segmentKeyId];
     if (ret != null) {
       return ret;
     }
@@ -95,7 +114,20 @@ class Helper {
     var segmentJsonMap = jsonDecode(segmentContent);
     lessonJsonMap['s'] = [segmentJsonMap];
     rootJsonMap['l'] = [lessonJsonMap];
-    ret = RepeatDoc.fromJson(rootJsonMap);
+    docMapCache[logic.currSegment!.segmentKeyId] = rootJsonMap;
+    return rootJsonMap;
+  }
+
+  RepeatDoc? getCurrRepeatDoc() {
+    if (logic.currSegment == null) {
+      return null;
+    }
+    RepeatDoc? ret = docCache[logic.currSegment!.segmentKeyId];
+    final map = getCurrRepeatDocMap();
+    if (map == null) {
+      return null;
+    }
+    ret = RepeatDoc.fromJson(map);
     docCache[logic.currSegment!.segmentKeyId] = ret;
     return ret;
   }
