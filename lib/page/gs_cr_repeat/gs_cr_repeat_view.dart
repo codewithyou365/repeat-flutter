@@ -57,14 +57,14 @@ class GsCrRepeatPage extends StatelessWidget {
         }
       }
     }
-
+    bool fullScreen = state.helper.fullScreen;
     return Stack(alignment: Alignment.topCenter, children: [
-      if (landscape) logic.repeatView.body(height: state.bodyHeight),
+      if (fullScreen) logic.repeatView.body(height: state.bodyHeight),
       Column(children: [
-        if (!landscape) SizedBox(height: topPadding),
+        if (!fullScreen) SizedBox(height: topPadding),
         topBar(logic: logic, topBarHeight: topBarHeight),
-        if (!landscape) logic.repeatView.body(height: state.bodyHeight),
-        if (landscape) SizedBox(height: state.bodyHeight),
+        if (!fullScreen) logic.repeatView.body(height: state.bodyHeight),
+        if (fullScreen) SizedBox(height: state.bodyHeight),
         if (state.showBottomBar) bottomBar(logic: logic, width: screenWidth, height: state.bottomBarHeight),
       ]),
     ]);

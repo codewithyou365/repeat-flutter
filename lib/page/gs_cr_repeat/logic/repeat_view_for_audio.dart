@@ -104,16 +104,21 @@ class RepeatViewForAudio extends RepeatView {
   Future<void> load(String path) async {
     var audioPlayer = this.audioPlayer;
     String prevPath = '';
+    Duration? d;
     if (audioPlayer.source != null) {
-      prevPath = audioPlayer.source!.toString();
+      final source = audioPlayer.source;
+      if (source is DeviceFileSource) {
+        prevPath = source.path;
+      }
       if (path != prevPath) {
         await audioPlayer.setSource(DeviceFileSource(path));
+        d = await audioPlayer.getDuration();
       }
     } else {
       await audioPlayer.setSource(DeviceFileSource(path));
+      d = await audioPlayer.getDuration();
       this.audioPlayer = audioPlayer;
     }
-    var d = await audioPlayer.getDuration();
     if (d != null) {
       duration = d.inMilliseconds;
     }

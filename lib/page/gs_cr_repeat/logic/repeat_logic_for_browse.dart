@@ -13,7 +13,9 @@ import 'time_stats_logic.dart';
 class RepeatLogicForBrowse extends RepeatLogic {
   TimeStatsLogic timeStatsLogic = TimeStatsLogic();
   late List<SegmentTodayPrg> scheduled;
+  @override
   late Function() update;
+  
   int index = 0;
   Ticker ticker = Ticker(1000);
 

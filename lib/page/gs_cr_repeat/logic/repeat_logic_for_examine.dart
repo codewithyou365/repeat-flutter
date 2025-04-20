@@ -14,7 +14,9 @@ import 'time_stats_logic.dart';
 class RepeatLogicForExamine extends RepeatLogic {
   TimeStatsLogic timeStatsLogic = TimeStatsLogic();
   late List<SegmentTodayPrg> scheduled;
+  @override
   late Function() update;
+
   int total = 0;
   Ticker ticker = Ticker(1000);
 

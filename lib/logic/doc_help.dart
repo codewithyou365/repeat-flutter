@@ -39,7 +39,7 @@ class DocHelp {
     return null;
   }
 
-  static List<Download> getDownloads(RepeatDoc kv) {
+  static List<Download> getDownloads(RepeatDoc kv, {String? rootUrl}) {
     List<Download> ret = [];
     Map<String, Download> hashToDownloads = {};
     void tryAppendDownload(Download d, String? rootUrl) {
@@ -57,6 +57,7 @@ class DocHelp {
       }
     }
 
+    kv.rootUrl ??= rootUrl;
     if (kv.download != null) {
       for (var d in kv.download!) {
         tryAppendDownload(d, kv.rootUrl);

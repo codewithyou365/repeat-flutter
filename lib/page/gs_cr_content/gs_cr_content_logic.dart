@@ -219,7 +219,8 @@ class GsCrContentLogic extends GetxController {
     if (kv == null) {
       return;
     }
-    var allDownloads = DocHelp.getDownloads(kv);
+    var rootUrl = url.substring(0, url.lastIndexOf("/"));
+    var allDownloads = DocHelp.getDownloads(kv, rootUrl: rootUrl);
 
     state.indexTotal.value = state.indexTotal.value + kv.lesson.length;
     for (int i = 0; i < allDownloads.length; i++) {
@@ -236,9 +237,10 @@ class GsCrContentLogic extends GetxController {
       return;
     }
 
-    await schedule(contentId, indexJsonDocId, url);
-
-    Nav.back();
+    var ok = await schedule(contentId, indexJsonDocId, url);
+    if (ok) {
+      Nav.back();
+    }
   }
 
   Future<bool> schedule(int contentId, int indexJsonDocId, String url) async {

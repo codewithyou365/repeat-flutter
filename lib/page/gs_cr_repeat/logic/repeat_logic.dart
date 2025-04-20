@@ -3,6 +3,8 @@ import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'constant.dart';
 
 abstract class RepeatLogic {
+  late Function() update;
+
   RepeatStep get step;
 
   SegmentTodayPrg? get currSegment;
@@ -17,7 +19,7 @@ abstract class RepeatLogic {
 
   Future<bool> init(List<SegmentTodayPrg> all, Function() update);
 
- void onClose();
+  void onClose();
 
   void onTapLeft();
 

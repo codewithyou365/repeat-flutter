@@ -1,16 +1,14 @@
 {
-  "rootPath": "meditation",
-  "key": "meditation",
-  "lesson": [
+  "l": [
     {
-      "key": "np1",
-      "url": "np1.mp4",
-      "path": "np1.mp4",
-      "hash": "b54c2c8bdc210320b118725f5270c2f708526e4f",
-      "defaultQuestion": "",
-      "defaultTip": "",
+      "d": [
+        {
+          "u": "np1.mp4",
+          "h": "b54c2c8bdc210320b118725f5270c2f708526e4f"
+        }
+      ],
       "title": "How to Get Started",
-      "segment": [
+      "s": [
         {
           "qStart": "00:00:07,166",
           "qEnd": "00:00:09,733",
@@ -154,7 +152,7 @@
         {
           "qStart": "00:01:36,800",
           "qEnd": "00:01:38,200",
-          "a": "to be more present"
+          "a": "to be more present "
         },
         {
           "qStart": "00:01:38,266",
@@ -1119,12 +1117,12 @@
         {
           "qStart": "00:09:53,466",
           "qEnd": "00:09:55,600",
-          "a": "breathing in through the nose"
+          "a": "breathing in through the nose  "
         },
         {
           "qStart": "00:09:57,366",
           "qEnd": "00:10:00,100",
-          "a": "and out through the mouth"
+          "a": "and out through the mouth  "
         },
         {
           "qStart": "00:10:00,966",
@@ -1149,7 +1147,7 @@
         {
           "qStart": "00:10:12,083",
           "qEnd": "00:10:14,016",
-          "a": "as you breathe out"
+          "a": "as you breathe out  "
         },
         {
           "qStart": "00:10:14,116",
@@ -1199,7 +1197,7 @@
         {
           "qStart": "00:10:40,750",
           "qEnd": "00:10:43,066",
-          "a": "nowhere to go"
+          "a": "nowhere to go "
         },
         {
           "qStart": "00:10:44,766",
@@ -1214,7 +1212,7 @@
         {
           "qStart": "00:10:52,166",
           "qEnd": "00:10:54,466",
-          "a": "or the floor beneath you"
+          "a": "or the floor beneath you "
         },
         {
           "qStart": "00:10:58,366",
@@ -1839,14 +1837,14 @@
       ]
     },
     {
-      "key": "np2",
-      "url": "np2.mp4",
-      "path": "np2.mp4",
-      "hash": "65e21ebfcac6250c73ac8f9935050d4b976ae3d6",
-      "defaultQuestion": "",
-      "defaultTip": "",
+      "d": [
+        {
+          "u": "np2.mp4",
+          "h": "65e21ebfcac6250c73ac8f9935050d4b976ae3d6"
+        }
+      ],
       "title": "How to Let Go",
-      "segment": [
+      "s": [
         {
           "qStart": "00:00:07,466",
           "qEnd": "00:00:11,500",
@@ -1925,7 +1923,7 @@
         {
           "qStart": "00:00:47,366",
           "qEnd": "00:00:48,533",
-          "a": "a visualization"
+          "a": "a visualization "
         },
         {
           "qStart": "00:00:48,600",
@@ -1935,12 +1933,12 @@
         {
           "qStart": "00:01:01,066",
           "qEnd": "00:01:02,300",
-          "a": "hi"
+          "a": "hi "
         },
         {
           "qStart": "00:01:02,300",
           "qEnd": "00:01:06,066",
-          "a": "I'm Andy and welcome to Headspace Guide to meditation"
+          "a": "I'm Andy and welcome to Headspace Guide to meditation "
         },
         {
           "qStart": "00:01:13,166",
@@ -2585,7 +2583,7 @@
         {
           "qStart": "00:06:49,733",
           "qEnd": "00:06:50,666",
-          "a": "now obviously"
+          "a": "now obviously "
         },
         {
           "qStart": "00:06:50,666",
@@ -2765,7 +2763,7 @@
         {
           "qStart": "00:08:22,717",
           "qEnd": "00:08:25,416",
-          "a": "of the space around you"
+          "a": "of the space around you "
         },
         {
           "qStart": "00:08:25,516",
@@ -2795,12 +2793,12 @@
         {
           "qStart": "00:08:40,666",
           "qEnd": "00:08:42,800",
-          "a": "breathing in through the nose"
+          "a": "breathing in through the nose "
         },
         {
           "qStart": "00:08:45,466",
           "qEnd": "00:08:48,366",
-          "a": "and out through the mouth"
+          "a": "and out through the mouth "
         },
         {
           "qStart": "00:09:09,300",
@@ -2820,7 +2818,7 @@
         {
           "qStart": "00:09:16,966",
           "qEnd": "00:09:19,166",
-          "a": "as you breathe out"
+          "a": "as you breathe out "
         },
         {
           "qStart": "00:09:19,966",
@@ -3075,7 +3073,7 @@
         {
           "qStart": "00:12:37,500",
           "qEnd": "00:12:39,166",
-          "a": "just softening"
+          "a": "just softening "
         },
         {
           "qStart": "00:12:39,266",
@@ -3435,7 +3433,7 @@
         {
           "qStart": "00:18:00,417",
           "qEnd": "00:18:04,233",
-          "a": "to notice how the body feels"
+          "a": "to notice how the body feels "
         },
         {
           "qStart": "00:18:04,400",
@@ -3535,7 +3533,7 @@
         {
           "qStart": "00:19:27,566",
           "qEnd": "00:19:29,933",
-          "a": "Dad Space Studios"
+          "a": "Dad Space Studios "
         },
         {
           "qStart": "00:13:59,600",

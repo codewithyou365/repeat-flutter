@@ -19,6 +19,8 @@ class Helper {
   late String rootPath;
   double topBarHeight;
   bool landscape;
+  bool? customFullScreen;
+
   Map<int, RepeatDoc> docCache = {};
   Map<int, Map<String, dynamic>> docMapCache = {};
   Map<int, Map<String, dynamic>> segmentMapCache = {};
@@ -33,6 +35,17 @@ class Helper {
     this.logic = logic;
     contents = await Db().db.contentDao.getAllContent(Classroom.curr);
     rootPath = await DocPath.getContentPath();
+  }
+
+  void update() {
+    logic.update();
+  }
+
+  bool get fullScreen {
+    if (customFullScreen != null) {
+      return customFullScreen!;
+    }
+    return landscape;
   }
 
   RepeatStep get step {
@@ -105,13 +118,10 @@ class Helper {
     if (lessonContent == null) {
       return null;
     }
-    String? segmentContent = getCurrSegmentContent();
-    if (segmentContent == null) {
-      return null;
-    }
+
+    var segmentJsonMap = getCurrSegmentMap();
     var rootJsonMap = jsonDecode(rootContent);
     var lessonJsonMap = jsonDecode(lessonContent);
-    var segmentJsonMap = jsonDecode(segmentContent);
     lessonJsonMap['s'] = [segmentJsonMap];
     rootJsonMap['l'] = [lessonJsonMap];
     docMapCache[logic.currSegment!.segmentKeyId] = rootJsonMap;
@@ -144,7 +154,7 @@ class Helper {
     if (doc == null) {
       return null;
     }
-    List<Download> downloads = DocHelp.getDownloads(doc);
+    List<Download> downloads = DocHelp.getDownloads(doc, rootUrl: "");
     ret = [];
     for (var download in downloads) {
       ret.add(rootPath.joinPath(DocPath.getRelativePath(logic.currSegment!.contentSerial)).joinPath(download.path));
