@@ -1,6 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/widgets.dart';
-import 'package:get/get.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'constant.dart';
 import 'model.dart';
@@ -13,6 +12,9 @@ class RepeatViewForAudio extends RepeatView {
   late AudioPlayer audioPlayer;
   int duration = 0;
   late MediaSegmentHelper mediaSegmentHelper;
+
+  // Ui
+  double audioBarHeight = 50;
 
   RepeatViewForAudio();
 
@@ -29,7 +31,8 @@ class RepeatViewForAudio extends RepeatView {
   }
 
   @override
-  Widget body({required double height}) {
+  Widget body() {
+    double height = 400;
     Helper? helper = this.helper;
     if (helper == null) {
       return SizedBox(height: height);
@@ -38,16 +41,6 @@ class RepeatViewForAudio extends RepeatView {
     if (s == null) {
       return SizedBox(height: height);
     }
-
-    double padding = 16;
-    double top = 0;
-    double width = MediaQuery.of(Get.context!).size.width;
-    if (helper.landscape) {
-      padding = MediaQuery.of(Get.context!).padding.left;
-      top = helper.topBarHeight;
-    }
-    width = width - padding * 2;
-    double audioBarHeight = 50;
 
     var path = '';
     List<String>? paths = helper.getPaths();
@@ -65,21 +58,8 @@ class RepeatViewForAudio extends RepeatView {
       }
     }
 
-    MediaBar? audioBar;
-    if (range != null && range.enable) {
-      audioBar = MediaBar(
-        width: width,
-        height: audioBarHeight,
-        segmentStartMs: range.start,
-        segmentEndMs: range.end,
-        key: mediaKey,
-        duration: () => duration,
-        onPlay: (Duration position) async {
-          await audioPlayer.seek(position);
-          await audioPlayer.resume();
-        },
-        onStop: audioPlayer.stop,
-      );
+    if (range == null || !range.enable) {
+      return SizedBox(height: height);
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -88,16 +68,33 @@ class RepeatViewForAudio extends RepeatView {
       });
     });
 
-    return SizedBox(
-      height: height,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(padding, top, padding, 0),
-        child: ListView(padding: const EdgeInsets.all(0), children: [
-          if (audioBar != null) audioBar,
-          if (s.question != null && s.question!.isNotEmpty) Text(s.question!),
-          if (helper.step != RepeatStep.recall) Text(s.answer),
-        ]),
-      ),
+    double padding = 16;
+    if (helper.landscape) {
+      padding = helper.leftPadding;
+    }
+    height = helper.screenHeight - helper.topPadding - helper.topBarHeight - helper.bottomBarHeight;
+    return Column(
+      children: [
+        SizedBox(height: helper.topPadding),
+        helper.topBar(),
+        SizedBox(
+          height: height,
+          child: ListView(padding: const EdgeInsets.all(0), children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  mediaBar(helper.screenWidth - padding * 2, audioBarHeight, range),
+                  if (s.question != null && s.question!.isNotEmpty) Text(s.question!),
+                  if (helper.step != RepeatStep.recall) Text(s.answer),
+                ],
+              ),
+            ),
+          ]),
+        ),
+        helper.bottomBar(width: helper.screenWidth),
+      ],
     );
   }
 
@@ -122,5 +119,21 @@ class RepeatViewForAudio extends RepeatView {
     if (d != null) {
       duration = d.inMilliseconds;
     }
+  }
+
+  Widget mediaBar(double width, double height, Range range) {
+    return MediaBar(
+      width: width,
+      height: height,
+      segmentStartMs: range.start,
+      segmentEndMs: range.end,
+      key: mediaKey,
+      duration: () => duration,
+      onPlay: (Duration position) async {
+        await audioPlayer.seek(position);
+        await audioPlayer.resume();
+      },
+      onStop: audioPlayer.stop,
+    );
   }
 }

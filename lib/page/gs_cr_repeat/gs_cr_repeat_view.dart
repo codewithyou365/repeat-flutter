@@ -27,19 +27,21 @@ class GsCrRepeatPage extends StatelessWidget {
     final state = logic.state;
     final Size screenSize = MediaQuery.of(context).size;
     final double topPadding = MediaQuery.of(context).padding.top;
+    final double leftPadding = MediaQuery.of(context).padding.left;
     final double screenWidth = screenSize.width;
     double screenHeight = screenSize.height;
     var landscape = false;
     if (screenWidth > screenHeight) {
       landscape = true;
     }
+    state.helper.screenWidth = screenWidth;
+    state.helper.screenHeight = screenHeight;
     state.helper.landscape = landscape;
+    state.helper.leftPadding = leftPadding;
+    state.helper.topPadding = topPadding;
     double topBarHeight = state.helper.topBarHeight;
-    state.bottomBarHeight = 50;
-    state.bodyHeight = screenHeight - topBarHeight - state.bottomBarHeight;
-    if (!landscape) {
-      state.bodyHeight -= topPadding;
-    }
+    state.helper.topBar = () => topBar(logic: logic, height: topBarHeight);
+    state.helper.bottomBar = ({required double width}) => bottomBar(logic: logic, width: width, height: state.helper.bottomBarHeight);
 
     if (state.lastLandscape == null || state.lastLandscape != landscape) {
       state.lastLandscape = landscape;
@@ -57,20 +59,10 @@ class GsCrRepeatPage extends StatelessWidget {
         }
       }
     }
-    bool fullScreen = state.helper.fullScreen;
-    return Stack(alignment: Alignment.topCenter, children: [
-      if (fullScreen) logic.repeatView.body(height: state.bodyHeight),
-      Column(children: [
-        if (!fullScreen) SizedBox(height: topPadding),
-        topBar(logic: logic, topBarHeight: topBarHeight),
-        if (!fullScreen) logic.repeatView.body(height: state.bodyHeight),
-        if (fullScreen) SizedBox(height: state.bodyHeight),
-        if (state.showBottomBar) bottomBar(logic: logic, width: screenWidth, height: state.bottomBarHeight),
-      ]),
-    ]);
+    return logic.repeatView.body();
   }
 
-  Widget topBar({required GsCrRepeatLogic logic, required double topBarHeight}) {
+  Widget topBar({required GsCrRepeatLogic logic, required double height}) {
     final repeatLogic = logic.repeatLogic;
     final state = logic.state;
     return Stack(
@@ -78,7 +70,7 @@ class GsCrRepeatPage extends StatelessWidget {
       children: [
         topBarTitle(logic: logic, fontSize: 18),
         SizedBox(
-          height: topBarHeight,
+          height: height,
           child: Row(
             children: [
               const SizedBox(width: 10),
@@ -89,12 +81,12 @@ class GsCrRepeatPage extends StatelessWidget {
                 },
               ),
               const Spacer(),
-              if (repeatLogic != null && repeatLogic.step == RepeatStep.evaluate)
+              if (repeatLogic != null && repeatLogic.step != RepeatStep.recall)
                 IconButton(
                   icon: const Icon(Icons.assistant_photo),
                   onPressed: logic.adjustProgress,
                 ),
-              if (repeatLogic != null && repeatLogic.step == RepeatStep.evaluate)
+              if (repeatLogic != null && repeatLogic.step != RepeatStep.recall)
                 IconButton(
                   icon: const Icon(Icons.list_alt),
                   tooltip: I18nKey.labelDetail.tr,

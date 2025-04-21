@@ -6,7 +6,6 @@ class GsCrRepeatState {
 
   var concentrationMode = true;
   Helper helper = Helper();
-  double bottomBarHeight = 50;
   late double bodyHeight;
   var showBottomBar = true;
 

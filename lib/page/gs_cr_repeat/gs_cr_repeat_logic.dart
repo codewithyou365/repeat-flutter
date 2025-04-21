@@ -13,7 +13,6 @@ import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic_for_browse.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic_for_examine.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic.dart';
-import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_view_for_audio.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_view_for_video.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'gs_cr_repeat_state.dart';

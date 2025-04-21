@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/widgets.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
@@ -17,19 +18,23 @@ class Helper {
   late RepeatLogic logic;
   late List<Content> contents;
   late String rootPath;
-  double topBarHeight;
-  bool landscape;
-  bool? customFullScreen;
+
+  late double screenWidth;
+  late double screenHeight;
+  bool landscape = false;
+  late double leftPadding;
+  late double topPadding;
+  double topBarHeight = 50;
+  late Widget Function() topBar;
+  double bottomBarHeight = 50;
+  late Widget Function({required double width}) bottomBar;
 
   Map<int, RepeatDoc> docCache = {};
   Map<int, Map<String, dynamic>> docMapCache = {};
   Map<int, Map<String, dynamic>> segmentMapCache = {};
   Map<int, List<String>> pathCache = {};
 
-  Helper({
-    this.landscape = false,
-    this.topBarHeight = 50,
-  });
+  Helper();
 
   Future<void> init(RepeatLogic logic) async {
     this.logic = logic;
@@ -39,13 +44,6 @@ class Helper {
 
   void update() {
     logic.update();
-  }
-
-  bool get fullScreen {
-    if (customFullScreen != null) {
-      return customFullScreen!;
-    }
-    return landscape;
   }
 
   RepeatStep get step {
