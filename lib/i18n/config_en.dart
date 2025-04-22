@@ -200,6 +200,11 @@ class ConfigEn extends Config {
     put(I18nKey.labelEdit, "Edit");
     put(I18nKey.labelDoYourShareTheNotes, "Do you share your notes?");
     put(I18nKey.labelSharingNotes, "Sharing notes");
+    put(I18nKey.labelDataNotChange, "Data not changed");
+    put(I18nKey.labelStartOrEnd, "Is this point (%s) saved as the starting point or the ending point of the media?");
+    put(I18nKey.labelSaveToStart, "This point (%s) is gonna save as the starting point of the media");
+    put(I18nKey.labelSaveToEnd, "This point (%s) is gonna save as the ending point of the media");
+    put(I18nKey.btnEnd, "End");
     put(I18nKey.btnHandleNow, "Handle Now");
     put(I18nKey.btnStart, "Start");
     put(I18nKey.btnAddSchedule, "Add Schedule");

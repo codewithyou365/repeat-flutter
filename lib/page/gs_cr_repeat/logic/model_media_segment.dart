@@ -1,16 +1,30 @@
+import 'dart:convert';
+
+import 'package:get/get.dart';
 import 'package:repeat_flutter/common/time.dart';
+import 'package:repeat_flutter/db/dao/schedule_dao.dart';
+import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
+import 'package:repeat_flutter/widget/audio/media_bar.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
+import 'package:repeat_flutter/widget/overlay/overlay.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'helper.dart';
 
 class Range {
   int start;
   int end;
   bool enable;
+  String jsonStartName;
+  String jsonEndName;
 
   Range({
     required this.start,
     required this.end,
     required this.enable,
+    this.jsonStartName = "",
+    this.jsonEndName = "",
   });
 }
 
@@ -22,7 +36,13 @@ class MediaSegmentHelper {
 
   MediaSegmentHelper({
     required this.helper,
-  });
+  }) {
+    ScheduleDao.setSegmentShowContent.add((int id) {
+      mediaSegmentCache.remove(id);
+      answerRangeCache.remove(id);
+      questionRangeCache.remove(id);
+    });
+  }
 
   MediaSegment? getMediaSegment() {
     if (helper.logic.currSegment == null) {
@@ -65,6 +85,8 @@ class MediaSegmentHelper {
       ret = Range(start: 0, end: 0, enable: false);
       answerRangeCache[helper.logic.currSegment!.segmentKeyId] = ret;
     }
+    ret.jsonStartName = "aStart";
+    ret.jsonEndName = "aEnd";
     return ret;
   }
 
@@ -92,7 +114,76 @@ class MediaSegmentHelper {
       ret = Range(start: 0, end: 0, enable: false);
       questionRangeCache[helper.logic.currSegment!.segmentKeyId] = ret;
     }
+    ret.jsonStartName = "qStart";
+    ret.jsonEndName = "qEnd";
     return ret;
+  }
+
+  MediaEditCallback? mediaEdit(Range range) {
+    if (!helper.edit) {
+      return null;
+    }
+    return (int currMs) async {
+      var str = Time.convertMsToString(currMs);
+      save({required bool start}) {
+        showTransparentOverlay(() async {
+          Map<String, dynamic>? map = helper.getCurrSegmentMap();
+          if (map == null) {
+            Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["map"]));
+            return;
+          }
+          String jsonName = start ? range.jsonStartName : range.jsonEndName;
+          map[jsonName] = str;
+          String jsonStr = jsonEncode(map);
+          var segmentKeyId = helper.getCurrSegment()!.segmentKeyId;
+          await Db().db.scheduleDao.tUpdateSegmentContent(segmentKeyId, jsonStr);
+          helper.logic.update();
+          Get.back();
+          Snackbar.show(I18nKey.labelSaved.tr);
+        });
+      }
+
+      saveWithConfirm({required bool start}) {
+        MsgBox.yesOrNo(
+          I18nKey.labelTips.tr,
+          start ? I18nKey.labelSaveToStart.trArgs([str]) : I18nKey.labelSaveToEnd.tr.trArgs([str]),
+          yes: () => save(start: start),
+        );
+      }
+
+      if (currMs < range.start - 50) {
+        saveWithConfirm(start: true);
+      } else if (currMs > range.end + 50) {
+        saveWithConfirm(start: false);
+      } else if (range.start + 50 < currMs && currMs < range.end - 50) {
+        MsgBox.myDialog(
+          title: I18nKey.labelTips.tr,
+          content: MsgBox.content(I18nKey.labelStartOrEnd.trArgs([str])),
+          action: MsgBox.buttonsWithDivider(buttons: [
+            MsgBox.button(
+              text: I18nKey.btnCancel.tr,
+              onPressed: () {
+                Get.back();
+              },
+            ),
+            MsgBox.button(
+              text: I18nKey.btnStart.tr,
+              onPressed: () {
+                save(start: true);
+              },
+            ),
+            MsgBox.button(
+              text: I18nKey.btnEnd.tr,
+              onPressed: () {
+                save(start: false);
+              },
+            ),
+          ]),
+        );
+      } else {
+        Snackbar.show(I18nKey.labelDataNotChange.tr);
+      }
+    };
   }
 }
 

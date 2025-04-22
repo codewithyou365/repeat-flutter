@@ -16,6 +16,7 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 abstract class LessonKeyDao {
   late AppDatabase db;
   static LessonShow? Function(int lessonKeyId)? getLessonShow;
+  static List<void Function(int lessonKeyId)> setLessonShowContent = [];
 
   @Query('SELECT *'
       ' FROM LessonKey'
@@ -145,17 +146,20 @@ abstract class LessonKeyDao {
     var now = DateTime.now();
     await updateKeyAndContent(lessonKeyId, content, lessonKey.contentVersion + 1);
     await db.textVersionDao.insertOrIgnore(TextVersion(
-       t: TextVersionType.lessonContent,
-       id:lessonKeyId,
-       version:lessonKey.contentVersion + 1,
-       reason:TextVersionReason.editor,
-       text:content,
-       createTime:now,
+      t: TextVersionType.lessonContent,
+      id: lessonKeyId,
+      version: lessonKey.contentVersion + 1,
+      reason: TextVersionReason.editor,
+      text: content,
+      createTime: now,
     ));
     if (getLessonShow != null) {
       LessonShow? lessonShow = getLessonShow!(lessonKeyId);
       if (lessonShow != null) {
         lessonShow.lessonContent = content;
+        for (var set in setLessonShowContent) {
+          set(lessonKeyId);
+        }
         lessonShow.lessonContentVersion++;
       }
     }

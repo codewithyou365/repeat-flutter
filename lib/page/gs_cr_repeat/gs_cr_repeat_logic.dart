@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/game_server/game_server.dart';
+import 'package:repeat_flutter/logic/widget/copy_template.dart';
 
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/segment_list.dart';
@@ -23,6 +25,7 @@ class GsCrRepeatLogic extends GetxController {
   final GsCrRepeatState state = GsCrRepeatState();
   GameServer server = GameServer();
 
+  late CopyLogic copyLogic = CopyLogic<GsCrRepeatLogic>(CrK.copyTemplate, this);
   late RepeatView repeatView = RepeatViewForVideo();
   late SegmentList segmentList = SegmentList<GsCrRepeatLogic>(this);
   late RepeatLogic? repeatLogic;
@@ -64,6 +67,11 @@ class GsCrRepeatLogic extends GetxController {
 
   switchConcentrationMode() {
     state.concentrationMode = !state.concentrationMode;
+    update([GsCrRepeatLogic.id]);
+  }
+
+  switchEditMode() {
+    state.helper.edit = !state.helper.edit;
     update([GsCrRepeatLogic.id]);
   }
 

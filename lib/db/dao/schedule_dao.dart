@@ -189,6 +189,7 @@ abstract class ScheduleDao {
   late AppDatabase db;
 
   static SegmentShow? Function(int segmentKeyId)? getSegmentShow;
+  static List<void Function(int segmentKeyId)> setSegmentShowContent = [];
   static ScheduleConfig scheduleConfig = ScheduleConfig([], 0, 0, [], []);
 
   static ScheduleConfig defaultScheduleConfig = ScheduleConfig(
@@ -1167,6 +1168,9 @@ abstract class ScheduleDao {
       SegmentShow? currSegmentShow = getSegmentShow!(segmentKeyId);
       if (currSegmentShow != null) {
         currSegmentShow.segmentContent = content;
+        for (var set in setSegmentShowContent) {
+          set(segmentKeyId);
+        }
         currSegmentShow.k = key;
         currSegmentShow.segmentContentVersion++;
       }

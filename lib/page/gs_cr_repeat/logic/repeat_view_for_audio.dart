@@ -1,8 +1,16 @@
+import 'dart:convert';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/widgets.dart';
+import 'package:get/get.dart';
+import 'package:repeat_flutter/common/time.dart';
+import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'constant.dart';
-import 'model.dart';
+import 'model_media_segment.dart';
 import 'helper.dart';
 import 'repeat_view.dart';
 
@@ -14,7 +22,7 @@ class RepeatViewForAudio extends RepeatView {
   late MediaSegmentHelper mediaSegmentHelper;
 
   // Ui
-  double audioBarHeight = 50;
+  double mediaBarHeight = 50;
 
   RepeatViewForAudio();
 
@@ -43,7 +51,7 @@ class RepeatViewForAudio extends RepeatView {
     }
 
     var path = '';
-    List<String>? paths = helper.getPaths();
+    List<String>? paths = helper.getLessonPaths();
     if (paths != null && paths.isNotEmpty) {
       path = paths.first;
     }
@@ -72,11 +80,14 @@ class RepeatViewForAudio extends RepeatView {
     if (helper.landscape) {
       padding = helper.leftPadding;
     }
-    height = helper.screenHeight - helper.topPadding - helper.topBarHeight - helper.bottomBarHeight;
+    height = helper.screenHeight - helper.topPadding - helper.topBarHeight - helper.bottomBarHeight - mediaBarHeight;
+    var q = helper.text(QaType.question);
+    var a = helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
     return Column(
       children: [
         SizedBox(height: helper.topPadding),
         helper.topBar(),
+        mediaBar(helper.screenWidth - padding * 2, mediaBarHeight, range),
         SizedBox(
           height: height,
           child: ListView(padding: const EdgeInsets.all(0), children: [
@@ -85,9 +96,8 @@ class RepeatViewForAudio extends RepeatView {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  mediaBar(helper.screenWidth - padding * 2, audioBarHeight, range),
-                  if (s.question != null && s.question!.isNotEmpty) Text(s.question!),
-                  if (helper.step != RepeatStep.recall) Text(s.answer),
+                  if (q != null) q,
+                  if (a != null) a,
                 ],
               ),
             ),
@@ -134,6 +144,7 @@ class RepeatViewForAudio extends RepeatView {
         await audioPlayer.resume();
       },
       onStop: audioPlayer.stop,
+      onEdit: mediaSegmentHelper.mediaEdit(range),
     );
   }
 }

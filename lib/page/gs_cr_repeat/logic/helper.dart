@@ -2,11 +2,13 @@ import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
 import 'package:repeat_flutter/common/path.dart';
+import 'package:repeat_flutter/db/dao/lesson_key_dao.dart';
+import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content.dart';
+import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/lesson_help.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
@@ -28,13 +30,27 @@ class Helper {
   late Widget Function() topBar;
   double bottomBarHeight = 50;
   late Widget Function({required double width}) bottomBar;
+  late Widget? Function(QaType type) text;
 
-  Map<int, RepeatDoc> docCache = {};
-  Map<int, Map<String, dynamic>> docMapCache = {};
+  bool edit = false;
+
+  Map<int, Map<String, dynamic>> lessonMapCache = {};
+  Map<int, List<String>> lessonPathCache = {};
+
   Map<int, Map<String, dynamic>> segmentMapCache = {};
-  Map<int, List<String>> pathCache = {};
 
-  Helper();
+  Helper() {
+    LessonKeyDao.setLessonShowContent = [];
+    LessonKeyDao.setLessonShowContent.add((int id) {
+      lessonMapCache.remove(id);
+      lessonPathCache.remove(id);
+    });
+
+    ScheduleDao.setSegmentShowContent = [];
+    ScheduleDao.setSegmentShowContent.add((int id) {
+      segmentMapCache.remove(id);
+    });
+  }
 
   Future<void> init(RepeatLogic logic) async {
     this.logic = logic;
@@ -83,6 +99,27 @@ class Helper {
     return ret.content;
   }
 
+  Map<String, dynamic>? getCurrLessonMap() {
+    if (logic.currSegment == null) {
+      return null;
+    }
+    Map<String, dynamic>? ret = lessonMapCache[logic.currSegment!.lessonKeyId];
+    String? lessonContent = getCurrLessonContent();
+    if (lessonContent == null) {
+      return null;
+    }
+    ret = jsonDecode(lessonContent);
+    if (ret is! Map<String, dynamic>) {
+      return null;
+    }
+    lessonMapCache[logic.currSegment!.lessonKeyId] = ret;
+    return ret;
+  }
+
+  SegmentTodayPrg? getCurrSegment() {
+    return logic.currSegment;
+  }
+
   Map<String, dynamic>? getCurrSegmentMap() {
     if (logic.currSegment == null) {
       return null;
@@ -104,10 +141,6 @@ class Helper {
     if (logic.currSegment == null) {
       return null;
     }
-    Map<String, dynamic>? ret = docMapCache[logic.currSegment!.segmentKeyId];
-    if (ret != null) {
-      return ret;
-    }
     String? rootContent = getCurrRootContent();
     if (rootContent == null) {
       return null;
@@ -122,7 +155,6 @@ class Helper {
     var lessonJsonMap = jsonDecode(lessonContent);
     lessonJsonMap['s'] = [segmentJsonMap];
     rootJsonMap['l'] = [lessonJsonMap];
-    docMapCache[logic.currSegment!.segmentKeyId] = rootJsonMap;
     return rootJsonMap;
   }
 
@@ -130,34 +162,32 @@ class Helper {
     if (logic.currSegment == null) {
       return null;
     }
-    RepeatDoc? ret = docCache[logic.currSegment!.segmentKeyId];
     final map = getCurrRepeatDocMap();
     if (map == null) {
       return null;
     }
-    ret = RepeatDoc.fromJson(map);
-    docCache[logic.currSegment!.segmentKeyId] = ret;
-    return ret;
+    return RepeatDoc.fromJson(map);
   }
 
-  List<String>? getPaths() {
+  List<String>? getLessonPaths() {
     if (logic.currSegment == null) {
       return null;
     }
-    List<String>? ret = pathCache[logic.currSegment!.segmentKeyId];
+    List<String>? ret = lessonPathCache[logic.currSegment!.lessonKeyId];
     if (ret != null) {
       return ret;
     }
-    var doc = getCurrRepeatDoc();
+    var doc = getCurrLessonMap();
     if (doc == null) {
       return null;
     }
-    List<Download> downloads = DocHelp.getDownloads(doc, rootUrl: "");
+    Lesson lesson = Lesson.fromJson(doc);
+    var downloads = lesson.download ?? [];
     ret = [];
     for (var download in downloads) {
       ret.add(rootPath.joinPath(DocPath.getRelativePath(logic.currSegment!.contentSerial)).joinPath(download.path));
     }
-    pathCache[logic.currSegment!.segmentKeyId] = ret;
+    lessonPathCache[logic.currSegment!.lessonKeyId] = ret;
     return ret;
   }
 }

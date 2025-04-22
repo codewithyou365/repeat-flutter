@@ -1,8 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/widget/text/text_button.dart';
 
 import 'gs_cr_repeat_logic.dart';
 import 'logic/constant.dart';
@@ -42,6 +47,7 @@ class GsCrRepeatPage extends StatelessWidget {
     double topBarHeight = state.helper.topBarHeight;
     state.helper.topBar = () => topBar(logic: logic, height: topBarHeight);
     state.helper.bottomBar = ({required double width}) => bottomBar(logic: logic, width: width, height: state.helper.bottomBarHeight);
+    state.helper.text = (QaType type) => text(logic, type);
 
     if (state.lastLandscape == null || state.lastLandscape != landscape) {
       state.lastLandscape = landscape;
@@ -65,59 +71,58 @@ class GsCrRepeatPage extends StatelessWidget {
   Widget topBar({required GsCrRepeatLogic logic, required double height}) {
     final repeatLogic = logic.repeatLogic;
     final state = logic.state;
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        topBarTitle(logic: logic, fontSize: 18),
-        SizedBox(
-          height: height,
-          child: Row(
-            children: [
-              const SizedBox(width: 10),
-              IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new),
-                onPressed: () {
-                  Nav.back();
-                },
+    return SizedBox(
+      height: height,
+      child: Row(
+        children: [
+          const SizedBox(width: 10),
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new),
+            onPressed: () {
+              Nav.back();
+            },
+          ),
+          topBarTitle(logic: logic, fontSize: 18),
+          const Spacer(),
+          if (repeatLogic != null && repeatLogic.step != RepeatStep.recall)
+            IconButton(
+              icon: const Icon(Icons.assistant_photo),
+              onPressed: logic.adjustProgress,
+            ),
+          if (repeatLogic != null && repeatLogic.step != RepeatStep.recall)
+            IconButton(
+              icon: const Icon(Icons.list_alt),
+              tooltip: I18nKey.labelDetail.tr,
+              onPressed: logic.openSegmentList,
+            ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              // PopupMenuItem<String>(
+              //   onTap: () => logic.openGameMode(context),
+              //   child: Text("${I18nKey.btnGameMode.tr}(${state.gameMode})"),
+              // ),
+              PopupMenuItem<String>(
+                onTap: logic.switchConcentrationMode,
+                child: Text("${I18nKey.btnConcentration.tr}(${state.concentrationMode})"),
               ),
-              const Spacer(),
-              if (repeatLogic != null && repeatLogic.step != RepeatStep.recall)
-                IconButton(
-                  icon: const Icon(Icons.assistant_photo),
-                  onPressed: logic.adjustProgress,
-                ),
-              if (repeatLogic != null && repeatLogic.step != RepeatStep.recall)
-                IconButton(
-                  icon: const Icon(Icons.list_alt),
-                  tooltip: I18nKey.labelDetail.tr,
-                  onPressed: logic.openSegmentList,
-                ),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert),
-                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                  // PopupMenuItem<String>(
-                  //   onTap: () => logic.openGameMode(context),
-                  //   child: Text("${I18nKey.btnGameMode.tr}(${state.gameMode})"),
-                  // ),
-                  PopupMenuItem<String>(
-                    onTap: logic.switchConcentrationMode,
-                    child: Text("${I18nKey.btnConcentration.tr}(${state.concentrationMode})"),
-                  ),
-                  // PopupMenuItem<String>(
-                  //   onTap: logic.extendTail,
-                  //   child: Text("${I18nKey.btnExtendTail.tr}(${state.extendTail})"),
-                  // ),
-                  // PopupMenuItem<String>(
-                  //   onTap: logic.resetTail,
-                  //   child: Text(I18nKey.btnResetTail.tr),
-                  // ),
-                ],
+              PopupMenuItem<String>(
+                onTap: logic.switchEditMode,
+                child: Text("${I18nKey.labelEdit.tr}(${state.helper.edit})"),
               ),
-              const SizedBox(width: 10),
+              // PopupMenuItem<String>(
+              //   onTap: logic.extendTail,
+              //   child: Text("${I18nKey.btnExtendTail.tr}(${state.extendTail})"),
+              // ),
+              // PopupMenuItem<String>(
+              //   onTap: logic.resetTail,
+              //   child: Text(I18nKey.btnResetTail.tr),
+              // ),
             ],
           ),
-        ),
-      ],
+          const SizedBox(width: 10),
+        ],
+      ),
     );
   }
 
@@ -208,5 +213,39 @@ class GsCrRepeatPage extends StatelessWidget {
         child: Text(text),
       ),
     );
+  }
+
+  Widget? text(GsCrRepeatLogic logic, QaType type) {
+    var helper = logic.state.helper;
+    var edit = helper.edit;
+    var map = helper.getCurrSegmentMap();
+    if (map == null) {
+      return null;
+    }
+    String? text = map[type.acronym];
+    if (text == null) {
+      return null;
+    }
+    if (edit) {
+      return MyTextButton.build(() {
+        Editor.show(
+          Get.context!,
+          type.i18n.tr,
+          text,
+          (str) async {
+            map[type.acronym] = str;
+            String jsonStr = jsonEncode(map);
+            var segmentKeyId = helper.getCurrSegment()!.segmentKeyId;
+            await Db().db.scheduleDao.tUpdateSegmentContent(segmentKeyId, jsonStr);
+            logic.update([GsCrRepeatLogic.id]);
+          },
+          qrPagePath: Nav.gsCrContentScan.path,
+        );
+      }, text);
+    } else {
+      return MyTextButton.build(() {
+        logic.copyLogic.show(Get.context!, "{{text}}", text);
+      }, text);
+    }
   }
 }

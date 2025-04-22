@@ -24,10 +24,7 @@ class MsgBox {
     myDialog(
       title: title,
       barrierDismissible: barrierDismissible,
-      content: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Text(desc),
-      ),
+      content: content(desc),
       action: yesOrNoAction(yes: yes, no: no, yesBtnTitle: yesBtnTitle, noBtnTitle: noBtnTitle),
     );
   }
@@ -307,7 +304,7 @@ class MsgBox {
   }
 
   static void myDialog({
-    required title,
+    String title = "",
     required Widget content,
     required Widget action,
     bool barrierDismissible = true,
@@ -353,6 +350,13 @@ class MsgBox {
           ),
         ),
       ),
+    );
+  }
+
+  static content(String text) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Text(text),
     );
   }
 

@@ -36,13 +36,17 @@ class Time {
     return ret;
   }
 
-  static String convertToString(Duration time) {
-    int hours = time.inHours;
-    int minutes = time.inMinutes % 60;
-    int seconds = time.inSeconds % 60;
-    int milliseconds = time.inMilliseconds % 1000;
+  static String convertMsToString(int ms) {
+    int hours = ms ~/ (1000 * 60 * 60);
+    int minutes = (ms ~/ (1000 * 60)) % 60;
+    int seconds = (ms ~/ 1000) % 60;
+    int milliseconds = ms % 1000;
 
     return "${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')},${milliseconds.toString().padLeft(3, '0')}";
+  }
+
+  static String convertToString(Duration time) {
+    return convertMsToString(time.inMilliseconds);
   }
 
   static String extend(String time, int extendMilliseconds, Duration max) {

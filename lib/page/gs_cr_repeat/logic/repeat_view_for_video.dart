@@ -4,7 +4,7 @@ import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:video_player/video_player.dart';
 import 'constant.dart';
-import 'model.dart';
+import 'model_media_segment.dart';
 import 'helper.dart';
 import 'repeat_view.dart';
 import 'dart:io';
@@ -19,6 +19,7 @@ class RepeatViewForVideo extends RepeatView {
 
   // UI
   var showLandscapeUi = true.obs;
+  double mediaBarHeight = 50;
   double padding = 16;
 
   RepeatViewForVideo();
@@ -53,7 +54,7 @@ class RepeatViewForVideo extends RepeatView {
     }
 
     var path = '';
-    List<String>? paths = helper.getPaths();
+    List<String>? paths = helper.getLessonPaths();
     if (paths != null && paths.isNotEmpty) {
       path = paths.first;
     }
@@ -94,6 +95,8 @@ class RepeatViewForVideo extends RepeatView {
 
   landscape(MediaSegment s, Range range) {
     var helper = this.helper!;
+    var q = helper.text(QaType.question);
+    var a = helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
     return Stack(
       alignment: Alignment.topCenter,
       children: [
@@ -123,14 +126,15 @@ class RepeatViewForVideo extends RepeatView {
               child: Column(
                 children: [
                   SizedBox(height: helper.topBarHeight),
+                  mediaBar(helper.screenWidth / 2, mediaBarHeight, range),
                   SizedBox(
-                    height: helper.screenHeight - helper.topBarHeight - helper.bottomBarHeight,
+                    height: helper.screenHeight - helper.topBarHeight - helper.bottomBarHeight - mediaBarHeight,
                     width: helper.screenWidth / 2,
                     child: Padding(
                       padding: EdgeInsets.only(left: padding, right: helper.leftPadding),
                       child: ListView(padding: const EdgeInsets.all(0), children: [
-                        if (s.question != null && s.question!.isNotEmpty) Text(s.question!),
-                        if (helper.step != RepeatStep.recall) Text(s.answer),
+                        if (q != null) q,
+                        if (a != null) a,
                       ]),
                     ),
                   ),
@@ -139,22 +143,14 @@ class RepeatViewForVideo extends RepeatView {
             ),
           ),
         ),
-        Obx(() => showLandscapeUi.value ? helper.topBar() : SizedBox(width: helper.screenWidth)),
+        helper.topBar(),
         Obx(
           () => AnimatedPositioned(
             duration: const Duration(milliseconds: 150),
-            bottom: showLandscapeUi.value ? 0 : -helper.bottomBarHeight,
-            left: 0,
+            bottom: showLandscapeUi.value ? 0 : -helper.bottomBarHeight * 2,
+            left: helper.screenWidth / 2,
             right: 0,
-            child: Container(
-              color: Colors.white.withAlpha(200),
-              child: Row(
-                children: [
-                  mediaBar(helper.screenWidth / 2, helper.bottomBarHeight, range),
-                  helper.bottomBar(width: helper.screenWidth / 2),
-                ],
-              ),
-            ),
+            child: helper.bottomBar(width: helper.screenWidth / 2),
           ),
         ),
       ],
@@ -164,6 +160,8 @@ class RepeatViewForVideo extends RepeatView {
   portrait(MediaSegment s, Range range) {
     var helper = this.helper!;
     double height = helper.screenHeight - helper.topPadding - helper.topBarHeight - helper.bottomBarHeight;
+    var q = helper.text(QaType.question);
+    var a = helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
     var bar = mediaBar(helper.screenWidth - padding * 2, helper.bottomBarHeight, range);
     return Column(
       children: [
@@ -179,8 +177,8 @@ class RepeatViewForVideo extends RepeatView {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   bar,
-                  if (s.question != null && s.question!.isNotEmpty) Text(s.question!),
-                  if (helper.step != RepeatStep.recall) Text(s.answer),
+                  if (q != null) q,
+                  if (a != null) a,
                 ],
               ),
             ),
@@ -202,16 +200,13 @@ class RepeatViewForVideo extends RepeatView {
     final aspectRatio = _videoPlayerController!.value.aspectRatio;
     final screenWidth = helper!.screenWidth;
     final screenHeight = helper!.screenHeight;
-    final topBar = helper!.topBarHeight;
-    final bottomBar = helper!.bottomBarHeight;
 
     double targetWidth, targetHeight, left, right, top, bottom;
 
     if (showLandscapeUi.value) {
-      final maxHeight = screenHeight - topBar - bottomBar;
       final maxWidth = screenWidth / 2;
 
-      targetHeight = maxHeight;
+      targetHeight = screenHeight;
       targetWidth = targetHeight * aspectRatio;
 
       if (targetWidth > maxWidth) {
@@ -224,8 +219,8 @@ class RepeatViewForVideo extends RepeatView {
         right = maxWidth;
       } else {
         final horizontalPadding = (maxWidth - targetWidth) / 2;
-        top = topBar;
-        bottom = bottomBar;
+        top = 0;
+        bottom = 0;
         left = horizontalPadding;
         right = horizontalPadding + maxWidth;
       }
@@ -312,6 +307,7 @@ class RepeatViewForVideo extends RepeatView {
           await _videoPlayerController!.pause();
         }
       },
+      onEdit: mediaSegmentHelper.mediaEdit(range),
     );
   }
 

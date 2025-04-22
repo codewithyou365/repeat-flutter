@@ -201,6 +201,11 @@ class ConfigZh extends Config {
     put(I18nKey.labelEdit, "编辑");
     put(I18nKey.labelDoYourShareTheNotes, "是否分享你的笔记");
     put(I18nKey.labelSharingNotes, "分享笔记");
+    put(I18nKey.labelDataNotChange, "数据没有发生变化");
+    put(I18nKey.labelStartOrEnd, "该点(%s)是被保存为媒体的起点还是终点？");
+    put(I18nKey.labelSaveToStart, "这个点（%s）会被保存为媒体的起点");
+    put(I18nKey.labelSaveToEnd, "这个点（%s）会被保存为媒体的终点");
+    put(I18nKey.btnEnd, "终点");
     put(I18nKey.btnHandleNow, "现在处理");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");

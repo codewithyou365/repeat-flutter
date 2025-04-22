@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 typedef MediaDurationMsCallback = int Function();
 typedef MediaPlayCallback = Future<void> Function(Duration position);
 typedef MediaStopCallback = Future<void> Function();
+typedef MediaEditCallback = Future<void> Function(int ms);
 
 class MediaBar extends StatefulWidget {
   static const double pixelPerMs = 0.06;
@@ -16,6 +17,7 @@ class MediaBar extends StatefulWidget {
   final MediaDurationMsCallback duration;
   final MediaPlayCallback onPlay;
   final MediaStopCallback onStop;
+  final MediaEditCallback? onEdit;
 
   const MediaBar({
     required this.width,
@@ -25,6 +27,7 @@ class MediaBar extends StatefulWidget {
     required this.duration,
     required this.onPlay,
     required this.onStop,
+    required this.onEdit,
     Key? key,
   }) : super(key: key);
 
@@ -195,6 +198,14 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
                 onPressed: () => _playAtPosition(incrementMs: 5000),
               ),
               const Spacer(),
+              if (widget.onEdit != null && !_isPlaying)
+                IconButton(
+                  icon: const Icon(Icons.cut),
+                  iconSize: 20,
+                  onPressed: () {
+                    widget.onEdit!(widget.segmentStartMs + (-_blockOffset / MediaBar.pixelPerMs).floor());
+                  },
+                ),
               IconButton(
                 icon: _isPlaying ? const Icon(Icons.pause) : const Icon(Icons.play_arrow),
                 iconSize: 20,

@@ -1,7 +1,4 @@
-import 'dart:convert';
-
 import 'package:flutter/widgets.dart';
-import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'constant.dart';
 import 'helper.dart';
 import 'repeat_view.dart';
@@ -28,13 +25,14 @@ class RepeatViewForText extends RepeatView {
     if (segmentContent == null) {
       return SizedBox(height: height);
     }
-    Segment s = Segment.fromJson(jsonDecode(segmentContent));
 
     double padding = 16;
     if (helper.landscape) {
       padding = helper.leftPadding;
     }
     height = helper.screenHeight - helper.topPadding - helper.topBarHeight - helper.bottomBarHeight;
+    var q = helper.text(QaType.question);
+    var a = helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
     return Column(
       children: [
         SizedBox(height: helper.topPadding),
@@ -47,8 +45,8 @@ class RepeatViewForText extends RepeatView {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (s.question != null && s.question!.isNotEmpty) Text(s.question!),
-                  if (helper.step != RepeatStep.recall) Text(s.answer),
+                  if (q != null) q,
+                  if (a != null) a,
                 ],
               ),
             ),

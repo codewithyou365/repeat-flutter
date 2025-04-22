@@ -18,7 +18,7 @@ class RepeatDoc {
       view: json['v'] as String?,
       rootUrl: json['r'] as String?,
       download: Download.toList(json['d']),
-      lesson: (json['l'] as List).map((e) => Lesson.fromJson(e as Map<String, dynamic>)).toList(),
+      lesson: (json['l'] as List?)?.map((e) => Lesson.fromJson(e as Map<String, dynamic>)).toList() ?? [],
     );
   }
 
@@ -83,7 +83,7 @@ class Lesson {
       view: json['v'] as String?,
       rootUrl: json['r'] as String?,
       download: Download.toList(json['d']),
-      segment: (json['s'] as List).map((e) => Segment.fromJson(e as Map<String, dynamic>)).toList(),
+      segment: (json['s'] as List?)?.map((e) => Segment.fromJson(e as Map<String, dynamic>)).toList() ?? [],
     );
   }
 
