@@ -36,7 +36,9 @@ class ProgressLogic {
   Widget build(BuildContext context) {
     double viewProgress = progress;
     double minViewValue = 0.03;
-    if (progress < minViewValue) {
+    if (progress == 0.0) {
+      viewProgress = progress;
+    } else if (progress < minViewValue) {
       viewProgress = minViewValue;
     }
     if (progress != 1 && progress > 1 - minViewValue) {
