@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/page/gs_cr_repeat/logic/model_media_range.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:video_player/video_player.dart';
 import 'constant.dart';
-import 'model_media_segment.dart';
 import 'helper.dart';
 import 'repeat_view.dart';
 import 'dart:io';
@@ -14,7 +14,7 @@ class RepeatViewForVideo extends RepeatView {
   final GlobalKey<MediaBarState> mediaKey = GlobalKey<MediaBarState>();
   VideoPlayerController? _videoPlayerController;
   int duration = 0;
-  late MediaSegmentHelper mediaSegmentHelper;
+  late MediaRangeHelper mediaRangeHelper;
   var initialized = false.obs;
 
   // UI
@@ -34,7 +34,7 @@ class RepeatViewForVideo extends RepeatView {
   @override
   void init(Helper helper) {
     this.helper = helper;
-    mediaSegmentHelper = MediaSegmentHelper(helper: helper);
+    mediaRangeHelper = MediaRangeHelper(helper: helper);
   }
 
   @override
@@ -48,10 +48,6 @@ class RepeatViewForVideo extends RepeatView {
     if (helper == null) {
       return emptyBody();
     }
-    var s = mediaSegmentHelper.getMediaSegment();
-    if (s == null) {
-      return emptyBody();
-    }
 
     var path = '';
     List<String>? paths = helper.getLessonPaths();
@@ -59,13 +55,13 @@ class RepeatViewForVideo extends RepeatView {
       path = paths.first;
     }
 
-    Range? range;
+    MediaRange? range;
     if (path.isNotEmpty) {
       if (helper.step != RepeatStep.recall) {
-        range = mediaSegmentHelper.getCurrAnswerRange();
+        range = mediaRangeHelper.getCurrAnswerRange();
       }
       if (range == null || !range.enable) {
-        range = mediaSegmentHelper.getCurrQuestionRange();
+        range = mediaRangeHelper.getCurrQuestionRange();
       }
     }
 
@@ -80,9 +76,9 @@ class RepeatViewForVideo extends RepeatView {
     });
 
     if (helper.landscape) {
-      return landscape(s, range);
+      return landscape(range);
     } else {
-      return portrait(s, range);
+      return portrait(range);
     }
   }
 
@@ -93,7 +89,7 @@ class RepeatViewForVideo extends RepeatView {
     ]);
   }
 
-  landscape(MediaSegment s, Range range) {
+  landscape(MediaRange range) {
     var helper = this.helper!;
     var q = helper.text(QaType.question);
     var a = helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
@@ -157,7 +153,7 @@ class RepeatViewForVideo extends RepeatView {
     );
   }
 
-  portrait(MediaSegment s, Range range) {
+  portrait(MediaRange range) {
     var helper = this.helper!;
     double height = helper.screenHeight - helper.topPadding - helper.topBarHeight - helper.bottomBarHeight;
     var q = helper.text(QaType.question);
@@ -288,7 +284,7 @@ class RepeatViewForVideo extends RepeatView {
     });
   }
 
-  Widget mediaBar(double width, double height, Range range) {
+  Widget mediaBar(double width, double height, MediaRange range) {
     return MediaBar(
       width: width,
       height: height,
@@ -307,7 +303,7 @@ class RepeatViewForVideo extends RepeatView {
           await _videoPlayerController!.pause();
         }
       },
-      onEdit: mediaSegmentHelper.mediaEdit(range),
+      onEdit: mediaRangeHelper.mediaRangeEdit(range),
     );
   }
 

@@ -5,21 +5,20 @@ import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'helper.dart';
 
-class Range {
+class MediaRange {
   int start;
   int end;
   bool enable;
   String jsonStartName;
   String jsonEndName;
 
-  Range({
+  MediaRange({
     required this.start,
     required this.end,
     required this.enable,
@@ -28,98 +27,87 @@ class Range {
   });
 }
 
-class MediaSegmentHelper {
-  Map<int, MediaSegment> mediaSegmentCache = {};
-  Map<int, Range> answerRangeCache = {};
-  Map<int, Range> questionRangeCache = {};
+class MediaRangeHelper {
+  Map<int, MediaRange> answerRangeCache = {};
+  Map<int, MediaRange> questionRangeCache = {};
   final Helper helper;
 
-  MediaSegmentHelper({
+  MediaRangeHelper({
     required this.helper,
   }) {
     ScheduleDao.setSegmentShowContent.add((int id) {
-      mediaSegmentCache.remove(id);
       answerRangeCache.remove(id);
       questionRangeCache.remove(id);
     });
   }
 
-  MediaSegment? getMediaSegment() {
+  MediaRange? getCurrAnswerRange() {
     if (helper.logic.currSegment == null) {
       return null;
     }
-    MediaSegment? ret = mediaSegmentCache[helper.logic.currSegment!.segmentKeyId];
+    MediaRange? ret = answerRangeCache[helper.logic.currSegment!.segmentKeyId];
     if (ret != null) {
       return ret;
     }
-    final map = helper.getCurrSegmentMap();
-    if (map == null) {
-      return null;
-    }
-    ret = MediaSegment.fromJson(map);
-    mediaSegmentCache[helper.logic.currSegment!.segmentKeyId] = ret;
-    return ret;
-  }
-
-  Range? getCurrAnswerRange() {
-    if (helper.logic.currSegment == null) {
-      return null;
-    }
-    Range? ret = answerRangeCache[helper.logic.currSegment!.segmentKeyId];
-    if (ret != null) {
-      return ret;
-    }
-    final s = getMediaSegment();
+    final s = helper.getCurrSegmentMap();
     if (s == null) {
       return null;
     }
-    if (s.aStart != null && //
-        s.aEnd != null &&
-        s.aStart!.isNotEmpty &&
-        s.aEnd!.isNotEmpty) {
-      final start = Time.parseTimeToMilliseconds(s.aStart!).toInt();
-      final end = Time.parseTimeToMilliseconds(s.aEnd!).toInt();
-      ret = Range(start: start, end: end, enable: true);
+    String jsonStartName = "aStart";
+    String jsonEndName = "aEnd";
+    String? startStr = s[jsonStartName] as String?;
+    String? endStr = s[jsonEndName] as String?;
+    if (startStr != null && //
+        endStr != null &&
+        startStr.isNotEmpty &&
+        endStr.isNotEmpty) {
+      final start = Time.parseTimeToMilliseconds(startStr).toInt();
+      final end = Time.parseTimeToMilliseconds(endStr).toInt();
+      ret = MediaRange(start: start, end: end, enable: true);
       answerRangeCache[helper.logic.currSegment!.segmentKeyId] = ret;
     } else {
-      ret = Range(start: 0, end: 0, enable: false);
+      ret = MediaRange(start: 0, end: 0, enable: false);
       answerRangeCache[helper.logic.currSegment!.segmentKeyId] = ret;
     }
-    ret.jsonStartName = "aStart";
-    ret.jsonEndName = "aEnd";
+    ret.jsonStartName =jsonStartName;
+    ret.jsonEndName =jsonEndName;
     return ret;
   }
 
-  Range? getCurrQuestionRange() {
+  MediaRange? getCurrQuestionRange() {
     if (helper.logic.currSegment == null) {
       return null;
     }
-    Range? ret = questionRangeCache[helper.logic.currSegment!.segmentKeyId];
+    MediaRange? ret = questionRangeCache[helper.logic.currSegment!.segmentKeyId];
     if (ret != null) {
       return ret;
     }
-    final s = getMediaSegment();
+    final s = helper.getCurrSegmentMap();
     if (s == null) {
       return null;
     }
-    if (s.qStart != null && //
-        s.qEnd != null &&
-        s.qStart!.isNotEmpty &&
-        s.qEnd!.isNotEmpty) {
-      final start = Time.parseTimeToMilliseconds(s.qStart!).toInt();
-      final end = Time.parseTimeToMilliseconds(s.qEnd!).toInt();
-      ret = Range(start: start, end: end, enable: true);
+    String jsonStartName = "qStart";
+    String jsonEndName = "qEnd";
+    String? startStr = s[jsonStartName] as String?;
+    String? endStr = s[jsonEndName] as String?;
+    if (startStr != null && //
+        endStr != null &&
+        startStr.isNotEmpty &&
+        endStr.isNotEmpty) {
+      final start = Time.parseTimeToMilliseconds(startStr).toInt();
+      final end = Time.parseTimeToMilliseconds(endStr).toInt();
+      ret = MediaRange(start: start, end: end, enable: true);
       questionRangeCache[helper.logic.currSegment!.segmentKeyId] = ret;
     } else {
-      ret = Range(start: 0, end: 0, enable: false);
+      ret = MediaRange(start: 0, end: 0, enable: false);
       questionRangeCache[helper.logic.currSegment!.segmentKeyId] = ret;
     }
-    ret.jsonStartName = "qStart";
-    ret.jsonEndName = "qEnd";
+    ret.jsonStartName =jsonStartName;
+    ret.jsonEndName =jsonEndName;
     return ret;
   }
 
-  MediaEditCallback? mediaEdit(Range range) {
+  MediaEditCallback? mediaRangeEdit(MediaRange range) {
     if (!helper.edit) {
       return null;
     }
@@ -183,66 +171,6 @@ class MediaSegmentHelper {
       } else {
         Snackbar.show(I18nKey.labelDataNotChange.tr);
       }
-    };
-  }
-}
-
-class MediaSegment extends Segment {
-  String? qStart;
-  String? qEnd;
-  String? aStart;
-  String? aEnd;
-
-  MediaSegment({
-    required super.view,
-    required super.rootUrl,
-    required super.download,
-    required super.key,
-    required super.write,
-    required super.note,
-    required super.tip,
-    required super.question,
-    required super.answer,
-    required this.qStart,
-    required this.qEnd,
-    required this.aStart,
-    required this.aEnd,
-  });
-
-  factory MediaSegment.fromJson(Map<String, dynamic> json) {
-    return MediaSegment(
-      view: json['v'] as String?,
-      rootUrl: json['r'] as String?,
-      download: Download.toList(json['d']),
-      key: json['k'] as String?,
-      write: json['w'] as String?,
-      note: json['n'] as String?,
-      tip: json['t'] as String?,
-      question: json['q'] as String?,
-      answer: json['a'] as String,
-      qStart: json['qStart'] as String?,
-      qEnd: json['qEnd'] as String?,
-      aStart: json['aStart'] as String?,
-      aEnd: json['aEnd'] as String?,
-    );
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      'v': super.view,
-      'r': super.rootUrl,
-      'd': super.download?.map((e) => e.toJson()).toList(),
-      'k': super.key,
-      'w': super.write,
-      'n': super.note,
-      't': super.tip,
-      'q': super.question,
-      'a': super.answer,
-      'qStart': qStart,
-      'qEnd': qEnd,
-      'aStart': aStart,
-      'aEnd': aEnd,
     };
   }
 }

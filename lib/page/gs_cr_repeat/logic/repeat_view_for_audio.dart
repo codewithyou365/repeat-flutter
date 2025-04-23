@@ -1,16 +1,8 @@
-import 'dart:convert';
-
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/widgets.dart';
-import 'package:get/get.dart';
-import 'package:repeat_flutter/common/time.dart';
-import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
-import 'package:repeat_flutter/widget/dialog/msg_box.dart';
-import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'constant.dart';
-import 'model_media_segment.dart';
+import 'model_media_range.dart';
 import 'helper.dart';
 import 'repeat_view.dart';
 
@@ -19,7 +11,7 @@ class RepeatViewForAudio extends RepeatView {
   final GlobalKey<MediaBarState> mediaKey = GlobalKey<MediaBarState>();
   late AudioPlayer audioPlayer;
   int duration = 0;
-  late MediaSegmentHelper mediaSegmentHelper;
+  late MediaRangeHelper mediaRangeHelper;
 
   // Ui
   double mediaBarHeight = 50;
@@ -30,7 +22,7 @@ class RepeatViewForAudio extends RepeatView {
   void init(Helper helper) {
     audioPlayer = AudioPlayer(playerId: playerId);
     this.helper = helper;
-    mediaSegmentHelper = MediaSegmentHelper(helper: helper);
+    mediaRangeHelper = MediaRangeHelper(helper: helper);
   }
 
   @override
@@ -45,10 +37,6 @@ class RepeatViewForAudio extends RepeatView {
     if (helper == null) {
       return SizedBox(height: height);
     }
-    var s = mediaSegmentHelper.getMediaSegment();
-    if (s == null) {
-      return SizedBox(height: height);
-    }
 
     var path = '';
     List<String>? paths = helper.getLessonPaths();
@@ -56,13 +44,13 @@ class RepeatViewForAudio extends RepeatView {
       path = paths.first;
     }
 
-    Range? range;
+    MediaRange? range;
     if (path.isNotEmpty) {
       if (helper.step != RepeatStep.recall) {
-        range = mediaSegmentHelper.getCurrAnswerRange();
+        range = mediaRangeHelper.getCurrAnswerRange();
       }
       if (range == null || !range.enable) {
-        range = mediaSegmentHelper.getCurrQuestionRange();
+        range = mediaRangeHelper.getCurrQuestionRange();
       }
     }
 
@@ -131,7 +119,7 @@ class RepeatViewForAudio extends RepeatView {
     }
   }
 
-  Widget mediaBar(double width, double height, Range range) {
+  Widget mediaBar(double width, double height, MediaRange range) {
     return MediaBar(
       width: width,
       height: height,
@@ -144,7 +132,7 @@ class RepeatViewForAudio extends RepeatView {
         await audioPlayer.resume();
       },
       onStop: audioPlayer.stop,
-      onEdit: mediaSegmentHelper.mediaEdit(range),
+      onEdit: mediaRangeHelper.mediaRangeEdit(range),
     );
   }
 }
