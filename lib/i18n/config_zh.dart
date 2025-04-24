@@ -205,6 +205,17 @@ class ConfigZh extends Config {
     put(I18nKey.labelStartOrEnd, "该点(%s)是被保存为媒体的起点还是终点？");
     put(I18nKey.labelSaveToStart, "这个点（%s）会被保存为媒体的起点");
     put(I18nKey.labelSaveToEnd, "这个点（%s）会被保存为媒体的终点");
+    put(I18nKey.labelVideoBoardSetting, "挡板设置");
+    put(I18nKey.labelSwitchLandscapeToSetVideoBoard, "切换到横屏以设置挡板");
+    put(I18nKey.labelSaveAt, "保存到：");
+    put(I18nKey.labelNoVideoBoard, "暂无挡板，请添加挡板");
+    put(I18nKey.labelVideoBoard, "挡板 #%s");
+    put(I18nKey.labelAddVideoBoard, "添加挡板");
+    put(I18nKey.labelDeleteVideoBoard, "删除挡板");
+    put(I18nKey.labelXPosition, "水平位置 (0 = 左侧, 1 = 右侧)");
+    put(I18nKey.labelYPosition, "垂直位置 (0 = 顶部, 1 = 底部)");
+    put(I18nKey.labelWidth, "宽度比例 (0 = 0%, 1 = 100%)");
+    put(I18nKey.labelHeight, "高度比例 (0 = 0%, 1 = 100%)");
     put(I18nKey.btnEnd, "终点");
     put(I18nKey.btnHandleNow, "现在处理");
     put(I18nKey.btnStart, "开始");

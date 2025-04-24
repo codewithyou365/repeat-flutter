@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/model_media_range.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:video_player/video_player.dart';
 import 'constant.dart';
 import 'helper.dart';
+import 'model_video_board.dart';
 import 'repeat_view.dart';
 import 'dart:io';
 
@@ -15,10 +17,11 @@ class RepeatViewForVideo extends RepeatView {
   VideoPlayerController? _videoPlayerController;
   int duration = 0;
   late MediaRangeHelper mediaRangeHelper;
+  late VideoBoardHelper videoBoardHelper;
   var initialized = false.obs;
 
   // UI
-  var showLandscapeUi = true.obs;
+  var showLandscapeOperateUi = true.obs;
   double mediaBarHeight = 50;
   double padding = 16;
 
@@ -35,6 +38,7 @@ class RepeatViewForVideo extends RepeatView {
   void init(Helper helper) {
     this.helper = helper;
     mediaRangeHelper = MediaRangeHelper(helper: helper);
+    videoBoardHelper = VideoBoardHelper(helper: helper);
   }
 
   @override
@@ -74,7 +78,7 @@ class RepeatViewForVideo extends RepeatView {
         mediaKey.currentState?.playFromStart();
       });
     });
-
+    videoBoardHelper.boards.value = videoBoardHelper.getCurrVideoBoard();
     if (helper.landscape) {
       return landscape(range);
     } else {
@@ -98,7 +102,7 @@ class RepeatViewForVideo extends RepeatView {
       children: [
         GestureDetector(
           onTap: () {
-            showLandscapeUi.value = !showLandscapeUi.value;
+            showLandscapeOperateUi.value = !showLandscapeOperateUi.value;
           },
           behavior: HitTestBehavior.opaque,
           child: Stack(
@@ -114,7 +118,7 @@ class RepeatViewForVideo extends RepeatView {
         Obx(
           () => AnimatedPositioned(
             duration: const Duration(milliseconds: 150),
-            right: showLandscapeUi.value ? 0 : -helper.screenWidth / 2,
+            right: showLandscapeOperateUi.value ? 0 : -helper.screenWidth / 2,
             child: Container(
               color: Theme.of(Get.context!).colorScheme.onSecondary,
               height: helper.screenHeight,
@@ -122,18 +126,28 @@ class RepeatViewForVideo extends RepeatView {
               child: Column(
                 children: [
                   SizedBox(height: helper.topBarHeight),
-                  mediaBar(helper.screenWidth / 2, mediaBarHeight, range),
-                  SizedBox(
-                    height: helper.screenHeight - helper.topBarHeight - helper.bottomBarHeight - mediaBarHeight,
-                    width: helper.screenWidth / 2,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: padding, right: helper.leftPadding),
-                      child: ListView(padding: const EdgeInsets.all(0), children: [
-                        if (q != null) q,
-                        if (a != null) a,
-                      ]),
+                  if (!videoBoardHelper.showEdit) mediaBar(helper.screenWidth / 2, mediaBarHeight, range),
+                  if (!videoBoardHelper.showEdit)
+                    SizedBox(
+                      height: helper.screenHeight - helper.topBarHeight - helper.bottomBarHeight - mediaBarHeight,
+                      width: helper.screenWidth / 2,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: padding, right: helper.leftPadding),
+                        child: ListView(padding: const EdgeInsets.all(0), children: [
+                          if (q != null) q,
+                          if (a != null) a,
+                        ]),
+                      ),
                     ),
-                  ),
+                  if (videoBoardHelper.showEdit)
+                    SizedBox(
+                      height: helper.screenHeight - helper.topBarHeight,
+                      width: helper.screenWidth / 2,
+                      child: Padding(
+                        padding: EdgeInsets.only(left: padding, right: helper.leftPadding),
+                        child: videoBoardHelper.editPanel(),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -143,10 +157,10 @@ class RepeatViewForVideo extends RepeatView {
         Obx(
           () => AnimatedPositioned(
             duration: const Duration(milliseconds: 150),
-            bottom: showLandscapeUi.value ? 0 : -helper.bottomBarHeight * 2,
+            bottom: showLandscapeOperateUi.value ? 0 : -helper.bottomBarHeight * 2,
             left: helper.screenWidth / 2,
             right: 0,
-            child: helper.bottomBar(width: helper.screenWidth / 2),
+            child: videoBoardHelper.showEdit ? const SizedBox.shrink() : helper.bottomBar(width: helper.screenWidth / 2),
           ),
         ),
       ],
@@ -199,7 +213,7 @@ class RepeatViewForVideo extends RepeatView {
 
     double targetWidth, targetHeight, left, right, top, bottom;
 
-    if (showLandscapeUi.value) {
+    if (showLandscapeOperateUi.value) {
       final maxWidth = screenWidth / 2;
 
       targetHeight = screenHeight;
@@ -247,38 +261,50 @@ class RepeatViewForVideo extends RepeatView {
       bottom: bottom,
       left: left,
       right: right,
-      child: SizedBox(
+      child: videoBoardHelper.wrapVideo(
         width: targetWidth,
         height: targetHeight,
-        child: VideoPlayer(_videoPlayerController!),
+        video: VideoPlayer(_videoPlayerController!),
+        onPressed: () {
+          videoBoardHelper.openedVideoBoardSettings.value = true;
+        },
+        showLandscapeOperateUi: showLandscapeOperateUi.value,
       ),
     );
   }
 
   Widget videoWidget(double maxHeight) {
     return Obx(() {
-      bool videoPrepared = _videoPlayerController != null && _videoPlayerController!.value.isInitialized;
-      double aspectRatio = 16.0 / 9.0;
-      if (videoPrepared) {
-        aspectRatio = _videoPlayerController!.value.aspectRatio;
+      final controller = _videoPlayerController;
+      final isVideoReady = controller != null && controller.value.isInitialized;
+
+      if (!(initialized.value && isVideoReady)) {
+        return const Center(child: CircularProgressIndicator());
       }
-      if (initialized.value && videoPrepared) {
-        double width = maxHeight * aspectRatio;
-        if (width < helper!.screenWidth) {
-          var sb = SizedBox(
+
+      final aspectRatio = controller.value.aspectRatio;
+      final screenWidth = helper!.screenWidth;
+      void onPressed() {
+        Snackbar.show(I18nKey.labelSwitchLandscapeToSetVideoBoard.tr);
+      }
+
+      double width = maxHeight * aspectRatio;
+      if (width < screenWidth) {
+        return Center(
+          child: videoBoardHelper.wrapVideo(
             width: width,
             height: maxHeight,
-            child: VideoPlayer(_videoPlayerController!),
-          );
-          return Center(child: sb);
-        }
-        return AspectRatio(
-          aspectRatio: aspectRatio,
-          child: VideoPlayer(_videoPlayerController!),
+            video: VideoPlayer(_videoPlayerController!),
+            onPressed: onPressed,
+          ),
         );
       } else {
-        return const Center(
-          child: CircularProgressIndicator(),
+        double height = screenWidth / aspectRatio;
+        return videoBoardHelper.wrapVideo(
+          width: screenWidth,
+          height: height,
+          video: VideoPlayer(_videoPlayerController!),
+          onPressed: onPressed,
         );
       }
     });

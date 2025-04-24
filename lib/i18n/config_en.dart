@@ -204,6 +204,17 @@ class ConfigEn extends Config {
     put(I18nKey.labelStartOrEnd, "Is this point (%s) saved as the starting point or the ending point of the media?");
     put(I18nKey.labelSaveToStart, "This point (%s) is gonna save as the starting point of the media");
     put(I18nKey.labelSaveToEnd, "This point (%s) is gonna save as the ending point of the media");
+    put(I18nKey.labelVideoBoardSetting, "Blocker Settings");
+    put(I18nKey.labelSwitchLandscapeToSetVideoBoard, "Switch to landscape to configure Blocker");
+    put(I18nKey.labelSaveAt, "Save at: ");
+    put(I18nKey.labelNoVideoBoard, "No blockers yet, please add one");
+    put(I18nKey.labelVideoBoard, "Blocker #%s");
+    put(I18nKey.labelAddVideoBoard, "Add Blocker");
+    put(I18nKey.labelDeleteVideoBoard, "Delete Blocker");
+    put(I18nKey.labelXPosition, "Horizontal Position (0 = Left, 1 = Right)");
+    put(I18nKey.labelYPosition, "Vertical Position (0 = Top, 1 = Bottom)");
+    put(I18nKey.labelWidth, "Width Ratio (0 = 0%, 1 = 100%)");
+    put(I18nKey.labelHeight, "Height Ratio (0 = 0%, 1 = 100%)");
     put(I18nKey.btnEnd, "End");
     put(I18nKey.btnHandleNow, "Handle Now");
     put(I18nKey.btnStart, "Start");
