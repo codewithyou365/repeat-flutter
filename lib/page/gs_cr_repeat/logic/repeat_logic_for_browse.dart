@@ -13,14 +13,9 @@ import 'time_stats_logic.dart';
 class RepeatLogicForBrowse extends RepeatLogic {
   TimeStatsLogic timeStatsLogic = TimeStatsLogic();
   late List<SegmentTodayPrg> scheduled;
-  @override
-  late Function() update;
-  
+
   int index = 0;
   Ticker ticker = Ticker(1000);
-
-  @override
-  RepeatStep step = RepeatStep.recall;
 
   @override
   SegmentTodayPrg? get currSegment {
@@ -76,7 +71,6 @@ class RepeatLogicForBrowse extends RepeatLogic {
 
   @override
   Future<bool> init(List<SegmentTodayPrg> all, Function() update) async {
-
     if (all.isEmpty) {
       Snackbar.show(I18nKey.labelNoLearningContent.tr);
       return false;
@@ -112,6 +106,12 @@ class RepeatLogicForBrowse extends RepeatLogic {
   }
 
   @override
+  void onTapMiddle() {
+    tip = TipLevel.tip;
+    update();
+  }
+
+  @override
   void onTapRight() {
     if (ticker.isStuck()) {
       return;
@@ -138,6 +138,7 @@ class RepeatLogicForBrowse extends RepeatLogic {
   }
 
   void next() {
+    tip = TipLevel.none;
     step = RepeatStep.recall;
     if (index < scheduled.length - 1) {
       index++;
@@ -146,6 +147,7 @@ class RepeatLogicForBrowse extends RepeatLogic {
   }
 
   void prev() {
+    tip = TipLevel.none;
     step = RepeatStep.recall;
     if (index > 0) {
       index--;

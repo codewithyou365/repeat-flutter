@@ -5,7 +5,9 @@ import 'constant.dart';
 abstract class RepeatLogic {
   late Function() update;
 
-  RepeatStep get step;
+  RepeatStep step = RepeatStep.recall;
+
+  TipLevel tip = TipLevel.none;
 
   SegmentTodayPrg? get currSegment;
 
@@ -22,6 +24,8 @@ abstract class RepeatLogic {
   void onClose();
 
   void onTapLeft();
+
+  void onTapMiddle();
 
   void onTapRight();
 

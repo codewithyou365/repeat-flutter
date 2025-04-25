@@ -96,6 +96,7 @@ class RepeatViewForVideo extends RepeatView {
   landscape(MediaRange range) {
     var helper = this.helper!;
     var q = helper.text(QaType.question);
+    var t = helper.tip == TipLevel.tip ? helper.text(QaType.tip) : null;
     var a = helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
     return Stack(
       alignment: Alignment.topCenter,
@@ -135,6 +136,7 @@ class RepeatViewForVideo extends RepeatView {
                         padding: EdgeInsets.only(left: padding, right: helper.leftPadding),
                         child: ListView(padding: const EdgeInsets.all(0), children: [
                           if (q != null) q,
+                          if (t != null) t,
                           if (a != null) a,
                         ]),
                       ),
@@ -171,6 +173,7 @@ class RepeatViewForVideo extends RepeatView {
     var helper = this.helper!;
     double height = helper.screenHeight - helper.topPadding - helper.topBarHeight - helper.bottomBarHeight;
     var q = helper.text(QaType.question);
+    var t = helper.tip == TipLevel.tip ? helper.text(QaType.tip) : null;
     var a = helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
     var bar = mediaBar(helper.screenWidth - padding * 2, helper.bottomBarHeight, range);
     return Column(
@@ -188,6 +191,7 @@ class RepeatViewForVideo extends RepeatView {
                 children: [
                   bar,
                   if (q != null) q,
+                  if (t != null) t,
                   if (a != null) a,
                 ],
               ),

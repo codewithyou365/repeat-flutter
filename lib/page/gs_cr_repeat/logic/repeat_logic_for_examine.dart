@@ -14,14 +14,9 @@ import 'time_stats_logic.dart';
 class RepeatLogicForExamine extends RepeatLogic {
   TimeStatsLogic timeStatsLogic = TimeStatsLogic();
   late List<SegmentTodayPrg> scheduled;
-  @override
-  late Function() update;
 
   int total = 0;
   Ticker ticker = Ticker(1000);
-
-  @override
-  RepeatStep step = RepeatStep.recall;
 
   @override
   SegmentTodayPrg? get currSegment {
@@ -129,6 +124,12 @@ class RepeatLogicForExamine extends RepeatLogic {
   }
 
   @override
+  void onTapMiddle() {
+    tip = TipLevel.tip;
+    update();
+  }
+
+  @override
   void onTapRight() async {
     Snackbar.show(I18nKey.labelOnTapError.tr);
   }
@@ -176,12 +177,14 @@ class RepeatLogicForExamine extends RepeatLogic {
     if (currSegment!.progress >= ScheduleDao.scheduleConfig.maxRepeatTime) {
       scheduled.removeAt(0);
     }
+    tip = TipLevel.none;
     scheduled.sort(schedulesCurrentSort);
     timeStatsLogic.updateTimeStats();
   }
 
   Future<void> error() async {
     step = RepeatStep.recall;
+    tip = TipLevel.none;
     await Db().db.scheduleDao.error(currSegment!);
     scheduled.sort(schedulesCurrentSort);
   }

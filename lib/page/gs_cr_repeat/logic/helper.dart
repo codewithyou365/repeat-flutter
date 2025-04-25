@@ -66,6 +66,10 @@ class Helper {
     return logic.step;
   }
 
+  TipLevel get tip {
+    return logic.tip;
+  }
+
   String? getCurrSegmentContent() {
     if (logic.currSegment == null) {
       return null;

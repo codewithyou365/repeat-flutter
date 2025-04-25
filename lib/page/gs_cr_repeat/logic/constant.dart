@@ -2,11 +2,12 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 
 enum RepeatStep { recall, evaluate, finish }
 
-enum TipLevel { none, tip1, tip2 }
+enum TipLevel { none, tip }
 
 enum QaType {
-  answer(acronym: 'a', i18n: I18nKey.labelAnswer),
-  question(acronym: 'q', i18n: I18nKey.labelQuestion);
+  question(acronym: 'q', i18n: I18nKey.labelQuestion),
+  tip(acronym: 't', i18n: I18nKey.labelTips),
+  answer(acronym: 'a', i18n: I18nKey.labelAnswer);
 
   final String acronym;
 

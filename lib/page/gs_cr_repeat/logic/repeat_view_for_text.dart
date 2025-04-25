@@ -32,6 +32,7 @@ class RepeatViewForText extends RepeatView {
     }
     height = helper.screenHeight - helper.topPadding - helper.topBarHeight - helper.bottomBarHeight;
     var q = helper.text(QaType.question);
+    var t = helper.tip == TipLevel.tip ? helper.text(QaType.tip) : null;
     var a = helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
     return Column(
       children: [
@@ -46,6 +47,7 @@ class RepeatViewForText extends RepeatView {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (q != null) q,
+                  if (t != null) t,
                   if (a != null) a,
                 ],
               ),

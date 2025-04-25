@@ -139,13 +139,19 @@ class GsCrRepeatPage extends StatelessWidget {
   }
 
   Widget bottomBar({required GsCrRepeatLogic logic, required double width, required double height}) {
-    var repeatLogic = logic.repeatLogic;
-    var leftButtonText = repeatLogic?.leftLabel ?? '';
-    var rightButtonText = repeatLogic?.rightLabel ?? '';
-    void Function() leftButtonLogic = repeatLogic?.onTapLeft ?? () {};
-    void Function() rightButtonLogic = repeatLogic?.onTapRight ?? () {};
-    void Function()? rightButtonLongPressLogic = repeatLogic?.getLongTapRight();
-    var buttonWidth = width / 2;
+    final helper = logic.state.helper;
+    var m = helper.getCurrSegmentMap();
+    String? tip;
+    if (m != null) {
+      tip = m[QaType.tip.acronym];
+    }
+    final repeatLogic = logic.repeatLogic;
+    final leftButtonText = repeatLogic?.leftLabel ?? '';
+    final rightButtonText = repeatLogic?.rightLabel ?? '';
+    final void Function() leftButtonLogic = repeatLogic?.onTapLeft ?? () {};
+    final void Function() rightButtonLogic = repeatLogic?.onTapRight ?? () {};
+    final void Function()? rightButtonLongPressLogic = repeatLogic?.getLongTapRight();
+    final buttonWidth = width / 2;
     return SizedBox(
       width: width,
       height: height,
@@ -169,19 +175,19 @@ class GsCrRepeatPage extends StatelessWidget {
               ),
             ],
           ),
-          Row(
-            children: [
-              const Spacer(),
-              bottomBarButton(
-                I18nKey.btnTips.tr,
-                logic.onPreClick,
-                () {},
-                width: buttonWidth,
-                //onLongPress: logic.tipWithAnswer,
-              ),
-              const Spacer(),
-            ],
-          )
+          if (helper.tip == TipLevel.none && tip != null && tip.isNotEmpty)
+            Row(
+              children: [
+                const Spacer(),
+                bottomBarButton(
+                  I18nKey.btnTips.tr,
+                  logic.onPreClick,
+                  () => repeatLogic?.onTapMiddle(),
+                  width: buttonWidth,
+                ),
+                const Spacer(),
+              ],
+            )
         ],
       ),
     );
