@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
@@ -42,7 +43,7 @@ class GsCrPage extends StatelessWidget {
             ),
           ),
         ],
-        title: const Text(""),
+        title: Text(Classroom.currName),
       ),
       bottomNavigationBar: SizedBox(
         height: 60.h,
