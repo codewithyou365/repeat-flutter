@@ -106,7 +106,7 @@ class GsCrContentShareLogic extends GetxController {
       } else {
         response.headers.set('Content-Disposition', 'inline');
       }
-      var rootIndex =  request.requestedUri.toString().lastIndexOf('/');
+      var rootIndex = request.requestedUri.toString().lastIndexOf('/');
       var url = request.requestedUri.toString().substring(0, rootIndex);
       url = url.joinPath(Classroom.curr.toString());
       url = url.joinPath(state.content.serial.toString());
@@ -141,78 +141,85 @@ class GsCrContentShareLogic extends GetxController {
     String? selectedDirectory;
     RxBool shareNote = RxBool(state.shareNote.value);
 
-    MsgBox.checkboxWithYesOrNo(I18nKey.labelTips.tr, null, shareNote, I18nKey.labelDoYourShareTheNotes.tr, yes: () async {
-      await showOverlay(() async {
-        var permissionStatus = await Permission.storage.request();
-        if (permissionStatus != PermissionStatus.granted) {
-          Snackbar.show(I18nKey.labelStoragePermissionDenied.tr);
-          return;
-        }
+    MsgBox.checkboxWithYesOrNo(
+        title: I18nKey.labelTips.tr,
+        select: shareNote,
+        selectDesc: I18nKey.labelDoYourShareTheNotes.tr,
+        yes: () async {
+          await showOverlay(
+            () async {
+              var permissionStatus = await Permission.storage.request();
+              if (permissionStatus != PermissionStatus.granted) {
+                Snackbar.show(I18nKey.labelStoragePermissionDenied.tr);
+                return;
+              }
 
-        String relativeIndexPath = DocPath.getRelativeIndexPath(state.content.serial);
-        String relativePath = DocPath.getRelativePath(state.content.serial);
-        var rootPath = await DocPath.getContentPath();
+              String relativeIndexPath = DocPath.getRelativeIndexPath(state.content.serial);
+              String relativePath = DocPath.getRelativePath(state.content.serial);
+              var rootPath = await DocPath.getContentPath();
 
-        Map<String, dynamic> docMap = {};
-        bool success = await DocHelp.getDocMapFromDb(
-          contentId: state.content.id!,
-          ret: docMap,
-          shareNote: state.shareNote.value,
-        );
-        if (!success) {
-          return;
-        }
+              Map<String, dynamic> docMap = {};
+              bool success = await DocHelp.getDocMapFromDb(
+                contentId: state.content.id!,
+                ret: docMap,
+                shareNote: state.shareNote.value,
+              );
+              if (!success) {
+                return;
+              }
 
-        var docText = json.encode(docMap);
-        String indexHash = Hash.toSha1ForString(docText);
-        String zipFilePath = "$indexHash.zip";
-        File zipFile = File(rootPath.joinPath(relativePath).joinPath(zipFilePath));
-        bool zipFileExist = await zipFile.exists();
+              var docText = json.encode(docMap);
+              String indexHash = Hash.toSha1ForString(docText);
+              String zipFilePath = "$indexHash.zip";
+              File zipFile = File(rootPath.joinPath(relativePath).joinPath(zipFilePath));
+              bool zipFileExist = await zipFile.exists();
 
-        if (!zipFileExist) {
-          List<Doc> docs = await Db().db.docDao.getAllDoc("$relativePath/");
-          var downloads = DocHelp.getDownloads(RepeatDoc.fromJson(docMap));
-          final receivePort = ReceivePort();
-          await Isolate.spawn(
-            _createZipFileInIsolate,
-            {
-              'sendPort': receivePort.sendPort,
-              'docs': docs,
-              'downloads': downloads,
-              'docBytes': utf8.encode(docText),
-              'zipFilePath': zipFilePath,
-              'indexFilePath': rootPath.joinPath(relativeIndexPath),
-              'relativePath': relativePath,
-              'rootPath': rootPath,
-              'contentUrl': state.content.url,
+              if (!zipFileExist) {
+                List<Doc> docs = await Db().db.docDao.getAllDoc("$relativePath/");
+                var downloads = DocHelp.getDownloads(RepeatDoc.fromJson(docMap));
+                final receivePort = ReceivePort();
+                await Isolate.spawn(
+                  _createZipFileInIsolate,
+                  {
+                    'sendPort': receivePort.sendPort,
+                    'docs': docs,
+                    'downloads': downloads,
+                    'docBytes': utf8.encode(docText),
+                    'zipFilePath': zipFilePath,
+                    'indexFilePath': rootPath.joinPath(relativeIndexPath),
+                    'relativePath': relativePath,
+                    'rootPath': rootPath,
+                    'contentUrl': state.content.url,
+                  },
+                );
+
+                // Wait for the isolate to complete
+                final result = await receivePort.first as Map<String, dynamic>;
+                if (result['error'] != null) {
+                  Snackbar.show("Error creating zip file: ${result['error']}");
+                  return;
+                }
+              }
+
+              selectedDirectory = await FilePicker.platform.getDirectoryPath(
+                dialogTitle: I18nKey.labelSelectDirectoryToSave.trArgs([zipFilePath]),
+              );
+              if (selectedDirectory != null) {
+                try {
+                  String targetZipName = "${Classroom.currName}-${state.content.name}.zip";
+                  zipFile.copySync(selectedDirectory!.joinPath(targetZipName));
+                  Snackbar.show(I18nKey.labelSaveSuccess.trArgs([targetZipName]));
+                } catch (e) {
+                  Snackbar.show(I18nKey.labelDirectoryPermissionDenied.trArgs([selectedDirectory!]));
+                  selectedDirectory = null;
+                }
+              } else {
+                Snackbar.show(I18nKey.labelSaveCancel.tr);
+              }
             },
+            I18nKey.labelSaving.tr,
           );
-
-          // Wait for the isolate to complete
-          final result = await receivePort.first as Map<String, dynamic>;
-          if (result['error'] != null) {
-            Snackbar.show("Error creating zip file: ${result['error']}");
-            return;
-          }
-        }
-
-        selectedDirectory = await FilePicker.platform.getDirectoryPath(
-          dialogTitle: I18nKey.labelSelectDirectoryToSave.trArgs([zipFilePath]),
-        );
-        if (selectedDirectory != null) {
-          try {
-            String targetZipName = "${Classroom.currName}-${state.content.name}.zip";
-            zipFile.copySync(selectedDirectory!.joinPath(targetZipName));
-            Snackbar.show(I18nKey.labelSaveSuccess.trArgs([targetZipName]));
-          } catch (e) {
-            Snackbar.show(I18nKey.labelDirectoryPermissionDenied.trArgs([selectedDirectory!]));
-            selectedDirectory = null;
-          }
-        } else {
-          Snackbar.show(I18nKey.labelSaveCancel.tr);
-        }
-      }, I18nKey.labelSaving.tr);
-    });
+        });
     if (selectedDirectory != null) {
       MsgBox.yes(I18nKey.labelFileSaved.tr, selectedDirectory!);
     }

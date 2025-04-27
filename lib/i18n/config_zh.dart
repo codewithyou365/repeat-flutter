@@ -63,11 +63,13 @@ class ConfigZh extends Config {
     put(I18nKey.labelExecuting, "执行中...");
     put(I18nKey.labelDeleting, "删除中...");
     put(I18nKey.labelSaving, "保存中...");
+    put(I18nKey.labelCopying, "复制中...");
     put(I18nKey.labelSelectDirectoryToSave, "选择一个目录进行保存 %s");
     put(I18nKey.labelFileSaved, "文件已保存");
     put(I18nKey.labelSaveSuccess, "保存成功 : %s");
     put(I18nKey.labelDirectoryPermissionDenied, "请重新选择其他目录，没有权限保存到该目录: %s");
     put(I18nKey.labelSaved, "保存成功");
+    put(I18nKey.labelCopied, "复制成功");
     put(I18nKey.labelSaveCancel, "保存已取消");
     put(I18nKey.labelStoragePermissionDenied, "存储权限被拒绝，请在设置中打开存储权限");
     put(I18nKey.labelLearned, "已学习: %s");
@@ -216,6 +218,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelYPosition, "垂直位置 (0 = 顶部, 1 = 底部)");
     put(I18nKey.labelWidth, "宽度比例 (0 = 0%, 1 = 100%)");
     put(I18nKey.labelHeight, "高度比例 (0 = 0%, 1 = 100%)");
+    put(I18nKey.labelWarning, "警告");
+    put(I18nKey.labelCopyToWhere, "复制到该段落的上方还是下方？");
     put(I18nKey.btnEnd, "终点");
     put(I18nKey.btnHandleNow, "现在处理");
     put(I18nKey.btnStart, "开始");
@@ -244,6 +248,8 @@ class ConfigZh extends Config {
     put(I18nKey.btnAdd, "新增");
     put(I18nKey.btnReset, "重置");
     put(I18nKey.btnCopy, "复制");
+    put(I18nKey.btnBelow, "下方");
+    put(I18nKey.btnAbove, "上方");
     put(I18nKey.btnDownload, "下载");
     put(I18nKey.btnLearn, "学习");
     put(I18nKey.btnBrowse, "浏览");

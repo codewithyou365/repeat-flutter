@@ -15,7 +15,9 @@ import 'package:repeat_flutter/db/dao/lesson_dao.dart';
 import 'package:repeat_flutter/db/dao/lesson_key_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/kv_dao.dart';
+import 'package:repeat_flutter/db/dao/segment_dao.dart';
 import 'package:repeat_flutter/db/dao/segment_key_dao.dart';
+import 'package:repeat_flutter/db/dao/segment_overall_prg_dao.dart';
 import 'package:repeat_flutter/db/dao/stats_dao.dart';
 import 'package:repeat_flutter/db/dao/text_version_dao.dart';
 import 'package:repeat_flutter/db/dao/lock_dao.dart';
@@ -112,7 +114,11 @@ abstract class AppDatabase extends FloorDatabase {
 
   ScheduleDao get scheduleDao;
 
+  SegmentDao get segmentDao;
+
   SegmentKeyDao get segmentKeyDao;
+
+  SegmentOverallPrgDao get segmentOverallPrgDao;
 
   StatsDao get statsDao;
 }

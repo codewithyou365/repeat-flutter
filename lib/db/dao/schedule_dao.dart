@@ -507,6 +507,30 @@ abstract class ScheduleDao {
       ' WHERE SegmentKey.classroomId=:classroomId')
   Future<List<SegmentShow>> getAllSegment(int classroomId);
 
+  @Query('SELECT SegmentKey.id segmentKeyId'
+      ',SegmentKey.k'
+      ',Content.id contentId'
+      ',Content.name contentName'
+      ',Content.serial contentSerial'
+      ',Content.sort contentSort'
+      ',SegmentKey.content segmentContent'
+      ',SegmentKey.contentVersion segmentContentVersion'
+      ',SegmentKey.note segmentNote'
+      ',SegmentKey.noteVersion segmentNoteVersion'
+      ',SegmentKey.lessonIndex'
+      ',SegmentKey.segmentIndex'
+      ',SegmentOverallPrg.next'
+      ',SegmentOverallPrg.progress'
+      ',Segment.segmentKeyId is null missing'
+      ' FROM SegmentKey'
+      " JOIN Content ON Content.classroomId=:classroomId AND Content.docId!=0"
+      ' LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id'
+      ' LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id'
+      ' WHERE SegmentKey.classroomId=:classroomId'
+      '  AND SegmentKey.contentSerial=:contentSerial'
+      '  AND SegmentKey.lessonIndex=:lessonIndex')
+  Future<List<SegmentShow>> getLessonSegment(int classroomId, int contentSerial, int lessonIndex);
+
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertSegments(List<Segment> entities);
 
@@ -915,6 +939,98 @@ abstract class ScheduleDao {
     } else {
       return ImportResult.success.index;
     }
+  }
+
+  @transaction
+  Future<int> addSegment(SegmentShow raw, int segmentIndex) async {
+    await forUpdate();
+    String content = "";
+    String key = "";
+    Map<String, dynamic> contentMap;
+    try {
+      contentMap = convert.jsonDecode(raw.segmentContent);
+      if (contentMap['k'] == null || contentMap['k'].toString().isEmpty) {
+        if (contentMap['a'] != null && contentMap['a'].toString().isNotEmpty) {
+          contentMap['k'] = '${contentMap['a']}_${DateTime.now().millisecondsSinceEpoch}';
+        } else {
+          contentMap['k'] = 'segment_${DateTime.now().millisecondsSinceEpoch}';
+        }
+      } else {
+        contentMap['k'] = '${contentMap['k']}_${DateTime.now().millisecondsSinceEpoch}';
+      }
+      content = convert.jsonEncode(contentMap);
+      key = contentMap['k'].toString();
+    } catch (e) {
+      return 0;
+    }
+    int classroomId = Classroom.curr;
+    var existingSegment = await getSegmentKeyByKey(classroomId, raw.contentSerial, key);
+    if (existingSegment != null) {
+      Snackbar.show(I18nKey.labelSegmentKeyDuplicated.trArgs([key]));
+      return 0;
+    }
+
+    // adjust the segment index and sort
+    var segments = await db.segmentDao.findByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
+    var segmentKeys = await db.segmentKeyDao.findByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
+    for (var v in segments) {
+      v.segmentIndex++;
+      v.sort++;
+    }
+    for (var v in segmentKeys) {
+      v.segmentIndex++;
+    }
+    await db.segmentDao.deleteByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
+    await db.segmentKeyDao.deleteByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
+
+    // insert and get the segment key id
+    SegmentKey? segmentKey = SegmentKey(
+      classroomId: classroomId,
+      contentSerial: raw.contentSerial,
+      lessonIndex: raw.lessonIndex,
+      segmentIndex: segmentIndex,
+      version: 1,
+      k: key,
+      content: content,
+      contentVersion: 1,
+      note: '',
+      noteVersion: 1,
+    );
+    segmentKeys.add(segmentKey);
+    await db.segmentKeyDao.insertListOrFail(segmentKeys);
+    segmentKey = await getSegmentKeyByKey(segmentKey.classroomId, segmentKey.contentSerial, key);
+    if (segmentKey == null) {
+      throw Exception('Failed to get segment key');
+    }
+
+    int sortValue = segmentKey.contentSerial * 10000000000 + segmentKey.lessonIndex * 100000 + segmentIndex;
+    var segment = Segment(segmentKey.id!, segmentKey.classroomId, segmentKey.contentSerial, segmentKey.lessonIndex, segmentKey.segmentIndex, sortValue);
+    segments.add(segment);
+    await db.segmentDao.insertListOrFail(segments);
+    var now = DateTime.now();
+    var segmentOverallPrg = SegmentOverallPrg(segmentKey.id!, segmentKey.classroomId, segmentKey.contentSerial, Date.from(now), 0);
+    await db.segmentOverallPrgDao.insertOrFail(segmentOverallPrg);
+    await db.textVersionDao.insertOrFail(TextVersion(
+      t: TextVersionType.segmentContent,
+      id: segmentKey.id!,
+      version: 1,
+      reason: TextVersionReason.editor,
+      text: segmentKey.content,
+      createTime: now,
+    ));
+
+    await db.textVersionDao.insertOrFail(TextVersion(
+      t: TextVersionType.segmentNote,
+      id: segmentKey.id!,
+      version: 1,
+      reason: TextVersionReason.editor,
+      text: segmentKey.note,
+      createTime: now,
+    ));
+
+    await insertKv(CrKv(segmentKey.classroomId, CrK.updateSegmentShowTime, now.millisecondsSinceEpoch.toString()));
+
+    return segmentKey.id!;
   }
 
   @transaction

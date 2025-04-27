@@ -15,9 +15,9 @@ class Segment {
   final int classroomId;
   final int contentSerial;
   final int lessonIndex;
-  final int segmentIndex;
+  int segmentIndex;
 
-  final int sort;
+  int sort;
 
   Segment(
     this.segmentKeyId,

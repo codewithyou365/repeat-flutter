@@ -96,7 +96,11 @@ class _$AppDatabase extends AppDatabase {
 
   ScheduleDao? _scheduleDaoInstance;
 
+  SegmentDao? _segmentDaoInstance;
+
   SegmentKeyDao? _segmentKeyDaoInstance;
+
+  SegmentOverallPrgDao? _segmentOverallPrgDaoInstance;
 
   StatsDao? _statsDaoInstance;
 
@@ -294,8 +298,19 @@ class _$AppDatabase extends AppDatabase {
   }
 
   @override
+  SegmentDao get segmentDao {
+    return _segmentDaoInstance ??= _$SegmentDao(database, changeListener);
+  }
+
+  @override
   SegmentKeyDao get segmentKeyDao {
     return _segmentKeyDaoInstance ??= _$SegmentKeyDao(database, changeListener);
+  }
+
+  @override
+  SegmentOverallPrgDao get segmentOverallPrgDao {
+    return _segmentOverallPrgDaoInstance ??=
+        _$SegmentOverallPrgDao(database, changeListener);
   }
 
   @override
@@ -1388,6 +1403,11 @@ class _$TextVersionDao extends TextVersionDao {
   }
 
   @override
+  Future<void> insertOrFail(TextVersion entity) async {
+    await _textVersionInsertionAdapter.insert(entity, OnConflictStrategy.fail);
+  }
+
+  @override
   Future<void> insertOrIgnore(TextVersion entity) async {
     await _textVersionInsertionAdapter.insert(
         entity, OnConflictStrategy.ignore);
@@ -2302,6 +2322,18 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
+  Future<List<SegmentShow>> getLessonSegment(
+    int classroomId,
+    int contentSerial,
+    int lessonIndex,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT SegmentKey.id segmentKeyId,SegmentKey.k,Content.id contentId,Content.name contentName,Content.serial contentSerial,Content.sort contentSort,SegmentKey.content segmentContent,SegmentKey.contentVersion segmentContentVersion,SegmentKey.note segmentNote,SegmentKey.noteVersion segmentNoteVersion,SegmentKey.lessonIndex,SegmentKey.segmentIndex,SegmentOverallPrg.next,SegmentOverallPrg.progress,Segment.segmentKeyId is null missing FROM SegmentKey JOIN Content ON Content.classroomId=?1 AND Content.docId!=0 LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id WHERE SegmentKey.classroomId=?1  AND SegmentKey.contentSerial=?2  AND SegmentKey.lessonIndex=?3',
+        mapper: (Map<String, Object?> row) => SegmentShow(segmentKeyId: row['segmentKeyId'] as int, k: row['k'] as String, contentId: row['contentId'] as int, contentName: row['contentName'] as String, contentSerial: row['contentSerial'] as int, contentSort: row['contentSort'] as int, segmentContent: row['segmentContent'] as String, segmentContentVersion: row['segmentContentVersion'] as int, segmentNote: row['segmentNote'] as String, segmentNoteVersion: row['segmentNoteVersion'] as int, lessonIndex: row['lessonIndex'] as int, segmentIndex: row['segmentIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int, missing: (row['missing'] as int) != 0),
+        arguments: [classroomId, contentSerial, lessonIndex]);
+  }
+
+  @override
   Future<void> deleteSegmentByContentSerial(
     int classroomId,
     int contentSerial,
@@ -2558,6 +2590,24 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
+  Future<int> addSegment(
+    SegmentShow raw,
+    int segmentIndex,
+  ) async {
+    if (database is sqflite.Transaction) {
+      return super.addSegment(raw, segmentIndex);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<int>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        return transactionDatabase.scheduleDao.addSegment(raw, segmentIndex);
+      });
+    }
+  }
+
+  @override
   Future<void> hideContentAndDeleteSegment(
     int contentId,
     int contentSerial,
@@ -2736,17 +2786,97 @@ class _$ScheduleDao extends ScheduleDao {
   }
 }
 
-class _$SegmentKeyDao extends SegmentKeyDao {
-  _$SegmentKeyDao(
+class _$SegmentDao extends SegmentDao {
+  _$SegmentDao(
     this.database,
     this.changeListener,
-  ) : _queryAdapter = QueryAdapter(database);
+  )   : _queryAdapter = QueryAdapter(database),
+        _segmentInsertionAdapter = InsertionAdapter(
+            database,
+            'Segment',
+            (Segment item) => <String, Object?>{
+                  'segmentKeyId': item.segmentKeyId,
+                  'classroomId': item.classroomId,
+                  'contentSerial': item.contentSerial,
+                  'lessonIndex': item.lessonIndex,
+                  'segmentIndex': item.segmentIndex,
+                  'sort': item.sort
+                });
 
   final sqflite.DatabaseExecutor database;
 
   final StreamController<String> changeListener;
 
   final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<Segment> _segmentInsertionAdapter;
+
+  @override
+  Future<List<Segment>> findByMinSegmentIndex(
+    int classroomId,
+    int contentSerial,
+    int lessonIndex,
+    int minSegmentIndex,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM Segment WHERE classroomId=?1 AND contentSerial=?2 AND lessonIndex=?3 AND segmentIndex>=?4',
+        mapper: (Map<String, Object?> row) => Segment(row['segmentKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['sort'] as int),
+        arguments: [classroomId, contentSerial, lessonIndex, minSegmentIndex]);
+  }
+
+  @override
+  Future<void> deleteByMinSegmentIndex(
+    int classroomId,
+    int contentSerial,
+    int lessonIndex,
+    int minSegmentIndex,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM Segment WHERE classroomId=?1 AND contentSerial=?2 AND lessonIndex=?3 AND segmentIndex>=?4',
+        arguments: [classroomId, contentSerial, lessonIndex, minSegmentIndex]);
+  }
+
+  @override
+  Future<void> insertOrFail(Segment entity) async {
+    await _segmentInsertionAdapter.insert(entity, OnConflictStrategy.fail);
+  }
+
+  @override
+  Future<void> insertListOrFail(List<Segment> entities) async {
+    await _segmentInsertionAdapter.insertList(
+        entities, OnConflictStrategy.fail);
+  }
+}
+
+class _$SegmentKeyDao extends SegmentKeyDao {
+  _$SegmentKeyDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _segmentKeyInsertionAdapter = InsertionAdapter(
+            database,
+            'SegmentKey',
+            (SegmentKey item) => <String, Object?>{
+                  'id': item.id,
+                  'classroomId': item.classroomId,
+                  'contentSerial': item.contentSerial,
+                  'lessonIndex': item.lessonIndex,
+                  'segmentIndex': item.segmentIndex,
+                  'version': item.version,
+                  'k': item.k,
+                  'content': item.content,
+                  'contentVersion': item.contentVersion,
+                  'note': item.note,
+                  'noteVersion': item.noteVersion
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<SegmentKey> _segmentKeyInsertionAdapter;
 
   @override
   Future<int?> count(
@@ -2758,6 +2888,70 @@ class _$SegmentKeyDao extends SegmentKeyDao {
         'SELECT count(id) FROM SegmentKey where classroomId=?1 and contentSerial=?2 lessonIndex=?3',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId, contentSerial, lessonIndex]);
+  }
+
+  @override
+  Future<List<SegmentKey>> findByMinSegmentIndex(
+    int classroomId,
+    int contentSerial,
+    int lessonIndex,
+    int minSegmentIndex,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM SegmentKey WHERE classroomId=?1 AND contentSerial=?2 AND lessonIndex=?3 AND segmentIndex>=?4',
+        mapper: (Map<String, Object?> row) => SegmentKey(classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, lessonIndex: row['lessonIndex'] as int, segmentIndex: row['segmentIndex'] as int, version: row['version'] as int, k: row['k'] as String, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, id: row['id'] as int?),
+        arguments: [classroomId, contentSerial, lessonIndex, minSegmentIndex]);
+  }
+
+  @override
+  Future<void> deleteByMinSegmentIndex(
+    int classroomId,
+    int contentSerial,
+    int lessonIndex,
+    int minSegmentIndex,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM SegmentKey WHERE classroomId=?1 AND contentSerial=?2 AND lessonIndex=?3 AND segmentIndex>=?4',
+        arguments: [classroomId, contentSerial, lessonIndex, minSegmentIndex]);
+  }
+
+  @override
+  Future<void> insertOrFail(SegmentKey entity) async {
+    await _segmentKeyInsertionAdapter.insert(entity, OnConflictStrategy.fail);
+  }
+
+  @override
+  Future<void> insertListOrFail(List<SegmentKey> entities) async {
+    await _segmentKeyInsertionAdapter.insertList(
+        entities, OnConflictStrategy.fail);
+  }
+}
+
+class _$SegmentOverallPrgDao extends SegmentOverallPrgDao {
+  _$SegmentOverallPrgDao(
+    this.database,
+    this.changeListener,
+  ) : _segmentOverallPrgInsertionAdapter = InsertionAdapter(
+            database,
+            'SegmentOverallPrg',
+            (SegmentOverallPrg item) => <String, Object?>{
+                  'segmentKeyId': item.segmentKeyId,
+                  'classroomId': item.classroomId,
+                  'contentSerial': item.contentSerial,
+                  'next': _dateConverter.encode(item.next),
+                  'progress': item.progress
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final InsertionAdapter<SegmentOverallPrg> _segmentOverallPrgInsertionAdapter;
+
+  @override
+  Future<void> insertOrFail(SegmentOverallPrg entity) async {
+    await _segmentOverallPrgInsertionAdapter.insert(
+        entity, OnConflictStrategy.fail);
   }
 }
 

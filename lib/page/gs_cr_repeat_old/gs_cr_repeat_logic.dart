@@ -186,7 +186,7 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     RxString err = "".obs;
-    var content = null;//TODO await RepeatDocHelp.from(next.segmentKeyId, err: err);
+    var content = null; //TODO await RepeatDocHelp.from(next.segmentKeyId, err: err);
     return;
     if (err.value != "") {
       Nav.back();
@@ -340,7 +340,7 @@ class GsCrRepeatLogic extends GetxController {
     state.openTip = [];
     var oldSegmentKeyId = state.segment.segmentKeyId;
     RxString err = "".obs;
-    var learnSegment = null;//TODO await RepeatDocHelp.from(curr.segmentKeyId, offset: pnOffset, err: err);
+    var learnSegment = null; //TODO await RepeatDocHelp.from(curr.segmentKeyId, offset: pnOffset, err: err);
     if (err.value != "") {
       Nav.back();
       MsgBox.yes(I18nKey.btnError.tr, err.value);
@@ -351,8 +351,8 @@ class GsCrRepeatLogic extends GetxController {
     }
     if (learnSegment.miss) {
       MsgBox.yesOrNo(
-        I18nKey.labelTips.tr,
-        I18nKey.labelSegmentRemoved.tr,
+        title: I18nKey.labelTips.tr,
+        desc: I18nKey.labelSegmentRemoved.tr,
         yes: () {
           showOverlay(() async {
             await Db().db.scheduleDao.deleteBySegmentKeyId(learnSegment.segmentKeyId);

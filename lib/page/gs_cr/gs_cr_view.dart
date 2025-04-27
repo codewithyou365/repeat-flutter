@@ -150,7 +150,11 @@ class GsCrPage extends StatelessWidget {
                       ),
                       PopupMenuItem<String>(
                         onTap: () {
-                          MsgBox.yesOrNo(I18nKey.labelReset.tr, I18nKey.labelResetAllDesc.tr, yes: logic.resetAllSchedule);
+                          MsgBox.yesOrNo(
+                            title: I18nKey.labelReset.tr,
+                            desc: I18nKey.labelResetAllDesc.tr,
+                            yes: logic.resetAllSchedule,
+                          );
                         },
                         child: Text(I18nKey.labelReset.tr),
                       ),

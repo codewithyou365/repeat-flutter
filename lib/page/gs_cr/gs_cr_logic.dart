@@ -233,8 +233,8 @@ class GsCrLogic extends GetxController {
     var warning = await Db().db.contentDao.hasWarning(Classroom.curr);
     if (warning ?? false) {
       MsgBox.yesOrNo(
-        I18nKey.labelTips.tr,
-        I18nKey.labelContentsHaveUnnecessarySegments.tr,
+        title: I18nKey.labelTips.tr,
+        desc: I18nKey.labelContentsHaveUnnecessarySegments.tr,
         yesBtnTitle: I18nKey.btnHandleNow.tr,
         yes: () {
           Get.back();
@@ -312,13 +312,17 @@ class GsCrLogic extends GetxController {
       default:
         break;
     }
-    MsgBox.yesOrNo(I18nKey.labelReset.tr, desc, yes: () {
-      showOverlay(() async {
-        await init(type: type);
-        Nav.back();
-        Snackbar.show(I18nKey.labelFinish.tr);
-      }, I18nKey.labelExecuting.tr);
-    });
+    MsgBox.yesOrNo(
+      title: I18nKey.labelReset.tr,
+      desc: desc,
+      yes: () {
+        showOverlay(() async {
+          await init(type: type);
+          Nav.back();
+          Snackbar.show(I18nKey.labelFinish.tr);
+        }, I18nKey.labelExecuting.tr);
+      },
+    );
   }
 
   void resetAllSchedule() {

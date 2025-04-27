@@ -63,11 +63,13 @@ class ConfigEn extends Config {
     put(I18nKey.labelExecuting, "Executing...");
     put(I18nKey.labelDeleting, "Deleting...");
     put(I18nKey.labelSaving, "Saving...");
+    put(I18nKey.labelCopying, "Copying...");
     put(I18nKey.labelSelectDirectoryToSave, "Select a directory to save %s");
     put(I18nKey.labelFileSaved, "The file has been saved.");
     put(I18nKey.labelSaveSuccess, "Save success : %s");
     put(I18nKey.labelDirectoryPermissionDenied, "Please select another directory. No permission to save to this directory: %s");
     put(I18nKey.labelSaved, "Save success");
+    put(I18nKey.labelCopied, "Copy success");
     put(I18nKey.labelSaveCancel, "Save canceled");
     put(I18nKey.labelStoragePermissionDenied, "Storage permission has been denied. Please enable storage permission in the settings.");
     put(I18nKey.labelLearned, "Learned: %s");
@@ -215,6 +217,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelYPosition, "Vertical Position (0 = Top, 1 = Bottom)");
     put(I18nKey.labelWidth, "Width Ratio (0 = 0%, 1 = 100%)");
     put(I18nKey.labelHeight, "Height Ratio (0 = 0%, 1 = 100%)");
+    put(I18nKey.labelWarning, "Warning");
+    put(I18nKey.labelCopyToWhere, "Should the copy be placed above or below this segment?");
     put(I18nKey.btnEnd, "End");
     put(I18nKey.btnHandleNow, "Handle Now");
     put(I18nKey.btnStart, "Start");
@@ -243,6 +247,8 @@ class ConfigEn extends Config {
     put(I18nKey.btnAdd, "Add");
     put(I18nKey.btnReset, "Reset");
     put(I18nKey.btnCopy, "Copy");
+    put(I18nKey.btnBelow, "Below");
+    put(I18nKey.btnAbove, "Above");
     put(I18nKey.btnDownload, "Download");
     put(I18nKey.btnLearn, "Learn");
     put(I18nKey.btnBrowse, "Browse");

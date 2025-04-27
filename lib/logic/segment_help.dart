@@ -4,6 +4,16 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 
 import 'model/segment_show.dart';
 
+class QueryLesson {
+  final int contentSerial;
+  final int lessonIndex;
+
+  QueryLesson({
+    required this.contentSerial,
+    required this.lessonIndex,
+  });
+}
+
 class SegmentHelp {
   static List<SegmentShow> cache = [];
   static Map<int, SegmentShow> segmentKeyIdToShow = {};
@@ -14,15 +24,22 @@ class SegmentHelp {
     return '$progressUpdateTime-$contentUpdateTime';
   }
 
-  static tryGen({force = false}) async {
-    if (cache.isEmpty || force) {
-      cache = await Db().db.scheduleDao.getAllSegment(Classroom.curr);
-      segmentKeyIdToShow = {for (var segment in cache) segment.segmentKeyId: segment};
+  static tryGen({force = false, QueryLesson? query}) async {
+    if (cache.isEmpty || force || query != null) {
+      if (query != null) {
+        List<SegmentShow> lessonSegment = await Db().db.scheduleDao.getLessonSegment(Classroom.curr, query.contentSerial, query.lessonIndex);
+        cache.removeWhere((segment) => segment.contentSerial == query.contentSerial && segment.lessonIndex == query.lessonIndex);
+        cache.addAll(lessonSegment);
+        segmentKeyIdToShow = {for (var segment in cache) segment.segmentKeyId: segment};
+      } else {
+        cache = await Db().db.scheduleDao.getAllSegment(Classroom.curr);
+        segmentKeyIdToShow = {for (var segment in cache) segment.segmentKeyId: segment};
+      }
     }
   }
 
-  static Future<List<SegmentShow>> getSegments() async {
-    await tryGen();
+  static Future<List<SegmentShow>> getSegments({force = false, QueryLesson? query}) async {
+    await tryGen(force: force, query: query);
     return cache;
   }
 

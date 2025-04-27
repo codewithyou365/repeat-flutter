@@ -19,6 +19,7 @@ import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:repeat_flutter/widget/text/expandable_text.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -44,7 +45,7 @@ class SegmentList<T extends GetxController> {
     Future<void> Function()? removeWarning,
   }) async {
     List<SegmentShow> segmentShow = await SegmentHelp.getSegments();
-    return await showSheet(
+    return await _showSheet(
       segmentShow,
       initContentNameSelect: initContentNameSelect,
       initLessonSelect: initLessonSelect,
@@ -54,7 +55,7 @@ class SegmentList<T extends GetxController> {
     );
   }
 
-  Future<void> showSheet(
+  Future<void> _showSheet(
     List<SegmentShow> originalSegmentShow, {
     String? initContentNameSelect,
     int? initLessonSelect,
@@ -155,9 +156,9 @@ class SegmentList<T extends GetxController> {
     }
 
     String searchKey = genSearchKey();
-    void trySearch() {
+    void trySearch({force = false}) {
       String newSearchKey = genSearchKey();
-      if (newSearchKey == searchKey) {
+      if (!force && newSearchKey == searchKey) {
         return;
       }
       searchKey = newSearchKey;
@@ -209,14 +210,11 @@ class SegmentList<T extends GetxController> {
         lessonSelect.value = index;
       }
     }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      trySearch();
+    void scrollTo(int selectSegmentKeyId) {
       int? selectedIndex;
-      if (selectSegmentKeyId != null) {
-        SegmentShow? ss = SegmentHelp.getCache(selectSegmentKeyId);
-        if (ss != null) {
-          selectedIndex = segmentShow.indexOf(ss);
-        }
+      SegmentShow? ss = SegmentHelp.getCache(selectSegmentKeyId);
+      if (ss != null) {
+        selectedIndex = segmentShow.indexOf(ss);
       }
       if (selectedIndex != null) {
         itemScrollController.scrollTo(
@@ -225,7 +223,37 @@ class SegmentList<T extends GetxController> {
           curve: Curves.easeInOut,
         );
       }
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      trySearch();
+      if (selectSegmentKeyId != null) {
+        scrollTo(selectSegmentKeyId);
+      }
     });
+
+    copy({required SegmentShow segment, required bool below}) async {
+      await showOverlay(() async {
+        int segmentIndex = segment.segmentIndex;
+        if (below) {
+          segmentIndex++;
+        }
+        var segmentKeyId = await Db().db.scheduleDao.addSegment(segment, segmentIndex);
+        if (segmentKeyId == 0) {
+          return;
+        }
+        originalSegmentShow = await SegmentHelp.getSegments(
+          force: true,
+          query: QueryLesson(
+            contentSerial: segment.contentSerial,
+            lessonIndex: segment.lessonIndex,
+          ),
+        );
+        trySearch(force: true);
+      }, I18nKey.labelCopying.tr);
+      Snackbar.show(I18nKey.labelCopied.tr);
+      Get.back();
+    }
 
     return Sheet.showBottomSheet(
       Get.context!,
@@ -308,6 +336,9 @@ class SegmentList<T extends GetxController> {
                       itemPositionsListener: itemPositionsListener,
                       itemCount: list.length,
                       itemBuilder: (context, index) {
+                        if (index >= list.length) {
+                          return const SizedBox.shrink();
+                        }
                         final segment = list[index];
                         return Card(
                           color: segment.missing ? Colors.red : null,
@@ -464,8 +495,8 @@ class SegmentList<T extends GetxController> {
                                     IconButton(
                                       onPressed: () {
                                         MsgBox.yesOrNo(
-                                          I18nKey.labelDelete.tr,
-                                          I18nKey.labelDeleteSegment.tr,
+                                          title: I18nKey.labelDelete.tr,
+                                          desc: I18nKey.labelDeleteSegment.tr,
                                           yes: () {
                                             showTransparentOverlay(() async {
                                               await Db().db.scheduleDao.deleteBySegmentKeyId(segment.segmentKeyId);
@@ -491,6 +522,45 @@ class SegmentList<T extends GetxController> {
                                         Icons.delete_forever,
                                       ),
                                     ),
+                                  PopupMenuButton<String>(
+                                    icon: const Icon(Icons.more_vert),
+                                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                      PopupMenuItem<String>(
+                                        onTap: () {
+                                          MsgBox.yesOrNo(
+                                            title: I18nKey.labelWarning.tr,
+                                            desc: I18nKey.labelDeleteSegment.tr,
+                                            yes: () {},
+                                          );
+                                        },
+                                        child: Text(I18nKey.btnDelete.tr),
+                                      ),
+                                      PopupMenuItem<String>(
+                                        onTap: () {
+                                          MsgBox.myDialog(
+                                              title: I18nKey.labelTips.tr,
+                                              content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
+                                              action: MsgBox.buttonsWithDivider(buttons: [
+                                                MsgBox.button(
+                                                  text: I18nKey.btnCancel.tr,
+                                                  onPressed: () {
+                                                    Get.back();
+                                                  },
+                                                ),
+                                                MsgBox.button(
+                                                  text: I18nKey.btnAbove.tr,
+                                                  onPressed: () => copy(segment: segment, below: false),
+                                                ),
+                                                MsgBox.button(
+                                                  text: I18nKey.btnBelow.tr,
+                                                  onPressed: () => copy(segment: segment, below: true),
+                                                ),
+                                              ]));
+                                        },
+                                        child: Text(I18nKey.btnCopy.tr),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ],
@@ -701,8 +771,8 @@ class SegmentList<T extends GetxController> {
     var now = DateTime.now();
     if (nextTimeForWarning <= now.millisecondsSinceEpoch) {
       MsgBox.yesOrNo(
-        I18nKey.labelTips.tr,
-        I18nKey.labelSettingLearningProgressWarning.tr,
+        title: I18nKey.labelTips.tr,
+        desc: I18nKey.labelSettingLearningProgressWarning.tr,
         yesBtnTitle: I18nKey.btnContinue.tr,
         yes: () async {
           var after3Days = now.add(const Duration(days: 3)).millisecondsSinceEpoch.toString();

@@ -23,7 +23,8 @@ abstract class TextVersionDao {
 
   @Query('DELETE FROM TextVersion WHERE t=:type AND id=:id')
   Future<void> delete(TextVersionType type, int id);
-
+  @Insert(onConflict: OnConflictStrategy.fail)
+  Future<void> insertOrFail(TextVersion entity);
   @Insert(onConflict: OnConflictStrategy.ignore)
   Future<void> insertOrIgnore(TextVersion entity);
 

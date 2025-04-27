@@ -12,9 +12,9 @@ enum InputType {
 }
 
 class MsgBox {
-  static yesOrNo(
-    String title,
-    String desc, {
+  static yesOrNo({
+    required String title,
+    required String desc,
     VoidCallback? yes,
     String? yesBtnTitle,
     VoidCallback? no,
@@ -29,11 +29,11 @@ class MsgBox {
     );
   }
 
-  static checkboxWithYesOrNo(
-    String title,
+  static checkboxWithYesOrNo({
+    required String title,
     String? desc,
-    RxBool select,
-    String selectDesc, {
+    required RxBool select,
+    required String selectDesc,
     VoidCallback? yes,
     String? yesBtnTitle,
     VoidCallback? no,

@@ -40,8 +40,8 @@ class Editor {
     void onCancel() {
       if (textController.text != dbValue) {
         MsgBox.yesOrNo(
-          I18nKey.labelTips.tr,
-          I18nKey.labelTextChange.tr,
+ title:         I18nKey.labelTips.tr,
+ desc:         I18nKey.labelTextChange.tr,
           yesBtnTitle: I18nKey.btnSave.tr,
           no: () {
             Get.back();

@@ -96,10 +96,10 @@ class GsPage extends StatelessWidget {
   openDeleteDialog(GsLogic logic, Classroom model) {
     RxBool deleteAll = false.obs;
     MsgBox.checkboxWithYesOrNo(
-      I18nKey.labelDelete.tr,
-      I18nKey.labelDeleteClassroom.trArgs([model.name]),
-      deleteAll,
-      I18nKey.labelDeleteClassroomAll.tr,
+      title: I18nKey.labelDelete.tr,
+      desc: I18nKey.labelDeleteClassroom.trArgs([model.name]),
+      select: deleteAll,
+      selectDesc: I18nKey.labelDeleteClassroomAll.tr,
       yes: () {
         logic.delete(model.id, deleteAll.value);
         Get.back();

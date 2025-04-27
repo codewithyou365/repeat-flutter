@@ -69,8 +69,8 @@ class MediaRangeHelper {
       ret = MediaRange(start: 0, end: 0, enable: false);
       answerRangeCache[helper.logic.currSegment!.segmentKeyId] = ret;
     }
-    ret.jsonStartName =jsonStartName;
-    ret.jsonEndName =jsonEndName;
+    ret.jsonStartName = jsonStartName;
+    ret.jsonEndName = jsonEndName;
     return ret;
   }
 
@@ -102,8 +102,8 @@ class MediaRangeHelper {
       ret = MediaRange(start: 0, end: 0, enable: false);
       questionRangeCache[helper.logic.currSegment!.segmentKeyId] = ret;
     }
-    ret.jsonStartName =jsonStartName;
-    ret.jsonEndName =jsonEndName;
+    ret.jsonStartName = jsonStartName;
+    ret.jsonEndName = jsonEndName;
     return ret;
   }
 
@@ -133,8 +133,8 @@ class MediaRangeHelper {
 
       saveWithConfirm({required bool start}) {
         MsgBox.yesOrNo(
-          I18nKey.labelTips.tr,
-          start ? I18nKey.labelSaveToStart.trArgs([str]) : I18nKey.labelSaveToEnd.tr.trArgs([str]),
+          title: I18nKey.labelTips.tr,
+          desc: start ? I18nKey.labelSaveToStart.trArgs([str]) : I18nKey.labelSaveToEnd.tr.trArgs([str]),
           yes: () => save(start: start),
         );
       }

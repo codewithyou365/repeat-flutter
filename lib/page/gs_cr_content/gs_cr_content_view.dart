@@ -142,8 +142,8 @@ class GsCrContentPage extends StatelessWidget {
 
   openDeleteDialog(GsCrContentLogic logic, Content model) {
     MsgBox.yesOrNo(
-      I18nKey.labelDelete.tr,
-      I18nKey.labelDeleteContent.trArgs([model.name]),
+      title: I18nKey.labelDelete.tr,
+      desc: I18nKey.labelDeleteContent.trArgs([model.name]),
       yes: () {
         logic.delete(model.id!, model.serial);
         Get.back();

@@ -335,8 +335,8 @@ class LessonList<T extends GetxController> {
                                     IconButton(
                                       onPressed: () {
                                         MsgBox.yesOrNo(
-                                          I18nKey.labelDelete.tr,
-                                          I18nKey.labelDeleteLesson.tr,
+                                          title: I18nKey.labelDelete.tr,
+                                          desc: I18nKey.labelDeleteLesson.tr,
                                           yes: () {
                                             showTransparentOverlay(() async {
                                               var ok = await Db().db.lessonKeyDao.delete(lesson.lessonKeyId);

@@ -60,8 +60,8 @@ class GsCrSettingsElLogic extends GetxController {
 
   void reset() {
     MsgBox.yesOrNo(
-      I18nKey.labelTips.tr,
-      I18nKey.labelResetConfig.tr,
+      title: I18nKey.labelTips.tr,
+      desc: I18nKey.labelResetConfig.tr,
       yes: () {
         valueKey = 0;
         state.elConfigs = [];
