@@ -324,7 +324,12 @@ class RepeatViewForVideo extends RepeatView {
       duration: () => duration,
       onPlay: (Duration position) async {
         if (_videoPlayerController != null) {
-          await _videoPlayerController!.seekTo(position);
+          try {
+            await _videoPlayerController!.seekTo(position).timeout(const Duration(milliseconds: 100));
+          } catch (e) {
+            await _videoPlayerController!.initialize();
+            await _videoPlayerController!.seekTo(position);
+          }
           await _videoPlayerController!.play();
         }
       },
