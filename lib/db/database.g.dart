@@ -2538,9 +2538,9 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> deleteBySegmentKeyId(int segmentKeyId) async {
+  Future<void> deleteAbnormalSegment(int segmentKeyId) async {
     if (database is sqflite.Transaction) {
-      await super.deleteBySegmentKeyId(segmentKeyId);
+      await super.deleteAbnormalSegment(segmentKeyId);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
@@ -2548,7 +2548,7 @@ class _$ScheduleDao extends ScheduleDao {
           ..database = transaction;
         prepareDb(transactionDatabase);
         await transactionDatabase.scheduleDao
-            .deleteBySegmentKeyId(segmentKeyId);
+            .deleteAbnormalSegment(segmentKeyId);
       });
     }
   }
@@ -2585,6 +2585,22 @@ class _$ScheduleDao extends ScheduleDao {
         prepareDb(transactionDatabase);
         return transactionDatabase.scheduleDao
             .importSegment(contentId, contentSerial, indexJsonDocId, url);
+      });
+    }
+  }
+
+  @override
+  Future<bool> deleteNormalSegment(int segmentKeyId) async {
+    if (database is sqflite.Transaction) {
+      return super.deleteNormalSegment(segmentKeyId);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<bool>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        return transactionDatabase.scheduleDao
+            .deleteNormalSegment(segmentKeyId);
       });
     }
   }
@@ -2877,6 +2893,24 @@ class _$SegmentKeyDao extends SegmentKeyDao {
   final QueryAdapter _queryAdapter;
 
   final InsertionAdapter<SegmentKey> _segmentKeyInsertionAdapter;
+
+  @override
+  Future<SegmentKey?> oneById(int id) async {
+    return _queryAdapter.query('SELECT * FROM SegmentKey where id=?1',
+        mapper: (Map<String, Object?> row) => SegmentKey(
+            classroomId: row['classroomId'] as int,
+            contentSerial: row['contentSerial'] as int,
+            lessonIndex: row['lessonIndex'] as int,
+            segmentIndex: row['segmentIndex'] as int,
+            version: row['version'] as int,
+            k: row['k'] as String,
+            content: row['content'] as String,
+            contentVersion: row['contentVersion'] as int,
+            note: row['note'] as String,
+            noteVersion: row['noteVersion'] as int,
+            id: row['id'] as int?),
+        arguments: [id]);
+  }
 
   @override
   Future<int?> count(

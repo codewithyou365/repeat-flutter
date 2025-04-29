@@ -618,7 +618,7 @@ abstract class ScheduleDao {
   Future<void> insertSegmentStats(SegmentStats stats);
 
   @transaction
-  Future<void> deleteBySegmentKeyId(int segmentKeyId) async {
+  Future<void> deleteAbnormalSegment(int segmentKeyId) async {
     await forUpdate();
     await deleteSegment(segmentKeyId);
     await deleteSegmentKey(segmentKeyId);
@@ -939,6 +939,45 @@ abstract class ScheduleDao {
     } else {
       return ImportResult.success.index;
     }
+  }
+
+  @transaction
+  Future<bool> deleteNormalSegment(int segmentKeyId) async {
+    await forUpdate();
+    var raw = await db.segmentKeyDao.oneById(segmentKeyId);
+    if (raw == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the data($segmentKeyId)"]));
+      return false;
+    }
+    int classroomId = raw.classroomId;
+    int segmentIndex = raw.segmentIndex;
+    var segments = await db.segmentDao.findByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
+    var segmentKeys = await db.segmentKeyDao.findByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
+    List<Segment> insertSegments = [];
+    List<SegmentKey> insertSegmentKeys = [];
+    for (var v in segments) {
+      v.segmentIndex--;
+      v.sort--;
+      if (v.segmentKeyId != segmentKeyId) {
+        insertSegments.add(v);
+      }
+    }
+    for (var v in segmentKeys) {
+      v.segmentIndex--;
+      if (v.id != segmentKeyId) {
+        insertSegmentKeys.add(v);
+      }
+    }
+    await db.segmentDao.deleteByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
+    await db.segmentKeyDao.deleteByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
+    await db.segmentDao.insertListOrFail(insertSegments);
+    await db.segmentKeyDao.insertListOrFail(insertSegmentKeys);
+    await deleteSegmentOverallPrg(segmentKeyId);
+    await deleteSegmentReview(segmentKeyId);
+    await deleteSegmentTodayPrg(segmentKeyId);
+    await db.textVersionDao.delete(TextVersionType.segmentContent, segmentKeyId);
+    await db.textVersionDao.delete(TextVersionType.segmentNote, segmentKeyId);
+    return true;
   }
 
   @transaction

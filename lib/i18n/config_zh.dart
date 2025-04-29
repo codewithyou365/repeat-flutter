@@ -70,6 +70,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelDirectoryPermissionDenied, "请重新选择其他目录，没有权限保存到该目录: %s");
     put(I18nKey.labelSaved, "保存成功");
     put(I18nKey.labelCopied, "复制成功");
+    put(I18nKey.labelDeleted, "删除成功");
     put(I18nKey.labelSaveCancel, "保存已取消");
     put(I18nKey.labelStoragePermissionDenied, "存储权限被拒绝，请在设置中打开存储权限");
     put(I18nKey.labelLearned, "已学习: %s");
@@ -136,6 +137,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelDataDuplication, "数据重复!");
     put(I18nKey.labelDataAnomaly, "数据异常! %s");
     put(I18nKey.labelDataAnomalyWithArg, "数据异常! %s");
+    put(I18nKey.labelDataMissing, "数据丢失!");
     put(I18nKey.labelRemoteImport, "远程导入");
     put(I18nKey.labelLocalZipImport, "本地ZIP导入");
     put(I18nKey.labelLocalMediaImport, "本地媒体导入");

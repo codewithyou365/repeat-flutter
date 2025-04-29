@@ -5,11 +5,13 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/text/text_button.dart';
 
 import 'gs_cr_repeat_logic.dart';
+import 'gs_cr_repeat_state.dart' show GsCrRepeatState;
 import 'logic/constant.dart';
 
 class GsCrRepeatPage extends StatelessWidget {
@@ -65,7 +67,53 @@ class GsCrRepeatPage extends StatelessWidget {
         }
       }
     }
-    return logic.repeatView.body();
+    var dataMiss = false;
+    if (state.helper.initialized) {
+      var segment = state.helper.getCurrSegment();
+      if (segment == null) {
+        dataMiss = true;
+      } else {
+        var segmentShow = SegmentHelp.getCache(segment.segmentKeyId);
+        if (segmentShow == null) {
+          dataMiss = true;
+        }
+      }
+    }
+    if (dataMiss) {
+      return dataMissing(state);
+    } else {
+      return logic.repeatView.body();
+    }
+  }
+
+  Widget dataMissing(GsCrRepeatState state) {
+    var helper = state.helper;
+    return Column(
+      children: [
+        SizedBox(
+          height: helper.topPadding,
+        ),
+        SizedBox(
+          height: helper.topBarHeight,
+          child: Row(
+            children: [
+              const SizedBox(width: 10),
+              IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new),
+                onPressed: () {
+                  Nav.back();
+                },
+              ),
+              const Spacer(),
+            ],
+          ),
+        ),
+        SizedBox(height: (helper.screenHeight * 1 / 3) - helper.topBarHeight - helper.topPadding),
+        Center(
+          child: Text(I18nKey.labelDataMissing.tr),
+        ),
+      ],
+    );
   }
 
   Widget topBar({required GsCrRepeatLogic logic, required double height}) {

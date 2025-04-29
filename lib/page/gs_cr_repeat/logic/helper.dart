@@ -17,6 +17,7 @@ import 'constant.dart';
 import 'repeat_logic.dart';
 
 class Helper {
+  bool initialized = false;
   late RepeatLogic logic;
   late List<Content> contents;
   late String rootPath;
@@ -53,6 +54,7 @@ class Helper {
   }
 
   Future<void> init(RepeatLogic logic) async {
+    initialized = true;
     this.logic = logic;
     contents = await Db().db.contentDao.getAllContent(Classroom.curr);
     rootPath = await DocPath.getContentPath();

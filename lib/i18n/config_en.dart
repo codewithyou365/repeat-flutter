@@ -70,6 +70,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelDirectoryPermissionDenied, "Please select another directory. No permission to save to this directory: %s");
     put(I18nKey.labelSaved, "Save success");
     put(I18nKey.labelCopied, "Copy success");
+    put(I18nKey.labelDeleted, "Delete success");
     put(I18nKey.labelSaveCancel, "Save canceled");
     put(I18nKey.labelStoragePermissionDenied, "Storage permission has been denied. Please enable storage permission in the settings.");
     put(I18nKey.labelLearned, "Learned: %s");
@@ -136,6 +137,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelDataDuplication, "Data duplication!");
     put(I18nKey.labelDataAnomaly, "Data anomaly! %s");
     put(I18nKey.labelDataAnomalyWithArg, "Data anomaly! %s");
+    put(I18nKey.labelDataMissing, "Data missing!");
     put(I18nKey.labelRemoteImport, "Remote import");
     put(I18nKey.labelLocalZipImport, "Local ZIP import");
     put(I18nKey.labelLocalMediaImport, "Local media import");

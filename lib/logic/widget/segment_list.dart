@@ -15,6 +15,7 @@ import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/logic/widget/lesson_list.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -231,6 +232,26 @@ class SegmentList<T extends GetxController> {
         scrollTo(selectSegmentKeyId);
       }
     });
+
+    delete({required SegmentShow segment}) async {
+      await showOverlay(() async {
+        bool ok = await Db().db.scheduleDao.deleteNormalSegment(segment.segmentKeyId);
+        if (!ok) {
+          return false;
+        }
+        originalSegmentShow = await SegmentHelp.getSegments(
+          force: true,
+          query: QueryLesson(
+            contentSerial: segment.contentSerial,
+            lessonIndex: segment.lessonIndex,
+          ),
+        );
+        trySearch(force: true);
+        await Get.find<GsCrLogic>().init();
+      }, I18nKey.labelDeleting.tr);
+      Snackbar.show(I18nKey.labelDeleted.tr);
+      Get.back();
+    }
 
     copy({required SegmentShow segment, required bool below}) async {
       await showOverlay(() async {
@@ -499,7 +520,7 @@ class SegmentList<T extends GetxController> {
                                           desc: I18nKey.labelDeleteSegment.tr,
                                           yes: () {
                                             showTransparentOverlay(() async {
-                                              await Db().db.scheduleDao.deleteBySegmentKeyId(segment.segmentKeyId);
+                                              await Db().db.scheduleDao.deleteAbnormalSegment(segment.segmentKeyId);
 
                                               SegmentHelp.deleteCache(segment.segmentKeyId);
                                               segmentShow.removeWhere((element) => element.segmentKeyId == segment.segmentKeyId);
@@ -530,7 +551,7 @@ class SegmentList<T extends GetxController> {
                                           MsgBox.yesOrNo(
                                             title: I18nKey.labelWarning.tr,
                                             desc: I18nKey.labelDeleteSegment.tr,
-                                            yes: () {},
+                                            yes: () => delete(segment: segment),
                                           );
                                         },
                                         child: Text(I18nKey.btnDelete.tr),

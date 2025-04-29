@@ -6,6 +6,9 @@ abstract class SegmentKeyDao {
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertOrFail(SegmentKey entity);
 
+  @Query('SELECT * FROM SegmentKey where id=:id')
+  Future<SegmentKey?> oneById(int id);
+
   @Query('SELECT count(id) FROM SegmentKey where classroomId=:classroomId and contentSerial=:contentSerial lessonIndex=:lessonIndex')
   Future<int?> count(int classroomId, int contentSerial, int lessonIndex);
 
