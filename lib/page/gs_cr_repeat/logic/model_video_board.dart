@@ -150,23 +150,13 @@ class VideoBoardHelper {
     required double height,
     required VideoPlayer video,
     required VoidCallback onPressed,
-    bool showLandscapeOperateUi = true,
   }) {
     List<VideoBoard> configs = boards.value;
     if (!openedVideoBoardSettings.value && helper.step != RepeatStep.recall) {
       configs = [];
     }
     bool showSettings = false;
-    if (showLandscapeOperateUi && //
-        !helper.landscape &&
-        helper.edit) {
-      showSettings = true;
-    }
-    if (!showSettings && //
-        showLandscapeOperateUi &&
-        helper.edit &&
-        helper.landscape &&
-        !openedVideoBoardSettings.value) {
+    if (helper.edit && !openedVideoBoardSettings.value) {
       showSettings = true;
     }
 

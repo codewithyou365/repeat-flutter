@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/model_media_range.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -176,31 +175,39 @@ class RepeatViewForVideo extends RepeatView {
     var t = helper.tip == TipLevel.tip ? helper.text(QaType.tip) : null;
     var a = helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
     var bar = mediaBar(helper.screenWidth - padding * 2, helper.bottomBarHeight, range);
-    return Column(
-      children: [
-        SizedBox(height: helper.topPadding),
-        helper.topBar(),
-        SizedBox(
-          height: height,
-          child: ListView(padding: const EdgeInsets.all(0), children: [
-            videoWidget(height - helper.bottomBarHeight * 3),
-            Padding(
-              padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  bar,
-                  if (q != null) q,
-                  if (t != null) t,
-                  if (a != null) a,
-                ],
-              ),
-            ),
-          ]),
-        ),
-        helper.bottomBar(width: helper.screenWidth),
-      ],
-    );
+    return Obx(() {
+      return Column(
+        children: [
+          SizedBox(height: helper.topPadding),
+          helper.topBar(),
+          SizedBox(
+            height: height,
+            child: ListView(padding: const EdgeInsets.all(0), children: [
+              videoWidget(height - helper.bottomBarHeight * 3),
+              if (!videoBoardHelper.showEdit)
+                Padding(
+                  padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      bar,
+                      if (q != null) q,
+                      if (t != null) t,
+                      if (a != null) a,
+                    ],
+                  ),
+                ),
+              if (videoBoardHelper.showEdit)
+                Padding(
+                  padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
+                  child: SizedBox(height: height, child: videoBoardHelper.editPanel()),
+                ),
+            ]),
+          ),
+          if (!videoBoardHelper.showEdit) helper.bottomBar(width: helper.screenWidth),
+        ],
+      );
+    });
   }
 
   Widget videoWidgetForLandscape() {
@@ -272,7 +279,6 @@ class RepeatViewForVideo extends RepeatView {
         onPressed: () {
           videoBoardHelper.openedVideoBoardSettings.value = true;
         },
-        showLandscapeOperateUi: showLandscapeOperateUi.value,
       ),
     );
   }
@@ -289,7 +295,7 @@ class RepeatViewForVideo extends RepeatView {
       final aspectRatio = controller.value.aspectRatio;
       final screenWidth = helper!.screenWidth;
       void onPressed() {
-        Snackbar.show(I18nKey.labelSwitchLandscapeToSetVideoBoard.tr);
+        videoBoardHelper.openedVideoBoardSettings.value = true;
       }
 
       double width = maxHeight * aspectRatio;
