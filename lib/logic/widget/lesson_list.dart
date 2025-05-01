@@ -5,16 +5,20 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/lesson_key.dart';
 import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/lesson_show.dart';
 import 'package:repeat_flutter/logic/lesson_help.dart';
+import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:repeat_flutter/widget/text/expandable_text.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -37,6 +41,7 @@ class LessonList<T extends GetxController> {
     int? selectLessonKeyId,
     bool focus = false,
     Future<void> Function()? removeWarning,
+    Future<void> Function()? segmentModified,
   }) async {
     List<LessonShow> lessonShow = await LessonHelp.getLessons();
     return await showSheet(
@@ -46,6 +51,7 @@ class LessonList<T extends GetxController> {
       selectLessonKeyId: selectLessonKeyId,
       focus: focus,
       removeWarning: removeWarning,
+      segmentModified: segmentModified,
     );
   }
 
@@ -56,6 +62,7 @@ class LessonList<T extends GetxController> {
     int? selectLessonKeyId,
     bool focus = true,
     Future<void> Function()? removeWarning,
+    Future<void> Function()? segmentModified,
   }) {
     // for search and controls
     RxString search = RxString("");
@@ -129,9 +136,9 @@ class LessonList<T extends GetxController> {
     }
 
     String searchKey = genSearchKey();
-    void trySearch() {
+    void trySearch({bool force = false}) {
       String newSearchKey = genSearchKey();
-      if (newSearchKey == searchKey) {
+      if (!force && newSearchKey == searchKey) {
         return;
       }
       searchKey = newSearchKey;
@@ -189,6 +196,35 @@ class LessonList<T extends GetxController> {
         );
       }
     });
+
+    delete({required LessonShow lesson}) async {
+      bool success = await showOverlay<bool>(() async {
+        Map<String, dynamic> out = {};
+        bool ok = await Db().db.lessonKeyDao.deleteNormalLesson(lesson.lessonKeyId, out);
+        if (!ok) {
+          return false;
+        }
+        LessonKey lessonKey = out['lessonKey'] as LessonKey;
+        await SegmentHelp.getSegments(
+          force: true,
+          query: QueryLesson(
+            contentSerial: lessonKey.contentSerial,
+            minLessonIndex: lesson.lessonIndex,
+          ),
+        );
+        if (segmentModified != null) {
+          await segmentModified();
+        }
+        originalLessonShow = await LessonHelp.getLessons(force: true);
+        trySearch(force: true);
+        await Get.find<GsCrLogic>().init();
+        return true;
+      }, I18nKey.labelDeleting.tr);
+      if (success) {
+        Snackbar.show(I18nKey.labelDeleted.tr);
+      }
+      Get.back();
+    }
 
     return Sheet.showBottomSheet(
       Get.context!,
@@ -339,7 +375,7 @@ class LessonList<T extends GetxController> {
                                           desc: I18nKey.labelDeleteLesson.tr,
                                           yes: () {
                                             showTransparentOverlay(() async {
-                                              var ok = await Db().db.lessonKeyDao.delete(lesson.lessonKeyId);
+                                              var ok = await Db().db.lessonKeyDao.deleteAbnormalLesson(lesson.lessonKeyId);
                                               if (ok == false) {
                                                 return;
                                               }
@@ -364,6 +400,45 @@ class LessonList<T extends GetxController> {
                                         Icons.delete_forever,
                                       ),
                                     ),
+                                  PopupMenuButton<String>(
+                                    icon: const Icon(Icons.more_vert),
+                                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                      PopupMenuItem<String>(
+                                        onTap: () {
+                                          MsgBox.yesOrNo(
+                                            title: I18nKey.labelWarning.tr,
+                                            desc: I18nKey.labelDeleteSegment.tr,
+                                            yes: () => delete(lesson: lesson),
+                                          );
+                                        },
+                                        child: Text(I18nKey.btnDelete.tr),
+                                      ),
+                                      PopupMenuItem<String>(
+                                        onTap: () {
+                                          MsgBox.myDialog(
+                                              title: I18nKey.labelTips.tr,
+                                              content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
+                                              action: MsgBox.buttonsWithDivider(buttons: [
+                                                MsgBox.button(
+                                                  text: I18nKey.btnCancel.tr,
+                                                  onPressed: () {
+                                                    Get.back();
+                                                  },
+                                                ),
+                                                MsgBox.button(
+                                                  text: I18nKey.btnAbove.tr,
+                                                  onPressed: () => Get.back(),
+                                                ),
+                                                MsgBox.button(
+                                                  text: I18nKey.btnBelow.tr,
+                                                  onPressed: () => Get.back(),
+                                                ),
+                                              ]));
+                                        },
+                                        child: Text(I18nKey.btnCopy.tr),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ],

@@ -11,6 +11,14 @@ abstract class LessonDao {
   @Query('SELECT * FROM Lesson WHERE classroomId=:classroomId and contentSerial=:contentSerial and lessonIndex=:lessonIndex')
   Future<Lesson?> one(int classroomId, int contentSerial, int lessonIndex);
 
+  @Query('SELECT * FROM Lesson'
+      ' WHERE classroomId=:classroomId AND contentSerial=:contentSerial AND lessonIndex>=:minLessonIndex')
+  Future<List<Lesson>> findByMinLessonIndex(int classroomId, int contentSerial, int minLessonIndex);
+
+  @Query('DELETE FROM Lesson'
+      ' WHERE classroomId=:classroomId AND contentSerial=:contentSerial AND lessonIndex>=:minLessonIndex')
+  Future<void> deleteByMinLessonIndex(int classroomId, int contentSerial, int minLessonIndex);
+
   @Query('DELETE FROM Lesson'
       ' WHERE Lesson.classroomId=:classroomId'
       ' and Lesson.contentSerial=:contentSerial')

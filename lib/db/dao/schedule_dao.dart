@@ -529,7 +529,31 @@ abstract class ScheduleDao {
       ' WHERE SegmentKey.classroomId=:classroomId'
       '  AND SegmentKey.contentSerial=:contentSerial'
       '  AND SegmentKey.lessonIndex=:lessonIndex')
-  Future<List<SegmentShow>> getLessonSegment(int classroomId, int contentSerial, int lessonIndex);
+  Future<List<SegmentShow>> getSegmentByLessonIndex(int classroomId, int contentSerial, int lessonIndex);
+
+  @Query('SELECT SegmentKey.id segmentKeyId'
+      ',SegmentKey.k'
+      ',Content.id contentId'
+      ',Content.name contentName'
+      ',Content.serial contentSerial'
+      ',Content.sort contentSort'
+      ',SegmentKey.content segmentContent'
+      ',SegmentKey.contentVersion segmentContentVersion'
+      ',SegmentKey.note segmentNote'
+      ',SegmentKey.noteVersion segmentNoteVersion'
+      ',SegmentKey.lessonIndex'
+      ',SegmentKey.segmentIndex'
+      ',SegmentOverallPrg.next'
+      ',SegmentOverallPrg.progress'
+      ',Segment.segmentKeyId is null missing'
+      ' FROM SegmentKey'
+      " JOIN Content ON Content.classroomId=:classroomId AND Content.docId!=0"
+      ' LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id'
+      ' LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id'
+      ' WHERE SegmentKey.classroomId=:classroomId'
+      '  AND SegmentKey.contentSerial=:contentSerial'
+      '  AND SegmentKey.lessonIndex>=:minLessonIndex')
+  Future<List<SegmentShow>> getSegmentByMinLessonIndex(int classroomId, int contentSerial, int minLessonIndex);
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertSegments(List<Segment> entities);
@@ -764,13 +788,13 @@ abstract class ScheduleDao {
           noteVersion: 1,
         ));
         segments.add(Segment(
-          0,
-          content.classroomId,
-          content.serial,
-          lessonIndex,
-          segmentIndex,
+          segmentKeyId: 0,
+          classroomId: content.classroomId,
+          contentSerial: content.serial,
+          lessonIndex: lessonIndex,
+          segmentIndex: segmentIndex,
           //4611686118427387904-(99999*10000000000+99999*100000+99999)
-          content.sort * 10000000000 + lessonIndex * 100000 + segmentIndex,
+          sort: content.sort * 10000000000 + lessonIndex * 100000 + segmentIndex,
         ));
         segmentOverallPrgs.add(SegmentOverallPrg(0, content.classroomId, content.serial, Date.from(now), 0));
       }
@@ -1043,7 +1067,14 @@ abstract class ScheduleDao {
     }
 
     int sortValue = segmentKey.contentSerial * 10000000000 + segmentKey.lessonIndex * 100000 + segmentIndex;
-    var segment = Segment(segmentKey.id!, segmentKey.classroomId, segmentKey.contentSerial, segmentKey.lessonIndex, segmentKey.segmentIndex, sortValue);
+    var segment = Segment(
+      segmentKeyId: segmentKey.id!,
+      classroomId: segmentKey.classroomId,
+      contentSerial: segmentKey.contentSerial,
+      lessonIndex: segmentKey.lessonIndex,
+      segmentIndex: segmentKey.segmentIndex,
+      sort: sortValue,
+    );
     segments.add(segment);
     await db.segmentDao.insertListOrFail(segments);
     var now = DateTime.now();

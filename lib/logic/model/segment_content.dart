@@ -7,15 +7,15 @@ class SegmentContentInDb extends Segment {
   @primaryKey
   final String contentName;
 
-  SegmentContentInDb(
-    super.segmentKeyId,
-    super.classroomId,
-    super.contentSerial,
-    super.lessonIndex,
-    super.segmentIndex,
-    super.sort,
-    this.contentName,
-  );
+  SegmentContentInDb({
+    required super.segmentKeyId,
+    required super.classroomId,
+    required super.contentSerial,
+    required super.lessonIndex,
+    required super.segmentIndex,
+    required super.sort,
+    required this.contentName,
+  });
 }
 
 class SegmentContent extends SegmentContentInDb {
@@ -34,25 +34,37 @@ class SegmentContent extends SegmentContentInDb {
   var k = "";
   var miss = false;
 
-  SegmentContent(
-    super.segmentKeyId,
-    super.classroomId,
-    super.contentSerial,
-    super.lessonIndex,
-    super.segmentIndex,
-    super.sort,
-    super.contentName,
-  );
+  SegmentContent({
+    required super.segmentKeyId,
+    required super.classroomId,
+    required super.contentSerial,
+    required super.lessonIndex,
+    required super.segmentIndex,
+    required super.sort,
+    required super.contentName,
+  });
+
+  static SegmentContent empty() {
+    return SegmentContent(
+      segmentKeyId: 0,
+      classroomId: 0,
+      contentSerial: 0,
+      lessonIndex: 0,
+      segmentIndex: 0,
+      sort: 0,
+      contentName: "",
+    );
+  }
 
   static SegmentContent from(SegmentContentInDb d) {
     return SegmentContent(
-      d.segmentKeyId,
-      d.classroomId,
-      d.contentSerial,
-      d.lessonIndex,
-      d.segmentIndex,
-      d.sort,
-      d.contentName,
+      segmentKeyId: d.segmentKeyId,
+      classroomId: d.classroomId,
+      contentSerial: d.contentSerial,
+      lessonIndex: d.lessonIndex,
+      segmentIndex: d.segmentIndex,
+      sort: d.sort,
+      contentName: d.contentName,
     );
   }
 }

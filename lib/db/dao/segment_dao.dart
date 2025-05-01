@@ -7,6 +7,10 @@ abstract class SegmentDao {
   Future<void> insertOrFail(Segment entity);
 
   @Query('SELECT * FROM Segment'
+      ' WHERE classroomId=:classroomId AND contentSerial=:contentSerial AND lessonIndex=:lessonIndex AND segmentIndex=:segmentIndex')
+  Future<Segment?> one(int classroomId, int contentSerial, int lessonIndex, int segmentIndex);
+
+  @Query('SELECT * FROM Segment'
       ' WHERE classroomId=:classroomId AND contentSerial=:contentSerial AND lessonIndex=:lessonIndex AND segmentIndex>=:minSegmentIndex')
   Future<List<Segment>> findByMinSegmentIndex(int classroomId, int contentSerial, int lessonIndex, int minSegmentIndex);
 
@@ -16,5 +20,4 @@ abstract class SegmentDao {
 
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertListOrFail(List<Segment> entities);
-
 }

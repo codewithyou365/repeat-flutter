@@ -222,6 +222,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelHeight, "高度比例 (0 = 0%, 1 = 100%)");
     put(I18nKey.labelWarning, "警告");
     put(I18nKey.labelCopyToWhere, "复制到该段落的上方还是下方？");
+    put(I18nKey.labelLessonDeleteBlocked, "在该课程下存在段落，无法删除该课程");
     put(I18nKey.btnEnd, "终点");
     put(I18nKey.btnHandleNow, "现在处理");
     put(I18nKey.btnStart, "开始");

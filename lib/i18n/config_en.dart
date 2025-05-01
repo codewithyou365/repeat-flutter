@@ -221,6 +221,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelHeight, "Height Ratio (0 = 0%, 1 = 100%)");
     put(I18nKey.labelWarning, "Warning");
     put(I18nKey.labelCopyToWhere, "Should the copy be placed above or below this segment?");
+    put(I18nKey.labelLessonDeleteBlocked, "There are segments under this lesson, so it cannot be deleted.");
     put(I18nKey.btnEnd, "End");
     put(I18nKey.btnHandleNow, "Handle Now");
     put(I18nKey.btnStart, "Start");

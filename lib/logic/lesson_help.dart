@@ -3,12 +3,9 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/logic/model/lesson_show.dart';
 
-import 'model/segment_show.dart';
-
 class LessonHelp {
   static List<LessonShow> cache = [];
   static Map<int, LessonShow> segmentKeyIdToShow = {};
-
 
   static tryGen({force = false}) async {
     if (cache.isEmpty || force) {
@@ -17,8 +14,8 @@ class LessonHelp {
     }
   }
 
-  static Future<List<LessonShow>> getLessons() async {
-    await tryGen();
+  static Future<List<LessonShow>> getLessons({force = false}) async {
+    await tryGen(force: force);
     return cache;
   }
 

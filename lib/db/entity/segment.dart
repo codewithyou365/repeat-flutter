@@ -14,19 +14,19 @@ class Segment {
 
   final int classroomId;
   final int contentSerial;
-  final int lessonIndex;
+  int lessonIndex;
   int segmentIndex;
 
   int sort;
 
-  Segment(
-    this.segmentKeyId,
-    this.classroomId,
-    this.contentSerial,
-    this.lessonIndex,
-    this.segmentIndex,
-    this.sort,
-  );
+  Segment({
+    required this.segmentKeyId,
+    required this.classroomId,
+    required this.contentSerial,
+    required this.lessonIndex,
+    required this.segmentIndex,
+    required this.sort,
+  });
 
   String toStringKey() {
     return '$classroomId|$contentSerial|$lessonIndex|$segmentIndex';

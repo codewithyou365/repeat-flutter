@@ -900,6 +900,29 @@ class _$LessonDao extends LessonDao {
   }
 
   @override
+  Future<List<Lesson>> findByMinLessonIndex(
+    int classroomId,
+    int contentSerial,
+    int minLessonIndex,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM Lesson WHERE classroomId=?1 AND contentSerial=?2 AND lessonIndex>=?3',
+        mapper: (Map<String, Object?> row) => Lesson(lessonKeyId: row['lessonKeyId'] as int, classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, lessonIndex: row['lessonIndex'] as int),
+        arguments: [classroomId, contentSerial, minLessonIndex]);
+  }
+
+  @override
+  Future<void> deleteByMinLessonIndex(
+    int classroomId,
+    int contentSerial,
+    int minLessonIndex,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM Lesson WHERE classroomId=?1 AND contentSerial=?2 AND lessonIndex>=?3',
+        arguments: [classroomId, contentSerial, minLessonIndex]);
+  }
+
+  @override
   Future<void> delete(
     int classroomId,
     int contentSerial,
@@ -993,6 +1016,29 @@ class _$LessonKeyDao extends LessonKeyDao {
   }
 
   @override
+  Future<List<LessonKey>> findByMinLessonIndex(
+    int classroomId,
+    int contentSerial,
+    int minLessonIndex,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM LessonKey WHERE classroomId=?1 AND contentSerial=?2 AND lessonIndex>=?3',
+        mapper: (Map<String, Object?> row) => LessonKey(id: row['id'] as int?, classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, lessonIndex: row['lessonIndex'] as int, version: row['version'] as int, content: row['content'] as String, contentVersion: row['contentVersion'] as int),
+        arguments: [classroomId, contentSerial, minLessonIndex]);
+  }
+
+  @override
+  Future<void> deleteByMinLessonIndex(
+    int classroomId,
+    int contentSerial,
+    int minLessonIndex,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM LessonKey WHERE classroomId=?1 AND contentSerial=?2 AND lessonIndex>=?3',
+        arguments: [classroomId, contentSerial, minLessonIndex]);
+  }
+
+  @override
   Future<void> updateKeyAndContent(
     int id,
     String content,
@@ -1058,16 +1104,36 @@ class _$LessonKeyDao extends LessonKeyDao {
   }
 
   @override
-  Future<bool> delete(int lessonKeyId) async {
+  Future<bool> deleteAbnormalLesson(int lessonKeyId) async {
     if (database is sqflite.Transaction) {
-      return super.delete(lessonKeyId);
+      return super.deleteAbnormalLesson(lessonKeyId);
     } else {
       return (database as sqflite.Database)
           .transaction<bool>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        return transactionDatabase.lessonKeyDao.delete(lessonKeyId);
+        return transactionDatabase.lessonKeyDao
+            .deleteAbnormalLesson(lessonKeyId);
+      });
+    }
+  }
+
+  @override
+  Future<bool> deleteNormalLesson(
+    int lessonKeyId,
+    Map<String, dynamic> out,
+  ) async {
+    if (database is sqflite.Transaction) {
+      return super.deleteNormalLesson(lessonKeyId, out);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<bool>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        return transactionDatabase.lessonKeyDao
+            .deleteNormalLesson(lessonKeyId, out);
       });
     }
   }
@@ -2224,7 +2290,7 @@ class _$ScheduleDao extends ScheduleDao {
   Future<SegmentContentInDb?> getSegmentContent(int segmentKeyId) async {
     return _queryAdapter.query(
         'SELECT Segment.segmentKeyId,Segment.classroomId,Segment.contentSerial,Segment.lessonIndex,Segment.segmentIndex,Segment.sort sort,Content.name contentName FROM Segment JOIN Content ON Content.classroomId=Segment.classroomId AND Content.serial=Segment.contentSerial WHERE Segment.segmentKeyId=?1',
-        mapper: (Map<String, Object?> row) => SegmentContentInDb(row['segmentKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['sort'] as int, row['contentName'] as String),
+        mapper: (Map<String, Object?> row) => SegmentContentInDb(segmentKeyId: row['segmentKeyId'] as int, classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, lessonIndex: row['lessonIndex'] as int, segmentIndex: row['segmentIndex'] as int, sort: row['sort'] as int, contentName: row['contentName'] as String),
         arguments: [segmentKeyId]);
   }
 
@@ -2322,7 +2388,7 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<List<SegmentShow>> getLessonSegment(
+  Future<List<SegmentShow>> getSegmentByLessonIndex(
     int classroomId,
     int contentSerial,
     int lessonIndex,
@@ -2331,6 +2397,18 @@ class _$ScheduleDao extends ScheduleDao {
         'SELECT SegmentKey.id segmentKeyId,SegmentKey.k,Content.id contentId,Content.name contentName,Content.serial contentSerial,Content.sort contentSort,SegmentKey.content segmentContent,SegmentKey.contentVersion segmentContentVersion,SegmentKey.note segmentNote,SegmentKey.noteVersion segmentNoteVersion,SegmentKey.lessonIndex,SegmentKey.segmentIndex,SegmentOverallPrg.next,SegmentOverallPrg.progress,Segment.segmentKeyId is null missing FROM SegmentKey JOIN Content ON Content.classroomId=?1 AND Content.docId!=0 LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id WHERE SegmentKey.classroomId=?1  AND SegmentKey.contentSerial=?2  AND SegmentKey.lessonIndex=?3',
         mapper: (Map<String, Object?> row) => SegmentShow(segmentKeyId: row['segmentKeyId'] as int, k: row['k'] as String, contentId: row['contentId'] as int, contentName: row['contentName'] as String, contentSerial: row['contentSerial'] as int, contentSort: row['contentSort'] as int, segmentContent: row['segmentContent'] as String, segmentContentVersion: row['segmentContentVersion'] as int, segmentNote: row['segmentNote'] as String, segmentNoteVersion: row['segmentNoteVersion'] as int, lessonIndex: row['lessonIndex'] as int, segmentIndex: row['segmentIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int, missing: (row['missing'] as int) != 0),
         arguments: [classroomId, contentSerial, lessonIndex]);
+  }
+
+  @override
+  Future<List<SegmentShow>> getSegmentByMinLessonIndex(
+    int classroomId,
+    int contentSerial,
+    int minLessonIndex,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT SegmentKey.id segmentKeyId,SegmentKey.k,Content.id contentId,Content.name contentName,Content.serial contentSerial,Content.sort contentSort,SegmentKey.content segmentContent,SegmentKey.contentVersion segmentContentVersion,SegmentKey.note segmentNote,SegmentKey.noteVersion segmentNoteVersion,SegmentKey.lessonIndex,SegmentKey.segmentIndex,SegmentOverallPrg.next,SegmentOverallPrg.progress,Segment.segmentKeyId is null missing FROM SegmentKey JOIN Content ON Content.classroomId=?1 AND Content.docId!=0 LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id WHERE SegmentKey.classroomId=?1  AND SegmentKey.contentSerial=?2  AND SegmentKey.lessonIndex>=?3',
+        mapper: (Map<String, Object?> row) => SegmentShow(segmentKeyId: row['segmentKeyId'] as int, k: row['k'] as String, contentId: row['contentId'] as int, contentName: row['contentName'] as String, contentSerial: row['contentSerial'] as int, contentSort: row['contentSort'] as int, segmentContent: row['segmentContent'] as String, segmentContentVersion: row['segmentContentVersion'] as int, segmentNote: row['segmentNote'] as String, segmentNoteVersion: row['segmentNoteVersion'] as int, lessonIndex: row['lessonIndex'] as int, segmentIndex: row['segmentIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int, missing: (row['missing'] as int) != 0),
+        arguments: [classroomId, contentSerial, minLessonIndex]);
   }
 
   @override
@@ -2828,6 +2906,19 @@ class _$SegmentDao extends SegmentDao {
   final InsertionAdapter<Segment> _segmentInsertionAdapter;
 
   @override
+  Future<Segment?> one(
+    int classroomId,
+    int contentSerial,
+    int lessonIndex,
+    int segmentIndex,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT * FROM Segment WHERE classroomId=?1 AND contentSerial=?2 AND lessonIndex=?3 AND segmentIndex=?4',
+        mapper: (Map<String, Object?> row) => Segment(segmentKeyId: row['segmentKeyId'] as int, classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, lessonIndex: row['lessonIndex'] as int, segmentIndex: row['segmentIndex'] as int, sort: row['sort'] as int),
+        arguments: [classroomId, contentSerial, lessonIndex, segmentIndex]);
+  }
+
+  @override
   Future<List<Segment>> findByMinSegmentIndex(
     int classroomId,
     int contentSerial,
@@ -2836,7 +2927,7 @@ class _$SegmentDao extends SegmentDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT * FROM Segment WHERE classroomId=?1 AND contentSerial=?2 AND lessonIndex=?3 AND segmentIndex>=?4',
-        mapper: (Map<String, Object?> row) => Segment(row['segmentKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, row['lessonIndex'] as int, row['segmentIndex'] as int, row['sort'] as int),
+        mapper: (Map<String, Object?> row) => Segment(segmentKeyId: row['segmentKeyId'] as int, classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, lessonIndex: row['lessonIndex'] as int, segmentIndex: row['segmentIndex'] as int, sort: row['sort'] as int),
         arguments: [classroomId, contentSerial, lessonIndex, minSegmentIndex]);
   }
 

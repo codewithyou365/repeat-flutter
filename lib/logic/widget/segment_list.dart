@@ -386,7 +386,14 @@ class SegmentList<T extends GetxController> {
                                         onTap: () async {
                                           var lesson = await Db().db.lessonDao.one(Classroom.curr, segment.contentSerial, segment.lessonIndex);
                                           if (lesson != null) {
-                                            lessonList.show(initContentNameSelect: initContentNameSelect, selectLessonKeyId: lesson.lessonKeyId);
+                                            lessonList.show(
+                                              initContentNameSelect: initContentNameSelect,
+                                              selectLessonKeyId: lesson.lessonKeyId,
+                                              segmentModified: () async {
+                                                originalSegmentShow = await SegmentHelp.getSegments();
+                                                trySearch(force: true);
+                                              },
+                                            );
                                           }
                                         },
                                         child: Text.rich(

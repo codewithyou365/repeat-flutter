@@ -223,6 +223,7 @@ enum I18nKey {
   labelHeight,
   labelWarning,
   labelCopyToWhere,
+  labelLessonDeleteBlocked,
   btnEnd,
   btnHandleNow,
   btnStart,

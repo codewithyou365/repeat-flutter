@@ -14,7 +14,7 @@ class SegmentKey {
 
   final int classroomId;
   final int contentSerial;
-  final int lessonIndex;
+  int lessonIndex;
   int segmentIndex;
   int version;
   final String k;
