@@ -208,6 +208,8 @@ abstract class LessonKeyDao {
     var raw = await db.segmentDao.one(lessonKey.classroomId, lessonKey.contentSerial, lessonKey.lessonIndex + 1, 0);
     if (raw == null) {
       // last one
+      await db.lessonDao.deleteByMinLessonIndex(lessonKey.classroomId, lessonKey.contentSerial, lessonKey.lessonIndex);
+      await deleteByMinLessonIndex(lessonKey.classroomId, lessonKey.contentSerial, lessonKey.lessonIndex);
       return true;
     }
     Content? content = await db.contentDao.getBySerial(lessonKey.classroomId, lessonKey.contentSerial);
@@ -250,8 +252,8 @@ abstract class LessonKeyDao {
       v.lessonIndex--;
       insertSegmentKeys.add(v);
     }
-    await db.lessonDao.deleteByMinLessonIndex(classroomId, raw.contentSerial, raw.lessonIndex);
-    await deleteByMinLessonIndex(classroomId, raw.contentSerial, raw.lessonIndex);
+    await db.lessonDao.deleteByMinLessonIndex(classroomId, lessonKey.contentSerial, lessonKey.lessonIndex);
+    await deleteByMinLessonIndex(classroomId, lessonKey.contentSerial, lessonKey.lessonIndex);
     await db.lessonDao.insertOrFail(insertLessons);
     await insertOrFail(insertLessonKeys);
 

@@ -11,9 +11,9 @@ import 'package:floor/floor.dart';
 class Lesson {
   int lessonKeyId;
 
-  late final int classroomId;
-  late final int contentSerial;
-  late final int lessonIndex;
+  final int classroomId;
+  final int contentSerial;
+  int lessonIndex;
 
   Lesson({
     this.lessonKeyId = 0,

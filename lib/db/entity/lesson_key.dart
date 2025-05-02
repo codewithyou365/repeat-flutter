@@ -11,12 +11,12 @@ class LessonKey {
   @PrimaryKey(autoGenerate: true)
   int? id;
 
-  late final int classroomId;
-  late final int contentSerial;
-  late final int lessonIndex;
-  late int version;
-  late final String content;
-  late int contentVersion;
+  final int classroomId;
+  final int contentSerial;
+  int lessonIndex;
+  int version;
+  final String content;
+  int contentVersion;
 
   LessonKey({
     this.id,
