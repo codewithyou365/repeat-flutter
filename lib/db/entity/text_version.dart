@@ -19,7 +19,7 @@ enum TextVersionReason {
 )
 class TextVersion {
   final TextVersionType t;
-  final int id;
+  int id;
   final int version;
   final TextVersionReason reason;
   final String text;
@@ -27,7 +27,7 @@ class TextVersion {
 
   TextVersion({
     required this.t,
-    required this.id,
+    this.id = 0,
     required this.version,
     required this.reason,
     required this.text,

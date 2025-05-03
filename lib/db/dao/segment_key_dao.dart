@@ -20,6 +20,14 @@ abstract class SegmentKeyDao {
       ' WHERE classroomId=:classroomId AND contentSerial=:contentSerial AND lessonIndex=:lessonIndex AND segmentIndex>=:minSegmentIndex')
   Future<void> deleteByMinSegmentIndex(int classroomId, int contentSerial, int lessonIndex, int minSegmentIndex);
 
+  @Query('SELECT * FROM SegmentKey'
+      ' WHERE classroomId=:classroomId AND contentSerial=:contentSerial AND lessonIndex>=:minLessonIndex')
+  Future<List<SegmentKey>> findByMinLessonIndex(int classroomId, int contentSerial, int minLessonIndex);
+
+  @Query('DELETE FROM SegmentKey'
+      ' WHERE classroomId=:classroomId AND contentSerial=:contentSerial AND lessonIndex>=:minLessonIndex')
+  Future<void> deleteByMinLessonIndex(int classroomId, int contentSerial, int minLessonIndex);
+
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertListOrFail(List<SegmentKey> entities);
 }

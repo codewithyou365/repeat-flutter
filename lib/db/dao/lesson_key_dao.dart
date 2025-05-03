@@ -26,6 +26,11 @@ abstract class LessonKeyDao {
       ' WHERE LessonKey.id=:id')
   Future<LessonKey?> getById(int id);
 
+  @Query('SELECT id'
+      ' FROM LessonKey'
+      ' WHERE classroomId=:classroomId and contentSerial=:contentSerial and lessonIndex=:lessonIndex and version=:version')
+  Future<int?> getLessonKeyId(int classroomId, int contentSerial, int lessonIndex, int version);
+
   @Query('SELECT ifnull(sum(Lesson.lessonKeyId is null),0) missingCount'
       ' FROM LessonKey'
       ' JOIN Content ON Content.id=:contentId'
@@ -194,37 +199,37 @@ abstract class LessonKeyDao {
 
   @transaction
   Future<bool> deleteNormalLesson(int lessonKeyId, Map<String, dynamic> out) async {
-    LessonKey? lessonKey = await getById(lessonKeyId);
-    if (lessonKey == null) {
+    LessonKey? deleteLk = await getById(lessonKeyId);
+    if (deleteLk == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the lesson data($lessonKeyId)"]));
       return false;
     }
-    out['lessonKey'] = lessonKey;
-    var currSegment = await db.segmentDao.one(lessonKey.classroomId, lessonKey.contentSerial, lessonKey.lessonIndex, 0);
+    out['lessonKey'] = deleteLk;
+    var currSegment = await db.segmentDao.one(deleteLk.classroomId, deleteLk.contentSerial, deleteLk.lessonIndex, 0);
     if (currSegment != null) {
       Snackbar.show(I18nKey.labelLessonDeleteBlocked.tr);
       return false;
     }
-    var raw = await db.segmentDao.one(lessonKey.classroomId, lessonKey.contentSerial, lessonKey.lessonIndex + 1, 0);
+    var raw = await db.segmentDao.last(deleteLk.classroomId, deleteLk.contentSerial, deleteLk.lessonIndex + 1);
     if (raw == null) {
       // last one
-      await db.lessonDao.deleteByMinLessonIndex(lessonKey.classroomId, lessonKey.contentSerial, lessonKey.lessonIndex);
-      await deleteByMinLessonIndex(lessonKey.classroomId, lessonKey.contentSerial, lessonKey.lessonIndex);
+      await db.lessonDao.deleteByMinLessonIndex(deleteLk.classroomId, deleteLk.contentSerial, deleteLk.lessonIndex);
+      await deleteByMinLessonIndex(deleteLk.classroomId, deleteLk.contentSerial, deleteLk.lessonIndex);
       return true;
     }
-    Content? content = await db.contentDao.getBySerial(lessonKey.classroomId, lessonKey.contentSerial);
+    Content? content = await db.contentDao.getBySerial(deleteLk.classroomId, deleteLk.contentSerial);
     if (content == null) {
-      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the content data(${lessonKey.contentSerial})"]));
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the content data(${deleteLk.contentSerial})"]));
       return false;
     }
     int classroomId = raw.classroomId;
     int segmentIndex = raw.segmentIndex;
-    var lessons = await db.lessonDao.findByMinLessonIndex(classroomId, lessonKey.contentSerial, lessonKey.lessonIndex);
-    var lessonKeys = await findByMinLessonIndex(classroomId, lessonKey.contentSerial, lessonKey.lessonIndex);
+    var lessons = await db.lessonDao.findByMinLessonIndex(classroomId, deleteLk.contentSerial, deleteLk.lessonIndex);
+    var lessonKeys = await findByMinLessonIndex(classroomId, deleteLk.contentSerial, deleteLk.lessonIndex);
     List<Lesson> insertLessons = [];
     List<LessonKey> insertLessonKeys = [];
     for (var v in lessons) {
-      if (v.lessonIndex == lessonKey.lessonIndex) {
+      if (v.lessonIndex == deleteLk.lessonIndex) {
         continue;
       }
       var lessonIndex = v.lessonIndex - 1;
@@ -232,14 +237,14 @@ abstract class LessonKeyDao {
       insertLessons.add(v);
     }
     for (var v in lessonKeys) {
-      if (v.lessonIndex == lessonKey.lessonIndex) {
+      if (v.lessonIndex == deleteLk.lessonIndex) {
         continue;
       }
       v.lessonIndex--;
       insertLessonKeys.add(v);
     }
-    var segments = await db.segmentDao.findByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
-    var segmentKeys = await db.segmentKeyDao.findByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
+    var segments = await db.segmentDao.findByMinLessonIndex(classroomId, raw.contentSerial, raw.lessonIndex);
+    var segmentKeys = await db.segmentKeyDao.findByMinLessonIndex(classroomId, raw.contentSerial, raw.lessonIndex);
     List<Segment> insertSegments = [];
     List<SegmentKey> insertSegmentKeys = [];
     for (var v in segments) {
@@ -252,15 +257,117 @@ abstract class LessonKeyDao {
       v.lessonIndex--;
       insertSegmentKeys.add(v);
     }
-    await db.lessonDao.deleteByMinLessonIndex(classroomId, lessonKey.contentSerial, lessonKey.lessonIndex);
-    await deleteByMinLessonIndex(classroomId, lessonKey.contentSerial, lessonKey.lessonIndex);
+    await db.lessonDao.deleteByMinLessonIndex(classroomId, deleteLk.contentSerial, deleteLk.lessonIndex);
+    await deleteByMinLessonIndex(classroomId, deleteLk.contentSerial, deleteLk.lessonIndex);
     await db.lessonDao.insertOrFail(insertLessons);
     await insertOrFail(insertLessonKeys);
 
-    await db.segmentDao.deleteByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
-    await db.segmentKeyDao.deleteByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
+    await db.segmentDao.deleteByMinLessonIndex(classroomId, raw.contentSerial, raw.lessonIndex);
+    await db.segmentKeyDao.deleteByMinLessonIndex(classroomId, raw.contentSerial, raw.lessonIndex);
     await db.segmentDao.insertListOrFail(insertSegments);
     await db.segmentKeyDao.insertListOrFail(insertSegmentKeys);
+    await db.textVersionDao.delete(TextVersionType.lessonContent, deleteLk.id!);
+    return true;
+  }
+
+  @transaction
+  Future<bool> addLesson(LessonShow lessonShow, int lessonIndex, Map<String, dynamic> out) async {
+    var now = DateTime.now();
+    int classroomId = Classroom.curr;
+    int lessonKeyId = lessonShow.lessonKeyId;
+    LessonKey? baseLk = await getById(lessonKeyId);
+    if (baseLk == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the lesson data($lessonKeyId)"]));
+      return false;
+    }
+    out['lessonKey'] = baseLk;
+    int contentSerial = baseLk.contentSerial;
+    Lesson newLesson = Lesson(
+      classroomId: classroomId,
+      contentSerial: contentSerial,
+      lessonIndex: lessonIndex,
+    );
+    LessonKey newLessonKey = LessonKey(
+      classroomId: classroomId,
+      contentSerial: contentSerial,
+      lessonIndex: lessonIndex,
+      version: 1,
+      content: baseLk.content,
+      contentVersion: 1,
+    );
+    TextVersion newTextVersion = TextVersion(
+      t: TextVersionType.lessonContent,
+      version: 1,
+      reason: TextVersionReason.editor,
+      text: baseLk.content,
+      createTime: now,
+    );
+
+    var lastSegment = await db.segmentDao.last(classroomId, contentSerial, lessonIndex);
+    if (lastSegment == null) {
+      // last one
+      await insertOrFail([newLessonKey]);
+      int? newLessonKeyId = await getLessonKeyId(newLessonKey.classroomId, newLessonKey.contentSerial, newLessonKey.lessonIndex, newLessonKey.version);
+      if (newLessonKeyId == null) {
+        Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the newLessonKeyId by ${newLessonKey.classroomId}, ${newLessonKey.contentSerial}, ${newLessonKey.lessonIndex}, ${newLessonKey.version} in last"]));
+        return false;
+      }
+      newLesson.lessonKeyId = newLessonKeyId;
+      newTextVersion.id = newLessonKeyId;
+      await db.lessonDao.insertOrFail([newLesson]);
+      await db.textVersionDao.insertOrFail(newTextVersion);
+      return true;
+    }
+
+    Content? content = await db.contentDao.getBySerial(classroomId, contentSerial);
+    if (content == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the content data($contentSerial)"]));
+      return false;
+    }
+    var lessons = await db.lessonDao.findByMinLessonIndex(classroomId, contentSerial, lessonIndex);
+    var lessonKeys = await findByMinLessonIndex(classroomId, contentSerial, lessonIndex);
+    List<Lesson> insertLessons = [newLesson];
+    List<LessonKey> insertLessonKeys = [newLessonKey];
+    for (var v in lessons) {
+      v.lessonIndex++;
+      insertLessons.add(v);
+    }
+    for (var v in lessonKeys) {
+      v.lessonIndex++;
+      insertLessonKeys.add(v);
+    }
+    var segments = await db.segmentDao.findByMinLessonIndex(classroomId, contentSerial, lessonIndex);
+    var segmentKeys = await db.segmentKeyDao.findByMinLessonIndex(classroomId, contentSerial, lessonIndex);
+    List<Segment> insertSegments = [];
+    List<SegmentKey> insertSegmentKeys = [];
+    for (var v in segments) {
+      var lessonIndex = v.lessonIndex + 1;
+      v.sort = content.sort * 10000000000 + lessonIndex * 100000 + v.segmentIndex;
+      v.lessonIndex = lessonIndex;
+      insertSegments.add(v);
+    }
+    for (var v in segmentKeys) {
+      v.lessonIndex++;
+      insertSegmentKeys.add(v);
+    }
+    await deleteByMinLessonIndex(classroomId, contentSerial, lessonIndex);
+    await insertOrFail(insertLessonKeys);
+    int? newLessonKeyId = await getLessonKeyId(newLessonKey.classroomId, newLessonKey.contentSerial, newLessonKey.lessonIndex, newLessonKey.version);
+    if (newLessonKeyId == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the newLessonKeyId by ${newLessonKey.classroomId}, ${newLessonKey.contentSerial}, ${newLessonKey.lessonIndex}, ${newLessonKey.version}"]));
+      return false;
+    }
+    newLesson.lessonKeyId = newLessonKeyId;
+    newTextVersion.id = newLessonKeyId;
+
+    await db.lessonDao.deleteByMinLessonIndex(classroomId, contentSerial, lessonIndex);
+    await db.lessonDao.insertOrFail(insertLessons);
+
+    await db.segmentDao.deleteByMinLessonIndex(classroomId, contentSerial, lessonIndex);
+    await db.segmentKeyDao.deleteByMinLessonIndex(classroomId, contentSerial, lessonIndex);
+    await db.segmentDao.insertListOrFail(insertSegments);
+    await db.segmentKeyDao.insertListOrFail(insertSegmentKeys);
+    await db.textVersionDao.insertOrFail(newTextVersion);
     return true;
   }
 }

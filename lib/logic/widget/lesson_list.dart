@@ -196,6 +196,21 @@ class LessonList<T extends GetxController> {
         );
       }
     });
+    Future<void> refresh(LessonKey lessonKey) async {
+      await SegmentHelp.getSegments(
+        force: true,
+        query: QueryLesson(
+          contentSerial: lessonKey.contentSerial,
+          minLessonIndex: lessonKey.lessonIndex,
+        ),
+      );
+      if (segmentModified != null) {
+        await segmentModified();
+      }
+      originalLessonShow = await LessonHelp.getLessons(force: true);
+      trySearch(force: true);
+      await Get.find<GsCrLogic>().init();
+    }
 
     delete({required LessonShow lesson}) async {
       bool success = await showOverlay<bool>(() async {
@@ -205,23 +220,32 @@ class LessonList<T extends GetxController> {
           return false;
         }
         LessonKey lessonKey = out['lessonKey'] as LessonKey;
-        await SegmentHelp.getSegments(
-          force: true,
-          query: QueryLesson(
-            contentSerial: lessonKey.contentSerial,
-            minLessonIndex: lesson.lessonIndex,
-          ),
-        );
-        if (segmentModified != null) {
-          await segmentModified();
-        }
-        originalLessonShow = await LessonHelp.getLessons(force: true);
-        trySearch(force: true);
-        await Get.find<GsCrLogic>().init();
+        await refresh(lessonKey);
         return true;
       }, I18nKey.labelDeleting.tr);
       if (success) {
         Snackbar.show(I18nKey.labelDeleted.tr);
+      }
+      Get.back();
+    }
+
+    copy({required LessonShow lesson, required bool below}) async {
+      bool success = await showOverlay<bool>(() async {
+        int lessonIndex = lesson.lessonIndex;
+        if (below) {
+          lessonIndex++;
+        }
+        Map<String, dynamic> out = {};
+        var ok = await Db().db.lessonKeyDao.addLesson(lesson, lessonIndex, out);
+        if (!ok) {
+          return false;
+        }
+        LessonKey lessonKey = out['lessonKey'] as LessonKey;
+        await refresh(lessonKey);
+        return true;
+      }, I18nKey.labelCopying.tr);
+      if (success) {
+        Snackbar.show(I18nKey.labelCopied.tr);
       }
       Get.back();
     }
@@ -427,11 +451,11 @@ class LessonList<T extends GetxController> {
                                                 ),
                                                 MsgBox.button(
                                                   text: I18nKey.btnAbove.tr,
-                                                  onPressed: () => Get.back(),
+                                                  onPressed: () => copy(lesson: lesson, below: false),
                                                 ),
                                                 MsgBox.button(
                                                   text: I18nKey.btnBelow.tr,
-                                                  onPressed: () => Get.back(),
+                                                  onPressed: () => copy(lesson: lesson, below: true),
                                                 ),
                                               ]));
                                         },
