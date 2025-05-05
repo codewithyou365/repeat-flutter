@@ -67,22 +67,20 @@ class GsCrRepeatPage extends StatelessWidget {
         }
       }
     }
-    var dataMiss = false;
+    String? viewName;
     if (state.helper.initialized) {
       var segment = state.helper.getCurrSegment();
-      if (segment == null) {
-        dataMiss = true;
-      } else {
+      if (segment != null) {
         var segmentShow = SegmentHelp.getCache(segment.segmentKeyId);
-        if (segmentShow == null) {
-          dataMiss = true;
+        if (segmentShow != null) {
+          viewName = state.helper.getCurrViewName();
         }
       }
     }
-    if (dataMiss) {
+    if (viewName == null) {
       return dataMissing(state);
     } else {
-      return logic.repeatView.body();
+      return logic.nameToRepeatView[viewName]!.body();
     }
   }
 

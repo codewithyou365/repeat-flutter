@@ -15,6 +15,8 @@ import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic_for_browse.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic_for_examine.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic.dart';
+import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_view_for_audio.dart';
+import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_view_for_text.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_view_for_video.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'gs_cr_repeat_state.dart';
@@ -24,9 +26,15 @@ class GsCrRepeatLogic extends GetxController {
   static const String id = "GsCrRepeatLogic";
   final GsCrRepeatState state = GsCrRepeatState();
   GameServer server = GameServer();
+  final Map<String, RepeatView> nameToRepeatView = {};
+
+  GsCrRepeatLogic() {
+    nameToRepeatView["audio"] = RepeatViewForAudio();
+    nameToRepeatView["text"] = RepeatViewForText();
+    nameToRepeatView["video"] = RepeatViewForVideo();
+  }
 
   late CopyLogic copyLogic = CopyLogic<GsCrRepeatLogic>(CrK.copyTemplate, this);
-  late RepeatView repeatView = RepeatViewForVideo();
   late SegmentList segmentList = SegmentList<GsCrRepeatLogic>(this);
   late RepeatLogic? repeatLogic;
 
@@ -41,7 +49,10 @@ class GsCrRepeatLogic extends GetxController {
     super.onClose();
     server.stop();
     repeatLogic?.onClose();
-    repeatView.dispose();
+    for (var v in nameToRepeatView.values) {
+      v.dispose();
+    }
+
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     Get.find<GsCrLogic>().init();
   }
@@ -61,7 +72,9 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     await state.helper.init(repeatLogic!);
-    repeatView.init(state.helper);
+    for (var v in nameToRepeatView.values) {
+      v.init(state.helper);
+    }
     update([GsCrRepeatLogic.id]);
   }
 

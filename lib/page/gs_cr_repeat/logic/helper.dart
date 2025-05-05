@@ -34,6 +34,7 @@ class Helper {
   late Widget? Function(QaType type) text;
 
   bool edit = false;
+  Map<int, Map<String, dynamic>> rootMapCache = {};
 
   Map<int, Map<String, dynamic>> lessonMapCache = {};
   Map<int, List<String>> lessonPathCache = {};
@@ -103,6 +104,23 @@ class Helper {
       return null;
     }
     return ret.content;
+  }
+
+  Map<String, dynamic>? getCurrRootMap() {
+    if (logic.currSegment == null) {
+      return null;
+    }
+    Map<String, dynamic>? ret = rootMapCache[logic.currSegment!.contentSerial];
+    String? rootContent = getCurrRootContent();
+    if (rootContent == null) {
+      return null;
+    }
+    ret = jsonDecode(rootContent);
+    if (ret is! Map<String, dynamic>) {
+      return null;
+    }
+    rootMapCache[logic.currSegment!.contentSerial] = ret;
+    return ret;
   }
 
   Map<String, dynamic>? getCurrLessonMap() {
@@ -195,5 +213,29 @@ class Helper {
     }
     lessonPathCache[logic.currSegment!.lessonKeyId] = ret;
     return ret;
+  }
+
+  String? getCurrViewName() {
+    String? ret;
+    var m = getCurrSegmentMap();
+    if (m != null && m['v'] != null) {
+      ret = m['v'] as String;
+    }
+    if (ret == null) {
+      m = getCurrLessonMap();
+      if (m != null && m['v'] != null) {
+        ret = m['v'] as String;
+      }
+    }
+    if (ret == null) {
+      m = getCurrRootMap();
+      if (m != null && m['v'] != null) {
+        ret = m['v'] as String;
+      }
+    }
+    if (ret != null) {
+      return ret.toLowerCase();
+    }
+    return null;
   }
 }
