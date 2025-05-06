@@ -21,6 +21,7 @@ class RepeatViewForVideo extends RepeatView {
 
   // UI
   var showLandscapeOperateUi = true.obs;
+  RxDouble videoHeightInPortrait = RxDouble(0);
   double mediaBarHeight = 50;
   double padding = 16;
 
@@ -126,7 +127,7 @@ class RepeatViewForVideo extends RepeatView {
               child: Column(
                 children: [
                   SizedBox(height: helper.topBarHeight),
-                  if (!videoBoardHelper.showEdit) mediaBar(helper.screenWidth / 2, mediaBarHeight, range),
+                  mediaBar(helper.screenWidth / 2, mediaBarHeight, range),
                   if (!videoBoardHelper.showEdit)
                     SizedBox(
                       height: helper.screenHeight - helper.topBarHeight - helper.bottomBarHeight - mediaBarHeight,
@@ -142,7 +143,7 @@ class RepeatViewForVideo extends RepeatView {
                     ),
                   if (videoBoardHelper.showEdit)
                     SizedBox(
-                      height: helper.screenHeight - helper.topBarHeight,
+                      height: helper.screenHeight - helper.topBarHeight - mediaBarHeight,
                       width: helper.screenWidth / 2,
                       child: Padding(
                         padding: EdgeInsets.only(left: padding, right: helper.leftPadding),
@@ -170,40 +171,38 @@ class RepeatViewForVideo extends RepeatView {
 
   portrait(MediaRange range) {
     var helper = this.helper!;
-    double height = helper.screenHeight - helper.topPadding - helper.topBarHeight - helper.bottomBarHeight;
+    double height = helper.screenHeight - helper.topPadding - helper.topBarHeight - mediaBarHeight - helper.bottomBarHeight;
     var q = helper.text(QaType.question);
     var t = helper.tip == TipLevel.tip ? helper.text(QaType.tip) : null;
     var a = helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
-    var bar = mediaBar(helper.screenWidth - padding * 2, helper.bottomBarHeight, range);
+    videoHeightInPortrait.value = videoWidgetHeight(height - helper.bottomBarHeight * 3);
+    var bar = mediaBar(helper.screenWidth - padding * 2, mediaBarHeight, range);
     return Obx(() {
       return Column(
         children: [
           SizedBox(height: helper.topPadding),
           helper.topBar(),
-          SizedBox(
-            height: height,
-            child: ListView(padding: const EdgeInsets.all(0), children: [
-              videoWidget(height - helper.bottomBarHeight * 3),
-              if (!videoBoardHelper.showEdit)
-                Padding(
+          videoWidget(height - helper.bottomBarHeight * 3),
+          bar,
+          if (!videoBoardHelper.showEdit)
+            SizedBox(
+              height: height - videoHeightInPortrait.value,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
+                child: ListView(padding: const EdgeInsets.all(0), children: [
+                  if (q != null) q,
+                  if (t != null) t,
+                  if (a != null) a,
+                ]),
+              ),
+            ),
+          if (videoBoardHelper.showEdit)
+            SizedBox(
+                height: height - videoHeightInPortrait.value,
+                child: Padding(
                   padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      bar,
-                      if (q != null) q,
-                      if (t != null) t,
-                      if (a != null) a,
-                    ],
-                  ),
-                ),
-              if (videoBoardHelper.showEdit)
-                Padding(
-                  padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
-                  child: SizedBox(height: height, child: videoBoardHelper.editPanel()),
-                ),
-            ]),
-          ),
+                  child: videoBoardHelper.editPanel(),
+                )),
           if (!videoBoardHelper.showEdit) helper.bottomBar(width: helper.screenWidth),
         ],
       );
@@ -283,41 +282,60 @@ class RepeatViewForVideo extends RepeatView {
     );
   }
 
+  double videoWidgetHeight(double maxHeight) {
+    final controller = _videoPlayerController;
+    final isVideoReady = controller != null && controller.value.isInitialized;
+
+    if (!(initialized.value && isVideoReady)) {
+      return 300;
+    }
+
+    final aspectRatio = controller.value.aspectRatio;
+    final screenWidth = helper!.screenWidth;
+
+    double width = maxHeight * aspectRatio;
+    if (width < screenWidth) {
+      return maxHeight;
+    } else {
+      return screenWidth / aspectRatio;
+    }
+  }
+
   Widget videoWidget(double maxHeight) {
-    return Obx(() {
-      final controller = _videoPlayerController;
-      final isVideoReady = controller != null && controller.value.isInitialized;
+    final controller = _videoPlayerController;
+    final isVideoReady = controller != null && controller.value.isInitialized;
 
-      if (!(initialized.value && isVideoReady)) {
-        return const Center(child: CircularProgressIndicator());
-      }
+    if (!(initialized.value && isVideoReady)) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-      final aspectRatio = controller.value.aspectRatio;
-      final screenWidth = helper!.screenWidth;
-      void onPressed() {
-        videoBoardHelper.openedVideoBoardSettings.value = true;
-      }
+    final aspectRatio = controller.value.aspectRatio;
+    final screenWidth = helper!.screenWidth;
+    void onPressed() {
+      videoBoardHelper.openedVideoBoardSettings.value = true;
+    }
 
-      double width = maxHeight * aspectRatio;
-      if (width < screenWidth) {
-        return Center(
-          child: videoBoardHelper.wrapVideo(
-            width: width,
-            height: maxHeight,
-            video: VideoPlayer(_videoPlayerController!),
-            onPressed: onPressed,
-          ),
-        );
-      } else {
-        double height = screenWidth / aspectRatio;
-        return videoBoardHelper.wrapVideo(
-          width: screenWidth,
-          height: height,
+    double width = maxHeight * aspectRatio;
+    if (width < screenWidth) {
+      videoHeightInPortrait.value = maxHeight;
+      return Center(
+        child: videoBoardHelper.wrapVideo(
+          width: width,
+          height: maxHeight,
           video: VideoPlayer(_videoPlayerController!),
           onPressed: onPressed,
-        );
-      }
-    });
+        ),
+      );
+    } else {
+      double height = screenWidth / aspectRatio;
+      videoHeightInPortrait.value = height;
+      return videoBoardHelper.wrapVideo(
+        width: screenWidth,
+        height: height,
+        video: VideoPlayer(_videoPlayerController!),
+        onPressed: onPressed,
+      );
+    }
   }
 
   Widget mediaBar(double width, double height, MediaRange range) {
