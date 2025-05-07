@@ -19,7 +19,7 @@ import 'controller/submit.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:path/path.dart' as path;
 
-class GameServer {
+class WebServer {
   Server<GameUser> server = Server();
   Map<String, String> keyToLocalPath = {};
   List<String> ips = [];

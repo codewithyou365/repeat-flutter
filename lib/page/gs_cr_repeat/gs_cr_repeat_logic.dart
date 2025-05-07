@@ -6,11 +6,11 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/game_server/game_server.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
 
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/segment_list.dart';
+import 'package:repeat_flutter/logic/widget/web_manager.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic_for_browse.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic_for_examine.dart';
@@ -25,7 +25,6 @@ import 'logic/repeat_view.dart';
 class GsCrRepeatLogic extends GetxController {
   static const String id = "GsCrRepeatLogic";
   final GsCrRepeatState state = GsCrRepeatState();
-  GameServer server = GameServer();
   final Map<String, RepeatView> nameToRepeatView = {};
 
   GsCrRepeatLogic() {
@@ -36,6 +35,8 @@ class GsCrRepeatLogic extends GetxController {
 
   late CopyLogic copyLogic = CopyLogic<GsCrRepeatLogic>(CrK.copyTemplate, this);
   late SegmentList segmentList = SegmentList<GsCrRepeatLogic>(this);
+  late WebManager webManager = WebManager<GsCrRepeatLogic>(this);
+
   late RepeatLogic? repeatLogic;
 
   @override
@@ -47,7 +48,7 @@ class GsCrRepeatLogic extends GetxController {
   @override
   void onClose() {
     super.onClose();
-    server.stop();
+    webManager.switchWeb(false);
     repeatLogic?.onClose();
     for (var v in nameToRepeatView.values) {
       v.dispose();

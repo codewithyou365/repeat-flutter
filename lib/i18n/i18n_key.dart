@@ -249,6 +249,7 @@ enum I18nKey {
   btnEditTrack,
   btnEditNote,
   btnGameMode,
+  btnWeb,
   btnConcentration,
   btnAdd,
   btnReset,

@@ -117,6 +117,7 @@ class Server<User extends UserId> {
           }
         }
       });
+      logger?.call('HTTP server started');
     } catch (e) {
       logger?.call('Error starting HTTP server: $e');
     }

@@ -1,44 +1,15 @@
-import 'dart:convert';
-
-import 'package:floor/floor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/cr_kv.dart';
+
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/model/segment_content.dart';
-import 'package:repeat_flutter/nav.dart';
+
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
-import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
-
-class CopyTemplate {
-  String prefix;
-  String suffix;
-
-  CopyTemplate(this.prefix, this.suffix);
-
-  String toStringWithText(String text) {
-    return '$prefix$text$suffix'.trim();
-  }
-
-  factory CopyTemplate.fromJson(Map<String, dynamic> json) {
-    return CopyTemplate(json['prefix'], json['suffix']);
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'prefix': prefix,
-      'suffix': suffix,
-    };
-  }
-}
 
 class UserManager<T extends GetxController> {
   static const String id = "UserManager";

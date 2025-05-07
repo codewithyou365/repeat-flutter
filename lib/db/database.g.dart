@@ -1840,11 +1840,37 @@ class _$CrKvDao extends CrKvDao {
   }
 
   @override
-  Future<CrKv?> one(CrK k) async {
-    return _queryAdapter.query('SELECT * FROM CrKv where `k`=?1',
+  Future<CrKv?> one(
+    int classroomId,
+    CrK k,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT * FROM CrKv where classroomId=?1 and `k`=?2',
         mapper: (Map<String, Object?> row) => CrKv(row['classroomId'] as int,
             _crKConverter.decode(row['k'] as String), row['value'] as String),
-        arguments: [_crKConverter.encode(k)]);
+        arguments: [classroomId, _crKConverter.encode(k)]);
+  }
+
+  @override
+  Future<int?> getInt(
+    int classroomId,
+    CrK k,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT CAST(value as INTEGER) FROM CrKv WHERE classroomId=?1 and k=?2',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [classroomId, _crKConverter.encode(k)]);
+  }
+
+  @override
+  Future<String?> getString(
+    int classroomId,
+    CrK k,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT value FROM CrKv WHERE classroomId=?1 and k=?2',
+        mapper: (Map<String, Object?> row) => row.values.first as String,
+        arguments: [classroomId, _crKConverter.encode(k)]);
   }
 
   @override
