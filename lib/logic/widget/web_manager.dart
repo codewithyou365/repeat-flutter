@@ -36,6 +36,10 @@ class WebManager<T extends GetxController> {
     return "${I18nKey.btnWeb.tr}(${open.value})";
   }
 
+  Future<void> init() async {
+    await userManager.init();
+  }
+
   setIgnoringPunctuation(bool ignoringPunctuation) {
     this.ignoringPunctuation.value = ignoringPunctuation;
     Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame, ignoringPunctuation ? '1' : '0'));
@@ -155,6 +159,7 @@ class WebManager<T extends GetxController> {
               Get.back();
               userManager.show(Get.context!);
             },
+
           ),
           RowWidget.buildDividerWithoutColor(),
           Obx(() {

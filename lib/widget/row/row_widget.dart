@@ -368,6 +368,7 @@ class RowWidget {
     InputType? inputType,
     VoidCallback? yes,
     String Function(Rx)? format,
+    VoidCallback? refresh,
   }) {
     var showValue = value.value.toString();
     if (format != null) {
@@ -411,6 +412,11 @@ class RowWidget {
                 ),
               ),
             ),
+            if (refresh != null)
+              IconButton(
+                onPressed: refresh,
+                icon: const Icon(Icons.refresh),
+              ),
           ],
         ),
       ),

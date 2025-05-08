@@ -52,42 +52,44 @@ class UserManager<T extends GetxController> {
               id: UserManager.id,
               builder: (_) {
                 var localAllowRegisterNumber = RxString("$allowRegisterNumber");
-                return ListView(
-                  children: [
-                    RowWidget.buildTextWithEdit(
-                      I18nKey.labelAllowRegisterNumber.tr,
-                      localAllowRegisterNumber,
-                      inputType: InputType.number,
-                      yes: () async {
-                        allowRegisterNumber = int.parse(localAllowRegisterNumber.value);
-                        await setAllowRegisterNumber(allowRegisterNumber);
-                        parentLogic.update([UserManager.id]);
-                        Get.back();
-                      },
-                    ),
-                    RowWidget.buildDivider(),
-                    ...List.generate(
-                      users.length,
-                      (index) => Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Card(
-                          color: Theme.of(context).secondaryHeaderColor,
-                          child: PopupMenuButton<String>(
-                            child: RowWidget.buildText(users[index].name, "在线"),
-                            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                              PopupMenuItem<String>(
-                                onTap: () {
-                                  //TODO
-                                },
-                                child: Text(I18nKey.labelResetPassword.tr),
-                              ),
-                            ],
-                          ),
+                return ListView(children: [
+                  RowWidget.buildTextWithEdit(
+                    I18nKey.labelAllowRegisterNumber.tr,
+                    localAllowRegisterNumber,
+                    inputType: InputType.number,
+                    yes: () async {
+                      allowRegisterNumber = int.parse(localAllowRegisterNumber.value);
+                      await setAllowRegisterNumber(allowRegisterNumber);
+                      parentLogic.update([UserManager.id]);
+                      Get.back();
+                    },
+                    refresh: () async {
+                      await init();
+                      parentLogic.update([UserManager.id]);
+                    },
+                  ),
+                  RowWidget.buildDivider(),
+                  ...List.generate(
+                    users.length,
+                    (index) => Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Card(
+                        color: Theme.of(context).secondaryHeaderColor,
+                        child: PopupMenuButton<String>(
+                          child: RowWidget.buildText(users[index].name, "在线"),
+                          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                            PopupMenuItem<String>(
+                              onTap: () {
+                                //TODO
+                              },
+                              child: Text(I18nKey.labelResetPassword.tr),
+                            ),
+                          ],
                         ),
                       ),
-                    )
-                  ],
-                );
+                    ),
+                  )
+                ]);
               },
             ),
           ),
