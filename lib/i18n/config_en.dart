@@ -222,6 +222,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelWarning, "Warning");
     put(I18nKey.labelCopyToWhere, "Should the copy be placed above or below this segment?");
     put(I18nKey.labelLessonDeleteBlocked, "There are segments under this lesson, so it cannot be deleted.");
+    put(I18nKey.labelGameRuleSettings, "Game Rule Settings");
+    put(I18nKey.labelWordGuessGame, "Word Guess Game");
     put(I18nKey.btnEnd, "End");
     put(I18nKey.btnHandleNow, "Handle Now");
     put(I18nKey.btnStart, "Start");

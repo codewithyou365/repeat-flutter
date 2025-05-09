@@ -223,6 +223,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelWarning, "警告");
     put(I18nKey.labelCopyToWhere, "复制到该段落的上方还是下方？");
     put(I18nKey.labelLessonDeleteBlocked, "在该课程下存在段落，无法删除该课程");
+    put(I18nKey.labelGameRuleSettings, "游戏规则设置");
+    put(I18nKey.labelWordGuessGame, "猜词游戏");
     put(I18nKey.btnEnd, "终点");
     put(I18nKey.btnHandleNow, "现在处理");
     put(I18nKey.btnStart, "开始");

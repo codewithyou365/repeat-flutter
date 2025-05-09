@@ -24,6 +24,7 @@ class WebManager<T extends GetxController> {
   bool openPending = false;
   WebServer web = WebServer();
   RxBool open = RxBool(false);
+  RxString online = RxString("");
   List<String> urls = [];
   RxBool ignoringPunctuation = RxBool(false);
   RxBool editInGame = RxBool(false);
@@ -34,6 +35,10 @@ class WebManager<T extends GetxController> {
 
   String get title {
     return "${I18nKey.btnWeb.tr}(${open.value})";
+  }
+
+  String getOnline() {
+    return "${web.server.nodes.userId2Node.length} / ${userManager.allowRegisterNumber}";
   }
 
   Future<void> init() async {
@@ -54,8 +59,7 @@ class WebManager<T extends GetxController> {
       if (open.value == value) {
         return;
       }
-      open.value = value;
-      if (open.value) {
+      if (value) {
         try {
           int gamePort = await web.start();
           this.urls = [];
@@ -79,6 +83,7 @@ class WebManager<T extends GetxController> {
       }
     } finally {
       openPending = false;
+      open.value = value;
     }
   }
 
@@ -100,68 +105,38 @@ class WebManager<T extends GetxController> {
     bool focus = true,
     String? id = "",
   }) async {
-    var crk = await Db().db.crKvDao.getInt(Classroom.curr, CrK.ignoringPunctuationInTypingGame);
-    if (crk != null) {
-      ignoringPunctuation.value = crk == 1;
+    var ki = await Db().db.crKvDao.getInt(Classroom.curr, CrK.ignoringPunctuationInTypingGame);
+    if (ki != null) {
+      ignoringPunctuation.value = ki == 1;
     }
-    crk = await Db().db.crKvDao.getInt(Classroom.curr, CrK.matchTypeInTypingGame);
-    if (crk != null) {
-      matchType.value = crk;
+    ki = await Db().db.crKvDao.getInt(Classroom.curr, CrK.matchTypeInTypingGame);
+    if (ki != null) {
+      matchType.value = ki;
     }
-    return Sheet.showBottomSheet(
+    var ks = await Db().db.crKvDao.getString(Classroom.curr, CrK.skipCharacterInTypingGame);
+    if (ks != null) {
+      skipChar.value = ks;
+    }
+    online.value = getOnline();
+    return Sheet.withHeaderAndBody(
       Get.context!,
+      Padding(
+        key: GlobalKey(),
+        padding: EdgeInsets.symmetric(horizontal: 10.0.w, vertical: 0.0),
+        child: Column(
+          children: [
+            RowWidget.buildSwitch(
+              I18nKey.btnWeb.tr,
+              open,
+              switchWeb,
+            ),
+            RowWidget.buildDivider(),
+          ],
+        ),
+      ),
       Padding(
         padding: EdgeInsets.symmetric(horizontal: 10.0.w, vertical: 0.0),
         child: ListView(children: [
-          RowWidget.buildSwitch(
-            I18nKey.btnWeb.tr,
-            open,
-            switchWeb,
-          ),
-          RowWidget.buildDividerWithoutColor(),
-          // if (id != null) RowWidget.buildText(I18nKey.labelGameId.tr, id),
-          // if (id != null) RowWidget.buildDividerWithoutColor(),
-          // RowWidget.buildSwitch(
-          //   I18nKey.labelIgnorePunctuation.tr,
-          //   ignoringPunctuation,
-          //   setIgnoringPunctuation,
-          // ),
-          // RowWidget.buildDividerWithoutColor(),
-          // RowWidget.buildSwitch(
-          //   I18nKey.labelEnableEditSegment.tr,
-          //   editInGame,
-          // ),
-          // RowWidget.buildDividerWithoutColor(),
-          // Obx(() {
-          //   return RowWidget.buildCupertinoPicker(
-          //     I18nKey.labelMatchType.tr,
-          //     [I18nKey.labelWord.tr, I18nKey.labelSingle.tr, I18nKey.labelAll.tr],
-          //     matchType,
-          //     changed: setMatchType,
-          //   );
-          // }),
-          // RowWidget.buildDividerWithoutColor(),
-          // Obx(() {
-          //   return RowWidget.buildTextWithEdit(
-          //     I18nKey.labelSkipCharacter.tr,
-          //     skipChar,
-          //     yes: () {
-          //       Get.back();
-          //       setSkipChar(skipChar.value);
-          //     },
-          //   );
-          // }),
-          // RowWidget.buildDividerWithoutColor(),
-          RowWidget.buildTextWithEdit(
-            I18nKey.labelOnlineUserNumber.tr,
-            RxString("${web.server.nodes.userId2Node.length} / ${userManager.allowRegisterNumber}"),
-            onTap: () {
-              Get.back();
-              userManager.show(Get.context!);
-            },
-
-          ),
-          RowWidget.buildDividerWithoutColor(),
           Obx(() {
             return Column(children: [
               ...List.generate(
@@ -191,6 +166,49 @@ class WebManager<T extends GetxController> {
               )
             ]);
           }),
+          Obx(() {
+            return RowWidget.buildTextWithEdit(
+              I18nKey.labelOnlineUserNumber.tr,
+              online,
+              onTap: () async {
+                await userManager.show(Get.context!);
+                online.value = getOnline();
+              },
+            );
+          }),
+          RowWidget.buildDividerWithoutColor(),
+          RowWidget.buildCupertinoPicker(
+            I18nKey.labelGameRuleSettings.tr,
+            [I18nKey.labelWordGuessGame.tr],
+            RxInt(0),
+          ),
+          RowWidget.buildDividerWithoutColor(),
+          RowWidget.buildSwitch(
+            I18nKey.labelIgnorePunctuation.tr,
+            ignoringPunctuation,
+            setIgnoringPunctuation,
+          ),
+          RowWidget.buildDividerWithoutColor(),
+          Obx(() {
+            return RowWidget.buildCupertinoPicker(
+              I18nKey.labelMatchType.tr,
+              [I18nKey.labelWord.tr, I18nKey.labelSingle.tr, I18nKey.labelAll.tr],
+              matchType,
+              changed: setMatchType,
+            );
+          }),
+          RowWidget.buildDividerWithoutColor(),
+          Obx(() {
+            return RowWidget.buildTextWithEdit(
+              I18nKey.labelSkipCharacter.tr,
+              skipChar,
+              yes: () {
+                Get.back();
+                setSkipChar(skipChar.value);
+              },
+            );
+          }),
+          RowWidget.buildDividerWithoutColor(),
         ]),
       ),
       rate: 1,
