@@ -38,6 +38,7 @@ class SubmitRes {
   List<String> input;
   List<String> output;
   int matchType;
+
   SubmitRes(this.id, this.input, this.output, this.matchType);
 
   Map<String, dynamic> toJson() {
@@ -63,23 +64,11 @@ Future<message.Response?> submit(message.Request req, GameUser? user) async {
   if (user == null) {
     return message.Response(error: GameServerError.serviceStopped.name);
   }
-  final logic = Get.find<GsCrRepeatLogic>();
-  SegmentTodayPrg? curr = null;//TODO logic.getCurr();
-  if (curr == null) {
-    return message.Response(error: GameServerError.gameNotFound.name);
-  }
   final reqBody = SubmitReq.fromJson(req.data);
-  final game = await Db().db.gameDao.one(reqBody.gameId);
-  if (game == null) {
-    return message.Response(error: GameServerError.gameNotFound.name);
-  }
-  if (curr.id != reqBody.gameId) {
-    return message.Response(error: GameServerError.gameNotFound.name);
-  }
   int matchTypeInt = await Db().db.gameDao.intKv(Classroom.curr, CrK.matchTypeInTypingGame) ?? 1;
   List<String> input = [];
   List<String> output = [];
-  GameUserInput gameUserInput = await Db().db.gameDao.submit(game, matchTypeInt, reqBody.prevId, user.id!, reqBody.input, input, output);
+  GameUserInput gameUserInput = await Db().db.gameDao.submit(reqBody.gameId, matchTypeInt, reqBody.prevId, user.id!, reqBody.input, input, output);
   if (gameUserInput.isEmpty()) {
     return message.Response(error: GameServerError.gameSyncError.name);
   }

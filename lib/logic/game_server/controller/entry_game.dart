@@ -32,9 +32,6 @@ Future<message.Response?> entryGame(message.Request req, GameUser? user) async {
   if (game == null) {
     return message.Response(error: GameServerError.gameNotFound.name);
   }
-  if (game.id != req.data) {
-    return message.Response(error: GameServerError.gameEntryCodeError.name);
-  }
   LatestGameRes res = LatestGameRes(game.id, game.time);
   return message.Response(data: res);
 }

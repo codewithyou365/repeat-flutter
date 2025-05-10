@@ -99,6 +99,7 @@ abstract class GameDao {
     if (game == null) {
       return GameUserInput.empty();
     }
+    Map<String, dynamic> segment = jsonDecode(game.segmentContent);
     GameUserInput? gameUserInput = await lastUserInput(game.id, gameUserId, game.time);
     if (gameUserInput != null) {
       return ListUtil.toList(gameUserInput.output);
@@ -107,17 +108,17 @@ abstract class GameDao {
     MatchType matchType = MatchType.values[matchTypeInt];
     int typingGame = await intKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame) ?? 0;
     if (typingGame == 1) {
-      var punctuation = game.w.replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), '').trim();
+      var punctuation = getWord(segment).replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), '').trim();
       if (punctuation.isNotEmpty) {
-        return GameLogic.processWord(game.w, punctuation, [], [], matchType, null);
+        return GameLogic.processWord(getWord(segment), punctuation, [], [], matchType, null);
       }
     }
-    return GameLogic.processWord(game.w, "", [], [], matchType, null);
+    return GameLogic.processWord(getWord(segment), "", [], [], matchType, null);
   }
 
   @transaction
   Future<GameUserInput> submit(
-    Game game,
+    int gameId,
     int matchTypeInt,
     int preGameUserInputId,
     int gameUserId,
@@ -125,6 +126,11 @@ abstract class GameDao {
     List<String> obtainInput,
     List<String> obtainOutput,
   ) async {
+    final game = await Db().db.gameDao.one(gameId);
+    if (game == null) {
+      return GameUserInput.empty();
+    }
+    Map<String, dynamic> segment = jsonDecode(game.segmentContent);
     MatchType matchType = MatchType.values[matchTypeInt];
     GameUserInput? gameUserInput = await lastUserInput(game.id, gameUserId, game.time);
     if (gameUserInput == null && preGameUserInputId != 0) {
@@ -141,9 +147,9 @@ abstract class GameDao {
     } else {
       int typingGame = await intKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame) ?? 0;
       if (typingGame == 1) {
-        var punctuation = game.w.replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), '').trim();
+        var punctuation = getWord(segment).replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), '').trim();
         if (punctuation.isNotEmpty) {
-          prevOutput = GameLogic.processWord(game.w, punctuation, [], [], matchType, null);
+          prevOutput = GameLogic.processWord(getWord(segment), punctuation, [], [], matchType, null);
         }
       }
     }
@@ -152,7 +158,7 @@ abstract class GameDao {
     if (skipChar != null && skipChar.isEmpty) {
       skipChar = null;
     }
-    input = GameLogic.processWord(game.w, userInput, obtainOutput, prevOutput, matchType, skipChar);
+    input = GameLogic.processWord(getWord(segment), userInput, obtainOutput, prevOutput, matchType, skipChar);
     await insertGameUserInput(GameUserInput(
       game.id,
       gameUserId,
@@ -173,5 +179,13 @@ abstract class GameDao {
       return GameUserInput.empty();
     }
     return ret;
+  }
+
+  String getWord(Map<String, dynamic> segment) {
+    String? w = segment['w'];
+    if (w != null) {
+      return w;
+    }
+    return segment['a']!;
   }
 }

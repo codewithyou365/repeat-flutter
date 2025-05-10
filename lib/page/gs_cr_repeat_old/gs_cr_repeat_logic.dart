@@ -565,20 +565,17 @@ class GsCrRepeatLogic extends GetxController {
     var stp = state.segmentTodayPrg;
     stp.time += 1;
     var game = Game(
-      stp.id!,
-      stp.time,
-      state.segment.mediaHash,
-      state.segment.aStart,
-      state.segment.aEnd,
-      state.segment.word,
-      state.segment.segmentKeyId,
-      state.segment.classroomId,
-      state.segment.contentSerial,
-      state.segment.lessonIndex,
-      state.segment.segmentIndex,
-      false,
-      now.millisecondsSinceEpoch,
-      Date.from(now),
+      id: stp.id!,
+      time: stp.time,
+      segmentContent: state.segment.word,
+      segmentKeyId: state.segment.segmentKeyId,
+      classroomId: state.segment.classroomId,
+      contentSerial: state.segment.contentSerial,
+      lessonIndex: state.segment.lessonIndex,
+      segmentIndex: state.segment.segmentIndex,
+      finish: false,
+      createTime: now.millisecondsSinceEpoch,
+      createDate: Date.from(now),
     );
     await Db().db.gameDao.tryInsertGame(game);
     server.server.broadcast(Request(path: Path.refreshGame, data: {"id": stp.id, "time": stp.time}));

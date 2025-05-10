@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/await_util.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
@@ -8,6 +9,7 @@ import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'constant.dart';
+import 'game_helper.dart';
 import 'time_stats_logic.dart';
 
 class RepeatLogicForBrowse extends RepeatLogic {
@@ -70,13 +72,16 @@ class RepeatLogicForBrowse extends RepeatLogic {
   }
 
   @override
-  Future<bool> init(List<SegmentTodayPrg> all, Function() update) async {
+  Future<bool> init(List<SegmentTodayPrg> all, Function() update, GameHelper gameHelper) async {
     if (all.isEmpty) {
       Snackbar.show(I18nKey.labelNoLearningContent.tr);
       return false;
     }
     this.update = update;
+    this.gameHelper = gameHelper;
     scheduled = all;
+
+    await gameHelper.tryRefreshGame(currSegment!);
     await timeStatsLogic.tryInsertTimeStats();
     return true;
   }
@@ -96,7 +101,9 @@ class RepeatLogicForBrowse extends RepeatLogic {
         show();
         break;
       case RepeatStep.evaluate:
-        next();
+        if (!AwaitUtil.tryDo(next)) {
+          return;
+        }
         break;
       case RepeatStep.finish:
         Get.back();
@@ -116,7 +123,9 @@ class RepeatLogicForBrowse extends RepeatLogic {
     if (ticker.isStuck()) {
       return;
     }
-    prev();
+    if (!AwaitUtil.tryDo(prev)) {
+      return;
+    }
     update();
   }
 
@@ -126,7 +135,7 @@ class RepeatLogicForBrowse extends RepeatLogic {
       return;
     }
     await Db().db.scheduleDao.jumpDirectly(currSegment!.segmentKeyId, progress, nextDayValue);
-    next();
+    await next();
   }
 
   void show() {
@@ -137,21 +146,23 @@ class RepeatLogicForBrowse extends RepeatLogic {
     }
   }
 
-  void next() {
+  Future<void> next() async {
     tip = TipLevel.none;
     step = RepeatStep.recall;
     if (index < scheduled.length - 1) {
       index++;
     }
-    timeStatsLogic.updateTimeStats();
+    await gameHelper.tryRefreshGame(currSegment!);
+    await timeStatsLogic.updateTimeStats();
   }
 
-  void prev() {
+  Future<void> prev() async {
     tip = TipLevel.none;
     step = RepeatStep.recall;
     if (index > 0) {
       index--;
     }
-    timeStatsLogic.updateTimeStats();
+    await gameHelper.tryRefreshGame(currSegment!);
+    await timeStatsLogic.updateTimeStats();
   }
 }

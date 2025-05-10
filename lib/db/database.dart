@@ -141,7 +141,7 @@ class Db {
         m1_2,
         m2_3,
       ]).build();
-      log("Database path: ${await sqflite.getDatabasesPath()}");
+      log("Database path: \n${await sqflite.getDatabasesPath()}/$fileName");
     }
     db.lockDao.insertLock(Lock(1));
     return db;

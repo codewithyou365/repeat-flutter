@@ -17,15 +17,12 @@
 
   <nut-dialog
       v-model:visible="dialogVisible"
-      :title="t('pleaseInputGameNumber')"
+      :title="t('tips')"
+      :content="t('entryGameError')+gameNo"
       :okText="t('confirm')"
       :cancelText="t('cancel')"
-      :onOk="onEntryGameOk"
-      :onCancel="onEntryGameCancel">
-    <nut-input clearable
-               type="number"
-               v-model="gameNo"
-    />
+      :onOk="onCloseDialog"
+      :onCancel="onCloseDialog">
   </nut-dialog>
   <nut-overlay v-model:visible="overlayVisible">
     <div class="overlay-body">
@@ -42,7 +39,6 @@ import {Setting, PlayStart, Loading1} from '@nutui/icons-vue';
 import {useI18n} from 'vue-i18n';
 import {onMounted, ref} from 'vue';
 import {client, Request} from "../api/ws.ts";
-import {showDialog} from "@nutui/nutui";
 import {LocationQueryRaw, useRouter} from "vue-router";
 import {Path} from "../utils/constant.ts";
 
@@ -54,40 +50,22 @@ const {t} = useI18n();
 
 onMounted(() => {
 });
-const onCancel = () => {
-  console.log('event cancel')
-}
-const onOk = () => {
-  console.log('event ok')
-}
-const onEntryGameCancel = () => {
+
+const onCloseDialog = () => {
   dialogVisible.value = false;
 };
 
-const onEntryGameOk = async () => {
-  overlayVisible.value = true;
-  console.log('Game Number:', gameNo.value);
-  const req = new Request({path: Path.entryGame, data: parseInt(gameNo.value)});
+const onEntryGame = async () => {
+  const req = new Request({path: Path.entryGame, data: 0});
   const res = await client.node!.send(req);
   overlayVisible.value = false;
-  dialogVisible.value = false;
   if (res.error) {
-    showDialog({
-      title: t('tips'),
-      content: t('gameEntryCodeError'),
-      noCancelBtn: true,
-      okText: t('confirm'),
-      onCancel,
-      onOk
-    })
+    gameNo.value = res.error;
+    dialogVisible.value = true;
   } else {
     const refreshGame = res.data as LocationQueryRaw;
     await router.push({path: "/game", query: refreshGame});
   }
-};
-
-const onEntryGame = () => {
-  dialogVisible.value = true;
 };
 
 </script>

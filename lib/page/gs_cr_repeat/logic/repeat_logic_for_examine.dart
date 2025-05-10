@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/await_util.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
@@ -9,6 +10,7 @@ import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'constant.dart';
+import 'game_helper.dart';
 import 'time_stats_logic.dart';
 
 class RepeatLogicForExamine extends RepeatLogic {
@@ -84,15 +86,17 @@ class RepeatLogicForExamine extends RepeatLogic {
   }
 
   @override
-  Future<bool> init(List<SegmentTodayPrg> all, Function() update) async {
+  Future<bool> init(List<SegmentTodayPrg> all, Function() update, GameHelper gameHelper) async {
     if (all.isEmpty) {
       Snackbar.show(I18nKey.labelNoLearningContent.tr);
       return false;
     }
     this.update = update;
+    this.gameHelper = gameHelper;
     total = all.length;
     scheduled = SegmentTodayPrg.refineWithFinish(all, false);
     scheduled.sort(schedulesCurrentSort);
+    await gameHelper.tryRefreshGame(currSegment!);
     await timeStatsLogic.tryInsertTimeStats();
     return true;
   }
@@ -103,7 +107,11 @@ class RepeatLogicForExamine extends RepeatLogic {
   }
 
   @override
-  void onTapLeft() async {
+  void onTapLeft() {
+    AwaitUtil.tryDo(_onTapLeft);
+  }
+
+  Future<void> _onTapLeft() async {
     if (ticker.isStuck()) {
       return;
     }
@@ -136,22 +144,26 @@ class RepeatLogicForExamine extends RepeatLogic {
 
   @override
   Function()? getLongTapRight() {
-    return () async {
-      if (ticker.isStuck()) {
-        return;
-      }
-      switch (step) {
-        case RepeatStep.recall:
-          await error();
-          break;
-        case RepeatStep.evaluate:
-          await error();
-          break;
-        default:
-          break;
-      }
-      update();
+    return () {
+      AwaitUtil.tryDo(_getLongTapRight);
     };
+  }
+
+  Future<void> _getLongTapRight() async {
+    if (ticker.isStuck()) {
+      return;
+    }
+    switch (step) {
+      case RepeatStep.recall:
+        await error();
+        break;
+      case RepeatStep.evaluate:
+        await error();
+        break;
+      default:
+        break;
+    }
+    update();
   }
 
   @override
@@ -170,16 +182,17 @@ class RepeatLogicForExamine extends RepeatLogic {
   Future<void> right() async {
     step = RepeatStep.recall;
     await Db().db.scheduleDao.right(currSegment!);
-    next();
+    await next();
   }
 
-  void next() {
+  Future<void> next() async {
     if (currSegment!.progress >= ScheduleDao.scheduleConfig.maxRepeatTime) {
       scheduled.removeAt(0);
     }
     tip = TipLevel.none;
     scheduled.sort(schedulesCurrentSort);
-    timeStatsLogic.updateTimeStats();
+    await gameHelper.tryRefreshGame(currSegment!);
+    await timeStatsLogic.updateTimeStats();
   }
 
   Future<void> error() async {
@@ -187,6 +200,7 @@ class RepeatLogicForExamine extends RepeatLogic {
     tip = TipLevel.none;
     await Db().db.scheduleDao.error(currSegment!);
     scheduled.sort(schedulesCurrentSort);
+    await gameHelper.tryRefreshGame(currSegment!);
   }
 
   int schedulesCurrentSort(SegmentTodayPrg a, SegmentTodayPrg b) {

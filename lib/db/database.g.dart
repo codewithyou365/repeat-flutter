@@ -156,7 +156,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER NOT NULL, `time` INTEGER NOT NULL, `mediaHash` TEXT NOT NULL, `aStart` TEXT NOT NULL, `aEnd` TEXT NOT NULL, `w` TEXT NOT NULL, `segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER NOT NULL, `time` INTEGER NOT NULL, `segmentContent` TEXT NOT NULL, `segmentKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `lessonIndex` INTEGER NOT NULL, `segmentIndex` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `GameUser` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `password` TEXT NOT NULL, `nonce` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `token` TEXT NOT NULL, `tokenExpiredDate` INTEGER NOT NULL)');
         await database.execute(
@@ -497,10 +497,7 @@ class _$GameDao extends GameDao {
             (Game item) => <String, Object?>{
                   'id': item.id,
                   'time': item.time,
-                  'mediaHash': item.mediaHash,
-                  'aStart': item.aStart,
-                  'aEnd': item.aEnd,
-                  'w': item.w,
+                  'segmentContent': item.segmentContent,
                   'segmentKeyId': item.segmentKeyId,
                   'classroomId': item.classroomId,
                   'contentSerial': item.contentSerial,
@@ -576,20 +573,17 @@ class _$GameDao extends GameDao {
   Future<Game?> getOne() async {
     return _queryAdapter.query('SELECT * FROM Game where finish=false',
         mapper: (Map<String, Object?> row) => Game(
-            row['id'] as int,
-            row['time'] as int,
-            row['mediaHash'] as String,
-            row['aStart'] as String,
-            row['aEnd'] as String,
-            row['w'] as String,
-            row['segmentKeyId'] as int,
-            row['classroomId'] as int,
-            row['contentSerial'] as int,
-            row['lessonIndex'] as int,
-            row['segmentIndex'] as int,
-            (row['finish'] as int) != 0,
-            row['createTime'] as int,
-            _dateConverter.decode(row['createDate'] as int)));
+            id: row['id'] as int,
+            time: row['time'] as int,
+            segmentContent: row['segmentContent'] as String,
+            segmentKeyId: row['segmentKeyId'] as int,
+            classroomId: row['classroomId'] as int,
+            contentSerial: row['contentSerial'] as int,
+            lessonIndex: row['lessonIndex'] as int,
+            segmentIndex: row['segmentIndex'] as int,
+            finish: (row['finish'] as int) != 0,
+            createTime: row['createTime'] as int,
+            createDate: _dateConverter.decode(row['createDate'] as int)));
   }
 
   @override
@@ -647,20 +641,17 @@ class _$GameDao extends GameDao {
   Future<Game?> one(int gameId) async {
     return _queryAdapter.query('SELECT * FROM Game WHERE id=?1',
         mapper: (Map<String, Object?> row) => Game(
-            row['id'] as int,
-            row['time'] as int,
-            row['mediaHash'] as String,
-            row['aStart'] as String,
-            row['aEnd'] as String,
-            row['w'] as String,
-            row['segmentKeyId'] as int,
-            row['classroomId'] as int,
-            row['contentSerial'] as int,
-            row['lessonIndex'] as int,
-            row['segmentIndex'] as int,
-            (row['finish'] as int) != 0,
-            row['createTime'] as int,
-            _dateConverter.decode(row['createDate'] as int)),
+            id: row['id'] as int,
+            time: row['time'] as int,
+            segmentContent: row['segmentContent'] as String,
+            segmentKeyId: row['segmentKeyId'] as int,
+            classroomId: row['classroomId'] as int,
+            contentSerial: row['contentSerial'] as int,
+            lessonIndex: row['lessonIndex'] as int,
+            segmentIndex: row['segmentIndex'] as int,
+            finish: (row['finish'] as int) != 0,
+            createTime: row['createTime'] as int,
+            createDate: _dateConverter.decode(row['createDate'] as int)),
         arguments: [gameId]);
   }
 
@@ -767,7 +758,7 @@ class _$GameDao extends GameDao {
 
   @override
   Future<GameUserInput> submit(
-    Game game,
+    int gameId,
     int matchTypeInt,
     int preGameUserInputId,
     int gameUserId,
@@ -776,7 +767,7 @@ class _$GameDao extends GameDao {
     List<String> obtainOutput,
   ) async {
     if (database is sqflite.Transaction) {
-      return super.submit(game, matchTypeInt, preGameUserInputId, gameUserId,
+      return super.submit(gameId, matchTypeInt, preGameUserInputId, gameUserId,
           userInput, obtainInput, obtainOutput);
     } else {
       return (database as sqflite.Database)
@@ -785,7 +776,7 @@ class _$GameDao extends GameDao {
           ..database = transaction;
         prepareDb(transactionDatabase);
         return transactionDatabase.gameDao.submit(
-            game,
+            gameId,
             matchTypeInt,
             preGameUserInputId,
             gameUserId,

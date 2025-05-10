@@ -1,9 +1,12 @@
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'game_helper.dart';
 
 import 'constant.dart';
 
 abstract class RepeatLogic {
   late Function() update;
+
+  late GameHelper gameHelper;
 
   RepeatStep step = RepeatStep.recall;
 
@@ -19,7 +22,11 @@ abstract class RepeatLogic {
 
   String get rightLabel;
 
-  Future<bool> init(List<SegmentTodayPrg> all, Function() update);
+  Future<bool> init(
+    List<SegmentTodayPrg> all,
+    Function() update,
+    GameHelper gameHelper,
+  );
 
   void onClose();
 

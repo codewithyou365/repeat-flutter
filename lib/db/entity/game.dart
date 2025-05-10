@@ -15,10 +15,7 @@ class Game {
   final int id;
 
   final int time;
-  final String mediaHash;
-  final String aStart;
-  final String aEnd;
-  final String w;
+  final String segmentContent;
 
   final int segmentKeyId;
   final int classroomId;
@@ -30,20 +27,17 @@ class Game {
   final int createTime;
   final Date createDate;
 
-  Game(
-    this.id,
-    this.time,
-    this.mediaHash,
-    this.aStart,
-    this.aEnd,
-    this.w,
-    this.segmentKeyId,
-    this.classroomId,
-    this.contentSerial,
-    this.lessonIndex,
-    this.segmentIndex,
-    this.finish,
-    this.createTime,
-    this.createDate,
-  );
+  Game({
+    required this.id,
+    required this.time,
+    required this.segmentContent,
+    required this.segmentKeyId,
+    required this.classroomId,
+    required this.contentSerial,
+    required this.lessonIndex,
+    required this.segmentIndex,
+    required this.finish,
+    required this.createTime,
+    required this.createDate,
+  });
 }

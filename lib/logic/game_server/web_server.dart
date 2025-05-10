@@ -20,6 +20,7 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:path/path.dart' as path;
 
 class WebServer {
+  bool open = false;
   Server<GameUser> server = Server();
   Map<String, String> keyToLocalPath = {};
   List<String> ips = [];
@@ -27,7 +28,7 @@ class WebServer {
   Future<int> start() async {
     var port = 40321;
     try {
-      server.start(port, authByToken, _serveFile);
+      await server.start(port, authByToken, _serveFile);
       server.logger = Snackbar.show;
       server.controllers[Path.loginOrRegister] = loginOrRegister;
       server.controllers[Path.entryGame] = (request) => withGameUser(request, entryGame);
@@ -37,6 +38,7 @@ class WebServer {
       server.controllers[Path.getEditStatus] = (request) => withGameUser(request, getEditStatus);
       server.controllers[Path.getSegmentContent] = (request) => withGameUser(request, getSegmentContent);
       server.controllers[Path.setSegmentContent] = (request) => withGameUserAndServer(request, setSegmentContent);
+      open = true;
     } catch (e) {
       Snackbar.show('Error starting HTTP service: $e');
       return 0;
@@ -47,6 +49,7 @@ class WebServer {
   Future<void> stop() async {
     try {
       await server.stop();
+      open = false;
     } catch (e) {
       Snackbar.show('Error starting HTTP service: $e');
       return;

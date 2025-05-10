@@ -12,6 +12,7 @@ import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/segment_list.dart';
 import 'package:repeat_flutter/logic/widget/web_manager.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
+import 'package:repeat_flutter/page/gs_cr_repeat/logic/game_helper.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic_for_browse.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic_for_examine.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic.dart';
@@ -36,6 +37,7 @@ class GsCrRepeatLogic extends GetxController {
   late CopyLogic copyLogic = CopyLogic<GsCrRepeatLogic>(CrK.copyTemplate, this);
   late SegmentList segmentList = SegmentList<GsCrRepeatLogic>(this);
   late WebManager webManager = WebManager<GsCrRepeatLogic>(this);
+  late GameHelper gameHelper = GameHelper(webManager.web);
 
   late RepeatLogic? repeatLogic;
 
@@ -68,7 +70,7 @@ class GsCrRepeatLogic extends GetxController {
     await webManager.init();
     var ok = await repeatLogic!.init(all, () {
       update([GsCrRepeatLogic.id]);
-    });
+    }, gameHelper);
     if (!ok) {
       Get.back();
       return;
