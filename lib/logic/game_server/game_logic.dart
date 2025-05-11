@@ -20,7 +20,11 @@ class GameLogic {
       String prevAnswer = prev[i];
       String failed = replaceChar * original.length;
       if (matchType == MatchType.all || (prevAnswer.replaceAll(replaceChar, '').length != prevAnswer.length && inputFields.isNotEmpty)) {
-        String answer = processChar(original, inputFields[0], prevAnswer, matchType, skipChar);
+        String inputField = "";
+        if (inputFields.isNotEmpty) {
+          inputField = inputFields[0];
+        }
+        String answer = processChar(original, inputField, prevAnswer, matchType, skipChar);
         ret.add(answer);
 
         List<String> nextChars = [];

@@ -19,6 +19,7 @@ Future<void> responseHandler(
     try {
       res = await controller(req) ?? Response(status: 501);
     } catch (e) {
+      print(e.toString());
       res = Response(status: 500, error: e.toString());
     }
   } else {
