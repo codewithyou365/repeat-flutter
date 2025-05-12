@@ -126,7 +126,7 @@ abstract class GameDao {
     List<String> obtainInput,
     List<String> obtainOutput,
   ) async {
-    final game = await Db().db.gameDao.one(gameId);
+    final game = await one(gameId);
     if (game == null) {
       return GameUserInput.empty();
     }
