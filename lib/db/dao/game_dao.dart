@@ -32,8 +32,8 @@ abstract class GameDao {
   @Query('UPDATE Game set time=:time,finish=false where id=:gameId')
   Future<void> refreshGame(int gameId, int time);
 
-  @Query('UPDATE Game set aStart=:aStart,aEnd=:aEnd,w=:w where id=:gameId')
-  Future<void> refreshGameContent(int gameId, String aStart, String aEnd, String w);
+  @Query('UPDATE Game set segmentContent=:segmentContent where id=:gameId')
+  Future<void> refreshGameContent(int gameId, String segmentContent);
 
   @Query('UPDATE SegmentTodayPrg set time=:time where id=:gameId')
   Future<void> refreshSegmentTodayPrg(int gameId, int time);
@@ -80,14 +80,14 @@ abstract class GameDao {
   }
 
   @transaction
-  Future<void> clearGame(int gameId, int userId, String aStart, String aEnd, String w) async {
+  Future<void> clearGame(int gameId, int userId, String segmentContent) async {
     var game = await one(gameId);
     if (game == null) {
       return;
     }
 
     await clearGameUser(game.id, userId, game.time);
-    await refreshGameContent(game.id, aStart, aEnd, w);
+    await refreshGameContent(game.id, segmentContent);
   }
 
   @transaction

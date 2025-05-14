@@ -2,13 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class Snackbar {
+  static String _lastContent = "";
+
+  static String popContent() {
+    String ret = _lastContent;
+    _lastContent = "";
+    return ret;
+  }
+
   static void show(String content) {
     var context = Get.context;
     if (context == null) return;
 
     var overlay = Navigator.of(context, rootNavigator: true).overlay;
     if (overlay == null) return;
-
+    _lastContent = content;
     // Create an animation controller
     var animationController = AnimationController(
       duration: const Duration(milliseconds: 300), // Animation duration
@@ -60,9 +68,7 @@ class Snackbar {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white
-                              : Colors.black,
+                          color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
                         ),
                         textAlign: TextAlign.center,
                       ),

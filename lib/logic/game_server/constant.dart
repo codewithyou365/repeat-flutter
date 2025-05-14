@@ -6,6 +6,7 @@ enum GameServerError {
   gameEntryCodeError,
   contentNotFound,
   editModeDisabled,
+  contentCantBeSave,
 }
 
 class GameConstant {

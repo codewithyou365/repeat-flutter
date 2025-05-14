@@ -6,8 +6,8 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/repeat_doc_edit_help.dart';
-import 'package:repeat_flutter/logic/repeat_doc_help.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/gs_cr_repeat_logic.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class SetSegmentContentReq {
   int gameId;
@@ -31,6 +31,29 @@ class SetSegmentContentReq {
 }
 
 Future<message.Response?> setSegmentContent(message.Request req, GameUser? user, Server<GameUser> server) async {
-  // TODO
+  if (user == null) {
+    return message.Response(error: GameServerError.serviceStopped.name);
+  }
+  final reqBody = SetSegmentContentReq.fromJson(req.data);
+  final game = await Db().db.gameDao.one(reqBody.gameId);
+  if (game == null) {
+    return message.Response(error: GameServerError.gameNotFound.name);
+  }
+  var ok = await RepeatDocEditHelp.setSegment(game.contentSerial, game.lessonIndex, game.segmentIndex, reqBody.content);
+  if (!ok) {
+    return message.Response(error: GameServerError.contentNotFound.name);
+  }
+  ok = await Db().db.scheduleDao.tUpdateSegmentContent(game.segmentKeyId, reqBody.content);
+  if (!ok) {
+    String content = Snackbar.popContent();
+    if (content.isNotEmpty) {
+      return message.Response(error: content);
+    } else {
+      return message.Response(error: GameServerError.contentCantBeSave.name);
+    }
+  }
+  Get.find<GsCrRepeatLogic>().update([GsCrRepeatLogic.id]);
+  await Db().db.gameDao.clearGame(reqBody.gameId, user.id!, reqBody.content);
+  server.broadcast(Request(path: Path.refreshGame, data: {"id": game.id, "time": game.time}));
   return message.Response();
 }

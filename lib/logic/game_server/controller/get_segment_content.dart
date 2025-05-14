@@ -47,18 +47,11 @@ Future<message.Response?> getSegmentContent(message.Request req, GameUser? user)
   if (user == null) {
     return message.Response(error: GameServerError.serviceStopped.name);
   }
-  //TODO if (!Get.find<GsCrRepeatLogic>().state.editInGame.value) {
-  //   return message.Response(error: GameServerError.editModeDisabled.name);
-  // }
   final reqBody = GetSegmentContentReq.fromJson(req.data);
   final game = await Db().db.gameDao.one(reqBody.gameId);
   if (game == null) {
     return message.Response(error: GameServerError.gameNotFound.name);
   }
-  String? resBody = await RepeatDocEditHelp.getSegment(game.contentSerial, game.lessonIndex, game.segmentIndex);
-  if (resBody == null) {
-    return message.Response(error: GameServerError.contentNotFound.name);
-  }
-  final res = GetSegmentContentRes(resBody);
+  final res = GetSegmentContentRes(game.segmentContent);
   return message.Response(data: res);
 }

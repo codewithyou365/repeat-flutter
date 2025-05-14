@@ -1297,11 +1297,11 @@ abstract class ScheduleDao {
   }
 
   @transaction
-  Future<void> tUpdateSegmentContent(int segmentKeyId, String content) async {
+  Future<bool> tUpdateSegmentContent(int segmentKeyId, String content) async {
     SegmentKey? segmentKey = await getSegmentKeyById(segmentKeyId);
     if (segmentKey == null) {
       Snackbar.show(I18nKey.labelNotFoundSegment.trArgs([segmentKeyId.toString()]));
-      return;
+      return false;
     }
     dynamic contentM;
     try {
@@ -1309,11 +1309,11 @@ abstract class ScheduleDao {
       content = convert.jsonEncode(contentM);
     } catch (e) {
       Snackbar.show(e.toString());
-      return;
+      return false;
     }
 
     if (segmentKey.content == content) {
-      return;
+      return true;
     }
     String key;
     try {
@@ -1321,24 +1321,19 @@ abstract class ScheduleDao {
       key = getKey(segment.key, segment.answer);
     } catch (e) {
       Snackbar.show(e.toString());
-      return;
+      return false;
     }
     if (key.isEmpty) {
       Snackbar.show(I18nKey.labelSegmentKeyCantBeEmpty.tr);
-      return;
+      return false;
     }
 
     var otherSegmentKey = await getSegmentKeyByKey(segmentKey.classroomId, segmentKey.contentSerial, key);
     if (otherSegmentKey != null && otherSegmentKey.id != segmentKey.id) {
       Snackbar.show(I18nKey.labelSegmentKeyDuplicated.trArgs([key]));
-      return;
+      return false;
     }
-    // TODO the repeat doc is only used to import
-    var ok = await RepeatDocEditHelp.setSegment(segmentKey.contentSerial, segmentKey.lessonIndex, segmentKey.segmentIndex, content);
-    if (!ok) {
-      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(['997']));
-      return;
-    }
+
     var now = DateTime.now();
     await updateSegmentKeyAndContent(segmentKeyId, key, content, segmentKey.contentVersion + 1);
     await insertSegmentTextVersion(TextVersion(
@@ -1361,6 +1356,7 @@ abstract class ScheduleDao {
         currSegmentShow.segmentContentVersion++;
       }
     }
+    return true;
   }
 
   @transaction

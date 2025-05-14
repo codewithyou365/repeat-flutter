@@ -599,13 +599,11 @@ class _$GameDao extends GameDao {
   @override
   Future<void> refreshGameContent(
     int gameId,
-    String aStart,
-    String aEnd,
-    String w,
+    String segmentContent,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Game set aStart=?2,aEnd=?3,w=?4 where id=?1',
-        arguments: [gameId, aStart, aEnd, w]);
+        'UPDATE Game set segmentContent=?2 where id=?1',
+        arguments: [gameId, segmentContent]);
   }
 
   @override
@@ -720,12 +718,10 @@ class _$GameDao extends GameDao {
   Future<void> clearGame(
     int gameId,
     int userId,
-    String aStart,
-    String aEnd,
-    String w,
+    String segmentContent,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.clearGame(gameId, userId, aStart, aEnd, w);
+      await super.clearGame(gameId, userId, segmentContent);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
@@ -733,7 +729,7 @@ class _$GameDao extends GameDao {
           ..database = transaction;
         prepareDb(transactionDatabase);
         await transactionDatabase.gameDao
-            .clearGame(gameId, userId, aStart, aEnd, w);
+            .clearGame(gameId, userId, segmentContent);
       });
     }
   }
@@ -2823,19 +2819,19 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> tUpdateSegmentContent(
+  Future<bool> tUpdateSegmentContent(
     int segmentKeyId,
     String content,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.tUpdateSegmentContent(segmentKeyId, content);
+      return super.tUpdateSegmentContent(segmentKeyId, content);
     } else {
-      await (database as sqflite.Database)
-          .transaction<void>((transaction) async {
+      return (database as sqflite.Database)
+          .transaction<bool>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        await transactionDatabase.scheduleDao
+        return transactionDatabase.scheduleDao
             .tUpdateSegmentContent(segmentKeyId, content);
       });
     }
