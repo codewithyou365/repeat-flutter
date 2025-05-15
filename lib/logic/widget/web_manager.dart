@@ -21,6 +21,7 @@ class WebManager<T extends GetxController> {
   final T parentLogic;
 
   late UserManager userManager = UserManager<T>(parentLogic);
+  late VoidCallback onOpenWeb;
   bool openPending = false;
   WebServer web = WebServer();
   RxBool open = RxBool(false);
@@ -41,7 +42,8 @@ class WebManager<T extends GetxController> {
     return "${web.server.nodes.userId2Node.length} / ${userManager.allowRegisterNumber}";
   }
 
-  Future<void> init() async {
+  Future<void> init(VoidCallback onOpenWeb) async {
+    this.onOpenWeb = onOpenWeb;
     await userManager.init();
   }
 
@@ -68,6 +70,7 @@ class WebManager<T extends GetxController> {
             String url = ips[i];
             this.urls.add('http://$url:$gamePort');
           }
+          onOpenWeb();
         } catch (e) {
           Snackbar.show('Error Start Web: $e');
           return;

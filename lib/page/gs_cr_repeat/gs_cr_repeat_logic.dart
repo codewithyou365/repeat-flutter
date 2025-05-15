@@ -67,7 +67,9 @@ class GsCrRepeatLogic extends GetxController {
     } else {
       repeatLogic = RepeatLogicForExamine();
     }
-    await webManager.init();
+    await webManager.init(() {
+      gameHelper.tryRefreshGame(repeatLogic!.currSegment!);
+    });
     var ok = await repeatLogic!.init(all, () {
       update([GsCrRepeatLogic.id]);
     }, gameHelper);
