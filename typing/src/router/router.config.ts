@@ -20,8 +20,8 @@ export const routes = [
         component: () => import('../view/game.vue'),
     },
     {
-        path: '/game-editor',
-        component: () => import('../view/game-editor.vue'),
+        path: '/editor',
+        component: () => import('../view/editor.vue'),
     },
 
 ];

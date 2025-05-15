@@ -8,9 +8,12 @@
   </nut-navbar>
   <reconnect/>
   <div style="margin: 8px">
-    <nut-grid :column-num="1" square>
-      <nut-grid-item text="entry game" clickable @click="onEntryGame">
+    <nut-grid :column-num="4" square>
+      <nut-grid-item text="enter" clickable @click="onEntryGame">
         <PlayStart/>
+      </nut-grid-item>
+      <nut-grid-item text="edit" clickable @click="onEditor">
+        <Edit/>
       </nut-grid-item>
     </nut-grid>
   </div>
@@ -35,7 +38,7 @@
 
 <script setup lang="ts">
 import reconnect from '../component/reconnect.vue';
-import {Setting, PlayStart, Loading1} from '@nutui/icons-vue';
+import {Setting, PlayStart, Loading1, Edit} from '@nutui/icons-vue';
 import {useI18n} from 'vue-i18n';
 import {onMounted, ref} from 'vue';
 import {client, Request} from "../api/ws.ts";
@@ -65,6 +68,19 @@ const onEntryGame = async () => {
   } else {
     const refreshGame = res.data as LocationQueryRaw;
     await router.push({path: "/game", query: refreshGame});
+  }
+};
+
+const onEditor = async () => {
+  const req = new Request({path: Path.entryGame, data: 0});
+  const res = await client.node!.send(req);
+  overlayVisible.value = false;
+  if (res.error) {
+    gameNo.value = res.error;
+    dialogVisible.value = true;
+  } else {
+    const refreshGame = res.data as LocationQueryRaw;
+    await router.push({path: "/editor", query: refreshGame});
   }
 };
 

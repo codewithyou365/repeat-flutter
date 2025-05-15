@@ -1,7 +1,6 @@
 <template>
   <nut-navbar left-show @click-back="onClickBack">
     <template #right>
-      <Edit v-if="enableEdit" class="nav-bar" width="16px" @click="onClickEditor"></Edit>
       <router-link to="/settings">
         <Setting width="16px"></Setting>
       </router-link>
@@ -214,14 +213,6 @@ const finish = (word: string) => {
 };
 const onClickBack = () => history.back();
 
-const onClickEditor = async () => {
-  await router.push({
-    path: "/game-editor", query: {
-      id: refreshGame.id,
-      time: refreshGame.time,
-    }
-  });
-}
 </script>
 <style>
 .container {
