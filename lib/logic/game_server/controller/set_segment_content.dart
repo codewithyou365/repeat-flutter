@@ -5,7 +5,6 @@ import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
-import 'package:repeat_flutter/logic/repeat_doc_edit_help.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/gs_cr_repeat_logic.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -39,11 +38,7 @@ Future<message.Response?> setSegmentContent(message.Request req, GameUser? user,
   if (game == null) {
     return message.Response(error: GameServerError.gameNotFound.name);
   }
-  var ok = await RepeatDocEditHelp.setSegment(game.contentSerial, game.lessonIndex, game.segmentIndex, reqBody.content);
-  if (!ok) {
-    return message.Response(error: GameServerError.contentNotFound.name);
-  }
-  ok = await Db().db.scheduleDao.tUpdateSegmentContent(game.segmentKeyId, reqBody.content);
+  var ok = await Db().db.scheduleDao.tUpdateSegmentContent(game.segmentKeyId, reqBody.content);
   if (!ok) {
     String content = Snackbar.popContent();
     if (content.isNotEmpty) {
