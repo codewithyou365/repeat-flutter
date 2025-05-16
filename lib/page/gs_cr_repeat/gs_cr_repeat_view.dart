@@ -274,16 +274,23 @@ class GsCrRepeatPage extends StatelessWidget {
     if (map == null) {
       return null;
     }
+    String editText = '${type.i18n.tr}:';
     String? text = map[type.acronym];
     if (text == null) {
-      return null;
+      if (edit) {
+        logic.repeatLogic!.tip = TipLevel.tip;
+      } else {
+        return null;
+      }
+    } else {
+      editText = '${type.i18n.tr}:$text';
     }
     if (edit) {
       return MyTextButton.build(() {
         Editor.show(
           Get.context!,
           type.i18n.tr,
-          text,
+          text ?? "",
           (str) async {
             map[type.acronym] = str;
             String jsonStr = jsonEncode(map);
@@ -293,11 +300,11 @@ class GsCrRepeatPage extends StatelessWidget {
           },
           qrPagePath: Nav.gsCrContentScan.path,
         );
-      }, text);
+      }, editText);
     } else {
       return MyTextButton.build(() {
-        logic.copyLogic.show(Get.context!, "{{text}}", text);
-      }, text);
+        logic.copyLogic.show(Get.context!, "{{text}}", text!);
+      }, text!);
     }
   }
 }

@@ -96,8 +96,8 @@ class RepeatViewForVideo extends RepeatView {
   landscape(MediaRange range) {
     var helper = this.helper!;
     var q = helper.text(QaType.question);
-    var t = helper.tip == TipLevel.tip ? helper.text(QaType.tip) : null;
-    var a = helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
+    var t = helper.edit || helper.tip == TipLevel.tip ? helper.text(QaType.tip) : null;
+    var a = helper.edit || helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
     return Stack(
       alignment: Alignment.topCenter,
       children: [
@@ -173,8 +173,8 @@ class RepeatViewForVideo extends RepeatView {
     var helper = this.helper!;
     double height = helper.screenHeight - helper.topPadding - helper.topBarHeight - mediaBarHeight - helper.bottomBarHeight;
     var q = helper.text(QaType.question);
-    var t = helper.tip == TipLevel.tip ? helper.text(QaType.tip) : null;
-    var a = helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
+    var t = helper.edit || helper.tip == TipLevel.tip ? helper.text(QaType.tip) : null;
+    var a = helper.edit || helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
     videoHeightInPortrait.value = videoWidgetHeight(height - helper.bottomBarHeight * 3);
     var bar = mediaBar(helper.screenWidth - padding * 2, mediaBarHeight, range);
     return Obx(() {
