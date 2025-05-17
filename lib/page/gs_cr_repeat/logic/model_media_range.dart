@@ -31,6 +31,8 @@ class MediaRangeHelper {
   Map<int, MediaRange> answerRangeCache = {};
   Map<int, MediaRange> questionRangeCache = {};
   final Helper helper;
+  static const String defaultStart = "00:00:00,000";
+  static const String defaultEnd = "00:00:05,000";
 
   MediaRangeHelper({
     required this.helper,
@@ -42,43 +44,18 @@ class MediaRangeHelper {
   }
 
   MediaRange? getCurrAnswerRange() {
-    if (helper.logic.currSegment == null) {
-      return null;
-    }
-    MediaRange? ret = answerRangeCache[helper.logic.currSegment!.segmentKeyId];
-    if (ret != null) {
-      return ret;
-    }
-    final s = helper.getCurrSegmentMap();
-    if (s == null) {
-      return null;
-    }
-    String jsonStartName = "aStart";
-    String jsonEndName = "aEnd";
-    String? startStr = s[jsonStartName] as String?;
-    String? endStr = s[jsonEndName] as String?;
-    if (startStr != null && //
-        endStr != null &&
-        startStr.isNotEmpty &&
-        endStr.isNotEmpty) {
-      final start = Time.parseTimeToMilliseconds(startStr).toInt();
-      final end = Time.parseTimeToMilliseconds(endStr).toInt();
-      ret = MediaRange(start: start, end: end, enable: true);
-      answerRangeCache[helper.logic.currSegment!.segmentKeyId] = ret;
-    } else {
-      ret = MediaRange(start: 0, end: 0, enable: false);
-      answerRangeCache[helper.logic.currSegment!.segmentKeyId] = ret;
-    }
-    ret.jsonStartName = jsonStartName;
-    ret.jsonEndName = jsonEndName;
-    return ret;
+    return _getCurrRange(answerRangeCache, "aStart", "aEnd");
   }
 
   MediaRange? getCurrQuestionRange() {
+    return _getCurrRange(questionRangeCache, "qStart", "qEnd");
+  }
+
+  MediaRange? _getCurrRange(Map<int, MediaRange> cache, String jsonStartName, String jsonEndName) {
     if (helper.logic.currSegment == null) {
       return null;
     }
-    MediaRange? ret = questionRangeCache[helper.logic.currSegment!.segmentKeyId];
+    MediaRange? ret = cache[helper.logic.currSegment!.segmentKeyId];
     if (ret != null) {
       return ret;
     }
@@ -86,22 +63,21 @@ class MediaRangeHelper {
     if (s == null) {
       return null;
     }
-    String jsonStartName = "qStart";
-    String jsonEndName = "qEnd";
     String? startStr = s[jsonStartName] as String?;
     String? endStr = s[jsonEndName] as String?;
-    if (startStr != null && //
-        endStr != null &&
-        startStr.isNotEmpty &&
-        endStr.isNotEmpty) {
-      final start = Time.parseTimeToMilliseconds(startStr).toInt();
-      final end = Time.parseTimeToMilliseconds(endStr).toInt();
-      ret = MediaRange(start: start, end: end, enable: true);
-      questionRangeCache[helper.logic.currSegment!.segmentKeyId] = ret;
-    } else {
-      ret = MediaRange(start: 0, end: 0, enable: false);
-      questionRangeCache[helper.logic.currSegment!.segmentKeyId] = ret;
+    bool enable = true;
+    if (startStr == null || startStr.isEmpty) {
+      startStr = defaultStart;
+      enable = false;
     }
+    if (endStr == null || endStr.isEmpty) {
+      endStr = defaultEnd;
+      enable = false;
+    }
+    final start = Time.parseTimeToMilliseconds(startStr).toInt();
+    final end = Time.parseTimeToMilliseconds(endStr).toInt();
+    ret = MediaRange(start: start, end: end, enable: enable);
+    cache[helper.logic.currSegment!.segmentKeyId] = ret;
     ret.jsonStartName = jsonStartName;
     ret.jsonEndName = jsonEndName;
     return ret;
@@ -119,6 +95,12 @@ class MediaRangeHelper {
           if (map == null) {
             Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["map"]));
             return;
+          }
+          if (map[range.jsonStartName] == null) {
+            map[range.jsonStartName] = defaultStart;
+          }
+          if (map[range.jsonEndName] == null) {
+            map[range.jsonEndName] = defaultEnd;
           }
           String jsonName = start ? range.jsonStartName : range.jsonEndName;
           map[jsonName] = str;

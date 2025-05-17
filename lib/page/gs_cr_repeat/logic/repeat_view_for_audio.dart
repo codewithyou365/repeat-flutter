@@ -54,7 +54,7 @@ class RepeatViewForAudio extends RepeatView {
       }
     }
 
-    if (range == null || !range.enable) {
+    if (range == null) {
       return SizedBox(height: height);
     }
 

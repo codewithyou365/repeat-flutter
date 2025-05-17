@@ -347,6 +347,13 @@ abstract class LessonKeyDao {
     await db.segmentDao.insertListOrFail(insertSegments);
     await db.segmentKeyDao.insertListOrFail(insertSegmentKeys);
     await db.textVersionDao.insertOrFail(newTextVersion);
+
+    await db.scheduleDao.interAddSegment(
+      segmentContent: "{}",
+      contentSerial: contentSerial,
+      lessonIndex: lessonIndex,
+      segmentIndex: 0,
+    );
     return true;
   }
 }

@@ -1005,17 +1005,31 @@ abstract class ScheduleDao {
 
   @transaction
   Future<int> addSegment(SegmentShow raw, int segmentIndex) async {
+    return interAddSegment(
+      segmentContent: raw.segmentContent,
+      contentSerial: raw.contentSerial,
+      lessonIndex: raw.lessonIndex,
+      segmentIndex: segmentIndex,
+    );
+  }
+
+  Future<int> interAddSegment({
+    required String segmentContent,
+    required int contentSerial,
+    required int lessonIndex,
+    required int segmentIndex,
+  }) async {
     await forUpdate();
     String content = "";
     String key = "";
     Map<String, dynamic> contentMap;
     try {
-      contentMap = convert.jsonDecode(raw.segmentContent);
+      contentMap = convert.jsonDecode(segmentContent);
       if (contentMap['k'] == null || contentMap['k'].toString().isEmpty) {
         if (contentMap['a'] != null && contentMap['a'].toString().isNotEmpty) {
           contentMap['k'] = '${contentMap['a']}_${DateTime.now().millisecondsSinceEpoch}';
         } else {
-          contentMap['k'] = 'segment_${DateTime.now().millisecondsSinceEpoch}';
+          contentMap['a'] = 'segment_${DateTime.now().millisecondsSinceEpoch}';
         }
       } else {
         contentMap['k'] = '${contentMap['k']}_${DateTime.now().millisecondsSinceEpoch}';
@@ -1026,15 +1040,15 @@ abstract class ScheduleDao {
       return 0;
     }
     int classroomId = Classroom.curr;
-    var existingSegment = await getSegmentKeyByKey(classroomId, raw.contentSerial, key);
+    var existingSegment = await getSegmentKeyByKey(classroomId, contentSerial, key);
     if (existingSegment != null) {
       Snackbar.show(I18nKey.labelSegmentKeyDuplicated.trArgs([key]));
       return 0;
     }
 
     // adjust the segment index and sort
-    var segments = await db.segmentDao.findByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
-    var segmentKeys = await db.segmentKeyDao.findByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
+    var segments = await db.segmentDao.findByMinSegmentIndex(classroomId, contentSerial, lessonIndex, segmentIndex);
+    var segmentKeys = await db.segmentKeyDao.findByMinSegmentIndex(classroomId, contentSerial, lessonIndex, segmentIndex);
     for (var v in segments) {
       v.segmentIndex++;
       v.sort++;
@@ -1042,14 +1056,14 @@ abstract class ScheduleDao {
     for (var v in segmentKeys) {
       v.segmentIndex++;
     }
-    await db.segmentDao.deleteByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
-    await db.segmentKeyDao.deleteByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
+    await db.segmentDao.deleteByMinSegmentIndex(classroomId, contentSerial, lessonIndex, segmentIndex);
+    await db.segmentKeyDao.deleteByMinSegmentIndex(classroomId, contentSerial, lessonIndex, segmentIndex);
 
     // insert and get the segment key id
     SegmentKey? segmentKey = SegmentKey(
       classroomId: classroomId,
-      contentSerial: raw.contentSerial,
-      lessonIndex: raw.lessonIndex,
+      contentSerial: contentSerial,
+      lessonIndex: lessonIndex,
       segmentIndex: segmentIndex,
       version: 1,
       k: key,
