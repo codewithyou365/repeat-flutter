@@ -226,6 +226,7 @@ enum I18nKey {
   labelLessonDeleteBlocked,
   labelGameRuleSettings,
   labelWordGuessGame,
+  labelLastCourseCannotBeDeleted,
   btnEnd,
   btnHandleNow,
   btnStart,

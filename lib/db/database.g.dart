@@ -887,6 +887,17 @@ class _$LessonDao extends LessonDao {
   }
 
   @override
+  Future<int?> count(
+    int classroomId,
+    int contentSerial,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT count(1) FROM Lesson WHERE classroomId=?1 AND contentSerial=?2',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [classroomId, contentSerial]);
+  }
+
+  @override
   Future<List<Lesson>> findByMinLessonIndex(
     int classroomId,
     int contentSerial,

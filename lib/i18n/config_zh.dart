@@ -225,6 +225,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelLessonDeleteBlocked, "在该课程下存在段落，无法删除该课程");
     put(I18nKey.labelGameRuleSettings, "游戏规则设置");
     put(I18nKey.labelWordGuessGame, "猜词游戏");
+    put(I18nKey.labelLastCourseCannotBeDeleted, "最后一个课程不能删除，否则将无法进行复制。");
     put(I18nKey.btnEnd, "终点");
     put(I18nKey.btnHandleNow, "现在处理");
     put(I18nKey.btnStart, "开始");

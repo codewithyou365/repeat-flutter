@@ -208,6 +208,11 @@ abstract class LessonKeyDao {
     int contentSerial = deleteLk.contentSerial;
     int lessonIndex = deleteLk.lessonIndex;
     out['lessonKey'] = deleteLk;
+    var lessonCount = await db.lessonDao.count(classroomId, contentSerial) ?? 1;
+    if (lessonCount == 1) {
+      Snackbar.show(I18nKey.labelLastCourseCannotBeDeleted.tr);
+      return false;
+    }
     var currSegment = await db.segmentDao.one(classroomId, contentSerial, lessonIndex, 0);
     if (currSegment != null) {
       Snackbar.show(I18nKey.labelLessonDeleteBlocked.tr);

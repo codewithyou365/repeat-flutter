@@ -224,6 +224,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelLessonDeleteBlocked, "There are segments under this lesson, so it cannot be deleted.");
     put(I18nKey.labelGameRuleSettings, "Game Rule Settings");
     put(I18nKey.labelWordGuessGame, "Word Guess Game");
+    put(I18nKey.labelLastCourseCannotBeDeleted, "The last course cannot be deleted, otherwise copying will not be possible.");
     put(I18nKey.btnEnd, "End");
     put(I18nKey.btnHandleNow, "Handle Now");
     put(I18nKey.btnStart, "Start");

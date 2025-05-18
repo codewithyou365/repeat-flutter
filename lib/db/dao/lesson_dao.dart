@@ -11,6 +11,10 @@ abstract class LessonDao {
   @Query('SELECT * FROM Lesson WHERE classroomId=:classroomId and contentSerial=:contentSerial and lessonIndex=:lessonIndex')
   Future<Lesson?> one(int classroomId, int contentSerial, int lessonIndex);
 
+  @Query('SELECT count(1) FROM Lesson'
+      ' WHERE classroomId=:classroomId AND contentSerial=:contentSerial')
+  Future<int?> count(int classroomId, int contentSerial);
+
   @Query('SELECT * FROM Lesson'
       ' WHERE classroomId=:classroomId AND contentSerial=:contentSerial AND lessonIndex>=:minLessonIndex')
   Future<List<Lesson>> findByMinLessonIndex(int classroomId, int contentSerial, int minLessonIndex);
