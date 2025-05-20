@@ -227,6 +227,8 @@ enum I18nKey {
   labelGameRuleSettings,
   labelWordGuessGame,
   labelLastCourseCannotBeDeleted,
+  labelFileNotFound,
+  labelFileExtensionNotMatch,
   btnEnd,
   btnHandleNow,
   btnStart,

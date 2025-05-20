@@ -60,13 +60,11 @@ class RepeatViewForVideo extends RepeatView {
     }
 
     MediaRange? range;
-    if (path.isNotEmpty) {
-      if (helper.step != RepeatStep.recall) {
-        range = mediaRangeHelper.getCurrAnswerRange();
-      }
-      if (range == null || !range.enable) {
-        range = mediaRangeHelper.getCurrQuestionRange();
-      }
+    if (helper.step != RepeatStep.recall) {
+      range = mediaRangeHelper.getCurrAnswerRange();
+    }
+    if (range == null || !range.enable) {
+      range = mediaRangeHelper.getCurrQuestionRange();
     }
 
     if (range == null) {
@@ -367,9 +365,15 @@ class RepeatViewForVideo extends RepeatView {
   }
 
   Future<void> load(String path) async {
-    if (path.isEmpty) return;
-
     try {
+      var helper = this.helper!;
+      var ok = await helper.tryImportMedia(
+        localMediaPath: path,
+        allowedExtensions: ['mp4'],
+      );
+      if (!ok) {
+        return;
+      }
       bool needsInitialization = true;
 
       if (_videoPlayerController != null) {
@@ -383,8 +387,18 @@ class RepeatViewForVideo extends RepeatView {
       }
 
       if (needsInitialization) {
-        _videoPlayerController = VideoPlayerController.file(File(path));
-        await _videoPlayerController!.initialize();
+        try {
+          _videoPlayerController = VideoPlayerController.file(File(path));
+          await _videoPlayerController!.initialize();
+        } catch (e) {
+          var ok = await helper.tryImportMedia(
+            localMediaPath: path,
+            allowedExtensions: ['mp4'],
+          );
+          if (!ok) {
+            return;
+          }
+        }
 
         if (_videoPlayerController!.value.isInitialized) {
           duration = _videoPlayerController!.value.duration.inMilliseconds;

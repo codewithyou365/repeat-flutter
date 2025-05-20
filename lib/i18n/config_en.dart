@@ -225,6 +225,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelGameRuleSettings, "Game Rule Settings");
     put(I18nKey.labelWordGuessGame, "Word Guess Game");
     put(I18nKey.labelLastCourseCannotBeDeleted, "The last course cannot be deleted, otherwise copying will not be possible.");
+    put(I18nKey.labelFileNotFound, "File not found. Do you want to import the file now?");
+    put(I18nKey.labelFileExtensionNotMatch, "The file extension does not match the expected format. Please ensure it is one of %s");
     put(I18nKey.btnEnd, "End");
     put(I18nKey.btnHandleNow, "Handle Now");
     put(I18nKey.btnStart, "Start");

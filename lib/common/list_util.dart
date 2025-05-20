@@ -25,3 +25,10 @@ class ListUtil {
     return [];
   }
 }
+
+extension CaseInsensitiveContains on List<String> {
+  bool containsIgnoreCase(String? value) {
+    if (value == null) return false;
+    return any((element) => element.toLowerCase() == value.toLowerCase());
+  }
+}

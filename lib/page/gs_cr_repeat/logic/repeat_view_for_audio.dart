@@ -1,6 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/widgets.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'constant.dart';
 import 'model_media_range.dart';
 import 'helper.dart';
@@ -99,25 +100,57 @@ class RepeatViewForAudio extends RepeatView {
   }
 
   Future<void> load(String path) async {
-    var audioPlayer = this.audioPlayer;
-    String prevPath = '';
-    Duration? d;
-    if (audioPlayer.source != null) {
-      final source = audioPlayer.source;
-      if (source is DeviceFileSource) {
-        prevPath = source.path;
+    try {
+      var helper = this.helper!;
+      var ok = await helper.tryImportMedia(
+        localMediaPath: path,
+        allowedExtensions: ['mp3', 'mp4'],
+      );
+      if (!ok) {
+        return;
       }
-      if (path != prevPath) {
-        await audioPlayer.setSource(DeviceFileSource(path));
-        d = await audioPlayer.getDuration();
+      var audioPlayer = this.audioPlayer;
+      String prevPath = '';
+      Duration? d;
+      if (audioPlayer.source != null) {
+        final source = audioPlayer.source;
+        if (source is DeviceFileSource) {
+          prevPath = source.path;
+        }
+        if (path != prevPath) {
+          try {
+            await audioPlayer.setSource(DeviceFileSource(path));
+            d = await audioPlayer.getDuration();
+          } catch (e) {
+            var ok = await helper.tryImportMedia(
+              localMediaPath: path,
+              allowedExtensions: ['mp3'],
+            );
+            if (!ok) {
+              return;
+            }
+          }
+        }
+      } else {
+        try {
+          await audioPlayer.setSource(DeviceFileSource(path));
+          d = await audioPlayer.getDuration();
+        } catch (e) {
+          var ok = await helper.tryImportMedia(
+            localMediaPath: path,
+            allowedExtensions: ['mp3'],
+          );
+          if (!ok) {
+            return;
+          }
+        }
+        this.audioPlayer = audioPlayer;
       }
-    } else {
-      await audioPlayer.setSource(DeviceFileSource(path));
-      d = await audioPlayer.getDuration();
-      this.audioPlayer = audioPlayer;
-    }
-    if (d != null) {
-      duration = d.inMilliseconds;
+      if (d != null) {
+        duration = d.inMilliseconds;
+      }
+    } catch (e) {
+      Snackbar.show("Error loading video: $e");
     }
   }
 

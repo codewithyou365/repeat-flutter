@@ -36,7 +36,13 @@ class Download {
   String url;
   String hash;
 
-  String get path => hash.substring(0, 2).joinPath("${hash.substring(2)}.${url.split('.').last}");
+  String get extension => url.split('.').last;
+
+  String get folder => hash.substring(0, 2);
+
+  String get name => "${hash.substring(2)}.$extension";
+
+  String get path => "$folder/$name";
 
   Download({
     required this.url,

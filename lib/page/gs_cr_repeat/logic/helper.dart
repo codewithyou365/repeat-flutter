@@ -1,6 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/widgets.dart';
+import 'package:get/get.dart';
+import 'package:repeat_flutter/common/folder.dart';
+import 'package:repeat_flutter/common/hash.dart';
+import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/dao/lesson_key_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
@@ -8,10 +14,13 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/lesson_help.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'constant.dart';
 import 'repeat_logic.dart';
@@ -237,5 +246,72 @@ class Helper {
       return ret.toLowerCase();
     }
     return null;
+  }
+
+  Future<bool> tryImportMedia({
+    required String localMediaPath,
+    required List<String> allowedExtensions,
+  }) async {
+    var file = File(localMediaPath);
+    var exist = await file.exists();
+    if (exist) {
+      return true;
+    } else {
+      MsgBox.yesOrNo(
+        title: I18nKey.labelTips.tr,
+        desc: I18nKey.labelFileNotFound.tr,
+        no: () async {
+          Get.back();
+          Get.back();
+        },
+        yes: () async {
+          FilePickerResult? result;
+          if (allowedExtensions.length == 1 && allowedExtensions.first == 'mp4') {
+            result = await FilePicker.platform.pickFiles(
+              type: FileType.video,
+            );
+          } else {
+            result = await FilePicker.platform.pickFiles(
+              type: FileType.media,
+            );
+          }
+
+          String pickedPath = "";
+          String pickedName = "";
+          if (result != null && result.files.single.path != null) {
+            pickedPath = result.files.single.path!;
+            pickedName = result.files.single.name;
+          } else {
+            Snackbar.show(I18nKey.labelLocalImportCancel.tr);
+            return;
+          }
+
+          try {
+            var s = getCurrSegment()!;
+            String hash = await Hash.toSha1(pickedPath);
+            Download download = Download(url: pickedName, hash: hash);
+            var rootPath = await DocPath.getContentPath();
+            String localFolder = rootPath.joinPath(DocPath.getRelativePath(s.contentSerial).joinPath(download.folder));
+            if (!allowedExtensions.containsIgnoreCase(download.extension)) {
+              Snackbar.show(I18nKey.labelFileExtensionNotMatch.trArgs([jsonEncode(allowedExtensions)]));
+              return;
+            }
+
+            await Folder.ensureExists(localFolder);
+            await File(pickedPath).copy(localFolder.joinPath(download.name));
+            var lessonKeyId = s.lessonKeyId;
+            var m = getCurrLessonMap()!;
+            m['d'] = [download];
+            Db().db.lessonKeyDao.updateLessonContent(lessonKeyId, jsonEncode(m));
+            Get.back();
+            Get.back();
+          } catch (e) {
+            Snackbar.show(e.toString());
+            return;
+          }
+        },
+      );
+      return false;
+    }
   }
 }
