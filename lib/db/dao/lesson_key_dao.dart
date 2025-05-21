@@ -33,7 +33,7 @@ abstract class LessonKeyDao {
 
   @Query('SELECT ifnull(sum(Lesson.lessonKeyId is null),0) missingCount'
       ' FROM LessonKey'
-      ' JOIN Content ON Content.id=:contentId'
+      ' JOIN Content ON Content.id=:contentId AND Content.serial=SegmentKey.contentSerial AND Content.docId!=0'
       ' LEFT JOIN Lesson ON Lesson.lessonKeyId=LessonKey.id')
   Future<int?> getMissingCount(int contentId);
 
@@ -46,7 +46,7 @@ abstract class LessonKeyDao {
       ',LessonKey.lessonIndex'
       ',Lesson.lessonKeyId is null missing'
       ' FROM LessonKey'
-      " JOIN Content ON Content.classroomId=:classroomId AND Content.docId!=0"
+      " JOIN Content ON Content.classroomId=:classroomId AND Content.serial=LessonKey.contentSerial AND Content.docId!=0"
       ' LEFT JOIN Lesson ON Lesson.lessonKeyId=LessonKey.id'
       ' WHERE LessonKey.classroomId=:classroomId')
   Future<List<LessonShow>> getAllLesson(int classroomId);

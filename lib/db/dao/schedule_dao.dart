@@ -500,7 +500,7 @@ abstract class ScheduleDao {
       ',SegmentOverallPrg.progress'
       ',Segment.segmentKeyId is null missing'
       ' FROM SegmentKey'
-      " JOIN Content ON Content.classroomId=:classroomId AND Content.docId!=0"
+      " JOIN Content ON Content.classroomId=:classroomId AND Content.serial=SegmentKey.contentSerial AND Content.docId!=0"
       ' LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id'
       ' LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id'
       ' WHERE SegmentKey.classroomId=:classroomId')
@@ -522,7 +522,7 @@ abstract class ScheduleDao {
       ',SegmentOverallPrg.progress'
       ',Segment.segmentKeyId is null missing'
       ' FROM SegmentKey'
-      " JOIN Content ON Content.classroomId=:classroomId AND Content.docId!=0"
+      " JOIN Content ON Content.classroomId=:classroomId AND Content.serial=SegmentKey.contentSerial AND Content.docId!=0"
       ' LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id'
       ' LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id'
       ' WHERE SegmentKey.classroomId=:classroomId'
@@ -546,7 +546,7 @@ abstract class ScheduleDao {
       ',SegmentOverallPrg.progress'
       ',Segment.segmentKeyId is null missing'
       ' FROM SegmentKey'
-      " JOIN Content ON Content.classroomId=:classroomId AND Content.docId!=0"
+      " JOIN Content ON Content.classroomId=:classroomId AND Content.serial=SegmentKey.contentSerial AND Content.docId!=0"
       ' LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id'
       ' LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id'
       ' WHERE SegmentKey.classroomId=:classroomId'

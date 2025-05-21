@@ -9,7 +9,7 @@ class ConfigZh extends Config {
     put(I18nKey.settings, "设置");
     put(I18nKey.content, "内容");
     put(I18nKey.contentShare, "内容分享");
-    put(I18nKey.mediaImportTemplate, "媒体导入模版");
+    put(I18nKey.createType, "创建的类型");
     put(I18nKey.statistic, "统计");
     put(I18nKey.statisticLearn, "统计-学习");
     put(I18nKey.statisticReview, "统计-回顾");
@@ -140,7 +140,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelDataMissing, "数据丢失!");
     put(I18nKey.labelRemoteImport, "远程导入");
     put(I18nKey.labelLocalZipImport, "本地ZIP导入");
-    put(I18nKey.labelLocalMediaImport, "本地媒体导入");
+    put(I18nKey.create, "创建");
     put(I18nKey.labelLocalImportCancel, "本地导入取消");
     put(I18nKey.labelSegmentRemoved, "对应的学习片段已移除，建议先备份你的数据，再点击确定进行删除相关数据。");
     put(I18nKey.labelDocNotBeDownloaded, "还未下载文件:%s");

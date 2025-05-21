@@ -29,9 +29,9 @@ class GsCrRepeatLogic extends GetxController {
   final Map<String, RepeatView> nameToRepeatView = {};
 
   GsCrRepeatLogic() {
-    nameToRepeatView["audio"] = RepeatViewForAudio();
-    nameToRepeatView["text"] = RepeatViewForText();
-    nameToRepeatView["video"] = RepeatViewForVideo();
+    nameToRepeatView[RepeatViewEnum.audio.name] = RepeatViewForAudio();
+    nameToRepeatView[RepeatViewEnum.text.name] = RepeatViewForText();
+    nameToRepeatView[RepeatViewEnum.video.name] = RepeatViewForVideo();
   }
 
   late CopyLogic copyLogic = CopyLogic<GsCrRepeatLogic>(CrK.copyTemplate, this);

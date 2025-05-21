@@ -9,7 +9,7 @@ class ConfigEn extends Config {
     put(I18nKey.settings, "Settings");
     put(I18nKey.content, "Content");
     put(I18nKey.contentShare, "Content Share");
-    put(I18nKey.mediaImportTemplate, "Media Import Template");
+    put(I18nKey.createType, "Created Type");
     put(I18nKey.statistic, "Stats");
     put(I18nKey.statisticLearn, "Stats-Learn");
     put(I18nKey.statisticReview, "Stats-Review");
@@ -140,7 +140,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelDataMissing, "Data missing!");
     put(I18nKey.labelRemoteImport, "Remote import");
     put(I18nKey.labelLocalZipImport, "Local ZIP import");
-    put(I18nKey.labelLocalMediaImport, "Local media import");
+    put(I18nKey.create, "Create");
     put(I18nKey.labelLocalImportCancel, "Local Import is Canceled");
     put(I18nKey.labelSegmentRemoved, "The corresponding learning segment has been removed. It is recommended to back up your data first, then click \"Confirm\" to delete the related data.");
     put(I18nKey.labelDocNotBeDownloaded, "The content (%s) is not downloaded");

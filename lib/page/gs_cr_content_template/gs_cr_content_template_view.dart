@@ -13,7 +13,7 @@ class GsCrContentTemplatePage extends StatelessWidget {
     final logic = Get.find<GsCrContentTemplateLogic>();
     return Scaffold(
       appBar: AppBar(
-        title: Text(I18nKey.mediaImportTemplate.tr),
+        title: Text(I18nKey.createType.tr),
       ),
       body: GetBuilder<GsCrContentTemplateLogic>(
         id: GsCrContentTemplateLogic.id,

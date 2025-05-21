@@ -78,7 +78,7 @@ class GsCrContentPage extends StatelessWidget {
         onTap: () {
           Nav.gsCrContentTemplate.push(arguments: <int>[model.id!, model.serial]);
         },
-        child: Text(I18nKey.labelLocalMediaImport.tr),
+        child: Text(I18nKey.create.tr),
       ));
     } else {
       menus.add(PopupMenuItem<String>(

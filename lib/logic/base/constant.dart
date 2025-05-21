@@ -57,6 +57,12 @@ enum ImportResult {
   successButSomeSegmentsAreSurplus,
 }
 
+enum RepeatViewEnum {
+  text,
+  audio,
+  video,
+}
+
 class DownloadConstant {
   static const String userAgent = "B20240321";
   static const String defaultUrl = 'http://127.0.0.1:40321/';
