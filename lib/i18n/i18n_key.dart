@@ -229,6 +229,7 @@ enum I18nKey {
   labelLastCourseCannotBeDeleted,
   labelFileNotFound,
   labelFileExtensionNotMatch,
+  labelRoot,
   btnEnd,
   btnHandleNow,
   btnStart,

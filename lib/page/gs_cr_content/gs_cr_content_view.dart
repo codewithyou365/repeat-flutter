@@ -89,6 +89,12 @@ class GsCrContentPage extends StatelessWidget {
       ));
       menus.add(PopupMenuItem<String>(
         onTap: () {
+          logic.showContent();
+        },
+        child: Text(I18nKey.labelContent.tr),
+      ));
+      menus.add(PopupMenuItem<String>(
+        onTap: () {
           logic.showLesson(model.id!);
         },
         child: Text(I18nKey.labelLessonName.tr),

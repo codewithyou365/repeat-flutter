@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:repeat_flutter/page/content/content_nav.dart';
 import 'package:repeat_flutter/page/gs/gs_nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_content/gs_cr_content_nav.dart';
@@ -19,6 +20,7 @@ import 'package:repeat_flutter/page/gs_settings_lang/gs_settings_lang_nav.dart';
 import 'package:repeat_flutter/page/gs_settings_theme/gs_settings_theme_nav.dart';
 
 enum Nav {
+  content("/content"),
   gs("/gs"),
   gsCr("/gs/cr"),
   gsCrContent("/gs/cr/content"),
@@ -63,6 +65,7 @@ enum Nav {
   static final String initialRoute = gs.path;
 
   static final List<GetPage> getPages = [
+    contentNav(content.path),
     gsNav(gs.path),
     gsCrNav(gsCr.path),
     gsCrContentNav(gsCrContent.path),

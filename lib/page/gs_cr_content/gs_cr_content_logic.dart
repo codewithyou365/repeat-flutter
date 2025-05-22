@@ -58,6 +58,10 @@ class GsCrContentLogic extends GetxController {
     }, I18nKey.labelDeleting.tr);
   }
 
+  showContent() {
+    Nav.content.push();
+  }
+
   showLesson(int contentId) async {
     var content = await Db().db.contentDao.getById(contentId);
     if (content == null) {
