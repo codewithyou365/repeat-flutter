@@ -14,13 +14,16 @@ class ContentLogic extends GetxController {
   @override
   void onInit() async {
     super.onInit();
+    var args = Get.arguments as List;
+    String name = args[0];
+    Future<void> Function() removeWarning = args[1];
     List<LessonShow> originalLessonShow = await LessonHelp.getLessons();
     lessonList = LessonList<ContentLogic>(
       parentLogic: this,
-      removeWarning: () async {},
+      removeWarning: removeWarning,
       //TODO
       segmentModified: () async {},
-      //TODO
+      initContentNameSelect: name,
       originalLessonShow: originalLessonShow,
     );
     update([ContentLogic.id]);

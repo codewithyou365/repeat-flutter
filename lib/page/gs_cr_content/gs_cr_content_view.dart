@@ -89,7 +89,7 @@ class GsCrContentPage extends StatelessWidget {
       ));
       menus.add(PopupMenuItem<String>(
         onTap: () {
-          logic.showContent();
+          logic.showContent(model.id!);
         },
         child: Text(I18nKey.labelContent.tr),
       ));

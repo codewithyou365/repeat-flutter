@@ -36,6 +36,7 @@ class LessonList<T extends GetxController> {
   List<LessonShow> lessonShow = [];
   final Future<void> Function() removeWarning;
   final Future<void> Function() segmentModified;
+  String? initContentNameSelect;
 
   bool showSearchDetailPanel = false;
   RxInt contentNameSelect = 0.obs;
@@ -62,6 +63,7 @@ class LessonList<T extends GetxController> {
     required this.parentLogic,
     required this.removeWarning,
     required this.segmentModified,
+    required this.initContentNameSelect,
   }) {
     searchFocusNode.addListener(() {
       if (searchFocusNode.hasFocus) {
@@ -173,7 +175,6 @@ class LessonList<T extends GetxController> {
   }
 
   Widget show({
-    String? initContentNameSelect,
     int? initLessonSelect,
     int? selectLessonKeyId,
     bool focus = true,
@@ -212,10 +213,11 @@ class LessonList<T extends GetxController> {
 
     // init select
     if (initContentNameSelect != null) {
-      int index = contentNameOptions.indexOf(initContentNameSelect);
+      int index = contentNameOptions.indexOf(initContentNameSelect!);
       if (index != -1) {
         contentNameSelect.value = index;
       }
+      initContentNameSelect = null;
     }
     if (initLessonSelect != null) {
       int index = lessonOptions.indexOf('${initLessonSelect + 1}');

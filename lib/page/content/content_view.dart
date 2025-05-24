@@ -121,6 +121,9 @@ class ContentPage extends StatelessWidget {
                       textField = Helper.getTextField(
                         controller: logic.lessonList!.searchController,
                         focusNode: logic.lessonList!.searchFocusNode,
+                        onSubmitted: (value) {
+                          logic.lessonList!.trySearch();
+                        },
                       );
                     }
                     return AnimatedPositioned(
