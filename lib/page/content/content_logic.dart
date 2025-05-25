@@ -1,15 +1,18 @@
 import 'package:get/get.dart';
 import 'package:repeat_flutter/logic/lesson_help.dart';
+import 'package:repeat_flutter/logic/model/segment_show.dart';
+import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/logic/model/lesson_show.dart';
-import 'package:repeat_flutter/page/content/logic/lesson_list.dart';
+import 'package:repeat_flutter/page/content/logic/view_logic_lesson_list.dart';
 
 import 'content_state.dart';
+import 'logic/view_logic.dart';
+import 'logic/view_logic_segment_list.dart';
 
 class ContentLogic extends GetxController {
   static const String id = "ContentLogicId";
   final ContentState state = ContentState();
-
-  LessonList? lessonList;
+  List<ViewLogic?> viewList = [null, null, null];
 
   @override
   void onInit() async {
@@ -18,7 +21,8 @@ class ContentLogic extends GetxController {
     String name = args[0];
     Future<void> Function() removeWarning = args[1];
     List<LessonShow> originalLessonShow = await LessonHelp.getLessons();
-    lessonList = LessonList<ContentLogic>(
+    List<SegmentShow> originalSegmentShow = await SegmentHelp.getSegments();
+    viewList[0] = ViewLogicLessonList<ContentLogic>(
       parentLogic: this,
       removeWarning: removeWarning,
       //TODO
@@ -26,12 +30,28 @@ class ContentLogic extends GetxController {
       initContentNameSelect: name,
       originalLessonShow: originalLessonShow,
     );
+    viewList[1] = ViewLogicLessonList<ContentLogic>(
+      parentLogic: this,
+      removeWarning: removeWarning,
+      //TODO
+      segmentModified: () async {},
+      initContentNameSelect: name,
+      originalLessonShow: originalLessonShow,
+    );
+    viewList[2] = ViewLogicSegmentList<ContentLogic>(
+      parentLogic: this,
+      removeWarning: removeWarning,
+      originalSegmentShow: originalSegmentShow,
+    );
     update([ContentLogic.id]);
   }
 
   @override
   void onClose() {
-    state.searchController.dispose();
-    state.focusNode.dispose();
+    for (var view in viewList) {
+      if (view != null) {
+        view.dispose();
+      }
+    }
   }
 }

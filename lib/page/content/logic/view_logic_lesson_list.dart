@@ -22,14 +22,14 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:repeat_flutter/widget/text/expandable_text.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-class LessonList<T extends GetxController> {
+import 'view_logic.dart';
+
+class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
   static const String bodyId = "LessonList.bodyId";
   static const String findUnnecessaryLessonsId = "LessonList.findUnnecessaryLessonsId";
   static const String detailSearchId = "LessonList.searchId";
   late HistoryList historyList = HistoryList<T>(parentLogic);
 
-  final TextEditingController searchController = TextEditingController();
-  final FocusNode searchFocusNode = FocusNode();
   final RxString search = RxString("");
   final T parentLogic;
   List<LessonShow> originalLessonShow;
@@ -58,7 +58,7 @@ class LessonList<T extends GetxController> {
   double bodyViewHeight = 0;
   double baseBodyViewHeight = 0;
 
-  LessonList({
+  ViewLogicLessonList({
     required this.originalLessonShow,
     required this.parentLogic,
     required this.removeWarning,
@@ -84,7 +84,7 @@ class LessonList<T extends GetxController> {
   void tryUpdateDetailSearchPanel(bool newShow) {
     if (showSearchDetailPanel != newShow) {
       showSearchDetailPanel = newShow;
-      parentLogic.update([LessonList.detailSearchId]);
+      parentLogic.update([ViewLogicLessonList.detailSearchId]);
     }
   }
 
@@ -92,6 +92,7 @@ class LessonList<T extends GetxController> {
     return '${contentNameSelect.value},${lessonIndexSelect.value},${search.value}';
   }
 
+  @override
   void trySearch({bool force = false}) {
     String newSearchKey = genSearchKey();
     if (!force && newSearchKey == searchKey) {
@@ -119,7 +120,7 @@ class LessonList<T extends GetxController> {
     refreshMissingLessonIndex(missingLessonIndex, lessonShow);
 
     bodyViewHeight = getBodyViewHeight(missingLessonIndex, baseBodyViewHeight);
-    parentLogic.update([LessonList.findUnnecessaryLessonsId, LessonList.bodyId]);
+    parentLogic.update([ViewLogicLessonList.findUnnecessaryLessonsId, ViewLogicLessonList.bodyId]);
   }
 
   Future<void> refresh(LessonKey lessonKey) async {
@@ -248,7 +249,7 @@ class LessonList<T extends GetxController> {
         children: [
           if (missingLessonIndex.isNotEmpty)
             GetBuilder<T>(
-                id: LessonList.findUnnecessaryLessonsId,
+                id: ViewLogicLessonList.findUnnecessaryLessonsId,
                 builder: (_) {
                   if (missingLessonIndex.isNotEmpty) {
                     return Column(
@@ -291,7 +292,7 @@ class LessonList<T extends GetxController> {
                   }
                 }),
           GetBuilder<T>(
-            id: LessonList.bodyId,
+            id: ViewLogicLessonList.bodyId,
             builder: (_) {
               var list = lessonShow;
               return SizedBox(
@@ -365,7 +366,7 @@ class LessonList<T extends GetxController> {
                                         content,
                                         (str) async {
                                           await Db().db.lessonKeyDao.updateLessonContent(lesson.lessonKeyId, str);
-                                          parentLogic.update([LessonList.bodyId]);
+                                          parentLogic.update([ViewLogicLessonList.bodyId]);
                                         },
                                         qrPagePath: Nav.gsCrContentScan.path,
                                         onHistory: () {
@@ -401,7 +402,7 @@ class LessonList<T extends GetxController> {
                                               await Db().db.contentDao.updateContentWarningForLesson(lesson.contentId, warning, DateTime.now().millisecondsSinceEpoch);
                                               await removeWarning();
                                             }
-                                            parentLogic.update([LessonList.findUnnecessaryLessonsId, LessonList.bodyId]);
+                                            parentLogic.update([ViewLogicLessonList.findUnnecessaryLessonsId, ViewLogicLessonList.bodyId]);
                                             Get.back();
                                           });
                                         },
@@ -464,7 +465,7 @@ class LessonList<T extends GetxController> {
         ],
       ),
       GetBuilder<T>(
-          id: LessonList.detailSearchId,
+          id: ViewLogicLessonList.detailSearchId,
           builder: (_) {
             if (showSearchDetailPanel) {
               double searchViewHeight = 3 * (RowWidget.rowHeight + RowWidget.dividerHeight);
@@ -512,7 +513,7 @@ class LessonList<T extends GetxController> {
                         selectedSortIndex.value = index;
                         I18nKey key = sortOptionKeys[index];
                         sort(lessonShow, key);
-                        parentLogic.update([LessonList.bodyId]);
+                        parentLogic.update([ViewLogicLessonList.bodyId]);
                       },
                       pickWidth: 210.w,
                     ),
@@ -586,5 +587,11 @@ class LessonList<T extends GetxController> {
     } else {
       return baseBodyViewHeight;
     }
+  }
+
+  @override
+  dispose() {
+    searchController.dispose();
+    searchFocusNode.dispose();
   }
 }

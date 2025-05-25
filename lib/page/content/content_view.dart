@@ -1,3 +1,4 @@
+import 'package:floor/floor.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
@@ -34,11 +35,12 @@ class ContentPage extends StatelessWidget {
           GetBuilder<ContentLogic>(
               id: ContentLogic.id,
               builder: (context) {
-                var lessonList = logic.lessonList;
-                if (lessonList == null) {
+                var list = logic.viewList[state.tabIndex.value];
+                if (list == null) {
                   return const SizedBox.shrink();
                 } else {
-                  return lessonList.show(
+                  return list.show(
+                    focus: false,
                     height: bodyHeight,
                     width: screenWidth,
                   );
@@ -51,9 +53,6 @@ class ContentPage extends StatelessWidget {
 
   Widget topBar({required ContentLogic logic, required double width, required double height}) {
     final taps = [I18nKey.labelRoot.tr, I18nKey.labelLesson.tr, I18nKey.labelSegment.tr];
-    final search = logic.state.search;
-    final searchController = logic.state.searchController;
-    final focusNode = logic.state.focusNode;
     final startSearch = logic.state.startSearch;
     final tabIndex = logic.state.tabIndex;
     const padding = 10.0;
@@ -85,7 +84,10 @@ class ContentPage extends StatelessWidget {
                     ...List.generate(taps.length, (i) {
                       return Expanded(
                         child: TextButton(
-                          onPressed: () => tabIndex.value = i,
+                          onPressed: () {
+                            tabIndex.value = i;
+                            logic.update([ContentLogic.id]);
+                          },
                           child: Text(taps[i]),
                         ),
                       );
@@ -96,7 +98,8 @@ class ContentPage extends StatelessWidget {
                       child: IconButton(
                         onPressed: () {
                           startSearch.value = true;
-                          logic.lessonList?.searchFocusNode.requestFocus();
+                          var list = logic.viewList[tabIndex.value];
+                          list?.searchFocusNode.requestFocus();
                         },
                         icon: const Icon(Icons.search),
                       ),
@@ -117,12 +120,13 @@ class ContentPage extends StatelessWidget {
                 Obx(
                   () {
                     var textField = Helper.getTextField();
-                    if (logic.lessonList != null) {
+                    var list = logic.viewList[tabIndex.value];
+                    if (list != null) {
                       textField = Helper.getTextField(
-                        controller: logic.lessonList!.searchController,
-                        focusNode: logic.lessonList!.searchFocusNode,
+                        controller: list.searchController,
+                        focusNode: list.searchFocusNode,
                         onSubmitted: (value) {
-                          logic.lessonList!.trySearch();
+                          list.trySearch();
                         },
                       );
                     }
@@ -157,7 +161,11 @@ class ContentPage extends StatelessWidget {
                                 child: IconButton(
                                   onPressed: () {
                                     startSearch.value = false;
-                                    logic.lessonList?.searchFocusNode.unfocus();
+                                    for (var list in logic.viewList) {
+                                      if (list != null) {
+                                        list.searchFocusNode.unfocus();
+                                      }
+                                    }
                                   },
                                   icon: const Icon(Icons.close),
                                 ),
