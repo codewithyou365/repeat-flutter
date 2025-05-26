@@ -29,7 +29,8 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   static const String bodyId = "SegmentList.bodyId";
   static const String findUnnecessarySegmentsId = "SegmentList.findUnnecessarySegmentsId";
   static const String detailSearchId = "SegmentList.searchId";
-
+  final ItemScrollController itemScrollController = ItemScrollController();
+  final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
   List<I18nKey> sortOptionKeys = [
     I18nKey.labelSortPositionAsc,
     I18nKey.labelSortPositionDesc,
@@ -44,9 +45,15 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   RxInt lessonSelect = 0.obs;
   RxInt progressSelect = 0.obs;
   RxInt nextMonthSelect = 0.obs;
+  bool showSearchDetailPanel = false;
   String searchKey = '';
   List<int> missingSegmentIndex = [];
   List<String> contentNameOptions = [];
+  List<String> sortOptions = [];
+  List<String> lessonOptions = [];
+  List<String> progressOptions = [];
+  List<String> nextMonthOptions = [];
+  int missingSegmentOffset = -1;
   List<int> lesson = [];
   List<int> progress = [];
   List<int> nextMonth = [];
@@ -61,15 +68,76 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   double baseBodyViewHeight = 0;
 
   ViewLogicSegmentList({
+    required VoidCallback onSearchUnFocus,
     required this.parentLogic,
     required this.originalSegmentShow,
     required this.removeWarning,
-  });
+  }) : super(onSearchUnFocus: onSearchUnFocus) {
+    searchFocusNode.addListener(() {
+      if (searchFocusNode.hasFocus) {
+        tryUpdateDetailSearchPanel(true);
+      } else {
+        tryUpdateDetailSearchPanel(false);
+      }
+    });
+    searchController.addListener(() {
+      search.value = searchController.text;
+      trySearch();
+    });
+    segmentShow = List.from(originalSegmentShow);
+
+    sortOptions = sortOptionKeys.map((key) => key.tr).toList();
+    sort(segmentShow, sortOptionKeys[selectedSortIndex.value]);
+
+    collectDataFromSegments(
+      missingSegmentIndex,
+      contentNameOptions,
+      lesson,
+      progress,
+      nextMonth,
+      segmentShow, // keep consistent with view below.
+    );
+
+    lessonOptions = lesson.map((k) {
+      if (k == -1) {
+        return I18nKey.labelAll.tr;
+      }
+      return '${k + 1}';
+    }).toList();
+    progressOptions = progress.map((k) {
+      if (k == -1) {
+        return I18nKey.labelAll.tr;
+      }
+      return k.toString();
+    }).toList();
+    nextMonthOptions = nextMonth.map((k) {
+      if (k == -1) {
+        return I18nKey.labelAll.tr;
+      }
+      return '${k.toString().substring(0, 4)}-${k.toString().substring(4, 6)}';
+    }).toList();
+  }
 
   String genSearchKey() {
     return '${contentNameSelect.value},${lessonSelect.value},${progressSelect.value},${nextMonthSelect.value},${search.value}';
   }
 
+  void scrollTo(int selectSegmentKeyId) {
+    int? selectedIndex;
+    SegmentShow? ss = SegmentHelp.getCache(selectSegmentKeyId);
+    if (ss != null) {
+      selectedIndex = segmentShow.indexOf(ss);
+    }
+    if (selectedIndex != null) {
+      itemScrollController.scrollTo(
+        index: selectedIndex,
+        duration: const Duration(milliseconds: 10),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  @override
   void trySearch({force = false}) {
     String newSearchKey = genSearchKey();
     if (!force && newSearchKey == searchKey) {
@@ -154,6 +222,14 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
     Get.back();
   }
 
+  void tryUpdateDetailSearchPanel(bool newShow) {
+    if (showSearchDetailPanel != newShow) {
+      showSearchDetailPanel = newShow;
+      parentLogic.update([ViewLogicSegmentList.detailSearchId]);
+    }
+  }
+
+  @override
   Widget show({
     String? initContentNameSelect,
     int? initLessonSelect,
@@ -162,69 +238,6 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
     required double width,
     required double height,
   }) {
-    // for search and controls
-
-    bool showSearchDetailPanel = false;
-
-    void tryUpdateDetailSearchPanel(bool newShow) {
-      if (showSearchDetailPanel != newShow) {
-        showSearchDetailPanel = newShow;
-        parentLogic.update([ViewLogicSegmentList.detailSearchId]);
-      }
-    }
-
-    searchFocusNode.addListener(() {
-      if (searchFocusNode.hasFocus) {
-        tryUpdateDetailSearchPanel(true);
-      } else {
-        tryUpdateDetailSearchPanel(false);
-      }
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (focus) {
-        searchFocusNode.requestFocus();
-      }
-    });
-
-    // for sorting and content
-    segmentShow = List.from(originalSegmentShow);
-
-    List<String> sortOptions = sortOptionKeys.map((key) => key.tr).toList();
-    sort(segmentShow, sortOptionKeys[selectedSortIndex.value]);
-
-    // for collect search data, and missing segment
-    int missingSegmentOffset = -1;
-
-    collectDataFromSegments(
-      missingSegmentIndex,
-      contentNameOptions,
-      lesson,
-      progress,
-      nextMonth,
-      segmentShow, // keep consistent with view below.
-    );
-
-    List<String> lessonOptions = lesson.map((k) {
-      if (k == -1) {
-        return I18nKey.labelAll.tr;
-      }
-      return '${k + 1}';
-    }).toList();
-    List<String> progressOptions = progress.map((k) {
-      if (k == -1) {
-        return I18nKey.labelAll.tr;
-      }
-      return k.toString();
-    }).toList();
-    List<String> nextMonthOptions = nextMonth.map((k) {
-      if (k == -1) {
-        return I18nKey.labelAll.tr;
-      }
-      return '${k.toString().substring(0, 4)}-${k.toString().substring(4, 6)}';
-    }).toList();
-    final ItemScrollController itemScrollController = ItemScrollController();
-    final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
-
     // for height
     baseBodyViewHeight = height;
     bodyViewHeight = getBodyViewHeight(missingSegmentIndex, baseBodyViewHeight);
@@ -244,22 +257,11 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
         lessonSelect.value = index;
       }
     }
-    void scrollTo(int selectSegmentKeyId) {
-      int? selectedIndex;
-      SegmentShow? ss = SegmentHelp.getCache(selectSegmentKeyId);
-      if (ss != null) {
-        selectedIndex = segmentShow.indexOf(ss);
-      }
-      if (selectedIndex != null) {
-        itemScrollController.scrollTo(
-          index: selectedIndex,
-          duration: const Duration(milliseconds: 10),
-          curve: Curves.easeInOut,
-        );
-      }
-    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (focus) {
+        searchFocusNode.requestFocus();
+      }
       trySearch();
       if (selectSegmentKeyId != null) {
         scrollTo(selectSegmentKeyId);
@@ -521,9 +523,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
                                             var warning = contentId2Missing[segment.contentId] ?? false;
                                             if (warning == false) {
                                               await Db().db.contentDao.updateContentWarningForSegment(segment.contentId, warning, DateTime.now().millisecondsSinceEpoch);
-                                              if (removeWarning != null) {
-                                                await removeWarning();
-                                              }
+                                              await removeWarning();
                                             }
                                             parentLogic.update([ViewLogicSegmentList.findUnnecessarySegmentsId, ViewLogicSegmentList.bodyId]);
                                             Get.back();

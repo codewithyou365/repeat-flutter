@@ -30,6 +30,9 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
   static const String detailSearchId = "LessonList.searchId";
   late HistoryList historyList = HistoryList<T>(parentLogic);
 
+  final ItemScrollController itemScrollController = ItemScrollController();
+  final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
+
   final RxString search = RxString("");
   final T parentLogic;
   List<LessonShow> originalLessonShow;
@@ -48,7 +51,8 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
   List<int> missingLessonIndex = [];
   List<String> contentNameOptions = [];
   List<int> lessonIndex = [];
-
+  List<String> sortOptions = [];
+  List<String> lessonOptions = [];
   RxInt selectedSortIndex = 0.obs;
   List<I18nKey> sortOptionKeys = [
     I18nKey.labelSortPositionAsc,
@@ -59,12 +63,13 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
   double baseBodyViewHeight = 0;
 
   ViewLogicLessonList({
+    required VoidCallback onSearchUnFocus,
     required this.originalLessonShow,
     required this.parentLogic,
     required this.removeWarning,
     required this.segmentModified,
     required this.initContentNameSelect,
-  }) {
+  }) : super(onSearchUnFocus: onSearchUnFocus) {
     searchFocusNode.addListener(() {
       if (searchFocusNode.hasFocus) {
         tryUpdateDetailSearchPanel(true);
@@ -79,6 +84,24 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
 
     searchKey = genSearchKey();
     lessonShow = List.from(originalLessonShow);
+
+    // for sorting and content
+    sortOptions = sortOptionKeys.map((key) => key.tr).toList();
+    sort(lessonShow, sortOptionKeys[selectedSortIndex.value]);
+
+    collectDataFromLessons(
+      missingLessonIndex,
+      contentNameOptions,
+      lessonIndex,
+      lessonShow,
+    );
+
+    lessonOptions = lessonIndex.map((k) {
+      if (k == -1) {
+        return I18nKey.labelAll.tr;
+      }
+      return '${k + 1}';
+    }).toList();
   }
 
   void tryUpdateDetailSearchPanel(bool newShow) {
@@ -175,6 +198,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
     Get.back();
   }
 
+  @override
   Widget show({
     int? initLessonSelect,
     int? selectLessonKeyId,
@@ -182,33 +206,6 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
     required double width,
     required double height,
   }) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (focus) {
-        searchFocusNode.requestFocus();
-      }
-    });
-
-    // for sorting and content
-    List<String> sortOptions = sortOptionKeys.map((key) => key.tr).toList();
-    sort(lessonShow, sortOptionKeys[selectedSortIndex.value]);
-
-    collectDataFromLessons(
-      missingLessonIndex,
-      contentNameOptions,
-      lessonIndex,
-      lessonShow,
-    );
-
-    List<String> lessonOptions = lessonIndex.map((k) {
-      if (k == -1) {
-        return I18nKey.labelAll.tr;
-      }
-      return '${k + 1}';
-    }).toList();
-
-    final ItemScrollController itemScrollController = ItemScrollController();
-    final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
-
     baseBodyViewHeight = height;
     bodyViewHeight = getBodyViewHeight(missingLessonIndex, baseBodyViewHeight);
 
@@ -227,6 +224,9 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
       }
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (focus) {
+        searchFocusNode.requestFocus();
+      }
       trySearch();
       int? selectedIndex;
       if (selectLessonKeyId != null) {

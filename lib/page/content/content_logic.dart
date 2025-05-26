@@ -23,6 +23,9 @@ class ContentLogic extends GetxController {
     List<LessonShow> originalLessonShow = await LessonHelp.getLessons();
     List<SegmentShow> originalSegmentShow = await SegmentHelp.getSegments();
     viewList[0] = ViewLogicLessonList<ContentLogic>(
+      onSearchUnFocus: () {
+        state.startSearch.value = false;
+      },
       parentLogic: this,
       removeWarning: removeWarning,
       //TODO
@@ -31,6 +34,9 @@ class ContentLogic extends GetxController {
       originalLessonShow: originalLessonShow,
     );
     viewList[1] = ViewLogicLessonList<ContentLogic>(
+      onSearchUnFocus: () {
+        state.startSearch.value = false;
+      },
       parentLogic: this,
       removeWarning: removeWarning,
       //TODO
@@ -39,6 +45,9 @@ class ContentLogic extends GetxController {
       originalLessonShow: originalLessonShow,
     );
     viewList[2] = ViewLogicSegmentList<ContentLogic>(
+      onSearchUnFocus: () {
+        state.startSearch.value = false;
+      },
       parentLogic: this,
       removeWarning: removeWarning,
       originalSegmentShow: originalSegmentShow,
