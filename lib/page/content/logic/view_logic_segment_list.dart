@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
@@ -27,8 +26,6 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   static const String bodyId = "SegmentList.bodyId";
-  static const String findUnnecessarySegmentsId = "SegmentList.findUnnecessarySegmentsId";
-  static const String detailSearchId = "SegmentList.searchId";
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
   List<I18nKey> sortOptionKeys = [
@@ -46,6 +43,9 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   RxInt progressSelect = 0.obs;
   RxInt nextMonthSelect = 0.obs;
   bool showSearchDetailPanel = false;
+  double searchDetailPanelHeight = 3 * (RowWidget.rowHeight + RowWidget.dividerHeight);
+
+  double missPanelHeight = RowWidget.rowHeight + RowWidget.dividerHeight;
   String searchKey = '';
   List<int> missingSegmentIndex = [];
   List<String> contentNameOptions = [];
@@ -68,11 +68,11 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   double baseBodyViewHeight = 0;
 
   ViewLogicSegmentList({
-    required VoidCallback onSearchUnFocus,
+    required VoidCallback onSearchUnfocus,
     required this.parentLogic,
     required this.originalSegmentShow,
     required this.removeWarning,
-  }) : super(onSearchUnFocus: onSearchUnFocus) {
+  }) : super(onSearchUnfocus: onSearchUnfocus) {
     searchFocusNode.addListener(() {
       if (searchFocusNode.hasFocus) {
         tryUpdateDetailSearchPanel(true);
@@ -175,8 +175,8 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
     sort(segmentShow, sortOptionKeys[selectedSortIndex.value]);
     refreshMissingSegmentIndex(missingSegmentIndex, segmentShow);
 
-    bodyViewHeight = getBodyViewHeight(missingSegmentIndex, baseBodyViewHeight);
-    parentLogic.update([ViewLogicSegmentList.findUnnecessarySegmentsId, ViewLogicSegmentList.bodyId]);
+    bodyViewHeight = getBodyViewHeight();
+    parentLogic.update([ViewLogicSegmentList.bodyId]);
   }
 
   delete({required SegmentShow segment}) async {
@@ -225,7 +225,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   void tryUpdateDetailSearchPanel(bool newShow) {
     if (showSearchDetailPanel != newShow) {
       showSearchDetailPanel = newShow;
-      parentLogic.update([ViewLogicSegmentList.detailSearchId]);
+      parentLogic.update([ViewLogicSegmentList.bodyId]);
     }
   }
 
@@ -240,7 +240,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   }) {
     // for height
     baseBodyViewHeight = height;
-    bodyViewHeight = getBodyViewHeight(missingSegmentIndex, baseBodyViewHeight);
+    bodyViewHeight = getBodyViewHeight();
 
     searchKey = genSearchKey();
 
@@ -267,413 +267,388 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
         scrollTo(selectSegmentKeyId);
       }
     });
-    return Stack(children: [
-      Column(
-        children: [
-          if (missingSegmentIndex.isNotEmpty)
-            GetBuilder<T>(
-                id: ViewLogicSegmentList.findUnnecessarySegmentsId,
-                builder: (_) {
-                  if (missingSegmentIndex.isNotEmpty) {
-                    return Column(
+    return GetBuilder<T>(
+        id: ViewLogicSegmentList.bodyId,
+        builder: (_) {
+          Widget missingPanel = const SizedBox.shrink();
+          if (missingSegmentIndex.isNotEmpty) {
+            missingPanel = SizedBox(
+              height: missPanelHeight,
+              child: Column(
+                children: [
+                  RowWidget.buildWidgetsWithTitle(I18nKey.labelFindUnnecessarySegments.tr, [
+                    IconButton(
+                        onPressed: () {
+                          if (missingSegmentOffset - 1 < 0) {
+                            missingSegmentOffset = 0;
+                          } else {
+                            missingSegmentOffset--;
+                          }
+                          itemScrollController.scrollTo(
+                            index: missingSegmentIndex[missingSegmentOffset],
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        icon: const Icon(Icons.arrow_back)),
+                    IconButton(
+                        onPressed: () {
+                          if (missingSegmentOffset + 1 >= missingSegmentIndex.length) {
+                            missingSegmentOffset = missingSegmentIndex.length - 1;
+                          } else {
+                            missingSegmentOffset++;
+                          }
+                          itemScrollController.scrollTo(
+                            index: missingSegmentIndex[missingSegmentOffset],
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        icon: const Icon(Icons.arrow_forward)),
+                  ]),
+                  RowWidget.buildDividerWithoutColor(),
+                ],
+              ),
+            );
+          }
+          Widget searchDetailPanel = const SizedBox.shrink();
+          if (showSearchDetailPanel) {
+            searchDetailPanel = SizedBox(
+              height: searchDetailPanelHeight,
+              child: Column(
+                children: [
+                  Container(
+                    height: searchDetailPanelHeight,
+                    padding: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(Get.context!).scaffoldBackgroundColor,
+                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          spreadRadius: 1,
+                          blurRadius: 4,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ListView(
+                      padding: const EdgeInsets.all(0),
                       children: [
-                        RowWidget.buildWidgetsWithTitle(I18nKey.labelFindUnnecessarySegments.tr, [
-                          IconButton(
-                              onPressed: () {
-                                if (missingSegmentOffset - 1 < 0) {
-                                  missingSegmentOffset = 0;
-                                } else {
-                                  missingSegmentOffset--;
-                                }
-                                itemScrollController.scrollTo(
-                                  index: missingSegmentIndex[missingSegmentOffset],
-                                  duration: const Duration(milliseconds: 500),
-                                  curve: Curves.easeInOut,
-                                );
-                              },
-                              icon: const Icon(Icons.arrow_back)),
-                          IconButton(
-                              onPressed: () {
-                                if (missingSegmentOffset + 1 >= missingSegmentIndex.length) {
-                                  missingSegmentOffset = missingSegmentIndex.length - 1;
-                                } else {
-                                  missingSegmentOffset++;
-                                }
-                                itemScrollController.scrollTo(
-                                  index: missingSegmentIndex[missingSegmentOffset],
-                                  duration: const Duration(milliseconds: 500),
-                                  curve: Curves.easeInOut,
-                                );
-                              },
-                              icon: const Icon(Icons.arrow_forward)),
-                        ]),
+                        RowWidget.buildCupertinoPicker(
+                          I18nKey.labelContent.tr,
+                          contentNameOptions,
+                          contentNameSelect,
+                          changed: (index) {
+                            contentNameSelect.value = index;
+                            trySearch();
+                          },
+                        ),
+                        RowWidget.buildDividerWithoutColor(),
+                        RowWidget.buildCupertinoPicker(
+                          I18nKey.labelLessonName.tr,
+                          lessonOptions,
+                          lessonSelect,
+                          changed: (index) {
+                            lessonSelect.value = index;
+                            trySearch();
+                          },
+                        ),
+                        RowWidget.buildDividerWithoutColor(),
+                        RowWidget.buildCupertinoPicker(
+                          I18nKey.labelProgress.tr,
+                          progressOptions,
+                          progressSelect,
+                          changed: (index) {
+                            progressSelect.value = index;
+                            trySearch();
+                          },
+                        ),
+                        RowWidget.buildDividerWithoutColor(),
+                        RowWidget.buildCupertinoPicker(
+                          I18nKey.labelMonth.tr,
+                          nextMonthOptions,
+                          nextMonthSelect,
+                          changed: (index) {
+                            nextMonthSelect.value = index;
+                            trySearch();
+                          },
+                        ),
+                        RowWidget.buildDividerWithoutColor(),
+                        RowWidget.buildCupertinoPicker(
+                          I18nKey.labelSortBy.tr,
+                          sortOptions,
+                          selectedSortIndex,
+                          changed: (index) {
+                            selectedSortIndex.value = index;
+                            I18nKey key = sortOptionKeys[index];
+                            sort(segmentShow, key);
+                            parentLogic.update([ViewLogicSegmentList.bodyId]);
+                          },
+                          pickWidth: 210.w,
+                        ),
                         RowWidget.buildDividerWithoutColor(),
                       ],
-                    );
-                  } else {
-                    return const SizedBox.shrink();
-                  }
-                }),
-          GetBuilder<T>(
-            id: ViewLogicSegmentList.bodyId,
-            builder: (_) {
-              var list = segmentShow;
-              return SizedBox(
-                height: bodyViewHeight,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+          var list = segmentShow;
+          return Column(
+            children: [
+              searchDetailPanel,
+              missingPanel,
+              SizedBox(
+                height: getBodyViewHeight(),
                 width: width,
-                child: NotificationListener<ScrollNotification>(
-                  onNotification: (ScrollNotification notification) {
-                    if (notification is ScrollStartNotification) {
-                      if (searchFocusNode.hasFocus) {
-                        List<String> searches = StringUtil.splitN(searchKey, ",", 5);
-                        if (searches.length == 5) {
-                          contentNameSelect.value = int.parse(searches[0]);
-                          lessonSelect.value = int.parse(searches[1]);
-                          progressSelect.value = int.parse(searches[2]);
-                          nextMonthSelect.value = int.parse(searches[3]);
-                          search.value = searches[4];
-                          searchController.text = search.value;
-                        }
-                        searchFocusNode.unfocus();
-                      }
+                child: ScrollablePositionedList.builder(
+                  itemScrollController: itemScrollController,
+                  itemPositionsListener: itemPositionsListener,
+                  itemCount: list.length,
+                  itemBuilder: (context, index) {
+                    if (index >= list.length) {
+                      return const SizedBox.shrink();
                     }
-                    return true;
-                  },
-                  child: ScrollablePositionedList.builder(
-                    itemScrollController: itemScrollController,
-                    itemPositionsListener: itemPositionsListener,
-                    itemCount: list.length,
-                    itemBuilder: (context, index) {
-                      if (index >= list.length) {
-                        return const SizedBox.shrink();
-                      }
-                      final segment = list[index];
-                      return Card(
-                        color: segment.missing ? Colors.red : null,
-                        elevation: 2,
-                        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Stack(
-                          alignment: Alignment.topRight,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: GestureDetector(
-                                      onTap: () async {
-                                        var lesson = await Db().db.lessonDao.one(Classroom.curr, segment.contentSerial, segment.lessonIndex);
-                                        if (lesson != null) {
-                                          lessonList.show(
-                                            initContentNameSelect: initContentNameSelect,
-                                            selectLessonKeyId: lesson.lessonKeyId,
-                                            segmentModified: () async {
-                                              originalSegmentShow = await SegmentHelp.getSegments();
-                                              trySearch(force: true);
-                                            },
-                                          );
-                                        }
-                                      },
-                                      child: Text.rich(
-                                        TextSpan(children: [
-                                          TextSpan(
-                                            text: '${I18nKey.labelLessonName.tr}: ${segment.toLessonPos()}',
-                                            style: const TextStyle(fontSize: 12, color: Colors.blue),
-                                          ),
-                                          TextSpan(
-                                            text: segment.toSegmentPos(),
-                                            style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                          ),
-                                        ]),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 8, width: width),
-                                  ExpandableText(
-                                    title: I18nKey.labelKey.tr,
-                                    text: ': ${segment.k}',
-                                    limit: 50,
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
-                                    selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                                    selectText: search.value,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  ExpandableText(
-                                    title: I18nKey.labelSegmentName.tr,
-                                    text: ': ${segment.segmentContent}',
-                                    version: segment.segmentContentVersion,
-                                    limit: 60,
-                                    style: const TextStyle(fontSize: 14),
-                                    selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                                    versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
-                                    selectText: search.value,
-                                    onEdit: () {
-                                      searchFocusNode.unfocus();
-                                      var contentM = jsonDecode(segment.segmentContent);
-                                      var content = const JsonEncoder.withIndent(' ').convert(contentM);
-                                      Editor.show(
-                                        Get.context!,
-                                        I18nKey.labelSegmentName.tr,
-                                        content,
-                                        (str) async {
-                                          await Db().db.scheduleDao.tUpdateSegmentContent(segment.segmentKeyId, str);
-                                          parentLogic.update([ViewLogicSegmentList.bodyId]);
-                                        },
-                                        qrPagePath: Nav.gsCrContentScan.path,
-                                        onHistory: () {
-                                          historyList.show(TextVersionType.segmentContent, segment.segmentKeyId);
-                                        },
-                                      );
-                                    },
-                                  ),
-                                  const SizedBox(height: 8),
-                                  ExpandableText(
-                                    title: I18nKey.labelNote.tr,
-                                    text: ': ${segment.segmentNote}',
-                                    limit: 60,
-                                    version: segment.segmentNoteVersion,
-                                    style: const TextStyle(fontSize: 14),
-                                    selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                                    versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
-                                    selectText: search.value,
-                                    onEdit: () {
-                                      searchFocusNode.unfocus();
-                                      Editor.show(
-                                        Get.context!,
-                                        I18nKey.labelNote.tr,
-                                        segment.segmentNote,
-                                        (str) async {
-                                          await Db().db.scheduleDao.tUpdateSegmentNote(segment.segmentKeyId, str);
-                                          parentLogic.update([ViewLogicSegmentList.bodyId]);
-                                        },
-                                        qrPagePath: Nav.gsCrContentScan.path,
-                                        onHistory: () {
-                                          historyList.show(TextVersionType.segmentNote, segment.segmentKeyId);
-                                        },
-                                      );
-                                    },
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: Colors.blue.withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(4),
-                                        ),
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            editProgressWithMsgBox(segment);
-                                          },
-                                          child: Text(
-                                            '${I18nKey.labelProgress.tr}: ${segment.progress}',
-                                            style: const TextStyle(fontSize: 12, color: Colors.green),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: Colors.blue.withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(4),
-                                        ),
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            editProgressWithMsgBox(segment);
-                                          },
-                                          child: Text(
-                                            '${I18nKey.labelSetNextLearnDate.tr}: ${segment.next.format()}',
-                                            style: const TextStyle(fontSize: 12, color: Colors.green),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
+                    final segment = list[index];
+                    return Card(
+                      color: segment.missing ? Colors.red : null,
+                      elevation: 2,
+                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.topRight,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                if (segment.missing)
-                                  IconButton(
-                                    onPressed: () {
-                                      MsgBox.yesOrNo(
-                                        title: I18nKey.labelDelete.tr,
-                                        desc: I18nKey.labelDeleteSegment.tr,
-                                        yes: () {
-                                          showTransparentOverlay(() async {
-                                            await Db().db.scheduleDao.deleteAbnormalSegment(segment.segmentKeyId);
-
-                                            SegmentHelp.deleteCache(segment.segmentKeyId);
-                                            segmentShow.removeWhere((element) => element.segmentKeyId == segment.segmentKeyId);
-
-                                            var contentId2Missing = refreshMissingSegmentIndex(missingSegmentIndex, segmentShow);
-                                            var warning = contentId2Missing[segment.contentId] ?? false;
-                                            if (warning == false) {
-                                              await Db().db.contentDao.updateContentWarningForSegment(segment.contentId, warning, DateTime.now().millisecondsSinceEpoch);
-                                              await removeWarning();
-                                            }
-                                            parentLogic.update([ViewLogicSegmentList.findUnnecessarySegmentsId, ViewLogicSegmentList.bodyId]);
-                                            Get.back();
-                                          });
-                                        },
-                                      );
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: GestureDetector(
+                                    onTap: () async {
+                                      var lesson = await Db().db.lessonDao.one(Classroom.curr, segment.contentSerial, segment.lessonIndex);
+                                      if (lesson != null) {
+                                        lessonList.show(
+                                          initContentNameSelect: initContentNameSelect,
+                                          selectLessonKeyId: lesson.lessonKeyId,
+                                          segmentModified: () async {
+                                            originalSegmentShow = await SegmentHelp.getSegments();
+                                            trySearch(force: true);
+                                          },
+                                        );
+                                      }
                                     },
-                                    icon: const Icon(
-                                      Icons.delete_forever,
+                                    child: Text.rich(
+                                      TextSpan(children: [
+                                        TextSpan(
+                                          text: '${I18nKey.labelLessonName.tr}: ${segment.toLessonPos()}',
+                                          style: const TextStyle(fontSize: 12, color: Colors.blue),
+                                        ),
+                                        TextSpan(
+                                          text: segment.toSegmentPos(),
+                                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                        ),
+                                      ]),
                                     ),
                                   ),
-                                PopupMenuButton<String>(
-                                  icon: const Icon(Icons.more_vert),
-                                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                                    PopupMenuItem<String>(
-                                      onTap: () {
-                                        MsgBox.yesOrNo(
-                                          title: I18nKey.labelWarning.tr,
-                                          desc: I18nKey.labelDeleteSegment.tr,
-                                          yes: () => delete(segment: segment),
-                                        );
+                                ),
+                                SizedBox(height: 8, width: width),
+                                ExpandableText(
+                                  title: I18nKey.labelKey.tr,
+                                  text: ': ${segment.k}',
+                                  limit: 50,
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                                  selectText: search.value,
+                                ),
+                                const SizedBox(height: 8),
+                                ExpandableText(
+                                  title: I18nKey.labelSegmentName.tr,
+                                  text: ': ${segment.segmentContent}',
+                                  version: segment.segmentContentVersion,
+                                  limit: 60,
+                                  style: const TextStyle(fontSize: 14),
+                                  selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                                  versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
+                                  selectText: search.value,
+                                  onEdit: () {
+                                    searchFocusNode.unfocus();
+                                    var contentM = jsonDecode(segment.segmentContent);
+                                    var content = const JsonEncoder.withIndent(' ').convert(contentM);
+                                    Editor.show(
+                                      Get.context!,
+                                      I18nKey.labelSegmentName.tr,
+                                      content,
+                                      (str) async {
+                                        await Db().db.scheduleDao.tUpdateSegmentContent(segment.segmentKeyId, str);
+                                        parentLogic.update([ViewLogicSegmentList.bodyId]);
                                       },
-                                      child: Text(I18nKey.btnDelete.tr),
+                                      qrPagePath: Nav.gsCrContentScan.path,
+                                      onHistory: () {
+                                        historyList.show(TextVersionType.segmentContent, segment.segmentKeyId);
+                                      },
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: 8),
+                                ExpandableText(
+                                  title: I18nKey.labelNote.tr,
+                                  text: ': ${segment.segmentNote}',
+                                  limit: 60,
+                                  version: segment.segmentNoteVersion,
+                                  style: const TextStyle(fontSize: 14),
+                                  selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                                  versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
+                                  selectText: search.value,
+                                  onEdit: () {
+                                    searchFocusNode.unfocus();
+                                    Editor.show(
+                                      Get.context!,
+                                      I18nKey.labelNote.tr,
+                                      segment.segmentNote,
+                                      (str) async {
+                                        await Db().db.scheduleDao.tUpdateSegmentNote(segment.segmentKeyId, str);
+                                        parentLogic.update([ViewLogicSegmentList.bodyId]);
+                                      },
+                                      qrPagePath: Nav.gsCrContentScan.path,
+                                      onHistory: () {
+                                        historyList.show(TextVersionType.segmentNote, segment.segmentKeyId);
+                                      },
+                                    );
+                                  },
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          editProgressWithMsgBox(segment);
+                                        },
+                                        child: Text(
+                                          '${I18nKey.labelProgress.tr}: ${segment.progress}',
+                                          style: const TextStyle(fontSize: 12, color: Colors.green),
+                                        ),
+                                      ),
                                     ),
-                                    PopupMenuItem<String>(
-                                      onTap: () {
-                                        MsgBox.myDialog(
-                                            title: I18nKey.labelTips.tr,
-                                            content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
-                                            action: MsgBox.buttonsWithDivider(buttons: [
-                                              MsgBox.button(
-                                                text: I18nKey.btnCancel.tr,
-                                                onPressed: () {
-                                                  Get.back();
-                                                },
-                                              ),
-                                              MsgBox.button(
-                                                text: I18nKey.btnAbove.tr,
-                                                onPressed: () => copy(segment: segment, below: false),
-                                              ),
-                                              MsgBox.button(
-                                                text: I18nKey.btnBelow.tr,
-                                                onPressed: () => copy(segment: segment, below: true),
-                                              ),
-                                            ]));
-                                      },
-                                      child: Text(I18nKey.btnCopy.tr),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          editProgressWithMsgBox(segment);
+                                        },
+                                        child: Text(
+                                          '${I18nKey.labelSetNextLearnDate.tr}: ${segment.next.format()}',
+                                          style: const TextStyle(fontSize: 12, color: Colors.green),
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      GetBuilder<T>(
-          id: ViewLogicSegmentList.detailSearchId,
-          builder: (_) {
-            if (showSearchDetailPanel) {
-              double searchViewHeight = 4.5 * (RowWidget.rowHeight + RowWidget.dividerHeight);
-              return SizedBox(
-                height: searchViewHeight,
-                child: Column(
-                  children: [
-                    Container(
-                      height: searchViewHeight,
-                      padding: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                        color: Theme.of(Get.context!).scaffoldBackgroundColor,
-                        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            spreadRadius: 1,
-                            blurRadius: 4,
-                            offset: const Offset(0, 4),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              if (segment.missing)
+                                IconButton(
+                                  onPressed: () {
+                                    MsgBox.yesOrNo(
+                                      title: I18nKey.labelDelete.tr,
+                                      desc: I18nKey.labelDeleteSegment.tr,
+                                      yes: () {
+                                        showTransparentOverlay(() async {
+                                          await Db().db.scheduleDao.deleteAbnormalSegment(segment.segmentKeyId);
+
+                                          SegmentHelp.deleteCache(segment.segmentKeyId);
+                                          segmentShow.removeWhere((element) => element.segmentKeyId == segment.segmentKeyId);
+
+                                          var contentId2Missing = refreshMissingSegmentIndex(missingSegmentIndex, segmentShow);
+                                          var warning = contentId2Missing[segment.contentId] ?? false;
+                                          if (warning == false) {
+                                            await Db().db.contentDao.updateContentWarningForSegment(segment.contentId, warning, DateTime.now().millisecondsSinceEpoch);
+                                            await removeWarning();
+                                          }
+                                          parentLogic.update([ViewLogicSegmentList.bodyId]);
+                                          Get.back();
+                                        });
+                                      },
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.delete_forever,
+                                  ),
+                                ),
+                              PopupMenuButton<String>(
+                                icon: const Icon(Icons.more_vert),
+                                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                  PopupMenuItem<String>(
+                                    onTap: () {
+                                      MsgBox.yesOrNo(
+                                        title: I18nKey.labelWarning.tr,
+                                        desc: I18nKey.labelDeleteSegment.tr,
+                                        yes: () => delete(segment: segment),
+                                      );
+                                    },
+                                    child: Text(I18nKey.btnDelete.tr),
+                                  ),
+                                  PopupMenuItem<String>(
+                                    onTap: () {
+                                      MsgBox.myDialog(
+                                          title: I18nKey.labelTips.tr,
+                                          content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
+                                          action: MsgBox.buttonsWithDivider(buttons: [
+                                            MsgBox.button(
+                                              text: I18nKey.btnCancel.tr,
+                                              onPressed: () {
+                                                Get.back();
+                                              },
+                                            ),
+                                            MsgBox.button(
+                                              text: I18nKey.btnAbove.tr,
+                                              onPressed: () => copy(segment: segment, below: false),
+                                            ),
+                                            MsgBox.button(
+                                              text: I18nKey.btnBelow.tr,
+                                              onPressed: () => copy(segment: segment, below: true),
+                                            ),
+                                          ]));
+                                    },
+                                    child: Text(I18nKey.btnCopy.tr),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                      child: ListView(
-                        padding: const EdgeInsets.all(0),
-                        children: [
-                          RowWidget.buildCupertinoPicker(
-                            I18nKey.labelContent.tr,
-                            contentNameOptions,
-                            contentNameSelect,
-                            changed: (index) {
-                              contentNameSelect.value = index;
-                            },
-                          ),
-                          RowWidget.buildDividerWithoutColor(),
-                          RowWidget.buildCupertinoPicker(
-                            I18nKey.labelLessonName.tr,
-                            lessonOptions,
-                            lessonSelect,
-                            changed: (index) {
-                              lessonSelect.value = index;
-                            },
-                          ),
-                          RowWidget.buildDividerWithoutColor(),
-                          RowWidget.buildCupertinoPicker(
-                            I18nKey.labelProgress.tr,
-                            progressOptions,
-                            progressSelect,
-                            changed: (index) {
-                              progressSelect.value = index;
-                            },
-                          ),
-                          RowWidget.buildDividerWithoutColor(),
-                          RowWidget.buildCupertinoPicker(
-                            I18nKey.labelMonth.tr,
-                            nextMonthOptions,
-                            nextMonthSelect,
-                            changed: (index) {
-                              nextMonthSelect.value = index;
-                            },
-                          ),
-                          RowWidget.buildDividerWithoutColor(),
-                          RowWidget.buildCupertinoPicker(
-                            I18nKey.labelSortBy.tr,
-                            sortOptions,
-                            selectedSortIndex,
-                            changed: (index) {
-                              selectedSortIndex.value = index;
-                              I18nKey key = sortOptionKeys[index];
-                              sort(segmentShow, key);
-                              parentLogic.update([ViewLogicSegmentList.bodyId]);
-                            },
-                            pickWidth: 210.w,
-                          ),
-                          RowWidget.buildDividerWithoutColor(),
-                        ],
-                      ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              );
-            } else {
-              return const SizedBox.shrink();
-            }
-          }),
-    ]);
+              ),
+            ],
+          );
+        });
   }
 
   static Map<int, bool> refreshMissingSegmentIndex(
@@ -766,12 +741,15 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
     }
   }
 
-  static double getBodyViewHeight(List<int> missingSegmentIndex, double baseBodyViewHeight) {
+  double getBodyViewHeight() {
+    double ret = baseBodyViewHeight;
     if (missingSegmentIndex.isNotEmpty) {
-      return baseBodyViewHeight - RowWidget.rowHeight - RowWidget.dividerHeight;
-    } else {
-      return baseBodyViewHeight;
+      ret = ret - RowWidget.rowHeight - RowWidget.dividerHeight;
     }
+    if (showSearchDetailPanel) {
+      ret = ret - searchDetailPanelHeight;
+    }
+    return ret;
   }
 
   Future<void> editProgressWithMsgBox(SegmentShow segment) async {

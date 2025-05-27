@@ -63,13 +63,13 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
   double baseBodyViewHeight = 0;
 
   ViewLogicLessonList({
-    required VoidCallback onSearchUnFocus,
+    required VoidCallback onSearchUnfocus,
     required this.originalLessonShow,
     required this.parentLogic,
     required this.removeWarning,
     required this.segmentModified,
     required this.initContentNameSelect,
-  }) : super(onSearchUnFocus: onSearchUnFocus) {
+  }) : super(onSearchUnfocus: onSearchUnfocus) {
     searchFocusNode.addListener(() {
       if (searchFocusNode.hasFocus) {
         tryUpdateDetailSearchPanel(true);

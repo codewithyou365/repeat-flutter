@@ -5,10 +5,10 @@ abstract class ViewLogic {
   final FocusNode searchFocusNode = FocusNode();
   final TextEditingController searchController = TextEditingController();
 
-  ViewLogic({required VoidCallback onSearchUnFocus}) {
+  ViewLogic({required VoidCallback onSearchUnfocus}) {
     searchFocusNode.addListener(() {
       if (!searchFocusNode.hasFocus) {
-        onSearchUnFocus();
+        onSearchUnfocus();
       }
     });
   }
