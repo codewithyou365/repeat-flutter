@@ -64,7 +64,6 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   Future<void> Function() removeWarning;
   List<SegmentShow> originalSegmentShow;
 
-  double bodyViewHeight = 0;
   double baseBodyViewHeight = 0;
 
   ViewLogicSegmentList({
@@ -175,7 +174,6 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
     sort(segmentShow, sortOptionKeys[selectedSortIndex.value]);
     refreshMissingSegmentIndex(missingSegmentIndex, segmentShow);
 
-    bodyViewHeight = getBodyViewHeight();
     parentLogic.update([ViewLogicSegmentList.bodyId]);
   }
 
@@ -240,7 +238,6 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   }) {
     // for height
     baseBodyViewHeight = height;
-    bodyViewHeight = getBodyViewHeight();
 
     searchKey = genSearchKey();
 
@@ -274,6 +271,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
           if (missingSegmentIndex.isNotEmpty) {
             missingPanel = SizedBox(
               height: missPanelHeight,
+              width: width,
               child: Column(
                 children: [
                   RowWidget.buildWidgetsWithTitle(I18nKey.labelFindUnnecessarySegments.tr, [
@@ -313,84 +311,78 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
           }
           Widget searchDetailPanel = const SizedBox.shrink();
           if (showSearchDetailPanel) {
-            searchDetailPanel = SizedBox(
+            searchDetailPanel = Container(
               height: searchDetailPanelHeight,
-              child: Column(
-                children: [
-                  Container(
-                    height: searchDetailPanelHeight,
-                    padding: const EdgeInsets.only(bottom: 8),
-                    decoration: BoxDecoration(
-                      color: Theme.of(Get.context!).scaffoldBackgroundColor,
-                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          spreadRadius: 1,
-                          blurRadius: 4,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: ListView(
-                      padding: const EdgeInsets.all(0),
-                      children: [
-                        RowWidget.buildCupertinoPicker(
-                          I18nKey.labelContent.tr,
-                          contentNameOptions,
-                          contentNameSelect,
-                          changed: (index) {
-                            contentNameSelect.value = index;
-                            trySearch();
-                          },
-                        ),
-                        RowWidget.buildDividerWithoutColor(),
-                        RowWidget.buildCupertinoPicker(
-                          I18nKey.labelLessonName.tr,
-                          lessonOptions,
-                          lessonSelect,
-                          changed: (index) {
-                            lessonSelect.value = index;
-                            trySearch();
-                          },
-                        ),
-                        RowWidget.buildDividerWithoutColor(),
-                        RowWidget.buildCupertinoPicker(
-                          I18nKey.labelProgress.tr,
-                          progressOptions,
-                          progressSelect,
-                          changed: (index) {
-                            progressSelect.value = index;
-                            trySearch();
-                          },
-                        ),
-                        RowWidget.buildDividerWithoutColor(),
-                        RowWidget.buildCupertinoPicker(
-                          I18nKey.labelMonth.tr,
-                          nextMonthOptions,
-                          nextMonthSelect,
-                          changed: (index) {
-                            nextMonthSelect.value = index;
-                            trySearch();
-                          },
-                        ),
-                        RowWidget.buildDividerWithoutColor(),
-                        RowWidget.buildCupertinoPicker(
-                          I18nKey.labelSortBy.tr,
-                          sortOptions,
-                          selectedSortIndex,
-                          changed: (index) {
-                            selectedSortIndex.value = index;
-                            I18nKey key = sortOptionKeys[index];
-                            sort(segmentShow, key);
-                            parentLogic.update([ViewLogicSegmentList.bodyId]);
-                          },
-                          pickWidth: 210.w,
-                        ),
-                        RowWidget.buildDividerWithoutColor(),
-                      ],
-                    ),
+              width: width,
+              padding: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: Theme.of(Get.context!).scaffoldBackgroundColor,
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    spreadRadius: 1,
+                    blurRadius: 4,
+                    offset: const Offset(0, 4),
                   ),
+                ],
+              ),
+              child: ListView(
+                padding: const EdgeInsets.all(0),
+                children: [
+                  RowWidget.buildCupertinoPicker(
+                    I18nKey.labelContent.tr,
+                    contentNameOptions,
+                    contentNameSelect,
+                    changed: (index) {
+                      contentNameSelect.value = index;
+                      trySearch();
+                    },
+                  ),
+                  RowWidget.buildDividerWithoutColor(),
+                  RowWidget.buildCupertinoPicker(
+                    I18nKey.labelLessonName.tr,
+                    lessonOptions,
+                    lessonSelect,
+                    changed: (index) {
+                      lessonSelect.value = index;
+                      trySearch();
+                    },
+                  ),
+                  RowWidget.buildDividerWithoutColor(),
+                  RowWidget.buildCupertinoPicker(
+                    I18nKey.labelProgress.tr,
+                    progressOptions,
+                    progressSelect,
+                    changed: (index) {
+                      progressSelect.value = index;
+                      trySearch();
+                    },
+                  ),
+                  RowWidget.buildDividerWithoutColor(),
+                  RowWidget.buildCupertinoPicker(
+                    I18nKey.labelMonth.tr,
+                    nextMonthOptions,
+                    nextMonthSelect,
+                    changed: (index) {
+                      nextMonthSelect.value = index;
+                      trySearch();
+                    },
+                  ),
+                  RowWidget.buildDividerWithoutColor(),
+                  RowWidget.buildCupertinoPicker(
+                    I18nKey.labelSortBy.tr,
+                    sortOptions,
+                    selectedSortIndex,
+                    changed: (index) {
+                      selectedSortIndex.value = index;
+                      I18nKey key = sortOptionKeys[index];
+                      sort(segmentShow, key);
+                      parentLogic.update([ViewLogicSegmentList.bodyId]);
+                    },
+                    pickWidth: 210.w,
+                  ),
+                  RowWidget.buildDividerWithoutColor(),
                 ],
               ),
             );
@@ -428,7 +420,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
                                     color: Colors.grey.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(4),
@@ -450,7 +442,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
                                     child: Text.rich(
                                       TextSpan(children: [
                                         TextSpan(
-                                          text: '${I18nKey.labelLessonName.tr}: ${segment.toLessonPos()}',
+                                          text: segment.toLessonPos(),
                                           style: const TextStyle(fontSize: 12, color: Colors.blue),
                                         ),
                                         TextSpan(
@@ -744,7 +736,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   double getBodyViewHeight() {
     double ret = baseBodyViewHeight;
     if (missingSegmentIndex.isNotEmpty) {
-      ret = ret - RowWidget.rowHeight - RowWidget.dividerHeight;
+      ret = ret - missPanelHeight;
     }
     if (showSearchDetailPanel) {
       ret = ret - searchDetailPanelHeight;

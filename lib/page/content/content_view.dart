@@ -26,6 +26,11 @@ class ContentPage extends StatelessWidget {
     }
     double topBarHeight = 50;
     double bodyHeight = screenHeight - topPadding - topBarHeight - RowWidget.dividerHeight;
+    double bodyWidth = screenWidth;
+    if (landscape) {
+      bodyWidth = screenWidth - leftPadding * 2;
+    }
+
     return Scaffold(
       body: Column(
         children: [
@@ -42,7 +47,7 @@ class ContentPage extends StatelessWidget {
                   return list.show(
                     focus: false,
                     height: bodyHeight,
-                    width: screenWidth,
+                    width: bodyWidth,
                   );
                 }
               })

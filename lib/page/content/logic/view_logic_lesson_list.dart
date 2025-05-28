@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/lesson_key.dart';
 import 'package:repeat_flutter/db/entity/text_version.dart';
@@ -26,13 +25,13 @@ import 'view_logic.dart';
 
 class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
   static const String bodyId = "LessonList.bodyId";
-  static const String findUnnecessaryLessonsId = "LessonList.findUnnecessaryLessonsId";
-  static const String detailSearchId = "LessonList.searchId";
   late HistoryList historyList = HistoryList<T>(parentLogic);
 
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
+  double searchDetailPanelHeight = 3 * (RowWidget.rowHeight + RowWidget.dividerHeight);
 
+  double missPanelHeight = RowWidget.rowHeight + RowWidget.dividerHeight;
   final RxString search = RxString("");
   final T parentLogic;
   List<LessonShow> originalLessonShow;
@@ -59,7 +58,6 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
     I18nKey.labelSortPositionDesc,
   ];
 
-  double bodyViewHeight = 0;
   double baseBodyViewHeight = 0;
 
   ViewLogicLessonList({
@@ -107,7 +105,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
   void tryUpdateDetailSearchPanel(bool newShow) {
     if (showSearchDetailPanel != newShow) {
       showSearchDetailPanel = newShow;
-      parentLogic.update([ViewLogicLessonList.detailSearchId]);
+      parentLogic.update([ViewLogicLessonList.bodyId]);
     }
   }
 
@@ -142,8 +140,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
     sort(lessonShow, sortOptionKeys[selectedSortIndex.value]);
     refreshMissingLessonIndex(missingLessonIndex, lessonShow);
 
-    bodyViewHeight = getBodyViewHeight(missingLessonIndex, baseBodyViewHeight);
-    parentLogic.update([ViewLogicLessonList.findUnnecessaryLessonsId, ViewLogicLessonList.bodyId]);
+    parentLogic.update([ViewLogicLessonList.bodyId]);
   }
 
   Future<void> refresh(LessonKey lessonKey) async {
@@ -207,7 +204,6 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
     required double height,
   }) {
     baseBodyViewHeight = height;
-    bodyViewHeight = getBodyViewHeight(missingLessonIndex, baseBodyViewHeight);
 
     // init select
     if (initContentNameSelect != null) {
@@ -244,288 +240,266 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
       }
     });
 
-    return Stack(children: [
-      Column(
-        children: [
-          if (missingLessonIndex.isNotEmpty)
-            GetBuilder<T>(
-                id: ViewLogicLessonList.findUnnecessaryLessonsId,
-                builder: (_) {
-                  if (missingLessonIndex.isNotEmpty) {
-                    return Column(
-                      children: [
-                        RowWidget.buildWidgetsWithTitle(I18nKey.labelFindUnnecessaryLessons.tr, [
-                          IconButton(
-                              onPressed: () {
-                                if (missingLessonOffset - 1 < 0) {
-                                  missingLessonOffset = 0;
-                                } else {
-                                  missingLessonOffset--;
-                                }
-                                itemScrollController.scrollTo(
-                                  index: missingLessonIndex[missingLessonOffset],
-                                  duration: const Duration(milliseconds: 500),
-                                  curve: Curves.easeInOut,
-                                );
-                              },
-                              icon: const Icon(Icons.arrow_back)),
-                          IconButton(
-                              onPressed: () {
-                                if (missingLessonOffset + 1 >= missingLessonIndex.length) {
-                                  missingLessonOffset = missingLessonIndex.length - 1;
-                                } else {
-                                  missingLessonOffset++;
-                                }
-                                itemScrollController.scrollTo(
-                                  index: missingLessonIndex[missingLessonOffset],
-                                  duration: const Duration(milliseconds: 500),
-                                  curve: Curves.easeInOut,
-                                );
-                              },
-                              icon: const Icon(Icons.arrow_forward)),
-                        ]),
-                        RowWidget.buildDividerWithoutColor(),
-                      ],
-                    );
-                  } else {
-                    return const SizedBox.shrink();
-                  }
-                }),
-          GetBuilder<T>(
-            id: ViewLogicLessonList.bodyId,
-            builder: (_) {
-              var list = lessonShow;
-              return SizedBox(
-                height: bodyViewHeight,
-                width: width,
-                child: NotificationListener<ScrollNotification>(
-                  onNotification: (ScrollNotification notification) {
-                    if (notification is ScrollStartNotification) {
-                      if (searchFocusNode.hasFocus) {
-                        List<String> searches = StringUtil.splitN(searchKey, ",", 3);
-                        if (searches.length == 3) {
-                          contentNameSelect.value = int.parse(searches[0]);
-                          lessonIndexSelect.value = int.parse(searches[1]);
-                          search.value = searches[2];
-                          searchController.text = search.value;
-                        }
-                        searchFocusNode.unfocus();
-                      }
-                    }
-                    return true;
-                  },
-                  child: ScrollablePositionedList.builder(
-                    itemScrollController: itemScrollController,
-                    itemPositionsListener: itemPositionsListener,
-                    itemCount: list.length,
-                    itemBuilder: (context, index) {
-                      final lesson = list[index];
-                      return Card(
-                        color: lesson.missing ? Colors.red : null,
-                        elevation: 2,
-                        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Stack(
-                          alignment: Alignment.topRight,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      '${I18nKey.labelLessonName.tr}: ${lesson.toPos()}',
-                                      style: const TextStyle(fontSize: 12, color: Colors.blue),
-                                    ),
-                                  ),
-                                  SizedBox(height: 8, width: width),
-                                  ExpandableText(
-                                    title: I18nKey.labelLessonName.tr,
-                                    text: ': ${lesson.lessonContent}',
-                                    version: lesson.lessonContentVersion,
-                                    limit: 60,
-                                    style: const TextStyle(fontSize: 14),
-                                    selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                                    versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
-                                    selectText: search.value,
-                                    onEdit: () {
-                                      searchFocusNode.unfocus();
-                                      var contentM = jsonDecode(lesson.lessonContent);
-                                      var content = const JsonEncoder.withIndent(' ').convert(contentM);
-                                      Editor.show(
-                                        Get.context!,
-                                        I18nKey.labelLessonName.tr,
-                                        content,
-                                        (str) async {
-                                          await Db().db.lessonKeyDao.updateLessonContent(lesson.lessonKeyId, str);
-                                          parentLogic.update([ViewLogicLessonList.bodyId]);
-                                        },
-                                        qrPagePath: Nav.gsCrContentScan.path,
-                                        onHistory: () {
-                                          historyList.show(TextVersionType.lessonContent, lesson.lessonKeyId);
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                if (lesson.missing)
-                                  IconButton(
-                                    onPressed: () {
-                                      MsgBox.yesOrNo(
-                                        title: I18nKey.labelDelete.tr,
-                                        desc: I18nKey.labelDeleteLesson.tr,
-                                        yes: () {
-                                          showTransparentOverlay(() async {
-                                            var ok = await Db().db.lessonKeyDao.deleteAbnormalLesson(lesson.lessonKeyId);
-                                            if (ok == false) {
-                                              return;
-                                            }
-                                            LessonHelp.deleteCache(lesson.lessonKeyId);
-                                            lessonShow.removeWhere((element) => element.lessonKeyId == lesson.lessonKeyId);
+    return GetBuilder<T>(
+        id: ViewLogicLessonList.bodyId,
+        builder: (_) {
+          var list = lessonShow;
 
-                                            var contentId2Missing = refreshMissingLessonIndex(missingLessonIndex, lessonShow);
-                                            var warning = contentId2Missing[lesson.contentId] ?? false;
-                                            if (warning == false) {
-                                              await Db().db.contentDao.updateContentWarningForLesson(lesson.contentId, warning, DateTime.now().millisecondsSinceEpoch);
-                                              await removeWarning();
-                                            }
-                                            parentLogic.update([ViewLogicLessonList.findUnnecessaryLessonsId, ViewLogicLessonList.bodyId]);
-                                            Get.back();
-                                          });
-                                        },
-                                      );
-                                    },
-                                    icon: const Icon(
-                                      Icons.delete_forever,
-                                    ),
+          Widget missingPanel = const SizedBox.shrink();
+          if (missingLessonIndex.isNotEmpty) {
+            missingPanel = SizedBox(
+              height: missPanelHeight,
+              width: width,
+              child: Column(
+                children: [
+                  RowWidget.buildWidgetsWithTitle(I18nKey.labelFindUnnecessaryLessons.tr, [
+                    IconButton(
+                        onPressed: () {
+                          if (missingLessonOffset - 1 < 0) {
+                            missingLessonOffset = 0;
+                          } else {
+                            missingLessonOffset--;
+                          }
+                          itemScrollController.scrollTo(
+                            index: missingLessonIndex[missingLessonOffset],
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        icon: const Icon(Icons.arrow_back)),
+                    IconButton(
+                        onPressed: () {
+                          if (missingLessonOffset + 1 >= missingLessonIndex.length) {
+                            missingLessonOffset = missingLessonIndex.length - 1;
+                          } else {
+                            missingLessonOffset++;
+                          }
+                          itemScrollController.scrollTo(
+                            index: missingLessonIndex[missingLessonOffset],
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        icon: const Icon(Icons.arrow_forward)),
+                  ]),
+                  RowWidget.buildDividerWithoutColor(),
+                ],
+              ),
+            );
+          }
+          Widget searchDetailPanel = const SizedBox.shrink();
+          if (showSearchDetailPanel) {
+            searchDetailPanel = Container(
+              height: searchDetailPanelHeight,
+              width: width,
+              padding: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: Theme.of(Get.context!).scaffoldBackgroundColor,
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    spreadRadius: 0,
+                    blurRadius: 4,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: ListView(
+                padding: const EdgeInsets.all(0),
+                children: [
+                  RowWidget.buildCupertinoPicker(
+                    I18nKey.labelContent.tr,
+                    contentNameOptions,
+                    contentNameSelect,
+                    changed: (index) {
+                      contentNameSelect.value = index;
+                      trySearch();
+                    },
+                  ),
+                  RowWidget.buildDividerWithoutColor(),
+                  RowWidget.buildCupertinoPicker(
+                    I18nKey.labelLesson.tr,
+                    lessonOptions,
+                    lessonIndexSelect,
+                    changed: (index) {
+                      lessonIndexSelect.value = index;
+                      trySearch();
+                    },
+                  ),
+                  RowWidget.buildDividerWithoutColor(),
+                  RowWidget.buildCupertinoPicker(
+                    I18nKey.labelSortBy.tr,
+                    sortOptions,
+                    selectedSortIndex,
+                    changed: (index) {
+                      selectedSortIndex.value = index;
+                      I18nKey key = sortOptionKeys[index];
+                      sort(lessonShow, key);
+                      parentLogic.update([ViewLogicLessonList.bodyId]);
+                    },
+                    pickWidth: 210.w,
+                  ),
+                  RowWidget.buildDividerWithoutColor(),
+                ],
+              ),
+            );
+          }
+          return Column(
+            children: [
+              missingPanel,
+              searchDetailPanel,
+              SizedBox(
+                height: getBodyViewHeight(),
+                width: width,
+                child: ScrollablePositionedList.builder(
+                  itemScrollController: itemScrollController,
+                  itemPositionsListener: itemPositionsListener,
+                  itemCount: list.length,
+                  itemBuilder: (context, index) {
+                    final lesson = list[index];
+                    return Card(
+                      color: lesson.missing ? Colors.red : null,
+                      elevation: 2,
+                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.topRight,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(4),
                                   ),
-                                PopupMenuButton<String>(
-                                  icon: const Icon(Icons.more_vert),
-                                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                                    PopupMenuItem<String>(
-                                      onTap: () {
-                                        MsgBox.yesOrNo(
-                                          title: I18nKey.labelWarning.tr,
-                                          desc: I18nKey.labelDeleteSegment.tr,
-                                          yes: () => delete(lesson: lesson),
-                                        );
+                                  child: Text(
+                                    lesson.toPos(),
+                                    style: const TextStyle(fontSize: 12, color: Colors.blue),
+                                  ),
+                                ),
+                                SizedBox(height: 8, width: width),
+                                ExpandableText(
+                                  title: I18nKey.labelLessonName.tr,
+                                  text: ': ${lesson.lessonContent}',
+                                  version: lesson.lessonContentVersion,
+                                  limit: 60,
+                                  style: const TextStyle(fontSize: 14),
+                                  selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                                  versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
+                                  selectText: search.value,
+                                  onEdit: () {
+                                    searchFocusNode.unfocus();
+                                    var contentM = jsonDecode(lesson.lessonContent);
+                                    var content = const JsonEncoder.withIndent(' ').convert(contentM);
+                                    Editor.show(
+                                      Get.context!,
+                                      I18nKey.labelLessonName.tr,
+                                      content,
+                                      (str) async {
+                                        await Db().db.lessonKeyDao.updateLessonContent(lesson.lessonKeyId, str);
+                                        parentLogic.update([ViewLogicLessonList.bodyId]);
                                       },
-                                      child: Text(I18nKey.btnDelete.tr),
-                                    ),
-                                    PopupMenuItem<String>(
-                                      onTap: () {
-                                        MsgBox.myDialog(
-                                            title: I18nKey.labelTips.tr,
-                                            content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
-                                            action: MsgBox.buttonsWithDivider(buttons: [
-                                              MsgBox.button(
-                                                text: I18nKey.btnCancel.tr,
-                                                onPressed: () {
-                                                  Get.back();
-                                                },
-                                              ),
-                                              MsgBox.button(
-                                                text: I18nKey.btnAbove.tr,
-                                                onPressed: () => copy(lesson: lesson, below: false),
-                                              ),
-                                              MsgBox.button(
-                                                text: I18nKey.btnBelow.tr,
-                                                onPressed: () => copy(lesson: lesson, below: true),
-                                              ),
-                                            ]));
+                                      qrPagePath: Nav.gsCrContentScan.path,
+                                      onHistory: () {
+                                        historyList.show(TextVersionType.lessonContent, lesson.lessonKeyId);
                                       },
-                                      child: Text(I18nKey.btnCopy.tr),
-                                    ),
-                                  ],
+                                    );
+                                  },
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              if (lesson.missing)
+                                IconButton(
+                                  onPressed: () {
+                                    MsgBox.yesOrNo(
+                                      title: I18nKey.labelDelete.tr,
+                                      desc: I18nKey.labelDeleteLesson.tr,
+                                      yes: () {
+                                        showTransparentOverlay(() async {
+                                          var ok = await Db().db.lessonKeyDao.deleteAbnormalLesson(lesson.lessonKeyId);
+                                          if (ok == false) {
+                                            return;
+                                          }
+                                          LessonHelp.deleteCache(lesson.lessonKeyId);
+                                          lessonShow.removeWhere((element) => element.lessonKeyId == lesson.lessonKeyId);
+
+                                          var contentId2Missing = refreshMissingLessonIndex(missingLessonIndex, lessonShow);
+                                          var warning = contentId2Missing[lesson.contentId] ?? false;
+                                          if (warning == false) {
+                                            await Db().db.contentDao.updateContentWarningForLesson(lesson.contentId, warning, DateTime.now().millisecondsSinceEpoch);
+                                            await removeWarning();
+                                          }
+                                          parentLogic.update([ViewLogicLessonList.bodyId]);
+                                          Get.back();
+                                        });
+                                      },
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.delete_forever,
+                                  ),
+                                ),
+                              PopupMenuButton<String>(
+                                icon: const Icon(Icons.more_vert),
+                                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                  PopupMenuItem<String>(
+                                    onTap: () {
+                                      MsgBox.yesOrNo(
+                                        title: I18nKey.labelWarning.tr,
+                                        desc: I18nKey.labelDeleteSegment.tr,
+                                        yes: () => delete(lesson: lesson),
+                                      );
+                                    },
+                                    child: Text(I18nKey.btnDelete.tr),
+                                  ),
+                                  PopupMenuItem<String>(
+                                    onTap: () {
+                                      MsgBox.myDialog(
+                                          title: I18nKey.labelTips.tr,
+                                          content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
+                                          action: MsgBox.buttonsWithDivider(buttons: [
+                                            MsgBox.button(
+                                              text: I18nKey.btnCancel.tr,
+                                              onPressed: () {
+                                                Get.back();
+                                              },
+                                            ),
+                                            MsgBox.button(
+                                              text: I18nKey.btnAbove.tr,
+                                              onPressed: () => copy(lesson: lesson, below: false),
+                                            ),
+                                            MsgBox.button(
+                                              text: I18nKey.btnBelow.tr,
+                                              onPressed: () => copy(lesson: lesson, below: true),
+                                            ),
+                                          ]));
+                                    },
+                                    child: Text(I18nKey.btnCopy.tr),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-        ],
-      ),
-      GetBuilder<T>(
-          id: ViewLogicLessonList.detailSearchId,
-          builder: (_) {
-            if (showSearchDetailPanel) {
-              double searchViewHeight = 3 * (RowWidget.rowHeight + RowWidget.dividerHeight);
-              return Container(
-                height: searchViewHeight,
-                padding: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: Theme.of(Get.context!).scaffoldBackgroundColor,
-                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      spreadRadius: 0,
-                      blurRadius: 4,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: ListView(
-                  padding: const EdgeInsets.all(0),
-                  children: [
-                    RowWidget.buildCupertinoPicker(
-                      I18nKey.labelContent.tr,
-                      contentNameOptions,
-                      contentNameSelect,
-                      changed: (index) {
-                        contentNameSelect.value = index;
-                      },
-                    ),
-                    RowWidget.buildDividerWithoutColor(),
-                    RowWidget.buildCupertinoPicker(
-                      I18nKey.labelLesson.tr,
-                      lessonOptions,
-                      lessonIndexSelect,
-                      changed: (index) {
-                        lessonIndexSelect.value = index;
-                      },
-                    ),
-                    RowWidget.buildDividerWithoutColor(),
-                    RowWidget.buildCupertinoPicker(
-                      I18nKey.labelSortBy.tr,
-                      sortOptions,
-                      selectedSortIndex,
-                      changed: (index) {
-                        selectedSortIndex.value = index;
-                        I18nKey key = sortOptionKeys[index];
-                        sort(lessonShow, key);
-                        parentLogic.update([ViewLogicLessonList.bodyId]);
-                      },
-                      pickWidth: 210.w,
-                    ),
-                    RowWidget.buildDividerWithoutColor(),
-                  ],
-                ),
-              );
-            } else {
-              return const SizedBox.shrink();
-            }
-          }),
-    ]);
+              ),
+            ],
+          );
+        });
   }
 
   Map<int, bool> refreshMissingLessonIndex(
@@ -581,12 +555,15 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
     }
   }
 
-  double getBodyViewHeight(List<int> missingLessonIndex, double baseBodyViewHeight) {
+  double getBodyViewHeight() {
+    double ret = baseBodyViewHeight;
     if (missingLessonIndex.isNotEmpty) {
-      return baseBodyViewHeight - RowWidget.rowHeight - RowWidget.dividerHeight;
-    } else {
-      return baseBodyViewHeight;
+      ret = ret - missPanelHeight;
     }
+    if (showSearchDetailPanel) {
+      ret = ret - searchDetailPanelHeight;
+    }
+    return ret;
   }
 
   @override
