@@ -6,7 +6,7 @@ enum TextVersionType {
   segmentContent,
   segmentNote,
   lessonContent,
-  rootContent,
+  bookContent,
 }
 
 enum TextVersionReason {

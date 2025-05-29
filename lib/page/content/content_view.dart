@@ -1,4 +1,3 @@
-import 'package:floor/floor.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
@@ -57,7 +56,7 @@ class ContentPage extends StatelessWidget {
   }
 
   Widget topBar({required ContentLogic logic, required double width, required double height}) {
-    final taps = [I18nKey.labelRoot.tr, I18nKey.labelLesson.tr, I18nKey.labelSegment.tr];
+    final taps = [I18nKey.labelBook.tr, I18nKey.labelLesson.tr, I18nKey.labelSegment.tr];
     final startSearch = logic.state.startSearch;
     final tabIndex = logic.state.tabIndex;
     const padding = 10.0;

@@ -1552,6 +1552,14 @@ class _$ContentDao extends ContentDao {
   final InsertionAdapter<Content> _contentInsertionAdapter;
 
   @override
+  Future<List<BookShow>> getAllBook(int classroomId) async {
+    return _queryAdapter.queryList(
+        'SELECT id bookId,name,sort,content bookContent,contentVersion bookContentVersion FROM Content where classroomId=?1 and hide=false and docId!=0 ORDER BY sort',
+        mapper: (Map<String, Object?> row) => BookShow(bookId: row['bookId'] as int, name: row['name'] as String, sort: row['sort'] as int, bookContent: row['bookContent'] as String, bookContentVersion: row['bookContentVersion'] as int),
+        arguments: [classroomId]);
+  }
+
+  @override
   Future<List<Content>> getAllContent(int classroomId) async {
     return _queryAdapter.queryList(
         'SELECT * FROM Content where classroomId=?1 and hide=false ORDER BY sort',
@@ -1785,6 +1793,24 @@ class _$ContentDao extends ContentDao {
   @override
   Future<void> insertContent(Content entity) async {
     await _contentInsertionAdapter.insert(entity, OnConflictStrategy.fail);
+  }
+
+  @override
+  Future<void> updateBookContent(
+    int bookId,
+    String content,
+  ) async {
+    if (database is sqflite.Transaction) {
+      await super.updateBookContent(bookId, content);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        await transactionDatabase.contentDao.updateBookContent(bookId, content);
+      });
+    }
   }
 
   @override

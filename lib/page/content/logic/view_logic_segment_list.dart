@@ -425,32 +425,9 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
                                     color: Colors.grey.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
-                                  child: GestureDetector(
-                                    onTap: () async {
-                                      var lesson = await Db().db.lessonDao.one(Classroom.curr, segment.contentSerial, segment.lessonIndex);
-                                      if (lesson != null) {
-                                        lessonList.show(
-                                          initContentNameSelect: initContentNameSelect,
-                                          selectLessonKeyId: lesson.lessonKeyId,
-                                          segmentModified: () async {
-                                            originalSegmentShow = await SegmentHelp.getSegments();
-                                            trySearch(force: true);
-                                          },
-                                        );
-                                      }
-                                    },
-                                    child: Text.rich(
-                                      TextSpan(children: [
-                                        TextSpan(
-                                          text: segment.toLessonPos(),
-                                          style: const TextStyle(fontSize: 12, color: Colors.blue),
-                                        ),
-                                        TextSpan(
-                                          text: segment.toSegmentPos(),
-                                          style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                        ),
-                                      ]),
-                                    ),
+                                  child: Text(
+                                    '${segment.toLessonPos()}${segment.toSegmentPos()}',
+                                    style: const TextStyle(fontSize: 12, color: Colors.blue),
                                   ),
                                 ),
                                 SizedBox(height: 8, width: width),

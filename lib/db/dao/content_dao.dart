@@ -1,5 +1,7 @@
 // dao/content_dao.dart
 
+import 'dart:convert' as convert;
+
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/num.dart';
 import 'package:repeat_flutter/db/database.dart';
@@ -7,11 +9,22 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 @dao
 abstract class ContentDao {
   late AppDatabase db;
+  static BookShow? Function(int lessonKeyId)? getBookShow;
+  static List<void Function(int lessonKeyId)> setBookShowContent = [];
+
+  @Query('SELECT id bookId'
+      ',name'
+      ',sort'
+      ',content bookContent'
+      ',contentVersion bookContentVersion'
+      ' FROM Content where classroomId=:classroomId and hide=false and docId!=0 ORDER BY sort')
+  Future<List<BookShow>> getAllBook(int classroomId);
 
   @Query('SELECT * FROM Content where classroomId=:classroomId and hide=false ORDER BY sort')
   Future<List<Content>> getAllContent(int classroomId);
@@ -74,6 +87,48 @@ abstract class ContentDao {
   Future<void> updateDocId(int id, int docId);
 
   @transaction
+  Future<void> updateBookContent(int bookId, String content) async {
+    Content? book = await getById(bookId);
+    if (book == null) {
+      Snackbar.show(I18nKey.labelNotFoundSegment.trArgs([bookId.toString()]));
+      return;
+    }
+
+    try {
+      Map<String, dynamic> contentM = convert.jsonDecode(content);
+      content = convert.jsonEncode(contentM);
+    } catch (e) {
+      Snackbar.show(e.toString());
+      return;
+    }
+
+    if (book.content == content) {
+      return;
+    }
+
+    var now = DateTime.now();
+    await updateContentVersion(bookId, content, book.contentVersion + 1);
+    await db.textVersionDao.insertOrIgnore(TextVersion(
+      t: TextVersionType.bookContent,
+      id: bookId,
+      version: book.contentVersion + 1,
+      reason: TextVersionReason.editor,
+      text: content,
+      createTime: now,
+    ));
+    if (getBookShow != null) {
+      BookShow? bookShow = getBookShow!(bookId);
+      if (bookShow != null) {
+        bookShow.bookContent = content;
+        for (var set in setBookShowContent) {
+          set(bookId);
+        }
+        bookShow.bookContentVersion++;
+      }
+    }
+  }
+
+  @transaction
   Future<Content> add(String name) async {
     await db.lockDao.forUpdate();
     var ret = await getContentByName(Classroom.curr, name);
@@ -120,7 +175,7 @@ abstract class ContentDao {
       var maxVersion = oldContent.contentVersion;
       var nextVersion = maxVersion + 1;
       TextVersion insertContentVersion = TextVersion(
-        t: TextVersionType.rootContent,
+        t: TextVersionType.bookContent,
         id: oldContent.serial,
         version: nextVersion,
         reason: TextVersionReason.import,

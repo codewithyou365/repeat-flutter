@@ -42,6 +42,7 @@ import 'package:repeat_flutter/db/entity/time_stats.dart';
 import 'package:repeat_flutter/db/migration/m1_2.dart';
 import 'package:repeat_flutter/db/migration/m2_3.dart';
 import 'package:repeat_flutter/db/type_converter.dart';
+import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/lesson_show.dart';
 import 'package:repeat_flutter/logic/model/segment_content.dart';
 import 'package:repeat_flutter/logic/model/segment_key_id.dart';
@@ -75,6 +76,7 @@ part 'database.g.dart'; // the generated code will be there
   SegmentStats,
   TextVersion,
   TimeStats,
+  BookShow,
   Game,
   GameUser,
   GameUserInput,
