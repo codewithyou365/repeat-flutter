@@ -66,8 +66,8 @@ class HistoryList<T extends GetxController> {
     List<TextVersion> versions = List.from(originalVersions);
     RxInt selectedSortIndex = 0.obs;
     List<I18nKey> sortOptionKeys = [
-      I18nKey.labelSortCreateDateAsc,
       I18nKey.labelSortCreateDateDesc,
+      I18nKey.labelSortCreateDateAsc,
     ];
     List<String> sortOptions = sortOptionKeys.map((key) => key.tr).toList();
     sort(versions, sortOptionKeys[selectedSortIndex.value]);
