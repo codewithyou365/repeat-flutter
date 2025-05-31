@@ -2,15 +2,19 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/lesson_help.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
 
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/segment_list.dart';
 import 'package:repeat_flutter/logic/widget/web_manager.dart';
+import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/game_helper.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic_for_browse.dart';
@@ -106,16 +110,30 @@ class GsCrRepeatLogic extends GetxController {
     });
   }
 
-  void openSegmentList() async {
-    if (repeatLogic == null) {
-      return;
-    }
-    var curr = repeatLogic!.currSegment;
+  void openContent() async {
+    var curr = getCurr();
     if (curr == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
-    await segmentList.show(selectSegmentKeyId: curr.segmentKeyId);
+    var content = await Db().db.contentDao.getBySerial(curr.classroomId, curr.contentSerial);
+    if (content == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.tr);
+      return;
+    }
+    var lesson = LessonHelp.getCache(curr.lessonKeyId);
+    if (lesson == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.tr);
+      return;
+    }
+    await Nav.content.push(
+      arguments: ContentArgs(
+        bookName: content.name,
+        initLessonSelect: lesson.lessonIndex,
+        selectSegmentKeyId: curr.segmentKeyId,
+        defaultTap: 2,
+      ),
+    );
     update([GsCrRepeatLogic.id]);
   }
 

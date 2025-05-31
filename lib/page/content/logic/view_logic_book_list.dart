@@ -7,7 +7,6 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
-import 'package:repeat_flutter/logic/book_help.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -28,7 +27,6 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   final T parentLogic;
   List<BookShow> originalBookShow;
   List<BookShow> bookShow = [];
-  String? initContentNameSelect;
 
   bool showSearchDetailPanel = false;
   RxInt contentNameSelect = 0.obs;
@@ -50,7 +48,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
     required VoidCallback onSearchUnfocus,
     required this.originalBookShow,
     required this.parentLogic,
-    required this.initContentNameSelect,
+    String? initContentNameSelect,
   }) : super(onSearchUnfocus: onSearchUnfocus) {
     searchFocusNode.addListener(() {
       if (searchFocusNode.hasFocus) {
@@ -71,10 +69,13 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
     sortOptions = sortOptionKeys.map((key) => key.tr).toList();
     sort(bookShow, sortOptionKeys[selectedSortIndex.value]);
 
-    collectDataFromBooks(
+    collectData(
       contentNameOptions,
       bookShow,
     );
+    if (initContentNameSelect != null) {
+      contentNameSelect.value = contentNameOptions.indexOf(initContentNameSelect);
+    }
   }
 
   void tryUpdateDetailSearchPanel(bool newShow) {
@@ -116,41 +117,17 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
 
   @override
   Widget show({
-    int? initBookSelect,
-    int? selectBookKeyId,
     bool focus = true,
     required double width,
     required double height,
   }) {
     baseBodyViewHeight = height;
 
-    // init select
-    if (initContentNameSelect != null) {
-      int index = contentNameOptions.indexOf(initContentNameSelect!);
-      if (index != -1) {
-        contentNameSelect.value = index;
-      }
-      initContentNameSelect = null;
-    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (focus) {
         searchFocusNode.requestFocus();
       }
       trySearch();
-      int? selectedIndex;
-      if (selectBookKeyId != null) {
-        BookShow? ls = BookHelp.getCache(selectBookKeyId);
-        if (ls != null) {
-          selectedIndex = bookShow.indexOf(ls);
-        }
-      }
-      if (selectedIndex != null) {
-        itemScrollController.scrollTo(
-          index: selectedIndex,
-          duration: const Duration(milliseconds: 10),
-          curve: Curves.easeInOut,
-        );
-      }
     });
 
     return GetBuilder<T>(
@@ -286,7 +263,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
         });
   }
 
-  void collectDataFromBooks(
+  void collectData(
     List<String> contentName,
     List<BookShow> bookShow,
   ) {

@@ -61,16 +61,20 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   late HistoryList historyList = HistoryList<T>(parentLogic);
   late LessonList lessonList = LessonList<T>(parentLogic);
   final T parentLogic;
-  Future<void> Function() removeWarning;
+  Future<void> Function()? removeWarning;
   List<SegmentShow> originalSegmentShow;
 
   double baseBodyViewHeight = 0;
+  int? selectSegmentKeyId;
 
   ViewLogicSegmentList({
     required VoidCallback onSearchUnfocus,
     required this.parentLogic,
     required this.originalSegmentShow,
     required this.removeWarning,
+    required this.selectSegmentKeyId,
+    String? initContentNameSelect,
+    int? initLessonSelect,
   }) : super(onSearchUnfocus: onSearchUnfocus) {
     searchFocusNode.addListener(() {
       if (searchFocusNode.hasFocus) {
@@ -88,33 +92,14 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
     sortOptions = sortOptionKeys.map((key) => key.tr).toList();
     sort(segmentShow, sortOptionKeys[selectedSortIndex.value]);
 
-    collectDataFromSegments(
-      missingSegmentIndex,
-      contentNameOptions,
-      lesson,
-      progress,
-      nextMonth,
-      segmentShow, // keep consistent with view below.
-    );
+    collectData();
 
-    lessonOptions = lesson.map((k) {
-      if (k == -1) {
-        return I18nKey.labelAll.tr;
-      }
-      return '${k + 1}';
-    }).toList();
-    progressOptions = progress.map((k) {
-      if (k == -1) {
-        return I18nKey.labelAll.tr;
-      }
-      return k.toString();
-    }).toList();
-    nextMonthOptions = nextMonth.map((k) {
-      if (k == -1) {
-        return I18nKey.labelAll.tr;
-      }
-      return '${k.toString().substring(0, 4)}-${k.toString().substring(4, 6)}';
-    }).toList();
+    if (initContentNameSelect != null) {
+      contentNameSelect.value = contentNameOptions.indexOf(initContentNameSelect);
+    }
+    if (initLessonSelect != null) {
+      lessonSelect.value = lessonOptions.indexOf('${initLessonSelect + 1}');
+    }
   }
 
   String genSearchKey() {
@@ -153,6 +138,9 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
           }
         }
         if (ret && contentNameSelect.value != 0) {
+          if (contentNameSelect.value < 0 || contentNameSelect.value >= contentNameOptions.length) {
+            return false;
+          }
           ret = e.contentName == contentNameOptions[contentNameSelect.value];
         }
         if (ret && lessonSelect.value != 0) {
@@ -229,39 +217,20 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
 
   @override
   Widget show({
-    String? initContentNameSelect,
-    int? initLessonSelect,
-    int? selectSegmentKeyId,
     bool focus = true,
     required double width,
     required double height,
   }) {
     // for height
     baseBodyViewHeight = height;
-
-    searchKey = genSearchKey();
-
-    // init select
-    if (initContentNameSelect != null) {
-      int index = contentNameOptions.indexOf(initContentNameSelect);
-      if (index != -1) {
-        contentNameSelect.value = index;
-      }
-    }
-    if (initLessonSelect != null) {
-      int index = lessonOptions.indexOf('${initLessonSelect + 1}');
-      if (index != -1) {
-        lessonSelect.value = index;
-      }
-    }
-
+    collectData();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (focus) {
         searchFocusNode.requestFocus();
       }
       trySearch();
       if (selectSegmentKeyId != null) {
-        scrollTo(selectSegmentKeyId);
+        scrollTo(selectSegmentKeyId!);
       }
     });
     return GetBuilder<T>(
@@ -556,7 +525,9 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
                                           var warning = contentId2Missing[segment.contentId] ?? false;
                                           if (warning == false) {
                                             await Db().db.contentDao.updateContentWarningForSegment(segment.contentId, warning, DateTime.now().millisecondsSinceEpoch);
-                                            await removeWarning();
+                                            if (removeWarning != null) {
+                                              await removeWarning!();
+                                            }
                                           }
                                           parentLogic.update([ViewLogicSegmentList.bodyId]);
                                           Get.back();
@@ -637,21 +608,24 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
     return contentId2Missing;
   }
 
-  static void collectDataFromSegments(
-    List<int> missingSegmentIndex,
-    List<String> contentName,
-    List<int> lesson,
-    List<int> progress,
-    List<int> nextMonth,
-    List<SegmentShow> segmentShow,
-  ) {
+  void collectData() {
+    missingSegmentIndex = [];
+    contentNameOptions = [];
+
+    lesson = [];
+    lessonOptions = [];
+    progress = [];
+    progressOptions = [];
+    nextMonth = [];
+    nextMonthOptions = [];
+
     for (int i = 0; i < segmentShow.length; i++) {
       var v = segmentShow[i];
       if (v.missing) {
         missingSegmentIndex.add(i);
       }
-      if (!contentName.contains(v.contentName)) {
-        contentName.add(v.contentName);
+      if (!contentNameOptions.contains(v.contentName)) {
+        contentNameOptions.add(v.contentName);
       }
       if (!lesson.contains(v.lessonIndex)) {
         lesson.add(v.lessonIndex);
@@ -667,10 +641,28 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
     lesson.sort();
     progress.sort();
     nextMonth.sort();
-    contentName.insert(0, I18nKey.labelAll.tr);
+    contentNameOptions.insert(0, I18nKey.labelAll.tr);
     lesson.insert(0, -1);
+    lessonOptions = lesson.map((k) {
+      if (k == -1) {
+        return I18nKey.labelAll.tr;
+      }
+      return '${k + 1}';
+    }).toList();
     progress.insert(0, -1);
+    progressOptions = progress.map((k) {
+      if (k == -1) {
+        return I18nKey.labelAll.tr;
+      }
+      return k.toString();
+    }).toList();
     nextMonth.insert(0, -1);
+    nextMonthOptions = nextMonth.map((k) {
+      if (k == -1) {
+        return I18nKey.labelAll.tr;
+      }
+      return '${k.toString().substring(0, 4)}-${k.toString().substring(4, 6)}';
+    }).toList();
   }
 
   static sort(List<SegmentShow> segmentShow, I18nKey key) {

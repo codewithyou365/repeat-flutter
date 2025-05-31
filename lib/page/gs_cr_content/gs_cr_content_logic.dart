@@ -17,6 +17,7 @@ import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/logic/widget/lesson_list.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/logic/widget/segment_list.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
@@ -64,12 +65,14 @@ class GsCrContentLogic extends GetxController {
       Snackbar.show(I18nKey.labelNoContent.tr);
       return;
     }
-    Nav.content.push(arguments: [
-      content.name,
-      () async {
-        await init();
-      }
-    ]);
+    await Nav.content.push(
+      arguments: ContentArgs(
+        bookName: content.name,
+        removeWarning: () async {
+          await init();
+        },
+      ),
+    );
   }
 
   showLesson(int contentId) async {

@@ -139,7 +139,7 @@ class GsCrRepeatPage extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.list_alt),
               tooltip: I18nKey.labelDetail.tr,
-              onPressed: logic.openSegmentList,
+              onPressed: logic.openContent,
             ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),

@@ -5,6 +5,7 @@ import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/segment_show.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/logic/model/lesson_show.dart';
+import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/content/logic/view_logic_book_list.dart';
 import 'package:repeat_flutter/page/content/logic/view_logic_lesson_list.dart';
 
@@ -20,9 +21,7 @@ class ContentLogic extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    var args = Get.arguments as List;
-    String name = args[0];
-    Future<void> Function() removeWarning = args[1];
+    var args = Get.arguments as ContentArgs;
     List<BookShow> originalBookShow = await BookHelp.getBooks();
     List<LessonShow> originalLessonShow = await LessonHelp.getLessons();
     List<SegmentShow> originalSegmentShow = await SegmentHelp.getSegments();
@@ -31,7 +30,7 @@ class ContentLogic extends GetxController {
         state.startSearch.value = false;
       },
       parentLogic: this,
-      initContentNameSelect: name,
+      initContentNameSelect: args.bookName,
       originalBookShow: originalBookShow,
     );
     viewList[1] = ViewLogicLessonList<ContentLogic>(
@@ -39,10 +38,10 @@ class ContentLogic extends GetxController {
         state.startSearch.value = false;
       },
       parentLogic: this,
-      removeWarning: removeWarning,
-      //TODO
+      removeWarning: args.removeWarning,
       segmentModified: () async {},
-      initContentNameSelect: name,
+      initContentNameSelect: args.bookName,
+      initLessonSelect: args.initLessonSelect,
       originalLessonShow: originalLessonShow,
     );
     viewList[2] = ViewLogicSegmentList<ContentLogic>(
@@ -50,9 +49,13 @@ class ContentLogic extends GetxController {
         state.startSearch.value = false;
       },
       parentLogic: this,
-      removeWarning: removeWarning,
+      removeWarning: args.removeWarning,
       originalSegmentShow: originalSegmentShow,
+      initContentNameSelect: args.bookName,
+      initLessonSelect: args.initLessonSelect,
+      selectSegmentKeyId: args.selectSegmentKeyId,
     );
+    state.tabIndex.value = args.defaultTap;
     update([ContentLogic.id]);
   }
 

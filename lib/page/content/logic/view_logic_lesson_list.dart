@@ -36,9 +36,8 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
   final T parentLogic;
   List<LessonShow> originalLessonShow;
   List<LessonShow> lessonShow = [];
-  final Future<void> Function() removeWarning;
+  final Future<void> Function()? removeWarning;
   final Future<void> Function() segmentModified;
-  String? initContentNameSelect;
 
   bool showSearchDetailPanel = false;
   RxInt contentNameSelect = 0.obs;
@@ -66,7 +65,8 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
     required this.parentLogic,
     required this.removeWarning,
     required this.segmentModified,
-    required this.initContentNameSelect,
+    String? initContentNameSelect,
+    int? initLessonSelect,
   }) : super(onSearchUnfocus: onSearchUnfocus) {
     searchFocusNode.addListener(() {
       if (searchFocusNode.hasFocus) {
@@ -87,7 +87,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
     sortOptions = sortOptionKeys.map((key) => key.tr).toList();
     sort(lessonShow, sortOptionKeys[selectedSortIndex.value]);
 
-    collectDataFromLessons(
+    collectData(
       missingLessonIndex,
       contentNameOptions,
       lessonIndex,
@@ -100,6 +100,12 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
       }
       return '${k + 1}';
     }).toList();
+    if (initContentNameSelect != null) {
+      contentNameSelect.value = contentNameOptions.indexOf(initContentNameSelect);
+    }
+    if (initLessonSelect != null) {
+      lessonIndexSelect.value = lessonOptions.indexOf('${initLessonSelect + 1}');
+    }
   }
 
   void tryUpdateDetailSearchPanel(bool newShow) {
@@ -197,47 +203,17 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
 
   @override
   Widget show({
-    int? initLessonSelect,
-    int? selectLessonKeyId,
     bool focus = true,
     required double width,
     required double height,
   }) {
     baseBodyViewHeight = height;
 
-    // init select
-    if (initContentNameSelect != null) {
-      int index = contentNameOptions.indexOf(initContentNameSelect!);
-      if (index != -1) {
-        contentNameSelect.value = index;
-      }
-      initContentNameSelect = null;
-    }
-    if (initLessonSelect != null) {
-      int index = lessonOptions.indexOf('${initLessonSelect + 1}');
-      if (index != -1) {
-        lessonIndexSelect.value = index;
-      }
-    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (focus) {
         searchFocusNode.requestFocus();
       }
       trySearch();
-      int? selectedIndex;
-      if (selectLessonKeyId != null) {
-        LessonShow? ls = LessonHelp.getCache(selectLessonKeyId);
-        if (ls != null) {
-          selectedIndex = lessonShow.indexOf(ls);
-        }
-      }
-      if (selectedIndex != null) {
-        itemScrollController.scrollTo(
-          index: selectedIndex,
-          duration: const Duration(milliseconds: 10),
-          curve: Curves.easeInOut,
-        );
-      }
     });
 
     return GetBuilder<T>(
@@ -438,7 +414,9 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
                                           var warning = contentId2Missing[lesson.contentId] ?? false;
                                           if (warning == false) {
                                             await Db().db.contentDao.updateContentWarningForLesson(lesson.contentId, warning, DateTime.now().millisecondsSinceEpoch);
-                                            await removeWarning();
+                                            if (removeWarning != null) {
+                                              await removeWarning!();
+                                            }
                                           }
                                           parentLogic.update([ViewLogicLessonList.bodyId]);
                                           Get.back();
@@ -519,7 +497,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
     return contentId2Missing;
   }
 
-  void collectDataFromLessons(
+  void collectData(
     List<int> missingLessonIndex,
     List<String> contentName,
     List<int> lessonIndex,
