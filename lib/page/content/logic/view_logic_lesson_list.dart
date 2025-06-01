@@ -36,6 +36,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
   final T parentLogic;
   List<LessonShow> originalLessonShow;
   List<LessonShow> lessonShow = [];
+  VoidCallback onLessonModified;
   final Future<void> Function()? removeWarning;
   final Future<void> Function() segmentModified;
 
@@ -61,6 +62,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
 
   ViewLogicLessonList({
     required VoidCallback onSearchUnfocus,
+    required this.onLessonModified,
     required this.originalLessonShow,
     required this.parentLogic,
     required this.removeWarning,
@@ -87,19 +89,8 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
     sortOptions = sortOptionKeys.map((key) => key.tr).toList();
     sort(lessonShow, sortOptionKeys[selectedSortIndex.value]);
 
-    collectData(
-      missingLessonIndex,
-      contentNameOptions,
-      lessonIndex,
-      lessonShow,
-    );
+    collectData();
 
-    lessonOptions = lessonIndex.map((k) {
-      if (k == -1) {
-        return I18nKey.labelAll.tr;
-      }
-      return '${k + 1}';
-    }).toList();
     if (initContentNameSelect != null) {
       contentNameSelect.value = contentNameOptions.indexOf(initContentNameSelect);
     }
@@ -159,6 +150,8 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
     );
     await segmentModified();
     originalLessonShow = await LessonHelp.getLessons(force: true);
+    onLessonModified();
+    collectData();
     trySearch(force: true);
     await Get.find<GsCrLogic>().init();
   }
@@ -497,27 +490,33 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
     return contentId2Missing;
   }
 
-  void collectData(
-    List<int> missingLessonIndex,
-    List<String> contentName,
-    List<int> lessonIndex,
-    List<LessonShow> lessonShow,
-  ) {
-    for (int i = 0; i < lessonShow.length; i++) {
-      var v = lessonShow[i];
+  void collectData() {
+    missingLessonIndex = [];
+    contentNameOptions = [];
+    lessonIndex = [];
+
+    for (int i = 0; i < originalLessonShow.length; i++) {
+      var v = originalLessonShow[i];
       if (v.missing) {
         missingLessonIndex.add(i);
       }
-      if (!contentName.contains(v.contentName)) {
-        contentName.add(v.contentName);
+      if (!contentNameOptions.contains(v.contentName)) {
+        contentNameOptions.add(v.contentName);
       }
       if (!lessonIndex.contains(v.lessonIndex)) {
         lessonIndex.add(v.lessonIndex);
       }
     }
+
+    contentNameOptions.insert(0, I18nKey.labelAll.tr);
     lessonIndex.sort();
-    contentName.insert(0, I18nKey.labelAll.tr);
     lessonIndex.insert(0, -1);
+    lessonOptions = lessonIndex.map((k) {
+      if (k == -1) {
+        return I18nKey.labelAll.tr;
+      }
+      return '${k + 1}';
+    }).toList();
   }
 
   sort(List<LessonShow> lessonShow, I18nKey key) {

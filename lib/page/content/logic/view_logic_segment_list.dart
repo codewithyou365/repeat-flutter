@@ -8,6 +8,7 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/model/lesson_show.dart';
 import 'package:repeat_flutter/logic/model/segment_show.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
@@ -54,7 +55,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   List<String> progressOptions = [];
   List<String> nextMonthOptions = [];
   int missingSegmentOffset = -1;
-  List<int> lesson = [];
+  List<int> lessonIndex = [];
   List<int> progress = [];
   List<int> nextMonth = [];
   List<SegmentShow> segmentShow = [];
@@ -62,6 +63,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   late LessonList lessonList = LessonList<T>(parentLogic);
   final T parentLogic;
   Future<void> Function()? removeWarning;
+  List<LessonShow> originalLessonShow;
   List<SegmentShow> originalSegmentShow;
 
   double baseBodyViewHeight = 0;
@@ -70,6 +72,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   ViewLogicSegmentList({
     required VoidCallback onSearchUnfocus,
     required this.parentLogic,
+    required this.originalLessonShow,
     required this.originalSegmentShow,
     required this.removeWarning,
     required this.selectSegmentKeyId,
@@ -144,7 +147,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
           ret = e.contentName == contentNameOptions[contentNameSelect.value];
         }
         if (ret && lessonSelect.value != 0) {
-          ret = e.lessonIndex == lesson[lessonSelect.value];
+          ret = e.lessonIndex == lessonIndex[lessonSelect.value];
         }
         if (ret && progressSelect.value != 0) {
           ret = e.progress == progress[progressSelect.value];
@@ -609,26 +612,35 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   }
 
   void collectData() {
-    missingSegmentIndex = [];
     contentNameOptions = [];
+    lessonIndex = [];
 
-    lesson = [];
-    lessonOptions = [];
+    for (int i = 0; i < originalLessonShow.length; i++) {
+      var v = originalLessonShow[i];
+      if (!contentNameOptions.contains(v.contentName)) {
+        contentNameOptions.add(v.contentName);
+      }
+      if (!lessonIndex.contains(v.lessonIndex)) {
+        lessonIndex.add(v.lessonIndex);
+      }
+    }
+    contentNameOptions.insert(0, I18nKey.labelAll.tr);
+    lessonIndex.sort();
+    lessonIndex.insert(0, -1);
+    lessonOptions = lessonIndex.map((k) {
+      if (k == -1) {
+        return I18nKey.labelAll.tr;
+      }
+      return '${k + 1}';
+    }).toList();
+
+    missingSegmentIndex = [];
     progress = [];
-    progressOptions = [];
     nextMonth = [];
-    nextMonthOptions = [];
-
     for (int i = 0; i < segmentShow.length; i++) {
       var v = segmentShow[i];
       if (v.missing) {
         missingSegmentIndex.add(i);
-      }
-      if (!contentNameOptions.contains(v.contentName)) {
-        contentNameOptions.add(v.contentName);
-      }
-      if (!lesson.contains(v.lessonIndex)) {
-        lesson.add(v.lessonIndex);
       }
       if (!progress.contains(v.progress)) {
         progress.add(v.progress);
@@ -638,17 +650,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
         nextMonth.add(month);
       }
     }
-    lesson.sort();
     progress.sort();
-    nextMonth.sort();
-    contentNameOptions.insert(0, I18nKey.labelAll.tr);
-    lesson.insert(0, -1);
-    lessonOptions = lesson.map((k) {
-      if (k == -1) {
-        return I18nKey.labelAll.tr;
-      }
-      return '${k + 1}';
-    }).toList();
     progress.insert(0, -1);
     progressOptions = progress.map((k) {
       if (k == -1) {
@@ -656,6 +658,8 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
       }
       return k.toString();
     }).toList();
+
+    nextMonth.sort();
     nextMonth.insert(0, -1);
     nextMonthOptions = nextMonth.map((k) {
       if (k == -1) {

@@ -33,9 +33,25 @@ class ContentLogic extends GetxController {
       initContentNameSelect: args.bookName,
       originalBookShow: originalBookShow,
     );
+    var segmentList = ViewLogicSegmentList<ContentLogic>(
+      onSearchUnfocus: () {
+        state.startSearch.value = false;
+      },
+      parentLogic: this,
+      removeWarning: args.removeWarning,
+      originalLessonShow: originalLessonShow,
+      originalSegmentShow: originalSegmentShow,
+      initContentNameSelect: args.bookName,
+      initLessonSelect: args.initLessonSelect,
+      selectSegmentKeyId: args.selectSegmentKeyId,
+    );
     viewList[1] = ViewLogicLessonList<ContentLogic>(
       onSearchUnfocus: () {
         state.startSearch.value = false;
+      },
+      onLessonModified: () async {
+        segmentList.originalLessonShow = await LessonHelp.getLessons();
+        segmentList.collectData();
       },
       parentLogic: this,
       removeWarning: args.removeWarning,
@@ -44,17 +60,7 @@ class ContentLogic extends GetxController {
       initLessonSelect: args.initLessonSelect,
       originalLessonShow: originalLessonShow,
     );
-    viewList[2] = ViewLogicSegmentList<ContentLogic>(
-      onSearchUnfocus: () {
-        state.startSearch.value = false;
-      },
-      parentLogic: this,
-      removeWarning: args.removeWarning,
-      originalSegmentShow: originalSegmentShow,
-      initContentNameSelect: args.bookName,
-      initLessonSelect: args.initLessonSelect,
-      selectSegmentKeyId: args.selectSegmentKeyId,
-    );
+    viewList[2] = segmentList;
     state.tabIndex.value = args.defaultTap;
     update([ContentLogic.id]);
   }
