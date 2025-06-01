@@ -188,6 +188,29 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
     Get.back();
   }
 
+  addFirst() async {
+    if (contentNameSelect.value > 0 && lessonSelect.value > 0) {
+      await showOverlay(() async {
+        var content = await Db().db.contentDao.getContentByName(Classroom.curr, contentNameOptions[contentNameSelect.value]);
+        if (content == null) {
+          Snackbar.show(I18nKey.labelNoContent.tr);
+          return;
+        }
+        int lessonIndex = lessonSelect.value - 1;
+        await Db().db.scheduleDao.addFirstSegment(content.serial, lessonIndex);
+        originalSegmentShow = await SegmentHelp.getSegments(
+          force: true,
+          query: QueryLesson(
+            contentSerial: content.serial,
+            lessonIndex: lessonIndex,
+          ),
+        );
+        trySearch(force: true);
+      }, I18nKey.labelAdding.tr);
+      Snackbar.show(I18nKey.labelAddSuccess.tr);
+    }
+  }
+
   copy({required SegmentShow segment, required bool below}) async {
     await showOverlay(() async {
       int segmentIndex = segment.segmentIndex;
@@ -359,7 +382,253 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
               ),
             );
           }
+          Widget body = const SizedBox.shrink();
           var list = segmentShow;
+
+          if (list.isNotEmpty) {
+            body = ScrollablePositionedList.builder(
+              itemScrollController: itemScrollController,
+              itemPositionsListener: itemPositionsListener,
+              itemCount: list.length,
+              itemBuilder: (context, index) {
+                if (index >= list.length) {
+                  return const SizedBox.shrink();
+                }
+                final segment = list[index];
+                return Card(
+                  color: segment.missing ? Colors.red : null,
+                  elevation: 2,
+                  margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Stack(
+                    alignment: Alignment.topRight,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '${segment.toLessonPos()}${segment.toSegmentPos()}',
+                                style: const TextStyle(fontSize: 12, color: Colors.blue),
+                              ),
+                            ),
+                            SizedBox(height: 8, width: width),
+                            ExpandableText(
+                              title: I18nKey.labelKey.tr,
+                              text: ': ${segment.k}',
+                              limit: 50,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                              selectText: search.value,
+                            ),
+                            const SizedBox(height: 8),
+                            ExpandableText(
+                              title: I18nKey.labelSegmentName.tr,
+                              text: ': ${segment.segmentContent}',
+                              version: segment.segmentContentVersion,
+                              limit: 60,
+                              style: const TextStyle(fontSize: 14),
+                              selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                              versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
+                              selectText: search.value,
+                              onEdit: () {
+                                searchFocusNode.unfocus();
+                                var contentM = jsonDecode(segment.segmentContent);
+                                var content = const JsonEncoder.withIndent(' ').convert(contentM);
+                                Editor.show(
+                                  Get.context!,
+                                  I18nKey.labelSegmentName.tr,
+                                  content,
+                                  (str) async {
+                                    await Db().db.scheduleDao.tUpdateSegmentContent(segment.segmentKeyId, str);
+                                    parentLogic.update([ViewLogicSegmentList.bodyId]);
+                                  },
+                                  qrPagePath: Nav.gsCrContentScan.path,
+                                  onHistory: () {
+                                    historyList.show(TextVersionType.segmentContent, segment.segmentKeyId);
+                                  },
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            ExpandableText(
+                              title: I18nKey.labelNote.tr,
+                              text: ': ${segment.segmentNote}',
+                              limit: 60,
+                              version: segment.segmentNoteVersion,
+                              style: const TextStyle(fontSize: 14),
+                              selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                              versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
+                              selectText: search.value,
+                              onEdit: () {
+                                searchFocusNode.unfocus();
+                                Editor.show(
+                                  Get.context!,
+                                  I18nKey.labelNote.tr,
+                                  segment.segmentNote,
+                                  (str) async {
+                                    await Db().db.scheduleDao.tUpdateSegmentNote(segment.segmentKeyId, str);
+                                    parentLogic.update([ViewLogicSegmentList.bodyId]);
+                                  },
+                                  qrPagePath: Nav.gsCrContentScan.path,
+                                  onHistory: () {
+                                    historyList.show(TextVersionType.segmentNote, segment.segmentKeyId);
+                                  },
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      editProgressWithMsgBox(segment);
+                                    },
+                                    child: Text(
+                                      '${I18nKey.labelProgress.tr}: ${segment.progress}',
+                                      style: const TextStyle(fontSize: 12, color: Colors.green),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      editProgressWithMsgBox(segment);
+                                    },
+                                    child: Text(
+                                      '${I18nKey.labelSetNextLearnDate.tr}: ${segment.next.format()}',
+                                      style: const TextStyle(fontSize: 12, color: Colors.green),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          if (segment.missing)
+                            IconButton(
+                              onPressed: () {
+                                MsgBox.yesOrNo(
+                                  title: I18nKey.labelDelete.tr,
+                                  desc: I18nKey.labelDeleteSegment.tr,
+                                  yes: () {
+                                    showTransparentOverlay(() async {
+                                      await Db().db.scheduleDao.deleteAbnormalSegment(segment.segmentKeyId);
+
+                                      SegmentHelp.deleteCache(segment.segmentKeyId);
+                                      segmentShow.removeWhere((element) => element.segmentKeyId == segment.segmentKeyId);
+
+                                      var contentId2Missing = refreshMissingSegmentIndex(missingSegmentIndex, segmentShow);
+                                      var warning = contentId2Missing[segment.contentId] ?? false;
+                                      if (warning == false) {
+                                        await Db().db.contentDao.updateContentWarningForSegment(segment.contentId, warning, DateTime.now().millisecondsSinceEpoch);
+                                        if (removeWarning != null) {
+                                          await removeWarning!();
+                                        }
+                                      }
+                                      parentLogic.update([ViewLogicSegmentList.bodyId]);
+                                      Get.back();
+                                    });
+                                  },
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.delete_forever,
+                              ),
+                            ),
+                          PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_vert),
+                            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                              PopupMenuItem<String>(
+                                onTap: () {
+                                  MsgBox.yesOrNo(
+                                    title: I18nKey.labelWarning.tr,
+                                    desc: I18nKey.labelDeleteSegment.tr,
+                                    yes: () => delete(segment: segment),
+                                  );
+                                },
+                                child: Text(I18nKey.btnDelete.tr),
+                              ),
+                              PopupMenuItem<String>(
+                                onTap: () {
+                                  MsgBox.myDialog(
+                                      title: I18nKey.labelTips.tr,
+                                      content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
+                                      action: MsgBox.buttonsWithDivider(buttons: [
+                                        MsgBox.button(
+                                          text: I18nKey.btnCancel.tr,
+                                          onPressed: () {
+                                            Get.back();
+                                          },
+                                        ),
+                                        MsgBox.button(
+                                          text: I18nKey.btnAbove.tr,
+                                          onPressed: () => copy(segment: segment, below: false),
+                                        ),
+                                        MsgBox.button(
+                                          text: I18nKey.btnBelow.tr,
+                                          onPressed: () => copy(segment: segment, below: true),
+                                        ),
+                                      ]));
+                                },
+                                child: Text(I18nKey.btnCopy.tr),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          } else if (contentNameSelect.value > 0 && lessonSelect.value > 0) {
+            body = Center(
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "当前 ${contentNameOptions[contentNameSelect.value]}-${lessonSelect.value} 不存在, 点击加号",
+                    ),
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: IconButton(
+                        onPressed: addFirst,
+                        icon: const Icon(Icons.add),
+                        padding: EdgeInsets.zero, // Optional: removes extra padding
+                      ),
+                    ),
+                    TextSpan(text: I18nKey.create.tr),
+                  ],
+                ),
+              ),
+            );
+          }
           return Column(
             children: [
               searchDetailPanel,
@@ -367,227 +636,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
               SizedBox(
                 height: getBodyViewHeight(),
                 width: width,
-                child: ScrollablePositionedList.builder(
-                  itemScrollController: itemScrollController,
-                  itemPositionsListener: itemPositionsListener,
-                  itemCount: list.length,
-                  itemBuilder: (context, index) {
-                    if (index >= list.length) {
-                      return const SizedBox.shrink();
-                    }
-                    final segment = list[index];
-                    return Card(
-                      color: segment.missing ? Colors.red : null,
-                      elevation: 2,
-                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Stack(
-                        alignment: Alignment.topRight,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    '${segment.toLessonPos()}${segment.toSegmentPos()}',
-                                    style: const TextStyle(fontSize: 12, color: Colors.blue),
-                                  ),
-                                ),
-                                SizedBox(height: 8, width: width),
-                                ExpandableText(
-                                  title: I18nKey.labelKey.tr,
-                                  text: ': ${segment.k}',
-                                  limit: 50,
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                  selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                                  selectText: search.value,
-                                ),
-                                const SizedBox(height: 8),
-                                ExpandableText(
-                                  title: I18nKey.labelSegmentName.tr,
-                                  text: ': ${segment.segmentContent}',
-                                  version: segment.segmentContentVersion,
-                                  limit: 60,
-                                  style: const TextStyle(fontSize: 14),
-                                  selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                                  versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
-                                  selectText: search.value,
-                                  onEdit: () {
-                                    searchFocusNode.unfocus();
-                                    var contentM = jsonDecode(segment.segmentContent);
-                                    var content = const JsonEncoder.withIndent(' ').convert(contentM);
-                                    Editor.show(
-                                      Get.context!,
-                                      I18nKey.labelSegmentName.tr,
-                                      content,
-                                      (str) async {
-                                        await Db().db.scheduleDao.tUpdateSegmentContent(segment.segmentKeyId, str);
-                                        parentLogic.update([ViewLogicSegmentList.bodyId]);
-                                      },
-                                      qrPagePath: Nav.gsCrContentScan.path,
-                                      onHistory: () {
-                                        historyList.show(TextVersionType.segmentContent, segment.segmentKeyId);
-                                      },
-                                    );
-                                  },
-                                ),
-                                const SizedBox(height: 8),
-                                ExpandableText(
-                                  title: I18nKey.labelNote.tr,
-                                  text: ': ${segment.segmentNote}',
-                                  limit: 60,
-                                  version: segment.segmentNoteVersion,
-                                  style: const TextStyle(fontSize: 14),
-                                  selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                                  versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
-                                  selectText: search.value,
-                                  onEdit: () {
-                                    searchFocusNode.unfocus();
-                                    Editor.show(
-                                      Get.context!,
-                                      I18nKey.labelNote.tr,
-                                      segment.segmentNote,
-                                      (str) async {
-                                        await Db().db.scheduleDao.tUpdateSegmentNote(segment.segmentKeyId, str);
-                                        parentLogic.update([ViewLogicSegmentList.bodyId]);
-                                      },
-                                      qrPagePath: Nav.gsCrContentScan.path,
-                                      onHistory: () {
-                                        historyList.show(TextVersionType.segmentNote, segment.segmentKeyId);
-                                      },
-                                    );
-                                  },
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.blue.withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          editProgressWithMsgBox(segment);
-                                        },
-                                        child: Text(
-                                          '${I18nKey.labelProgress.tr}: ${segment.progress}',
-                                          style: const TextStyle(fontSize: 12, color: Colors.green),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.blue.withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          editProgressWithMsgBox(segment);
-                                        },
-                                        child: Text(
-                                          '${I18nKey.labelSetNextLearnDate.tr}: ${segment.next.format()}',
-                                          style: const TextStyle(fontSize: 12, color: Colors.green),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              if (segment.missing)
-                                IconButton(
-                                  onPressed: () {
-                                    MsgBox.yesOrNo(
-                                      title: I18nKey.labelDelete.tr,
-                                      desc: I18nKey.labelDeleteSegment.tr,
-                                      yes: () {
-                                        showTransparentOverlay(() async {
-                                          await Db().db.scheduleDao.deleteAbnormalSegment(segment.segmentKeyId);
-
-                                          SegmentHelp.deleteCache(segment.segmentKeyId);
-                                          segmentShow.removeWhere((element) => element.segmentKeyId == segment.segmentKeyId);
-
-                                          var contentId2Missing = refreshMissingSegmentIndex(missingSegmentIndex, segmentShow);
-                                          var warning = contentId2Missing[segment.contentId] ?? false;
-                                          if (warning == false) {
-                                            await Db().db.contentDao.updateContentWarningForSegment(segment.contentId, warning, DateTime.now().millisecondsSinceEpoch);
-                                            if (removeWarning != null) {
-                                              await removeWarning!();
-                                            }
-                                          }
-                                          parentLogic.update([ViewLogicSegmentList.bodyId]);
-                                          Get.back();
-                                        });
-                                      },
-                                    );
-                                  },
-                                  icon: const Icon(
-                                    Icons.delete_forever,
-                                  ),
-                                ),
-                              PopupMenuButton<String>(
-                                icon: const Icon(Icons.more_vert),
-                                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                                  PopupMenuItem<String>(
-                                    onTap: () {
-                                      MsgBox.yesOrNo(
-                                        title: I18nKey.labelWarning.tr,
-                                        desc: I18nKey.labelDeleteSegment.tr,
-                                        yes: () => delete(segment: segment),
-                                      );
-                                    },
-                                    child: Text(I18nKey.btnDelete.tr),
-                                  ),
-                                  PopupMenuItem<String>(
-                                    onTap: () {
-                                      MsgBox.myDialog(
-                                          title: I18nKey.labelTips.tr,
-                                          content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
-                                          action: MsgBox.buttonsWithDivider(buttons: [
-                                            MsgBox.button(
-                                              text: I18nKey.btnCancel.tr,
-                                              onPressed: () {
-                                                Get.back();
-                                              },
-                                            ),
-                                            MsgBox.button(
-                                              text: I18nKey.btnAbove.tr,
-                                              onPressed: () => copy(segment: segment, below: false),
-                                            ),
-                                            MsgBox.button(
-                                              text: I18nKey.btnBelow.tr,
-                                              onPressed: () => copy(segment: segment, below: true),
-                                            ),
-                                          ]));
-                                    },
-                                    child: Text(I18nKey.btnCopy.tr),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                child: body,
               ),
             ],
           );

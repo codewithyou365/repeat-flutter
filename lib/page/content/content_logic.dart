@@ -51,7 +51,9 @@ class ContentLogic extends GetxController {
       },
       onLessonModified: () async {
         segmentList.originalLessonShow = await LessonHelp.getLessons();
+        segmentList.originalSegmentShow = await SegmentHelp.getSegments();
         segmentList.collectData();
+        segmentList.trySearch(force: true);
       },
       parentLogic: this,
       removeWarning: args.removeWarning,

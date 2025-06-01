@@ -64,6 +64,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelDeleting, "Deleting...");
     put(I18nKey.labelSaving, "Saving...");
     put(I18nKey.labelCopying, "Copying...");
+    put(I18nKey.labelAdding, "Adding...");
     put(I18nKey.labelSelectDirectoryToSave, "Select a directory to save %s");
     put(I18nKey.labelFileSaved, "The file has been saved.");
     put(I18nKey.labelSaveSuccess, "Save success : %s");
@@ -228,6 +229,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelFileNotFound, "File not found. Do you want to import the file now?");
     put(I18nKey.labelFileExtensionNotMatch, "The file extension does not match the expected format. Please ensure it is one of %s");
     put(I18nKey.labelBook, "Book");
+    put(I18nKey.labelAddSuccess, "Add success.");
     put(I18nKey.btnEnd, "End");
     put(I18nKey.btnHandleNow, "Handle Now");
     put(I18nKey.btnStart, "Start");

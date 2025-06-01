@@ -1013,6 +1013,19 @@ abstract class ScheduleDao {
     );
   }
 
+  @transaction
+  Future<int> addFirstSegment(
+    int contentSerial,
+    int lessonIndex,
+  ) async {
+    return interAddSegment(
+      segmentContent: "{}",
+      contentSerial: contentSerial,
+      lessonIndex: lessonIndex,
+      segmentIndex: 0,
+    );
+  }
+
   Future<int> interAddSegment({
     required String segmentContent,
     required int contentSerial,
@@ -1035,7 +1048,12 @@ abstract class ScheduleDao {
         contentMap['k'] = '${contentMap['k']}_${DateTime.now().millisecondsSinceEpoch}';
       }
       content = convert.jsonEncode(contentMap);
-      key = contentMap['k'].toString();
+
+      if (contentMap['k'] != null) {
+        key = contentMap['k'].toString();
+      } else {
+        key = contentMap['a'].toString();
+      }
     } catch (e) {
       return 0;
     }

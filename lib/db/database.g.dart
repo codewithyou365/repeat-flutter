@@ -2785,6 +2785,25 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
+  Future<int> addFirstSegment(
+    int contentSerial,
+    int lessonIndex,
+  ) async {
+    if (database is sqflite.Transaction) {
+      return super.addFirstSegment(contentSerial, lessonIndex);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<int>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        return transactionDatabase.scheduleDao
+            .addFirstSegment(contentSerial, lessonIndex);
+      });
+    }
+  }
+
+  @override
   Future<void> hideContentAndDeleteSegment(
     int contentId,
     int contentSerial,

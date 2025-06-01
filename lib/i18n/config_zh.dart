@@ -64,6 +64,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelDeleting, "删除中...");
     put(I18nKey.labelSaving, "保存中...");
     put(I18nKey.labelCopying, "复制中...");
+    put(I18nKey.labelAdding, "添加中...");
     put(I18nKey.labelSelectDirectoryToSave, "选择一个目录进行保存 %s");
     put(I18nKey.labelFileSaved, "文件已保存");
     put(I18nKey.labelSaveSuccess, "保存成功 : %s");
@@ -229,6 +230,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelFileNotFound, "文件未找到, 现在导入文件吗？");
     put(I18nKey.labelFileExtensionNotMatch, "文件扩展名与预期格式不符，请确保其为以下之一：%s");
     put(I18nKey.labelBook, "卷");
+    put(I18nKey.labelAddSuccess, "添加成功");
     put(I18nKey.btnEnd, "终点");
     put(I18nKey.btnHandleNow, "现在处理");
     put(I18nKey.btnStart, "开始");
