@@ -7,6 +7,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/lesson_key.dart';
 import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/lesson_show.dart';
 import 'package:repeat_flutter/logic/lesson_help.dart';
 import 'package:repeat_flutter/logic/segment_help.dart';
@@ -34,6 +35,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
   double missPanelHeight = RowWidget.rowHeight + RowWidget.dividerHeight;
   final RxString search = RxString("");
   final T parentLogic;
+  List<BookShow> originalBookShow;
   List<LessonShow> originalLessonShow;
   List<LessonShow> lessonShow = [];
   VoidCallback onLessonModified;
@@ -48,7 +50,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
   // for collect search data, and missing lesson
   int missingLessonOffset = -1;
   List<int> missingLessonIndex = [];
-  List<String> contentNameOptions = [];
+  List<String> bookOptions = [];
   List<int> lessonIndex = [];
   List<String> sortOptions = [];
   List<String> lessonOptions = [];
@@ -63,6 +65,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
   ViewLogicLessonList({
     required VoidCallback onSearchUnfocus,
     required this.onLessonModified,
+    required this.originalBookShow,
     required this.originalLessonShow,
     required this.parentLogic,
     required this.removeWarning,
@@ -92,7 +95,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
     collectData();
 
     if (initContentNameSelect != null) {
-      contentNameSelect.value = contentNameOptions.indexOf(initContentNameSelect);
+      contentNameSelect.value = bookOptions.indexOf(initContentNameSelect);
     }
     if (initLessonSelect != null) {
       lessonIndexSelect.value = lessonOptions.indexOf('${initLessonSelect + 1}');
@@ -124,7 +127,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
           ret = e.lessonContent.contains(search.value);
         }
         if (ret && contentNameSelect.value != 0) {
-          ret = e.contentName == contentNameOptions[contentNameSelect.value];
+          ret = e.contentName == bookOptions[contentNameSelect.value];
         }
         if (ret && lessonIndexSelect.value != 0) {
           ret = e.lessonIndex == lessonIndex[lessonIndexSelect.value];
@@ -279,7 +282,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
                 children: [
                   RowWidget.buildCupertinoPicker(
                     I18nKey.labelContent.tr,
-                    contentNameOptions,
+                    bookOptions,
                     contentNameSelect,
                     changed: (index) {
                       contentNameSelect.value = index;
@@ -491,24 +494,27 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
   }
 
   void collectData() {
-    missingLessonIndex = [];
-    contentNameOptions = [];
-    lessonIndex = [];
+    bookOptions = [];
+    for (int i = 0; i < originalBookShow.length; i++) {
+      var v = originalBookShow[i];
+      if (!bookOptions.contains(v.name)) {
+        bookOptions.add(v.name);
+      }
+    }
+    bookOptions.insert(0, I18nKey.labelAll.tr);
 
+    missingLessonIndex = [];
+    lessonIndex = [];
     for (int i = 0; i < originalLessonShow.length; i++) {
       var v = originalLessonShow[i];
       if (v.missing) {
         missingLessonIndex.add(i);
-      }
-      if (!contentNameOptions.contains(v.contentName)) {
-        contentNameOptions.add(v.contentName);
       }
       if (!lessonIndex.contains(v.lessonIndex)) {
         lessonIndex.add(v.lessonIndex);
       }
     }
 
-    contentNameOptions.insert(0, I18nKey.labelAll.tr);
     lessonIndex.sort();
     lessonIndex.insert(0, -1);
     lessonOptions = lessonIndex.map((k) {

@@ -25,31 +25,25 @@ class ContentLogic extends GetxController {
     List<BookShow> originalBookShow = await BookHelp.getBooks();
     List<LessonShow> originalLessonShow = await LessonHelp.getLessons();
     List<SegmentShow> originalSegmentShow = await SegmentHelp.getSegments();
-    viewList[0] = ViewLogicBookList<ContentLogic>(
-      onSearchUnfocus: () {
-        state.startSearch.value = false;
-      },
-      parentLogic: this,
-      initContentNameSelect: args.bookName,
-      originalBookShow: originalBookShow,
-    );
     var segmentList = ViewLogicSegmentList<ContentLogic>(
       onSearchUnfocus: () {
         state.startSearch.value = false;
       },
       parentLogic: this,
       removeWarning: args.removeWarning,
+      originalBookShow: originalBookShow,
       originalLessonShow: originalLessonShow,
       originalSegmentShow: originalSegmentShow,
       initContentNameSelect: args.bookName,
       initLessonSelect: args.initLessonSelect,
       selectSegmentKeyId: args.selectSegmentKeyId,
     );
-    viewList[1] = ViewLogicLessonList<ContentLogic>(
+    var lessonList = ViewLogicLessonList<ContentLogic>(
       onSearchUnfocus: () {
         state.startSearch.value = false;
       },
       onLessonModified: () async {
+        segmentList.originalBookShow = await BookHelp.getBooks();
         segmentList.originalLessonShow = await LessonHelp.getLessons();
         segmentList.originalSegmentShow = await SegmentHelp.getSegments();
         segmentList.collectData();
@@ -60,8 +54,19 @@ class ContentLogic extends GetxController {
       segmentModified: () async {},
       initContentNameSelect: args.bookName,
       initLessonSelect: args.initLessonSelect,
+      originalBookShow: originalBookShow,
       originalLessonShow: originalLessonShow,
     );
+    var bookList = ViewLogicBookList<ContentLogic>(
+      onSearchUnfocus: () {
+        state.startSearch.value = false;
+      },
+      parentLogic: this,
+      initContentNameSelect: args.bookName,
+      originalBookShow: originalBookShow,
+    );
+    viewList[0] = bookList;
+    viewList[1] = lessonList;
     viewList[2] = segmentList;
     state.tabIndex.value = args.defaultTap;
     update([ContentLogic.id]);

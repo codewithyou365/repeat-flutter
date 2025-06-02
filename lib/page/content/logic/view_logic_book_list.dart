@@ -34,7 +34,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
 
   // for collect search data, and missing book
   int missingBookOffset = -1;
-  List<String> contentNameOptions = [];
+  List<String> bookOptions = [];
   List<String> sortOptions = [];
   RxInt selectedSortIndex = 0.obs;
   List<I18nKey> sortOptionKeys = [
@@ -69,12 +69,10 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
     sortOptions = sortOptionKeys.map((key) => key.tr).toList();
     sort(bookShow, sortOptionKeys[selectedSortIndex.value]);
 
-    collectData(
-      contentNameOptions,
-      bookShow,
-    );
+    collectData();
+
     if (initContentNameSelect != null) {
-      contentNameSelect.value = contentNameOptions.indexOf(initContentNameSelect);
+      contentNameSelect.value = bookOptions.indexOf(initContentNameSelect);
     }
   }
 
@@ -103,7 +101,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
           ret = e.bookContent.contains(search.value);
         }
         if (ret && contentNameSelect.value != 0) {
-          ret = e.name == contentNameOptions[contentNameSelect.value];
+          ret = e.name == bookOptions[contentNameSelect.value];
         }
         return ret;
       }).toList();
@@ -158,7 +156,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                 children: [
                   RowWidget.buildCupertinoPicker(
                     I18nKey.labelContent.tr,
-                    contentNameOptions,
+                    bookOptions,
                     contentNameSelect,
                     changed: (index) {
                       contentNameSelect.value = index;
@@ -263,17 +261,14 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
         });
   }
 
-  void collectData(
-    List<String> contentName,
-    List<BookShow> bookShow,
-  ) {
+  void collectData() {
     for (int i = 0; i < bookShow.length; i++) {
       var v = bookShow[i];
-      if (!contentName.contains(v.name)) {
-        contentName.add(v.name);
+      if (!bookOptions.contains(v.name)) {
+        bookOptions.add(v.name);
       }
     }
-    contentName.insert(0, I18nKey.labelAll.tr);
+    bookOptions.insert(0, I18nKey.labelAll.tr);
   }
 
   sort(List<BookShow> bookShow, I18nKey key) {
