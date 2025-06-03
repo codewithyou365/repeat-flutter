@@ -231,6 +231,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelFileExtensionNotMatch, "文件扩展名与预期格式不符，请确保其为以下之一：%s");
     put(I18nKey.labelBook, "卷");
     put(I18nKey.labelAddSuccess, "添加成功");
+    put(I18nKey.labelTipForAddingContent, "当前 %s 不存在, 点击加号添加");
     put(I18nKey.btnEnd, "终点");
     put(I18nKey.btnHandleNow, "现在处理");
     put(I18nKey.btnStart, "开始");

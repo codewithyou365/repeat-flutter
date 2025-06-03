@@ -243,7 +243,7 @@ class SegmentList<T extends GetxController> {
           force: true,
           query: QueryLesson(
             contentSerial: segment.contentSerial,
-            lessonIndex: segment.lessonIndex,
+            chapterIndex: segment.lessonIndex,
           ),
         );
         trySearch(force: true);
@@ -267,7 +267,7 @@ class SegmentList<T extends GetxController> {
           force: true,
           query: QueryLesson(
             contentSerial: segment.contentSerial,
-            lessonIndex: segment.lessonIndex,
+            chapterIndex: segment.lessonIndex,
           ),
         );
         trySearch(force: true);

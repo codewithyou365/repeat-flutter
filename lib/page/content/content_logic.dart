@@ -25,9 +25,16 @@ class ContentLogic extends GetxController {
     List<BookShow> originalBookShow = await BookHelp.getBooks();
     List<LessonShow> originalLessonShow = await LessonHelp.getLessons();
     List<SegmentShow> originalSegmentShow = await SegmentHelp.getSegments();
+    late ViewLogicLessonList<ContentLogic> lessonList;
     var segmentList = ViewLogicSegmentList<ContentLogic>(
       onSearchUnfocus: () {
         state.startSearch.value = false;
+      },
+      onLessonModified: () async {
+        lessonList.originalBookShow = await BookHelp.getBooks();
+        lessonList.originalLessonShow = await LessonHelp.getLessons();
+        lessonList.collectData();
+        lessonList.trySearch(force: true);
       },
       parentLogic: this,
       removeWarning: args.removeWarning,
@@ -38,7 +45,7 @@ class ContentLogic extends GetxController {
       initLessonSelect: args.initLessonSelect,
       selectSegmentKeyId: args.selectSegmentKeyId,
     );
-    var lessonList = ViewLogicLessonList<ContentLogic>(
+    lessonList = ViewLogicLessonList<ContentLogic>(
       onSearchUnfocus: () {
         state.startSearch.value = false;
       },
@@ -51,7 +58,6 @@ class ContentLogic extends GetxController {
       },
       parentLogic: this,
       removeWarning: args.removeWarning,
-      segmentModified: () async {},
       initContentNameSelect: args.bookName,
       initLessonSelect: args.initLessonSelect,
       originalBookShow: originalBookShow,

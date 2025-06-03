@@ -8,6 +8,7 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/lesson_help.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/lesson_show.dart';
 import 'package:repeat_flutter/logic/model/segment_show.dart';
@@ -41,7 +42,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   RxString search = RxString("");
   RxInt selectedSortIndex = 0.obs;
 
-  RxInt lessonSelect = 0.obs;
+  RxInt chapterSelect = 0.obs;
   RxInt progressSelect = 0.obs;
   RxInt nextMonthSelect = 0.obs;
   bool showSearchDetailPanel = false;
@@ -67,6 +68,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   late LessonList lessonList = LessonList<T>(parentLogic);
   final T parentLogic;
   Future<void> Function()? removeWarning;
+  VoidCallback onLessonModified;
   List<BookShow> originalBookShow;
   List<LessonShow> originalLessonShow;
   List<SegmentShow> originalSegmentShow;
@@ -81,6 +83,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
     required this.originalLessonShow,
     required this.originalSegmentShow,
     required this.removeWarning,
+    required this.onLessonModified,
     required this.selectSegmentKeyId,
     String? initContentNameSelect,
     int? initLessonSelect,
@@ -107,12 +110,12 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
       bookSelect.value = bookOptions.indexOf(initContentNameSelect);
     }
     if (initLessonSelect != null) {
-      lessonSelect.value = lessonOptions.indexOf('${initLessonSelect + 1}');
+      chapterSelect.value = lessonOptions.indexOf('${initLessonSelect + 1}');
     }
   }
 
   String genSearchKey() {
-    return '${bookSelect.value},${lessonSelect.value},${progressSelect.value},${nextMonthSelect.value},${search.value}';
+    return '${bookSelect.value},${chapterSelect.value},${progressSelect.value},${nextMonthSelect.value},${search.value}';
   }
 
   void scrollTo(int selectSegmentKeyId) {
@@ -137,7 +140,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
       return;
     }
     searchKey = newSearchKey;
-    if (search.value.isNotEmpty || bookSelect.value != 0 || lessonSelect.value != 0 || progressSelect.value != 0 || nextMonthSelect.value != 0) {
+    if (search.value.isNotEmpty || bookSelect.value != 0 || chapterSelect.value != 0 || progressSelect.value != 0 || nextMonthSelect.value != 0) {
       segmentShow = originalSegmentShow.where((e) {
         bool ret = true;
         if (ret && search.value.isNotEmpty) {
@@ -152,8 +155,8 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
           }
           ret = e.contentName == bookOptions[bookSelect.value];
         }
-        if (ret && lessonSelect.value != 0) {
-          ret = e.lessonIndex == lessonIndex[lessonSelect.value];
+        if (ret && chapterSelect.value != 0) {
+          ret = e.lessonIndex == lessonIndex[chapterSelect.value];
         }
         if (ret && progressSelect.value != 0) {
           ret = e.progress == progress[progressSelect.value];
@@ -184,7 +187,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
         force: true,
         query: QueryLesson(
           contentSerial: segment.contentSerial,
-          lessonIndex: segment.lessonIndex,
+          chapterIndex: segment.lessonIndex,
         ),
       );
       trySearch(force: true);
@@ -195,20 +198,29 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   }
 
   addFirst() async {
-    if (bookSelect.value > 0 && lessonSelect.value > 0) {
+    if (bookSelect.value > 0 && chapterSelect.value > 0) {
       await showOverlay(() async {
-        var content = await Db().db.contentDao.getContentByName(Classroom.curr, bookOptions[bookSelect.value]);
+        var classroomId = Classroom.curr;
+        var content = await Db().db.contentDao.getContentByName(classroomId, bookOptions[bookSelect.value]);
         if (content == null) {
           Snackbar.show(I18nKey.labelNoContent.tr);
           return;
         }
-        int lessonIndex = lessonSelect.value - 1;
-        await Db().db.scheduleDao.addFirstSegment(content.serial, lessonIndex);
+        int chapterIndex = chapterSelect.value - 1;
+        var chapterCount = await Db().db.lessonDao.count(classroomId, content.serial) ?? 0;
+        if (chapterCount == 0) {
+          await Db().db.lessonKeyDao.addFirstLesson(content.serial);
+          await LessonHelp.getLessons(force: true);
+          onLessonModified();
+          chapterIndex = 0;
+        }
+
+        await Db().db.scheduleDao.addFirstSegment(content.serial, chapterIndex);
         originalSegmentShow = await SegmentHelp.getSegments(
           force: true,
           query: QueryLesson(
             contentSerial: content.serial,
-            lessonIndex: lessonIndex,
+            chapterIndex: chapterIndex,
           ),
         );
         trySearch(force: true);
@@ -231,7 +243,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
         force: true,
         query: QueryLesson(
           contentSerial: segment.contentSerial,
-          lessonIndex: segment.lessonIndex,
+          chapterIndex: segment.lessonIndex,
         ),
       );
       trySearch(force: true);
@@ -344,9 +356,9 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
                   RowWidget.buildCupertinoPicker(
                     I18nKey.labelLessonName.tr,
                     lessonOptions,
-                    lessonSelect,
+                    chapterSelect,
                     changed: (index) {
-                      lessonSelect.value = index;
+                      chapterSelect.value = index;
                       trySearch();
                     },
                   ),
@@ -613,13 +625,13 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
                 );
               },
             );
-          } else if (bookSelect.value > 0 && lessonSelect.value > 0) {
+          } else if (bookSelect.value > 0 && chapterSelect.value > 0) {
             body = Center(
               child: RichText(
                 text: TextSpan(
                   children: [
                     TextSpan(
-                      text: "当前 ${bookOptions[bookSelect.value]}-${lessonSelect.value} 不存在, 点击加号添加",
+                      text: I18nKey.labelTipForAddingContent.trArgs(["${bookOptions[bookSelect.value]}-${chapterSelect.value}"]),
                     ),
                     WidgetSpan(
                       alignment: PlaceholderAlignment.middle,

@@ -230,6 +230,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelFileExtensionNotMatch, "The file extension does not match the expected format. Please ensure it is one of %s");
     put(I18nKey.labelBook, "Book");
     put(I18nKey.labelAddSuccess, "Add success.");
+    put(I18nKey.labelTipForAddingContent, "The current %s does not exist. Click the plus icon to add it");
     put(I18nKey.btnEnd, "End");
     put(I18nKey.btnHandleNow, "Handle Now");
     put(I18nKey.btnStart, "Start");

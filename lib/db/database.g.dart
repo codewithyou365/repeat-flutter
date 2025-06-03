@@ -1168,6 +1168,21 @@ class _$LessonKeyDao extends LessonKeyDao {
       });
     }
   }
+
+  @override
+  Future<bool> addFirstLesson(int contentSerial) async {
+    if (database is sqflite.Transaction) {
+      return super.addFirstLesson(contentSerial);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<bool>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        return transactionDatabase.lessonKeyDao.addFirstLesson(contentSerial);
+      });
+    }
+  }
 }
 
 class _$DocDao extends DocDao {

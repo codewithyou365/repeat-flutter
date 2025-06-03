@@ -6,12 +6,12 @@ import 'model/segment_show.dart';
 
 class QueryLesson {
   final int contentSerial;
-  final int? lessonIndex;
+  final int? chapterIndex;
   final int? minLessonIndex;
 
   QueryLesson({
     required this.contentSerial,
-    this.lessonIndex,
+    this.chapterIndex,
     this.minLessonIndex,
   });
 }
@@ -29,9 +29,9 @@ class SegmentHelp {
   static tryGen({force = false, QueryLesson? query}) async {
     if (cache.isEmpty || force || query != null) {
       if (query != null) {
-        if (query.lessonIndex != null) {
-          List<SegmentShow> lessonSegment = await Db().db.scheduleDao.getSegmentByLessonIndex(Classroom.curr, query.contentSerial, query.lessonIndex!);
-          cache.removeWhere((segment) => segment.contentSerial == query.contentSerial && segment.lessonIndex == query.lessonIndex!);
+        if (query.chapterIndex != null) {
+          List<SegmentShow> lessonSegment = await Db().db.scheduleDao.getSegmentByLessonIndex(Classroom.curr, query.contentSerial, query.chapterIndex!);
+          cache.removeWhere((segment) => segment.contentSerial == query.contentSerial && segment.lessonIndex == query.chapterIndex!);
           cache.addAll(lessonSegment);
         } else if (query.minLessonIndex != null) {
           List<SegmentShow> lessonSegment = await Db().db.scheduleDao.getSegmentByMinLessonIndex(Classroom.curr, query.contentSerial, query.minLessonIndex!);

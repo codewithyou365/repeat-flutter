@@ -208,11 +208,6 @@ abstract class LessonKeyDao {
     int contentSerial = deleteLk.contentSerial;
     int lessonIndex = deleteLk.lessonIndex;
     out['lessonKey'] = deleteLk;
-    var lessonCount = await db.lessonDao.count(classroomId, contentSerial) ?? 1;
-    if (lessonCount == 1) {
-      Snackbar.show(I18nKey.labelLastCourseCannotBeDeleted.tr);
-      return false;
-    }
     var currSegment = await db.segmentDao.one(classroomId, contentSerial, lessonIndex, 0);
     if (currSegment != null) {
       Snackbar.show(I18nKey.labelLessonDeleteBlocked.tr);
@@ -272,8 +267,6 @@ abstract class LessonKeyDao {
 
   @transaction
   Future<bool> addLesson(LessonShow lessonShow, int lessonIndex, Map<String, dynamic> out) async {
-    var now = DateTime.now();
-    int classroomId = Classroom.curr;
     int lessonKeyId = lessonShow.lessonKeyId;
     LessonKey? baseLk = await getById(lessonKeyId);
     if (baseLk == null) {
@@ -281,35 +274,59 @@ abstract class LessonKeyDao {
       return false;
     }
     out['lessonKey'] = baseLk;
-    int contentSerial = baseLk.contentSerial;
+    return await interAddLesson(
+      lessonContent: baseLk.content,
+      bookSerial: baseLk.contentSerial,
+      chapterIndex: lessonIndex,
+    );
+  }
+
+  @transaction
+  Future<bool> addFirstLesson(
+    int contentSerial,
+  ) async {
+    return await interAddLesson(
+      lessonContent: "{}",
+      bookSerial: contentSerial,
+      chapterIndex: 0,
+    );
+  }
+
+  Future<bool> interAddLesson({
+    required String lessonContent,
+    required int bookSerial,
+    required int chapterIndex,
+  }) async {
+    var now = DateTime.now();
+    int classroomId = Classroom.curr;
     Lesson newLesson = Lesson(
       classroomId: classroomId,
-      contentSerial: contentSerial,
-      lessonIndex: lessonIndex,
+      contentSerial: bookSerial,
+      lessonIndex: chapterIndex,
     );
     LessonKey newLessonKey = LessonKey(
       classroomId: classroomId,
-      contentSerial: contentSerial,
-      lessonIndex: lessonIndex,
+      contentSerial: bookSerial,
+      lessonIndex: chapterIndex,
       version: 1,
-      content: baseLk.content,
+      content: lessonContent,
       contentVersion: 1,
     );
     TextVersion newTextVersion = TextVersion(
       t: TextVersionType.lessonContent,
       version: 1,
       reason: TextVersionReason.editor,
-      text: baseLk.content,
+      text: lessonContent,
       createTime: now,
     );
 
-    Content? content = await db.contentDao.getBySerial(classroomId, contentSerial);
+    Content? content = await db.contentDao.getBySerial(classroomId, bookSerial);
     if (content == null) {
-      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the content data($contentSerial)"]));
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the content data($bookSerial)"]));
       return false;
     }
-    var lessons = await db.lessonDao.findByMinLessonIndex(classroomId, contentSerial, lessonIndex);
-    var lessonKeys = await findByMinLessonIndex(classroomId, contentSerial, lessonIndex);
+    var lessons = await db.lessonDao.findByMinLessonIndex(classroomId, bookSerial, chapterIndex);
+    var lessonKeys = await findByMinLessonIndex(classroomId, bookSerial, chapterIndex);
     List<Lesson> insertLessons = [newLesson];
     List<LessonKey> insertLessonKeys = [newLessonKey];
     for (var v in lessons) {
@@ -320,8 +337,8 @@ abstract class LessonKeyDao {
       v.lessonIndex++;
       insertLessonKeys.add(v);
     }
-    var segments = await db.segmentDao.findByMinLessonIndex(classroomId, contentSerial, lessonIndex);
-    var segmentKeys = await db.segmentKeyDao.findByMinLessonIndex(classroomId, contentSerial, lessonIndex);
+    var segments = await db.segmentDao.findByMinLessonIndex(classroomId, bookSerial, chapterIndex);
+    var segmentKeys = await db.segmentKeyDao.findByMinLessonIndex(classroomId, bookSerial, chapterIndex);
     List<Segment> insertSegments = [];
     List<SegmentKey> insertSegmentKeys = [];
     for (var v in segments) {
@@ -334,7 +351,7 @@ abstract class LessonKeyDao {
       v.lessonIndex++;
       insertSegmentKeys.add(v);
     }
-    await deleteByMinLessonIndex(classroomId, contentSerial, lessonIndex);
+    await deleteByMinLessonIndex(classroomId, bookSerial, chapterIndex);
     await insertOrFail(insertLessonKeys);
     int? newLessonKeyId = await getLessonKeyId(newLessonKey.classroomId, newLessonKey.contentSerial, newLessonKey.lessonIndex, newLessonKey.version);
     if (newLessonKeyId == null) {
@@ -344,21 +361,15 @@ abstract class LessonKeyDao {
     newLesson.lessonKeyId = newLessonKeyId;
     newTextVersion.id = newLessonKeyId;
 
-    await db.lessonDao.deleteByMinLessonIndex(classroomId, contentSerial, lessonIndex);
+    await db.lessonDao.deleteByMinLessonIndex(classroomId, bookSerial, chapterIndex);
     await db.lessonDao.insertOrFail(insertLessons);
 
-    await db.segmentDao.deleteByMinLessonIndex(classroomId, contentSerial, lessonIndex);
-    await db.segmentKeyDao.deleteByMinLessonIndex(classroomId, contentSerial, lessonIndex);
+    await db.segmentDao.deleteByMinLessonIndex(classroomId, bookSerial, chapterIndex);
+    await db.segmentKeyDao.deleteByMinLessonIndex(classroomId, bookSerial, chapterIndex);
     await db.segmentDao.insertListOrFail(insertSegments);
     await db.segmentKeyDao.insertListOrFail(insertSegmentKeys);
     await db.textVersionDao.insertOrFail(newTextVersion);
 
-    // TODO await db.scheduleDao.interAddSegment(
-    //   segmentContent: "{}",
-    //   contentSerial: contentSerial,
-    //   lessonIndex: lessonIndex,
-    //   segmentIndex: 0,
-    // );
     return true;
   }
 }

@@ -232,6 +232,7 @@ enum I18nKey {
   labelFileExtensionNotMatch,
   labelBook,
   labelAddSuccess,
+  labelTipForAddingContent,
   btnEnd,
   btnHandleNow,
   btnStart,
