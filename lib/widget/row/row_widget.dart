@@ -16,6 +16,30 @@ class Button {
   Button(this.title, [this.onPressed]);
 }
 
+class OptionHead {
+  final String title;
+  final RxInt value;
+  final double? optionWidth;
+
+  OptionHead({
+    required this.title,
+    required this.value,
+    this.optionWidth,
+  });
+}
+
+class OptionBody {
+  final String label;
+  final int value;
+  final List<OptionBody> next;
+
+  OptionBody({
+    required this.label,
+    required this.value,
+    required this.next,
+  });
+}
+
 class RowWidget {
   static const double titleFontSize = 17;
   static const double rowHeight = 50;
@@ -171,6 +195,65 @@ class RowWidget {
           version: QrVersions.auto,
           size: size,
         ),
+      ),
+    );
+  }
+
+  static Widget buildCascadeCupertinoPicker({
+    required List<OptionHead> head,
+    required List<OptionBody> body,
+    required ValueChanged<List<int>>? changed,
+  }) {
+    return SizedBox(
+      height: (rowHeight + dividerHeight) * head.length,
+      child: Column(
+        children: List.generate(head.length * 2, (i) {
+          if (i.isEven) {
+            int index = i ~/ 2;
+            return Obx(() {
+              // Walk the options tree to get the current level's options
+              List<OptionBody> currentOptions = body;
+              for (int j = 0; j < index; j++) {
+                int selected = head[j].value.value;
+                if (selected < currentOptions.length) {
+                  currentOptions = currentOptions[selected].next;
+                } else {
+                  currentOptions = [];
+                  break;
+                }
+              }
+
+              // Get the string labels for the picker
+              List<String> labels = currentOptions.map((e) => e.label).toList();
+
+              // Clamp initValue to safe range
+              if (head[index].value.value >= labels.length) {
+                head[index].value.value = 0;
+              }
+
+              return buildCupertinoPicker(
+                head[index].title,
+                labels,
+                head[index].value,
+                pickWidth: head[index].optionWidth,
+                changed: (selectedIndex) {
+                  head[index].value.value = selectedIndex;
+
+                  // Reset all following pickers to 0
+                  for (int k = index + 1; k < head.length; k++) {
+                    head[k].value.value = 0;
+                  }
+
+                  // Notify final selection
+                  final result = head.map((h) => h.value.value).toList();
+                  changed?.call(result);
+                },
+              );
+            });
+          } else {
+            return buildDividerWithoutColor();
+          }
+        }),
       ),
     );
   }

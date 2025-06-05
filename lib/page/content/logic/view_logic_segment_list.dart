@@ -42,6 +42,8 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   RxString search = RxString("");
   RxInt selectedSortIndex = 0.obs;
 
+  List<OptionBody> options = [];
+
   RxInt chapterSelect = 0.obs;
   RxInt progressSelect = 0.obs;
   RxInt nextMonthSelect = 0.obs;
@@ -52,15 +54,12 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
   String searchKey = '';
   List<int> missingSegmentIndex = [];
 
-  List<String> bookOptions = [];
   RxInt bookSelect = 0.obs;
 
   List<String> sortOptions = [];
-  List<String> lessonOptions = [];
   List<String> progressOptions = [];
   List<String> nextMonthOptions = [];
   int missingSegmentOffset = -1;
-  List<int> lessonIndex = [];
   List<int> progress = [];
   List<int> nextMonth = [];
   List<SegmentShow> segmentShow = [];
@@ -107,10 +106,15 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
     collectData();
 
     if (initContentNameSelect != null) {
-      bookSelect.value = bookOptions.indexOf(initContentNameSelect);
-    }
-    if (initLessonSelect != null) {
-      chapterSelect.value = lessonOptions.indexOf('${initLessonSelect + 1}');
+      bookSelect.value = options.indexWhere((opt) => opt.label == initContentNameSelect);
+      if (bookSelect.value < options.length) {
+        final selectedBook = options[bookSelect.value];
+        if (initLessonSelect != null) {
+          if (initLessonSelect + 1 < selectedBook.next.length) {
+            chapterSelect.value = initLessonSelect + 1;
+          }
+        }
+      }
     }
   }
 
@@ -150,13 +154,20 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
           }
         }
         if (ret && bookSelect.value != 0) {
-          if (bookSelect.value < 0 || bookSelect.value >= bookOptions.length) {
-            return false;
+          if (bookSelect.value < options.length) {
+            final selectedBook = options[bookSelect.value];
+            ret = e.contentName == selectedBook.label;
+            if (ret && chapterSelect.value != 0) {
+              if (chapterSelect.value < selectedBook.next.length) {
+                final selectedLesson = selectedBook.next[chapterSelect.value];
+                ret = e.lessonIndex == selectedLesson.value;
+              } else {
+                ret = false;
+              }
+            }
+          } else {
+            ret = false;
           }
-          ret = e.contentName == bookOptions[bookSelect.value];
-        }
-        if (ret && chapterSelect.value != 0) {
-          ret = e.lessonIndex == lessonIndex[chapterSelect.value];
         }
         if (ret && progressSelect.value != 0) {
           ret = e.progress == progress[progressSelect.value];
@@ -201,7 +212,7 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
     if (bookSelect.value > 0 && chapterSelect.value > 0) {
       await showOverlay(() async {
         var classroomId = Classroom.curr;
-        var content = await Db().db.contentDao.getContentByName(classroomId, bookOptions[bookSelect.value]);
+        var content = await Db().db.contentDao.getContentByName(classroomId, options[bookSelect.value].label);
         if (content == null) {
           Snackbar.show(I18nKey.labelNoContent.tr);
           return;
@@ -343,26 +354,16 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
               child: ListView(
                 padding: const EdgeInsets.all(0),
                 children: [
-                  RowWidget.buildCupertinoPicker(
-                    I18nKey.labelContent.tr,
-                    bookOptions,
-                    bookSelect,
+                  RowWidget.buildCascadeCupertinoPicker(
+                    head: [
+                      OptionHead(title: I18nKey.labelBook.tr, value: bookSelect),
+                      OptionHead(title: I18nKey.labelLesson.tr, value: chapterSelect),
+                    ],
+                    body: options,
                     changed: (index) {
-                      bookSelect.value = index;
                       trySearch();
                     },
                   ),
-                  RowWidget.buildDividerWithoutColor(),
-                  RowWidget.buildCupertinoPicker(
-                    I18nKey.labelLessonName.tr,
-                    lessonOptions,
-                    chapterSelect,
-                    changed: (index) {
-                      chapterSelect.value = index;
-                      trySearch();
-                    },
-                  ),
-                  RowWidget.buildDividerWithoutColor(),
                   RowWidget.buildCupertinoPicker(
                     I18nKey.labelProgress.tr,
                     progressOptions,
@@ -625,13 +626,13 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
                 );
               },
             );
-          } else if (bookSelect.value > 0 && chapterSelect.value > 0) {
+          } else if (bookSelect.value > 0 && chapterSelect.value > 0 && search.value.isEmpty && progressSelect.value == 0 && nextMonthSelect.value == 0) {
             body = Center(
               child: RichText(
                 text: TextSpan(
                   children: [
                     TextSpan(
-                      text: I18nKey.labelTipForAddingContent.trArgs(["${bookOptions[bookSelect.value]}-${chapterSelect.value}"]),
+                      text: I18nKey.labelTipForAddingContent.trArgs(["${options[bookSelect.value].label}-${chapterSelect.value}"]),
                     ),
                     WidgetSpan(
                       alignment: PlaceholderAlignment.middle,
@@ -677,32 +678,63 @@ class ViewLogicSegmentList<T extends GetxController> extends ViewLogic {
     return contentId2Missing;
   }
 
+  void updateOptions() {
+    options = [];
+    final Map<String, List<dynamic>> lessonsByBook = {};
+    for (var lesson in originalLessonShow) {
+      lessonsByBook.putIfAbsent(lesson.contentName, () => []).add(lesson);
+    }
+
+    final Set<String> uniqueBookNames = {};
+    for (var book in originalBookShow) {
+      uniqueBookNames.add(book.name);
+    }
+
+    final List<OptionBody> bookOptions = [];
+
+    for (var bookName in uniqueBookNames) {
+      final lessons = lessonsByBook[bookName] ?? [];
+
+      final Set<int> lessonIndices = {};
+      for (var lesson in lessons) {
+        lessonIndices.add(lesson.lessonIndex);
+      }
+
+      final sortedIndices = lessonIndices.toList()..sort();
+      sortedIndices.insert(0, -1);
+
+      final lessonOptions = sortedIndices.map((k) {
+        return OptionBody(
+          label: (k == -1) ? I18nKey.labelAll.tr : '${k + 1}',
+          value: k,
+          next: [],
+        );
+      }).toList();
+
+      bookOptions.add(OptionBody(
+        label: bookName,
+        value: 0,
+        next: lessonOptions,
+      ));
+    }
+
+    options.add(OptionBody(
+      label: I18nKey.labelAll.tr,
+      value: -1,
+      next: [
+        OptionBody(
+          label: I18nKey.labelAll.tr,
+          value: -1,
+          next: [],
+        )
+      ],
+    ));
+
+    options.addAll(bookOptions);
+  }
+
   void collectData() {
-    bookOptions = [];
-    for (int i = 0; i < originalBookShow.length; i++) {
-      var v = originalBookShow[i];
-      if (!bookOptions.contains(v.name)) {
-        bookOptions.add(v.name);
-      }
-    }
-    bookOptions.insert(0, I18nKey.labelAll.tr);
-
-    lessonIndex = [];
-    for (int i = 0; i < originalLessonShow.length; i++) {
-      var v = originalLessonShow[i];
-      if (!lessonIndex.contains(v.lessonIndex)) {
-        lessonIndex.add(v.lessonIndex);
-      }
-    }
-
-    lessonIndex.sort();
-    lessonIndex.insert(0, -1);
-    lessonOptions = lessonIndex.map((k) {
-      if (k == -1) {
-        return I18nKey.labelAll.tr;
-      }
-      return '${k + 1}';
-    }).toList();
+    updateOptions();
 
     missingSegmentIndex = [];
     progress = [];
