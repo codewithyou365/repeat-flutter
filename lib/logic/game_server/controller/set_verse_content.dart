@@ -8,11 +8,11 @@ import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/page/gs_cr_repeat/gs_cr_repeat_logic.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
-class SetSegmentContentReq {
+class SetVerseContentReq {
   int gameId;
   String content;
 
-  SetSegmentContentReq(this.gameId, this.content);
+  SetVerseContentReq(this.gameId, this.content);
 
   Map<String, dynamic> toJson() {
     return {
@@ -21,24 +21,24 @@ class SetSegmentContentReq {
     };
   }
 
-  factory SetSegmentContentReq.fromJson(Map<String, dynamic> json) {
-    return SetSegmentContentReq(
+  factory SetVerseContentReq.fromJson(Map<String, dynamic> json) {
+    return SetVerseContentReq(
       json['gameId'] as int,
       json['content'] as String,
     );
   }
 }
 
-Future<message.Response?> setSegmentContent(message.Request req, GameUser? user, Server<GameUser> server) async {
+Future<message.Response?> setVerseContent(message.Request req, GameUser? user, Server<GameUser> server) async {
   if (user == null) {
     return message.Response(error: GameServerError.serviceStopped.name);
   }
-  final reqBody = SetSegmentContentReq.fromJson(req.data);
+  final reqBody = SetVerseContentReq.fromJson(req.data);
   final game = await Db().db.gameDao.one(reqBody.gameId);
   if (game == null) {
     return message.Response(error: GameServerError.gameNotFound.name);
   }
-  var ok = await Db().db.scheduleDao.tUpdateSegmentContent(game.segmentKeyId, reqBody.content);
+  var ok = await Db().db.scheduleDao.tUpdateVerseContent(game.verseKeyId, reqBody.content);
   if (!ok) {
     String content = Snackbar.popContent();
     if (content.isNotEmpty) {

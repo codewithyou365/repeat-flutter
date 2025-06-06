@@ -3,8 +3,8 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/model/segment_show.dart';
-import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/logic/model/verse_show.dart';
+import 'package:repeat_flutter/logic/verse_help.dart';
 
 class ProgressLogic {
   double progress = 0;
@@ -16,7 +16,7 @@ class ProgressLogic {
   Future<void> init() async {
     learnedCount = 0;
     totalCount = 0;
-    var key = await SegmentHelp.getSegmentKey(Classroom.curr);
+    var key = await VerseHelp.getVerseKey(Classroom.curr);
 
     var cache = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.lastCache4ProgressStats) ?? ',0,0';
     var values = cache.split(",");
@@ -25,7 +25,7 @@ class ProgressLogic {
       learnedCount = int.parse(values[1]);
       totalCount = int.parse(values[2]);
     } else {
-      List<SegmentShow> progressRawData = await SegmentHelp.getSegments();
+      List<VerseShow> progressRawData = await VerseHelp.getVerses();
       learnedCount = progressRawData.where((e) => e.progress != 0).length;
       totalCount = progressRawData.length;
       await Db().db.scheduleDao.insertKv(CrKv(Classroom.curr, CrK.lastCache4ProgressStats, '$key,$learnedCount,$totalCount'));

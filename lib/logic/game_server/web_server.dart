@@ -9,8 +9,8 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/game_server/controller/get_edit_status.dart';
-import 'package:repeat_flutter/logic/game_server/controller/get_segment_content.dart';
-import 'package:repeat_flutter/logic/game_server/controller/set_segment_content.dart';
+import 'package:repeat_flutter/logic/game_server/controller/get_verse_content.dart';
+import 'package:repeat_flutter/logic/game_server/controller/set_verse_content.dart';
 import 'controller/heart.dart';
 import 'controller/game_user_history.dart';
 import 'controller/entry_game.dart';
@@ -36,8 +36,8 @@ class WebServer {
       server.controllers[Path.gameUserHistory] = (request) => withGameUser(request, gameUserHistory);
       server.controllers[Path.submit] = (request) => withGameUser(request, submit);
       server.controllers[Path.getEditStatus] = (request) => withGameUser(request, getEditStatus);
-      server.controllers[Path.getSegmentContent] = (request) => withGameUser(request, getSegmentContent);
-      server.controllers[Path.setSegmentContent] = (request) => withGameUserAndServer(request, setSegmentContent);
+      server.controllers[Path.getVerseContent] = (request) => withGameUser(request, getVerseContent);
+      server.controllers[Path.setVerseContent] = (request) => withGameUserAndServer(request, setVerseContent);
       open = true;
     } catch (e) {
       Snackbar.show('Error starting HTTP service: $e');

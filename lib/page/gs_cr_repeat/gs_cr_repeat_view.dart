@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/text/text_button.dart';
@@ -69,10 +69,10 @@ class GsCrRepeatPage extends StatelessWidget {
     }
     String? viewName;
     if (state.helper.initialized) {
-      var segment = state.helper.getCurrSegment();
-      if (segment != null) {
-        var segmentShow = SegmentHelp.getCache(segment.segmentKeyId);
-        if (segmentShow != null) {
+      var verse = state.helper.getCurrVerse();
+      if (verse != null) {
+        var verseShow = VerseHelp.getCache(verse.verseKeyId);
+        if (verseShow != null) {
           viewName = state.helper.getCurrViewName();
         }
       }
@@ -80,7 +80,7 @@ class GsCrRepeatPage extends StatelessWidget {
     if (viewName == null) {
       return dataMissing(state);
     } else {
-      return logic.nameToRepeatView[viewName]!.body();
+      return logic.showTypeToRepeatView[viewName]!.body();
     }
   }
 
@@ -186,7 +186,7 @@ class GsCrRepeatPage extends StatelessWidget {
 
   Widget bottomBar({required GsCrRepeatLogic logic, required double width, required double height}) {
     final helper = logic.state.helper;
-    var m = helper.getCurrSegmentMap();
+    var m = helper.getCurrVerseMap();
     String? tip;
     if (m != null) {
       tip = m[QaType.tip.acronym];
@@ -270,7 +270,7 @@ class GsCrRepeatPage extends StatelessWidget {
   Widget? text(GsCrRepeatLogic logic, QaType type) {
     var helper = logic.state.helper;
     var edit = helper.edit;
-    var map = helper.getCurrSegmentMap();
+    var map = helper.getCurrVerseMap();
     if (map == null) {
       return null;
     }
@@ -286,8 +286,8 @@ class GsCrRepeatPage extends StatelessWidget {
           (str) async {
             map[type.acronym] = str;
             String jsonStr = jsonEncode(map);
-            var segmentKeyId = helper.getCurrSegment()!.segmentKeyId;
-            await Db().db.scheduleDao.tUpdateSegmentContent(segmentKeyId, jsonStr);
+            var verseKeyId = helper.getCurrVerse()!.verseKeyId;
+            await Db().db.scheduleDao.tUpdateVerseContent(verseKeyId, jsonStr);
             logic.update([GsCrRepeatLogic.id]);
           },
           qrPagePath: Nav.gsCrContentScan.path,

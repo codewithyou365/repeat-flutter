@@ -1,5 +1,5 @@
-import 'package:repeat_flutter/logic/model/segment_overall_prg_with_key.dart';
+import 'package:repeat_flutter/logic/model/verse_overall_prg_with_key.dart';
 
 class GsCrStatsLearnState {
-  List<SegmentOverallPrgWithKey> progress = <SegmentOverallPrgWithKey>[];
+  List<VerseOverallPrgWithKey> progress = <VerseOverallPrgWithKey>[];
 }

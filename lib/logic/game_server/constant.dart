@@ -28,6 +28,6 @@ class Path {
   static const gameUserHistory = '/api/gameUserHistory';
   static const submit = '/api/submit';
   static const getEditStatus = '/api/getEditStatus';
-  static const getSegmentContent = '/api/getSegmentContent';
-  static const setSegmentContent = '/api/setSegmentContent';
+  static const getVerseContent = '/api/getVerseContent';
+  static const setVerseContent = '/api/setVerseContent';
 }

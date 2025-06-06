@@ -7,8 +7,8 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/logic/base/constant.dart' show DocPath;
 import 'package:repeat_flutter/logic/lesson_help.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
-import 'package:repeat_flutter/logic/model/segment_show.dart';
-import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/logic/model/verse_show.dart';
+import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class DocHelp {
@@ -69,10 +69,10 @@ class DocHelp {
           tryAppendDownload(d, lesson.rootUrl ?? kv.rootUrl);
         }
       }
-      for (var segment in lesson.segment) {
-        if (segment.download != null) {
-          for (var d in segment.download!) {
-            tryAppendDownload(d, segment.rootUrl ?? lesson.rootUrl ?? kv.rootUrl);
+      for (var verse in lesson.verse) {
+        if (verse.download != null) {
+          for (var d in verse.download!) {
+            tryAppendDownload(d, verse.rootUrl ?? lesson.rootUrl ?? kv.rootUrl);
           }
         }
       }
@@ -97,10 +97,10 @@ class DocHelp {
     String? rootUrl,
     bool shareNote = false,
   }) async {
-    await SegmentHelp.tryGen(force: true);
+    await VerseHelp.tryGen(force: true);
     await LessonHelp.tryGen(force: true);
     var content = await Db().db.contentDao.getById(contentId);
-    var segmentCache = SegmentHelp.cache;
+    var verseCache = VerseHelp.cache;
     var lessonCache = LessonHelp.cache;
 
     Map<String, dynamic> contentJson = jsonDecode(content!.content);
@@ -114,22 +114,22 @@ class DocHelp {
       fixDownloadInfo(ret);
     }
 
-    Map<int, List<SegmentShow>> lessonToSegmentShow = {};
+    Map<int, List<VerseShow>> lessonToVerseShow = {};
 
-    for (var segment in segmentCache) {
-      if (segment.contentId == contentId) {
-        int lessonKey = segment.lessonIndex;
+    for (var verse in verseCache) {
+      if (verse.contentId == contentId) {
+        int lessonKey = verse.lessonIndex;
 
-        if (!lessonToSegmentShow.containsKey(lessonKey)) {
-          lessonToSegmentShow[lessonKey] = [];
+        if (!lessonToVerseShow.containsKey(lessonKey)) {
+          lessonToVerseShow[lessonKey] = [];
         }
 
-        lessonToSegmentShow[lessonKey]!.add(segment);
+        lessonToVerseShow[lessonKey]!.add(verse);
       }
     }
 
-    lessonToSegmentShow.forEach((lessonIndex, segments) {
-      segments.sort((a, b) => a.segmentIndex.compareTo(b.segmentIndex));
+    lessonToVerseShow.forEach((lessonIndex, verses) {
+      verses.sort((a, b) => a.verseIndex.compareTo(b.verseIndex));
     });
 
     List<Map<String, dynamic>> lessonsList = [];
@@ -145,30 +145,30 @@ class DocHelp {
           return false;
         }
 
-        List<SegmentShow> segmentsForLesson = lessonToSegmentShow[lesson.lessonIndex] ?? [];
-        List<Map<String, dynamic>> segmentsList = [];
-        for (var segment in segmentsForLesson) {
-          Map<String, dynamic> segmentData = {};
+        List<VerseShow> versesForLesson = lessonToVerseShow[lesson.lessonIndex] ?? [];
+        List<Map<String, dynamic>> versesList = [];
+        for (var verse in versesForLesson) {
+          Map<String, dynamic> verseData = {};
 
           try {
-            segmentData = jsonDecode(segment.segmentContent);
+            verseData = jsonDecode(verse.verseContent);
           } catch (e) {
-            Snackbar.show('Error parsing segment content: $e');
+            Snackbar.show('Error parsing verse content: $e');
             return false;
           }
 
-          if (shareNote && segment.segmentNote.isNotEmpty) {
-            segmentData['n'] = segment.segmentNote;
+          if (shareNote && verse.verseNote.isNotEmpty) {
+            verseData['n'] = verse.verseNote;
           }
           if (rootUrl != null) {
-            fixDownloadInfo(segmentData);
+            fixDownloadInfo(verseData);
           }
-          segmentsList.add(segmentData);
+          versesList.add(verseData);
         }
         if (rootUrl != null) {
           fixDownloadInfo(lessonData);
         }
-        lessonData['s'] = segmentsList;
+        lessonData['v'] = versesList;
         lessonsList.add(lessonData);
       }
     }

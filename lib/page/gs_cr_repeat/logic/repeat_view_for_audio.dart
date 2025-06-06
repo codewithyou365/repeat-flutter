@@ -158,8 +158,8 @@ class RepeatViewForAudio extends RepeatView {
     return MediaBar(
       width: width,
       height: height,
-      segmentStartMs: range.start,
-      segmentEndMs: range.end,
+      verseStartMs: range.start,
+      verseEndMs: range.end,
       key: mediaKey,
       duration: () => duration,
       onPlay: (Duration position) async {

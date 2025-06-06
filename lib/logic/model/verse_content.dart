@@ -1,23 +1,23 @@
 import 'package:floor/floor.dart';
-import 'package:repeat_flutter/db/entity/segment.dart';
+import 'package:repeat_flutter/db/entity/verse.dart';
 
 @Entity(tableName: "")
-class SegmentContentInDb extends Segment {
+class VerseContentInDb extends Verse {
   @primaryKey
   final String contentName;
 
-  SegmentContentInDb({
-    required super.segmentKeyId,
+  VerseContentInDb({
+    required super.verseKeyId,
     required super.classroomId,
     required super.contentSerial,
     required super.lessonIndex,
-    required super.segmentIndex,
+    required super.verseIndex,
     required super.sort,
     required this.contentName,
   });
 }
 
-class SegmentContent extends SegmentContentInDb {
+class VerseContent extends VerseContentInDb {
   var mediaDocPath = "";
   var mediaHash = "";
   var mediaExtension = "";
@@ -31,35 +31,35 @@ class SegmentContent extends SegmentContentInDb {
   var k = "";
   var miss = false;
 
-  SegmentContent({
-    required super.segmentKeyId,
+  VerseContent({
+    required super.verseKeyId,
     required super.classroomId,
     required super.contentSerial,
     required super.lessonIndex,
-    required super.segmentIndex,
+    required super.verseIndex,
     required super.sort,
     required super.contentName,
   });
 
-  static SegmentContent empty() {
-    return SegmentContent(
-      segmentKeyId: 0,
+  static VerseContent empty() {
+    return VerseContent(
+      verseKeyId: 0,
       classroomId: 0,
       contentSerial: 0,
       lessonIndex: 0,
-      segmentIndex: 0,
+      verseIndex: 0,
       sort: 0,
       contentName: "",
     );
   }
 
-  static SegmentContent from(SegmentContentInDb d) {
-    return SegmentContent(
-      segmentKeyId: d.segmentKeyId,
+  static VerseContent from(VerseContentInDb d) {
+    return VerseContent(
+      verseKeyId: d.verseKeyId,
       classroomId: d.classroomId,
       contentSerial: d.contentSerial,
       lessonIndex: d.lessonIndex,
-      segmentIndex: d.segmentIndex,
+      verseIndex: d.verseIndex,
       sort: d.sort,
       contentName: d.contentName,
     );

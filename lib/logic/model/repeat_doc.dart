@@ -1,13 +1,11 @@
-import 'package:repeat_flutter/common/path.dart';
-
 class RepeatDoc {
-  String? view;
+  String? showType;
   String? rootUrl;
   List<Download>? download;
   List<Lesson> lesson;
 
   RepeatDoc({
-    required this.view,
+    required this.showType,
     required this.rootUrl,
     required this.download,
     required this.lesson,
@@ -15,7 +13,7 @@ class RepeatDoc {
 
   factory RepeatDoc.fromJson(Map<String, dynamic> json) {
     return RepeatDoc(
-      view: json['v'] as String?,
+      showType: json['s'] as String?,
       rootUrl: json['r'] as String?,
       download: Download.toList(json['d']),
       lesson: (json['l'] as List?)?.map((e) => Lesson.fromJson(e as Map<String, dynamic>)).toList() ?? [],
@@ -24,7 +22,7 @@ class RepeatDoc {
 
   Map<String, dynamic> toJson() {
     return {
-      'v': view,
+      's': showType,
       'r': rootUrl,
       'd': download?.map((e) => e.toJson()).toList(),
       'l': lesson.map((e) => e.toJson()).toList(),
@@ -72,39 +70,39 @@ class Download {
 }
 
 class Lesson {
-  String? view;
+  String? showType;
   String? rootUrl;
   List<Download>? download;
-  List<Segment> segment;
+  List<Verse> verse;
 
   Lesson({
-    required this.view,
+    required this.showType,
     required this.rootUrl,
     required this.download,
-    required this.segment,
+    required this.verse,
   });
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
     return Lesson(
-      view: json['v'] as String?,
+      showType: json['s'] as String?,
       rootUrl: json['r'] as String?,
       download: Download.toList(json['d']),
-      segment: (json['s'] as List?)?.map((e) => Segment.fromJson(e as Map<String, dynamic>)).toList() ?? [],
+      verse: (json['v'] as List?)?.map((e) => Verse.fromJson(e as Map<String, dynamic>)).toList() ?? [],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'v': view,
+      's': showType,
       'r': rootUrl,
       'd': download?.map((e) => e.toJson()).toList(),
-      's': segment.map((e) => e.toJson()).toList(),
+      'v': verse.map((e) => e.toJson()).toList(),
     };
   }
 }
 
-class Segment {
-  String? view;
+class Verse {
+  String? showType;
   String? rootUrl;
   List<Download>? download;
   String? key;
@@ -114,8 +112,8 @@ class Segment {
   String? question;
   String answer;
 
-  Segment({
-    required this.view,
+  Verse({
+    required this.showType,
     required this.rootUrl,
     required this.download,
     required this.key,
@@ -126,9 +124,9 @@ class Segment {
     required this.answer,
   });
 
-  factory Segment.fromJson(Map<String, dynamic> json) {
-    return Segment(
-      view: json['v'] as String?,
+  factory Verse.fromJson(Map<String, dynamic> json) {
+    return Verse(
+      showType: json['s'] as String?,
       rootUrl: json['r'] as String?,
       download: Download.toList(json['d']),
       key: json['k'] as String?,
@@ -142,7 +140,7 @@ class Segment {
 
   Map<String, dynamic> toJson() {
     return {
-      'v': view,
+      's': showType,
       'r': rootUrl,
       'd': download?.map((e) => e.toJson()).toList(),
       'k': key,

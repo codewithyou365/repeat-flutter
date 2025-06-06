@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/logic/model/segment_review_with_key.dart';
+import 'package:repeat_flutter/logic/model/verse_review_with_key.dart';
 import 'gs_cr_stats_review_state.dart';
 
 class GsCrStatsReviewLogic extends GetxController {
@@ -24,7 +24,7 @@ class GsCrStatsReviewLogic extends GetxController {
     state.learnCount = {};
     state.reviewCount = {};
     state.minCount = {};
-    List<SegmentReviewWithKey> review = await Db().db.scheduleDao.getAllSegmentReview(Classroom.curr, monthStart, monthEnd);
+    List<VerseReviewWithKey> review = await Db().db.scheduleDao.getAllVerseReview(Classroom.curr, monthStart, monthEnd);
     for (var e in review) {
       state.learnCount.update(e.createDate.value, (count) => count + 1, ifAbsent: () => 1);
       state.reviewCount.update(e.createDate.value, (count) => count + e.count, ifAbsent: () => e.count);

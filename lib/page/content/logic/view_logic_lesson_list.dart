@@ -11,7 +11,7 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/lesson_show.dart';
 import 'package:repeat_flutter/logic/lesson_help.dart';
-import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -157,7 +157,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
 
   Future<void> refresh(LessonKey? lessonKey) async {
     if (lessonKey != null) {
-      await SegmentHelp.getSegments(
+      await VerseHelp.getVerses(
         force: true,
         query: QueryLesson(
           contentSerial: lessonKey.contentSerial,
@@ -452,7 +452,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
                                 onTap: () {
                                   MsgBox.yesOrNo(
                                     title: I18nKey.labelWarning.tr,
-                                    desc: I18nKey.labelDeleteSegment.tr,
+                                    desc: I18nKey.labelDeleteVerse.tr,
                                     yes: () => delete(lesson: lesson),
                                   );
                                 },

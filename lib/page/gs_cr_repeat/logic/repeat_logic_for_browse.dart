@@ -2,9 +2,9 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/await_util.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/segment_help.dart' show SegmentHelp;
+import 'package:repeat_flutter/logic/verse_help.dart' show VerseHelp;
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -14,13 +14,13 @@ import 'time_stats_logic.dart';
 
 class RepeatLogicForBrowse extends RepeatLogic {
   TimeStatsLogic timeStatsLogic = TimeStatsLogic();
-  late List<SegmentTodayPrg> scheduled;
+  late List<VerseTodayPrg> scheduled;
 
   int index = 0;
   Ticker ticker = Ticker(1000);
 
   @override
-  SegmentTodayPrg? get currSegment {
+  VerseTodayPrg? get currVerse {
     if (index < scheduled.length) {
       return scheduled[index];
     }
@@ -28,7 +28,7 @@ class RepeatLogicForBrowse extends RepeatLogic {
   }
 
   @override
-  SegmentTodayPrg? get nextSegment {
+  VerseTodayPrg? get nextVerse {
     if (index + 1 < scheduled.length) {
       return scheduled[index + 1];
     }
@@ -38,8 +38,8 @@ class RepeatLogicForBrowse extends RepeatLogic {
   @override
   String get titleLabel {
     String pos = "";
-    if (currSegment != null) {
-      pos = SegmentHelp.getSegmentPos(currSegment!.segmentKeyId);
+    if (currVerse != null) {
+      pos = VerseHelp.getVersePos(currVerse!.verseKeyId);
     }
     return '${index + 1}/${scheduled.length} $pos';
   }
@@ -47,9 +47,9 @@ class RepeatLogicForBrowse extends RepeatLogic {
   @override
   String get leftLabel {
     String nextDiffKey = "";
-    if (currSegment!.sort + 1 != nextSegment?.sort) {
-      if (nextSegment != null) {
-        nextDiffKey = SegmentHelp.getSegmentPos(nextSegment!.segmentKeyId);
+    if (currVerse!.sort + 1 != nextVerse?.sort) {
+      if (nextVerse != null) {
+        nextDiffKey = VerseHelp.getVersePos(nextVerse!.verseKeyId);
       }
     }
     switch (step) {
@@ -72,7 +72,7 @@ class RepeatLogicForBrowse extends RepeatLogic {
   }
 
   @override
-  Future<bool> init(List<SegmentTodayPrg> all, Function() update, GameHelper gameHelper) async {
+  Future<bool> init(List<VerseTodayPrg> all, Function() update, GameHelper gameHelper) async {
     if (all.isEmpty) {
       Snackbar.show(I18nKey.labelNoLearningContent.tr);
       return false;
@@ -81,7 +81,7 @@ class RepeatLogicForBrowse extends RepeatLogic {
     this.gameHelper = gameHelper;
     scheduled = all;
 
-    await gameHelper.tryRefreshGame(currSegment!);
+    await gameHelper.tryRefreshGame(currVerse!);
     await timeStatsLogic.tryInsertTimeStats();
     return true;
   }
@@ -131,10 +131,10 @@ class RepeatLogicForBrowse extends RepeatLogic {
 
   @override
   Future<void> jump({required int progress, required int nextDayValue}) async {
-    if (currSegment == null) {
+    if (currVerse == null) {
       return;
     }
-    await Db().db.scheduleDao.jumpDirectly(currSegment!.segmentKeyId, progress, nextDayValue);
+    await Db().db.scheduleDao.jumpDirectly(currVerse!.verseKeyId, progress, nextDayValue);
     await next();
   }
 
@@ -152,7 +152,7 @@ class RepeatLogicForBrowse extends RepeatLogic {
     if (index < scheduled.length - 1) {
       index++;
     }
-    await gameHelper.tryRefreshGame(currSegment!);
+    await gameHelper.tryRefreshGame(currVerse!);
     await timeStatsLogic.updateTimeStats();
   }
 
@@ -162,7 +162,7 @@ class RepeatLogicForBrowse extends RepeatLogic {
     if (index > 0) {
       index--;
     }
-    await gameHelper.tryRefreshGame(currSegment!);
+    await gameHelper.tryRefreshGame(currVerse!);
     await timeStatsLogic.updateTimeStats();
   }
 }

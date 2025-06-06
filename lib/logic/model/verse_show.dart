@@ -2,37 +2,37 @@ import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
 
 @Entity(tableName: "")
-class SegmentShow {
+class VerseShow {
   @primaryKey
-  final int segmentKeyId;
+  final int verseKeyId;
   String k;
   final int contentId;
   final String contentName;
   final int contentSerial;
   final int contentSort;
-  String segmentContent;
-  int segmentContentVersion;
-  String segmentNote;
-  int segmentNoteVersion;
+  String verseContent;
+  int verseContentVersion;
+  String verseNote;
+  int verseNoteVersion;
   int lessonIndex;
-  int segmentIndex;
+  int verseIndex;
   Date next;
   int progress;
   final bool missing;
 
-  SegmentShow({
-    required this.segmentKeyId,
+  VerseShow({
+    required this.verseKeyId,
     required this.k,
     required this.contentId,
     required this.contentName,
     required this.contentSerial,
     required this.contentSort,
-    required this.segmentContent,
-    required this.segmentContentVersion,
-    required this.segmentNote,
-    required this.segmentNoteVersion,
+    required this.verseContent,
+    required this.verseContentVersion,
+    required this.verseNote,
+    required this.verseNoteVersion,
     required this.lessonIndex,
-    required this.segmentIndex,
+    required this.verseIndex,
     required this.next,
     required this.progress,
     required this.missing,
@@ -41,11 +41,11 @@ class SegmentShow {
   String toLessonPos() {
     return '$contentName-${lessonIndex + 1}';
   }
-  String toSegmentPos() {
-    return '-${segmentIndex + 1}';
+  String toVersePos() {
+    return '-${verseIndex + 1}';
   }
 
   int toSort() {
-    return contentSort * 10000000000 + lessonIndex * 100000 + segmentIndex;
+    return contentSort * 10000000000 + lessonIndex * 100000 + verseIndex;
   }
 }

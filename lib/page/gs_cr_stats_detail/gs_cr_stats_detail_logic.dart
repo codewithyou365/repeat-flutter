@@ -4,8 +4,8 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/segment_stats.dart';
-import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/db/entity/verse_stats.dart';
+import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 
 import 'gs_cr_stats_detail_state.dart';
 
@@ -25,7 +25,7 @@ class GsCrStatsDetailLogic extends GetxController {
     state.fullCustomCount = {};
     Date monthStart = Date.from(DateTime(focusedDay.year, focusedDay.month - 1, 1));
     Date monthEnd = Date.from(DateTime(focusedDay.year, focusedDay.month + 2, 1));
-    List<SegmentStats> data = await Db().db.statsDao.getStatsByDateRange(Classroom.curr, monthStart, monthEnd);
+    List<VerseStats> data = await Db().db.statsDao.getStatsByDateRange(Classroom.curr, monthStart, monthEnd);
     for (var e in data) {
       if (e.type == TodayPrgType.learn.index) {
         state.learnCount.update(e.createDate.value, (count) => count + 1, ifAbsent: () => 1);

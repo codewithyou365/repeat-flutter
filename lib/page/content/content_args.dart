@@ -3,12 +3,12 @@ class ContentArgs {
   Future<void> Function()? removeWarning;
   int? initLessonSelect;
   int defaultTap;
-  int? selectSegmentKeyId;
+  int? selectVerseKeyId;
 
   ContentArgs({
     this.bookName,
     this.initLessonSelect,
-    this.selectSegmentKeyId,
+    this.selectVerseKeyId,
     this.removeWarning,
     this.defaultTap = 0,
   });

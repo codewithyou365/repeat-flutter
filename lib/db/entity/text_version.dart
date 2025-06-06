@@ -3,8 +3,8 @@
 import 'package:floor/floor.dart';
 
 enum TextVersionType {
-  segmentContent,
-  segmentNote,
+  verseContent,
+  verseNote,
   lessonContent,
   bookContent,
 }

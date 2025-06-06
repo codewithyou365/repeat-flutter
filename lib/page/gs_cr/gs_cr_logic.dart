@@ -12,14 +12,14 @@ import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
-import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/book_help.dart';
 import 'package:repeat_flutter/logic/lesson_help.dart';
-import 'package:repeat_flutter/logic/model/segment_show.dart';
-import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/logic/model/verse_show.dart';
+import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -33,7 +33,7 @@ class GsCrLogic extends GetxController {
   static const String idForAdd = "GsCrLogicForAdd";
   final GsCrState state = GsCrState();
   late CopyLogic copyLogic = CopyLogic<GsCrLogic>(CrK.copyListTemplate, this);
-  List<SegmentTodayPrg> currProgresses = [];
+  List<VerseTodayPrg> currProgresses = [];
   Timer? timer;
 
   @override
@@ -55,8 +55,8 @@ class GsCrLogic extends GetxController {
 
   Future<void> init({TodayPrgType? type}) async {
     await copyLogic.init();
-    await SegmentHelp.tryGen(force: true);
-    ScheduleDao.getSegmentShow = SegmentHelp.getCache;
+    await VerseHelp.tryGen(force: true);
+    ScheduleDao.getVerseShow = VerseHelp.getCache;
     await LessonHelp.tryGen(force: true);
     LessonKeyDao.getLessonShow = LessonHelp.getCache;
     await BookHelp.tryGen(force: true);
@@ -64,7 +64,7 @@ class GsCrLogic extends GetxController {
     state.forAdd.contents = await Db().db.contentDao.getAllEnableContent(Classroom.curr);
     state.forAdd.contentNames = state.forAdd.contents.map((e) => e.name).toList();
     var now = DateTime.now();
-    List<SegmentTodayPrg> allProgresses = [];
+    List<VerseTodayPrg> allProgresses = [];
     if (type == null) {
       allProgresses = await Db().db.scheduleDao.initToday();
     } else {
@@ -75,7 +75,7 @@ class GsCrLogic extends GetxController {
     state.fullCustom = [];
     state.review = [];
     state.learn = [];
-    state.segments = [];
+    state.verses = [];
     String? fullCustomJsonStr = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount);
     List<List<String>> fullCustomConfigs = ListUtil.toListList(fullCustomJsonStr);
     var configInUseJsonStr = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.todayScheduleConfigInUse);
@@ -89,34 +89,34 @@ class GsCrLogic extends GetxController {
       scheduleConfig = ScheduleDao.scheduleConfig;
     }
     scheduleConfig ??= ScheduleDao.scheduleConfig;
-    List<SegmentTodayPrgInView> learn = [];
-    List<SegmentTodayPrgInView> review = [];
-    List<SegmentTodayPrgInView> fullCustom = [];
-    Map<int, SegmentTodayPrgInView> typeToSegment = {};
+    List<VerseTodayPrgInView> learn = [];
+    List<VerseTodayPrgInView> review = [];
+    List<VerseTodayPrgInView> fullCustom = [];
+    Map<int, VerseTodayPrgInView> typeToVerse = {};
     for (var item in allProgresses) {
-      var prgTypeAndIndex = SegmentTodayPrg.getPrgTypeAndIndex(item.type);
+      var prgTypeAndIndex = VerseTodayPrg.getPrgTypeAndIndex(item.type);
 
-      SegmentTodayPrgInView view;
-      if (typeToSegment.containsKey(prgTypeAndIndex)) {
-        view = typeToSegment[prgTypeAndIndex]!;
+      VerseTodayPrgInView view;
+      if (typeToVerse.containsKey(prgTypeAndIndex)) {
+        view = typeToVerse[prgTypeAndIndex]!;
       } else {
-        view = SegmentTodayPrgInView([]);
-        typeToSegment[prgTypeAndIndex] = view;
+        view = VerseTodayPrgInView([]);
+        typeToVerse[prgTypeAndIndex] = view;
       }
-      view.segments.add(item);
+      view.verses.add(item);
     }
     int uniqIndex = 0;
     for (var index = 0; index < scheduleConfig.elConfigs.length; index++) {
-      var prgTypeAndIndex = SegmentTodayPrg.toPrgTypeAndIndex(TodayPrgType.learn, index);
+      var prgTypeAndIndex = VerseTodayPrg.toPrgTypeAndIndex(TodayPrgType.learn, index);
       var learnedTotalCount = 0;
       var learnTotalCount = 0;
-      SegmentTodayPrgInView rule;
-      if (typeToSegment.containsKey(prgTypeAndIndex)) {
-        rule = typeToSegment[prgTypeAndIndex]!;
-        learnedTotalCount = SegmentTodayPrg.getFinishedCount(rule.segments);
-        learnTotalCount = rule.segments.length;
+      VerseTodayPrgInView rule;
+      if (typeToVerse.containsKey(prgTypeAndIndex)) {
+        rule = typeToVerse[prgTypeAndIndex]!;
+        learnedTotalCount = VerseTodayPrg.getFinishedCount(rule.verses);
+        learnTotalCount = rule.verses.length;
       } else {
-        rule = SegmentTodayPrgInView([]);
+        rule = VerseTodayPrgInView([]);
       }
       var config = scheduleConfig.elConfigs.elementAt(index);
       rule.index = index;
@@ -125,19 +125,19 @@ class GsCrLogic extends GetxController {
       rule.name = config.title == "" ? "R$index: $learnedTotalCount/$learnTotalCount" : "${config.title}: $learnedTotalCount/$learnTotalCount";
       rule.desc = config.tr();
       learn.add(rule);
-      state.learn.addAll(rule.segments);
+      state.learn.addAll(rule.verses);
     }
     for (var index = 0; index < scheduleConfig.relConfigs.length; index++) {
-      var prgTypeAndIndex = SegmentTodayPrg.toPrgTypeAndIndex(TodayPrgType.review, index);
+      var prgTypeAndIndex = VerseTodayPrg.toPrgTypeAndIndex(TodayPrgType.review, index);
       var learnedTotalCount = 0;
       var learnTotalCount = 0;
-      SegmentTodayPrgInView rule;
-      if (typeToSegment.containsKey(prgTypeAndIndex)) {
-        rule = typeToSegment[prgTypeAndIndex]!;
-        learnedTotalCount = SegmentTodayPrg.getFinishedCount(rule.segments);
-        learnTotalCount = rule.segments.length;
+      VerseTodayPrgInView rule;
+      if (typeToVerse.containsKey(prgTypeAndIndex)) {
+        rule = typeToVerse[prgTypeAndIndex]!;
+        learnedTotalCount = VerseTodayPrg.getFinishedCount(rule.verses);
+        learnTotalCount = rule.verses.length;
       } else {
-        rule = SegmentTodayPrgInView([]);
+        rule = VerseTodayPrgInView([]);
       }
       var config = scheduleConfig.relConfigs.elementAt(index);
       rule.index = index;
@@ -146,19 +146,19 @@ class GsCrLogic extends GetxController {
       rule.name = config.title == "" ? "R$index: $learnedTotalCount/$learnTotalCount" : "${config.title}: $learnedTotalCount/$learnTotalCount";
       rule.desc = config.tr();
       review.add(rule);
-      state.review.addAll(rule.segments);
+      state.review.addAll(rule.verses);
     }
     for (var index = 0; index < fullCustomConfigs.length; index++) {
-      var prgTypeAndIndex = SegmentTodayPrg.toPrgTypeAndIndex(TodayPrgType.fullCustom, index);
+      var prgTypeAndIndex = VerseTodayPrg.toPrgTypeAndIndex(TodayPrgType.fullCustom, index);
       var learnedTotalCount = 0;
       var learnTotalCount = 0;
-      SegmentTodayPrgInView rule;
-      if (typeToSegment.containsKey(prgTypeAndIndex)) {
-        rule = typeToSegment[prgTypeAndIndex]!;
-        learnedTotalCount = SegmentTodayPrg.getFinishedCount(rule.segments);
-        learnTotalCount = rule.segments.length;
+      VerseTodayPrgInView rule;
+      if (typeToVerse.containsKey(prgTypeAndIndex)) {
+        rule = typeToVerse[prgTypeAndIndex]!;
+        learnedTotalCount = VerseTodayPrg.getFinishedCount(rule.verses);
+        learnTotalCount = rule.verses.length;
       } else {
-        rule = SegmentTodayPrgInView([]);
+        rule = VerseTodayPrgInView([]);
       }
       rule.index = index;
       rule.uniqIndex = uniqIndex++;
@@ -166,11 +166,11 @@ class GsCrLogic extends GetxController {
       rule.name = "$index: $learnedTotalCount/$learnTotalCount";
       rule.desc = I18nKey.labelFullCustomConfig.trParams(fullCustomConfigs[index]);
       fullCustom.add(rule);
-      state.fullCustom.addAll(rule.segments);
+      state.fullCustom.addAll(rule.verses);
     }
-    state.segments.addAll(learn);
-    state.segments.addAll(review);
-    state.segments.addAll(fullCustom);
+    state.verses.addAll(learn);
+    state.verses.addAll(review);
+    state.verses.addAll(fullCustom);
 
     var todayLearnCreateDate = await Db().db.scheduleDao.intKv(Classroom.curr, CrK.todayScheduleCreateDate) ?? 0;
     var next = ScheduleDao.getNext(now, ScheduleDao.scheduleConfig.intervalSeconds);
@@ -179,23 +179,23 @@ class GsCrLogic extends GetxController {
     }
     resetLearnDeadline();
 
-    state.learnedTotalCount = SegmentTodayPrg.getFinishedCount(allProgresses);
+    state.learnedTotalCount = VerseTodayPrg.getFinishedCount(allProgresses);
     state.learnTotalCount = allProgresses.length;
 
     for (var l in learn) {
-      var learnedTotalCount = SegmentTodayPrg.getFinishedCount(state.learn);
+      var learnedTotalCount = VerseTodayPrg.getFinishedCount(state.learn);
       var learnTotalCount = state.learn.length;
       l.groupDesc = toGroupName(TodayPrgType.learn) + ": $learnedTotalCount/$learnTotalCount";
     }
 
     for (var l in review) {
-      var learnedTotalCount = SegmentTodayPrg.getFinishedCount(state.review);
+      var learnedTotalCount = VerseTodayPrg.getFinishedCount(state.review);
       var learnTotalCount = state.review.length;
       l.groupDesc = toGroupName(TodayPrgType.review) + ": $learnedTotalCount/$learnTotalCount";
     }
 
     for (var l in fullCustom) {
-      var learnedTotalCount = SegmentTodayPrg.getFinishedCount(state.fullCustom);
+      var learnedTotalCount = VerseTodayPrg.getFinishedCount(state.fullCustom);
       var learnTotalCount = state.fullCustom.length;
       l.groupDesc = toGroupName(TodayPrgType.fullCustom) + ": $learnedTotalCount/$learnTotalCount";
     }
@@ -233,12 +233,12 @@ class GsCrLogic extends GetxController {
     }
   }
 
-  tryStart(List<SegmentTodayPrg> list, {bool grouping = false, Repeat mode = Repeat.normal}) async {
+  tryStart(List<VerseTodayPrg> list, {bool grouping = false, Repeat mode = Repeat.normal}) async {
     var warning = await Db().db.contentDao.hasWarning(Classroom.curr);
     if (warning ?? false) {
       MsgBox.yesOrNo(
         title: I18nKey.labelTips.tr,
-        desc: I18nKey.labelContentsHaveUnnecessarySegments.tr,
+        desc: I18nKey.labelContentsHaveUnnecessaryVerses.tr,
         yesBtnTitle: I18nKey.btnHandleNow.tr,
         yes: () {
           Get.back();
@@ -252,10 +252,10 @@ class GsCrLogic extends GetxController {
       return;
     }
     if (grouping) {
-      list = SegmentTodayPrg.getFirstUnfinishedGroup(list);
+      list = VerseTodayPrg.getFirstUnfinishedGroup(list);
     }
     if (mode == Repeat.normal) {
-      var learnedTotalCount = SegmentTodayPrg.getFinishedCount(list);
+      var learnedTotalCount = VerseTodayPrg.getFinishedCount(list);
       var learnTotalCount = list.length;
       if (learnTotalCount - learnedTotalCount == 0) {
         Snackbar.show(I18nKey.labelNoLearningContent.tr);
@@ -347,13 +347,13 @@ class GsCrLogic extends GetxController {
     }
     await showTransparentOverlay(() async {
       state.forAdd.maxLesson = -1;
-      state.forAdd.maxSegment = -1;
+      state.forAdd.maxVerse = -1;
       state.forAdd.fromContent = state.forAdd.contents[0];
       await initLesson(updateView: false);
-      await initSegment(updateView: false);
+      await initVerse(updateView: false);
       state.forAdd.fromContentIndex = 0;
       state.forAdd.fromLessonIndex = 0;
-      state.forAdd.fromSegmentIndex = 0;
+      state.forAdd.fromVerseIndex = 0;
       state.forAdd.count = 1;
     });
     return true;
@@ -370,14 +370,14 @@ class GsCrLogic extends GetxController {
     }
   }
 
-  Future<void> initSegment({bool updateView = true}) async {
+  Future<void> initVerse({bool updateView = true}) async {
     if (state.forAdd.maxLesson < 0) {
       return;
     }
-    if (state.forAdd.maxSegment < 0) {
+    if (state.forAdd.maxVerse < 0) {
       var contentSerial = state.forAdd.fromContent!.serial;
-      var maxSegment = await Db().db.scheduleDao.getMaxSegmentIndex(Classroom.curr, contentSerial, state.forAdd.fromLessonIndex);
-      state.forAdd.maxSegment = (maxSegment ?? 1) + 1;
+      var maxVerse = await Db().db.scheduleDao.getMaxVerseIndex(Classroom.curr, contentSerial, state.forAdd.fromLessonIndex);
+      state.forAdd.maxVerse = (maxVerse ?? 1) + 1;
       if (updateView) {
         update([GsCrLogic.idForAdd]);
       }
@@ -387,24 +387,24 @@ class GsCrLogic extends GetxController {
   void selectContent(int contentIndex) async {
     var content = state.forAdd.contents[contentIndex];
     state.forAdd.maxLesson = -1;
-    state.forAdd.maxSegment = -1;
+    state.forAdd.maxVerse = -1;
     state.forAdd.fromContent = content;
     state.forAdd.fromContentIndex = contentIndex;
     state.forAdd.fromLessonIndex = 0;
-    state.forAdd.fromSegmentIndex = 0;
+    state.forAdd.fromVerseIndex = 0;
 
     update([GsCrLogic.idForAdd]);
   }
 
   void selectLesson(int lessonIndex) async {
-    state.forAdd.maxSegment = -1;
+    state.forAdd.maxVerse = -1;
     state.forAdd.fromLessonIndex = lessonIndex;
-    state.forAdd.fromSegmentIndex = 0;
+    state.forAdd.fromVerseIndex = 0;
     update([GsCrLogic.idForAdd]);
   }
 
-  void selectSegment(int segmentIndex) async {
-    state.forAdd.fromSegmentIndex = segmentIndex;
+  void selectVerse(int verseIndex) async {
+    state.forAdd.fromVerseIndex = verseIndex;
   }
 
   void selectCount(int count) async {
@@ -415,26 +415,26 @@ class GsCrLogic extends GetxController {
     if (state.forAdd.maxLesson < 0) {
       return;
     }
-    if (state.forAdd.maxSegment < 0) {
+    if (state.forAdd.maxVerse < 0) {
       return;
     }
     await Db().db.scheduleDao.addFullCustom(
           state.forAdd.fromContent!.serial,
           state.forAdd.fromLessonIndex,
-          state.forAdd.fromSegmentIndex,
+          state.forAdd.fromVerseIndex,
           state.forAdd.count,
         );
     await init();
   }
 
   // for copy
-  void copy(BuildContext context, List<SegmentTodayPrg> segments) async {
-    List<SegmentShow> ret = [];
-    for (int i = 0; i < segments.length; i++) {
-      final segment = segments[i];
-      SegmentShow? segmentShow = SegmentHelp.getCache(segment.segmentKeyId);
-      if (segmentShow != null) {
-        ret.add(segmentShow);
+  void copy(BuildContext context, List<VerseTodayPrg> verses) async {
+    List<VerseShow> ret = [];
+    for (int i = 0; i < verses.length; i++) {
+      final verse = verses[i];
+      VerseShow? verseShow = VerseHelp.getCache(verse.verseKeyId);
+      if (verseShow != null) {
+        ret.add(verseShow);
       }
     }
     if (!copyLogic.showQaList(context, ret)) {

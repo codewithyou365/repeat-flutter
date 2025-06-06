@@ -8,8 +8,8 @@ import 'package:repeat_flutter/db/entity/content.dart' show Content;
 import 'package:repeat_flutter/db/entity/lesson.dart';
 import 'package:repeat_flutter/db/entity/lesson_key.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/segment.dart';
-import 'package:repeat_flutter/db/entity/segment_key.dart';
+import 'package:repeat_flutter/db/entity/verse.dart';
+import 'package:repeat_flutter/db/entity/verse_key.dart';
 import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/lesson_show.dart';
@@ -33,7 +33,7 @@ abstract class LessonKeyDao {
 
   @Query('SELECT ifnull(sum(Lesson.lessonKeyId is null),0) missingCount'
       ' FROM LessonKey'
-      ' JOIN Content ON Content.id=:contentId AND Content.serial=SegmentKey.contentSerial AND Content.docId!=0'
+      ' JOIN Content ON Content.id=:contentId AND Content.serial=VerseKey.contentSerial AND Content.docId!=0'
       ' LEFT JOIN Lesson ON Lesson.lessonKeyId=LessonKey.id')
   Future<int?> getMissingCount(int contentId);
 
@@ -143,7 +143,7 @@ abstract class LessonKeyDao {
   Future<void> updateLessonContent(int lessonKeyId, String content) async {
     LessonKey? lessonKey = await getById(lessonKeyId);
     if (lessonKey == null) {
-      Snackbar.show(I18nKey.labelNotFoundSegment.trArgs([lessonKeyId.toString()]));
+      Snackbar.show(I18nKey.labelNotFoundVerse.trArgs([lessonKeyId.toString()]));
       return;
     }
 
@@ -187,9 +187,9 @@ abstract class LessonKeyDao {
     if (lessonKey == null) {
       return true;
     }
-    int segmentKeyDaoCount = await db.segmentKeyDao.count(lessonKey.classroomId, lessonKey.contentSerial, lessonKey.lessonIndex) ?? 0;
-    if (segmentKeyDaoCount != 0) {
-      Snackbar.show(I18nKey.labelLessonHasSegmentsAndCantBeDeleted.tr);
+    int verseKeyDaoCount = await db.verseKeyDao.count(lessonKey.classroomId, lessonKey.contentSerial, lessonKey.lessonIndex) ?? 0;
+    if (verseKeyDaoCount != 0) {
+      Snackbar.show(I18nKey.labelLessonHasVersesAndCantBeDeleted.tr);
       return false;
     }
     await db.lessonDao.deleteById(lessonKeyId);
@@ -208,8 +208,8 @@ abstract class LessonKeyDao {
     int contentSerial = deleteLk.contentSerial;
     int lessonIndex = deleteLk.lessonIndex;
     out['lessonKey'] = deleteLk;
-    var currSegment = await db.segmentDao.one(classroomId, contentSerial, lessonIndex, 0);
-    if (currSegment != null) {
+    var currVerse = await db.verseDao.one(classroomId, contentSerial, lessonIndex, 0);
+    if (currVerse != null) {
       Snackbar.show(I18nKey.labelLessonDeleteBlocked.tr);
       return false;
     }
@@ -238,29 +238,29 @@ abstract class LessonKeyDao {
       v.lessonIndex--;
       insertLessonKeys.add(v);
     }
-    var segments = await db.segmentDao.findByMinLessonIndex(classroomId, contentSerial, lessonIndex);
-    var segmentKeys = await db.segmentKeyDao.findByMinLessonIndex(classroomId, contentSerial, lessonIndex);
-    List<Segment> insertSegments = [];
-    List<SegmentKey> insertSegmentKeys = [];
-    for (var v in segments) {
+    var verses = await db.verseDao.findByMinLessonIndex(classroomId, contentSerial, lessonIndex);
+    var verseKeys = await db.verseKeyDao.findByMinLessonIndex(classroomId, contentSerial, lessonIndex);
+    List<Verse> insertVerses = [];
+    List<VerseKey> insertVerseKeys = [];
+    for (var v in verses) {
       var lessonIndex = v.lessonIndex - 1;
-      v.sort = content.sort * 10000000000 + lessonIndex * 100000 + v.segmentIndex;
+      v.sort = content.sort * 10000000000 + lessonIndex * 100000 + v.verseIndex;
       v.lessonIndex = lessonIndex;
-      insertSegments.add(v);
+      insertVerses.add(v);
     }
-    for (var v in segmentKeys) {
+    for (var v in verseKeys) {
       v.lessonIndex--;
-      insertSegmentKeys.add(v);
+      insertVerseKeys.add(v);
     }
     await db.lessonDao.deleteByMinLessonIndex(classroomId, contentSerial, lessonIndex);
     await deleteByMinLessonIndex(classroomId, contentSerial, lessonIndex);
     await db.lessonDao.insertOrFail(insertLessons);
     await insertOrFail(insertLessonKeys);
 
-    await db.segmentDao.deleteByMinLessonIndex(classroomId, contentSerial, lessonIndex);
-    await db.segmentKeyDao.deleteByMinLessonIndex(classroomId, contentSerial, lessonIndex);
-    await db.segmentDao.insertListOrFail(insertSegments);
-    await db.segmentKeyDao.insertListOrFail(insertSegmentKeys);
+    await db.verseDao.deleteByMinLessonIndex(classroomId, contentSerial, lessonIndex);
+    await db.verseKeyDao.deleteByMinLessonIndex(classroomId, contentSerial, lessonIndex);
+    await db.verseDao.insertListOrFail(insertVerses);
+    await db.verseKeyDao.insertListOrFail(insertVerseKeys);
     await db.textVersionDao.delete(TextVersionType.lessonContent, deleteLk.id!);
     return true;
   }
@@ -337,19 +337,19 @@ abstract class LessonKeyDao {
       v.lessonIndex++;
       insertLessonKeys.add(v);
     }
-    var segments = await db.segmentDao.findByMinLessonIndex(classroomId, bookSerial, chapterIndex);
-    var segmentKeys = await db.segmentKeyDao.findByMinLessonIndex(classroomId, bookSerial, chapterIndex);
-    List<Segment> insertSegments = [];
-    List<SegmentKey> insertSegmentKeys = [];
-    for (var v in segments) {
+    var verses = await db.verseDao.findByMinLessonIndex(classroomId, bookSerial, chapterIndex);
+    var verseKeys = await db.verseKeyDao.findByMinLessonIndex(classroomId, bookSerial, chapterIndex);
+    List<Verse> insertVerses = [];
+    List<VerseKey> insertVerseKeys = [];
+    for (var v in verses) {
       var lessonIndex = v.lessonIndex + 1;
-      v.sort = content.sort * 10000000000 + lessonIndex * 100000 + v.segmentIndex;
+      v.sort = content.sort * 10000000000 + lessonIndex * 100000 + v.verseIndex;
       v.lessonIndex = lessonIndex;
-      insertSegments.add(v);
+      insertVerses.add(v);
     }
-    for (var v in segmentKeys) {
+    for (var v in verseKeys) {
       v.lessonIndex++;
-      insertSegmentKeys.add(v);
+      insertVerseKeys.add(v);
     }
     await deleteByMinLessonIndex(classroomId, bookSerial, chapterIndex);
     await insertOrFail(insertLessonKeys);
@@ -364,10 +364,10 @@ abstract class LessonKeyDao {
     await db.lessonDao.deleteByMinLessonIndex(classroomId, bookSerial, chapterIndex);
     await db.lessonDao.insertOrFail(insertLessons);
 
-    await db.segmentDao.deleteByMinLessonIndex(classroomId, bookSerial, chapterIndex);
-    await db.segmentKeyDao.deleteByMinLessonIndex(classroomId, bookSerial, chapterIndex);
-    await db.segmentDao.insertListOrFail(insertSegments);
-    await db.segmentKeyDao.insertListOrFail(insertSegmentKeys);
+    await db.verseDao.deleteByMinLessonIndex(classroomId, bookSerial, chapterIndex);
+    await db.verseKeyDao.deleteByMinLessonIndex(classroomId, bookSerial, chapterIndex);
+    await db.verseDao.insertListOrFail(insertVerses);
+    await db.verseKeyDao.insertListOrFail(insertVerseKeys);
     await db.textVersionDao.insertOrFail(newTextVersion);
 
     return true;

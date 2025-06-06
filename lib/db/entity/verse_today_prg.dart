@@ -1,4 +1,4 @@
-// entity/segment_today_prg.dart
+// entity/verse_today_prg.dart
 
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
@@ -12,18 +12,18 @@ enum TodayPrgType {
 
 @Entity(
   indices: [
-    Index(value: ['classroomId', 'segmentKeyId', 'type'], unique: true),
+    Index(value: ['classroomId', 'verseKeyId', 'type'], unique: true),
     Index(value: ['classroomId', 'sort']),
     Index(value: ['classroomId', 'contentSerial']),
   ],
 )
-class SegmentTodayPrg {
+class VerseTodayPrg {
   @PrimaryKey(autoGenerate: true)
   final int? id;
   final int classroomId;
   final int contentSerial;
   final int lessonKeyId;
-  final int segmentKeyId;
+  final int verseKeyId;
   int time;
   int type;
   final int sort;
@@ -33,11 +33,11 @@ class SegmentTodayPrg {
   final Date reviewCreateDate;
   bool finish;
 
-  SegmentTodayPrg({
+  VerseTodayPrg({
     required this.classroomId,
     required this.contentSerial,
     required this.lessonKeyId,
-    required this.segmentKeyId,
+    required this.verseKeyId,
     required this.time,
     required this.type,
     required this.sort,
@@ -49,12 +49,12 @@ class SegmentTodayPrg {
     this.id,
   });
 
-  static SegmentTodayPrg empty() {
-    return SegmentTodayPrg(
+  static VerseTodayPrg empty() {
+    return VerseTodayPrg(
       classroomId: 0,
       contentSerial: 0,
       lessonKeyId: 0,
-      segmentKeyId: 0,
+      verseKeyId: 0,
       time: 0,
       type: TodayPrgType.none.index,
       sort: 0,
@@ -66,16 +66,16 @@ class SegmentTodayPrg {
     );
   }
 
-  static void setType(List<SegmentTodayPrg> list, TodayPrgType todayPrgType, int index, int limit) {
+  static void setType(List<VerseTodayPrg> list, TodayPrgType todayPrgType, int index, int limit) {
     if (limit <= 0) {
-      for (SegmentTodayPrg sl in list) {
-        sl.type = SegmentTodayPrg.toType(todayPrgType, index, 0);
+      for (VerseTodayPrg sl in list) {
+        sl.type = VerseTodayPrg.toType(todayPrgType, index, 0);
       }
     } else {
       var groupNumber = 0;
       for (int i = 0; i < list.length; i++) {
         var sl = list[i];
-        sl.type = SegmentTodayPrg.toType(todayPrgType, index, groupNumber);
+        sl.type = VerseTodayPrg.toType(todayPrgType, index, groupNumber);
         if ((i + 1) % limit == 0) {
           groupNumber++;
         }
@@ -117,48 +117,48 @@ class SegmentTodayPrg {
     return (type ~/ 100000) % 100000;
   }
 
-  static List<SegmentTodayPrg> clone(List<SegmentTodayPrg> list) {
-    List<SegmentTodayPrg> clonedList = [];
-    for (SegmentTodayPrg segment in list) {
-      SegmentTodayPrg clonedSegment = SegmentTodayPrg(
-        classroomId: segment.classroomId,
-        contentSerial: segment.contentSerial,
-        lessonKeyId: segment.lessonKeyId,
-        segmentKeyId: segment.segmentKeyId,
-        time: segment.time,
-        type: segment.type,
-        sort: segment.sort,
-        progress: segment.progress,
-        viewTime: segment.viewTime,
-        reviewCount: segment.reviewCount,
-        reviewCreateDate: segment.reviewCreateDate,
-        finish: segment.finish,
-        id: segment.id,
+  static List<VerseTodayPrg> clone(List<VerseTodayPrg> list) {
+    List<VerseTodayPrg> clonedList = [];
+    for (VerseTodayPrg verse in list) {
+      VerseTodayPrg clonedVerse = VerseTodayPrg(
+        classroomId: verse.classroomId,
+        contentSerial: verse.contentSerial,
+        lessonKeyId: verse.lessonKeyId,
+        verseKeyId: verse.verseKeyId,
+        time: verse.time,
+        type: verse.type,
+        sort: verse.sort,
+        progress: verse.progress,
+        viewTime: verse.viewTime,
+        reviewCount: verse.reviewCount,
+        reviewCreateDate: verse.reviewCreateDate,
+        finish: verse.finish,
+        id: verse.id,
       );
-      clonedList.add(clonedSegment);
+      clonedList.add(clonedVerse);
     }
     return clonedList;
   }
 
-  static List<SegmentTodayPrg> refineWithFinish(List<SegmentTodayPrg> list, bool finish) {
-    var wrapper = list.where((segment) {
-      return segment.finish == finish;
+  static List<VerseTodayPrg> refineWithFinish(List<VerseTodayPrg> list, bool finish) {
+    var wrapper = list.where((verse) {
+      return verse.finish == finish;
     });
     return wrapper.toList();
   }
 
-  static int getFinishedCount(List<SegmentTodayPrg> list) {
+  static int getFinishedCount(List<VerseTodayPrg> list) {
     var ret = 0;
-    for (SegmentTodayPrg segment in list) {
-      if (segment.finish) {
+    for (VerseTodayPrg verse in list) {
+      if (verse.finish) {
         ret++;
       }
     }
     return ret;
   }
 
-  static List<SegmentTodayPrg> getFirstUnfinishedGroup(List<SegmentTodayPrg> list) {
-    Map<int, List<SegmentTodayPrg>> grouped = {};
+  static List<VerseTodayPrg> getFirstUnfinishedGroup(List<VerseTodayPrg> list) {
+    Map<int, List<VerseTodayPrg>> grouped = {};
     for (var item in list) {
       if (!grouped.containsKey(item.type)) {
         grouped[item.type] = [];

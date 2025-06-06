@@ -8,12 +8,12 @@ import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
 
 class EditProgress {
-  static void show(int segmentKeyId, {String? warning, String? title, Future<void> Function(int p, int n)? callback}) async {
-    var segmentProgress = await Db().db.scheduleDao.getSegmentProgress(segmentKeyId);
-    if (segmentProgress == null) {
+  static void show(int verseKeyId, {String? warning, String? title, Future<void> Function(int p, int n)? callback}) async {
+    var verseProgress = await Db().db.scheduleDao.getVerseProgress(verseKeyId);
+    if (verseProgress == null) {
       return;
     }
-    var progress = (segmentProgress + 1).obs;
+    var progress = (verseProgress + 1).obs;
     var nextDay = ScheduleDao.getNextByProgress(DateTime.now(), progress.value).value.obs;
     Sheet.showBottomSheet(Get.context!, Obx(() {
       return ListView(
@@ -31,11 +31,11 @@ class EditProgress {
           ),
           if (warning != null) RowWidget.buildMiddleText(warning, ts: const TextStyle(fontSize: RowWidget.titleFontSize, color: Colors.red)),
           if (warning != null) RowWidget.buildDivider(),
-          RowWidget.buildMiddleText(I18nKey.labelAdjustLearnProgressDesc.trArgs(["$segmentProgress"])),
+          RowWidget.buildMiddleText(I18nKey.labelAdjustLearnProgressDesc.trArgs(["$verseProgress"])),
           RowWidget.buildDivider(),
           RowWidget.buildCupertinoPicker(
             I18nKey.labelSetLevel.tr,
-            List.generate(segmentProgress + ScheduleDao.scheduleConfig.forgettingCurve.length, (i) {
+            List.generate(verseProgress + ScheduleDao.scheduleConfig.forgettingCurve.length, (i) {
               return '$i';
             }),
             progress,

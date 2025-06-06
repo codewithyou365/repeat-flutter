@@ -11,7 +11,7 @@ class ScheduleHelp {
   }
 
   static Future<bool> innerAddContentToSchedule(int contentId, int contentSerial, int? indexJsonDocId, String? url) async {
-    var v = await Db().db.scheduleDao.importSegment(contentId, contentSerial, indexJsonDocId, url);
+    var v = await Db().db.scheduleDao.importVerse(contentId, contentSerial, indexJsonDocId, url);
     var ir = ImportResult.values[v];
     bool ret = ir != ImportResult.error;
     return ret;

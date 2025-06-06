@@ -13,12 +13,12 @@ import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content.dart';
-import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/lesson_help.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
-import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -48,7 +48,7 @@ class Helper {
   Map<int, Map<String, dynamic>> lessonMapCache = {};
   Map<int, List<String>> lessonPathCache = {};
 
-  Map<int, Map<String, dynamic>> segmentMapCache = {};
+  Map<int, Map<String, dynamic>> verseMapCache = {};
 
   Helper() {
     LessonKeyDao.setLessonShowContent = [];
@@ -57,9 +57,9 @@ class Helper {
       lessonPathCache.remove(id);
     });
 
-    ScheduleDao.setSegmentShowContent = [];
-    ScheduleDao.setSegmentShowContent.add((int id) {
-      segmentMapCache.remove(id);
+    ScheduleDao.setVerseShowContent = [];
+    ScheduleDao.setVerseShowContent.add((int id) {
+      verseMapCache.remove(id);
     });
   }
 
@@ -82,22 +82,22 @@ class Helper {
     return logic.tip;
   }
 
-  String? getCurrSegmentContent() {
-    if (logic.currSegment == null) {
+  String? getCurrVerseContent() {
+    if (logic.currVerse == null) {
       return null;
     }
-    var segment = SegmentHelp.getCache(logic.currSegment!.segmentKeyId);
-    if (segment == null) {
+    var verse = VerseHelp.getCache(logic.currVerse!.verseKeyId);
+    if (verse == null) {
       return null;
     }
-    return segment.segmentContent;
+    return verse.verseContent;
   }
 
   String? getCurrLessonContent() {
-    if (logic.currSegment == null) {
+    if (logic.currVerse == null) {
       return null;
     }
-    var lesson = LessonHelp.getCache(logic.currSegment!.lessonKeyId);
+    var lesson = LessonHelp.getCache(logic.currVerse!.lessonKeyId);
     if (lesson == null) {
       return null;
     }
@@ -105,10 +105,10 @@ class Helper {
   }
 
   String? getCurrRootContent() {
-    if (logic.currSegment == null) {
+    if (logic.currVerse == null) {
       return null;
     }
-    Content ret = contents.firstWhere((c) => c.serial == logic.currSegment!.contentSerial, orElse: () => Content.empty());
+    Content ret = contents.firstWhere((c) => c.serial == logic.currVerse!.contentSerial, orElse: () => Content.empty());
     if (ret.id == null) {
       return null;
     }
@@ -116,10 +116,10 @@ class Helper {
   }
 
   Map<String, dynamic>? getCurrRootMap() {
-    if (logic.currSegment == null) {
+    if (logic.currVerse == null) {
       return null;
     }
-    Map<String, dynamic>? ret = rootMapCache[logic.currSegment!.contentSerial];
+    Map<String, dynamic>? ret = rootMapCache[logic.currVerse!.contentSerial];
     String? rootContent = getCurrRootContent();
     if (rootContent == null) {
       return null;
@@ -128,15 +128,15 @@ class Helper {
     if (ret is! Map<String, dynamic>) {
       return null;
     }
-    rootMapCache[logic.currSegment!.contentSerial] = ret;
+    rootMapCache[logic.currVerse!.contentSerial] = ret;
     return ret;
   }
 
   Map<String, dynamic>? getCurrLessonMap() {
-    if (logic.currSegment == null) {
+    if (logic.currVerse == null) {
       return null;
     }
-    Map<String, dynamic>? ret = lessonMapCache[logic.currSegment!.lessonKeyId];
+    Map<String, dynamic>? ret = lessonMapCache[logic.currVerse!.lessonKeyId];
     String? lessonContent = getCurrLessonContent();
     if (lessonContent == null) {
       return null;
@@ -145,33 +145,33 @@ class Helper {
     if (ret is! Map<String, dynamic>) {
       return null;
     }
-    lessonMapCache[logic.currSegment!.lessonKeyId] = ret;
+    lessonMapCache[logic.currVerse!.lessonKeyId] = ret;
     return ret;
   }
 
-  SegmentTodayPrg? getCurrSegment() {
-    return logic.currSegment;
+  VerseTodayPrg? getCurrVerse() {
+    return logic.currVerse;
   }
 
-  Map<String, dynamic>? getCurrSegmentMap() {
-    if (logic.currSegment == null) {
+  Map<String, dynamic>? getCurrVerseMap() {
+    if (logic.currVerse == null) {
       return null;
     }
-    Map<String, dynamic>? ret = segmentMapCache[logic.currSegment!.segmentKeyId];
-    String? segmentContent = getCurrSegmentContent();
-    if (segmentContent == null) {
+    Map<String, dynamic>? ret = verseMapCache[logic.currVerse!.verseKeyId];
+    String? verseContent = getCurrVerseContent();
+    if (verseContent == null) {
       return null;
     }
-    ret = jsonDecode(segmentContent);
+    ret = jsonDecode(verseContent);
     if (ret is! Map<String, dynamic>) {
       return null;
     }
-    segmentMapCache[logic.currSegment!.segmentKeyId] = ret;
+    verseMapCache[logic.currVerse!.verseKeyId] = ret;
     return ret;
   }
 
   Map<String, dynamic>? getCurrRepeatDocMap() {
-    if (logic.currSegment == null) {
+    if (logic.currVerse == null) {
       return null;
     }
     String? rootContent = getCurrRootContent();
@@ -183,16 +183,16 @@ class Helper {
       return null;
     }
 
-    var segmentJsonMap = getCurrSegmentMap();
+    var verseJsonMap = getCurrVerseMap();
     var rootJsonMap = jsonDecode(rootContent);
     var lessonJsonMap = jsonDecode(lessonContent);
-    lessonJsonMap['s'] = [segmentJsonMap];
+    lessonJsonMap['v'] = [verseJsonMap];
     rootJsonMap['l'] = [lessonJsonMap];
     return rootJsonMap;
   }
 
   RepeatDoc? getCurrRepeatDoc() {
-    if (logic.currSegment == null) {
+    if (logic.currVerse == null) {
       return null;
     }
     final map = getCurrRepeatDocMap();
@@ -203,10 +203,10 @@ class Helper {
   }
 
   List<String>? getLessonPaths() {
-    if (logic.currSegment == null) {
+    if (logic.currVerse == null) {
       return null;
     }
-    List<String>? ret = lessonPathCache[logic.currSegment!.lessonKeyId];
+    List<String>? ret = lessonPathCache[logic.currVerse!.lessonKeyId];
     if (ret != null) {
       return ret;
     }
@@ -218,28 +218,28 @@ class Helper {
     var downloads = lesson.download ?? [];
     ret = [];
     for (var download in downloads) {
-      ret.add(rootPath.joinPath(DocPath.getRelativePath(logic.currSegment!.contentSerial)).joinPath(download.path));
+      ret.add(rootPath.joinPath(DocPath.getRelativePath(logic.currVerse!.contentSerial)).joinPath(download.path));
     }
-    lessonPathCache[logic.currSegment!.lessonKeyId] = ret;
+    lessonPathCache[logic.currVerse!.lessonKeyId] = ret;
     return ret;
   }
 
   String? getCurrViewName() {
     String? ret;
-    var m = getCurrSegmentMap();
-    if (m != null && m['v'] != null) {
-      ret = m['v'] as String;
+    var m = getCurrVerseMap();
+    if (m != null && m['s'] != null) {
+      ret = m['s'] as String;
     }
     if (ret == null) {
       m = getCurrLessonMap();
-      if (m != null && m['v'] != null) {
-        ret = m['v'] as String;
+      if (m != null && m['s'] != null) {
+        ret = m['s'] as String;
       }
     }
     if (ret == null) {
       m = getCurrRootMap();
-      if (m != null && m['v'] != null) {
-        ret = m['v'] as String;
+      if (m != null && m['s'] != null) {
+        ret = m['s'] as String;
       }
     }
     if (ret != null) {
@@ -287,7 +287,7 @@ class Helper {
           }
 
           try {
-            var s = getCurrSegment()!;
+            var s = getCurrVerse()!;
             String hash = await Hash.toSha1(pickedPath);
             Download download = Download(url: pickedName, hash: hash);
             var rootPath = await DocPath.getContentPath();

@@ -1,7 +1,7 @@
 import 'package:repeat_flutter/db/entity/content.dart';
-import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 
-class SegmentTodayPrgInView {
+class VerseTodayPrgInView {
   int index;
   int uniqIndex;
   String name;
@@ -9,10 +9,10 @@ class SegmentTodayPrgInView {
   String groupDesc;
   String desc;
 
-  List<SegmentTodayPrg> segments;
+  List<VerseTodayPrg> verses;
 
-  SegmentTodayPrgInView(
-    this.segments, {
+  VerseTodayPrgInView(
+    this.verses, {
     this.index = 0,
     this.uniqIndex = 0,
     this.name = "",
@@ -26,21 +26,21 @@ class ForAdd {
   List<Content> contents = [];
   List<String> contentNames = [];
   int maxLesson = 1;
-  int maxSegment = 1;
+  int maxVerse = 1;
 
   Content? fromContent;
   int fromContentIndex = 0;
   int fromLessonIndex = 0;
-  int fromSegmentIndex = 0;
+  int fromVerseIndex = 0;
   int count = 1;
 }
 
 class GsCrState {
-  List<SegmentTodayPrgInView> segments = [];
-  List<SegmentTodayPrg> all = [];
-  List<SegmentTodayPrg> learn = [];
-  List<SegmentTodayPrg> review = [];
-  List<SegmentTodayPrg> fullCustom = [];
+  List<VerseTodayPrgInView> verses = [];
+  List<VerseTodayPrg> all = [];
+  List<VerseTodayPrg> learn = [];
+  List<VerseTodayPrg> review = [];
+  List<VerseTodayPrg> fullCustom = [];
 
   ForAdd forAdd = ForAdd();
 

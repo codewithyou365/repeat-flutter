@@ -1,17 +1,17 @@
-// entity/segment_overall_prg.dart
+// entity/verse_overall_prg.dart
 
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
 
 @Entity(
-  primaryKeys: ['segmentKeyId'],
+  primaryKeys: ['verseKeyId'],
   indices: [
     Index(value: ['classroomId', 'next', 'progress']),
     Index(value: ['classroomId', 'contentSerial']),
   ],
 )
-class SegmentOverallPrg {
-  int segmentKeyId;
+class VerseOverallPrg {
+  int verseKeyId;
 
   final int classroomId;
   final int contentSerial;
@@ -19,8 +19,8 @@ class SegmentOverallPrg {
 
   final int progress;
 
-  SegmentOverallPrg(
-    this.segmentKeyId,
+  VerseOverallPrg(
+    this.verseKeyId,
     this.classroomId,
     this.contentSerial,
     this.next,

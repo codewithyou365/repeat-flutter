@@ -95,14 +95,14 @@ class GsCrContentShareLogic extends GetxController {
     await response.close();
   }
 
-  Future<void> _serveFile(List<String> pathSegments, HttpRequest request) async {
+  Future<void> _serveFile(List<String> pathVerses, HttpRequest request) async {
     var response = request.response;
-    var path = Url.toPath(pathSegments);
+    var path = Url.toPath(pathVerses);
     if (path == state.lanAddressSuffix) {
       String userAgent = request.headers.value('user-agent') ?? 'Unknown';
       response.headers.contentType = ContentType.json;
       if (userAgent == DownloadConstant.userAgent) {
-        response.headers.set('Content-Disposition', 'attachment; filename="${pathSegments.last}"');
+        response.headers.set('Content-Disposition', 'attachment; filename="${pathVerses.last}"');
       } else {
         response.headers.set('Content-Disposition', 'inline');
       }

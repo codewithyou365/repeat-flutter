@@ -101,9 +101,9 @@ class GsCrContentPage extends StatelessWidget {
       ));
       menus.add(PopupMenuItem<String>(
         onTap: () {
-          logic.showSegment(model.id!);
+          logic.showVerse(model.id!);
         },
-        child: Text(I18nKey.labelSegmentName.tr),
+        child: Text(I18nKey.labelVerseName.tr),
       ));
     }
     menus.add(PopupMenuItem<String>(
@@ -127,11 +127,11 @@ class GsCrContentPage extends StatelessWidget {
                 style: TextStyle(fontSize: 50.sp),
               ),
             ),
-            if ((model.lessonWarning == true || model.segmentWarning == true) && model.docId != 0)
+            if ((model.lessonWarning == true || model.verseWarning == true) && model.docId != 0)
               IconButton(
                 onPressed: () {
-                  if (model.segmentWarning) {
-                    logic.showSegment(model.id!);
+                  if (model.verseWarning) {
+                    logic.showVerse(model.id!);
                   } else if (model.lessonWarning) {
                     logic.showLesson(model.id!);
                   }

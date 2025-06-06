@@ -2,7 +2,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/widgets.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/lesson_show.dart';
-import 'package:repeat_flutter/logic/model/segment_show.dart';
+import 'package:repeat_flutter/logic/model/verse_show.dart';
 
 abstract class ViewLogic {
   final FocusNode searchFocusNode = FocusNode();

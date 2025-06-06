@@ -1,34 +1,34 @@
-// entity/segment.dart
+// entity/verse.dart
 
 import 'package:floor/floor.dart';
 
 @Entity(
-  primaryKeys: ['segmentKeyId'],
+  primaryKeys: ['verseKeyId'],
   indices: [
     Index(value: ['classroomId', 'sort'], unique: true),
-    Index(value: ['classroomId', 'contentSerial', 'lessonIndex', 'segmentIndex'], unique: true),
+    Index(value: ['classroomId', 'contentSerial', 'lessonIndex', 'verseIndex'], unique: true),
   ],
 )
-class Segment {
-  int segmentKeyId;
+class Verse {
+  int verseKeyId;
 
   final int classroomId;
   final int contentSerial;
   int lessonIndex;
-  int segmentIndex;
+  int verseIndex;
 
   int sort;
 
-  Segment({
-    required this.segmentKeyId,
+  Verse({
+    required this.verseKeyId,
     required this.classroomId,
     required this.contentSerial,
     required this.lessonIndex,
-    required this.segmentIndex,
+    required this.verseIndex,
     required this.sort,
   });
 
   String toStringKey() {
-    return '$classroomId|$contentSerial|$lessonIndex|$segmentIndex';
+    return '$classroomId|$contentSerial|$lessonIndex|$verseIndex';
   }
 }

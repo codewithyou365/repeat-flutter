@@ -1,12 +1,12 @@
-// entity/game_user_segment.dart
+// entity/game_user_verse.dart
 
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
 
 @Entity(
   indices: [
-    Index(value: ['classroomId', 'contentSerial', 'lessonIndex', 'segmentIndex']),
-    Index(value: ['segmentKeyId']),
+    Index(value: ['classroomId', 'contentSerial', 'lessonIndex', 'verseIndex']),
+    Index(value: ['verseKeyId']),
     Index(value: ['createDate']),
     Index(value: ['gameId', 'gameUserId', 'time']),
   ],
@@ -17,11 +17,11 @@ class GameUserInput {
   final int gameId;
   final int gameUserId;
   final int time;
-  final int segmentKeyId;
+  final int verseKeyId;
   final int classroomId;
   final int contentSerial;
   final int lessonIndex;
-  final int segmentIndex;
+  final int verseIndex;
 
   final String input;
   final String output;
@@ -32,11 +32,11 @@ class GameUserInput {
     this.gameId,
     this.gameUserId,
     this.time,
-    this.segmentKeyId,
+    this.verseKeyId,
     this.classroomId,
     this.contentSerial,
     this.lessonIndex,
-    this.segmentIndex,
+    this.verseIndex,
     this.input,
     this.output,
     this.createTime,

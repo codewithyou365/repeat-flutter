@@ -9,8 +9,8 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/model/segment_show.dart';
-import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/logic/model/verse_show.dart';
+import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/logic/widget/lesson_list.dart';
@@ -26,14 +26,14 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'editor.dart';
 
-class SegmentList<T extends GetxController> {
-  static const String bodyId = "SegmentList.bodyId";
-  static const String findUnnecessarySegmentsId = "SegmentList.findUnnecessarySegmentsId";
-  static const String detailSearchId = "SegmentList.searchId";
+class VerseList<T extends GetxController> {
+  static const String bodyId = "VerseList.bodyId";
+  static const String findUnnecessaryVersesId = "VerseList.findUnnecessaryVersesId";
+  static const String detailSearchId = "VerseList.searchId";
 
   final T parentLogic;
 
-  SegmentList(this.parentLogic);
+  VerseList(this.parentLogic);
 
   late HistoryList historyList = HistoryList<T>(parentLogic);
   late LessonList lessonList = LessonList<T>(parentLogic);
@@ -41,26 +41,26 @@ class SegmentList<T extends GetxController> {
   Future<void> show({
     String? initContentNameSelect,
     int? initLessonSelect,
-    int? selectSegmentKeyId,
+    int? selectVerseKeyId,
     bool focus = false,
     Future<void> Function()? removeWarning,
   }) async {
-    List<SegmentShow> segmentShow = await SegmentHelp.getSegments();
+    List<VerseShow> verseShow = await VerseHelp.getVerses();
     return await _showSheet(
-      segmentShow,
+      verseShow,
       initContentNameSelect: initContentNameSelect,
       initLessonSelect: initLessonSelect,
-      selectSegmentKeyId: selectSegmentKeyId,
+      selectVerseKeyId: selectVerseKeyId,
       focus: focus,
       removeWarning: removeWarning,
     );
   }
 
   Future<void> _showSheet(
-    List<SegmentShow> originalSegmentShow, {
+    List<VerseShow> originalVerseShow, {
     String? initContentNameSelect,
     int? initLessonSelect,
-    int? selectSegmentKeyId,
+    int? selectVerseKeyId,
     bool focus = true,
     Future<void> Function()? removeWarning,
   }) {
@@ -71,7 +71,7 @@ class SegmentList<T extends GetxController> {
     void tryUpdateDetailSearchPanel(bool newShow) {
       if (showSearchDetailPanel != newShow) {
         showSearchDetailPanel = newShow;
-        parentLogic.update([SegmentList.detailSearchId]);
+        parentLogic.update([VerseList.detailSearchId]);
       }
     }
 
@@ -91,7 +91,7 @@ class SegmentList<T extends GetxController> {
     });
 
     // for sorting and content
-    List<SegmentShow> segmentShow = List.from(originalSegmentShow);
+    List<VerseShow> verseShow = List.from(originalVerseShow);
     RxInt selectedSortIndex = 0.obs;
     List<I18nKey> sortOptionKeys = [
       I18nKey.labelSortPositionAsc,
@@ -102,22 +102,22 @@ class SegmentList<T extends GetxController> {
       I18nKey.labelSortNextLearnDateDesc,
     ];
     List<String> sortOptions = sortOptionKeys.map((key) => key.tr).toList();
-    sort(segmentShow, sortOptionKeys[selectedSortIndex.value]);
+    sort(verseShow, sortOptionKeys[selectedSortIndex.value]);
 
-    // for collect search data, and missing segment
-    int missingSegmentOffset = -1;
-    List<int> missingSegmentIndex = [];
+    // for collect search data, and missing verse
+    int missingVerseOffset = -1;
+    List<int> missingVerseIndex = [];
     List<String> contentNameOptions = [];
     List<int> lesson = [];
     List<int> progress = [];
     List<int> nextMonth = [];
-    collectDataFromSegments(
-      missingSegmentIndex,
+    collectDataFromVerses(
+      missingVerseIndex,
       contentNameOptions,
       lesson,
       progress,
       nextMonth,
-      segmentShow, // keep consistent with view below.
+      verseShow, // keep consistent with view below.
     );
     RxInt contentNameSelect = 0.obs;
     RxInt lessonSelect = 0.obs;
@@ -150,7 +150,7 @@ class SegmentList<T extends GetxController> {
     final Size screenSize = mediaQueryData.size;
     final totalHeight = screenSize.height - mediaQueryData.padding.top;
     final baseBodyViewHeight = totalHeight - RowWidget.rowHeight - RowWidget.dividerHeight - Sheet.paddingVertical * 2;
-    bodyViewHeight = getBodyViewHeight(missingSegmentIndex, baseBodyViewHeight);
+    bodyViewHeight = getBodyViewHeight(missingVerseIndex, baseBodyViewHeight);
 
     String genSearchKey() {
       return '${contentNameSelect.value},${lessonSelect.value},${progressSelect.value},${nextMonthSelect.value},${search.value}';
@@ -164,12 +164,12 @@ class SegmentList<T extends GetxController> {
       }
       searchKey = newSearchKey;
       if (search.value.isNotEmpty || contentNameSelect.value != 0 || lessonSelect.value != 0 || progressSelect.value != 0 || nextMonthSelect.value != 0) {
-        segmentShow = originalSegmentShow.where((e) {
+        verseShow = originalVerseShow.where((e) {
           bool ret = true;
           if (ret && search.value.isNotEmpty) {
-            ret = e.segmentContent.contains(search.value);
+            ret = e.verseContent.contains(search.value);
             if (ret == false) {
-              ret = e.segmentNote.contains(search.value);
+              ret = e.verseNote.contains(search.value);
             }
           }
           if (ret && contentNameSelect.value != 0) {
@@ -189,13 +189,13 @@ class SegmentList<T extends GetxController> {
           return ret;
         }).toList();
       } else {
-        segmentShow = List.from(originalSegmentShow);
+        verseShow = List.from(originalVerseShow);
       }
-      sort(segmentShow, sortOptionKeys[selectedSortIndex.value]);
-      refreshMissingSegmentIndex(missingSegmentIndex, segmentShow);
+      sort(verseShow, sortOptionKeys[selectedSortIndex.value]);
+      refreshMissingVerseIndex(missingVerseIndex, verseShow);
 
-      bodyViewHeight = getBodyViewHeight(missingSegmentIndex, baseBodyViewHeight);
-      parentLogic.update([SegmentList.findUnnecessarySegmentsId, SegmentList.bodyId]);
+      bodyViewHeight = getBodyViewHeight(missingVerseIndex, baseBodyViewHeight);
+      parentLogic.update([VerseList.findUnnecessaryVersesId, VerseList.bodyId]);
     }
 
     // init select
@@ -211,11 +211,11 @@ class SegmentList<T extends GetxController> {
         lessonSelect.value = index;
       }
     }
-    void scrollTo(int selectSegmentKeyId) {
+    void scrollTo(int selectVerseKeyId) {
       int? selectedIndex;
-      SegmentShow? ss = SegmentHelp.getCache(selectSegmentKeyId);
+      VerseShow? ss = VerseHelp.getCache(selectVerseKeyId);
       if (ss != null) {
-        selectedIndex = segmentShow.indexOf(ss);
+        selectedIndex = verseShow.indexOf(ss);
       }
       if (selectedIndex != null) {
         itemScrollController.scrollTo(
@@ -228,22 +228,22 @@ class SegmentList<T extends GetxController> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       trySearch();
-      if (selectSegmentKeyId != null) {
-        scrollTo(selectSegmentKeyId);
+      if (selectVerseKeyId != null) {
+        scrollTo(selectVerseKeyId);
       }
     });
 
-    delete({required SegmentShow segment}) async {
+    delete({required VerseShow verse}) async {
       await showOverlay(() async {
-        bool ok = await Db().db.scheduleDao.deleteNormalSegment(segment.segmentKeyId);
+        bool ok = await Db().db.scheduleDao.deleteNormalVerse(verse.verseKeyId);
         if (!ok) {
           return false;
         }
-        originalSegmentShow = await SegmentHelp.getSegments(
+        originalVerseShow = await VerseHelp.getVerses(
           force: true,
           query: QueryLesson(
-            contentSerial: segment.contentSerial,
-            chapterIndex: segment.lessonIndex,
+            contentSerial: verse.contentSerial,
+            chapterIndex: verse.lessonIndex,
           ),
         );
         trySearch(force: true);
@@ -253,21 +253,21 @@ class SegmentList<T extends GetxController> {
       Get.back();
     }
 
-    copy({required SegmentShow segment, required bool below}) async {
+    copy({required VerseShow verse, required bool below}) async {
       await showOverlay(() async {
-        int segmentIndex = segment.segmentIndex;
+        int verseIndex = verse.verseIndex;
         if (below) {
-          segmentIndex++;
+          verseIndex++;
         }
-        var segmentKeyId = await Db().db.scheduleDao.addSegment(segment, segmentIndex);
-        if (segmentKeyId == 0) {
+        var verseKeyId = await Db().db.scheduleDao.addVerse(verse, verseIndex);
+        if (verseKeyId == 0) {
           return;
         }
-        originalSegmentShow = await SegmentHelp.getSegments(
+        originalVerseShow = await VerseHelp.getVerses(
           force: true,
           query: QueryLesson(
-            contentSerial: segment.contentSerial,
-            chapterIndex: segment.lessonIndex,
+            contentSerial: verse.contentSerial,
+            chapterIndex: verse.lessonIndex,
           ),
         );
         trySearch(force: true);
@@ -283,23 +283,23 @@ class SegmentList<T extends GetxController> {
           children: [
             RowWidget.buildSearch(search, searchController, focusNode: focusNode, onClose: Get.back, onSearch: trySearch),
             RowWidget.buildDividerWithoutColor(),
-            if (missingSegmentIndex.isNotEmpty)
+            if (missingVerseIndex.isNotEmpty)
               GetBuilder<T>(
-                  id: SegmentList.findUnnecessarySegmentsId,
+                  id: VerseList.findUnnecessaryVersesId,
                   builder: (_) {
-                    if (missingSegmentIndex.isNotEmpty) {
+                    if (missingVerseIndex.isNotEmpty) {
                       return Column(
                         children: [
-                          RowWidget.buildWidgetsWithTitle(I18nKey.labelFindUnnecessarySegments.tr, [
+                          RowWidget.buildWidgetsWithTitle(I18nKey.labelFindUnnecessaryVerses.tr, [
                             IconButton(
                                 onPressed: () {
-                                  if (missingSegmentOffset - 1 < 0) {
-                                    missingSegmentOffset = 0;
+                                  if (missingVerseOffset - 1 < 0) {
+                                    missingVerseOffset = 0;
                                   } else {
-                                    missingSegmentOffset--;
+                                    missingVerseOffset--;
                                   }
                                   itemScrollController.scrollTo(
-                                    index: missingSegmentIndex[missingSegmentOffset],
+                                    index: missingVerseIndex[missingVerseOffset],
                                     duration: const Duration(milliseconds: 500),
                                     curve: Curves.easeInOut,
                                   );
@@ -307,13 +307,13 @@ class SegmentList<T extends GetxController> {
                                 icon: const Icon(Icons.arrow_back)),
                             IconButton(
                                 onPressed: () {
-                                  if (missingSegmentOffset + 1 >= missingSegmentIndex.length) {
-                                    missingSegmentOffset = missingSegmentIndex.length - 1;
+                                  if (missingVerseOffset + 1 >= missingVerseIndex.length) {
+                                    missingVerseOffset = missingVerseIndex.length - 1;
                                   } else {
-                                    missingSegmentOffset++;
+                                    missingVerseOffset++;
                                   }
                                   itemScrollController.scrollTo(
-                                    index: missingSegmentIndex[missingSegmentOffset],
+                                    index: missingVerseIndex[missingVerseOffset],
                                     duration: const Duration(milliseconds: 500),
                                     curve: Curves.easeInOut,
                                   );
@@ -328,9 +328,9 @@ class SegmentList<T extends GetxController> {
                     }
                   }),
             GetBuilder<T>(
-              id: SegmentList.bodyId,
+              id: VerseList.bodyId,
               builder: (_) {
-                var list = segmentShow;
+                var list = verseShow;
                 return SizedBox(
                   height: bodyViewHeight,
                   width: screenSize.width,
@@ -360,9 +360,9 @@ class SegmentList<T extends GetxController> {
                         if (index >= list.length) {
                           return const SizedBox.shrink();
                         }
-                        final segment = list[index];
+                        final verse = list[index];
                         return Card(
-                          color: segment.missing ? Colors.red : null,
+                          color: verse.missing ? Colors.red : null,
                           elevation: 2,
                           margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                           shape: RoundedRectangleBorder(
@@ -384,13 +384,13 @@ class SegmentList<T extends GetxController> {
                                       ),
                                       child: GestureDetector(
                                         onTap: () async {
-                                          var lesson = await Db().db.lessonDao.one(Classroom.curr, segment.contentSerial, segment.lessonIndex);
+                                          var lesson = await Db().db.lessonDao.one(Classroom.curr, verse.contentSerial, verse.lessonIndex);
                                           if (lesson != null) {
                                             lessonList.show(
                                               initContentNameSelect: initContentNameSelect,
                                               selectLessonKeyId: lesson.lessonKeyId,
-                                              segmentModified: () async {
-                                                originalSegmentShow = await SegmentHelp.getSegments();
+                                              verseModified: () async {
+                                                originalVerseShow = await VerseHelp.getVerses();
                                                 trySearch(force: true);
                                               },
                                             );
@@ -399,11 +399,11 @@ class SegmentList<T extends GetxController> {
                                         child: Text.rich(
                                           TextSpan(children: [
                                             TextSpan(
-                                              text: '${I18nKey.labelLessonName.tr}: ${segment.toLessonPos()}',
+                                              text: '${I18nKey.labelLessonName.tr}: ${verse.toLessonPos()}',
                                               style: const TextStyle(fontSize: 12, color: Colors.blue),
                                             ),
                                             TextSpan(
-                                              text: segment.toSegmentPos(),
+                                              text: verse.toVersePos(),
                                               style: const TextStyle(fontSize: 12, color: Colors.grey),
                                             ),
                                           ]),
@@ -413,7 +413,7 @@ class SegmentList<T extends GetxController> {
                                     SizedBox(height: 8, width: screenSize.width),
                                     ExpandableText(
                                       title: I18nKey.labelKey.tr,
-                                      text: ': ${segment.k}',
+                                      text: ': ${verse.k}',
                                       limit: 50,
                                       style: const TextStyle(fontWeight: FontWeight.bold),
                                       selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
@@ -421,9 +421,9 @@ class SegmentList<T extends GetxController> {
                                     ),
                                     const SizedBox(height: 8),
                                     ExpandableText(
-                                      title: I18nKey.labelSegmentName.tr,
-                                      text: ': ${segment.segmentContent}',
-                                      version: segment.segmentContentVersion,
+                                      title: I18nKey.labelVerseName.tr,
+                                      text: ': ${verse.verseContent}',
+                                      version: verse.verseContentVersion,
                                       limit: 60,
                                       style: const TextStyle(fontSize: 14),
                                       selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
@@ -431,19 +431,19 @@ class SegmentList<T extends GetxController> {
                                       selectText: search.value,
                                       onEdit: () {
                                         focusNode.unfocus();
-                                        var contentM = jsonDecode(segment.segmentContent);
+                                        var contentM = jsonDecode(verse.verseContent);
                                         var content = const JsonEncoder.withIndent(' ').convert(contentM);
                                         Editor.show(
                                           Get.context!,
-                                          I18nKey.labelSegmentName.tr,
+                                          I18nKey.labelVerseName.tr,
                                           content,
                                           (str) async {
-                                            await Db().db.scheduleDao.tUpdateSegmentContent(segment.segmentKeyId, str);
-                                            parentLogic.update([SegmentList.bodyId]);
+                                            await Db().db.scheduleDao.tUpdateVerseContent(verse.verseKeyId, str);
+                                            parentLogic.update([VerseList.bodyId]);
                                           },
                                           qrPagePath: Nav.gsCrContentScan.path,
                                           onHistory: () {
-                                            historyList.show(TextVersionType.segmentContent, segment.segmentKeyId);
+                                            historyList.show(TextVersionType.verseContent, verse.verseKeyId);
                                           },
                                         );
                                       },
@@ -451,9 +451,9 @@ class SegmentList<T extends GetxController> {
                                     const SizedBox(height: 8),
                                     ExpandableText(
                                       title: I18nKey.labelNote.tr,
-                                      text: ': ${segment.segmentNote}',
+                                      text: ': ${verse.verseNote}',
                                       limit: 60,
-                                      version: segment.segmentNoteVersion,
+                                      version: verse.verseNoteVersion,
                                       style: const TextStyle(fontSize: 14),
                                       selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
                                       versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
@@ -463,14 +463,14 @@ class SegmentList<T extends GetxController> {
                                         Editor.show(
                                           Get.context!,
                                           I18nKey.labelNote.tr,
-                                          segment.segmentNote,
+                                          verse.verseNote,
                                           (str) async {
-                                            await Db().db.scheduleDao.tUpdateSegmentNote(segment.segmentKeyId, str);
-                                            parentLogic.update([SegmentList.bodyId]);
+                                            await Db().db.scheduleDao.tUpdateVerseNote(verse.verseKeyId, str);
+                                            parentLogic.update([VerseList.bodyId]);
                                           },
                                           qrPagePath: Nav.gsCrContentScan.path,
                                           onHistory: () {
-                                            historyList.show(TextVersionType.segmentNote, segment.segmentKeyId);
+                                            historyList.show(TextVersionType.verseNote, verse.verseKeyId);
                                           },
                                         );
                                       },
@@ -486,10 +486,10 @@ class SegmentList<T extends GetxController> {
                                           ),
                                           child: GestureDetector(
                                             onTap: () {
-                                              editProgressWithMsgBox(segment);
+                                              editProgressWithMsgBox(verse);
                                             },
                                             child: Text(
-                                              '${I18nKey.labelProgress.tr}: ${segment.progress}',
+                                              '${I18nKey.labelProgress.tr}: ${verse.progress}',
                                               style: const TextStyle(fontSize: 12, color: Colors.green),
                                             ),
                                           ),
@@ -503,10 +503,10 @@ class SegmentList<T extends GetxController> {
                                           ),
                                           child: GestureDetector(
                                             onTap: () {
-                                              editProgressWithMsgBox(segment);
+                                              editProgressWithMsgBox(verse);
                                             },
                                             child: Text(
-                                              '${I18nKey.labelSetNextLearnDate.tr}: ${segment.next.format()}',
+                                              '${I18nKey.labelSetNextLearnDate.tr}: ${verse.next.format()}',
                                               style: const TextStyle(fontSize: 12, color: Colors.green),
                                             ),
                                           ),
@@ -519,28 +519,28 @@ class SegmentList<T extends GetxController> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                  if (segment.missing)
+                                  if (verse.missing)
                                     IconButton(
                                       onPressed: () {
                                         MsgBox.yesOrNo(
                                           title: I18nKey.labelDelete.tr,
-                                          desc: I18nKey.labelDeleteSegment.tr,
+                                          desc: I18nKey.labelDeleteVerse.tr,
                                           yes: () {
                                             showTransparentOverlay(() async {
-                                              await Db().db.scheduleDao.deleteAbnormalSegment(segment.segmentKeyId);
+                                              await Db().db.scheduleDao.deleteAbnormalVerse(verse.verseKeyId);
 
-                                              SegmentHelp.deleteCache(segment.segmentKeyId);
-                                              segmentShow.removeWhere((element) => element.segmentKeyId == segment.segmentKeyId);
+                                              VerseHelp.deleteCache(verse.verseKeyId);
+                                              verseShow.removeWhere((element) => element.verseKeyId == verse.verseKeyId);
 
-                                              var contentId2Missing = refreshMissingSegmentIndex(missingSegmentIndex, segmentShow);
-                                              var warning = contentId2Missing[segment.contentId] ?? false;
+                                              var contentId2Missing = refreshMissingVerseIndex(missingVerseIndex, verseShow);
+                                              var warning = contentId2Missing[verse.contentId] ?? false;
                                               if (warning == false) {
-                                                await Db().db.contentDao.updateContentWarningForSegment(segment.contentId, warning, DateTime.now().millisecondsSinceEpoch);
+                                                await Db().db.contentDao.updateContentWarningForVerse(verse.contentId, warning, DateTime.now().millisecondsSinceEpoch);
                                                 if (removeWarning != null) {
                                                   await removeWarning();
                                                 }
                                               }
-                                              parentLogic.update([SegmentList.findUnnecessarySegmentsId, SegmentList.bodyId]);
+                                              parentLogic.update([VerseList.findUnnecessaryVersesId, VerseList.bodyId]);
                                               Get.back();
                                             });
                                           },
@@ -557,8 +557,8 @@ class SegmentList<T extends GetxController> {
                                         onTap: () {
                                           MsgBox.yesOrNo(
                                             title: I18nKey.labelWarning.tr,
-                                            desc: I18nKey.labelDeleteSegment.tr,
-                                            yes: () => delete(segment: segment),
+                                            desc: I18nKey.labelDeleteVerse.tr,
+                                            yes: () => delete(verse: verse),
                                           );
                                         },
                                         child: Text(I18nKey.btnDelete.tr),
@@ -577,11 +577,11 @@ class SegmentList<T extends GetxController> {
                                                 ),
                                                 MsgBox.button(
                                                   text: I18nKey.btnAbove.tr,
-                                                  onPressed: () => copy(segment: segment, below: false),
+                                                  onPressed: () => copy(verse: verse, below: false),
                                                 ),
                                                 MsgBox.button(
                                                   text: I18nKey.btnBelow.tr,
-                                                  onPressed: () => copy(segment: segment, below: true),
+                                                  onPressed: () => copy(verse: verse, below: true),
                                                 ),
                                               ]));
                                         },
@@ -603,7 +603,7 @@ class SegmentList<T extends GetxController> {
           ],
         ),
         GetBuilder<T>(
-            id: SegmentList.detailSearchId,
+            id: VerseList.detailSearchId,
             builder: (_) {
               if (showSearchDetailPanel) {
                 double searchViewHeight = 4.5 * (RowWidget.rowHeight + RowWidget.dividerHeight);
@@ -672,8 +672,8 @@ class SegmentList<T extends GetxController> {
                               changed: (index) {
                                 selectedSortIndex.value = index;
                                 I18nKey key = sortOptionKeys[index];
-                                sort(segmentShow, key);
-                                parentLogic.update([SegmentList.bodyId]);
+                                sort(verseShow, key);
+                                parentLogic.update([VerseList.bodyId]);
                               },
                               pickWidth: 210.w,
                             ),
@@ -696,35 +696,35 @@ class SegmentList<T extends GetxController> {
     });
   }
 
-  static Map<int, bool> refreshMissingSegmentIndex(
-    List<int> missingSegmentIndex,
-    List<SegmentShow> segmentShow,
+  static Map<int, bool> refreshMissingVerseIndex(
+    List<int> missingVerseIndex,
+    List<VerseShow> verseShow,
   ) {
-    missingSegmentIndex.clear();
+    missingVerseIndex.clear();
 
     Map<int, bool> contentId2Missing = {};
-    for (int i = 0; i < segmentShow.length; i++) {
-      var v = segmentShow[i];
+    for (int i = 0; i < verseShow.length; i++) {
+      var v = verseShow[i];
       if (v.missing) {
         contentId2Missing[v.contentId] = true;
-        missingSegmentIndex.add(i);
+        missingVerseIndex.add(i);
       }
     }
     return contentId2Missing;
   }
 
-  static void collectDataFromSegments(
-    List<int> missingSegmentIndex,
+  static void collectDataFromVerses(
+    List<int> missingVerseIndex,
     List<String> contentName,
     List<int> lesson,
     List<int> progress,
     List<int> nextMonth,
-    List<SegmentShow> segmentShow,
+    List<VerseShow> verseShow,
   ) {
-    for (int i = 0; i < segmentShow.length; i++) {
-      var v = segmentShow[i];
+    for (int i = 0; i < verseShow.length; i++) {
+      var v = verseShow[i];
       if (v.missing) {
-        missingSegmentIndex.add(i);
+        missingVerseIndex.add(i);
       }
       if (!contentName.contains(v.contentName)) {
         contentName.add(v.contentName);
@@ -749,34 +749,34 @@ class SegmentList<T extends GetxController> {
     nextMonth.insert(0, -1);
   }
 
-  static sort(List<SegmentShow> segmentShow, I18nKey key) {
+  static sort(List<VerseShow> verseShow, I18nKey key) {
     switch (key) {
       case I18nKey.labelSortProgressAsc:
-        segmentShow.sort((a, b) {
+        verseShow.sort((a, b) {
           int progressComparison = a.progress.compareTo(b.progress);
           return progressComparison != 0 ? progressComparison : a.toSort().compareTo(b.toSort());
         });
         break;
       case I18nKey.labelSortProgressDesc:
-        segmentShow.sort((a, b) {
+        verseShow.sort((a, b) {
           int progressComparison = b.progress.compareTo(a.progress);
           return progressComparison != 0 ? progressComparison : a.toSort().compareTo(b.toSort());
         });
         break;
       case I18nKey.labelSortPositionAsc:
-        segmentShow.sort((a, b) => a.toSort().compareTo(b.toSort()));
+        verseShow.sort((a, b) => a.toSort().compareTo(b.toSort()));
         break;
       case I18nKey.labelSortPositionDesc:
-        segmentShow.sort((a, b) => b.toSort().compareTo(a.toSort()));
+        verseShow.sort((a, b) => b.toSort().compareTo(a.toSort()));
         break;
       case I18nKey.labelSortNextLearnDateAsc:
-        segmentShow.sort((a, b) {
+        verseShow.sort((a, b) {
           int nextComparison = a.next.value.compareTo(b.next.value);
           return nextComparison != 0 ? nextComparison : a.toSort().compareTo(b.toSort());
         });
         break;
       case I18nKey.labelSortNextLearnDateDesc:
-        segmentShow.sort((a, b) {
+        verseShow.sort((a, b) {
           int nextComparison = b.next.value.compareTo(a.next.value);
           return nextComparison != 0 ? nextComparison : a.toSort().compareTo(b.toSort());
         });
@@ -786,15 +786,15 @@ class SegmentList<T extends GetxController> {
     }
   }
 
-  static double getBodyViewHeight(List<int> missingSegmentIndex, double baseBodyViewHeight) {
-    if (missingSegmentIndex.isNotEmpty) {
+  static double getBodyViewHeight(List<int> missingVerseIndex, double baseBodyViewHeight) {
+    if (missingVerseIndex.isNotEmpty) {
       return baseBodyViewHeight - RowWidget.rowHeight - RowWidget.dividerHeight;
     } else {
       return baseBodyViewHeight;
     }
   }
 
-  Future<void> editProgressWithMsgBox(SegmentShow segment) async {
+  Future<void> editProgressWithMsgBox(VerseShow verse) async {
     var nextTimeForWarning = await Db().db.scheduleDao.intKv(Classroom.curr, CrK.nextTimeForSettingLearningProgressWarning) ?? 0;
     var now = DateTime.now();
     if (nextTimeForWarning <= now.millisecondsSinceEpoch) {
@@ -806,19 +806,19 @@ class SegmentList<T extends GetxController> {
           var after3Days = now.add(const Duration(days: 3)).millisecondsSinceEpoch.toString();
           await Db().db.scheduleDao.insertKv(CrKv(Classroom.curr, CrK.nextTimeForSettingLearningProgressWarning, after3Days));
           Get.back();
-          await editProgress(segment);
+          await editProgress(verse);
         },
       );
     } else {
-      await editProgress(segment);
+      await editProgress(verse);
     }
   }
 
-  Future<void> editProgress(SegmentShow segment) async {
-    EditProgress.show(segment.segmentKeyId, warning: I18nKey.labelSettingLearningProgressWarning.tr, title: I18nKey.btnOk.tr, callback: (p, n) async {
-      await Db().db.scheduleDao.jumpDirectly(segment.segmentKeyId, p, n);
+  Future<void> editProgress(VerseShow verse) async {
+    EditProgress.show(verse.verseKeyId, warning: I18nKey.labelSettingLearningProgressWarning.tr, title: I18nKey.btnOk.tr, callback: (p, n) async {
+      await Db().db.scheduleDao.jumpDirectly(verse.verseKeyId, p, n);
       Get.back();
-      parentLogic.update([SegmentList.bodyId]);
+      parentLogic.update([VerseList.bodyId]);
     });
   }
 }

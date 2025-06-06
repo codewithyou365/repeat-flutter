@@ -12,8 +12,8 @@ class MediaBar extends StatefulWidget {
 
   final double width;
   final double height;
-  final int segmentStartMs;
-  final int segmentEndMs;
+  final int verseStartMs;
+  final int verseEndMs;
   final MediaDurationMsCallback duration;
   final MediaPlayCallback onPlay;
   final MediaStopCallback onStop;
@@ -22,8 +22,8 @@ class MediaBar extends StatefulWidget {
   const MediaBar({
     required this.width,
     required this.height,
-    required this.segmentStartMs,
-    required this.segmentEndMs,
+    required this.verseStartMs,
+    required this.verseEndMs,
     required this.duration,
     required this.onPlay,
     required this.onStop,
@@ -61,16 +61,16 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
 
     final nowMs = DateTime.now().millisecondsSinceEpoch;
     final elapsedMs = nowMs - _startMillisecondsSinceEpoch + _startMediaPositionMs;
-    if (_startMediaPositionMs + 50 >= widget.segmentEndMs) {
+    if (_startMediaPositionMs + 50 >= widget.verseEndMs) {
       if (elapsedMs >= widget.duration()) {
         _stopPlayback();
         return;
       }
-    } else if (elapsedMs >= widget.segmentEndMs) {
+    } else if (elapsedMs >= widget.verseEndMs) {
       _stopPlayback();
       return;
     }
-    final newOffset = -(elapsedMs - widget.segmentStartMs) * MediaBar.pixelPerMs;
+    final newOffset = -(elapsedMs - widget.verseStartMs) * MediaBar.pixelPerMs;
     if (_blockOffset != newOffset) {
       setState(() {
         _blockOffset = newOffset;
@@ -89,7 +89,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
   }
 
   void playFromStart() {
-    _playAtPosition(timeOffsetMs: widget.segmentStartMs);
+    _playAtPosition(timeOffsetMs: widget.verseStartMs);
   }
 
   Future<void> _playAtPosition({int? timeOffsetMs, int? incrementMs}) async {
@@ -98,24 +98,24 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
     if (timeOffsetMs != null) {
       currPositionMs = timeOffsetMs;
     } else if (incrementMs != null) {
-      final currentPositionMs = widget.segmentStartMs + (-_blockOffset / MediaBar.pixelPerMs).floor();
+      final currentPositionMs = widget.verseStartMs + (-_blockOffset / MediaBar.pixelPerMs).floor();
       currPositionMs = currentPositionMs + incrementMs;
       if (currPositionMs < 0) {
         currPositionMs = 0;
       } else {
         int durationMs = widget.duration();
         if (durationMs == 0) {
-          durationMs = widget.segmentEndMs;
+          durationMs = widget.verseEndMs;
         }
         if (currPositionMs > durationMs) {
           currPositionMs = durationMs;
         }
       }
     } else {
-      currPositionMs = widget.segmentStartMs + (-_blockOffset / MediaBar.pixelPerMs).floor();
+      currPositionMs = widget.verseStartMs + (-_blockOffset / MediaBar.pixelPerMs).floor();
     }
 
-    var durationMs = widget.segmentEndMs - currPositionMs;
+    var durationMs = widget.verseEndMs - currPositionMs;
 
     if (durationMs <= 50) {
       durationMs = widget.duration() - currPositionMs;
@@ -170,8 +170,8 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
               size: Size(widget.width, widget.height),
               painter: MediaBarPainter(
                 offset: _blockOffset,
-                mediaSegmentStartMs: widget.segmentStartMs,
-                mediaSegmentEndMs: widget.segmentEndMs,
+                mediaVerseStartMs: widget.verseStartMs,
+                mediaVerseEndMs: widget.verseEndMs,
                 mediaDurationMs: widget.duration(),
               ),
             ),
@@ -203,7 +203,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
                   icon: const Icon(Icons.cut),
                   iconSize: 20,
                   onPressed: () {
-                    widget.onEdit!(widget.segmentStartMs + (-_blockOffset / MediaBar.pixelPerMs).floor());
+                    widget.onEdit!(widget.verseStartMs + (-_blockOffset / MediaBar.pixelPerMs).floor());
                   },
                 ),
               IconButton(
@@ -244,8 +244,8 @@ class MediaBarPainter extends CustomPainter {
   static const double totalWidth = lineWidth + gapWidth;
 
   final double offset;
-  final int mediaSegmentStartMs;
-  final int mediaSegmentEndMs;
+  final int mediaVerseStartMs;
+  final int mediaVerseEndMs;
   final int mediaDurationMs;
 
   late final Paint _centerLinePaint;
@@ -254,8 +254,8 @@ class MediaBarPainter extends CustomPainter {
 
   MediaBarPainter({
     required this.offset,
-    required this.mediaSegmentStartMs,
-    required this.mediaSegmentEndMs,
+    required this.mediaVerseStartMs,
+    required this.mediaVerseEndMs,
     required this.mediaDurationMs,
   }) {
     _centerLinePaint = Paint()
@@ -291,7 +291,7 @@ class MediaBarPainter extends CustomPainter {
 
   void _drawTimeScale(Canvas canvas, start, Size size) {
     final centerX = size.width / 2;
-    final currentTimeMs = mediaSegmentStartMs + (-offset / MediaBar.pixelPerMs).floor();
+    final currentTimeMs = mediaVerseStartMs + (-offset / MediaBar.pixelPerMs).floor();
 
     const tickIntervalMs = 1000;
     const minorTickIntervalMs = 200;
@@ -305,8 +305,8 @@ class MediaBarPainter extends CustomPainter {
     final scaleY = size.height - start;
 
     final zeroX = centerX + (0 - currentTimeMs) * MediaBar.pixelPerMs;
-    final startHighlightX = centerX + (mediaSegmentStartMs - currentTimeMs) * MediaBar.pixelPerMs;
-    final endHighlightX = centerX + (mediaSegmentEndMs - currentTimeMs) * MediaBar.pixelPerMs;
+    final startHighlightX = centerX + (mediaVerseStartMs - currentTimeMs) * MediaBar.pixelPerMs;
+    final endHighlightX = centerX + (mediaVerseEndMs - currentTimeMs) * MediaBar.pixelPerMs;
     final durationX = centerX + (mediaDurationMs - currentTimeMs) * MediaBar.pixelPerMs;
     final double lineDrawStartX = max(0.0, zeroX);
     final double lineDrawEndX = min(size.width, durationX);
@@ -342,9 +342,9 @@ class MediaBarPainter extends CustomPainter {
       double tickHeight;
       bool isMainTick = tickTimeMs % tickIntervalMs == 0;
 
-      bool isInSegmentRange = tickTimeMs >= mediaSegmentStartMs && tickTimeMs <= mediaSegmentEndMs;
+      bool isInVerseRange = tickTimeMs >= mediaVerseStartMs && tickTimeMs <= mediaVerseEndMs;
 
-      Color tickColor = isInSegmentRange ? Colors.red.withValues(alpha: 0.6) : Colors.blue;
+      Color tickColor = isInVerseRange ? Colors.red.withValues(alpha: 0.6) : Colors.blue;
 
       if (isMainTick) {
         tickHeight = 10.0;
@@ -356,7 +356,7 @@ class MediaBarPainter extends CustomPainter {
         final textPainter = TextPainter(
           text: TextSpan(
             text: timeLabel,
-            style: TextStyle(color: isInSegmentRange ? Colors.red.withValues(alpha: 0.8) : Colors.blueGrey, fontSize: 9),
+            style: TextStyle(color: isInVerseRange ? Colors.red.withValues(alpha: 0.8) : Colors.blueGrey, fontSize: 9),
           ),
           textDirection: TextDirection.ltr,
         );
@@ -380,7 +380,7 @@ class MediaBarPainter extends CustomPainter {
   double _drawTimeText(Canvas canvas, Size size) {
     final elapsedTimeMs = (-offset / MediaBar.pixelPerMs).floor();
 
-    final playPositionMs = mediaSegmentStartMs + elapsedTimeMs;
+    final playPositionMs = mediaVerseStartMs + elapsedTimeMs;
 
     final minutes = (playPositionMs / 60000).floor();
     final seconds = ((playPositionMs % 60000) / 1000).floor();
@@ -410,8 +410,8 @@ class MediaBarPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant MediaBarPainter oldDelegate) {
-    return oldDelegate.mediaSegmentStartMs != mediaSegmentStartMs || //
-        oldDelegate.mediaSegmentEndMs != mediaSegmentEndMs ||
+    return oldDelegate.mediaVerseStartMs != mediaVerseStartMs || //
+        oldDelegate.mediaVerseEndMs != mediaVerseEndMs ||
         oldDelegate.mediaDurationMs != mediaDurationMs ||
         offset != oldDelegate.offset;
   }

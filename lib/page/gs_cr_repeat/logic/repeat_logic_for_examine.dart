@@ -3,9 +3,9 @@ import 'package:repeat_flutter/common/await_util.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/segment_help.dart' show SegmentHelp;
+import 'package:repeat_flutter/logic/verse_help.dart' show VerseHelp;
 import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -15,13 +15,13 @@ import 'time_stats_logic.dart';
 
 class RepeatLogicForExamine extends RepeatLogic {
   TimeStatsLogic timeStatsLogic = TimeStatsLogic();
-  late List<SegmentTodayPrg> scheduled;
+  late List<VerseTodayPrg> scheduled;
 
   int total = 0;
   Ticker ticker = Ticker(1000);
 
   @override
-  SegmentTodayPrg? get currSegment {
+  VerseTodayPrg? get currVerse {
     if (scheduled.isNotEmpty) {
       return scheduled[0];
     } else {
@@ -30,7 +30,7 @@ class RepeatLogicForExamine extends RepeatLogic {
   }
 
   @override
-  SegmentTodayPrg? get nextSegment {
+  VerseTodayPrg? get nextVerse {
     if (1 < scheduled.length) {
       return scheduled[1];
     }
@@ -40,8 +40,8 @@ class RepeatLogicForExamine extends RepeatLogic {
   @override
   String get titleLabel {
     String pos = "";
-    if (currSegment != null) {
-      pos = SegmentHelp.getSegmentPos(currSegment!.segmentKeyId);
+    if (currVerse != null) {
+      pos = VerseHelp.getVersePos(currVerse!.verseKeyId);
     }
     return '${total - scheduled.length}/$total $pos';
   }
@@ -49,9 +49,9 @@ class RepeatLogicForExamine extends RepeatLogic {
   @override
   String get leftLabel {
     String nextDiffKey = "";
-    if (currSegment != null && currSegment!.sort + 1 != nextSegment?.sort) {
-      if (nextSegment != null) {
-        nextDiffKey = SegmentHelp.getSegmentPos(nextSegment!.segmentKeyId);
+    if (currVerse != null && currVerse!.sort + 1 != nextVerse?.sort) {
+      if (nextVerse != null) {
+        nextDiffKey = VerseHelp.getVersePos(nextVerse!.verseKeyId);
       }
     }
     switch (step) {
@@ -59,7 +59,7 @@ class RepeatLogicForExamine extends RepeatLogic {
         return I18nKey.btnCheck.tr;
       case RepeatStep.evaluate:
         if (scheduled.length == 1) {
-          if (currSegment!.progress + 1 == ScheduleDao.scheduleConfig.maxRepeatTime) {
+          if (currVerse!.progress + 1 == ScheduleDao.scheduleConfig.maxRepeatTime) {
             return I18nKey.btnFinish.tr;
           }
           return I18nKey.btnNext.tr;
@@ -86,7 +86,7 @@ class RepeatLogicForExamine extends RepeatLogic {
   }
 
   @override
-  Future<bool> init(List<SegmentTodayPrg> all, Function() update, GameHelper gameHelper) async {
+  Future<bool> init(List<VerseTodayPrg> all, Function() update, GameHelper gameHelper) async {
     if (all.isEmpty) {
       Snackbar.show(I18nKey.labelNoLearningContent.tr);
       return false;
@@ -94,9 +94,9 @@ class RepeatLogicForExamine extends RepeatLogic {
     this.update = update;
     this.gameHelper = gameHelper;
     total = all.length;
-    scheduled = SegmentTodayPrg.refineWithFinish(all, false);
+    scheduled = VerseTodayPrg.refineWithFinish(all, false);
     scheduled.sort(schedulesCurrentSort);
-    await gameHelper.tryRefreshGame(currSegment!);
+    await gameHelper.tryRefreshGame(currVerse!);
     await timeStatsLogic.tryInsertTimeStats();
     return true;
   }
@@ -168,10 +168,10 @@ class RepeatLogicForExamine extends RepeatLogic {
 
   @override
   Future<void> jump({required int progress, required int nextDayValue}) async {
-    if (currSegment == null) {
+    if (currVerse == null) {
       return;
     }
-    await Db().db.scheduleDao.jump(currSegment!, progress, nextDayValue);
+    await Db().db.scheduleDao.jump(currVerse!, progress, nextDayValue);
     next();
   }
 
@@ -181,29 +181,29 @@ class RepeatLogicForExamine extends RepeatLogic {
 
   Future<void> right() async {
     step = RepeatStep.recall;
-    await Db().db.scheduleDao.right(currSegment!);
+    await Db().db.scheduleDao.right(currVerse!);
     await next();
   }
 
   Future<void> next() async {
-    if (currSegment!.progress >= ScheduleDao.scheduleConfig.maxRepeatTime) {
+    if (currVerse!.progress >= ScheduleDao.scheduleConfig.maxRepeatTime) {
       scheduled.removeAt(0);
     }
     tip = TipLevel.none;
     scheduled.sort(schedulesCurrentSort);
-    await gameHelper.tryRefreshGame(currSegment!);
+    await gameHelper.tryRefreshGame(currVerse!);
     await timeStatsLogic.updateTimeStats();
   }
 
   Future<void> error() async {
     step = RepeatStep.recall;
     tip = TipLevel.none;
-    await Db().db.scheduleDao.error(currSegment!);
+    await Db().db.scheduleDao.error(currVerse!);
     scheduled.sort(schedulesCurrentSort);
-    await gameHelper.tryRefreshGame(currSegment!);
+    await gameHelper.tryRefreshGame(currVerse!);
   }
 
-  int schedulesCurrentSort(SegmentTodayPrg a, SegmentTodayPrg b) {
+  int schedulesCurrentSort(VerseTodayPrg a, VerseTodayPrg b) {
     if (a.viewTime != b.viewTime) {
       return a.viewTime.compareTo(b.viewTime);
     } else {

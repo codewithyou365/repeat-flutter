@@ -32,11 +32,11 @@ abstract class GameDao {
   @Query('UPDATE Game set time=:time,finish=false where id=:gameId')
   Future<void> refreshGame(int gameId, int time);
 
-  @Query('UPDATE Game set segmentContent=:segmentContent where id=:gameId')
-  Future<void> refreshGameContent(int gameId, String segmentContent);
+  @Query('UPDATE Game set verseContent=:verseContent where id=:gameId')
+  Future<void> refreshGameContent(int gameId, String verseContent);
 
-  @Query('UPDATE SegmentTodayPrg set time=:time where id=:gameId')
-  Future<void> refreshSegmentTodayPrg(int gameId, int time);
+  @Query('UPDATE VerseTodayPrg set time=:time where id=:gameId')
+  Future<void> refreshVerseTodayPrg(int gameId, int time);
 
   @Query('SELECT id FROM Game where finish=false')
   Future<List<int>> getAllEnableGameIds();
@@ -69,7 +69,7 @@ abstract class GameDao {
     if (needDisableGameIds.isNotEmpty) {
       await disableGames(needDisableGameIds);
     }
-    await refreshSegmentTodayPrg(game.id, game.time);
+    await refreshVerseTodayPrg(game.id, game.time);
     var curr = await one(game.id);
     if (curr != null) {
       await refreshGame(game.id, game.time);
@@ -80,14 +80,14 @@ abstract class GameDao {
   }
 
   @transaction
-  Future<void> clearGame(int gameId, int userId, String segmentContent) async {
+  Future<void> clearGame(int gameId, int userId, String verseContent) async {
     var game = await one(gameId);
     if (game == null) {
       return;
     }
 
     await clearGameUser(game.id, userId, game.time);
-    await refreshGameContent(game.id, segmentContent);
+    await refreshGameContent(game.id, verseContent);
   }
 
   @transaction
@@ -99,7 +99,7 @@ abstract class GameDao {
     if (game == null) {
       return GameUserInput.empty();
     }
-    Map<String, dynamic> segment = jsonDecode(game.segmentContent);
+    Map<String, dynamic> verse = jsonDecode(game.verseContent);
     GameUserInput? gameUserInput = await lastUserInput(game.id, gameUserId, game.time);
     if (gameUserInput != null) {
       return ListUtil.toList(gameUserInput.output);
@@ -108,12 +108,12 @@ abstract class GameDao {
     MatchType matchType = MatchType.values[matchTypeInt];
     int typingGame = await intKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame) ?? 0;
     if (typingGame == 1) {
-      var punctuation = getWord(segment).replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), '').trim();
+      var punctuation = getWord(verse).replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), '').trim();
       if (punctuation.isNotEmpty) {
-        return GameLogic.processWord(getWord(segment), punctuation, [], [], matchType, null);
+        return GameLogic.processWord(getWord(verse), punctuation, [], [], matchType, null);
       }
     }
-    return GameLogic.processWord(getWord(segment), "", [], [], matchType, null);
+    return GameLogic.processWord(getWord(verse), "", [], [], matchType, null);
   }
 
   @transaction
@@ -130,7 +130,7 @@ abstract class GameDao {
     if (game == null) {
       return GameUserInput.empty();
     }
-    Map<String, dynamic> segment = jsonDecode(game.segmentContent);
+    Map<String, dynamic> verse = jsonDecode(game.verseContent);
     MatchType matchType = MatchType.values[matchTypeInt];
     GameUserInput? gameUserInput = await lastUserInput(game.id, gameUserId, game.time);
     if (gameUserInput == null && preGameUserInputId != 0) {
@@ -147,9 +147,9 @@ abstract class GameDao {
     } else {
       int typingGame = await intKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame) ?? 0;
       if (typingGame == 1) {
-        var punctuation = getWord(segment).replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), '').trim();
+        var punctuation = getWord(verse).replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), '').trim();
         if (punctuation.isNotEmpty) {
-          prevOutput = GameLogic.processWord(getWord(segment), punctuation, [], [], matchType, null);
+          prevOutput = GameLogic.processWord(getWord(verse), punctuation, [], [], matchType, null);
         }
       }
     }
@@ -158,16 +158,16 @@ abstract class GameDao {
     if (skipChar != null && skipChar.isEmpty) {
       skipChar = null;
     }
-    input = GameLogic.processWord(getWord(segment), userInput, obtainOutput, prevOutput, matchType, skipChar);
+    input = GameLogic.processWord(getWord(verse), userInput, obtainOutput, prevOutput, matchType, skipChar);
     await insertGameUserInput(GameUserInput(
       game.id,
       gameUserId,
       game.time,
-      game.segmentKeyId,
+      game.verseKeyId,
       game.classroomId,
       game.contentSerial,
       game.lessonIndex,
-      game.segmentIndex,
+      game.verseIndex,
       jsonEncode(input),
       jsonEncode(obtainOutput),
       now.millisecondsSinceEpoch,
@@ -181,11 +181,11 @@ abstract class GameDao {
     return ret;
   }
 
-  String getWord(Map<String, dynamic> segment) {
-    String? w = segment['w'];
+  String getWord(Map<String, dynamic> verse) {
+    String? w = verse['w'];
     if (w != null) {
       return w;
     }
-    return segment['a']!;
+    return verse['a']!;
   }
 }

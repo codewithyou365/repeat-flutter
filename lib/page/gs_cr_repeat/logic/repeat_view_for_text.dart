@@ -21,8 +21,8 @@ class RepeatViewForText extends RepeatView {
     if (helper == null) {
       return SizedBox(height: height);
     }
-    var segmentContent = helper.getCurrSegmentContent();
-    if (segmentContent == null) {
+    var verseContent = helper.getCurrVerseContent();
+    if (verseContent == null) {
       return SizedBox(height: height);
     }
 

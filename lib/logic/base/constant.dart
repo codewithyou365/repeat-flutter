@@ -54,7 +54,7 @@ enum MatchType {
 enum ImportResult {
   success,
   error,
-  successButSomeSegmentsAreSurplus,
+  successButSomeVersesAreSurplus,
 }
 
 enum RepeatViewEnum {

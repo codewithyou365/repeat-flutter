@@ -61,7 +61,7 @@ class VideoBoard {
 
 class VideoBoardHelper {
   Map<int, List<VideoBoard>> lessonVideoBoardCache = {};
-  Map<int, List<VideoBoard>> segmentVideoBoardCache = {};
+  Map<int, List<VideoBoard>> verseVideoBoardCache = {};
   final Helper helper;
   static const String jsonName = "videoBoard";
 
@@ -69,8 +69,8 @@ class VideoBoardHelper {
     required this.helper,
   }) {
     boards.value = getCurrVideoBoard();
-    ScheduleDao.setSegmentShowContent.add((int id) {
-      segmentVideoBoardCache.remove(id);
+    ScheduleDao.setVerseShowContent.add((int id) {
+      verseVideoBoardCache.remove(id);
     });
     LessonKeyDao.setLessonShowContent.add((int id) {
       lessonVideoBoardCache.remove(id);
@@ -78,11 +78,11 @@ class VideoBoardHelper {
   }
 
   List<VideoBoard>? getCurrLessonVideoBoard() {
-    if (helper.logic.currSegment == null) {
+    if (helper.logic.currVerse == null) {
       return null;
     }
 
-    final lessonKeyId = helper.logic.currSegment!.lessonKeyId;
+    final lessonKeyId = helper.logic.currVerse!.lessonKeyId;
     List<VideoBoard>? ret = lessonVideoBoardCache[lessonKeyId];
     if (ret != null) {
       return ret;
@@ -104,38 +104,38 @@ class VideoBoardHelper {
     return ret;
   }
 
-  List<VideoBoard>? getCurrSegmentVideoBoard() {
-    if (helper.logic.currSegment == null) {
+  List<VideoBoard>? getCurrVerseVideoBoard() {
+    if (helper.logic.currVerse == null) {
       return null;
     }
 
-    final segmentKeyId = helper.logic.currSegment!.segmentKeyId;
-    List<VideoBoard>? ret = segmentVideoBoardCache[segmentKeyId];
+    final verseKeyId = helper.logic.currVerse!.verseKeyId;
+    List<VideoBoard>? ret = verseVideoBoardCache[verseKeyId];
     if (ret != null) {
       return ret;
     }
 
-    final segmentMap = helper.getCurrSegmentMap();
-    if (segmentMap == null) {
+    final verseMap = helper.getCurrVerseMap();
+    if (verseMap == null) {
       return null;
     }
 
-    final List<dynamic>? list = segmentMap[jsonName] as List<dynamic>?;
+    final List<dynamic>? list = verseMap[jsonName] as List<dynamic>?;
     if (list != null) {
       ret = list.map((e) => VideoBoard.fromJson(Map<String, dynamic>.from(e))).toList();
     } else {
       ret = [];
     }
 
-    segmentVideoBoardCache[segmentKeyId] = ret;
+    verseVideoBoardCache[verseKeyId] = ret;
     return ret;
   }
 
   List<VideoBoard> getCurrVideoBoard() {
     List<VideoBoard> configs = [];
-    List<VideoBoard>? segmentList = getCurrSegmentVideoBoard();
-    if (segmentList != null && segmentList.isNotEmpty) {
-      configs = segmentList;
+    List<VideoBoard>? verseList = getCurrVerseVideoBoard();
+    if (verseList != null && verseList.isNotEmpty) {
+      configs = verseList;
     } else {
       List<VideoBoard>? lessonList = getCurrLessonVideoBoard();
       if (lessonList != null && lessonList.isNotEmpty) {
@@ -218,7 +218,7 @@ class VideoBoardHelper {
   Rx<List<VideoBoard>> boards = Rx([]);
   var openedVideoBoardSettings = false.obs;
 
-  final saveToSegment = false.obs;
+  final saveToVerse = false.obs;
   final selectedBoardIndex = 0.obs;
   final selectedProperty = "x".obs;
   final properties = ["x", "y", "w", "h"];
@@ -331,20 +331,20 @@ class VideoBoardHelper {
             Text(I18nKey.labelSaveAt.tr),
             Radio<bool>(
               value: false,
-              groupValue: saveToSegment.value,
+              groupValue: saveToVerse.value,
               onChanged: (val) {
-                if (val != null) saveToSegment.value = val;
+                if (val != null) saveToVerse.value = val;
               },
             ),
             Text(I18nKey.labelLessonName.tr),
             Radio<bool>(
               value: true,
-              groupValue: saveToSegment.value,
+              groupValue: saveToVerse.value,
               onChanged: (val) {
-                if (val != null) saveToSegment.value = val;
+                if (val != null) saveToVerse.value = val;
               },
             ),
-            Text(I18nKey.labelSegmentName.tr),
+            Text(I18nKey.labelVerseName.tr),
           ],
         ),
         const SizedBox(height: 24),
@@ -425,31 +425,31 @@ class VideoBoardHelper {
 
   Future<void> _saveBoards() async {
     final helper = this.helper;
-    if (helper.logic.currSegment == null) return;
+    if (helper.logic.currVerse == null) return;
 
     try {
       final List<Map<String, dynamic>> jsonList = boards.value.map((e) => e.toJson()).toList();
 
-      if (saveToSegment.value) {
-        final segmentKeyId = helper.logic.currSegment!.segmentKeyId;
-        final segmentMap = helper.getCurrSegmentMap() ?? {};
-        segmentMap[jsonName] = jsonList;
-        final jsonStr = jsonEncode(segmentMap);
-        await Db().db.scheduleDao.tUpdateSegmentContent(segmentKeyId, jsonStr);
-        segmentVideoBoardCache[segmentKeyId] = boards.value;
+      if (saveToVerse.value) {
+        final verseKeyId = helper.logic.currVerse!.verseKeyId;
+        final verseMap = helper.getCurrVerseMap() ?? {};
+        verseMap[jsonName] = jsonList;
+        final jsonStr = jsonEncode(verseMap);
+        await Db().db.scheduleDao.tUpdateVerseContent(verseKeyId, jsonStr);
+        verseVideoBoardCache[verseKeyId] = boards.value;
       } else {
-        final lessonKeyId = helper.logic.currSegment!.lessonKeyId;
+        final lessonKeyId = helper.logic.currVerse!.lessonKeyId;
         final lessonMap = helper.getCurrLessonMap() ?? {};
         lessonMap[jsonName] = jsonList;
         final jsonStr = jsonEncode(lessonMap);
         await Db().db.lessonKeyDao.updateLessonContent(lessonKeyId, jsonStr);
 
-        final segmentKeyId = helper.logic.currSegment!.segmentKeyId;
-        final segmentMap = helper.getCurrSegmentMap() ?? {};
-        segmentMap.remove(jsonName);
-        final segmentJsonStr = jsonEncode(segmentMap);
-        await Db().db.scheduleDao.tUpdateSegmentContent(segmentKeyId, segmentJsonStr);
-        segmentVideoBoardCache[segmentKeyId] = boards.value;
+        final verseKeyId = helper.logic.currVerse!.verseKeyId;
+        final verseMap = helper.getCurrVerseMap() ?? {};
+        verseMap.remove(jsonName);
+        final verseJsonStr = jsonEncode(verseMap);
+        await Db().db.scheduleDao.tUpdateVerseContent(verseKeyId, verseJsonStr);
+        verseVideoBoardCache[verseKeyId] = boards.value;
         lessonVideoBoardCache[lessonKeyId] = boards.value;
       }
       Snackbar.show(I18nKey.labelSaved.tr);

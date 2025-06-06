@@ -11,8 +11,8 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/model/segment_content.dart';
-import 'package:repeat_flutter/logic/model/segment_show.dart';
+import 'package:repeat_flutter/logic/model/verse_content.dart';
+import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -80,12 +80,12 @@ class CopyLogic<T extends GetxController> {
     await Db().db.scheduleDao.insertKv(CrKv(Classroom.curr, this.key, str));
   }
 
-  List<String> getShowSegments(List<SegmentContent> segments) {
+  List<String> getShowVerses(List<VerseContent> verses) {
     List<String> ret = [];
     for (var templateString in copyTemplates) {
       final template = Template(templateString);
       final rendered = template.renderString({
-        'segments': segments
+        'verses': verses
             .asMap()
             .entries
             .map((e) => {
@@ -139,7 +139,7 @@ class CopyLogic<T extends GetxController> {
           if (data is String) {
             copyText = getShowText(data);
           } else {
-            copyText = getShowSegments(data as List<SegmentContent>);
+            copyText = getShowVerses(data as List<VerseContent>);
           }
           List<String> showText = [];
           for (var v in copyText) {
@@ -198,17 +198,17 @@ class CopyLogic<T extends GetxController> {
     );
   }
 
-  bool showQaList(BuildContext context, List<SegmentShow> list) {
+  bool showQaList(BuildContext context, List<VerseShow> list) {
     if (list.isEmpty) {
       return false;
     }
     show(
         context,
         '''
-{{#segments}}
+{{#verses}}
 q{{index1}}: {{question}}
 a{{index1}}: {{answer}}
-{{/segments}}
+{{/verses}}
   ''',
         list);
     return true;

@@ -2,8 +2,8 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/logic/book_help.dart';
 import 'package:repeat_flutter/logic/lesson_help.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
-import 'package:repeat_flutter/logic/model/segment_show.dart';
-import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/logic/model/verse_show.dart';
+import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/model/lesson_show.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/content/logic/view_logic_book_list.dart';
@@ -11,7 +11,7 @@ import 'package:repeat_flutter/page/content/logic/view_logic_lesson_list.dart';
 
 import 'content_state.dart';
 import 'logic/view_logic.dart';
-import 'logic/view_logic_segment_list.dart';
+import 'logic/view_logic_verse_list.dart';
 
 class ContentLogic extends GetxController {
   static const String id = "ContentLogicId";
@@ -24,9 +24,9 @@ class ContentLogic extends GetxController {
     var args = Get.arguments as ContentArgs;
     List<BookShow> originalBookShow = await BookHelp.getBooks();
     List<LessonShow> originalLessonShow = await LessonHelp.getLessons();
-    List<SegmentShow> originalSegmentShow = await SegmentHelp.getSegments();
+    List<VerseShow> originalVerseShow = await VerseHelp.getVerses();
     late ViewLogicLessonList<ContentLogic> lessonList;
-    var segmentList = ViewLogicSegmentList<ContentLogic>(
+    var verseList = ViewLogicVerseList<ContentLogic>(
       onSearchUnfocus: () {
         state.startSearch.value = false;
       },
@@ -40,21 +40,21 @@ class ContentLogic extends GetxController {
       removeWarning: args.removeWarning,
       originalBookShow: originalBookShow,
       originalLessonShow: originalLessonShow,
-      originalSegmentShow: originalSegmentShow,
+      originalVerseShow: originalVerseShow,
       initContentNameSelect: args.bookName,
       initLessonSelect: args.initLessonSelect,
-      selectSegmentKeyId: args.selectSegmentKeyId,
+      selectVerseKeyId: args.selectVerseKeyId,
     );
     lessonList = ViewLogicLessonList<ContentLogic>(
       onSearchUnfocus: () {
         state.startSearch.value = false;
       },
       onLessonModified: () async {
-        segmentList.originalBookShow = await BookHelp.getBooks();
-        segmentList.originalLessonShow = await LessonHelp.getLessons();
-        segmentList.originalSegmentShow = await SegmentHelp.getSegments();
-        segmentList.collectData();
-        segmentList.trySearch(force: true);
+        verseList.originalBookShow = await BookHelp.getBooks();
+        verseList.originalLessonShow = await LessonHelp.getLessons();
+        verseList.originalVerseShow = await VerseHelp.getVerses();
+        verseList.collectData();
+        verseList.trySearch(force: true);
       },
       parentLogic: this,
       removeWarning: args.removeWarning,
@@ -73,7 +73,7 @@ class ContentLogic extends GetxController {
     );
     viewList[0] = bookList;
     viewList[1] = lessonList;
-    viewList[2] = segmentList;
+    viewList[2] = verseList;
     state.tabIndex.value = args.defaultTap;
     update([ContentLogic.id]);
   }

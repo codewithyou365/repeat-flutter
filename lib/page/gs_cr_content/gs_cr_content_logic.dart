@@ -19,7 +19,7 @@ import 'package:repeat_flutter/logic/widget/lesson_list.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
-import 'package:repeat_flutter/logic/widget/segment_list.dart';
+import 'package:repeat_flutter/logic/widget/verse_list.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -30,7 +30,7 @@ class GsCrContentLogic extends GetxController {
   static const String id = "GsCrContentLogic";
   final GsCrContentState state = GsCrContentState();
   late LessonList lessonList = LessonList<GsCrContentLogic>(this);
-  late SegmentList segmentList = SegmentList<GsCrContentLogic>(this);
+  late VerseList verseList = VerseList<GsCrContentLogic>(this);
   static RegExp reg = RegExp(r'^[0-9A-Z]+$');
 
   @override
@@ -53,7 +53,7 @@ class GsCrContentLogic extends GetxController {
   delete(int contentId, int contentSerial) async {
     showOverlay(() async {
       state.list.removeWhere((element) => identical(element.id, contentId));
-      await Db().db.scheduleDao.hideContentAndDeleteSegment(contentId, contentSerial);
+      await Db().db.scheduleDao.hideContentAndDeleteVerse(contentId, contentSerial);
       Get.find<GsCrLogic>().init();
       update([GsCrContentLogic.id]);
     }, I18nKey.labelDeleting.tr);
@@ -89,13 +89,13 @@ class GsCrContentLogic extends GetxController {
     );
   }
 
-  showSegment(int contentId) async {
+  showVerse(int contentId) async {
     var content = await Db().db.contentDao.getById(contentId);
     if (content == null) {
       Snackbar.show(I18nKey.labelNoContent.tr);
       return;
     }
-    segmentList.show(
+    verseList.show(
       initContentNameSelect: content.name,
       removeWarning: () async {
         await init();
@@ -195,7 +195,7 @@ class GsCrContentLogic extends GetxController {
     }
     var total = 0;
     for (var d in kv.lesson) {
-      total += d.segment.length;
+      total += d.verse.length;
     }
     return total;
   }

@@ -9,25 +9,25 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
-import 'package:repeat_flutter/db/entity/segment.dart';
+import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/db/entity/lesson.dart';
 import 'package:repeat_flutter/db/entity/lesson_key.dart';
-import 'package:repeat_flutter/db/entity/segment_key.dart';
-import 'package:repeat_flutter/db/entity/segment_overall_prg.dart';
-import 'package:repeat_flutter/db/entity/segment_review.dart';
+import 'package:repeat_flutter/db/entity/verse_key.dart';
+import 'package:repeat_flutter/db/entity/verse_overall_prg.dart';
+import 'package:repeat_flutter/db/entity/verse_review.dart';
 import 'package:repeat_flutter/db/entity/text_version.dart';
-import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart' as rd;
-import 'package:repeat_flutter/logic/model/segment_content.dart';
-import 'package:repeat_flutter/logic/model/segment_key_id.dart';
-import 'package:repeat_flutter/logic/model/segment_overall_prg_with_key.dart';
-import 'package:repeat_flutter/logic/model/segment_review_with_key.dart';
-import 'package:repeat_flutter/db/entity/segment_stats.dart';
-import 'package:repeat_flutter/logic/model/segment_show.dart';
+import 'package:repeat_flutter/logic/model/verse_content.dart';
+import 'package:repeat_flutter/logic/model/key_id.dart';
+import 'package:repeat_flutter/logic/model/verse_overall_prg_with_key.dart';
+import 'package:repeat_flutter/logic/model/verse_review_with_key.dart';
+import 'package:repeat_flutter/db/entity/verse_stats.dart';
+import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 // ebbinghaus learning config
@@ -187,8 +187,8 @@ class ScheduleConfig {
 abstract class ScheduleDao {
   late AppDatabase db;
 
-  static SegmentShow? Function(int segmentKeyId)? getSegmentShow;
-  static List<void Function(int segmentKeyId)> setSegmentShowContent = [];
+  static VerseShow? Function(int verseKeyId)? getVerseShow;
+  static List<void Function(int verseKeyId)> setVerseShowContent = [];
   static ScheduleConfig scheduleConfig = ScheduleConfig([], 0, 0, [], []);
 
   static ScheduleConfig defaultScheduleConfig = ScheduleConfig(
@@ -244,422 +244,422 @@ abstract class ScheduleDao {
   @Query('UPDATE CrKv SET value=:value WHERE classroomId=:classroomId and k=:k')
   Future<void> updateKv(int classroomId, CrK k, String value);
 
-  /// --- Update SegmentKey ---
-  @Query('UPDATE SegmentKey set note=:note,noteVersion=:noteVersion WHERE id=:id')
-  Future<void> updateSegmentNote(int id, String note, int noteVersion);
+  /// --- Update VerseKey ---
+  @Query('UPDATE VerseKey set note=:note,noteVersion=:noteVersion WHERE id=:id')
+  Future<void> updateVerseNote(int id, String note, int noteVersion);
 
-  @Query('UPDATE SegmentKey set k=:key,content=:content,contentVersion=:contentVersion WHERE id=:id')
-  Future<void> updateSegmentKeyAndContent(int id, String key, String content, int contentVersion);
+  @Query('UPDATE VerseKey set k=:key,content=:content,contentVersion=:contentVersion WHERE id=:id')
+  Future<void> updateVerseKeyAndContent(int id, String key, String content, int contentVersion);
 
-  @Query('SELECT note FROM SegmentKey WHERE id=:id')
-  Future<String?> getSegmentNote(int id);
+  @Query('SELECT note FROM VerseKey WHERE id=:id')
+  Future<String?> getVerseNote(int id);
 
-  /// --- SegmentTodayPrg ---
+  /// --- VerseTodayPrg ---
 
-  @Query('DELETE FROM SegmentTodayPrg WHERE classroomId=:classroomId')
-  Future<void> deleteSegmentTodayPrgByClassroomId(int classroomId);
+  @Query('DELETE FROM VerseTodayPrg WHERE classroomId=:classroomId')
+  Future<void> deleteVerseTodayPrgByClassroomId(int classroomId);
 
-  @Query('DELETE FROM SegmentTodayPrg where classroomId=:classroomId and reviewCreateDate>100')
-  Future<void> deleteSegmentTodayReviewPrgByClassroomId(int classroomId);
+  @Query('DELETE FROM VerseTodayPrg where classroomId=:classroomId and reviewCreateDate>100')
+  Future<void> deleteVerseTodayReviewPrgByClassroomId(int classroomId);
 
-  @Query('DELETE FROM SegmentTodayPrg where classroomId=:classroomId and reviewCreateDate=0')
-  Future<void> deleteSegmentTodayLearnPrgByClassroomId(int classroomId);
+  @Query('DELETE FROM VerseTodayPrg where classroomId=:classroomId and reviewCreateDate=0')
+  Future<void> deleteVerseTodayLearnPrgByClassroomId(int classroomId);
 
-  @Query('DELETE FROM SegmentTodayPrg where classroomId=:classroomId and reviewCreateDate=1')
-  Future<void> deleteSegmentTodayFullCustomPrgByClassroomId(int classroomId);
+  @Query('DELETE FROM VerseTodayPrg where classroomId=:classroomId and reviewCreateDate=1')
+  Future<void> deleteVerseTodayFullCustomPrgByClassroomId(int classroomId);
 
   @Insert(onConflict: OnConflictStrategy.fail)
-  Future<void> insertSegmentTodayPrg(List<SegmentTodayPrg> entities);
+  Future<void> insertVerseTodayPrg(List<VerseTodayPrg> entities);
 
   @Query('SELECT *'
-      ' FROM SegmentTodayPrg'
+      ' FROM VerseTodayPrg'
       " WHERE classroomId=:classroomId"
       ' order by id asc')
-  Future<List<SegmentTodayPrg>> findSegmentTodayPrg(int classroomId);
+  Future<List<VerseTodayPrg>> findVerseTodayPrg(int classroomId);
 
-  @Query('UPDATE SegmentTodayPrg SET progress=:progress,viewTime=:viewTime,finish=:finish WHERE segmentKeyId=:segmentKeyId and type=:type')
-  Future<void> setSegmentTodayPrg(int segmentKeyId, int type, int progress, DateTime viewTime, bool finish);
+  @Query('UPDATE VerseTodayPrg SET progress=:progress,viewTime=:viewTime,finish=:finish WHERE verseKeyId=:verseKeyId and type=:type')
+  Future<void> setVerseTodayPrg(int verseKeyId, int type, int progress, DateTime viewTime, bool finish);
 
-  @Query("SELECT count(Segment.segmentKeyId) FROM Segment"
-      " AND Segment.classroomId=:classroomId"
-      " WHERE Segment.contentSerial=:contentSerial"
-      " and Segment.lessonIndex=:lessonIndex")
+  @Query("SELECT count(Verse.verseKeyId) FROM Verse"
+      " AND Verse.classroomId=:classroomId"
+      " WHERE Verse.contentSerial=:contentSerial"
+      " and Verse.lessonIndex=:lessonIndex")
   Future<int?> lessonCount(int classroomId, int contentSerial, int lessonIndex);
 
-  @Query("SELECT IFNULL(MIN(SegmentReview.createDate),-1) FROM SegmentReview"
-      " JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId"
-      " WHERE SegmentReview.classroomId=:classroomId"
-      " AND SegmentReview.count=:reviewCount"
-      " and SegmentReview.createDate<=:now"
-      " order by SegmentReview.createDate")
+  @Query("SELECT IFNULL(MIN(VerseReview.createDate),-1) FROM VerseReview"
+      " JOIN Verse ON Verse.verseKeyId=VerseReview.verseKeyId"
+      " WHERE VerseReview.classroomId=:classroomId"
+      " AND VerseReview.count=:reviewCount"
+      " and VerseReview.createDate<=:now"
+      " order by VerseReview.createDate")
   Future<int?> findReviewedMinCreateDate(int classroomId, int reviewCount, Date now);
 
   @Query("SELECT"
-      " SegmentReview.classroomId"
-      ",Segment.contentSerial"
+      " VerseReview.classroomId"
+      ",Verse.contentSerial"
       ",Lesson.lessonKeyId"
-      ",SegmentReview.segmentKeyId"
+      ",VerseReview.verseKeyId"
       ",0 time"
       ",0 type"
-      ",Segment.sort"
+      ",Verse.sort"
       ",0 progress"
       ",0 viewTime"
-      ",SegmentReview.count reviewCount"
-      ",SegmentReview.createDate reviewCreateDate"
+      ",VerseReview.count reviewCount"
+      ",VerseReview.createDate reviewCreateDate"
       ",0 finish"
-      " FROM SegmentReview"
-      " JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId"
+      " FROM VerseReview"
+      " JOIN Verse ON Verse.verseKeyId=VerseReview.verseKeyId"
       " JOIN Lesson ON Lesson.classroomId=:classroomId"
-      "  AND Lesson.contentSerial=Segment.contentSerial"
-      "  AND Lesson.lessonIndex=Segment.lessonIndex"
-      " WHERE SegmentReview.classroomId=:classroomId"
-      " AND SegmentReview.count=:reviewCount"
-      " AND SegmentReview.createDate=:startDate"
-      " ORDER BY Segment.sort")
-  Future<List<SegmentTodayPrg>> scheduleReview(int classroomId, int reviewCount, Date startDate);
+      "  AND Lesson.contentSerial=Verse.contentSerial"
+      "  AND Lesson.lessonIndex=Verse.lessonIndex"
+      " WHERE VerseReview.classroomId=:classroomId"
+      " AND VerseReview.count=:reviewCount"
+      " AND VerseReview.createDate=:startDate"
+      " ORDER BY Verse.sort")
+  Future<List<VerseTodayPrg>> scheduleReview(int classroomId, int reviewCount, Date startDate);
 
   @Query("SELECT * FROM ("
       " SELECT"
-      " Segment.classroomId"
-      ",Segment.contentSerial"
+      " Verse.classroomId"
+      ",Verse.contentSerial"
       ",Lesson.lessonKeyId"
-      ",SegmentOverallPrg.segmentKeyId"
+      ",VerseOverallPrg.verseKeyId"
       ",0 time"
       ",0 type"
-      ",Segment.sort"
-      ",SegmentOverallPrg.progress progress"
+      ",Verse.sort"
+      ",VerseOverallPrg.progress progress"
       ",0 viewTime"
       ",0 reviewCount"
       ",0 reviewCreateDate"
       ",0 finish"
-      " FROM SegmentOverallPrg"
-      " JOIN Segment ON Segment.segmentKeyId=SegmentOverallPrg.segmentKeyId"
-      "  AND Segment.classroomId=:classroomId"
+      " FROM VerseOverallPrg"
+      " JOIN Verse ON Verse.verseKeyId=VerseOverallPrg.verseKeyId"
+      "  AND Verse.classroomId=:classroomId"
       " JOIN Lesson ON Lesson.classroomId=:classroomId"
-      "  AND Lesson.contentSerial=Segment.contentSerial"
-      "  AND Lesson.lessonIndex=Segment.lessonIndex"
-      " WHERE SegmentOverallPrg.next<=:now"
-      "  AND SegmentOverallPrg.progress>=:minProgress"
-      " ORDER BY SegmentOverallPrg.progress,Segment.sort"
-      " ) Segment order by Segment.sort")
-  Future<List<SegmentTodayPrg>> scheduleLearn(int classroomId, int minProgress, Date now);
+      "  AND Lesson.contentSerial=Verse.contentSerial"
+      "  AND Lesson.lessonIndex=Verse.lessonIndex"
+      " WHERE VerseOverallPrg.next<=:now"
+      "  AND VerseOverallPrg.progress>=:minProgress"
+      " ORDER BY VerseOverallPrg.progress,Verse.sort"
+      " ) Verse order by Verse.sort")
+  Future<List<VerseTodayPrg>> scheduleLearn(int classroomId, int minProgress, Date now);
 
   @Query("SELECT"
-      " Segment.classroomId"
-      ",Segment.contentSerial"
+      " Verse.classroomId"
+      ",Verse.contentSerial"
       ",Lesson.lessonKeyId"
-      ",Segment.segmentKeyId"
+      ",Verse.verseKeyId"
       ",0 time"
       ",0 type"
-      ",Segment.sort"
+      ",Verse.sort"
       ",0 progress"
       ",0 viewTime"
       ",0 reviewCount"
       ",1 reviewCreateDate"
       ",0 finish"
-      " FROM Segment"
+      " FROM Verse"
       " JOIN Lesson ON Lesson.classroomId=:classroomId"
-      "  AND Lesson.contentSerial=Segment.contentSerial"
-      "  AND Lesson.lessonIndex=Segment.lessonIndex"
-      " WHERE Segment.classroomId=:classroomId"
-      " AND Segment.sort>=("
-      "  SELECT Segment.sort FROM Segment"
-      "  WHERE Segment.contentSerial=:contentSerial"
-      "  AND Segment.lessonIndex=:lessonIndex"
-      "  AND Segment.segmentIndex=:segmentIndex"
+      "  AND Lesson.contentSerial=Verse.contentSerial"
+      "  AND Lesson.lessonIndex=Verse.lessonIndex"
+      " WHERE Verse.classroomId=:classroomId"
+      " AND Verse.sort>=("
+      "  SELECT Verse.sort FROM Verse"
+      "  WHERE Verse.contentSerial=:contentSerial"
+      "  AND Verse.lessonIndex=:lessonIndex"
+      "  AND Verse.verseIndex=:verseIndex"
       ")"
-      " ORDER BY Segment.sort"
+      " ORDER BY Verse.sort"
       " limit :limit"
       "")
-  Future<List<SegmentTodayPrg>> scheduleFullCustom(int classroomId, int contentSerial, int lessonIndex, int segmentIndex, int limit);
+  Future<List<VerseTodayPrg>> scheduleFullCustom(int classroomId, int contentSerial, int lessonIndex, int verseIndex, int limit);
 
-  @Query('UPDATE SegmentOverallPrg SET progress=:progress,next=:next WHERE segmentKeyId=:segmentKeyId')
-  Future<void> setPrgAndNext4Sop(int segmentKeyId, int progress, Date next);
+  @Query('UPDATE VerseOverallPrg SET progress=:progress,next=:next WHERE verseKeyId=:verseKeyId')
+  Future<void> setPrgAndNext4Sop(int verseKeyId, int progress, Date next);
 
-  @Query('UPDATE SegmentOverallPrg SET progress=:progress WHERE segmentKeyId=:segmentKeyId')
-  Future<void> setPrg4Sop(int segmentKeyId, int progress);
+  @Query('UPDATE VerseOverallPrg SET progress=:progress WHERE verseKeyId=:verseKeyId')
+  Future<void> setPrg4Sop(int verseKeyId, int progress);
 
-  @Query("SELECT progress FROM SegmentOverallPrg WHERE segmentKeyId=:segmentKeyId")
-  Future<int?> getSegmentProgress(int segmentKeyId);
+  @Query("SELECT progress FROM VerseOverallPrg WHERE verseKeyId=:verseKeyId")
+  Future<int?> getVerseProgress(int verseKeyId);
 
-  @Query("SELECT SegmentOverallPrg.*"
+  @Query("SELECT VerseOverallPrg.*"
       ",Content.name contentName"
-      ",Segment.lessonIndex"
-      ",Segment.segmentIndex"
-      " FROM Segment"
-      " JOIN SegmentOverallPrg on SegmentOverallPrg.segmentKeyId=Segment.segmentKeyId"
-      " JOIN Content ON Content.classroomId=Segment.classroomId AND Content.serial=Segment.contentSerial"
-      " WHERE Segment.classroomId=:classroomId"
-      " ORDER BY Segment.sort asc")
-  Future<List<SegmentOverallPrgWithKey>> getAllSegmentOverallPrg(int classroomId);
+      ",Verse.lessonIndex"
+      ",Verse.verseIndex"
+      " FROM Verse"
+      " JOIN VerseOverallPrg on VerseOverallPrg.verseKeyId=Verse.verseKeyId"
+      " JOIN Content ON Content.classroomId=Verse.classroomId AND Content.serial=Verse.contentSerial"
+      " WHERE Verse.classroomId=:classroomId"
+      " ORDER BY Verse.sort asc")
+  Future<List<VerseOverallPrgWithKey>> getAllVerseOverallPrg(int classroomId);
 
-  /// --- SegmentReview
+  /// --- VerseReview
   @Query("SELECT Content.name FROM Content WHERE Content.classroomId=:classroomId AND Content.serial=:contentSerial")
   Future<String?> getContentNameBySerial(int classroomId, int contentSerial);
 
-  @Query("SELECT SegmentReview.*"
+  @Query("SELECT VerseReview.*"
       ",Content.name contentName"
-      ",Segment.lessonIndex"
-      ",Segment.segmentIndex"
-      " FROM SegmentReview"
-      " JOIN Segment ON Segment.segmentKeyId=SegmentReview.segmentKeyId"
-      " JOIN Content ON Content.classroomId=SegmentReview.classroomId AND Content.serial=SegmentReview.contentSerial"
-      " WHERE SegmentReview.classroomId=:classroomId"
-      " AND SegmentReview.createDate>=:start AND SegmentReview.createDate<=:end"
-      " ORDER BY SegmentReview.createDate desc,Segment.sort asc")
-  Future<List<SegmentReviewWithKey>> getAllSegmentReview(int classroomId, Date start, Date end);
+      ",Verse.lessonIndex"
+      ",Verse.verseIndex"
+      " FROM VerseReview"
+      " JOIN Verse ON Verse.verseKeyId=VerseReview.verseKeyId"
+      " JOIN Content ON Content.classroomId=VerseReview.classroomId AND Content.serial=VerseReview.contentSerial"
+      " WHERE VerseReview.classroomId=:classroomId"
+      " AND VerseReview.createDate>=:start AND VerseReview.createDate<=:end"
+      " ORDER BY VerseReview.createDate desc,Verse.sort asc")
+  Future<List<VerseReviewWithKey>> getAllVerseReview(int classroomId, Date start, Date end);
 
   @Insert(onConflict: OnConflictStrategy.fail)
-  Future<void> insertSegmentReview(List<SegmentReview> review);
+  Future<void> insertVerseReview(List<VerseReview> review);
 
-  @Query('UPDATE SegmentReview SET count=:count WHERE createDate=:createDate and `segmentKeyId`=:segmentKeyId')
-  Future<void> setSegmentReviewCount(Date createDate, int segmentKeyId, int count);
+  @Query('UPDATE VerseReview SET count=:count WHERE createDate=:createDate and `verseKeyId`=:verseKeyId')
+  Future<void> setVerseReviewCount(Date createDate, int verseKeyId, int count);
 
   @Query("SELECT"
-      " Segment.segmentKeyId"
-      ",Segment.classroomId"
-      ",Segment.contentSerial"
-      ",Segment.lessonIndex"
-      ",Segment.segmentIndex"
-      ",Segment.sort sort"
+      " Verse.verseKeyId"
+      ",Verse.classroomId"
+      ",Verse.contentSerial"
+      ",Verse.lessonIndex"
+      ",Verse.verseIndex"
+      ",Verse.sort sort"
       ",Content.name contentName"
-      " FROM Segment"
-      " JOIN Content ON Content.classroomId=Segment.classroomId AND Content.serial=Segment.contentSerial"
-      " WHERE Segment.segmentKeyId=:segmentKeyId")
-  Future<SegmentContentInDb?> getSegmentContent(int segmentKeyId);
+      " FROM Verse"
+      " JOIN Content ON Content.classroomId=Verse.classroomId AND Content.serial=Verse.contentSerial"
+      " WHERE Verse.verseKeyId=:verseKeyId")
+  Future<VerseContentInDb?> getVerseContent(int verseKeyId);
 
   @Query("SELECT"
       " Content.name contentName"
-      " FROM SegmentKey"
-      " JOIN Content ON Content.classroomId=SegmentKey.classroomId AND Content.serial=SegmentKey.contentSerial"
-      " WHERE SegmentKey.id=:segmentKeyId")
-  Future<String?> getContentName(int segmentKeyId);
+      " FROM VerseKey"
+      " JOIN Content ON Content.classroomId=VerseKey.classroomId AND Content.serial=VerseKey.contentSerial"
+      " WHERE VerseKey.id=:verseKeyId")
+  Future<String?> getContentName(int verseKeyId);
 
-  @Query("SELECT LimitSegment.segmentKeyId"
-      " FROM (SELECT sort,segmentKeyId"
-      "  FROM Segment"
+  @Query("SELECT LimitVerse.verseKeyId"
+      " FROM (SELECT sort,verseKeyId"
+      "  FROM Verse"
       "  WHERE classroomId=:classroomId"
-      "  AND sort<(SELECT Segment.sort FROM Segment WHERE Segment.segmentKeyId=:segmentKeyId)"
+      "  AND sort<(SELECT Verse.sort FROM Verse WHERE Verse.verseKeyId=:verseKeyId)"
       "  ORDER BY sort desc"
-      "  LIMIT :offset) LimitSegment"
-      "  ORDER BY LimitSegment.sort"
+      "  LIMIT :offset) LimitVerse"
+      "  ORDER BY LimitVerse.sort"
       " LIMIT 1")
-  Future<int?> getPrevSegmentKeyIdWithOffset(int classroomId, int segmentKeyId, int offset);
+  Future<int?> getPrevVerseKeyIdWithOffset(int classroomId, int verseKeyId, int offset);
 
-  @Query("SELECT LimitSegment.segmentKeyId"
-      " FROM (SELECT sort,segmentKeyId"
-      "  FROM Segment"
+  @Query("SELECT LimitVerse.verseKeyId"
+      " FROM (SELECT sort,verseKeyId"
+      "  FROM Verse"
       "  WHERE classroomId=:classroomId"
-      "  AND sort>(SELECT Segment.sort FROM Segment WHERE Segment.segmentKeyId=:segmentKeyId)"
+      "  AND sort>(SELECT Verse.sort FROM Verse WHERE Verse.verseKeyId=:verseKeyId)"
       "  ORDER BY sort"
-      "  LIMIT :offset) LimitSegment"
-      "  ORDER BY LimitSegment.sort desc"
+      "  LIMIT :offset) LimitVerse"
+      "  ORDER BY LimitVerse.sort desc"
       " LIMIT 1")
-  Future<int?> getNextSegmentKeyIdWithOffset(int classroomId, int segmentKeyId, int offset);
+  Future<int?> getNextVerseKeyIdWithOffset(int classroomId, int verseKeyId, int offset);
 
   @Insert(onConflict: OnConflictStrategy.ignore)
-  Future<void> insertSegmentKeys(List<SegmentKey> entities);
+  Future<void> insertVerseKeys(List<VerseKey> entities);
 
   @Update()
-  Future<void> updateSegmentKeys(List<SegmentKey> entities);
+  Future<void> updateVerseKeys(List<VerseKey> entities);
 
-  @Query('SELECT SegmentKey.id'
-      ',SegmentKey.k FROM SegmentKey'
-      ' WHERE SegmentKey.classroomId=:classroomId'
-      ' and SegmentKey.contentSerial=:contentSerial')
-  Future<List<KeyId>> getSegmentKeyId(int classroomId, int contentSerial);
+  @Query('SELECT VerseKey.id'
+      ',VerseKey.k FROM VerseKey'
+      ' WHERE VerseKey.classroomId=:classroomId'
+      ' and VerseKey.contentSerial=:contentSerial')
+  Future<List<KeyId>> getVerseKeyId(int classroomId, int contentSerial);
 
-  @Query('SELECT SegmentKey.* FROM SegmentKey'
-      ' WHERE SegmentKey.classroomId=:classroomId'
-      ' AND SegmentKey.contentSerial=:contentSerial')
-  Future<List<SegmentKey>> getSegmentKey(int classroomId, int contentSerial);
+  @Query('SELECT VerseKey.* FROM VerseKey'
+      ' WHERE VerseKey.classroomId=:classroomId'
+      ' AND VerseKey.contentSerial=:contentSerial')
+  Future<List<VerseKey>> getVerseKey(int classroomId, int contentSerial);
 
-  @Query('SELECT SegmentKey.* FROM SegmentKey'
-      ' WHERE SegmentKey.id=:id')
-  Future<SegmentKey?> getSegmentKeyById(int id);
+  @Query('SELECT VerseKey.* FROM VerseKey'
+      ' WHERE VerseKey.id=:id')
+  Future<VerseKey?> getVerseKeyById(int id);
 
-  @Query('SELECT SegmentKey.* FROM SegmentKey'
-      ' WHERE SegmentKey.classroomId=:classroomId'
-      ' AND SegmentKey.contentSerial=:contentSerial'
-      ' AND SegmentKey.k=:key')
-  Future<SegmentKey?> getSegmentKeyByKey(int classroomId, int contentSerial, String key);
+  @Query('SELECT VerseKey.* FROM VerseKey'
+      ' WHERE VerseKey.classroomId=:classroomId'
+      ' AND VerseKey.contentSerial=:contentSerial'
+      ' AND VerseKey.k=:key')
+  Future<VerseKey?> getVerseKeyByKey(int classroomId, int contentSerial, String key);
 
-  @Query('SELECT SegmentKey.id segmentKeyId'
-      ',SegmentKey.k'
+  @Query('SELECT VerseKey.id verseKeyId'
+      ',VerseKey.k'
       ',Content.id contentId'
       ',Content.name contentName'
       ',Content.serial contentSerial'
       ',Content.sort contentSort'
-      ',SegmentKey.content segmentContent'
-      ',SegmentKey.contentVersion segmentContentVersion'
-      ',SegmentKey.note segmentNote'
-      ',SegmentKey.noteVersion segmentNoteVersion'
-      ',SegmentKey.lessonIndex'
-      ',SegmentKey.segmentIndex'
-      ',SegmentOverallPrg.next'
-      ',SegmentOverallPrg.progress'
-      ',Segment.segmentKeyId is null missing'
-      ' FROM SegmentKey'
-      " JOIN Content ON Content.classroomId=:classroomId AND Content.serial=SegmentKey.contentSerial AND Content.docId!=0"
-      ' LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id'
-      ' LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id'
-      ' WHERE SegmentKey.classroomId=:classroomId')
-  Future<List<SegmentShow>> getAllSegment(int classroomId);
+      ',VerseKey.content verseContent'
+      ',VerseKey.contentVersion verseContentVersion'
+      ',VerseKey.note verseNote'
+      ',VerseKey.noteVersion verseNoteVersion'
+      ',VerseKey.lessonIndex'
+      ',VerseKey.verseIndex'
+      ',VerseOverallPrg.next'
+      ',VerseOverallPrg.progress'
+      ',Verse.verseKeyId is null missing'
+      ' FROM VerseKey'
+      " JOIN Content ON Content.classroomId=:classroomId AND Content.serial=VerseKey.contentSerial AND Content.docId!=0"
+      ' LEFT JOIN Verse ON Verse.verseKeyId=VerseKey.id'
+      ' LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseKeyId=VerseKey.id'
+      ' WHERE VerseKey.classroomId=:classroomId')
+  Future<List<VerseShow>> getAllVerse(int classroomId);
 
-  @Query('SELECT SegmentKey.id segmentKeyId'
-      ',SegmentKey.k'
+  @Query('SELECT VerseKey.id verseKeyId'
+      ',VerseKey.k'
       ',Content.id contentId'
       ',Content.name contentName'
       ',Content.serial contentSerial'
       ',Content.sort contentSort'
-      ',SegmentKey.content segmentContent'
-      ',SegmentKey.contentVersion segmentContentVersion'
-      ',SegmentKey.note segmentNote'
-      ',SegmentKey.noteVersion segmentNoteVersion'
-      ',SegmentKey.lessonIndex'
-      ',SegmentKey.segmentIndex'
-      ',SegmentOverallPrg.next'
-      ',SegmentOverallPrg.progress'
-      ',Segment.segmentKeyId is null missing'
-      ' FROM SegmentKey'
-      " JOIN Content ON Content.classroomId=:classroomId AND Content.serial=SegmentKey.contentSerial AND Content.docId!=0"
-      ' LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id'
-      ' LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id'
-      ' WHERE SegmentKey.classroomId=:classroomId'
-      '  AND SegmentKey.contentSerial=:contentSerial'
-      '  AND SegmentKey.lessonIndex=:lessonIndex')
-  Future<List<SegmentShow>> getSegmentByLessonIndex(int classroomId, int contentSerial, int lessonIndex);
+      ',VerseKey.content verseContent'
+      ',VerseKey.contentVersion verseContentVersion'
+      ',VerseKey.note verseNote'
+      ',VerseKey.noteVersion verseNoteVersion'
+      ',VerseKey.lessonIndex'
+      ',VerseKey.verseIndex'
+      ',VerseOverallPrg.next'
+      ',VerseOverallPrg.progress'
+      ',Verse.verseKeyId is null missing'
+      ' FROM VerseKey'
+      " JOIN Content ON Content.classroomId=:classroomId AND Content.serial=VerseKey.contentSerial AND Content.docId!=0"
+      ' LEFT JOIN Verse ON Verse.verseKeyId=VerseKey.id'
+      ' LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseKeyId=VerseKey.id'
+      ' WHERE VerseKey.classroomId=:classroomId'
+      '  AND VerseKey.contentSerial=:contentSerial'
+      '  AND VerseKey.lessonIndex=:lessonIndex')
+  Future<List<VerseShow>> getVerseByLessonIndex(int classroomId, int contentSerial, int lessonIndex);
 
-  @Query('SELECT SegmentKey.id segmentKeyId'
-      ',SegmentKey.k'
+  @Query('SELECT VerseKey.id verseKeyId'
+      ',VerseKey.k'
       ',Content.id contentId'
       ',Content.name contentName'
       ',Content.serial contentSerial'
       ',Content.sort contentSort'
-      ',SegmentKey.content segmentContent'
-      ',SegmentKey.contentVersion segmentContentVersion'
-      ',SegmentKey.note segmentNote'
-      ',SegmentKey.noteVersion segmentNoteVersion'
-      ',SegmentKey.lessonIndex'
-      ',SegmentKey.segmentIndex'
-      ',SegmentOverallPrg.next'
-      ',SegmentOverallPrg.progress'
-      ',Segment.segmentKeyId is null missing'
-      ' FROM SegmentKey'
-      " JOIN Content ON Content.classroomId=:classroomId AND Content.serial=SegmentKey.contentSerial AND Content.docId!=0"
-      ' LEFT JOIN Segment ON Segment.segmentKeyId=SegmentKey.id'
-      ' LEFT JOIN SegmentOverallPrg ON SegmentOverallPrg.segmentKeyId=SegmentKey.id'
-      ' WHERE SegmentKey.classroomId=:classroomId'
-      '  AND SegmentKey.contentSerial=:contentSerial'
-      '  AND SegmentKey.lessonIndex>=:minLessonIndex')
-  Future<List<SegmentShow>> getSegmentByMinLessonIndex(int classroomId, int contentSerial, int minLessonIndex);
+      ',VerseKey.content verseContent'
+      ',VerseKey.contentVersion verseContentVersion'
+      ',VerseKey.note verseNote'
+      ',VerseKey.noteVersion verseNoteVersion'
+      ',VerseKey.lessonIndex'
+      ',VerseKey.verseIndex'
+      ',VerseOverallPrg.next'
+      ',VerseOverallPrg.progress'
+      ',Verse.verseKeyId is null missing'
+      ' FROM VerseKey'
+      " JOIN Content ON Content.classroomId=:classroomId AND Content.serial=VerseKey.contentSerial AND Content.docId!=0"
+      ' LEFT JOIN Verse ON Verse.verseKeyId=VerseKey.id'
+      ' LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseKeyId=VerseKey.id'
+      ' WHERE VerseKey.classroomId=:classroomId'
+      '  AND VerseKey.contentSerial=:contentSerial'
+      '  AND VerseKey.lessonIndex>=:minLessonIndex')
+  Future<List<VerseShow>> getVerseByMinLessonIndex(int classroomId, int contentSerial, int minLessonIndex);
 
   @Insert(onConflict: OnConflictStrategy.replace)
-  Future<void> insertSegments(List<Segment> entities);
+  Future<void> insertVerses(List<Verse> entities);
 
   @Insert(onConflict: OnConflictStrategy.ignore)
-  Future<void> insertSegmentOverallPrgs(List<SegmentOverallPrg> entities);
+  Future<void> insertVerseOverallPrgs(List<VerseOverallPrg> entities);
 
-  @Query('DELETE FROM Segment'
-      ' WHERE Segment.classroomId=:classroomId'
-      ' and Segment.contentSerial=:contentSerial')
-  Future<void> deleteSegmentByContentSerial(int classroomId, int contentSerial);
+  @Query('DELETE FROM Verse'
+      ' WHERE Verse.classroomId=:classroomId'
+      ' and Verse.contentSerial=:contentSerial')
+  Future<void> deleteVerseByContentSerial(int classroomId, int contentSerial);
 
-  @Query('DELETE FROM Segment WHERE segmentKeyId=:segmentKeyId')
-  Future<void> deleteSegment(int segmentKeyId);
+  @Query('DELETE FROM Verse WHERE verseKeyId=:verseKeyId')
+  Future<void> deleteVerse(int verseKeyId);
 
-  @Query('DELETE FROM SegmentKey WHERE id=:segmentKeyId')
-  Future<void> deleteSegmentKey(int segmentKeyId);
+  @Query('DELETE FROM VerseKey WHERE id=:verseKeyId')
+  Future<void> deleteVerseKey(int verseKeyId);
 
-  @Query('DELETE FROM SegmentOverallPrg WHERE segmentKeyId=:segmentKeyId')
-  Future<void> deleteSegmentOverallPrg(int segmentKeyId);
+  @Query('DELETE FROM VerseOverallPrg WHERE verseKeyId=:verseKeyId')
+  Future<void> deleteVerseOverallPrg(int verseKeyId);
 
-  @Query('DELETE FROM SegmentReview WHERE segmentKeyId=:segmentKeyId')
-  Future<void> deleteSegmentReview(int segmentKeyId);
+  @Query('DELETE FROM VerseReview WHERE verseKeyId=:verseKeyId')
+  Future<void> deleteVerseReview(int verseKeyId);
 
-  @Query('DELETE FROM SegmentTodayPrg WHERE segmentKeyId=:segmentKeyId')
-  Future<void> deleteSegmentTodayPrg(int segmentKeyId);
+  @Query('DELETE FROM VerseTodayPrg WHERE verseKeyId=:verseKeyId')
+  Future<void> deleteVerseTodayPrg(int verseKeyId);
 
-  @Query('DELETE FROM Segment WHERE classroomId=:classroomId')
-  Future<void> deleteSegmentByClassroomId(int classroomId);
+  @Query('DELETE FROM Verse WHERE classroomId=:classroomId')
+  Future<void> deleteVerseByClassroomId(int classroomId);
 
-  @Query('DELETE FROM SegmentKey WHERE classroomId=:classroomId')
-  Future<void> deleteSegmentKeyByClassroomId(int classroomId);
+  @Query('DELETE FROM VerseKey WHERE classroomId=:classroomId')
+  Future<void> deleteVerseKeyByClassroomId(int classroomId);
 
-  @Query('DELETE FROM SegmentOverallPrg WHERE classroomId=:classroomId')
-  Future<void> deleteSegmentOverallPrgByClassroomId(int classroomId);
+  @Query('DELETE FROM VerseOverallPrg WHERE classroomId=:classroomId')
+  Future<void> deleteVerseOverallPrgByClassroomId(int classroomId);
 
-  @Query('DELETE FROM SegmentReview WHERE classroomId=:classroomId')
-  Future<void> deleteSegmentReviewByClassroomId(int classroomId);
+  @Query('DELETE FROM VerseReview WHERE classroomId=:classroomId')
+  Future<void> deleteVerseReviewByClassroomId(int classroomId);
 
-  @Query('SELECT ifnull(max(Segment.lessonIndex),0) FROM Segment'
-      ' WHERE Segment.classroomId=:classroomId'
-      ' AND Segment.contentSerial=:contentSerial')
+  @Query('SELECT ifnull(max(Verse.lessonIndex),0) FROM Verse'
+      ' WHERE Verse.classroomId=:classroomId'
+      ' AND Verse.contentSerial=:contentSerial')
   Future<int?> getMaxLessonIndex(int classroomId, int contentSerial);
 
-  @Query('SELECT ifnull(max(Segment.segmentIndex),0) FROM Segment'
-      ' WHERE Segment.classroomId=:classroomId'
-      ' AND Segment.contentSerial=:contentSerial'
-      ' AND Segment.lessonIndex=:lessonIndex')
-  Future<int?> getMaxSegmentIndex(int classroomId, int contentSerial, int lessonIndex);
+  @Query('SELECT ifnull(max(Verse.verseIndex),0) FROM Verse'
+      ' WHERE Verse.classroomId=:classroomId'
+      ' AND Verse.contentSerial=:contentSerial'
+      ' AND Verse.lessonIndex=:lessonIndex')
+  Future<int?> getMaxVerseIndex(int classroomId, int contentSerial, int lessonIndex);
 
-  @Query('SELECT ifnull(max(SegmentStats.id),0) FROM SegmentStats'
-      ' WHERE SegmentStats.classroomId=:classroomId')
-  Future<int?> getMaxSegmentStatsId(int classroomId);
+  @Query('SELECT ifnull(max(VerseStats.id),0) FROM VerseStats'
+      ' WHERE VerseStats.classroomId=:classroomId')
+  Future<int?> getMaxVerseStatsId(int classroomId);
 
   @Query('SELECT ifnull(max(Content.updateTime),0) FROM Content'
       ' WHERE Content.classroomId=:classroomId')
   Future<int?> getMaxContentUpdateTime(int classroomId);
 
-  /// SegmentText start
+  /// VerseText start
 
   @Query('SELECT TextVersion.* '
-      ' FROM SegmentKey'
+      ' FROM VerseKey'
       ' JOIN TextVersion ON TextVersion.t=0'
-      '  AND TextVersion.id=SegmentKey.id'
-      '  AND TextVersion.version=SegmentKey.contentVersion'
-      ' WHERE SegmentKey.id in (:ids)')
-  Future<List<TextVersion>> getSegmentTextForContent(List<int> ids);
+      '  AND TextVersion.id=VerseKey.id'
+      '  AND TextVersion.version=VerseKey.contentVersion'
+      ' WHERE VerseKey.id in (:ids)')
+  Future<List<TextVersion>> getVerseTextForContent(List<int> ids);
 
   @Query('SELECT TextVersion.* '
-      ' FROM SegmentKey'
+      ' FROM VerseKey'
       ' JOIN TextVersion ON TextVersion.t=1'
-      '  AND TextVersion.id=SegmentKey.id'
-      '  AND TextVersion.version=SegmentKey.noteVersion'
-      ' WHERE SegmentKey.id in (:ids)')
-  Future<List<TextVersion>> getSegmentTextForNote(List<int> ids);
+      '  AND TextVersion.id=VerseKey.id'
+      '  AND TextVersion.version=VerseKey.noteVersion'
+      ' WHERE VerseKey.id in (:ids)')
+  Future<List<TextVersion>> getVerseTextForNote(List<int> ids);
 
   @Insert(onConflict: OnConflictStrategy.ignore)
-  Future<void> insertSegmentTextVersions(List<TextVersion> entities);
+  Future<void> insertVerseTextVersions(List<TextVersion> entities);
 
   @Insert(onConflict: OnConflictStrategy.ignore)
-  Future<void> insertSegmentTextVersion(TextVersion entity);
+  Future<void> insertVerseTextVersion(TextVersion entity);
 
-  /// SegmentText end
+  /// VerseText end
 
   @Insert(onConflict: OnConflictStrategy.replace)
-  Future<void> insertSegmentStats(SegmentStats stats);
+  Future<void> insertVerseStats(VerseStats stats);
 
   @transaction
-  Future<void> deleteAbnormalSegment(int segmentKeyId) async {
+  Future<void> deleteAbnormalVerse(int verseKeyId) async {
     await forUpdate();
-    await deleteSegment(segmentKeyId);
-    await deleteSegmentKey(segmentKeyId);
-    await deleteSegmentOverallPrg(segmentKeyId);
-    await deleteSegmentReview(segmentKeyId);
-    await deleteSegmentTodayPrg(segmentKeyId);
-    await db.textVersionDao.delete(TextVersionType.segmentContent, segmentKeyId);
-    await db.textVersionDao.delete(TextVersionType.segmentNote, segmentKeyId);
+    await deleteVerse(verseKeyId);
+    await deleteVerseKey(verseKeyId);
+    await deleteVerseOverallPrg(verseKeyId);
+    await deleteVerseReview(verseKeyId);
+    await deleteVerseTodayPrg(verseKeyId);
+    await db.textVersionDao.delete(TextVersionType.verseContent, verseKeyId);
+    await db.textVersionDao.delete(TextVersionType.verseNote, verseKeyId);
   }
 
   @transaction
   Future<void> deleteByClassroomId(int classroomId) async {
     await forUpdate();
-    await deleteSegmentByClassroomId(classroomId);
-    await deleteSegmentKeyByClassroomId(classroomId);
-    await deleteSegmentOverallPrgByClassroomId(classroomId);
-    await deleteSegmentReviewByClassroomId(classroomId);
-    await deleteSegmentTodayPrgByClassroomId(classroomId);
+    await deleteVerseByClassroomId(classroomId);
+    await deleteVerseKeyByClassroomId(classroomId);
+    await deleteVerseOverallPrgByClassroomId(classroomId);
+    await deleteVerseReviewByClassroomId(classroomId);
+    await deleteVerseTodayPrgByClassroomId(classroomId);
   }
 
   /// for content
@@ -674,13 +674,13 @@ abstract class ScheduleDao {
     return ret;
   }
 
-  Future<bool> prepareImportSegment(
+  Future<bool> prepareImportVerse(
     List<String> contentJson,
     List<Lesson> lessons,
     List<LessonKey> lessonKeys,
-    List<SegmentKey> segmentKeys,
-    List<Segment> segments,
-    List<SegmentOverallPrg> segmentOverallPrgs, {
+    List<VerseKey> verseKeys,
+    List<Verse> verses,
+    List<VerseOverallPrg> verseOverallPrgs, {
     int contentId = 0,
     int contentSerial = 0,
     int? indexJsonDocId,
@@ -712,12 +712,12 @@ abstract class ScheduleDao {
       return false;
     }
     for (var d in kv.lesson) {
-      if (d.segment.length >= 100000) {
-        Snackbar.show(I18nKey.labelTooMuchData.trArgs(["segment"]));
+      if (d.verse.length >= 100000) {
+        Snackbar.show(I18nKey.labelTooMuchData.trArgs(["verse"]));
         return false;
       }
     }
-    Map<String, bool> segmentKey = {};
+    Map<String, bool> verseKey = {};
     var now = DateTime.now();
 
     Map<String, dynamic> excludeLesson = {};
@@ -731,13 +731,13 @@ abstract class ScheduleDao {
     List<dynamic> rawLessons = jsonData['l'] as List<dynamic>;
     for (var lessonIndex = 0; lessonIndex < kv.lesson.length; lessonIndex++) {
       Map<String, dynamic> rawLesson = rawLessons[lessonIndex] as Map<String, dynamic>;
-      Map<String, dynamic> excludeSegment = {};
+      Map<String, dynamic> excludeVerse = {};
       rawLesson.forEach((k, v) {
-        if (k != 's') {
-          excludeSegment[k] = v;
+        if (k != 'v') {
+          excludeVerse[k] = v;
         }
       });
-      String lessonContent = convert.jsonEncode(excludeSegment);
+      String lessonContent = convert.jsonEncode(excludeVerse);
 
       var lesson = kv.lesson[lessonIndex];
       lessons.add(Lesson(
@@ -753,64 +753,64 @@ abstract class ScheduleDao {
         content: lessonContent,
         contentVersion: 1,
       ));
-      List<dynamic> rawSegments = rawLesson['s'] as List<dynamic>;
-      for (var segmentIndex = 0; segmentIndex < lesson.segment.length; segmentIndex++) {
-        var rawSegment = rawSegments[segmentIndex] as Map<String, dynamic>;
-        var segment = lesson.segment[segmentIndex];
-        if (segment.answer.isEmpty) {
-          Snackbar.show(I18nKey.labelSegmentNeedToContainAnswer.tr);
+      List<dynamic> rawVerses = rawLesson['v'] as List<dynamic>;
+      for (var verseIndex = 0; verseIndex < lesson.verse.length; verseIndex++) {
+        var rawVerse = rawVerses[verseIndex] as Map<String, dynamic>;
+        var verse = lesson.verse[verseIndex];
+        if (verse.answer.isEmpty) {
+          Snackbar.show(I18nKey.labelVerseNeedToContainAnswer.tr);
           return false;
         }
-        var key = getKey(segment.key, segment.answer);
-        if (segmentKey.containsKey(key)) {
-          Snackbar.show(I18nKey.labelSegmentKeyDuplicated.trArgs([key]));
+        var key = getKey(verse.key, verse.answer);
+        if (verseKey.containsKey(key)) {
+          Snackbar.show(I18nKey.labelVerseKeyDuplicated.trArgs([key]));
           return false;
         }
-        segmentKey[key] = true;
+        verseKey[key] = true;
         Map<String, dynamic> excludeNote = {};
-        rawSegment.forEach((k, v) {
+        rawVerse.forEach((k, v) {
           if (k != 'n') {
             excludeNote[k] = v;
           }
         });
-        String segmentContent = convert.jsonEncode(excludeNote);
-        segmentKeys.add(SegmentKey(
+        String verseContent = convert.jsonEncode(excludeNote);
+        verseKeys.add(VerseKey(
           classroomId: content.classroomId,
           contentSerial: content.serial,
           lessonIndex: lessonIndex,
-          segmentIndex: segmentIndex,
+          verseIndex: verseIndex,
           version: 1,
           k: key,
-          content: segmentContent,
+          content: verseContent,
           contentVersion: 1,
-          note: segment.note ?? '',
+          note: verse.note ?? '',
           noteVersion: 1,
         ));
-        segments.add(Segment(
-          segmentKeyId: 0,
+        verses.add(Verse(
+          verseKeyId: 0,
           classroomId: content.classroomId,
           contentSerial: content.serial,
           lessonIndex: lessonIndex,
-          segmentIndex: segmentIndex,
+          verseIndex: verseIndex,
           //4611686118427387904-(99999*10000000000+99999*100000+99999)
-          sort: content.sort * 10000000000 + lessonIndex * 100000 + segmentIndex,
+          sort: content.sort * 10000000000 + lessonIndex * 100000 + verseIndex,
         ));
-        segmentOverallPrgs.add(SegmentOverallPrg(0, content.classroomId, content.serial, Date.from(now), 0));
+        verseOverallPrgs.add(VerseOverallPrg(0, content.classroomId, content.serial, Date.from(now), 0));
       }
     }
     return true;
   }
 
-  List<TextVersion> toNeedToInsertSegmentText(
-    List<SegmentKey> newSegmentKeys,
-    TextVersionType segmentTextVersionType,
-    Map<int, TextVersion> segmentKeyIdToVersion,
-    String Function(SegmentKey) getText,
+  List<TextVersion> toNeedToInsertVerseText(
+    List<VerseKey> newVerseKeys,
+    TextVersionType verseTextVersionType,
+    Map<int, TextVersion> verseKeyIdToVersion,
+    String Function(VerseKey) getText,
   ) {
     List<TextVersion> needToInsert = [];
 
-    for (var v in newSegmentKeys) {
-      TextVersion? version = segmentKeyIdToVersion[v.id!];
+    for (var v in newVerseKeys) {
+      TextVersion? version = verseKeyIdToVersion[v.id!];
       String text = getText(v);
       if (version == null || version.text != text) {
         int currVersionNumber = 1;
@@ -818,7 +818,7 @@ abstract class ScheduleDao {
           currVersionNumber = version.version + 1;
         }
         var stv = TextVersion(
-          t: segmentTextVersionType,
+          t: verseTextVersionType,
           id: v.id!,
           version: currVersionNumber,
           reason: TextVersionReason.import,
@@ -832,7 +832,7 @@ abstract class ScheduleDao {
   }
 
   @transaction
-  Future<int> importSegment(
+  Future<int> importVerse(
     int contentId,
     int contentSerial,
     int? indexJsonDocId,
@@ -842,16 +842,16 @@ abstract class ScheduleDao {
     List<String> newContents = [];
     List<Lesson> newLessons = [];
     List<LessonKey> newLessonKeys = [];
-    List<SegmentKey> newSegmentKeys = [];
-    List<Segment> segments = [];
-    List<SegmentOverallPrg> segmentOverallPrgs = [];
-    bool success = await prepareImportSegment(
+    List<VerseKey> newVerseKeys = [];
+    List<Verse> verses = [];
+    List<VerseOverallPrg> verseOverallPrgs = [];
+    bool success = await prepareImportVerse(
       newContents,
       newLessons,
       newLessonKeys,
-      newSegmentKeys,
-      segments,
-      segmentOverallPrgs,
+      newVerseKeys,
+      verses,
+      verseOverallPrgs,
       contentId: contentId,
       contentSerial: contentSerial,
       indexJsonDocId: indexJsonDocId,
@@ -861,188 +861,188 @@ abstract class ScheduleDao {
       return ImportResult.error.index;
     }
     if (contentSerial == 0) {
-      for (var segmentKey in newSegmentKeys) {
-        contentSerial = segmentKey.contentSerial;
+      for (var verseKey in newVerseKeys) {
+        contentSerial = verseKey.contentSerial;
         break;
       }
     }
 
-    List<SegmentKey> oldSegmentKeys = await getSegmentKey(Classroom.curr, contentSerial);
+    List<VerseKey> oldVerseKeys = await getVerseKey(Classroom.curr, contentSerial);
     var maxVersion = 0;
-    Map<String, SegmentKey> keyToOldSegmentKey = {};
+    Map<String, VerseKey> keyToOldVerseKey = {};
     Map<String, int> keyToId = {};
-    List<int> oldSegmentKeyIds = [];
-    for (var oldSegmentKey in oldSegmentKeys) {
-      if (oldSegmentKey.version > maxVersion) {
-        maxVersion = oldSegmentKey.version;
+    List<int> oldVerseKeyIds = [];
+    for (var oldVerseKey in oldVerseKeys) {
+      if (oldVerseKey.version > maxVersion) {
+        maxVersion = oldVerseKey.version;
       }
-      keyToOldSegmentKey[oldSegmentKey.k] = oldSegmentKey;
-      keyToId[oldSegmentKey.k] = oldSegmentKey.id!;
-      oldSegmentKeyIds.add(oldSegmentKey.id!);
+      keyToOldVerseKey[oldVerseKey.k] = oldVerseKey;
+      keyToId[oldVerseKey.k] = oldVerseKey.id!;
+      oldVerseKeyIds.add(oldVerseKey.id!);
     }
     var nextVersion = maxVersion + 1;
-    Map<int, SegmentKey> needToModifyMap = {};
-    List<SegmentKey> needToInsert = [];
-    for (var newSegmentKey in newSegmentKeys) {
-      newSegmentKey.version = nextVersion;
-      SegmentKey? oldSegmentKey = keyToOldSegmentKey[newSegmentKey.k];
-      if (oldSegmentKey == null) {
-        needToInsert.add(newSegmentKey);
+    Map<int, VerseKey> needToModifyMap = {};
+    List<VerseKey> needToInsert = [];
+    for (var newVerseKey in newVerseKeys) {
+      newVerseKey.version = nextVersion;
+      VerseKey? oldVerseKey = keyToOldVerseKey[newVerseKey.k];
+      if (oldVerseKey == null) {
+        needToInsert.add(newVerseKey);
       } else {
-        newSegmentKey.id = oldSegmentKey.id;
-        newSegmentKey.contentVersion = oldSegmentKey.contentVersion;
-        newSegmentKey.noteVersion = oldSegmentKey.noteVersion;
-        if (oldSegmentKey.lessonIndex != newSegmentKey.lessonIndex || //
-            oldSegmentKey.segmentIndex != newSegmentKey.segmentIndex || //
-            oldSegmentKey.content != newSegmentKey.content || //
-            oldSegmentKey.note != newSegmentKey.note) {
-          needToModifyMap[oldSegmentKey.id!] = newSegmentKey;
+        newVerseKey.id = oldVerseKey.id;
+        newVerseKey.contentVersion = oldVerseKey.contentVersion;
+        newVerseKey.noteVersion = oldVerseKey.noteVersion;
+        if (oldVerseKey.lessonIndex != newVerseKey.lessonIndex || //
+            oldVerseKey.verseIndex != newVerseKey.verseIndex || //
+            oldVerseKey.content != newVerseKey.content || //
+            oldVerseKey.note != newVerseKey.note) {
+          needToModifyMap[oldVerseKey.id!] = newVerseKey;
         }
       }
     }
     if (needToInsert.isNotEmpty) {
-      await insertSegmentKeys(needToInsert);
-      var keyIds = await getSegmentKeyId(Classroom.curr, contentSerial);
+      await insertVerseKeys(needToInsert);
+      var keyIds = await getVerseKeyId(Classroom.curr, contentSerial);
       keyToId = {for (var keyId in keyIds) keyId.k: keyId.id};
-      for (var newSegmentKey in newSegmentKeys) {
-        int? id = keyToId[newSegmentKey.k];
+      for (var newVerseKey in newVerseKeys) {
+        int? id = keyToId[newVerseKey.k];
         if (id != null) {
-          newSegmentKey.id = id;
+          newVerseKey.id = id;
         }
       }
     }
 
-    List<TextVersion> oldContentVersion = await getSegmentTextForContent(oldSegmentKeyIds);
-    Map<int, TextVersion> oldSegmentKeyIdToContentVersion = {for (var v in oldContentVersion) v.id: v};
-    var needToInsertSegmentContent = toNeedToInsertSegmentText(newSegmentKeys, TextVersionType.segmentContent, oldSegmentKeyIdToContentVersion, (v) => v.content);
-    Map<int, TextVersion> newSegmentKeyIdToContentVersion = {for (var v in needToInsertSegmentContent) v.id: v};
-    List<TextVersion> oldNoteVersion = await getSegmentTextForNote(oldSegmentKeyIds);
-    Map<int, TextVersion> oldSegmentKeyIdToNoteVersion = {for (var v in oldNoteVersion) v.id: v};
-    var needToInsertSegmentNote = toNeedToInsertSegmentText(newSegmentKeys, TextVersionType.segmentNote, oldSegmentKeyIdToNoteVersion, (v) => v.note);
-    Map<int, TextVersion> newSegmentKeyIdToNoteVersion = {for (var v in needToInsertSegmentNote) v.id: v};
-    for (var i = 0; i < newSegmentKeys.length; i++) {
-      SegmentKey newSegmentKey = newSegmentKeys[i];
-      var id = keyToId[newSegmentKey.k]!;
-      var contentVersion = newSegmentKeyIdToContentVersion[id];
-      if (contentVersion != null && newSegmentKey.contentVersion != contentVersion.version) {
-        newSegmentKey.contentVersion = contentVersion.version;
-        needToModifyMap[newSegmentKey.id!] = newSegmentKey;
+    List<TextVersion> oldContentVersion = await getVerseTextForContent(oldVerseKeyIds);
+    Map<int, TextVersion> oldVerseKeyIdToContentVersion = {for (var v in oldContentVersion) v.id: v};
+    var needToInsertVerseContent = toNeedToInsertVerseText(newVerseKeys, TextVersionType.verseContent, oldVerseKeyIdToContentVersion, (v) => v.content);
+    Map<int, TextVersion> newVerseKeyIdToContentVersion = {for (var v in needToInsertVerseContent) v.id: v};
+    List<TextVersion> oldNoteVersion = await getVerseTextForNote(oldVerseKeyIds);
+    Map<int, TextVersion> oldVerseKeyIdToNoteVersion = {for (var v in oldNoteVersion) v.id: v};
+    var needToInsertVerseNote = toNeedToInsertVerseText(newVerseKeys, TextVersionType.verseNote, oldVerseKeyIdToNoteVersion, (v) => v.note);
+    Map<int, TextVersion> newVerseKeyIdToNoteVersion = {for (var v in needToInsertVerseNote) v.id: v};
+    for (var i = 0; i < newVerseKeys.length; i++) {
+      VerseKey newVerseKey = newVerseKeys[i];
+      var id = keyToId[newVerseKey.k]!;
+      var contentVersion = newVerseKeyIdToContentVersion[id];
+      if (contentVersion != null && newVerseKey.contentVersion != contentVersion.version) {
+        newVerseKey.contentVersion = contentVersion.version;
+        needToModifyMap[newVerseKey.id!] = newVerseKey;
       }
-      var noteVersion = newSegmentKeyIdToNoteVersion[id];
-      if (noteVersion != null && newSegmentKey.noteVersion != noteVersion.version) {
-        newSegmentKey.noteVersion = noteVersion.version;
-        needToModifyMap[newSegmentKey.id!] = newSegmentKey;
+      var noteVersion = newVerseKeyIdToNoteVersion[id];
+      if (noteVersion != null && newVerseKey.noteVersion != noteVersion.version) {
+        newVerseKey.noteVersion = noteVersion.version;
+        needToModifyMap[newVerseKey.id!] = newVerseKey;
       }
-      segments[i].segmentKeyId = id;
-      segmentOverallPrgs[i].segmentKeyId = id;
+      verses[i].verseKeyId = id;
+      verseOverallPrgs[i].verseKeyId = id;
     }
-    await deleteSegmentByContentSerial(Classroom.curr, contentSerial);
-    await insertSegments(segments);
-    await insertSegmentOverallPrgs(segmentOverallPrgs);
-    if (needToInsertSegmentContent.isNotEmpty) {
-      await insertSegmentTextVersions(needToInsertSegmentContent);
+    await deleteVerseByContentSerial(Classroom.curr, contentSerial);
+    await insertVerses(verses);
+    await insertVerseOverallPrgs(verseOverallPrgs);
+    if (needToInsertVerseContent.isNotEmpty) {
+      await insertVerseTextVersions(needToInsertVerseContent);
     }
-    if (needToInsertSegmentNote.isNotEmpty) {
-      await insertSegmentTextVersions(needToInsertSegmentNote);
+    if (needToInsertVerseNote.isNotEmpty) {
+      await insertVerseTextVersions(needToInsertVerseNote);
     }
     if (needToModifyMap.isNotEmpty) {
-      await updateSegmentKeys(needToModifyMap.values.toList());
+      await updateVerseKeys(needToModifyMap.values.toList());
     }
     await db.contentDao.import(contentSerial, newContents[0]);
     var warningInLesson = await db.lessonKeyDao.import(newLessons, newLessonKeys, contentSerial);
-    var warningInSegment = segments.length < keyToId.length;
+    var warningInVerse = verses.length < keyToId.length;
 
     if (indexJsonDocId != null && url != null) {
-      await db.contentDao.updateContent(contentId, indexJsonDocId, url, warningInLesson, warningInSegment, DateTime.now().millisecondsSinceEpoch);
+      await db.contentDao.updateContent(contentId, indexJsonDocId, url, warningInLesson, warningInVerse, DateTime.now().millisecondsSinceEpoch);
     } else {
-      await db.contentDao.updateContentWarning(contentId, warningInLesson, warningInSegment, DateTime.now().millisecondsSinceEpoch);
+      await db.contentDao.updateContentWarning(contentId, warningInLesson, warningInVerse, DateTime.now().millisecondsSinceEpoch);
     }
-    if (warningInLesson == true || warningInSegment == true) {
-      return ImportResult.successButSomeSegmentsAreSurplus.index;
+    if (warningInLesson == true || warningInVerse == true) {
+      return ImportResult.successButSomeVersesAreSurplus.index;
     } else {
       return ImportResult.success.index;
     }
   }
 
   @transaction
-  Future<bool> deleteNormalSegment(int segmentKeyId) async {
+  Future<bool> deleteNormalVerse(int verseKeyId) async {
     await forUpdate();
-    var raw = await db.segmentKeyDao.oneById(segmentKeyId);
+    var raw = await db.verseKeyDao.oneById(verseKeyId);
     if (raw == null) {
-      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the data($segmentKeyId)"]));
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the data($verseKeyId)"]));
       return false;
     }
     int classroomId = raw.classroomId;
-    int segmentIndex = raw.segmentIndex;
-    var segments = await db.segmentDao.findByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
-    var segmentKeys = await db.segmentKeyDao.findByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
-    List<Segment> insertSegments = [];
-    List<SegmentKey> insertSegmentKeys = [];
-    for (var v in segments) {
-      v.segmentIndex--;
+    int verseIndex = raw.verseIndex;
+    var verses = await db.verseDao.findByMinVerseIndex(classroomId, raw.contentSerial, raw.lessonIndex, verseIndex);
+    var verseKeys = await db.verseKeyDao.findByMinVerseIndex(classroomId, raw.contentSerial, raw.lessonIndex, verseIndex);
+    List<Verse> insertVerses = [];
+    List<VerseKey> insertVerseKeys = [];
+    for (var v in verses) {
+      v.verseIndex--;
       v.sort--;
-      if (v.segmentKeyId != segmentKeyId) {
-        insertSegments.add(v);
+      if (v.verseKeyId != verseKeyId) {
+        insertVerses.add(v);
       }
     }
-    for (var v in segmentKeys) {
-      v.segmentIndex--;
-      if (v.id != segmentKeyId) {
-        insertSegmentKeys.add(v);
+    for (var v in verseKeys) {
+      v.verseIndex--;
+      if (v.id != verseKeyId) {
+        insertVerseKeys.add(v);
       }
     }
-    await db.segmentDao.deleteByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
-    await db.segmentKeyDao.deleteByMinSegmentIndex(classroomId, raw.contentSerial, raw.lessonIndex, segmentIndex);
-    await db.segmentDao.insertListOrFail(insertSegments);
-    await db.segmentKeyDao.insertListOrFail(insertSegmentKeys);
-    await deleteSegmentOverallPrg(segmentKeyId);
-    await deleteSegmentReview(segmentKeyId);
-    await deleteSegmentTodayPrg(segmentKeyId);
-    await db.textVersionDao.delete(TextVersionType.segmentContent, segmentKeyId);
-    await db.textVersionDao.delete(TextVersionType.segmentNote, segmentKeyId);
+    await db.verseDao.deleteByMinVerseIndex(classroomId, raw.contentSerial, raw.lessonIndex, verseIndex);
+    await db.verseKeyDao.deleteByMinVerseIndex(classroomId, raw.contentSerial, raw.lessonIndex, verseIndex);
+    await db.verseDao.insertListOrFail(insertVerses);
+    await db.verseKeyDao.insertListOrFail(insertVerseKeys);
+    await deleteVerseOverallPrg(verseKeyId);
+    await deleteVerseReview(verseKeyId);
+    await deleteVerseTodayPrg(verseKeyId);
+    await db.textVersionDao.delete(TextVersionType.verseContent, verseKeyId);
+    await db.textVersionDao.delete(TextVersionType.verseNote, verseKeyId);
     return true;
   }
 
   @transaction
-  Future<int> addSegment(SegmentShow raw, int segmentIndex) async {
-    return interAddSegment(
-      segmentContent: raw.segmentContent,
+  Future<int> addVerse(VerseShow raw, int verseIndex) async {
+    return interAddVerse(
+      verseContent: raw.verseContent,
       contentSerial: raw.contentSerial,
       lessonIndex: raw.lessonIndex,
-      segmentIndex: segmentIndex,
+      verseIndex: verseIndex,
     );
   }
 
   @transaction
-  Future<int> addFirstSegment(
+  Future<int> addFirstVerse(
     int contentSerial,
     int lessonIndex,
   ) async {
-    return interAddSegment(
-      segmentContent: "{}",
+    return interAddVerse(
+      verseContent: "{}",
       contentSerial: contentSerial,
       lessonIndex: lessonIndex,
-      segmentIndex: 0,
+      verseIndex: 0,
     );
   }
 
-  Future<int> interAddSegment({
-    required String segmentContent,
+  Future<int> interAddVerse({
+    required String verseContent,
     required int contentSerial,
     required int lessonIndex,
-    required int segmentIndex,
+    required int verseIndex,
   }) async {
     await forUpdate();
     String content = "";
     String key = "";
     Map<String, dynamic> contentMap;
     try {
-      contentMap = convert.jsonDecode(segmentContent);
+      contentMap = convert.jsonDecode(verseContent);
       if (contentMap['k'] == null || contentMap['k'].toString().isEmpty) {
         if (contentMap['a'] != null && contentMap['a'].toString().isNotEmpty) {
           contentMap['k'] = '${contentMap['a']}_${DateTime.now().millisecondsSinceEpoch}';
         } else {
-          contentMap['a'] = 'segment_${DateTime.now().millisecondsSinceEpoch}';
+          contentMap['a'] = 'verse_${DateTime.now().millisecondsSinceEpoch}';
         }
       } else {
         contentMap['k'] = '${contentMap['k']}_${DateTime.now().millisecondsSinceEpoch}';
@@ -1058,31 +1058,31 @@ abstract class ScheduleDao {
       return 0;
     }
     int classroomId = Classroom.curr;
-    var existingSegment = await getSegmentKeyByKey(classroomId, contentSerial, key);
-    if (existingSegment != null) {
-      Snackbar.show(I18nKey.labelSegmentKeyDuplicated.trArgs([key]));
+    var existingVerse = await getVerseKeyByKey(classroomId, contentSerial, key);
+    if (existingVerse != null) {
+      Snackbar.show(I18nKey.labelVerseKeyDuplicated.trArgs([key]));
       return 0;
     }
 
-    // adjust the segment index and sort
-    var segments = await db.segmentDao.findByMinSegmentIndex(classroomId, contentSerial, lessonIndex, segmentIndex);
-    var segmentKeys = await db.segmentKeyDao.findByMinSegmentIndex(classroomId, contentSerial, lessonIndex, segmentIndex);
-    for (var v in segments) {
-      v.segmentIndex++;
+    // adjust the verse index and sort
+    var verses = await db.verseDao.findByMinVerseIndex(classroomId, contentSerial, lessonIndex, verseIndex);
+    var verseKeys = await db.verseKeyDao.findByMinVerseIndex(classroomId, contentSerial, lessonIndex, verseIndex);
+    for (var v in verses) {
+      v.verseIndex++;
       v.sort++;
     }
-    for (var v in segmentKeys) {
-      v.segmentIndex++;
+    for (var v in verseKeys) {
+      v.verseIndex++;
     }
-    await db.segmentDao.deleteByMinSegmentIndex(classroomId, contentSerial, lessonIndex, segmentIndex);
-    await db.segmentKeyDao.deleteByMinSegmentIndex(classroomId, contentSerial, lessonIndex, segmentIndex);
+    await db.verseDao.deleteByMinVerseIndex(classroomId, contentSerial, lessonIndex, verseIndex);
+    await db.verseKeyDao.deleteByMinVerseIndex(classroomId, contentSerial, lessonIndex, verseIndex);
 
-    // insert and get the segment key id
-    SegmentKey? segmentKey = SegmentKey(
+    // insert and get the verse key id
+    VerseKey? verseKey = VerseKey(
       classroomId: classroomId,
       contentSerial: contentSerial,
       lessonIndex: lessonIndex,
-      segmentIndex: segmentIndex,
+      verseIndex: verseIndex,
       version: 1,
       k: key,
       content: content,
@@ -1090,62 +1090,62 @@ abstract class ScheduleDao {
       note: '',
       noteVersion: 1,
     );
-    segmentKeys.add(segmentKey);
-    await db.segmentKeyDao.insertListOrFail(segmentKeys);
-    segmentKey = await getSegmentKeyByKey(segmentKey.classroomId, segmentKey.contentSerial, key);
-    if (segmentKey == null) {
-      throw Exception('Failed to get segment key');
+    verseKeys.add(verseKey);
+    await db.verseKeyDao.insertListOrFail(verseKeys);
+    verseKey = await getVerseKeyByKey(verseKey.classroomId, verseKey.contentSerial, key);
+    if (verseKey == null) {
+      throw Exception('Failed to get verse key');
     }
 
-    int sortValue = segmentKey.contentSerial * 10000000000 + segmentKey.lessonIndex * 100000 + segmentIndex;
-    var segment = Segment(
-      segmentKeyId: segmentKey.id!,
-      classroomId: segmentKey.classroomId,
-      contentSerial: segmentKey.contentSerial,
-      lessonIndex: segmentKey.lessonIndex,
-      segmentIndex: segmentKey.segmentIndex,
+    int sortValue = verseKey.contentSerial * 10000000000 + verseKey.lessonIndex * 100000 + verseIndex;
+    var verse = Verse(
+      verseKeyId: verseKey.id!,
+      classroomId: verseKey.classroomId,
+      contentSerial: verseKey.contentSerial,
+      lessonIndex: verseKey.lessonIndex,
+      verseIndex: verseKey.verseIndex,
       sort: sortValue,
     );
-    segments.add(segment);
-    await db.segmentDao.insertListOrFail(segments);
+    verses.add(verse);
+    await db.verseDao.insertListOrFail(verses);
     var now = DateTime.now();
-    var segmentOverallPrg = SegmentOverallPrg(segmentKey.id!, segmentKey.classroomId, segmentKey.contentSerial, Date.from(now), 0);
-    await db.segmentOverallPrgDao.insertOrFail(segmentOverallPrg);
+    var verseOverallPrg = VerseOverallPrg(verseKey.id!, verseKey.classroomId, verseKey.contentSerial, Date.from(now), 0);
+    await db.verseOverallPrgDao.insertOrFail(verseOverallPrg);
     await db.textVersionDao.insertOrFail(TextVersion(
-      t: TextVersionType.segmentContent,
-      id: segmentKey.id!,
+      t: TextVersionType.verseContent,
+      id: verseKey.id!,
       version: 1,
       reason: TextVersionReason.editor,
-      text: segmentKey.content,
+      text: verseKey.content,
       createTime: now,
     ));
 
     await db.textVersionDao.insertOrFail(TextVersion(
-      t: TextVersionType.segmentNote,
-      id: segmentKey.id!,
+      t: TextVersionType.verseNote,
+      id: verseKey.id!,
       version: 1,
       reason: TextVersionReason.editor,
-      text: segmentKey.note,
+      text: verseKey.note,
       createTime: now,
     ));
 
-    await insertKv(CrKv(segmentKey.classroomId, CrK.updateSegmentShowTime, now.millisecondsSinceEpoch.toString()));
+    await insertKv(CrKv(verseKey.classroomId, CrK.updateVerseShowTime, now.millisecondsSinceEpoch.toString()));
 
-    return segmentKey.id!;
+    return verseKey.id!;
   }
 
   @transaction
-  Future<void> hideContentAndDeleteSegment(int contentId, int contentSerial) async {
+  Future<void> hideContentAndDeleteVerse(int contentId, int contentSerial) async {
     await forUpdate();
     await hideContent(contentId);
-    await deleteSegmentByContentSerial(Classroom.curr, contentSerial);
+    await deleteVerseByContentSerial(Classroom.curr, contentSerial);
   }
 
   /// for progress
   @transaction
-  Future<List<SegmentTodayPrg>> initToday() async {
+  Future<List<VerseTodayPrg>> initToday() async {
     await forUpdate();
-    List<SegmentTodayPrg> todayPrg = [];
+    List<VerseTodayPrg> todayPrg = [];
     var now = DateTime.now();
     var needToInsert = false;
     var todayLearnCreateDate = await intKv(Classroom.curr, CrK.todayScheduleCreateDate);
@@ -1161,48 +1161,48 @@ abstract class ScheduleDao {
     if (needToInsert) {
       await deleteKv(CrKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount, ""));
       await insertKv(CrKv(Classroom.curr, CrK.todayScheduleCreateDate, "${Date.from(now).value}"));
-      await deleteSegmentTodayPrgByClassroomId(Classroom.curr);
+      await deleteVerseTodayPrgByClassroomId(Classroom.curr);
       var elConfigs = scheduleConfig.elConfigs;
       await initTodayEl(now, elConfigs, todayPrg);
       var relConfigs = scheduleConfig.relConfigs;
       await initTodayRel(now, relConfigs, todayPrg);
-      await insertSegmentTodayPrg(todayPrg);
+      await insertVerseTodayPrg(todayPrg);
       var configInUseStr = convert.json.encode(scheduleConfig);
       await insertKv(CrKv(Classroom.curr, CrK.todayScheduleConfigInUse, configInUseStr));
     }
-    todayPrg = await findSegmentTodayPrg(Classroom.curr);
+    todayPrg = await findVerseTodayPrg(Classroom.curr);
     return todayPrg;
   }
 
   @transaction
-  Future<List<SegmentTodayPrg>> forceInitToday(TodayPrgType type) async {
+  Future<List<VerseTodayPrg>> forceInitToday(TodayPrgType type) async {
     scheduleConfig = await getScheduleConfigByKey(CrK.todayScheduleConfig);
     var scheduleConfigInUse = await getScheduleConfigByKey(CrK.todayScheduleConfigInUse);
-    List<SegmentTodayPrg> todayPrg = [];
+    List<VerseTodayPrg> todayPrg = [];
     var now = DateTime.now();
     if (type == TodayPrgType.learn || type == TodayPrgType.none) {
-      await deleteSegmentTodayLearnPrgByClassroomId(Classroom.curr);
+      await deleteVerseTodayLearnPrgByClassroomId(Classroom.curr);
       var elConfigs = scheduleConfig.elConfigs;
       scheduleConfigInUse.elConfigs = elConfigs;
       await initTodayEl(now, elConfigs, todayPrg);
     }
     if (type == TodayPrgType.review || type == TodayPrgType.none) {
-      await deleteSegmentTodayReviewPrgByClassroomId(Classroom.curr);
+      await deleteVerseTodayReviewPrgByClassroomId(Classroom.curr);
       var relConfigs = scheduleConfig.relConfigs;
       scheduleConfigInUse.relConfigs = relConfigs;
       await initTodayRel(now, relConfigs, todayPrg);
     }
     if (type == TodayPrgType.fullCustom || type == TodayPrgType.none) {
       await deleteKv(CrKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount, ""));
-      await deleteSegmentTodayFullCustomPrgByClassroomId(Classroom.curr);
+      await deleteVerseTodayFullCustomPrgByClassroomId(Classroom.curr);
     }
     if (todayPrg.isNotEmpty) {
-      await insertSegmentTodayPrg(todayPrg);
+      await insertVerseTodayPrg(todayPrg);
     }
     var configInUseStr = convert.json.encode(scheduleConfigInUse);
     await insertKv(CrKv(Classroom.curr, CrK.todayScheduleConfigInUse, configInUseStr));
 
-    return await findSegmentTodayPrg(Classroom.curr);
+    return await findVerseTodayPrg(Classroom.curr);
   }
 
   Future<ScheduleConfig> getScheduleConfig() async {
@@ -1219,7 +1219,7 @@ abstract class ScheduleDao {
     return ScheduleConfig.fromJson(configJson);
   }
 
-  Future<void> initTodayEl(DateTime now, List<ElConfig> elConfigs, List<SegmentTodayPrg> todayPrg) async {
+  Future<void> initTodayEl(DateTime now, List<ElConfig> elConfigs, List<VerseTodayPrg> todayPrg) async {
     if (elConfigs.isNotEmpty) {
       int minLevel = (1 << 63) - 1;
       for (var config in elConfigs) {
@@ -1244,7 +1244,7 @@ abstract class ScheduleDao {
     }
   }
 
-  Future<void> initTodayRel(DateTime now, List<RelConfig> relConfigs, List<SegmentTodayPrg> todayPrg) async {
+  Future<void> initTodayRel(DateTime now, List<RelConfig> relConfigs, List<VerseTodayPrg> todayPrg) async {
     for (int index = relConfigs.length - 1; index >= 0; --index) {
       var relConfig = relConfigs[index];
       if (index != relConfig.level) {
@@ -1263,7 +1263,7 @@ abstract class ScheduleDao {
       if (shouldStartDate.value < relConfig.from.value) {
         continue;
       }
-      List<SegmentTodayPrg> sls = await scheduleReview(Classroom.curr, relConfig.level, shouldStartDate);
+      List<VerseTodayPrg> sls = await scheduleReview(Classroom.curr, relConfig.level, shouldStartDate);
       if (sls.isEmpty) {
         var startDateInt = await findReviewedMinCreateDate(Classroom.curr, index, shouldStartDate);
         if (startDateInt == null || startDateInt == -1) {
@@ -1274,13 +1274,13 @@ abstract class ScheduleDao {
         }
         sls = await scheduleReview(Classroom.curr, relConfig.level, Date(startDateInt));
       }
-      SegmentTodayPrg.setType(sls, TodayPrgType.review, index, relConfig.learnCountPerGroup);
+      VerseTodayPrg.setType(sls, TodayPrgType.review, index, relConfig.learnCountPerGroup);
       todayPrg.addAll(sls);
     }
   }
 
-  List<SegmentTodayPrg> refineEl(List<SegmentTodayPrg> all, int index, ElConfig config) {
-    List<SegmentTodayPrg> curr;
+  List<VerseTodayPrg> refineEl(List<VerseTodayPrg> all, int index, ElConfig config) {
+    List<VerseTodayPrg> curr;
     if (config.level != config.toLevel) {
       curr = all.where((sl) {
         return config.level <= sl.progress && sl.progress <= config.toLevel;
@@ -1293,45 +1293,45 @@ abstract class ScheduleDao {
     if (curr.isEmpty) {
       return curr;
     }
-    List<SegmentTodayPrg> ret;
+    List<VerseTodayPrg> ret;
     if (config.learnCount <= 0) {
       ret = curr;
     } else {
       ret = curr.sublist(0, curr.length < config.learnCount ? curr.length : config.learnCount);
     }
-    all.removeWhere((a) => ret.any((b) => a.segmentKeyId == b.segmentKeyId));
+    all.removeWhere((a) => ret.any((b) => a.verseKeyId == b.verseKeyId));
 
     for (int i = 0; i < ret.length; i++) {
       ret[i].progress = 0;
     }
-    SegmentTodayPrg.setType(ret, TodayPrgType.learn, index, config.learnCountPerGroup);
+    VerseTodayPrg.setType(ret, TodayPrgType.learn, index, config.learnCountPerGroup);
     return ret;
   }
 
   @transaction
-  Future<void> addFullCustom(int contentSerial, int lessonIndex, int segmentIndex, int limit) async {
-    List<SegmentTodayPrg> ret;
-    ret = await scheduleFullCustom(Classroom.curr, contentSerial, lessonIndex, segmentIndex, limit);
+  Future<void> addFullCustom(int contentSerial, int lessonIndex, int verseIndex, int limit) async {
+    List<VerseTodayPrg> ret;
+    ret = await scheduleFullCustom(Classroom.curr, contentSerial, lessonIndex, verseIndex, limit);
     String? fullCustomJsonStr = await stringKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount);
     List<List<String>> fullCustomConfigs = ListUtil.toListList(fullCustomJsonStr);
     var contentName = await getContentNameBySerial(Classroom.curr, contentSerial);
     List<String> args = [];
     args.add(contentName ?? '-');
     args.add('${lessonIndex + 1}');
-    args.add('${segmentIndex + 1}');
+    args.add('${verseIndex + 1}');
     args.add('$limit');
     fullCustomConfigs.add(args);
     insertKv(CrKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount, convert.jsonEncode(fullCustomConfigs)));
-    SegmentTodayPrg.setType(ret, TodayPrgType.fullCustom, fullCustomConfigs.length - 1, 0);
+    VerseTodayPrg.setType(ret, TodayPrgType.fullCustom, fullCustomConfigs.length - 1, 0);
 
-    await insertSegmentTodayPrg(ret);
+    await insertVerseTodayPrg(ret);
   }
 
   @transaction
-  Future<bool> tUpdateSegmentContent(int segmentKeyId, String content) async {
-    SegmentKey? segmentKey = await getSegmentKeyById(segmentKeyId);
-    if (segmentKey == null) {
-      Snackbar.show(I18nKey.labelNotFoundSegment.trArgs([segmentKeyId.toString()]));
+  Future<bool> tUpdateVerseContent(int verseKeyId, String content) async {
+    VerseKey? verseKey = await getVerseKeyById(verseKeyId);
+    if (verseKey == null) {
+      Snackbar.show(I18nKey.labelNotFoundVerse.trArgs([verseKeyId.toString()]));
       return false;
     }
     dynamic contentM;
@@ -1343,79 +1343,79 @@ abstract class ScheduleDao {
       return false;
     }
 
-    if (segmentKey.content == content) {
+    if (verseKey.content == content) {
       return true;
     }
     String key;
     try {
-      rd.Segment segment = rd.Segment.fromJson(contentM);
-      key = getKey(segment.key, segment.answer);
+      rd.Verse verse = rd.Verse.fromJson(contentM);
+      key = getKey(verse.key, verse.answer);
     } catch (e) {
       Snackbar.show(e.toString());
       return false;
     }
     if (key.isEmpty) {
-      Snackbar.show(I18nKey.labelSegmentKeyCantBeEmpty.tr);
+      Snackbar.show(I18nKey.labelVerseKeyCantBeEmpty.tr);
       return false;
     }
 
-    var otherSegmentKey = await getSegmentKeyByKey(segmentKey.classroomId, segmentKey.contentSerial, key);
-    if (otherSegmentKey != null && otherSegmentKey.id != segmentKey.id) {
-      Snackbar.show(I18nKey.labelSegmentKeyDuplicated.trArgs([key]));
+    var otherVerseKey = await getVerseKeyByKey(verseKey.classroomId, verseKey.contentSerial, key);
+    if (otherVerseKey != null && otherVerseKey.id != verseKey.id) {
+      Snackbar.show(I18nKey.labelVerseKeyDuplicated.trArgs([key]));
       return false;
     }
 
     var now = DateTime.now();
-    await updateSegmentKeyAndContent(segmentKeyId, key, content, segmentKey.contentVersion + 1);
-    await insertSegmentTextVersion(TextVersion(
-      t: TextVersionType.segmentContent,
-      id: segmentKeyId,
-      version: segmentKey.contentVersion + 1,
+    await updateVerseKeyAndContent(verseKeyId, key, content, verseKey.contentVersion + 1);
+    await insertVerseTextVersion(TextVersion(
+      t: TextVersionType.verseContent,
+      id: verseKeyId,
+      version: verseKey.contentVersion + 1,
       reason: TextVersionReason.editor,
       text: content,
       createTime: now,
     ));
-    await insertKv(CrKv(Classroom.curr, CrK.updateSegmentShowTime, now.millisecondsSinceEpoch.toString()));
-    if (getSegmentShow != null) {
-      SegmentShow? currSegmentShow = getSegmentShow!(segmentKeyId);
-      if (currSegmentShow != null) {
-        currSegmentShow.segmentContent = content;
-        for (var set in setSegmentShowContent) {
-          set(segmentKeyId);
+    await insertKv(CrKv(Classroom.curr, CrK.updateVerseShowTime, now.millisecondsSinceEpoch.toString()));
+    if (getVerseShow != null) {
+      VerseShow? currVerseShow = getVerseShow!(verseKeyId);
+      if (currVerseShow != null) {
+        currVerseShow.verseContent = content;
+        for (var set in setVerseShowContent) {
+          set(verseKeyId);
         }
-        currSegmentShow.k = key;
-        currSegmentShow.segmentContentVersion++;
+        currVerseShow.k = key;
+        currVerseShow.verseContentVersion++;
       }
     }
     return true;
   }
 
   @transaction
-  Future<void> tUpdateSegmentNote(int segmentKeyId, String note) async {
-    SegmentKey? segmentKey = await getSegmentKeyById(segmentKeyId);
-    if (segmentKey == null) {
-      Snackbar.show(I18nKey.labelNotFoundSegment.trArgs([segmentKeyId.toString()]));
+  Future<void> tUpdateVerseNote(int verseKeyId, String note) async {
+    VerseKey? verseKey = await getVerseKeyById(verseKeyId);
+    if (verseKey == null) {
+      Snackbar.show(I18nKey.labelNotFoundVerse.trArgs([verseKeyId.toString()]));
       return;
     }
-    if (segmentKey.note == note) {
+    if (verseKey.note == note) {
       return;
     }
     var now = DateTime.now();
-    await updateSegmentNote(segmentKeyId, note, segmentKey.noteVersion + 1);
-    await insertSegmentTextVersion(TextVersion(
-      t: TextVersionType.segmentNote,
-      id: segmentKeyId,
-      version: segmentKey.noteVersion + 1,
+    await updateVerseNote(verseKeyId, note, verseKey.noteVersion + 1);
+    await insertVerseTextVersion(TextVersion(
+      t: TextVersionType.verseNote,
+      id: verseKeyId,
+      version: verseKey.noteVersion + 1,
       reason: TextVersionReason.editor,
       text: note,
       createTime: now,
     ));
-    await insertKv(CrKv(Classroom.curr, CrK.updateSegmentShowTime, now.millisecondsSinceEpoch.toString()));
-    if (getSegmentShow != null) {
-      SegmentShow? currSegmentShow = getSegmentShow!(segmentKeyId);
-      if (currSegmentShow != null) {
-        currSegmentShow.segmentNote = note;
-        currSegmentShow.segmentNoteVersion++;
+    await insertKv(CrKv(Classroom.curr, CrK.updateVerseShowTime, now.millisecondsSinceEpoch.toString()));
+    if (getVerseShow != null) {
+      VerseShow? currVerseShow = getVerseShow!(verseKeyId);
+      if (currVerseShow != null) {
+        currVerseShow.verseNote = note;
+        currVerseShow.verseNoteVersion++;
       }
     }
   }
@@ -1428,15 +1428,15 @@ abstract class ScheduleDao {
     return Date(todayLearnCreateDate);
   }
 
-  int getPrgTypeInt(SegmentTodayPrg segmentTodayPrg) {
-    return getPrgType(segmentTodayPrg).index;
+  int getPrgTypeInt(VerseTodayPrg verseTodayPrg) {
+    return getPrgType(verseTodayPrg).index;
   }
 
-  TodayPrgType getPrgType(SegmentTodayPrg segmentTodayPrg) {
+  TodayPrgType getPrgType(VerseTodayPrg verseTodayPrg) {
     TodayPrgType prgType = TodayPrgType.none;
-    if (segmentTodayPrg.reviewCreateDate.value == 0) {
+    if (verseTodayPrg.reviewCreateDate.value == 0) {
       prgType = TodayPrgType.learn;
-    } else if (segmentTodayPrg.reviewCreateDate.value == 1) {
+    } else if (verseTodayPrg.reviewCreateDate.value == 1) {
       prgType = TodayPrgType.fullCustom;
     } else {
       prgType = TodayPrgType.review;
@@ -1444,41 +1444,41 @@ abstract class ScheduleDao {
     return prgType;
   }
 
-  Future<void> setPrg(int segmentKeyId, int progress, Date? next) async {
+  Future<void> setPrg(int verseKeyId, int progress, Date? next) async {
     if (next != null) {
-      await setPrgAndNext4Sop(segmentKeyId, progress, next);
+      await setPrgAndNext4Sop(verseKeyId, progress, next);
     } else {
-      await setPrg4Sop(segmentKeyId, progress);
+      await setPrg4Sop(verseKeyId, progress);
     }
     var now = DateTime.now();
-    await insertKv(CrKv(Classroom.curr, CrK.updateSegmentShowTime, now.millisecondsSinceEpoch.toString()));
-    if (getSegmentShow != null) {
-      SegmentShow? currSegmentShow = getSegmentShow!(segmentKeyId);
-      if (currSegmentShow != null) {
-        currSegmentShow.progress = progress;
+    await insertKv(CrKv(Classroom.curr, CrK.updateVerseShowTime, now.millisecondsSinceEpoch.toString()));
+    if (getVerseShow != null) {
+      VerseShow? currVerseShow = getVerseShow!(verseKeyId);
+      if (currVerseShow != null) {
+        currVerseShow.progress = progress;
         if (next != null) {
-          currSegmentShow.next = next;
+          currVerseShow.next = next;
         }
       }
     }
   }
 
   @transaction
-  Future<void> error(SegmentTodayPrg stp) async {
+  Future<void> error(VerseTodayPrg stp) async {
     await forUpdate();
     var now = DateTime.now();
     await setTodayPrgWithCache(stp, 0, now);
-    await setPrg(stp.segmentKeyId, 0, null);
+    await setPrg(stp.verseKeyId, 0, null);
   }
 
   @transaction
-  Future<void> jumpDirectly(int segmentKeyId, int progress, int nextDayValue) async {
+  Future<void> jumpDirectly(int verseKeyId, int progress, int nextDayValue) async {
     await forUpdate();
-    await setPrg(segmentKeyId, progress, Date(nextDayValue));
+    await setPrg(verseKeyId, progress, Date(nextDayValue));
   }
 
   @transaction
-  Future<void> jump(SegmentTodayPrg stp, int progress, int nextDayValue) async {
+  Future<void> jump(VerseTodayPrg stp, int progress, int nextDayValue) async {
     await forUpdate();
 
     TodayPrgType prgType = getPrgType(stp);
@@ -1487,18 +1487,18 @@ abstract class ScheduleDao {
     var todayLearnCreateDate = await getTodayLearnCreateDate(now);
 
     if (prgType == TodayPrgType.learn) {
-      await insertSegmentReview([SegmentReview(todayLearnCreateDate, stp.segmentKeyId, Classroom.curr, stp.contentSerial, 0)]);
+      await insertVerseReview([VerseReview(todayLearnCreateDate, stp.verseKeyId, Classroom.curr, stp.contentSerial, 0)]);
     } else if (prgType == TodayPrgType.review) {
-      await setSegmentReviewCount(stp.reviewCreateDate, stp.segmentKeyId, stp.reviewCount + 1);
+      await setVerseReviewCount(stp.reviewCreateDate, stp.verseKeyId, stp.reviewCount + 1);
     }
 
-    await setPrg(stp.segmentKeyId, progress, Date(nextDayValue));
+    await setPrg(stp.verseKeyId, progress, Date(nextDayValue));
     await setTodayPrgWithCache(stp, scheduleConfig.maxRepeatTime, now);
-    await insertSegmentStats(SegmentStats(stp.segmentKeyId, getPrgTypeInt(stp), todayLearnCreateDate, now.millisecondsSinceEpoch, Classroom.curr, stp.contentSerial));
+    await insertVerseStats(VerseStats(stp.verseKeyId, getPrgTypeInt(stp), todayLearnCreateDate, now.millisecondsSinceEpoch, Classroom.curr, stp.contentSerial));
   }
 
   @transaction
-  Future<void> right(SegmentTodayPrg stp) async {
+  Future<void> right(VerseTodayPrg stp) async {
     await forUpdate();
 
     TodayPrgType prgType = getPrgType(stp);
@@ -1519,37 +1519,37 @@ abstract class ScheduleDao {
       if (prgType == TodayPrgType.learn) {
         int nextProgress = 0;
         if (state == ProgressState.familiar) {
-          var segmentProgress = await getSegmentProgress(stp.segmentKeyId);
-          if (segmentProgress == null) {
+          var verseProgress = await getVerseProgress(stp.verseKeyId);
+          if (verseProgress == null) {
             return;
           }
-          nextProgress = segmentProgress + 1;
+          nextProgress = verseProgress + 1;
         }
-        await setPrg(stp.segmentKeyId, nextProgress, getNextByProgress(todayLearnCreateDate.toDateTime(), nextProgress));
-        await insertSegmentReview([SegmentReview(todayLearnCreateDate, stp.segmentKeyId, Classroom.curr, stp.contentSerial, 0)]);
+        await setPrg(stp.verseKeyId, nextProgress, getNextByProgress(todayLearnCreateDate.toDateTime(), nextProgress));
+        await insertVerseReview([VerseReview(todayLearnCreateDate, stp.verseKeyId, Classroom.curr, stp.contentSerial, 0)]);
       } else if (prgType == TodayPrgType.review) {
-        await setSegmentReviewCount(stp.reviewCreateDate, stp.segmentKeyId, stp.reviewCount + 1);
+        await setVerseReviewCount(stp.reviewCreateDate, stp.verseKeyId, stp.reviewCount + 1);
       }
       await setTodayPrgWithCache(stp, scheduleConfig.maxRepeatTime, now);
-      await insertSegmentStats(SegmentStats(stp.segmentKeyId, prgType.index, todayLearnCreateDate, now.millisecondsSinceEpoch, Classroom.curr, stp.contentSerial));
+      await insertVerseStats(VerseStats(stp.verseKeyId, prgType.index, todayLearnCreateDate, now.millisecondsSinceEpoch, Classroom.curr, stp.contentSerial));
     }
   }
 
-  Future<void> setTodayPrgWithCache(SegmentTodayPrg segmentTodayPrg, int progress, DateTime now) async {
+  Future<void> setTodayPrgWithCache(VerseTodayPrg verseTodayPrg, int progress, DateTime now) async {
     var finish = false;
     if (progress >= scheduleConfig.maxRepeatTime) {
       finish = true;
     }
-    await setSegmentTodayPrg(
-      segmentTodayPrg.segmentKeyId,
-      segmentTodayPrg.type,
+    await setVerseTodayPrg(
+      verseTodayPrg.verseKeyId,
+      verseTodayPrg.type,
       progress,
       now,
       finish,
     );
-    segmentTodayPrg.progress = progress;
-    segmentTodayPrg.viewTime = now;
-    segmentTodayPrg.finish = finish;
+    verseTodayPrg.progress = progress;
+    verseTodayPrg.viewTime = now;
+    verseTodayPrg.finish = finish;
   }
 
   static Date getNextByProgress(DateTime now, int nextProgress) {

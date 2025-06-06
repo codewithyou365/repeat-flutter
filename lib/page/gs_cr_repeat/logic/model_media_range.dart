@@ -37,7 +37,7 @@ class MediaRangeHelper {
   MediaRangeHelper({
     required this.helper,
   }) {
-    ScheduleDao.setSegmentShowContent.add((int id) {
+    ScheduleDao.setVerseShowContent.add((int id) {
       answerRangeCache.remove(id);
       questionRangeCache.remove(id);
     });
@@ -52,14 +52,14 @@ class MediaRangeHelper {
   }
 
   MediaRange? _getCurrRange(Map<int, MediaRange> cache, String jsonStartName, String jsonEndName) {
-    if (helper.logic.currSegment == null) {
+    if (helper.logic.currVerse == null) {
       return null;
     }
-    MediaRange? ret = cache[helper.logic.currSegment!.segmentKeyId];
+    MediaRange? ret = cache[helper.logic.currVerse!.verseKeyId];
     if (ret != null) {
       return ret;
     }
-    final s = helper.getCurrSegmentMap();
+    final s = helper.getCurrVerseMap();
     if (s == null) {
       return null;
     }
@@ -77,7 +77,7 @@ class MediaRangeHelper {
     final start = Time.parseTimeToMilliseconds(startStr).toInt();
     final end = Time.parseTimeToMilliseconds(endStr).toInt();
     ret = MediaRange(start: start, end: end, enable: enable);
-    cache[helper.logic.currSegment!.segmentKeyId] = ret;
+    cache[helper.logic.currVerse!.verseKeyId] = ret;
     ret.jsonStartName = jsonStartName;
     ret.jsonEndName = jsonEndName;
     return ret;
@@ -91,7 +91,7 @@ class MediaRangeHelper {
       var str = Time.convertMsToString(currMs);
       save({required bool start}) {
         showTransparentOverlay(() async {
-          Map<String, dynamic>? map = helper.getCurrSegmentMap();
+          Map<String, dynamic>? map = helper.getCurrVerseMap();
           if (map == null) {
             Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["map"]));
             return;
@@ -105,8 +105,8 @@ class MediaRangeHelper {
           String jsonName = start ? range.jsonStartName : range.jsonEndName;
           map[jsonName] = str;
           String jsonStr = jsonEncode(map);
-          var segmentKeyId = helper.getCurrSegment()!.segmentKeyId;
-          await Db().db.scheduleDao.tUpdateSegmentContent(segmentKeyId, jsonStr);
+          var verseKeyId = helper.getCurrVerse()!.verseKeyId;
+          await Db().db.scheduleDao.tUpdateVerseContent(verseKeyId, jsonStr);
           helper.logic.update();
           Get.back();
           Snackbar.show(I18nKey.labelSaved.tr);

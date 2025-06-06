@@ -10,7 +10,7 @@ import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/lesson_show.dart';
 import 'package:repeat_flutter/logic/lesson_help.dart';
-import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
@@ -41,7 +41,7 @@ class LessonList<T extends GetxController> {
     int? selectLessonKeyId,
     bool focus = false,
     Future<void> Function()? removeWarning,
-    Future<void> Function()? segmentModified,
+    Future<void> Function()? verseModified,
   }) async {
     List<LessonShow> lessonShow = await LessonHelp.getLessons();
     return await showSheet(
@@ -51,7 +51,7 @@ class LessonList<T extends GetxController> {
       selectLessonKeyId: selectLessonKeyId,
       focus: focus,
       removeWarning: removeWarning,
-      segmentModified: segmentModified,
+      verseModified: verseModified,
     );
   }
 
@@ -62,7 +62,7 @@ class LessonList<T extends GetxController> {
     int? selectLessonKeyId,
     bool focus = true,
     Future<void> Function()? removeWarning,
-    Future<void> Function()? segmentModified,
+    Future<void> Function()? verseModified,
   }) {
     // for search and controls
     RxString search = RxString("");
@@ -197,15 +197,15 @@ class LessonList<T extends GetxController> {
       }
     });
     Future<void> refresh(LessonKey lessonKey) async {
-      await SegmentHelp.getSegments(
+      await VerseHelp.getVerses(
         force: true,
         query: QueryLesson(
           contentSerial: lessonKey.contentSerial,
           minLessonIndex: lessonKey.lessonIndex,
         ),
       );
-      if (segmentModified != null) {
-        await segmentModified();
+      if (verseModified != null) {
+        await verseModified();
       }
       originalLessonShow = await LessonHelp.getLessons(force: true);
       trySearch(force: true);
@@ -431,7 +431,7 @@ class LessonList<T extends GetxController> {
                                         onTap: () {
                                           MsgBox.yesOrNo(
                                             title: I18nKey.labelWarning.tr,
-                                            desc: I18nKey.labelDeleteSegment.tr,
+                                            desc: I18nKey.labelDeleteVerse.tr,
                                             yes: () => delete(lesson: lesson),
                                           );
                                         },

@@ -3,27 +3,27 @@ import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
-import 'package:repeat_flutter/db/entity/segment_stats.dart';
+import 'package:repeat_flutter/db/entity/verse_stats.dart';
 import 'package:repeat_flutter/db/entity/time_stats.dart';
 
 @dao
 abstract class StatsDao {
   late AppDatabase db;
 
-  @Query('SELECT * FROM SegmentStats WHERE classroomId = :classroomId AND createDate = :date')
-  Future<List<SegmentStats>> getStatsByDate(int classroomId, Date date);
+  @Query('SELECT * FROM VerseStats WHERE classroomId = :classroomId AND createDate = :date')
+  Future<List<VerseStats>> getStatsByDate(int classroomId, Date date);
 
-  @Query('SELECT * FROM SegmentStats WHERE classroomId = :classroomId AND createDate >= :start AND createDate <= :end')
-  Future<List<SegmentStats>> getStatsByDateRange(int classroomId, Date start, Date end);
+  @Query('SELECT * FROM VerseStats WHERE classroomId = :classroomId AND createDate >= :start AND createDate <= :end')
+  Future<List<VerseStats>> getStatsByDateRange(int classroomId, Date start, Date end);
 
-  @Query('SELECT COALESCE(COUNT(*), 0) FROM SegmentStats WHERE classroomId = :classroomId AND createDate >= :start AND createDate <= :end')
+  @Query('SELECT COALESCE(COUNT(*), 0) FROM VerseStats WHERE classroomId = :classroomId AND createDate >= :start AND createDate <= :end')
   Future<int?> getCountByDateRange(int classroomId, Date start, Date end);
 
-  @Query('SELECT COUNT(*) FROM SegmentStats WHERE classroomId = :classroomId AND type = :type AND createDate = :date')
+  @Query('SELECT COUNT(*) FROM VerseStats WHERE classroomId = :classroomId AND type = :type AND createDate = :date')
   Future<int?> getCountByType(int classroomId, int type, Date date);
 
-  @Query('SELECT DISTINCT segmentKeyId FROM SegmentStats WHERE classroomId = :classroomId AND createDate = :date')
-  Future<List<int>> getDistinctSegmentKeyIds(int classroomId, Date date);
+  @Query('SELECT DISTINCT verseKeyId FROM VerseStats WHERE classroomId = :classroomId AND createDate = :date')
+  Future<List<int>> getDistinctVerseKeyIds(int classroomId, Date date);
 
   @Query('SELECT * FROM TimeStats WHERE classroomId = :classroomId AND createDate = :date')
   Future<TimeStats?> getTimeStatsByDate(int classroomId, Date date);

@@ -1,4 +1,4 @@
-import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'game_helper.dart';
 
 import 'constant.dart';
@@ -12,9 +12,9 @@ abstract class RepeatLogic {
 
   TipLevel tip = TipLevel.none;
 
-  SegmentTodayPrg? get currSegment;
+  VerseTodayPrg? get currVerse;
 
-  SegmentTodayPrg? get nextSegment;
+  VerseTodayPrg? get nextVerse;
 
   String get titleLabel;
 
@@ -23,7 +23,7 @@ abstract class RepeatLogic {
   String get rightLabel;
 
   Future<bool> init(
-    List<SegmentTodayPrg> all,
+    List<VerseTodayPrg> all,
     Function() update,
     GameHelper gameHelper,
   );

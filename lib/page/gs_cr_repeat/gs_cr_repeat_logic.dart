@@ -4,14 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
-import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/lesson_help.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
 
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
-import 'package:repeat_flutter/logic/widget/segment_list.dart';
+import 'package:repeat_flutter/logic/widget/verse_list.dart';
 import 'package:repeat_flutter/logic/widget/web_manager.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
@@ -30,16 +30,16 @@ import 'logic/repeat_view.dart';
 class GsCrRepeatLogic extends GetxController {
   static const String id = "GsCrRepeatLogic";
   final GsCrRepeatState state = GsCrRepeatState();
-  final Map<String, RepeatView> nameToRepeatView = {};
+  final Map<String, RepeatView> showTypeToRepeatView = {};
 
   GsCrRepeatLogic() {
-    nameToRepeatView[RepeatViewEnum.audio.name] = RepeatViewForAudio();
-    nameToRepeatView[RepeatViewEnum.text.name] = RepeatViewForText();
-    nameToRepeatView[RepeatViewEnum.video.name] = RepeatViewForVideo();
+    showTypeToRepeatView[RepeatViewEnum.audio.name] = RepeatViewForAudio();
+    showTypeToRepeatView[RepeatViewEnum.text.name] = RepeatViewForText();
+    showTypeToRepeatView[RepeatViewEnum.video.name] = RepeatViewForVideo();
   }
 
   late CopyLogic copyLogic = CopyLogic<GsCrRepeatLogic>(CrK.copyTemplate, this);
-  late SegmentList segmentList = SegmentList<GsCrRepeatLogic>(this);
+  late VerseList verseList = VerseList<GsCrRepeatLogic>(this);
   late WebManager webManager = WebManager<GsCrRepeatLogic>(this);
   late GameHelper gameHelper = GameHelper(webManager.web);
 
@@ -56,7 +56,7 @@ class GsCrRepeatLogic extends GetxController {
     super.onClose();
     webManager.switchWeb(false);
     repeatLogic?.onClose();
-    for (var v in nameToRepeatView.values) {
+    for (var v in showTypeToRepeatView.values) {
       v.dispose();
     }
 
@@ -72,7 +72,7 @@ class GsCrRepeatLogic extends GetxController {
       repeatLogic = RepeatLogicForExamine();
     }
     await webManager.init(() {
-      gameHelper.tryRefreshGame(repeatLogic!.currSegment!);
+      gameHelper.tryRefreshGame(repeatLogic!.currVerse!);
     });
     var ok = await repeatLogic!.init(all, () {
       update([GsCrRepeatLogic.id]);
@@ -82,7 +82,7 @@ class GsCrRepeatLogic extends GetxController {
       return;
     }
     await state.helper.init(repeatLogic!);
-    for (var v in nameToRepeatView.values) {
+    for (var v in showTypeToRepeatView.values) {
       v.init(state.helper);
     }
     update([GsCrRepeatLogic.id]);
@@ -103,7 +103,7 @@ class GsCrRepeatLogic extends GetxController {
     if (curr == null || repeatLogic == null) {
       return;
     }
-    EditProgress.show(curr.segmentKeyId, title: I18nKey.btnNext.tr, callback: (p, n) async {
+    EditProgress.show(curr.verseKeyId, title: I18nKey.btnNext.tr, callback: (p, n) async {
       await repeatLogic!.jump(progress: p, nextDayValue: n);
       Get.back();
       update([GsCrRepeatLogic.id]);
@@ -130,7 +130,7 @@ class GsCrRepeatLogic extends GetxController {
       arguments: ContentArgs(
         bookName: content.name,
         initLessonSelect: lesson.lessonIndex,
-        selectSegmentKeyId: curr.segmentKeyId,
+        selectVerseKeyId: curr.verseKeyId,
         defaultTap: 2,
       ),
     );
@@ -141,10 +141,10 @@ class GsCrRepeatLogic extends GetxController {
     state.needUpdateSystemUiMode = true;
   }
 
-  SegmentTodayPrg? getCurr() {
+  VerseTodayPrg? getCurr() {
     if (repeatLogic == null) {
       return null;
     }
-    return repeatLogic!.currSegment;
+    return repeatLogic!.currVerse;
   }
 }

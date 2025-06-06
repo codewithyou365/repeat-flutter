@@ -32,15 +32,15 @@ class GsCrContentTemplatePage extends StatelessWidget {
     );
   }
 
-  Widget buildItem(String content, GsCrContentTemplateLogic logic) {
+  Widget buildItem(String showType, GsCrContentTemplateLogic logic) {
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: Card(
         child: InkWell(
-          onTap: () => logic.onSave(content),
+          onTap: () => logic.onSave(showType),
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(content),
+            child: Text(showType),
           ),
         ),
       ),

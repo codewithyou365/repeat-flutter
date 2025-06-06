@@ -40,7 +40,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelDownloadFirstBeforeSaving, "请先下载再进行保存");
     put(I18nKey.labelAddContent, "新增内容");
     put(I18nKey.labelDeleteContent, "请确定删除内容： %s");
-    put(I18nKey.labelDeleteSegment, "请确定该段落");
+    put(I18nKey.labelDeleteVerse, "请确定该节");
     put(I18nKey.labelDeleteLesson, "请确定该课程");
     put(I18nKey.labelDownloadContent, "下载内容");
     put(I18nKey.labelScheduleContent, "添加学习任务 %s 个单位");
@@ -108,7 +108,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelElConfig1111, "随机安排%s级到%s级，数量%s (每组%s个)");
     put(I18nKey.labelRelConfig0, "第%s次回顾%s天以前的内容，从%s开始 (每组不限)");
     put(I18nKey.labelRelConfig1, "第%s次回顾%s天以前的内容，从%s开始 (每组%s个)");
-    put(I18nKey.labelFullCustomConfig, "从内容@0的@1课@2段开始 规划@3个段 (每组不限)");
+    put(I18nKey.labelFullCustomConfig, "从内容@0的@1课@2节开始 规划@3个节 (每组不限)");
     put(I18nKey.labelElRandom, "是否随机");
     put(I18nKey.labelElToLevel, "结束等级");
     put(I18nKey.labelElLevel, "开始等级");
@@ -143,7 +143,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelLocalZipImport, "本地ZIP导入");
     put(I18nKey.create, "创建");
     put(I18nKey.labelLocalImportCancel, "本地导入取消");
-    put(I18nKey.labelSegmentRemoved, "对应的学习片段已移除，建议先备份你的数据，再点击确定进行删除相关数据。");
+    put(I18nKey.labelVerseRemoved, "对应的学习章节已移除，建议先备份你的数据，再点击确定进行删除相关数据。");
     put(I18nKey.labelDocNotBeDownloaded, "还未下载文件:%s");
     put(I18nKey.labelDocCantBeFound, "无法找到文件:%s");
     put(I18nKey.labelInputPathError, "路径错误");
@@ -151,12 +151,12 @@ class ConfigZh extends Config {
     put(I18nKey.labelFrom, "开始于");
     put(I18nKey.labelLesson, "课");
     put(I18nKey.labelLessonName, "课程");
-    put(I18nKey.labelSegment, "段");
-    put(I18nKey.labelSegmentName, "段落");
+    put(I18nKey.labelVerse, "节");
+    put(I18nKey.labelVerseName, "章节");
     put(I18nKey.labelIgnorePunctuation, "忽略标点符号");
     put(I18nKey.labelMatchType, "匹配类型");
     put(I18nKey.labelSkipCharacter, "输入该字符便跳过");
-    put(I18nKey.labelEnableEditSegment, "启用编辑段落");
+    put(I18nKey.labelEnableEditVerse, "启用编辑章节");
     put(I18nKey.labelGameId, "游戏ID");
     put(I18nKey.labelOnlineUserNumber, "在线人数");
     put(I18nKey.labelAllowRegisterNumber, "允许注册人数");
@@ -175,15 +175,14 @@ class ConfigZh extends Config {
     put(I18nKey.labelTodayTime, "今日时长");
     put(I18nKey.labelTotalTime, "总计时长");
     put(I18nKey.labelMin, "分钟");
-    put(I18nKey.labelSeg, "段");
     put(I18nKey.labelNote, "笔记");
     put(I18nKey.labelShare, "分享");
     put(I18nKey.labelCalendar, "日历");
     put(I18nKey.labelCopyTemplateCount, "复制模版数量");
-    put(I18nKey.labelSegmentNeedToContainAnswer, "段落需要包含答案字段");
-    put(I18nKey.labelSegmentKeyDuplicated, "段落KEY重复： %s");
-    put(I18nKey.labelSegmentKeyCantBeEmpty, "段落KEY不能为空");
-    put(I18nKey.labelLessonHasSegmentsAndCantBeDeleted, "该课程中存在段落，不能删除该课程");
+    put(I18nKey.labelVerseNeedToContainAnswer, "章节需要包含答案字段");
+    put(I18nKey.labelVerseKeyDuplicated, "章节KEY重复： %s");
+    put(I18nKey.labelVerseKeyCantBeEmpty, "章节KEY不能为空");
+    put(I18nKey.labelLessonHasVersesAndCantBeDeleted, "该课程中存在章节，不能删除该课程");
     put(I18nKey.labelKey, "键");
     put(I18nKey.labelCreateTime, "创建时间");
     put(I18nKey.labelContent, "内容");
@@ -195,12 +194,12 @@ class ConfigZh extends Config {
     put(I18nKey.labelSortPositionDesc, "位置 (降序)");
     put(I18nKey.labelSortNextLearnDateAsc, "下次学习时间 (升序)");
     put(I18nKey.labelSortNextLearnDateDesc, "下次学习时间 (降序)");
-    put(I18nKey.labelFindUnnecessarySegments, "查找多余段落");
+    put(I18nKey.labelFindUnnecessaryVerses, "查找多余章节");
     put(I18nKey.labelFindUnnecessaryLessons, "查找多余课程");
     put(I18nKey.labelSearch, "搜索...");
-    put(I18nKey.labelNotFoundSegment, "未找到段落(%s)");
+    put(I18nKey.labelNotFoundVerse, "未找到章节(%s)");
     put(I18nKey.labelSettingLearningProgressWarning, "在此处设置学习进度将不会有学习记录");
-    put(I18nKey.labelContentsHaveUnnecessarySegments, "内容中存在多余的段落");
+    put(I18nKey.labelContentsHaveUnnecessaryVerses, "内容中存在多余的章节");
     put(I18nKey.labelLessonKeyCantBeEmpty, "课程键不能为空");
     put(I18nKey.labelLessonKeyDuplicated, "课程键重复");
     put(I18nKey.labelEdit, "编辑");
@@ -222,8 +221,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelWidth, "宽度比例 (0 = 0%, 1 = 100%)");
     put(I18nKey.labelHeight, "高度比例 (0 = 0%, 1 = 100%)");
     put(I18nKey.labelWarning, "警告");
-    put(I18nKey.labelCopyToWhere, "复制到该段落的上方还是下方？");
-    put(I18nKey.labelLessonDeleteBlocked, "在该课程下存在段落，无法删除该课程");
+    put(I18nKey.labelCopyToWhere, "复制到该章节的上方还是下方？");
+    put(I18nKey.labelLessonDeleteBlocked, "在该课程下存在章节，无法删除该课程");
     put(I18nKey.labelGameRuleSettings, "游戏规则设置");
     put(I18nKey.labelWordGuessGame, "猜词游戏");
     put(I18nKey.labelLastCourseCannotBeDeleted, "最后一个课程不能删除，否则将无法进行复制。");
@@ -245,7 +244,7 @@ class ConfigZh extends Config {
     put(I18nKey.btnResetTail, "重置尾部");
     put(I18nKey.btnOther, "其他");
     put(I18nKey.btnCut, "切割并保留前后");
-    put(I18nKey.btnDeleteCurr, "删除当前段");
+    put(I18nKey.btnDeleteCurr, "删除当前");
     put(I18nKey.btnCancel, "取消");
     put(I18nKey.btnHistory, "历史");
     put(I18nKey.btnContinue, "继续");
@@ -284,6 +283,6 @@ class ConfigZh extends Config {
     put(I18nKey.btnSave, "保存");
     put(I18nKey.btnClose, "关闭");
     put(I18nKey.btnCheck, "检查");
-    put(I18nKey.btnEditSegment, "编辑段落");
+    put(I18nKey.btnEditVerse, "编辑章节");
   }
 }

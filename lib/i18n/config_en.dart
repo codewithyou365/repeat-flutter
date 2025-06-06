@@ -40,14 +40,14 @@ class ConfigEn extends Config {
     put(I18nKey.labelDownloadFirstBeforeSaving, "Please download first before saving.");
     put(I18nKey.labelAddContent, "Add content");
     put(I18nKey.labelDeleteContent, "Please confirm to delete content: %s");
-    put(I18nKey.labelDeleteSegment, "Please confirm to delete the segment");
+    put(I18nKey.labelDeleteVerse, "Please confirm to delete the verse");
     put(I18nKey.labelDeleteLesson, "Please confirm to delete the lesson");
     put(I18nKey.labelDownloadContent, "Download content");
-    put(I18nKey.labelScheduleContent, "Add learning task with %s segments.");
+    put(I18nKey.labelScheduleContent, "Add learning task with %s verses.");
     put(I18nKey.labelNoLearningContent, "There is no learning content available.");
     put(I18nKey.labelResetLearningContent, "The learning content will be reset in %s");
     put(I18nKey.labelTips, "Tips");
-    put(I18nKey.labelReviewThisCount, "Review These Segments Count");
+    put(I18nKey.labelReviewThisCount, "Review These Verses Count");
     put(I18nKey.labelLearnCount, "Learn Count");
     put(I18nKey.labelReviewCount, "Review Count");
     put(I18nKey.labelFullCustomCount, "Full Custom Count");
@@ -108,7 +108,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelElConfig1111, "Randomly organize Level from %s to %s, quantity is %s (%s per group)");
     put(I18nKey.labelRelConfig0, "The %sth review covers the content from %s days ago, starting from %s. (unlimited per group)");
     put(I18nKey.labelRelConfig1, "The %sth review covers the content from %s days ago, starting from %s. (%s per group)");
-    put(I18nKey.labelFullCustomConfig, "Start from segment @1, lesson @2 of the content @0, and plan @3 segment (unlimited per group).");
+    put(I18nKey.labelFullCustomConfig, "Start from verse @1, lesson @2 of the content @0, and plan @3 verse (unlimited per group).");
     put(I18nKey.labelElRandom, "Random");
     put(I18nKey.labelElToLevel, "End Level");
     put(I18nKey.labelElLevel, "Start Level");
@@ -143,7 +143,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelLocalZipImport, "Local ZIP import");
     put(I18nKey.create, "Create");
     put(I18nKey.labelLocalImportCancel, "Local Import is Canceled");
-    put(I18nKey.labelSegmentRemoved, "The corresponding learning segment has been removed. It is recommended to back up your data first, then click \"Confirm\" to delete the related data.");
+    put(I18nKey.labelVerseRemoved, "The corresponding learning verse has been removed. It is recommended to back up your data first, then click \"Confirm\" to delete the related data.");
     put(I18nKey.labelDocNotBeDownloaded, "The content (%s) is not downloaded");
     put(I18nKey.labelDocCantBeFound, "The content (%s) cannot be found");
     put(I18nKey.labelInputPathError, "The inputting path is error");
@@ -151,12 +151,12 @@ class ConfigEn extends Config {
     put(I18nKey.labelFrom, "From");
     put(I18nKey.labelLesson, "Lesson");
     put(I18nKey.labelLessonName, "Lesson");
-    put(I18nKey.labelSegment, "Segment");
-    put(I18nKey.labelSegmentName, "Segment");
+    put(I18nKey.labelVerse, "Verse");
+    put(I18nKey.labelVerseName, "Verse");
     put(I18nKey.labelIgnorePunctuation, "Ignore Punctuation");
     put(I18nKey.labelMatchType, "Match Type");
     put(I18nKey.labelSkipCharacter, "Enter This Char To Skip");
-    put(I18nKey.labelEnableEditSegment, "Enable Edit Segment");
+    put(I18nKey.labelEnableEditVerse, "Enable Edit Verse");
     put(I18nKey.labelGameId, "Game ID");
     put(I18nKey.labelOnlineUserNumber, "Online User Number");
     put(I18nKey.labelAllowRegisterNumber, "Allow Reg Number");
@@ -175,15 +175,14 @@ class ConfigEn extends Config {
     put(I18nKey.labelTodayTime, "Today Time");
     put(I18nKey.labelTotalTime, "Total Time");
     put(I18nKey.labelMin, "Min");
-    put(I18nKey.labelSeg, "Seg");
     put(I18nKey.labelNote, "Note");
     put(I18nKey.labelShare, "Share");
     put(I18nKey.labelCalendar, "Calendar");
     put(I18nKey.labelCopyTemplateCount, "Copy Template Count");
-    put(I18nKey.labelSegmentNeedToContainAnswer, "Segment Need To Contain Answer");
-    put(I18nKey.labelSegmentKeyDuplicated, "Segment Key duplicated: %s");
-    put(I18nKey.labelSegmentKeyCantBeEmpty, "Segment Key can't be empty");
-    put(I18nKey.labelLessonHasSegmentsAndCantBeDeleted, "This lesson has segments, the lesson cannot be deleted.");
+    put(I18nKey.labelVerseNeedToContainAnswer, "Verse Need To Contain Answer");
+    put(I18nKey.labelVerseKeyDuplicated, "Verse Key duplicated: %s");
+    put(I18nKey.labelVerseKeyCantBeEmpty, "Verse Key can't be empty");
+    put(I18nKey.labelLessonHasVersesAndCantBeDeleted, "This lesson has verses, the lesson cannot be deleted.");
     put(I18nKey.labelKey, "Key");
     put(I18nKey.labelCreateTime, "Create Time");
     put(I18nKey.labelContent, "Content");
@@ -195,11 +194,11 @@ class ConfigEn extends Config {
     put(I18nKey.labelSortPositionDesc, "Position (Desc)");
     put(I18nKey.labelSortNextLearnDateAsc, "Next Learning Date (Asc)");
     put(I18nKey.labelSortNextLearnDateDesc, "Next Learning Date (Desc)");
-    put(I18nKey.labelFindUnnecessarySegments, "Find Unnecessary Segments");
+    put(I18nKey.labelFindUnnecessaryVerses, "Find Unnecessary Verses");
     put(I18nKey.labelSearch, "Search...");
-    put(I18nKey.labelNotFoundSegment, "not found segment (%s)");
+    put(I18nKey.labelNotFoundVerse, "not found verse (%s)");
     put(I18nKey.labelSettingLearningProgressWarning, "Setting the learning progress here will not create a learning record");
-    put(I18nKey.labelContentsHaveUnnecessarySegments, "Contents have unnecessary segments");
+    put(I18nKey.labelContentsHaveUnnecessaryVerses, "Contents have unnecessary verses");
     put(I18nKey.labelLessonKeyCantBeEmpty, "Lesson key cannot be empty");
     put(I18nKey.labelLessonKeyDuplicated, "Lesson key is duplicated");
     put(I18nKey.labelEdit, "Edit");
@@ -221,8 +220,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelWidth, "Width Ratio (0 = 0%, 1 = 100%)");
     put(I18nKey.labelHeight, "Height Ratio (0 = 0%, 1 = 100%)");
     put(I18nKey.labelWarning, "Warning");
-    put(I18nKey.labelCopyToWhere, "Should the copy be placed above or below this segment?");
-    put(I18nKey.labelLessonDeleteBlocked, "There are segments under this lesson, so it cannot be deleted.");
+    put(I18nKey.labelCopyToWhere, "Should the copy be placed above or below this verse?");
+    put(I18nKey.labelLessonDeleteBlocked, "There are verses under this lesson, so it cannot be deleted.");
     put(I18nKey.labelGameRuleSettings, "Game Rule Settings");
     put(I18nKey.labelWordGuessGame, "Word Guess Game");
     put(I18nKey.labelLastCourseCannotBeDeleted, "The last course cannot be deleted, otherwise copying will not be possible.");
@@ -283,6 +282,6 @@ class ConfigEn extends Config {
     put(I18nKey.btnSave, "Save");
     put(I18nKey.btnClose, "Close");
     put(I18nKey.btnCheck, "CHECK");
-    put(I18nKey.btnEditSegment, "Edit Segment");
+    put(I18nKey.btnEditVerse, "Edit Verse");
   }
 }

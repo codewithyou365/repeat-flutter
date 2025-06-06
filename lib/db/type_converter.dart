@@ -18,7 +18,7 @@ class KConverter extends TypeConverter<K, String> {
   }
 }
 
-class SegmentTextVersionTypeConverter extends TypeConverter<TextVersionType, int> {
+class VerseTextVersionTypeConverter extends TypeConverter<TextVersionType, int> {
   @override
   TextVersionType decode(int databaseValue) {
     return TextVersionType.values[databaseValue];
@@ -30,7 +30,7 @@ class SegmentTextVersionTypeConverter extends TypeConverter<TextVersionType, int
   }
 }
 
-class SegmentTextVersionReasonConverter extends TypeConverter<TextVersionReason, int> {
+class VerseTextVersionReasonConverter extends TypeConverter<TextVersionReason, int> {
   @override
   TextVersionReason decode(int databaseValue) {
     return TextVersionReason.values[databaseValue];

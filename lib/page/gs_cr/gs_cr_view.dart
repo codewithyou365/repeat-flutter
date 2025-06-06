@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -80,8 +80,8 @@ class GsCrPage extends StatelessWidget {
     return GetBuilder<GsCrLogic>(
       id: GsCrLogic.id,
       builder: (_) {
-        return GroupedListView<SegmentTodayPrgInView, String>(
-          elements: state.segments,
+        return GroupedListView<VerseTodayPrgInView, String>(
+          elements: state.verses,
           groupBy: (element) => "${element.type.index}",
           groupHeaderBuilder: (element) => PopupMenuButton<String>(
             child: SizedBox(
@@ -196,7 +196,7 @@ class GsCrPage extends StatelessWidget {
               ),
             ),
           ),
-          itemBuilder: (context, SegmentTodayPrgInView element) => Card(
+          itemBuilder: (context, VerseTodayPrgInView element) => Card(
             elevation: 8.0,
             margin: EdgeInsets.fromLTRB(6, element.uniqIndex == 0 ? 90 : 10.0, 6.0, 10.0),
             child: PopupMenuButton<String>(
@@ -211,15 +211,15 @@ class GsCrPage extends StatelessWidget {
               ),
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                 PopupMenuItem<String>(
-                  onTap: () => {logic.tryStart(element.segments, mode: Repeat.justView)},
+                  onTap: () => {logic.tryStart(element.verses, mode: Repeat.justView)},
                   child: Text(I18nKey.btnBrowse.tr),
                 ),
                 PopupMenuItem<String>(
-                  onTap: () => {logic.tryStart(element.segments, grouping: true)},
+                  onTap: () => {logic.tryStart(element.verses, grouping: true)},
                   child: Text(I18nKey.btnExamine.tr),
                 ),
                 PopupMenuItem<String>(
-                  onTap: () => {logic.copy(context, element.segments)},
+                  onTap: () => {logic.copy(context, element.verses)},
                   child: Text(I18nKey.btnCopy.tr),
                 ),
               ],
@@ -315,7 +315,7 @@ class GsCrPage extends StatelessWidget {
                               children: [
                                 cupertinoItem(['', I18nKey.content.tr], logic.selectContent, null, select: logic.state.forAdd.contentNames),
                                 cupertinoItem([I18nKey.labelFrom.tr, I18nKey.labelLesson.tr], logic.selectLesson, logic.initLesson, count: logic.state.forAdd.maxLesson),
-                                cupertinoItem(['', I18nKey.labelSegment.tr], logic.selectSegment, logic.initSegment, count: logic.state.forAdd.maxSegment),
+                                cupertinoItem(['', I18nKey.labelVerse.tr], logic.selectVerse, logic.initVerse, count: logic.state.forAdd.maxVerse),
                               ],
                             ),
                           ),

@@ -10,7 +10,7 @@ class GsCrStatsLearnLogic extends GetxController {
   @override
   onInit() async {
     super.onInit();
-    state.progress = await Db().db.scheduleDao.getAllSegmentOverallPrg(Classroom.curr);
+    state.progress = await Db().db.scheduleDao.getAllVerseOverallPrg(Classroom.curr);
     update([id]);
   }
 }

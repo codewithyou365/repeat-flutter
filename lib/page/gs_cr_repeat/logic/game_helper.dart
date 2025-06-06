@@ -3,33 +3,33 @@ import 'package:repeat_flutter/common/ws/message.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
-import 'package:repeat_flutter/db/entity/segment_today_prg.dart';
+import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/game_server/web_server.dart';
-import 'package:repeat_flutter/logic/model/segment_show.dart';
-import 'package:repeat_flutter/logic/segment_help.dart';
+import 'package:repeat_flutter/logic/model/verse_show.dart';
+import 'package:repeat_flutter/logic/verse_help.dart';
 
 class GameHelper {
   final WebServer server;
 
   GameHelper(this.server);
 
-  Future<void> tryRefreshGame(SegmentTodayPrg stp) async {
+  Future<void> tryRefreshGame(VerseTodayPrg stp) async {
     if (!server.open) {
       return;
     }
-    SegmentShow segment = SegmentHelp.getCache(stp.segmentKeyId)!;
+    VerseShow verse = VerseHelp.getCache(stp.verseKeyId)!;
     var now = DateTime.now();
     stp.time += 1;
     var game = Game(
       id: stp.id!,
       time: stp.time,
-      segmentContent: segment.segmentContent,
-      segmentKeyId: segment.segmentKeyId,
+      verseContent: verse.verseContent,
+      verseKeyId: verse.verseKeyId,
       classroomId: stp.classroomId,
-      contentSerial: segment.contentSerial,
-      lessonIndex: segment.lessonIndex,
-      segmentIndex: segment.segmentIndex,
+      contentSerial: verse.contentSerial,
+      lessonIndex: verse.lessonIndex,
+      verseIndex: verse.verseIndex,
       finish: false,
       createTime: now.millisecondsSinceEpoch,
       createDate: Date.from(now),

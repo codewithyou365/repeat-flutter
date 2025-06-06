@@ -29,7 +29,7 @@ abstract class ContentDao {
   @Query('SELECT * FROM Content where classroomId=:classroomId and hide=false ORDER BY sort')
   Future<List<Content>> getAllContent(int classroomId);
 
-  @Query('SELECT max(segmentWarning) FROM Content where classroomId=:classroomId and docId!=0 and hide=false')
+  @Query('SELECT max(verseWarning) FROM Content where classroomId=:classroomId and docId!=0 and hide=false')
   Future<bool?> hasWarning(int classroomId);
 
   @Query('SELECT * FROM Content where classroomId=:classroomId and docId!=0 and hide=false ORDER BY sort')
@@ -59,17 +59,17 @@ abstract class ContentDao {
   @Query('UPDATE Content set content=:content,contentVersion=:contentVersion WHERE Content.id=:id')
   Future<void> updateContentVersion(int id, String content, int contentVersion);
 
-  @Query('UPDATE Content set docId=:docId,url=:url,lessonWarning=:lessonWarning,segmentWarning=:segmentWarning,updateTime=:updateTime WHERE Content.id=:id')
-  Future<void> updateContent(int id, int docId, String url, bool lessonWarning, bool segmentWarning, int updateTime);
+  @Query('UPDATE Content set docId=:docId,url=:url,lessonWarning=:lessonWarning,verseWarning=:verseWarning,updateTime=:updateTime WHERE Content.id=:id')
+  Future<void> updateContent(int id, int docId, String url, bool lessonWarning, bool verseWarning, int updateTime);
 
-  @Query('UPDATE Content set lessonWarning=:lessonWarning,segmentWarning=:segmentWarning,updateTime=:updateTime WHERE Content.id=:id')
-  Future<void> updateContentWarning(int id, bool lessonWarning, bool segmentWarning, int updateTime);
+  @Query('UPDATE Content set lessonWarning=:lessonWarning,verseWarning=:verseWarning,updateTime=:updateTime WHERE Content.id=:id')
+  Future<void> updateContentWarning(int id, bool lessonWarning, bool verseWarning, int updateTime);
 
   @Query('UPDATE Content set lessonWarning=:lessonWarning,updateTime=:updateTime WHERE Content.id=:id')
   Future<void> updateContentWarningForLesson(int id, bool lessonWarning, int updateTime);
 
-  @Query('UPDATE Content set segmentWarning=:segmentWarning,updateTime=:updateTime WHERE Content.id=:id')
-  Future<void> updateContentWarningForSegment(int id, bool segmentWarning, int updateTime);
+  @Query('UPDATE Content set verseWarning=:verseWarning,updateTime=:updateTime WHERE Content.id=:id')
+  Future<void> updateContentWarningForVerse(int id, bool verseWarning, int updateTime);
 
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertContent(Content entity);
@@ -90,7 +90,7 @@ abstract class ContentDao {
   Future<void> updateBookContent(int bookId, String content) async {
     Content? book = await getById(bookId);
     if (book == null) {
-      Snackbar.show(I18nKey.labelNotFoundSegment.trArgs([bookId.toString()]));
+      Snackbar.show(I18nKey.labelNotFoundVerse.trArgs([bookId.toString()]));
       return;
     }
 
@@ -158,7 +158,7 @@ abstract class ContentDao {
         sort: sort,
         hide: false,
         lessonWarning: false,
-        segmentWarning: false,
+        verseWarning: false,
         createTime: now,
         updateTime: now,
       );
