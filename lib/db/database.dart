@@ -11,8 +11,8 @@ import 'package:repeat_flutter/db/dao/cr_kv_dao.dart';
 import 'package:repeat_flutter/db/dao/doc_dao.dart';
 import 'package:repeat_flutter/db/dao/game_dao.dart';
 import 'package:repeat_flutter/db/dao/game_user_dao.dart';
-import 'package:repeat_flutter/db/dao/lesson_dao.dart';
-import 'package:repeat_flutter/db/dao/lesson_key_dao.dart';
+import 'package:repeat_flutter/db/dao/chapter_dao.dart';
+import 'package:repeat_flutter/db/dao/chapter_key_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/kv_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_dao.dart';
@@ -26,8 +26,8 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/db/entity/lock.dart';
-import 'package:repeat_flutter/db/entity/lesson.dart';
-import 'package:repeat_flutter/db/entity/lesson_key.dart';
+import 'package:repeat_flutter/db/entity/chapter.dart';
+import 'package:repeat_flutter/db/entity/chapter_key.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/db/entity/verse_key.dart';
 import 'package:repeat_flutter/db/entity/verse_overall_prg.dart';
@@ -43,7 +43,7 @@ import 'package:repeat_flutter/db/migration/m1_2.dart';
 import 'package:repeat_flutter/db/migration/m2_3.dart';
 import 'package:repeat_flutter/db/type_converter.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
-import 'package:repeat_flutter/logic/model/lesson_show.dart';
+import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/model/verse_content.dart';
 import 'package:repeat_flutter/logic/model/key_id.dart';
 import 'package:repeat_flutter/logic/model/verse_overall_prg_with_key.dart';
@@ -57,8 +57,8 @@ part 'database.g.dart'; // the generated code will be there
 
 @Database(version: 3, entities: [
   Kv,
-  Lesson,
-  LessonKey,
+  Chapter,
+  ChapterKey,
   Doc,
   Classroom,
   Content,
@@ -81,7 +81,7 @@ part 'database.g.dart'; // the generated code will be there
   GameUser,
   GameUserInput,
   Lock,
-  LessonShow,
+  ChapterShow,
 ])
 @TypeConverters([
   KConverter,
@@ -100,9 +100,9 @@ abstract class AppDatabase extends FloorDatabase {
 
   KvDao get kvDao;
 
-  LessonDao get lessonDao;
+  ChapterDao get chapterDao;
 
-  LessonKeyDao get lessonKeyDao;
+  ChapterKeyDao get chapterKeyDao;
 
   DocDao get docDao;
 
@@ -154,7 +154,7 @@ prepareDb(AppDatabase db) {
   db.gameUserDao.db = db;
   db.gameDao.db = db;
   db.kvDao.db = db;
-  db.lessonKeyDao.db = db;
+  db.chapterKeyDao.db = db;
   db.docDao.db = db;
   db.classroomDao.db = db;
   db.contentDao.db = db;

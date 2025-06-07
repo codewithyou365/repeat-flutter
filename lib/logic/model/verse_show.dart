@@ -14,7 +14,7 @@ class VerseShow {
   int verseContentVersion;
   String verseNote;
   int verseNoteVersion;
-  int lessonIndex;
+  int chapterIndex;
   int verseIndex;
   Date next;
   int progress;
@@ -31,21 +31,21 @@ class VerseShow {
     required this.verseContentVersion,
     required this.verseNote,
     required this.verseNoteVersion,
-    required this.lessonIndex,
+    required this.chapterIndex,
     required this.verseIndex,
     required this.next,
     required this.progress,
     required this.missing,
   });
 
-  String toLessonPos() {
-    return '$contentName-${lessonIndex + 1}';
+  String toChapterPos() {
+    return '$contentName-${chapterIndex + 1}';
   }
   String toVersePos() {
     return '-${verseIndex + 1}';
   }
 
   int toSort() {
-    return contentSort * 10000000000 + lessonIndex * 100000 + verseIndex;
+    return contentSort * 10000000000 + chapterIndex * 100000 + verseIndex;
   }
 }

@@ -5,7 +5,7 @@ import 'package:floor/floor.dart';
 enum TextVersionType {
   verseContent,
   verseNote,
-  lessonContent,
+  chapterContent,
   bookContent,
 }
 

@@ -22,7 +22,7 @@ class VerseTodayPrg {
   final int? id;
   final int classroomId;
   final int contentSerial;
-  final int lessonKeyId;
+  final int chapterKeyId;
   final int verseKeyId;
   int time;
   int type;
@@ -36,7 +36,7 @@ class VerseTodayPrg {
   VerseTodayPrg({
     required this.classroomId,
     required this.contentSerial,
-    required this.lessonKeyId,
+    required this.chapterKeyId,
     required this.verseKeyId,
     required this.time,
     required this.type,
@@ -53,7 +53,7 @@ class VerseTodayPrg {
     return VerseTodayPrg(
       classroomId: 0,
       contentSerial: 0,
-      lessonKeyId: 0,
+      chapterKeyId: 0,
       verseKeyId: 0,
       time: 0,
       type: TodayPrgType.none.index,
@@ -123,7 +123,7 @@ class VerseTodayPrg {
       VerseTodayPrg clonedVerse = VerseTodayPrg(
         classroomId: verse.classroomId,
         contentSerial: verse.contentSerial,
-        lessonKeyId: verse.lessonKeyId,
+        chapterKeyId: verse.chapterKeyId,
         verseKeyId: verse.verseKeyId,
         time: verse.time,
         type: verse.type,

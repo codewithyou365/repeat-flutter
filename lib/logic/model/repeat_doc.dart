@@ -2,13 +2,13 @@ class RepeatDoc {
   String? showType;
   String? rootUrl;
   List<Download>? download;
-  List<Lesson> lesson;
+  List<Chapter> chapter;
 
   RepeatDoc({
     required this.showType,
     required this.rootUrl,
     required this.download,
-    required this.lesson,
+    required this.chapter,
   });
 
   factory RepeatDoc.fromJson(Map<String, dynamic> json) {
@@ -16,7 +16,7 @@ class RepeatDoc {
       showType: json['s'] as String?,
       rootUrl: json['r'] as String?,
       download: Download.toList(json['d']),
-      lesson: (json['l'] as List?)?.map((e) => Lesson.fromJson(e as Map<String, dynamic>)).toList() ?? [],
+      chapter: (json['c'] as List?)?.map((e) => Chapter.fromJson(e as Map<String, dynamic>)).toList() ?? [],
     );
   }
 
@@ -25,7 +25,7 @@ class RepeatDoc {
       's': showType,
       'r': rootUrl,
       'd': download?.map((e) => e.toJson()).toList(),
-      'l': lesson.map((e) => e.toJson()).toList(),
+      'c': chapter.map((e) => e.toJson()).toList(),
     };
   }
 }
@@ -69,21 +69,21 @@ class Download {
   }
 }
 
-class Lesson {
+class Chapter {
   String? showType;
   String? rootUrl;
   List<Download>? download;
   List<Verse> verse;
 
-  Lesson({
+  Chapter({
     required this.showType,
     required this.rootUrl,
     required this.download,
     required this.verse,
   });
 
-  factory Lesson.fromJson(Map<String, dynamic> json) {
-    return Lesson(
+  factory Chapter.fromJson(Map<String, dynamic> json) {
+    return Chapter(
       showType: json['s'] as String?,
       rootUrl: json['r'] as String?,
       download: Download.toList(json['d']),

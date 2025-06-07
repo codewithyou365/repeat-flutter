@@ -1,34 +1,34 @@
-// entity/lesson_key.dart
+// entity/chapter_key.dart
 
 import 'package:floor/floor.dart';
 
 @Entity(
   indices: [
-    Index(value: ['classroomId', 'contentSerial', 'lessonIndex', 'version'], unique: true),
+    Index(value: ['classroomId', 'contentSerial', 'chapterIndex', 'version'], unique: true),
   ],
 )
-class LessonKey {
+class ChapterKey {
   @PrimaryKey(autoGenerate: true)
   int? id;
 
   final int classroomId;
   final int contentSerial;
-  int lessonIndex;
+  int chapterIndex;
   int version;
   final String content;
   int contentVersion;
 
-  LessonKey({
+  ChapterKey({
     this.id,
     required this.classroomId,
     required this.contentSerial,
-    required this.lessonIndex,
+    required this.chapterIndex,
     required this.version,
     required this.content,
     required this.contentVersion,
   });
 
   String get k {
-    return "$classroomId-$contentSerial-$lessonIndex";
+    return "$classroomId-$contentSerial-$chapterIndex";
   }
 }

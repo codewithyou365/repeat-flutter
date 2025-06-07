@@ -28,7 +28,7 @@ class GameHelper {
       verseKeyId: verse.verseKeyId,
       classroomId: stp.classroomId,
       contentSerial: verse.contentSerial,
-      lessonIndex: verse.lessonIndex,
+      chapterIndex: verse.chapterIndex,
       verseIndex: verse.verseIndex,
       finish: false,
       createTime: now.millisecondsSinceEpoch,

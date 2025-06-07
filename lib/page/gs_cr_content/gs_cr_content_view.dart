@@ -95,9 +95,9 @@ class GsCrContentPage extends StatelessWidget {
       ));
       menus.add(PopupMenuItem<String>(
         onTap: () {
-          logic.showLesson(model.id!);
+          logic.showChapter(model.id!);
         },
-        child: Text(I18nKey.labelLessonName.tr),
+        child: Text(I18nKey.labelChapterName.tr),
       ));
       menus.add(PopupMenuItem<String>(
         onTap: () {
@@ -127,13 +127,13 @@ class GsCrContentPage extends StatelessWidget {
                 style: TextStyle(fontSize: 50.sp),
               ),
             ),
-            if ((model.lessonWarning == true || model.verseWarning == true) && model.docId != 0)
+            if ((model.chapterWarning == true || model.verseWarning == true) && model.docId != 0)
               IconButton(
                 onPressed: () {
                   if (model.verseWarning) {
                     logic.showVerse(model.id!);
-                  } else if (model.lessonWarning) {
-                    logic.showLesson(model.id!);
+                  } else if (model.chapterWarning) {
+                    logic.showChapter(model.id!);
                   }
                 },
                 color: Colors.yellow,

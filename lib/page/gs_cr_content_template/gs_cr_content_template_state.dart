@@ -4,7 +4,7 @@ class GsCrContentTemplateState {
   int contentSerial = 0;
   static const String prefixTemplate = '{"s":"';
   static const String suffixTemplate = '",\n'
-      ' "l": [\n'
+      ' "c": [\n'
       '    {\n'
       '      "v": [\n'
       '        {"a":"1"}\n'

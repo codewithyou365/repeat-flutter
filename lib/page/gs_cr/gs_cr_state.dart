@@ -25,12 +25,12 @@ class VerseTodayPrgInView {
 class ForAdd {
   List<Content> contents = [];
   List<String> contentNames = [];
-  int maxLesson = 1;
+  int maxChapter = 1;
   int maxVerse = 1;
 
   Content? fromContent;
   int fromContentIndex = 0;
-  int fromLessonIndex = 0;
+  int fromChapterIndex = 0;
   int fromVerseIndex = 0;
   int count = 1;
 }

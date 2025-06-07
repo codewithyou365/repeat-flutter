@@ -40,7 +40,7 @@ class RepeatViewForAudio extends RepeatView {
     }
 
     var path = '';
-    List<String>? paths = helper.getLessonPaths();
+    List<String>? paths = helper.getChapterPaths();
     if (paths != null && paths.isNotEmpty) {
       path = paths.first;
     }

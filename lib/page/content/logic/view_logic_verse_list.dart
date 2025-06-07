@@ -8,14 +8,14 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/lesson_help.dart';
+import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
-import 'package:repeat_flutter/logic/model/lesson_show.dart';
+import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
-import 'package:repeat_flutter/logic/widget/lesson_list.dart';
+import 'package:repeat_flutter/logic/widget/chapter_list.dart';
 import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/logic/view_logic.dart';
@@ -64,12 +64,12 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
   List<int> nextMonth = [];
   List<VerseShow> verseShow = [];
   late HistoryList historyList = HistoryList<T>(parentLogic);
-  late LessonList lessonList = LessonList<T>(parentLogic);
+  late ChapterList chapterList = ChapterList<T>(parentLogic);
   final T parentLogic;
   Future<void> Function()? removeWarning;
-  VoidCallback onLessonModified;
+  VoidCallback onChapterModified;
   List<BookShow> originalBookShow;
-  List<LessonShow> originalLessonShow;
+  List<ChapterShow> originalChapterShow;
   List<VerseShow> originalVerseShow;
 
   double baseBodyViewHeight = 0;
@@ -79,13 +79,13 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     required VoidCallback onSearchUnfocus,
     required this.parentLogic,
     required this.originalBookShow,
-    required this.originalLessonShow,
+    required this.originalChapterShow,
     required this.originalVerseShow,
     required this.removeWarning,
-    required this.onLessonModified,
+    required this.onChapterModified,
     required this.selectVerseKeyId,
     String? initContentNameSelect,
-    int? initLessonSelect,
+    int? initChapterSelect,
   }) : super(onSearchUnfocus: onSearchUnfocus) {
     searchFocusNode.addListener(() {
       if (searchFocusNode.hasFocus) {
@@ -109,9 +109,9 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
       bookSelect.value = options.indexWhere((opt) => opt.label == initContentNameSelect);
       if (bookSelect.value < options.length) {
         final selectedBook = options[bookSelect.value];
-        if (initLessonSelect != null) {
-          if (initLessonSelect + 1 < selectedBook.next.length) {
-            chapterSelect.value = initLessonSelect + 1;
+        if (initChapterSelect != null) {
+          if (initChapterSelect + 1 < selectedBook.next.length) {
+            chapterSelect.value = initChapterSelect + 1;
           }
         }
       }
@@ -159,8 +159,8 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
             ret = e.contentName == selectedBook.label;
             if (ret && chapterSelect.value != 0) {
               if (chapterSelect.value < selectedBook.next.length) {
-                final selectedLesson = selectedBook.next[chapterSelect.value];
-                ret = e.lessonIndex == selectedLesson.value;
+                final selectedChapter = selectedBook.next[chapterSelect.value];
+                ret = e.chapterIndex == selectedChapter.value;
               } else {
                 ret = false;
               }
@@ -196,9 +196,9 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
       }
       originalVerseShow = await VerseHelp.getVerses(
         force: true,
-        query: QueryLesson(
+        query: QueryChapter(
           contentSerial: verse.contentSerial,
-          chapterIndex: verse.lessonIndex,
+          chapterIndex: verse.chapterIndex,
         ),
       );
       trySearch(force: true);
@@ -218,18 +218,18 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
           return;
         }
         int chapterIndex = chapterSelect.value - 1;
-        var chapterCount = await Db().db.lessonDao.count(classroomId, content.serial) ?? 0;
+        var chapterCount = await Db().db.chapterDao.count(classroomId, content.serial) ?? 0;
         if (chapterCount == 0) {
-          await Db().db.lessonKeyDao.addFirstLesson(content.serial);
-          await LessonHelp.getLessons(force: true);
-          onLessonModified();
+          await Db().db.chapterKeyDao.addFirstChapter(content.serial);
+          await ChapterHelp.getChapters(force: true);
+          onChapterModified();
           chapterIndex = 0;
         }
 
         await Db().db.scheduleDao.addFirstVerse(content.serial, chapterIndex);
         originalVerseShow = await VerseHelp.getVerses(
           force: true,
-          query: QueryLesson(
+          query: QueryChapter(
             contentSerial: content.serial,
             chapterIndex: chapterIndex,
           ),
@@ -252,9 +252,9 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
       }
       originalVerseShow = await VerseHelp.getVerses(
         force: true,
-        query: QueryLesson(
+        query: QueryChapter(
           contentSerial: verse.contentSerial,
-          chapterIndex: verse.lessonIndex,
+          chapterIndex: verse.chapterIndex,
         ),
       );
       trySearch(force: true);
@@ -357,7 +357,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                   RowWidget.buildCascadeCupertinoPicker(
                     head: [
                       OptionHead(title: I18nKey.labelBook.tr, value: bookSelect),
-                      OptionHead(title: I18nKey.labelLesson.tr, value: chapterSelect),
+                      OptionHead(title: I18nKey.labelChapter.tr, value: chapterSelect),
                     ],
                     body: options,
                     changed: (index) {
@@ -436,7 +436,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                '${verse.toLessonPos()}${verse.toVersePos()}',
+                                '${verse.toChapterPos()}${verse.toVersePos()}',
                                 style: const TextStyle(fontSize: 12, color: Colors.blue),
                               ),
                             ),
@@ -680,9 +680,9 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
 
   void updateOptions() {
     options = [];
-    final Map<String, List<dynamic>> lessonsByBook = {};
-    for (var lesson in originalLessonShow) {
-      lessonsByBook.putIfAbsent(lesson.contentName, () => []).add(lesson);
+    final Map<String, List<dynamic>> chaptersByBook = {};
+    for (var chapter in originalChapterShow) {
+      chaptersByBook.putIfAbsent(chapter.contentName, () => []).add(chapter);
     }
 
     final Set<String> uniqueBookNames = {};
@@ -693,17 +693,17 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     final List<OptionBody> bookOptions = [];
 
     for (var bookName in uniqueBookNames) {
-      final lessons = lessonsByBook[bookName] ?? [];
+      final chapters = chaptersByBook[bookName] ?? [];
 
-      final Set<int> lessonIndices = {};
-      for (var lesson in lessons) {
-        lessonIndices.add(lesson.lessonIndex);
+      final Set<int> chapterIndices = {};
+      for (var chapter in chapters) {
+        chapterIndices.add(chapter.chapterIndex);
       }
 
-      final sortedIndices = lessonIndices.toList()..sort();
+      final sortedIndices = chapterIndices.toList()..sort();
       sortedIndices.insert(0, -1);
 
-      final lessonOptions = sortedIndices.map((k) {
+      final chapterOptions = sortedIndices.map((k) {
         return OptionBody(
           label: (k == -1) ? I18nKey.labelAll.tr : '${k + 1}',
           value: k,
@@ -714,7 +714,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
       bookOptions.add(OptionBody(
         label: bookName,
         value: 0,
-        next: lessonOptions,
+        next: chapterOptions,
       ));
     }
 

@@ -5,12 +5,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/lesson_key.dart';
+import 'package:repeat_flutter/db/entity/chapter_key.dart';
 import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
-import 'package:repeat_flutter/logic/model/lesson_show.dart';
-import 'package:repeat_flutter/logic/lesson_help.dart';
+import 'package:repeat_flutter/logic/model/chapter_show.dart';
+import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/logic/widget/editor.dart';
@@ -25,8 +25,8 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'view_logic.dart';
 
-class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
-  static const String bodyId = "LessonList.bodyId";
+class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
+  static const String bodyId = "ChapterList.bodyId";
   late HistoryList historyList = HistoryList<T>(parentLogic);
 
   final ItemScrollController itemScrollController = ItemScrollController();
@@ -37,9 +37,9 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
   final RxString search = RxString("");
   final T parentLogic;
   List<BookShow> originalBookShow;
-  List<LessonShow> originalLessonShow;
-  List<LessonShow> lessonShow = [];
-  VoidCallback onLessonModified;
+  List<ChapterShow> originalChapterShow;
+  List<ChapterShow> chapterShow = [];
+  VoidCallback onChapterModified;
   final Future<void> Function()? removeWarning;
 
   bool showSearchDetailPanel = false;
@@ -48,9 +48,9 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
   String searchKey = '';
   List<OptionBody> options = [];
 
-  // for collect search data, and missing lesson
-  int missingLessonOffset = -1;
-  List<int> missingLessonIndex = [];
+  // for collect search data, and missing chapter
+  int missingChapterOffset = -1;
+  List<int> missingChapterIndex = [];
   List<String> sortOptions = [];
   RxInt selectedSortIndex = 0.obs;
   List<I18nKey> sortOptionKeys = [
@@ -60,15 +60,15 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
 
   double baseBodyViewHeight = 0;
 
-  ViewLogicLessonList({
+  ViewLogicChapterList({
     required VoidCallback onSearchUnfocus,
-    required this.onLessonModified,
+    required this.onChapterModified,
     required this.originalBookShow,
-    required this.originalLessonShow,
+    required this.originalChapterShow,
     required this.parentLogic,
     required this.removeWarning,
     String? initContentNameSelect,
-    int? initLessonSelect,
+    int? initChapterSelect,
   }) : super(onSearchUnfocus: onSearchUnfocus) {
     searchFocusNode.addListener(() {
       if (searchFocusNode.hasFocus) {
@@ -83,11 +83,11 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
     });
 
     searchKey = genSearchKey();
-    lessonShow = List.from(originalLessonShow);
+    chapterShow = List.from(originalChapterShow);
 
     // for sorting and content
     sortOptions = sortOptionKeys.map((key) => key.tr).toList();
-    sort(lessonShow, sortOptionKeys[selectedSortIndex.value]);
+    sort(chapterShow, sortOptionKeys[selectedSortIndex.value]);
 
     collectData();
 
@@ -95,9 +95,9 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
       bookSelect.value = options.indexWhere((opt) => opt.label == initContentNameSelect);
       if (bookSelect.value < options.length) {
         final selectedBook = options[bookSelect.value];
-        if (initLessonSelect != null) {
-          if (initLessonSelect + 1 < selectedBook.next.length) {
-            chapterSelect.value = initLessonSelect + 1;
+        if (initChapterSelect != null) {
+          if (initChapterSelect + 1 < selectedBook.next.length) {
+            chapterSelect.value = initChapterSelect + 1;
           }
         }
       }
@@ -107,7 +107,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
   void tryUpdateDetailSearchPanel(bool newShow) {
     if (showSearchDetailPanel != newShow) {
       showSearchDetailPanel = newShow;
-      parentLogic.update([ViewLogicLessonList.bodyId]);
+      parentLogic.update([ViewLogicChapterList.bodyId]);
     }
   }
 
@@ -123,10 +123,10 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
     }
     searchKey = newSearchKey;
     if (search.value.isNotEmpty || bookSelect.value != 0 || chapterSelect.value != 0) {
-      lessonShow = originalLessonShow.where((e) {
+      chapterShow = originalChapterShow.where((e) {
         bool ret = true;
         if (ret && search.value.isNotEmpty) {
-          ret = e.lessonContent.contains(search.value);
+          ret = e.chapterContent.contains(search.value);
         }
         if (ret && bookSelect.value != 0) {
           if (bookSelect.value < options.length) {
@@ -134,8 +134,8 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
             ret = e.contentName == selectedBook.label;
             if (ret && chapterSelect.value != 0) {
               if (chapterSelect.value < selectedBook.next.length) {
-                final selectedLesson = selectedBook.next[chapterSelect.value];
-                ret = e.lessonIndex == selectedLesson.value;
+                final selectedChapter = selectedBook.next[chapterSelect.value];
+                ret = e.chapterIndex == selectedChapter.value;
               } else {
                 ret = false;
               }
@@ -147,40 +147,40 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
         return ret;
       }).toList();
     } else {
-      lessonShow = List.from(originalLessonShow);
+      chapterShow = List.from(originalChapterShow);
     }
-    sort(lessonShow, sortOptionKeys[selectedSortIndex.value]);
-    refreshMissingLessonIndex(missingLessonIndex, lessonShow);
+    sort(chapterShow, sortOptionKeys[selectedSortIndex.value]);
+    refreshMissingChapterIndex(missingChapterIndex, chapterShow);
 
-    parentLogic.update([ViewLogicLessonList.bodyId]);
+    parentLogic.update([ViewLogicChapterList.bodyId]);
   }
 
-  Future<void> refresh(LessonKey? lessonKey) async {
-    if (lessonKey != null) {
+  Future<void> refresh(ChapterKey? chapterKey) async {
+    if (chapterKey != null) {
       await VerseHelp.getVerses(
         force: true,
-        query: QueryLesson(
-          contentSerial: lessonKey.contentSerial,
-          minLessonIndex: lessonKey.lessonIndex,
+        query: QueryChapter(
+          contentSerial: chapterKey.contentSerial,
+          minChapterIndex: chapterKey.chapterIndex,
         ),
       );
     }
-    originalLessonShow = await LessonHelp.getLessons(force: true);
-    onLessonModified();
+    originalChapterShow = await ChapterHelp.getChapters(force: true);
+    onChapterModified();
     collectData();
     trySearch(force: true);
     await Get.find<GsCrLogic>().init();
   }
 
-  delete({required LessonShow lesson}) async {
+  delete({required ChapterShow chapter}) async {
     bool success = await showOverlay<bool>(() async {
       Map<String, dynamic> out = {};
-      bool ok = await Db().db.lessonKeyDao.deleteNormalLesson(lesson.lessonKeyId, out);
+      bool ok = await Db().db.chapterKeyDao.deleteNormalChapter(chapter.chapterKeyId, out);
       if (!ok) {
         return false;
       }
-      LessonKey lessonKey = out['lessonKey'] as LessonKey;
-      await refresh(lessonKey);
+      ChapterKey chapterKey = out['chapterKey'] as ChapterKey;
+      await refresh(chapterKey);
       return true;
     }, I18nKey.labelDeleting.tr);
     if (success) {
@@ -199,9 +199,9 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
           Snackbar.show(I18nKey.labelNoContent.tr);
           return false;
         }
-        var chapterCount = await Db().db.lessonDao.count(classroomId, content.serial) ?? 0;
+        var chapterCount = await Db().db.chapterDao.count(classroomId, content.serial) ?? 0;
         if (chapterCount == 0) {
-          await Db().db.lessonKeyDao.addFirstLesson(content.serial);
+          await Db().db.chapterKeyDao.addFirstChapter(content.serial);
           await refresh(null);
         }
         return true;
@@ -212,19 +212,19 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
     }
   }
 
-  copy({required LessonShow lesson, required bool below}) async {
+  copy({required ChapterShow chapter, required bool below}) async {
     bool success = await showOverlay<bool>(() async {
-      int lessonIndex = lesson.lessonIndex;
+      int chapterIndex = chapter.chapterIndex;
       if (below) {
-        lessonIndex++;
+        chapterIndex++;
       }
       Map<String, dynamic> out = {};
-      var ok = await Db().db.lessonKeyDao.addLesson(lesson, lessonIndex, out);
+      var ok = await Db().db.chapterKeyDao.addChapter(chapter, chapterIndex, out);
       if (!ok) {
         return false;
       }
-      LessonKey lessonKey = out['lessonKey'] as LessonKey;
-      await refresh(lessonKey);
+      ChapterKey chapterKey = out['chapterKey'] as ChapterKey;
+      await refresh(chapterKey);
       return true;
     }, I18nKey.labelCopying.tr);
     if (success) {
@@ -249,27 +249,27 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
     });
 
     return GetBuilder<T>(
-        id: ViewLogicLessonList.bodyId,
+        id: ViewLogicChapterList.bodyId,
         builder: (_) {
-          var list = lessonShow;
+          var list = chapterShow;
 
           Widget missingPanel = const SizedBox.shrink();
-          if (missingLessonIndex.isNotEmpty) {
+          if (missingChapterIndex.isNotEmpty) {
             missingPanel = SizedBox(
               height: missPanelHeight,
               width: width,
               child: Column(
                 children: [
-                  RowWidget.buildWidgetsWithTitle(I18nKey.labelFindUnnecessaryLessons.tr, [
+                  RowWidget.buildWidgetsWithTitle(I18nKey.labelFindUnnecessaryChapters.tr, [
                     IconButton(
                         onPressed: () {
-                          if (missingLessonOffset - 1 < 0) {
-                            missingLessonOffset = 0;
+                          if (missingChapterOffset - 1 < 0) {
+                            missingChapterOffset = 0;
                           } else {
-                            missingLessonOffset--;
+                            missingChapterOffset--;
                           }
                           itemScrollController.scrollTo(
-                            index: missingLessonIndex[missingLessonOffset],
+                            index: missingChapterIndex[missingChapterOffset],
                             duration: const Duration(milliseconds: 500),
                             curve: Curves.easeInOut,
                           );
@@ -277,13 +277,13 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
                         icon: const Icon(Icons.arrow_back)),
                     IconButton(
                         onPressed: () {
-                          if (missingLessonOffset + 1 >= missingLessonIndex.length) {
-                            missingLessonOffset = missingLessonIndex.length - 1;
+                          if (missingChapterOffset + 1 >= missingChapterIndex.length) {
+                            missingChapterOffset = missingChapterIndex.length - 1;
                           } else {
-                            missingLessonOffset++;
+                            missingChapterOffset++;
                           }
                           itemScrollController.scrollTo(
-                            index: missingLessonIndex[missingLessonOffset],
+                            index: missingChapterIndex[missingChapterOffset],
                             duration: const Duration(milliseconds: 500),
                             curve: Curves.easeInOut,
                           );
@@ -319,7 +319,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
                   RowWidget.buildCascadeCupertinoPicker(
                     head: [
                       OptionHead(title: I18nKey.labelBook.tr, value: bookSelect),
-                      OptionHead(title: I18nKey.labelLesson.tr, value: chapterSelect),
+                      OptionHead(title: I18nKey.labelChapter.tr, value: chapterSelect),
                     ],
                     body: options,
                     changed: (index) {
@@ -333,8 +333,8 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
                     changed: (index) {
                       selectedSortIndex.value = index;
                       I18nKey key = sortOptionKeys[index];
-                      sort(lessonShow, key);
-                      parentLogic.update([ViewLogicLessonList.bodyId]);
+                      sort(chapterShow, key);
+                      parentLogic.update([ViewLogicChapterList.bodyId]);
                     },
                     pickWidth: 210.w,
                   ),
@@ -350,9 +350,9 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
               itemPositionsListener: itemPositionsListener,
               itemCount: list.length,
               itemBuilder: (context, index) {
-                final lesson = list[index];
+                final chapter = list[index];
                 return Card(
-                  color: lesson.missing ? Colors.red : null,
+                  color: chapter.missing ? Colors.red : null,
                   elevation: 2,
                   margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                   shape: RoundedRectangleBorder(
@@ -373,15 +373,15 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                lesson.toPos(),
+                                chapter.toPos(),
                                 style: const TextStyle(fontSize: 12, color: Colors.blue),
                               ),
                             ),
                             SizedBox(height: 8, width: width),
                             ExpandableText(
-                              title: I18nKey.labelLessonName.tr,
-                              text: ': ${lesson.lessonContent}',
-                              version: lesson.lessonContentVersion,
+                              title: I18nKey.labelChapterName.tr,
+                              text: ': ${chapter.chapterContent}',
+                              version: chapter.chapterContentVersion,
                               limit: 60,
                               style: const TextStyle(fontSize: 14),
                               selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
@@ -389,19 +389,19 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
                               selectText: search.value,
                               onEdit: () {
                                 searchFocusNode.unfocus();
-                                var contentM = jsonDecode(lesson.lessonContent);
+                                var contentM = jsonDecode(chapter.chapterContent);
                                 var content = const JsonEncoder.withIndent(' ').convert(contentM);
                                 Editor.show(
                                   Get.context!,
-                                  I18nKey.labelLessonName.tr,
+                                  I18nKey.labelChapterName.tr,
                                   content,
                                   (str) async {
-                                    await Db().db.lessonKeyDao.updateLessonContent(lesson.lessonKeyId, str);
-                                    parentLogic.update([ViewLogicLessonList.bodyId]);
+                                    await Db().db.chapterKeyDao.updateChapterContent(chapter.chapterKeyId, str);
+                                    parentLogic.update([ViewLogicChapterList.bodyId]);
                                   },
                                   qrPagePath: Nav.gsCrContentScan.path,
                                   onHistory: () {
-                                    historyList.show(TextVersionType.lessonContent, lesson.lessonKeyId);
+                                    historyList.show(TextVersionType.chapterContent, chapter.chapterKeyId);
                                   },
                                 );
                               },
@@ -412,30 +412,30 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          if (lesson.missing)
+                          if (chapter.missing)
                             IconButton(
                               onPressed: () {
                                 MsgBox.yesOrNo(
                                   title: I18nKey.labelDelete.tr,
-                                  desc: I18nKey.labelDeleteLesson.tr,
+                                  desc: I18nKey.labelDeleteChapter.tr,
                                   yes: () {
                                     showTransparentOverlay(() async {
-                                      var ok = await Db().db.lessonKeyDao.deleteAbnormalLesson(lesson.lessonKeyId);
+                                      var ok = await Db().db.chapterKeyDao.deleteAbnormalChapter(chapter.chapterKeyId);
                                       if (ok == false) {
                                         return;
                                       }
-                                      LessonHelp.deleteCache(lesson.lessonKeyId);
-                                      lessonShow.removeWhere((element) => element.lessonKeyId == lesson.lessonKeyId);
+                                      ChapterHelp.deleteCache(chapter.chapterKeyId);
+                                      chapterShow.removeWhere((element) => element.chapterKeyId == chapter.chapterKeyId);
 
-                                      var contentId2Missing = refreshMissingLessonIndex(missingLessonIndex, lessonShow);
-                                      var warning = contentId2Missing[lesson.contentId] ?? false;
+                                      var contentId2Missing = refreshMissingChapterIndex(missingChapterIndex, chapterShow);
+                                      var warning = contentId2Missing[chapter.contentId] ?? false;
                                       if (warning == false) {
-                                        await Db().db.contentDao.updateContentWarningForLesson(lesson.contentId, warning, DateTime.now().millisecondsSinceEpoch);
+                                        await Db().db.contentDao.updateContentWarningForChapter(chapter.contentId, warning, DateTime.now().millisecondsSinceEpoch);
                                         if (removeWarning != null) {
                                           await removeWarning!();
                                         }
                                       }
-                                      parentLogic.update([ViewLogicLessonList.bodyId]);
+                                      parentLogic.update([ViewLogicChapterList.bodyId]);
                                       Get.back();
                                     });
                                   },
@@ -453,7 +453,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
                                   MsgBox.yesOrNo(
                                     title: I18nKey.labelWarning.tr,
                                     desc: I18nKey.labelDeleteVerse.tr,
-                                    yes: () => delete(lesson: lesson),
+                                    yes: () => delete(chapter: chapter),
                                   );
                                 },
                                 child: Text(I18nKey.btnDelete.tr),
@@ -472,11 +472,11 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
                                         ),
                                         MsgBox.button(
                                           text: I18nKey.btnAbove.tr,
-                                          onPressed: () => copy(lesson: lesson, below: false),
+                                          onPressed: () => copy(chapter: chapter, below: false),
                                         ),
                                         MsgBox.button(
                                           text: I18nKey.btnBelow.tr,
-                                          onPressed: () => copy(lesson: lesson, below: true),
+                                          onPressed: () => copy(chapter: chapter, below: true),
                                         ),
                                       ]));
                                 },
@@ -526,18 +526,18 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
         });
   }
 
-  Map<int, bool> refreshMissingLessonIndex(
-    List<int> missingLessonIndex,
-    List<LessonShow> lessonShow,
+  Map<int, bool> refreshMissingChapterIndex(
+    List<int> missingChapterIndex,
+    List<ChapterShow> chapterShow,
   ) {
-    missingLessonIndex.clear();
+    missingChapterIndex.clear();
 
     Map<int, bool> contentId2Missing = {};
-    for (int i = 0; i < lessonShow.length; i++) {
-      var v = lessonShow[i];
+    for (int i = 0; i < chapterShow.length; i++) {
+      var v = chapterShow[i];
       if (v.missing) {
         contentId2Missing[v.contentId] = true;
-        missingLessonIndex.add(i);
+        missingChapterIndex.add(i);
       }
     }
     return contentId2Missing;
@@ -545,9 +545,9 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
 
   void updateOptions() {
     options = [];
-    final Map<String, List<dynamic>> lessonsByBook = {};
-    for (var lesson in originalLessonShow) {
-      lessonsByBook.putIfAbsent(lesson.contentName, () => []).add(lesson);
+    final Map<String, List<dynamic>> chaptersByBook = {};
+    for (var chapter in originalChapterShow) {
+      chaptersByBook.putIfAbsent(chapter.contentName, () => []).add(chapter);
     }
 
     final Set<String> uniqueBookNames = {};
@@ -558,17 +558,17 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
     final List<OptionBody> bookOptions = [];
 
     for (var bookName in uniqueBookNames) {
-      final lessons = lessonsByBook[bookName] ?? [];
+      final chapters = chaptersByBook[bookName] ?? [];
 
-      final Set<int> lessonIndices = {};
-      for (var lesson in lessons) {
-        lessonIndices.add(lesson.lessonIndex);
+      final Set<int> chapterIndices = {};
+      for (var chapter in chapters) {
+        chapterIndices.add(chapter.chapterIndex);
       }
 
-      final sortedIndices = lessonIndices.toList()..sort();
+      final sortedIndices = chapterIndices.toList()..sort();
       sortedIndices.insert(0, -1);
 
-      final lessonOptions = sortedIndices.map((k) {
+      final chapterOptions = sortedIndices.map((k) {
         return OptionBody(
           label: (k == -1) ? I18nKey.labelAll.tr : '${k + 1}',
           value: k,
@@ -579,7 +579,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
       bookOptions.add(OptionBody(
         label: bookName,
         value: 0,
-        next: lessonOptions,
+        next: chapterOptions,
       ));
     }
 
@@ -600,22 +600,22 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
 
   void collectData() {
     updateOptions();
-    missingLessonIndex = [];
-    for (int i = 0; i < originalLessonShow.length; i++) {
-      var v = originalLessonShow[i];
+    missingChapterIndex = [];
+    for (int i = 0; i < originalChapterShow.length; i++) {
+      var v = originalChapterShow[i];
       if (v.missing) {
-        missingLessonIndex.add(i);
+        missingChapterIndex.add(i);
       }
     }
   }
 
-  sort(List<LessonShow> lessonShow, I18nKey key) {
+  sort(List<ChapterShow> chapterShow, I18nKey key) {
     switch (key) {
       case I18nKey.labelSortPositionAsc:
-        lessonShow.sort((a, b) => a.toSort().compareTo(b.toSort()));
+        chapterShow.sort((a, b) => a.toSort().compareTo(b.toSort()));
         break;
       case I18nKey.labelSortPositionDesc:
-        lessonShow.sort((a, b) => b.toSort().compareTo(a.toSort()));
+        chapterShow.sort((a, b) => b.toSort().compareTo(a.toSort()));
         break;
       default:
         break;
@@ -624,7 +624,7 @@ class ViewLogicLessonList<T extends GetxController> extends ViewLogic {
 
   double getBodyViewHeight() {
     double ret = baseBodyViewHeight;
-    if (missingLessonIndex.isNotEmpty) {
+    if (missingChapterIndex.isNotEmpty) {
       ret = ret - missPanelHeight;
     }
     if (showSearchDetailPanel) {

@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/logic/base/constant.dart' show DocPath;
-import 'package:repeat_flutter/logic/lesson_help.dart';
+import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
@@ -63,16 +63,16 @@ class DocHelp {
         tryAppendDownload(d, kv.rootUrl);
       }
     }
-    for (var lesson in kv.lesson) {
-      if (lesson.download != null) {
-        for (var d in lesson.download!) {
-          tryAppendDownload(d, lesson.rootUrl ?? kv.rootUrl);
+    for (var chapter in kv.chapter) {
+      if (chapter.download != null) {
+        for (var d in chapter.download!) {
+          tryAppendDownload(d, chapter.rootUrl ?? kv.rootUrl);
         }
       }
-      for (var verse in lesson.verse) {
+      for (var verse in chapter.verse) {
         if (verse.download != null) {
           for (var d in verse.download!) {
-            tryAppendDownload(d, verse.rootUrl ?? lesson.rootUrl ?? kv.rootUrl);
+            tryAppendDownload(d, verse.rootUrl ?? chapter.rootUrl ?? kv.rootUrl);
           }
         }
       }
@@ -98,14 +98,14 @@ class DocHelp {
     bool shareNote = false,
   }) async {
     await VerseHelp.tryGen(force: true);
-    await LessonHelp.tryGen(force: true);
+    await ChapterHelp.tryGen(force: true);
     var content = await Db().db.contentDao.getById(contentId);
     var verseCache = VerseHelp.cache;
-    var lessonCache = LessonHelp.cache;
+    var chapterCache = ChapterHelp.cache;
 
     Map<String, dynamic> contentJson = jsonDecode(content!.content);
     contentJson.forEach((k, v) {
-      if (k != 'l') {
+      if (k != 'c') {
         ret[k] = v;
       }
     });
@@ -114,40 +114,40 @@ class DocHelp {
       fixDownloadInfo(ret);
     }
 
-    Map<int, List<VerseShow>> lessonToVerseShow = {};
+    Map<int, List<VerseShow>> chapterToVerseShow = {};
 
     for (var verse in verseCache) {
       if (verse.contentId == contentId) {
-        int lessonKey = verse.lessonIndex;
+        int chapterKey = verse.chapterIndex;
 
-        if (!lessonToVerseShow.containsKey(lessonKey)) {
-          lessonToVerseShow[lessonKey] = [];
+        if (!chapterToVerseShow.containsKey(chapterKey)) {
+          chapterToVerseShow[chapterKey] = [];
         }
 
-        lessonToVerseShow[lessonKey]!.add(verse);
+        chapterToVerseShow[chapterKey]!.add(verse);
       }
     }
 
-    lessonToVerseShow.forEach((lessonIndex, verses) {
+    chapterToVerseShow.forEach((chapterIndex, verses) {
       verses.sort((a, b) => a.verseIndex.compareTo(b.verseIndex));
     });
 
-    List<Map<String, dynamic>> lessonsList = [];
-    for (int i = 0; i < lessonCache.length; i++) {
-      var lesson = lessonCache[i];
-      if (lesson.contentId == contentId) {
-        Map<String, dynamic> lessonData = {};
+    List<Map<String, dynamic>> chaptersList = [];
+    for (int i = 0; i < chapterCache.length; i++) {
+      var chapter = chapterCache[i];
+      if (chapter.contentId == contentId) {
+        Map<String, dynamic> chapterData = {};
 
         try {
-          lessonData = jsonDecode(lesson.lessonContent);
+          chapterData = jsonDecode(chapter.chapterContent);
         } catch (e) {
-          Snackbar.show('Error parsing lesson content: $e');
+          Snackbar.show('Error parsing chapter content: $e');
           return false;
         }
 
-        List<VerseShow> versesForLesson = lessonToVerseShow[lesson.lessonIndex] ?? [];
+        List<VerseShow> versesForChapter = chapterToVerseShow[chapter.chapterIndex] ?? [];
         List<Map<String, dynamic>> versesList = [];
-        for (var verse in versesForLesson) {
+        for (var verse in versesForChapter) {
           Map<String, dynamic> verseData = {};
 
           try {
@@ -166,16 +166,16 @@ class DocHelp {
           versesList.add(verseData);
         }
         if (rootUrl != null) {
-          fixDownloadInfo(lessonData);
+          fixDownloadInfo(chapterData);
         }
-        lessonData['v'] = versesList;
-        lessonsList.add(lessonData);
+        chapterData['v'] = versesList;
+        chaptersList.add(chapterData);
       }
     }
     if (rootUrl != null) {
       ret['r'] = rootUrl;
     }
-    ret['l'] = lessonsList;
+    ret['c'] = chaptersList;
 
     return true;
   }

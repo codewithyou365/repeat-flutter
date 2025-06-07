@@ -7,12 +7,12 @@ abstract class TextVersionDao {
   Future<List<TextVersion>> list(TextVersionType type, int id);
 
   @Query('SELECT TextVersion.* '
-      ' FROM LessonKey'
+      ' FROM ChapterKey'
       ' JOIN TextVersion ON TextVersion.t=2'
-      '  AND TextVersion.id=LessonKey.id'
-      '  AND TextVersion.version=LessonKey.contentVersion'
-      ' WHERE LessonKey.id in (:ids)')
-  Future<List<TextVersion>> getTextForLesson(List<int> ids);
+      '  AND TextVersion.id=ChapterKey.id'
+      '  AND TextVersion.version=ChapterKey.contentVersion'
+      ' WHERE ChapterKey.id in (:ids)')
+  Future<List<TextVersion>> getTextForChapter(List<int> ids);
 
   @Query('SELECT TextVersion.* '
       ' FROM TextVersion'

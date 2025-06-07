@@ -5,7 +5,7 @@ import 'package:repeat_flutter/db/entity/verse_overall_prg.dart';
 class VerseOverallPrgWithKey extends VerseOverallPrg {
   @primaryKey
   String contentName;
-  int lessonIndex;
+  int chapterIndex;
   int verseIndex;
 
   VerseOverallPrgWithKey(
@@ -15,11 +15,11 @@ class VerseOverallPrgWithKey extends VerseOverallPrg {
     super.next,
     super.progress,
     this.contentName,
-    this.lessonIndex,
+    this.chapterIndex,
     this.verseIndex,
   );
 
   String toKey() {
-    return '$contentName-${lessonIndex + 1}-${verseIndex + 1}';
+    return '$contentName-${chapterIndex + 1}-${verseIndex + 1}';
   }
 }

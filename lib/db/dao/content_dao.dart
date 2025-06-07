@@ -15,8 +15,8 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 @dao
 abstract class ContentDao {
   late AppDatabase db;
-  static BookShow? Function(int lessonKeyId)? getBookShow;
-  static List<void Function(int lessonKeyId)> setBookShowContent = [];
+  static BookShow? Function(int chapterKeyId)? getBookShow;
+  static List<void Function(int chapterKeyId)> setBookShowContent = [];
 
   @Query('SELECT id bookId'
       ',name'
@@ -59,14 +59,14 @@ abstract class ContentDao {
   @Query('UPDATE Content set content=:content,contentVersion=:contentVersion WHERE Content.id=:id')
   Future<void> updateContentVersion(int id, String content, int contentVersion);
 
-  @Query('UPDATE Content set docId=:docId,url=:url,lessonWarning=:lessonWarning,verseWarning=:verseWarning,updateTime=:updateTime WHERE Content.id=:id')
-  Future<void> updateContent(int id, int docId, String url, bool lessonWarning, bool verseWarning, int updateTime);
+  @Query('UPDATE Content set docId=:docId,url=:url,chapterWarning=:chapterWarning,verseWarning=:verseWarning,updateTime=:updateTime WHERE Content.id=:id')
+  Future<void> updateContent(int id, int docId, String url, bool chapterWarning, bool verseWarning, int updateTime);
 
-  @Query('UPDATE Content set lessonWarning=:lessonWarning,verseWarning=:verseWarning,updateTime=:updateTime WHERE Content.id=:id')
-  Future<void> updateContentWarning(int id, bool lessonWarning, bool verseWarning, int updateTime);
+  @Query('UPDATE Content set chapterWarning=:chapterWarning,verseWarning=:verseWarning,updateTime=:updateTime WHERE Content.id=:id')
+  Future<void> updateContentWarning(int id, bool chapterWarning, bool verseWarning, int updateTime);
 
-  @Query('UPDATE Content set lessonWarning=:lessonWarning,updateTime=:updateTime WHERE Content.id=:id')
-  Future<void> updateContentWarningForLesson(int id, bool lessonWarning, int updateTime);
+  @Query('UPDATE Content set chapterWarning=:chapterWarning,updateTime=:updateTime WHERE Content.id=:id')
+  Future<void> updateContentWarningForChapter(int id, bool chapterWarning, int updateTime);
 
   @Query('UPDATE Content set verseWarning=:verseWarning,updateTime=:updateTime WHERE Content.id=:id')
   Future<void> updateContentWarningForVerse(int id, bool verseWarning, int updateTime);
@@ -157,7 +157,7 @@ abstract class ContentDao {
         contentVersion: 0,
         sort: sort,
         hide: false,
-        lessonWarning: false,
+        chapterWarning: false,
         verseWarning: false,
         createTime: now,
         updateTime: now,

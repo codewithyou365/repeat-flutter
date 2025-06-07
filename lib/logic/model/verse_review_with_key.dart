@@ -5,7 +5,7 @@ import 'package:repeat_flutter/db/entity/verse_review.dart';
 class VerseReviewWithKey extends VerseReview {
   @primaryKey
   String contentName;
-  int lessonIndex;
+  int chapterIndex;
   int verseIndex;
 
   VerseReviewWithKey(
@@ -15,7 +15,7 @@ class VerseReviewWithKey extends VerseReview {
     super.contentSerial,
     super.count,
     this.contentName,
-    this.lessonIndex,
+    this.chapterIndex,
     this.verseIndex,
   );
 }

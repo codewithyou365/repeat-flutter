@@ -1,13 +1,13 @@
 import 'package:get/get.dart';
 import 'package:repeat_flutter/logic/book_help.dart';
-import 'package:repeat_flutter/logic/lesson_help.dart';
+import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
-import 'package:repeat_flutter/logic/model/lesson_show.dart';
+import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/content/logic/view_logic_book_list.dart';
-import 'package:repeat_flutter/page/content/logic/view_logic_lesson_list.dart';
+import 'package:repeat_flutter/page/content/logic/view_logic_chapter_list.dart';
 
 import 'content_state.dart';
 import 'logic/view_logic.dart';
@@ -23,35 +23,35 @@ class ContentLogic extends GetxController {
     super.onInit();
     var args = Get.arguments as ContentArgs;
     List<BookShow> originalBookShow = await BookHelp.getBooks();
-    List<LessonShow> originalLessonShow = await LessonHelp.getLessons();
+    List<ChapterShow> originalChapterShow = await ChapterHelp.getChapters();
     List<VerseShow> originalVerseShow = await VerseHelp.getVerses();
-    late ViewLogicLessonList<ContentLogic> lessonList;
+    late ViewLogicChapterList<ContentLogic> chapterList;
     var verseList = ViewLogicVerseList<ContentLogic>(
       onSearchUnfocus: () {
         state.startSearch.value = false;
       },
-      onLessonModified: () async {
-        lessonList.originalBookShow = await BookHelp.getBooks();
-        lessonList.originalLessonShow = await LessonHelp.getLessons();
-        lessonList.collectData();
-        lessonList.trySearch(force: true);
+      onChapterModified: () async {
+        chapterList.originalBookShow = await BookHelp.getBooks();
+        chapterList.originalChapterShow = await ChapterHelp.getChapters();
+        chapterList.collectData();
+        chapterList.trySearch(force: true);
       },
       parentLogic: this,
       removeWarning: args.removeWarning,
       originalBookShow: originalBookShow,
-      originalLessonShow: originalLessonShow,
+      originalChapterShow: originalChapterShow,
       originalVerseShow: originalVerseShow,
       initContentNameSelect: args.bookName,
-      initLessonSelect: args.initLessonSelect,
+      initChapterSelect: args.initChapterSelect,
       selectVerseKeyId: args.selectVerseKeyId,
     );
-    lessonList = ViewLogicLessonList<ContentLogic>(
+    chapterList = ViewLogicChapterList<ContentLogic>(
       onSearchUnfocus: () {
         state.startSearch.value = false;
       },
-      onLessonModified: () async {
+      onChapterModified: () async {
         verseList.originalBookShow = await BookHelp.getBooks();
-        verseList.originalLessonShow = await LessonHelp.getLessons();
+        verseList.originalChapterShow = await ChapterHelp.getChapters();
         verseList.originalVerseShow = await VerseHelp.getVerses();
         verseList.collectData();
         verseList.trySearch(force: true);
@@ -59,9 +59,9 @@ class ContentLogic extends GetxController {
       parentLogic: this,
       removeWarning: args.removeWarning,
       initContentNameSelect: args.bookName,
-      initLessonSelect: args.initLessonSelect,
+      initChapterSelect: args.initChapterSelect,
       originalBookShow: originalBookShow,
-      originalLessonShow: originalLessonShow,
+      originalChapterShow: originalChapterShow,
     );
     var bookList = ViewLogicBookList<ContentLogic>(
       onSearchUnfocus: () {
@@ -72,7 +72,7 @@ class ContentLogic extends GetxController {
       originalBookShow: originalBookShow,
     );
     viewList[0] = bookList;
-    viewList[1] = lessonList;
+    viewList[1] = chapterList;
     viewList[2] = verseList;
     state.tabIndex.value = args.defaultTap;
     update([ContentLogic.id]);

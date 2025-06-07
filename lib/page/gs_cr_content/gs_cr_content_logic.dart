@@ -15,7 +15,7 @@ import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/logic/schedule_help.dart';
-import 'package:repeat_flutter/logic/widget/lesson_list.dart';
+import 'package:repeat_flutter/logic/widget/chapter_list.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
@@ -29,7 +29,7 @@ import 'gs_cr_content_state.dart';
 class GsCrContentLogic extends GetxController {
   static const String id = "GsCrContentLogic";
   final GsCrContentState state = GsCrContentState();
-  late LessonList lessonList = LessonList<GsCrContentLogic>(this);
+  late ChapterList chapterList = ChapterList<GsCrContentLogic>(this);
   late VerseList verseList = VerseList<GsCrContentLogic>(this);
   static RegExp reg = RegExp(r'^[0-9A-Z]+$');
 
@@ -75,13 +75,13 @@ class GsCrContentLogic extends GetxController {
     );
   }
 
-  showLesson(int contentId) async {
+  showChapter(int contentId) async {
     var content = await Db().db.contentDao.getById(contentId);
     if (content == null) {
       Snackbar.show(I18nKey.labelNoContent.tr);
       return;
     }
-    lessonList.show(
+    chapterList.show(
       initContentNameSelect: content.name,
       removeWarning: () async {
         await init();
@@ -194,7 +194,7 @@ class GsCrContentLogic extends GetxController {
       return 0;
     }
     var total = 0;
-    for (var d in kv.lesson) {
+    for (var d in kv.chapter) {
       total += d.verse.length;
     }
     return total;
@@ -239,7 +239,7 @@ class GsCrContentLogic extends GetxController {
     var rootUrl = url.substring(0, url.lastIndexOf("/"));
     var allDownloads = DocHelp.getDownloads(kv, rootUrl: rootUrl);
 
-    state.indexTotal.value = state.indexTotal.value + kv.lesson.length;
+    state.indexTotal.value = state.indexTotal.value + kv.chapter.length;
     for (int i = 0; i < allDownloads.length; i++) {
       var v = allDownloads[i];
       await downloadDoc(

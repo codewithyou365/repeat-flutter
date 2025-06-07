@@ -4,15 +4,15 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 
 import 'model/verse_show.dart';
 
-class QueryLesson {
+class QueryChapter {
   final int contentSerial;
   final int? chapterIndex;
-  final int? minLessonIndex;
+  final int? minChapterIndex;
 
-  QueryLesson({
+  QueryChapter({
     required this.contentSerial,
     this.chapterIndex,
-    this.minLessonIndex,
+    this.minChapterIndex,
   });
 }
 
@@ -26,17 +26,17 @@ class VerseHelp {
     return '$progressUpdateTime-$contentUpdateTime';
   }
 
-  static tryGen({force = false, QueryLesson? query}) async {
+  static tryGen({force = false, QueryChapter? query}) async {
     if (cache.isEmpty || force || query != null) {
       if (query != null) {
         if (query.chapterIndex != null) {
-          List<VerseShow> lessonVerse = await Db().db.scheduleDao.getVerseByLessonIndex(Classroom.curr, query.contentSerial, query.chapterIndex!);
-          cache.removeWhere((verse) => verse.contentSerial == query.contentSerial && verse.lessonIndex == query.chapterIndex!);
-          cache.addAll(lessonVerse);
-        } else if (query.minLessonIndex != null) {
-          List<VerseShow> lessonVerse = await Db().db.scheduleDao.getVerseByMinLessonIndex(Classroom.curr, query.contentSerial, query.minLessonIndex!);
-          cache.removeWhere((verse) => verse.contentSerial == query.contentSerial && verse.lessonIndex >= query.minLessonIndex!);
-          cache.addAll(lessonVerse);
+          List<VerseShow> chapterVerse = await Db().db.scheduleDao.getVerseByChapterIndex(Classroom.curr, query.contentSerial, query.chapterIndex!);
+          cache.removeWhere((verse) => verse.contentSerial == query.contentSerial && verse.chapterIndex == query.chapterIndex!);
+          cache.addAll(chapterVerse);
+        } else if (query.minChapterIndex != null) {
+          List<VerseShow> chapterVerse = await Db().db.scheduleDao.getVerseByMinChapterIndex(Classroom.curr, query.contentSerial, query.minChapterIndex!);
+          cache.removeWhere((verse) => verse.contentSerial == query.contentSerial && verse.chapterIndex >= query.minChapterIndex!);
+          cache.addAll(chapterVerse);
         }
         verseKeyIdToShow = {for (var verse in cache) verse.verseKeyId: verse};
       } else {
@@ -46,7 +46,7 @@ class VerseHelp {
     }
   }
 
-  static Future<List<VerseShow>> getVerses({force = false, QueryLesson? query}) async {
+  static Future<List<VerseShow>> getVerses({force = false, QueryChapter? query}) async {
     await tryGen(force: force, query: query);
     return cache;
   }
@@ -58,7 +58,7 @@ class VerseHelp {
   static String getVersePos(int verseKeyId) {
     var verse = VerseHelp.verseKeyIdToShow[verseKeyId];
     if (verse != null) {
-      return "${verse.toLessonPos()}${verse.toVersePos()}";
+      return "${verse.toChapterPos()}${verse.toVersePos()}";
     }
     return "";
   }

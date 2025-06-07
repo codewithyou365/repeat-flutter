@@ -13,7 +13,7 @@ import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
-import 'package:repeat_flutter/logic/widget/lesson_list.dart';
+import 'package:repeat_flutter/logic/widget/chapter_list.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -36,11 +36,11 @@ class VerseList<T extends GetxController> {
   VerseList(this.parentLogic);
 
   late HistoryList historyList = HistoryList<T>(parentLogic);
-  late LessonList lessonList = LessonList<T>(parentLogic);
+  late ChapterList chapterList = ChapterList<T>(parentLogic);
 
   Future<void> show({
     String? initContentNameSelect,
-    int? initLessonSelect,
+    int? initChapterSelect,
     int? selectVerseKeyId,
     bool focus = false,
     Future<void> Function()? removeWarning,
@@ -49,7 +49,7 @@ class VerseList<T extends GetxController> {
     return await _showSheet(
       verseShow,
       initContentNameSelect: initContentNameSelect,
-      initLessonSelect: initLessonSelect,
+      initChapterSelect: initChapterSelect,
       selectVerseKeyId: selectVerseKeyId,
       focus: focus,
       removeWarning: removeWarning,
@@ -59,7 +59,7 @@ class VerseList<T extends GetxController> {
   Future<void> _showSheet(
     List<VerseShow> originalVerseShow, {
     String? initContentNameSelect,
-    int? initLessonSelect,
+    int? initChapterSelect,
     int? selectVerseKeyId,
     bool focus = true,
     Future<void> Function()? removeWarning,
@@ -108,22 +108,22 @@ class VerseList<T extends GetxController> {
     int missingVerseOffset = -1;
     List<int> missingVerseIndex = [];
     List<String> contentNameOptions = [];
-    List<int> lesson = [];
+    List<int> chapter = [];
     List<int> progress = [];
     List<int> nextMonth = [];
     collectDataFromVerses(
       missingVerseIndex,
       contentNameOptions,
-      lesson,
+      chapter,
       progress,
       nextMonth,
       verseShow, // keep consistent with view below.
     );
     RxInt contentNameSelect = 0.obs;
-    RxInt lessonSelect = 0.obs;
+    RxInt chapterSelect = 0.obs;
     RxInt progressSelect = 0.obs;
     RxInt nextMonthSelect = 0.obs;
-    List<String> lessonOptions = lesson.map((k) {
+    List<String> chapterOptions = chapter.map((k) {
       if (k == -1) {
         return I18nKey.labelAll.tr;
       }
@@ -153,7 +153,7 @@ class VerseList<T extends GetxController> {
     bodyViewHeight = getBodyViewHeight(missingVerseIndex, baseBodyViewHeight);
 
     String genSearchKey() {
-      return '${contentNameSelect.value},${lessonSelect.value},${progressSelect.value},${nextMonthSelect.value},${search.value}';
+      return '${contentNameSelect.value},${chapterSelect.value},${progressSelect.value},${nextMonthSelect.value},${search.value}';
     }
 
     String searchKey = genSearchKey();
@@ -163,7 +163,7 @@ class VerseList<T extends GetxController> {
         return;
       }
       searchKey = newSearchKey;
-      if (search.value.isNotEmpty || contentNameSelect.value != 0 || lessonSelect.value != 0 || progressSelect.value != 0 || nextMonthSelect.value != 0) {
+      if (search.value.isNotEmpty || contentNameSelect.value != 0 || chapterSelect.value != 0 || progressSelect.value != 0 || nextMonthSelect.value != 0) {
         verseShow = originalVerseShow.where((e) {
           bool ret = true;
           if (ret && search.value.isNotEmpty) {
@@ -175,8 +175,8 @@ class VerseList<T extends GetxController> {
           if (ret && contentNameSelect.value != 0) {
             ret = e.contentName == contentNameOptions[contentNameSelect.value];
           }
-          if (ret && lessonSelect.value != 0) {
-            ret = e.lessonIndex == lesson[lessonSelect.value];
+          if (ret && chapterSelect.value != 0) {
+            ret = e.chapterIndex == chapter[chapterSelect.value];
           }
           if (ret && progressSelect.value != 0) {
             ret = e.progress == progress[progressSelect.value];
@@ -205,10 +205,10 @@ class VerseList<T extends GetxController> {
         contentNameSelect.value = index;
       }
     }
-    if (initLessonSelect != null) {
-      int index = lessonOptions.indexOf('${initLessonSelect + 1}');
+    if (initChapterSelect != null) {
+      int index = chapterOptions.indexOf('${initChapterSelect + 1}');
       if (index != -1) {
-        lessonSelect.value = index;
+        chapterSelect.value = index;
       }
     }
     void scrollTo(int selectVerseKeyId) {
@@ -241,9 +241,9 @@ class VerseList<T extends GetxController> {
         }
         originalVerseShow = await VerseHelp.getVerses(
           force: true,
-          query: QueryLesson(
+          query: QueryChapter(
             contentSerial: verse.contentSerial,
-            chapterIndex: verse.lessonIndex,
+            chapterIndex: verse.chapterIndex,
           ),
         );
         trySearch(force: true);
@@ -265,9 +265,9 @@ class VerseList<T extends GetxController> {
         }
         originalVerseShow = await VerseHelp.getVerses(
           force: true,
-          query: QueryLesson(
+          query: QueryChapter(
             contentSerial: verse.contentSerial,
-            chapterIndex: verse.lessonIndex,
+            chapterIndex: verse.chapterIndex,
           ),
         );
         trySearch(force: true);
@@ -341,7 +341,7 @@ class VerseList<T extends GetxController> {
                           List<String> searches = StringUtil.splitN(searchKey, ",", 5);
                           if (searches.length == 5) {
                             contentNameSelect.value = int.parse(searches[0]);
-                            lessonSelect.value = int.parse(searches[1]);
+                            chapterSelect.value = int.parse(searches[1]);
                             progressSelect.value = int.parse(searches[2]);
                             nextMonthSelect.value = int.parse(searches[3]);
                             search.value = searches[4];
@@ -384,11 +384,11 @@ class VerseList<T extends GetxController> {
                                       ),
                                       child: GestureDetector(
                                         onTap: () async {
-                                          var lesson = await Db().db.lessonDao.one(Classroom.curr, verse.contentSerial, verse.lessonIndex);
-                                          if (lesson != null) {
-                                            lessonList.show(
+                                          var chapter = await Db().db.chapterDao.one(Classroom.curr, verse.contentSerial, verse.chapterIndex);
+                                          if (chapter != null) {
+                                            chapterList.show(
                                               initContentNameSelect: initContentNameSelect,
-                                              selectLessonKeyId: lesson.lessonKeyId,
+                                              selectChapterKeyId: chapter.chapterKeyId,
                                               verseModified: () async {
                                                 originalVerseShow = await VerseHelp.getVerses();
                                                 trySearch(force: true);
@@ -399,7 +399,7 @@ class VerseList<T extends GetxController> {
                                         child: Text.rich(
                                           TextSpan(children: [
                                             TextSpan(
-                                              text: '${I18nKey.labelLessonName.tr}: ${verse.toLessonPos()}',
+                                              text: '${I18nKey.labelChapterName.tr}: ${verse.toChapterPos()}',
                                               style: const TextStyle(fontSize: 12, color: Colors.blue),
                                             ),
                                             TextSpan(
@@ -639,11 +639,11 @@ class VerseList<T extends GetxController> {
                             ),
                             RowWidget.buildDividerWithoutColor(),
                             RowWidget.buildCupertinoPicker(
-                              I18nKey.labelLessonName.tr,
-                              lessonOptions,
-                              lessonSelect,
+                              I18nKey.labelChapterName.tr,
+                              chapterOptions,
+                              chapterSelect,
                               changed: (index) {
-                                lessonSelect.value = index;
+                                chapterSelect.value = index;
                               },
                             ),
                             RowWidget.buildDividerWithoutColor(),
@@ -716,7 +716,7 @@ class VerseList<T extends GetxController> {
   static void collectDataFromVerses(
     List<int> missingVerseIndex,
     List<String> contentName,
-    List<int> lesson,
+    List<int> chapter,
     List<int> progress,
     List<int> nextMonth,
     List<VerseShow> verseShow,
@@ -729,8 +729,8 @@ class VerseList<T extends GetxController> {
       if (!contentName.contains(v.contentName)) {
         contentName.add(v.contentName);
       }
-      if (!lesson.contains(v.lessonIndex)) {
-        lesson.add(v.lessonIndex);
+      if (!chapter.contains(v.chapterIndex)) {
+        chapter.add(v.chapterIndex);
       }
       if (!progress.contains(v.progress)) {
         progress.add(v.progress);
@@ -740,11 +740,11 @@ class VerseList<T extends GetxController> {
         nextMonth.add(month);
       }
     }
-    lesson.sort();
+    chapter.sort();
     progress.sort();
     nextMonth.sort();
     contentName.insert(0, I18nKey.labelAll.tr);
-    lesson.insert(0, -1);
+    chapter.insert(0, -1);
     progress.insert(0, -1);
     nextMonth.insert(0, -1);
   }

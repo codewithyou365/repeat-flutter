@@ -56,7 +56,7 @@ class ContentPage extends StatelessWidget {
   }
 
   Widget topBar({required ContentLogic logic, required double width, required double height}) {
-    final taps = [I18nKey.labelBook.tr, I18nKey.labelLesson.tr, I18nKey.labelVerse.tr];
+    final taps = [I18nKey.labelBook.tr, I18nKey.labelChapter.tr, I18nKey.labelVerse.tr];
     final startSearch = logic.state.startSearch;
     final tabIndex = logic.state.tabIndex;
     const padding = 10.0;

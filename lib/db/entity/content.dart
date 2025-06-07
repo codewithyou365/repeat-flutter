@@ -28,7 +28,7 @@ class Content {
   int contentVersion;
   int sort;
   bool hide;
-  bool lessonWarning;
+  bool chapterWarning;
   bool verseWarning;
   int createTime;
   int updateTime;
@@ -45,7 +45,7 @@ class Content {
     required this.contentVersion,
     required this.sort,
     required this.hide,
-    required this.lessonWarning,
+    required this.chapterWarning,
     required this.verseWarning,
     required this.createTime,
     required this.updateTime,
@@ -64,7 +64,7 @@ class Content {
       contentVersion: 0,
       sort: 0,
       hide: false,
-      lessonWarning: false,
+      chapterWarning: false,
       verseWarning: false,
       createTime: 0,
       updateTime: 0,

@@ -7,7 +7,7 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/lesson_help.dart';
+import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
 
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
@@ -121,15 +121,15 @@ class GsCrRepeatLogic extends GetxController {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
-    var lesson = LessonHelp.getCache(curr.lessonKeyId);
-    if (lesson == null) {
+    var chapter = ChapterHelp.getCache(curr.chapterKeyId);
+    if (chapter == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
     await Nav.content.push(
       arguments: ContentArgs(
         bookName: content.name,
-        initLessonSelect: lesson.lessonIndex,
+        initChapterSelect: chapter.chapterIndex,
         selectVerseKeyId: curr.verseKeyId,
         defaultTap: 2,
       ),

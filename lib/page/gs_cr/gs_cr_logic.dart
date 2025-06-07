@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/content_dao.dart';
-import 'package:repeat_flutter/db/dao/lesson_key_dao.dart';
+import 'package:repeat_flutter/db/dao/chapter_key_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
@@ -17,7 +17,7 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/book_help.dart';
-import 'package:repeat_flutter/logic/lesson_help.dart';
+import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
@@ -57,8 +57,8 @@ class GsCrLogic extends GetxController {
     await copyLogic.init();
     await VerseHelp.tryGen(force: true);
     ScheduleDao.getVerseShow = VerseHelp.getCache;
-    await LessonHelp.tryGen(force: true);
-    LessonKeyDao.getLessonShow = LessonHelp.getCache;
+    await ChapterHelp.tryGen(force: true);
+    ChapterKeyDao.getChapterShow = ChapterHelp.getCache;
     await BookHelp.tryGen(force: true);
     ContentDao.getBookShow = BookHelp.getCache;
     state.forAdd.contents = await Db().db.contentDao.getAllEnableContent(Classroom.curr);
@@ -346,24 +346,24 @@ class GsCrLogic extends GetxController {
       return false;
     }
     await showTransparentOverlay(() async {
-      state.forAdd.maxLesson = -1;
+      state.forAdd.maxChapter = -1;
       state.forAdd.maxVerse = -1;
       state.forAdd.fromContent = state.forAdd.contents[0];
-      await initLesson(updateView: false);
+      await initChapter(updateView: false);
       await initVerse(updateView: false);
       state.forAdd.fromContentIndex = 0;
-      state.forAdd.fromLessonIndex = 0;
+      state.forAdd.fromChapterIndex = 0;
       state.forAdd.fromVerseIndex = 0;
       state.forAdd.count = 1;
     });
     return true;
   }
 
-  Future<void> initLesson({bool updateView = true}) async {
-    if (state.forAdd.maxLesson < 0) {
+  Future<void> initChapter({bool updateView = true}) async {
+    if (state.forAdd.maxChapter < 0) {
       var contentSerial = state.forAdd.fromContent!.serial;
-      var maxLesson = await Db().db.scheduleDao.getMaxLessonIndex(Classroom.curr, contentSerial);
-      state.forAdd.maxLesson = (maxLesson ?? 1) + 1;
+      var maxChapter = await Db().db.scheduleDao.getMaxChapterIndex(Classroom.curr, contentSerial);
+      state.forAdd.maxChapter = (maxChapter ?? 1) + 1;
       if (updateView) {
         update([GsCrLogic.idForAdd]);
       }
@@ -371,12 +371,12 @@ class GsCrLogic extends GetxController {
   }
 
   Future<void> initVerse({bool updateView = true}) async {
-    if (state.forAdd.maxLesson < 0) {
+    if (state.forAdd.maxChapter < 0) {
       return;
     }
     if (state.forAdd.maxVerse < 0) {
       var contentSerial = state.forAdd.fromContent!.serial;
-      var maxVerse = await Db().db.scheduleDao.getMaxVerseIndex(Classroom.curr, contentSerial, state.forAdd.fromLessonIndex);
+      var maxVerse = await Db().db.scheduleDao.getMaxVerseIndex(Classroom.curr, contentSerial, state.forAdd.fromChapterIndex);
       state.forAdd.maxVerse = (maxVerse ?? 1) + 1;
       if (updateView) {
         update([GsCrLogic.idForAdd]);
@@ -386,19 +386,19 @@ class GsCrLogic extends GetxController {
 
   void selectContent(int contentIndex) async {
     var content = state.forAdd.contents[contentIndex];
-    state.forAdd.maxLesson = -1;
+    state.forAdd.maxChapter = -1;
     state.forAdd.maxVerse = -1;
     state.forAdd.fromContent = content;
     state.forAdd.fromContentIndex = contentIndex;
-    state.forAdd.fromLessonIndex = 0;
+    state.forAdd.fromChapterIndex = 0;
     state.forAdd.fromVerseIndex = 0;
 
     update([GsCrLogic.idForAdd]);
   }
 
-  void selectLesson(int lessonIndex) async {
+  void selectChapter(int chapterIndex) async {
     state.forAdd.maxVerse = -1;
-    state.forAdd.fromLessonIndex = lessonIndex;
+    state.forAdd.fromChapterIndex = chapterIndex;
     state.forAdd.fromVerseIndex = 0;
     update([GsCrLogic.idForAdd]);
   }
@@ -412,7 +412,7 @@ class GsCrLogic extends GetxController {
   }
 
   void addSchedule() async {
-    if (state.forAdd.maxLesson < 0) {
+    if (state.forAdd.maxChapter < 0) {
       return;
     }
     if (state.forAdd.maxVerse < 0) {
@@ -420,7 +420,7 @@ class GsCrLogic extends GetxController {
     }
     await Db().db.scheduleDao.addFullCustom(
           state.forAdd.fromContent!.serial,
-          state.forAdd.fromLessonIndex,
+          state.forAdd.fromChapterIndex,
           state.forAdd.fromVerseIndex,
           state.forAdd.count,
         );

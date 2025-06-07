@@ -5,11 +5,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/lesson_key.dart';
+import 'package:repeat_flutter/db/entity/chapter_key.dart';
 import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/model/lesson_show.dart';
-import 'package:repeat_flutter/logic/lesson_help.dart';
+import 'package:repeat_flutter/logic/model/chapter_show.dart';
+import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -24,31 +24,31 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'editor.dart';
 
-class LessonList<T extends GetxController> {
-  static const String bodyId = "LessonList.bodyId";
-  static const String findUnnecessaryLessonsId = "LessonList.findUnnecessaryLessonsId";
-  static const String detailSearchId = "LessonList.searchId";
+class ChapterList<T extends GetxController> {
+  static const String bodyId = "ChapterList.bodyId";
+  static const String findUnnecessaryChaptersId = "ChapterList.findUnnecessaryChaptersId";
+  static const String detailSearchId = "ChapterList.searchId";
 
   final T parentLogic;
 
-  LessonList(this.parentLogic);
+  ChapterList(this.parentLogic);
 
   late HistoryList historyList = HistoryList<T>(parentLogic);
 
   Future<void> show({
     String? initContentNameSelect,
-    int? initLessonSelect,
-    int? selectLessonKeyId,
+    int? initChapterSelect,
+    int? selectChapterKeyId,
     bool focus = false,
     Future<void> Function()? removeWarning,
     Future<void> Function()? verseModified,
   }) async {
-    List<LessonShow> lessonShow = await LessonHelp.getLessons();
+    List<ChapterShow> chapterShow = await ChapterHelp.getChapters();
     return await showSheet(
-      lessonShow,
+      chapterShow,
       initContentNameSelect: initContentNameSelect,
-      initLessonSelect: initLessonSelect,
-      selectLessonKeyId: selectLessonKeyId,
+      initChapterSelect: initChapterSelect,
+      selectChapterKeyId: selectChapterKeyId,
       focus: focus,
       removeWarning: removeWarning,
       verseModified: verseModified,
@@ -56,10 +56,10 @@ class LessonList<T extends GetxController> {
   }
 
   Future<void> showSheet(
-    List<LessonShow> originalLessonShow, {
+    List<ChapterShow> originalChapterShow, {
     String? initContentNameSelect,
-    int? initLessonSelect,
-    int? selectLessonKeyId,
+    int? initChapterSelect,
+    int? selectChapterKeyId,
     bool focus = true,
     Future<void> Function()? removeWarning,
     Future<void> Function()? verseModified,
@@ -71,7 +71,7 @@ class LessonList<T extends GetxController> {
     void tryUpdateDetailSearchPanel(bool newShow) {
       if (showSearchDetailPanel != newShow) {
         showSearchDetailPanel = newShow;
-        parentLogic.update([LessonList.detailSearchId]);
+        parentLogic.update([ChapterList.detailSearchId]);
       }
     }
 
@@ -91,29 +91,29 @@ class LessonList<T extends GetxController> {
     });
 
     // for sorting and content
-    List<LessonShow> lessonShow = List.from(originalLessonShow);
+    List<ChapterShow> chapterShow = List.from(originalChapterShow);
     RxInt selectedSortIndex = 0.obs;
     List<I18nKey> sortOptionKeys = [
       I18nKey.labelSortPositionAsc,
       I18nKey.labelSortPositionDesc,
     ];
     List<String> sortOptions = sortOptionKeys.map((key) => key.tr).toList();
-    sort(lessonShow, sortOptionKeys[selectedSortIndex.value]);
+    sort(chapterShow, sortOptionKeys[selectedSortIndex.value]);
 
-    // for collect search data, and missing lesson
-    int missingLessonOffset = -1;
-    List<int> missingLessonIndex = [];
+    // for collect search data, and missing chapter
+    int missingChapterOffset = -1;
+    List<int> missingChapterIndex = [];
     List<String> contentNameOptions = [];
-    List<int> lessonIndex = [];
-    collectDataFromLessons(
-      missingLessonIndex,
+    List<int> chapterIndex = [];
+    collectDataFromChapters(
+      missingChapterIndex,
       contentNameOptions,
-      lessonIndex,
-      lessonShow, // keep consistent with view below.
+      chapterIndex,
+      chapterShow, // keep consistent with view below.
     );
     RxInt contentNameSelect = 0.obs;
-    RxInt lessonIndexSelect = 0.obs;
-    List<String> lessonOptions = lessonIndex.map((k) {
+    RxInt chapterIndexSelect = 0.obs;
+    List<String> chapterOptions = chapterIndex.map((k) {
       if (k == -1) {
         return I18nKey.labelAll.tr;
       }
@@ -129,10 +129,10 @@ class LessonList<T extends GetxController> {
     final Size screenSize = mediaQueryData.size;
     final totalHeight = screenSize.height - mediaQueryData.padding.top;
     final baseBodyViewHeight = totalHeight - RowWidget.rowHeight - RowWidget.dividerHeight - Sheet.paddingVertical * 2;
-    bodyViewHeight = getBodyViewHeight(missingLessonIndex, baseBodyViewHeight);
+    bodyViewHeight = getBodyViewHeight(missingChapterIndex, baseBodyViewHeight);
 
     String genSearchKey() {
-      return '${contentNameSelect.value},${lessonIndexSelect.value},${search.value}';
+      return '${contentNameSelect.value},${chapterIndexSelect.value},${search.value}';
     }
 
     String searchKey = genSearchKey();
@@ -142,28 +142,28 @@ class LessonList<T extends GetxController> {
         return;
       }
       searchKey = newSearchKey;
-      if (search.value.isNotEmpty || contentNameSelect.value != 0 || lessonIndexSelect.value != 0) {
-        lessonShow = originalLessonShow.where((e) {
+      if (search.value.isNotEmpty || contentNameSelect.value != 0 || chapterIndexSelect.value != 0) {
+        chapterShow = originalChapterShow.where((e) {
           bool ret = true;
           if (ret && search.value.isNotEmpty) {
-            ret = e.lessonContent.contains(search.value);
+            ret = e.chapterContent.contains(search.value);
           }
           if (ret && contentNameSelect.value != 0) {
             ret = e.contentName == contentNameOptions[contentNameSelect.value];
           }
-          if (ret && lessonIndexSelect.value != 0) {
-            ret = e.lessonIndex == lessonIndex[lessonIndexSelect.value];
+          if (ret && chapterIndexSelect.value != 0) {
+            ret = e.chapterIndex == chapterIndex[chapterIndexSelect.value];
           }
           return ret;
         }).toList();
       } else {
-        lessonShow = List.from(originalLessonShow);
+        chapterShow = List.from(originalChapterShow);
       }
-      sort(lessonShow, sortOptionKeys[selectedSortIndex.value]);
-      refreshMissingLessonIndex(missingLessonIndex, lessonShow);
+      sort(chapterShow, sortOptionKeys[selectedSortIndex.value]);
+      refreshMissingChapterIndex(missingChapterIndex, chapterShow);
 
-      bodyViewHeight = getBodyViewHeight(missingLessonIndex, baseBodyViewHeight);
-      parentLogic.update([LessonList.findUnnecessaryLessonsId, LessonList.bodyId]);
+      bodyViewHeight = getBodyViewHeight(missingChapterIndex, baseBodyViewHeight);
+      parentLogic.update([ChapterList.findUnnecessaryChaptersId, ChapterList.bodyId]);
     }
 
     // init select
@@ -173,19 +173,19 @@ class LessonList<T extends GetxController> {
         contentNameSelect.value = index;
       }
     }
-    if (initLessonSelect != null) {
-      int index = lessonOptions.indexOf('${initLessonSelect + 1}');
+    if (initChapterSelect != null) {
+      int index = chapterOptions.indexOf('${initChapterSelect + 1}');
       if (index != -1) {
-        lessonIndexSelect.value = index;
+        chapterIndexSelect.value = index;
       }
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       trySearch();
       int? selectedIndex;
-      if (selectLessonKeyId != null) {
-        LessonShow? ls = LessonHelp.getCache(selectLessonKeyId);
+      if (selectChapterKeyId != null) {
+        ChapterShow? ls = ChapterHelp.getCache(selectChapterKeyId);
         if (ls != null) {
-          selectedIndex = lessonShow.indexOf(ls);
+          selectedIndex = chapterShow.indexOf(ls);
         }
       }
       if (selectedIndex != null) {
@@ -196,31 +196,31 @@ class LessonList<T extends GetxController> {
         );
       }
     });
-    Future<void> refresh(LessonKey lessonKey) async {
+    Future<void> refresh(ChapterKey chapterKey) async {
       await VerseHelp.getVerses(
         force: true,
-        query: QueryLesson(
-          contentSerial: lessonKey.contentSerial,
-          minLessonIndex: lessonKey.lessonIndex,
+        query: QueryChapter(
+          contentSerial: chapterKey.contentSerial,
+          minChapterIndex: chapterKey.chapterIndex,
         ),
       );
       if (verseModified != null) {
         await verseModified();
       }
-      originalLessonShow = await LessonHelp.getLessons(force: true);
+      originalChapterShow = await ChapterHelp.getChapters(force: true);
       trySearch(force: true);
       await Get.find<GsCrLogic>().init();
     }
 
-    delete({required LessonShow lesson}) async {
+    delete({required ChapterShow chapter}) async {
       bool success = await showOverlay<bool>(() async {
         Map<String, dynamic> out = {};
-        bool ok = await Db().db.lessonKeyDao.deleteNormalLesson(lesson.lessonKeyId, out);
+        bool ok = await Db().db.chapterKeyDao.deleteNormalChapter(chapter.chapterKeyId, out);
         if (!ok) {
           return false;
         }
-        LessonKey lessonKey = out['lessonKey'] as LessonKey;
-        await refresh(lessonKey);
+        ChapterKey chapterKey = out['chapterKey'] as ChapterKey;
+        await refresh(chapterKey);
         return true;
       }, I18nKey.labelDeleting.tr);
       if (success) {
@@ -229,19 +229,19 @@ class LessonList<T extends GetxController> {
       Get.back();
     }
 
-    copy({required LessonShow lesson, required bool below}) async {
+    copy({required ChapterShow chapter, required bool below}) async {
       bool success = await showOverlay<bool>(() async {
-        int lessonIndex = lesson.lessonIndex;
+        int chapterIndex = chapter.chapterIndex;
         if (below) {
-          lessonIndex++;
+          chapterIndex++;
         }
         Map<String, dynamic> out = {};
-        var ok = await Db().db.lessonKeyDao.addLesson(lesson, lessonIndex, out);
+        var ok = await Db().db.chapterKeyDao.addChapter(chapter, chapterIndex, out);
         if (!ok) {
           return false;
         }
-        LessonKey lessonKey = out['lessonKey'] as LessonKey;
-        await refresh(lessonKey);
+        ChapterKey chapterKey = out['chapterKey'] as ChapterKey;
+        await refresh(chapterKey);
         return true;
       }, I18nKey.labelCopying.tr);
       if (success) {
@@ -257,23 +257,23 @@ class LessonList<T extends GetxController> {
           children: [
             RowWidget.buildSearch(search, searchController, focusNode: focusNode, onClose: Get.back, onSearch: trySearch),
             RowWidget.buildDividerWithoutColor(),
-            if (missingLessonIndex.isNotEmpty)
+            if (missingChapterIndex.isNotEmpty)
               GetBuilder<T>(
-                  id: LessonList.findUnnecessaryLessonsId,
+                  id: ChapterList.findUnnecessaryChaptersId,
                   builder: (_) {
-                    if (missingLessonIndex.isNotEmpty) {
+                    if (missingChapterIndex.isNotEmpty) {
                       return Column(
                         children: [
-                          RowWidget.buildWidgetsWithTitle(I18nKey.labelFindUnnecessaryLessons.tr, [
+                          RowWidget.buildWidgetsWithTitle(I18nKey.labelFindUnnecessaryChapters.tr, [
                             IconButton(
                                 onPressed: () {
-                                  if (missingLessonOffset - 1 < 0) {
-                                    missingLessonOffset = 0;
+                                  if (missingChapterOffset - 1 < 0) {
+                                    missingChapterOffset = 0;
                                   } else {
-                                    missingLessonOffset--;
+                                    missingChapterOffset--;
                                   }
                                   itemScrollController.scrollTo(
-                                    index: missingLessonIndex[missingLessonOffset],
+                                    index: missingChapterIndex[missingChapterOffset],
                                     duration: const Duration(milliseconds: 500),
                                     curve: Curves.easeInOut,
                                   );
@@ -281,13 +281,13 @@ class LessonList<T extends GetxController> {
                                 icon: const Icon(Icons.arrow_back)),
                             IconButton(
                                 onPressed: () {
-                                  if (missingLessonOffset + 1 >= missingLessonIndex.length) {
-                                    missingLessonOffset = missingLessonIndex.length - 1;
+                                  if (missingChapterOffset + 1 >= missingChapterIndex.length) {
+                                    missingChapterOffset = missingChapterIndex.length - 1;
                                   } else {
-                                    missingLessonOffset++;
+                                    missingChapterOffset++;
                                   }
                                   itemScrollController.scrollTo(
-                                    index: missingLessonIndex[missingLessonOffset],
+                                    index: missingChapterIndex[missingChapterOffset],
                                     duration: const Duration(milliseconds: 500),
                                     curve: Curves.easeInOut,
                                   );
@@ -302,9 +302,9 @@ class LessonList<T extends GetxController> {
                     }
                   }),
             GetBuilder<T>(
-              id: LessonList.bodyId,
+              id: ChapterList.bodyId,
               builder: (_) {
-                var list = lessonShow;
+                var list = chapterShow;
                 return SizedBox(
                   height: bodyViewHeight,
                   width: screenSize.width,
@@ -315,7 +315,7 @@ class LessonList<T extends GetxController> {
                           List<String> searches = StringUtil.splitN(searchKey, ",", 3);
                           if (searches.length == 3) {
                             contentNameSelect.value = int.parse(searches[0]);
-                            lessonIndexSelect.value = int.parse(searches[1]);
+                            chapterIndexSelect.value = int.parse(searches[1]);
                             search.value = searches[2];
                             searchController.text = search.value;
                           }
@@ -329,9 +329,9 @@ class LessonList<T extends GetxController> {
                       itemPositionsListener: itemPositionsListener,
                       itemCount: list.length,
                       itemBuilder: (context, index) {
-                        final lesson = list[index];
+                        final chapter = list[index];
                         return Card(
-                          color: lesson.missing ? Colors.red : null,
+                          color: chapter.missing ? Colors.red : null,
                           elevation: 2,
                           margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                           shape: RoundedRectangleBorder(
@@ -352,15 +352,15 @@ class LessonList<T extends GetxController> {
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
-                                        '${I18nKey.labelLessonName.tr}: ${lesson.toPos()}',
+                                        '${I18nKey.labelChapterName.tr}: ${chapter.toPos()}',
                                         style: const TextStyle(fontSize: 12, color: Colors.blue),
                                       ),
                                     ),
                                     SizedBox(height: 8, width: screenSize.width),
                                     ExpandableText(
-                                      title: I18nKey.labelLessonName.tr,
-                                      text: ': ${lesson.lessonContent}',
-                                      version: lesson.lessonContentVersion,
+                                      title: I18nKey.labelChapterName.tr,
+                                      text: ': ${chapter.chapterContent}',
+                                      version: chapter.chapterContentVersion,
                                       limit: 60,
                                       style: const TextStyle(fontSize: 14),
                                       selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
@@ -368,19 +368,19 @@ class LessonList<T extends GetxController> {
                                       selectText: search.value,
                                       onEdit: () {
                                         focusNode.unfocus();
-                                        var contentM = jsonDecode(lesson.lessonContent);
+                                        var contentM = jsonDecode(chapter.chapterContent);
                                         var content = const JsonEncoder.withIndent(' ').convert(contentM);
                                         Editor.show(
                                           Get.context!,
-                                          I18nKey.labelLessonName.tr,
+                                          I18nKey.labelChapterName.tr,
                                           content,
                                           (str) async {
-                                            await Db().db.lessonKeyDao.updateLessonContent(lesson.lessonKeyId, str);
-                                            parentLogic.update([LessonList.bodyId]);
+                                            await Db().db.chapterKeyDao.updateChapterContent(chapter.chapterKeyId, str);
+                                            parentLogic.update([ChapterList.bodyId]);
                                           },
                                           qrPagePath: Nav.gsCrContentScan.path,
                                           onHistory: () {
-                                            historyList.show(TextVersionType.lessonContent, lesson.lessonKeyId);
+                                            historyList.show(TextVersionType.chapterContent, chapter.chapterKeyId);
                                           },
                                         );
                                       },
@@ -391,30 +391,30 @@ class LessonList<T extends GetxController> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                  if (lesson.missing)
+                                  if (chapter.missing)
                                     IconButton(
                                       onPressed: () {
                                         MsgBox.yesOrNo(
                                           title: I18nKey.labelDelete.tr,
-                                          desc: I18nKey.labelDeleteLesson.tr,
+                                          desc: I18nKey.labelDeleteChapter.tr,
                                           yes: () {
                                             showTransparentOverlay(() async {
-                                              var ok = await Db().db.lessonKeyDao.deleteAbnormalLesson(lesson.lessonKeyId);
+                                              var ok = await Db().db.chapterKeyDao.deleteAbnormalChapter(chapter.chapterKeyId);
                                               if (ok == false) {
                                                 return;
                                               }
-                                              LessonHelp.deleteCache(lesson.lessonKeyId);
-                                              lessonShow.removeWhere((element) => element.lessonKeyId == lesson.lessonKeyId);
+                                              ChapterHelp.deleteCache(chapter.chapterKeyId);
+                                              chapterShow.removeWhere((element) => element.chapterKeyId == chapter.chapterKeyId);
 
-                                              var contentId2Missing = refreshMissingLessonIndex(missingLessonIndex, lessonShow);
-                                              var warning = contentId2Missing[lesson.contentId] ?? false;
+                                              var contentId2Missing = refreshMissingChapterIndex(missingChapterIndex, chapterShow);
+                                              var warning = contentId2Missing[chapter.contentId] ?? false;
                                               if (warning == false) {
-                                                await Db().db.contentDao.updateContentWarningForLesson(lesson.contentId, warning, DateTime.now().millisecondsSinceEpoch);
+                                                await Db().db.contentDao.updateContentWarningForChapter(chapter.contentId, warning, DateTime.now().millisecondsSinceEpoch);
                                                 if (removeWarning != null) {
                                                   await removeWarning();
                                                 }
                                               }
-                                              parentLogic.update([LessonList.findUnnecessaryLessonsId, LessonList.bodyId]);
+                                              parentLogic.update([ChapterList.findUnnecessaryChaptersId, ChapterList.bodyId]);
                                               Get.back();
                                             });
                                           },
@@ -432,7 +432,7 @@ class LessonList<T extends GetxController> {
                                           MsgBox.yesOrNo(
                                             title: I18nKey.labelWarning.tr,
                                             desc: I18nKey.labelDeleteVerse.tr,
-                                            yes: () => delete(lesson: lesson),
+                                            yes: () => delete(chapter: chapter),
                                           );
                                         },
                                         child: Text(I18nKey.btnDelete.tr),
@@ -451,11 +451,11 @@ class LessonList<T extends GetxController> {
                                                 ),
                                                 MsgBox.button(
                                                   text: I18nKey.btnAbove.tr,
-                                                  onPressed: () => copy(lesson: lesson, below: false),
+                                                  onPressed: () => copy(chapter: chapter, below: false),
                                                 ),
                                                 MsgBox.button(
                                                   text: I18nKey.btnBelow.tr,
-                                                  onPressed: () => copy(lesson: lesson, below: true),
+                                                  onPressed: () => copy(chapter: chapter, below: true),
                                                 ),
                                               ]));
                                         },
@@ -477,7 +477,7 @@ class LessonList<T extends GetxController> {
           ],
         ),
         GetBuilder<T>(
-            id: LessonList.detailSearchId,
+            id: ChapterList.detailSearchId,
             builder: (_) {
               if (showSearchDetailPanel) {
                 double searchViewHeight = 4 * (RowWidget.rowHeight + RowWidget.dividerHeight);
@@ -513,11 +513,11 @@ class LessonList<T extends GetxController> {
                             ),
                             RowWidget.buildDividerWithoutColor(),
                             RowWidget.buildCupertinoPicker(
-                              I18nKey.labelLesson.tr,
-                              lessonOptions,
-                              lessonIndexSelect,
+                              I18nKey.labelChapter.tr,
+                              chapterOptions,
+                              chapterIndexSelect,
                               changed: (index) {
-                                lessonIndexSelect.value = index;
+                                chapterIndexSelect.value = index;
                               },
                             ),
                             RowWidget.buildDividerWithoutColor(),
@@ -528,8 +528,8 @@ class LessonList<T extends GetxController> {
                               changed: (index) {
                                 selectedSortIndex.value = index;
                                 I18nKey key = sortOptionKeys[index];
-                                sort(lessonShow, key);
-                                parentLogic.update([LessonList.bodyId]);
+                                sort(chapterShow, key);
+                                parentLogic.update([ChapterList.bodyId]);
                               },
                               pickWidth: 210.w,
                             ),
@@ -552,61 +552,61 @@ class LessonList<T extends GetxController> {
     });
   }
 
-  static Map<int, bool> refreshMissingLessonIndex(
-    List<int> missingLessonIndex,
-    List<LessonShow> lessonShow,
+  static Map<int, bool> refreshMissingChapterIndex(
+    List<int> missingChapterIndex,
+    List<ChapterShow> chapterShow,
   ) {
-    missingLessonIndex.clear();
+    missingChapterIndex.clear();
 
     Map<int, bool> contentId2Missing = {};
-    for (int i = 0; i < lessonShow.length; i++) {
-      var v = lessonShow[i];
+    for (int i = 0; i < chapterShow.length; i++) {
+      var v = chapterShow[i];
       if (v.missing) {
         contentId2Missing[v.contentId] = true;
-        missingLessonIndex.add(i);
+        missingChapterIndex.add(i);
       }
     }
     return contentId2Missing;
   }
 
-  static void collectDataFromLessons(
-    List<int> missingLessonIndex,
+  static void collectDataFromChapters(
+    List<int> missingChapterIndex,
     List<String> contentName,
-    List<int> lessonIndex,
-    List<LessonShow> lessonShow,
+    List<int> chapterIndex,
+    List<ChapterShow> chapterShow,
   ) {
-    for (int i = 0; i < lessonShow.length; i++) {
-      var v = lessonShow[i];
+    for (int i = 0; i < chapterShow.length; i++) {
+      var v = chapterShow[i];
       if (v.missing) {
-        missingLessonIndex.add(i);
+        missingChapterIndex.add(i);
       }
       if (!contentName.contains(v.contentName)) {
         contentName.add(v.contentName);
       }
-      if (!lessonIndex.contains(v.lessonIndex)) {
-        lessonIndex.add(v.lessonIndex);
+      if (!chapterIndex.contains(v.chapterIndex)) {
+        chapterIndex.add(v.chapterIndex);
       }
     }
-    lessonIndex.sort();
+    chapterIndex.sort();
     contentName.insert(0, I18nKey.labelAll.tr);
-    lessonIndex.insert(0, -1);
+    chapterIndex.insert(0, -1);
   }
 
-  static sort(List<LessonShow> lessonShow, I18nKey key) {
+  static sort(List<ChapterShow> chapterShow, I18nKey key) {
     switch (key) {
       case I18nKey.labelSortPositionAsc:
-        lessonShow.sort((a, b) => a.toSort().compareTo(b.toSort()));
+        chapterShow.sort((a, b) => a.toSort().compareTo(b.toSort()));
         break;
       case I18nKey.labelSortPositionDesc:
-        lessonShow.sort((a, b) => b.toSort().compareTo(a.toSort()));
+        chapterShow.sort((a, b) => b.toSort().compareTo(a.toSort()));
         break;
       default:
         break;
     }
   }
 
-  static double getBodyViewHeight(List<int> missingLessonIndex, double baseBodyViewHeight) {
-    if (missingLessonIndex.isNotEmpty) {
+  static double getBodyViewHeight(List<int> missingChapterIndex, double baseBodyViewHeight) {
+    if (missingChapterIndex.isNotEmpty) {
       return baseBodyViewHeight - RowWidget.rowHeight - RowWidget.dividerHeight;
     } else {
       return baseBodyViewHeight;

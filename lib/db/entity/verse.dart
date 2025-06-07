@@ -6,7 +6,7 @@ import 'package:floor/floor.dart';
   primaryKeys: ['verseKeyId'],
   indices: [
     Index(value: ['classroomId', 'sort'], unique: true),
-    Index(value: ['classroomId', 'contentSerial', 'lessonIndex', 'verseIndex'], unique: true),
+    Index(value: ['classroomId', 'contentSerial', 'chapterIndex', 'verseIndex'], unique: true),
   ],
 )
 class Verse {
@@ -14,7 +14,7 @@ class Verse {
 
   final int classroomId;
   final int contentSerial;
-  int lessonIndex;
+  int chapterIndex;
   int verseIndex;
 
   int sort;
@@ -23,12 +23,12 @@ class Verse {
     required this.verseKeyId,
     required this.classroomId,
     required this.contentSerial,
-    required this.lessonIndex,
+    required this.chapterIndex,
     required this.verseIndex,
     required this.sort,
   });
 
   String toStringKey() {
-    return '$classroomId|$contentSerial|$lessonIndex|$verseIndex';
+    return '$classroomId|$contentSerial|$chapterIndex|$verseIndex';
   }
 }

@@ -314,7 +314,7 @@ class GsCrPage extends StatelessWidget {
                             child: Row(
                               children: [
                                 cupertinoItem(['', I18nKey.content.tr], logic.selectContent, null, select: logic.state.forAdd.contentNames),
-                                cupertinoItem([I18nKey.labelFrom.tr, I18nKey.labelLesson.tr], logic.selectLesson, logic.initLesson, count: logic.state.forAdd.maxLesson),
+                                cupertinoItem([I18nKey.labelFrom.tr, I18nKey.labelChapter.tr], logic.selectChapter, logic.initChapter, count: logic.state.forAdd.maxChapter),
                                 cupertinoItem(['', I18nKey.labelVerse.tr], logic.selectVerse, logic.initVerse, count: logic.state.forAdd.maxVerse),
                               ],
                             ),

@@ -41,7 +41,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelAddContent, "Add content");
     put(I18nKey.labelDeleteContent, "Please confirm to delete content: %s");
     put(I18nKey.labelDeleteVerse, "Please confirm to delete the verse");
-    put(I18nKey.labelDeleteLesson, "Please confirm to delete the lesson");
+    put(I18nKey.labelDeleteChapter, "Please confirm to delete the chapter");
     put(I18nKey.labelDownloadContent, "Download content");
     put(I18nKey.labelScheduleContent, "Add learning task with %s verses.");
     put(I18nKey.labelNoLearningContent, "There is no learning content available.");
@@ -108,7 +108,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelElConfig1111, "Randomly organize Level from %s to %s, quantity is %s (%s per group)");
     put(I18nKey.labelRelConfig0, "The %sth review covers the content from %s days ago, starting from %s. (unlimited per group)");
     put(I18nKey.labelRelConfig1, "The %sth review covers the content from %s days ago, starting from %s. (%s per group)");
-    put(I18nKey.labelFullCustomConfig, "Start from verse @1, lesson @2 of the content @0, and plan @3 verse (unlimited per group).");
+    put(I18nKey.labelFullCustomConfig, "Start from verse @1, chapter @2 of the content @0, and plan @3 verse (unlimited per group).");
     put(I18nKey.labelElRandom, "Random");
     put(I18nKey.labelElToLevel, "End Level");
     put(I18nKey.labelElLevel, "Start Level");
@@ -149,8 +149,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelInputPathError, "The inputting path is error");
     put(I18nKey.labelScheduleCount, "Count");
     put(I18nKey.labelFrom, "From");
-    put(I18nKey.labelLesson, "Lesson");
-    put(I18nKey.labelLessonName, "Lesson");
+    put(I18nKey.labelChapter, "Chapter");
+    put(I18nKey.labelChapterName, "Chapter");
     put(I18nKey.labelVerse, "Verse");
     put(I18nKey.labelVerseName, "Verse");
     put(I18nKey.labelIgnorePunctuation, "Ignore Punctuation");
@@ -182,7 +182,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelVerseNeedToContainAnswer, "Verse Need To Contain Answer");
     put(I18nKey.labelVerseKeyDuplicated, "Verse Key duplicated: %s");
     put(I18nKey.labelVerseKeyCantBeEmpty, "Verse Key can't be empty");
-    put(I18nKey.labelLessonHasVersesAndCantBeDeleted, "This lesson has verses, the lesson cannot be deleted.");
+    put(I18nKey.labelChapterHasVersesAndCantBeDeleted, "This chapter has verses, the chapter cannot be deleted.");
     put(I18nKey.labelKey, "Key");
     put(I18nKey.labelCreateTime, "Create Time");
     put(I18nKey.labelContent, "Content");
@@ -199,8 +199,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelNotFoundVerse, "not found verse (%s)");
     put(I18nKey.labelSettingLearningProgressWarning, "Setting the learning progress here will not create a learning record");
     put(I18nKey.labelContentsHaveUnnecessaryVerses, "Contents have unnecessary verses");
-    put(I18nKey.labelLessonKeyCantBeEmpty, "Lesson key cannot be empty");
-    put(I18nKey.labelLessonKeyDuplicated, "Lesson key is duplicated");
+    put(I18nKey.labelChapterKeyCantBeEmpty, "Chapter key cannot be empty");
+    put(I18nKey.labelChapterKeyDuplicated, "Chapter key is duplicated");
     put(I18nKey.labelEdit, "Edit");
     put(I18nKey.labelDoYourShareTheNotes, "Do you share your notes?");
     put(I18nKey.labelSharingNotes, "Sharing notes");
@@ -221,7 +221,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelHeight, "Height Ratio (0 = 0%, 1 = 100%)");
     put(I18nKey.labelWarning, "Warning");
     put(I18nKey.labelCopyToWhere, "Should the copy be placed above or below this verse?");
-    put(I18nKey.labelLessonDeleteBlocked, "There are verses under this lesson, so it cannot be deleted.");
+    put(I18nKey.labelChapterDeleteBlocked, "There are verses under this chapter, so it cannot be deleted.");
     put(I18nKey.labelGameRuleSettings, "Game Rule Settings");
     put(I18nKey.labelWordGuessGame, "Word Guess Game");
     put(I18nKey.labelLastCourseCannotBeDeleted, "The last course cannot be deleted, otherwise copying will not be possible.");

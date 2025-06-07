@@ -8,7 +8,7 @@ import 'package:repeat_flutter/common/folder.dart';
 import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/path.dart';
-import 'package:repeat_flutter/db/dao/lesson_key_dao.dart';
+import 'package:repeat_flutter/db/dao/chapter_key_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
@@ -16,7 +16,7 @@ import 'package:repeat_flutter/db/entity/content.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/lesson_help.dart';
+import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/model/repeat_doc.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -45,16 +45,16 @@ class Helper {
   bool edit = false;
   Map<int, Map<String, dynamic>> rootMapCache = {};
 
-  Map<int, Map<String, dynamic>> lessonMapCache = {};
-  Map<int, List<String>> lessonPathCache = {};
+  Map<int, Map<String, dynamic>> chapterMapCache = {};
+  Map<int, List<String>> chapterPathCache = {};
 
   Map<int, Map<String, dynamic>> verseMapCache = {};
 
   Helper() {
-    LessonKeyDao.setLessonShowContent = [];
-    LessonKeyDao.setLessonShowContent.add((int id) {
-      lessonMapCache.remove(id);
-      lessonPathCache.remove(id);
+    ChapterKeyDao.setChapterShowContent = [];
+    ChapterKeyDao.setChapterShowContent.add((int id) {
+      chapterMapCache.remove(id);
+      chapterPathCache.remove(id);
     });
 
     ScheduleDao.setVerseShowContent = [];
@@ -93,15 +93,15 @@ class Helper {
     return verse.verseContent;
   }
 
-  String? getCurrLessonContent() {
+  String? getCurrChapterContent() {
     if (logic.currVerse == null) {
       return null;
     }
-    var lesson = LessonHelp.getCache(logic.currVerse!.lessonKeyId);
-    if (lesson == null) {
+    var chapter = ChapterHelp.getCache(logic.currVerse!.chapterKeyId);
+    if (chapter == null) {
       return null;
     }
-    return lesson.lessonContent;
+    return chapter.chapterContent;
   }
 
   String? getCurrRootContent() {
@@ -132,20 +132,20 @@ class Helper {
     return ret;
   }
 
-  Map<String, dynamic>? getCurrLessonMap() {
+  Map<String, dynamic>? getCurrChapterMap() {
     if (logic.currVerse == null) {
       return null;
     }
-    Map<String, dynamic>? ret = lessonMapCache[logic.currVerse!.lessonKeyId];
-    String? lessonContent = getCurrLessonContent();
-    if (lessonContent == null) {
+    Map<String, dynamic>? ret = chapterMapCache[logic.currVerse!.chapterKeyId];
+    String? chapterContent = getCurrChapterContent();
+    if (chapterContent == null) {
       return null;
     }
-    ret = jsonDecode(lessonContent);
+    ret = jsonDecode(chapterContent);
     if (ret is! Map<String, dynamic>) {
       return null;
     }
-    lessonMapCache[logic.currVerse!.lessonKeyId] = ret;
+    chapterMapCache[logic.currVerse!.chapterKeyId] = ret;
     return ret;
   }
 
@@ -178,16 +178,16 @@ class Helper {
     if (rootContent == null) {
       return null;
     }
-    String? lessonContent = getCurrLessonContent();
-    if (lessonContent == null) {
+    String? chapterContent = getCurrChapterContent();
+    if (chapterContent == null) {
       return null;
     }
 
     var verseJsonMap = getCurrVerseMap();
     var rootJsonMap = jsonDecode(rootContent);
-    var lessonJsonMap = jsonDecode(lessonContent);
-    lessonJsonMap['v'] = [verseJsonMap];
-    rootJsonMap['l'] = [lessonJsonMap];
+    var chapterJsonMap = jsonDecode(chapterContent);
+    chapterJsonMap['v'] = [verseJsonMap];
+    rootJsonMap['c'] = [chapterJsonMap];
     return rootJsonMap;
   }
 
@@ -202,25 +202,25 @@ class Helper {
     return RepeatDoc.fromJson(map);
   }
 
-  List<String>? getLessonPaths() {
+  List<String>? getChapterPaths() {
     if (logic.currVerse == null) {
       return null;
     }
-    List<String>? ret = lessonPathCache[logic.currVerse!.lessonKeyId];
+    List<String>? ret = chapterPathCache[logic.currVerse!.chapterKeyId];
     if (ret != null) {
       return ret;
     }
-    var doc = getCurrLessonMap();
+    var doc = getCurrChapterMap();
     if (doc == null) {
       return null;
     }
-    Lesson lesson = Lesson.fromJson(doc);
-    var downloads = lesson.download ?? [];
+    Chapter chapter = Chapter.fromJson(doc);
+    var downloads = chapter.download ?? [];
     ret = [];
     for (var download in downloads) {
       ret.add(rootPath.joinPath(DocPath.getRelativePath(logic.currVerse!.contentSerial)).joinPath(download.path));
     }
-    lessonPathCache[logic.currVerse!.lessonKeyId] = ret;
+    chapterPathCache[logic.currVerse!.chapterKeyId] = ret;
     return ret;
   }
 
@@ -231,7 +231,7 @@ class Helper {
       ret = m['s'] as String;
     }
     if (ret == null) {
-      m = getCurrLessonMap();
+      m = getCurrChapterMap();
       if (m != null && m['s'] != null) {
         ret = m['s'] as String;
       }
@@ -299,10 +299,10 @@ class Helper {
 
             await Folder.ensureExists(localFolder);
             await File(pickedPath).copy(localFolder.joinPath(download.name));
-            var lessonKeyId = s.lessonKeyId;
-            var m = getCurrLessonMap()!;
+            var chapterKeyId = s.chapterKeyId;
+            var m = getCurrChapterMap()!;
             m['d'] = [download];
-            Db().db.lessonKeyDao.updateLessonContent(lessonKeyId, jsonEncode(m));
+            Db().db.chapterKeyDao.updateChapterContent(chapterKeyId, jsonEncode(m));
             Get.back();
             Get.back();
           } catch (e) {

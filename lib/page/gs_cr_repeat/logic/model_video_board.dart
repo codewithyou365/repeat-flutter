@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/db/dao/lesson_key_dao.dart';
+import 'package:repeat_flutter/db/dao/chapter_key_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
@@ -60,7 +60,7 @@ class VideoBoard {
 }
 
 class VideoBoardHelper {
-  Map<int, List<VideoBoard>> lessonVideoBoardCache = {};
+  Map<int, List<VideoBoard>> chapterVideoBoardCache = {};
   Map<int, List<VideoBoard>> verseVideoBoardCache = {};
   final Helper helper;
   static const String jsonName = "videoBoard";
@@ -72,35 +72,35 @@ class VideoBoardHelper {
     ScheduleDao.setVerseShowContent.add((int id) {
       verseVideoBoardCache.remove(id);
     });
-    LessonKeyDao.setLessonShowContent.add((int id) {
-      lessonVideoBoardCache.remove(id);
+    ChapterKeyDao.setChapterShowContent.add((int id) {
+      chapterVideoBoardCache.remove(id);
     });
   }
 
-  List<VideoBoard>? getCurrLessonVideoBoard() {
+  List<VideoBoard>? getCurrChapterVideoBoard() {
     if (helper.logic.currVerse == null) {
       return null;
     }
 
-    final lessonKeyId = helper.logic.currVerse!.lessonKeyId;
-    List<VideoBoard>? ret = lessonVideoBoardCache[lessonKeyId];
+    final chapterKeyId = helper.logic.currVerse!.chapterKeyId;
+    List<VideoBoard>? ret = chapterVideoBoardCache[chapterKeyId];
     if (ret != null) {
       return ret;
     }
 
-    final lessonMap = helper.getCurrLessonMap();
-    if (lessonMap == null) {
+    final chapterMap = helper.getCurrChapterMap();
+    if (chapterMap == null) {
       return null;
     }
 
-    final List<dynamic>? list = lessonMap[jsonName] as List<dynamic>?;
+    final List<dynamic>? list = chapterMap[jsonName] as List<dynamic>?;
     if (list != null) {
       ret = list.map((e) => VideoBoard.fromJson(Map<String, dynamic>.from(e))).toList();
     } else {
       ret = [];
     }
 
-    lessonVideoBoardCache[lessonKeyId] = ret;
+    chapterVideoBoardCache[chapterKeyId] = ret;
     return ret;
   }
 
@@ -137,9 +137,9 @@ class VideoBoardHelper {
     if (verseList != null && verseList.isNotEmpty) {
       configs = verseList;
     } else {
-      List<VideoBoard>? lessonList = getCurrLessonVideoBoard();
-      if (lessonList != null && lessonList.isNotEmpty) {
-        configs = lessonList;
+      List<VideoBoard>? chapterList = getCurrChapterVideoBoard();
+      if (chapterList != null && chapterList.isNotEmpty) {
+        configs = chapterList;
       }
     }
     return configs;
@@ -336,7 +336,7 @@ class VideoBoardHelper {
                 if (val != null) saveToVerse.value = val;
               },
             ),
-            Text(I18nKey.labelLessonName.tr),
+            Text(I18nKey.labelChapterName.tr),
             Radio<bool>(
               value: true,
               groupValue: saveToVerse.value,
@@ -438,11 +438,11 @@ class VideoBoardHelper {
         await Db().db.scheduleDao.tUpdateVerseContent(verseKeyId, jsonStr);
         verseVideoBoardCache[verseKeyId] = boards.value;
       } else {
-        final lessonKeyId = helper.logic.currVerse!.lessonKeyId;
-        final lessonMap = helper.getCurrLessonMap() ?? {};
-        lessonMap[jsonName] = jsonList;
-        final jsonStr = jsonEncode(lessonMap);
-        await Db().db.lessonKeyDao.updateLessonContent(lessonKeyId, jsonStr);
+        final chapterKeyId = helper.logic.currVerse!.chapterKeyId;
+        final chapterMap = helper.getCurrChapterMap() ?? {};
+        chapterMap[jsonName] = jsonList;
+        final jsonStr = jsonEncode(chapterMap);
+        await Db().db.chapterKeyDao.updateChapterContent(chapterKeyId, jsonStr);
 
         final verseKeyId = helper.logic.currVerse!.verseKeyId;
         final verseMap = helper.getCurrVerseMap() ?? {};
@@ -450,7 +450,7 @@ class VideoBoardHelper {
         final verseJsonStr = jsonEncode(verseMap);
         await Db().db.scheduleDao.tUpdateVerseContent(verseKeyId, verseJsonStr);
         verseVideoBoardCache[verseKeyId] = boards.value;
-        lessonVideoBoardCache[lessonKeyId] = boards.value;
+        chapterVideoBoardCache[chapterKeyId] = boards.value;
       }
       Snackbar.show(I18nKey.labelSaved.tr);
     } catch (e) {
