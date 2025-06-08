@@ -7,16 +7,16 @@ class DocPath {
   static const String content = "c";
   static const String zipRootFile = "__root.json";
 
-  static String getRelativeIndexPath(int contentSerial) {
-    return getRelativePath(contentSerial).joinPath(getIndexFileName());
+  static String getRelativeIndexPath(int bookSerial) {
+    return getRelativePath(bookSerial).joinPath(getIndexFileName());
   }
 
   static String getIndexFileName() {
     return "index.json";
   }
 
-  static String getRelativePath(int contentSerial) {
-    return '${Classroom.curr}'.joinPath('$contentSerial');
+  static String getRelativePath(int bookSerial) {
+    return '${Classroom.curr}'.joinPath('$bookSerial');
   }
 
   static Future<String> getContentPath() async {

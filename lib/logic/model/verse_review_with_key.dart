@@ -12,7 +12,7 @@ class VerseReviewWithKey extends VerseReview {
     super.createDate,
     super.verseKeyId,
     super.classroomId,
-    super.contentSerial,
+    super.bookSerial,
     super.count,
     this.contentName,
     this.chapterIndex,

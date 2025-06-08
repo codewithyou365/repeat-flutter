@@ -200,7 +200,7 @@ class ChapterList<T extends GetxController> {
       await VerseHelp.getVerses(
         force: true,
         query: QueryChapter(
-          contentSerial: chapterKey.contentSerial,
+          bookSerial: chapterKey.bookSerial,
           minChapterIndex: chapterKey.chapterIndex,
         ),
       );
@@ -409,7 +409,7 @@ class ChapterList<T extends GetxController> {
                                               var contentId2Missing = refreshMissingChapterIndex(missingChapterIndex, chapterShow);
                                               var warning = contentId2Missing[chapter.contentId] ?? false;
                                               if (warning == false) {
-                                                await Db().db.contentDao.updateContentWarningForChapter(chapter.contentId, warning, DateTime.now().millisecondsSinceEpoch);
+                                                await Db().db.bookDao.updateBookWarningForChapter(chapter.contentId, warning, DateTime.now().millisecondsSinceEpoch);
                                                 if (removeWarning != null) {
                                                   await removeWarning();
                                                 }
@@ -504,7 +504,7 @@ class ChapterList<T extends GetxController> {
                         child: ListView(
                           children: [
                             RowWidget.buildCupertinoPicker(
-                              I18nKey.labelContent.tr,
+                              I18nKey.labelBook.tr,
                               contentNameOptions,
                               contentNameSelect,
                               changed: (index) {

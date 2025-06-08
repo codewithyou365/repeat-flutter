@@ -242,7 +242,7 @@ class VerseList<T extends GetxController> {
         originalVerseShow = await VerseHelp.getVerses(
           force: true,
           query: QueryChapter(
-            contentSerial: verse.contentSerial,
+            bookSerial: verse.bookSerial,
             chapterIndex: verse.chapterIndex,
           ),
         );
@@ -266,7 +266,7 @@ class VerseList<T extends GetxController> {
         originalVerseShow = await VerseHelp.getVerses(
           force: true,
           query: QueryChapter(
-            contentSerial: verse.contentSerial,
+            bookSerial: verse.bookSerial,
             chapterIndex: verse.chapterIndex,
           ),
         );
@@ -384,7 +384,7 @@ class VerseList<T extends GetxController> {
                                       ),
                                       child: GestureDetector(
                                         onTap: () async {
-                                          var chapter = await Db().db.chapterDao.one(Classroom.curr, verse.contentSerial, verse.chapterIndex);
+                                          var chapter = await Db().db.chapterDao.one(Classroom.curr, verse.bookSerial, verse.chapterIndex);
                                           if (chapter != null) {
                                             chapterList.show(
                                               initContentNameSelect: initContentNameSelect,
@@ -535,7 +535,7 @@ class VerseList<T extends GetxController> {
                                               var contentId2Missing = refreshMissingVerseIndex(missingVerseIndex, verseShow);
                                               var warning = contentId2Missing[verse.contentId] ?? false;
                                               if (warning == false) {
-                                                await Db().db.contentDao.updateContentWarningForVerse(verse.contentId, warning, DateTime.now().millisecondsSinceEpoch);
+                                                await Db().db.bookDao.updateBookWarningForVerse(verse.contentId, warning, DateTime.now().millisecondsSinceEpoch);
                                                 if (removeWarning != null) {
                                                   await removeWarning();
                                                 }
@@ -630,7 +630,7 @@ class VerseList<T extends GetxController> {
                         child: ListView(
                           children: [
                             RowWidget.buildCupertinoPicker(
-                              I18nKey.labelContent.tr,
+                              I18nKey.labelBook.tr,
                               contentNameOptions,
                               contentNameSelect,
                               changed: (index) {

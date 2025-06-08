@@ -9,7 +9,7 @@ class VerseContentInDb extends Verse {
   VerseContentInDb({
     required super.verseKeyId,
     required super.classroomId,
-    required super.contentSerial,
+    required super.bookSerial,
     required super.chapterIndex,
     required super.verseIndex,
     required super.sort,
@@ -34,7 +34,7 @@ class VerseContent extends VerseContentInDb {
   VerseContent({
     required super.verseKeyId,
     required super.classroomId,
-    required super.contentSerial,
+    required super.bookSerial,
     required super.chapterIndex,
     required super.verseIndex,
     required super.sort,
@@ -45,7 +45,7 @@ class VerseContent extends VerseContentInDb {
     return VerseContent(
       verseKeyId: 0,
       classroomId: 0,
-      contentSerial: 0,
+      bookSerial: 0,
       chapterIndex: 0,
       verseIndex: 0,
       sort: 0,
@@ -57,7 +57,7 @@ class VerseContent extends VerseContentInDb {
     return VerseContent(
       verseKeyId: d.verseKeyId,
       classroomId: d.classroomId,
-      contentSerial: d.contentSerial,
+      bookSerial: d.bookSerial,
       chapterIndex: d.chapterIndex,
       verseIndex: d.verseIndex,
       sort: d.sort,

@@ -11,7 +11,7 @@ class VerseOverallPrgWithKey extends VerseOverallPrg {
   VerseOverallPrgWithKey(
     super.verseKeyId,
     super.classroomId,
-    super.contentSerial,
+    super.bookSerial,
     super.next,
     super.progress,
     this.contentName,

@@ -7,7 +7,7 @@ import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/zip.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/content.dart';
+import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
@@ -24,13 +24,13 @@ import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import '../../logic/doc_help.dart' show DocHelp;
-import 'gs_cr_content_state.dart';
+import 'sc_cr_material_state.dart';
 
-class GsCrContentLogic extends GetxController {
+class ScCrMaterialLogic extends GetxController {
   static const String id = "GsCrContentLogic";
-  final GsCrContentState state = GsCrContentState();
-  late ChapterList chapterList = ChapterList<GsCrContentLogic>(this);
-  late VerseList verseList = VerseList<GsCrContentLogic>(this);
+  final ScCrMaterialState state = ScCrMaterialState();
+  late ChapterList chapterList = ChapterList<ScCrMaterialLogic>(this);
+  late VerseList verseList = VerseList<ScCrMaterialLogic>(this);
   static RegExp reg = RegExp(r'^[0-9A-Z]+$');
 
   @override
@@ -41,26 +41,26 @@ class GsCrContentLogic extends GetxController {
 
   init() async {
     state.list.clear();
-    state.list.addAll(await Db().db.contentDao.getAllContent(Classroom.curr));
-    update([GsCrContentLogic.id]);
+    state.list.addAll(await Db().db.bookDao.getAll(Classroom.curr));
+    update([ScCrMaterialLogic.id]);
   }
 
   resetDoc(int contentId) async {
-    await Db().db.contentDao.updateDocId(contentId, 0);
+    await Db().db.bookDao.updateDocId(contentId, 0);
     await init();
   }
 
-  delete(int contentId, int contentSerial) async {
+  delete(int contentId, int bookSerial) async {
     showOverlay(() async {
       state.list.removeWhere((element) => identical(element.id, contentId));
-      await Db().db.scheduleDao.hideContentAndDeleteVerse(contentId, contentSerial);
+      await Db().db.scheduleDao.hideContentAndDeleteVerse(contentId, bookSerial);
       Get.find<GsCrLogic>().init();
-      update([GsCrContentLogic.id]);
+      update([ScCrMaterialLogic.id]);
     }, I18nKey.labelDeleting.tr);
   }
 
   showContent(int contentId) async {
-    var content = await Db().db.contentDao.getById(contentId);
+    var content = await Db().db.bookDao.getById(contentId);
     if (content == null) {
       Snackbar.show(I18nKey.labelNoContent.tr);
       return;
@@ -76,7 +76,7 @@ class GsCrContentLogic extends GetxController {
   }
 
   showChapter(int contentId) async {
-    var content = await Db().db.contentDao.getById(contentId);
+    var content = await Db().db.bookDao.getById(contentId);
     if (content == null) {
       Snackbar.show(I18nKey.labelNoContent.tr);
       return;
@@ -90,7 +90,7 @@ class GsCrContentLogic extends GetxController {
   }
 
   showVerse(int contentId) async {
-    var content = await Db().db.contentDao.getById(contentId);
+    var content = await Db().db.bookDao.getById(contentId);
     if (content == null) {
       Snackbar.show(I18nKey.labelNoContent.tr);
       return;
@@ -103,7 +103,7 @@ class GsCrContentLogic extends GetxController {
     );
   }
 
-  addByZip(int contentId, int contentSerial) async {
+  addByZip(int contentId, int bookSerial) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['zip'],
@@ -117,7 +117,7 @@ class GsCrContentLogic extends GetxController {
     }
     showOverlay(() async {
       var rootPath = await DocPath.getContentPath();
-      var zipTargetPath = rootPath.joinPath(DocPath.getRelativePath(contentSerial));
+      var zipTargetPath = rootPath.joinPath(DocPath.getRelativePath(bookSerial));
       await Zip.uncompress(File(path), zipTargetPath);
       ZipRootDoc? zipRoot = await ZipRootDoc.fromPath(zipTargetPath.joinPath(DocPath.zipRootFile));
       if (zipRoot == null) {
@@ -125,7 +125,7 @@ class GsCrContentLogic extends GetxController {
         return;
       }
 
-      var kv = await DocHelp.fromPath(DocPath.getRelativeIndexPath(contentSerial));
+      var kv = await DocHelp.fromPath(DocPath.getRelativeIndexPath(bookSerial));
       if (kv == null) {
         Snackbar.show(I18nKey.labelDataAnomalyWithArg.trArgs(['88']));
         return;
@@ -134,14 +134,14 @@ class GsCrContentLogic extends GetxController {
       // for media document
       for (var i = 0; i < allDownloads.length; i++) {
         var v = allDownloads[i];
-        var relativeMediaPath = DocPath.getRelativePath(contentSerial).joinPath(v.path);
+        var relativeMediaPath = DocPath.getRelativePath(bookSerial).joinPath(v.path);
         var url = v.url;
         String hash = v.hash;
         await Db().db.docDao.insertDoc(Doc(url, relativeMediaPath, hash));
       }
 
       // for repeat document
-      var indexPath = DocPath.getRelativeIndexPath(contentSerial);
+      var indexPath = DocPath.getRelativeIndexPath(bookSerial);
       var targetRepeatDocPath = rootPath.joinPath(indexPath);
       String hash = await Hash.toSha1(targetRepeatDocPath);
       await Db().db.docDao.insertDoc(Doc(zipRoot.url, indexPath, hash));
@@ -157,25 +157,25 @@ class GsCrContentLogic extends GetxController {
   add(String name) async {
     if (name.isEmpty) {
       Get.back();
-      Snackbar.show(I18nKey.labelContentNameEmpty.tr);
+      Snackbar.show(I18nKey.labelBookNameEmpty.tr);
       return;
     }
     if (name.length > 3 || !reg.hasMatch(name)) {
       Get.back();
-      Snackbar.show(I18nKey.labelContentNameError.tr);
+      Snackbar.show(I18nKey.labelBookNameError.tr);
       return;
     }
     if (state.list.any((e) => e.name == name)) {
       Get.back();
-      Snackbar.show(I18nKey.labelContentNameDuplicated.tr);
+      Snackbar.show(I18nKey.labelBookNameDuplicated.tr);
       return;
     }
-    await Db().db.contentDao.add(name);
+    await Db().db.bookDao.add(name);
     await init();
     Get.back();
   }
 
-  share(Content model) async {
+  share(Book model) async {
     showTransparentOverlay(() async {
       var doc = await Db().db.docDao.getById(model.docId);
       if (doc == null) {
@@ -187,8 +187,8 @@ class GsCrContentLogic extends GetxController {
     });
   }
 
-  Future<int> getUnitCount(int contentSerial) async {
-    RepeatDoc? kv = await DocHelp.fromPath(DocPath.getRelativeIndexPath(contentSerial));
+  Future<int> getUnitCount(int bookSerial) async {
+    RepeatDoc? kv = await DocHelp.fromPath(DocPath.getRelativeIndexPath(bookSerial));
     if (kv == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return 0;
@@ -220,10 +220,10 @@ class GsCrContentLogic extends GetxController {
     }
   }
 
-  download(int contentId, int contentSerial, String url) async {
+  download(int contentId, int bookSerial, String url) async {
     state.indexCount.value = 0;
     state.indexTotal.value = 1;
-    var indexPath = DocPath.getRelativeIndexPath(contentSerial);
+    var indexPath = DocPath.getRelativeIndexPath(bookSerial);
     var success = await downloadDoc(
       url,
       indexPath,
@@ -244,7 +244,7 @@ class GsCrContentLogic extends GetxController {
       var v = allDownloads[i];
       await downloadDoc(
         v.url,
-        DocPath.getRelativePath(contentSerial).joinPath(v.path),
+        DocPath.getRelativePath(bookSerial).joinPath(v.path),
         hash: v.hash,
         progressCallback: downloadProgress,
       );

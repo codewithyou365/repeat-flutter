@@ -90,7 +90,7 @@ class _$AppDatabase extends AppDatabase {
 
   TextVersionDao? _textVersionDaoInstance;
 
-  ContentDao? _contentDaoInstance;
+  BookDao? _bookDaoInstance;
 
   CrKvDao? _crKvDaoInstance;
 
@@ -128,45 +128,45 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Kv` (`k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`k`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Chapter` (`chapterKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, PRIMARY KEY (`chapterKeyId`))');
+            'CREATE TABLE IF NOT EXISTS `Chapter` (`chapterKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookSerial` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, PRIMARY KEY (`chapterKeyId`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `ChapterKey` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, `version` INTEGER NOT NULL, `content` TEXT NOT NULL, `contentVersion` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `ChapterKey` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `bookSerial` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, `version` INTEGER NOT NULL, `content` TEXT NOT NULL, `contentVersion` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Doc` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `url` TEXT NOT NULL, `path` TEXT NOT NULL, `count` INTEGER NOT NULL, `total` INTEGER NOT NULL, `msg` TEXT NOT NULL, `hash` TEXT NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Classroom` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Content` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `serial` INTEGER NOT NULL, `name` TEXT NOT NULL, `desc` TEXT NOT NULL, `docId` INTEGER NOT NULL, `url` TEXT NOT NULL, `content` TEXT NOT NULL, `contentVersion` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, `chapterWarning` INTEGER NOT NULL, `verseWarning` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `updateTime` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `Book` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `serial` INTEGER NOT NULL, `name` TEXT NOT NULL, `desc` TEXT NOT NULL, `docId` INTEGER NOT NULL, `url` TEXT NOT NULL, `content` TEXT NOT NULL, `contentVersion` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, `chapterWarning` INTEGER NOT NULL, `verseWarning` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `updateTime` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `CrKv` (`classroomId` INTEGER NOT NULL, `k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`classroomId`, `k`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Verse` (`verseKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, `verseIndex` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`verseKeyId`))');
+            'CREATE TABLE IF NOT EXISTS `Verse` (`verseKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookSerial` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, `verseIndex` INTEGER NOT NULL, `sort` INTEGER NOT NULL, PRIMARY KEY (`verseKeyId`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `VerseKey` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, `verseIndex` INTEGER NOT NULL, `version` INTEGER NOT NULL, `k` TEXT NOT NULL, `content` TEXT NOT NULL, `contentVersion` INTEGER NOT NULL, `note` TEXT NOT NULL, `noteVersion` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `VerseKey` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `bookSerial` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, `verseIndex` INTEGER NOT NULL, `version` INTEGER NOT NULL, `k` TEXT NOT NULL, `content` TEXT NOT NULL, `contentVersion` INTEGER NOT NULL, `note` TEXT NOT NULL, `noteVersion` INTEGER NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `VerseOverallPrg` (`verseKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `next` INTEGER NOT NULL, `progress` INTEGER NOT NULL, PRIMARY KEY (`verseKeyId`))');
+            'CREATE TABLE IF NOT EXISTS `VerseOverallPrg` (`verseKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookSerial` INTEGER NOT NULL, `next` INTEGER NOT NULL, `progress` INTEGER NOT NULL, PRIMARY KEY (`verseKeyId`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `VerseReview` (`createDate` INTEGER NOT NULL, `verseKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY (`createDate`, `verseKeyId`))');
+            'CREATE TABLE IF NOT EXISTS `VerseReview` (`createDate` INTEGER NOT NULL, `verseKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookSerial` INTEGER NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY (`createDate`, `verseKeyId`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `VerseTodayPrg` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `chapterKeyId` INTEGER NOT NULL, `verseKeyId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `type` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `reviewCount` INTEGER NOT NULL, `reviewCreateDate` INTEGER NOT NULL, `finish` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `VerseTodayPrg` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `bookSerial` INTEGER NOT NULL, `chapterKeyId` INTEGER NOT NULL, `verseKeyId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `type` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `reviewCount` INTEGER NOT NULL, `reviewCreateDate` INTEGER NOT NULL, `finish` INTEGER NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `VerseStats` (`verseKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, PRIMARY KEY (`verseKeyId`, `type`, `createDate`))');
+            'CREATE TABLE IF NOT EXISTS `VerseStats` (`verseKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookSerial` INTEGER NOT NULL, PRIMARY KEY (`verseKeyId`, `type`, `createDate`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `TextVersion` (`t` INTEGER NOT NULL, `id` INTEGER NOT NULL, `version` INTEGER NOT NULL, `reason` INTEGER NOT NULL, `text` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`t`, `id`, `version`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER NOT NULL, `time` INTEGER NOT NULL, `verseContent` TEXT NOT NULL, `verseKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, `verseIndex` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER NOT NULL, `time` INTEGER NOT NULL, `verseContent` TEXT NOT NULL, `verseKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookSerial` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, `verseIndex` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `GameUser` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `password` TEXT NOT NULL, `nonce` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `token` TEXT NOT NULL, `tokenExpiredDate` INTEGER NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `GameUserInput` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `gameId` INTEGER NOT NULL, `gameUserId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `verseKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `contentSerial` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, `verseIndex` INTEGER NOT NULL, `input` TEXT NOT NULL, `output` TEXT NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `GameUserInput` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `gameId` INTEGER NOT NULL, `gameUserId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `verseKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookSerial` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, `verseIndex` INTEGER NOT NULL, `input` TEXT NOT NULL, `output` TEXT NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Lock` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_Chapter_classroomId_contentSerial_chapterIndex` ON `Chapter` (`classroomId`, `contentSerial`, `chapterIndex`)');
+            'CREATE UNIQUE INDEX `index_Chapter_classroomId_bookSerial_chapterIndex` ON `Chapter` (`classroomId`, `bookSerial`, `chapterIndex`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_ChapterKey_classroomId_contentSerial_chapterIndex_version` ON `ChapterKey` (`classroomId`, `contentSerial`, `chapterIndex`, `version`)');
+            'CREATE UNIQUE INDEX `index_ChapterKey_classroomId_bookSerial_chapterIndex_version` ON `ChapterKey` (`classroomId`, `bookSerial`, `chapterIndex`, `version`)');
         await database
             .execute('CREATE UNIQUE INDEX `index_Doc_path` ON `Doc` (`path`)');
         await database.execute(
@@ -174,29 +174,29 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE UNIQUE INDEX `index_Classroom_sort` ON `Classroom` (`sort`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_Content_classroomId_name` ON `Content` (`classroomId`, `name`)');
+            'CREATE UNIQUE INDEX `index_Book_classroomId_name` ON `Book` (`classroomId`, `name`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_Content_classroomId_serial` ON `Content` (`classroomId`, `serial`)');
+            'CREATE UNIQUE INDEX `index_Book_classroomId_serial` ON `Book` (`classroomId`, `serial`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_Content_classroomId_sort` ON `Content` (`classroomId`, `sort`)');
+            'CREATE UNIQUE INDEX `index_Book_classroomId_sort` ON `Book` (`classroomId`, `sort`)');
         await database.execute(
-            'CREATE INDEX `index_Content_classroomId_updateTime` ON `Content` (`classroomId`, `updateTime`)');
+            'CREATE INDEX `index_Book_classroomId_updateTime` ON `Book` (`classroomId`, `updateTime`)');
         await database.execute(
-            'CREATE INDEX `index_Content_sort_id` ON `Content` (`sort`, `id`)');
+            'CREATE INDEX `index_Book_sort_id` ON `Book` (`sort`, `id`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_Verse_classroomId_sort` ON `Verse` (`classroomId`, `sort`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_Verse_classroomId_contentSerial_chapterIndex_verseIndex` ON `Verse` (`classroomId`, `contentSerial`, `chapterIndex`, `verseIndex`)');
+            'CREATE UNIQUE INDEX `index_Verse_classroomId_bookSerial_chapterIndex_verseIndex` ON `Verse` (`classroomId`, `bookSerial`, `chapterIndex`, `verseIndex`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_VerseKey_classroomId_contentSerial_chapterIndex_verseIndex_version` ON `VerseKey` (`classroomId`, `contentSerial`, `chapterIndex`, `verseIndex`, `version`)');
+            'CREATE UNIQUE INDEX `index_VerseKey_classroomId_bookSerial_chapterIndex_verseIndex_version` ON `VerseKey` (`classroomId`, `bookSerial`, `chapterIndex`, `verseIndex`, `version`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_VerseKey_classroomId_contentSerial_k` ON `VerseKey` (`classroomId`, `contentSerial`, `k`)');
+            'CREATE UNIQUE INDEX `index_VerseKey_classroomId_bookSerial_k` ON `VerseKey` (`classroomId`, `bookSerial`, `k`)');
         await database.execute(
             'CREATE INDEX `index_VerseOverallPrg_classroomId_next_progress` ON `VerseOverallPrg` (`classroomId`, `next`, `progress`)');
         await database.execute(
-            'CREATE INDEX `index_VerseOverallPrg_classroomId_contentSerial` ON `VerseOverallPrg` (`classroomId`, `contentSerial`)');
+            'CREATE INDEX `index_VerseOverallPrg_classroomId_bookSerial` ON `VerseOverallPrg` (`classroomId`, `bookSerial`)');
         await database.execute(
-            'CREATE INDEX `index_VerseReview_classroomId_contentSerial` ON `VerseReview` (`classroomId`, `contentSerial`)');
+            'CREATE INDEX `index_VerseReview_classroomId_bookSerial` ON `VerseReview` (`classroomId`, `bookSerial`)');
         await database.execute(
             'CREATE INDEX `index_VerseReview_classroomId_createDate` ON `VerseReview` (`classroomId`, `createDate`)');
         await database.execute(
@@ -204,15 +204,15 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE INDEX `index_VerseTodayPrg_classroomId_sort` ON `VerseTodayPrg` (`classroomId`, `sort`)');
         await database.execute(
-            'CREATE INDEX `index_VerseTodayPrg_classroomId_contentSerial` ON `VerseTodayPrg` (`classroomId`, `contentSerial`)');
+            'CREATE INDEX `index_VerseTodayPrg_classroomId_bookSerial` ON `VerseTodayPrg` (`classroomId`, `bookSerial`)');
         await database.execute(
-            'CREATE INDEX `index_VerseStats_classroomId_contentSerial` ON `VerseStats` (`classroomId`, `contentSerial`)');
+            'CREATE INDEX `index_VerseStats_classroomId_bookSerial` ON `VerseStats` (`classroomId`, `bookSerial`)');
         await database.execute(
             'CREATE INDEX `index_VerseStats_classroomId_createDate` ON `VerseStats` (`classroomId`, `createDate`)');
         await database.execute(
             'CREATE INDEX `index_VerseStats_classroomId_createTime` ON `VerseStats` (`classroomId`, `createTime`)');
         await database.execute(
-            'CREATE INDEX `index_Game_classroomId_contentSerial_chapterIndex_verseIndex` ON `Game` (`classroomId`, `contentSerial`, `chapterIndex`, `verseIndex`)');
+            'CREATE INDEX `index_Game_classroomId_bookSerial_chapterIndex_verseIndex` ON `Game` (`classroomId`, `bookSerial`, `chapterIndex`, `verseIndex`)');
         await database.execute(
             'CREATE INDEX `index_Game_verseKeyId` ON `Game` (`verseKeyId`)');
         await database.execute(
@@ -222,7 +222,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE UNIQUE INDEX `index_GameUser_token` ON `GameUser` (`token`)');
         await database.execute(
-            'CREATE INDEX `index_GameUserInput_classroomId_contentSerial_chapterIndex_verseIndex` ON `GameUserInput` (`classroomId`, `contentSerial`, `chapterIndex`, `verseIndex`)');
+            'CREATE INDEX `index_GameUserInput_classroomId_bookSerial_chapterIndex_verseIndex` ON `GameUserInput` (`classroomId`, `bookSerial`, `chapterIndex`, `verseIndex`)');
         await database.execute(
             'CREATE INDEX `index_GameUserInput_verseKeyId` ON `GameUserInput` (`verseKeyId`)');
         await database.execute(
@@ -283,8 +283,8 @@ class _$AppDatabase extends AppDatabase {
   }
 
   @override
-  ContentDao get contentDao {
-    return _contentDaoInstance ??= _$ContentDao(database, changeListener);
+  BookDao get bookDao {
+    return _bookDaoInstance ??= _$BookDao(database, changeListener);
   }
 
   @override
@@ -500,7 +500,7 @@ class _$GameDao extends GameDao {
                   'verseContent': item.verseContent,
                   'verseKeyId': item.verseKeyId,
                   'classroomId': item.classroomId,
-                  'contentSerial': item.contentSerial,
+                  'bookSerial': item.bookSerial,
                   'chapterIndex': item.chapterIndex,
                   'verseIndex': item.verseIndex,
                   'finish': item.finish ? 1 : 0,
@@ -517,7 +517,7 @@ class _$GameDao extends GameDao {
                   'time': item.time,
                   'verseKeyId': item.verseKeyId,
                   'classroomId': item.classroomId,
-                  'contentSerial': item.contentSerial,
+                  'bookSerial': item.bookSerial,
                   'chapterIndex': item.chapterIndex,
                   'verseIndex': item.verseIndex,
                   'input': item.input,
@@ -578,7 +578,7 @@ class _$GameDao extends GameDao {
             verseContent: row['verseContent'] as String,
             verseKeyId: row['verseKeyId'] as int,
             classroomId: row['classroomId'] as int,
-            contentSerial: row['contentSerial'] as int,
+            bookSerial: row['bookSerial'] as int,
             chapterIndex: row['chapterIndex'] as int,
             verseIndex: row['verseIndex'] as int,
             finish: (row['finish'] as int) != 0,
@@ -644,7 +644,7 @@ class _$GameDao extends GameDao {
             verseContent: row['verseContent'] as String,
             verseKeyId: row['verseKeyId'] as int,
             classroomId: row['classroomId'] as int,
-            contentSerial: row['contentSerial'] as int,
+            bookSerial: row['bookSerial'] as int,
             chapterIndex: row['chapterIndex'] as int,
             verseIndex: row['verseIndex'] as int,
             finish: (row['finish'] as int) != 0,
@@ -661,7 +661,7 @@ class _$GameDao extends GameDao {
   ) async {
     return _queryAdapter.query(
         'SELECT * FROM GameUserInput WHERE gameId=?1 and gameUserId=?2 and time=?3 order by id desc limit 1',
-        mapper: (Map<String, Object?> row) => GameUserInput(row['gameId'] as int, row['gameUserId'] as int, row['time'] as int, row['verseKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, row['chapterIndex'] as int, row['verseIndex'] as int, row['input'] as String, row['output'] as String, row['createTime'] as int, _dateConverter.decode(row['createDate'] as int), id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => GameUserInput(row['gameId'] as int, row['gameUserId'] as int, row['time'] as int, row['verseKeyId'] as int, row['classroomId'] as int, row['bookSerial'] as int, row['chapterIndex'] as int, row['verseIndex'] as int, row['input'] as String, row['output'] as String, row['createTime'] as int, _dateConverter.decode(row['createDate'] as int), id: row['id'] as int?),
         arguments: [gameId, gameUserId, time]);
   }
 
@@ -673,7 +673,7 @@ class _$GameDao extends GameDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT * FROM GameUserInput WHERE gameId=?1 and gameUserId=?2 and time=?3',
-        mapper: (Map<String, Object?> row) => GameUserInput(row['gameId'] as int, row['gameUserId'] as int, row['time'] as int, row['verseKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, row['chapterIndex'] as int, row['verseIndex'] as int, row['input'] as String, row['output'] as String, row['createTime'] as int, _dateConverter.decode(row['createDate'] as int), id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => GameUserInput(row['gameId'] as int, row['gameUserId'] as int, row['time'] as int, row['verseKeyId'] as int, row['classroomId'] as int, row['bookSerial'] as int, row['chapterIndex'] as int, row['verseIndex'] as int, row['input'] as String, row['output'] as String, row['createTime'] as int, _dateConverter.decode(row['createDate'] as int), id: row['id'] as int?),
         arguments: [gameId, gameUserId, time]);
   }
 
@@ -847,7 +847,7 @@ class _$ChapterDao extends ChapterDao {
             (Chapter item) => <String, Object?>{
                   'chapterKeyId': item.chapterKeyId,
                   'classroomId': item.classroomId,
-                  'contentSerial': item.contentSerial,
+                  'bookSerial': item.bookSerial,
                   'chapterIndex': item.chapterIndex
                 });
 
@@ -862,72 +862,72 @@ class _$ChapterDao extends ChapterDao {
   @override
   Future<List<Chapter>> find(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM Chapter WHERE classroomId=?1 and contentSerial=?2',
+        'SELECT * FROM Chapter WHERE classroomId=?1 and bookSerial=?2',
         mapper: (Map<String, Object?> row) => Chapter(
             chapterKeyId: row['chapterKeyId'] as int,
             classroomId: row['classroomId'] as int,
-            contentSerial: row['contentSerial'] as int,
+            bookSerial: row['bookSerial'] as int,
             chapterIndex: row['chapterIndex'] as int),
-        arguments: [classroomId, contentSerial]);
+        arguments: [classroomId, bookSerial]);
   }
 
   @override
   Future<Chapter?> one(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int chapterIndex,
   ) async {
     return _queryAdapter.query(
-        'SELECT * FROM Chapter WHERE classroomId=?1 and contentSerial=?2 and chapterIndex=?3',
-        mapper: (Map<String, Object?> row) => Chapter(chapterKeyId: row['chapterKeyId'] as int, classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, chapterIndex: row['chapterIndex'] as int),
-        arguments: [classroomId, contentSerial, chapterIndex]);
+        'SELECT * FROM Chapter WHERE classroomId=?1 and bookSerial=?2 and chapterIndex=?3',
+        mapper: (Map<String, Object?> row) => Chapter(chapterKeyId: row['chapterKeyId'] as int, classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, chapterIndex: row['chapterIndex'] as int),
+        arguments: [classroomId, bookSerial, chapterIndex]);
   }
 
   @override
   Future<int?> count(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
   ) async {
     return _queryAdapter.query(
-        'SELECT count(1) FROM Chapter WHERE classroomId=?1 AND contentSerial=?2',
+        'SELECT count(1) FROM Chapter WHERE classroomId=?1 AND bookSerial=?2',
         mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [classroomId, contentSerial]);
+        arguments: [classroomId, bookSerial]);
   }
 
   @override
   Future<List<Chapter>> findByMinChapterIndex(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int minChapterIndex,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM Chapter WHERE classroomId=?1 AND contentSerial=?2 AND chapterIndex>=?3',
-        mapper: (Map<String, Object?> row) => Chapter(chapterKeyId: row['chapterKeyId'] as int, classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, chapterIndex: row['chapterIndex'] as int),
-        arguments: [classroomId, contentSerial, minChapterIndex]);
+        'SELECT * FROM Chapter WHERE classroomId=?1 AND bookSerial=?2 AND chapterIndex>=?3',
+        mapper: (Map<String, Object?> row) => Chapter(chapterKeyId: row['chapterKeyId'] as int, classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, chapterIndex: row['chapterIndex'] as int),
+        arguments: [classroomId, bookSerial, minChapterIndex]);
   }
 
   @override
   Future<void> deleteByMinChapterIndex(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int minChapterIndex,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM Chapter WHERE classroomId=?1 AND contentSerial=?2 AND chapterIndex>=?3',
-        arguments: [classroomId, contentSerial, minChapterIndex]);
+        'DELETE FROM Chapter WHERE classroomId=?1 AND bookSerial=?2 AND chapterIndex>=?3',
+        arguments: [classroomId, bookSerial, minChapterIndex]);
   }
 
   @override
   Future<void> delete(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM Chapter WHERE Chapter.classroomId=?1 and Chapter.contentSerial=?2',
-        arguments: [classroomId, contentSerial]);
+        'DELETE FROM Chapter WHERE Chapter.classroomId=?1 and Chapter.bookSerial=?2',
+        arguments: [classroomId, bookSerial]);
   }
 
   @override
@@ -938,7 +938,8 @@ class _$ChapterDao extends ChapterDao {
 
   @override
   Future<void> insertOrFail(List<Chapter> entities) async {
-    await _chapterInsertionAdapter.insertList(entities, OnConflictStrategy.fail);
+    await _chapterInsertionAdapter.insertList(
+        entities, OnConflictStrategy.fail);
   }
 }
 
@@ -953,7 +954,7 @@ class _$ChapterKeyDao extends ChapterKeyDao {
             (ChapterKey item) => <String, Object?>{
                   'id': item.id,
                   'classroomId': item.classroomId,
-                  'contentSerial': item.contentSerial,
+                  'bookSerial': item.bookSerial,
                   'chapterIndex': item.chapterIndex,
                   'version': item.version,
                   'content': item.content,
@@ -966,7 +967,7 @@ class _$ChapterKeyDao extends ChapterKeyDao {
             (ChapterKey item) => <String, Object?>{
                   'id': item.id,
                   'classroomId': item.classroomId,
-                  'contentSerial': item.contentSerial,
+                  'bookSerial': item.bookSerial,
                   'chapterIndex': item.chapterIndex,
                   'version': item.version,
                   'content': item.content,
@@ -985,11 +986,12 @@ class _$ChapterKeyDao extends ChapterKeyDao {
 
   @override
   Future<ChapterKey?> getById(int id) async {
-    return _queryAdapter.query('SELECT * FROM ChapterKey WHERE ChapterKey.id=?1',
+    return _queryAdapter.query(
+        'SELECT * FROM ChapterKey WHERE ChapterKey.id=?1',
         mapper: (Map<String, Object?> row) => ChapterKey(
             id: row['id'] as int?,
             classroomId: row['classroomId'] as int,
-            contentSerial: row['contentSerial'] as int,
+            bookSerial: row['bookSerial'] as int,
             chapterIndex: row['chapterIndex'] as int,
             version: row['version'] as int,
             content: row['content'] as String,
@@ -1000,20 +1002,20 @@ class _$ChapterKeyDao extends ChapterKeyDao {
   @override
   Future<int?> getChapterKeyId(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int chapterIndex,
     int version,
   ) async {
     return _queryAdapter.query(
-        'SELECT id FROM ChapterKey WHERE classroomId=?1 and contentSerial=?2 and chapterIndex=?3 and version=?4',
+        'SELECT id FROM ChapterKey WHERE classroomId=?1 and bookSerial=?2 and chapterIndex=?3 and version=?4',
         mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [classroomId, contentSerial, chapterIndex, version]);
+        arguments: [classroomId, bookSerial, chapterIndex, version]);
   }
 
   @override
   Future<int?> getMissingCount(int contentId) async {
     return _queryAdapter.query(
-        'SELECT ifnull(sum(Chapter.chapterKeyId is null),0) missingCount FROM ChapterKey JOIN Content ON Content.id=?1 AND Content.serial=VerseKey.contentSerial AND Content.docId!=0 LEFT JOIN Chapter ON Chapter.chapterKeyId=ChapterKey.id',
+        'SELECT ifnull(sum(Chapter.chapterKeyId is null),0) missingCount FROM ChapterKey JOIN Book ON Book.id=?1 AND Book.serial=VerseKey.bookSerial AND Book.docId!=0 LEFT JOIN Chapter ON Chapter.chapterKeyId=ChapterKey.id',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [contentId]);
   }
@@ -1021,7 +1023,7 @@ class _$ChapterKeyDao extends ChapterKeyDao {
   @override
   Future<List<ChapterShow>> getAllChapter(int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT ChapterKey.id chapterKeyId,Content.id contentId,Content.name contentName,Content.sort contentSort,ChapterKey.content chapterContent,ChapterKey.contentVersion chapterContentVersion,ChapterKey.chapterIndex,Chapter.chapterKeyId is null missing FROM ChapterKey JOIN Content ON Content.classroomId=?1 AND Content.serial=ChapterKey.contentSerial AND Content.docId!=0 LEFT JOIN Chapter ON Chapter.chapterKeyId=ChapterKey.id WHERE ChapterKey.classroomId=?1',
+        'SELECT ChapterKey.id chapterKeyId,Book.id contentId,Book.name contentName,Book.sort contentSort,ChapterKey.content chapterContent,ChapterKey.contentVersion chapterContentVersion,ChapterKey.chapterIndex,Chapter.chapterKeyId is null missing FROM ChapterKey JOIN Book ON Book.classroomId=?1 AND Book.serial=ChapterKey.bookSerial AND Book.docId!=0 LEFT JOIN Chapter ON Chapter.chapterKeyId=ChapterKey.id WHERE ChapterKey.classroomId=?1',
         mapper: (Map<String, Object?> row) => ChapterShow(chapterKeyId: row['chapterKeyId'] as int, contentId: row['contentId'] as int, contentName: row['contentName'] as String, contentSort: row['contentSort'] as int, chapterContent: row['chapterContent'] as String, chapterContentVersion: row['chapterContentVersion'] as int, chapterIndex: row['chapterIndex'] as int, missing: (row['missing'] as int) != 0),
         arguments: [classroomId]);
   }
@@ -1029,24 +1031,24 @@ class _$ChapterKeyDao extends ChapterKeyDao {
   @override
   Future<List<ChapterKey>> findByMinChapterIndex(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int minChapterIndex,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM ChapterKey WHERE classroomId=?1 AND contentSerial=?2 AND chapterIndex>=?3',
-        mapper: (Map<String, Object?> row) => ChapterKey(id: row['id'] as int?, classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, chapterIndex: row['chapterIndex'] as int, version: row['version'] as int, content: row['content'] as String, contentVersion: row['contentVersion'] as int),
-        arguments: [classroomId, contentSerial, minChapterIndex]);
+        'SELECT * FROM ChapterKey WHERE classroomId=?1 AND bookSerial=?2 AND chapterIndex>=?3',
+        mapper: (Map<String, Object?> row) => ChapterKey(id: row['id'] as int?, classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, chapterIndex: row['chapterIndex'] as int, version: row['version'] as int, content: row['content'] as String, contentVersion: row['contentVersion'] as int),
+        arguments: [classroomId, bookSerial, minChapterIndex]);
   }
 
   @override
   Future<void> deleteByMinChapterIndex(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int minChapterIndex,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM ChapterKey WHERE classroomId=?1 AND contentSerial=?2 AND chapterIndex>=?3',
-        arguments: [classroomId, contentSerial, minChapterIndex]);
+        'DELETE FROM ChapterKey WHERE classroomId=?1 AND bookSerial=?2 AND chapterIndex>=?3',
+        arguments: [classroomId, bookSerial, minChapterIndex]);
   }
 
   @override
@@ -1063,19 +1065,19 @@ class _$ChapterKeyDao extends ChapterKeyDao {
   @override
   Future<List<ChapterKey>> find(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM ChapterKey WHERE classroomId=?1 and contentSerial=?2',
+        'SELECT * FROM ChapterKey WHERE classroomId=?1 and bookSerial=?2',
         mapper: (Map<String, Object?> row) => ChapterKey(
             id: row['id'] as int?,
             classroomId: row['classroomId'] as int,
-            contentSerial: row['contentSerial'] as int,
+            bookSerial: row['bookSerial'] as int,
             chapterIndex: row['chapterIndex'] as int,
             version: row['version'] as int,
             content: row['content'] as String,
             contentVersion: row['contentVersion'] as int),
-        arguments: [classroomId, contentSerial]);
+        arguments: [classroomId, bookSerial]);
   }
 
   @override
@@ -1092,7 +1094,8 @@ class _$ChapterKeyDao extends ChapterKeyDao {
 
   @override
   Future<void> updateOrFail(List<ChapterKey> entities) async {
-    await _chapterKeyUpdateAdapter.updateList(entities, OnConflictStrategy.fail);
+    await _chapterKeyUpdateAdapter.updateList(
+        entities, OnConflictStrategy.fail);
   }
 
   @override
@@ -1170,16 +1173,16 @@ class _$ChapterKeyDao extends ChapterKeyDao {
   }
 
   @override
-  Future<bool> addFirstChapter(int contentSerial) async {
+  Future<bool> addFirstChapter(int bookSerial) async {
     if (database is sqflite.Transaction) {
-      return super.addFirstChapter(contentSerial);
+      return super.addFirstChapter(bookSerial);
     } else {
       return (database as sqflite.Database)
           .transaction<bool>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        return transactionDatabase.chapterKeyDao.addFirstChapter(contentSerial);
+        return transactionDatabase.chapterKeyDao.addFirstChapter(bookSerial);
       });
     }
   }
@@ -1494,14 +1497,14 @@ class _$TextVersionDao extends TextVersionDao {
   }
 
   @override
-  Future<TextVersion?> getTextForContent(
-    int contentSerial,
+  Future<TextVersion?> getTextForBook(
+    int bookSerial,
     int version,
   ) async {
     return _queryAdapter.query(
         'SELECT TextVersion.*  FROM TextVersion WHERE TextVersion.t=3  AND TextVersion.id=?1  AND TextVersion.version=?2',
         mapper: (Map<String, Object?> row) => TextVersion(t: _verseTextVersionTypeConverter.decode(row['t'] as int), id: row['id'] as int, version: row['version'] as int, reason: _verseTextVersionReasonConverter.decode(row['reason'] as int), text: row['text'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
-        arguments: [contentSerial, version]);
+        arguments: [bookSerial, version]);
   }
 
   @override
@@ -1532,15 +1535,15 @@ class _$TextVersionDao extends TextVersionDao {
   }
 }
 
-class _$ContentDao extends ContentDao {
-  _$ContentDao(
+class _$BookDao extends BookDao {
+  _$BookDao(
     this.database,
     this.changeListener,
   )   : _queryAdapter = QueryAdapter(database),
-        _contentInsertionAdapter = InsertionAdapter(
+        _bookInsertionAdapter = InsertionAdapter(
             database,
-            'Content',
-            (Content item) => <String, Object?>{
+            'Book',
+            (Book item) => <String, Object?>{
                   'id': item.id,
                   'classroomId': item.classroomId,
                   'serial': item.serial,
@@ -1564,44 +1567,59 @@ class _$ContentDao extends ContentDao {
 
   final QueryAdapter _queryAdapter;
 
-  final InsertionAdapter<Content> _contentInsertionAdapter;
+  final InsertionAdapter<Book> _bookInsertionAdapter;
 
   @override
   Future<List<BookShow>> getAllBook(int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT id bookId,name,sort,content bookContent,contentVersion bookContentVersion FROM Content where classroomId=?1 and hide=false and docId!=0 ORDER BY sort',
+        'SELECT id bookId,name,sort,content bookContent,contentVersion bookContentVersion FROM Book where classroomId=?1 and hide=false and docId!=0 ORDER BY sort',
         mapper: (Map<String, Object?> row) => BookShow(bookId: row['bookId'] as int, name: row['name'] as String, sort: row['sort'] as int, bookContent: row['bookContent'] as String, bookContentVersion: row['bookContentVersion'] as int),
         arguments: [classroomId]);
   }
 
   @override
-  Future<List<Content>> getAllContent(int classroomId) async {
+  Future<List<Book>> getAll(int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM Content where classroomId=?1 and hide=false ORDER BY sort',
-        mapper: (Map<String, Object?> row) => Content(id: row['id'] as int?, classroomId: row['classroomId'] as int, serial: row['serial'] as int, name: row['name'] as String, desc: row['desc'] as String, docId: row['docId'] as int, url: row['url'] as String, content: row['content'] as String, contentVersion: row['contentVersion'] as int, sort: row['sort'] as int, hide: (row['hide'] as int) != 0, chapterWarning: (row['chapterWarning'] as int) != 0, verseWarning: (row['verseWarning'] as int) != 0, createTime: row['createTime'] as int, updateTime: row['updateTime'] as int),
+        'SELECT * FROM Book where classroomId=?1 and hide=false ORDER BY sort',
+        mapper: (Map<String, Object?> row) => Book(
+            id: row['id'] as int?,
+            classroomId: row['classroomId'] as int,
+            serial: row['serial'] as int,
+            name: row['name'] as String,
+            desc: row['desc'] as String,
+            docId: row['docId'] as int,
+            url: row['url'] as String,
+            content: row['content'] as String,
+            contentVersion: row['contentVersion'] as int,
+            sort: row['sort'] as int,
+            hide: (row['hide'] as int) != 0,
+            chapterWarning: (row['chapterWarning'] as int) != 0,
+            verseWarning: (row['verseWarning'] as int) != 0,
+            createTime: row['createTime'] as int,
+            updateTime: row['updateTime'] as int),
         arguments: [classroomId]);
   }
 
   @override
   Future<bool?> hasWarning(int classroomId) async {
     return _queryAdapter.query(
-        'SELECT max(verseWarning) FROM Content where classroomId=?1 and docId!=0 and hide=false',
+        'SELECT max(verseWarning) FROM Book where classroomId=?1 and docId!=0 and hide=false',
         mapper: (Map<String, Object?> row) => (row.values.first as int) != 0,
         arguments: [classroomId]);
   }
 
   @override
-  Future<List<Content>> getAllEnableContent(int classroomId) async {
+  Future<List<Book>> getAllEnableBook(int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM Content where classroomId=?1 and docId!=0 and hide=false ORDER BY sort',
-        mapper: (Map<String, Object?> row) => Content(id: row['id'] as int?, classroomId: row['classroomId'] as int, serial: row['serial'] as int, name: row['name'] as String, desc: row['desc'] as String, docId: row['docId'] as int, url: row['url'] as String, content: row['content'] as String, contentVersion: row['contentVersion'] as int, sort: row['sort'] as int, hide: (row['hide'] as int) != 0, chapterWarning: (row['chapterWarning'] as int) != 0, verseWarning: (row['verseWarning'] as int) != 0, createTime: row['createTime'] as int, updateTime: row['updateTime'] as int),
+        'SELECT * FROM Book where classroomId=?1 and docId!=0 and hide=false ORDER BY sort',
+        mapper: (Map<String, Object?> row) => Book(id: row['id'] as int?, classroomId: row['classroomId'] as int, serial: row['serial'] as int, name: row['name'] as String, desc: row['desc'] as String, docId: row['docId'] as int, url: row['url'] as String, content: row['content'] as String, contentVersion: row['contentVersion'] as int, sort: row['sort'] as int, hide: (row['hide'] as int) != 0, chapterWarning: (row['chapterWarning'] as int) != 0, verseWarning: (row['verseWarning'] as int) != 0, createTime: row['createTime'] as int, updateTime: row['updateTime'] as int),
         arguments: [classroomId]);
   }
 
   @override
   Future<int?> getMaxSerial(int classroomId) async {
     return _queryAdapter.query(
-        'SELECT ifnull(max(serial),0) FROM Content WHERE classroomId=?1',
+        'SELECT ifnull(max(serial),0) FROM Book WHERE classroomId=?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId]);
   }
@@ -1612,7 +1630,7 @@ class _$ContentDao extends ContentDao {
     int serial,
   ) async {
     return _queryAdapter.query(
-        'SELECT ifnull(serial,0) FROM Content WHERE classroomId=?1 and serial=?2',
+        'SELECT ifnull(serial,0) FROM Book WHERE classroomId=?1 and serial=?2',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId, serial]);
   }
@@ -1620,7 +1638,7 @@ class _$ContentDao extends ContentDao {
   @override
   Future<int?> getMaxSort(int classroomId) async {
     return _queryAdapter.query(
-        'SELECT ifnull(max(sort),0) FROM Content WHERE classroomId=?1',
+        'SELECT ifnull(max(sort),0) FROM Book WHERE classroomId=?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId]);
   }
@@ -1631,15 +1649,15 @@ class _$ContentDao extends ContentDao {
     int sort,
   ) async {
     return _queryAdapter.query(
-        'SELECT ifnull(sort,0) FROM Content WHERE classroomId=?1 and sort=?2',
+        'SELECT ifnull(sort,0) FROM Book WHERE classroomId=?1 and sort=?2',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId, sort]);
   }
 
   @override
-  Future<Content?> getById(int id) async {
-    return _queryAdapter.query('SELECT * FROM Content WHERE id=?1',
-        mapper: (Map<String, Object?> row) => Content(
+  Future<Book?> getById(int id) async {
+    return _queryAdapter.query('SELECT * FROM Book WHERE id=?1',
+        mapper: (Map<String, Object?> row) => Book(
             id: row['id'] as int?,
             classroomId: row['classroomId'] as int,
             serial: row['serial'] as int,
@@ -1659,13 +1677,13 @@ class _$ContentDao extends ContentDao {
   }
 
   @override
-  Future<Content?> getBySerial(
+  Future<Book?> getBySerial(
     int classroomId,
     int serial,
   ) async {
     return _queryAdapter.query(
-        'SELECT * FROM Content WHERE classroomId=?1 and serial=?2',
-        mapper: (Map<String, Object?> row) => Content(
+        'SELECT * FROM Book WHERE classroomId=?1 and serial=?2',
+        mapper: (Map<String, Object?> row) => Book(
             id: row['id'] as int?,
             classroomId: row['classroomId'] as int,
             serial: row['serial'] as int,
@@ -1685,13 +1703,13 @@ class _$ContentDao extends ContentDao {
   }
 
   @override
-  Future<Content?> getContentByName(
+  Future<Book?> getBookByName(
     int classroomId,
     String name,
   ) async {
     return _queryAdapter.query(
-        'SELECT * FROM Content WHERE classroomId=?1 and name=?2',
-        mapper: (Map<String, Object?> row) => Content(
+        'SELECT * FROM Book WHERE classroomId=?1 and name=?2',
+        mapper: (Map<String, Object?> row) => Book(
             id: row['id'] as int?,
             classroomId: row['classroomId'] as int,
             serial: row['serial'] as int,
@@ -1711,18 +1729,18 @@ class _$ContentDao extends ContentDao {
   }
 
   @override
-  Future<void> updateContentVersion(
+  Future<void> updateBookContentVersion(
     int id,
     String content,
     int contentVersion,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Content set content=?2,contentVersion=?3 WHERE Content.id=?1',
+        'UPDATE Book set content=?2,contentVersion=?3 WHERE Book.id=?1',
         arguments: [id, content, contentVersion]);
   }
 
   @override
-  Future<void> updateContent(
+  Future<void> updateBook(
     int id,
     int docId,
     String url,
@@ -1731,7 +1749,7 @@ class _$ContentDao extends ContentDao {
     int updateTime,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Content set docId=?2,url=?3,chapterWarning=?4,verseWarning=?5,updateTime=?6 WHERE Content.id=?1',
+        'UPDATE Book set docId=?2,url=?3,chapterWarning=?4,verseWarning=?5,updateTime=?6 WHERE Book.id=?1',
         arguments: [
           id,
           docId,
@@ -1743,14 +1761,14 @@ class _$ContentDao extends ContentDao {
   }
 
   @override
-  Future<void> updateContentWarning(
+  Future<void> updateBookWarning(
     int id,
     bool chapterWarning,
     bool verseWarning,
     int updateTime,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Content set chapterWarning=?2,verseWarning=?3,updateTime=?4 WHERE Content.id=?1',
+        'UPDATE Book set chapterWarning=?2,verseWarning=?3,updateTime=?4 WHERE Book.id=?1',
         arguments: [
           id,
           chapterWarning ? 1 : 0,
@@ -1760,38 +1778,38 @@ class _$ContentDao extends ContentDao {
   }
 
   @override
-  Future<void> updateContentWarningForChapter(
+  Future<void> updateBookWarningForChapter(
     int id,
     bool chapterWarning,
     int updateTime,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Content set chapterWarning=?2,updateTime=?3 WHERE Content.id=?1',
+        'UPDATE Book set chapterWarning=?2,updateTime=?3 WHERE Book.id=?1',
         arguments: [id, chapterWarning ? 1 : 0, updateTime]);
   }
 
   @override
-  Future<void> updateContentWarningForVerse(
+  Future<void> updateBookWarningForVerse(
     int id,
     bool verseWarning,
     int updateTime,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Content set verseWarning=?2,updateTime=?3 WHERE Content.id=?1',
+        'UPDATE Book set verseWarning=?2,updateTime=?3 WHERE Book.id=?1',
         arguments: [id, verseWarning ? 1 : 0, updateTime]);
   }
 
   @override
   Future<void> hide(int id) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Content set hide=true WHERE Content.id=?1',
+        'UPDATE Book set hide=true WHERE Book.id=?1',
         arguments: [id]);
   }
 
   @override
-  Future<void> showContent(int id) async {
+  Future<void> show(int id) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Content set hide=false WHERE Content.id=?1',
+        'UPDATE Book set hide=false WHERE Book.id=?1',
         arguments: [id]);
   }
 
@@ -1801,13 +1819,13 @@ class _$ContentDao extends ContentDao {
     int docId,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Content set docId=?2 WHERE Content.id=?1',
+        'UPDATE Book set docId=?2 WHERE Book.id=?1',
         arguments: [id, docId]);
   }
 
   @override
-  Future<void> insertContent(Content entity) async {
-    await _contentInsertionAdapter.insert(entity, OnConflictStrategy.fail);
+  Future<void> insertBook(Book entity) async {
+    await _bookInsertionAdapter.insert(entity, OnConflictStrategy.fail);
   }
 
   @override
@@ -1823,22 +1841,22 @@ class _$ContentDao extends ContentDao {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        await transactionDatabase.contentDao.updateBookContent(bookId, content);
+        await transactionDatabase.bookDao.updateBookContent(bookId, content);
       });
     }
   }
 
   @override
-  Future<Content> add(String name) async {
+  Future<Book> add(String name) async {
     if (database is sqflite.Transaction) {
       return super.add(name);
     } else {
       return (database as sqflite.Database)
-          .transaction<Content>((transaction) async {
+          .transaction<Book>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        return transactionDatabase.contentDao.add(name);
+        return transactionDatabase.bookDao.add(name);
       });
     }
   }
@@ -1942,7 +1960,7 @@ class _$ScheduleDao extends ScheduleDao {
             (VerseTodayPrg item) => <String, Object?>{
                   'id': item.id,
                   'classroomId': item.classroomId,
-                  'contentSerial': item.contentSerial,
+                  'bookSerial': item.bookSerial,
                   'chapterKeyId': item.chapterKeyId,
                   'verseKeyId': item.verseKeyId,
                   'time': item.time,
@@ -1962,7 +1980,7 @@ class _$ScheduleDao extends ScheduleDao {
                   'createDate': _dateConverter.encode(item.createDate),
                   'verseKeyId': item.verseKeyId,
                   'classroomId': item.classroomId,
-                  'contentSerial': item.contentSerial,
+                  'bookSerial': item.bookSerial,
                   'count': item.count
                 }),
         _verseKeyInsertionAdapter = InsertionAdapter(
@@ -1971,7 +1989,7 @@ class _$ScheduleDao extends ScheduleDao {
             (VerseKey item) => <String, Object?>{
                   'id': item.id,
                   'classroomId': item.classroomId,
-                  'contentSerial': item.contentSerial,
+                  'bookSerial': item.bookSerial,
                   'chapterIndex': item.chapterIndex,
                   'verseIndex': item.verseIndex,
                   'version': item.version,
@@ -1987,7 +2005,7 @@ class _$ScheduleDao extends ScheduleDao {
             (Verse item) => <String, Object?>{
                   'verseKeyId': item.verseKeyId,
                   'classroomId': item.classroomId,
-                  'contentSerial': item.contentSerial,
+                  'bookSerial': item.bookSerial,
                   'chapterIndex': item.chapterIndex,
                   'verseIndex': item.verseIndex,
                   'sort': item.sort
@@ -1998,7 +2016,7 @@ class _$ScheduleDao extends ScheduleDao {
             (VerseOverallPrg item) => <String, Object?>{
                   'verseKeyId': item.verseKeyId,
                   'classroomId': item.classroomId,
-                  'contentSerial': item.contentSerial,
+                  'bookSerial': item.bookSerial,
                   'next': _dateConverter.encode(item.next),
                   'progress': item.progress
                 }),
@@ -2023,7 +2041,7 @@ class _$ScheduleDao extends ScheduleDao {
                   'createDate': _dateConverter.encode(item.createDate),
                   'createTime': item.createTime,
                   'classroomId': item.classroomId,
-                  'contentSerial': item.contentSerial
+                  'bookSerial': item.bookSerial
                 }),
         _verseKeyUpdateAdapter = UpdateAdapter(
             database,
@@ -2032,7 +2050,7 @@ class _$ScheduleDao extends ScheduleDao {
             (VerseKey item) => <String, Object?>{
                   'id': item.id,
                   'classroomId': item.classroomId,
-                  'contentSerial': item.contentSerial,
+                  'bookSerial': item.bookSerial,
                   'chapterIndex': item.chapterIndex,
                   'verseIndex': item.verseIndex,
                   'version': item.version,
@@ -2097,9 +2115,9 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> hideContent(int id) async {
+  Future<void> hideBook(int id) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Content set hide=true,docId=0 WHERE Content.id=?1',
+        'UPDATE Book set hide=true,docId=0 WHERE Book.id=?1',
         arguments: [id]);
   }
 
@@ -2201,7 +2219,7 @@ class _$ScheduleDao extends ScheduleDao {
         'SELECT * FROM VerseTodayPrg WHERE classroomId=?1 order by id asc',
         mapper: (Map<String, Object?> row) => VerseTodayPrg(
             classroomId: row['classroomId'] as int,
-            contentSerial: row['contentSerial'] as int,
+            bookSerial: row['bookSerial'] as int,
             chapterKeyId: row['chapterKeyId'] as int,
             verseKeyId: row['verseKeyId'] as int,
             time: row['time'] as int,
@@ -2239,13 +2257,13 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<int?> chapterCount(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int chapterIndex,
   ) async {
     return _queryAdapter.query(
-        'SELECT count(Verse.verseKeyId) FROM Verse AND Verse.classroomId=?1 WHERE Verse.contentSerial=?2 and Verse.chapterIndex=?3',
+        'SELECT count(Verse.verseKeyId) FROM Verse AND Verse.classroomId=?1 WHERE Verse.bookSerial=?2 and Verse.chapterIndex=?3',
         mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [classroomId, contentSerial, chapterIndex]);
+        arguments: [classroomId, bookSerial, chapterIndex]);
   }
 
   @override
@@ -2267,8 +2285,8 @@ class _$ScheduleDao extends ScheduleDao {
     Date startDate,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT VerseReview.classroomId,Verse.contentSerial,Chapter.chapterKeyId,VerseReview.verseKeyId,0 time,0 type,Verse.sort,0 progress,0 viewTime,VerseReview.count reviewCount,VerseReview.createDate reviewCreateDate,0 finish FROM VerseReview JOIN Verse ON Verse.verseKeyId=VerseReview.verseKeyId JOIN Chapter ON Chapter.classroomId=?1  AND Chapter.contentSerial=Verse.contentSerial  AND Chapter.chapterIndex=Verse.chapterIndex WHERE VerseReview.classroomId=?1 AND VerseReview.count=?2 AND VerseReview.createDate=?3 ORDER BY Verse.sort',
-        mapper: (Map<String, Object?> row) => VerseTodayPrg(classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, chapterKeyId: row['chapterKeyId'] as int, verseKeyId: row['verseKeyId'] as int, time: row['time'] as int, type: row['type'] as int, sort: row['sort'] as int, progress: row['progress'] as int, viewTime: _dateTimeConverter.decode(row['viewTime'] as int), reviewCount: row['reviewCount'] as int, reviewCreateDate: _dateConverter.decode(row['reviewCreateDate'] as int), finish: (row['finish'] as int) != 0, id: row['id'] as int?),
+        'SELECT VerseReview.classroomId,Verse.bookSerial,Chapter.chapterKeyId,VerseReview.verseKeyId,0 time,0 type,Verse.sort,0 progress,0 viewTime,VerseReview.count reviewCount,VerseReview.createDate reviewCreateDate,0 finish FROM VerseReview JOIN Verse ON Verse.verseKeyId=VerseReview.verseKeyId JOIN Chapter ON Chapter.classroomId=?1  AND Chapter.bookSerial=Verse.bookSerial  AND Chapter.chapterIndex=Verse.chapterIndex WHERE VerseReview.classroomId=?1 AND VerseReview.count=?2 AND VerseReview.createDate=?3 ORDER BY Verse.sort',
+        mapper: (Map<String, Object?> row) => VerseTodayPrg(classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, chapterKeyId: row['chapterKeyId'] as int, verseKeyId: row['verseKeyId'] as int, time: row['time'] as int, type: row['type'] as int, sort: row['sort'] as int, progress: row['progress'] as int, viewTime: _dateTimeConverter.decode(row['viewTime'] as int), reviewCount: row['reviewCount'] as int, reviewCreateDate: _dateConverter.decode(row['reviewCreateDate'] as int), finish: (row['finish'] as int) != 0, id: row['id'] as int?),
         arguments: [
           classroomId,
           reviewCount,
@@ -2283,29 +2301,23 @@ class _$ScheduleDao extends ScheduleDao {
     Date now,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM ( SELECT Verse.classroomId,Verse.contentSerial,Chapter.chapterKeyId,VerseOverallPrg.verseKeyId,0 time,0 type,Verse.sort,VerseOverallPrg.progress progress,0 viewTime,0 reviewCount,0 reviewCreateDate,0 finish FROM VerseOverallPrg JOIN Verse ON Verse.verseKeyId=VerseOverallPrg.verseKeyId  AND Verse.classroomId=?1 JOIN Chapter ON Chapter.classroomId=?1  AND Chapter.contentSerial=Verse.contentSerial  AND Chapter.chapterIndex=Verse.chapterIndex WHERE VerseOverallPrg.next<=?3  AND VerseOverallPrg.progress>=?2 ORDER BY VerseOverallPrg.progress,Verse.sort ) Verse order by Verse.sort',
-        mapper: (Map<String, Object?> row) => VerseTodayPrg(classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, chapterKeyId: row['chapterKeyId'] as int, verseKeyId: row['verseKeyId'] as int, time: row['time'] as int, type: row['type'] as int, sort: row['sort'] as int, progress: row['progress'] as int, viewTime: _dateTimeConverter.decode(row['viewTime'] as int), reviewCount: row['reviewCount'] as int, reviewCreateDate: _dateConverter.decode(row['reviewCreateDate'] as int), finish: (row['finish'] as int) != 0, id: row['id'] as int?),
+        'SELECT * FROM ( SELECT Verse.classroomId,Verse.bookSerial,Chapter.chapterKeyId,VerseOverallPrg.verseKeyId,0 time,0 type,Verse.sort,VerseOverallPrg.progress progress,0 viewTime,0 reviewCount,0 reviewCreateDate,0 finish FROM VerseOverallPrg JOIN Verse ON Verse.verseKeyId=VerseOverallPrg.verseKeyId  AND Verse.classroomId=?1 JOIN Chapter ON Chapter.classroomId=?1  AND Chapter.bookSerial=Verse.bookSerial  AND Chapter.chapterIndex=Verse.chapterIndex WHERE VerseOverallPrg.next<=?3  AND VerseOverallPrg.progress>=?2 ORDER BY VerseOverallPrg.progress,Verse.sort ) Verse order by Verse.sort',
+        mapper: (Map<String, Object?> row) => VerseTodayPrg(classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, chapterKeyId: row['chapterKeyId'] as int, verseKeyId: row['verseKeyId'] as int, time: row['time'] as int, type: row['type'] as int, sort: row['sort'] as int, progress: row['progress'] as int, viewTime: _dateTimeConverter.decode(row['viewTime'] as int), reviewCount: row['reviewCount'] as int, reviewCreateDate: _dateConverter.decode(row['reviewCreateDate'] as int), finish: (row['finish'] as int) != 0, id: row['id'] as int?),
         arguments: [classroomId, minProgress, _dateConverter.encode(now)]);
   }
 
   @override
   Future<List<VerseTodayPrg>> scheduleFullCustom(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int chapterIndex,
     int verseIndex,
     int limit,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT Verse.classroomId,Verse.contentSerial,Chapter.chapterKeyId,Verse.verseKeyId,0 time,0 type,Verse.sort,0 progress,0 viewTime,0 reviewCount,1 reviewCreateDate,0 finish FROM Verse JOIN Chapter ON Chapter.classroomId=?1  AND Chapter.contentSerial=Verse.contentSerial  AND Chapter.chapterIndex=Verse.chapterIndex WHERE Verse.classroomId=?1 AND Verse.sort>=(  SELECT Verse.sort FROM Verse  WHERE Verse.contentSerial=?2  AND Verse.chapterIndex=?3  AND Verse.verseIndex=?4) ORDER BY Verse.sort limit ?5',
-        mapper: (Map<String, Object?> row) => VerseTodayPrg(classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, chapterKeyId: row['chapterKeyId'] as int, verseKeyId: row['verseKeyId'] as int, time: row['time'] as int, type: row['type'] as int, sort: row['sort'] as int, progress: row['progress'] as int, viewTime: _dateTimeConverter.decode(row['viewTime'] as int), reviewCount: row['reviewCount'] as int, reviewCreateDate: _dateConverter.decode(row['reviewCreateDate'] as int), finish: (row['finish'] as int) != 0, id: row['id'] as int?),
-        arguments: [
-          classroomId,
-          contentSerial,
-          chapterIndex,
-          verseIndex,
-          limit
-        ]);
+        'SELECT Verse.classroomId,Verse.bookSerial,Chapter.chapterKeyId,Verse.verseKeyId,0 time,0 type,Verse.sort,0 progress,0 viewTime,0 reviewCount,1 reviewCreateDate,0 finish FROM Verse JOIN Chapter ON Chapter.classroomId=?1  AND Chapter.bookSerial=Verse.bookSerial  AND Chapter.chapterIndex=Verse.chapterIndex WHERE Verse.classroomId=?1 AND Verse.sort>=(  SELECT Verse.sort FROM Verse  WHERE Verse.bookSerial=?2  AND Verse.chapterIndex=?3  AND Verse.verseIndex=?4) ORDER BY Verse.sort limit ?5',
+        mapper: (Map<String, Object?> row) => VerseTodayPrg(classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, chapterKeyId: row['chapterKeyId'] as int, verseKeyId: row['verseKeyId'] as int, time: row['time'] as int, type: row['type'] as int, sort: row['sort'] as int, progress: row['progress'] as int, viewTime: _dateTimeConverter.decode(row['viewTime'] as int), reviewCount: row['reviewCount'] as int, reviewCreateDate: _dateConverter.decode(row['reviewCreateDate'] as int), finish: (row['finish'] as int) != 0, id: row['id'] as int?),
+        arguments: [classroomId, bookSerial, chapterIndex, verseIndex, limit]);
   }
 
   @override
@@ -2341,20 +2353,20 @@ class _$ScheduleDao extends ScheduleDao {
   Future<List<VerseOverallPrgWithKey>> getAllVerseOverallPrg(
       int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT VerseOverallPrg.*,Content.name contentName,Verse.chapterIndex,Verse.verseIndex FROM Verse JOIN VerseOverallPrg on VerseOverallPrg.verseKeyId=Verse.verseKeyId JOIN Content ON Content.classroomId=Verse.classroomId AND Content.serial=Verse.contentSerial WHERE Verse.classroomId=?1 ORDER BY Verse.sort asc',
-        mapper: (Map<String, Object?> row) => VerseOverallPrgWithKey(row['verseKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, row['contentName'] as String, row['chapterIndex'] as int, row['verseIndex'] as int),
+        'SELECT VerseOverallPrg.*,Book.name contentName,Verse.chapterIndex,Verse.verseIndex FROM Verse JOIN VerseOverallPrg on VerseOverallPrg.verseKeyId=Verse.verseKeyId JOIN Book ON Book.classroomId=Verse.classroomId AND Book.serial=Verse.bookSerial WHERE Verse.classroomId=?1 ORDER BY Verse.sort asc',
+        mapper: (Map<String, Object?> row) => VerseOverallPrgWithKey(row['verseKeyId'] as int, row['classroomId'] as int, row['bookSerial'] as int, _dateConverter.decode(row['next'] as int), row['progress'] as int, row['contentName'] as String, row['chapterIndex'] as int, row['verseIndex'] as int),
         arguments: [classroomId]);
   }
 
   @override
-  Future<String?> getContentNameBySerial(
+  Future<String?> getBookNameBySerial(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
   ) async {
     return _queryAdapter.query(
-        'SELECT Content.name FROM Content WHERE Content.classroomId=?1 AND Content.serial=?2',
+        'SELECT Book.name FROM Book WHERE Book.classroomId=?1 AND Book.serial=?2',
         mapper: (Map<String, Object?> row) => row.values.first as String,
-        arguments: [classroomId, contentSerial]);
+        arguments: [classroomId, bookSerial]);
   }
 
   @override
@@ -2364,8 +2376,8 @@ class _$ScheduleDao extends ScheduleDao {
     Date end,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT VerseReview.*,Content.name contentName,Verse.chapterIndex,Verse.verseIndex FROM VerseReview JOIN Verse ON Verse.verseKeyId=VerseReview.verseKeyId JOIN Content ON Content.classroomId=VerseReview.classroomId AND Content.serial=VerseReview.contentSerial WHERE VerseReview.classroomId=?1 AND VerseReview.createDate>=?2 AND VerseReview.createDate<=?3 ORDER BY VerseReview.createDate desc,Verse.sort asc',
-        mapper: (Map<String, Object?> row) => VerseReviewWithKey(_dateConverter.decode(row['createDate'] as int), row['verseKeyId'] as int, row['classroomId'] as int, row['contentSerial'] as int, row['count'] as int, row['contentName'] as String, row['chapterIndex'] as int, row['verseIndex'] as int),
+        'SELECT VerseReview.*,Book.name contentName,Verse.chapterIndex,Verse.verseIndex FROM VerseReview JOIN Verse ON Verse.verseKeyId=VerseReview.verseKeyId JOIN Book ON Book.classroomId=VerseReview.classroomId AND Book.serial=VerseReview.bookSerial WHERE VerseReview.classroomId=?1 AND VerseReview.createDate>=?2 AND VerseReview.createDate<=?3 ORDER BY VerseReview.createDate desc,Verse.sort asc',
+        mapper: (Map<String, Object?> row) => VerseReviewWithKey(_dateConverter.decode(row['createDate'] as int), row['verseKeyId'] as int, row['classroomId'] as int, row['bookSerial'] as int, row['count'] as int, row['contentName'] as String, row['chapterIndex'] as int, row['verseIndex'] as int),
         arguments: [
           classroomId,
           _dateConverter.encode(start),
@@ -2387,15 +2399,15 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<VerseContentInDb?> getVerseContent(int verseKeyId) async {
     return _queryAdapter.query(
-        'SELECT Verse.verseKeyId,Verse.classroomId,Verse.contentSerial,Verse.chapterIndex,Verse.verseIndex,Verse.sort sort,Content.name contentName FROM Verse JOIN Content ON Content.classroomId=Verse.classroomId AND Content.serial=Verse.contentSerial WHERE Verse.verseKeyId=?1',
-        mapper: (Map<String, Object?> row) => VerseContentInDb(verseKeyId: row['verseKeyId'] as int, classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int, contentName: row['contentName'] as String),
+        'SELECT Verse.verseKeyId,Verse.classroomId,Verse.bookSerial,Verse.chapterIndex,Verse.verseIndex,Verse.sort sort,Book.name contentName FROM Verse JOIN Book ON Book.classroomId=Verse.classroomId AND Book.serial=Verse.bookSerial WHERE Verse.verseKeyId=?1',
+        mapper: (Map<String, Object?> row) => VerseContentInDb(verseKeyId: row['verseKeyId'] as int, classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int, contentName: row['contentName'] as String),
         arguments: [verseKeyId]);
   }
 
   @override
-  Future<String?> getContentName(int verseKeyId) async {
+  Future<String?> getBookName(int verseKeyId) async {
     return _queryAdapter.query(
-        'SELECT Content.name contentName FROM VerseKey JOIN Content ON Content.classroomId=VerseKey.classroomId AND Content.serial=VerseKey.contentSerial WHERE VerseKey.id=?1',
+        'SELECT Book.name contentName FROM VerseKey JOIN Book ON Book.classroomId=VerseKey.classroomId AND Book.serial=VerseKey.bookSerial WHERE VerseKey.id=?1',
         mapper: (Map<String, Object?> row) => row.values.first as String,
         arguments: [verseKeyId]);
   }
@@ -2427,23 +2439,23 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<List<KeyId>> getVerseKeyId(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT VerseKey.id,VerseKey.k FROM VerseKey WHERE VerseKey.classroomId=?1 and VerseKey.contentSerial=?2',
+        'SELECT VerseKey.id,VerseKey.k FROM VerseKey WHERE VerseKey.classroomId=?1 and VerseKey.bookSerial=?2',
         mapper: (Map<String, Object?> row) => KeyId(row['id'] as int, row['k'] as String),
-        arguments: [classroomId, contentSerial]);
+        arguments: [classroomId, bookSerial]);
   }
 
   @override
   Future<List<VerseKey>> getVerseKey(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT VerseKey.* FROM VerseKey WHERE VerseKey.classroomId=?1 AND VerseKey.contentSerial=?2',
-        mapper: (Map<String, Object?> row) => VerseKey(classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, version: row['version'] as int, k: row['k'] as String, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, id: row['id'] as int?),
-        arguments: [classroomId, contentSerial]);
+        'SELECT VerseKey.* FROM VerseKey WHERE VerseKey.classroomId=?1 AND VerseKey.bookSerial=?2',
+        mapper: (Map<String, Object?> row) => VerseKey(classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, version: row['version'] as int, k: row['k'] as String, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, id: row['id'] as int?),
+        arguments: [classroomId, bookSerial]);
   }
 
   @override
@@ -2452,7 +2464,7 @@ class _$ScheduleDao extends ScheduleDao {
         'SELECT VerseKey.* FROM VerseKey WHERE VerseKey.id=?1',
         mapper: (Map<String, Object?> row) => VerseKey(
             classroomId: row['classroomId'] as int,
-            contentSerial: row['contentSerial'] as int,
+            bookSerial: row['bookSerial'] as int,
             chapterIndex: row['chapterIndex'] as int,
             verseIndex: row['verseIndex'] as int,
             version: row['version'] as int,
@@ -2468,61 +2480,60 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<VerseKey?> getVerseKeyByKey(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     String key,
   ) async {
     return _queryAdapter.query(
-        'SELECT VerseKey.* FROM VerseKey WHERE VerseKey.classroomId=?1 AND VerseKey.contentSerial=?2 AND VerseKey.k=?3',
-        mapper: (Map<String, Object?> row) => VerseKey(classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, version: row['version'] as int, k: row['k'] as String, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, id: row['id'] as int?),
-        arguments: [classroomId, contentSerial, key]);
+        'SELECT VerseKey.* FROM VerseKey WHERE VerseKey.classroomId=?1 AND VerseKey.bookSerial=?2 AND VerseKey.k=?3',
+        mapper: (Map<String, Object?> row) => VerseKey(classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, version: row['version'] as int, k: row['k'] as String, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, id: row['id'] as int?),
+        arguments: [classroomId, bookSerial, key]);
   }
 
   @override
   Future<List<VerseShow>> getAllVerse(int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT VerseKey.id verseKeyId,VerseKey.k,Content.id contentId,Content.name contentName,Content.serial contentSerial,Content.sort contentSort,VerseKey.content verseContent,VerseKey.contentVersion verseContentVersion,VerseKey.note verseNote,VerseKey.noteVersion verseNoteVersion,VerseKey.chapterIndex,VerseKey.verseIndex,VerseOverallPrg.next,VerseOverallPrg.progress,Verse.verseKeyId is null missing FROM VerseKey JOIN Content ON Content.classroomId=?1 AND Content.serial=VerseKey.contentSerial AND Content.docId!=0 LEFT JOIN Verse ON Verse.verseKeyId=VerseKey.id LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseKeyId=VerseKey.id WHERE VerseKey.classroomId=?1',
-        mapper: (Map<String, Object?> row) => VerseShow(verseKeyId: row['verseKeyId'] as int, k: row['k'] as String, contentId: row['contentId'] as int, contentName: row['contentName'] as String, contentSerial: row['contentSerial'] as int, contentSort: row['contentSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, verseNote: row['verseNote'] as String, verseNoteVersion: row['verseNoteVersion'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int, missing: (row['missing'] as int) != 0),
+        'SELECT VerseKey.id verseKeyId,VerseKey.k,Book.id contentId,Book.name contentName,Book.serial bookSerial,Book.sort contentSort,VerseKey.content verseContent,VerseKey.contentVersion verseContentVersion,VerseKey.note verseNote,VerseKey.noteVersion verseNoteVersion,VerseKey.chapterIndex,VerseKey.verseIndex,VerseOverallPrg.next,VerseOverallPrg.progress,Verse.verseKeyId is null missing FROM VerseKey JOIN Book ON Book.classroomId=?1 AND Book.serial=VerseKey.bookSerial AND Book.docId!=0 LEFT JOIN Verse ON Verse.verseKeyId=VerseKey.id LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseKeyId=VerseKey.id WHERE VerseKey.classroomId=?1',
+        mapper: (Map<String, Object?> row) => VerseShow(verseKeyId: row['verseKeyId'] as int, k: row['k'] as String, contentId: row['contentId'] as int, contentName: row['contentName'] as String, bookSerial: row['bookSerial'] as int, contentSort: row['contentSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, verseNote: row['verseNote'] as String, verseNoteVersion: row['verseNoteVersion'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int, missing: (row['missing'] as int) != 0),
         arguments: [classroomId]);
   }
 
   @override
   Future<List<VerseShow>> getVerseByChapterIndex(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int chapterIndex,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT VerseKey.id verseKeyId,VerseKey.k,Content.id contentId,Content.name contentName,Content.serial contentSerial,Content.sort contentSort,VerseKey.content verseContent,VerseKey.contentVersion verseContentVersion,VerseKey.note verseNote,VerseKey.noteVersion verseNoteVersion,VerseKey.chapterIndex,VerseKey.verseIndex,VerseOverallPrg.next,VerseOverallPrg.progress,Verse.verseKeyId is null missing FROM VerseKey JOIN Content ON Content.classroomId=?1 AND Content.serial=VerseKey.contentSerial AND Content.docId!=0 LEFT JOIN Verse ON Verse.verseKeyId=VerseKey.id LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseKeyId=VerseKey.id WHERE VerseKey.classroomId=?1  AND VerseKey.contentSerial=?2  AND VerseKey.chapterIndex=?3',
-        mapper: (Map<String, Object?> row) => VerseShow(verseKeyId: row['verseKeyId'] as int, k: row['k'] as String, contentId: row['contentId'] as int, contentName: row['contentName'] as String, contentSerial: row['contentSerial'] as int, contentSort: row['contentSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, verseNote: row['verseNote'] as String, verseNoteVersion: row['verseNoteVersion'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int, missing: (row['missing'] as int) != 0),
-        arguments: [classroomId, contentSerial, chapterIndex]);
+        'SELECT VerseKey.id verseKeyId,VerseKey.k,Book.id contentId,Book.name contentName,Book.serial bookSerial,Book.sort contentSort,VerseKey.content verseContent,VerseKey.contentVersion verseContentVersion,VerseKey.note verseNote,VerseKey.noteVersion verseNoteVersion,VerseKey.chapterIndex,VerseKey.verseIndex,VerseOverallPrg.next,VerseOverallPrg.progress,Verse.verseKeyId is null missing FROM VerseKey JOIN Book ON Book.classroomId=?1 AND Book.serial=VerseKey.bookSerial AND Book.docId!=0 LEFT JOIN Verse ON Verse.verseKeyId=VerseKey.id LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseKeyId=VerseKey.id WHERE VerseKey.classroomId=?1  AND VerseKey.bookSerial=?2  AND VerseKey.chapterIndex=?3',
+        mapper: (Map<String, Object?> row) => VerseShow(verseKeyId: row['verseKeyId'] as int, k: row['k'] as String, contentId: row['contentId'] as int, contentName: row['contentName'] as String, bookSerial: row['bookSerial'] as int, contentSort: row['contentSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, verseNote: row['verseNote'] as String, verseNoteVersion: row['verseNoteVersion'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int, missing: (row['missing'] as int) != 0),
+        arguments: [classroomId, bookSerial, chapterIndex]);
   }
 
   @override
   Future<List<VerseShow>> getVerseByMinChapterIndex(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int minChapterIndex,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT VerseKey.id verseKeyId,VerseKey.k,Content.id contentId,Content.name contentName,Content.serial contentSerial,Content.sort contentSort,VerseKey.content verseContent,VerseKey.contentVersion verseContentVersion,VerseKey.note verseNote,VerseKey.noteVersion verseNoteVersion,VerseKey.chapterIndex,VerseKey.verseIndex,VerseOverallPrg.next,VerseOverallPrg.progress,Verse.verseKeyId is null missing FROM VerseKey JOIN Content ON Content.classroomId=?1 AND Content.serial=VerseKey.contentSerial AND Content.docId!=0 LEFT JOIN Verse ON Verse.verseKeyId=VerseKey.id LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseKeyId=VerseKey.id WHERE VerseKey.classroomId=?1  AND VerseKey.contentSerial=?2  AND VerseKey.chapterIndex>=?3',
-        mapper: (Map<String, Object?> row) => VerseShow(verseKeyId: row['verseKeyId'] as int, k: row['k'] as String, contentId: row['contentId'] as int, contentName: row['contentName'] as String, contentSerial: row['contentSerial'] as int, contentSort: row['contentSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, verseNote: row['verseNote'] as String, verseNoteVersion: row['verseNoteVersion'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int, missing: (row['missing'] as int) != 0),
-        arguments: [classroomId, contentSerial, minChapterIndex]);
+        'SELECT VerseKey.id verseKeyId,VerseKey.k,Book.id contentId,Book.name contentName,Book.serial bookSerial,Book.sort contentSort,VerseKey.content verseContent,VerseKey.contentVersion verseContentVersion,VerseKey.note verseNote,VerseKey.noteVersion verseNoteVersion,VerseKey.chapterIndex,VerseKey.verseIndex,VerseOverallPrg.next,VerseOverallPrg.progress,Verse.verseKeyId is null missing FROM VerseKey JOIN Book ON Book.classroomId=?1 AND Book.serial=VerseKey.bookSerial AND Book.docId!=0 LEFT JOIN Verse ON Verse.verseKeyId=VerseKey.id LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseKeyId=VerseKey.id WHERE VerseKey.classroomId=?1  AND VerseKey.bookSerial=?2  AND VerseKey.chapterIndex>=?3',
+        mapper: (Map<String, Object?> row) => VerseShow(verseKeyId: row['verseKeyId'] as int, k: row['k'] as String, contentId: row['contentId'] as int, contentName: row['contentName'] as String, bookSerial: row['bookSerial'] as int, contentSort: row['contentSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, verseNote: row['verseNote'] as String, verseNoteVersion: row['verseNoteVersion'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int, missing: (row['missing'] as int) != 0),
+        arguments: [classroomId, bookSerial, minChapterIndex]);
   }
 
   @override
-  Future<void> deleteVerseByContentSerial(
+  Future<void> deleteVerseByBookSerial(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM Verse WHERE Verse.classroomId=?1 and Verse.contentSerial=?2',
-        arguments: [classroomId, contentSerial]);
+        'DELETE FROM Verse WHERE Verse.classroomId=?1 and Verse.bookSerial=?2',
+        arguments: [classroomId, bookSerial]);
   }
 
   @override
   Future<void> deleteVerse(int verseKeyId) async {
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM Verse WHERE verseKeyId=?1',
+    await _queryAdapter.queryNoReturn('DELETE FROM Verse WHERE verseKeyId=?1',
         arguments: [verseKeyId]);
   }
 
@@ -2555,8 +2566,7 @@ class _$ScheduleDao extends ScheduleDao {
 
   @override
   Future<void> deleteVerseByClassroomId(int classroomId) async {
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM Verse WHERE classroomId=?1',
+    await _queryAdapter.queryNoReturn('DELETE FROM Verse WHERE classroomId=?1',
         arguments: [classroomId]);
   }
 
@@ -2584,24 +2594,24 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<int?> getMaxChapterIndex(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
   ) async {
     return _queryAdapter.query(
-        'SELECT ifnull(max(Verse.chapterIndex),0) FROM Verse WHERE Verse.classroomId=?1 AND Verse.contentSerial=?2',
+        'SELECT ifnull(max(Verse.chapterIndex),0) FROM Verse WHERE Verse.classroomId=?1 AND Verse.bookSerial=?2',
         mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [classroomId, contentSerial]);
+        arguments: [classroomId, bookSerial]);
   }
 
   @override
   Future<int?> getMaxVerseIndex(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int chapterIndex,
   ) async {
     return _queryAdapter.query(
-        'SELECT ifnull(max(Verse.verseIndex),0) FROM Verse WHERE Verse.classroomId=?1 AND Verse.contentSerial=?2 AND Verse.chapterIndex=?3',
+        'SELECT ifnull(max(Verse.verseIndex),0) FROM Verse WHERE Verse.classroomId=?1 AND Verse.bookSerial=?2 AND Verse.chapterIndex=?3',
         mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [classroomId, contentSerial, chapterIndex]);
+        arguments: [classroomId, bookSerial, chapterIndex]);
   }
 
   @override
@@ -2613,9 +2623,9 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<int?> getMaxContentUpdateTime(int classroomId) async {
+  Future<int?> getMaxBookUpdateTime(int classroomId) async {
     return _queryAdapter.query(
-        'SELECT ifnull(max(Content.updateTime),0) FROM Content WHERE Content.classroomId=?1',
+        'SELECT ifnull(max(Book.updateTime),0) FROM Book WHERE Book.classroomId=?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId]);
   }
@@ -2678,8 +2688,7 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> insertVerseOverallPrgs(
-      List<VerseOverallPrg> entities) async {
+  Future<void> insertVerseOverallPrgs(List<VerseOverallPrg> entities) async {
     await _verseOverallPrgInsertionAdapter.insertList(
         entities, OnConflictStrategy.ignore);
   }
@@ -2698,14 +2707,12 @@ class _$ScheduleDao extends ScheduleDao {
 
   @override
   Future<void> insertVerseStats(VerseStats stats) async {
-    await _verseStatsInsertionAdapter.insert(
-        stats, OnConflictStrategy.replace);
+    await _verseStatsInsertionAdapter.insert(stats, OnConflictStrategy.replace);
   }
 
   @override
   Future<void> updateVerseKeys(List<VerseKey> entities) async {
-    await _verseKeyUpdateAdapter.updateList(
-        entities, OnConflictStrategy.abort);
+    await _verseKeyUpdateAdapter.updateList(entities, OnConflictStrategy.abort);
   }
 
   @override
@@ -2723,8 +2730,7 @@ class _$ScheduleDao extends ScheduleDao {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        await transactionDatabase.scheduleDao
-            .deleteAbnormalVerse(verseKeyId);
+        await transactionDatabase.scheduleDao.deleteAbnormalVerse(verseKeyId);
       });
     }
   }
@@ -2747,12 +2753,12 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<int> importVerse(
     int contentId,
-    int contentSerial,
+    int bookSerial,
     int? indexJsonDocId,
     String? url,
   ) async {
     if (database is sqflite.Transaction) {
-      return super.importVerse(contentId, contentSerial, indexJsonDocId, url);
+      return super.importVerse(contentId, bookSerial, indexJsonDocId, url);
     } else {
       return (database as sqflite.Database)
           .transaction<int>((transaction) async {
@@ -2760,7 +2766,7 @@ class _$ScheduleDao extends ScheduleDao {
           ..database = transaction;
         prepareDb(transactionDatabase);
         return transactionDatabase.scheduleDao
-            .importVerse(contentId, contentSerial, indexJsonDocId, url);
+            .importVerse(contentId, bookSerial, indexJsonDocId, url);
       });
     }
   }
@@ -2775,8 +2781,7 @@ class _$ScheduleDao extends ScheduleDao {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        return transactionDatabase.scheduleDao
-            .deleteNormalVerse(verseKeyId);
+        return transactionDatabase.scheduleDao.deleteNormalVerse(verseKeyId);
       });
     }
   }
@@ -2801,11 +2806,11 @@ class _$ScheduleDao extends ScheduleDao {
 
   @override
   Future<int> addFirstVerse(
-    int contentSerial,
+    int bookSerial,
     int chapterIndex,
   ) async {
     if (database is sqflite.Transaction) {
-      return super.addFirstVerse(contentSerial, chapterIndex);
+      return super.addFirstVerse(bookSerial, chapterIndex);
     } else {
       return (database as sqflite.Database)
           .transaction<int>((transaction) async {
@@ -2813,7 +2818,7 @@ class _$ScheduleDao extends ScheduleDao {
           ..database = transaction;
         prepareDb(transactionDatabase);
         return transactionDatabase.scheduleDao
-            .addFirstVerse(contentSerial, chapterIndex);
+            .addFirstVerse(bookSerial, chapterIndex);
       });
     }
   }
@@ -2821,10 +2826,10 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<void> hideContentAndDeleteVerse(
     int contentId,
-    int contentSerial,
+    int bookSerial,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.hideContentAndDeleteVerse(contentId, contentSerial);
+      await super.hideContentAndDeleteVerse(contentId, bookSerial);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
@@ -2832,7 +2837,7 @@ class _$ScheduleDao extends ScheduleDao {
           ..database = transaction;
         prepareDb(transactionDatabase);
         await transactionDatabase.scheduleDao
-            .hideContentAndDeleteVerse(contentId, contentSerial);
+            .hideContentAndDeleteVerse(contentId, bookSerial);
       });
     }
   }
@@ -2869,14 +2874,13 @@ class _$ScheduleDao extends ScheduleDao {
 
   @override
   Future<void> addFullCustom(
-    int contentSerial,
+    int bookSerial,
     int chapterIndex,
     int verseIndex,
     int limit,
   ) async {
     if (database is sqflite.Transaction) {
-      await super
-          .addFullCustom(contentSerial, chapterIndex, verseIndex, limit);
+      await super.addFullCustom(bookSerial, chapterIndex, verseIndex, limit);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
@@ -2884,7 +2888,7 @@ class _$ScheduleDao extends ScheduleDao {
           ..database = transaction;
         prepareDb(transactionDatabase);
         await transactionDatabase.scheduleDao
-            .addFullCustom(contentSerial, chapterIndex, verseIndex, limit);
+            .addFullCustom(bookSerial, chapterIndex, verseIndex, limit);
       });
     }
   }
@@ -3008,7 +3012,7 @@ class _$VerseDao extends VerseDao {
             (Verse item) => <String, Object?>{
                   'verseKeyId': item.verseKeyId,
                   'classroomId': item.classroomId,
-                  'contentSerial': item.contentSerial,
+                  'bookSerial': item.bookSerial,
                   'chapterIndex': item.chapterIndex,
                   'verseIndex': item.verseIndex,
                   'sort': item.sort
@@ -3025,74 +3029,74 @@ class _$VerseDao extends VerseDao {
   @override
   Future<Verse?> one(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int chapterIndex,
     int verseIndex,
   ) async {
     return _queryAdapter.query(
-        'SELECT * FROM Verse WHERE classroomId=?1 AND contentSerial=?2 AND chapterIndex=?3 AND verseIndex=?4',
-        mapper: (Map<String, Object?> row) => Verse(verseKeyId: row['verseKeyId'] as int, classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int),
-        arguments: [classroomId, contentSerial, chapterIndex, verseIndex]);
+        'SELECT * FROM Verse WHERE classroomId=?1 AND bookSerial=?2 AND chapterIndex=?3 AND verseIndex=?4',
+        mapper: (Map<String, Object?> row) => Verse(verseKeyId: row['verseKeyId'] as int, classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int),
+        arguments: [classroomId, bookSerial, chapterIndex, verseIndex]);
   }
 
   @override
   Future<Verse?> last(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int minChapterIndex,
   ) async {
     return _queryAdapter.query(
-        'SELECT * FROM Verse WHERE classroomId=?1 AND contentSerial=?2 AND chapterIndex>=?3 order by chapterIndex,verseIndex limit 1',
-        mapper: (Map<String, Object?> row) => Verse(verseKeyId: row['verseKeyId'] as int, classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int),
-        arguments: [classroomId, contentSerial, minChapterIndex]);
+        'SELECT * FROM Verse WHERE classroomId=?1 AND bookSerial=?2 AND chapterIndex>=?3 order by chapterIndex,verseIndex limit 1',
+        mapper: (Map<String, Object?> row) => Verse(verseKeyId: row['verseKeyId'] as int, classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int),
+        arguments: [classroomId, bookSerial, minChapterIndex]);
   }
 
   @override
   Future<List<Verse>> findByMinVerseIndex(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int chapterIndex,
     int minVerseIndex,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM Verse WHERE classroomId=?1 AND contentSerial=?2 AND chapterIndex=?3 AND verseIndex>=?4',
-        mapper: (Map<String, Object?> row) => Verse(verseKeyId: row['verseKeyId'] as int, classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int),
-        arguments: [classroomId, contentSerial, chapterIndex, minVerseIndex]);
+        'SELECT * FROM Verse WHERE classroomId=?1 AND bookSerial=?2 AND chapterIndex=?3 AND verseIndex>=?4',
+        mapper: (Map<String, Object?> row) => Verse(verseKeyId: row['verseKeyId'] as int, classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int),
+        arguments: [classroomId, bookSerial, chapterIndex, minVerseIndex]);
   }
 
   @override
   Future<void> deleteByMinVerseIndex(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int chapterIndex,
     int minVerseIndex,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM Verse WHERE classroomId=?1 AND contentSerial=?2 AND chapterIndex=?3 AND verseIndex>=?4',
-        arguments: [classroomId, contentSerial, chapterIndex, minVerseIndex]);
+        'DELETE FROM Verse WHERE classroomId=?1 AND bookSerial=?2 AND chapterIndex=?3 AND verseIndex>=?4',
+        arguments: [classroomId, bookSerial, chapterIndex, minVerseIndex]);
   }
 
   @override
   Future<List<Verse>> findByMinChapterIndex(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int minChapterIndex,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM Verse WHERE classroomId=?1 AND contentSerial=?2 AND chapterIndex>=?3',
-        mapper: (Map<String, Object?> row) => Verse(verseKeyId: row['verseKeyId'] as int, classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int),
-        arguments: [classroomId, contentSerial, minChapterIndex]);
+        'SELECT * FROM Verse WHERE classroomId=?1 AND bookSerial=?2 AND chapterIndex>=?3',
+        mapper: (Map<String, Object?> row) => Verse(verseKeyId: row['verseKeyId'] as int, classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int),
+        arguments: [classroomId, bookSerial, minChapterIndex]);
   }
 
   @override
   Future<void> deleteByMinChapterIndex(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int minChapterIndex,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM Verse WHERE classroomId=?1 AND contentSerial=?2 AND chapterIndex>=?3',
-        arguments: [classroomId, contentSerial, minChapterIndex]);
+        'DELETE FROM Verse WHERE classroomId=?1 AND bookSerial=?2 AND chapterIndex>=?3',
+        arguments: [classroomId, bookSerial, minChapterIndex]);
   }
 
   @override
@@ -3102,8 +3106,7 @@ class _$VerseDao extends VerseDao {
 
   @override
   Future<void> insertListOrFail(List<Verse> entities) async {
-    await _verseInsertionAdapter.insertList(
-        entities, OnConflictStrategy.fail);
+    await _verseInsertionAdapter.insertList(entities, OnConflictStrategy.fail);
   }
 }
 
@@ -3118,7 +3121,7 @@ class _$VerseKeyDao extends VerseKeyDao {
             (VerseKey item) => <String, Object?>{
                   'id': item.id,
                   'classroomId': item.classroomId,
-                  'contentSerial': item.contentSerial,
+                  'bookSerial': item.bookSerial,
                   'chapterIndex': item.chapterIndex,
                   'verseIndex': item.verseIndex,
                   'version': item.version,
@@ -3142,7 +3145,7 @@ class _$VerseKeyDao extends VerseKeyDao {
     return _queryAdapter.query('SELECT * FROM VerseKey where id=?1',
         mapper: (Map<String, Object?> row) => VerseKey(
             classroomId: row['classroomId'] as int,
-            contentSerial: row['contentSerial'] as int,
+            bookSerial: row['bookSerial'] as int,
             chapterIndex: row['chapterIndex'] as int,
             verseIndex: row['verseIndex'] as int,
             version: row['version'] as int,
@@ -3158,61 +3161,61 @@ class _$VerseKeyDao extends VerseKeyDao {
   @override
   Future<int?> count(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int chapterIndex,
   ) async {
     return _queryAdapter.query(
-        'SELECT count(id) FROM VerseKey where classroomId=?1 and contentSerial=?2 chapterIndex=?3',
+        'SELECT count(id) FROM VerseKey where classroomId=?1 and bookSerial=?2 chapterIndex=?3',
         mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [classroomId, contentSerial, chapterIndex]);
+        arguments: [classroomId, bookSerial, chapterIndex]);
   }
 
   @override
   Future<List<VerseKey>> findByMinVerseIndex(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int chapterIndex,
     int minVerseIndex,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM VerseKey WHERE classroomId=?1 AND contentSerial=?2 AND chapterIndex=?3 AND verseIndex>=?4',
-        mapper: (Map<String, Object?> row) => VerseKey(classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, version: row['version'] as int, k: row['k'] as String, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, id: row['id'] as int?),
-        arguments: [classroomId, contentSerial, chapterIndex, minVerseIndex]);
+        'SELECT * FROM VerseKey WHERE classroomId=?1 AND bookSerial=?2 AND chapterIndex=?3 AND verseIndex>=?4',
+        mapper: (Map<String, Object?> row) => VerseKey(classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, version: row['version'] as int, k: row['k'] as String, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, id: row['id'] as int?),
+        arguments: [classroomId, bookSerial, chapterIndex, minVerseIndex]);
   }
 
   @override
   Future<void> deleteByMinVerseIndex(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int chapterIndex,
     int minVerseIndex,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM VerseKey WHERE classroomId=?1 AND contentSerial=?2 AND chapterIndex=?3 AND verseIndex>=?4',
-        arguments: [classroomId, contentSerial, chapterIndex, minVerseIndex]);
+        'DELETE FROM VerseKey WHERE classroomId=?1 AND bookSerial=?2 AND chapterIndex=?3 AND verseIndex>=?4',
+        arguments: [classroomId, bookSerial, chapterIndex, minVerseIndex]);
   }
 
   @override
   Future<List<VerseKey>> findByMinChapterIndex(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int minChapterIndex,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM VerseKey WHERE classroomId=?1 AND contentSerial=?2 AND chapterIndex>=?3',
-        mapper: (Map<String, Object?> row) => VerseKey(classroomId: row['classroomId'] as int, contentSerial: row['contentSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, version: row['version'] as int, k: row['k'] as String, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, id: row['id'] as int?),
-        arguments: [classroomId, contentSerial, minChapterIndex]);
+        'SELECT * FROM VerseKey WHERE classroomId=?1 AND bookSerial=?2 AND chapterIndex>=?3',
+        mapper: (Map<String, Object?> row) => VerseKey(classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, version: row['version'] as int, k: row['k'] as String, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, id: row['id'] as int?),
+        arguments: [classroomId, bookSerial, minChapterIndex]);
   }
 
   @override
   Future<void> deleteByMinChapterIndex(
     int classroomId,
-    int contentSerial,
+    int bookSerial,
     int minChapterIndex,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM VerseKey WHERE classroomId=?1 AND contentSerial=?2 AND chapterIndex>=?3',
-        arguments: [classroomId, contentSerial, minChapterIndex]);
+        'DELETE FROM VerseKey WHERE classroomId=?1 AND bookSerial=?2 AND chapterIndex>=?3',
+        arguments: [classroomId, bookSerial, minChapterIndex]);
   }
 
   @override
@@ -3237,7 +3240,7 @@ class _$VerseOverallPrgDao extends VerseOverallPrgDao {
             (VerseOverallPrg item) => <String, Object?>{
                   'verseKeyId': item.verseKeyId,
                   'classroomId': item.classroomId,
-                  'contentSerial': item.contentSerial,
+                  'bookSerial': item.bookSerial,
                   'next': _dateConverter.encode(item.next),
                   'progress': item.progress
                 });
@@ -3301,7 +3304,7 @@ class _$StatsDao extends StatsDao {
             _dateConverter.decode(row['createDate'] as int),
             row['createTime'] as int,
             row['classroomId'] as int,
-            row['contentSerial'] as int),
+            row['bookSerial'] as int),
         arguments: [classroomId, _dateConverter.encode(date)]);
   }
 
@@ -3313,7 +3316,7 @@ class _$StatsDao extends StatsDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT * FROM VerseStats WHERE classroomId = ?1 AND createDate >= ?2 AND createDate <= ?3',
-        mapper: (Map<String, Object?> row) => VerseStats(row['verseKeyId'] as int, row['type'] as int, _dateConverter.decode(row['createDate'] as int), row['createTime'] as int, row['classroomId'] as int, row['contentSerial'] as int),
+        mapper: (Map<String, Object?> row) => VerseStats(row['verseKeyId'] as int, row['type'] as int, _dateConverter.decode(row['createDate'] as int), row['createTime'] as int, row['classroomId'] as int, row['bookSerial'] as int),
         arguments: [
           classroomId,
           _dateConverter.encode(start),

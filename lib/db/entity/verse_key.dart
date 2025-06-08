@@ -4,8 +4,8 @@ import 'package:floor/floor.dart';
 
 @Entity(
   indices: [
-    Index(value: ['classroomId', 'contentSerial', 'chapterIndex', 'verseIndex', 'version'], unique: true),
-    Index(value: ['classroomId', 'contentSerial', 'k'], unique: true),
+    Index(value: ['classroomId', 'bookSerial', 'chapterIndex', 'verseIndex', 'version'], unique: true),
+    Index(value: ['classroomId', 'bookSerial', 'k'], unique: true),
   ],
 )
 class VerseKey {
@@ -13,7 +13,7 @@ class VerseKey {
   int? id;
 
   final int classroomId;
-  final int contentSerial;
+  final int bookSerial;
   int chapterIndex;
   int verseIndex;
   int version;
@@ -25,7 +25,7 @@ class VerseKey {
 
   VerseKey({
     required this.classroomId,
-    required this.contentSerial,
+    required this.bookSerial,
     required this.chapterIndex,
     required this.verseIndex,
     required this.version,

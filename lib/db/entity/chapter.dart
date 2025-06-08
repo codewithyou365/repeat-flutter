@@ -5,20 +5,20 @@ import 'package:floor/floor.dart';
 @Entity(
   primaryKeys: ['chapterKeyId'],
   indices: [
-    Index(value: ['classroomId', 'contentSerial', 'chapterIndex'], unique: true),
+    Index(value: ['classroomId', 'bookSerial', 'chapterIndex'], unique: true),
   ],
 )
 class Chapter {
   int chapterKeyId;
 
   final int classroomId;
-  final int contentSerial;
+  final int bookSerial;
   int chapterIndex;
 
   Chapter({
     this.chapterKeyId = 0,
     required this.classroomId,
-    required this.contentSerial,
+    required this.bookSerial,
     required this.chapterIndex,
   });
 }

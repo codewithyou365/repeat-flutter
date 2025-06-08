@@ -99,7 +99,7 @@ class DocHelp {
   }) async {
     await VerseHelp.tryGen(force: true);
     await ChapterHelp.tryGen(force: true);
-    var content = await Db().db.contentDao.getById(contentId);
+    var content = await Db().db.bookDao.getById(contentId);
     var verseCache = VerseHelp.cache;
     var chapterCache = ChapterHelp.cache;
 

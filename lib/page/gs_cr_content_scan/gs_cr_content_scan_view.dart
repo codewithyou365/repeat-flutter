@@ -13,7 +13,7 @@ class GsCrContentScanPage extends StatelessWidget {
     final logic = Get.find<GsCrContentScanLogic>();
     return Scaffold(
       appBar: AppBar(
-        title: Text(I18nKey.content.tr),
+        title: Text(I18nKey.scan.tr),
       ),
       body: QrScan(logic.onResult, key: logic.state.qrScanKey),
     );

@@ -9,7 +9,7 @@ class BookHelp {
 
   static tryGen({force = false}) async {
     if (cache.isEmpty || force) {
-      cache = await Db().db.contentDao.getAllBook(Classroom.curr);
+      cache = await Db().db.bookDao.getAllBook(Classroom.curr);
       bookIdToShow = {for (var book in cache) book.bookId: book};
     }
   }

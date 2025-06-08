@@ -4,7 +4,7 @@ import 'dart:convert' as convert;
 
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/content.dart' show Content;
+import 'package:repeat_flutter/db/entity/book.dart' show Book;
 import 'package:repeat_flutter/db/entity/chapter.dart';
 import 'package:repeat_flutter/db/entity/chapter_key.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
@@ -28,42 +28,42 @@ abstract class ChapterKeyDao {
 
   @Query('SELECT id'
       ' FROM ChapterKey'
-      ' WHERE classroomId=:classroomId and contentSerial=:contentSerial and chapterIndex=:chapterIndex and version=:version')
-  Future<int?> getChapterKeyId(int classroomId, int contentSerial, int chapterIndex, int version);
+      ' WHERE classroomId=:classroomId and bookSerial=:bookSerial and chapterIndex=:chapterIndex and version=:version')
+  Future<int?> getChapterKeyId(int classroomId, int bookSerial, int chapterIndex, int version);
 
   @Query('SELECT ifnull(sum(Chapter.chapterKeyId is null),0) missingCount'
       ' FROM ChapterKey'
-      ' JOIN Content ON Content.id=:contentId AND Content.serial=VerseKey.contentSerial AND Content.docId!=0'
+      ' JOIN Book ON Book.id=:contentId AND Book.serial=VerseKey.bookSerial AND Book.docId!=0'
       ' LEFT JOIN Chapter ON Chapter.chapterKeyId=ChapterKey.id')
   Future<int?> getMissingCount(int contentId);
 
   @Query('SELECT ChapterKey.id chapterKeyId'
-      ',Content.id contentId'
-      ',Content.name contentName'
-      ',Content.sort contentSort'
+      ',Book.id contentId'
+      ',Book.name contentName'
+      ',Book.sort contentSort'
       ',ChapterKey.content chapterContent'
       ',ChapterKey.contentVersion chapterContentVersion'
       ',ChapterKey.chapterIndex'
       ',Chapter.chapterKeyId is null missing'
       ' FROM ChapterKey'
-      " JOIN Content ON Content.classroomId=:classroomId AND Content.serial=ChapterKey.contentSerial AND Content.docId!=0"
+      " JOIN Book ON Book.classroomId=:classroomId AND Book.serial=ChapterKey.bookSerial AND Book.docId!=0"
       ' LEFT JOIN Chapter ON Chapter.chapterKeyId=ChapterKey.id'
       ' WHERE ChapterKey.classroomId=:classroomId')
   Future<List<ChapterShow>> getAllChapter(int classroomId);
 
   @Query('SELECT * FROM ChapterKey'
-      ' WHERE classroomId=:classroomId AND contentSerial=:contentSerial AND chapterIndex>=:minChapterIndex')
-  Future<List<ChapterKey>> findByMinChapterIndex(int classroomId, int contentSerial, int minChapterIndex);
+      ' WHERE classroomId=:classroomId AND bookSerial=:bookSerial AND chapterIndex>=:minChapterIndex')
+  Future<List<ChapterKey>> findByMinChapterIndex(int classroomId, int bookSerial, int minChapterIndex);
 
   @Query('DELETE FROM ChapterKey'
-      ' WHERE classroomId=:classroomId AND contentSerial=:contentSerial AND chapterIndex>=:minChapterIndex')
-  Future<void> deleteByMinChapterIndex(int classroomId, int contentSerial, int minChapterIndex);
+      ' WHERE classroomId=:classroomId AND bookSerial=:bookSerial AND chapterIndex>=:minChapterIndex')
+  Future<void> deleteByMinChapterIndex(int classroomId, int bookSerial, int minChapterIndex);
 
   @Query('UPDATE ChapterKey set content=:content,contentVersion=:contentVersion WHERE id=:id')
   Future<void> updateKeyAndContent(int id, String content, int contentVersion);
 
-  @Query('SELECT * FROM ChapterKey WHERE classroomId=:classroomId and contentSerial=:contentSerial')
-  Future<List<ChapterKey>> find(int classroomId, int contentSerial);
+  @Query('SELECT * FROM ChapterKey WHERE classroomId=:classroomId and bookSerial=:bookSerial')
+  Future<List<ChapterKey>> find(int classroomId, int bookSerial);
 
   @Query('DELETE FROM ChapterKey WHERE id=:id')
   Future<void> deleteById(int id);
@@ -74,8 +74,8 @@ abstract class ChapterKeyDao {
   @Update(onConflict: OnConflictStrategy.fail)
   Future<void> updateOrFail(List<ChapterKey> entities);
 
-  Future<bool> import(List<Chapter> newChapters, List<ChapterKey> newChapterKeys, int contentSerial) async {
-    List<ChapterKey> oldChapters = await find(Classroom.curr, contentSerial);
+  Future<bool> import(List<Chapter> newChapters, List<ChapterKey> newChapterKeys, int bookSerial) async {
+    List<ChapterKey> oldChapters = await find(Classroom.curr, bookSerial);
     var maxVersion = 0;
     Map<String, ChapterKey> keyToChapter = {};
     Map<String, int> keyToId = {};
@@ -107,7 +107,7 @@ abstract class ChapterKeyDao {
     }
     if (needToInsert.isNotEmpty) {
       await insertOrFail(needToInsert);
-      newChapterKeys = await find(Classroom.curr, contentSerial);
+      newChapterKeys = await find(Classroom.curr, bookSerial);
       keyToId = {for (var chapterKey in newChapterKeys) chapterKey.k: chapterKey.id!};
     }
 
@@ -126,7 +126,7 @@ abstract class ChapterKeyDao {
       newChapters[i].chapterKeyId = id;
     }
 
-    await db.chapterDao.delete(Classroom.curr, contentSerial);
+    await db.chapterDao.delete(Classroom.curr, bookSerial);
     if (newChapters.isNotEmpty) {
       await db.chapterDao.insertOrFail(newChapters);
     }
@@ -187,7 +187,7 @@ abstract class ChapterKeyDao {
     if (chapterKey == null) {
       return true;
     }
-    int verseKeyDaoCount = await db.verseKeyDao.count(chapterKey.classroomId, chapterKey.contentSerial, chapterKey.chapterIndex) ?? 0;
+    int verseKeyDaoCount = await db.verseKeyDao.count(chapterKey.classroomId, chapterKey.bookSerial, chapterKey.chapterIndex) ?? 0;
     if (verseKeyDaoCount != 0) {
       Snackbar.show(I18nKey.labelChapterHasVersesAndCantBeDeleted.tr);
       return false;
@@ -205,23 +205,23 @@ abstract class ChapterKeyDao {
       return false;
     }
     int classroomId = deleteLk.classroomId;
-    int contentSerial = deleteLk.contentSerial;
+    int bookSerial = deleteLk.bookSerial;
     int chapterIndex = deleteLk.chapterIndex;
     out['chapterKey'] = deleteLk;
-    var currVerse = await db.verseDao.one(classroomId, contentSerial, chapterIndex, 0);
+    var currVerse = await db.verseDao.one(classroomId, bookSerial, chapterIndex, 0);
     if (currVerse != null) {
       Snackbar.show(I18nKey.labelChapterDeleteBlocked.tr);
       return false;
     }
 
-    Content? content = await db.contentDao.getBySerial(classroomId, contentSerial);
+    Book? content = await db.bookDao.getBySerial(classroomId, bookSerial);
     if (content == null) {
-      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the content data($contentSerial)"]));
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the content data($bookSerial)"]));
       return false;
     }
 
-    var chapters = await db.chapterDao.findByMinChapterIndex(classroomId, contentSerial, chapterIndex);
-    var chapterKeys = await findByMinChapterIndex(classroomId, contentSerial, chapterIndex);
+    var chapters = await db.chapterDao.findByMinChapterIndex(classroomId, bookSerial, chapterIndex);
+    var chapterKeys = await findByMinChapterIndex(classroomId, bookSerial, chapterIndex);
     List<Chapter> insertChapters = [];
     List<ChapterKey> insertChapterKeys = [];
     for (var v in chapters) {
@@ -238,8 +238,8 @@ abstract class ChapterKeyDao {
       v.chapterIndex--;
       insertChapterKeys.add(v);
     }
-    var verses = await db.verseDao.findByMinChapterIndex(classroomId, contentSerial, chapterIndex);
-    var verseKeys = await db.verseKeyDao.findByMinChapterIndex(classroomId, contentSerial, chapterIndex);
+    var verses = await db.verseDao.findByMinChapterIndex(classroomId, bookSerial, chapterIndex);
+    var verseKeys = await db.verseKeyDao.findByMinChapterIndex(classroomId, bookSerial, chapterIndex);
     List<Verse> insertVerses = [];
     List<VerseKey> insertVerseKeys = [];
     for (var v in verses) {
@@ -252,13 +252,13 @@ abstract class ChapterKeyDao {
       v.chapterIndex--;
       insertVerseKeys.add(v);
     }
-    await db.chapterDao.deleteByMinChapterIndex(classroomId, contentSerial, chapterIndex);
-    await deleteByMinChapterIndex(classroomId, contentSerial, chapterIndex);
+    await db.chapterDao.deleteByMinChapterIndex(classroomId, bookSerial, chapterIndex);
+    await deleteByMinChapterIndex(classroomId, bookSerial, chapterIndex);
     await db.chapterDao.insertOrFail(insertChapters);
     await insertOrFail(insertChapterKeys);
 
-    await db.verseDao.deleteByMinChapterIndex(classroomId, contentSerial, chapterIndex);
-    await db.verseKeyDao.deleteByMinChapterIndex(classroomId, contentSerial, chapterIndex);
+    await db.verseDao.deleteByMinChapterIndex(classroomId, bookSerial, chapterIndex);
+    await db.verseKeyDao.deleteByMinChapterIndex(classroomId, bookSerial, chapterIndex);
     await db.verseDao.insertListOrFail(insertVerses);
     await db.verseKeyDao.insertListOrFail(insertVerseKeys);
     await db.textVersionDao.delete(TextVersionType.chapterContent, deleteLk.id!);
@@ -276,18 +276,18 @@ abstract class ChapterKeyDao {
     out['chapterKey'] = baseLk;
     return await interAddChapter(
       chapterContent: baseLk.content,
-      bookSerial: baseLk.contentSerial,
+      bookSerial: baseLk.bookSerial,
       chapterIndex: chapterIndex,
     );
   }
 
   @transaction
   Future<bool> addFirstChapter(
-    int contentSerial,
+    int bookSerial,
   ) async {
     return await interAddChapter(
       chapterContent: "{}",
-      bookSerial: contentSerial,
+      bookSerial: bookSerial,
       chapterIndex: 0,
     );
   }
@@ -301,12 +301,12 @@ abstract class ChapterKeyDao {
     int classroomId = Classroom.curr;
     Chapter newChapter = Chapter(
       classroomId: classroomId,
-      contentSerial: bookSerial,
+      bookSerial: bookSerial,
       chapterIndex: chapterIndex,
     );
     ChapterKey newChapterKey = ChapterKey(
       classroomId: classroomId,
-      contentSerial: bookSerial,
+      bookSerial: bookSerial,
       chapterIndex: chapterIndex,
       version: 1,
       content: chapterContent,
@@ -320,7 +320,7 @@ abstract class ChapterKeyDao {
       createTime: now,
     );
 
-    Content? content = await db.contentDao.getBySerial(classroomId, bookSerial);
+    Book? content = await db.bookDao.getBySerial(classroomId, bookSerial);
     if (content == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the content data($bookSerial)"]));
       return false;
@@ -353,9 +353,9 @@ abstract class ChapterKeyDao {
     }
     await deleteByMinChapterIndex(classroomId, bookSerial, chapterIndex);
     await insertOrFail(insertChapterKeys);
-    int? newChapterKeyId = await getChapterKeyId(newChapterKey.classroomId, newChapterKey.contentSerial, newChapterKey.chapterIndex, newChapterKey.version);
+    int? newChapterKeyId = await getChapterKeyId(newChapterKey.classroomId, newChapterKey.bookSerial, newChapterKey.chapterIndex, newChapterKey.version);
     if (newChapterKeyId == null) {
-      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the newChapterKeyId by ${newChapterKey.classroomId}, ${newChapterKey.contentSerial}, ${newChapterKey.chapterIndex}, ${newChapterKey.version}"]));
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the newChapterKeyId by ${newChapterKey.classroomId}, ${newChapterKey.bookSerial}, ${newChapterKey.chapterIndex}, ${newChapterKey.version}"]));
       return false;
     }
     newChapter.chapterKeyId = newChapterKeyId;

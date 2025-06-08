@@ -17,9 +17,9 @@ abstract class TextVersionDao {
   @Query('SELECT TextVersion.* '
       ' FROM TextVersion'
       ' WHERE TextVersion.t=3'
-      '  AND TextVersion.id=:contentSerial'
+      '  AND TextVersion.id=:bookSerial'
       '  AND TextVersion.version=:version')
-  Future<TextVersion?> getTextForContent(int contentSerial, int version);
+  Future<TextVersion?> getTextForBook(int bookSerial, int version);
 
   @Query('DELETE FROM TextVersion WHERE t=:type AND id=:id')
   Future<void> delete(TextVersionType type, int id);

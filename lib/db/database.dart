@@ -6,7 +6,7 @@ import 'dart:developer';
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/dao/classroom_dao.dart';
-import 'package:repeat_flutter/db/dao/content_dao.dart';
+import 'package:repeat_flutter/db/dao/book_dao.dart';
 import 'package:repeat_flutter/db/dao/cr_kv_dao.dart';
 import 'package:repeat_flutter/db/dao/doc_dao.dart';
 import 'package:repeat_flutter/db/dao/game_dao.dart';
@@ -24,7 +24,7 @@ import 'package:repeat_flutter/db/dao/lock_dao.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
-import 'package:repeat_flutter/db/entity/content.dart';
+import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/lock.dart';
 import 'package:repeat_flutter/db/entity/chapter.dart';
 import 'package:repeat_flutter/db/entity/chapter_key.dart';
@@ -61,7 +61,7 @@ part 'database.g.dart'; // the generated code will be there
   ChapterKey,
   Doc,
   Classroom,
-  Content,
+  Book,
   CrKv,
   Verse,
   VerseKey,
@@ -110,7 +110,7 @@ abstract class AppDatabase extends FloorDatabase {
 
   TextVersionDao get textVersionDao;
 
-  ContentDao get contentDao;
+  BookDao get bookDao;
 
   CrKvDao get crKvDao;
 
@@ -157,7 +157,7 @@ prepareDb(AppDatabase db) {
   db.chapterKeyDao.db = db;
   db.docDao.db = db;
   db.classroomDao.db = db;
-  db.contentDao.db = db;
+  db.bookDao.db = db;
   db.scheduleDao.db = db;
   db.statsDao.db = db;
 }

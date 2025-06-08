@@ -160,7 +160,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
       await VerseHelp.getVerses(
         force: true,
         query: QueryChapter(
-          contentSerial: chapterKey.contentSerial,
+          bookSerial: chapterKey.bookSerial,
           minChapterIndex: chapterKey.chapterIndex,
         ),
       );
@@ -194,7 +194,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     if (bookSelect.value > 0) {
       success = await showOverlay<bool>(() async {
         var classroomId = Classroom.curr;
-        var content = await Db().db.contentDao.getContentByName(classroomId, options[bookSelect.value].label);
+        var content = await Db().db.bookDao.getBookByName(classroomId, options[bookSelect.value].label);
         if (content == null) {
           Snackbar.show(I18nKey.labelNoContent.tr);
           return false;
@@ -318,8 +318,8 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                 children: [
                   RowWidget.buildCascadeCupertinoPicker(
                     head: [
-                      OptionHead(title: I18nKey.labelBook.tr, value: bookSelect),
-                      OptionHead(title: I18nKey.labelChapter.tr, value: chapterSelect),
+                      OptionHead(title: I18nKey.labelBookFn.tr, value: bookSelect),
+                      OptionHead(title: I18nKey.labelChapterName.tr, value: chapterSelect),
                     ],
                     body: options,
                     changed: (index) {
@@ -430,7 +430,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                                       var contentId2Missing = refreshMissingChapterIndex(missingChapterIndex, chapterShow);
                                       var warning = contentId2Missing[chapter.contentId] ?? false;
                                       if (warning == false) {
-                                        await Db().db.contentDao.updateContentWarningForChapter(chapter.contentId, warning, DateTime.now().millisecondsSinceEpoch);
+                                        await Db().db.bookDao.updateBookWarningForChapter(chapter.contentId, warning, DateTime.now().millisecondsSinceEpoch);
                                         if (removeWarning != null) {
                                           await removeWarning!();
                                         }

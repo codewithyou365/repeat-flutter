@@ -12,7 +12,7 @@ import 'package:repeat_flutter/db/dao/chapter_key_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/content.dart';
+import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
@@ -28,7 +28,7 @@ import 'repeat_logic.dart';
 class Helper {
   bool initialized = false;
   late RepeatLogic logic;
-  late List<Content> contents;
+  late List<Book> contents;
   late String rootPath;
 
   late double screenWidth;
@@ -66,7 +66,7 @@ class Helper {
   Future<void> init(RepeatLogic logic) async {
     initialized = true;
     this.logic = logic;
-    contents = await Db().db.contentDao.getAllContent(Classroom.curr);
+    contents = await Db().db.bookDao.getAll(Classroom.curr);
     rootPath = await DocPath.getContentPath();
   }
 
@@ -108,7 +108,7 @@ class Helper {
     if (logic.currVerse == null) {
       return null;
     }
-    Content ret = contents.firstWhere((c) => c.serial == logic.currVerse!.contentSerial, orElse: () => Content.empty());
+    Book ret = contents.firstWhere((c) => c.serial == logic.currVerse!.bookSerial, orElse: () => Book.empty());
     if (ret.id == null) {
       return null;
     }
@@ -119,7 +119,7 @@ class Helper {
     if (logic.currVerse == null) {
       return null;
     }
-    Map<String, dynamic>? ret = rootMapCache[logic.currVerse!.contentSerial];
+    Map<String, dynamic>? ret = rootMapCache[logic.currVerse!.bookSerial];
     String? rootContent = getCurrRootContent();
     if (rootContent == null) {
       return null;
@@ -128,7 +128,7 @@ class Helper {
     if (ret is! Map<String, dynamic>) {
       return null;
     }
-    rootMapCache[logic.currVerse!.contentSerial] = ret;
+    rootMapCache[logic.currVerse!.bookSerial] = ret;
     return ret;
   }
 
@@ -218,7 +218,7 @@ class Helper {
     var downloads = chapter.download ?? [];
     ret = [];
     for (var download in downloads) {
-      ret.add(rootPath.joinPath(DocPath.getRelativePath(logic.currVerse!.contentSerial)).joinPath(download.path));
+      ret.add(rootPath.joinPath(DocPath.getRelativePath(logic.currVerse!.bookSerial)).joinPath(download.path));
     }
     chapterPathCache[logic.currVerse!.chapterKeyId] = ret;
     return ret;
@@ -291,7 +291,7 @@ class Helper {
             String hash = await Hash.toSha1(pickedPath);
             Download download = Download(url: pickedName, hash: hash);
             var rootPath = await DocPath.getContentPath();
-            String localFolder = rootPath.joinPath(DocPath.getRelativePath(s.contentSerial).joinPath(download.folder));
+            String localFolder = rootPath.joinPath(DocPath.getRelativePath(s.bookSerial).joinPath(download.folder));
             if (!allowedExtensions.containsIgnoreCase(download.extension)) {
               Snackbar.show(I18nKey.labelFileExtensionNotMatch.trArgs([jsonEncode(allowedExtensions)]));
               return;

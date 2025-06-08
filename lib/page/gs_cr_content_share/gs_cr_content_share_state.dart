@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:repeat_flutter/db/entity/content.dart';
+import 'package:repeat_flutter/db/entity/book.dart';
 
 class Address {
   String title;
@@ -10,7 +10,7 @@ class Address {
 
 class GsCrContentShareState {
   final List<Address> addresses = <Address>[];
-  Content content = Content.empty();
+  Book content = Book.empty();
   var lanAddressSuffix = "";
   RxBool shareNote = false.obs;
 }

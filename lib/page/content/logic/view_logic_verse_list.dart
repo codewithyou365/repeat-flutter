@@ -197,7 +197,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
       originalVerseShow = await VerseHelp.getVerses(
         force: true,
         query: QueryChapter(
-          contentSerial: verse.contentSerial,
+          bookSerial: verse.bookSerial,
           chapterIndex: verse.chapterIndex,
         ),
       );
@@ -212,7 +212,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     if (bookSelect.value > 0 && chapterSelect.value > 0) {
       await showOverlay(() async {
         var classroomId = Classroom.curr;
-        var content = await Db().db.contentDao.getContentByName(classroomId, options[bookSelect.value].label);
+        var content = await Db().db.bookDao.getBookByName(classroomId, options[bookSelect.value].label);
         if (content == null) {
           Snackbar.show(I18nKey.labelNoContent.tr);
           return;
@@ -230,7 +230,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
         originalVerseShow = await VerseHelp.getVerses(
           force: true,
           query: QueryChapter(
-            contentSerial: content.serial,
+            bookSerial: content.serial,
             chapterIndex: chapterIndex,
           ),
         );
@@ -253,7 +253,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
       originalVerseShow = await VerseHelp.getVerses(
         force: true,
         query: QueryChapter(
-          contentSerial: verse.contentSerial,
+          bookSerial: verse.bookSerial,
           chapterIndex: verse.chapterIndex,
         ),
       );
@@ -356,8 +356,8 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                 children: [
                   RowWidget.buildCascadeCupertinoPicker(
                     head: [
-                      OptionHead(title: I18nKey.labelBook.tr, value: bookSelect),
-                      OptionHead(title: I18nKey.labelChapter.tr, value: chapterSelect),
+                      OptionHead(title: I18nKey.labelBookFn.tr, value: bookSelect),
+                      OptionHead(title: I18nKey.labelChapterName.tr, value: chapterSelect),
                     ],
                     body: options,
                     changed: (index) {
@@ -565,7 +565,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                       var contentId2Missing = refreshMissingVerseIndex(missingVerseIndex, verseShow);
                                       var warning = contentId2Missing[verse.contentId] ?? false;
                                       if (warning == false) {
-                                        await Db().db.contentDao.updateContentWarningForVerse(verse.contentId, warning, DateTime.now().millisecondsSinceEpoch);
+                                        await Db().db.bookDao.updateBookWarningForVerse(verse.contentId, warning, DateTime.now().millisecondsSinceEpoch);
                                         if (removeWarning != null) {
                                           await removeWarning!();
                                         }

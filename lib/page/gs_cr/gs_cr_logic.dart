@@ -6,7 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/time.dart';
-import 'package:repeat_flutter/db/dao/content_dao.dart';
+import 'package:repeat_flutter/db/dao/book_dao.dart';
 import 'package:repeat_flutter/db/dao/chapter_key_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
@@ -60,8 +60,8 @@ class GsCrLogic extends GetxController {
     await ChapterHelp.tryGen(force: true);
     ChapterKeyDao.getChapterShow = ChapterHelp.getCache;
     await BookHelp.tryGen(force: true);
-    ContentDao.getBookShow = BookHelp.getCache;
-    state.forAdd.contents = await Db().db.contentDao.getAllEnableContent(Classroom.curr);
+    BookDao.getBookShow = BookHelp.getCache;
+    state.forAdd.contents = await Db().db.bookDao.getAllEnableBook(Classroom.curr);
     state.forAdd.contentNames = state.forAdd.contents.map((e) => e.name).toList();
     var now = DateTime.now();
     List<VerseTodayPrg> allProgresses = [];
@@ -234,15 +234,15 @@ class GsCrLogic extends GetxController {
   }
 
   tryStart(List<VerseTodayPrg> list, {bool grouping = false, Repeat mode = Repeat.normal}) async {
-    var warning = await Db().db.contentDao.hasWarning(Classroom.curr);
+    var warning = await Db().db.bookDao.hasWarning(Classroom.curr);
     if (warning ?? false) {
       MsgBox.yesOrNo(
         title: I18nKey.labelTips.tr,
-        desc: I18nKey.labelContentsHaveUnnecessaryVerses.tr,
+        desc: I18nKey.labelHaveUnnecessaryVerses.tr,
         yesBtnTitle: I18nKey.btnHandleNow.tr,
         yes: () {
           Get.back();
-          Nav.gsCrContent.push();
+          Nav.scCrMaterial.push();
         },
       );
       return;
@@ -361,8 +361,8 @@ class GsCrLogic extends GetxController {
 
   Future<void> initChapter({bool updateView = true}) async {
     if (state.forAdd.maxChapter < 0) {
-      var contentSerial = state.forAdd.fromContent!.serial;
-      var maxChapter = await Db().db.scheduleDao.getMaxChapterIndex(Classroom.curr, contentSerial);
+      var bookSerial = state.forAdd.fromContent!.serial;
+      var maxChapter = await Db().db.scheduleDao.getMaxChapterIndex(Classroom.curr, bookSerial);
       state.forAdd.maxChapter = (maxChapter ?? 1) + 1;
       if (updateView) {
         update([GsCrLogic.idForAdd]);
@@ -375,8 +375,8 @@ class GsCrLogic extends GetxController {
       return;
     }
     if (state.forAdd.maxVerse < 0) {
-      var contentSerial = state.forAdd.fromContent!.serial;
-      var maxVerse = await Db().db.scheduleDao.getMaxVerseIndex(Classroom.curr, contentSerial, state.forAdd.fromChapterIndex);
+      var bookSerial = state.forAdd.fromContent!.serial;
+      var maxVerse = await Db().db.scheduleDao.getMaxVerseIndex(Classroom.curr, bookSerial, state.forAdd.fromChapterIndex);
       state.forAdd.maxVerse = (maxVerse ?? 1) + 1;
       if (updateView) {
         update([GsCrLogic.idForAdd]);

@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
-import 'package:repeat_flutter/db/entity/content.dart';
+import 'package:repeat_flutter/db/entity/book.dart';
 
-class GsCrContentState {
-  final List<Content> list = <Content>[];
+class ScCrMaterialState {
+  final List<Book> list = <Book>[];
   var loading = false.obs;
   var indexCount = 0.obs;
   var indexTotal = 1.obs;

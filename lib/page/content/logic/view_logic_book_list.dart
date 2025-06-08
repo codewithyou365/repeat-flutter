@@ -155,7 +155,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                 padding: const EdgeInsets.all(0),
                 children: [
                   RowWidget.buildCupertinoPicker(
-                    I18nKey.labelContent.tr,
+                    I18nKey.labelBookFn.tr,
                     bookOptions,
                     contentNameSelect,
                     changed: (index) {
@@ -220,7 +220,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                                 ),
                                 SizedBox(height: 8, width: width),
                                 ExpandableText(
-                                  title: I18nKey.labelBook.tr,
+                                  title: I18nKey.labelBookFn.tr,
                                   text: ': ${book.bookContent}',
                                   version: book.bookContentVersion,
                                   limit: 60,
@@ -237,7 +237,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                                       I18nKey.labelBook.tr,
                                       content,
                                       (str) async {
-                                        await Db().db.contentDao.updateBookContent(book.bookId, str);
+                                        await Db().db.bookDao.updateBookContent(book.bookId, str);
                                         parentLogic.update([ViewLogicBookList.bodyId]);
                                       },
                                       qrPagePath: Nav.gsCrContentScan.path,

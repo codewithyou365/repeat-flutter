@@ -2,31 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/db/entity/content.dart';
+import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
-import 'gs_cr_content_logic.dart';
+import 'sc_cr_material_logic.dart';
 
-class GsCrContentPage extends StatelessWidget {
-  const GsCrContentPage({Key? key}) : super(key: key);
+class ScCrMaterialPage extends StatelessWidget {
+  const ScCrMaterialPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final logic = Get.find<GsCrContentLogic>();
+    final logic = Get.find<ScCrMaterialLogic>();
     return Scaffold(
       appBar: AppBar(
-        title: Text(I18nKey.content.tr),
+        title: Text(I18nKey.material.tr),
       ),
-      body: GetBuilder<GsCrContentLogic>(
-        id: GsCrContentLogic.id,
+      body: GetBuilder<ScCrMaterialLogic>(
+        id: ScCrMaterialLogic.id,
         builder: (_) => buildBody(logic),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           RxString mgn = RxString("");
-          MsgBox.strInputWithYesOrNo(mgn, I18nKey.btnAdd.tr, I18nKey.labelContentName.tr, yes: () {
+          MsgBox.strInputWithYesOrNo(mgn, I18nKey.btnAdd.tr, I18nKey.labelBookName.tr, yes: () {
             logic.add(mgn.value);
             return;
           });
@@ -37,7 +37,7 @@ class GsCrContentPage extends StatelessWidget {
     );
   }
 
-  Widget buildBody(GsCrContentLogic logic) {
+  Widget buildBody(ScCrMaterialLogic logic) {
     var state = logic.state;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 28.w),
@@ -60,7 +60,7 @@ class GsCrContentPage extends StatelessWidget {
     );
   }
 
-  Widget buildButton(GsCrContentLogic logic, Content model) {
+  Widget buildButton(ScCrMaterialLogic logic, Book model) {
     var menus = <PopupMenuEntry<String>>[];
 
     if (model.docId == 0) {
@@ -146,10 +146,10 @@ class GsCrContentPage extends StatelessWidget {
     );
   }
 
-  openDeleteDialog(GsCrContentLogic logic, Content model) {
+  openDeleteDialog(ScCrMaterialLogic logic, Book model) {
     MsgBox.yesOrNo(
       title: I18nKey.labelDelete.tr,
-      desc: I18nKey.labelDeleteContent.trArgs([model.name]),
+      desc: I18nKey.labelDeleteBook.trArgs([model.name]),
       yes: () {
         logic.delete(model.id!, model.serial);
         Get.back();
@@ -157,12 +157,12 @@ class GsCrContentPage extends StatelessWidget {
     );
   }
 
-  openDownloadDialog(GsCrContentLogic logic, Content model) {
+  openDownloadDialog(ScCrMaterialLogic logic, Book model) {
     final state = logic.state;
     RxString downloadUrl = model.url.obs;
     MsgBox.strInputWithYesOrNo(
       downloadUrl,
-      I18nKey.labelDownloadContent.tr,
+      I18nKey.labelDownloadBook.tr,
       I18nKey.labelRemoteUrl.tr,
       nextChildren: [
         Obx(() {

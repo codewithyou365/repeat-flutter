@@ -2,7 +2,6 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/page/content/content_nav.dart';
 import 'package:repeat_flutter/page/gs/gs_nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_nav.dart';
-import 'package:repeat_flutter/page/gs_cr_content/gs_cr_content_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_content_scan/gs_cr_content_scan_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_content_share/gs_cr_content_share_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_content_template/gs_cr_content_template_nav.dart';
@@ -18,12 +17,12 @@ import 'package:repeat_flutter/page/gs_settings/gs_settings_nav.dart';
 import 'package:repeat_flutter/page/gs_settings_data/gs_settings_data_nav.dart';
 import 'package:repeat_flutter/page/gs_settings_lang/gs_settings_lang_nav.dart';
 import 'package:repeat_flutter/page/gs_settings_theme/gs_settings_theme_nav.dart';
+import 'package:repeat_flutter/page/sc_cr_material/sc_cr_material_nav.dart';
 
 enum Nav {
   content("/content"),
   gs("/gs"),
   gsCr("/gs/cr"),
-  gsCrContent("/gs/cr/content"),
   gsCrContentScan("/gs/cr/content/scan"),
   gsCrContentShare("/gs/cr/content/share"),
   gsCrContentTemplate("/gs/cr/content/template"),
@@ -39,6 +38,7 @@ enum Nav {
   gsSettingsData("/gs/settings/data"),
   gsSettingsLang("/gs/settings/lang"),
   gsSettingsTheme("/gs/settings/theme"),
+  scCrMaterial("/sc/cr/material"),
   ;
 
   final String path;
@@ -68,7 +68,6 @@ enum Nav {
     contentNav(content.path),
     gsNav(gs.path),
     gsCrNav(gsCr.path),
-    gsCrContentNav(gsCrContent.path),
     gsCrContentScanNav(gsCrContentScan.path),
     gsCrContentShareNav(gsCrContentShare.path),
     gsCrContentTemplateNav(gsCrContentTemplate.path),
@@ -84,5 +83,6 @@ enum Nav {
     gsSettingsDataNav(gsSettingsData.path),
     gsSettingsLangNav(gsSettingsLang.path),
     gsSettingsThemeNav(gsSettingsTheme.path),
+    scCrMaterialNav(scCrMaterial.path),
   ];
 }

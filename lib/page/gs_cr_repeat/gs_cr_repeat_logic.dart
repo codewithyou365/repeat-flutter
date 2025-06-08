@@ -116,7 +116,7 @@ class GsCrRepeatLogic extends GetxController {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
-    var content = await Db().db.contentDao.getBySerial(curr.classroomId, curr.contentSerial);
+    var content = await Db().db.bookDao.getBySerial(curr.classroomId, curr.bookSerial);
     if (content == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;

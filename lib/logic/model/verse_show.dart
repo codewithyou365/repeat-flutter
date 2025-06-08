@@ -8,7 +8,7 @@ class VerseShow {
   String k;
   final int contentId;
   final String contentName;
-  final int contentSerial;
+  final int bookSerial;
   final int contentSort;
   String verseContent;
   int verseContentVersion;
@@ -25,7 +25,7 @@ class VerseShow {
     required this.k,
     required this.contentId,
     required this.contentName,
-    required this.contentSerial,
+    required this.bookSerial,
     required this.contentSort,
     required this.verseContent,
     required this.verseContentVersion,

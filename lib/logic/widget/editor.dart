@@ -22,7 +22,7 @@ class Editor {
     final shareBtn = Button(I18nKey.btnShare.tr, () {
       showQrCode(context, textController.text);
     });
-    final scanBtn = Button(I18nKey.btnScan.tr, () async {
+    final scanBtn = Button(I18nKey.scan.tr, () async {
       if (qrPagePath == null) {
         return;
       }

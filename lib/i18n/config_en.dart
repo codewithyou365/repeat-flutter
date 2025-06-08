@@ -7,8 +7,8 @@ class ConfigEn extends Config {
   ConfigEn({Map<String, String>? defaultData}) : super(defaultData) {
     put(I18nKey.appName, "Repeat");
     put(I18nKey.settings, "Settings");
-    put(I18nKey.content, "Content");
-    put(I18nKey.contentShare, "Content Share");
+    put(I18nKey.material, "Material");
+    put(I18nKey.bookShare, "Book Share");
     put(I18nKey.createType, "Created Type");
     put(I18nKey.statistic, "Stats");
     put(I18nKey.statisticLearn, "Stats-Learn");
@@ -28,21 +28,20 @@ class ConfigEn extends Config {
     put(I18nKey.labelClassroomNameEmpty, "The classroom name cannot be empty");
     put(I18nKey.labelClassroomNameError, "The classroom name should be 3 letters or less and consist of alphanumeric characters in uppercase.");
     put(I18nKey.labelClassroomNameDuplicated, "The classroom name is duplicated.");
-    put(I18nKey.labelContentName, "Content Name");
-    put(I18nKey.labelContentNameEmpty, "The content name cannot be empty");
-    put(I18nKey.labelContentNameError, "The content name should be 3 letters or less and consist of alphanumeric characters in uppercase.");
-    put(I18nKey.labelContentNameDuplicated, "The content name is duplicated.");
+    put(I18nKey.labelBookName, "Book Name");
+    put(I18nKey.labelBookNameEmpty, "The book name cannot be empty");
+    put(I18nKey.labelBookNameError, "The book name should be 3 letters or less and consist of alphanumeric characters in uppercase.");
+    put(I18nKey.labelBookNameDuplicated, "The book name is duplicated.");
     put(I18nKey.labelDelete, "Delete");
     put(I18nKey.labelRemoteUrl, "Remote URL");
     put(I18nKey.labelOriginalAddress, "Original address");
     put(I18nKey.labelLanAddress, "LAN address");
     put(I18nKey.labelDownloadFirstBeforeSharing, "Please download first before sharing.");
     put(I18nKey.labelDownloadFirstBeforeSaving, "Please download first before saving.");
-    put(I18nKey.labelAddContent, "Add content");
-    put(I18nKey.labelDeleteContent, "Please confirm to delete content: %s");
+    put(I18nKey.labelDeleteBook, "Please confirm to delete content: %s");
     put(I18nKey.labelDeleteVerse, "Please confirm to delete the verse");
     put(I18nKey.labelDeleteChapter, "Please confirm to delete the chapter");
-    put(I18nKey.labelDownloadContent, "Download content");
+    put(I18nKey.labelDownloadBook, "Download book");
     put(I18nKey.labelScheduleContent, "Add learning task with %s verses.");
     put(I18nKey.labelNoLearningContent, "There is no learning content available.");
     put(I18nKey.labelResetLearningContent, "The learning content will be reset in %s");
@@ -133,7 +132,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelSetMaskTips, "Swipe left to increase the height of the barrier.");
     put(I18nKey.labelQrCodeContentCopiedToClipboard, "QR code content copied to clipboard");
     put(I18nKey.labelCopiedToClipboard, "Copied to clipboard");
-    put(I18nKey.labelShouldLinkToTheContentBeAdded, "Should the link to the content be added?");
+    put(I18nKey.labelShouldScannedContentBeAdded, "Should the scanned content be added?");
     put(I18nKey.labelTooMuchData, "Too much data! %s");
     put(I18nKey.labelDataDuplication, "Data duplication!");
     put(I18nKey.labelDataAnomaly, "Data anomaly! %s");
@@ -198,7 +197,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelSearch, "Search...");
     put(I18nKey.labelNotFoundVerse, "not found verse (%s)");
     put(I18nKey.labelSettingLearningProgressWarning, "Setting the learning progress here will not create a learning record");
-    put(I18nKey.labelContentsHaveUnnecessaryVerses, "Contents have unnecessary verses");
+    put(I18nKey.labelHaveUnnecessaryVerses, "There are some unnecessary verses");
     put(I18nKey.labelChapterKeyCantBeEmpty, "Chapter key cannot be empty");
     put(I18nKey.labelChapterKeyDuplicated, "Chapter key is duplicated");
     put(I18nKey.labelEdit, "Edit");
@@ -228,6 +227,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelFileNotFound, "File not found. Do you want to import the file now?");
     put(I18nKey.labelFileExtensionNotMatch, "The file extension does not match the expected format. Please ensure it is one of %s");
     put(I18nKey.labelBook, "Book");
+    put(I18nKey.labelBookFn, "Book");
     put(I18nKey.labelAddSuccess, "Add success.");
     put(I18nKey.labelTipForAddingContent, "The current %s does not exist. Click the plus icon to add it");
     put(I18nKey.btnEnd, "End");
@@ -250,7 +250,7 @@ class ConfigEn extends Config {
     put(I18nKey.btnOk, "Ok");
     put(I18nKey.btnDelete, "Delete");
     put(I18nKey.btnShare, "Share");
-    put(I18nKey.btnScan, "Scan");
+    put(I18nKey.scan, "Scan");
     put(I18nKey.btnEditTrack, "Edit Track");
     put(I18nKey.btnEditNote, "Edit Note");
     put(I18nKey.btnGameMode, "Game Mode");

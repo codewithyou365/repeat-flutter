@@ -10,7 +10,7 @@ class GsCrContentScanLogic extends GetxController {
   onResult(String code) {
     state.qrScanKey.currentState?.pauseCamera();
     MsgBox.yesOrNo(
-      title: I18nKey.labelShouldLinkToTheContentBeAdded.tr,
+      title: I18nKey.labelShouldScannedContentBeAdded.tr,
       desc: code,
       no: () {
         Get.back();

@@ -15,7 +15,7 @@ class GsCrContentSharePage extends StatelessWidget {
     final logic = Get.find<GsCrContentShareLogic>();
     return Scaffold(
       appBar: AppBar(
-        title: Text(I18nKey.contentShare.tr),
+        title: Text(I18nKey.bookShare.tr),
         actions: <Widget>[
           Padding(
             padding: EdgeInsets.all(8.0.w),

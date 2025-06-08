@@ -6,7 +6,7 @@ import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/nav.dart';
-import 'package:repeat_flutter/page/gs_cr_content/gs_cr_content_logic.dart';
+import 'package:repeat_flutter/page/sc_cr_material/sc_cr_material_logic.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 
 import 'gs_cr_content_template_state.dart';
@@ -20,7 +20,7 @@ class GsCrContentTemplateLogic extends GetxController {
     super.onInit();
     List<int> ids = Get.arguments as List<int>;
     state.contentId = ids[0];
-    state.contentSerial = ids[1];
+    state.bookSerial = ids[1];
     for (var v in RepeatViewEnum.values) {
       state.items.add(v.name);
     }
@@ -29,7 +29,7 @@ class GsCrContentTemplateLogic extends GetxController {
   void onSave(String name) async {
     showOverlay(() async {
       var rootPath = await DocPath.getContentPath();
-      var relativePath = DocPath.getRelativePath(state.contentSerial);
+      var relativePath = DocPath.getRelativePath(state.bookSerial);
       var workPath = rootPath.joinPath(relativePath);
       await Folder.ensureExists(workPath);
       var indexJsonContent = GsCrContentTemplateState.prefixTemplate;
@@ -40,9 +40,9 @@ class GsCrContentTemplateLogic extends GetxController {
       File indexJsonFile = File(indexJsonPath);
       await indexJsonFile.writeAsString(indexJsonContent, flush: true);
 
-      final logic = Get.find<GsCrContentLogic>();
+      final logic = Get.find<ScCrMaterialLogic>();
       await logic.schedule(state.contentId, 1, indexJsonUrl);
-      Nav.gsCrContent.until();
+      Nav.scCrMaterial.until();
     }, I18nKey.labelSaving.tr);
   }
 }

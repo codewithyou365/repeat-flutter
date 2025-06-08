@@ -1,4 +1,4 @@
-// entity/content.dart
+// entity/book.dart
 
 import 'package:floor/floor.dart';
 
@@ -11,7 +11,7 @@ import 'package:floor/floor.dart';
     Index(value: ['sort', 'id']),
   ],
 )
-class Content {
+class Book {
   @PrimaryKey(autoGenerate: true)
   final int? id;
 
@@ -33,7 +33,7 @@ class Content {
   int createTime;
   int updateTime;
 
-  Content({
+  Book({
     this.id,
     required this.classroomId,
     required this.serial,
@@ -51,8 +51,8 @@ class Content {
     required this.updateTime,
   });
 
-  static Content empty() {
-    return Content(
+  static Book empty() {
+    return Book(
       id: null,
       classroomId: 0,
       serial: 0,

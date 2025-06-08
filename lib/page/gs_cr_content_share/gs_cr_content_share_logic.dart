@@ -14,7 +14,7 @@ import 'package:repeat_flutter/common/url.dart';
 import 'package:repeat_flutter/common/zip.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/content.dart';
+import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
@@ -36,7 +36,7 @@ class GsCrContentShareLogic extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    state.content = Get.arguments[0] as Content;
+    state.content = Get.arguments[0] as Book;
     state.addresses.add(Address(I18nKey.labelOriginalAddress.tr, state.content.url));
     state.lanAddressSuffix = "/${DocPath.getIndexFileName()}";
     _startHttpService();

@@ -7,8 +7,8 @@ class ConfigZh extends Config {
   ConfigZh({Map<String, String>? defaultData}) : super(defaultData) {
     put(I18nKey.appName, "重复");
     put(I18nKey.settings, "设置");
-    put(I18nKey.content, "内容");
-    put(I18nKey.contentShare, "内容分享");
+    put(I18nKey.material, "材料");
+    put(I18nKey.bookShare, "学卷分享");
     put(I18nKey.createType, "创建的类型");
     put(I18nKey.statistic, "统计");
     put(I18nKey.statisticLearn, "统计-学习");
@@ -28,21 +28,20 @@ class ConfigZh extends Config {
     put(I18nKey.labelClassroomNameEmpty, "课堂名字应不能为空");
     put(I18nKey.labelClassroomNameError, "课堂名字应为 3 个字母或更少，并且由大写字母数字字符组成。");
     put(I18nKey.labelClassroomNameDuplicated, "课堂名字重复。");
-    put(I18nKey.labelContentName, "内容名称");
-    put(I18nKey.labelContentNameEmpty, "内容名字应不能为空");
-    put(I18nKey.labelContentNameError, "内容名字应为 3 个字母或更少，并且由大写字母数字字符组成。");
-    put(I18nKey.labelContentNameDuplicated, "内容名字重复。");
+    put(I18nKey.labelBookName, "学卷名称");
+    put(I18nKey.labelBookNameEmpty, "学卷名字应不能为空");
+    put(I18nKey.labelBookNameError, "学卷名字应为 3 个字母或更少，并且由大写字母数字字符组成。");
+    put(I18nKey.labelBookNameDuplicated, "学卷名字重复。");
     put(I18nKey.labelDelete, "删除");
     put(I18nKey.labelRemoteUrl, "远程地址");
     put(I18nKey.labelOriginalAddress, "原始地址");
     put(I18nKey.labelLanAddress, "局域网地址");
     put(I18nKey.labelDownloadFirstBeforeSharing, "请先下载再进行分享");
     put(I18nKey.labelDownloadFirstBeforeSaving, "请先下载再进行保存");
-    put(I18nKey.labelAddContent, "新增内容");
-    put(I18nKey.labelDeleteContent, "请确定删除内容： %s");
+    put(I18nKey.labelDeleteBook, "请确定删除学卷： %s");
     put(I18nKey.labelDeleteVerse, "请确定该节");
     put(I18nKey.labelDeleteChapter, "请确定该篇章");
-    put(I18nKey.labelDownloadContent, "下载内容");
+    put(I18nKey.labelDownloadBook, "下载学卷");
     put(I18nKey.labelScheduleContent, "添加学习任务 %s 个单位");
     put(I18nKey.labelNoLearningContent, "没有学习内容");
     put(I18nKey.labelResetLearningContent, "在 %s 后，将重置学习内容");
@@ -133,7 +132,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelSetMaskTips, "向左滑动增加挡板高度");
     put(I18nKey.labelQrCodeContentCopiedToClipboard, "二维码内容已拷贝到剪切板中");
     put(I18nKey.labelCopiedToClipboard, "已拷贝到剪切板中");
-    put(I18nKey.labelShouldLinkToTheContentBeAdded, "是否添加改内容链接");
+    put(I18nKey.labelShouldScannedContentBeAdded, "是否添加扫描内容");
     put(I18nKey.labelTooMuchData, "数据过多! %s");
     put(I18nKey.labelDataDuplication, "数据重复!");
     put(I18nKey.labelDataAnomaly, "数据异常! %s");
@@ -187,7 +186,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelCreateTime, "创建时间");
     put(I18nKey.labelContent, "内容");
     put(I18nKey.labelPosition, "位置");
-    put(I18nKey.labelSortBy, "排序方式");
+    put(I18nKey.labelSortBy, "排序");
     put(I18nKey.labelSortProgressAsc, "进度 (升序)");
     put(I18nKey.labelSortProgressDesc, "进度 (降序)");
     put(I18nKey.labelSortPositionAsc, "位置 (升序)");
@@ -199,7 +198,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelSearch, "搜索...");
     put(I18nKey.labelNotFoundVerse, "未找到小节(%s)");
     put(I18nKey.labelSettingLearningProgressWarning, "在此处设置学习进度将不会有学习记录");
-    put(I18nKey.labelContentsHaveUnnecessaryVerses, "内容中存在多余的小节");
+    put(I18nKey.labelHaveUnnecessaryVerses, "存在多余的小节");
     put(I18nKey.labelChapterKeyCantBeEmpty, "篇章键不能为空");
     put(I18nKey.labelChapterKeyDuplicated, "篇章键重复");
     put(I18nKey.labelEdit, "编辑");
@@ -229,6 +228,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelFileNotFound, "文件未找到, 现在导入文件吗？");
     put(I18nKey.labelFileExtensionNotMatch, "文件扩展名与预期格式不符，请确保其为以下之一：%s");
     put(I18nKey.labelBook, "卷");
+    put(I18nKey.labelBookFn, "学卷");
     put(I18nKey.labelAddSuccess, "添加成功");
     put(I18nKey.labelTipForAddingContent, "当前 %s 不存在, 点击加号添加");
     put(I18nKey.btnEnd, "终点");
@@ -251,7 +251,7 @@ class ConfigZh extends Config {
     put(I18nKey.btnOk, "确定");
     put(I18nKey.btnDelete, "删除");
     put(I18nKey.btnShare, "分享");
-    put(I18nKey.btnScan, "扫描");
+    put(I18nKey.scan, "扫描");
     put(I18nKey.btnEditTrack, "编辑音轨");
     put(I18nKey.btnEditNote, "编辑笔记");
     put(I18nKey.btnGameMode, "游戏模式");

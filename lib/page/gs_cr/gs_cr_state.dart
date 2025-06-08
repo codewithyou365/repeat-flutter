@@ -1,4 +1,4 @@
-import 'package:repeat_flutter/db/entity/content.dart';
+import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 
 class VerseTodayPrgInView {
@@ -23,12 +23,12 @@ class VerseTodayPrgInView {
 }
 
 class ForAdd {
-  List<Content> contents = [];
+  List<Book> contents = [];
   List<String> contentNames = [];
   int maxChapter = 1;
   int maxVerse = 1;
 
-  Content? fromContent;
+  Book? fromContent;
   int fromContentIndex = 0;
   int fromChapterIndex = 0;
   int fromVerseIndex = 0;

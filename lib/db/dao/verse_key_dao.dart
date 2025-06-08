@@ -9,24 +9,24 @@ abstract class VerseKeyDao {
   @Query('SELECT * FROM VerseKey where id=:id')
   Future<VerseKey?> oneById(int id);
 
-  @Query('SELECT count(id) FROM VerseKey where classroomId=:classroomId and contentSerial=:contentSerial chapterIndex=:chapterIndex')
-  Future<int?> count(int classroomId, int contentSerial, int chapterIndex);
+  @Query('SELECT count(id) FROM VerseKey where classroomId=:classroomId and bookSerial=:bookSerial chapterIndex=:chapterIndex')
+  Future<int?> count(int classroomId, int bookSerial, int chapterIndex);
 
   @Query('SELECT * FROM VerseKey'
-      ' WHERE classroomId=:classroomId AND contentSerial=:contentSerial AND chapterIndex=:chapterIndex AND verseIndex>=:minVerseIndex')
-  Future<List<VerseKey>> findByMinVerseIndex(int classroomId, int contentSerial, int chapterIndex, int minVerseIndex);
+      ' WHERE classroomId=:classroomId AND bookSerial=:bookSerial AND chapterIndex=:chapterIndex AND verseIndex>=:minVerseIndex')
+  Future<List<VerseKey>> findByMinVerseIndex(int classroomId, int bookSerial, int chapterIndex, int minVerseIndex);
 
   @Query('DELETE FROM VerseKey'
-      ' WHERE classroomId=:classroomId AND contentSerial=:contentSerial AND chapterIndex=:chapterIndex AND verseIndex>=:minVerseIndex')
-  Future<void> deleteByMinVerseIndex(int classroomId, int contentSerial, int chapterIndex, int minVerseIndex);
+      ' WHERE classroomId=:classroomId AND bookSerial=:bookSerial AND chapterIndex=:chapterIndex AND verseIndex>=:minVerseIndex')
+  Future<void> deleteByMinVerseIndex(int classroomId, int bookSerial, int chapterIndex, int minVerseIndex);
 
   @Query('SELECT * FROM VerseKey'
-      ' WHERE classroomId=:classroomId AND contentSerial=:contentSerial AND chapterIndex>=:minChapterIndex')
-  Future<List<VerseKey>> findByMinChapterIndex(int classroomId, int contentSerial, int minChapterIndex);
+      ' WHERE classroomId=:classroomId AND bookSerial=:bookSerial AND chapterIndex>=:minChapterIndex')
+  Future<List<VerseKey>> findByMinChapterIndex(int classroomId, int bookSerial, int minChapterIndex);
 
   @Query('DELETE FROM VerseKey'
-      ' WHERE classroomId=:classroomId AND contentSerial=:contentSerial AND chapterIndex>=:minChapterIndex')
-  Future<void> deleteByMinChapterIndex(int classroomId, int contentSerial, int minChapterIndex);
+      ' WHERE classroomId=:classroomId AND bookSerial=:bookSerial AND chapterIndex>=:minChapterIndex')
+  Future<void> deleteByMinChapterIndex(int classroomId, int bookSerial, int minChapterIndex);
 
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertListOrFail(List<VerseKey> entities);

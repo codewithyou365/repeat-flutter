@@ -52,11 +52,11 @@ class GsCrPage extends StatelessWidget {
           // Distribute buttons evenly
           children: [
             InkWell(
-              onTap: () => {Nav.gsCrContent.push()},
+              onTap: () => {Nav.scCrMaterial.push()},
               child: Container(
                 width: 180.w,
                 alignment: Alignment.center,
-                child: Text(I18nKey.content.tr),
+                child: Text(I18nKey.material.tr),
               ),
             ),
             InkWell(
@@ -313,7 +313,7 @@ class GsCrPage extends StatelessWidget {
                             color: Theme.of(context).secondaryHeaderColor,
                             child: Row(
                               children: [
-                                cupertinoItem(['', I18nKey.content.tr], logic.selectContent, null, select: logic.state.forAdd.contentNames),
+                                cupertinoItem(['', I18nKey.material.tr], logic.selectContent, null, select: logic.state.forAdd.contentNames),
                                 cupertinoItem([I18nKey.labelFrom.tr, I18nKey.labelChapter.tr], logic.selectChapter, logic.initChapter, count: logic.state.forAdd.maxChapter),
                                 cupertinoItem(['', I18nKey.labelVerse.tr], logic.selectVerse, logic.initVerse, count: logic.state.forAdd.maxVerse),
                               ],

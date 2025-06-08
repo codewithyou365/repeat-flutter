@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:convert' as convert;
 
 import 'package:repeat_flutter/common/url.dart';
-import 'package:repeat_flutter/db/entity/content.dart';
+import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 

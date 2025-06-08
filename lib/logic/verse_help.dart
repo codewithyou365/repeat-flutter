@@ -5,12 +5,12 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'model/verse_show.dart';
 
 class QueryChapter {
-  final int contentSerial;
+  final int bookSerial;
   final int? chapterIndex;
   final int? minChapterIndex;
 
   QueryChapter({
-    required this.contentSerial,
+    required this.bookSerial,
     this.chapterIndex,
     this.minChapterIndex,
   });
@@ -22,7 +22,7 @@ class VerseHelp {
 
   static Future<String> getVerseKey(int classroomId) async {
     var progressUpdateTime = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.updateVerseShowTime) ?? '';
-    var contentUpdateTime = await Db().db.scheduleDao.getMaxContentUpdateTime(Classroom.curr) ?? 0;
+    var contentUpdateTime = await Db().db.scheduleDao.getMaxBookUpdateTime(Classroom.curr) ?? 0;
     return '$progressUpdateTime-$contentUpdateTime';
   }
 
@@ -30,12 +30,12 @@ class VerseHelp {
     if (cache.isEmpty || force || query != null) {
       if (query != null) {
         if (query.chapterIndex != null) {
-          List<VerseShow> chapterVerse = await Db().db.scheduleDao.getVerseByChapterIndex(Classroom.curr, query.contentSerial, query.chapterIndex!);
-          cache.removeWhere((verse) => verse.contentSerial == query.contentSerial && verse.chapterIndex == query.chapterIndex!);
+          List<VerseShow> chapterVerse = await Db().db.scheduleDao.getVerseByChapterIndex(Classroom.curr, query.bookSerial, query.chapterIndex!);
+          cache.removeWhere((verse) => verse.bookSerial == query.bookSerial && verse.chapterIndex == query.chapterIndex!);
           cache.addAll(chapterVerse);
         } else if (query.minChapterIndex != null) {
-          List<VerseShow> chapterVerse = await Db().db.scheduleDao.getVerseByMinChapterIndex(Classroom.curr, query.contentSerial, query.minChapterIndex!);
-          cache.removeWhere((verse) => verse.contentSerial == query.contentSerial && verse.chapterIndex >= query.minChapterIndex!);
+          List<VerseShow> chapterVerse = await Db().db.scheduleDao.getVerseByMinChapterIndex(Classroom.curr, query.bookSerial, query.minChapterIndex!);
+          cache.removeWhere((verse) => verse.bookSerial == query.bookSerial && verse.chapterIndex >= query.minChapterIndex!);
           cache.addAll(chapterVerse);
         }
         verseKeyIdToShow = {for (var verse in cache) verse.verseKeyId: verse};
