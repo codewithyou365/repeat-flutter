@@ -11,7 +11,6 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/model/verse_content.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -80,22 +79,21 @@ class CopyLogic<T extends GetxController> {
     await Db().db.scheduleDao.insertKv(CrKv(Classroom.curr, this.key, str));
   }
 
-  List<String> getShowVerses(List<VerseContent> verses) {
+  List<String> getShowVerses(List<VerseShow> verses) {
     List<String> ret = [];
     for (var templateString in copyTemplates) {
       final template = Template(templateString);
       final rendered = template.renderString({
-        'verses': verses
-            .asMap()
-            .entries
-            .map((e) => {
-                  'index0': e.key,
-                  'index1': e.key + 1,
-                  'indexA': Num.toBase26(e.key),
-                  'question': e.value.question,
-                  'answer': e.value.answer,
-                })
-            .toList()
+        'verses': verses.asMap().entries.map((e) {
+          var m = jsonDecode(e.value.verseContent);
+          return {
+            'index0': e.key,
+            'index1': e.key + 1,
+            'indexA': Num.toBase26(e.key),
+            'question': m['q'] ?? '',
+            'answer': m['a'] ?? '',
+          };
+        }).toList()
       });
       ret.add(rendered.toString());
     }
@@ -139,7 +137,7 @@ class CopyLogic<T extends GetxController> {
           if (data is String) {
             copyText = getShowText(data);
           } else {
-            copyText = getShowVerses(data as List<VerseContent>);
+            copyText = getShowVerses(data as List<VerseShow>);
           }
           List<String> showText = [];
           for (var v in copyText) {
