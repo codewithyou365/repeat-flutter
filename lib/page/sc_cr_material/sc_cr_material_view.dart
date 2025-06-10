@@ -93,18 +93,6 @@ class ScCrMaterialPage extends StatelessWidget {
         },
         child: Text(I18nKey.labelContent.tr),
       ));
-      menus.add(PopupMenuItem<String>(
-        onTap: () {
-          logic.showChapter(model.id!);
-        },
-        child: Text(I18nKey.labelChapterName.tr),
-      ));
-      menus.add(PopupMenuItem<String>(
-        onTap: () {
-          logic.showVerse(model.id!);
-        },
-        child: Text(I18nKey.labelVerseName.tr),
-      ));
     }
     menus.add(PopupMenuItem<String>(
       onTap: () {
