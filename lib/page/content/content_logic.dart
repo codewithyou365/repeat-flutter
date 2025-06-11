@@ -36,6 +36,9 @@ class ContentLogic extends GetxController {
         chapterList.collectData();
         chapterList.trySearch(force: true);
       },
+      onCardTapDown: (List<String> selected) {
+        //TODO
+      },
       parentLogic: this,
       removeWarning: args.removeWarning,
       originalBookShow: originalBookShow,
@@ -49,6 +52,12 @@ class ContentLogic extends GetxController {
       onSearchUnfocus: () {
         state.startSearch.value = false;
       },
+      onCardTapDown: (List<String> selected) {
+        state.tabIndex.value = 2;
+        verseList.setBookSelectByName(selected.first);
+        verseList.chapterSelect.value = int.parse(selected[1]) + 1;
+        update([ContentLogic.id]);
+      },
       onChapterModified: () async {
         verseList.originalBookShow = await BookHelp.getBooks();
         verseList.originalChapterShow = await ChapterHelp.getChapters();
@@ -58,7 +67,7 @@ class ContentLogic extends GetxController {
       },
       parentLogic: this,
       removeWarning: args.removeWarning,
-      initContentNameSelect: args.bookName,
+      initBookNameSelect: args.bookName,
       initChapterSelect: args.initChapterSelect,
       originalBookShow: originalBookShow,
       originalChapterShow: originalChapterShow,
@@ -66,6 +75,11 @@ class ContentLogic extends GetxController {
     var bookList = ViewLogicBookList<ContentLogic>(
       onSearchUnfocus: () {
         state.startSearch.value = false;
+      },
+      onCardTapDown: (List<String> selected) {
+        state.tabIndex.value = 1;
+        chapterList.setBookSelectByName(selected.first);
+        update([ContentLogic.id]);
       },
       parentLogic: this,
       initContentNameSelect: args.bookName,

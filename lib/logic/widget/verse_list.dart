@@ -173,7 +173,7 @@ class VerseList<T extends GetxController> {
             }
           }
           if (ret && contentNameSelect.value != 0) {
-            ret = e.contentName == contentNameOptions[contentNameSelect.value];
+            ret = e.bookName == contentNameOptions[contentNameSelect.value];
           }
           if (ret && chapterSelect.value != 0) {
             ret = e.chapterIndex == chapter[chapterSelect.value];
@@ -533,9 +533,9 @@ class VerseList<T extends GetxController> {
                                               verseShow.removeWhere((element) => element.verseKeyId == verse.verseKeyId);
 
                                               var contentId2Missing = refreshMissingVerseIndex(missingVerseIndex, verseShow);
-                                              var warning = contentId2Missing[verse.contentId] ?? false;
+                                              var warning = contentId2Missing[verse.bookId] ?? false;
                                               if (warning == false) {
-                                                await Db().db.bookDao.updateBookWarningForVerse(verse.contentId, warning, DateTime.now().millisecondsSinceEpoch);
+                                                await Db().db.bookDao.updateBookWarningForVerse(verse.bookId, warning, DateTime.now().millisecondsSinceEpoch);
                                                 if (removeWarning != null) {
                                                   await removeWarning();
                                                 }
@@ -706,7 +706,7 @@ class VerseList<T extends GetxController> {
     for (int i = 0; i < verseShow.length; i++) {
       var v = verseShow[i];
       if (v.missing) {
-        contentId2Missing[v.contentId] = true;
+        contentId2Missing[v.bookId] = true;
         missingVerseIndex.add(i);
       }
     }
@@ -726,8 +726,8 @@ class VerseList<T extends GetxController> {
       if (v.missing) {
         missingVerseIndex.add(i);
       }
-      if (!contentName.contains(v.contentName)) {
-        contentName.add(v.contentName);
+      if (!contentName.contains(v.bookName)) {
+        contentName.add(v.bookName);
       }
       if (!chapter.contains(v.chapterIndex)) {
         chapter.add(v.chapterIndex);

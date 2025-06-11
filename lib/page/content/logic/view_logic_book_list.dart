@@ -11,6 +11,7 @@ import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:repeat_flutter/widget/text/expandable_text.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -19,7 +20,6 @@ import 'view_logic.dart';
 class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   static const String bodyId = "BookList.bodyId";
   late HistoryList historyList = HistoryList<T>(parentLogic);
-
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
   double searchDetailPanelHeight = 2 * (RowWidget.rowHeight + RowWidget.dividerHeight);
@@ -45,11 +45,12 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   double baseBodyViewHeight = 0;
 
   ViewLogicBookList({
-    required VoidCallback onSearchUnfocus,
     required this.originalBookShow,
     required this.parentLogic,
+    required super.onCardTapDown,
+    required super.onSearchUnfocus,
     String? initContentNameSelect,
-  }) : super(onSearchUnfocus: onSearchUnfocus) {
+  }) {
     searchFocusNode.addListener(() {
       if (searchFocusNode.hasFocus) {
         tryUpdateDetailSearchPanel(true);
@@ -193,64 +194,69 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                   itemCount: list.length,
                   itemBuilder: (context, index) {
                     final book = list[index];
-                    return Card(
-                      elevation: 2,
-                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Stack(
-                        alignment: Alignment.topRight,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(4),
+                    return GestureDetector(
+                      onTapDown: (_) {
+                        onCardTapDown([book.name]);
+                      },
+                      child: Card(
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Stack(
+                          alignment: Alignment.topRight,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      book.toPos(),
+                                      style: const TextStyle(fontSize: 12, color: Colors.blue),
+                                    ),
                                   ),
-                                  child: Text(
-                                    book.toPos(),
-                                    style: const TextStyle(fontSize: 12, color: Colors.blue),
+                                  SizedBox(height: 8, width: width),
+                                  ExpandableText(
+                                    title: I18nKey.labelBookFn.tr,
+                                    text: ': ${book.bookContent}',
+                                    version: book.bookContentVersion,
+                                    limit: 60,
+                                    style: const TextStyle(fontSize: 14),
+                                    selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                                    versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
+                                    selectText: search.value,
+                                    onEdit: () {
+                                      searchFocusNode.unfocus();
+                                      var contentM = jsonDecode(book.bookContent);
+                                      var content = const JsonEncoder.withIndent(' ').convert(contentM);
+                                      Editor.show(
+                                        Get.context!,
+                                        I18nKey.labelBook.tr,
+                                        content,
+                                        (str) async {
+                                          await Db().db.bookDao.updateBookContent(book.bookId, str);
+                                          parentLogic.update([ViewLogicBookList.bodyId]);
+                                        },
+                                        qrPagePath: Nav.gsCrContentScan.path,
+                                        onHistory: () {
+                                          historyList.show(TextVersionType.bookContent, book.bookId);
+                                        },
+                                      );
+                                    },
                                   ),
-                                ),
-                                SizedBox(height: 8, width: width),
-                                ExpandableText(
-                                  title: I18nKey.labelBookFn.tr,
-                                  text: ': ${book.bookContent}',
-                                  version: book.bookContentVersion,
-                                  limit: 60,
-                                  style: const TextStyle(fontSize: 14),
-                                  selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                                  versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
-                                  selectText: search.value,
-                                  onEdit: () {
-                                    searchFocusNode.unfocus();
-                                    var contentM = jsonDecode(book.bookContent);
-                                    var content = const JsonEncoder.withIndent(' ').convert(contentM);
-                                    Editor.show(
-                                      Get.context!,
-                                      I18nKey.labelBook.tr,
-                                      content,
-                                      (str) async {
-                                        await Db().db.bookDao.updateBookContent(book.bookId, str);
-                                        parentLogic.update([ViewLogicBookList.bodyId]);
-                                      },
-                                      qrPagePath: Nav.gsCrContentScan.path,
-                                      onHistory: () {
-                                        historyList.show(TextVersionType.bookContent, book.bookId);
-                                      },
-                                    );
-                                  },
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },

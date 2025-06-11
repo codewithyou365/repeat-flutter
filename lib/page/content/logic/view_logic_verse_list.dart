@@ -76,7 +76,6 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
   int? selectVerseKeyId;
 
   ViewLogicVerseList({
-    required VoidCallback onSearchUnfocus,
     required this.parentLogic,
     required this.originalBookShow,
     required this.originalChapterShow,
@@ -84,9 +83,11 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     required this.removeWarning,
     required this.onChapterModified,
     required this.selectVerseKeyId,
+    required super.onCardTapDown,
+    required super.onSearchUnfocus,
     String? initContentNameSelect,
     int? initChapterSelect,
-  }) : super(onSearchUnfocus: onSearchUnfocus) {
+  }) {
     searchFocusNode.addListener(() {
       if (searchFocusNode.hasFocus) {
         tryUpdateDetailSearchPanel(true);
@@ -156,7 +157,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
         if (ret && bookSelect.value != 0) {
           if (bookSelect.value < options.length) {
             final selectedBook = options[bookSelect.value];
-            ret = e.contentName == selectedBook.label;
+            ret = e.bookName == selectedBook.label;
             if (ret && chapterSelect.value != 0) {
               if (chapterSelect.value < selectedBook.next.length) {
                 final selectedChapter = selectedBook.next[chapterSelect.value];
@@ -414,214 +415,219 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                   return const SizedBox.shrink();
                 }
                 final verse = list[index];
-                return Card(
-                  color: verse.missing ? Colors.red : null,
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Stack(
-                    alignment: Alignment.topRight,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '${verse.toChapterPos()}${verse.toVersePos()}',
-                                style: const TextStyle(fontSize: 12, color: Colors.blue),
-                              ),
-                            ),
-                            SizedBox(height: 8, width: width),
-                            ExpandableText(
-                              title: I18nKey.labelKey.tr,
-                              text: ': ${verse.k}',
-                              limit: 50,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                              selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                              selectText: search.value,
-                            ),
-                            const SizedBox(height: 8),
-                            ExpandableText(
-                              title: I18nKey.labelVerseName.tr,
-                              text: ': ${verse.verseContent}',
-                              version: verse.verseContentVersion,
-                              limit: 60,
-                              style: const TextStyle(fontSize: 14),
-                              selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                              versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
-                              selectText: search.value,
-                              onEdit: () {
-                                searchFocusNode.unfocus();
-                                var contentM = jsonDecode(verse.verseContent);
-                                var content = const JsonEncoder.withIndent(' ').convert(contentM);
-                                Editor.show(
-                                  Get.context!,
-                                  I18nKey.labelVerseName.tr,
-                                  content,
-                                  (str) async {
-                                    await Db().db.scheduleDao.tUpdateVerseContent(verse.verseKeyId, str);
-                                    parentLogic.update([ViewLogicVerseList.bodyId]);
-                                  },
-                                  qrPagePath: Nav.gsCrContentScan.path,
-                                  onHistory: () {
-                                    historyList.show(TextVersionType.verseContent, verse.verseKeyId);
-                                  },
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 8),
-                            ExpandableText(
-                              title: I18nKey.labelNote.tr,
-                              text: ': ${verse.verseNote}',
-                              limit: 60,
-                              version: verse.verseNoteVersion,
-                              style: const TextStyle(fontSize: 14),
-                              selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                              versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
-                              selectText: search.value,
-                              onEdit: () {
-                                searchFocusNode.unfocus();
-                                Editor.show(
-                                  Get.context!,
-                                  I18nKey.labelNote.tr,
-                                  verse.verseNote,
-                                  (str) async {
-                                    await Db().db.scheduleDao.tUpdateVerseNote(verse.verseKeyId, str);
-                                    parentLogic.update([ViewLogicVerseList.bodyId]);
-                                  },
-                                  qrPagePath: Nav.gsCrContentScan.path,
-                                  onHistory: () {
-                                    historyList.show(TextVersionType.verseNote, verse.verseKeyId);
-                                  },
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      editProgressWithMsgBox(verse);
-                                    },
-                                    child: Text(
-                                      '${I18nKey.labelProgress.tr}: ${verse.progress}',
-                                      style: const TextStyle(fontSize: 12, color: Colors.green),
-                                    ),
-                                  ),
+                return GestureDetector(
+                  onTapDown: (_) {
+                    onCardTapDown([verse.bookName, verse.chapterIndex.toString(), verse.verseIndex.toString()]);
+                  },
+                  child: Card(
+                    color: verse.missing ? Colors.red : null,
+                    elevation: 2,
+                    margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Stack(
+                      alignment: Alignment.topRight,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
                                 ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      editProgressWithMsgBox(verse);
+                                child: Text(
+                                  '${verse.toChapterPos()}${verse.toVersePos()}',
+                                  style: const TextStyle(fontSize: 12, color: Colors.blue),
+                                ),
+                              ),
+                              SizedBox(height: 8, width: width),
+                              ExpandableText(
+                                title: I18nKey.labelKey.tr,
+                                text: ': ${verse.k}',
+                                limit: 50,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                                selectText: search.value,
+                              ),
+                              const SizedBox(height: 8),
+                              ExpandableText(
+                                title: I18nKey.labelVerseName.tr,
+                                text: ': ${verse.verseContent}',
+                                version: verse.verseContentVersion,
+                                limit: 60,
+                                style: const TextStyle(fontSize: 14),
+                                selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                                versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
+                                selectText: search.value,
+                                onEdit: () {
+                                  searchFocusNode.unfocus();
+                                  var contentM = jsonDecode(verse.verseContent);
+                                  var content = const JsonEncoder.withIndent(' ').convert(contentM);
+                                  Editor.show(
+                                    Get.context!,
+                                    I18nKey.labelVerseName.tr,
+                                    content,
+                                    (str) async {
+                                      await Db().db.scheduleDao.tUpdateVerseContent(verse.verseKeyId, str);
+                                      parentLogic.update([ViewLogicVerseList.bodyId]);
                                     },
-                                    child: Text(
-                                      '${I18nKey.labelSetNextLearnDate.tr}: ${verse.next.format()}',
-                                      style: const TextStyle(fontSize: 12, color: Colors.green),
+                                    qrPagePath: Nav.gsCrContentScan.path,
+                                    onHistory: () {
+                                      historyList.show(TextVersionType.verseContent, verse.verseKeyId);
+                                    },
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 8),
+                              ExpandableText(
+                                title: I18nKey.labelNote.tr,
+                                text: ': ${verse.verseNote}',
+                                limit: 60,
+                                version: verse.verseNoteVersion,
+                                style: const TextStyle(fontSize: 14),
+                                selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                                versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
+                                selectText: search.value,
+                                onEdit: () {
+                                  searchFocusNode.unfocus();
+                                  Editor.show(
+                                    Get.context!,
+                                    I18nKey.labelNote.tr,
+                                    verse.verseNote,
+                                    (str) async {
+                                      await Db().db.scheduleDao.tUpdateVerseNote(verse.verseKeyId, str);
+                                      parentLogic.update([ViewLogicVerseList.bodyId]);
+                                    },
+                                    qrPagePath: Nav.gsCrContentScan.path,
+                                    onHistory: () {
+                                      historyList.show(TextVersionType.verseNote, verse.verseKeyId);
+                                    },
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        editProgressWithMsgBox(verse);
+                                      },
+                                      child: Text(
+                                        '${I18nKey.labelProgress.tr}: ${verse.progress}',
+                                        style: const TextStyle(fontSize: 12, color: Colors.green),
+                                      ),
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        editProgressWithMsgBox(verse);
+                                      },
+                                      child: Text(
+                                        '${I18nKey.labelSetNextLearnDate.tr}: ${verse.next.format()}',
+                                        style: const TextStyle(fontSize: 12, color: Colors.green),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            if (verse.missing)
+                              IconButton(
+                                onPressed: () {
+                                  MsgBox.yesOrNo(
+                                    title: I18nKey.labelDelete.tr,
+                                    desc: I18nKey.labelDeleteVerse.tr,
+                                    yes: () {
+                                      showTransparentOverlay(() async {
+                                        await Db().db.scheduleDao.deleteAbnormalVerse(verse.verseKeyId);
+
+                                        VerseHelp.deleteCache(verse.verseKeyId);
+                                        verseShow.removeWhere((element) => element.verseKeyId == verse.verseKeyId);
+
+                                        var contentId2Missing = refreshMissingVerseIndex(missingVerseIndex, verseShow);
+                                        var warning = contentId2Missing[verse.bookId] ?? false;
+                                        if (warning == false) {
+                                          await Db().db.bookDao.updateBookWarningForVerse(verse.bookId, warning, DateTime.now().millisecondsSinceEpoch);
+                                          if (removeWarning != null) {
+                                            await removeWarning!();
+                                          }
+                                        }
+                                        parentLogic.update([ViewLogicVerseList.bodyId]);
+                                        Get.back();
+                                      });
+                                    },
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.delete_forever,
+                                ),
+                              ),
+                            PopupMenuButton<String>(
+                              icon: const Icon(Icons.more_vert),
+                              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                PopupMenuItem<String>(
+                                  onTap: () {
+                                    MsgBox.yesOrNo(
+                                      title: I18nKey.labelWarning.tr,
+                                      desc: I18nKey.labelDeleteVerse.tr,
+                                      yes: () => delete(verse: verse),
+                                    );
+                                  },
+                                  child: Text(I18nKey.btnDelete.tr),
+                                ),
+                                PopupMenuItem<String>(
+                                  onTap: () {
+                                    MsgBox.myDialog(
+                                        title: I18nKey.labelTips.tr,
+                                        content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
+                                        action: MsgBox.buttonsWithDivider(buttons: [
+                                          MsgBox.button(
+                                            text: I18nKey.btnCancel.tr,
+                                            onPressed: () {
+                                              Get.back();
+                                            },
+                                          ),
+                                          MsgBox.button(
+                                            text: I18nKey.btnAbove.tr,
+                                            onPressed: () => copy(verse: verse, below: false),
+                                          ),
+                                          MsgBox.button(
+                                            text: I18nKey.btnBelow.tr,
+                                            onPressed: () => copy(verse: verse, below: true),
+                                          ),
+                                        ]));
+                                  },
+                                  child: Text(I18nKey.btnCopy.tr),
                                 ),
                               ],
                             ),
                           ],
                         ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          if (verse.missing)
-                            IconButton(
-                              onPressed: () {
-                                MsgBox.yesOrNo(
-                                  title: I18nKey.labelDelete.tr,
-                                  desc: I18nKey.labelDeleteVerse.tr,
-                                  yes: () {
-                                    showTransparentOverlay(() async {
-                                      await Db().db.scheduleDao.deleteAbnormalVerse(verse.verseKeyId);
-
-                                      VerseHelp.deleteCache(verse.verseKeyId);
-                                      verseShow.removeWhere((element) => element.verseKeyId == verse.verseKeyId);
-
-                                      var contentId2Missing = refreshMissingVerseIndex(missingVerseIndex, verseShow);
-                                      var warning = contentId2Missing[verse.contentId] ?? false;
-                                      if (warning == false) {
-                                        await Db().db.bookDao.updateBookWarningForVerse(verse.contentId, warning, DateTime.now().millisecondsSinceEpoch);
-                                        if (removeWarning != null) {
-                                          await removeWarning!();
-                                        }
-                                      }
-                                      parentLogic.update([ViewLogicVerseList.bodyId]);
-                                      Get.back();
-                                    });
-                                  },
-                                );
-                              },
-                              icon: const Icon(
-                                Icons.delete_forever,
-                              ),
-                            ),
-                          PopupMenuButton<String>(
-                            icon: const Icon(Icons.more_vert),
-                            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                              PopupMenuItem<String>(
-                                onTap: () {
-                                  MsgBox.yesOrNo(
-                                    title: I18nKey.labelWarning.tr,
-                                    desc: I18nKey.labelDeleteVerse.tr,
-                                    yes: () => delete(verse: verse),
-                                  );
-                                },
-                                child: Text(I18nKey.btnDelete.tr),
-                              ),
-                              PopupMenuItem<String>(
-                                onTap: () {
-                                  MsgBox.myDialog(
-                                      title: I18nKey.labelTips.tr,
-                                      content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
-                                      action: MsgBox.buttonsWithDivider(buttons: [
-                                        MsgBox.button(
-                                          text: I18nKey.btnCancel.tr,
-                                          onPressed: () {
-                                            Get.back();
-                                          },
-                                        ),
-                                        MsgBox.button(
-                                          text: I18nKey.btnAbove.tr,
-                                          onPressed: () => copy(verse: verse, below: false),
-                                        ),
-                                        MsgBox.button(
-                                          text: I18nKey.btnBelow.tr,
-                                          onPressed: () => copy(verse: verse, below: true),
-                                        ),
-                                      ]));
-                                },
-                                child: Text(I18nKey.btnCopy.tr),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 );
               },
@@ -671,7 +677,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     for (int i = 0; i < verseShow.length; i++) {
       var v = verseShow[i];
       if (v.missing) {
-        contentId2Missing[v.contentId] = true;
+        contentId2Missing[v.bookId] = true;
         missingVerseIndex.add(i);
       }
     }
@@ -682,7 +688,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     options = [];
     final Map<String, List<dynamic>> chaptersByBook = {};
     for (var chapter in originalChapterShow) {
-      chaptersByBook.putIfAbsent(chapter.contentName, () => []).add(chapter);
+      chaptersByBook.putIfAbsent(chapter.bookName, () => []).add(chapter);
     }
 
     final Set<String> uniqueBookNames = {};
@@ -851,5 +857,9 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
   dispose() {
     searchController.dispose();
     searchFocusNode.dispose();
+  }
+
+  setBookSelectByName(String bookName) {
+    bookSelect.value = options.indexWhere((opt) => opt.label == bookName);
   }
 }

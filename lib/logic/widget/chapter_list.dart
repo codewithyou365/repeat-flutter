@@ -149,7 +149,7 @@ class ChapterList<T extends GetxController> {
             ret = e.chapterContent.contains(search.value);
           }
           if (ret && contentNameSelect.value != 0) {
-            ret = e.contentName == contentNameOptions[contentNameSelect.value];
+            ret = e.bookName == contentNameOptions[contentNameSelect.value];
           }
           if (ret && chapterIndexSelect.value != 0) {
             ret = e.chapterIndex == chapterIndex[chapterIndexSelect.value];
@@ -407,9 +407,9 @@ class ChapterList<T extends GetxController> {
                                               chapterShow.removeWhere((element) => element.chapterKeyId == chapter.chapterKeyId);
 
                                               var contentId2Missing = refreshMissingChapterIndex(missingChapterIndex, chapterShow);
-                                              var warning = contentId2Missing[chapter.contentId] ?? false;
+                                              var warning = contentId2Missing[chapter.bookId] ?? false;
                                               if (warning == false) {
-                                                await Db().db.bookDao.updateBookWarningForChapter(chapter.contentId, warning, DateTime.now().millisecondsSinceEpoch);
+                                                await Db().db.bookDao.updateBookWarningForChapter(chapter.bookId, warning, DateTime.now().millisecondsSinceEpoch);
                                                 if (removeWarning != null) {
                                                   await removeWarning();
                                                 }
@@ -562,7 +562,7 @@ class ChapterList<T extends GetxController> {
     for (int i = 0; i < chapterShow.length; i++) {
       var v = chapterShow[i];
       if (v.missing) {
-        contentId2Missing[v.contentId] = true;
+        contentId2Missing[v.bookId] = true;
         missingChapterIndex.add(i);
       }
     }
@@ -580,8 +580,8 @@ class ChapterList<T extends GetxController> {
       if (v.missing) {
         missingChapterIndex.add(i);
       }
-      if (!contentName.contains(v.contentName)) {
-        contentName.add(v.contentName);
+      if (!contentName.contains(v.bookName)) {
+        contentName.add(v.bookName);
       }
       if (!chapterIndex.contains(v.chapterIndex)) {
         chapterIndex.add(v.chapterIndex);

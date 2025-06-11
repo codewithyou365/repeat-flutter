@@ -6,10 +6,10 @@ class VerseShow {
   @primaryKey
   final int verseKeyId;
   String k;
-  final int contentId;
-  final String contentName;
+  final int bookId;
+  final String bookName;
   final int bookSerial;
-  final int contentSort;
+  final int bookSort;
   String verseContent;
   int verseContentVersion;
   String verseNote;
@@ -23,10 +23,10 @@ class VerseShow {
   VerseShow({
     required this.verseKeyId,
     required this.k,
-    required this.contentId,
-    required this.contentName,
+    required this.bookId,
+    required this.bookName,
     required this.bookSerial,
-    required this.contentSort,
+    required this.bookSort,
     required this.verseContent,
     required this.verseContentVersion,
     required this.verseNote,
@@ -39,13 +39,13 @@ class VerseShow {
   });
 
   String toChapterPos() {
-    return '$contentName-${chapterIndex + 1}';
+    return '$bookName-${chapterIndex + 1}';
   }
   String toVersePos() {
     return '-${verseIndex + 1}';
   }
 
   int toSort() {
-    return contentSort * 10000000000 + chapterIndex * 100000 + verseIndex;
+    return bookSort * 10000000000 + chapterIndex * 100000 + verseIndex;
   }
 }

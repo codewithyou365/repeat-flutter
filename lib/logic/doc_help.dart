@@ -117,7 +117,7 @@ class DocHelp {
     Map<int, List<VerseShow>> chapterToVerseShow = {};
 
     for (var verse in verseCache) {
-      if (verse.contentId == contentId) {
+      if (verse.bookId == contentId) {
         int chapterKey = verse.chapterIndex;
 
         if (!chapterToVerseShow.containsKey(chapterKey)) {
@@ -135,7 +135,7 @@ class DocHelp {
     List<Map<String, dynamic>> chaptersList = [];
     for (int i = 0; i < chapterCache.length; i++) {
       var chapter = chapterCache[i];
-      if (chapter.contentId == contentId) {
+      if (chapter.bookId == contentId) {
         Map<String, dynamic> chapterData = {};
 
         try {

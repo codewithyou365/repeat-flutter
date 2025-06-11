@@ -38,9 +38,9 @@ abstract class ChapterKeyDao {
   Future<int?> getMissingCount(int contentId);
 
   @Query('SELECT ChapterKey.id chapterKeyId'
-      ',Book.id contentId'
-      ',Book.name contentName'
-      ',Book.sort contentSort'
+      ',Book.id bookId'
+      ',Book.name bookName'
+      ',Book.sort bookSort'
       ',ChapterKey.content chapterContent'
       ',ChapterKey.contentVersion chapterContentVersion'
       ',ChapterKey.chapterIndex'

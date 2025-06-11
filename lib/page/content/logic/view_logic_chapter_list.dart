@@ -28,7 +28,6 @@ import 'view_logic.dart';
 class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
   static const String bodyId = "ChapterList.bodyId";
   late HistoryList historyList = HistoryList<T>(parentLogic);
-
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
   double searchDetailPanelHeight = 3 * (RowWidget.rowHeight + RowWidget.dividerHeight);
@@ -61,15 +60,16 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
   double baseBodyViewHeight = 0;
 
   ViewLogicChapterList({
-    required VoidCallback onSearchUnfocus,
     required this.onChapterModified,
     required this.originalBookShow,
     required this.originalChapterShow,
     required this.parentLogic,
     required this.removeWarning,
-    String? initContentNameSelect,
+    required super.onCardTapDown,
+    required super.onSearchUnfocus,
+    String? initBookNameSelect,
     int? initChapterSelect,
-  }) : super(onSearchUnfocus: onSearchUnfocus) {
+  }) {
     searchFocusNode.addListener(() {
       if (searchFocusNode.hasFocus) {
         tryUpdateDetailSearchPanel(true);
@@ -91,8 +91,8 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
 
     collectData();
 
-    if (initContentNameSelect != null) {
-      bookSelect.value = options.indexWhere((opt) => opt.label == initContentNameSelect);
+    if (initBookNameSelect != null) {
+      bookSelect.value = options.indexWhere((opt) => opt.label == initBookNameSelect);
       if (bookSelect.value < options.length) {
         final selectedBook = options[bookSelect.value];
         if (initChapterSelect != null) {
@@ -131,7 +131,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
         if (ret && bookSelect.value != 0) {
           if (bookSelect.value < options.length) {
             final selectedBook = options[bookSelect.value];
-            ret = e.contentName == selectedBook.label;
+            ret = e.bookName == selectedBook.label;
             if (ret && chapterSelect.value != 0) {
               if (chapterSelect.value < selectedBook.next.length) {
                 final selectedChapter = selectedBook.next[chapterSelect.value];
@@ -231,6 +231,10 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
       Snackbar.show(I18nKey.labelCopied.tr);
     }
     Get.back();
+  }
+
+  setBookSelectByName(String bookName) {
+    bookSelect.value = options.indexWhere((opt) => opt.label == bookName);
   }
 
   @override
@@ -351,142 +355,147 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
               itemCount: list.length,
               itemBuilder: (context, index) {
                 final chapter = list[index];
-                return Card(
-                  color: chapter.missing ? Colors.red : null,
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Stack(
-                    alignment: Alignment.topRight,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(4),
+                return GestureDetector(
+                  onTapDown: (_) {
+                    onCardTapDown([chapter.bookName, chapter.chapterIndex.toString()]);
+                  },
+                  child: Card(
+                    color: chapter.missing ? Colors.red : null,
+                    elevation: 2,
+                    margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Stack(
+                      alignment: Alignment.topRight,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  chapter.toPos(),
+                                  style: const TextStyle(fontSize: 12, color: Colors.blue),
+                                ),
                               ),
-                              child: Text(
-                                chapter.toPos(),
-                                style: const TextStyle(fontSize: 12, color: Colors.blue),
-                              ),
-                            ),
-                            SizedBox(height: 8, width: width),
-                            ExpandableText(
-                              title: I18nKey.labelChapterName.tr,
-                              text: ': ${chapter.chapterContent}',
-                              version: chapter.chapterContentVersion,
-                              limit: 60,
-                              style: const TextStyle(fontSize: 14),
-                              selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                              versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
-                              selectText: search.value,
-                              onEdit: () {
-                                searchFocusNode.unfocus();
-                                var contentM = jsonDecode(chapter.chapterContent);
-                                var content = const JsonEncoder.withIndent(' ').convert(contentM);
-                                Editor.show(
-                                  Get.context!,
-                                  I18nKey.labelChapterName.tr,
-                                  content,
-                                  (str) async {
-                                    await Db().db.chapterKeyDao.updateChapterContent(chapter.chapterKeyId, str);
-                                    parentLogic.update([ViewLogicChapterList.bodyId]);
-                                  },
-                                  qrPagePath: Nav.gsCrContentScan.path,
-                                  onHistory: () {
-                                    historyList.show(TextVersionType.chapterContent, chapter.chapterKeyId);
-                                  },
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          if (chapter.missing)
-                            IconButton(
-                              onPressed: () {
-                                MsgBox.yesOrNo(
-                                  title: I18nKey.labelDelete.tr,
-                                  desc: I18nKey.labelDeleteChapter.tr,
-                                  yes: () {
-                                    showTransparentOverlay(() async {
-                                      var ok = await Db().db.chapterKeyDao.deleteAbnormalChapter(chapter.chapterKeyId);
-                                      if (ok == false) {
-                                        return;
-                                      }
-                                      ChapterHelp.deleteCache(chapter.chapterKeyId);
-                                      chapterShow.removeWhere((element) => element.chapterKeyId == chapter.chapterKeyId);
-
-                                      var contentId2Missing = refreshMissingChapterIndex(missingChapterIndex, chapterShow);
-                                      var warning = contentId2Missing[chapter.contentId] ?? false;
-                                      if (warning == false) {
-                                        await Db().db.bookDao.updateBookWarningForChapter(chapter.contentId, warning, DateTime.now().millisecondsSinceEpoch);
-                                        if (removeWarning != null) {
-                                          await removeWarning!();
-                                        }
-                                      }
+                              SizedBox(height: 8, width: width),
+                              ExpandableText(
+                                title: I18nKey.labelChapterName.tr,
+                                text: ': ${chapter.chapterContent}',
+                                version: chapter.chapterContentVersion,
+                                limit: 60,
+                                style: const TextStyle(fontSize: 14),
+                                selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                                versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
+                                selectText: search.value,
+                                onEdit: () {
+                                  searchFocusNode.unfocus();
+                                  var contentM = jsonDecode(chapter.chapterContent);
+                                  var content = const JsonEncoder.withIndent(' ').convert(contentM);
+                                  Editor.show(
+                                    Get.context!,
+                                    I18nKey.labelChapterName.tr,
+                                    content,
+                                    (str) async {
+                                      await Db().db.chapterKeyDao.updateChapterContent(chapter.chapterKeyId, str);
                                       parentLogic.update([ViewLogicChapterList.bodyId]);
-                                      Get.back();
-                                    });
-                                  },
-                                );
-                              },
-                              icon: const Icon(
-                                Icons.delete_forever,
-                              ),
-                            ),
-                          PopupMenuButton<String>(
-                            icon: const Icon(Icons.more_vert),
-                            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                              PopupMenuItem<String>(
-                                onTap: () {
-                                  MsgBox.yesOrNo(
-                                    title: I18nKey.labelWarning.tr,
-                                    desc: I18nKey.labelDeleteVerse.tr,
-                                    yes: () => delete(chapter: chapter),
+                                    },
+                                    qrPagePath: Nav.gsCrContentScan.path,
+                                    onHistory: () {
+                                      historyList.show(TextVersionType.chapterContent, chapter.chapterKeyId);
+                                    },
                                   );
                                 },
-                                child: Text(I18nKey.btnDelete.tr),
-                              ),
-                              PopupMenuItem<String>(
-                                onTap: () {
-                                  MsgBox.myDialog(
-                                      title: I18nKey.labelTips.tr,
-                                      content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
-                                      action: MsgBox.buttonsWithDivider(buttons: [
-                                        MsgBox.button(
-                                          text: I18nKey.btnCancel.tr,
-                                          onPressed: () {
-                                            Get.back();
-                                          },
-                                        ),
-                                        MsgBox.button(
-                                          text: I18nKey.btnAbove.tr,
-                                          onPressed: () => copy(chapter: chapter, below: false),
-                                        ),
-                                        MsgBox.button(
-                                          text: I18nKey.btnBelow.tr,
-                                          onPressed: () => copy(chapter: chapter, below: true),
-                                        ),
-                                      ]));
-                                },
-                                child: Text(I18nKey.btnCopy.tr),
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            if (chapter.missing)
+                              IconButton(
+                                onPressed: () {
+                                  MsgBox.yesOrNo(
+                                    title: I18nKey.labelDelete.tr,
+                                    desc: I18nKey.labelDeleteChapter.tr,
+                                    yes: () {
+                                      showTransparentOverlay(() async {
+                                        var ok = await Db().db.chapterKeyDao.deleteAbnormalChapter(chapter.chapterKeyId);
+                                        if (ok == false) {
+                                          return;
+                                        }
+                                        ChapterHelp.deleteCache(chapter.chapterKeyId);
+                                        chapterShow.removeWhere((element) => element.chapterKeyId == chapter.chapterKeyId);
+
+                                        var contentId2Missing = refreshMissingChapterIndex(missingChapterIndex, chapterShow);
+                                        var warning = contentId2Missing[chapter.bookId] ?? false;
+                                        if (warning == false) {
+                                          await Db().db.bookDao.updateBookWarningForChapter(chapter.bookId, warning, DateTime.now().millisecondsSinceEpoch);
+                                          if (removeWarning != null) {
+                                            await removeWarning!();
+                                          }
+                                        }
+                                        parentLogic.update([ViewLogicChapterList.bodyId]);
+                                        Get.back();
+                                      });
+                                    },
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.delete_forever,
+                                ),
+                              ),
+                            PopupMenuButton<String>(
+                              icon: const Icon(Icons.more_vert),
+                              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                PopupMenuItem<String>(
+                                  onTap: () {
+                                    MsgBox.yesOrNo(
+                                      title: I18nKey.labelWarning.tr,
+                                      desc: I18nKey.labelDeleteVerse.tr,
+                                      yes: () => delete(chapter: chapter),
+                                    );
+                                  },
+                                  child: Text(I18nKey.btnDelete.tr),
+                                ),
+                                PopupMenuItem<String>(
+                                  onTap: () {
+                                    MsgBox.myDialog(
+                                        title: I18nKey.labelTips.tr,
+                                        content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
+                                        action: MsgBox.buttonsWithDivider(buttons: [
+                                          MsgBox.button(
+                                            text: I18nKey.btnCancel.tr,
+                                            onPressed: () {
+                                              Get.back();
+                                            },
+                                          ),
+                                          MsgBox.button(
+                                            text: I18nKey.btnAbove.tr,
+                                            onPressed: () => copy(chapter: chapter, below: false),
+                                          ),
+                                          MsgBox.button(
+                                            text: I18nKey.btnBelow.tr,
+                                            onPressed: () => copy(chapter: chapter, below: true),
+                                          ),
+                                        ]));
+                                  },
+                                  child: Text(I18nKey.btnCopy.tr),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -536,7 +545,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     for (int i = 0; i < chapterShow.length; i++) {
       var v = chapterShow[i];
       if (v.missing) {
-        contentId2Missing[v.contentId] = true;
+        contentId2Missing[v.bookId] = true;
         missingChapterIndex.add(i);
       }
     }
@@ -547,7 +556,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     options = [];
     final Map<String, List<dynamic>> chaptersByBook = {};
     for (var chapter in originalChapterShow) {
-      chaptersByBook.putIfAbsent(chapter.contentName, () => []).add(chapter);
+      chaptersByBook.putIfAbsent(chapter.bookName, () => []).add(chapter);
     }
 
     final Set<String> uniqueBookNames = {};

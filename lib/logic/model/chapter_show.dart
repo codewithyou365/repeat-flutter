@@ -5,9 +5,9 @@ import 'package:repeat_flutter/common/date.dart';
 class ChapterShow {
   @primaryKey
   final int chapterKeyId;
-  final int contentId;
-  final String contentName;
-  final int contentSort;
+  final int bookId;
+  final String bookName;
+  final int bookSort;
   String chapterContent;
   int chapterContentVersion;
   final int chapterIndex;
@@ -15,9 +15,9 @@ class ChapterShow {
 
   ChapterShow({
     required this.chapterKeyId,
-    required this.contentId,
-    required this.contentName,
-    required this.contentSort,
+    required this.bookId,
+    required this.bookName,
+    required this.bookSort,
     required this.chapterContent,
     required this.chapterContentVersion,
     required this.chapterIndex,
@@ -25,10 +25,10 @@ class ChapterShow {
   });
 
   String toPos() {
-    return '$contentName-${chapterIndex + 1}';
+    return '$bookName-${chapterIndex + 1}';
   }
 
   int toSort() {
-    return contentSort * 10000000000 + chapterIndex * 100000;
+    return bookSort * 10000000000 + chapterIndex * 100000;
   }
 }

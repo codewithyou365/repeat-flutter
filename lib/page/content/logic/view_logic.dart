@@ -1,14 +1,15 @@
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/widgets.dart';
-import 'package:repeat_flutter/logic/model/book_show.dart';
-import 'package:repeat_flutter/logic/model/chapter_show.dart';
-import 'package:repeat_flutter/logic/model/verse_show.dart';
 
 abstract class ViewLogic {
   final FocusNode searchFocusNode = FocusNode();
   final TextEditingController searchController = TextEditingController();
+  final void Function(List<String> selected) onCardTapDown;
 
-  ViewLogic({required VoidCallback onSearchUnfocus}) {
+  ViewLogic({
+    required VoidCallback onSearchUnfocus,
+    required this.onCardTapDown,
+  }) {
     searchFocusNode.addListener(() {
       if (!searchFocusNode.hasFocus) {
         onSearchUnfocus();
