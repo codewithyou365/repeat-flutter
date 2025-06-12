@@ -1,22 +1,22 @@
-class RepeatDoc {
+class BookContent {
   String? showType;
   String? rootUrl;
-  List<Download>? download;
-  List<Chapter> chapter;
+  List<DownloadContent>? download;
+  List<ChapterContent> chapter;
 
-  RepeatDoc({
+  BookContent({
     required this.showType,
     required this.rootUrl,
     required this.download,
     required this.chapter,
   });
 
-  factory RepeatDoc.fromJson(Map<String, dynamic> json) {
-    return RepeatDoc(
+  factory BookContent.fromJson(Map<String, dynamic> json) {
+    return BookContent(
       showType: json['s'] as String?,
       rootUrl: json['r'] as String?,
-      download: Download.toList(json['d']),
-      chapter: (json['c'] as List?)?.map((e) => Chapter.fromJson(e as Map<String, dynamic>)).toList() ?? [],
+      download: DownloadContent.toList(json['d']),
+      chapter: (json['c'] as List?)?.map((e) => ChapterContent.fromJson(e as Map<String, dynamic>)).toList() ?? [],
     );
   }
 
@@ -30,7 +30,7 @@ class RepeatDoc {
   }
 }
 
-class Download {
+class DownloadContent {
   String url;
   String hash;
 
@@ -42,20 +42,20 @@ class Download {
 
   String get path => "$folder/$name";
 
-  Download({
+  DownloadContent({
     required this.url,
     required this.hash,
   });
 
-  static List<Download>? toList(dynamic json) {
+  static List<DownloadContent>? toList(dynamic json) {
     if (json != null) {
-      return (json as List).map((e) => Download.fromJson(e as Map<String, dynamic>)).toList();
+      return (json as List).map((e) => DownloadContent.fromJson(e as Map<String, dynamic>)).toList();
     }
     return null;
   }
 
-  factory Download.fromJson(Map<String, dynamic> json) {
-    return Download(
+  factory DownloadContent.fromJson(Map<String, dynamic> json) {
+    return DownloadContent(
       url: json['u'] as String,
       hash: json['h'] as String,
     );
@@ -69,25 +69,25 @@ class Download {
   }
 }
 
-class Chapter {
+class ChapterContent {
   String? showType;
   String? rootUrl;
-  List<Download>? download;
-  List<Verse> verse;
+  List<DownloadContent>? download;
+  List<VerseContent> verse;
 
-  Chapter({
+  ChapterContent({
     required this.showType,
     required this.rootUrl,
     required this.download,
     required this.verse,
   });
 
-  factory Chapter.fromJson(Map<String, dynamic> json) {
-    return Chapter(
+  factory ChapterContent.fromJson(Map<String, dynamic> json) {
+    return ChapterContent(
       showType: json['s'] as String?,
       rootUrl: json['r'] as String?,
-      download: Download.toList(json['d']),
-      verse: (json['v'] as List?)?.map((e) => Verse.fromJson(e as Map<String, dynamic>)).toList() ?? [],
+      download: DownloadContent.toList(json['d']),
+      verse: (json['v'] as List?)?.map((e) => VerseContent.fromJson(e as Map<String, dynamic>)).toList() ?? [],
     );
   }
 
@@ -101,10 +101,10 @@ class Chapter {
   }
 }
 
-class Verse {
+class VerseContent {
   String? showType;
   String? rootUrl;
-  List<Download>? download;
+  List<DownloadContent>? download;
   String? key;
   String? write;
   String? note;
@@ -112,7 +112,7 @@ class Verse {
   String? question;
   String answer;
 
-  Verse({
+  VerseContent({
     required this.showType,
     required this.rootUrl,
     required this.download,
@@ -124,11 +124,11 @@ class Verse {
     required this.answer,
   });
 
-  factory Verse.fromJson(Map<String, dynamic> json) {
-    return Verse(
+  factory VerseContent.fromJson(Map<String, dynamic> json) {
+    return VerseContent(
       showType: json['s'] as String?,
       rootUrl: json['r'] as String?,
-      download: Download.toList(json['d']),
+      download: DownloadContent.toList(json['d']),
       key: json['k'] as String?,
       write: json['w'] as String?,
       note: json['n'] as String?,

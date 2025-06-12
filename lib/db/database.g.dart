@@ -1023,8 +1023,8 @@ class _$ChapterKeyDao extends ChapterKeyDao {
   @override
   Future<List<ChapterShow>> getAllChapter(int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT ChapterKey.id chapterKeyId,Book.id contentId,Book.name contentName,Book.sort contentSort,ChapterKey.content chapterContent,ChapterKey.contentVersion chapterContentVersion,ChapterKey.chapterIndex,Chapter.chapterKeyId is null missing FROM ChapterKey JOIN Book ON Book.classroomId=?1 AND Book.serial=ChapterKey.bookSerial AND Book.docId!=0 LEFT JOIN Chapter ON Chapter.chapterKeyId=ChapterKey.id WHERE ChapterKey.classroomId=?1',
-        mapper: (Map<String, Object?> row) => ChapterShow(chapterKeyId: row['chapterKeyId'] as int, bookId: row['contentId'] as int, bookName: row['contentName'] as String, bookSort: row['contentSort'] as int, chapterContent: row['chapterContent'] as String, chapterContentVersion: row['chapterContentVersion'] as int, chapterIndex: row['chapterIndex'] as int, missing: (row['missing'] as int) != 0),
+        'SELECT ChapterKey.id chapterKeyId,Book.id bookId,Book.name bookName,Book.sort bookSort,ChapterKey.content chapterContent,ChapterKey.contentVersion chapterContentVersion,ChapterKey.chapterIndex,Chapter.chapterKeyId is null missing FROM ChapterKey JOIN Book ON Book.classroomId=?1 AND Book.serial=ChapterKey.bookSerial AND Book.docId!=0 LEFT JOIN Chapter ON Chapter.chapterKeyId=ChapterKey.id WHERE ChapterKey.classroomId=?1',
+        mapper: (Map<String, Object?> row) => ChapterShow(chapterKeyId: row['chapterKeyId'] as int, bookId: row['bookId'] as int, bookName: row['bookName'] as String, bookSort: row['bookSort'] as int, chapterContent: row['chapterContent'] as String, chapterContentVersion: row['chapterContentVersion'] as int, chapterIndex: row['chapterIndex'] as int, missing: (row['missing'] as int) != 0),
         arguments: [classroomId]);
   }
 
@@ -2397,14 +2397,6 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<VerseContentInDb?> getVerseContent(int verseKeyId) async {
-    return _queryAdapter.query(
-        'SELECT Verse.verseKeyId,Verse.classroomId,Verse.bookSerial,Verse.chapterIndex,Verse.verseIndex,Verse.sort sort,Book.name contentName FROM Verse JOIN Book ON Book.classroomId=Verse.classroomId AND Book.serial=Verse.bookSerial WHERE Verse.verseKeyId=?1',
-        mapper: (Map<String, Object?> row) => VerseContentInDb(verseKeyId: row['verseKeyId'] as int, classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int, contentName: row['contentName'] as String),
-        arguments: [verseKeyId]);
-  }
-
-  @override
   Future<String?> getBookName(int verseKeyId) async {
     return _queryAdapter.query(
         'SELECT Book.name contentName FROM VerseKey JOIN Book ON Book.classroomId=VerseKey.classroomId AND Book.serial=VerseKey.bookSerial WHERE VerseKey.id=?1',
@@ -2492,8 +2484,8 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<List<VerseShow>> getAllVerse(int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT VerseKey.id verseKeyId,VerseKey.k,Book.id contentId,Book.name contentName,Book.serial bookSerial,Book.sort contentSort,VerseKey.content verseContent,VerseKey.contentVersion verseContentVersion,VerseKey.note verseNote,VerseKey.noteVersion verseNoteVersion,VerseKey.chapterIndex,VerseKey.verseIndex,VerseOverallPrg.next,VerseOverallPrg.progress,Verse.verseKeyId is null missing FROM VerseKey JOIN Book ON Book.classroomId=?1 AND Book.serial=VerseKey.bookSerial AND Book.docId!=0 LEFT JOIN Verse ON Verse.verseKeyId=VerseKey.id LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseKeyId=VerseKey.id WHERE VerseKey.classroomId=?1',
-        mapper: (Map<String, Object?> row) => VerseShow(verseKeyId: row['verseKeyId'] as int, k: row['k'] as String, bookId: row['contentId'] as int, bookName: row['contentName'] as String, bookSerial: row['bookSerial'] as int, bookSort: row['contentSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, verseNote: row['verseNote'] as String, verseNoteVersion: row['verseNoteVersion'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int, missing: (row['missing'] as int) != 0),
+        'SELECT VerseKey.id verseKeyId,VerseKey.k,Book.id bookId,Book.name bookName,Book.serial bookSerial,Book.sort bookSort,VerseKey.content verseContent,VerseKey.contentVersion verseContentVersion,VerseKey.note verseNote,VerseKey.noteVersion verseNoteVersion,VerseKey.chapterIndex,VerseKey.verseIndex,VerseOverallPrg.next,VerseOverallPrg.progress,Verse.verseKeyId is null missing FROM VerseKey JOIN Book ON Book.classroomId=?1 AND Book.serial=VerseKey.bookSerial AND Book.docId!=0 LEFT JOIN Verse ON Verse.verseKeyId=VerseKey.id LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseKeyId=VerseKey.id WHERE VerseKey.classroomId=?1',
+        mapper: (Map<String, Object?> row) => VerseShow(verseKeyId: row['verseKeyId'] as int, k: row['k'] as String, bookId: row['bookId'] as int, bookName: row['bookName'] as String, bookSerial: row['bookSerial'] as int, bookSort: row['bookSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, verseNote: row['verseNote'] as String, verseNoteVersion: row['verseNoteVersion'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int, missing: (row['missing'] as int) != 0),
         arguments: [classroomId]);
   }
 
@@ -2504,8 +2496,8 @@ class _$ScheduleDao extends ScheduleDao {
     int chapterIndex,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT VerseKey.id verseKeyId,VerseKey.k,Book.id contentId,Book.name contentName,Book.serial bookSerial,Book.sort contentSort,VerseKey.content verseContent,VerseKey.contentVersion verseContentVersion,VerseKey.note verseNote,VerseKey.noteVersion verseNoteVersion,VerseKey.chapterIndex,VerseKey.verseIndex,VerseOverallPrg.next,VerseOverallPrg.progress,Verse.verseKeyId is null missing FROM VerseKey JOIN Book ON Book.classroomId=?1 AND Book.serial=VerseKey.bookSerial AND Book.docId!=0 LEFT JOIN Verse ON Verse.verseKeyId=VerseKey.id LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseKeyId=VerseKey.id WHERE VerseKey.classroomId=?1  AND VerseKey.bookSerial=?2  AND VerseKey.chapterIndex=?3',
-        mapper: (Map<String, Object?> row) => VerseShow(verseKeyId: row['verseKeyId'] as int, k: row['k'] as String, bookId: row['contentId'] as int, bookName: row['contentName'] as String, bookSerial: row['bookSerial'] as int, bookSort: row['contentSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, verseNote: row['verseNote'] as String, verseNoteVersion: row['verseNoteVersion'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int, missing: (row['missing'] as int) != 0),
+        'SELECT VerseKey.id verseKeyId,VerseKey.k,Book.id bookId,Book.name bookName,Book.serial bookSerial,Book.sort bookSort,VerseKey.content verseContent,VerseKey.contentVersion verseContentVersion,VerseKey.note verseNote,VerseKey.noteVersion verseNoteVersion,VerseKey.chapterIndex,VerseKey.verseIndex,VerseOverallPrg.next,VerseOverallPrg.progress,Verse.verseKeyId is null missing FROM VerseKey JOIN Book ON Book.classroomId=?1 AND Book.serial=VerseKey.bookSerial AND Book.docId!=0 LEFT JOIN Verse ON Verse.verseKeyId=VerseKey.id LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseKeyId=VerseKey.id WHERE VerseKey.classroomId=?1  AND VerseKey.bookSerial=?2  AND VerseKey.chapterIndex=?3',
+        mapper: (Map<String, Object?> row) => VerseShow(verseKeyId: row['verseKeyId'] as int, k: row['k'] as String, bookId: row['bookId'] as int, bookName: row['bookName'] as String, bookSerial: row['bookSerial'] as int, bookSort: row['bookSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, verseNote: row['verseNote'] as String, verseNoteVersion: row['verseNoteVersion'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int, missing: (row['missing'] as int) != 0),
         arguments: [classroomId, bookSerial, chapterIndex]);
   }
 
@@ -2516,8 +2508,8 @@ class _$ScheduleDao extends ScheduleDao {
     int minChapterIndex,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT VerseKey.id verseKeyId,VerseKey.k,Book.id contentId,Book.name contentName,Book.serial bookSerial,Book.sort contentSort,VerseKey.content verseContent,VerseKey.contentVersion verseContentVersion,VerseKey.note verseNote,VerseKey.noteVersion verseNoteVersion,VerseKey.chapterIndex,VerseKey.verseIndex,VerseOverallPrg.next,VerseOverallPrg.progress,Verse.verseKeyId is null missing FROM VerseKey JOIN Book ON Book.classroomId=?1 AND Book.serial=VerseKey.bookSerial AND Book.docId!=0 LEFT JOIN Verse ON Verse.verseKeyId=VerseKey.id LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseKeyId=VerseKey.id WHERE VerseKey.classroomId=?1  AND VerseKey.bookSerial=?2  AND VerseKey.chapterIndex>=?3',
-        mapper: (Map<String, Object?> row) => VerseShow(verseKeyId: row['verseKeyId'] as int, k: row['k'] as String, bookId: row['contentId'] as int, bookName: row['contentName'] as String, bookSerial: row['bookSerial'] as int, bookSort: row['contentSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, verseNote: row['verseNote'] as String, verseNoteVersion: row['verseNoteVersion'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int, missing: (row['missing'] as int) != 0),
+        'SELECT VerseKey.id verseKeyId,VerseKey.k,Book.id bookId,Book.name bookName,Book.serial bookSerial,Book.sort bookSort,VerseKey.content verseContent,VerseKey.contentVersion verseContentVersion,VerseKey.note verseNote,VerseKey.noteVersion verseNoteVersion,VerseKey.chapterIndex,VerseKey.verseIndex,VerseOverallPrg.next,VerseOverallPrg.progress,Verse.verseKeyId is null missing FROM VerseKey JOIN Book ON Book.classroomId=?1 AND Book.serial=VerseKey.bookSerial AND Book.docId!=0 LEFT JOIN Verse ON Verse.verseKeyId=VerseKey.id LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseKeyId=VerseKey.id WHERE VerseKey.classroomId=?1  AND VerseKey.bookSerial=?2  AND VerseKey.chapterIndex>=?3',
+        mapper: (Map<String, Object?> row) => VerseShow(verseKeyId: row['verseKeyId'] as int, k: row['k'] as String, bookId: row['bookId'] as int, bookName: row['bookName'] as String, bookSerial: row['bookSerial'] as int, bookSort: row['bookSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, verseNote: row['verseNote'] as String, verseNoteVersion: row['verseNoteVersion'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int, missing: (row['missing'] as int) != 0),
         arguments: [classroomId, bookSerial, minChapterIndex]);
   }
 

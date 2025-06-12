@@ -44,7 +44,6 @@ import 'package:repeat_flutter/db/migration/m2_3.dart';
 import 'package:repeat_flutter/db/type_converter.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
-import 'package:repeat_flutter/logic/model/verse_content.dart';
 import 'package:repeat_flutter/logic/model/key_id.dart';
 import 'package:repeat_flutter/logic/model/verse_overall_prg_with_key.dart';
 import 'package:repeat_flutter/logic/model/verse_review_with_key.dart';
@@ -72,7 +71,6 @@ part 'database.g.dart'; // the generated code will be there
   VerseReview,
   VerseReviewWithKey,
   VerseTodayPrg,
-  VerseContentInDb,
   VerseStats,
   TextVersion,
   TimeStats,

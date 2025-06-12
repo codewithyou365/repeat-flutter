@@ -19,7 +19,7 @@ import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
-import 'package:repeat_flutter/logic/model/repeat_doc.dart';
+import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
@@ -176,7 +176,7 @@ class GsCrContentShareLogic extends GetxController {
 
               if (!zipFileExist) {
                 List<Doc> docs = await Db().db.docDao.getAllDoc("$relativePath/");
-                var downloads = DocHelp.getDownloads(RepeatDoc.fromJson(docMap));
+                var downloads = DocHelp.getDownloads(BookContent.fromJson(docMap));
                 final receivePort = ReceivePort();
                 await Isolate.spawn(
                   _createZipFileInIsolate,
@@ -229,7 +229,7 @@ class GsCrContentShareLogic extends GetxController {
     SendPort sendPort = message['sendPort'];
     try {
       List<Doc> docs = message['docs'];
-      List<Download> downloads = message['downloads'];
+      List<DownloadContent> downloads = message['downloads'];
       Uint8List docBytes = message['docBytes'];
       String zipFilePath = message['zipFilePath'];
       String indexFilePath = message['indexFilePath'];

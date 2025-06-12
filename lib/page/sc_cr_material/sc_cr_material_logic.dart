@@ -12,7 +12,7 @@ import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/download.dart';
-import 'package:repeat_flutter/logic/model/repeat_doc.dart';
+import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/logic/widget/chapter_list.dart';
@@ -188,7 +188,7 @@ class ScCrMaterialLogic extends GetxController {
   }
 
   Future<int> getUnitCount(int bookSerial) async {
-    RepeatDoc? kv = await DocHelp.fromPath(DocPath.getRelativeIndexPath(bookSerial));
+    BookContent? kv = await DocHelp.fromPath(DocPath.getRelativeIndexPath(bookSerial));
     if (kv == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return 0;
@@ -232,7 +232,7 @@ class ScCrMaterialLogic extends GetxController {
     if (!success) {
       return;
     }
-    RepeatDoc? kv = await DocHelp.fromPath(indexPath);
+    BookContent? kv = await DocHelp.fromPath(indexPath);
     if (kv == null) {
       return;
     }

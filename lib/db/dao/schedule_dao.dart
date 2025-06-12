@@ -21,8 +21,7 @@ import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
-import 'package:repeat_flutter/logic/model/repeat_doc.dart' as rd;
-import 'package:repeat_flutter/logic/model/verse_content.dart';
+import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/key_id.dart';
 import 'package:repeat_flutter/logic/model/verse_overall_prg_with_key.dart';
 import 'package:repeat_flutter/logic/model/verse_review_with_key.dart';
@@ -416,19 +415,6 @@ abstract class ScheduleDao {
   Future<void> setVerseReviewCount(Date createDate, int verseKeyId, int count);
 
   @Query("SELECT"
-      " Verse.verseKeyId"
-      ",Verse.classroomId"
-      ",Verse.bookSerial"
-      ",Verse.chapterIndex"
-      ",Verse.verseIndex"
-      ",Verse.sort sort"
-      ",Book.name contentName"
-      " FROM Verse"
-      " JOIN Book ON Book.classroomId=Verse.classroomId AND Book.serial=Verse.bookSerial"
-      " WHERE Verse.verseKeyId=:verseKeyId")
-  Future<VerseContentInDb?> getVerseContent(int verseKeyId);
-
-  @Query("SELECT"
       " Book.name contentName"
       " FROM VerseKey"
       " JOIN Book ON Book.classroomId=VerseKey.classroomId AND Book.serial=VerseKey.bookSerial"
@@ -706,7 +692,7 @@ abstract class ScheduleDao {
       Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["jsonData"]));
       return false;
     }
-    var kv = rd.RepeatDoc.fromJson(jsonData);
+    var kv = BookContent.fromJson(jsonData);
     if (kv.chapter.length >= 100000) {
       Snackbar.show(I18nKey.labelTooMuchData.trArgs(["chapter"]));
       return false;
@@ -1348,7 +1334,7 @@ abstract class ScheduleDao {
     }
     String key;
     try {
-      rd.Verse verse = rd.Verse.fromJson(contentM);
+      VerseContent verse = VerseContent.fromJson(contentM);
       key = getKey(verse.key, verse.answer);
     } catch (e) {
       Snackbar.show(e.toString());

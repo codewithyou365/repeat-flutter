@@ -6,7 +6,7 @@ import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/logic/base/constant.dart' show DocPath;
 import 'package:repeat_flutter/logic/chapter_help.dart';
-import 'package:repeat_flutter/logic/model/repeat_doc.dart';
+import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -31,24 +31,24 @@ class DocHelp {
     return jsonData;
   }
 
-  static Future<RepeatDoc?> fromPath(String path) async {
+  static Future<BookContent?> fromPath(String path) async {
     Map<String, dynamic>? jsonData = await toJsonMap(path);
     if (jsonData != null) {
-      return RepeatDoc.fromJson(jsonData);
+      return BookContent.fromJson(jsonData);
     }
     return null;
   }
 
-  static List<Download> getDownloads(RepeatDoc kv, {String? rootUrl}) {
-    List<Download> ret = [];
-    Map<String, Download> hashToDownloads = {};
-    void tryAppendDownload(Download d, String? rootUrl) {
+  static List<DownloadContent> getDownloads(BookContent kv, {String? rootUrl}) {
+    List<DownloadContent> ret = [];
+    Map<String, DownloadContent> hashToDownloads = {};
+    void tryAppendDownload(DownloadContent d, String? rootUrl) {
       if (hashToDownloads[d.hash] == null) {
-        Download? curr;
+        DownloadContent? curr;
         if (d.url.startsWith("http")) {
           curr = d;
         } else if (rootUrl != null) {
-          curr = Download(url: rootUrl.joinPath(d.url), hash: d.hash);
+          curr = DownloadContent(url: rootUrl.joinPath(d.url), hash: d.hash);
         }
         if (curr != null) {
           ret.add(curr);
@@ -83,8 +83,8 @@ class DocHelp {
   static void fixDownloadInfo(Map<String, dynamic> json) {
     json.remove('u');
     if (json['d'] != null) {
-      List<Download> list = Download.toList(json['d']) ?? [];
-      for (Download v in list) {
+      List<DownloadContent> list = DownloadContent.toList(json['d']) ?? [];
+      for (DownloadContent v in list) {
         v.url = v.path;
       }
       json['d'] = list;

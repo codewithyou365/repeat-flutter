@@ -17,7 +17,7 @@ import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
-import 'package:repeat_flutter/logic/model/repeat_doc.dart';
+import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -191,7 +191,7 @@ class Helper {
     return rootJsonMap;
   }
 
-  RepeatDoc? getCurrRepeatDoc() {
+  BookContent? getCurrRepeatDoc() {
     if (logic.currVerse == null) {
       return null;
     }
@@ -199,7 +199,7 @@ class Helper {
     if (map == null) {
       return null;
     }
-    return RepeatDoc.fromJson(map);
+    return BookContent.fromJson(map);
   }
 
   List<String>? getChapterPaths() {
@@ -214,7 +214,7 @@ class Helper {
     if (doc == null) {
       return null;
     }
-    Chapter chapter = Chapter.fromJson(doc);
+    ChapterContent chapter = ChapterContent.fromJson(doc);
     var downloads = chapter.download ?? [];
     ret = [];
     for (var download in downloads) {
@@ -289,7 +289,7 @@ class Helper {
           try {
             var s = getCurrVerse()!;
             String hash = await Hash.toSha1(pickedPath);
-            Download download = Download(url: pickedName, hash: hash);
+            DownloadContent download = DownloadContent(url: pickedName, hash: hash);
             var rootPath = await DocPath.getContentPath();
             String localFolder = rootPath.joinPath(DocPath.getRelativePath(s.bookSerial).joinPath(download.folder));
             if (!allowedExtensions.containsIgnoreCase(download.extension)) {

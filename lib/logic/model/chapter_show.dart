@@ -1,5 +1,4 @@
 import 'package:floor/floor.dart';
-import 'package:repeat_flutter/common/date.dart';
 
 @Entity(tableName: "")
 class ChapterShow {
