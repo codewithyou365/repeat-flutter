@@ -4,11 +4,10 @@ import 'package:flutter/widgets.dart';
 abstract class ViewLogic {
   final FocusNode searchFocusNode = FocusNode();
   final TextEditingController searchController = TextEditingController();
-  final void Function(List<String> selected) onCardTapDown;
+
 
   ViewLogic({
     required VoidCallback onSearchUnfocus,
-    required this.onCardTapDown,
   }) {
     searchFocusNode.addListener(() {
       if (!searchFocusNode.hasFocus) {

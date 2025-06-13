@@ -28,6 +28,7 @@ import 'view_logic.dart';
 class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
   static const String bodyId = "ChapterList.bodyId";
   late HistoryList historyList = HistoryList<T>(parentLogic);
+  final void Function(ChapterShow chapterShow) onCardTapDown;
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
   double searchDetailPanelHeight = 3 * (RowWidget.rowHeight + RowWidget.dividerHeight);
@@ -65,7 +66,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     required this.originalChapterShow,
     required this.parentLogic,
     required this.removeWarning,
-    required super.onCardTapDown,
+    required this.onCardTapDown,
     required super.onSearchUnfocus,
     String? initBookNameSelect,
     int? initChapterSelect,
@@ -357,7 +358,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                 final chapter = list[index];
                 return GestureDetector(
                   onTapDown: (_) {
-                    onCardTapDown([chapter.bookName, chapter.chapterIndex.toString()]);
+                    onCardTapDown(chapter);
                   },
                   child: Card(
                     color: chapter.missing ? Colors.red : null,

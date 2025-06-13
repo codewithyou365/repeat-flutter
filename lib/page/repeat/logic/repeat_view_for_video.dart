@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/page/gs_cr_repeat/logic/model_media_range.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:video_player/video_player.dart';
+
+import 'model_media_range.dart';
 import 'constant.dart';
 import 'helper.dart';
 import 'model_video_board.dart';

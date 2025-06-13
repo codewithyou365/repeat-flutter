@@ -11,20 +11,19 @@ import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
 
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
-import 'package:repeat_flutter/logic/widget/verse_list.dart';
 import 'package:repeat_flutter/logic/widget/web_manager.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
-import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
-import 'package:repeat_flutter/page/gs_cr_repeat/logic/game_helper.dart';
-import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic_for_browse.dart';
-import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic_for_examine.dart';
-import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic.dart';
-import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_view_for_audio.dart';
-import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_view_for_text.dart';
-import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_view_for_video.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
+import 'repeat_args.dart';
 import 'gs_cr_repeat_state.dart';
+import 'logic/game_helper.dart';
+import 'logic/repeat_logic_for_browse.dart';
+import 'logic/repeat_logic_for_examine.dart';
+import 'logic/repeat_logic.dart';
+import 'logic/repeat_view_for_audio.dart';
+import 'logic/repeat_view_for_text.dart';
+import 'logic/repeat_view_for_video.dart';
 import 'logic/repeat_view.dart';
 
 class GsCrRepeatLogic extends GetxController {
@@ -39,7 +38,6 @@ class GsCrRepeatLogic extends GetxController {
   }
 
   late CopyLogic copyLogic = CopyLogic<GsCrRepeatLogic>(CrK.copyTemplate, this);
-  late VerseList verseList = VerseList<GsCrRepeatLogic>(this);
   late WebManager webManager = WebManager<GsCrRepeatLogic>(this);
   late GameHelper gameHelper = GameHelper(webManager.web);
 
@@ -61,12 +59,12 @@ class GsCrRepeatLogic extends GetxController {
     }
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
-    Get.find<GsCrLogic>().init();
   }
 
   init() async {
-    var all = Get.find<GsCrLogic>().currProgresses;
-    if (Get.arguments == Repeat.justView) {
+    var args = Get.arguments as RepeatArgs;
+    var all = args.progresses;
+    if (args.repeatType == RepeatType.justView) {
       repeatLogic = RepeatLogicForBrowse();
     } else {
       repeatLogic = RepeatLogicForExamine();

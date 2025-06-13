@@ -104,6 +104,8 @@ class _$AppDatabase extends AppDatabase {
 
   StatsDao? _statsDaoInstance;
 
+  VerseTodayPrgDao? _verseTodayPrgDaoInstance;
+
   Future<sqflite.Database> open(
     String path,
     List<Migration> migrations, [
@@ -316,6 +318,12 @@ class _$AppDatabase extends AppDatabase {
   @override
   StatsDao get statsDao {
     return _statsDaoInstance ??= _$StatsDao(database, changeListener);
+  }
+
+  @override
+  VerseTodayPrgDao get verseTodayPrgDao {
+    return _verseTodayPrgDaoInstance ??=
+        _$VerseTodayPrgDao(database, changeListener);
   }
 }
 
@@ -3463,6 +3471,64 @@ class _$StatsDao extends StatsDao {
         return transactionDatabase.statsDao.collectAll();
       });
     }
+  }
+}
+
+class _$VerseTodayPrgDao extends VerseTodayPrgDao {
+  _$VerseTodayPrgDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _verseTodayPrgInsertionAdapter = InsertionAdapter(
+            database,
+            'VerseTodayPrg',
+            (VerseTodayPrg item) => <String, Object?>{
+                  'id': item.id,
+                  'classroomId': item.classroomId,
+                  'bookSerial': item.bookSerial,
+                  'chapterKeyId': item.chapterKeyId,
+                  'verseKeyId': item.verseKeyId,
+                  'time': item.time,
+                  'type': item.type,
+                  'sort': item.sort,
+                  'progress': item.progress,
+                  'viewTime': _dateTimeConverter.encode(item.viewTime),
+                  'reviewCount': item.reviewCount,
+                  'reviewCreateDate':
+                      _dateConverter.encode(item.reviewCreateDate),
+                  'finish': item.finish ? 1 : 0
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<VerseTodayPrg> _verseTodayPrgInsertionAdapter;
+
+  @override
+  Future<VerseTodayPrg?> one(
+    int classroomId,
+    int verseKeyId,
+    int type,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT * FROM VerseTodayPrg where classroomId=?1 and verseKeyId=?2 and type=?3',
+        mapper: (Map<String, Object?> row) => VerseTodayPrg(classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, chapterKeyId: row['chapterKeyId'] as int, verseKeyId: row['verseKeyId'] as int, time: row['time'] as int, type: row['type'] as int, sort: row['sort'] as int, progress: row['progress'] as int, viewTime: _dateTimeConverter.decode(row['viewTime'] as int), reviewCount: row['reviewCount'] as int, reviewCreateDate: _dateConverter.decode(row['reviewCreateDate'] as int), finish: (row['finish'] as int) != 0, id: row['id'] as int?),
+        arguments: [classroomId, verseKeyId, type]);
+  }
+
+  @override
+  Future<void> delete(int id) async {
+    await _queryAdapter.queryNoReturn('DELETE FROM VerseTodayPrg WHERE id=?1',
+        arguments: [id]);
+  }
+
+  @override
+  Future<void> insertOrFail(VerseTodayPrg entity) async {
+    await _verseTodayPrgInsertionAdapter.insert(
+        entity, OnConflictStrategy.fail);
   }
 }
 

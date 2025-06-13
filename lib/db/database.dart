@@ -21,6 +21,7 @@ import 'package:repeat_flutter/db/dao/verse_overall_prg_dao.dart';
 import 'package:repeat_flutter/db/dao/stats_dao.dart';
 import 'package:repeat_flutter/db/dao/text_version_dao.dart';
 import 'package:repeat_flutter/db/dao/lock_dao.dart';
+import 'package:repeat_flutter/db/dao/verse_today_prg_dao.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
@@ -121,6 +122,8 @@ abstract class AppDatabase extends FloorDatabase {
   VerseOverallPrgDao get verseOverallPrgDao;
 
   StatsDao get statsDao;
+
+  VerseTodayPrgDao get verseTodayPrgDao;
 }
 
 class Db {

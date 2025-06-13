@@ -100,7 +100,7 @@ class GsCrPage extends StatelessWidget {
             ),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
               PopupMenuItem<String>(
-                onTap: () => {logic.tryStartGroup(element.type, mode: Repeat.justView)},
+                onTap: () => {logic.tryStartGroup(element.type, mode: RepeatType.justView)},
                 child: Text(I18nKey.btnBrowse.tr),
               ),
               PopupMenuItem<String>(
@@ -141,7 +141,7 @@ class GsCrPage extends StatelessWidget {
                     ),
                     itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                       PopupMenuItem<String>(
-                        onTap: () => {logic.tryStartAll(mode: Repeat.justView)},
+                        onTap: () => {logic.tryStartAll(mode: RepeatType.justView)},
                         child: Text(I18nKey.btnBrowse.tr),
                       ),
                       PopupMenuItem<String>(
@@ -174,7 +174,7 @@ class GsCrPage extends StatelessWidget {
                     ),
                     itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                       PopupMenuItem<String>(
-                        onTap: () => {logic.tryStartGroup(element.type, mode: Repeat.justView)},
+                        onTap: () => {logic.tryStartGroup(element.type, mode: RepeatType.justView)},
                         child: Text(I18nKey.btnBrowse.tr),
                       ),
                       PopupMenuItem<String>(
@@ -211,7 +211,7 @@ class GsCrPage extends StatelessWidget {
               ),
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                 PopupMenuItem<String>(
-                  onTap: () => {logic.tryStart(element.verses, mode: Repeat.justView)},
+                  onTap: () => {logic.tryStart(element.verses, mode: RepeatType.justView)},
                   child: Text(I18nKey.btnBrowse.tr),
                 ),
                 PopupMenuItem<String>(

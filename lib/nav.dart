@@ -5,7 +5,6 @@ import 'package:repeat_flutter/page/gs_cr/gs_cr_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_content_scan/gs_cr_content_scan_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_content_share/gs_cr_content_share_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_content_template/gs_cr_content_template_nav.dart';
-import 'package:repeat_flutter/page/gs_cr_repeat/gs_cr_repeat_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_settings/gs_cr_settings_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_settings_el/gs_cr_settings_el_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_settings_rel/gs_cr_settings_rel_nav.dart';
@@ -17,6 +16,7 @@ import 'package:repeat_flutter/page/gs_settings/gs_settings_nav.dart';
 import 'package:repeat_flutter/page/gs_settings_data/gs_settings_data_nav.dart';
 import 'package:repeat_flutter/page/gs_settings_lang/gs_settings_lang_nav.dart';
 import 'package:repeat_flutter/page/gs_settings_theme/gs_settings_theme_nav.dart';
+import 'package:repeat_flutter/page/repeat/repeat_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_material/sc_cr_material_nav.dart';
 
 enum Nav {
@@ -26,7 +26,6 @@ enum Nav {
   gsCrContentScan("/gs/cr/content/scan"),
   gsCrContentShare("/gs/cr/content/share"),
   gsCrContentTemplate("/gs/cr/content/template"),
-  gsCrRepeat("/gs/cr/repeat"),
   gsCrSettings("/gs/cr/settings"),
   gsCrSettingsEl("/gs/cr/settings/el"),
   gsCrSettingsRel("/gs/cr/settings/rel"),
@@ -38,6 +37,7 @@ enum Nav {
   gsSettingsData("/gs/settings/data"),
   gsSettingsLang("/gs/settings/lang"),
   gsSettingsTheme("/gs/settings/theme"),
+  repeat("/repeat"),
   scCrMaterial("/sc/cr/material"),
   ;
 
@@ -71,7 +71,6 @@ enum Nav {
     gsCrContentScanNav(gsCrContentScan.path),
     gsCrContentShareNav(gsCrContentShare.path),
     gsCrContentTemplateNav(gsCrContentTemplate.path),
-    gsCrRepeatNav(gsCrRepeat.path),
     gsCrSettingsNav(gsCrSettings.path),
     gsCrSettingsElNav(gsCrSettingsEl.path),
     gsCrSettingsRelNav(gsCrSettingsRel.path),
@@ -83,6 +82,7 @@ enum Nav {
     gsSettingsDataNav(gsSettingsData.path),
     gsSettingsLangNav(gsSettingsLang.path),
     gsSettingsThemeNav(gsSettingsTheme.path),
+    repeatNav(repeat.path),
     scCrMaterialNav(scCrMaterial.path),
   ];
 }

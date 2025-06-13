@@ -20,6 +20,7 @@ import 'view_logic.dart';
 class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   static const String bodyId = "BookList.bodyId";
   late HistoryList historyList = HistoryList<T>(parentLogic);
+  final void Function(BookShow bookShow) onCardTapDown;
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
   double searchDetailPanelHeight = 2 * (RowWidget.rowHeight + RowWidget.dividerHeight);
@@ -47,7 +48,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   ViewLogicBookList({
     required this.originalBookShow,
     required this.parentLogic,
-    required super.onCardTapDown,
+    required this.onCardTapDown,
     required super.onSearchUnfocus,
     String? initContentNameSelect,
   }) {
@@ -196,7 +197,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                     final book = list[index];
                     return GestureDetector(
                       onTapDown: (_) {
-                        onCardTapDown([book.name]);
+                        onCardTapDown(book);
                       },
                       child: Card(
                         elevation: 2,

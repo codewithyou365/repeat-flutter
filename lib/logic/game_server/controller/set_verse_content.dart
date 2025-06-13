@@ -5,7 +5,7 @@ import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
-import 'package:repeat_flutter/page/gs_cr_repeat/gs_cr_repeat_logic.dart';
+import 'package:repeat_flutter/page/repeat/gs_cr_repeat_logic.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class SetVerseContentReq {

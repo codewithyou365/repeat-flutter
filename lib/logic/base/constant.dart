@@ -40,7 +40,7 @@ enum ProgressState {
   unfamiliar;
 }
 
-enum Repeat {
+enum RepeatType {
   normal,
   justView;
 }

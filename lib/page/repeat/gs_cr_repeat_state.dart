@@ -1,4 +1,4 @@
-import 'package:repeat_flutter/page/gs_cr_repeat/logic/helper.dart';
+import 'logic/helper.dart';
 
 class GsCrRepeatState {
   bool? lastLandscape;

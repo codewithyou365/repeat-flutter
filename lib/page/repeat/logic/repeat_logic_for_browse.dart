@@ -5,11 +5,11 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/verse_help.dart' show VerseHelp;
-import 'package:repeat_flutter/page/gs_cr_repeat/logic/repeat_logic.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'constant.dart';
 import 'game_helper.dart';
+import 'repeat_logic.dart';
 import 'time_stats_logic.dart';
 
 class RepeatLogicForBrowse extends RepeatLogic {

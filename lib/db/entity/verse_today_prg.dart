@@ -8,6 +8,7 @@ enum TodayPrgType {
   learn,
   review,
   fullCustom,
+  justView,
 }
 
 @Entity(

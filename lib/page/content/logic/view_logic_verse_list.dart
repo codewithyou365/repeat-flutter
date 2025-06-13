@@ -31,6 +31,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
   static const String bodyId = "VerseList.bodyId";
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
+  final void Function(VerseShow verseShow) onCardTapDown;
   List<I18nKey> sortOptionKeys = [
     I18nKey.labelSortPositionAsc,
     I18nKey.labelSortPositionDesc,
@@ -83,7 +84,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     required this.removeWarning,
     required this.onChapterModified,
     required this.selectVerseKeyId,
-    required super.onCardTapDown,
+    required this.onCardTapDown,
     required super.onSearchUnfocus,
     String? initContentNameSelect,
     int? initChapterSelect,
@@ -417,7 +418,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                 final verse = list[index];
                 return GestureDetector(
                   onTapDown: (_) {
-                    onCardTapDown([verse.bookName, verse.chapterIndex.toString(), verse.verseIndex.toString()]);
+                    onCardTapDown(verse);
                   },
                   child: Card(
                     color: verse.missing ? Colors.red : null,

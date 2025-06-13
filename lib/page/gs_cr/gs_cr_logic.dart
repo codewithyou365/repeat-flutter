@@ -22,6 +22,7 @@ import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/page/repeat/repeat_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -33,7 +34,6 @@ class GsCrLogic extends GetxController {
   static const String idForAdd = "GsCrLogicForAdd";
   final GsCrState state = GsCrState();
   late CopyLogic copyLogic = CopyLogic<GsCrLogic>(CrK.copyListTemplate, this);
-  List<VerseTodayPrg> currProgresses = [];
   Timer? timer;
 
   @override
@@ -209,11 +209,11 @@ class GsCrLogic extends GetxController {
     update([GsCrLogic.id]);
   }
 
-  tryStartAll({Repeat mode = Repeat.normal}) {
+  tryStartAll({RepeatType mode = RepeatType.normal}) {
     tryStart(state.all, mode: mode);
   }
 
-  tryStartGroup(TodayPrgType type, {Repeat mode = Repeat.normal}) {
+  tryStartGroup(TodayPrgType type, {RepeatType mode = RepeatType.normal}) {
     if (type == TodayPrgType.learn) {
       tryStart(state.learn, mode: mode);
     } else if (type == TodayPrgType.review) {
@@ -233,7 +233,7 @@ class GsCrLogic extends GetxController {
     }
   }
 
-  tryStart(List<VerseTodayPrg> list, {bool grouping = false, Repeat mode = Repeat.normal}) async {
+  tryStart(List<VerseTodayPrg> list, {bool grouping = false, RepeatType mode = RepeatType.normal}) async {
     var warning = await Db().db.bookDao.hasWarning(Classroom.curr);
     if (warning ?? false) {
       MsgBox.yesOrNo(
@@ -254,7 +254,7 @@ class GsCrLogic extends GetxController {
     if (grouping) {
       list = VerseTodayPrg.getFirstUnfinishedGroup(list);
     }
-    if (mode == Repeat.normal) {
+    if (mode == RepeatType.normal) {
       var learnedTotalCount = VerseTodayPrg.getFinishedCount(list);
       var learnTotalCount = list.length;
       if (learnTotalCount - learnedTotalCount == 0) {
@@ -262,8 +262,9 @@ class GsCrLogic extends GetxController {
         return;
       }
     }
-    currProgresses = list;
-    Nav.gsCrRepeat.push(arguments: mode);
+    var repeat = RepeatArgs(progresses: list, repeatType: mode);
+    await Nav.repeat.push(arguments: repeat);
+    await init();
   }
 
   resetLearnDeadline() {
