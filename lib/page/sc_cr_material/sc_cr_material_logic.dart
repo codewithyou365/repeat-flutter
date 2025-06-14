@@ -59,7 +59,10 @@ class ScCrMaterialLogic extends GetxController {
     }, I18nKey.labelDeleting.tr);
   }
 
-  showContent(int contentId) async {
+  showContent({
+    required int contentId,
+    int defaultTap = 0,
+  }) async {
     var content = await Db().db.bookDao.getById(contentId);
     if (content == null) {
       Snackbar.show(I18nKey.labelNoContent.tr);
@@ -72,34 +75,6 @@ class ScCrMaterialLogic extends GetxController {
           await init();
         },
       ),
-    );
-  }
-
-  showChapter(int contentId) async {
-    var content = await Db().db.bookDao.getById(contentId);
-    if (content == null) {
-      Snackbar.show(I18nKey.labelNoContent.tr);
-      return;
-    }
-    chapterList.show(
-      initContentNameSelect: content.name,
-      removeWarning: () async {
-        await init();
-      },
-    );
-  }
-
-  showVerse(int contentId) async {
-    var content = await Db().db.bookDao.getById(contentId);
-    if (content == null) {
-      Snackbar.show(I18nKey.labelNoContent.tr);
-      return;
-    }
-    verseList.show(
-      initContentNameSelect: content.name,
-      removeWarning: () async {
-        await init();
-      },
     );
   }
 

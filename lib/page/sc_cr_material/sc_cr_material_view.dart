@@ -89,7 +89,7 @@ class ScCrMaterialPage extends StatelessWidget {
       ));
       menus.add(PopupMenuItem<String>(
         onTap: () {
-          logic.showContent(model.id!);
+          logic.showContent(contentId: model.id!);
         },
         child: Text(I18nKey.labelContent.tr),
       ));
@@ -119,9 +119,9 @@ class ScCrMaterialPage extends StatelessWidget {
               IconButton(
                 onPressed: () {
                   if (model.verseWarning) {
-                    logic.showVerse(model.id!);
+                    logic.showContent(contentId: model.id!, defaultTap: 2);
                   } else if (model.chapterWarning) {
-                    logic.showChapter(model.id!);
+                    logic.showContent(contentId: model.id!, defaultTap: 1);
                   }
                 },
                 color: Colors.yellow,
