@@ -5,7 +5,7 @@ import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
-import 'package:repeat_flutter/page/repeat/gs_cr_repeat_logic.dart';
+import 'package:repeat_flutter/page/repeat/repeat_logic.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class SetVerseContentReq {
@@ -47,7 +47,7 @@ Future<message.Response?> setVerseContent(message.Request req, GameUser? user, S
       return message.Response(error: GameServerError.contentCantBeSave.name);
     }
   }
-  Get.find<GsCrRepeatLogic>().update([GsCrRepeatLogic.id]);
+  Get.find<RepeatLogic>().update([RepeatLogic.id]);
   await Db().db.gameDao.clearGame(reqBody.gameId, user.id!, reqBody.content);
   server.broadcast(Request(path: Path.refreshGame, data: {"id": game.id, "time": game.time}));
   return message.Response();

@@ -23,11 +23,11 @@ import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'constant.dart';
-import 'repeat_logic.dart';
+import 'repeat_flow.dart';
 
 class Helper {
   bool initialized = false;
-  late RepeatLogic logic;
+  late RepeatFlow logic;
   late List<Book> contents;
   late String rootPath;
 
@@ -63,7 +63,7 @@ class Helper {
     });
   }
 
-  Future<void> init(RepeatLogic logic) async {
+  Future<void> init(RepeatFlow logic) async {
     initialized = true;
     this.logic = logic;
     contents = await Db().db.bookDao.getAll(Classroom.curr);

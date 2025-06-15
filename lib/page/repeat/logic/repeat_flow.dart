@@ -3,7 +3,7 @@ import 'game_helper.dart';
 
 import 'constant.dart';
 
-abstract class RepeatLogic {
+abstract class RepeatFlow {
   late Function() update;
 
   late GameHelper gameHelper;

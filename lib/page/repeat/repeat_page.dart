@@ -10,17 +10,17 @@ import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/text/text_button.dart';
 
-import 'gs_cr_repeat_logic.dart';
-import 'gs_cr_repeat_state.dart' show GsCrRepeatState;
+import 'repeat_logic.dart';
+import 'repeat_state.dart' show RepeatState;
 import 'logic/constant.dart';
 
-class GsCrRepeatPage extends StatelessWidget {
-  const GsCrRepeatPage({Key? key}) : super(key: key);
+class RepeatPage extends StatelessWidget {
+  const RepeatPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<GsCrRepeatLogic>(
-      id: GsCrRepeatLogic.id,
+    return GetBuilder<RepeatLogic>(
+      id: RepeatLogic.id,
       builder: (_) {
         return Scaffold(
           body: buildCore(context),
@@ -30,7 +30,7 @@ class GsCrRepeatPage extends StatelessWidget {
   }
 
   Widget buildCore(BuildContext context) {
-    final logic = Get.find<GsCrRepeatLogic>();
+    final logic = Get.find<RepeatLogic>();
     final state = logic.state;
     final Size screenSize = MediaQuery.of(context).size;
     final double topPadding = MediaQuery.of(context).padding.top;
@@ -84,7 +84,7 @@ class GsCrRepeatPage extends StatelessWidget {
     }
   }
 
-  Widget dataMissing(GsCrRepeatState state) {
+  Widget dataMissing(RepeatState state) {
     var helper = state.helper;
     return Column(
       children: [
@@ -114,7 +114,7 @@ class GsCrRepeatPage extends StatelessWidget {
     );
   }
 
-  Widget topBar({required GsCrRepeatLogic logic, required double height}) {
+  Widget topBar({required RepeatLogic logic, required double height}) {
     final repeatLogic = logic.repeatLogic;
     final state = logic.state;
     return SizedBox(
@@ -172,7 +172,7 @@ class GsCrRepeatPage extends StatelessWidget {
     );
   }
 
-  Widget topBarTitle({required GsCrRepeatLogic logic, double? fontSize}) {
+  Widget topBarTitle({required RepeatLogic logic, double? fontSize}) {
     var state = logic.state;
     String text = '';
     if (!state.concentrationMode && logic.repeatLogic != null) {
@@ -184,7 +184,7 @@ class GsCrRepeatPage extends StatelessWidget {
     );
   }
 
-  Widget bottomBar({required GsCrRepeatLogic logic, required double width, required double height}) {
+  Widget bottomBar({required RepeatLogic logic, required double width, required double height}) {
     final helper = logic.state.helper;
     var m = helper.getCurrVerseMap();
     String? tip;
@@ -267,7 +267,7 @@ class GsCrRepeatPage extends StatelessWidget {
     );
   }
 
-  Widget? text(GsCrRepeatLogic logic, QaType type) {
+  Widget? text(RepeatLogic logic, QaType type) {
     var helper = logic.state.helper;
     var edit = helper.edit;
     var map = helper.getCurrVerseMap();
@@ -288,7 +288,7 @@ class GsCrRepeatPage extends StatelessWidget {
             String jsonStr = jsonEncode(map);
             var verseKeyId = helper.getCurrVerse()!.verseKeyId;
             await Db().db.scheduleDao.tUpdateVerseContent(verseKeyId, jsonStr);
-            logic.update([GsCrRepeatLogic.id]);
+            logic.update([RepeatLogic.id]);
           },
           qrPagePath: Nav.gsCrContentScan.path,
         );

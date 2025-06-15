@@ -9,10 +9,10 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'constant.dart';
 import 'game_helper.dart';
-import 'repeat_logic.dart';
+import 'repeat_flow.dart';
 import 'time_stats_logic.dart';
 
-class RepeatLogicForBrowse extends RepeatLogic {
+class RepeatFlowForBrowse extends RepeatFlow {
   TimeStatsLogic timeStatsLogic = TimeStatsLogic();
   late List<VerseTodayPrg> scheduled;
 

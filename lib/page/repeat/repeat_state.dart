@@ -1,6 +1,6 @@
 import 'logic/helper.dart';
 
-class GsCrRepeatState {
+class RepeatState {
   bool? lastLandscape;
   bool needUpdateSystemUiMode = true;
 

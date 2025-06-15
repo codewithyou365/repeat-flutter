@@ -1,12 +1,12 @@
 import 'package:get/get.dart';
-import 'gs_cr_repeat_binding.dart';
-import 'gs_cr_repeat_view.dart';
+import 'repeat_binding.dart';
+import 'repeat_page.dart';
 
 GetPage repeatNav(String path) {
   return GetPage(
     name: path,
     transition: Transition.rightToLeft,
-    page: () => GsCrRepeatPage(),
-    binding: GsCrRepeatBinding(),
+    page: () => RepeatPage(),
+    binding: RepeatBinding(),
   );
 }
