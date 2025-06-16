@@ -5,6 +5,7 @@ class RepeatState {
   bool needUpdateSystemUiMode = true;
 
   var concentrationMode = true;
+  var enableShowRecallButtons = false;
   Helper helper = Helper();
   late double bodyHeight;
   var showBottomBar = true;

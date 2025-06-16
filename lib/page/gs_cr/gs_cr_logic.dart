@@ -262,7 +262,12 @@ class GsCrLogic extends GetxController {
         return;
       }
     }
-    var repeat = RepeatArgs(progresses: list, repeatType: mode);
+    var repeat = RepeatArgs(
+      progresses: list,
+      repeatType: mode,
+      enableShowRecallButtons: true,
+      defaultEdit: false,
+    );
     await Nav.repeat.push(arguments: repeat);
     await init();
   }

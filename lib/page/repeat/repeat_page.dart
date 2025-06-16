@@ -130,12 +130,12 @@ class RepeatPage extends StatelessWidget {
           ),
           topBarTitle(logic: logic, fontSize: 18),
           const Spacer(),
-          if (repeatLogic != null && repeatLogic.step != RepeatStep.recall)
+          if (repeatLogic != null && repeatLogic.step != RepeatStep.recall && state.enableShowRecallButtons)
             IconButton(
               icon: const Icon(Icons.assistant_photo),
               onPressed: logic.adjustProgress,
             ),
-          if (repeatLogic != null && repeatLogic.step != RepeatStep.recall)
+          if (repeatLogic != null && repeatLogic.step != RepeatStep.recall && state.enableShowRecallButtons)
             IconButton(
               icon: const Icon(Icons.list_alt),
               tooltip: I18nKey.labelDetail.tr,

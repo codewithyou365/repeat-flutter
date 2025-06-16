@@ -63,6 +63,7 @@ class RepeatLogic extends GetxController {
 
   init() async {
     var args = Get.arguments as RepeatArgs;
+    state.enableShowRecallButtons = args.enableShowRecallButtons;
     var all = args.progresses;
     if (args.repeatType == RepeatType.justView) {
       repeatLogic = RepeatFlowForBrowse();
@@ -79,6 +80,7 @@ class RepeatLogic extends GetxController {
       Get.back();
       return;
     }
+    state.helper.edit = args.defaultEdit;
     await state.helper.init(repeatLogic!);
     for (var v in showTypeToRepeatView.values) {
       v.init(state.helper);

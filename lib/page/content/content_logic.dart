@@ -83,7 +83,12 @@ class ContentLogic extends GetxController {
             return;
           }
         }
-        var repeat = RepeatArgs(progresses: [p], repeatType: RepeatType.justView);
+        var repeat = RepeatArgs(
+          progresses: [p],
+          repeatType: RepeatType.justView,
+          enableShowRecallButtons: false,
+          defaultEdit: true,
+        );
         await Nav.repeat.push(arguments: repeat);
         await Db().db.verseTodayPrgDao.delete(p.id!);
       },
