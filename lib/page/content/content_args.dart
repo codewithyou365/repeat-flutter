@@ -4,6 +4,7 @@ class ContentArgs {
   int? initChapterSelect;
   int defaultTap;
   int? selectVerseKeyId;
+  bool enableEnteringRepeatView;
 
   ContentArgs({
     this.bookName,
@@ -11,5 +12,6 @@ class ContentArgs {
     this.selectVerseKeyId,
     this.removeWarning,
     this.defaultTap = 0,
+    this.enableEnteringRepeatView = false,
   });
 }

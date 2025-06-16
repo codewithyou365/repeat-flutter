@@ -48,6 +48,9 @@ class ContentLogic extends GetxController {
         chapterList.trySearch(force: true);
       },
       onCardTapDown: (VerseShow verseShow) async {
+        if (!args.enableEnteringRepeatView) {
+          return;
+        }
         Verse? verse = await Db().db.verseDao.one(Classroom.curr, verseShow.bookSerial, verseShow.chapterIndex, verseShow.verseIndex);
         if (verse == null) {
           Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the verseKey data(${Classroom.curr}-${verseShow.bookSerial}-${verseShow.chapterIndex}-${verseShow.verseIndex})"]));

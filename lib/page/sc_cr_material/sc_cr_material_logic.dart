@@ -71,6 +71,7 @@ class ScCrMaterialLogic extends GetxController {
     await Nav.content.push(
       arguments: ContentArgs(
         bookName: content.name,
+        enableEnteringRepeatView: true,
         removeWarning: () async {
           await init();
         },
