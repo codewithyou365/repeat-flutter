@@ -169,7 +169,7 @@ class CopyLogic<T extends GetxController> {
                           (str) async {
                             write(index, str);
                           },
-                          qrPagePath: Nav.gsCrContentScan.path,
+                          qrPagePath: Nav.scan.path,
                         );
                       },
                       child: Text(I18nKey.labelDetailConfig.tr),

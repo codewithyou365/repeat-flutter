@@ -60,7 +60,7 @@ class GsCrSettingsLogic extends GetxController {
         state.configJson = str;
         inputConfig();
       },
-      qrPagePath: Nav.gsCrContentScan.path,
+      qrPagePath: Nav.scan.path,
     );
   }
 

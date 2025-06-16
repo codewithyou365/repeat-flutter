@@ -11,7 +11,6 @@ import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
-import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:repeat_flutter/widget/text/expandable_text.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -246,7 +245,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                                           await Db().db.bookDao.updateBookContent(book.bookId, str);
                                           parentLogic.update([ViewLogicBookList.bodyId]);
                                         },
-                                        qrPagePath: Nav.gsCrContentScan.path,
+                                        qrPagePath: Nav.scan.path,
                                         onHistory: () {
                                           historyList.show(TextVersionType.bookContent, book.bookId);
                                         },

@@ -290,7 +290,7 @@ class RepeatPage extends StatelessWidget {
             await Db().db.scheduleDao.tUpdateVerseContent(verseKeyId, jsonStr);
             logic.update([RepeatLogic.id]);
           },
-          qrPagePath: Nav.gsCrContentScan.path,
+          qrPagePath: Nav.scan.path,
         );
       }, editText);
     } else {

@@ -441,7 +441,7 @@ class VerseList<T extends GetxController> {
                                             await Db().db.scheduleDao.tUpdateVerseContent(verse.verseKeyId, str);
                                             parentLogic.update([VerseList.bodyId]);
                                           },
-                                          qrPagePath: Nav.gsCrContentScan.path,
+                                          qrPagePath: Nav.scan.path,
                                           onHistory: () {
                                             historyList.show(TextVersionType.verseContent, verse.verseKeyId);
                                           },
@@ -468,7 +468,7 @@ class VerseList<T extends GetxController> {
                                             await Db().db.scheduleDao.tUpdateVerseNote(verse.verseKeyId, str);
                                             parentLogic.update([VerseList.bodyId]);
                                           },
-                                          qrPagePath: Nav.gsCrContentScan.path,
+                                          qrPagePath: Nav.scan.path,
                                           onHistory: () {
                                             historyList.show(TextVersionType.verseNote, verse.verseKeyId);
                                           },

@@ -378,7 +378,7 @@ class ChapterList<T extends GetxController> {
                                             await Db().db.chapterKeyDao.updateChapterContent(chapter.chapterKeyId, str);
                                             parentLogic.update([ChapterList.bodyId]);
                                           },
-                                          qrPagePath: Nav.gsCrContentScan.path,
+                                          qrPagePath: Nav.scan.path,
                                           onHistory: () {
                                             historyList.show(TextVersionType.chapterContent, chapter.chapterKeyId);
                                           },

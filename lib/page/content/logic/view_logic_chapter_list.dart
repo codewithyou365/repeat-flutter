@@ -408,7 +408,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                                       await Db().db.chapterKeyDao.updateChapterContent(chapter.chapterKeyId, str);
                                       parentLogic.update([ViewLogicChapterList.bodyId]);
                                     },
-                                    qrPagePath: Nav.gsCrContentScan.path,
+                                    qrPagePath: Nav.scan.path,
                                     onHistory: () {
                                       historyList.show(TextVersionType.chapterContent, chapter.chapterKeyId);
                                     },

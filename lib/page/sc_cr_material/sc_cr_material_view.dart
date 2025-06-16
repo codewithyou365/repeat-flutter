@@ -173,7 +173,7 @@ class ScCrMaterialPage extends StatelessWidget {
       },
       yesBtnTitle: I18nKey.btnDownload.tr,
       noBtnTitle: I18nKey.btnClose.tr,
-      qrPagePath: Nav.gsCrContentScan.path,
+      qrPagePath: Nav.scan.path,
     );
   }
 }
