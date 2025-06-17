@@ -59,6 +59,10 @@ abstract class ChapterKeyDao {
       ' WHERE classroomId=:classroomId AND bookSerial=:bookSerial AND chapterIndex>=:minChapterIndex')
   Future<void> deleteByMinChapterIndex(int classroomId, int bookSerial, int minChapterIndex);
 
+  @Query('DELETE FROM ChapterKey'
+      ' WHERE classroomId=:classroomId')
+  Future<void> deleteByClassroomId(int classroomId);
+
   @Query('UPDATE ChapterKey set content=:content,contentVersion=:contentVersion WHERE id=:id')
   Future<void> updateKeyAndContent(int id, String content, int contentVersion);
 
@@ -113,7 +117,15 @@ abstract class ChapterKeyDao {
 
     List<TextVersion> oldContentVersion = await db.textVersionDao.getTextForChapter(oldChapterIds);
     Map<int, TextVersion> oldIdToContentVersion = {for (var v in oldContentVersion) v.id: v};
-    var needToInsertTextVersion = db.textVersionDao.toNeedToInsert<ChapterKey>(TextVersionType.chapterContent, newChapterKeys, (v) => v.id!, (v) => v.content, oldIdToContentVersion);
+    var needToInsertTextVersion = db.textVersionDao.convert<ChapterKey>(
+      classroomId: Classroom.curr,
+      bookSerial: bookSerial,
+      textVersionType: TextVersionType.chapterContent,
+      list: newChapterKeys,
+      getId: (v) => v.id!,
+      getText: (v) => v.content,
+      currIdToVersion: oldIdToContentVersion,
+    );
     Map<int, TextVersion> newIdToChapterVersion = {for (var v in needToInsertTextVersion) v.id: v};
     for (var i = 0; i < newChapterKeys.length; i++) {
       ChapterKey newChapter = newChapterKeys[i];
@@ -164,6 +176,8 @@ abstract class ChapterKeyDao {
     await db.textVersionDao.insertOrIgnore(TextVersion(
       t: TextVersionType.chapterContent,
       id: chapterKeyId,
+      classroomId: chapterKey.classroomId,
+      bookSerial: chapterKey.bookSerial,
       version: chapterKey.contentVersion + 1,
       reason: TextVersionReason.editor,
       text: content,
@@ -315,6 +329,8 @@ abstract class ChapterKeyDao {
     TextVersion newTextVersion = TextVersion(
       t: TextVersionType.chapterContent,
       version: 1,
+      classroomId: classroomId,
+      bookSerial: bookSerial,
       reason: TextVersionReason.editor,
       text: chapterContent,
       createTime: now,

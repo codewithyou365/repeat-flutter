@@ -28,6 +28,10 @@ abstract class ChapterDao {
       ' and Chapter.bookSerial=:bookSerial')
   Future<void> delete(int classroomId, int bookSerial);
 
+  @Query('DELETE FROM Chapter'
+      ' WHERE Chapter.classroomId=:classroomId')
+  Future<void> deleteByClassroomId(int classroomId);
+
   @Query('DELETE FROM ChapterKey WHERE id=:id')
   Future<void> deleteById(int id);
 

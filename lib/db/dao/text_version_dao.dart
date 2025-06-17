@@ -23,21 +23,29 @@ abstract class TextVersionDao {
 
   @Query('DELETE FROM TextVersion WHERE t=:type AND id=:id')
   Future<void> delete(TextVersionType type, int id);
+
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertOrFail(TextVersion entity);
+
   @Insert(onConflict: OnConflictStrategy.ignore)
   Future<void> insertOrIgnore(TextVersion entity);
 
   @Insert(onConflict: OnConflictStrategy.ignore)
   Future<void> insertsOrIgnore(List<TextVersion> entities);
 
-  List<TextVersion> toNeedToInsert<T>(
-    TextVersionType textVersionType,
-    List<T> list,
-    int Function(T) getId,
-    String Function(T) getText,
-    Map<int, TextVersion> currIdToVersion,
-  ) {
+  @Query('DELETE FROM TextVersion'
+      ' WHERE classroomId=:classroomId')
+  Future<void> deleteByClassroomId(int classroomId);
+
+  List<TextVersion> convert<T>({
+    required int classroomId,
+    required int bookSerial,
+    required TextVersionType textVersionType,
+    required List<T> list,
+    required int Function(T) getId,
+    required String Function(T) getText,
+    required Map<int, TextVersion> currIdToVersion,
+  }) {
     List<TextVersion> needToInsert = [];
 
     for (var v in list) {
@@ -52,6 +60,8 @@ abstract class TextVersionDao {
         var tv = TextVersion(
           t: textVersionType,
           id: id,
+          classroomId: classroomId,
+          bookSerial: bookSerial,
           version: currVersionNumber,
           reason: TextVersionReason.import,
           text: text,

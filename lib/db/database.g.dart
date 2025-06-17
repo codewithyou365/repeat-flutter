@@ -78,6 +78,8 @@ class _$AppDatabase extends AppDatabase {
 
   GameDao? _gameDaoInstance;
 
+  GameUserInputDao? _gameUserInputDaoInstance;
+
   KvDao? _kvDaoInstance;
 
   ChapterDao? _chapterDaoInstance;
@@ -89,6 +91,8 @@ class _$AppDatabase extends AppDatabase {
   ClassroomDao? _classroomDaoInstance;
 
   TextVersionDao? _textVersionDaoInstance;
+
+  TimeStatsDao? _timeStatsDaoInstance;
 
   BookDao? _bookDaoInstance;
 
@@ -103,6 +107,10 @@ class _$AppDatabase extends AppDatabase {
   VerseOverallPrgDao? _verseOverallPrgDaoInstance;
 
   StatsDao? _statsDaoInstance;
+
+  VerseReviewDao? _verseReviewDaoInstance;
+
+  VerseStatsDao? _verseStatsDaoInstance;
 
   VerseTodayPrgDao? _verseTodayPrgDaoInstance;
 
@@ -154,7 +162,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `VerseStats` (`verseKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookSerial` INTEGER NOT NULL, PRIMARY KEY (`verseKeyId`, `type`, `createDate`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `TextVersion` (`t` INTEGER NOT NULL, `id` INTEGER NOT NULL, `version` INTEGER NOT NULL, `reason` INTEGER NOT NULL, `text` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`t`, `id`, `version`))');
+            'CREATE TABLE IF NOT EXISTS `TextVersion` (`t` INTEGER NOT NULL, `id` INTEGER NOT NULL, `version` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookSerial` INTEGER NOT NULL, `reason` INTEGER NOT NULL, `text` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`t`, `id`, `version`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
         await database.execute(
@@ -214,6 +222,8 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE INDEX `index_VerseStats_classroomId_createTime` ON `VerseStats` (`classroomId`, `createTime`)');
         await database.execute(
+            'CREATE INDEX `index_TextVersion_t_classroomId_bookSerial_id` ON `TextVersion` (`t`, `classroomId`, `bookSerial`, `id`)');
+        await database.execute(
             'CREATE INDEX `index_Game_classroomId_bookSerial_chapterIndex_verseIndex` ON `Game` (`classroomId`, `bookSerial`, `chapterIndex`, `verseIndex`)');
         await database.execute(
             'CREATE INDEX `index_Game_verseKeyId` ON `Game` (`verseKeyId`)');
@@ -254,6 +264,12 @@ class _$AppDatabase extends AppDatabase {
   }
 
   @override
+  GameUserInputDao get gameUserInputDao {
+    return _gameUserInputDaoInstance ??=
+        _$GameUserInputDao(database, changeListener);
+  }
+
+  @override
   KvDao get kvDao {
     return _kvDaoInstance ??= _$KvDao(database, changeListener);
   }
@@ -282,6 +298,11 @@ class _$AppDatabase extends AppDatabase {
   TextVersionDao get textVersionDao {
     return _textVersionDaoInstance ??=
         _$TextVersionDao(database, changeListener);
+  }
+
+  @override
+  TimeStatsDao get timeStatsDao {
+    return _timeStatsDaoInstance ??= _$TimeStatsDao(database, changeListener);
   }
 
   @override
@@ -318,6 +339,17 @@ class _$AppDatabase extends AppDatabase {
   @override
   StatsDao get statsDao {
     return _statsDaoInstance ??= _$StatsDao(database, changeListener);
+  }
+
+  @override
+  VerseReviewDao get verseReviewDao {
+    return _verseReviewDaoInstance ??=
+        _$VerseReviewDao(database, changeListener);
+  }
+
+  @override
+  VerseStatsDao get verseStatsDao {
+    return _verseStatsDaoInstance ??= _$VerseStatsDao(database, changeListener);
   }
 
   @override
@@ -697,6 +729,12 @@ class _$GameDao extends GameDao {
   }
 
   @override
+  Future<void> deleteByClassroomId(int classroomId) async {
+    await _queryAdapter.queryNoReturn('DELETE FROM Game WHERE classroomId=?1',
+        arguments: [classroomId]);
+  }
+
+  @override
   Future<void> insertGame(Game game) async {
     await _gameInsertionAdapter.insert(game, OnConflictStrategy.fail);
   }
@@ -789,6 +827,26 @@ class _$GameDao extends GameDao {
             obtainOutput);
       });
     }
+  }
+}
+
+class _$GameUserInputDao extends GameUserInputDao {
+  _$GameUserInputDao(
+    this.database,
+    this.changeListener,
+  ) : _queryAdapter = QueryAdapter(database);
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  @override
+  Future<void> deleteByClassroomId(int classroomId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM GameUserInput WHERE classroomId=?1',
+        arguments: [classroomId]);
   }
 }
 
@@ -939,6 +997,13 @@ class _$ChapterDao extends ChapterDao {
   }
 
   @override
+  Future<void> deleteByClassroomId(int classroomId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM Chapter WHERE Chapter.classroomId=?1',
+        arguments: [classroomId]);
+  }
+
+  @override
   Future<void> deleteById(int id) async {
     await _queryAdapter
         .queryNoReturn('DELETE FROM ChapterKey WHERE id=?1', arguments: [id]);
@@ -1057,6 +1122,13 @@ class _$ChapterKeyDao extends ChapterKeyDao {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM ChapterKey WHERE classroomId=?1 AND bookSerial=?2 AND chapterIndex>=?3',
         arguments: [classroomId, bookSerial, minChapterIndex]);
+  }
+
+  @override
+  Future<void> deleteByClassroomId(int classroomId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM ChapterKey WHERE classroomId=?1',
+        arguments: [classroomId]);
   }
 
   @override
@@ -1426,8 +1498,29 @@ class _$ClassroomDao extends ClassroomDao {
   }
 
   @override
+  Future<void> deleteById(int id) async {
+    await _queryAdapter
+        .queryNoReturn('DELETE FROM Classroom WHERE id=?1', arguments: [id]);
+  }
+
+  @override
   Future<void> insertClassroom(Classroom entity) async {
     await _classroomInsertionAdapter.insert(entity, OnConflictStrategy.fail);
+  }
+
+  @override
+  Future<void> deleteAll(int classroomId) async {
+    if (database is sqflite.Transaction) {
+      await super.deleteAll(classroomId);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        await transactionDatabase.classroomDao.deleteAll(classroomId);
+      });
+    }
   }
 
   @override
@@ -1458,6 +1551,8 @@ class _$TextVersionDao extends TextVersionDao {
                   't': _verseTextVersionTypeConverter.encode(item.t),
                   'id': item.id,
                   'version': item.version,
+                  'classroomId': item.classroomId,
+                  'bookSerial': item.bookSerial,
                   'reason':
                       _verseTextVersionReasonConverter.encode(item.reason),
                   'text': item.text,
@@ -1483,6 +1578,8 @@ class _$TextVersionDao extends TextVersionDao {
             t: _verseTextVersionTypeConverter.decode(row['t'] as int),
             id: row['id'] as int,
             version: row['version'] as int,
+            classroomId: row['classroomId'] as int,
+            bookSerial: row['bookSerial'] as int,
             reason:
                 _verseTextVersionReasonConverter.decode(row['reason'] as int),
             text: row['text'] as String,
@@ -1500,7 +1597,7 @@ class _$TextVersionDao extends TextVersionDao {
         'SELECT TextVersion.*  FROM ChapterKey JOIN TextVersion ON TextVersion.t=2  AND TextVersion.id=ChapterKey.id  AND TextVersion.version=ChapterKey.contentVersion WHERE ChapterKey.id in (' +
             _sqliteVariablesForIds +
             ')',
-        mapper: (Map<String, Object?> row) => TextVersion(t: _verseTextVersionTypeConverter.decode(row['t'] as int), id: row['id'] as int, version: row['version'] as int, reason: _verseTextVersionReasonConverter.decode(row['reason'] as int), text: row['text'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
+        mapper: (Map<String, Object?> row) => TextVersion(t: _verseTextVersionTypeConverter.decode(row['t'] as int), id: row['id'] as int, version: row['version'] as int, classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, reason: _verseTextVersionReasonConverter.decode(row['reason'] as int), text: row['text'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [...ids]);
   }
 
@@ -1511,7 +1608,7 @@ class _$TextVersionDao extends TextVersionDao {
   ) async {
     return _queryAdapter.query(
         'SELECT TextVersion.*  FROM TextVersion WHERE TextVersion.t=3  AND TextVersion.id=?1  AND TextVersion.version=?2',
-        mapper: (Map<String, Object?> row) => TextVersion(t: _verseTextVersionTypeConverter.decode(row['t'] as int), id: row['id'] as int, version: row['version'] as int, reason: _verseTextVersionReasonConverter.decode(row['reason'] as int), text: row['text'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
+        mapper: (Map<String, Object?> row) => TextVersion(t: _verseTextVersionTypeConverter.decode(row['t'] as int), id: row['id'] as int, version: row['version'] as int, classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, reason: _verseTextVersionReasonConverter.decode(row['reason'] as int), text: row['text'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [bookSerial, version]);
   }
 
@@ -1523,6 +1620,13 @@ class _$TextVersionDao extends TextVersionDao {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM TextVersion WHERE t=?1 AND id=?2',
         arguments: [_verseTextVersionTypeConverter.encode(type), id]);
+  }
+
+  @override
+  Future<void> deleteByClassroomId(int classroomId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM TextVersion WHERE classroomId=?1',
+        arguments: [classroomId]);
   }
 
   @override
@@ -1540,6 +1644,26 @@ class _$TextVersionDao extends TextVersionDao {
   Future<void> insertsOrIgnore(List<TextVersion> entities) async {
     await _textVersionInsertionAdapter.insertList(
         entities, OnConflictStrategy.ignore);
+  }
+}
+
+class _$TimeStatsDao extends TimeStatsDao {
+  _$TimeStatsDao(
+    this.database,
+    this.changeListener,
+  ) : _queryAdapter = QueryAdapter(database);
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  @override
+  Future<void> deleteByClassroomId(int classroomId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM TimeStats WHERE classroomId=?1',
+        arguments: [classroomId]);
   }
 }
 
@@ -1832,6 +1956,13 @@ class _$BookDao extends BookDao {
   }
 
   @override
+  Future<void> deleteByClassroomId(int classroomId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM Book WHERE Book.classroomId=?1',
+        arguments: [classroomId]);
+  }
+
+  @override
   Future<void> insertBook(Book entity) async {
     await _bookInsertionAdapter.insert(entity, OnConflictStrategy.fail);
   }
@@ -1939,6 +2070,12 @@ class _$CrKvDao extends CrKvDao {
   }
 
   @override
+  Future<void> deleteByClassroomId(int classroomId) async {
+    await _queryAdapter.queryNoReturn('DELETE FROM CrKv WHERE classroomId=?1',
+        arguments: [classroomId]);
+  }
+
+  @override
   Future<void> insertOrReplace(CrKv kv) async {
     await _crKvInsertionAdapter.insert(kv, OnConflictStrategy.replace);
   }
@@ -2035,6 +2172,8 @@ class _$ScheduleDao extends ScheduleDao {
                   't': _verseTextVersionTypeConverter.encode(item.t),
                   'id': item.id,
                   'version': item.version,
+                  'classroomId': item.classroomId,
+                  'bookSerial': item.bookSerial,
                   'reason':
                       _verseTextVersionReasonConverter.encode(item.reason),
                   'text': item.text,
@@ -2190,13 +2329,6 @@ class _$ScheduleDao extends ScheduleDao {
     return _queryAdapter.query('SELECT note FROM VerseKey WHERE id=?1',
         mapper: (Map<String, Object?> row) => row.values.first as String,
         arguments: [id]);
-  }
-
-  @override
-  Future<void> deleteVerseTodayPrgByClassroomId(int classroomId) async {
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM VerseTodayPrg WHERE classroomId=?1',
-        arguments: [classroomId]);
   }
 
   @override
@@ -2565,33 +2697,6 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> deleteVerseByClassroomId(int classroomId) async {
-    await _queryAdapter.queryNoReturn('DELETE FROM Verse WHERE classroomId=?1',
-        arguments: [classroomId]);
-  }
-
-  @override
-  Future<void> deleteVerseKeyByClassroomId(int classroomId) async {
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM VerseKey WHERE classroomId=?1',
-        arguments: [classroomId]);
-  }
-
-  @override
-  Future<void> deleteVerseOverallPrgByClassroomId(int classroomId) async {
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM VerseOverallPrg WHERE classroomId=?1',
-        arguments: [classroomId]);
-  }
-
-  @override
-  Future<void> deleteVerseReviewByClassroomId(int classroomId) async {
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM VerseReview WHERE classroomId=?1',
-        arguments: [classroomId]);
-  }
-
-  @override
   Future<int?> getMaxChapterIndex(
     int classroomId,
     int bookSerial,
@@ -2640,7 +2745,7 @@ class _$ScheduleDao extends ScheduleDao {
         'SELECT TextVersion.*  FROM VerseKey JOIN TextVersion ON TextVersion.t=0  AND TextVersion.id=VerseKey.id  AND TextVersion.version=VerseKey.contentVersion WHERE VerseKey.id in (' +
             _sqliteVariablesForIds +
             ')',
-        mapper: (Map<String, Object?> row) => TextVersion(t: _verseTextVersionTypeConverter.decode(row['t'] as int), id: row['id'] as int, version: row['version'] as int, reason: _verseTextVersionReasonConverter.decode(row['reason'] as int), text: row['text'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
+        mapper: (Map<String, Object?> row) => TextVersion(t: _verseTextVersionTypeConverter.decode(row['t'] as int), id: row['id'] as int, version: row['version'] as int, classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, reason: _verseTextVersionReasonConverter.decode(row['reason'] as int), text: row['text'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [...ids]);
   }
 
@@ -2654,7 +2759,7 @@ class _$ScheduleDao extends ScheduleDao {
         'SELECT TextVersion.*  FROM VerseKey JOIN TextVersion ON TextVersion.t=1  AND TextVersion.id=VerseKey.id  AND TextVersion.version=VerseKey.noteVersion WHERE VerseKey.id in (' +
             _sqliteVariablesForIds +
             ')',
-        mapper: (Map<String, Object?> row) => TextVersion(t: _verseTextVersionTypeConverter.decode(row['t'] as int), id: row['id'] as int, version: row['version'] as int, reason: _verseTextVersionReasonConverter.decode(row['reason'] as int), text: row['text'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
+        mapper: (Map<String, Object?> row) => TextVersion(t: _verseTextVersionTypeConverter.decode(row['t'] as int), id: row['id'] as int, version: row['version'] as int, classroomId: row['classroomId'] as int, bookSerial: row['bookSerial'] as int, reason: _verseTextVersionReasonConverter.decode(row['reason'] as int), text: row['text'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [...ids]);
   }
 
@@ -2731,21 +2836,6 @@ class _$ScheduleDao extends ScheduleDao {
           ..database = transaction;
         prepareDb(transactionDatabase);
         await transactionDatabase.scheduleDao.deleteAbnormalVerse(verseKeyId);
-      });
-    }
-  }
-
-  @override
-  Future<void> deleteByClassroomId(int classroomId) async {
-    if (database is sqflite.Transaction) {
-      await super.deleteByClassroomId(classroomId);
-    } else {
-      await (database as sqflite.Database)
-          .transaction<void>((transaction) async {
-        final transactionDatabase = _$AppDatabase(changeListener)
-          ..database = transaction;
-        prepareDb(transactionDatabase);
-        await transactionDatabase.scheduleDao.deleteByClassroomId(classroomId);
       });
     }
   }
@@ -3100,6 +3190,12 @@ class _$VerseDao extends VerseDao {
   }
 
   @override
+  Future<void> deleteByClassroomId(int classroomId) async {
+    await _queryAdapter.queryNoReturn('DELETE FROM Verse WHERE classroomId=?1',
+        arguments: [classroomId]);
+  }
+
+  @override
   Future<void> insertOrFail(Verse entity) async {
     await _verseInsertionAdapter.insert(entity, OnConflictStrategy.fail);
   }
@@ -3219,6 +3315,13 @@ class _$VerseKeyDao extends VerseKeyDao {
   }
 
   @override
+  Future<void> deleteByClassroomId(int classroomId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseKey WHERE classroomId=?1',
+        arguments: [classroomId]);
+  }
+
+  @override
   Future<void> insertOrFail(VerseKey entity) async {
     await _verseKeyInsertionAdapter.insert(entity, OnConflictStrategy.fail);
   }
@@ -3234,7 +3337,8 @@ class _$VerseOverallPrgDao extends VerseOverallPrgDao {
   _$VerseOverallPrgDao(
     this.database,
     this.changeListener,
-  ) : _verseOverallPrgInsertionAdapter = InsertionAdapter(
+  )   : _queryAdapter = QueryAdapter(database),
+        _verseOverallPrgInsertionAdapter = InsertionAdapter(
             database,
             'VerseOverallPrg',
             (VerseOverallPrg item) => <String, Object?>{
@@ -3249,7 +3353,16 @@ class _$VerseOverallPrgDao extends VerseOverallPrgDao {
 
   final StreamController<String> changeListener;
 
+  final QueryAdapter _queryAdapter;
+
   final InsertionAdapter<VerseOverallPrg> _verseOverallPrgInsertionAdapter;
+
+  @override
+  Future<void> deleteByClassroomId(int classroomId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseOverallPrg WHERE classroomId=?1',
+        arguments: [classroomId]);
+  }
 
   @override
   Future<void> insertOrFail(VerseOverallPrg entity) async {
@@ -3474,6 +3587,46 @@ class _$StatsDao extends StatsDao {
   }
 }
 
+class _$VerseReviewDao extends VerseReviewDao {
+  _$VerseReviewDao(
+    this.database,
+    this.changeListener,
+  ) : _queryAdapter = QueryAdapter(database);
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  @override
+  Future<void> deleteByClassroomId(int classroomId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseReview WHERE classroomId=?1',
+        arguments: [classroomId]);
+  }
+}
+
+class _$VerseStatsDao extends VerseStatsDao {
+  _$VerseStatsDao(
+    this.database,
+    this.changeListener,
+  ) : _queryAdapter = QueryAdapter(database);
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  @override
+  Future<void> deleteByClassroomId(int classroomId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseStats WHERE classroomId=?1',
+        arguments: [classroomId]);
+  }
+}
+
 class _$VerseTodayPrgDao extends VerseTodayPrgDao {
   _$VerseTodayPrgDao(
     this.database,
@@ -3523,6 +3676,13 @@ class _$VerseTodayPrgDao extends VerseTodayPrgDao {
   Future<void> delete(int id) async {
     await _queryAdapter.queryNoReturn('DELETE FROM VerseTodayPrg WHERE id=?1',
         arguments: [id]);
+  }
+
+  @override
+  Future<void> deleteByClassroomId(int classroomId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseTodayPrg WHERE classroomId=?1',
+        arguments: [classroomId]);
   }
 
   @override

@@ -30,6 +30,9 @@ abstract class VerseDao {
       ' WHERE classroomId=:classroomId AND bookSerial=:bookSerial AND chapterIndex>=:minChapterIndex')
   Future<void> deleteByMinChapterIndex(int classroomId, int bookSerial, int minChapterIndex);
 
+  @Query('DELETE FROM Verse WHERE classroomId=:classroomId')
+  Future<void> deleteByClassroomId(int classroomId);
+
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertListOrFail(List<Verse> entities);
 }

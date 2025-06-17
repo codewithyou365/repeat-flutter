@@ -41,6 +41,28 @@ abstract class ClassroomDao {
       ' WHERE Classroom.id=:id')
   Future<void> showClassroom(int id);
 
+  @Query('DELETE FROM Classroom WHERE id=:id')
+  Future<void> deleteById(int id);
+
+  @transaction
+  Future<void> deleteAll(int classroomId) async {
+    await db.bookDao.deleteByClassroomId(classroomId);
+    await db.chapterDao.deleteByClassroomId(classroomId);
+    await db.chapterKeyDao.deleteByClassroomId(classroomId);
+    await deleteById(classroomId);
+    await db.crKvDao.deleteByClassroomId(classroomId);
+    await db.gameDao.deleteByClassroomId(classroomId);
+    await db.gameUserInputDao.deleteByClassroomId(classroomId);
+    await db.textVersionDao.deleteByClassroomId(classroomId);
+    await db.timeStatsDao.deleteByClassroomId(classroomId);
+    await db.verseDao.deleteByClassroomId(classroomId);
+    await db.verseKeyDao.deleteByClassroomId(classroomId);
+    await db.verseOverallPrgDao.deleteByClassroomId(classroomId);
+    await db.verseReviewDao.deleteByClassroomId(classroomId);
+    await db.verseStatsDao.deleteByClassroomId(classroomId);
+    await db.verseTodayPrgDao.deleteByClassroomId(classroomId);
+  }
+
   @transaction
   Future<Classroom> add(String name) async {
     await forUpdate();

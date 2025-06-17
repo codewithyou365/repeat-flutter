@@ -15,12 +15,17 @@ enum TextVersionReason {
 }
 
 @Entity(
+  indices: [
+    Index(value: ['t', 'classroomId', 'bookSerial', 'id']),
+  ],
   primaryKeys: ['t', 'id', 'version'],
 )
 class TextVersion {
   final TextVersionType t;
   int id;
   final int version;
+  final int classroomId;
+  final int bookSerial;
   final TextVersionReason reason;
   final String text;
   final DateTime createTime;
@@ -29,6 +34,8 @@ class TextVersion {
     required this.t,
     this.id = 0,
     required this.version,
+    required this.classroomId,
+    required this.bookSerial,
     required this.reason,
     required this.text,
     required this.createTime,

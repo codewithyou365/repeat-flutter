@@ -86,6 +86,10 @@ abstract class BookDao {
       ' WHERE Book.id=:id')
   Future<void> updateDocId(int id, int docId);
 
+  @Query('DELETE FROM Book'
+      ' WHERE Book.classroomId=:classroomId')
+  Future<void> deleteByClassroomId(int classroomId);
+
   @transaction
   Future<void> updateBookContent(int bookId, String content) async {
     Book? book = await getById(bookId);
@@ -111,6 +115,8 @@ abstract class BookDao {
     await db.textVersionDao.insertOrIgnore(TextVersion(
       t: TextVersionType.bookContent,
       id: bookId,
+      classroomId: book.classroomId,
+      bookSerial: book.serial,
       version: book.contentVersion + 1,
       reason: TextVersionReason.editor,
       text: content,
@@ -176,7 +182,9 @@ abstract class BookDao {
       var nextVersion = maxVersion + 1;
       TextVersion insertBookContentVersion = TextVersion(
         t: TextVersionType.bookContent,
-        id: oldBook.serial,
+        id: oldBook.id!,
+        classroomId: oldBook.classroomId,
+        bookSerial: oldBook.serial,
         version: nextVersion,
         reason: TextVersionReason.import,
         text: content,

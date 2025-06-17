@@ -46,10 +46,11 @@ class GsLogic extends GetxController {
     Get.back();
   }
 
-  delete(int classroomId, bool all) async {
-    await Db().db.classroomDao.hide(classroomId);
+  Future<void> delete(int classroomId, bool all) async {
     if (all) {
-      await Db().db.scheduleDao.deleteByClassroomId(classroomId);
+      await Db().db.classroomDao.deleteAll(classroomId);
+    } else {
+      await Db().db.classroomDao.hide(classroomId);
     }
     state.list.removeWhere((element) => element.id == classroomId);
     update([GsLogic.id]);

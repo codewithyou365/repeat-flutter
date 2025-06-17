@@ -13,6 +13,7 @@ import 'package:repeat_flutter/db/dao/game_dao.dart';
 import 'package:repeat_flutter/db/dao/game_user_dao.dart';
 import 'package:repeat_flutter/db/dao/chapter_dao.dart';
 import 'package:repeat_flutter/db/dao/chapter_key_dao.dart';
+import 'package:repeat_flutter/db/dao/game_user_input_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/kv_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_dao.dart';
@@ -20,7 +21,10 @@ import 'package:repeat_flutter/db/dao/verse_key_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_overall_prg_dao.dart';
 import 'package:repeat_flutter/db/dao/stats_dao.dart';
 import 'package:repeat_flutter/db/dao/text_version_dao.dart';
+import 'package:repeat_flutter/db/dao/time_stats_dao.dart';
 import 'package:repeat_flutter/db/dao/lock_dao.dart';
+import 'package:repeat_flutter/db/dao/verse_review_dao.dart';
+import 'package:repeat_flutter/db/dao/verse_stats_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_today_prg_dao.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
@@ -97,6 +101,8 @@ abstract class AppDatabase extends FloorDatabase {
 
   GameDao get gameDao;
 
+  GameUserInputDao get gameUserInputDao;
+
   KvDao get kvDao;
 
   ChapterDao get chapterDao;
@@ -108,6 +114,8 @@ abstract class AppDatabase extends FloorDatabase {
   ClassroomDao get classroomDao;
 
   TextVersionDao get textVersionDao;
+
+  TimeStatsDao get timeStatsDao;
 
   BookDao get bookDao;
 
@@ -122,6 +130,10 @@ abstract class AppDatabase extends FloorDatabase {
   VerseOverallPrgDao get verseOverallPrgDao;
 
   StatsDao get statsDao;
+
+  VerseReviewDao get verseReviewDao;
+
+  VerseStatsDao get verseStatsDao;
 
   VerseTodayPrgDao get verseTodayPrgDao;
 }

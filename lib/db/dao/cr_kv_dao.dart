@@ -25,4 +25,7 @@ abstract class CrKvDao {
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertsOrReplace(List<CrKv> kv);
+
+  @Query('DELETE FROM CrKv WHERE classroomId=:classroomId')
+  Future<void> deleteByClassroomId(int classroomId);
 }

@@ -6,4 +6,6 @@ abstract class VerseOverallPrgDao {
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertOrFail(VerseOverallPrg entity);
 
+  @Query('DELETE FROM VerseOverallPrg WHERE classroomId=:classroomId')
+  Future<void> deleteByClassroomId(int classroomId);
 }

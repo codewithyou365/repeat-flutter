@@ -62,6 +62,8 @@ abstract class GameDao {
   @Query('DELETE FROM GameUserInput WHERE gameId=:gameId and gameUserId=:gameUserId and time=:time')
   Future<void> clearGameUser(int gameId, int gameUserId, int time);
 
+  @Query('DELETE FROM Game WHERE classroomId=:classroomId')
+  Future<void> deleteByClassroomId(int classroomId);
   @transaction
   Future<Game> tryInsertGame(Game game) async {
     var ids = await getAllEnableGameIds();

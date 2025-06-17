@@ -255,9 +255,6 @@ abstract class ScheduleDao {
 
   /// --- VerseTodayPrg ---
 
-  @Query('DELETE FROM VerseTodayPrg WHERE classroomId=:classroomId')
-  Future<void> deleteVerseTodayPrgByClassroomId(int classroomId);
-
   @Query('DELETE FROM VerseTodayPrg where classroomId=:classroomId and reviewCreateDate>100')
   Future<void> deleteVerseTodayReviewPrgByClassroomId(int classroomId);
 
@@ -566,18 +563,6 @@ abstract class ScheduleDao {
   @Query('DELETE FROM VerseTodayPrg WHERE verseKeyId=:verseKeyId')
   Future<void> deleteVerseTodayPrg(int verseKeyId);
 
-  @Query('DELETE FROM Verse WHERE classroomId=:classroomId')
-  Future<void> deleteVerseByClassroomId(int classroomId);
-
-  @Query('DELETE FROM VerseKey WHERE classroomId=:classroomId')
-  Future<void> deleteVerseKeyByClassroomId(int classroomId);
-
-  @Query('DELETE FROM VerseOverallPrg WHERE classroomId=:classroomId')
-  Future<void> deleteVerseOverallPrgByClassroomId(int classroomId);
-
-  @Query('DELETE FROM VerseReview WHERE classroomId=:classroomId')
-  Future<void> deleteVerseReviewByClassroomId(int classroomId);
-
   @Query('SELECT ifnull(max(Verse.chapterIndex),0) FROM Verse'
       ' WHERE Verse.classroomId=:classroomId'
       ' AND Verse.bookSerial=:bookSerial')
@@ -638,15 +623,7 @@ abstract class ScheduleDao {
     await db.textVersionDao.delete(TextVersionType.verseNote, verseKeyId);
   }
 
-  @transaction
-  Future<void> deleteByClassroomId(int classroomId) async {
-    await forUpdate();
-    await deleteVerseByClassroomId(classroomId);
-    await deleteVerseKeyByClassroomId(classroomId);
-    await deleteVerseOverallPrgByClassroomId(classroomId);
-    await deleteVerseReviewByClassroomId(classroomId);
-    await deleteVerseTodayPrgByClassroomId(classroomId);
-  }
+
 
   /// for content
   String getKey(String? key, String answer) {
@@ -806,6 +783,8 @@ abstract class ScheduleDao {
         var stv = TextVersion(
           t: verseTextVersionType,
           id: v.id!,
+          classroomId: v.classroomId,
+          bookSerial: v.bookSerial,
           version: currVersionNumber,
           reason: TextVersionReason.import,
           text: text,
@@ -1100,6 +1079,8 @@ abstract class ScheduleDao {
     await db.textVersionDao.insertOrFail(TextVersion(
       t: TextVersionType.verseContent,
       id: verseKey.id!,
+      classroomId: verseKey.classroomId,
+      bookSerial: verseKey.bookSerial,
       version: 1,
       reason: TextVersionReason.editor,
       text: verseKey.content,
@@ -1109,6 +1090,8 @@ abstract class ScheduleDao {
     await db.textVersionDao.insertOrFail(TextVersion(
       t: TextVersionType.verseNote,
       id: verseKey.id!,
+      classroomId: verseKey.classroomId,
+      bookSerial: verseKey.bookSerial,
       version: 1,
       reason: TextVersionReason.editor,
       text: verseKey.note,
@@ -1147,7 +1130,7 @@ abstract class ScheduleDao {
     if (needToInsert) {
       await deleteKv(CrKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount, ""));
       await insertKv(CrKv(Classroom.curr, CrK.todayScheduleCreateDate, "${Date.from(now).value}"));
-      await deleteVerseTodayPrgByClassroomId(Classroom.curr);
+      await db.verseTodayPrgDao.deleteByClassroomId(Classroom.curr);
       var elConfigs = scheduleConfig.elConfigs;
       await initTodayEl(now, elConfigs, todayPrg);
       var relConfigs = scheduleConfig.relConfigs;
@@ -1356,6 +1339,8 @@ abstract class ScheduleDao {
     await insertVerseTextVersion(TextVersion(
       t: TextVersionType.verseContent,
       id: verseKeyId,
+      classroomId: verseKey.classroomId,
+      bookSerial: verseKey.bookSerial,
       version: verseKey.contentVersion + 1,
       reason: TextVersionReason.editor,
       text: content,
@@ -1391,6 +1376,8 @@ abstract class ScheduleDao {
     await insertVerseTextVersion(TextVersion(
       t: TextVersionType.verseNote,
       id: verseKeyId,
+      classroomId: verseKey.classroomId,
+      bookSerial: verseKey.bookSerial,
       version: verseKey.noteVersion + 1,
       reason: TextVersionReason.editor,
       text: note,
