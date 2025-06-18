@@ -163,7 +163,11 @@ class RepeatViewForAudio extends RepeatView {
       key: mediaKey,
       duration: () => duration,
       onPlay: (Duration position) async {
-        await audioPlayer.seek(position);
+        var source = audioPlayer.source;
+        if (source == null) {
+          return;
+        }
+        await audioPlayer.play(source, position: position);
         await audioPlayer.resume();
       },
       onStop: audioPlayer.stop,
