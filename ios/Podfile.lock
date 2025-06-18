@@ -93,20 +93,20 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/video_player_avfoundation/darwin"
 
 SPEC CHECKSUMS:
-  audioplayers_darwin: 877d9a4d06331c5c374595e46e16453ac7eafa40
+  audioplayers_darwin: ccf9c770ee768abb07e26d90af093f7bab1c12ab
   DKImagePickerController: b512c28220a2b8ac7419f21c491fc8534b7601ac
   DKPhotoGallery: fdfad5125a9fdda9cc57df834d49df790dbb4179
-  file_picker: 09aa5ec1ab24135ccd7a1621c46c84134bfd6655
+  file_picker: a0560bc09d61de87f12d246fc47d2119e6ef37be
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   MTBBarcodeScanner: f453b33c4b7dfe545d8c6484ed744d55671788cb
-  path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
-  permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
-  qr_code_scanner_plus: 3bfe4deb7f28996a63a2a580819d49dae80d5ed3
+  path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
+  permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
+  qr_code_scanner_plus: 7e087021bc69873140e0754750eb87d867bed755
   SDWebImage: 981fd7e860af070920f249fd092420006014c3eb
-  sqflite_darwin: 5a7236e3b501866c1c9befc6771dfd73ffb8702d
+  sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
   SwiftyGif: 93a1cc87bf3a51916001cf8f3d63835fb64c819f
-  video_player_avfoundation: 7c6c11d8470e1675df7397027218274b6d2360b3
+  video_player_avfoundation: 2cef49524dd1f16c5300b9cd6efd9611ce03639b
 
 PODFILE CHECKSUM: 0805b11bfb13bd44fc55fe52946ce14f22a2998e
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

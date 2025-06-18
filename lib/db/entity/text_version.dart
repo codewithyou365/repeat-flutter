@@ -16,7 +16,7 @@ enum TextVersionReason {
 
 @Entity(
   indices: [
-    Index(value: ['t', 'classroomId', 'bookSerial', 'id']),
+    Index(value: ['classroomId', 'bookSerial', 't', 'id']),
   ],
   primaryKeys: ['t', 'id', 'version'],
 )
