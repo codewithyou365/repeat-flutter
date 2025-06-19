@@ -276,12 +276,6 @@ abstract class ScheduleDao {
   @Query('UPDATE VerseTodayPrg SET progress=:progress,viewTime=:viewTime,finish=:finish WHERE verseKeyId=:verseKeyId and type=:type')
   Future<void> setVerseTodayPrg(int verseKeyId, int type, int progress, DateTime viewTime, bool finish);
 
-  @Query("SELECT count(Verse.verseKeyId) FROM Verse"
-      " AND Verse.classroomId=:classroomId"
-      " WHERE Verse.bookSerial=:bookSerial"
-      " and Verse.chapterIndex=:chapterIndex")
-  Future<int?> chapterCount(int classroomId, int bookSerial, int chapterIndex);
-
   @Query("SELECT IFNULL(MIN(VerseReview.createDate),-1) FROM VerseReview"
       " JOIN Verse ON Verse.verseKeyId=VerseReview.verseKeyId"
       " WHERE VerseReview.classroomId=:classroomId"
@@ -292,7 +286,7 @@ abstract class ScheduleDao {
 
   @Query("SELECT"
       " VerseReview.classroomId"
-      ",Verse.bookSerial"
+      ",Verse.bookId"
       ",Chapter.chapterKeyId"
       ",VerseReview.verseKeyId"
       ",0 time"
@@ -305,8 +299,7 @@ abstract class ScheduleDao {
       ",0 finish"
       " FROM VerseReview"
       " JOIN Verse ON Verse.verseKeyId=VerseReview.verseKeyId"
-      " JOIN Chapter ON Chapter.classroomId=:classroomId"
-      "  AND Chapter.bookSerial=Verse.bookSerial"
+      " JOIN Chapter ON Chapter.bookId=Verse.bookId"
       "  AND Chapter.chapterIndex=Verse.chapterIndex"
       " WHERE VerseReview.classroomId=:classroomId"
       " AND VerseReview.count=:reviewCount"
@@ -317,7 +310,7 @@ abstract class ScheduleDao {
   @Query("SELECT * FROM ("
       " SELECT"
       " Verse.classroomId"
-      ",Verse.bookSerial"
+      ",Verse.bookId"
       ",Chapter.chapterKeyId"
       ",VerseOverallPrg.verseKeyId"
       ",0 time"
@@ -331,8 +324,7 @@ abstract class ScheduleDao {
       " FROM VerseOverallPrg"
       " JOIN Verse ON Verse.verseKeyId=VerseOverallPrg.verseKeyId"
       "  AND Verse.classroomId=:classroomId"
-      " JOIN Chapter ON Chapter.classroomId=:classroomId"
-      "  AND Chapter.bookSerial=Verse.bookSerial"
+      " JOIN Chapter ON Chapter.bookId=Verse.bookId"
       "  AND Chapter.chapterIndex=Verse.chapterIndex"
       " WHERE VerseOverallPrg.next<=:now"
       "  AND VerseOverallPrg.progress>=:minProgress"
@@ -342,7 +334,7 @@ abstract class ScheduleDao {
 
   @Query("SELECT"
       " Verse.classroomId"
-      ",Verse.bookSerial"
+      ",Verse.bookId"
       ",Chapter.chapterKeyId"
       ",Verse.verseKeyId"
       ",0 time"
@@ -354,20 +346,19 @@ abstract class ScheduleDao {
       ",1 reviewCreateDate"
       ",0 finish"
       " FROM Verse"
-      " JOIN Chapter ON Chapter.classroomId=:classroomId"
-      "  AND Chapter.bookSerial=Verse.bookSerial"
+      " JOIN Chapter ON Chapter.bookId=Verse.bookId"
       "  AND Chapter.chapterIndex=Verse.chapterIndex"
       " WHERE Verse.classroomId=:classroomId"
       " AND Verse.sort>=("
       "  SELECT Verse.sort FROM Verse"
-      "  WHERE Verse.bookSerial=:bookSerial"
+      "  WHERE Verse.bookId=:bookId"
       "  AND Verse.chapterIndex=:chapterIndex"
       "  AND Verse.verseIndex=:verseIndex"
       ")"
       " ORDER BY Verse.sort"
       " limit :limit"
       "")
-  Future<List<VerseTodayPrg>> scheduleFullCustom(int classroomId, int bookSerial, int chapterIndex, int verseIndex, int limit);
+  Future<List<VerseTodayPrg>> scheduleFullCustom(int classroomId, int bookId, int chapterIndex, int verseIndex, int limit);
 
   @Query('UPDATE VerseOverallPrg SET progress=:progress,next=:next WHERE verseKeyId=:verseKeyId')
   Future<void> setPrgAndNext4Sop(int verseKeyId, int progress, Date next);
@@ -384,14 +375,14 @@ abstract class ScheduleDao {
       ",Verse.verseIndex"
       " FROM Verse"
       " JOIN VerseOverallPrg on VerseOverallPrg.verseKeyId=Verse.verseKeyId"
-      " JOIN Book ON Book.classroomId=Verse.classroomId AND Book.serial=Verse.bookSerial"
+      " JOIN Book ON Book.id=Verse.bookId"
       " WHERE Verse.classroomId=:classroomId"
       " ORDER BY Verse.sort asc")
   Future<List<VerseOverallPrgWithKey>> getAllVerseOverallPrg(int classroomId);
 
   /// --- VerseReview
-  @Query("SELECT Book.name FROM Book WHERE Book.classroomId=:classroomId AND Book.serial=:bookSerial")
-  Future<String?> getBookNameBySerial(int classroomId, int bookSerial);
+  @Query("SELECT Book.name FROM Book WHERE Book.id=:bookId")
+  Future<String?> getBookNameById(int bookId);
 
   @Query("SELECT VerseReview.*"
       ",Book.name contentName"
@@ -399,7 +390,7 @@ abstract class ScheduleDao {
       ",Verse.verseIndex"
       " FROM VerseReview"
       " JOIN Verse ON Verse.verseKeyId=VerseReview.verseKeyId"
-      " JOIN Book ON Book.classroomId=VerseReview.classroomId AND Book.serial=VerseReview.bookSerial"
+      " JOIN Book ON Book.id=VerseReview.bookId"
       " WHERE VerseReview.classroomId=:classroomId"
       " AND VerseReview.createDate>=:start AND VerseReview.createDate<=:end"
       " ORDER BY VerseReview.createDate desc,Verse.sort asc")
@@ -414,7 +405,7 @@ abstract class ScheduleDao {
   @Query("SELECT"
       " Book.name contentName"
       " FROM VerseKey"
-      " JOIN Book ON Book.classroomId=VerseKey.classroomId AND Book.serial=VerseKey.bookSerial"
+      " JOIN Book ON Book.id=VerseKey.bookId"
       " WHERE VerseKey.id=:verseKeyId")
   Future<String?> getBookName(int verseKeyId);
 
@@ -448,42 +439,39 @@ abstract class ScheduleDao {
 
   @Query('SELECT VerseKey.id'
       ',VerseKey.k FROM VerseKey'
-      ' WHERE VerseKey.classroomId=:classroomId'
-      ' and VerseKey.bookSerial=:bookSerial')
-  Future<List<KeyId>> getVerseKeyId(int classroomId, int bookSerial);
+      ' WHERE VerseKey.bookId=:bookId')
+  Future<List<KeyId>> getVerseKeyId(int bookId);
 
   @Query('SELECT VerseKey.* FROM VerseKey'
-      ' WHERE VerseKey.classroomId=:classroomId'
-      ' AND VerseKey.bookSerial=:bookSerial')
-  Future<List<VerseKey>> getVerseKey(int classroomId, int bookSerial);
+      ' WHERE VerseKey.bookId=:bookId')
+  Future<List<VerseKey>> getVerseKey(int bookId);
 
   @Query('SELECT VerseKey.* FROM VerseKey'
       ' WHERE VerseKey.id=:id')
   Future<VerseKey?> getVerseKeyById(int id);
 
   @Query('SELECT VerseKey.* FROM VerseKey'
-      ' WHERE VerseKey.classroomId=:classroomId'
-      ' AND VerseKey.bookSerial=:bookSerial'
+      ' WHERE VerseKey.bookId=:bookId'
       ' AND VerseKey.k=:key')
-  Future<VerseKey?> getVerseKeyByKey(int classroomId, int bookSerial, String key);
+  Future<VerseKey?> getVerseKeyByKey(int bookId, String key);
 
   @Query('SELECT VerseKey.id verseKeyId'
       ',VerseKey.k'
       ',Book.id bookId'
       ',Book.name bookName'
-      ',Book.serial bookSerial'
       ',Book.sort bookSort'
       ',VerseKey.content verseContent'
       ',VerseKey.contentVersion verseContentVersion'
       ',VerseKey.note verseNote'
       ',VerseKey.noteVersion verseNoteVersion'
+      ',VerseKey.chapterKeyId'
       ',VerseKey.chapterIndex'
       ',VerseKey.verseIndex'
       ',VerseOverallPrg.next'
       ',VerseOverallPrg.progress'
       ',Verse.verseKeyId is null missing'
       ' FROM VerseKey'
-      " JOIN Book ON Book.classroomId=:classroomId AND Book.serial=VerseKey.bookSerial AND Book.docId!=0"
+      ' JOIN Book ON Book.id=VerseKey.bookId AND Book.docId!=0'
       ' LEFT JOIN Verse ON Verse.verseKeyId=VerseKey.id'
       ' LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseKeyId=VerseKey.id'
       ' WHERE VerseKey.classroomId=:classroomId')
@@ -493,60 +481,53 @@ abstract class ScheduleDao {
       ',VerseKey.k'
       ',Book.id bookId'
       ',Book.name bookName'
-      ',Book.serial bookSerial'
       ',Book.sort bookSort'
       ',VerseKey.content verseContent'
       ',VerseKey.contentVersion verseContentVersion'
       ',VerseKey.note verseNote'
       ',VerseKey.noteVersion verseNoteVersion'
+      ',VerseKey.chapterKeyId'
       ',VerseKey.chapterIndex'
       ',VerseKey.verseIndex'
       ',VerseOverallPrg.next'
       ',VerseOverallPrg.progress'
       ',Verse.verseKeyId is null missing'
       ' FROM VerseKey'
-      " JOIN Book ON Book.classroomId=:classroomId AND Book.serial=VerseKey.bookSerial AND Book.docId!=0"
+      " JOIN Book ON Book.id=:bookId AND Book.docId!=0"
       ' LEFT JOIN Verse ON Verse.verseKeyId=VerseKey.id'
       ' LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseKeyId=VerseKey.id'
-      ' WHERE VerseKey.classroomId=:classroomId'
-      '  AND VerseKey.bookSerial=:bookSerial'
+      ' WHERE VerseKey.bookId=:bookId'
       '  AND VerseKey.chapterIndex=:chapterIndex')
-  Future<List<VerseShow>> getVerseByChapterIndex(int classroomId, int bookSerial, int chapterIndex);
+  Future<List<VerseShow>> getVerseByChapterIndex(int bookId, int chapterIndex);
 
   @Query('SELECT VerseKey.id verseKeyId'
       ',VerseKey.k'
       ',Book.id bookId'
       ',Book.name bookName'
-      ',Book.serial bookSerial'
       ',Book.sort bookSort'
       ',VerseKey.content verseContent'
       ',VerseKey.contentVersion verseContentVersion'
       ',VerseKey.note verseNote'
       ',VerseKey.noteVersion verseNoteVersion'
+      ',VerseKey.chapterKeyId'
       ',VerseKey.chapterIndex'
       ',VerseKey.verseIndex'
       ',VerseOverallPrg.next'
       ',VerseOverallPrg.progress'
       ',Verse.verseKeyId is null missing'
       ' FROM VerseKey'
-      " JOIN Book ON Book.classroomId=:classroomId AND Book.serial=VerseKey.bookSerial AND Book.docId!=0"
+      " JOIN Book ON Book.id=VerseKey.bookId AND Book.docId!=0"
       ' LEFT JOIN Verse ON Verse.verseKeyId=VerseKey.id'
       ' LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseKeyId=VerseKey.id'
-      ' WHERE VerseKey.classroomId=:classroomId'
-      '  AND VerseKey.bookSerial=:bookSerial'
+      ' WHERE VerseKey.bookId=:bookId'
       '  AND VerseKey.chapterIndex>=:minChapterIndex')
-  Future<List<VerseShow>> getVerseByMinChapterIndex(int classroomId, int bookSerial, int minChapterIndex);
+  Future<List<VerseShow>> getVerseByMinChapterIndex(int bookId, int minChapterIndex);
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertVerses(List<Verse> entities);
 
   @Insert(onConflict: OnConflictStrategy.ignore)
   Future<void> insertVerseOverallPrgs(List<VerseOverallPrg> entities);
-
-  @Query('DELETE FROM Verse'
-      ' WHERE Verse.classroomId=:classroomId'
-      ' and Verse.bookSerial=:bookSerial')
-  Future<void> deleteVerseByBookSerial(int classroomId, int bookSerial);
 
   @Query('DELETE FROM Verse WHERE verseKeyId=:verseKeyId')
   Future<void> deleteVerse(int verseKeyId);
@@ -564,15 +545,13 @@ abstract class ScheduleDao {
   Future<void> deleteVerseTodayPrg(int verseKeyId);
 
   @Query('SELECT ifnull(max(Verse.chapterIndex),0) FROM Verse'
-      ' WHERE Verse.classroomId=:classroomId'
-      ' AND Verse.bookSerial=:bookSerial')
-  Future<int?> getMaxChapterIndex(int classroomId, int bookSerial);
+      ' WHERE Verse.bookId=:bookId')
+  Future<int?> getMaxChapterIndex(int bookId);
 
   @Query('SELECT ifnull(max(Verse.verseIndex),0) FROM Verse'
-      ' WHERE Verse.classroomId=:classroomId'
-      ' AND Verse.bookSerial=:bookSerial'
+      ' WHERE Verse.bookId=:bookId'
       ' AND Verse.chapterIndex=:chapterIndex')
-  Future<int?> getMaxVerseIndex(int classroomId, int bookSerial, int chapterIndex);
+  Future<int?> getMaxVerseIndex(int bookId, int chapterIndex);
 
   @Query('SELECT ifnull(max(VerseStats.id),0) FROM VerseStats'
       ' WHERE VerseStats.classroomId=:classroomId')
@@ -623,8 +602,6 @@ abstract class ScheduleDao {
     await db.textVersionDao.delete(TextVersionType.verseNote, verseKeyId);
   }
 
-
-
   /// for content
   String getKey(String? key, String answer) {
     var ret = "";
@@ -637,47 +614,40 @@ abstract class ScheduleDao {
     return ret;
   }
 
-  Future<bool> prepareImportVerse(
-    List<String> contentJson,
+  Future<Book?> prepareImportVerse(
     List<Chapter> chapters,
     List<ChapterKey> chapterKeys,
     List<VerseKey> verseKeys,
     List<Verse> verses,
     List<VerseOverallPrg> verseOverallPrgs, {
-    int contentId = 0,
-    int bookSerial = 0,
+    required int bookId,
     int? indexJsonDocId,
     String? url,
   }) async {
-    Book? content;
-    if (contentId != 0) {
-      content = await db.bookDao.getById(contentId);
-    } else if (bookSerial != 0) {
-      content = await db.bookDao.getBySerial(Classroom.curr, bookSerial);
+    Book? book = await db.bookDao.getById(bookId);
+    if (book == null) {
+      Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["book"]));
+      return null;
     }
-    if (content == null) {
-      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["content"]));
-      return false;
-    }
-    var doc = await getDocById(indexJsonDocId ?? content.docId);
+    var doc = await getDocById(indexJsonDocId ?? book.docId);
     if (doc == null) {
-      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["doc"]));
-      return false;
+      Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["doc"]));
+      return null;
     }
-    Map<String, dynamic>? jsonData = await DocHelp.toJsonMap(DocPath.getRelativeIndexPath(content.serial));
+    Map<String, dynamic>? jsonData = await DocHelp.toJsonMap(DocPath.getRelativeIndexPath(book.id!));
     if (jsonData == null) {
-      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["jsonData"]));
-      return false;
+      Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["jsonData"]));
+      return null;
     }
     var kv = BookContent.fromJson(jsonData);
     if (kv.chapter.length >= 100000) {
-      Snackbar.show(I18nKey.labelTooMuchData.trArgs(["chapter"]));
-      return false;
+      Snackbar.showAndThrow(I18nKey.labelTooMuchData.trArgs(["chapter"]));
+      return null;
     }
     for (var d in kv.chapter) {
       if (d.verse.length >= 100000) {
-        Snackbar.show(I18nKey.labelTooMuchData.trArgs(["verse"]));
-        return false;
+        Snackbar.showAndThrow(I18nKey.labelTooMuchData.trArgs(["verse"]));
+        return null;
       }
     }
     Map<String, bool> verseKey = {};
@@ -689,7 +659,7 @@ abstract class ScheduleDao {
         excludeChapter[k] = v;
       }
     });
-    contentJson.add(convert.jsonEncode(excludeChapter));
+    book.content = convert.jsonEncode(excludeChapter);
 
     List<dynamic> rawChapters = jsonData['c'] as List<dynamic>;
     for (var chapterIndex = 0; chapterIndex < kv.chapter.length; chapterIndex++) {
@@ -704,13 +674,13 @@ abstract class ScheduleDao {
 
       var chapter = kv.chapter[chapterIndex];
       chapters.add(Chapter(
-        classroomId: content.classroomId,
-        bookSerial: content.serial,
+        classroomId: book.classroomId,
+        bookId: book.id!,
         chapterIndex: chapterIndex,
       ));
       chapterKeys.add(ChapterKey(
-        classroomId: content.classroomId,
-        bookSerial: content.serial,
+        classroomId: book.classroomId,
+        bookId: book.id!,
         chapterIndex: chapterIndex,
         version: 1,
         content: chapterContent,
@@ -721,13 +691,13 @@ abstract class ScheduleDao {
         var rawVerse = rawVerses[verseIndex] as Map<String, dynamic>;
         var verse = chapter.verse[verseIndex];
         if (verse.answer.isEmpty) {
-          Snackbar.show(I18nKey.labelVerseNeedToContainAnswer.tr);
-          return false;
+          Snackbar.showAndThrow(I18nKey.labelVerseNeedToContainAnswer.tr);
+          return null;
         }
         var key = getKey(verse.key, verse.answer);
         if (verseKey.containsKey(key)) {
-          Snackbar.show(I18nKey.labelVerseKeyDuplicated.trArgs([key]));
-          return false;
+          Snackbar.showAndThrow(I18nKey.labelVerseKeyDuplicated.trArgs([key]));
+          return null;
         }
         verseKey[key] = true;
         Map<String, dynamic> excludeNote = {};
@@ -738,8 +708,9 @@ abstract class ScheduleDao {
         });
         String verseContent = convert.jsonEncode(excludeNote);
         verseKeys.add(VerseKey(
-          classroomId: content.classroomId,
-          bookSerial: content.serial,
+          classroomId: book.classroomId,
+          bookId: book.id!,
+          chapterKeyId: 0,
           chapterIndex: chapterIndex,
           verseIndex: verseIndex,
           version: 1,
@@ -751,17 +722,25 @@ abstract class ScheduleDao {
         ));
         verses.add(Verse(
           verseKeyId: 0,
-          classroomId: content.classroomId,
-          bookSerial: content.serial,
+          classroomId: book.classroomId,
+          bookId: book.id!,
+          chapterKeyId: 0,
           chapterIndex: chapterIndex,
           verseIndex: verseIndex,
           //4611686118427387904-(99999*10000000000+99999*100000+99999)
-          sort: content.sort * 10000000000 + chapterIndex * 100000 + verseIndex,
+          sort: book.sort * 10000000000 + chapterIndex * 100000 + verseIndex,
         ));
-        verseOverallPrgs.add(VerseOverallPrg(0, content.classroomId, content.serial, Date.from(now), 0));
+        verseOverallPrgs.add(VerseOverallPrg(
+          verseKeyId: 0,
+          classroomId: book.classroomId,
+          bookId: book.id!,
+          chapterKeyId: 0,
+          next: Date.from(now),
+          progress: 0,
+        ));
       }
     }
-    return true;
+    return book;
   }
 
   List<TextVersion> toNeedToInsertVerseText(
@@ -784,9 +763,9 @@ abstract class ScheduleDao {
           t: verseTextVersionType,
           id: v.id!,
           classroomId: v.classroomId,
-          bookSerial: v.bookSerial,
+          bookId: v.bookId,
           version: currVersionNumber,
-          reason: TextVersionReason.import,
+          reason: VersionReason.import,
           text: text,
           createTime: DateTime.now(),
         );
@@ -798,41 +777,31 @@ abstract class ScheduleDao {
 
   @transaction
   Future<int> importVerse(
-    int contentId,
-    int bookSerial,
+    int bookId,
     int? indexJsonDocId,
     String? url,
   ) async {
     await forUpdate();
-    List<String> newContents = [];
     List<Chapter> newChapters = [];
     List<ChapterKey> newChapterKeys = [];
     List<VerseKey> newVerseKeys = [];
     List<Verse> verses = [];
     List<VerseOverallPrg> verseOverallPrgs = [];
-    bool success = await prepareImportVerse(
-      newContents,
+    Book? book = await prepareImportVerse(
       newChapters,
       newChapterKeys,
       newVerseKeys,
       verses,
       verseOverallPrgs,
-      contentId: contentId,
-      bookSerial: bookSerial,
+      bookId: bookId,
       indexJsonDocId: indexJsonDocId,
       url: url,
     );
-    if (!success) {
+    if (book == null) {
       return ImportResult.error.index;
     }
-    if (bookSerial == 0) {
-      for (var verseKey in newVerseKeys) {
-        bookSerial = verseKey.bookSerial;
-        break;
-      }
-    }
 
-    List<VerseKey> oldVerseKeys = await getVerseKey(Classroom.curr, bookSerial);
+    List<VerseKey> oldVerseKeys = await getVerseKey(bookId);
     var maxVersion = 0;
     Map<String, VerseKey> keyToOldVerseKey = {};
     Map<String, int> keyToId = {};
@@ -848,8 +817,10 @@ abstract class ScheduleDao {
     var nextVersion = maxVersion + 1;
     Map<int, VerseKey> needToModifyMap = {};
     List<VerseKey> needToInsert = [];
+    var warningInChapter = await db.chapterKeyDao.import(newChapters, newChapterKeys, book.id!);
     for (var newVerseKey in newVerseKeys) {
       newVerseKey.version = nextVersion;
+      newVerseKey.chapterKeyId = newChapterKeys[newVerseKey.chapterIndex].id!;
       VerseKey? oldVerseKey = keyToOldVerseKey[newVerseKey.k];
       if (oldVerseKey == null) {
         needToInsert.add(newVerseKey);
@@ -857,7 +828,8 @@ abstract class ScheduleDao {
         newVerseKey.id = oldVerseKey.id;
         newVerseKey.contentVersion = oldVerseKey.contentVersion;
         newVerseKey.noteVersion = oldVerseKey.noteVersion;
-        if (oldVerseKey.chapterIndex != newVerseKey.chapterIndex || //
+        if (oldVerseKey.chapterKeyId != newVerseKey.chapterKeyId || //
+            oldVerseKey.chapterIndex != newVerseKey.chapterIndex || //
             oldVerseKey.verseIndex != newVerseKey.verseIndex || //
             oldVerseKey.content != newVerseKey.content || //
             oldVerseKey.note != newVerseKey.note) {
@@ -867,7 +839,7 @@ abstract class ScheduleDao {
     }
     if (needToInsert.isNotEmpty) {
       await insertVerseKeys(needToInsert);
-      var keyIds = await getVerseKeyId(Classroom.curr, bookSerial);
+      var keyIds = await getVerseKeyId(bookId);
       keyToId = {for (var keyId in keyIds) keyId.k: keyId.id};
       for (var newVerseKey in newVerseKeys) {
         int? id = keyToId[newVerseKey.k];
@@ -899,9 +871,11 @@ abstract class ScheduleDao {
         needToModifyMap[newVerseKey.id!] = newVerseKey;
       }
       verses[i].verseKeyId = id;
+      verses[i].chapterKeyId = newVerseKey.chapterKeyId;
       verseOverallPrgs[i].verseKeyId = id;
+      verseOverallPrgs[i].chapterKeyId = newVerseKey.chapterKeyId;
     }
-    await deleteVerseByBookSerial(Classroom.curr, bookSerial);
+    await db.verseDao.deleteByBookId(bookId);
     await insertVerses(verses);
     await insertVerseOverallPrgs(verseOverallPrgs);
     if (needToInsertVerseContent.isNotEmpty) {
@@ -913,14 +887,14 @@ abstract class ScheduleDao {
     if (needToModifyMap.isNotEmpty) {
       await updateVerseKeys(needToModifyMap.values.toList());
     }
-    await db.bookDao.import(bookSerial, newContents[0]);
-    var warningInChapter = await db.chapterKeyDao.import(newChapters, newChapterKeys, bookSerial);
+    await db.bookDao.import(bookId, book.content);
+
     var warningInVerse = verses.length < keyToId.length;
 
     if (indexJsonDocId != null && url != null) {
-      await db.bookDao.updateBook(contentId, indexJsonDocId, url, warningInChapter, warningInVerse, DateTime.now().millisecondsSinceEpoch);
+      await db.bookDao.updateBook(bookId, indexJsonDocId, url, warningInChapter, warningInVerse, DateTime.now().millisecondsSinceEpoch);
     } else {
-      await db.bookDao.updateBookWarning(contentId, warningInChapter, warningInVerse, DateTime.now().millisecondsSinceEpoch);
+      await db.bookDao.updateBookWarning(bookId, warningInChapter, warningInVerse, DateTime.now().millisecondsSinceEpoch);
     }
     if (warningInChapter == true || warningInVerse == true) {
       return ImportResult.successButSomeVersesAreSurplus.index;
@@ -934,13 +908,12 @@ abstract class ScheduleDao {
     await forUpdate();
     var raw = await db.verseKeyDao.oneById(verseKeyId);
     if (raw == null) {
-      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the data($verseKeyId)"]));
+      Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["cant find the data($verseKeyId)"]));
       return false;
     }
-    int classroomId = raw.classroomId;
     int verseIndex = raw.verseIndex;
-    var verses = await db.verseDao.findByMinVerseIndex(classroomId, raw.bookSerial, raw.chapterIndex, verseIndex);
-    var verseKeys = await db.verseKeyDao.findByMinVerseIndex(classroomId, raw.bookSerial, raw.chapterIndex, verseIndex);
+    var verses = await db.verseDao.findByMinVerseIndex(raw.bookId, raw.chapterIndex, verseIndex);
+    var verseKeys = await db.verseKeyDao.findByMinVerseIndex(raw.bookId, raw.chapterIndex, verseIndex);
     List<Verse> insertVerses = [];
     List<VerseKey> insertVerseKeys = [];
     for (var v in verses) {
@@ -956,8 +929,8 @@ abstract class ScheduleDao {
         insertVerseKeys.add(v);
       }
     }
-    await db.verseDao.deleteByMinVerseIndex(classroomId, raw.bookSerial, raw.chapterIndex, verseIndex);
-    await db.verseKeyDao.deleteByMinVerseIndex(classroomId, raw.bookSerial, raw.chapterIndex, verseIndex);
+    await db.verseDao.deleteByMinVerseIndex(raw.bookId, raw.chapterIndex, verseIndex);
+    await db.verseKeyDao.deleteByMinVerseIndex(raw.bookId, raw.chapterIndex, verseIndex);
     await db.verseDao.insertListOrFail(insertVerses);
     await db.verseKeyDao.insertListOrFail(insertVerseKeys);
     await deleteVerseOverallPrg(verseKeyId);
@@ -972,7 +945,8 @@ abstract class ScheduleDao {
   Future<int> addVerse(VerseShow raw, int verseIndex) async {
     return interAddVerse(
       verseContent: raw.verseContent,
-      bookSerial: raw.bookSerial,
+      bookId: raw.bookId,
+      chapterKeyId: raw.chapterKeyId,
       chapterIndex: raw.chapterIndex,
       verseIndex: verseIndex,
     );
@@ -980,12 +954,14 @@ abstract class ScheduleDao {
 
   @transaction
   Future<int> addFirstVerse(
-    int bookSerial,
+    int bookId,
+    int chapterKeyId,
     int chapterIndex,
   ) async {
     return interAddVerse(
       verseContent: "{}",
-      bookSerial: bookSerial,
+      bookId: bookId,
+      chapterKeyId: chapterKeyId,
       chapterIndex: chapterIndex,
       verseIndex: 0,
     );
@@ -993,11 +969,16 @@ abstract class ScheduleDao {
 
   Future<int> interAddVerse({
     required String verseContent,
-    required int bookSerial,
+    required int bookId,
+    required int chapterKeyId,
     required int chapterIndex,
     required int verseIndex,
   }) async {
-    await forUpdate();
+    Book? book = await db.bookDao.getById(bookId);
+    if (book == null) {
+      Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["book"]));
+      return 0;
+    }
     String content = "";
     String key = "";
     Map<String, dynamic> contentMap;
@@ -1023,15 +1004,15 @@ abstract class ScheduleDao {
       return 0;
     }
     int classroomId = Classroom.curr;
-    var existingVerse = await getVerseKeyByKey(classroomId, bookSerial, key);
+    var existingVerse = await getVerseKeyByKey(bookId, key);
     if (existingVerse != null) {
-      Snackbar.show(I18nKey.labelVerseKeyDuplicated.trArgs([key]));
+      Snackbar.showAndThrow(I18nKey.labelVerseKeyDuplicated.trArgs([key]));
       return 0;
     }
 
     // adjust the verse index and sort
-    var verses = await db.verseDao.findByMinVerseIndex(classroomId, bookSerial, chapterIndex, verseIndex);
-    var verseKeys = await db.verseKeyDao.findByMinVerseIndex(classroomId, bookSerial, chapterIndex, verseIndex);
+    var verses = await db.verseDao.findByMinVerseIndex(bookId, chapterIndex, verseIndex);
+    var verseKeys = await db.verseKeyDao.findByMinVerseIndex(bookId, chapterIndex, verseIndex);
     for (var v in verses) {
       v.verseIndex++;
       v.sort++;
@@ -1039,13 +1020,14 @@ abstract class ScheduleDao {
     for (var v in verseKeys) {
       v.verseIndex++;
     }
-    await db.verseDao.deleteByMinVerseIndex(classroomId, bookSerial, chapterIndex, verseIndex);
-    await db.verseKeyDao.deleteByMinVerseIndex(classroomId, bookSerial, chapterIndex, verseIndex);
+    await db.verseDao.deleteByMinVerseIndex(bookId, chapterIndex, verseIndex);
+    await db.verseKeyDao.deleteByMinVerseIndex(bookId, chapterIndex, verseIndex);
 
     // insert and get the verse key id
     VerseKey? verseKey = VerseKey(
       classroomId: classroomId,
-      bookSerial: bookSerial,
+      bookId: bookId,
+      chapterKeyId: chapterKeyId,
       chapterIndex: chapterIndex,
       verseIndex: verseIndex,
       version: 1,
@@ -1057,16 +1039,17 @@ abstract class ScheduleDao {
     );
     verseKeys.add(verseKey);
     await db.verseKeyDao.insertListOrFail(verseKeys);
-    verseKey = await getVerseKeyByKey(verseKey.classroomId, verseKey.bookSerial, key);
+    verseKey = await getVerseKeyByKey(verseKey.bookId, key);
     if (verseKey == null) {
       throw Exception('Failed to get verse key');
     }
 
-    int sortValue = verseKey.bookSerial * 10000000000 + verseKey.chapterIndex * 100000 + verseIndex;
+    int sortValue = book.sort * 10000000000 + verseKey.chapterIndex * 100000 + verseIndex;
     var verse = Verse(
       verseKeyId: verseKey.id!,
       classroomId: verseKey.classroomId,
-      bookSerial: verseKey.bookSerial,
+      bookId: verseKey.bookId,
+      chapterKeyId: verseKey.chapterKeyId,
       chapterIndex: verseKey.chapterIndex,
       verseIndex: verseKey.verseIndex,
       sort: sortValue,
@@ -1074,15 +1057,22 @@ abstract class ScheduleDao {
     verses.add(verse);
     await db.verseDao.insertListOrFail(verses);
     var now = DateTime.now();
-    var verseOverallPrg = VerseOverallPrg(verseKey.id!, verseKey.classroomId, verseKey.bookSerial, Date.from(now), 0);
+    var verseOverallPrg = VerseOverallPrg(
+      verseKeyId: verseKey.id!,
+      classroomId: verseKey.classroomId,
+      bookId: verseKey.bookId,
+      chapterKeyId: verseKey.chapterKeyId,
+      next: Date.from(now),
+      progress: 0,
+    );
     await db.verseOverallPrgDao.insertOrFail(verseOverallPrg);
     await db.textVersionDao.insertOrFail(TextVersion(
       t: TextVersionType.verseContent,
       id: verseKey.id!,
       classroomId: verseKey.classroomId,
-      bookSerial: verseKey.bookSerial,
+      bookId: verseKey.bookId,
       version: 1,
-      reason: TextVersionReason.editor,
+      reason: VersionReason.editor,
       text: verseKey.content,
       createTime: now,
     ));
@@ -1091,9 +1081,9 @@ abstract class ScheduleDao {
       t: TextVersionType.verseNote,
       id: verseKey.id!,
       classroomId: verseKey.classroomId,
-      bookSerial: verseKey.bookSerial,
+      bookId: verseKey.bookId,
       version: 1,
-      reason: TextVersionReason.editor,
+      reason: VersionReason.editor,
       text: verseKey.note,
       createTime: now,
     ));
@@ -1104,10 +1094,10 @@ abstract class ScheduleDao {
   }
 
   @transaction
-  Future<void> hideContentAndDeleteVerse(int contentId, int bookSerial) async {
+  Future<void> hideContentAndDeleteVerse(int bookId) async {
     await forUpdate();
-    await hideBook(contentId);
-    await deleteVerseByBookSerial(Classroom.curr, bookSerial);
+    await hideBook(bookId);
+    await db.verseDao.deleteByBookId(bookId);
   }
 
   /// for progress
@@ -1278,12 +1268,12 @@ abstract class ScheduleDao {
   }
 
   @transaction
-  Future<void> addFullCustom(int bookSerial, int chapterIndex, int verseIndex, int limit) async {
+  Future<void> addFullCustom(int bookId, int chapterIndex, int verseIndex, int limit) async {
     List<VerseTodayPrg> ret;
-    ret = await scheduleFullCustom(Classroom.curr, bookSerial, chapterIndex, verseIndex, limit);
+    ret = await scheduleFullCustom(Classroom.curr, bookId, chapterIndex, verseIndex, limit);
     String? fullCustomJsonStr = await stringKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount);
     List<List<String>> fullCustomConfigs = ListUtil.toListList(fullCustomJsonStr);
-    var contentName = await getBookNameBySerial(Classroom.curr, bookSerial);
+    var contentName = await getBookNameById(bookId);
     List<String> args = [];
     args.add(contentName ?? '-');
     args.add('${chapterIndex + 1}');
@@ -1300,7 +1290,7 @@ abstract class ScheduleDao {
   Future<bool> tUpdateVerseContent(int verseKeyId, String content) async {
     VerseKey? verseKey = await getVerseKeyById(verseKeyId);
     if (verseKey == null) {
-      Snackbar.show(I18nKey.labelNotFoundVerse.trArgs([verseKeyId.toString()]));
+      Snackbar.showAndThrow(I18nKey.labelNotFoundVerse.trArgs([verseKeyId.toString()]));
       return false;
     }
     dynamic contentM;
@@ -1308,7 +1298,7 @@ abstract class ScheduleDao {
       contentM = convert.jsonDecode(content);
       content = convert.jsonEncode(contentM);
     } catch (e) {
-      Snackbar.show(e.toString());
+      Snackbar.showAndThrow(e.toString());
       return false;
     }
 
@@ -1320,17 +1310,17 @@ abstract class ScheduleDao {
       VerseContent verse = VerseContent.fromJson(contentM);
       key = getKey(verse.key, verse.answer);
     } catch (e) {
-      Snackbar.show(e.toString());
+      Snackbar.showAndThrow(e.toString());
       return false;
     }
     if (key.isEmpty) {
-      Snackbar.show(I18nKey.labelVerseKeyCantBeEmpty.tr);
+      Snackbar.showAndThrow(I18nKey.labelVerseKeyCantBeEmpty.tr);
       return false;
     }
 
-    var otherVerseKey = await getVerseKeyByKey(verseKey.classroomId, verseKey.bookSerial, key);
+    var otherVerseKey = await getVerseKeyByKey(verseKey.bookId, key);
     if (otherVerseKey != null && otherVerseKey.id != verseKey.id) {
-      Snackbar.show(I18nKey.labelVerseKeyDuplicated.trArgs([key]));
+      Snackbar.showAndThrow(I18nKey.labelVerseKeyDuplicated.trArgs([key]));
       return false;
     }
 
@@ -1340,9 +1330,9 @@ abstract class ScheduleDao {
       t: TextVersionType.verseContent,
       id: verseKeyId,
       classroomId: verseKey.classroomId,
-      bookSerial: verseKey.bookSerial,
+      bookId: verseKey.bookId,
       version: verseKey.contentVersion + 1,
-      reason: TextVersionReason.editor,
+      reason: VersionReason.editor,
       text: content,
       createTime: now,
     ));
@@ -1365,7 +1355,7 @@ abstract class ScheduleDao {
   Future<void> tUpdateVerseNote(int verseKeyId, String note) async {
     VerseKey? verseKey = await getVerseKeyById(verseKeyId);
     if (verseKey == null) {
-      Snackbar.show(I18nKey.labelNotFoundVerse.trArgs([verseKeyId.toString()]));
+      Snackbar.showAndThrow(I18nKey.labelNotFoundVerse.trArgs([verseKeyId.toString()]));
       return;
     }
     if (verseKey.note == note) {
@@ -1377,9 +1367,9 @@ abstract class ScheduleDao {
       t: TextVersionType.verseNote,
       id: verseKeyId,
       classroomId: verseKey.classroomId,
-      bookSerial: verseKey.bookSerial,
+      bookId: verseKey.bookId,
       version: verseKey.noteVersion + 1,
-      reason: TextVersionReason.editor,
+      reason: VersionReason.editor,
       text: note,
       createTime: now,
     ));
@@ -1460,14 +1450,29 @@ abstract class ScheduleDao {
     var todayLearnCreateDate = await getTodayLearnCreateDate(now);
 
     if (prgType == TodayPrgType.learn) {
-      await insertVerseReview([VerseReview(todayLearnCreateDate, stp.verseKeyId, Classroom.curr, stp.bookSerial, 0)]);
+      await insertVerseReview([
+        VerseReview(
+          createDate: todayLearnCreateDate,
+          verseKeyId: stp.verseKeyId,
+          classroomId: Classroom.curr,
+          bookId: stp.bookId,
+          count: 0,
+        )
+      ]);
     } else if (prgType == TodayPrgType.review) {
       await setVerseReviewCount(stp.reviewCreateDate, stp.verseKeyId, stp.reviewCount + 1);
     }
 
     await setPrg(stp.verseKeyId, progress, Date(nextDayValue));
     await setTodayPrgWithCache(stp, scheduleConfig.maxRepeatTime, now);
-    await insertVerseStats(VerseStats(stp.verseKeyId, getPrgTypeInt(stp), todayLearnCreateDate, now.millisecondsSinceEpoch, Classroom.curr, stp.bookSerial));
+    await insertVerseStats(VerseStats(
+      verseKeyId: stp.verseKeyId,
+      type: getPrgTypeInt(stp),
+      createDate: todayLearnCreateDate,
+      createTime: now.millisecondsSinceEpoch,
+      classroomId: Classroom.curr,
+      bookId: stp.bookId,
+    ));
   }
 
   @transaction
@@ -1499,12 +1504,27 @@ abstract class ScheduleDao {
           nextProgress = verseProgress + 1;
         }
         await setPrg(stp.verseKeyId, nextProgress, getNextByProgress(todayLearnCreateDate.toDateTime(), nextProgress));
-        await insertVerseReview([VerseReview(todayLearnCreateDate, stp.verseKeyId, Classroom.curr, stp.bookSerial, 0)]);
+        await insertVerseReview([
+          VerseReview(
+            createDate: todayLearnCreateDate,
+            verseKeyId: stp.verseKeyId,
+            classroomId: Classroom.curr,
+            bookId: stp.bookId,
+            count: 0,
+          )
+        ]);
       } else if (prgType == TodayPrgType.review) {
         await setVerseReviewCount(stp.reviewCreateDate, stp.verseKeyId, stp.reviewCount + 1);
       }
       await setTodayPrgWithCache(stp, scheduleConfig.maxRepeatTime, now);
-      await insertVerseStats(VerseStats(stp.verseKeyId, prgType.index, todayLearnCreateDate, now.millisecondsSinceEpoch, Classroom.curr, stp.bookSerial));
+      await insertVerseStats(VerseStats(
+        verseKeyId: stp.verseKeyId,
+        type: prgType.index,
+        createDate: todayLearnCreateDate,
+        createTime: now.millisecondsSinceEpoch,
+        classroomId: Classroom.curr,
+        bookId: stp.bookId,
+      ));
     }
   }
 

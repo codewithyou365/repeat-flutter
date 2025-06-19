@@ -7,23 +7,26 @@ import 'package:repeat_flutter/common/date.dart';
   primaryKeys: ['verseKeyId'],
   indices: [
     Index(value: ['classroomId', 'next', 'progress']),
-    Index(value: ['classroomId', 'bookSerial']),
+    Index(value: ['classroomId']),
+    Index(value: ['bookId']),
   ],
 )
 class VerseOverallPrg {
   int verseKeyId;
 
   final int classroomId;
-  final int bookSerial;
+  final int bookId;
+  int chapterKeyId;
   final Date next;
 
   final int progress;
 
-  VerseOverallPrg(
-    this.verseKeyId,
-    this.classroomId,
-    this.bookSerial,
-    this.next,
-    this.progress,
-  );
+  VerseOverallPrg({
+    required this.verseKeyId,
+    required this.classroomId,
+    required this.bookId,
+    required this.chapterKeyId,
+    required this.next,
+    required this.progress,
+  });
 }

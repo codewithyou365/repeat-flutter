@@ -71,12 +71,12 @@ class ScCrMaterialPage extends StatelessWidget {
         child: Text(I18nKey.labelRemoteImport.tr),
       ));
       menus.add(PopupMenuItem<String>(
-        onTap: () => logic.addByZip(model.id!, model.serial),
+        onTap: () => logic.addByZip(model.id!),
         child: Text(I18nKey.labelLocalZipImport.tr),
       ));
       menus.add(PopupMenuItem<String>(
         onTap: () {
-          Nav.gsCrContentTemplate.push(arguments: <int>[model.id!, model.serial]);
+          Nav.gsCrContentTemplate.push(arguments: <int>[model.id!]);
         },
         child: Text(I18nKey.create.tr),
       ));
@@ -89,7 +89,7 @@ class ScCrMaterialPage extends StatelessWidget {
       ));
       menus.add(PopupMenuItem<String>(
         onTap: () {
-          logic.showContent(contentId: model.id!);
+          logic.showContent(bookId: model.id!);
         },
         child: Text(I18nKey.labelContent.tr),
       ));
@@ -119,9 +119,9 @@ class ScCrMaterialPage extends StatelessWidget {
               IconButton(
                 onPressed: () {
                   if (model.verseWarning) {
-                    logic.showContent(contentId: model.id!, defaultTap: 2);
+                    logic.showContent(bookId: model.id!, defaultTap: 2);
                   } else if (model.chapterWarning) {
-                    logic.showContent(contentId: model.id!, defaultTap: 1);
+                    logic.showContent(bookId: model.id!, defaultTap: 1);
                   }
                 },
                 color: Colors.yellow,
@@ -139,7 +139,7 @@ class ScCrMaterialPage extends StatelessWidget {
       title: I18nKey.labelDelete.tr,
       desc: I18nKey.labelDeleteBook.trArgs([model.name]),
       yes: () {
-        logic.delete(model.id!, model.serial);
+        logic.delete(model.id!);
         Get.back();
       },
     );
@@ -169,7 +169,7 @@ class ScCrMaterialPage extends StatelessWidget {
         const SizedBox(height: 10),
       ],
       yes: () {
-        logic.download(model.id!, model.serial, downloadUrl.value);
+        logic.download(model.id!, downloadUrl.value);
       },
       yesBtnTitle: I18nKey.btnDownload.tr,
       noBtnTitle: I18nKey.btnClose.tr,

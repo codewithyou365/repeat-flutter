@@ -5,12 +5,12 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'model/verse_show.dart';
 
 class QueryChapter {
-  final int bookSerial;
+  final int bookId;
   final int? chapterIndex;
   final int? minChapterIndex;
 
   QueryChapter({
-    required this.bookSerial,
+    required this.bookId,
     this.chapterIndex,
     this.minChapterIndex,
   });
@@ -30,12 +30,12 @@ class VerseHelp {
     if (cache.isEmpty || force || query != null) {
       if (query != null) {
         if (query.chapterIndex != null) {
-          List<VerseShow> chapterVerse = await Db().db.scheduleDao.getVerseByChapterIndex(Classroom.curr, query.bookSerial, query.chapterIndex!);
-          cache.removeWhere((verse) => verse.bookSerial == query.bookSerial && verse.chapterIndex == query.chapterIndex!);
+          List<VerseShow> chapterVerse = await Db().db.scheduleDao.getVerseByChapterIndex(query.bookId, query.chapterIndex!);
+          cache.removeWhere((verse) => verse.bookId == query.bookId && verse.chapterIndex == query.chapterIndex!);
           cache.addAll(chapterVerse);
         } else if (query.minChapterIndex != null) {
-          List<VerseShow> chapterVerse = await Db().db.scheduleDao.getVerseByMinChapterIndex(Classroom.curr, query.bookSerial, query.minChapterIndex!);
-          cache.removeWhere((verse) => verse.bookSerial == query.bookSerial && verse.chapterIndex >= query.minChapterIndex!);
+          List<VerseShow> chapterVerse = await Db().db.scheduleDao.getVerseByMinChapterIndex(query.bookId, query.minChapterIndex!);
+          cache.removeWhere((verse) => verse.bookId == query.bookId && verse.chapterIndex >= query.minChapterIndex!);
           cache.addAll(chapterVerse);
         }
         verseKeyIdToShow = {for (var verse in cache) verse.verseKeyId: verse};

@@ -6,27 +6,34 @@ enum TextVersionType {
   verseContent,
   verseNote,
   chapterContent,
-  bookContent,
 }
 
-enum TextVersionReason {
+enum VersionReason {
   import,
   editor,
 }
 
+abstract class ContentVersion {
+  String getContent();
+
+  int getVersion();
+
+  DateTime getCreateTime();
+}
+
 @Entity(
   indices: [
-    Index(value: ['classroomId', 'bookSerial', 't', 'id']),
+    Index(value: ['classroomId', 'bookId', 't', 'id']),
   ],
   primaryKeys: ['t', 'id', 'version'],
 )
-class TextVersion {
+class TextVersion implements ContentVersion {
   final TextVersionType t;
   int id;
   final int version;
   final int classroomId;
-  final int bookSerial;
-  final TextVersionReason reason;
+  final int bookId;
+  final VersionReason reason;
   final String text;
   final DateTime createTime;
 
@@ -35,9 +42,24 @@ class TextVersion {
     this.id = 0,
     required this.version,
     required this.classroomId,
-    required this.bookSerial,
+    required this.bookId,
     required this.reason,
     required this.text,
     required this.createTime,
   });
+
+  @override
+  String getContent() {
+    return text;
+  }
+
+  @override
+  int getVersion() {
+    return version;
+  }
+
+  @override
+  DateTime getCreateTime() {
+    return createTime;
+  }
 }

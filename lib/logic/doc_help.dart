@@ -92,14 +92,14 @@ class DocHelp {
   }
 
   static Future<bool> getDocMapFromDb({
-    required int contentId,
+    required int bookId,
     required Map<String, dynamic> ret,
     String? rootUrl,
     bool shareNote = false,
   }) async {
     await VerseHelp.tryGen(force: true);
     await ChapterHelp.tryGen(force: true);
-    var content = await Db().db.bookDao.getById(contentId);
+    var content = await Db().db.bookDao.getById(bookId);
     var verseCache = VerseHelp.cache;
     var chapterCache = ChapterHelp.cache;
 
@@ -117,7 +117,7 @@ class DocHelp {
     Map<int, List<VerseShow>> chapterToVerseShow = {};
 
     for (var verse in verseCache) {
-      if (verse.bookId == contentId) {
+      if (verse.bookId == bookId) {
         int chapterKey = verse.chapterIndex;
 
         if (!chapterToVerseShow.containsKey(chapterKey)) {
@@ -135,7 +135,7 @@ class DocHelp {
     List<Map<String, dynamic>> chaptersList = [];
     for (int i = 0; i < chapterCache.length; i++) {
       var chapter = chapterCache[i];
-      if (chapter.bookId == contentId) {
+      if (chapter.bookId == bookId) {
         Map<String, dynamic> chapterData = {};
 
         try {

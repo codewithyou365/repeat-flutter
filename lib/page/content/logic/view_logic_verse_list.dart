@@ -15,7 +15,6 @@ import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
-import 'package:repeat_flutter/logic/widget/chapter_list.dart';
 import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/logic/view_logic.dart';
@@ -65,7 +64,6 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
   List<int> nextMonth = [];
   List<VerseShow> verseShow = [];
   late HistoryList historyList = HistoryList<T>(parentLogic);
-  late ChapterList chapterList = ChapterList<T>(parentLogic);
   final T parentLogic;
   Future<void> Function()? removeWarning;
   VoidCallback onChapterModified;
@@ -199,7 +197,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
       originalVerseShow = await VerseHelp.getVerses(
         force: true,
         query: QueryChapter(
-          bookSerial: verse.bookSerial,
+          bookId: verse.bookId,
           chapterIndex: verse.chapterIndex,
         ),
       );
@@ -214,25 +212,23 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     if (bookSelect.value > 0 && chapterSelect.value > 0) {
       await showOverlay(() async {
         var classroomId = Classroom.curr;
-        var content = await Db().db.bookDao.getBookByName(classroomId, options[bookSelect.value].label);
-        if (content == null) {
+        var book = await Db().db.bookDao.getBookByName(classroomId, options[bookSelect.value].label);
+        if (book == null) {
           Snackbar.show(I18nKey.labelNoContent.tr);
           return;
         }
         int chapterIndex = chapterSelect.value - 1;
-        var chapterCount = await Db().db.chapterDao.count(classroomId, content.serial) ?? 0;
-        if (chapterCount == 0) {
-          await Db().db.chapterKeyDao.addFirstChapter(content.serial);
-          await ChapterHelp.getChapters(force: true);
-          onChapterModified();
-          chapterIndex = 0;
+        var chapter = await Db().db.chapterDao.one(book.id!, chapterIndex);
+        if (chapter == null) {
+          Snackbar.show(I18nKey.labelDataAnomaly.tr);
+          return;
         }
 
-        await Db().db.scheduleDao.addFirstVerse(content.serial, chapterIndex);
+        await Db().db.scheduleDao.addFirstVerse(book.id!, chapter.chapterKeyId, chapterIndex);
         originalVerseShow = await VerseHelp.getVerses(
           force: true,
           query: QueryChapter(
-            bookSerial: content.serial,
+            bookId: book.id!,
             chapterIndex: chapterIndex,
           ),
         );
@@ -255,7 +251,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
       originalVerseShow = await VerseHelp.getVerses(
         force: true,
         query: QueryChapter(
-          bookSerial: verse.bookSerial,
+          bookId: verse.bookId,
           chapterIndex: verse.chapterIndex,
         ),
       );
@@ -568,8 +564,8 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                         VerseHelp.deleteCache(verse.verseKeyId);
                                         verseShow.removeWhere((element) => element.verseKeyId == verse.verseKeyId);
 
-                                        var contentId2Missing = refreshMissingVerseIndex(missingVerseIndex, verseShow);
-                                        var warning = contentId2Missing[verse.bookId] ?? false;
+                                        var bookId2Missing = refreshMissingVerseIndex(missingVerseIndex, verseShow);
+                                        var warning = bookId2Missing[verse.bookId] ?? false;
                                         if (warning == false) {
                                           await Db().db.bookDao.updateBookWarningForVerse(verse.bookId, warning, DateTime.now().millisecondsSinceEpoch);
                                           if (removeWarning != null) {
@@ -674,15 +670,15 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
   ) {
     missingVerseIndex.clear();
 
-    Map<int, bool> contentId2Missing = {};
+    Map<int, bool> bookId2Missing = {};
     for (int i = 0; i < verseShow.length; i++) {
       var v = verseShow[i];
       if (v.missing) {
-        contentId2Missing[v.bookId] = true;
+        bookId2Missing[v.bookId] = true;
         missingVerseIndex.add(i);
       }
     }
-    return contentId2Missing;
+    return bookId2Missing;
   }
 
   void updateOptions() {

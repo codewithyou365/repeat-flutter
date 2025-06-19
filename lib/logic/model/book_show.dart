@@ -4,6 +4,7 @@ import 'package:floor/floor.dart';
 class BookShow {
   @primaryKey
   final int bookId;
+  final int classroomId;
   final String name;
   final int sort;
   String bookContent;
@@ -11,6 +12,7 @@ class BookShow {
 
   BookShow({
     required this.bookId,
+    required this.classroomId,
     required this.name,
     required this.sort,
     required this.bookContent,

@@ -5,6 +5,8 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
+import 'package:repeat_flutter/db/dao/book_content_version_dao.dart';
+import 'package:repeat_flutter/db/dao/chapter_content_version_dao.dart';
 import 'package:repeat_flutter/db/dao/classroom_dao.dart';
 import 'package:repeat_flutter/db/dao/book_dao.dart';
 import 'package:repeat_flutter/db/dao/cr_kv_dao.dart';
@@ -16,6 +18,7 @@ import 'package:repeat_flutter/db/dao/chapter_key_dao.dart';
 import 'package:repeat_flutter/db/dao/game_user_input_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/kv_dao.dart';
+import 'package:repeat_flutter/db/dao/verse_content_version_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_key_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_overall_prg_dao.dart';
@@ -26,6 +29,8 @@ import 'package:repeat_flutter/db/dao/lock_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_review_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_stats_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_today_prg_dao.dart';
+import 'package:repeat_flutter/db/entity/book_content_version.dart';
+import 'package:repeat_flutter/db/entity/chapter_content_version.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/doc.dart';
@@ -34,6 +39,7 @@ import 'package:repeat_flutter/db/entity/lock.dart';
 import 'package:repeat_flutter/db/entity/chapter.dart';
 import 'package:repeat_flutter/db/entity/chapter_key.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
+import 'package:repeat_flutter/db/entity/verse_content_version.dart';
 import 'package:repeat_flutter/db/entity/verse_key.dart';
 import 'package:repeat_flutter/db/entity/verse_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/verse_review.dart';
@@ -60,14 +66,17 @@ import 'entity/kv.dart';
 part 'database.g.dart'; // the generated code will be there
 
 @Database(version: 3, entities: [
-  Kv,
+  Book,
+  BookContentVersion,
   Chapter,
+  ChapterContentVersion,
   ChapterKey,
+  Kv,
   Doc,
   Classroom,
-  Book,
   CrKv,
   Verse,
+  VerseContentVersion,
   VerseKey,
   KeyId,
   VerseShow,
@@ -95,6 +104,20 @@ part 'database.g.dart'; // the generated code will be there
   VerseTextVersionReasonConverter,
 ])
 abstract class AppDatabase extends FloorDatabase {
+  BookContentVersionDao get bookContentVersionDao;
+
+  BookDao get bookDao;
+
+  ChapterContentVersionDao get chapterContentVersionDao;
+
+  ChapterDao get chapterDao;
+
+  ChapterKeyDao get chapterKeyDao;
+
+  ClassroomDao get classroomDao;
+
+  CrKvDao get crKvDao;
+
   LockDao get lockDao;
 
   GameUserDao get gameUserDao;
@@ -105,23 +128,15 @@ abstract class AppDatabase extends FloorDatabase {
 
   KvDao get kvDao;
 
-  ChapterDao get chapterDao;
-
-  ChapterKeyDao get chapterKeyDao;
-
   DocDao get docDao;
-
-  ClassroomDao get classroomDao;
 
   TextVersionDao get textVersionDao;
 
   TimeStatsDao get timeStatsDao;
 
-  BookDao get bookDao;
-
-  CrKvDao get crKvDao;
-
   ScheduleDao get scheduleDao;
+
+  VerseContentVersionDao get verseContentVersionDao;
 
   VerseDao get verseDao;
 
@@ -167,6 +182,7 @@ prepareDb(AppDatabase db) {
   db.gameUserDao.db = db;
   db.gameDao.db = db;
   db.kvDao.db = db;
+  db.chapterContentVersionDao.db = db;
   db.chapterKeyDao.db = db;
   db.docDao.db = db;
   db.classroomDao.db = db;

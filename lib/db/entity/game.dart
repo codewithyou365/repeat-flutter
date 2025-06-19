@@ -5,7 +5,8 @@ import 'package:repeat_flutter/common/date.dart';
 
 @Entity(
   indices: [
-    Index(value: ['classroomId', 'bookSerial', 'chapterIndex', 'verseIndex']),
+    Index(value: ['classroomId']),
+    Index(value: ['bookId', 'chapterIndex', 'verseIndex']),
     Index(value: ['verseKeyId']),
     Index(value: ['createDate']),
   ],
@@ -19,7 +20,7 @@ class Game {
 
   final int verseKeyId;
   final int classroomId;
-  final int bookSerial;
+  final int bookId;
   final int chapterIndex;
   final int verseIndex;
 
@@ -33,7 +34,7 @@ class Game {
     required this.verseContent,
     required this.verseKeyId,
     required this.classroomId,
-    required this.bookSerial,
+    required this.bookId,
     required this.chapterIndex,
     required this.verseIndex,
     required this.finish,

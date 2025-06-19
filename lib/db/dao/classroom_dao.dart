@@ -46,6 +46,7 @@ abstract class ClassroomDao {
 
   @transaction
   Future<void> deleteAll(int classroomId) async {
+    await db.bookContentVersionDao.deleteByClassroomId(classroomId);
     await db.bookDao.deleteByClassroomId(classroomId);
     await db.chapterDao.deleteByClassroomId(classroomId);
     await db.chapterKeyDao.deleteByClassroomId(classroomId);

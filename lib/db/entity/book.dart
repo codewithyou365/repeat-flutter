@@ -5,7 +5,6 @@ import 'package:floor/floor.dart';
 @Entity(
   indices: [
     Index(value: ['classroomId', 'name'], unique: true),
-    Index(value: ['classroomId', 'serial'], unique: true),
     Index(value: ['classroomId', 'sort'], unique: true),
     Index(value: ['classroomId', 'updateTime']),
     Index(value: ['sort', 'id']),
@@ -16,9 +15,6 @@ class Book {
   final int? id;
 
   final int classroomId;
-
-  // serial number in classroom
-  final int serial;
 
   String name;
   String desc;
@@ -36,7 +32,6 @@ class Book {
   Book({
     this.id,
     required this.classroomId,
-    required this.serial,
     required this.name,
     required this.desc,
     required this.docId,
@@ -55,7 +50,6 @@ class Book {
     return Book(
       id: null,
       classroomId: 0,
-      serial: 0,
       name: '',
       desc: '',
       docId: 0,

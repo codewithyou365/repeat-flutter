@@ -5,6 +5,7 @@ import 'dart:convert' as convert;
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/num.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/book_content_version.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/text_version.dart';
@@ -19,6 +20,7 @@ abstract class BookDao {
   static List<void Function(int chapterKeyId)> setBookShowContent = [];
 
   @Query('SELECT id bookId'
+      ',classroomId'
       ',name'
       ',sort'
       ',content bookContent'
@@ -35,12 +37,6 @@ abstract class BookDao {
   @Query('SELECT * FROM Book where classroomId=:classroomId and docId!=0 and hide=false ORDER BY sort')
   Future<List<Book>> getAllEnableBook(int classroomId);
 
-  @Query('SELECT ifnull(max(serial),0) FROM Book WHERE classroomId=:classroomId')
-  Future<int?> getMaxSerial(int classroomId);
-
-  @Query('SELECT ifnull(serial,0) FROM Book WHERE classroomId=:classroomId and serial=:serial')
-  Future<int?> existBySerial(int classroomId, int serial);
-
   @Query('SELECT ifnull(max(sort),0) FROM Book WHERE classroomId=:classroomId')
   Future<int?> getMaxSort(int classroomId);
 
@@ -49,9 +45,6 @@ abstract class BookDao {
 
   @Query('SELECT * FROM Book WHERE id=:id')
   Future<Book?> getById(int id);
-
-  @Query('SELECT * FROM Book WHERE classroomId=:classroomId and serial=:serial')
-  Future<Book?> getBySerial(int classroomId, int serial);
 
   @Query('SELECT * FROM Book WHERE classroomId=:classroomId and name=:name')
   Future<Book?> getBookByName(int classroomId, String name);
@@ -112,14 +105,12 @@ abstract class BookDao {
 
     var now = DateTime.now();
     await updateBookContentVersion(bookId, content, book.contentVersion + 1);
-    await db.textVersionDao.insertOrIgnore(TextVersion(
-      t: TextVersionType.bookContent,
-      id: bookId,
+    await db.bookContentVersionDao.insertOrIgnore(BookContentVersion(
       classroomId: book.classroomId,
-      bookSerial: book.serial,
+      bookId: book.id!,
       version: book.contentVersion + 1,
-      reason: TextVersionReason.editor,
-      text: content,
+      reason: VersionReason.editor,
+      content: content,
       createTime: now,
     ));
     if (getBookShow != null) {
@@ -136,7 +127,6 @@ abstract class BookDao {
 
   @transaction
   Future<Book> add(String name) async {
-    await db.lockDao.forUpdate();
     var ret = await getBookByName(Classroom.curr, name);
     if (ret != null) {
       if (ret.hide == false) {
@@ -145,16 +135,12 @@ abstract class BookDao {
       }
       await show(ret.id!);
     } else {
-      var maxSerial = await getMaxSerial(Classroom.curr);
-      var serial = await Num.getNextId(maxSerial, id: Classroom.curr, existById2: existBySerial);
-
       var maxSort = await getMaxSort(Classroom.curr);
       var sort = await Num.getNextId(maxSort, id: Classroom.curr, existById2: existBySort);
 
       var now = DateTime.now().millisecondsSinceEpoch;
       ret = Book(
         classroomId: Classroom.curr,
-        serial: serial,
         name: name,
         desc: '',
         docId: 0,
@@ -173,24 +159,26 @@ abstract class BookDao {
     return ret;
   }
 
-  Future<void> import(int bookSerial, String content) async {
-    Book? oldBook = await getBySerial(Classroom.curr, bookSerial);
-    TextVersion? oldBookContentVersion = await db.textVersionDao.getTextForBook(bookSerial, oldBook!.contentVersion);
+  Future<void> import(int bookId, String content) async {
+    Book? oldBook = await getById(bookId);
+    if (oldBook == null) {
+      Snackbar.showAndThrow(I18nKey.labelDataAnomaly.tr);
+      return;
+    }
+    BookContentVersion? oldBookContentVersion = await db.bookContentVersionDao.one(bookId, oldBook.contentVersion);
 
-    if (oldBookContentVersion == null || oldBookContentVersion.text != content) {
+    if (oldBookContentVersion == null || oldBookContentVersion.content != content) {
       var maxVersion = oldBook.contentVersion;
       var nextVersion = maxVersion + 1;
-      TextVersion insertBookContentVersion = TextVersion(
-        t: TextVersionType.bookContent,
-        id: oldBook.id!,
+      BookContentVersion insertBookContentVersion = BookContentVersion(
         classroomId: oldBook.classroomId,
-        bookSerial: oldBook.serial,
+        bookId: oldBook.id!,
         version: nextVersion,
-        reason: TextVersionReason.import,
-        text: content,
+        reason: VersionReason.import,
+        content: content,
         createTime: DateTime.now(),
       );
-      await db.textVersionDao.insertOrIgnore(insertBookContentVersion);
+      await db.bookContentVersionDao.insertOrIgnore(insertBookContentVersion);
       await updateBookContentVersion(oldBook.id!, content, nextVersion);
     }
   }

@@ -28,7 +28,7 @@ class ForAdd {
   int maxChapter = 1;
   int maxVerse = 1;
 
-  Book? fromContent;
+  Book? fromBook;
   int fromContentIndex = 0;
   int fromChapterIndex = 0;
   int fromVerseIndex = 0;

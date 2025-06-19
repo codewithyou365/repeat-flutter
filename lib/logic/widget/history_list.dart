@@ -34,7 +34,7 @@ class HistoryList<T extends GetxController> {
   }
 
   Future<void> showSheet(
-    List<TextVersion> originalVersions, {
+    List<ContentVersion> originalVersions, {
     bool focus = true,
   }) {
     RxString search = RxString("");
@@ -63,7 +63,7 @@ class HistoryList<T extends GetxController> {
     });
 
     // for sorting and content
-    List<TextVersion> versions = List.from(originalVersions);
+    List<ContentVersion> versions = List.from(originalVersions);
     RxInt selectedSortIndex = 0.obs;
     List<I18nKey> sortOptionKeys = [
       I18nKey.labelSortCreateDateDesc,
@@ -83,7 +83,7 @@ class HistoryList<T extends GetxController> {
     // Collect dates for filtering
     List<int> dates = [];
     for (var version in versions) {
-      final DateTime createTime = version.createTime;
+      final DateTime createTime = version.getCreateTime();
       int date = createTime.year * 10000 + createTime.month * 100 + createTime.day;
       if (!dates.contains(date)) {
         dates.add(date);
@@ -118,10 +118,10 @@ class HistoryList<T extends GetxController> {
         versions = originalVersions.where((e) {
           bool ret = true;
           if (ret && search.value.isNotEmpty) {
-            ret = e.text.contains(search.value);
+            ret = e.getContent().contains(search.value);
           }
           if (ret && dateSelect.value != 0) {
-            DateTime createTime = e.createTime;
+            DateTime createTime = e.getCreateTime();
             int date = createTime.year * 10000 + createTime.month * 100 + createTime.day;
             ret = date == dates[dateSelect.value];
           }
@@ -190,15 +190,15 @@ class HistoryList<T extends GetxController> {
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
-                                        '${I18nKey.labelCreateTime.tr}: ${DateTimeUtil.format(version.createTime)}',
+                                        '${I18nKey.labelCreateTime.tr}: ${DateTimeUtil.format(version.getCreateTime())}',
                                         style: const TextStyle(fontSize: 12, color: Colors.grey),
                                       ),
                                     ),
                                     SizedBox(height: 8, width: screenSize.width),
                                     ExpandableText(
                                       title: "",
-                                      text: version.text,
-                                      version: version.version,
+                                      text: version.getContent(),
+                                      version: version.getVersion(),
                                       limit: 60,
                                       style: const TextStyle(fontSize: 14),
                                       selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
@@ -210,7 +210,7 @@ class HistoryList<T extends GetxController> {
                               ),
                               IconButton(
                                 onPressed: () {
-                                  Clipboard.setData(ClipboardData(text: version.text));
+                                  Clipboard.setData(ClipboardData(text: version.getContent()));
                                   Snackbar.show(I18nKey.labelCopiedToClipboard.tr);
                                 },
                                 icon: const Icon(
@@ -296,13 +296,13 @@ class HistoryList<T extends GetxController> {
     });
   }
 
-  static void sort(List<TextVersion> versions, I18nKey key) {
+  static void sort(List<ContentVersion> versions, I18nKey key) {
     switch (key) {
       case I18nKey.labelSortCreateDateAsc:
-        versions.sort((a, b) => a.createTime.compareTo(b.createTime));
+        versions.sort((a, b) => a.getCreateTime().compareTo(b.getCreateTime()));
         break;
       case I18nKey.labelSortCreateDateDesc:
-        versions.sort((a, b) => b.createTime.compareTo(a.createTime));
+        versions.sort((a, b) => b.getCreateTime().compareTo(a.getCreateTime()));
         break;
       default:
         break;

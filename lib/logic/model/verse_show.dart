@@ -8,12 +8,12 @@ class VerseShow {
   String k;
   final int bookId;
   final String bookName;
-  final int bookSerial;
   final int bookSort;
   String verseContent;
   int verseContentVersion;
   String verseNote;
   int verseNoteVersion;
+  int chapterKeyId;
   int chapterIndex;
   int verseIndex;
   Date next;
@@ -25,12 +25,12 @@ class VerseShow {
     required this.k,
     required this.bookId,
     required this.bookName,
-    required this.bookSerial,
     required this.bookSort,
     required this.verseContent,
     required this.verseContentVersion,
     required this.verseNote,
     required this.verseNoteVersion,
+    required this.chapterKeyId,
     required this.chapterIndex,
     required this.verseIndex,
     required this.next,

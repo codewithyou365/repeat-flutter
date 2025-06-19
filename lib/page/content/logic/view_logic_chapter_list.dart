@@ -161,7 +161,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
       await VerseHelp.getVerses(
         force: true,
         query: QueryChapter(
-          bookSerial: chapterKey.bookSerial,
+          bookId: chapterKey.bookId,
           minChapterIndex: chapterKey.chapterIndex,
         ),
       );
@@ -195,14 +195,14 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     if (bookSelect.value > 0) {
       success = await showOverlay<bool>(() async {
         var classroomId = Classroom.curr;
-        var content = await Db().db.bookDao.getBookByName(classroomId, options[bookSelect.value].label);
-        if (content == null) {
+        var book = await Db().db.bookDao.getBookByName(classroomId, options[bookSelect.value].label);
+        if (book == null) {
           Snackbar.show(I18nKey.labelNoContent.tr);
           return false;
         }
-        var chapterCount = await Db().db.chapterDao.count(classroomId, content.serial) ?? 0;
+        var chapterCount = await Db().db.chapterDao.count(book.id!) ?? 0;
         if (chapterCount == 0) {
-          await Db().db.chapterKeyDao.addFirstChapter(content.serial);
+          await Db().db.chapterKeyDao.addFirstChapter(book.id!);
           await refresh(null);
         }
         return true;
@@ -436,8 +436,8 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                                         ChapterHelp.deleteCache(chapter.chapterKeyId);
                                         chapterShow.removeWhere((element) => element.chapterKeyId == chapter.chapterKeyId);
 
-                                        var contentId2Missing = refreshMissingChapterIndex(missingChapterIndex, chapterShow);
-                                        var warning = contentId2Missing[chapter.bookId] ?? false;
+                                        var bookId2Missing = refreshMissingChapterIndex(missingChapterIndex, chapterShow);
+                                        var warning = bookId2Missing[chapter.bookId] ?? false;
                                         if (warning == false) {
                                           await Db().db.bookDao.updateBookWarningForChapter(chapter.bookId, warning, DateTime.now().millisecondsSinceEpoch);
                                           if (removeWarning != null) {
@@ -542,15 +542,15 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
   ) {
     missingChapterIndex.clear();
 
-    Map<int, bool> contentId2Missing = {};
+    Map<int, bool> bookId2Missing = {};
     for (int i = 0; i < chapterShow.length; i++) {
       var v = chapterShow[i];
       if (v.missing) {
-        contentId2Missing[v.bookId] = true;
+        bookId2Missing[v.bookId] = true;
         missingChapterIndex.add(i);
       }
     }
-    return contentId2Missing;
+    return bookId2Missing;
   }
 
   void updateOptions() {

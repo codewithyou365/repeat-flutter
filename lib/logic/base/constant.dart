@@ -7,8 +7,8 @@ class DocPath {
   static const String content = "c";
   static const String zipRootFile = "__root.json";
 
-  static String getRelativeIndexPath(int bookSerial) {
-    return getRelativePath(bookSerial).joinPath(getIndexFileName());
+  static String getRelativeIndexPath(int bookId) {
+    return getRelativePath(bookId).joinPath(getIndexFileName());
   }
 
   static String getIndexFileName() {

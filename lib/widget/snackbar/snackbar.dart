@@ -10,6 +10,11 @@ class Snackbar {
     return ret;
   }
 
+  static void showAndThrow(String content) {
+    show(content);
+    throw Exception(content);
+  }
+
   static void show(String content) {
     var context = Get.context;
     if (context == null) return;

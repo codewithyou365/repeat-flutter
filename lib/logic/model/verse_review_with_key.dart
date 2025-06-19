@@ -8,14 +8,14 @@ class VerseReviewWithKey extends VerseReview {
   int chapterIndex;
   int verseIndex;
 
-  VerseReviewWithKey(
-    super.createDate,
-    super.verseKeyId,
-    super.classroomId,
-    super.bookSerial,
-    super.count,
-    this.contentName,
-    this.chapterIndex,
-    this.verseIndex,
-  );
+  VerseReviewWithKey({
+    required super.createDate,
+    required super.verseKeyId,
+    required super.classroomId,
+    required super.bookId,
+    required super.count,
+    required this.contentName,
+    required this.chapterIndex,
+    required this.verseIndex,
+  });
 }

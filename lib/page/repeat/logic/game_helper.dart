@@ -26,7 +26,7 @@ class GameHelper {
       verseContent: verse.verseContent,
       verseKeyId: verse.verseKeyId,
       classroomId: stp.classroomId,
-      bookSerial: verse.bookSerial,
+      bookId: verse.bookId,
       chapterIndex: verse.chapterIndex,
       verseIndex: verse.verseIndex,
       finish: false,

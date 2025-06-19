@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/text_version.dart';
+import 'package:repeat_flutter/db/entity/book_content_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
@@ -246,8 +246,9 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                                           parentLogic.update([ViewLogicBookList.bodyId]);
                                         },
                                         qrPagePath: Nav.scan.path,
-                                        onHistory: () {
-                                          historyList.show(TextVersionType.bookContent, book.bookId);
+                                        onHistory: () async {
+                                          List<BookContentVersion> historyData = await Db().db.bookContentVersionDao.list(book.bookId);
+                                          await historyList.showSheet(historyData);
                                         },
                                       );
                                     },

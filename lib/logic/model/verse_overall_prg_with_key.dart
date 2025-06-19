@@ -8,16 +8,17 @@ class VerseOverallPrgWithKey extends VerseOverallPrg {
   int chapterIndex;
   int verseIndex;
 
-  VerseOverallPrgWithKey(
-    super.verseKeyId,
-    super.classroomId,
-    super.bookSerial,
-    super.next,
-    super.progress,
-    this.contentName,
-    this.chapterIndex,
-    this.verseIndex,
-  );
+  VerseOverallPrgWithKey({
+    required super.verseKeyId,
+    required super.classroomId,
+    required super.bookId,
+    required super.chapterKeyId,
+    required super.next,
+    required super.progress,
+    required this.contentName,
+    required this.chapterIndex,
+    required this.verseIndex,
+  });
 
   String toKey() {
     return '$contentName-${chapterIndex + 1}-${verseIndex + 1}';

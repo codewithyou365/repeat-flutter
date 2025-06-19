@@ -4,7 +4,8 @@ import 'package:floor/floor.dart';
 
 @Entity(
   indices: [
-    Index(value: ['classroomId', 'bookSerial', 'chapterIndex', 'version'], unique: true),
+    Index(value: ['classroomId']),
+    Index(value: ['bookId', 'chapterIndex', 'version'], unique: true),
   ],
 )
 class ChapterKey {
@@ -12,7 +13,7 @@ class ChapterKey {
   int? id;
 
   final int classroomId;
-  final int bookSerial;
+  final int bookId;
   int chapterIndex;
   int version;
   final String content;
@@ -21,7 +22,7 @@ class ChapterKey {
   ChapterKey({
     this.id,
     required this.classroomId,
-    required this.bookSerial,
+    required this.bookId,
     required this.chapterIndex,
     required this.version,
     required this.content,
@@ -29,6 +30,6 @@ class ChapterKey {
   });
 
   String get k {
-    return "$classroomId-$bookSerial-$chapterIndex";
+    return "$bookId-$chapterIndex";
   }
 }

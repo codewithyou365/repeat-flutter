@@ -116,7 +116,7 @@ class RepeatLogic extends GetxController {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
-    var content = await Db().db.bookDao.getBySerial(curr.classroomId, curr.bookSerial);
+    var content = await Db().db.bookDao.getById(curr.bookId);
     if (content == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;

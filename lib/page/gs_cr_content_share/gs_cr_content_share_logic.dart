@@ -36,8 +36,8 @@ class GsCrContentShareLogic extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    state.content = Get.arguments[0] as Book;
-    state.addresses.add(Address(I18nKey.labelOriginalAddress.tr, state.content.url));
+    state.book = Get.arguments[0] as Book;
+    state.addresses.add(Address(I18nKey.labelOriginalAddress.tr, state.book.url));
     state.lanAddressSuffix = "/${DocPath.getIndexFileName()}";
     _startHttpService();
   }
@@ -109,10 +109,10 @@ class GsCrContentShareLogic extends GetxController {
       var rootIndex = request.requestedUri.toString().lastIndexOf('/');
       var url = request.requestedUri.toString().substring(0, rootIndex);
       url = url.joinPath(Classroom.curr.toString());
-      url = url.joinPath(state.content.serial.toString());
+      url = url.joinPath(state.book.id!.toString());
       Map<String, dynamic> docMap = {};
       bool success = await DocHelp.getDocMapFromDb(
-        contentId: state.content.id!,
+        bookId: state.book.id!,
         ret: docMap,
         shareNote: state.shareNote.value,
         rootUrl: url,
@@ -154,13 +154,13 @@ class GsCrContentShareLogic extends GetxController {
                 return;
               }
 
-              String relativeIndexPath = DocPath.getRelativeIndexPath(state.content.serial);
-              String relativePath = DocPath.getRelativePath(state.content.serial);
+              String relativeIndexPath = DocPath.getRelativeIndexPath(state.book.id!);
+              String relativePath = DocPath.getRelativePath(state.book.id!);
               var rootPath = await DocPath.getContentPath();
 
               Map<String, dynamic> docMap = {};
               bool success = await DocHelp.getDocMapFromDb(
-                contentId: state.content.id!,
+                bookId: state.book.id!,
                 ret: docMap,
                 shareNote: state.shareNote.value,
               );
@@ -189,7 +189,7 @@ class GsCrContentShareLogic extends GetxController {
                     'indexFilePath': rootPath.joinPath(relativeIndexPath),
                     'relativePath': relativePath,
                     'rootPath': rootPath,
-                    'contentUrl': state.content.url,
+                    'contentUrl': state.book.url,
                   },
                 );
 
@@ -206,7 +206,7 @@ class GsCrContentShareLogic extends GetxController {
               );
               if (selectedDirectory != null) {
                 try {
-                  String targetZipName = "${Classroom.currName}-${state.content.name}.zip";
+                  String targetZipName = "${Classroom.currName}-${state.book.name}.zip";
                   zipFile.copySync(selectedDirectory!.joinPath(targetZipName));
                   Snackbar.show(I18nKey.labelSaveSuccess.trArgs([targetZipName]));
                 } catch (e) {

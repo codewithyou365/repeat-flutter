@@ -14,13 +14,6 @@ abstract class TextVersionDao {
       ' WHERE ChapterKey.id in (:ids)')
   Future<List<TextVersion>> getTextForChapter(List<int> ids);
 
-  @Query('SELECT TextVersion.* '
-      ' FROM TextVersion'
-      ' WHERE TextVersion.t=3'
-      '  AND TextVersion.id=:bookSerial'
-      '  AND TextVersion.version=:version')
-  Future<TextVersion?> getTextForBook(int bookSerial, int version);
-
   @Query('DELETE FROM TextVersion WHERE t=:type AND id=:id')
   Future<void> delete(TextVersionType type, int id);
 
@@ -39,7 +32,7 @@ abstract class TextVersionDao {
 
   List<TextVersion> convert<T>({
     required int classroomId,
-    required int bookSerial,
+    required int bookId,
     required TextVersionType textVersionType,
     required List<T> list,
     required int Function(T) getId,
@@ -61,9 +54,9 @@ abstract class TextVersionDao {
           t: textVersionType,
           id: id,
           classroomId: classroomId,
-          bookSerial: bookSerial,
+          bookId: bookId,
           version: currVersionNumber,
-          reason: TextVersionReason.import,
+          reason: VersionReason.import,
           text: text,
           createTime: DateTime.now(),
         );

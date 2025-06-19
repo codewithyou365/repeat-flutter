@@ -19,8 +19,7 @@ class GsCrContentTemplateLogic extends GetxController {
   void onInit() {
     super.onInit();
     List<int> ids = Get.arguments as List<int>;
-    state.contentId = ids[0];
-    state.bookSerial = ids[1];
+    state.bookId = ids[0];
     for (var v in RepeatViewEnum.values) {
       state.items.add(v.name);
     }
@@ -29,7 +28,7 @@ class GsCrContentTemplateLogic extends GetxController {
   void onSave(String name) async {
     showOverlay(() async {
       var rootPath = await DocPath.getContentPath();
-      var relativePath = DocPath.getRelativePath(state.bookSerial);
+      var relativePath = DocPath.getRelativePath(state.bookId);
       var workPath = rootPath.joinPath(relativePath);
       await Folder.ensureExists(workPath);
       var indexJsonContent = GsCrContentTemplateState.prefixTemplate;
@@ -41,7 +40,7 @@ class GsCrContentTemplateLogic extends GetxController {
       await indexJsonFile.writeAsString(indexJsonContent, flush: true);
 
       final logic = Get.find<ScCrMaterialLogic>();
-      await logic.schedule(state.contentId, 1, indexJsonUrl);
+      await logic.schedule(state.bookId, 1, indexJsonUrl);
       Nav.scCrMaterial.until();
     }, I18nKey.labelSaving.tr);
   }

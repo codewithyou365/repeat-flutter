@@ -108,7 +108,7 @@ class Helper {
     if (logic.currVerse == null) {
       return null;
     }
-    Book ret = contents.firstWhere((c) => c.serial == logic.currVerse!.bookSerial, orElse: () => Book.empty());
+    Book ret = contents.firstWhere((c) => c.id! == logic.currVerse!.bookId, orElse: () => Book.empty());
     if (ret.id == null) {
       return null;
     }
@@ -119,7 +119,7 @@ class Helper {
     if (logic.currVerse == null) {
       return null;
     }
-    Map<String, dynamic>? ret = rootMapCache[logic.currVerse!.bookSerial];
+    Map<String, dynamic>? ret = rootMapCache[logic.currVerse!.bookId];
     String? rootContent = getCurrRootContent();
     if (rootContent == null) {
       return null;
@@ -128,7 +128,7 @@ class Helper {
     if (ret is! Map<String, dynamic>) {
       return null;
     }
-    rootMapCache[logic.currVerse!.bookSerial] = ret;
+    rootMapCache[logic.currVerse!.bookId] = ret;
     return ret;
   }
 
@@ -218,7 +218,7 @@ class Helper {
     var downloads = chapter.download ?? [];
     ret = [];
     for (var download in downloads) {
-      ret.add(rootPath.joinPath(DocPath.getRelativePath(logic.currVerse!.bookSerial)).joinPath(download.path));
+      ret.add(rootPath.joinPath(DocPath.getRelativePath(logic.currVerse!.bookId)).joinPath(download.path));
     }
     chapterPathCache[logic.currVerse!.chapterKeyId] = ret;
     return ret;
@@ -291,7 +291,7 @@ class Helper {
             String hash = await Hash.toSha1(pickedPath);
             DownloadContent download = DownloadContent(url: pickedName, hash: hash);
             var rootPath = await DocPath.getContentPath();
-            String localFolder = rootPath.joinPath(DocPath.getRelativePath(s.bookSerial).joinPath(download.folder));
+            String localFolder = rootPath.joinPath(DocPath.getRelativePath(s.bookId).joinPath(download.folder));
             if (!allowedExtensions.containsIgnoreCase(download.extension)) {
               Snackbar.show(I18nKey.labelFileExtensionNotMatch.trArgs([jsonEncode(allowedExtensions)]));
               return;

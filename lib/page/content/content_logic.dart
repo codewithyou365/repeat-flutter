@@ -2,7 +2,6 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/chapter.dart';
-import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
@@ -51,21 +50,21 @@ class ContentLogic extends GetxController {
         if (!args.enableEnteringRepeatView) {
           return;
         }
-        Verse? verse = await Db().db.verseDao.one(Classroom.curr, verseShow.bookSerial, verseShow.chapterIndex, verseShow.verseIndex);
+        Verse? verse = await Db().db.verseDao.one(verseShow.bookId, verseShow.chapterIndex, verseShow.verseIndex);
         if (verse == null) {
-          Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the verseKey data(${Classroom.curr}-${verseShow.bookSerial}-${verseShow.chapterIndex}-${verseShow.verseIndex})"]));
+          Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the verseKey data(${verseShow.bookId}-${verseShow.chapterIndex}-${verseShow.verseIndex})"]));
           return;
         }
         var p = await Db().db.verseTodayPrgDao.one(verse.classroomId, verse.verseKeyId, TodayPrgType.justView.index);
         if (p == null) {
-          Chapter? chapter = await Db().db.chapterDao.one(verse.classroomId, verse.bookSerial, verse.chapterIndex);
+          Chapter? chapter = await Db().db.chapterDao.getById(verse.chapterKeyId);
           if (chapter == null) {
-            Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the chapter data(${verse.classroomId}-${verse.bookSerial}-${verse.chapterIndex})"]));
+            Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the chapter data(${verse.chapterKeyId})"]));
             return;
           }
           await Db().db.verseTodayPrgDao.insertOrFail(VerseTodayPrg(
                 classroomId: verse.classroomId,
-                bookSerial: verse.bookSerial,
+                bookId: verse.bookId,
                 chapterKeyId: chapter.chapterKeyId,
                 verseKeyId: verse.verseKeyId,
                 time: 0,

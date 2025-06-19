@@ -4,7 +4,7 @@ import 'package:repeat_flutter/common/date.dart';
 @Entity(
   primaryKeys: ['verseKeyId', 'type', 'createDate'],
   indices: [
-    Index(value: ['classroomId', 'bookSerial']),
+    Index(value: ['bookId']),
     Index(value: ['classroomId', 'createDate']),
     Index(value: ['classroomId', 'createTime']),
   ],
@@ -15,14 +15,14 @@ class VerseStats {
   final Date createDate;
   final int createTime;
   final int classroomId;
-  final int bookSerial;
+  final int bookId;
 
-  VerseStats(
-    this.verseKeyId,
-    this.type,
-    this.createDate,
-    this.createTime,
-    this.classroomId,
-    this.bookSerial,
-  );
+  VerseStats({
+    required this.verseKeyId,
+    required this.type,
+    required this.createDate,
+    required this.createTime,
+    required this.classroomId,
+    required this.bookId,
+  });
 }

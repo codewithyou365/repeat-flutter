@@ -167,7 +167,7 @@ abstract class GameDao {
       game.time,
       game.verseKeyId,
       game.classroomId,
-      game.bookSerial,
+      game.bookId,
       game.chapterIndex,
       game.verseIndex,
       jsonEncode(input),

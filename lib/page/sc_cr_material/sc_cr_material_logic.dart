@@ -15,11 +15,9 @@ import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/logic/schedule_help.dart';
-import 'package:repeat_flutter/logic/widget/chapter_list.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
-import 'package:repeat_flutter/logic/widget/verse_list.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -29,8 +27,6 @@ import 'sc_cr_material_state.dart';
 class ScCrMaterialLogic extends GetxController {
   static const String id = "GsCrContentLogic";
   final ScCrMaterialState state = ScCrMaterialState();
-  late ChapterList chapterList = ChapterList<ScCrMaterialLogic>(this);
-  late VerseList verseList = VerseList<ScCrMaterialLogic>(this);
   static RegExp reg = RegExp(r'^[0-9A-Z]+$');
 
   @override
@@ -45,25 +41,25 @@ class ScCrMaterialLogic extends GetxController {
     update([ScCrMaterialLogic.id]);
   }
 
-  resetDoc(int contentId) async {
-    await Db().db.bookDao.updateDocId(contentId, 0);
+  resetDoc(int bookId) async {
+    await Db().db.bookDao.updateDocId(bookId, 0);
     await init();
   }
 
-  delete(int contentId, int bookSerial) async {
+  delete(int bookId) async {
     showOverlay(() async {
-      state.list.removeWhere((element) => identical(element.id, contentId));
-      await Db().db.scheduleDao.hideContentAndDeleteVerse(contentId, bookSerial);
+      state.list.removeWhere((element) => identical(element.id, bookId));
+      await Db().db.scheduleDao.hideContentAndDeleteVerse(bookId);
       Get.find<GsCrLogic>().init();
       update([ScCrMaterialLogic.id]);
     }, I18nKey.labelDeleting.tr);
   }
 
   showContent({
-    required int contentId,
+    required int bookId,
     int defaultTap = 0,
   }) async {
-    var content = await Db().db.bookDao.getById(contentId);
+    var content = await Db().db.bookDao.getById(bookId);
     if (content == null) {
       Snackbar.show(I18nKey.labelNoContent.tr);
       return;
@@ -79,7 +75,7 @@ class ScCrMaterialLogic extends GetxController {
     );
   }
 
-  addByZip(int contentId, int bookSerial) async {
+  addByZip(int bookId) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['zip'],
@@ -93,7 +89,7 @@ class ScCrMaterialLogic extends GetxController {
     }
     showOverlay(() async {
       var rootPath = await DocPath.getContentPath();
-      var zipTargetPath = rootPath.joinPath(DocPath.getRelativePath(bookSerial));
+      var zipTargetPath = rootPath.joinPath(DocPath.getRelativePath(bookId));
       await Zip.uncompress(File(path), zipTargetPath);
       ZipRootDoc? zipRoot = await ZipRootDoc.fromPath(zipTargetPath.joinPath(DocPath.zipRootFile));
       if (zipRoot == null) {
@@ -101,7 +97,7 @@ class ScCrMaterialLogic extends GetxController {
         return;
       }
 
-      var kv = await DocHelp.fromPath(DocPath.getRelativeIndexPath(bookSerial));
+      var kv = await DocHelp.fromPath(DocPath.getRelativeIndexPath(bookId));
       if (kv == null) {
         Snackbar.show(I18nKey.labelDataAnomalyWithArg.trArgs(['88']));
         return;
@@ -110,14 +106,14 @@ class ScCrMaterialLogic extends GetxController {
       // for media document
       for (var i = 0; i < allDownloads.length; i++) {
         var v = allDownloads[i];
-        var relativeMediaPath = DocPath.getRelativePath(bookSerial).joinPath(v.path);
+        var relativeMediaPath = DocPath.getRelativePath(bookId).joinPath(v.path);
         var url = v.url;
         String hash = v.hash;
         await Db().db.docDao.insertDoc(Doc(url, relativeMediaPath, hash));
       }
 
       // for repeat document
-      var indexPath = DocPath.getRelativeIndexPath(bookSerial);
+      var indexPath = DocPath.getRelativeIndexPath(bookId);
       var targetRepeatDocPath = rootPath.joinPath(indexPath);
       String hash = await Hash.toSha1(targetRepeatDocPath);
       await Db().db.docDao.insertDoc(Doc(zipRoot.url, indexPath, hash));
@@ -126,7 +122,7 @@ class ScCrMaterialLogic extends GetxController {
         return;
       }
 
-      await schedule(contentId, indexJsonDocId, zipRoot.url);
+      await schedule(bookId, indexJsonDocId, zipRoot.url);
     }, I18nKey.labelImporting.tr);
   }
 
@@ -196,10 +192,10 @@ class ScCrMaterialLogic extends GetxController {
     }
   }
 
-  download(int contentId, int bookSerial, String url) async {
+  download(int bookId, String url) async {
     state.indexCount.value = 0;
     state.indexTotal.value = 1;
-    var indexPath = DocPath.getRelativeIndexPath(bookSerial);
+    var indexPath = DocPath.getRelativeIndexPath(bookId);
     var success = await downloadDoc(
       url,
       indexPath,
@@ -220,7 +216,7 @@ class ScCrMaterialLogic extends GetxController {
       var v = allDownloads[i];
       await downloadDoc(
         v.url,
-        DocPath.getRelativePath(bookSerial).joinPath(v.path),
+        DocPath.getRelativePath(bookId).joinPath(v.path),
         hash: v.hash,
         progressCallback: downloadProgress,
       );
@@ -230,14 +226,14 @@ class ScCrMaterialLogic extends GetxController {
       return;
     }
 
-    var ok = await schedule(contentId, indexJsonDocId, url);
+    var ok = await schedule(bookId, indexJsonDocId, url);
     if (ok) {
       Nav.back();
     }
   }
 
-  Future<bool> schedule(int contentId, int indexJsonDocId, String url) async {
-    var result = await ScheduleHelp.addContentToSchedule(contentId, indexJsonDocId, url);
+  Future<bool> schedule(int bookId, int indexJsonDocId, String url) async {
+    var result = await ScheduleHelp.addBookToSchedule(bookId, indexJsonDocId, url);
     if (!result) {
       return false;
     }

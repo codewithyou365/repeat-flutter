@@ -1,7 +1,6 @@
 class GsCrContentTemplateState {
   final List<String> items = <String>[];
-  int contentId = 0;
-  int bookSerial = 0;
+  int bookId = 0;
   static const String prefixTemplate = '{"s":"';
   static const String suffixTemplate = '",\n'
       ' "c": [\n'

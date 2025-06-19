@@ -30,14 +30,14 @@ class VerseTextVersionTypeConverter extends TypeConverter<TextVersionType, int> 
   }
 }
 
-class VerseTextVersionReasonConverter extends TypeConverter<TextVersionReason, int> {
+class VerseTextVersionReasonConverter extends TypeConverter<VersionReason, int> {
   @override
-  TextVersionReason decode(int databaseValue) {
-    return TextVersionReason.values[databaseValue];
+  VersionReason decode(int databaseValue) {
+    return VersionReason.values[databaseValue];
   }
 
   @override
-  int encode(TextVersionReason value) {
+  int encode(VersionReason value) {
     return value.index;
   }
 }

@@ -354,7 +354,7 @@ class GsCrLogic extends GetxController {
     await showTransparentOverlay(() async {
       state.forAdd.maxChapter = -1;
       state.forAdd.maxVerse = -1;
-      state.forAdd.fromContent = state.forAdd.contents[0];
+      state.forAdd.fromBook = state.forAdd.contents[0];
       await initChapter(updateView: false);
       await initVerse(updateView: false);
       state.forAdd.fromContentIndex = 0;
@@ -367,8 +367,8 @@ class GsCrLogic extends GetxController {
 
   Future<void> initChapter({bool updateView = true}) async {
     if (state.forAdd.maxChapter < 0) {
-      var bookSerial = state.forAdd.fromContent!.serial;
-      var maxChapter = await Db().db.scheduleDao.getMaxChapterIndex(Classroom.curr, bookSerial);
+      var bookId = state.forAdd.fromBook!.id!;
+      var maxChapter = await Db().db.scheduleDao.getMaxChapterIndex(bookId);
       state.forAdd.maxChapter = (maxChapter ?? 1) + 1;
       if (updateView) {
         update([GsCrLogic.idForAdd]);
@@ -381,8 +381,8 @@ class GsCrLogic extends GetxController {
       return;
     }
     if (state.forAdd.maxVerse < 0) {
-      var bookSerial = state.forAdd.fromContent!.serial;
-      var maxVerse = await Db().db.scheduleDao.getMaxVerseIndex(Classroom.curr, bookSerial, state.forAdd.fromChapterIndex);
+      var bookId = state.forAdd.fromBook!.id!;
+      var maxVerse = await Db().db.scheduleDao.getMaxVerseIndex(bookId, state.forAdd.fromChapterIndex);
       state.forAdd.maxVerse = (maxVerse ?? 1) + 1;
       if (updateView) {
         update([GsCrLogic.idForAdd]);
@@ -394,7 +394,7 @@ class GsCrLogic extends GetxController {
     var content = state.forAdd.contents[contentIndex];
     state.forAdd.maxChapter = -1;
     state.forAdd.maxVerse = -1;
-    state.forAdd.fromContent = content;
+    state.forAdd.fromBook = content;
     state.forAdd.fromContentIndex = contentIndex;
     state.forAdd.fromChapterIndex = 0;
     state.forAdd.fromVerseIndex = 0;
@@ -425,7 +425,7 @@ class GsCrLogic extends GetxController {
       return;
     }
     await Db().db.scheduleDao.addFullCustom(
-          state.forAdd.fromContent!.serial,
+          state.forAdd.fromBook!.id!,
           state.forAdd.fromChapterIndex,
           state.forAdd.fromVerseIndex,
           state.forAdd.count,
