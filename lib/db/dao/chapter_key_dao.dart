@@ -11,7 +11,7 @@ import 'package:repeat_flutter/db/entity/chapter_key.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/db/entity/verse_key.dart';
-import 'package:repeat_flutter/db/entity/text_version.dart';
+import 'package:repeat_flutter/db/entity/content_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -204,14 +204,14 @@ abstract class ChapterKeyDao {
 
   @transaction
   Future<bool> deleteNormalChapter(int chapterKeyId, Map<String, dynamic> out) async {
-    ChapterKey? deleteLk = await getById(chapterKeyId);
-    if (deleteLk == null) {
+    ChapterKey? deleteChapterKey = await getById(chapterKeyId);
+    if (deleteChapterKey == null) {
       Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["cant find the chapter data($chapterKeyId)"]));
       return false;
     }
-    int bookId = deleteLk.bookId;
-    int chapterIndex = deleteLk.chapterIndex;
-    out['chapterKey'] = deleteLk;
+    int bookId = deleteChapterKey.bookId;
+    int chapterIndex = deleteChapterKey.chapterIndex;
+    out['chapterKey'] = deleteChapterKey;
     var currVerse = await db.verseDao.one(bookId, chapterIndex, 0);
     if (currVerse != null) {
       Snackbar.showAndThrow(I18nKey.labelChapterDeleteBlocked.tr);
@@ -265,7 +265,7 @@ abstract class ChapterKeyDao {
     await db.verseKeyDao.deleteByMinChapterIndex(bookId, chapterIndex);
     await db.verseDao.insertListOrFail(insertVerses);
     await db.verseKeyDao.insertListOrFail(insertVerseKeys);
-    await db.textVersionDao.delete(TextVersionType.chapterContent, deleteLk.id!);
+    await db.chapterContentVersionDao.deleteByChapterKeyId(deleteChapterKey.id!);
     return true;
   }
 

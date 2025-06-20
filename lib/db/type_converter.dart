@@ -1,9 +1,9 @@
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
-import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
-import 'package:repeat_flutter/db/entity/text_version.dart';
+import 'package:repeat_flutter/db/entity/content_version.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
+import 'package:repeat_flutter/db/entity/verse_content_version.dart';
 
 
 class KConverter extends TypeConverter<K, String> {
@@ -18,19 +18,19 @@ class KConverter extends TypeConverter<K, String> {
   }
 }
 
-class VerseTextVersionTypeConverter extends TypeConverter<TextVersionType, int> {
+class VerseVersionTypeConverter extends TypeConverter<VerseVersionType, int> {
   @override
-  TextVersionType decode(int databaseValue) {
-    return TextVersionType.values[databaseValue];
+  VerseVersionType decode(int databaseValue) {
+    return VerseVersionType.values[databaseValue];
   }
 
   @override
-  int encode(TextVersionType value) {
+  int encode(VerseVersionType value) {
     return value.index;
   }
 }
 
-class VerseTextVersionReasonConverter extends TypeConverter<VersionReason, int> {
+class VersionReasonConverter extends TypeConverter<VersionReason, int> {
   @override
   VersionReason decode(int databaseValue) {
     return VersionReason.values[databaseValue];

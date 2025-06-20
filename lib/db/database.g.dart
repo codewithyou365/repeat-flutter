@@ -98,8 +98,6 @@ class _$AppDatabase extends AppDatabase {
 
   DocDao? _docDaoInstance;
 
-  TextVersionDao? _textVersionDaoInstance;
-
   TimeStatsDao? _timeStatsDaoInstance;
 
   ScheduleDao? _scheduleDaoInstance;
@@ -173,8 +171,6 @@ class _$AppDatabase extends AppDatabase {
             'CREATE TABLE IF NOT EXISTS `VerseTodayPrg` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterKeyId` INTEGER NOT NULL, `verseKeyId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `type` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `reviewCount` INTEGER NOT NULL, `reviewCreateDate` INTEGER NOT NULL, `finish` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `VerseStats` (`verseKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, PRIMARY KEY (`verseKeyId`, `type`, `createDate`))');
-        await database.execute(
-            'CREATE TABLE IF NOT EXISTS `TextVersion` (`t` INTEGER NOT NULL, `id` INTEGER NOT NULL, `version` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `reason` INTEGER NOT NULL, `text` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`t`, `id`, `version`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
         await database.execute(
@@ -255,8 +251,6 @@ class _$AppDatabase extends AppDatabase {
             'CREATE INDEX `index_VerseStats_classroomId_createDate` ON `VerseStats` (`classroomId`, `createDate`)');
         await database.execute(
             'CREATE INDEX `index_VerseStats_classroomId_createTime` ON `VerseStats` (`classroomId`, `createTime`)');
-        await database.execute(
-            'CREATE INDEX `index_TextVersion_classroomId_bookId_t_id` ON `TextVersion` (`classroomId`, `bookId`, `t`, `id`)');
         await database.execute(
             'CREATE INDEX `index_Game_classroomId` ON `Game` (`classroomId`)');
         await database.execute(
@@ -353,12 +347,6 @@ class _$AppDatabase extends AppDatabase {
   }
 
   @override
-  TextVersionDao get textVersionDao {
-    return _textVersionDaoInstance ??=
-        _$TextVersionDao(database, changeListener);
-  }
-
-  @override
   TimeStatsDao get timeStatsDao {
     return _timeStatsDaoInstance ??= _$TimeStatsDao(database, changeListener);
   }
@@ -425,8 +413,7 @@ class _$BookContentVersionDao extends BookContentVersionDao {
                   'classroomId': item.classroomId,
                   'bookId': item.bookId,
                   'version': item.version,
-                  'reason':
-                      _verseTextVersionReasonConverter.encode(item.reason),
+                  'reason': _versionReasonConverter.encode(item.reason),
                   'content': item.content,
                   'createTime': _dateTimeConverter.encode(item.createTime)
                 });
@@ -448,8 +435,7 @@ class _$BookContentVersionDao extends BookContentVersionDao {
             classroomId: row['classroomId'] as int,
             bookId: row['bookId'] as int,
             version: row['version'] as int,
-            reason:
-                _verseTextVersionReasonConverter.decode(row['reason'] as int),
+            reason: _versionReasonConverter.decode(row['reason'] as int),
             content: row['content'] as String,
             createTime: _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [bookId]);
@@ -466,8 +452,7 @@ class _$BookContentVersionDao extends BookContentVersionDao {
             classroomId: row['classroomId'] as int,
             bookId: row['bookId'] as int,
             version: row['version'] as int,
-            reason:
-                _verseTextVersionReasonConverter.decode(row['reason'] as int),
+            reason: _versionReasonConverter.decode(row['reason'] as int),
             content: row['content'] as String,
             createTime: _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [bookId, version]);
@@ -797,8 +782,7 @@ class _$ChapterContentVersionDao extends ChapterContentVersionDao {
                   'bookId': item.bookId,
                   'chapterKeyId': item.chapterKeyId,
                   'version': item.version,
-                  'reason':
-                      _verseTextVersionReasonConverter.encode(item.reason),
+                  'reason': _versionReasonConverter.encode(item.reason),
                   'content': item.content,
                   'createTime': _dateTimeConverter.encode(item.createTime)
                 });
@@ -813,26 +797,25 @@ class _$ChapterContentVersionDao extends ChapterContentVersionDao {
       _chapterContentVersionInsertionAdapter;
 
   @override
-  Future<List<ChapterContentVersion>> list(int bookId) async {
+  Future<List<ChapterContentVersion>> list(int chapterKeyId) async {
     return _queryAdapter.queryList(
-        'SELECT *  FROM ChapterContentVersion WHERE bookId=?1',
+        'SELECT *  FROM ChapterContentVersion WHERE chapterKeyId=?1',
         mapper: (Map<String, Object?> row) => ChapterContentVersion(
             classroomId: row['classroomId'] as int,
             bookId: row['bookId'] as int,
             chapterKeyId: row['chapterKeyId'] as int,
             version: row['version'] as int,
-            reason:
-                _verseTextVersionReasonConverter.decode(row['reason'] as int),
+            reason: _versionReasonConverter.decode(row['reason'] as int),
             content: row['content'] as String,
             createTime: _dateTimeConverter.decode(row['createTime'] as int)),
-        arguments: [bookId]);
+        arguments: [chapterKeyId]);
   }
 
   @override
   Future<List<ChapterContentVersion>> currVersionList(int bookId) async {
     return _queryAdapter.queryList(
         'SELECT ChapterContentVersion.*  FROM ChapterKey JOIN ChapterContentVersion ON ChapterContentVersion.chapterKeyId=ChapterKey.id  AND ChapterContentVersion.version=ChapterKey.contentVersion WHERE ChapterContentVersion.bookId=?1',
-        mapper: (Map<String, Object?> row) => ChapterContentVersion(classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterKeyId: row['chapterKeyId'] as int, version: row['version'] as int, reason: _verseTextVersionReasonConverter.decode(row['reason'] as int), content: row['content'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
+        mapper: (Map<String, Object?> row) => ChapterContentVersion(classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterKeyId: row['chapterKeyId'] as int, version: row['version'] as int, reason: _versionReasonConverter.decode(row['reason'] as int), content: row['content'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [bookId]);
   }
 
@@ -841,6 +824,13 @@ class _$ChapterContentVersionDao extends ChapterContentVersionDao {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM ChapterContentVersion WHERE classroomId=?1',
         arguments: [classroomId]);
+  }
+
+  @override
+  Future<void> deleteByChapterKeyId(int chapterKeyId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM ChapterContentVersion WHERE chapterKeyId=?1',
+        arguments: [chapterKeyId]);
   }
 
   @override
@@ -2150,103 +2140,6 @@ class _$DocDao extends DocDao {
   }
 }
 
-class _$TextVersionDao extends TextVersionDao {
-  _$TextVersionDao(
-    this.database,
-    this.changeListener,
-  )   : _queryAdapter = QueryAdapter(database),
-        _textVersionInsertionAdapter = InsertionAdapter(
-            database,
-            'TextVersion',
-            (TextVersion item) => <String, Object?>{
-                  't': _verseTextVersionTypeConverter.encode(item.t),
-                  'id': item.id,
-                  'version': item.version,
-                  'classroomId': item.classroomId,
-                  'bookId': item.bookId,
-                  'reason':
-                      _verseTextVersionReasonConverter.encode(item.reason),
-                  'text': item.text,
-                  'createTime': _dateTimeConverter.encode(item.createTime)
-                });
-
-  final sqflite.DatabaseExecutor database;
-
-  final StreamController<String> changeListener;
-
-  final QueryAdapter _queryAdapter;
-
-  final InsertionAdapter<TextVersion> _textVersionInsertionAdapter;
-
-  @override
-  Future<List<TextVersion>> list(
-    TextVersionType type,
-    int id,
-  ) async {
-    return _queryAdapter.queryList(
-        'SELECT * FROM TextVersion WHERE t=?1 AND id=?2',
-        mapper: (Map<String, Object?> row) => TextVersion(
-            t: _verseTextVersionTypeConverter.decode(row['t'] as int),
-            id: row['id'] as int,
-            version: row['version'] as int,
-            classroomId: row['classroomId'] as int,
-            bookId: row['bookId'] as int,
-            reason:
-                _verseTextVersionReasonConverter.decode(row['reason'] as int),
-            text: row['text'] as String,
-            createTime: _dateTimeConverter.decode(row['createTime'] as int)),
-        arguments: [_verseTextVersionTypeConverter.encode(type), id]);
-  }
-
-  @override
-  Future<List<TextVersion>> getTextForChapter(List<int> ids) async {
-    const offset = 1;
-    final _sqliteVariablesForIds =
-        Iterable<String>.generate(ids.length, (i) => '?${i + offset}')
-            .join(',');
-    return _queryAdapter.queryList(
-        'SELECT TextVersion.*  FROM ChapterKey JOIN TextVersion ON TextVersion.t=2  AND TextVersion.id=ChapterKey.id  AND TextVersion.version=ChapterKey.contentVersion WHERE ChapterKey.id in (' +
-            _sqliteVariablesForIds +
-            ')',
-        mapper: (Map<String, Object?> row) => TextVersion(t: _verseTextVersionTypeConverter.decode(row['t'] as int), id: row['id'] as int, version: row['version'] as int, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, reason: _verseTextVersionReasonConverter.decode(row['reason'] as int), text: row['text'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
-        arguments: [...ids]);
-  }
-
-  @override
-  Future<void> delete(
-    TextVersionType type,
-    int id,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM TextVersion WHERE t=?1 AND id=?2',
-        arguments: [_verseTextVersionTypeConverter.encode(type), id]);
-  }
-
-  @override
-  Future<void> deleteByClassroomId(int classroomId) async {
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM TextVersion WHERE classroomId=?1',
-        arguments: [classroomId]);
-  }
-
-  @override
-  Future<void> insertOrFail(TextVersion entity) async {
-    await _textVersionInsertionAdapter.insert(entity, OnConflictStrategy.fail);
-  }
-
-  @override
-  Future<void> insertOrIgnore(TextVersion entity) async {
-    await _textVersionInsertionAdapter.insert(
-        entity, OnConflictStrategy.ignore);
-  }
-
-  @override
-  Future<void> insertsOrIgnore(List<TextVersion> entities) async {
-    await _textVersionInsertionAdapter.insertList(
-        entities, OnConflictStrategy.ignore);
-  }
-}
-
 class _$TimeStatsDao extends TimeStatsDao {
   _$TimeStatsDao(
     this.database,
@@ -2349,20 +2242,6 @@ class _$ScheduleDao extends ScheduleDao {
                   'next': _dateConverter.encode(item.next),
                   'progress': item.progress
                 }),
-        _textVersionInsertionAdapter = InsertionAdapter(
-            database,
-            'TextVersion',
-            (TextVersion item) => <String, Object?>{
-                  't': _verseTextVersionTypeConverter.encode(item.t),
-                  'id': item.id,
-                  'version': item.version,
-                  'classroomId': item.classroomId,
-                  'bookId': item.bookId,
-                  'reason':
-                      _verseTextVersionReasonConverter.encode(item.reason),
-                  'text': item.text,
-                  'createTime': _dateTimeConverter.encode(item.createTime)
-                }),
         _verseStatsInsertionAdapter = InsertionAdapter(
             database,
             'VerseStats',
@@ -2419,8 +2298,6 @@ class _$ScheduleDao extends ScheduleDao {
   final InsertionAdapter<Verse> _verseInsertionAdapter;
 
   final InsertionAdapter<VerseOverallPrg> _verseOverallPrgInsertionAdapter;
-
-  final InsertionAdapter<TextVersion> _textVersionInsertionAdapter;
 
   final InsertionAdapter<VerseStats> _verseStatsInsertionAdapter;
 
@@ -2896,34 +2773,6 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<List<TextVersion>> getVerseTextForContent(List<int> ids) async {
-    const offset = 1;
-    final _sqliteVariablesForIds =
-        Iterable<String>.generate(ids.length, (i) => '?${i + offset}')
-            .join(',');
-    return _queryAdapter.queryList(
-        'SELECT TextVersion.*  FROM VerseKey JOIN TextVersion ON TextVersion.t=0  AND TextVersion.id=VerseKey.id  AND TextVersion.version=VerseKey.contentVersion WHERE VerseKey.id in (' +
-            _sqliteVariablesForIds +
-            ')',
-        mapper: (Map<String, Object?> row) => TextVersion(t: _verseTextVersionTypeConverter.decode(row['t'] as int), id: row['id'] as int, version: row['version'] as int, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, reason: _verseTextVersionReasonConverter.decode(row['reason'] as int), text: row['text'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
-        arguments: [...ids]);
-  }
-
-  @override
-  Future<List<TextVersion>> getVerseTextForNote(List<int> ids) async {
-    const offset = 1;
-    final _sqliteVariablesForIds =
-        Iterable<String>.generate(ids.length, (i) => '?${i + offset}')
-            .join(',');
-    return _queryAdapter.queryList(
-        'SELECT TextVersion.*  FROM VerseKey JOIN TextVersion ON TextVersion.t=1  AND TextVersion.id=VerseKey.id  AND TextVersion.version=VerseKey.noteVersion WHERE VerseKey.id in (' +
-            _sqliteVariablesForIds +
-            ')',
-        mapper: (Map<String, Object?> row) => TextVersion(t: _verseTextVersionTypeConverter.decode(row['t'] as int), id: row['id'] as int, version: row['version'] as int, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, reason: _verseTextVersionReasonConverter.decode(row['reason'] as int), text: row['text'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
-        arguments: [...ids]);
-  }
-
-  @override
   Future<void> insertKv(CrKv kv) async {
     await _crKvInsertionAdapter.insert(kv, OnConflictStrategy.replace);
   }
@@ -2956,18 +2805,6 @@ class _$ScheduleDao extends ScheduleDao {
   Future<void> insertVerseOverallPrgs(List<VerseOverallPrg> entities) async {
     await _verseOverallPrgInsertionAdapter.insertList(
         entities, OnConflictStrategy.ignore);
-  }
-
-  @override
-  Future<void> insertVerseTextVersions(List<TextVersion> entities) async {
-    await _textVersionInsertionAdapter.insertList(
-        entities, OnConflictStrategy.ignore);
-  }
-
-  @override
-  Future<void> insertVerseTextVersion(TextVersion entity) async {
-    await _textVersionInsertionAdapter.insert(
-        entity, OnConflictStrategy.ignore);
   }
 
   @override
@@ -3260,10 +3097,9 @@ class _$VerseContentVersionDao extends VerseContentVersionDao {
                   'bookId': item.bookId,
                   'chapterKeyId': item.chapterKeyId,
                   'verseKeyId': item.verseKeyId,
-                  't': item.t.index,
+                  't': _verseVersionTypeConverter.encode(item.t),
                   'version': item.version,
-                  'reason':
-                      _verseTextVersionReasonConverter.encode(item.reason),
+                  'reason': _versionReasonConverter.encode(item.reason),
                   'content': item.content,
                   'createTime': _dateTimeConverter.encode(item.createTime)
                 });
@@ -3278,21 +3114,40 @@ class _$VerseContentVersionDao extends VerseContentVersionDao {
       _verseContentVersionInsertionAdapter;
 
   @override
-  Future<List<VerseContentVersion>> list(int bookId) async {
+  Future<List<VerseContentVersion>> list(
+    int verseKeyId,
+    VerseVersionType verseVersionType,
+  ) async {
     return _queryAdapter.queryList(
-        'SELECT *  FROM VerseContentVersion WHERE bookId=?1',
+        'SELECT *  FROM VerseContentVersion WHERE verseKeyId=?1 AND t=?2',
         mapper: (Map<String, Object?> row) => VerseContentVersion(
             classroomId: row['classroomId'] as int,
             bookId: row['bookId'] as int,
             chapterKeyId: row['chapterKeyId'] as int,
             verseKeyId: row['verseKeyId'] as int,
-            t: VerseContentType.values[row['t'] as int],
+            t: _verseVersionTypeConverter.decode(row['t'] as int),
             version: row['version'] as int,
-            reason:
-                _verseTextVersionReasonConverter.decode(row['reason'] as int),
+            reason: _versionReasonConverter.decode(row['reason'] as int),
             content: row['content'] as String,
             createTime: _dateTimeConverter.decode(row['createTime'] as int)),
-        arguments: [bookId]);
+        arguments: [
+          verseKeyId,
+          _verseVersionTypeConverter.encode(verseVersionType)
+        ]);
+  }
+
+  @override
+  Future<List<VerseContentVersion>> currVersionList(
+    int bookId,
+    VerseVersionType verseVersionType,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT VerseContentVersion.*  FROM VerseKey JOIN VerseContentVersion ON VerseContentVersion.verseKeyId=VerseKey.id  AND VerseContentVersion.t=?2  AND VerseContentVersion.version=VerseKey.contentVersion WHERE VerseContentVersion.bookId=?1',
+        mapper: (Map<String, Object?> row) => VerseContentVersion(classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterKeyId: row['chapterKeyId'] as int, verseKeyId: row['verseKeyId'] as int, t: _verseVersionTypeConverter.decode(row['t'] as int), version: row['version'] as int, reason: _versionReasonConverter.decode(row['reason'] as int), content: row['content'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
+        arguments: [
+          bookId,
+          _verseVersionTypeConverter.encode(verseVersionType)
+        ]);
   }
 
   @override
@@ -3300,6 +3155,13 @@ class _$VerseContentVersionDao extends VerseContentVersionDao {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM VerseContentVersion WHERE classroomId=?1',
         arguments: [classroomId]);
+  }
+
+  @override
+  Future<void> deleteByVerseKeyId(int verseKeyId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseContentVersion WHERE verseKeyId=?1',
+        arguments: [verseKeyId]);
   }
 
   @override
@@ -3942,5 +3804,5 @@ final _kConverter = KConverter();
 final _crKConverter = CrKConverter();
 final _dateTimeConverter = DateTimeConverter();
 final _dateConverter = DateConverter();
-final _verseTextVersionTypeConverter = VerseTextVersionTypeConverter();
-final _verseTextVersionReasonConverter = VerseTextVersionReasonConverter();
+final _verseVersionTypeConverter = VerseVersionTypeConverter();
+final _versionReasonConverter = VersionReasonConverter();

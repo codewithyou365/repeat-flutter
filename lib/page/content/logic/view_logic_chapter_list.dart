@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/chapter_content_version.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/chapter_key.dart';
-import 'package:repeat_flutter/db/entity/text_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
@@ -173,7 +173,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     await Get.find<GsCrLogic>().init();
   }
 
-  delete({required ChapterShow chapter}) async {
+  Future<void> delete({required ChapterShow chapter}) async {
     bool success = await showOverlay<bool>(() async {
       Map<String, dynamic> out = {};
       bool ok = await Db().db.chapterKeyDao.deleteNormalChapter(chapter.chapterKeyId, out);
@@ -190,7 +190,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     Get.back();
   }
 
-  addFirst() async {
+  Future<void> addFirst() async {
     bool success = false;
     if (bookSelect.value > 0) {
       success = await showOverlay<bool>(() async {
@@ -213,7 +213,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     }
   }
 
-  copy({required ChapterShow chapter, required bool below}) async {
+  Future<void> copy({required ChapterShow chapter, required bool below}) async {
     bool success = await showOverlay<bool>(() async {
       int chapterIndex = chapter.chapterIndex;
       if (below) {
@@ -234,7 +234,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     Get.back();
   }
 
-  setBookSelectByName(String bookName) {
+  void setBookSelectByName(String bookName) {
     bookSelect.value = options.indexWhere((opt) => opt.label == bookName);
   }
 
@@ -409,8 +409,9 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                                       parentLogic.update([ViewLogicChapterList.bodyId]);
                                     },
                                     qrPagePath: Nav.scan.path,
-                                    onHistory: () {
-                                      historyList.show(TextVersionType.chapterContent, chapter.chapterKeyId);
+                                    onHistory: () async {
+                                      List<ChapterContentVersion> historyData = await Db().db.chapterContentVersionDao.list(chapter.chapterKeyId);
+                                      await historyList.show(historyData);
                                     },
                                   );
                                 },
@@ -619,7 +620,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     }
   }
 
-  sort(List<ChapterShow> chapterShow, I18nKey key) {
+  void sort(List<ChapterShow> chapterShow, I18nKey key) {
     switch (key) {
       case I18nKey.labelSortPositionAsc:
         chapterShow.sort((a, b) => a.toSort().compareTo(b.toSort()));

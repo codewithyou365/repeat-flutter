@@ -6,9 +6,8 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
-import 'package:repeat_flutter/db/entity/text_version.dart';
+import 'package:repeat_flutter/db/entity/verse_content_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
@@ -188,7 +187,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     parentLogic.update([ViewLogicVerseList.bodyId]);
   }
 
-  delete({required VerseShow verse}) async {
+  Future<void> delete({required VerseShow verse}) async {
     await showOverlay(() async {
       bool ok = await Db().db.scheduleDao.deleteNormalVerse(verse.verseKeyId);
       if (!ok) {
@@ -208,7 +207,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     Get.back();
   }
 
-  addFirst() async {
+  Future<void> addFirst() async {
     if (bookSelect.value > 0 && chapterSelect.value > 0) {
       await showOverlay(() async {
         var classroomId = Classroom.curr;
@@ -238,7 +237,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     }
   }
 
-  copy({required VerseShow verse, required bool below}) async {
+  Future<void> copy({required VerseShow verse, required bool below}) async {
     await showOverlay(() async {
       int verseIndex = verse.verseIndex;
       if (below) {
@@ -474,8 +473,9 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                       parentLogic.update([ViewLogicVerseList.bodyId]);
                                     },
                                     qrPagePath: Nav.scan.path,
-                                    onHistory: () {
-                                      historyList.show(TextVersionType.verseContent, verse.verseKeyId);
+                                    onHistory: () async {
+                                      List<VerseContentVersion> historyData = await Db().db.verseContentVersionDao.list(verse.verseKeyId, VerseVersionType.content);
+                                      await historyList.show(historyData);
                                     },
                                   );
                                 },
@@ -501,8 +501,9 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                       parentLogic.update([ViewLogicVerseList.bodyId]);
                                     },
                                     qrPagePath: Nav.scan.path,
-                                    onHistory: () {
-                                      historyList.show(TextVersionType.verseNote, verse.verseKeyId);
+                                    onHistory: () async {
+                                      List<VerseContentVersion> historyData = await Db().db.verseContentVersionDao.list(verse.verseKeyId, VerseVersionType.note);
+                                      await historyList.show(historyData);
                                     },
                                   );
                                 },
@@ -774,7 +775,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     }).toList();
   }
 
-  static sort(List<VerseShow> verseShow, I18nKey key) {
+  static void sort(List<VerseShow> verseShow, I18nKey key) {
     switch (key) {
       case I18nKey.labelSortProgressAsc:
         verseShow.sort((a, b) {
@@ -856,7 +857,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     searchFocusNode.dispose();
   }
 
-  setBookSelectByName(String bookName) {
+  void setBookSelectByName(String bookName) {
     bookSelect.value = options.indexWhere((opt) => opt.label == bookName);
   }
 }

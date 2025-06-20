@@ -1,8 +1,8 @@
-// entity/text_version.dart
+// entity/book_content_version.dart
 
 import 'package:floor/floor.dart';
 
-import 'text_version.dart';
+import 'content_version.dart';
 
 @Entity(
   indices: [

@@ -2,7 +2,7 @@ import 'package:floor/floor.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/chapter_key.dart';
 import 'package:repeat_flutter/db/entity/chapter_content_version.dart';
-import 'package:repeat_flutter/db/entity/text_version.dart';
+import 'package:repeat_flutter/db/entity/content_version.dart';
 
 @dao
 abstract class ChapterContentVersionDao {
@@ -10,8 +10,8 @@ abstract class ChapterContentVersionDao {
 
   @Query('SELECT * '
       ' FROM ChapterContentVersion'
-      ' WHERE bookId=:bookId')
-  Future<List<ChapterContentVersion>> list(int bookId);
+      ' WHERE chapterKeyId=:chapterKeyId')
+  Future<List<ChapterContentVersion>> list(int chapterKeyId);
 
   @Query('SELECT ChapterContentVersion.* '
       ' FROM ChapterKey'
@@ -32,6 +32,10 @@ abstract class ChapterContentVersionDao {
   @Query('DELETE FROM ChapterContentVersion'
       ' WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
+
+  @Query('DELETE FROM ChapterContentVersion'
+      ' WHERE chapterKeyId=:chapterKeyId')
+  Future<void> deleteByChapterKeyId(int chapterKeyId);
 
   Future<List<ChapterContentVersion>> import(List<ChapterKey> list, int bookId) async {
     List<ChapterContentVersion> insertValues = [];

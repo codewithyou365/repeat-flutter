@@ -2,11 +2,11 @@
 
 import 'package:floor/floor.dart';
 
-import 'text_version.dart';
+import 'content_version.dart';
 
-enum VerseContentType {
-  verseContent,
-  verseNote,
+enum VerseVersionType {
+  content,
+  note,
 }
 
 @Entity(
@@ -22,7 +22,7 @@ class VerseContentVersion implements ContentVersion {
   final int bookId;
   final int chapterKeyId;
   final int verseKeyId;
-  final VerseContentType t;
+  final VerseVersionType t;
   final int version;
   final VersionReason reason;
   final String content;

@@ -23,7 +23,6 @@ import 'package:repeat_flutter/db/dao/verse_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_key_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_overall_prg_dao.dart';
 import 'package:repeat_flutter/db/dao/stats_dao.dart';
-import 'package:repeat_flutter/db/dao/text_version_dao.dart';
 import 'package:repeat_flutter/db/dao/time_stats_dao.dart';
 import 'package:repeat_flutter/db/dao/lock_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_review_dao.dart';
@@ -44,7 +43,7 @@ import 'package:repeat_flutter/db/entity/verse_key.dart';
 import 'package:repeat_flutter/db/entity/verse_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/verse_review.dart';
 import 'package:repeat_flutter/db/entity/verse_stats.dart';
-import 'package:repeat_flutter/db/entity/text_version.dart';
+import 'package:repeat_flutter/db/entity/content_version.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
@@ -86,7 +85,6 @@ part 'database.g.dart'; // the generated code will be there
   VerseReviewWithKey,
   VerseTodayPrg,
   VerseStats,
-  TextVersion,
   TimeStats,
   BookShow,
   Game,
@@ -100,8 +98,8 @@ part 'database.g.dart'; // the generated code will be there
   CrKConverter,
   DateTimeConverter,
   DateConverter,
-  VerseTextVersionTypeConverter,
-  VerseTextVersionReasonConverter,
+  VerseVersionTypeConverter,
+  VersionReasonConverter,
 ])
 abstract class AppDatabase extends FloorDatabase {
   BookContentVersionDao get bookContentVersionDao;
@@ -129,8 +127,6 @@ abstract class AppDatabase extends FloorDatabase {
   KvDao get kvDao;
 
   DocDao get docDao;
-
-  TextVersionDao get textVersionDao;
 
   TimeStatsDao get timeStatsDao;
 

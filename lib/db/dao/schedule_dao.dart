@@ -12,10 +12,11 @@ import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/db/entity/chapter.dart';
 import 'package:repeat_flutter/db/entity/chapter_key.dart';
+import 'package:repeat_flutter/db/entity/verse_content_version.dart';
 import 'package:repeat_flutter/db/entity/verse_key.dart';
 import 'package:repeat_flutter/db/entity/verse_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/verse_review.dart';
-import 'package:repeat_flutter/db/entity/text_version.dart';
+import 'package:repeat_flutter/db/entity/content_version.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
@@ -561,30 +562,6 @@ abstract class ScheduleDao {
       ' WHERE Book.classroomId=:classroomId')
   Future<int?> getMaxBookUpdateTime(int classroomId);
 
-  /// VerseText start
-
-  @Query('SELECT TextVersion.* '
-      ' FROM VerseKey'
-      ' JOIN TextVersion ON TextVersion.t=0'
-      '  AND TextVersion.id=VerseKey.id'
-      '  AND TextVersion.version=VerseKey.contentVersion'
-      ' WHERE VerseKey.id in (:ids)')
-  Future<List<TextVersion>> getVerseTextForContent(List<int> ids);
-
-  @Query('SELECT TextVersion.* '
-      ' FROM VerseKey'
-      ' JOIN TextVersion ON TextVersion.t=1'
-      '  AND TextVersion.id=VerseKey.id'
-      '  AND TextVersion.version=VerseKey.noteVersion'
-      ' WHERE VerseKey.id in (:ids)')
-  Future<List<TextVersion>> getVerseTextForNote(List<int> ids);
-
-  @Insert(onConflict: OnConflictStrategy.ignore)
-  Future<void> insertVerseTextVersions(List<TextVersion> entities);
-
-  @Insert(onConflict: OnConflictStrategy.ignore)
-  Future<void> insertVerseTextVersion(TextVersion entity);
-
   /// VerseText end
 
   @Insert(onConflict: OnConflictStrategy.replace)
@@ -598,8 +575,7 @@ abstract class ScheduleDao {
     await deleteVerseOverallPrg(verseKeyId);
     await deleteVerseReview(verseKeyId);
     await deleteVerseTodayPrg(verseKeyId);
-    await db.textVersionDao.delete(TextVersionType.verseContent, verseKeyId);
-    await db.textVersionDao.delete(TextVersionType.verseNote, verseKeyId);
+    await db.verseContentVersionDao.deleteByVerseKeyId(verseKeyId);
   }
 
   /// for content
@@ -743,38 +719,6 @@ abstract class ScheduleDao {
     return book;
   }
 
-  List<TextVersion> toNeedToInsertVerseText(
-    List<VerseKey> newVerseKeys,
-    TextVersionType verseTextVersionType,
-    Map<int, TextVersion> verseKeyIdToVersion,
-    String Function(VerseKey) getText,
-  ) {
-    List<TextVersion> needToInsert = [];
-
-    for (var v in newVerseKeys) {
-      TextVersion? version = verseKeyIdToVersion[v.id!];
-      String text = getText(v);
-      if (version == null || version.text != text) {
-        int currVersionNumber = 1;
-        if (version != null) {
-          currVersionNumber = version.version + 1;
-        }
-        var stv = TextVersion(
-          t: verseTextVersionType,
-          id: v.id!,
-          classroomId: v.classroomId,
-          bookId: v.bookId,
-          version: currVersionNumber,
-          reason: VersionReason.import,
-          text: text,
-          createTime: DateTime.now(),
-        );
-        needToInsert.add(stv);
-      }
-    }
-    return needToInsert;
-  }
-
   @transaction
   Future<int> importVerse(
     int bookId,
@@ -849,14 +793,8 @@ abstract class ScheduleDao {
       }
     }
 
-    List<TextVersion> oldContentVersion = await getVerseTextForContent(oldVerseKeyIds);
-    Map<int, TextVersion> oldVerseKeyIdToContentVersion = {for (var v in oldContentVersion) v.id: v};
-    var needToInsertVerseContent = toNeedToInsertVerseText(newVerseKeys, TextVersionType.verseContent, oldVerseKeyIdToContentVersion, (v) => v.content);
-    Map<int, TextVersion> newVerseKeyIdToContentVersion = {for (var v in needToInsertVerseContent) v.id: v};
-    List<TextVersion> oldNoteVersion = await getVerseTextForNote(oldVerseKeyIds);
-    Map<int, TextVersion> oldVerseKeyIdToNoteVersion = {for (var v in oldNoteVersion) v.id: v};
-    var needToInsertVerseNote = toNeedToInsertVerseText(newVerseKeys, TextVersionType.verseNote, oldVerseKeyIdToNoteVersion, (v) => v.note);
-    Map<int, TextVersion> newVerseKeyIdToNoteVersion = {for (var v in needToInsertVerseNote) v.id: v};
+    Map<int, VerseContentVersion> newVerseKeyIdToContentVersion = await db.verseContentVersionDao.import(newVerseKeys, VerseVersionType.content, book.id!);
+    Map<int, VerseContentVersion> newVerseKeyIdToNoteVersion = await db.verseContentVersionDao.import(newVerseKeys, VerseVersionType.note, book.id!);
     for (var i = 0; i < newVerseKeys.length; i++) {
       VerseKey newVerseKey = newVerseKeys[i];
       var id = keyToId[newVerseKey.k]!;
@@ -878,12 +816,6 @@ abstract class ScheduleDao {
     await db.verseDao.deleteByBookId(bookId);
     await insertVerses(verses);
     await insertVerseOverallPrgs(verseOverallPrgs);
-    if (needToInsertVerseContent.isNotEmpty) {
-      await insertVerseTextVersions(needToInsertVerseContent);
-    }
-    if (needToInsertVerseNote.isNotEmpty) {
-      await insertVerseTextVersions(needToInsertVerseNote);
-    }
     if (needToModifyMap.isNotEmpty) {
       await updateVerseKeys(needToModifyMap.values.toList());
     }
@@ -936,8 +868,7 @@ abstract class ScheduleDao {
     await deleteVerseOverallPrg(verseKeyId);
     await deleteVerseReview(verseKeyId);
     await deleteVerseTodayPrg(verseKeyId);
-    await db.textVersionDao.delete(TextVersionType.verseContent, verseKeyId);
-    await db.textVersionDao.delete(TextVersionType.verseNote, verseKeyId);
+    await db.verseContentVersionDao.deleteByVerseKeyId(verseKeyId);
     return true;
   }
 
@@ -1066,25 +997,26 @@ abstract class ScheduleDao {
       progress: 0,
     );
     await db.verseOverallPrgDao.insertOrFail(verseOverallPrg);
-    await db.textVersionDao.insertOrFail(TextVersion(
-      t: TextVersionType.verseContent,
-      id: verseKey.id!,
+    await db.verseContentVersionDao.insertOrFail(VerseContentVersion(
       classroomId: verseKey.classroomId,
       bookId: verseKey.bookId,
+      chapterKeyId: verseKey.chapterKeyId,
+      verseKeyId: verseKey.id!,
+      t: VerseVersionType.content,
       version: 1,
       reason: VersionReason.editor,
-      text: verseKey.content,
+      content: verseKey.content,
       createTime: now,
     ));
-
-    await db.textVersionDao.insertOrFail(TextVersion(
-      t: TextVersionType.verseNote,
-      id: verseKey.id!,
+    await db.verseContentVersionDao.insertOrFail(VerseContentVersion(
       classroomId: verseKey.classroomId,
       bookId: verseKey.bookId,
+      chapterKeyId: verseKey.chapterKeyId,
+      verseKeyId: verseKey.id!,
+      t: VerseVersionType.note,
       version: 1,
       reason: VersionReason.editor,
-      text: verseKey.note,
+      content: verseKey.note,
       createTime: now,
     ));
 
@@ -1326,14 +1258,15 @@ abstract class ScheduleDao {
 
     var now = DateTime.now();
     await updateVerseKeyAndContent(verseKeyId, key, content, verseKey.contentVersion + 1);
-    await insertVerseTextVersion(TextVersion(
-      t: TextVersionType.verseContent,
-      id: verseKeyId,
+    await db.verseContentVersionDao.insertOrFail(VerseContentVersion(
       classroomId: verseKey.classroomId,
       bookId: verseKey.bookId,
+      chapterKeyId: verseKey.chapterKeyId,
+      verseKeyId: verseKeyId,
+      t: VerseVersionType.content,
       version: verseKey.contentVersion + 1,
       reason: VersionReason.editor,
-      text: content,
+      content: content,
       createTime: now,
     ));
     await insertKv(CrKv(Classroom.curr, CrK.updateVerseShowTime, now.millisecondsSinceEpoch.toString()));
@@ -1363,14 +1296,15 @@ abstract class ScheduleDao {
     }
     var now = DateTime.now();
     await updateVerseNote(verseKeyId, note, verseKey.noteVersion + 1);
-    await insertVerseTextVersion(TextVersion(
-      t: TextVersionType.verseNote,
-      id: verseKeyId,
+    await db.verseContentVersionDao.insertOrFail(VerseContentVersion(
       classroomId: verseKey.classroomId,
       bookId: verseKey.bookId,
+      chapterKeyId: verseKey.chapterKeyId,
+      verseKeyId: verseKeyId,
+      t: VerseVersionType.note,
       version: verseKey.noteVersion + 1,
       reason: VersionReason.editor,
-      text: note,
+      content: note,
       createTime: now,
     ));
     await insertKv(CrKv(Classroom.curr, CrK.updateVerseShowTime, now.millisecondsSinceEpoch.toString()));

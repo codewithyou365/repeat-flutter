@@ -4,8 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/date_time_util.dart';
 import 'package:repeat_flutter/common/string_util.dart';
-import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/text_version.dart';
+import 'package:repeat_flutter/db/entity/content_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
@@ -22,18 +21,6 @@ class HistoryList<T extends GetxController> {
   HistoryList(this.parentLogic);
 
   Future<void> show(
-    TextVersionType versionType,
-    int versionId, {
-    bool focus = false,
-  }) async {
-    List<TextVersion> historyData = await Db().db.textVersionDao.list(versionType, versionId);
-    return await showSheet(
-      historyData,
-      focus: focus,
-    );
-  }
-
-  Future<void> showSheet(
     List<ContentVersion> originalVersions, {
     bool focus = true,
   }) {
