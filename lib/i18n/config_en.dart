@@ -229,7 +229,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelBook, "Book");
     put(I18nKey.labelBookFn, "Book");
     put(I18nKey.labelAddSuccess, "Add success.");
-    put(I18nKey.labelTipForAddingContent, "The current %s does not exist. Click the plus icon to add it");
+    put(I18nKey.labelChapterTipForAddingContent, "The book %s doesn't have chapter. Click the plus icon to add it");
+    put(I18nKey.labelVerseTipForAddingContent, "The chapter %s doesn't have verse. Click the plus icon to add it");
     put(I18nKey.btnEnd, "End");
     put(I18nKey.btnHandleNow, "Handle Now");
     put(I18nKey.btnStart, "Start");
@@ -255,7 +256,7 @@ class ConfigEn extends Config {
     put(I18nKey.btnEditNote, "Edit Note");
     put(I18nKey.btnGameMode, "Game Mode");
     put(I18nKey.btnWeb, "Web");
-    put(I18nKey.btnConcentration, "Concentration");
+    put(I18nKey.btnFocus, "Focus");
     put(I18nKey.btnAdd, "Add");
     put(I18nKey.btnReset, "Reset");
     put(I18nKey.btnCopy, "Copy");

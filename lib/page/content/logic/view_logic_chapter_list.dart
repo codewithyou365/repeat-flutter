@@ -28,7 +28,7 @@ import 'view_logic.dart';
 class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
   static const String bodyId = "ChapterList.bodyId";
   late HistoryList historyList = HistoryList<T>(parentLogic);
-  final void Function(ChapterShow chapterShow) onCardTapDown;
+  final void Function(ChapterShow chapterShow) onNext;
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
   double searchDetailPanelHeight = 3 * (RowWidget.rowHeight + RowWidget.dividerHeight);
@@ -66,7 +66,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     required this.originalChapterShow,
     required this.parentLogic,
     required this.removeWarning,
-    required this.onCardTapDown,
+    required this.onNext,
     required super.onSearchUnfocus,
     String? initBookNameSelect,
     int? initChapterSelect,
@@ -356,26 +356,26 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
               itemCount: list.length,
               itemBuilder: (context, index) {
                 final chapter = list[index];
-                return GestureDetector(
-                  onTapDown: (_) {
-                    onCardTapDown(chapter);
-                  },
-                  child: Card(
-                    color: chapter.missing ? Colors.red : null,
-                    elevation: 2,
-                    margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Stack(
-                      alignment: Alignment.topRight,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
+                return Card(
+                  color: chapter.missing ? Colors.red : null,
+                  elevation: 2,
+                  margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Stack(
+                    alignment: Alignment.topRight,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                onNext(chapter);
+                              },
+                              child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: Colors.grey.withValues(alpha: 0.1),
@@ -386,139 +386,143 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                                   style: const TextStyle(fontSize: 12, color: Colors.blue),
                                 ),
                               ),
-                              SizedBox(height: 8, width: width),
-                              ExpandableText(
-                                title: I18nKey.labelChapterName.tr,
-                                text: ': ${chapter.chapterContent}',
-                                version: chapter.chapterContentVersion,
-                                limit: 60,
-                                style: const TextStyle(fontSize: 14),
-                                selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                                versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
-                                selectText: search.value,
-                                onEdit: () {
-                                  searchFocusNode.unfocus();
-                                  var contentM = jsonDecode(chapter.chapterContent);
-                                  var content = const JsonEncoder.withIndent(' ').convert(contentM);
-                                  Editor.show(
-                                    Get.context!,
-                                    I18nKey.labelChapterName.tr,
-                                    content,
-                                    (str) async {
-                                      await Db().db.chapterKeyDao.updateChapterContent(chapter.chapterKeyId, str);
-                                      parentLogic.update([ViewLogicChapterList.bodyId]);
-                                    },
-                                    qrPagePath: Nav.scan.path,
-                                    onHistory: () async {
-                                      List<ChapterContentVersion> historyData = await Db().db.chapterContentVersionDao.list(chapter.chapterKeyId);
-                                      await historyList.show(historyData);
-                                    },
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            if (chapter.missing)
-                              IconButton(
-                                onPressed: () {
-                                  MsgBox.yesOrNo(
-                                    title: I18nKey.labelDelete.tr,
-                                    desc: I18nKey.labelDeleteChapter.tr,
-                                    yes: () {
-                                      showTransparentOverlay(() async {
-                                        var ok = await Db().db.chapterKeyDao.deleteAbnormalChapter(chapter.chapterKeyId);
-                                        if (ok == false) {
-                                          return;
-                                        }
-                                        ChapterHelp.deleteCache(chapter.chapterKeyId);
-                                        chapterShow.removeWhere((element) => element.chapterKeyId == chapter.chapterKeyId);
-
-                                        var bookId2Missing = refreshMissingChapterIndex(missingChapterIndex, chapterShow);
-                                        var warning = bookId2Missing[chapter.bookId] ?? false;
-                                        if (warning == false) {
-                                          await Db().db.bookDao.updateBookWarningForChapter(chapter.bookId, warning, DateTime.now().millisecondsSinceEpoch);
-                                          if (removeWarning != null) {
-                                            await removeWarning!();
-                                          }
-                                        }
-                                        parentLogic.update([ViewLogicChapterList.bodyId]);
-                                        Get.back();
-                                      });
-                                    },
-                                  );
-                                },
-                                icon: const Icon(
-                                  Icons.delete_forever,
-                                ),
-                              ),
-                            PopupMenuButton<String>(
-                              icon: const Icon(Icons.more_vert),
-                              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                                PopupMenuItem<String>(
-                                  onTap: () {
-                                    MsgBox.yesOrNo(
-                                      title: I18nKey.labelWarning.tr,
-                                      desc: I18nKey.labelDeleteVerse.tr,
-                                      yes: () => delete(chapter: chapter),
-                                    );
+                            ),
+                            SizedBox(height: 8, width: width),
+                            ExpandableText(
+                              title: I18nKey.labelChapterName.tr,
+                              text: ': ${chapter.chapterContent}',
+                              version: chapter.chapterContentVersion,
+                              limit: 60,
+                              style: const TextStyle(fontSize: 14),
+                              selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                              versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
+                              selectText: search.value,
+                              onEdit: () {
+                                searchFocusNode.unfocus();
+                                var contentM = jsonDecode(chapter.chapterContent);
+                                var content = const JsonEncoder.withIndent(' ').convert(contentM);
+                                Editor.show(
+                                  Get.context!,
+                                  I18nKey.labelChapterName.tr,
+                                  content,
+                                  (str) async {
+                                    await Db().db.chapterKeyDao.updateChapterContent(chapter.chapterKeyId, str);
+                                    parentLogic.update([ViewLogicChapterList.bodyId]);
                                   },
-                                  child: Text(I18nKey.btnDelete.tr),
-                                ),
-                                PopupMenuItem<String>(
-                                  onTap: () {
-                                    MsgBox.myDialog(
-                                        title: I18nKey.labelTips.tr,
-                                        content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
-                                        action: MsgBox.buttonsWithDivider(buttons: [
-                                          MsgBox.button(
-                                            text: I18nKey.btnCancel.tr,
-                                            onPressed: () {
-                                              Get.back();
-                                            },
-                                          ),
-                                          MsgBox.button(
-                                            text: I18nKey.btnAbove.tr,
-                                            onPressed: () => copy(chapter: chapter, below: false),
-                                          ),
-                                          MsgBox.button(
-                                            text: I18nKey.btnBelow.tr,
-                                            onPressed: () => copy(chapter: chapter, below: true),
-                                          ),
-                                        ]));
+                                  qrPagePath: Nav.scan.path,
+                                  onHistory: () async {
+                                    List<ChapterContentVersion> historyData = await Db().db.chapterContentVersionDao.list(chapter.chapterKeyId);
+                                    await historyList.show(historyData);
                                   },
-                                  child: Text(I18nKey.btnCopy.tr),
-                                ),
-                              ],
+                                );
+                              },
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          if (chapter.missing)
+                            IconButton(
+                              onPressed: () {
+                                MsgBox.yesOrNo(
+                                  title: I18nKey.labelDelete.tr,
+                                  desc: I18nKey.labelDeleteChapter.tr,
+                                  yes: () {
+                                    showTransparentOverlay(() async {
+                                      var ok = await Db().db.chapterKeyDao.deleteAbnormalChapter(chapter.chapterKeyId);
+                                      if (ok == false) {
+                                        return;
+                                      }
+                                      ChapterHelp.deleteCache(chapter.chapterKeyId);
+                                      chapterShow.removeWhere((element) => element.chapterKeyId == chapter.chapterKeyId);
+
+                                      var bookId2Missing = refreshMissingChapterIndex(missingChapterIndex, chapterShow);
+                                      var warning = bookId2Missing[chapter.bookId] ?? false;
+                                      if (warning == false) {
+                                        await Db().db.bookDao.updateBookWarningForChapter(chapter.bookId, warning, DateTime.now().millisecondsSinceEpoch);
+                                        if (removeWarning != null) {
+                                          await removeWarning!();
+                                        }
+                                      }
+                                      parentLogic.update([ViewLogicChapterList.bodyId]);
+                                      Get.back();
+                                    });
+                                  },
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.delete_forever,
+                              ),
+                            ),
+                          PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_vert),
+                            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                              PopupMenuItem<String>(
+                                onTap: () {
+                                  MsgBox.yesOrNo(
+                                    title: I18nKey.labelWarning.tr,
+                                    desc: I18nKey.labelDeleteVerse.tr,
+                                    yes: () => delete(chapter: chapter),
+                                  );
+                                },
+                                child: Text(I18nKey.btnDelete.tr),
+                              ),
+                              PopupMenuItem<String>(
+                                onTap: () {
+                                  MsgBox.myDialog(
+                                      title: I18nKey.labelTips.tr,
+                                      content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
+                                      action: MsgBox.buttonsWithDivider(buttons: [
+                                        MsgBox.button(
+                                          text: I18nKey.btnCancel.tr,
+                                          onPressed: () {
+                                            Get.back();
+                                          },
+                                        ),
+                                        MsgBox.button(
+                                          text: I18nKey.btnAbove.tr,
+                                          onPressed: () => copy(chapter: chapter, below: false),
+                                        ),
+                                        MsgBox.button(
+                                          text: I18nKey.btnBelow.tr,
+                                          onPressed: () => copy(chapter: chapter, below: true),
+                                        ),
+                                      ]));
+                                },
+                                child: Text(I18nKey.btnCopy.tr),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 );
               },
             );
           } else if (bookSelect.value > 0 && search.value.isEmpty) {
             body = Center(
-              child: RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: I18nKey.labelTipForAddingContent.trArgs([options[bookSelect.value].label]),
-                    ),
-                    WidgetSpan(
-                      alignment: PlaceholderAlignment.middle,
-                      child: IconButton(
-                        onPressed: addFirst,
-                        icon: const Icon(Icons.add),
-                        padding: EdgeInsets.zero, // Optional: removes extra padding
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        style: TextStyle(color: Theme.of(Get.context!).colorScheme.onSurface),
+                        text: I18nKey.labelChapterTipForAddingContent.trArgs([options[bookSelect.value].label]),
                       ),
-                    ),
-                  ],
+                      WidgetSpan(
+                        alignment: PlaceholderAlignment.middle,
+                        child: IconButton(
+                          onPressed: addFirst,
+                          icon: const Icon(Icons.add),
+                          padding: EdgeInsets.zero, // Optional: removes extra padding
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );

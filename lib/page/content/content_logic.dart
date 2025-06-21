@@ -46,7 +46,7 @@ class ContentLogic extends GetxController {
         chapterList.collectData();
         chapterList.trySearch(force: true);
       },
-      onCardTapDown: (VerseShow verseShow) async {
+      onNext: (VerseShow verseShow) async {
         if (!args.enableEnteringRepeatView) {
           return;
         }
@@ -104,7 +104,7 @@ class ContentLogic extends GetxController {
       onSearchUnfocus: () {
         state.startSearch.value = false;
       },
-      onCardTapDown: (ChapterShow chapter) {
+      onNext: (ChapterShow chapter) {
         state.tabIndex.value = 2;
         verseList.setBookSelectByName(chapter.bookName);
         verseList.chapterSelect.value = chapter.chapterIndex + 1;
@@ -128,7 +128,7 @@ class ContentLogic extends GetxController {
       onSearchUnfocus: () {
         state.startSearch.value = false;
       },
-      onCardTapDown: (BookShow bookShow) {
+      onNext: (BookShow bookShow) {
         state.tabIndex.value = 1;
         chapterList.setBookSelectByName(bookShow.name);
         update([ContentLogic.id]);

@@ -150,7 +150,7 @@ class RepeatPage extends StatelessWidget {
               ),
               PopupMenuItem<String>(
                 onTap: logic.switchConcentrationMode,
-                child: Text("${I18nKey.btnConcentration.tr}(${state.concentrationMode})"),
+                child: Text("${I18nKey.btnFocus.tr}(${state.concentrationMode})"),
               ),
               PopupMenuItem<String>(
                 onTap: logic.switchEditMode,

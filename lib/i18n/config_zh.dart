@@ -39,8 +39,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelDownloadFirstBeforeSharing, "请先下载再进行分享");
     put(I18nKey.labelDownloadFirstBeforeSaving, "请先下载再进行保存");
     put(I18nKey.labelDeleteBook, "请确定删除学卷： %s");
-    put(I18nKey.labelDeleteVerse, "请确定该节");
-    put(I18nKey.labelDeleteChapter, "请确定该篇章");
+    put(I18nKey.labelDeleteVerse, "请确定删除该小节");
+    put(I18nKey.labelDeleteChapter, "请确定删除该篇章");
     put(I18nKey.labelDownloadBook, "下载学卷");
     put(I18nKey.labelScheduleContent, "添加学习任务 %s 个单位");
     put(I18nKey.labelNoLearningContent, "没有学习内容");
@@ -230,7 +230,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelBook, "卷");
     put(I18nKey.labelBookFn, "学卷");
     put(I18nKey.labelAddSuccess, "添加成功");
-    put(I18nKey.labelTipForAddingContent, "当前 %s 不存在, 点击加号添加");
+    put(I18nKey.labelChapterTipForAddingContent, "该学卷(%s)中不存在篇章, 点击加号添加");
+    put(I18nKey.labelVerseTipForAddingContent, "该篇章(%s)中不存在小节, 点击加号添加");
     put(I18nKey.btnEnd, "终点");
     put(I18nKey.btnHandleNow, "现在处理");
     put(I18nKey.btnStart, "开始");
@@ -256,7 +257,7 @@ class ConfigZh extends Config {
     put(I18nKey.btnEditNote, "编辑笔记");
     put(I18nKey.btnGameMode, "游戏模式");
     put(I18nKey.btnWeb, "网络");
-    put(I18nKey.btnConcentration, "专注");
+    put(I18nKey.btnFocus, "专注");
     put(I18nKey.btnAdd, "新增");
     put(I18nKey.btnReset, "重置");
     put(I18nKey.btnCopy, "复制");

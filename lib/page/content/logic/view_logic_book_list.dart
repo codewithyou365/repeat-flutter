@@ -19,7 +19,7 @@ import 'view_logic.dart';
 class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   static const String bodyId = "BookList.bodyId";
   late HistoryList historyList = HistoryList<T>(parentLogic);
-  final void Function(BookShow bookShow) onCardTapDown;
+  final void Function(BookShow bookShow) onNext;
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
   double searchDetailPanelHeight = 2 * (RowWidget.rowHeight + RowWidget.dividerHeight);
@@ -47,7 +47,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   ViewLogicBookList({
     required this.originalBookShow,
     required this.parentLogic,
-    required this.onCardTapDown,
+    required this.onNext,
     required super.onSearchUnfocus,
     String? initContentNameSelect,
   }) {
@@ -194,25 +194,25 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                   itemCount: list.length,
                   itemBuilder: (context, index) {
                     final book = list[index];
-                    return GestureDetector(
-                      onTapDown: (_) {
-                        onCardTapDown(book);
-                      },
-                      child: Card(
-                        elevation: 2,
-                        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Stack(
-                          alignment: Alignment.topRight,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
+                    return Card(
+                      elevation: 2,
+                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.topRight,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    onNext(book);
+                                  },
+                                  child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
                                       color: Colors.grey.withValues(alpha: 0.1),
@@ -223,41 +223,41 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                                       style: const TextStyle(fontSize: 12, color: Colors.blue),
                                     ),
                                   ),
-                                  SizedBox(height: 8, width: width),
-                                  ExpandableText(
-                                    title: I18nKey.labelBookFn.tr,
-                                    text: ': ${book.bookContent}',
-                                    version: book.bookContentVersion,
-                                    limit: 60,
-                                    style: const TextStyle(fontSize: 14),
-                                    selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                                    versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
-                                    selectText: search.value,
-                                    onEdit: () {
-                                      searchFocusNode.unfocus();
-                                      var contentM = jsonDecode(book.bookContent);
-                                      var content = const JsonEncoder.withIndent(' ').convert(contentM);
-                                      Editor.show(
-                                        Get.context!,
-                                        I18nKey.labelBook.tr,
-                                        content,
-                                        (str) async {
-                                          await Db().db.bookDao.updateBookContent(book.bookId, str);
-                                          parentLogic.update([ViewLogicBookList.bodyId]);
-                                        },
-                                        qrPagePath: Nav.scan.path,
-                                        onHistory: () async {
-                                          List<BookContentVersion> historyData = await Db().db.bookContentVersionDao.list(book.bookId);
-                                          await historyList.show(historyData);
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
+                                ),
+                                SizedBox(height: 8, width: width),
+                                ExpandableText(
+                                  title: I18nKey.labelBookFn.tr,
+                                  text: ': ${book.bookContent}',
+                                  version: book.bookContentVersion,
+                                  limit: 60,
+                                  style: const TextStyle(fontSize: 14),
+                                  selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                                  versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
+                                  selectText: search.value,
+                                  onEdit: () {
+                                    searchFocusNode.unfocus();
+                                    var contentM = jsonDecode(book.bookContent);
+                                    var content = const JsonEncoder.withIndent(' ').convert(contentM);
+                                    Editor.show(
+                                      Get.context!,
+                                      I18nKey.labelBook.tr,
+                                      content,
+                                      (str) async {
+                                        await Db().db.bookDao.updateBookContent(book.bookId, str);
+                                        parentLogic.update([ViewLogicBookList.bodyId]);
+                                      },
+                                      qrPagePath: Nav.scan.path,
+                                      onHistory: () async {
+                                        List<BookContentVersion> historyData = await Db().db.bookContentVersionDao.list(book.bookId);
+                                        await historyList.show(historyData);
+                                      },
+                                    );
+                                  },
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     );
                   },
