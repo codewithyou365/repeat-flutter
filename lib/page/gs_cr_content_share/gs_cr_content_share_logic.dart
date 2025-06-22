@@ -12,10 +12,8 @@ import 'package:repeat_flutter/common/ip.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/url.dart';
 import 'package:repeat_flutter/common/zip.dart';
-import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
-import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
@@ -175,14 +173,12 @@ class GsCrContentShareLogic extends GetxController {
               bool zipFileExist = await zipFile.exists();
 
               if (!zipFileExist) {
-                List<Doc> docs = await Db().db.docDao.getAllDoc("$relativePath/");
                 var downloads = DocHelp.getDownloads(BookContent.fromJson(docMap));
                 final receivePort = ReceivePort();
                 await Isolate.spawn(
                   _createZipFileInIsolate,
                   {
                     'sendPort': receivePort.sendPort,
-                    'docs': docs,
                     'downloads': downloads,
                     'docBytes': utf8.encode(docText),
                     'zipFilePath': zipFilePath,
@@ -228,7 +224,6 @@ class GsCrContentShareLogic extends GetxController {
   static void _createZipFileInIsolate(Map<String, dynamic> message) async {
     SendPort sendPort = message['sendPort'];
     try {
-      List<Doc> docs = message['docs'];
       List<DownloadContent> downloads = message['downloads'];
       Uint8List docBytes = message['docBytes'];
       String zipFilePath = message['zipFilePath'];
@@ -238,7 +233,7 @@ class GsCrContentShareLogic extends GetxController {
       String contentUrl = message['contentUrl'];
 
       var rootFilePath = rootPath.joinPath(relativePath).joinPath(DocPath.zipRootFile);
-      var rootFileContent = ZipRootDoc(docs, contentUrl);
+      var rootFileContent = ZipRootDoc(contentUrl);
       var rootFile = File(rootFilePath);
       await rootFile.writeAsString(json.encode(rootFileContent));
 

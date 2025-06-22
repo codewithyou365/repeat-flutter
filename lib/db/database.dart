@@ -10,7 +10,6 @@ import 'package:repeat_flutter/db/dao/chapter_content_version_dao.dart';
 import 'package:repeat_flutter/db/dao/classroom_dao.dart';
 import 'package:repeat_flutter/db/dao/book_dao.dart';
 import 'package:repeat_flutter/db/dao/cr_kv_dao.dart';
-import 'package:repeat_flutter/db/dao/doc_dao.dart';
 import 'package:repeat_flutter/db/dao/game_dao.dart';
 import 'package:repeat_flutter/db/dao/game_user_dao.dart';
 import 'package:repeat_flutter/db/dao/chapter_dao.dart';
@@ -32,7 +31,6 @@ import 'package:repeat_flutter/db/entity/book_content_version.dart';
 import 'package:repeat_flutter/db/entity/chapter_content_version.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
-import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/lock.dart';
 import 'package:repeat_flutter/db/entity/chapter.dart';
@@ -43,7 +41,6 @@ import 'package:repeat_flutter/db/entity/verse_key.dart';
 import 'package:repeat_flutter/db/entity/verse_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/verse_review.dart';
 import 'package:repeat_flutter/db/entity/verse_stats.dart';
-import 'package:repeat_flutter/db/entity/content_version.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
@@ -71,7 +68,6 @@ part 'database.g.dart'; // the generated code will be there
   ChapterContentVersion,
   ChapterKey,
   Kv,
-  Doc,
   Classroom,
   CrKv,
   Verse,
@@ -126,8 +122,6 @@ abstract class AppDatabase extends FloorDatabase {
 
   KvDao get kvDao;
 
-  DocDao get docDao;
-
   TimeStatsDao get timeStatsDao;
 
   ScheduleDao get scheduleDao;
@@ -174,13 +168,12 @@ class Db {
   }
 }
 
-prepareDb(AppDatabase db) {
+void prepareDb(AppDatabase db) {
   db.gameUserDao.db = db;
   db.gameDao.db = db;
   db.kvDao.db = db;
   db.chapterContentVersionDao.db = db;
   db.chapterKeyDao.db = db;
-  db.docDao.db = db;
   db.classroomDao.db = db;
   db.bookDao.db = db;
   db.scheduleDao.db = db;

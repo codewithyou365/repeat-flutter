@@ -2,13 +2,11 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/zip.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
-import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/download.dart';
@@ -35,18 +33,18 @@ class ScCrMaterialLogic extends GetxController {
     init();
   }
 
-  init() async {
+  Future<void> init() async {
     state.list.clear();
     state.list.addAll(await Db().db.bookDao.getAll(Classroom.curr));
     update([ScCrMaterialLogic.id]);
   }
 
-  resetDoc(int bookId) async {
+  Future<void> resetDoc(int bookId) async {
     await Db().db.bookDao.updateDocId(bookId, 0);
     await init();
   }
 
-  delete(int bookId) async {
+  Future<void> delete(int bookId) async {
     showOverlay(() async {
       state.list.removeWhere((element) => identical(element.id, bookId));
       await Db().db.scheduleDao.hideContentAndDeleteVerse(bookId);
@@ -55,7 +53,7 @@ class ScCrMaterialLogic extends GetxController {
     }, I18nKey.labelDeleting.tr);
   }
 
-  showContent({
+  Future<void> showContent({
     required int bookId,
     int defaultTap = 0,
   }) async {
@@ -75,7 +73,7 @@ class ScCrMaterialLogic extends GetxController {
     );
   }
 
-  addByZip(int bookId) async {
+  Future<void> addByZip(int bookId) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['zip'],
@@ -102,31 +100,11 @@ class ScCrMaterialLogic extends GetxController {
         Snackbar.show(I18nKey.labelDataAnomalyWithArg.trArgs(['88']));
         return;
       }
-      var allDownloads = DocHelp.getDownloads(kv);
-      // for media document
-      for (var i = 0; i < allDownloads.length; i++) {
-        var v = allDownloads[i];
-        var relativeMediaPath = DocPath.getRelativePath(bookId).joinPath(v.path);
-        var url = v.url;
-        String hash = v.hash;
-        await Db().db.docDao.insertDoc(Doc(url, relativeMediaPath, hash));
-      }
-
-      // for repeat document
-      var indexPath = DocPath.getRelativeIndexPath(bookId);
-      var targetRepeatDocPath = rootPath.joinPath(indexPath);
-      String hash = await Hash.toSha1(targetRepeatDocPath);
-      await Db().db.docDao.insertDoc(Doc(zipRoot.url, indexPath, hash));
-      var indexJsonDocId = await Db().db.docDao.getIdByPath(indexPath);
-      if (indexJsonDocId == null) {
-        return;
-      }
-
-      await schedule(bookId, indexJsonDocId, zipRoot.url);
+      await schedule(bookId, zipRoot.url);
     }, I18nKey.labelImporting.tr);
   }
 
-  add(String name) async {
+  Future<void> add(String name) async {
     if (name.isEmpty) {
       Get.back();
       Snackbar.show(I18nKey.labelBookNameEmpty.tr);
@@ -147,13 +125,8 @@ class ScCrMaterialLogic extends GetxController {
     Get.back();
   }
 
-  share(Book model) async {
+  Future<void> share(Book model) async {
     showTransparentOverlay(() async {
-      var doc = await Db().db.docDao.getById(model.docId);
-      if (doc == null) {
-        Snackbar.show(I18nKey.labelDownloadFirstBeforeSharing.tr);
-        return;
-      }
       var args = <dynamic>[model];
       Nav.gsCrContentShare.push(arguments: args);
     });
@@ -221,19 +194,15 @@ class ScCrMaterialLogic extends GetxController {
         progressCallback: downloadProgress,
       );
     }
-    var indexJsonDocId = await Db().db.docDao.getIdByPath(indexPath);
-    if (indexJsonDocId == null) {
-      return;
-    }
 
-    var ok = await schedule(bookId, indexJsonDocId, url);
+    var ok = await schedule(bookId, url);
     if (ok) {
       Nav.back();
     }
   }
 
-  Future<bool> schedule(int bookId, int indexJsonDocId, String url) async {
-    var result = await ScheduleHelp.addBookToSchedule(bookId, indexJsonDocId, url);
+  Future<bool> schedule(int bookId, String url) async {
+    var result = await ScheduleHelp.addBookToSchedule(bookId, url);
     if (!result) {
       return false;
     }

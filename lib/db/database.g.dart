@@ -96,8 +96,6 @@ class _$AppDatabase extends AppDatabase {
 
   KvDao? _kvDaoInstance;
 
-  DocDao? _docDaoInstance;
-
   TimeStatsDao? _timeStatsDaoInstance;
 
   ScheduleDao? _scheduleDaoInstance;
@@ -152,8 +150,6 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Kv` (`k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`k`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Doc` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `url` TEXT NOT NULL, `path` TEXT NOT NULL, `count` INTEGER NOT NULL, `total` INTEGER NOT NULL, `msg` TEXT NOT NULL, `hash` TEXT NOT NULL)');
-        await database.execute(
             'CREATE TABLE IF NOT EXISTS `Classroom` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `CrKv` (`classroomId` INTEGER NOT NULL, `k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`classroomId`, `k`))');
@@ -203,8 +199,6 @@ class _$AppDatabase extends AppDatabase {
             'CREATE INDEX `index_ChapterKey_classroomId` ON `ChapterKey` (`classroomId`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_ChapterKey_bookId_chapterIndex_version` ON `ChapterKey` (`bookId`, `chapterIndex`, `version`)');
-        await database
-            .execute('CREATE UNIQUE INDEX `index_Doc_path` ON `Doc` (`path`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_Classroom_name` ON `Classroom` (`name`)');
         await database.execute(
@@ -339,11 +333,6 @@ class _$AppDatabase extends AppDatabase {
   @override
   KvDao get kvDao {
     return _kvDaoInstance ??= _$KvDao(database, changeListener);
-  }
-
-  @override
-  DocDao get docDao {
-    return _docDaoInstance ??= _$DocDao(database, changeListener);
   }
 
   @override
@@ -2003,143 +1992,6 @@ class _$KvDao extends KvDao {
   }
 }
 
-class _$DocDao extends DocDao {
-  _$DocDao(
-    this.database,
-    this.changeListener,
-  )   : _queryAdapter = QueryAdapter(database),
-        _docInsertionAdapter = InsertionAdapter(
-            database,
-            'Doc',
-            (Doc item) => <String, Object?>{
-                  'id': item.id,
-                  'url': item.url,
-                  'path': item.path,
-                  'count': item.count,
-                  'total': item.total,
-                  'msg': item.msg,
-                  'hash': item.hash
-                });
-
-  final sqflite.DatabaseExecutor database;
-
-  final StreamController<String> changeListener;
-
-  final QueryAdapter _queryAdapter;
-
-  final InsertionAdapter<Doc> _docInsertionAdapter;
-
-  @override
-  Future<void> forUpdate() async {
-    await _queryAdapter
-        .queryNoReturn('SELECT * FROM Lock where id=1 for update');
-  }
-
-  @override
-  Future<int?> getIdByPath(String path) async {
-    return _queryAdapter.query('SELECT id FROM Doc WHERE path=?1',
-        mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [path]);
-  }
-
-  @override
-  Future<String?> getPath(int id) async {
-    return _queryAdapter.query('SELECT path FROM Doc WHERE id = ?1',
-        mapper: (Map<String, Object?> row) => row.values.first as String,
-        arguments: [id]);
-  }
-
-  @override
-  Future<Doc?> getByPath(String path) async {
-    return _queryAdapter.query('SELECT * FROM Doc WHERE path=?1',
-        mapper: (Map<String, Object?> row) => Doc(
-            row['url'] as String, row['path'] as String, row['hash'] as String,
-            id: row['id'] as int?,
-            msg: row['msg'] as String,
-            count: row['count'] as int,
-            total: row['total'] as int),
-        arguments: [path]);
-  }
-
-  @override
-  Future<Doc?> getById(int id) async {
-    return _queryAdapter.query('SELECT * FROM Doc WHERE id=?1',
-        mapper: (Map<String, Object?> row) => Doc(
-            row['url'] as String, row['path'] as String, row['hash'] as String,
-            id: row['id'] as int?,
-            msg: row['msg'] as String,
-            count: row['count'] as int,
-            total: row['total'] as int),
-        arguments: [id]);
-  }
-
-  @override
-  Future<void> updateDoc(
-    int id,
-    String msg,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'UPDATE OR ABORT Doc SET msg=?2 WHERE id = ?1',
-        arguments: [id, msg]);
-  }
-
-  @override
-  Future<void> updateProgressById(
-    int id,
-    int count,
-    int total,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'UPDATE OR ABORT Doc SET count=?2,total=?3 WHERE id = ?1',
-        arguments: [id, count, total]);
-  }
-
-  @override
-  Future<void> updateFinish(
-    int id,
-    String url,
-    String path,
-    String hash,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'UPDATE OR ABORT Doc SET msg=\'\',count=total,url=?2,path=?3,hash=?4 WHERE id=?1',
-        arguments: [id, url, path, hash]);
-  }
-
-  @override
-  Future<List<Doc>> getAllDoc(String prefixPath) async {
-    return _queryAdapter.queryList(
-        'SELECT * FROM Doc WHERE path LIKE ?1 || \'%\'',
-        mapper: (Map<String, Object?> row) => Doc(
-            row['url'] as String, row['path'] as String, row['hash'] as String,
-            id: row['id'] as int?,
-            msg: row['msg'] as String,
-            count: row['count'] as int,
-            total: row['total'] as int),
-        arguments: [prefixPath]);
-  }
-
-  @override
-  Future<void> insertDoc(Doc data) async {
-    await _docInsertionAdapter.insert(data, OnConflictStrategy.replace);
-  }
-
-  @override
-  Future<Doc> insertByPath(String path) async {
-    if (database is sqflite.Transaction) {
-      return super.insertByPath(path);
-    } else {
-      return (database as sqflite.Database)
-          .transaction<Doc>((transaction) async {
-        final transactionDatabase = _$AppDatabase(changeListener)
-          ..database = transaction;
-        prepareDb(transactionDatabase);
-        return transactionDatabase.docDao.insertByPath(path);
-      });
-    }
-  }
-}
-
 class _$TimeStatsDao extends TimeStatsDao {
   _$TimeStatsDao(
     this.database,
@@ -2304,18 +2156,6 @@ class _$ScheduleDao extends ScheduleDao {
   final UpdateAdapter<VerseKey> _verseKeyUpdateAdapter;
 
   final DeletionAdapter<CrKv> _crKvDeletionAdapter;
-
-  @override
-  Future<Doc?> getDocById(int id) async {
-    return _queryAdapter.query('SELECT * FROM Doc WHERE id=?1',
-        mapper: (Map<String, Object?> row) => Doc(
-            row['url'] as String, row['path'] as String, row['hash'] as String,
-            id: row['id'] as int?,
-            msg: row['msg'] as String,
-            count: row['count'] as int,
-            total: row['total'] as int),
-        arguments: [id]);
-  }
 
   @override
   Future<void> forUpdate() async {
@@ -2840,19 +2680,17 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<int> importVerse(
     int bookId,
-    int? indexJsonDocId,
     String? url,
   ) async {
     if (database is sqflite.Transaction) {
-      return super.importVerse(bookId, indexJsonDocId, url);
+      return super.importVerse(bookId, url);
     } else {
       return (database as sqflite.Database)
           .transaction<int>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        return transactionDatabase.scheduleDao
-            .importVerse(bookId, indexJsonDocId, url);
+        return transactionDatabase.scheduleDao.importVerse(bookId, url);
       });
     }
   }
@@ -3168,12 +3006,6 @@ class _$VerseContentVersionDao extends VerseContentVersionDao {
   Future<void> insertOrFail(VerseContentVersion entity) async {
     await _verseContentVersionInsertionAdapter.insert(
         entity, OnConflictStrategy.fail);
-  }
-
-  @override
-  Future<void> insertOrIgnore(VerseContentVersion entity) async {
-    await _verseContentVersionInsertionAdapter.insert(
-        entity, OnConflictStrategy.ignore);
   }
 
   @override

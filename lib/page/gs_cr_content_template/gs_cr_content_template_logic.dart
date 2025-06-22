@@ -40,7 +40,7 @@ class GsCrContentTemplateLogic extends GetxController {
       await indexJsonFile.writeAsString(indexJsonContent, flush: true);
 
       final logic = Get.find<ScCrMaterialLogic>();
-      await logic.schedule(state.bookId, 1, indexJsonUrl);
+      await logic.schedule(state.bookId, indexJsonUrl);
       Nav.scCrMaterial.until();
     }, I18nKey.labelSaving.tr);
   }

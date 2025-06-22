@@ -8,7 +8,6 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
-import 'package:repeat_flutter/db/entity/doc.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/db/entity/chapter.dart';
 import 'package:repeat_flutter/db/entity/chapter_key.dart';
@@ -63,7 +62,7 @@ class ElConfig {
     );
   }
 
-  tr() {
+  String tr() {
     var key = "labelElConfig";
     List<String> args = [level.toString()];
     key += random ? "1" : "0";
@@ -80,7 +79,7 @@ class ElConfig {
     return ret.trArgs(args);
   }
 
-  trWithTitle() {
+  String trWithTitle() {
     var desc = tr();
     if (title != "") {
       desc = "$title:$desc";
@@ -120,7 +119,7 @@ class RelConfig {
     );
   }
 
-  tr() {
+  String tr() {
     var key = "labelRelConfig";
     List<String> args = [level.toString(), before.toString(), from.value.toString()];
     key += learnCountPerGroup > 0 ? "1" : "0";
@@ -132,7 +131,7 @@ class RelConfig {
     return ret.trArgs(args);
   }
 
-  trWithTitle() {
+  String trWithTitle() {
     var desc = tr();
     if (title != "") {
       desc = "$title:$desc";
@@ -216,9 +215,6 @@ abstract class ScheduleDao {
     ],
     [],
   );
-
-  @Query('SELECT * FROM Doc WHERE id=:id')
-  Future<Doc?> getDocById(int id);
 
   @Query('SELECT * FROM Lock where id=1 for update')
   Future<void> forUpdate();
@@ -590,24 +586,18 @@ abstract class ScheduleDao {
     return ret;
   }
 
-  Future<Book?> prepareImportVerse(
-    List<Chapter> chapters,
-    List<ChapterKey> chapterKeys,
-    List<VerseKey> verseKeys,
-    List<Verse> verses,
-    List<VerseOverallPrg> verseOverallPrgs, {
+  Future<Book?> prepareImportVerse({
+    required List<Chapter> chapters,
+    required List<ChapterKey> chapterKeys,
+    required List<VerseKey> verseKeys,
+    required List<Verse> verses,
+    required List<VerseOverallPrg> verseOverallPrgs,
     required int bookId,
-    int? indexJsonDocId,
     String? url,
   }) async {
     Book? book = await db.bookDao.getById(bookId);
     if (book == null) {
       Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["book"]));
-      return null;
-    }
-    var doc = await getDocById(indexJsonDocId ?? book.docId);
-    if (doc == null) {
-      Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["doc"]));
       return null;
     }
     Map<String, dynamic>? jsonData = await DocHelp.toJsonMap(DocPath.getRelativeIndexPath(book.id!));
@@ -722,23 +712,21 @@ abstract class ScheduleDao {
   @transaction
   Future<int> importVerse(
     int bookId,
-    int? indexJsonDocId,
     String? url,
   ) async {
     await forUpdate();
-    List<Chapter> newChapters = [];
-    List<ChapterKey> newChapterKeys = [];
-    List<VerseKey> newVerseKeys = [];
+    List<Chapter> chapters = [];
+    List<ChapterKey> chapterKeys = [];
+    List<VerseKey> verseKeys = [];
     List<Verse> verses = [];
     List<VerseOverallPrg> verseOverallPrgs = [];
     Book? book = await prepareImportVerse(
-      newChapters,
-      newChapterKeys,
-      newVerseKeys,
-      verses,
-      verseOverallPrgs,
+      chapters: chapters,
+      chapterKeys: chapterKeys,
+      verseKeys: verseKeys,
+      verses: verses,
+      verseOverallPrgs: verseOverallPrgs,
       bookId: bookId,
-      indexJsonDocId: indexJsonDocId,
       url: url,
     );
     if (book == null) {
@@ -761,10 +749,10 @@ abstract class ScheduleDao {
     var nextVersion = maxVersion + 1;
     Map<int, VerseKey> needToModifyMap = {};
     List<VerseKey> needToInsert = [];
-    var warningInChapter = await db.chapterKeyDao.import(newChapters, newChapterKeys, book.id!);
-    for (var newVerseKey in newVerseKeys) {
+    var warningInChapter = await db.chapterKeyDao.import(chapters, chapterKeys, book.id!);
+    for (var newVerseKey in verseKeys) {
       newVerseKey.version = nextVersion;
-      newVerseKey.chapterKeyId = newChapterKeys[newVerseKey.chapterIndex].id!;
+      newVerseKey.chapterKeyId = chapterKeys[newVerseKey.chapterIndex].id!;
       VerseKey? oldVerseKey = keyToOldVerseKey[newVerseKey.k];
       if (oldVerseKey == null) {
         needToInsert.add(newVerseKey);
@@ -785,7 +773,7 @@ abstract class ScheduleDao {
       await insertVerseKeys(needToInsert);
       var keyIds = await getVerseKeyId(bookId);
       keyToId = {for (var keyId in keyIds) keyId.k: keyId.id};
-      for (var newVerseKey in newVerseKeys) {
+      for (var newVerseKey in verseKeys) {
         int? id = keyToId[newVerseKey.k];
         if (id != null) {
           newVerseKey.id = id;
@@ -793,10 +781,10 @@ abstract class ScheduleDao {
       }
     }
 
-    Map<int, VerseContentVersion> newVerseKeyIdToContentVersion = await db.verseContentVersionDao.import(newVerseKeys, VerseVersionType.content, book.id!);
-    Map<int, VerseContentVersion> newVerseKeyIdToNoteVersion = await db.verseContentVersionDao.import(newVerseKeys, VerseVersionType.note, book.id!);
-    for (var i = 0; i < newVerseKeys.length; i++) {
-      VerseKey newVerseKey = newVerseKeys[i];
+    Map<int, VerseContentVersion> newVerseKeyIdToContentVersion = await db.verseContentVersionDao.import(verseKeys, VerseVersionType.content, book.id!);
+    Map<int, VerseContentVersion> newVerseKeyIdToNoteVersion = await db.verseContentVersionDao.import(verseKeys, VerseVersionType.note, book.id!);
+    for (var i = 0; i < verseKeys.length; i++) {
+      VerseKey newVerseKey = verseKeys[i];
       var id = keyToId[newVerseKey.k]!;
       var contentVersion = newVerseKeyIdToContentVersion[id];
       if (contentVersion != null && newVerseKey.contentVersion != contentVersion.version) {
@@ -823,8 +811,8 @@ abstract class ScheduleDao {
 
     var warningInVerse = verses.length < keyToId.length;
 
-    if (indexJsonDocId != null && url != null) {
-      await db.bookDao.updateBook(bookId, indexJsonDocId, url, warningInChapter, warningInVerse, DateTime.now().millisecondsSinceEpoch);
+    if (url != null) {
+      await db.bookDao.updateBook(bookId, 1, url, warningInChapter, warningInVerse, DateTime.now().millisecondsSinceEpoch);
     } else {
       await db.bookDao.updateBookWarning(bookId, warningInChapter, warningInVerse, DateTime.now().millisecondsSinceEpoch);
     }
