@@ -10,4 +10,6 @@ import 'package:repeat_flutter/db/entity/time_stats.dart';
 abstract class GameUserInputDao {
   @Query('DELETE FROM GameUserInput WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
+  @Query('DELETE FROM GameUserInput WHERE chapterKeyId=:chapterKeyId')
+  Future<void> deleteByChapterKeyId(int chapterKeyId);
 }

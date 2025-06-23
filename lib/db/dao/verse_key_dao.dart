@@ -32,6 +32,9 @@ abstract class VerseKeyDao {
   @Query('DELETE FROM VerseKey WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
 
+  @Query('DELETE FROM VerseKey WHERE chapterKeyId=:chapterKeyId')
+  Future<void> deleteByChapterKeyId(int chapterKeyId);
+
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertListOrFail(List<VerseKey> entities);
 }

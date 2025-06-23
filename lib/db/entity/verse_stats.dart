@@ -16,7 +16,7 @@ class VerseStats {
   final int createTime;
   final int classroomId;
   final int bookId;
-
+  final int chapterKeyId;
   VerseStats({
     required this.verseKeyId,
     required this.type,
@@ -24,5 +24,6 @@ class VerseStats {
     required this.createTime,
     required this.classroomId,
     required this.bookId,
+    required this.chapterKeyId,
   });
 }

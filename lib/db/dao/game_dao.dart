@@ -64,6 +64,10 @@ abstract class GameDao {
 
   @Query('DELETE FROM Game WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
+
+  @Query('DELETE FROM Game WHERE chapterKeyId=:chapterKeyId')
+  Future<void> deleteByChapterKeyId(int chapterKeyId);
+
   @transaction
   Future<Game> tryInsertGame(Game game) async {
     var ids = await getAllEnableGameIds();
@@ -99,7 +103,7 @@ abstract class GameDao {
   ) async {
     Game? game = await getOne();
     if (game == null) {
-      return GameUserInput.empty();
+      return [];
     }
     Map<String, dynamic> verse = jsonDecode(game.verseContent);
     GameUserInput? gameUserInput = await lastUserInput(game.id, gameUserId, game.time);
@@ -162,18 +166,17 @@ abstract class GameDao {
     }
     input = GameLogic.processWord(getWord(verse), userInput, obtainOutput, prevOutput, matchType, skipChar);
     await insertGameUserInput(GameUserInput(
-      game.id,
-      gameUserId,
-      game.time,
-      game.verseKeyId,
-      game.classroomId,
-      game.bookId,
-      game.chapterIndex,
-      game.verseIndex,
-      jsonEncode(input),
-      jsonEncode(obtainOutput),
-      now.millisecondsSinceEpoch,
-      Date.from(now),
+      gameId: game.id,
+      gameUserId: gameUserId,
+      time: game.time,
+      verseKeyId: game.verseKeyId,
+      classroomId: game.classroomId,
+      bookId: game.bookId,
+      chapterKeyId: game.chapterKeyId,
+      input: jsonEncode(input),
+      output: jsonEncode(obtainOutput),
+      createTime: now.millisecondsSinceEpoch,
+      createDate: Date.from(now),
     ));
     obtainInput.addAll(input);
     final ret = await lastUserInput(game.id, gameUserId, game.time);

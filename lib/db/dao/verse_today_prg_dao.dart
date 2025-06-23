@@ -14,4 +14,7 @@ abstract class VerseTodayPrgDao {
 
   @Query('DELETE FROM VerseTodayPrg WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
+
+  @Query('DELETE FROM VerseTodayPrg WHERE chapterKeyId=:chapterKeyId')
+  Future<void> deleteByChapterKeyId(int chapterKeyId);
 }

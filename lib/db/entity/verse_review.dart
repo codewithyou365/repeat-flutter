@@ -15,7 +15,7 @@ class VerseReview {
   final int verseKeyId;
   final int classroomId;
   final int bookId;
-
+  final int chapterKeyId;
   final int count;
 
   VerseReview({
@@ -23,6 +23,7 @@ class VerseReview {
     required this.verseKeyId,
     required this.classroomId,
     required this.bookId,
+    required this.chapterKeyId,
     required this.count,
   });
 }

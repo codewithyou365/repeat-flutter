@@ -10,7 +10,15 @@ class TimeStatsLogic {
     var now = DateTime.now();
     var nowMs = now.millisecondsSinceEpoch;
     lastRecallTime = nowMs;
-    await Db().db.statsDao.tryInsertTimeStats(TimeStats(Classroom.curr, Date.from(now), nowMs, 0));
+    await Db().db.statsDao.tryInsertTimeStats(TimeStats(
+          classroomId: Classroom.curr,
+          bookId: 0,
+          chapterKeyId: 0,
+          verseKeyId: 0,
+          createDate: Date.from(now),
+          createTime: nowMs,
+          duration: 0,
+        ));
   }
 
   updateTimeStats() {

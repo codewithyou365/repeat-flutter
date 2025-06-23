@@ -10,4 +10,7 @@ import 'package:repeat_flutter/db/entity/time_stats.dart';
 abstract class VerseStatsDao {
   @Query('DELETE FROM VerseStats WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
+
+  @Query('DELETE FROM VerseStats WHERE chapterKeyId=:chapterKeyId')
+  Future<void> deleteByChapterKeyId(int chapterKeyId);
 }

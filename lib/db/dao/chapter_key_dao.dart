@@ -197,8 +197,23 @@ abstract class ChapterKeyDao {
       Snackbar.showAndThrow(I18nKey.labelChapterHasVersesAndCantBeDeleted.tr);
       return false;
     }
-    await db.chapterDao.deleteById(chapterKeyId);
+    //await db.bookDao.deleteByClassroomId(classroomId);
+    //await db.bookContentVersionDao.deleteByClassroomId(classroomId);
+    await db.chapterDao.deleteByChapterKeyId(chapterKeyId);
+    await db.chapterContentVersionDao.deleteByChapterKeyId(chapterKeyId);
     await deleteById(chapterKeyId);
+    //await db.crKvDao.deleteByChapterKeyId(chapterKeyId);
+    await db.gameDao.deleteByChapterKeyId(chapterKeyId);
+    await db.gameUserInputDao.deleteByChapterKeyId(chapterKeyId);
+    await db.timeStatsDao.deleteByChapterKeyId(chapterKeyId);
+    await db.verseDao.deleteByChapterKeyId(chapterKeyId);
+    await db.verseContentVersionDao.deleteByChapterKeyId(chapterKeyId);
+    await db.verseKeyDao.deleteByChapterKeyId(chapterKeyId);
+    await db.verseOverallPrgDao.deleteByChapterKeyId(chapterKeyId);
+    await db.verseReviewDao.deleteByChapterKeyId(chapterKeyId);
+    await db.verseStatsDao.deleteByChapterKeyId(chapterKeyId);
+    await db.verseTodayPrgDao.deleteByChapterKeyId(chapterKeyId);
+
     return true;
   }
 

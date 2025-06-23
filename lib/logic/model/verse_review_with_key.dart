@@ -13,6 +13,7 @@ class VerseReviewWithKey extends VerseReview {
     required super.verseKeyId,
     required super.classroomId,
     required super.bookId,
+    required super.chapterKeyId,
     required super.count,
     required this.contentName,
     required this.chapterIndex,

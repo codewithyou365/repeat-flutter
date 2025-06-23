@@ -29,6 +29,9 @@ abstract class VerseContentVersionDao {
       ' WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
 
+  @Query('DELETE FROM VerseContentVersion WHERE chapterKeyId=:chapterKeyId')
+  Future<void> deleteByChapterKeyId(int chapterKeyId);
+
   @Query('DELETE FROM VerseContentVersion'
       ' WHERE verseKeyId=:verseKeyId')
   Future<void> deleteByVerseKeyId(int verseKeyId);

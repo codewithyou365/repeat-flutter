@@ -1378,6 +1378,7 @@ abstract class ScheduleDao {
           verseKeyId: stp.verseKeyId,
           classroomId: Classroom.curr,
           bookId: stp.bookId,
+          chapterKeyId: stp.chapterKeyId,
           count: 0,
         )
       ]);
@@ -1394,6 +1395,7 @@ abstract class ScheduleDao {
       createTime: now.millisecondsSinceEpoch,
       classroomId: Classroom.curr,
       bookId: stp.bookId,
+      chapterKeyId: stp.chapterKeyId,
     ));
   }
 
@@ -1432,6 +1434,7 @@ abstract class ScheduleDao {
             verseKeyId: stp.verseKeyId,
             classroomId: Classroom.curr,
             bookId: stp.bookId,
+            chapterKeyId: stp.chapterKeyId,
             count: 0,
           )
         ]);
@@ -1446,6 +1449,7 @@ abstract class ScheduleDao {
         createTime: now.millisecondsSinceEpoch,
         classroomId: Classroom.curr,
         bookId: stp.bookId,
+        chapterKeyId: stp.chapterKeyId,
       ));
     }
   }

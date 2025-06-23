@@ -34,8 +34,8 @@ abstract class ChapterDao {
       ' WHERE Chapter.classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
 
-  @Query('DELETE FROM ChapterKey WHERE id=:id')
-  Future<void> deleteById(int id);
+  @Query('DELETE FROM Chapter WHERE chapterKeyId=:chapterKeyId')
+  Future<void> deleteByChapterKeyId(int chapterKeyId);
 
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertOrFail(List<Chapter> entities);

@@ -162,19 +162,19 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `VerseOverallPrg` (`verseKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterKeyId` INTEGER NOT NULL, `next` INTEGER NOT NULL, `progress` INTEGER NOT NULL, PRIMARY KEY (`verseKeyId`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `VerseReview` (`createDate` INTEGER NOT NULL, `verseKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY (`createDate`, `verseKeyId`))');
+            'CREATE TABLE IF NOT EXISTS `VerseReview` (`createDate` INTEGER NOT NULL, `verseKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterKeyId` INTEGER NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY (`createDate`, `verseKeyId`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `VerseTodayPrg` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterKeyId` INTEGER NOT NULL, `verseKeyId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `type` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `reviewCount` INTEGER NOT NULL, `reviewCreateDate` INTEGER NOT NULL, `finish` INTEGER NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `VerseStats` (`verseKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, PRIMARY KEY (`verseKeyId`, `type`, `createDate`))');
+            'CREATE TABLE IF NOT EXISTS `VerseStats` (`verseKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterKeyId` INTEGER NOT NULL, PRIMARY KEY (`verseKeyId`, `type`, `createDate`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
+            'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterKeyId` INTEGER NOT NULL, `verseKeyId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER NOT NULL, `time` INTEGER NOT NULL, `verseContent` TEXT NOT NULL, `verseKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, `verseIndex` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER NOT NULL, `time` INTEGER NOT NULL, `verseContent` TEXT NOT NULL, `verseKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterKeyId` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `GameUser` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `password` TEXT NOT NULL, `nonce` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `token` TEXT NOT NULL, `tokenExpiredDate` INTEGER NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `GameUserInput` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `gameId` INTEGER NOT NULL, `gameUserId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `verseKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookSerial` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, `verseIndex` INTEGER NOT NULL, `input` TEXT NOT NULL, `output` TEXT NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `GameUserInput` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `gameId` INTEGER NOT NULL, `gameUserId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `verseKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterKeyId` INTEGER NOT NULL, `input` TEXT NOT NULL, `output` TEXT NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Lock` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
@@ -246,9 +246,15 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE INDEX `index_VerseStats_classroomId_createTime` ON `VerseStats` (`classroomId`, `createTime`)');
         await database.execute(
-            'CREATE INDEX `index_Game_classroomId` ON `Game` (`classroomId`)');
+            'CREATE INDEX `index_TimeStats_bookId` ON `TimeStats` (`bookId`)');
         await database.execute(
-            'CREATE INDEX `index_Game_bookId_chapterIndex_verseIndex` ON `Game` (`bookId`, `chapterIndex`, `verseIndex`)');
+            'CREATE INDEX `index_TimeStats_chapterKeyId` ON `TimeStats` (`chapterKeyId`)');
+        await database.execute(
+            'CREATE INDEX `index_TimeStats_verseKeyId` ON `TimeStats` (`verseKeyId`)');
+        await database.execute(
+            'CREATE INDEX `index_Game_classroomId` ON `Game` (`classroomId`)');
+        await database
+            .execute('CREATE INDEX `index_Game_bookId` ON `Game` (`bookId`)');
         await database.execute(
             'CREATE INDEX `index_Game_verseKeyId` ON `Game` (`verseKeyId`)');
         await database.execute(
@@ -258,7 +264,11 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE UNIQUE INDEX `index_GameUser_token` ON `GameUser` (`token`)');
         await database.execute(
-            'CREATE INDEX `index_GameUserInput_classroomId_bookSerial_chapterIndex_verseIndex` ON `GameUserInput` (`classroomId`, `bookSerial`, `chapterIndex`, `verseIndex`)');
+            'CREATE INDEX `index_GameUserInput_classroomId` ON `GameUserInput` (`classroomId`)');
+        await database.execute(
+            'CREATE INDEX `index_GameUserInput_bookId` ON `GameUserInput` (`bookId`)');
+        await database.execute(
+            'CREATE INDEX `index_GameUserInput_chapterKeyId` ON `GameUserInput` (`chapterKeyId`)');
         await database.execute(
             'CREATE INDEX `index_GameUserInput_verseKeyId` ON `GameUserInput` (`verseKeyId`)');
         await database.execute(
@@ -948,9 +958,10 @@ class _$ChapterDao extends ChapterDao {
   }
 
   @override
-  Future<void> deleteById(int id) async {
-    await _queryAdapter
-        .queryNoReturn('DELETE FROM ChapterKey WHERE id=?1', arguments: [id]);
+  Future<void> deleteByChapterKeyId(int chapterKeyId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM Chapter WHERE chapterKeyId=?1',
+        arguments: [chapterKeyId]);
   }
 
   @override
@@ -1631,8 +1642,7 @@ class _$GameDao extends GameDao {
                   'verseKeyId': item.verseKeyId,
                   'classroomId': item.classroomId,
                   'bookId': item.bookId,
-                  'chapterIndex': item.chapterIndex,
-                  'verseIndex': item.verseIndex,
+                  'chapterKeyId': item.chapterKeyId,
                   'finish': item.finish ? 1 : 0,
                   'createTime': item.createTime,
                   'createDate': _dateConverter.encode(item.createDate)
@@ -1647,9 +1657,8 @@ class _$GameDao extends GameDao {
                   'time': item.time,
                   'verseKeyId': item.verseKeyId,
                   'classroomId': item.classroomId,
-                  'bookSerial': item.bookSerial,
-                  'chapterIndex': item.chapterIndex,
-                  'verseIndex': item.verseIndex,
+                  'bookId': item.bookId,
+                  'chapterKeyId': item.chapterKeyId,
                   'input': item.input,
                   'output': item.output,
                   'createTime': item.createTime,
@@ -1709,8 +1718,7 @@ class _$GameDao extends GameDao {
             verseKeyId: row['verseKeyId'] as int,
             classroomId: row['classroomId'] as int,
             bookId: row['bookId'] as int,
-            chapterIndex: row['chapterIndex'] as int,
-            verseIndex: row['verseIndex'] as int,
+            chapterKeyId: row['chapterKeyId'] as int,
             finish: (row['finish'] as int) != 0,
             createTime: row['createTime'] as int,
             createDate: _dateConverter.decode(row['createDate'] as int)));
@@ -1775,8 +1783,7 @@ class _$GameDao extends GameDao {
             verseKeyId: row['verseKeyId'] as int,
             classroomId: row['classroomId'] as int,
             bookId: row['bookId'] as int,
-            chapterIndex: row['chapterIndex'] as int,
-            verseIndex: row['verseIndex'] as int,
+            chapterKeyId: row['chapterKeyId'] as int,
             finish: (row['finish'] as int) != 0,
             createTime: row['createTime'] as int,
             createDate: _dateConverter.decode(row['createDate'] as int)),
@@ -1791,7 +1798,7 @@ class _$GameDao extends GameDao {
   ) async {
     return _queryAdapter.query(
         'SELECT * FROM GameUserInput WHERE gameId=?1 and gameUserId=?2 and time=?3 order by id desc limit 1',
-        mapper: (Map<String, Object?> row) => GameUserInput(row['gameId'] as int, row['gameUserId'] as int, row['time'] as int, row['verseKeyId'] as int, row['classroomId'] as int, row['bookSerial'] as int, row['chapterIndex'] as int, row['verseIndex'] as int, row['input'] as String, row['output'] as String, row['createTime'] as int, _dateConverter.decode(row['createDate'] as int), id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => GameUserInput(gameId: row['gameId'] as int, gameUserId: row['gameUserId'] as int, time: row['time'] as int, verseKeyId: row['verseKeyId'] as int, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterKeyId: row['chapterKeyId'] as int, input: row['input'] as String, output: row['output'] as String, createTime: row['createTime'] as int, createDate: _dateConverter.decode(row['createDate'] as int), id: row['id'] as int?),
         arguments: [gameId, gameUserId, time]);
   }
 
@@ -1803,7 +1810,7 @@ class _$GameDao extends GameDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT * FROM GameUserInput WHERE gameId=?1 and gameUserId=?2 and time=?3',
-        mapper: (Map<String, Object?> row) => GameUserInput(row['gameId'] as int, row['gameUserId'] as int, row['time'] as int, row['verseKeyId'] as int, row['classroomId'] as int, row['bookSerial'] as int, row['chapterIndex'] as int, row['verseIndex'] as int, row['input'] as String, row['output'] as String, row['createTime'] as int, _dateConverter.decode(row['createDate'] as int), id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => GameUserInput(gameId: row['gameId'] as int, gameUserId: row['gameUserId'] as int, time: row['time'] as int, verseKeyId: row['verseKeyId'] as int, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterKeyId: row['chapterKeyId'] as int, input: row['input'] as String, output: row['output'] as String, createTime: row['createTime'] as int, createDate: _dateConverter.decode(row['createDate'] as int), id: row['id'] as int?),
         arguments: [gameId, gameUserId, time]);
   }
 
@@ -1822,6 +1829,12 @@ class _$GameDao extends GameDao {
   Future<void> deleteByClassroomId(int classroomId) async {
     await _queryAdapter.queryNoReturn('DELETE FROM Game WHERE classroomId=?1',
         arguments: [classroomId]);
+  }
+
+  @override
+  Future<void> deleteByChapterKeyId(int chapterKeyId) async {
+    await _queryAdapter.queryNoReturn('DELETE FROM Game WHERE chapterKeyId=?1',
+        arguments: [chapterKeyId]);
   }
 
   @override
@@ -1938,6 +1951,13 @@ class _$GameUserInputDao extends GameUserInputDao {
         'DELETE FROM GameUserInput WHERE classroomId=?1',
         arguments: [classroomId]);
   }
+
+  @override
+  Future<void> deleteByChapterKeyId(int chapterKeyId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM GameUserInput WHERE chapterKeyId=?1',
+        arguments: [chapterKeyId]);
+  }
 }
 
 class _$KvDao extends KvDao {
@@ -2010,6 +2030,13 @@ class _$TimeStatsDao extends TimeStatsDao {
         'DELETE FROM TimeStats WHERE classroomId=?1',
         arguments: [classroomId]);
   }
+
+  @override
+  Future<void> deleteByChapterKeyId(int chapterKeyId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM TimeStats WHERE chapterKeyId=?1',
+        arguments: [chapterKeyId]);
+  }
 }
 
 class _$ScheduleDao extends ScheduleDao {
@@ -2052,6 +2079,7 @@ class _$ScheduleDao extends ScheduleDao {
                   'verseKeyId': item.verseKeyId,
                   'classroomId': item.classroomId,
                   'bookId': item.bookId,
+                  'chapterKeyId': item.chapterKeyId,
                   'count': item.count
                 }),
         _verseKeyInsertionAdapter = InsertionAdapter(
@@ -2103,7 +2131,8 @@ class _$ScheduleDao extends ScheduleDao {
                   'createDate': _dateConverter.encode(item.createDate),
                   'createTime': item.createTime,
                   'classroomId': item.classroomId,
-                  'bookId': item.bookId
+                  'bookId': item.bookId,
+                  'chapterKeyId': item.chapterKeyId
                 }),
         _verseKeyUpdateAdapter = UpdateAdapter(
             database,
@@ -2403,7 +2432,7 @@ class _$ScheduleDao extends ScheduleDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT VerseReview.*,Book.name contentName,Verse.chapterIndex,Verse.verseIndex FROM VerseReview JOIN Verse ON Verse.verseKeyId=VerseReview.verseKeyId JOIN Book ON Book.id=VerseReview.bookId WHERE VerseReview.classroomId=?1 AND VerseReview.createDate>=?2 AND VerseReview.createDate<=?3 ORDER BY VerseReview.createDate desc,Verse.sort asc',
-        mapper: (Map<String, Object?> row) => VerseReviewWithKey(createDate: _dateConverter.decode(row['createDate'] as int), verseKeyId: row['verseKeyId'] as int, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, count: row['count'] as int, contentName: row['contentName'] as String, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int),
+        mapper: (Map<String, Object?> row) => VerseReviewWithKey(createDate: _dateConverter.decode(row['createDate'] as int), verseKeyId: row['verseKeyId'] as int, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterKeyId: row['chapterKeyId'] as int, count: row['count'] as int, contentName: row['contentName'] as String, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int),
         arguments: [
           classroomId,
           _dateConverter.encode(start),
@@ -2996,6 +3025,13 @@ class _$VerseContentVersionDao extends VerseContentVersionDao {
   }
 
   @override
+  Future<void> deleteByChapterKeyId(int chapterKeyId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseContentVersion WHERE chapterKeyId=?1',
+        arguments: [chapterKeyId]);
+  }
+
+  @override
   Future<void> deleteByVerseKeyId(int verseKeyId) async {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM VerseContentVersion WHERE verseKeyId=?1',
@@ -3125,6 +3161,12 @@ class _$VerseDao extends VerseDao {
   Future<void> deleteByBookId(int bookId) async {
     await _queryAdapter.queryNoReturn('DELETE FROM Verse WHERE Verse.bookId=?1',
         arguments: [bookId]);
+  }
+
+  @override
+  Future<void> deleteByChapterKeyId(int chapterKeyId) async {
+    await _queryAdapter.queryNoReturn('DELETE FROM Verse WHERE chapterKeyId=?1',
+        arguments: [chapterKeyId]);
   }
 
   @override
@@ -3260,6 +3302,13 @@ class _$VerseKeyDao extends VerseKeyDao {
   }
 
   @override
+  Future<void> deleteByChapterKeyId(int chapterKeyId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseKey WHERE chapterKeyId=?1',
+        arguments: [chapterKeyId]);
+  }
+
+  @override
   Future<void> insertOrFail(VerseKey entity) async {
     await _verseKeyInsertionAdapter.insert(entity, OnConflictStrategy.fail);
   }
@@ -3304,6 +3353,13 @@ class _$VerseOverallPrgDao extends VerseOverallPrgDao {
   }
 
   @override
+  Future<void> deleteByChapterKeyId(int chapterKeyId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseOverallPrg WHERE chapterKeyId=?1',
+        arguments: [chapterKeyId]);
+  }
+
+  @override
   Future<void> insertOrFail(VerseOverallPrg entity) async {
     await _verseOverallPrgInsertionAdapter.insert(
         entity, OnConflictStrategy.fail);
@@ -3320,6 +3376,9 @@ class _$StatsDao extends StatsDao {
             'TimeStats',
             (TimeStats item) => <String, Object?>{
                   'classroomId': item.classroomId,
+                  'bookId': item.bookId,
+                  'chapterKeyId': item.chapterKeyId,
+                  'verseKeyId': item.verseKeyId,
                   'createDate': _dateConverter.encode(item.createDate),
                   'createTime': item.createTime,
                   'duration': item.duration
@@ -3356,7 +3415,8 @@ class _$StatsDao extends StatsDao {
             createDate: _dateConverter.decode(row['createDate'] as int),
             createTime: row['createTime'] as int,
             classroomId: row['classroomId'] as int,
-            bookId: row['bookId'] as int),
+            bookId: row['bookId'] as int,
+            chapterKeyId: row['chapterKeyId'] as int),
         arguments: [classroomId, _dateConverter.encode(date)]);
   }
 
@@ -3368,7 +3428,7 @@ class _$StatsDao extends StatsDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT * FROM VerseStats WHERE classroomId = ?1 AND createDate >= ?2 AND createDate <= ?3',
-        mapper: (Map<String, Object?> row) => VerseStats(verseKeyId: row['verseKeyId'] as int, type: row['type'] as int, createDate: _dateConverter.decode(row['createDate'] as int), createTime: row['createTime'] as int, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int),
+        mapper: (Map<String, Object?> row) => VerseStats(verseKeyId: row['verseKeyId'] as int, type: row['type'] as int, createDate: _dateConverter.decode(row['createDate'] as int), createTime: row['createTime'] as int, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterKeyId: row['chapterKeyId'] as int),
         arguments: [
           classroomId,
           _dateConverter.encode(start),
@@ -3423,10 +3483,13 @@ class _$StatsDao extends StatsDao {
     return _queryAdapter.query(
         'SELECT * FROM TimeStats WHERE classroomId = ?1 AND createDate = ?2',
         mapper: (Map<String, Object?> row) => TimeStats(
-            row['classroomId'] as int,
-            _dateConverter.decode(row['createDate'] as int),
-            row['createTime'] as int,
-            row['duration'] as int),
+            classroomId: row['classroomId'] as int,
+            bookId: row['bookId'] as int,
+            chapterKeyId: row['chapterKeyId'] as int,
+            verseKeyId: row['verseKeyId'] as int,
+            createDate: _dateConverter.decode(row['createDate'] as int),
+            createTime: row['createTime'] as int,
+            duration: row['duration'] as int),
         arguments: [classroomId, _dateConverter.encode(date)]);
   }
 
@@ -3438,7 +3501,7 @@ class _$StatsDao extends StatsDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT * FROM TimeStats WHERE classroomId = ?1 AND createDate >= ?2 AND createDate <= ?3',
-        mapper: (Map<String, Object?> row) => TimeStats(row['classroomId'] as int, _dateConverter.decode(row['createDate'] as int), row['createTime'] as int, row['duration'] as int),
+        mapper: (Map<String, Object?> row) => TimeStats(classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterKeyId: row['chapterKeyId'] as int, verseKeyId: row['verseKeyId'] as int, createDate: _dateConverter.decode(row['createDate'] as int), createTime: row['createTime'] as int, duration: row['duration'] as int),
         arguments: [
           classroomId,
           _dateConverter.encode(start),
@@ -3544,6 +3607,13 @@ class _$VerseReviewDao extends VerseReviewDao {
         'DELETE FROM VerseReview WHERE classroomId=?1',
         arguments: [classroomId]);
   }
+
+  @override
+  Future<void> deleteByChapterKeyId(int chapterKeyId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseReview WHERE chapterKeyId=?1',
+        arguments: [chapterKeyId]);
+  }
 }
 
 class _$VerseStatsDao extends VerseStatsDao {
@@ -3563,6 +3633,13 @@ class _$VerseStatsDao extends VerseStatsDao {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM VerseStats WHERE classroomId=?1',
         arguments: [classroomId]);
+  }
+
+  @override
+  Future<void> deleteByChapterKeyId(int chapterKeyId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseStats WHERE chapterKeyId=?1',
+        arguments: [chapterKeyId]);
   }
 }
 
@@ -3622,6 +3699,13 @@ class _$VerseTodayPrgDao extends VerseTodayPrgDao {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM VerseTodayPrg WHERE classroomId=?1',
         arguments: [classroomId]);
+  }
+
+  @override
+  Future<void> deleteByChapterKeyId(int chapterKeyId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseTodayPrg WHERE chapterKeyId=?1',
+        arguments: [chapterKeyId]);
   }
 
   @override

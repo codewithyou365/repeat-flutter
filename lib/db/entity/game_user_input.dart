@@ -5,7 +5,9 @@ import 'package:repeat_flutter/common/date.dart';
 
 @Entity(
   indices: [
-    Index(value: ['classroomId', 'bookSerial', 'chapterIndex', 'verseIndex']),
+    Index(value: ['classroomId']),
+    Index(value: ['bookId']),
+    Index(value: ['chapterKeyId']),
     Index(value: ['verseKeyId']),
     Index(value: ['createDate']),
     Index(value: ['gameId', 'gameUserId', 'time']),
@@ -19,32 +21,42 @@ class GameUserInput {
   final int time;
   final int verseKeyId;
   final int classroomId;
-  final int bookSerial;
-  final int chapterIndex;
-  final int verseIndex;
+  final int bookId;
+  final int chapterKeyId;
 
   final String input;
   final String output;
   final int createTime;
   final Date createDate;
 
-  GameUserInput(
-    this.gameId,
-    this.gameUserId,
-    this.time,
-    this.verseKeyId,
-    this.classroomId,
-    this.bookSerial,
-    this.chapterIndex,
-    this.verseIndex,
-    this.input,
-    this.output,
-    this.createTime,
-    this.createDate, {
+  GameUserInput({
+    required this.gameId,
+    required this.gameUserId,
+    required this.time,
+    required this.verseKeyId,
+    required this.classroomId,
+    required this.bookId,
+    required this.chapterKeyId,
+    required this.input,
+    required this.output,
+    required this.createTime,
+    required this.createDate,
     this.id,
   });
 
-  static empty() => GameUserInput(0, 0, 0, 0, 0, 0, 0, 0, '', '', 0, Date(0));
+  static GameUserInput empty() => GameUserInput(
+        gameId: 0,
+        gameUserId: 0,
+        time: 0,
+        verseKeyId: 0,
+        classroomId: 0,
+        bookId: 0,
+        chapterKeyId: 0,
+        input: '',
+        output: '',
+        createTime: 0,
+        createDate: Date(0),
+      );
 
-  isEmpty() => gameId == 0;
+  bool isEmpty() => gameId == 0;
 }
