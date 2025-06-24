@@ -6,22 +6,19 @@ import 'package:repeat_flutter/db/entity/time_stats.dart';
 class TimeStatsLogic {
   int lastRecallTime = 0;
 
-  tryInsertTimeStats() async {
+  Future<void> tryInsertTimeStats() async {
     var now = DateTime.now();
     var nowMs = now.millisecondsSinceEpoch;
     lastRecallTime = nowMs;
-    await Db().db.statsDao.tryInsertTimeStats(TimeStats(
+    await Db().db.timeStatsDao.tryInsert(TimeStats(
           classroomId: Classroom.curr,
-          bookId: 0,
-          chapterKeyId: 0,
-          verseKeyId: 0,
           createDate: Date.from(now),
           createTime: nowMs,
           duration: 0,
         ));
   }
 
-  updateTimeStats() {
+  Future<void> updateTimeStats() async {
     var now = DateTime.now();
     var nowMs = now.millisecondsSinceEpoch;
     var duration = nowMs - lastRecallTime;
@@ -30,7 +27,7 @@ class TimeStatsLogic {
         duration = 60000;
       }
       lastRecallTime = nowMs;
-      Db().db.statsDao.updateTimeStats(Classroom.curr, Date.from(now), duration);
+      await Db().db.timeStatsDao.update(Classroom.curr, Date.from(now), duration);
     }
   }
 }

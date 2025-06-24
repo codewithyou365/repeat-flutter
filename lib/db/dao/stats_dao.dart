@@ -4,7 +4,6 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/verse_stats.dart';
-import 'package:repeat_flutter/db/entity/time_stats.dart';
 
 @dao
 abstract class StatsDao {
@@ -25,35 +24,11 @@ abstract class StatsDao {
   @Query('SELECT DISTINCT verseKeyId FROM VerseStats WHERE classroomId = :classroomId AND createDate = :date')
   Future<List<int>> getDistinctVerseKeyIds(int classroomId, Date date);
 
-  @Query('SELECT * FROM TimeStats WHERE classroomId = :classroomId AND createDate = :date')
-  Future<TimeStats?> getTimeStatsByDate(int classroomId, Date date);
-
-  @Query('SELECT * FROM TimeStats WHERE classroomId = :classroomId AND createDate >= :start AND createDate <= :end')
-  Future<List<TimeStats>> getTimeStatsByDateRange(int classroomId, Date start, Date end);
-
-  @Query('SELECT COALESCE(sum(duration), 0) FROM TimeStats WHERE classroomId = :classroomId AND createDate >= :start AND createDate <= :end')
-  Future<int?> getTimeByDateRange(int classroomId, Date start, Date end);
-
-  @Query('UPDATE TimeStats set duration=:time+duration'
-      ' WHERE classroomId=:classroomId AND createDate=:date')
-  Future<void> updateTimeStats(int classroomId, Date date, int time);
-
-  @Insert(onConflict: OnConflictStrategy.replace)
-  Future<void> insertTimeStats(TimeStats timeStats);
-
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertKv(CrKv kv);
 
   @Query("SELECT CAST(value as INTEGER) FROM CrKv WHERE classroomId=:classroomId and k=:k")
   Future<int?> intKv(int classroomId, CrK k);
-
-  @transaction
-  Future<void> tryInsertTimeStats(TimeStats newTimeStats) async {
-    var oldTimeStats = await getTimeStatsByDate(newTimeStats.classroomId, newTimeStats.createDate);
-    if (oldTimeStats == null) {
-      insertTimeStats(newTimeStats);
-    }
-  }
 
   @transaction
   Future<List<int>> collectAll() async {
@@ -76,7 +51,7 @@ abstract class StatsDao {
     var lastRecordCreateDate4StatsTotalTime = await intKv(Classroom.curr, CrK.lastRecordCreateDate4StatsTotalTime) ?? 0;
     if (lastRecordCreateDate4StatsTotalTime < before2Date.value) {
       var lastTotalTime = await intKv(Classroom.curr, CrK.statsTotalTime) ?? 0;
-      var currTimeStats = await getTimeByDateRange(Classroom.curr, Date(lastRecordCreateDate4StatsTotalTime), before2Date) ?? 0;
+      var currTimeStats = await db.timeStatsDao.getTimeByDateRange(Classroom.curr, Date(lastRecordCreateDate4StatsTotalTime), before2Date) ?? 0;
       totalTime = lastTotalTime + currTimeStats;
       insertKv(CrKv(Classroom.curr, CrK.statsTotalTime, totalTime.toString()));
       insertKv(CrKv(Classroom.curr, CrK.lastRecordCreateDate4StatsTotalTime, before2Date.value.toString()));
@@ -108,7 +83,7 @@ abstract class StatsDao {
   }
 
   Future<List<int>> collectDate(Date date) async {
-    int todayTime = await getTimeByDateRange(Classroom.curr, date, date) ?? 0;
+    int todayTime = await db.timeStatsDao.getTimeByDateRange(Classroom.curr, date, date) ?? 0;
     int todayLearning = await getCountByDateRange(Classroom.curr, date, date) ?? 0;
     return [todayLearning, todayTime];
   }

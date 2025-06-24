@@ -205,7 +205,7 @@ abstract class ChapterKeyDao {
     //await db.crKvDao.deleteByChapterKeyId(chapterKeyId);
     await db.gameDao.deleteByChapterKeyId(chapterKeyId);
     await db.gameUserInputDao.deleteByChapterKeyId(chapterKeyId);
-    await db.timeStatsDao.deleteByChapterKeyId(chapterKeyId);
+    //await db.timeStatsDao.deleteByChapterKeyId(chapterKeyId);
     await db.verseDao.deleteByChapterKeyId(chapterKeyId);
     await db.verseContentVersionDao.deleteByChapterKeyId(chapterKeyId);
     await db.verseKeyDao.deleteByChapterKeyId(chapterKeyId);

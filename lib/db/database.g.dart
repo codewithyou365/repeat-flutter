@@ -168,7 +168,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `VerseStats` (`verseKeyId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterKeyId` INTEGER NOT NULL, PRIMARY KEY (`verseKeyId`, `type`, `createDate`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterKeyId` INTEGER NOT NULL, `verseKeyId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
+            'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER NOT NULL, `time` INTEGER NOT NULL, `verseContent` TEXT NOT NULL, `verseKeyId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterKeyId` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
@@ -245,12 +245,6 @@ class _$AppDatabase extends AppDatabase {
             'CREATE INDEX `index_VerseStats_classroomId_createDate` ON `VerseStats` (`classroomId`, `createDate`)');
         await database.execute(
             'CREATE INDEX `index_VerseStats_classroomId_createTime` ON `VerseStats` (`classroomId`, `createTime`)');
-        await database.execute(
-            'CREATE INDEX `index_TimeStats_bookId` ON `TimeStats` (`bookId`)');
-        await database.execute(
-            'CREATE INDEX `index_TimeStats_chapterKeyId` ON `TimeStats` (`chapterKeyId`)');
-        await database.execute(
-            'CREATE INDEX `index_TimeStats_verseKeyId` ON `TimeStats` (`verseKeyId`)');
         await database.execute(
             'CREATE INDEX `index_Game_classroomId` ON `Game` (`classroomId`)');
         await database
@@ -2016,13 +2010,24 @@ class _$TimeStatsDao extends TimeStatsDao {
   _$TimeStatsDao(
     this.database,
     this.changeListener,
-  ) : _queryAdapter = QueryAdapter(database);
+  )   : _queryAdapter = QueryAdapter(database),
+        _timeStatsInsertionAdapter = InsertionAdapter(
+            database,
+            'TimeStats',
+            (TimeStats item) => <String, Object?>{
+                  'classroomId': item.classroomId,
+                  'createDate': _dateConverter.encode(item.createDate),
+                  'createTime': item.createTime,
+                  'duration': item.duration
+                });
 
   final sqflite.DatabaseExecutor database;
 
   final StreamController<String> changeListener;
 
   final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<TimeStats> _timeStatsInsertionAdapter;
 
   @override
   Future<void> deleteByClassroomId(int classroomId) async {
@@ -2032,10 +2037,82 @@ class _$TimeStatsDao extends TimeStatsDao {
   }
 
   @override
-  Future<void> deleteByChapterKeyId(int chapterKeyId) async {
+  Future<TimeStats?> getByDate(
+    int classroomId,
+    Date date,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT * FROM TimeStats WHERE classroomId = ?1 AND createDate = ?2',
+        mapper: (Map<String, Object?> row) => TimeStats(
+            classroomId: row['classroomId'] as int,
+            createDate: _dateConverter.decode(row['createDate'] as int),
+            createTime: row['createTime'] as int,
+            duration: row['duration'] as int),
+        arguments: [classroomId, _dateConverter.encode(date)]);
+  }
+
+  @override
+  Future<List<TimeStats>> getTimeStatsByDateRange(
+    int classroomId,
+    Date start,
+    Date end,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM TimeStats WHERE classroomId = ?1 AND createDate >= ?2 AND createDate <= ?3',
+        mapper: (Map<String, Object?> row) => TimeStats(classroomId: row['classroomId'] as int, createDate: _dateConverter.decode(row['createDate'] as int), createTime: row['createTime'] as int, duration: row['duration'] as int),
+        arguments: [
+          classroomId,
+          _dateConverter.encode(start),
+          _dateConverter.encode(end)
+        ]);
+  }
+
+  @override
+  Future<int?> getTimeByDateRange(
+    int classroomId,
+    Date start,
+    Date end,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT COALESCE(sum(duration), 0) FROM TimeStats WHERE classroomId = ?1 AND createDate >= ?2 AND createDate <= ?3',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [
+          classroomId,
+          _dateConverter.encode(start),
+          _dateConverter.encode(end)
+        ]);
+  }
+
+  @override
+  Future<void> update(
+    int classroomId,
+    Date date,
+    int time,
+  ) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM TimeStats WHERE chapterKeyId=?1',
-        arguments: [chapterKeyId]);
+        'UPDATE TimeStats set duration=?3+duration WHERE classroomId=?1 AND createDate=?2',
+        arguments: [classroomId, _dateConverter.encode(date), time]);
+  }
+
+  @override
+  Future<void> insertOrReplace(TimeStats timeStats) async {
+    await _timeStatsInsertionAdapter.insert(
+        timeStats, OnConflictStrategy.replace);
+  }
+
+  @override
+  Future<void> tryInsert(TimeStats newTimeStats) async {
+    if (database is sqflite.Transaction) {
+      await super.tryInsert(newTimeStats);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        await transactionDatabase.timeStatsDao.tryInsert(newTimeStats);
+      });
+    }
   }
 }
 
@@ -3371,18 +3448,6 @@ class _$StatsDao extends StatsDao {
     this.database,
     this.changeListener,
   )   : _queryAdapter = QueryAdapter(database),
-        _timeStatsInsertionAdapter = InsertionAdapter(
-            database,
-            'TimeStats',
-            (TimeStats item) => <String, Object?>{
-                  'classroomId': item.classroomId,
-                  'bookId': item.bookId,
-                  'chapterKeyId': item.chapterKeyId,
-                  'verseKeyId': item.verseKeyId,
-                  'createDate': _dateConverter.encode(item.createDate),
-                  'createTime': item.createTime,
-                  'duration': item.duration
-                }),
         _crKvInsertionAdapter = InsertionAdapter(
             database,
             'CrKv',
@@ -3397,8 +3462,6 @@ class _$StatsDao extends StatsDao {
   final StreamController<String> changeListener;
 
   final QueryAdapter _queryAdapter;
-
-  final InsertionAdapter<TimeStats> _timeStatsInsertionAdapter;
 
   final InsertionAdapter<CrKv> _crKvInsertionAdapter;
 
@@ -3476,67 +3539,6 @@ class _$StatsDao extends StatsDao {
   }
 
   @override
-  Future<TimeStats?> getTimeStatsByDate(
-    int classroomId,
-    Date date,
-  ) async {
-    return _queryAdapter.query(
-        'SELECT * FROM TimeStats WHERE classroomId = ?1 AND createDate = ?2',
-        mapper: (Map<String, Object?> row) => TimeStats(
-            classroomId: row['classroomId'] as int,
-            bookId: row['bookId'] as int,
-            chapterKeyId: row['chapterKeyId'] as int,
-            verseKeyId: row['verseKeyId'] as int,
-            createDate: _dateConverter.decode(row['createDate'] as int),
-            createTime: row['createTime'] as int,
-            duration: row['duration'] as int),
-        arguments: [classroomId, _dateConverter.encode(date)]);
-  }
-
-  @override
-  Future<List<TimeStats>> getTimeStatsByDateRange(
-    int classroomId,
-    Date start,
-    Date end,
-  ) async {
-    return _queryAdapter.queryList(
-        'SELECT * FROM TimeStats WHERE classroomId = ?1 AND createDate >= ?2 AND createDate <= ?3',
-        mapper: (Map<String, Object?> row) => TimeStats(classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterKeyId: row['chapterKeyId'] as int, verseKeyId: row['verseKeyId'] as int, createDate: _dateConverter.decode(row['createDate'] as int), createTime: row['createTime'] as int, duration: row['duration'] as int),
-        arguments: [
-          classroomId,
-          _dateConverter.encode(start),
-          _dateConverter.encode(end)
-        ]);
-  }
-
-  @override
-  Future<int?> getTimeByDateRange(
-    int classroomId,
-    Date start,
-    Date end,
-  ) async {
-    return _queryAdapter.query(
-        'SELECT COALESCE(sum(duration), 0) FROM TimeStats WHERE classroomId = ?1 AND createDate >= ?2 AND createDate <= ?3',
-        mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [
-          classroomId,
-          _dateConverter.encode(start),
-          _dateConverter.encode(end)
-        ]);
-  }
-
-  @override
-  Future<void> updateTimeStats(
-    int classroomId,
-    Date date,
-    int time,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'UPDATE TimeStats set duration=?3+duration WHERE classroomId=?1 AND createDate=?2',
-        arguments: [classroomId, _dateConverter.encode(date), time]);
-  }
-
-  @override
   Future<int?> intKv(
     int classroomId,
     CrK k,
@@ -3548,29 +3550,8 @@ class _$StatsDao extends StatsDao {
   }
 
   @override
-  Future<void> insertTimeStats(TimeStats timeStats) async {
-    await _timeStatsInsertionAdapter.insert(
-        timeStats, OnConflictStrategy.replace);
-  }
-
-  @override
   Future<void> insertKv(CrKv kv) async {
     await _crKvInsertionAdapter.insert(kv, OnConflictStrategy.replace);
-  }
-
-  @override
-  Future<void> tryInsertTimeStats(TimeStats newTimeStats) async {
-    if (database is sqflite.Transaction) {
-      await super.tryInsertTimeStats(newTimeStats);
-    } else {
-      await (database as sqflite.Database)
-          .transaction<void>((transaction) async {
-        final transactionDatabase = _$AppDatabase(changeListener)
-          ..database = transaction;
-        prepareDb(transactionDatabase);
-        await transactionDatabase.statsDao.tryInsertTimeStats(newTimeStats);
-      });
-    }
   }
 
   @override

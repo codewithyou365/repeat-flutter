@@ -11,6 +11,27 @@ abstract class TimeStatsDao {
   @Query('DELETE FROM TimeStats WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
 
-  @Query('DELETE FROM TimeStats WHERE chapterKeyId=:chapterKeyId')
-  Future<void> deleteByChapterKeyId(int chapterKeyId);
+  @Query('SELECT * FROM TimeStats WHERE classroomId = :classroomId AND createDate = :date')
+  Future<TimeStats?> getByDate(int classroomId, Date date);
+
+  @Query('SELECT * FROM TimeStats WHERE classroomId = :classroomId AND createDate >= :start AND createDate <= :end')
+  Future<List<TimeStats>> getTimeStatsByDateRange(int classroomId, Date start, Date end);
+
+  @Query('SELECT COALESCE(sum(duration), 0) FROM TimeStats WHERE classroomId = :classroomId AND createDate >= :start AND createDate <= :end')
+  Future<int?> getTimeByDateRange(int classroomId, Date start, Date end);
+
+  @Query('UPDATE TimeStats set duration=:time+duration'
+      ' WHERE classroomId=:classroomId AND createDate=:date')
+  Future<void> update(int classroomId, Date date, int time);
+
+  @Insert(onConflict: OnConflictStrategy.replace)
+  Future<void> insertOrReplace(TimeStats timeStats);
+
+  @transaction
+  Future<void> tryInsert(TimeStats newTimeStats) async {
+    var oldTimeStats = await getByDate(newTimeStats.classroomId, newTimeStats.createDate);
+    if (oldTimeStats == null) {
+      insertOrReplace(newTimeStats);
+    }
+  }
 }
