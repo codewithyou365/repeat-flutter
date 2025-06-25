@@ -8,8 +8,8 @@ import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
 
 class EditProgress {
-  static void show(int verseKeyId, {String? warning, String? title, Future<void> Function(int p, int n)? callback}) async {
-    var verseProgress = await Db().db.scheduleDao.getVerseProgress(verseKeyId);
+  static void show(int verseId, {String? warning, String? title, Future<void> Function(int p, int n)? callback}) async {
+    var verseProgress = await Db().db.scheduleDao.getVerseProgress(verseId);
     if (verseProgress == null) {
       return;
     }

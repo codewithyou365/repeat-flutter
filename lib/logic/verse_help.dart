@@ -18,7 +18,7 @@ class QueryChapter {
 
 class VerseHelp {
   static List<VerseShow> cache = [];
-  static Map<int, VerseShow> verseKeyIdToShow = {};
+  static Map<int, VerseShow> verseIdToShow = {};
 
   static Future<String> getVerseKey(int classroomId) async {
     var progressUpdateTime = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.updateVerseShowTime) ?? '';
@@ -38,10 +38,10 @@ class VerseHelp {
           cache.removeWhere((verse) => verse.bookId == query.bookId && verse.chapterIndex >= query.minChapterIndex!);
           cache.addAll(chapterVerse);
         }
-        verseKeyIdToShow = {for (var verse in cache) verse.verseKeyId: verse};
+        verseIdToShow = {for (var verse in cache) verse.verseId: verse};
       } else {
         cache = await Db().db.scheduleDao.getAllVerse(Classroom.curr);
-        verseKeyIdToShow = {for (var verse in cache) verse.verseKeyId: verse};
+        verseIdToShow = {for (var verse in cache) verse.verseId: verse};
       }
     }
   }
@@ -51,20 +51,20 @@ class VerseHelp {
     return cache;
   }
 
-  static VerseShow? getCache(int verseKeyId) {
-    return VerseHelp.verseKeyIdToShow[verseKeyId];
+  static VerseShow? getCache(int verseId) {
+    return VerseHelp.verseIdToShow[verseId];
   }
 
-  static String getVersePos(int verseKeyId) {
-    var verse = VerseHelp.verseKeyIdToShow[verseKeyId];
+  static String getVersePos(int verseId) {
+    var verse = VerseHelp.verseIdToShow[verseId];
     if (verse != null) {
       return "${verse.toChapterPos()}${verse.toVersePos()}";
     }
     return "";
   }
 
-  static void deleteCache(int verseKeyId) {
-    cache.removeWhere((element) => element.verseKeyId == verseKeyId);
-    verseKeyIdToShow.remove(verseKeyId);
+  static void deleteCache(int verseId) {
+    cache.removeWhere((element) => element.verseId == verseId);
+    verseIdToShow.remove(verseId);
   }
 }

@@ -38,7 +38,7 @@ Future<message.Response?> setVerseContent(message.Request req, GameUser? user, S
   if (game == null) {
     return message.Response(error: GameServerError.gameNotFound.name);
   }
-  var ok = await Db().db.scheduleDao.tUpdateVerseContent(game.verseKeyId, reqBody.content);
+  var ok = await Db().db.verseDao.updateVerseContent(game.verseId, reqBody.content);
   if (!ok) {
     String content = Snackbar.popContent();
     if (content.isNotEmpty) {

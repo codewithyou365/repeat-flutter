@@ -25,23 +25,8 @@ class GsCrContentTemplateLogic extends GetxController {
     }
   }
 
-  void onSave(String name) async {
-    showOverlay(() async {
-      var rootPath = await DocPath.getContentPath();
-      var relativePath = DocPath.getRelativePath(state.bookId);
-      var workPath = rootPath.joinPath(relativePath);
-      await Folder.ensureExists(workPath);
-      var indexJsonContent = GsCrContentTemplateState.prefixTemplate;
-      indexJsonContent += name;
-      indexJsonContent += GsCrContentTemplateState.suffixTemplate;
-      var indexJsonUrl = DownloadConstant.defaultUrl.joinPath(relativePath).joinPath('index.json');
-      var indexJsonPath = workPath.joinPath('index.json');
-      File indexJsonFile = File(indexJsonPath);
-      await indexJsonFile.writeAsString(indexJsonContent, flush: true);
+  Future<void> onSave(String name) async {
 
-      final logic = Get.find<ScCrMaterialLogic>();
-      await logic.schedule(state.bookId, indexJsonUrl);
-      Nav.scCrMaterial.until();
-    }, I18nKey.labelSaving.tr);
+    Get.back(result: name);
   }
 }

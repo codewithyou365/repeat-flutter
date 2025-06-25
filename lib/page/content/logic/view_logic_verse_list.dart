@@ -189,7 +189,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
 
   Future<void> delete({required VerseShow verse}) async {
     await showOverlay(() async {
-      bool ok = await Db().db.scheduleDao.deleteNormalVerse(verse.verseKeyId);
+      bool ok = await Db().db.verseDao.delete(verse.verseId);
       if (!ok) {
         return false;
       }
@@ -223,7 +223,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
           return;
         }
 
-        await Db().db.scheduleDao.addFirstVerse(book.id!, chapter.chapterKeyId, chapterIndex);
+        //TODO await Db().db.scheduleDao.addFirstVerse(book.id!, chapter.id!, chapterIndex);
         originalVerseShow = await VerseHelp.getVerses(
           force: true,
           query: QueryChapter(
@@ -243,8 +243,9 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
       if (below) {
         verseIndex++;
       }
-      var verseKeyId = await Db().db.scheduleDao.addVerse(verse, verseIndex);
-      if (verseKeyId == 0) {
+      int verseId = 0;
+      //TODO var verseId = await Db().db.scheduleDao.addVerse(verse, verseIndex);
+      if (verseId == 0) {
         return;
       }
       originalVerseShow = await VerseHelp.getVerses(
@@ -470,12 +471,12 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                   I18nKey.labelVerseName.tr,
                                   content,
                                   (str) async {
-                                    await Db().db.scheduleDao.tUpdateVerseContent(verse.verseKeyId, str);
+                                    //TODO await Db().db.scheduleDao.tUpdateVerseContent(verse.verseId, str);
                                     parentLogic.update([ViewLogicVerseList.bodyId]);
                                   },
                                   qrPagePath: Nav.scan.path,
                                   onHistory: () async {
-                                    List<VerseContentVersion> historyData = await Db().db.verseContentVersionDao.list(verse.verseKeyId, VerseVersionType.content);
+                                    List<VerseContentVersion> historyData = await Db().db.verseContentVersionDao.list(verse.verseId, VerseVersionType.content);
                                     await historyList.show(historyData);
                                   },
                                 );
@@ -498,12 +499,12 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                   I18nKey.labelNote.tr,
                                   verse.verseNote,
                                   (str) async {
-                                    await Db().db.scheduleDao.tUpdateVerseNote(verse.verseKeyId, str);
+                                    //TODO await Db().db.scheduleDao.tUpdateVerseNote(verse.verseId, str);
                                     parentLogic.update([ViewLogicVerseList.bodyId]);
                                   },
                                   qrPagePath: Nav.scan.path,
                                   onHistory: () async {
-                                    List<VerseContentVersion> historyData = await Db().db.verseContentVersionDao.list(verse.verseKeyId, VerseVersionType.note);
+                                    List<VerseContentVersion> historyData = await Db().db.verseContentVersionDao.list(verse.verseId, VerseVersionType.note);
                                     await historyList.show(historyData);
                                   },
                                 );
@@ -561,10 +562,10 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                   desc: I18nKey.labelDeleteVerse.tr,
                                   yes: () {
                                     showTransparentOverlay(() async {
-                                      await Db().db.scheduleDao.deleteAbnormalVerse(verse.verseKeyId);
+                                      await Db().db.scheduleDao.deleteAbnormalVerse(verse.verseId);
 
-                                      VerseHelp.deleteCache(verse.verseKeyId);
-                                      verseShow.removeWhere((element) => element.verseKeyId == verse.verseKeyId);
+                                      VerseHelp.deleteCache(verse.verseId);
+                                      verseShow.removeWhere((element) => element.verseId == verse.verseId);
 
                                       var bookId2Missing = refreshMissingVerseIndex(missingVerseIndex, verseShow);
                                       var warning = bookId2Missing[verse.bookId] ?? false;
@@ -848,8 +849,8 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
   }
 
   Future<void> editProgress(VerseShow verse) async {
-    EditProgress.show(verse.verseKeyId, warning: I18nKey.labelSettingLearningProgressWarning.tr, title: I18nKey.btnOk.tr, callback: (p, n) async {
-      await Db().db.scheduleDao.jumpDirectly(verse.verseKeyId, p, n);
+    EditProgress.show(verse.verseId, warning: I18nKey.labelSettingLearningProgressWarning.tr, title: I18nKey.btnOk.tr, callback: (p, n) async {
+      await Db().db.scheduleDao.jumpDirectly(verse.verseId, p, n);
       Get.back();
       parentLogic.update([ViewLogicVerseList.bodyId]);
     });

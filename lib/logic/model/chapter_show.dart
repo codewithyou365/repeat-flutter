@@ -3,24 +3,22 @@ import 'package:floor/floor.dart';
 @Entity(tableName: "")
 class ChapterShow {
   @primaryKey
-  final int chapterKeyId;
+  final int chapterId;
   final int bookId;
   final String bookName;
   final int bookSort;
   String chapterContent;
   int chapterContentVersion;
   final int chapterIndex;
-  final bool missing;
 
   ChapterShow({
-    required this.chapterKeyId,
+    required this.chapterId,
     required this.bookId,
     required this.bookName,
     required this.bookSort,
     required this.chapterContent,
     required this.chapterContentVersion,
     required this.chapterIndex,
-    required this.missing,
   });
 
   String toPos() {

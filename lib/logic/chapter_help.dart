@@ -4,12 +4,12 @@ import 'package:repeat_flutter/logic/model/chapter_show.dart';
 
 class ChapterHelp {
   static List<ChapterShow> cache = [];
-  static Map<int, ChapterShow> chapterKeyIdToShow = {};
+  static Map<int, ChapterShow> chapterIdToShow = {};
 
   static tryGen({force = false}) async {
     if (cache.isEmpty || force) {
-      cache = await Db().db.chapterKeyDao.getAllChapter(Classroom.curr);
-      chapterKeyIdToShow = {for (var chapter in cache) chapter.chapterKeyId: chapter};
+      cache = await Db().db.chapterDao.getAllChapter(Classroom.curr);
+      chapterIdToShow = {for (var chapter in cache) chapter.chapterId: chapter};
     }
   }
 
@@ -18,12 +18,12 @@ class ChapterHelp {
     return cache;
   }
 
-  static ChapterShow? getCache(int chapterKeyId) {
-    return ChapterHelp.chapterKeyIdToShow[chapterKeyId];
+  static ChapterShow? getCache(int chapterId) {
+    return ChapterHelp.chapterIdToShow[chapterId];
   }
 
-  static void deleteCache(int chapterKeyId) {
-    cache.removeWhere((element) => element.chapterKeyId == chapterKeyId);
-    chapterKeyIdToShow.remove(chapterKeyId);
+  static void deleteCache(int chapterId) {
+    cache.removeWhere((element) => element.chapterId == chapterId);
+    chapterIdToShow.remove(chapterId);
   }
 }

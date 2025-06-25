@@ -13,13 +13,11 @@ import 'package:repeat_flutter/db/dao/cr_kv_dao.dart';
 import 'package:repeat_flutter/db/dao/game_dao.dart';
 import 'package:repeat_flutter/db/dao/game_user_dao.dart';
 import 'package:repeat_flutter/db/dao/chapter_dao.dart';
-import 'package:repeat_flutter/db/dao/chapter_key_dao.dart';
 import 'package:repeat_flutter/db/dao/game_user_input_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/kv_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_content_version_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_dao.dart';
-import 'package:repeat_flutter/db/dao/verse_key_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_overall_prg_dao.dart';
 import 'package:repeat_flutter/db/dao/stats_dao.dart';
 import 'package:repeat_flutter/db/dao/time_stats_dao.dart';
@@ -34,10 +32,8 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/lock.dart';
 import 'package:repeat_flutter/db/entity/chapter.dart';
-import 'package:repeat_flutter/db/entity/chapter_key.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/db/entity/verse_content_version.dart';
-import 'package:repeat_flutter/db/entity/verse_key.dart';
 import 'package:repeat_flutter/db/entity/verse_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/verse_review.dart';
 import 'package:repeat_flutter/db/entity/verse_stats.dart';
@@ -55,6 +51,7 @@ import 'package:repeat_flutter/logic/model/key_id.dart';
 import 'package:repeat_flutter/logic/model/verse_overall_prg_with_key.dart';
 import 'package:repeat_flutter/logic/model/verse_review_with_key.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
+import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 
 import 'entity/kv.dart';
@@ -66,13 +63,11 @@ part 'database.g.dart'; // the generated code will be there
   BookContentVersion,
   Chapter,
   ChapterContentVersion,
-  ChapterKey,
   Kv,
   Classroom,
   CrKv,
   Verse,
   VerseContentVersion,
-  VerseKey,
   KeyId,
   VerseShow,
   VerseOverallPrg,
@@ -106,8 +101,6 @@ abstract class AppDatabase extends FloorDatabase {
 
   ChapterDao get chapterDao;
 
-  ChapterKeyDao get chapterKeyDao;
-
   ClassroomDao get classroomDao;
 
   CrKvDao get crKvDao;
@@ -129,8 +122,6 @@ abstract class AppDatabase extends FloorDatabase {
   VerseContentVersionDao get verseContentVersionDao;
 
   VerseDao get verseDao;
-
-  VerseKeyDao get verseKeyDao;
 
   VerseOverallPrgDao get verseOverallPrgDao;
 
@@ -173,9 +164,10 @@ void prepareDb(AppDatabase db) {
   db.gameDao.db = db;
   db.kvDao.db = db;
   db.chapterContentVersionDao.db = db;
-  db.chapterKeyDao.db = db;
+  db.chapterDao.db = db;
   db.classroomDao.db = db;
   db.bookDao.db = db;
   db.scheduleDao.db = db;
   db.statsDao.db = db;
+  db.verseDao.db = db;
 }

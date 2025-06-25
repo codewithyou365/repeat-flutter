@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/chapter.dart';
 import 'package:repeat_flutter/db/entity/chapter_content_version.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/chapter_key.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
@@ -33,7 +33,6 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
   double searchDetailPanelHeight = 3 * (RowWidget.rowHeight + RowWidget.dividerHeight);
 
-  double missPanelHeight = RowWidget.rowHeight + RowWidget.dividerHeight;
   final RxString search = RxString("");
   final T parentLogic;
   List<BookShow> originalBookShow;
@@ -50,7 +49,6 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
 
   // for collect search data, and missing chapter
   int missingChapterOffset = -1;
-  List<int> missingChapterIndex = [];
   List<String> sortOptions = [];
   RxInt selectedSortIndex = 0.obs;
   List<I18nKey> sortOptionKeys = [
@@ -151,18 +149,17 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
       chapterShow = List.from(originalChapterShow);
     }
     sort(chapterShow, sortOptionKeys[selectedSortIndex.value]);
-    refreshMissingChapterIndex(missingChapterIndex, chapterShow);
 
     parentLogic.update([ViewLogicChapterList.bodyId]);
   }
 
-  Future<void> refresh(ChapterKey? chapterKey) async {
-    if (chapterKey != null) {
+  Future<void> refresh(Chapter? chapter) async {
+    if (chapter != null) {
       await VerseHelp.getVerses(
         force: true,
         query: QueryChapter(
-          bookId: chapterKey.bookId,
-          minChapterIndex: chapterKey.chapterIndex,
+          bookId: chapter.bookId,
+          minChapterIndex: chapter.chapterIndex,
         ),
       );
     }
@@ -175,13 +172,12 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
 
   Future<void> delete({required ChapterShow chapter}) async {
     bool success = await showOverlay<bool>(() async {
-      Map<String, dynamic> out = {};
-      bool ok = await Db().db.chapterKeyDao.deleteNormalChapter(chapter.chapterKeyId, out);
-      if (!ok) {
+      Rx<Chapter> out = Rx(Chapter.empty());
+      bool ok = await Db().db.chapterDao.deleteChapter(chapter.chapterId, out);
+      if (!ok || out.value.id == null) {
         return false;
       }
-      ChapterKey chapterKey = out['chapterKey'] as ChapterKey;
-      await refresh(chapterKey);
+      await refresh(out.value);
       return true;
     }, I18nKey.labelDeleting.tr);
     if (success) {
@@ -202,7 +198,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
         }
         var chapterCount = await Db().db.chapterDao.count(book.id!) ?? 0;
         if (chapterCount == 0) {
-          await Db().db.chapterKeyDao.addFirstChapter(book.id!);
+          await Db().db.chapterDao.addFirstChapter(book.id!);
           await refresh(null);
         }
         return true;
@@ -219,13 +215,12 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
       if (below) {
         chapterIndex++;
       }
-      Map<String, dynamic> out = {};
-      var ok = await Db().db.chapterKeyDao.addChapter(chapter, chapterIndex, out);
-      if (!ok) {
+      Rx<Chapter> out = Rx(Chapter.empty());
+      var ok = await Db().db.chapterDao.addChapter(chapter, chapterIndex, out);
+      if (!ok || out.value.id == null) {
         return false;
       }
-      ChapterKey chapterKey = out['chapterKey'] as ChapterKey;
-      await refresh(chapterKey);
+      await refresh(out.value);
       return true;
     }, I18nKey.labelCopying.tr);
     if (success) {
@@ -258,48 +253,6 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
         builder: (_) {
           var list = chapterShow;
 
-          Widget missingPanel = const SizedBox.shrink();
-          if (missingChapterIndex.isNotEmpty) {
-            missingPanel = SizedBox(
-              height: missPanelHeight,
-              width: width,
-              child: Column(
-                children: [
-                  RowWidget.buildWidgetsWithTitle(I18nKey.labelFindUnnecessaryChapters.tr, [
-                    IconButton(
-                        onPressed: () {
-                          if (missingChapterOffset - 1 < 0) {
-                            missingChapterOffset = 0;
-                          } else {
-                            missingChapterOffset--;
-                          }
-                          itemScrollController.scrollTo(
-                            index: missingChapterIndex[missingChapterOffset],
-                            duration: const Duration(milliseconds: 500),
-                            curve: Curves.easeInOut,
-                          );
-                        },
-                        icon: const Icon(Icons.arrow_back)),
-                    IconButton(
-                        onPressed: () {
-                          if (missingChapterOffset + 1 >= missingChapterIndex.length) {
-                            missingChapterOffset = missingChapterIndex.length - 1;
-                          } else {
-                            missingChapterOffset++;
-                          }
-                          itemScrollController.scrollTo(
-                            index: missingChapterIndex[missingChapterOffset],
-                            duration: const Duration(milliseconds: 500),
-                            curve: Curves.easeInOut,
-                          );
-                        },
-                        icon: const Icon(Icons.arrow_forward)),
-                  ]),
-                  RowWidget.buildDividerWithoutColor(),
-                ],
-              ),
-            );
-          }
           Widget searchDetailPanel = const SizedBox.shrink();
           if (showSearchDetailPanel) {
             searchDetailPanel = Container(
@@ -357,7 +310,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
               itemBuilder: (context, index) {
                 final chapter = list[index];
                 return Card(
-                  color: chapter.missing ? Colors.red : null,
+                  color: null,
                   elevation: 2,
                   margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                   shape: RoundedRectangleBorder(
@@ -406,12 +359,12 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                                   I18nKey.labelChapterName.tr,
                                   content,
                                   (str) async {
-                                    await Db().db.chapterKeyDao.updateChapterContent(chapter.chapterKeyId, str);
+                                    await Db().db.chapterDao.updateChapterContent(chapter.chapterId, str);
                                     parentLogic.update([ViewLogicChapterList.bodyId]);
                                   },
                                   qrPagePath: Nav.scan.path,
                                   onHistory: () async {
-                                    List<ChapterContentVersion> historyData = await Db().db.chapterContentVersionDao.list(chapter.chapterKeyId);
+                                    List<ChapterContentVersion> historyData = await Db().db.chapterContentVersionDao.list(chapter.chapterId);
                                     await historyList.show(historyData);
                                   },
                                 );
@@ -423,39 +376,6 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          if (chapter.missing)
-                            IconButton(
-                              onPressed: () {
-                                MsgBox.yesOrNo(
-                                  title: I18nKey.labelDelete.tr,
-                                  desc: I18nKey.labelDeleteChapter.tr,
-                                  yes: () {
-                                    showTransparentOverlay(() async {
-                                      var ok = await Db().db.chapterKeyDao.deleteAbnormalChapter(chapter.chapterKeyId);
-                                      if (ok == false) {
-                                        return;
-                                      }
-                                      ChapterHelp.deleteCache(chapter.chapterKeyId);
-                                      chapterShow.removeWhere((element) => element.chapterKeyId == chapter.chapterKeyId);
-
-                                      var bookId2Missing = refreshMissingChapterIndex(missingChapterIndex, chapterShow);
-                                      var warning = bookId2Missing[chapter.bookId] ?? false;
-                                      if (warning == false) {
-                                        await Db().db.bookDao.updateBookWarningForChapter(chapter.bookId, warning, DateTime.now().millisecondsSinceEpoch);
-                                        if (removeWarning != null) {
-                                          await removeWarning!();
-                                        }
-                                      }
-                                      parentLogic.update([ViewLogicChapterList.bodyId]);
-                                      Get.back();
-                                    });
-                                  },
-                                );
-                              },
-                              icon: const Icon(
-                                Icons.delete_forever,
-                              ),
-                            ),
                           PopupMenuButton<String>(
                             icon: const Icon(Icons.more_vert),
                             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -529,7 +449,6 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
           }
           return Column(
             children: [
-              missingPanel,
               searchDetailPanel,
               SizedBox(
                 height: getBodyViewHeight(),
@@ -539,23 +458,6 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
             ],
           );
         });
-  }
-
-  Map<int, bool> refreshMissingChapterIndex(
-    List<int> missingChapterIndex,
-    List<ChapterShow> chapterShow,
-  ) {
-    missingChapterIndex.clear();
-
-    Map<int, bool> bookId2Missing = {};
-    for (int i = 0; i < chapterShow.length; i++) {
-      var v = chapterShow[i];
-      if (v.missing) {
-        bookId2Missing[v.bookId] = true;
-        missingChapterIndex.add(i);
-      }
-    }
-    return bookId2Missing;
   }
 
   void updateOptions() {
@@ -615,13 +517,6 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
 
   void collectData() {
     updateOptions();
-    missingChapterIndex = [];
-    for (int i = 0; i < originalChapterShow.length; i++) {
-      var v = originalChapterShow[i];
-      if (v.missing) {
-        missingChapterIndex.add(i);
-      }
-    }
   }
 
   void sort(List<ChapterShow> chapterShow, I18nKey key) {
@@ -639,9 +534,6 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
 
   double getBodyViewHeight() {
     double ret = baseBodyViewHeight;
-    if (missingChapterIndex.isNotEmpty) {
-      ret = ret - missPanelHeight;
-    }
     if (showSearchDetailPanel) {
       ret = ret - searchDetailPanelHeight;
     }

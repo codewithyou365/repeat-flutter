@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/db/dao/chapter_key_dao.dart';
-import 'package:repeat_flutter/db/dao/schedule_dao.dart';
+import 'package:repeat_flutter/db/dao/chapter_dao.dart';
+import 'package:repeat_flutter/db/dao/verse_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -69,10 +69,10 @@ class VideoBoardHelper {
     required this.helper,
   }) {
     boards.value = getCurrVideoBoard();
-    ScheduleDao.setVerseShowContent.add((int id) {
+    VerseDao.setVerseShowContent.add((int id) {
       verseVideoBoardCache.remove(id);
     });
-    ChapterKeyDao.setChapterShowContent.add((int id) {
+    ChapterDao.setChapterShowContent.add((int id) {
       chapterVideoBoardCache.remove(id);
     });
   }
@@ -82,8 +82,8 @@ class VideoBoardHelper {
       return null;
     }
 
-    final chapterKeyId = helper.logic.currVerse!.chapterKeyId;
-    List<VideoBoard>? ret = chapterVideoBoardCache[chapterKeyId];
+    final chapterId = helper.logic.currVerse!.chapterId;
+    List<VideoBoard>? ret = chapterVideoBoardCache[chapterId];
     if (ret != null) {
       return ret;
     }
@@ -100,7 +100,7 @@ class VideoBoardHelper {
       ret = [];
     }
 
-    chapterVideoBoardCache[chapterKeyId] = ret;
+    chapterVideoBoardCache[chapterId] = ret;
     return ret;
   }
 
@@ -109,8 +109,8 @@ class VideoBoardHelper {
       return null;
     }
 
-    final verseKeyId = helper.logic.currVerse!.verseKeyId;
-    List<VideoBoard>? ret = verseVideoBoardCache[verseKeyId];
+    final verseId = helper.logic.currVerse!.verseId;
+    List<VideoBoard>? ret = verseVideoBoardCache[verseId];
     if (ret != null) {
       return ret;
     }
@@ -127,7 +127,7 @@ class VideoBoardHelper {
       ret = [];
     }
 
-    verseVideoBoardCache[verseKeyId] = ret;
+    verseVideoBoardCache[verseId] = ret;
     return ret;
   }
 
@@ -431,26 +431,26 @@ class VideoBoardHelper {
       final List<Map<String, dynamic>> jsonList = boards.value.map((e) => e.toJson()).toList();
 
       if (saveToVerse.value) {
-        final verseKeyId = helper.logic.currVerse!.verseKeyId;
+        final verseId = helper.logic.currVerse!.verseId;
         final verseMap = helper.getCurrVerseMap() ?? {};
         verseMap[jsonName] = jsonList;
         final jsonStr = jsonEncode(verseMap);
-        await Db().db.scheduleDao.tUpdateVerseContent(verseKeyId, jsonStr);
-        verseVideoBoardCache[verseKeyId] = boards.value;
+        await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
+        verseVideoBoardCache[verseId] = boards.value;
       } else {
-        final chapterKeyId = helper.logic.currVerse!.chapterKeyId;
+        final chapterId = helper.logic.currVerse!.chapterId;
         final chapterMap = helper.getCurrChapterMap() ?? {};
         chapterMap[jsonName] = jsonList;
         final jsonStr = jsonEncode(chapterMap);
-        await Db().db.chapterKeyDao.updateChapterContent(chapterKeyId, jsonStr);
+        await Db().db.chapterDao.updateChapterContent(chapterId, jsonStr);
 
-        final verseKeyId = helper.logic.currVerse!.verseKeyId;
+        final verseId = helper.logic.currVerse!.verseId;
         final verseMap = helper.getCurrVerseMap() ?? {};
         verseMap.remove(jsonName);
         final verseJsonStr = jsonEncode(verseMap);
-        await Db().db.scheduleDao.tUpdateVerseContent(verseKeyId, verseJsonStr);
-        verseVideoBoardCache[verseKeyId] = boards.value;
-        chapterVideoBoardCache[chapterKeyId] = boards.value;
+        await Db().db.verseDao.updateVerseContent(verseId, verseJsonStr);
+        verseVideoBoardCache[verseId] = boards.value;
+        chapterVideoBoardCache[chapterId] = boards.value;
       }
       Snackbar.show(I18nKey.labelSaved.tr);
     } catch (e) {

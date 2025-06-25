@@ -16,8 +16,8 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 @dao
 abstract class BookDao {
   late AppDatabase db;
-  static BookShow? Function(int chapterKeyId)? getBookShow;
-  static List<void Function(int chapterKeyId)> setBookShowContent = [];
+  static BookShow? Function(int chapterId)? getBookShow;
+  static List<void Function(int chapterId)> setBookShowContent = [];
 
   @Query('SELECT id bookId'
       ',classroomId'
@@ -85,9 +85,13 @@ abstract class BookDao {
 
   @transaction
   Future<void> updateBookContent(int bookId, String content) async {
+    await innerUpdateBookContent(bookId, content);
+  }
+
+  Future<void> innerUpdateBookContent(int bookId, String content) async {
     Book? book = await getById(bookId);
     if (book == null) {
-      Snackbar.show(I18nKey.labelNotFoundVerse.trArgs([bookId.toString()]));
+      Snackbar.showAndThrow(I18nKey.labelNotFoundVerse.trArgs([bookId.toString()]));
       return;
     }
 
@@ -95,7 +99,7 @@ abstract class BookDao {
       Map<String, dynamic> contentM = convert.jsonDecode(content);
       content = convert.jsonEncode(contentM);
     } catch (e) {
-      Snackbar.show(e.toString());
+      Snackbar.showAndThrow(e.toString());
       return;
     }
 
@@ -157,6 +161,12 @@ abstract class BookDao {
       await insertBook(ret);
     }
     return ret;
+  }
+
+  @transaction
+  Future<void> create(int bookId, String content) async {
+    await innerUpdateBookContent(bookId, content);
+    await updateDocId(bookId, 1);
   }
 
   Future<void> import(int bookId, String content) async {

@@ -7,8 +7,9 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/book_dao.dart';
-import 'package:repeat_flutter/db/dao/chapter_key_dao.dart';
+import 'package:repeat_flutter/db/dao/chapter_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
+import 'package:repeat_flutter/db/dao/verse_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
@@ -56,9 +57,9 @@ class GsCrLogic extends GetxController {
   Future<void> init({TodayPrgType? type}) async {
     await copyLogic.init();
     await VerseHelp.tryGen(force: true);
-    ScheduleDao.getVerseShow = VerseHelp.getCache;
+    VerseDao.getVerseShow = VerseHelp.getCache;
     await ChapterHelp.tryGen(force: true);
-    ChapterKeyDao.getChapterShow = ChapterHelp.getCache;
+    ChapterDao.getChapterShow = ChapterHelp.getCache;
     await BookHelp.tryGen(force: true);
     BookDao.getBookShow = BookHelp.getCache;
     state.forAdd.contents = await Db().db.bookDao.getAllEnableBook(Classroom.curr);
@@ -438,7 +439,7 @@ class GsCrLogic extends GetxController {
     List<VerseShow> ret = [];
     for (int i = 0; i < verses.length; i++) {
       final verse = verses[i];
-      VerseShow? verseShow = VerseHelp.getCache(verse.verseKeyId);
+      VerseShow? verseShow = VerseHelp.getCache(verse.verseId);
       if (verseShow != null) {
         ret.add(verseShow);
       }

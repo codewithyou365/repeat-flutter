@@ -9,12 +9,12 @@ import 'content_version.dart';
     Index(value: ['classroomId']),
     Index(value: ['bookId']),
   ],
-  primaryKeys: ['chapterKeyId', 'version'],
+  primaryKeys: ['chapterId', 'version'],
 )
 class ChapterContentVersion implements ContentVersion {
   final int classroomId;
   final int bookId;
-  int chapterKeyId;
+  int chapterId;
   final int version;
   final VersionReason reason;
   final String content;
@@ -23,7 +23,7 @@ class ChapterContentVersion implements ContentVersion {
   ChapterContentVersion({
     required this.classroomId,
     required this.bookId,
-    required this.chapterKeyId,
+    required this.chapterId,
     required this.version,
     required this.reason,
     required this.content,

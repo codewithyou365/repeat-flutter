@@ -9,10 +9,10 @@ class VerseOverallPrgWithKey extends VerseOverallPrg {
   int verseIndex;
 
   VerseOverallPrgWithKey({
-    required super.verseKeyId,
+    required super.verseId,
     required super.classroomId,
     required super.bookId,
-    required super.chapterKeyId,
+    required super.chapterId,
     required super.next,
     required super.progress,
     required this.contentName,

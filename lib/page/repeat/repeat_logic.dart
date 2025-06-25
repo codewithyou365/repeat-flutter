@@ -103,7 +103,7 @@ class RepeatLogic extends GetxController {
     if (curr == null || repeatLogic == null) {
       return;
     }
-    EditProgress.show(curr.verseKeyId, title: I18nKey.btnNext.tr, callback: (p, n) async {
+    EditProgress.show(curr.verseId, title: I18nKey.btnNext.tr, callback: (p, n) async {
       await repeatLogic!.jump(progress: p, nextDayValue: n);
       Get.back();
       update([RepeatLogic.id]);
@@ -121,7 +121,7 @@ class RepeatLogic extends GetxController {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
-    var chapter = ChapterHelp.getCache(curr.chapterKeyId);
+    var chapter = ChapterHelp.getCache(curr.chapterId);
     if (chapter == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
@@ -130,7 +130,7 @@ class RepeatLogic extends GetxController {
       arguments: ContentArgs(
         bookName: content.name,
         initChapterSelect: chapter.chapterIndex,
-        selectVerseKeyId: curr.verseKeyId,
+        selectVerseKeyId: curr.verseId,
         defaultTap: 2,
       ),
     );

@@ -13,7 +13,7 @@ enum TodayPrgType {
 
 @Entity(
   indices: [
-    Index(value: ['verseKeyId', 'type'], unique: true),
+    Index(value: ['verseId', 'type'], unique: true),
     Index(value: ['classroomId', 'sort']),
     Index(value: ['bookId']),
   ],
@@ -23,8 +23,8 @@ class VerseTodayPrg {
   final int? id;
   final int classroomId;
   final int bookId;
-  final int chapterKeyId;
-  final int verseKeyId;
+  final int chapterId;
+  final int verseId;
   int time;
   int type;
   final int sort;
@@ -37,8 +37,8 @@ class VerseTodayPrg {
   VerseTodayPrg({
     required this.classroomId,
     required this.bookId,
-    required this.chapterKeyId,
-    required this.verseKeyId,
+    required this.chapterId,
+    required this.verseId,
     required this.time,
     required this.type,
     required this.sort,
@@ -54,8 +54,8 @@ class VerseTodayPrg {
     return VerseTodayPrg(
       classroomId: 0,
       bookId: 0,
-      chapterKeyId: 0,
-      verseKeyId: 0,
+      chapterId: 0,
+      verseId: 0,
       time: 0,
       type: TodayPrgType.none.index,
       sort: 0,
@@ -124,8 +124,8 @@ class VerseTodayPrg {
       VerseTodayPrg clonedVerse = VerseTodayPrg(
         classroomId: verse.classroomId,
         bookId: verse.bookId,
-        chapterKeyId: verse.chapterKeyId,
-        verseKeyId: verse.verseKeyId,
+        chapterId: verse.chapterId,
+        verseId: verse.verseId,
         time: verse.time,
         type: verse.type,
         sort: verse.sort,

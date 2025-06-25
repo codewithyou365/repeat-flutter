@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
+import 'package:repeat_flutter/db/dao/verse_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
@@ -37,7 +38,7 @@ class MediaRangeHelper {
   MediaRangeHelper({
     required this.helper,
   }) {
-    ScheduleDao.setVerseShowContent.add((int id) {
+    VerseDao.setVerseShowContent.add((int id) {
       answerRangeCache.remove(id);
       questionRangeCache.remove(id);
     });
@@ -55,7 +56,7 @@ class MediaRangeHelper {
     if (helper.logic.currVerse == null) {
       return null;
     }
-    MediaRange? ret = cache[helper.logic.currVerse!.verseKeyId];
+    MediaRange? ret = cache[helper.logic.currVerse!.verseId];
     if (ret != null) {
       return ret;
     }
@@ -77,7 +78,7 @@ class MediaRangeHelper {
     final start = Time.parseTimeToMilliseconds(startStr).toInt();
     final end = Time.parseTimeToMilliseconds(endStr).toInt();
     ret = MediaRange(start: start, end: end, enable: enable);
-    cache[helper.logic.currVerse!.verseKeyId] = ret;
+    cache[helper.logic.currVerse!.verseId] = ret;
     ret.jsonStartName = jsonStartName;
     ret.jsonEndName = jsonEndName;
     return ret;
@@ -105,8 +106,8 @@ class MediaRangeHelper {
           String jsonName = start ? range.jsonStartName : range.jsonEndName;
           map[jsonName] = str;
           String jsonStr = jsonEncode(map);
-          var verseKeyId = helper.getCurrVerse()!.verseKeyId;
-          await Db().db.scheduleDao.tUpdateVerseContent(verseKeyId, jsonStr);
+          var verseId = helper.getCurrVerse()!.verseId;
+          await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
           helper.logic.update();
           Get.back();
           Snackbar.show(I18nKey.labelSaved.tr);

@@ -20,5 +20,5 @@ abstract class ViewLogic {
 
   void trySearch({bool force = false});
 
-  dispose();
+  void dispose();
 }

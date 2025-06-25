@@ -8,8 +8,10 @@ import 'package:repeat_flutter/common/folder.dart';
 import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/path.dart';
+import 'package:repeat_flutter/db/dao/chapter_dao.dart';
 import 'package:repeat_flutter/db/dao/chapter_key_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
+import 'package:repeat_flutter/db/dao/verse_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
@@ -51,14 +53,14 @@ class Helper {
   Map<int, Map<String, dynamic>> verseMapCache = {};
 
   Helper() {
-    ChapterKeyDao.setChapterShowContent = [];
-    ChapterKeyDao.setChapterShowContent.add((int id) {
+    ChapterDao.setChapterShowContent = [];
+    ChapterDao.setChapterShowContent.add((int id) {
       chapterMapCache.remove(id);
       chapterPathCache.remove(id);
     });
 
-    ScheduleDao.setVerseShowContent = [];
-    ScheduleDao.setVerseShowContent.add((int id) {
+    VerseDao.setVerseShowContent = [];
+    VerseDao.setVerseShowContent.add((int id) {
       verseMapCache.remove(id);
     });
   }
@@ -86,7 +88,7 @@ class Helper {
     if (logic.currVerse == null) {
       return null;
     }
-    var verse = VerseHelp.getCache(logic.currVerse!.verseKeyId);
+    var verse = VerseHelp.getCache(logic.currVerse!.verseId);
     if (verse == null) {
       return null;
     }
@@ -97,7 +99,7 @@ class Helper {
     if (logic.currVerse == null) {
       return null;
     }
-    var chapter = ChapterHelp.getCache(logic.currVerse!.chapterKeyId);
+    var chapter = ChapterHelp.getCache(logic.currVerse!.chapterId);
     if (chapter == null) {
       return null;
     }
@@ -136,7 +138,7 @@ class Helper {
     if (logic.currVerse == null) {
       return null;
     }
-    Map<String, dynamic>? ret = chapterMapCache[logic.currVerse!.chapterKeyId];
+    Map<String, dynamic>? ret = chapterMapCache[logic.currVerse!.chapterId];
     String? chapterContent = getCurrChapterContent();
     if (chapterContent == null) {
       return null;
@@ -145,7 +147,7 @@ class Helper {
     if (ret is! Map<String, dynamic>) {
       return null;
     }
-    chapterMapCache[logic.currVerse!.chapterKeyId] = ret;
+    chapterMapCache[logic.currVerse!.chapterId] = ret;
     return ret;
   }
 
@@ -157,7 +159,7 @@ class Helper {
     if (logic.currVerse == null) {
       return null;
     }
-    Map<String, dynamic>? ret = verseMapCache[logic.currVerse!.verseKeyId];
+    Map<String, dynamic>? ret = verseMapCache[logic.currVerse!.verseId];
     String? verseContent = getCurrVerseContent();
     if (verseContent == null) {
       return null;
@@ -166,7 +168,7 @@ class Helper {
     if (ret is! Map<String, dynamic>) {
       return null;
     }
-    verseMapCache[logic.currVerse!.verseKeyId] = ret;
+    verseMapCache[logic.currVerse!.verseId] = ret;
     return ret;
   }
 
@@ -206,7 +208,7 @@ class Helper {
     if (logic.currVerse == null) {
       return null;
     }
-    List<String>? ret = chapterPathCache[logic.currVerse!.chapterKeyId];
+    List<String>? ret = chapterPathCache[logic.currVerse!.chapterId];
     if (ret != null) {
       return ret;
     }
@@ -220,7 +222,7 @@ class Helper {
     for (var download in downloads) {
       ret.add(rootPath.joinPath(DocPath.getRelativePath(logic.currVerse!.bookId)).joinPath(download.path));
     }
-    chapterPathCache[logic.currVerse!.chapterKeyId] = ret;
+    chapterPathCache[logic.currVerse!.chapterId] = ret;
     return ret;
   }
 
@@ -299,10 +301,10 @@ class Helper {
 
             await Folder.ensureExists(localFolder);
             await File(pickedPath).copy(localFolder.joinPath(download.name));
-            var chapterKeyId = s.chapterKeyId;
+            var chapterId = s.chapterId;
             var m = getCurrChapterMap()!;
             m['d'] = [download];
-            Db().db.chapterKeyDao.updateChapterContent(chapterKeyId, jsonEncode(m));
+            Db().db.chapterDao.updateChapterContent(chapterId, jsonEncode(m));
             Get.back();
             Get.back();
           } catch (e) {

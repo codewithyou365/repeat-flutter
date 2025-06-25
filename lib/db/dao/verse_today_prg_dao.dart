@@ -6,8 +6,8 @@ abstract class VerseTodayPrgDao {
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertOrFail(VerseTodayPrg entity);
 
-  @Query('SELECT * FROM VerseTodayPrg where classroomId=:classroomId and verseKeyId=:verseKeyId and type=:type')
-  Future<VerseTodayPrg?> one(int classroomId, int verseKeyId, int type);
+  @Query('SELECT * FROM VerseTodayPrg where classroomId=:classroomId and verseId=:verseId and type=:type')
+  Future<VerseTodayPrg?> one(int classroomId, int verseId, int type);
 
   @Query('DELETE FROM VerseTodayPrg WHERE id=:id')
   Future<void> delete(int id);
@@ -15,6 +15,9 @@ abstract class VerseTodayPrgDao {
   @Query('DELETE FROM VerseTodayPrg WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
 
-  @Query('DELETE FROM VerseTodayPrg WHERE chapterKeyId=:chapterKeyId')
-  Future<void> deleteByChapterKeyId(int chapterKeyId);
+  @Query('DELETE FROM VerseTodayPrg WHERE chapterId=:chapterId')
+  Future<void> deleteByChapterId(int chapterId);
+
+  @Query('DELETE FROM VerseTodayPrg WHERE verseId=:verseId')
+  Future<void> deleteByVerseId(int verseId);
 }

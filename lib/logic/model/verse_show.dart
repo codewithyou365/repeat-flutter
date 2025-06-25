@@ -4,7 +4,7 @@ import 'package:repeat_flutter/common/date.dart';
 @Entity(tableName: "")
 class VerseShow {
   @primaryKey
-  final int verseKeyId;
+  final int verseId;
   String k;
   final int bookId;
   final String bookName;
@@ -13,7 +13,7 @@ class VerseShow {
   int verseContentVersion;
   String verseNote;
   int verseNoteVersion;
-  int chapterKeyId;
+  int chapterId;
   int chapterIndex;
   int verseIndex;
   Date next;
@@ -21,7 +21,7 @@ class VerseShow {
   final bool missing;
 
   VerseShow({
-    required this.verseKeyId,
+    required this.verseId,
     required this.k,
     required this.bookId,
     required this.bookName,
@@ -30,7 +30,7 @@ class VerseShow {
     required this.verseContentVersion,
     required this.verseNote,
     required this.verseNoteVersion,
-    required this.chapterKeyId,
+    required this.chapterId,
     required this.chapterIndex,
     required this.verseIndex,
     required this.next,

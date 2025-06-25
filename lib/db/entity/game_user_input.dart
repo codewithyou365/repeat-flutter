@@ -7,8 +7,8 @@ import 'package:repeat_flutter/common/date.dart';
   indices: [
     Index(value: ['classroomId']),
     Index(value: ['bookId']),
-    Index(value: ['chapterKeyId']),
-    Index(value: ['verseKeyId']),
+    Index(value: ['chapterId']),
+    Index(value: ['verseId']),
     Index(value: ['createDate']),
     Index(value: ['gameId', 'gameUserId', 'time']),
   ],
@@ -19,10 +19,10 @@ class GameUserInput {
   final int gameId;
   final int gameUserId;
   final int time;
-  final int verseKeyId;
+  final int verseId;
   final int classroomId;
   final int bookId;
-  final int chapterKeyId;
+  final int chapterId;
 
   final String input;
   final String output;
@@ -33,10 +33,10 @@ class GameUserInput {
     required this.gameId,
     required this.gameUserId,
     required this.time,
-    required this.verseKeyId,
+    required this.verseId,
     required this.classroomId,
     required this.bookId,
-    required this.chapterKeyId,
+    required this.chapterId,
     required this.input,
     required this.output,
     required this.createTime,
@@ -48,10 +48,10 @@ class GameUserInput {
         gameId: 0,
         gameUserId: 0,
         time: 0,
-        verseKeyId: 0,
+        verseId: 0,
         classroomId: 0,
         bookId: 0,
-        chapterKeyId: 0,
+        chapterId: 0,
         input: '',
         output: '',
         createTime: 0,

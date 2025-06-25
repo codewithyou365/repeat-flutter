@@ -197,6 +197,7 @@ enum I18nKey {
   labelSortCreateDateDesc,
   labelSearch,
   labelNotFoundVerse,
+  labelContentCantContainNote,
   labelSettingLearningProgressWarning,
   labelHaveUnnecessaryVerses,
   labelChapterKeyCantBeEmpty,

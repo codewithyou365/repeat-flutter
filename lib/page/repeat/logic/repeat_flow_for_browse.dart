@@ -39,7 +39,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
   String get titleLabel {
     String pos = "";
     if (currVerse != null) {
-      pos = VerseHelp.getVersePos(currVerse!.verseKeyId);
+      pos = VerseHelp.getVersePos(currVerse!.verseId);
     }
     return '${index + 1}/${scheduled.length} $pos';
   }
@@ -49,7 +49,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
     String nextDiffKey = "";
     if (currVerse!.sort + 1 != nextVerse?.sort) {
       if (nextVerse != null) {
-        nextDiffKey = VerseHelp.getVersePos(nextVerse!.verseKeyId);
+        nextDiffKey = VerseHelp.getVersePos(nextVerse!.verseId);
       }
     }
     switch (step) {
@@ -134,7 +134,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
     if (currVerse == null) {
       return;
     }
-    await Db().db.scheduleDao.jumpDirectly(currVerse!.verseKeyId, progress, nextDayValue);
+    await Db().db.scheduleDao.jumpDirectly(currVerse!.verseId, progress, nextDayValue);
     await next();
   }
 

@@ -10,10 +10,10 @@ class VerseReviewWithKey extends VerseReview {
 
   VerseReviewWithKey({
     required super.createDate,
-    required super.verseKeyId,
+    required super.verseId,
     required super.classroomId,
     required super.bookId,
-    required super.chapterKeyId,
+    required super.chapterId,
     required super.count,
     required this.contentName,
     required this.chapterIndex,

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/folder.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/zip.dart';
 import 'package:repeat_flutter/db/database.dart';
@@ -209,5 +210,18 @@ class ScCrMaterialLogic extends GetxController {
     Get.find<GsCrLogic>().init();
     init();
     return true;
+  }
+
+  void createBook(int bookId) async {
+    String content = await Nav.gsCrContentTemplate.push(arguments: <int>[bookId]);
+    showOverlay(() async {
+      var rootPath = await DocPath.getContentPath();
+      var relativePath = DocPath.getRelativePath(bookId);
+      var workPath = rootPath.joinPath(relativePath);
+      await Folder.ensureExists(workPath);
+      await Db().db.bookDao.create(bookId, '{"s":"$content"}');
+      Get.find<GsCrLogic>().init();
+      init();
+    }, I18nKey.labelSaving.tr);
   }
 }

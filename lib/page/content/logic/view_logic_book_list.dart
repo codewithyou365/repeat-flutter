@@ -278,7 +278,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
     bookOptions.insert(0, I18nKey.labelAll.tr);
   }
 
-  sort(List<BookShow> bookShow, I18nKey key) {
+  void sort(List<BookShow> bookShow, I18nKey key) {
     switch (key) {
       case I18nKey.labelSortPositionAsc:
         bookShow.sort((a, b) => a.toSort().compareTo(b.toSort()));
@@ -300,7 +300,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   }
 
   @override
-  dispose() {
+  void dispose() {
     searchController.dispose();
     searchFocusNode.dispose();
   }

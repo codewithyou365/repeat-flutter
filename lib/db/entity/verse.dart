@@ -3,32 +3,41 @@
 import 'package:floor/floor.dart';
 
 @Entity(
-  primaryKeys: ['verseKeyId'],
   indices: [
-    Index(value: ['chapterKeyId']),
+    Index(value: ['chapterId']),
     Index(value: ['classroomId', 'sort'], unique: true),
     Index(value: ['bookId', 'chapterIndex', 'verseIndex'], unique: true),
   ],
 )
 class Verse {
-  int verseKeyId;
+  @PrimaryKey(autoGenerate: true)
+  int? id;
 
   final int classroomId;
   final int bookId;
-  int chapterKeyId;
+  int chapterId;
   int chapterIndex;
   int verseIndex;
-
   int sort;
+  final String k;
+  final String content;
+  int contentVersion;
+  final String note;
+  int noteVersion;
 
   Verse({
-    required this.verseKeyId,
+    this.id,
     required this.classroomId,
     required this.bookId,
-    required this.chapterKeyId,
+    required this.chapterId,
     required this.chapterIndex,
     required this.verseIndex,
     required this.sort,
+    required this.k,
+    required this.content,
+    required this.contentVersion,
+    required this.note,
+    required this.noteVersion,
   });
 
   String toStringKey() {

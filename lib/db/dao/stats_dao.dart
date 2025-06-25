@@ -21,7 +21,7 @@ abstract class StatsDao {
   @Query('SELECT COUNT(*) FROM VerseStats WHERE classroomId = :classroomId AND type = :type AND createDate = :date')
   Future<int?> getCountByType(int classroomId, int type, Date date);
 
-  @Query('SELECT DISTINCT verseKeyId FROM VerseStats WHERE classroomId = :classroomId AND createDate = :date')
+  @Query('SELECT DISTINCT verseId FROM VerseStats WHERE classroomId = :classroomId AND createDate = :date')
   Future<List<int>> getDistinctVerseKeyIds(int classroomId, Date date);
 
   @Insert(onConflict: OnConflictStrategy.replace)

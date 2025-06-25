@@ -50,7 +50,6 @@ abstract class ClassroomDao {
     await db.bookContentVersionDao.deleteByClassroomId(classroomId);
     await db.chapterDao.deleteByClassroomId(classroomId);
     await db.chapterContentVersionDao.deleteByClassroomId(classroomId);
-    await db.chapterKeyDao.deleteByClassroomId(classroomId);
     await deleteById(classroomId);
     await db.crKvDao.deleteByClassroomId(classroomId);
     await db.gameDao.deleteByClassroomId(classroomId);
@@ -58,7 +57,6 @@ abstract class ClassroomDao {
     await db.timeStatsDao.deleteByClassroomId(classroomId);
     await db.verseDao.deleteByClassroomId(classroomId);
     await db.verseContentVersionDao.deleteByClassroomId(classroomId);
-    await db.verseKeyDao.deleteByClassroomId(classroomId);
     await db.verseOverallPrgDao.deleteByClassroomId(classroomId);
     await db.verseReviewDao.deleteByClassroomId(classroomId);
     await db.verseStatsDao.deleteByClassroomId(classroomId);

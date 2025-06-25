@@ -65,8 +65,11 @@ abstract class GameDao {
   @Query('DELETE FROM Game WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
 
-  @Query('DELETE FROM Game WHERE chapterKeyId=:chapterKeyId')
-  Future<void> deleteByChapterKeyId(int chapterKeyId);
+  @Query('DELETE FROM Game WHERE chapterId=:chapterId')
+  Future<void> deleteByChapterId(int chapterId);
+
+  @Query('DELETE FROM Game WHERE verseId=:verseId')
+  Future<void> deleteByVerseId(int verseId);
 
   @transaction
   Future<Game> tryInsertGame(Game game) async {
@@ -169,10 +172,10 @@ abstract class GameDao {
       gameId: game.id,
       gameUserId: gameUserId,
       time: game.time,
-      verseKeyId: game.verseKeyId,
+      verseId: game.verseId,
       classroomId: game.classroomId,
       bookId: game.bookId,
-      chapterKeyId: game.chapterKeyId,
+      chapterId: game.chapterId,
       input: jsonEncode(input),
       output: jsonEncode(obtainOutput),
       createTime: now.millisecondsSinceEpoch,

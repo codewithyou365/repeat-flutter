@@ -41,7 +41,7 @@ class RepeatFlowForExamine extends RepeatFlow {
   String get titleLabel {
     String pos = "";
     if (currVerse != null) {
-      pos = VerseHelp.getVersePos(currVerse!.verseKeyId);
+      pos = VerseHelp.getVersePos(currVerse!.verseId);
     }
     return '${total - scheduled.length}/$total $pos';
   }
@@ -51,7 +51,7 @@ class RepeatFlowForExamine extends RepeatFlow {
     String nextDiffKey = "";
     if (currVerse != null && currVerse!.sort + 1 != nextVerse?.sort) {
       if (nextVerse != null) {
-        nextDiffKey = VerseHelp.getVersePos(nextVerse!.verseKeyId);
+        nextDiffKey = VerseHelp.getVersePos(nextVerse!.verseId);
       }
     }
     switch (step) {

@@ -60,43 +60,43 @@ class ScCrMaterialPage extends StatelessWidget {
     );
   }
 
-  Widget buildButton(ScCrMaterialLogic logic, Book model) {
+  Widget buildButton(ScCrMaterialLogic logic, Book book) {
     var menus = <PopupMenuEntry<String>>[];
 
-    if (model.docId == 0) {
+    if (book.docId == 0) {
       menus.add(PopupMenuItem<String>(
         onTap: () {
-          openDownloadDialog(logic, model);
+          openDownloadDialog(logic, book);
         },
         child: Text(I18nKey.labelRemoteImport.tr),
       ));
       menus.add(PopupMenuItem<String>(
-        onTap: () => logic.addByZip(model.id!),
+        onTap: () => logic.addByZip(book.id!),
         child: Text(I18nKey.labelLocalZipImport.tr),
       ));
       menus.add(PopupMenuItem<String>(
         onTap: () {
-          Nav.gsCrContentTemplate.push(arguments: <int>[model.id!]);
+          logic.createBook(book.id!);
         },
         child: Text(I18nKey.create.tr),
       ));
     } else {
       menus.add(PopupMenuItem<String>(
         onTap: () {
-          logic.share(model);
+          logic.share(book);
         },
         child: Text(I18nKey.btnShare.tr),
       ));
       menus.add(PopupMenuItem<String>(
         onTap: () {
-          logic.showContent(bookId: model.id!);
+          logic.showContent(bookId: book.id!);
         },
         child: Text(I18nKey.labelContent.tr),
       ));
     }
     menus.add(PopupMenuItem<String>(
       onTap: () {
-        openDeleteDialog(logic, model);
+        openDeleteDialog(logic, book);
       },
       child: Text(I18nKey.btnDelete.tr),
     ));
@@ -107,21 +107,21 @@ class ScCrMaterialPage extends StatelessWidget {
           alignment: Alignment.topRight,
           children: [
             Container(
-              color: model.docId == 0 ? Colors.red : Colors.green,
+              color: book.docId == 0 ? Colors.red : Colors.green,
               padding: const EdgeInsets.only(top: 70, bottom: 70),
               alignment: Alignment.center,
               child: Text(
-                model.name,
+                book.name,
                 style: TextStyle(fontSize: 50.sp),
               ),
             ),
-            if ((model.chapterWarning == true || model.verseWarning == true) && model.docId != 0)
+            if ((book.chapterWarning == true || book.verseWarning == true) && book.docId != 0)
               IconButton(
                 onPressed: () {
-                  if (model.verseWarning) {
-                    logic.showContent(bookId: model.id!, defaultTap: 2);
-                  } else if (model.chapterWarning) {
-                    logic.showContent(bookId: model.id!, defaultTap: 1);
+                  if (book.verseWarning) {
+                    logic.showContent(bookId: book.id!, defaultTap: 2);
+                  } else if (book.chapterWarning) {
+                    logic.showContent(bookId: book.id!, defaultTap: 1);
                   }
                 },
                 color: Colors.yellow,

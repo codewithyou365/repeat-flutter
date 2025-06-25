@@ -1,6 +1,6 @@
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/chapter_key.dart';
+import 'package:repeat_flutter/db/entity/chapter.dart';
 import 'package:repeat_flutter/db/entity/chapter_content_version.dart';
 import 'package:repeat_flutter/db/entity/content_version.dart';
 
@@ -10,12 +10,12 @@ abstract class ChapterContentVersionDao {
 
   @Query('SELECT * '
       ' FROM ChapterContentVersion'
-      ' WHERE chapterKeyId=:chapterKeyId')
-  Future<List<ChapterContentVersion>> list(int chapterKeyId);
+      ' WHERE chapterId=:chapterId')
+  Future<List<ChapterContentVersion>> list(int chapterId);
 
   @Query('SELECT ChapterContentVersion.* '
       ' FROM ChapterKey'
-      ' JOIN ChapterContentVersion ON ChapterContentVersion.chapterKeyId=ChapterKey.id'
+      ' JOIN ChapterContentVersion ON ChapterContentVersion.chapterId=ChapterKey.id'
       '  AND ChapterContentVersion.version=ChapterKey.contentVersion'
       ' WHERE ChapterContentVersion.bookId=:bookId')
   Future<List<ChapterContentVersion>> currVersionList(int bookId);
@@ -34,13 +34,13 @@ abstract class ChapterContentVersionDao {
   Future<void> deleteByClassroomId(int classroomId);
 
   @Query('DELETE FROM ChapterContentVersion'
-      ' WHERE chapterKeyId=:chapterKeyId')
-  Future<void> deleteByChapterKeyId(int chapterKeyId);
+      ' WHERE chapterId=:chapterId')
+  Future<void> deleteByChapterId(int chapterId);
 
-  Future<List<ChapterContentVersion>> import(List<ChapterKey> list, int bookId) async {
+  Future<List<ChapterContentVersion>> import(List<Chapter> list, int bookId) async {
     List<ChapterContentVersion> insertValues = [];
     List<ChapterContentVersion> contentVersion = await currVersionList(bookId);
-    Map<int, ChapterContentVersion> idToContentVersion = {for (var v in contentVersion) v.chapterKeyId: v};
+    Map<int, ChapterContentVersion> idToContentVersion = {for (var v in contentVersion) v.chapterId: v};
     for (var v in list) {
       int id = v.id!;
       String content = v.content;
@@ -53,7 +53,7 @@ abstract class ChapterContentVersionDao {
         var tv = ChapterContentVersion(
           classroomId: v.classroomId,
           bookId: v.bookId,
-          chapterKeyId: v.id!,
+          chapterId: v.id!,
           version: currVersionNumber,
           reason: VersionReason.import,
           content: v.content,

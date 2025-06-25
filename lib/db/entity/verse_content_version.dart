@@ -13,15 +13,15 @@ enum VerseVersionType {
   indices: [
     Index(value: ['classroomId']),
     Index(value: ['bookId']),
-    Index(value: ['chapterKeyId']),
+    Index(value: ['chapterId']),
   ],
-  primaryKeys: ['verseKeyId', 't', 'version'],
+  primaryKeys: ['verseId', 't', 'version'],
 )
 class VerseContentVersion implements ContentVersion {
   final int classroomId;
   final int bookId;
-  final int chapterKeyId;
-  final int verseKeyId;
+  final int chapterId;
+  final int verseId;
   final VerseVersionType t;
   final int version;
   final VersionReason reason;
@@ -31,8 +31,8 @@ class VerseContentVersion implements ContentVersion {
   VerseContentVersion({
     required this.classroomId,
     required this.bookId,
-    required this.chapterKeyId,
-    required this.verseKeyId,
+    required this.chapterId,
+    required this.verseId,
     required this.t,
     required this.version,
     required this.reason,

@@ -55,18 +55,18 @@ class ContentLogic extends GetxController {
           Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the verseKey data(${verseShow.bookId}-${verseShow.chapterIndex}-${verseShow.verseIndex})"]));
           return;
         }
-        var p = await Db().db.verseTodayPrgDao.one(verse.classroomId, verse.verseKeyId, TodayPrgType.justView.index);
+        var p = await Db().db.verseTodayPrgDao.one(verse.classroomId, verse.id!, TodayPrgType.justView.index);
         if (p == null) {
-          Chapter? chapter = await Db().db.chapterDao.getById(verse.chapterKeyId);
+          Chapter? chapter = await Db().db.chapterDao.getById(verse.chapterId);
           if (chapter == null) {
-            Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the chapter data(${verse.chapterKeyId})"]));
+            Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the chapter data(${verse.chapterId})"]));
             return;
           }
           await Db().db.verseTodayPrgDao.insertOrFail(VerseTodayPrg(
                 classroomId: verse.classroomId,
                 bookId: verse.bookId,
-                chapterKeyId: chapter.chapterKeyId,
-                verseKeyId: verse.verseKeyId,
+                chapterId: chapter.id!,
+                verseId: verse.id!,
                 time: 0,
                 type: TodayPrgType.justView.index,
                 sort: 0,
@@ -76,9 +76,9 @@ class ContentLogic extends GetxController {
                 reviewCreateDate: Date(0),
                 finish: false,
               ));
-          p = await Db().db.verseTodayPrgDao.one(verse.classroomId, verse.verseKeyId, TodayPrgType.justView.index);
+          p = await Db().db.verseTodayPrgDao.one(verse.classroomId, verse.id!, TodayPrgType.justView.index);
           if (p == null) {
-            Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant insert the verse(${verse.classroomId}-${verse.verseKeyId}-${TodayPrgType.justView})"]));
+            Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant insert the verse(${verse.classroomId}-${verse.id!}-${TodayPrgType.justView})"]));
             return;
           }
         }

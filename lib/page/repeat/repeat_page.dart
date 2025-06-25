@@ -71,7 +71,7 @@ class RepeatPage extends StatelessWidget {
     if (state.helper.initialized) {
       var verse = state.helper.getCurrVerse();
       if (verse != null) {
-        var verseShow = VerseHelp.getCache(verse.verseKeyId);
+        var verseShow = VerseHelp.getCache(verse.verseId);
         if (verseShow != null) {
           viewName = state.helper.getCurrViewName();
         }
@@ -286,8 +286,8 @@ class RepeatPage extends StatelessWidget {
           (str) async {
             map[type.acronym] = str;
             String jsonStr = jsonEncode(map);
-            var verseKeyId = helper.getCurrVerse()!.verseKeyId;
-            await Db().db.scheduleDao.tUpdateVerseContent(verseKeyId, jsonStr);
+            var verseId = helper.getCurrVerse()!.verseId;
+            await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
             logic.update([RepeatLogic.id]);
           },
           qrPagePath: Nav.scan.path,

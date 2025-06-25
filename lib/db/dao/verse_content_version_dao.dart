@@ -1,19 +1,19 @@
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/db/entity/content_version.dart';
+import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/db/entity/verse_content_version.dart';
-import 'package:repeat_flutter/db/entity/verse_key.dart';
 
 @dao
 abstract class VerseContentVersionDao {
   @Query('SELECT * '
       ' FROM VerseContentVersion'
-      ' WHERE verseKeyId=:verseKeyId'
+      ' WHERE verseId=:verseId'
       ' AND t=:verseVersionType')
-  Future<List<VerseContentVersion>> list(int verseKeyId, VerseVersionType verseVersionType);
+  Future<List<VerseContentVersion>> list(int verseId, VerseVersionType verseVersionType);
 
   @Query('SELECT VerseContentVersion.* '
       ' FROM VerseKey'
-      ' JOIN VerseContentVersion ON VerseContentVersion.verseKeyId=VerseKey.id'
+      ' JOIN VerseContentVersion ON VerseContentVersion.verseId=VerseKey.id'
       '  AND VerseContentVersion.t=:verseVersionType'
       '  AND VerseContentVersion.version=VerseKey.contentVersion'
       ' WHERE VerseContentVersion.bookId=:bookId')
@@ -29,17 +29,17 @@ abstract class VerseContentVersionDao {
       ' WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
 
-  @Query('DELETE FROM VerseContentVersion WHERE chapterKeyId=:chapterKeyId')
-  Future<void> deleteByChapterKeyId(int chapterKeyId);
+  @Query('DELETE FROM VerseContentVersion WHERE chapterId=:chapterId')
+  Future<void> deleteByChapterId(int chapterId);
 
   @Query('DELETE FROM VerseContentVersion'
-      ' WHERE verseKeyId=:verseKeyId')
-  Future<void> deleteByVerseKeyId(int verseKeyId);
+      ' WHERE verseId=:verseId')
+  Future<void> deleteByVerseId(int verseId);
 
-  Future<Map<int, VerseContentVersion>> import(List<VerseKey> list, VerseVersionType verseTextVersionType, int bookId) async {
+  Future<Map<int, VerseContentVersion>> import(List<Verse> list, VerseVersionType verseTextVersionType, int bookId) async {
     List<VerseContentVersion> insertValues = [];
     List<VerseContentVersion> contentVersion = await currVersionList(bookId, verseTextVersionType);
-    Map<int, VerseContentVersion> idToContentVersion = {for (var v in contentVersion) v.verseKeyId: v};
+    Map<int, VerseContentVersion> idToContentVersion = {for (var v in contentVersion) v.verseId: v};
     for (var v in list) {
       VerseContentVersion? version = idToContentVersion[v.id!];
       String text;
@@ -56,8 +56,8 @@ abstract class VerseContentVersionDao {
         var stv = VerseContentVersion(
           classroomId: v.classroomId,
           bookId: v.bookId,
-          chapterKeyId: v.chapterKeyId,
-          verseKeyId: v.id!,
+          chapterId: v.chapterId,
+          verseId: v.id!,
           t: verseTextVersionType,
           version: currVersionNumber,
           reason: VersionReason.import,
@@ -70,12 +70,12 @@ abstract class VerseContentVersionDao {
     if (insertValues.isNotEmpty) {
       await insertsOrIgnore(insertValues);
     }
-    Map<int, VerseContentVersion> ret = {for (var v in contentVersion) v.verseKeyId: v};
+    Map<int, VerseContentVersion> ret = {for (var v in contentVersion) v.verseId: v};
     return ret;
   }
 
   List<VerseContentVersion> toNeedToInsertVerseText(
-    List<VerseKey> newVerseKeys,
+    List<Verse> newVerseKeys,
     VerseVersionType verseTextVersionType,
     Map<int, VerseContentVersion> idToContentVersion,
   ) {
@@ -95,8 +95,8 @@ abstract class VerseContentVersionDao {
         var stv = VerseContentVersion(
           classroomId: v.classroomId,
           bookId: v.bookId,
-          chapterKeyId: v.chapterKeyId,
-          verseKeyId: v.id!,
+          chapterId: v.chapterId,
+          verseId: v.id!,
           t: verseTextVersionType,
           version: currVersionNumber,
           reason: VersionReason.import,

@@ -197,6 +197,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelFindUnnecessaryChapters, "查找多余篇章");
     put(I18nKey.labelSearch, "搜索...");
     put(I18nKey.labelNotFoundVerse, "未找到小节(%s)");
+    put(I18nKey.labelContentCantContainNote, "小节内容中不能包含 'n'(笔记) 字段");
     put(I18nKey.labelSettingLearningProgressWarning, "在此处设置学习进度将不会有学习记录");
     put(I18nKey.labelHaveUnnecessaryVerses, "存在多余的小节");
     put(I18nKey.labelChapterKeyCantBeEmpty, "篇章键不能为空");

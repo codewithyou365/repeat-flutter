@@ -17,17 +17,17 @@ class GameHelper {
     if (!server.open) {
       return;
     }
-    VerseShow verse = VerseHelp.getCache(stp.verseKeyId)!;
+    VerseShow verse = VerseHelp.getCache(stp.verseId)!;
     var now = DateTime.now();
     stp.time += 1;
     var game = Game(
       id: stp.id!,
       time: stp.time,
       verseContent: verse.verseContent,
-      verseKeyId: verse.verseKeyId,
+      verseId: verse.verseId,
       classroomId: stp.classroomId,
       bookId: verse.bookId,
-      chapterKeyId: verse.chapterKeyId,
+      chapterId: verse.chapterId,
       finish: false,
       createTime: now.millisecondsSinceEpoch,
       createDate: Date.from(now),
