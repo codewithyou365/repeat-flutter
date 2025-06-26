@@ -19,7 +19,6 @@ class Verse {
   int chapterIndex;
   int verseIndex;
   int sort;
-  final String k;
   final String content;
   int contentVersion;
   final String note;
@@ -33,7 +32,6 @@ class Verse {
     required this.chapterIndex,
     required this.verseIndex,
     required this.sort,
-    required this.k,
     required this.content,
     required this.contentVersion,
     required this.note,

@@ -409,7 +409,6 @@ abstract class ScheduleDao {
   Future<int?> getNextVerseKeyIdWithOffset(int classroomId, int verseId, int offset);
 
   @Query('SELECT Verse.id verseId'
-      ',Verse.k'
       ',Book.id bookId'
       ',Book.name bookName'
       ',Book.sort bookSort'
@@ -430,7 +429,6 @@ abstract class ScheduleDao {
   Future<List<VerseShow>> getAllVerse(int classroomId);
 
   @Query('SELECT Verse.id verseId'
-      ',Verse.k'
       ',Book.id bookId'
       ',Book.name bookName'
       ',Book.sort bookSort'
@@ -452,7 +450,6 @@ abstract class ScheduleDao {
   Future<List<VerseShow>> getVerseByChapterIndex(int bookId, int chapterIndex);
 
   @Query('SELECT Verse.id verseId'
-      ',Verse.k'
       ',Book.id bookId'
       ',Book.name bookName'
       ',Book.sort bookSort'
@@ -566,7 +563,6 @@ abstract class ScheduleDao {
         return null;
       }
     }
-    Map<String, bool> verseKey = {};
     var now = DateTime.now();
 
     Map<String, dynamic> excludeChapter = {};
@@ -604,12 +600,6 @@ abstract class ScheduleDao {
           Snackbar.showAndThrow(I18nKey.labelVerseNeedToContainAnswer.tr);
           return null;
         }
-        var key = getKey(verse.key, verse.answer);
-        if (verseKey.containsKey(key)) {
-          Snackbar.showAndThrow(I18nKey.labelVerseKeyDuplicated.trArgs([key]));
-          return null;
-        }
-        verseKey[key] = true;
         Map<String, dynamic> excludeNoteAndKey = {};
         rawVerse.forEach((k, v) {
           if (k != 'n' && k != 'k') {
@@ -625,7 +615,6 @@ abstract class ScheduleDao {
           verseIndex: verseIndex,
           //4611686118427387904-(99999*10000000000+99999*100000+99999)
           sort: book.sort * 10000000000 + chapterIndex * 100000 + verseIndex,
-          k: key,
           content: verseContent,
           contentVersion: 1,
           note: verse.note ?? '',

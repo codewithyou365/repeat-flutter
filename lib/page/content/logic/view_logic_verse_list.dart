@@ -445,15 +445,6 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                             ),
                             SizedBox(height: 8, width: width),
                             ExpandableText(
-                              title: I18nKey.labelKey.tr,
-                              text: ': ${verse.k}',
-                              limit: 50,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                              selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                              selectText: search.value,
-                            ),
-                            const SizedBox(height: 8),
-                            ExpandableText(
                               title: I18nKey.labelVerseName.tr,
                               text: ': ${verse.verseContent}',
                               version: verse.verseContentVersion,

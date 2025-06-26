@@ -5,7 +5,6 @@ import 'package:repeat_flutter/common/date.dart';
 class VerseShow {
   @primaryKey
   final int verseId;
-  String k;
   final int bookId;
   final String bookName;
   final int bookSort;
@@ -22,7 +21,6 @@ class VerseShow {
 
   VerseShow({
     required this.verseId,
-    required this.k,
     required this.bookId,
     required this.bookName,
     required this.bookSort,
