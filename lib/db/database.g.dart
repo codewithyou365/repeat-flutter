@@ -875,7 +875,7 @@ class _$ChapterDao extends ChapterDao {
   @override
   Future<List<ChapterShow>> getAllChapter(int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT Chapter.id chapterId,Book.id bookId,Book.name bookName,Book.sort bookSort,Chapter.content chapterContent,Chapter.contentVersion chapterContentVersion,Chapter.chapterIndex,0 missing FROM Chapter JOIN Book ON Book.id=Chapter.bookId AND Book.docId!=0 WHERE Chapter.classroomId=?1',
+        'SELECT Chapter.id chapterId,Book.id bookId,Book.name bookName,Book.sort bookSort,Chapter.content chapterContent,Chapter.contentVersion chapterContentVersion,Chapter.chapterIndex,0 missing FROM Chapter JOIN Book ON Book.id=Chapter.bookId AND Book.docId!=0 WHERE Chapter.classroomId=?1 ORDER BY Chapter.bookId,Chapter.chapterIndex',
         mapper: (Map<String, Object?> row) => ChapterShow(chapterId: row['chapterId'] as int, bookId: row['bookId'] as int, bookName: row['bookName'] as String, bookSort: row['bookSort'] as int, chapterContent: row['chapterContent'] as String, chapterContentVersion: row['chapterContentVersion'] as int, chapterIndex: row['chapterIndex'] as int),
         arguments: [classroomId]);
   }

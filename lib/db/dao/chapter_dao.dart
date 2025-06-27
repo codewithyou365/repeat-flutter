@@ -30,7 +30,8 @@ abstract class ChapterDao {
       ',0 missing'
       ' FROM Chapter'
       " JOIN Book ON Book.id=Chapter.bookId AND Book.docId!=0"
-      ' WHERE Chapter.classroomId=:classroomId')
+      ' WHERE Chapter.classroomId=:classroomId'
+      ' ORDER BY Chapter.bookId,Chapter.chapterIndex')
   Future<List<ChapterShow>> getAllChapter(int classroomId);
 
   @Query('SELECT * FROM Chapter WHERE bookId=:bookId')
@@ -110,7 +111,7 @@ abstract class ChapterDao {
     int minIndex = insertionIndexes.reduce((a, b) => a < b ? a : b);
     List<Chapter> entities = await findByMinChapterIndex(bookId, minIndex);
 
-    List<Chapter> updateEntities = [];
+    List<Chapter> oldEntities = [];
 
     for (var entity in entities) {
       int shift = 0;
@@ -120,12 +121,12 @@ abstract class ChapterDao {
       }
 
       entity.chapterIndex += shift;
-      updateEntities.add(entity);
+      oldEntities.add(entity);
     }
 
     await deleteByMinChapterIndex(bookId, minIndex);
+    await insertOrFail(oldEntities);
     await insertOrFail(chapters);
-    await updateOrFail(updateEntities);
   }
 
   Future<bool> interAddChapter({
@@ -268,11 +269,11 @@ abstract class ChapterDao {
       ChapterShow? chapterShow = getChapterShow!(chapterId);
       if (chapterShow != null) {
         chapterShow.chapterContent = content;
-        for (var set in setChapterShowContent) {
-          set(chapterId);
-        }
         chapterShow.chapterContentVersion++;
       }
+    }
+    for (var set in setChapterShowContent) {
+      set(chapterId);
     }
   }
 }
