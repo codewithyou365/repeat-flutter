@@ -111,7 +111,7 @@ abstract class ChapterDao {
     int minIndex = insertionIndexes.reduce((a, b) => a < b ? a : b);
     List<Chapter> entities = await findByMinChapterIndex(bookId, minIndex);
 
-    List<Chapter> oldEntities = [];
+    List<Chapter> needToInserts = [];
 
     for (var entity in entities) {
       int shift = 0;
@@ -121,12 +121,12 @@ abstract class ChapterDao {
       }
 
       entity.chapterIndex += shift;
-      oldEntities.add(entity);
+      needToInserts.add(entity);
     }
 
     await deleteByMinChapterIndex(bookId, minIndex);
-    await insertOrFail(oldEntities);
-    await insertOrFail(chapters);
+    needToInserts.addAll(chapters);
+    await insertOrFail(needToInserts);
   }
 
   Future<bool> interAddChapter({

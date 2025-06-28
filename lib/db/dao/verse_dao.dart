@@ -60,7 +60,7 @@ abstract class VerseDao {
   Future<void> deleteByChapterKeyId(int chapterId);
 
   @Insert(onConflict: OnConflictStrategy.fail)
-  Future<void> insertListOrFail(List<Verse> entities);
+  Future<void> insertOrFail(List<Verse> entities);
 
   @Query('UPDATE Verse set note=:note,noteVersion=:noteVersion WHERE id=:id')
   Future<void> updateNote(int id, String note, int noteVersion);
@@ -164,7 +164,7 @@ abstract class VerseDao {
     int minIndex = insertionIndexes.reduce((a, b) => a < b ? a : b);
     List<Verse> entities = await findByMinChapterIndex(bookId, minIndex);
 
-    List<Verse> updateEntities = [];
+    List<Verse> needToInserts = [];
 
     for (var entity in entities) {
       int shift = 0;
@@ -175,11 +175,11 @@ abstract class VerseDao {
 
       entity.chapterIndex += shift;
       entity.sort = bookSort * 10000000000 + entity.chapterIndex * 100000 + entity.verseIndex;
-      updateEntities.add(entity);
+      needToInserts.add(entity);
     }
 
     await deleteByMinChapterIndex(bookId, minIndex);
-    await updateOrFail(updateEntities);
+    await insertOrFail(needToInserts);
   }
 
   @transaction

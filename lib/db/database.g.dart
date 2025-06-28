@@ -2935,7 +2935,7 @@ class _$VerseDao extends VerseDao {
   }
 
   @override
-  Future<void> insertListOrFail(List<Verse> entities) async {
+  Future<void> insertOrFail(List<Verse> entities) async {
     await _verseInsertionAdapter.insertList(entities, OnConflictStrategy.fail);
   }
 

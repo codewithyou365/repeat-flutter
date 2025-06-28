@@ -8,10 +8,10 @@ import 'package:repeat_flutter/db/entity/chapter.dart';
 import 'package:repeat_flutter/db/entity/chapter_content_version.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/book_help.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
-import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -154,20 +154,12 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
   }
 
   Future<void> refresh(Chapter? chapter) async {
-    if (chapter != null) {
-      await VerseHelp.getVerses(
-        force: true,
-        query: QueryChapter(
-          bookId: chapter.bookId,
-          minChapterIndex: chapter.chapterIndex,
-        ),
-      );
-    }
-    originalChapterShow = await ChapterHelp.getChapters(force: true);
+    await Get.find<GsCrLogic>().init();
+    originalChapterShow = ChapterHelp.cache;
+    originalBookShow = BookHelp.cache;
     onChapterModified();
     collectData();
     trySearch(force: true);
-    await Get.find<GsCrLogic>().init();
   }
 
   Future<void> delete({required ChapterShow chapter}) async {
