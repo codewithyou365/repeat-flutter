@@ -106,7 +106,7 @@ abstract class VerseDao {
     int minIndex = verseIndexes.first;
     List<Verse> entities = await findByMinVerseIndex(bookId, chapterIndex, minIndex);
 
-    List<Verse> inserts = [];
+    List<Verse> needToInserts = [];
 
     for (var entity in entities) {
       if (verseIndexes.contains(entity.verseIndex)) {
@@ -116,11 +116,11 @@ abstract class VerseDao {
       int shift = verseIndexes.where((idx) => idx < entity.chapterIndex).length;
       entity.verseIndex -= shift;
       entity.sort = bookSort * 10000000000 + entity.chapterIndex * 100000 + entity.verseIndex;
-      inserts.add(entity);
+      needToInserts.add(entity);
     }
 
     await deleteByMinVerseIndex(bookId, chapterIndex, minIndex);
-    await updateOrFail(inserts);
+    await insertOrFail(needToInserts);
   }
 
   @transaction
