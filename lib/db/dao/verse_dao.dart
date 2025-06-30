@@ -1,6 +1,7 @@
 import 'dart:convert' as convert;
 
 import 'package:floor/floor.dart';
+import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/chapter.dart';
@@ -9,6 +10,7 @@ import 'package:repeat_flutter/db/entity/content_version.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/db/entity/verse_content_version.dart';
+import 'package:repeat_flutter/db/entity/verse_overall_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -28,6 +30,12 @@ abstract class VerseDao {
 
   @Query('SELECT * FROM Verse where id=:id')
   Future<Verse?> getById(int id);
+
+  @Query('SELECT * FROM Verse'
+      ' WHERE bookId=:bookId'
+      ' AND chapterIndex=:chapterIndex'
+      ' AND verseIndex=:verseIndex')
+  Future<Verse?> getByIndex(int bookId, int chapterIndex, int verseIndex);
 
   @Query('SELECT * FROM Verse'
       ' WHERE bookId=:bookId AND chapterIndex>=:minChapterIndex order by chapterIndex,verseIndex limit 1')
@@ -174,12 +182,126 @@ abstract class VerseDao {
       }
 
       entity.chapterIndex += shift;
-      entity.sort = bookSort * 10000000000 + entity.chapterIndex * 100000 + entity.verseIndex;
+      entity.sort = toVerseSort(bookSort, entity.chapterIndex, entity.verseIndex);
       needToInserts.add(entity);
     }
 
     await deleteByMinChapterIndex(bookId, minIndex);
     await insertOrFail(needToInserts);
+  }
+
+  Future<void> addVerses(int bookId, int bookSort, int chapterIndex, List<Verse> newEntities) async {
+    if (newEntities.isEmpty) return;
+
+    newEntities = newEntities.where((c) => c.bookId == bookId && c.chapterIndex == chapterIndex).toList();
+    newEntities.sort((a, b) => a.verseIndex.compareTo(b.verseIndex));
+
+    List<int> newIndexes = newEntities.map((c) => c.verseIndex).toList();
+
+    int minIndex = newIndexes.reduce((a, b) => a < b ? a : b);
+    List<Verse> oldEntities = await findByMinVerseIndex(bookId, chapterIndex, minIndex);
+
+    List<Verse> needToInserts = [];
+
+    for (var entity in oldEntities) {
+      int shift = 0;
+
+      for (var idx in newIndexes) {
+        if (entity.verseIndex >= idx) shift++;
+      }
+
+      entity.verseIndex += shift;
+      entity.sort = toVerseSort(bookSort, entity.chapterIndex, entity.verseIndex);
+      needToInserts.add(entity);
+    }
+
+    await deleteByMinVerseIndex(bookId, chapterIndex, minIndex);
+    needToInserts.addAll(newEntities);
+    await insertOrFail(needToInserts);
+  }
+
+  Future<int> interAddVerse({
+    required String content,
+    required int bookId,
+    required int chapterId,
+    required int chapterIndex,
+    required int verseIndex,
+  }) async {
+    var now = DateTime.now();
+    int classroomId = Classroom.curr;
+    Book? book = await db.bookDao.getById(bookId);
+    if (book == null) {
+      Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["book"]));
+      return 0;
+    }
+    Verse verse = Verse(
+      classroomId: classroomId,
+      bookId: bookId,
+      chapterId: chapterId,
+      chapterIndex: chapterIndex,
+      verseIndex: verseIndex,
+      sort: toVerseSort(book.sort, chapterIndex, verseIndex),
+      content: content,
+      contentVersion: 1,
+      note: '',
+      noteVersion: 1,
+    );
+    await addVerses(bookId, book.sort, chapterIndex, [verse]);
+    Verse? temp = await getByIndex(bookId, chapterIndex, verseIndex);
+    if (temp == null) {
+      Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["verse"]));
+      return 0;
+    } else {
+      verse = temp;
+    }
+    var verseOverallPrg = VerseOverallPrg(
+      verseId: verse.id!,
+      classroomId: verse.classroomId,
+      bookId: verse.bookId,
+      chapterId: verse.chapterId,
+      next: Date.from(now),
+      progress: 0,
+    );
+    await db.verseOverallPrgDao.insertOrFail(verseOverallPrg);
+    await db.verseContentVersionDao.insertOrFail(VerseContentVersion(
+      classroomId: verse.classroomId,
+      bookId: verse.bookId,
+      chapterId: verse.chapterId,
+      verseId: verse.id!,
+      t: VerseVersionType.content,
+      version: 1,
+      reason: VersionReason.editor,
+      content: verse.content,
+      createTime: now,
+    ));
+    await db.verseContentVersionDao.insertOrFail(VerseContentVersion(
+      classroomId: verse.classroomId,
+      bookId: verse.bookId,
+      chapterId: verse.chapterId,
+      verseId: verse.id!,
+      t: VerseVersionType.note,
+      version: 1,
+      reason: VersionReason.editor,
+      content: verse.note,
+      createTime: now,
+    ));
+
+    return verse.id!;
+  }
+
+  @transaction
+  Future<int> addFirstVerse(
+    int bookId,
+    int chapterId,
+    int chapterIndex,
+  ) async {
+    return interAddVerse(
+      content: "{}",
+      bookId: bookId,
+      chapterId: chapterId,
+      chapterIndex: chapterIndex,
+      verseIndex: 0,
+    );
   }
 
   @transaction
@@ -264,5 +386,9 @@ abstract class VerseDao {
       }
     }
     return true;
+  }
+
+  int toVerseSort(int bookSort, int chapterIndex, int verseIndex) {
+    return bookSort * 10000000000 + chapterIndex * 100000 + verseIndex;
   }
 }

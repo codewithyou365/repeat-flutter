@@ -223,7 +223,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
           return;
         }
 
-        //TODO await Db().db.scheduleDao.addFirstVerse(book.id!, chapter.id!, chapterIndex);
+        await Db().db.verseDao.addFirstVerse(book.id!, chapter.id!, chapterIndex);
         originalVerseShow = await VerseHelp.getVerses(
           force: true,
           query: QueryChapter(

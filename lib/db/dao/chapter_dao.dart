@@ -100,23 +100,23 @@ abstract class ChapterDao {
     await insertOrFail(needToInserts);
   }
 
-  Future<void> addChapters(int bookId, List<Chapter> chapters) async {
-    if (chapters.isEmpty) return;
+  Future<void> addChapters(int bookId, List<Chapter> newEntities) async {
+    if (newEntities.isEmpty) return;
 
-    chapters = chapters.where((c) => c.bookId == bookId).toList();
-    chapters.sort((a, b) => a.chapterIndex.compareTo(b.chapterIndex));
+    newEntities = newEntities.where((c) => c.bookId == bookId).toList();
+    newEntities.sort((a, b) => a.chapterIndex.compareTo(b.chapterIndex));
 
-    List<int> insertionIndexes = chapters.map((c) => c.chapterIndex).toList();
+    List<int> newIndexes = newEntities.map((c) => c.chapterIndex).toList();
 
-    int minIndex = insertionIndexes.reduce((a, b) => a < b ? a : b);
-    List<Chapter> entities = await findByMinChapterIndex(bookId, minIndex);
+    int minIndex = newIndexes.reduce((a, b) => a < b ? a : b);
+    List<Chapter> oldEntities = await findByMinChapterIndex(bookId, minIndex);
 
     List<Chapter> needToInserts = [];
 
-    for (var entity in entities) {
+    for (var entity in oldEntities) {
       int shift = 0;
 
-      for (var idx in insertionIndexes) {
+      for (var idx in newIndexes) {
         if (entity.chapterIndex >= idx) shift++;
       }
 
@@ -125,7 +125,7 @@ abstract class ChapterDao {
     }
 
     await deleteByMinChapterIndex(bookId, minIndex);
-    needToInserts.addAll(chapters);
+    needToInserts.addAll(newEntities);
     await insertOrFail(needToInserts);
   }
 

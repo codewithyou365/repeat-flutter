@@ -2840,6 +2840,18 @@ class _$VerseDao extends VerseDao {
   }
 
   @override
+  Future<Verse?> getByIndex(
+    int bookId,
+    int chapterIndex,
+    int verseIndex,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT * FROM Verse WHERE bookId=?1 AND chapterIndex=?2 AND verseIndex=?3',
+        mapper: (Map<String, Object?> row) => Verse(id: row['id'] as int?, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int),
+        arguments: [bookId, chapterIndex, verseIndex]);
+  }
+
+  @override
   Future<Verse?> last(
     int bookId,
     int minChapterIndex,
@@ -2955,6 +2967,26 @@ class _$VerseDao extends VerseDao {
           ..database = transaction;
         prepareDb(transactionDatabase);
         return transactionDatabase.verseDao.delete(verseId);
+      });
+    }
+  }
+
+  @override
+  Future<int> addFirstVerse(
+    int bookId,
+    int chapterId,
+    int chapterIndex,
+  ) async {
+    if (database is sqflite.Transaction) {
+      return super.addFirstVerse(bookId, chapterId, chapterIndex);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<int>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        return transactionDatabase.verseDao
+            .addFirstVerse(bookId, chapterId, chapterIndex);
       });
     }
   }
