@@ -2992,6 +2992,24 @@ class _$VerseDao extends VerseDao {
   }
 
   @override
+  Future<int> addVerse(
+    VerseShow raw,
+    int verseIndex,
+  ) async {
+    if (database is sqflite.Transaction) {
+      return super.addVerse(raw, verseIndex);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<int>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        return transactionDatabase.verseDao.addVerse(raw, verseIndex);
+      });
+    }
+  }
+
+  @override
   Future<void> updateVerseNote(
     int id,
     String note,

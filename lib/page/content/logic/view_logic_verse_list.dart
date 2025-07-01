@@ -243,8 +243,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
       if (below) {
         verseIndex++;
       }
-      int verseId = 0;
-      //TODO var verseId = await Db().db.scheduleDao.addVerse(verse, verseIndex);
+      int verseId = await Db().db.verseDao.addVerse(verse, verseIndex);
       if (verseId == 0) {
         return;
       }
@@ -462,7 +461,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                   I18nKey.labelVerseName.tr,
                                   content,
                                   (str) async {
-                                    //TODO await Db().db.scheduleDao.tUpdateVerseContent(verse.verseId, str);
+                                    await Db().db.verseDao.updateVerseContent(verse.verseId, str);
                                     parentLogic.update([ViewLogicVerseList.bodyId]);
                                   },
                                   qrPagePath: Nav.scan.path,
@@ -490,7 +489,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                   I18nKey.labelNote.tr,
                                   verse.verseNote,
                                   (str) async {
-                                    //TODO await Db().db.scheduleDao.tUpdateVerseNote(verse.verseId, str);
+                                    await Db().db.verseDao.updateVerseNote(verse.verseId, str);
                                     parentLogic.update([ViewLogicVerseList.bodyId]);
                                   },
                                   qrPagePath: Nav.scan.path,

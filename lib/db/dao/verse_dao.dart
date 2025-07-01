@@ -305,6 +305,17 @@ abstract class VerseDao {
   }
 
   @transaction
+  Future<int> addVerse(VerseShow raw, int verseIndex) async {
+    return interAddVerse(
+      content: raw.verseContent,
+      bookId: raw.bookId,
+      chapterId: raw.chapterId,
+      chapterIndex: raw.chapterIndex,
+      verseIndex: verseIndex,
+    );
+  }
+
+  @transaction
   Future<void> updateVerseNote(int id, String note) async {
     Verse? verse = await getById(id);
     if (verse == null) {
