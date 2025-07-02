@@ -11,7 +11,6 @@ import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/db/entity/chapter.dart';
-import 'package:repeat_flutter/db/entity/verse_overall_prg.dart';
 import 'package:repeat_flutter/db/entity/verse_review.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/common/date.dart';
@@ -19,7 +18,6 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
-import 'package:repeat_flutter/logic/model/verse_overall_prg_with_key.dart';
 import 'package:repeat_flutter/logic/model/verse_review_with_key.dart';
 import 'package:repeat_flutter/db/entity/verse_stats.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
@@ -301,20 +299,19 @@ abstract class ScheduleDao {
       " Verse.classroomId"
       ",Verse.bookId"
       ",Verse.chapterId"
-      ",VerseOverallPrg.verseId"
+      ",Verse.id verseId"
       ",0 time"
       ",0 type"
       ",Verse.sort"
-      ",VerseOverallPrg.progress progress"
+      ",Verse.progress progress"
       ",0 viewTime"
       ",0 reviewCount"
       ",0 reviewCreateDate"
       ",0 finish"
-      " FROM VerseOverallPrg"
-      " JOIN Verse ON Verse.id=VerseOverallPrg.verseId"
-      " WHERE VerseOverallPrg.next<=:now"
-      "  AND VerseOverallPrg.progress>=:minProgress"
-      " ORDER BY VerseOverallPrg.progress,Verse.sort"
+      " FROM Verse"
+      " WHERE Verse.next<=:now"
+      "  AND Verse.progress>=:minProgress"
+      " ORDER BY Verse.progress,Verse.sort"
       " ) Verse order by Verse.sort")
   Future<List<VerseTodayPrg>> scheduleLearn(int minProgress, Date now);
 
@@ -344,25 +341,14 @@ abstract class ScheduleDao {
       "")
   Future<List<VerseTodayPrg>> scheduleFullCustom(int classroomId, int bookId, int chapterIndex, int verseIndex, int limit);
 
-  @Query('UPDATE VerseOverallPrg SET progress=:progress,next=:next WHERE verseId=:verseId')
+  @Query('UPDATE Verse SET progress=:progress,next=:next WHERE verseId=:verseId')
   Future<void> setPrgAndNext4Sop(int verseId, int progress, Date next);
 
-  @Query('UPDATE VerseOverallPrg SET progress=:progress WHERE verseId=:verseId')
+  @Query('UPDATE Verse SET progress=:progress WHERE verseId=:verseId')
   Future<void> setPrg4Sop(int verseId, int progress);
 
-  @Query("SELECT progress FROM VerseOverallPrg WHERE verseId=:verseId")
+  @Query("SELECT progress FROM Verse WHERE verseId=:verseId")
   Future<int?> getVerseProgress(int verseId);
-
-  @Query("SELECT VerseOverallPrg.*"
-      ",Book.name contentName"
-      ",Verse.chapterIndex"
-      ",Verse.verseIndex"
-      " FROM Verse"
-      " JOIN VerseOverallPrg on VerseOverallPrg.verseId=Verse.id"
-      " JOIN Book ON Book.id=Verse.bookId"
-      " WHERE Verse.classroomId=:classroomId"
-      " ORDER BY Verse.sort asc")
-  Future<List<VerseOverallPrgWithKey>> getAllVerseOverallPrg(int classroomId);
 
   /// --- VerseReview
   @Query("SELECT Book.name FROM Book WHERE Book.id=:bookId")
@@ -419,12 +405,11 @@ abstract class ScheduleDao {
       ',Verse.chapterId'
       ',Verse.chapterIndex'
       ',Verse.verseIndex'
-      ',VerseOverallPrg.next'
-      ',VerseOverallPrg.progress'
+      ',Verse.next'
+      ',Verse.progress'
       ',0 missing'
       ' FROM Verse'
       ' JOIN Book ON Book.id=Verse.bookId AND Book.docId!=0'
-      ' LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseId=Verse.id'
       ' WHERE Verse.classroomId=:classroomId')
   Future<List<VerseShow>> getAllVerse(int classroomId);
 
@@ -439,12 +424,11 @@ abstract class ScheduleDao {
       ',Verse.chapterId'
       ',Verse.chapterIndex'
       ',Verse.verseIndex'
-      ',VerseOverallPrg.next'
-      ',VerseOverallPrg.progress'
+      ',Verse.next'
+      ',Verse.progress'
       ',0 missing'
       ' FROM Verse'
       " JOIN Book ON Book.id=:bookId AND Book.docId!=0"
-      ' LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseId=Verse.id'
       ' WHERE Verse.bookId=:bookId'
       '  AND Verse.chapterIndex=:chapterIndex')
   Future<List<VerseShow>> getVerseByChapterIndex(int bookId, int chapterIndex);
@@ -460,12 +444,11 @@ abstract class ScheduleDao {
       ',Verse.chapterId'
       ',Verse.chapterIndex'
       ',Verse.verseIndex'
-      ',VerseOverallPrg.next'
-      ',VerseOverallPrg.progress'
+      ',Verse.next'
+      ',Verse.progress'
       ',0 missing'
       ' FROM Verse'
       " JOIN Book ON Book.id=Verse.bookId AND Book.docId!=0"
-      ' LEFT JOIN VerseOverallPrg ON VerseOverallPrg.verseId=Verse.id'
       ' WHERE Verse.bookId=:bookId'
       '  AND Verse.chapterIndex>=:minChapterIndex')
   Future<List<VerseShow>> getVerseByMinChapterIndex(int bookId, int minChapterIndex);
@@ -473,17 +456,11 @@ abstract class ScheduleDao {
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertVerses(List<Verse> entities);
 
-  @Insert(onConflict: OnConflictStrategy.ignore)
-  Future<void> insertVerseOverallPrgs(List<VerseOverallPrg> entities);
-
   @Query('DELETE FROM Verse WHERE verseId=:verseId')
   Future<void> deleteVerse(int verseId);
 
   @Query('DELETE FROM VerseKey WHERE id=:verseId')
   Future<void> deleteVerseKey(int verseId);
-
-  @Query('DELETE FROM VerseOverallPrg WHERE verseId=:verseId')
-  Future<void> deleteVerseOverallPrg(int verseId);
 
   @Query('DELETE FROM VerseReview WHERE verseId=:verseId')
   Future<void> deleteVerseReview(int verseId);
@@ -518,7 +495,6 @@ abstract class ScheduleDao {
     await forUpdate();
     await deleteVerse(verseId);
     await deleteVerseKey(verseId);
-    await deleteVerseOverallPrg(verseId);
     await deleteVerseReview(verseId);
     await deleteVerseTodayPrg(verseId);
     await db.verseContentVersionDao.deleteByVerseId(verseId);
@@ -539,7 +515,6 @@ abstract class ScheduleDao {
   Future<Book?> prepareImportVerse({
     required List<Chapter> chapters,
     required List<Verse> verses,
-    required List<VerseOverallPrg> verseOverallPrgs,
     required int bookId,
   }) async {
     Book? book = await db.bookDao.getById(bookId);
@@ -619,12 +594,6 @@ abstract class ScheduleDao {
           contentVersion: 1,
           note: verse.note ?? '',
           noteVersion: 1,
-        ));
-        verseOverallPrgs.add(VerseOverallPrg(
-          verseId: 0,
-          classroomId: book.classroomId,
-          bookId: book.id!,
-          chapterId: 0,
           next: Date.from(now),
           progress: 0,
         ));
@@ -741,194 +710,6 @@ abstract class ScheduleDao {
     return ImportResult.success.index;
     // }
   }
-
-  // @transaction
-  // Future<bool> deleteNormalVerse(int verseId) async {
-  //   await forUpdate();
-  //   var raw = await db.verseKeyDao.oneById(verseId);
-  //   if (raw == null) {
-  //     Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["cant find the data($verseId)"]));
-  //     return false;
-  //   }
-  //   int verseIndex = raw.verseIndex;
-  //   var verses = await db.verseDao.findByMinVerseIndex(raw.bookId, raw.chapterIndex, verseIndex);
-  //   var verseKeys = await db.verseKeyDao.findByMinVerseIndex(raw.bookId, raw.chapterIndex, verseIndex);
-  //   List<Verse> insertVerses = [];
-  //   List<VerseKey> insertVerseKeys = [];
-  //   for (var v in verses) {
-  //     v.verseIndex--;
-  //     v.sort--;
-  //     if (v.verseId != verseId) {
-  //       insertVerses.add(v);
-  //     }
-  //   }
-  //   for (var v in verseKeys) {
-  //     v.verseIndex--;
-  //     if (v.id != verseId) {
-  //       insertVerseKeys.add(v);
-  //     }
-  //   }
-  //   await db.verseDao.deleteByMinVerseIndex(raw.bookId, raw.chapterIndex, verseIndex);
-  //   await db.verseKeyDao.deleteByMinVerseIndex(raw.bookId, raw.chapterIndex, verseIndex);
-  //   await db.verseDao.insertListOrFail(insertVerses);
-  //   await db.verseKeyDao.insertListOrFail(insertVerseKeys);
-  //   await deleteVerseOverallPrg(verseId);
-  //   await deleteVerseReview(verseId);
-  //   await deleteVerseTodayPrg(verseId);
-  //   await db.verseContentVersionDao.deleteByVerseKeyId(verseId);
-  //   return true;
-  // }
-
-  // @transaction
-  // Future<int> addVerse(VerseShow raw, int verseIndex) async {
-  //   return interAddVerse(
-  //     verseContent: raw.verseContent,
-  //     bookId: raw.bookId,
-  //     chapterId: raw.chapterId,
-  //     chapterIndex: raw.chapterIndex,
-  //     verseIndex: verseIndex,
-  //   );
-  // }
-  //
-  // @transaction
-  // Future<int> addFirstVerse(
-  //   int bookId,
-  //   int chapterId,
-  //   int chapterIndex,
-  // ) async {
-  //   return interAddVerse(
-  //     verseContent: "{}",
-  //     bookId: bookId,
-  //     chapterId: chapterId,
-  //     chapterIndex: chapterIndex,
-  //     verseIndex: 0,
-  //   );
-  // }
-
-  // Future<int> interAddVerse({
-  //   required String verseContent,
-  //   required int bookId,
-  //   required int chapterId,
-  //   required int chapterIndex,
-  //   required int verseIndex,
-  // }) async {
-  //   Book? book = await db.bookDao.getById(bookId);
-  //   if (book == null) {
-  //     Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["book"]));
-  //     return 0;
-  //   }
-  //   String content = "";
-  //   String key = "";
-  //   Map<String, dynamic> contentMap;
-  //   try {
-  //     contentMap = convert.jsonDecode(verseContent);
-  //     if (contentMap['k'] == null || contentMap['k'].toString().isEmpty) {
-  //       if (contentMap['a'] != null && contentMap['a'].toString().isNotEmpty) {
-  //         contentMap['k'] = '${contentMap['a']}_${DateTime.now().millisecondsSinceEpoch}';
-  //       } else {
-  //         contentMap['a'] = 'verse_${DateTime.now().millisecondsSinceEpoch}';
-  //       }
-  //     } else {
-  //       contentMap['k'] = '${contentMap['k']}_${DateTime.now().millisecondsSinceEpoch}';
-  //     }
-  //     content = convert.jsonEncode(contentMap);
-  //
-  //     if (contentMap['k'] != null) {
-  //       key = contentMap['k'].toString();
-  //     } else {
-  //       key = contentMap['a'].toString();
-  //     }
-  //   } catch (e) {
-  //     return 0;
-  //   }
-  //   int classroomId = Classroom.curr;
-  //   var existingVerse = await getVerseKeyByKey(bookId, key);
-  //   if (existingVerse != null) {
-  //     Snackbar.showAndThrow(I18nKey.labelVerseKeyDuplicated.trArgs([key]));
-  //     return 0;
-  //   }
-  //
-  //   // adjust the verse index and sort
-  //   var verses = await db.verseDao.findByMinVerseIndex(bookId, chapterIndex, verseIndex);
-  //   var verseKeys = await db.verseKeyDao.findByMinVerseIndex(bookId, chapterIndex, verseIndex);
-  //   for (var v in verses) {
-  //     v.verseIndex++;
-  //     v.sort++;
-  //   }
-  //   for (var v in verseKeys) {
-  //     v.verseIndex++;
-  //   }
-  //   await db.verseDao.deleteByMinVerseIndex(bookId, chapterIndex, verseIndex);
-  //   await db.verseKeyDao.deleteByMinVerseIndex(bookId, chapterIndex, verseIndex);
-  //
-  //   // insert and get the verse key id
-  //   VerseKey? verseKey = VerseKey(
-  //     classroomId: classroomId,
-  //     bookId: bookId,
-  //     chapterId: chapterId,
-  //     version: 1,
-  //     k: key,
-  //     content: content,
-  //     contentVersion: 1,
-  //     note: '',
-  //     noteVersion: 1,
-  //   );
-  //   verseKeys.add(verseKey);
-  //   await db.verseKeyDao.insertListOrFail(verseKeys);
-  //   verseKey = await getVerseKeyByKey(verseKey.bookId, key);
-  //   if (verseKey == null) {
-  //     throw Exception('Failed to get verse key');
-  //   }
-  //
-  //   int sortValue = book.sort * 10000000000 + verseKey.chapterIndex * 100000 + verseIndex;
-  //   var verse = Verse(
-  //     verseId: verseKey.id!,
-  //     classroomId: verseKey.classroomId,
-  //     bookId: verseKey.bookId,
-  //     chapterId: verseKey.chapterId,
-  //     chapterIndex: verseKey.chapterIndex,
-  //     verseIndex: verseKey.verseIndex,
-  //     sort: sortValue,
-  //   );
-  //   verses.add(verse);
-  //   await db.verseDao.insertListOrFail(verses);
-  //   var now = DateTime.now();
-  //   var verseOverallPrg = VerseOverallPrg(
-  //     verseId: verseKey.id!,
-  //     classroomId: verseKey.classroomId,
-  //     bookId: verseKey.bookId,
-  //     chapterId: verseKey.chapterId,
-  //     next: Date.from(now),
-  //     progress: 0,
-  //   );
-  //   await db.verseOverallPrgDao.insertOrFail(verseOverallPrg);
-  //   await db.verseContentVersionDao.insertOrFail(VerseContentVersion(
-  //     classroomId: verseKey.classroomId,
-  //     bookId: verseKey.bookId,
-  //     chapterId: verseKey.chapterId,
-  //     verseId: verseKey.id!,
-  //     t: VerseVersionType.content,
-  //     version: 1,
-  //     reason: VersionReason.editor,
-  //     content: verseKey.content,
-  //     createTime: now,
-  //   ));
-  //   await db.verseContentVersionDao.insertOrFail(VerseContentVersion(
-  //     classroomId: verseKey.classroomId,
-  //     bookId: verseKey.bookId,
-  //     chapterId: verseKey.chapterId,
-  //     verseId: verseKey.id!,
-  //     t: VerseVersionType.note,
-  //     version: 1,
-  //     reason: VersionReason.editor,
-  //     content: verseKey.note,
-  //     createTime: now,
-  //   ));
-  //
-  //   await insertKv(CrKv(verseKey.classroomId, CrK.updateVerseShowTime, now.millisecondsSinceEpoch.toString()));
-  //
-  //   return verseKey.id!;
-  // }
 
   @transaction
   Future<void> hideContentAndDeleteVerse(int bookId) async {

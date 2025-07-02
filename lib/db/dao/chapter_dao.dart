@@ -200,7 +200,6 @@ abstract class ChapterDao {
     //await db.timeStatsDao.deleteByClassroomId(classroomId);
     await db.verseDao.deleteByChapter(book, chapter);
     await db.verseContentVersionDao.deleteByChapterId(chapterId);
-    await db.verseOverallPrgDao.deleteByChapterId(chapterId);
     await db.verseReviewDao.deleteByChapterId(chapterId);
     await db.verseStatsDao.deleteByChapterId(chapterId);
     await db.verseTodayPrgDao.deleteByChapterId(chapterId);

@@ -1,6 +1,7 @@
 // entity/verse.dart
 
 import 'package:floor/floor.dart';
+import 'package:repeat_flutter/common/date.dart';
 
 @Entity(
   indices: [
@@ -24,6 +25,9 @@ class Verse {
   final String note;
   int noteVersion;
 
+  final Date next;
+  final int progress;
+
   Verse({
     this.id,
     required this.classroomId,
@@ -36,6 +40,8 @@ class Verse {
     required this.contentVersion,
     required this.note,
     required this.noteVersion,
+    required this.next,
+    required this.progress,
   });
 
   String toStringKey() {

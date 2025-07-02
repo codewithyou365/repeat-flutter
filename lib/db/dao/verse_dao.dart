@@ -10,7 +10,6 @@ import 'package:repeat_flutter/db/entity/content_version.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/db/entity/verse_content_version.dart';
-import 'package:repeat_flutter/db/entity/verse_overall_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -154,7 +153,6 @@ abstract class VerseDao {
     //await db.timeStatsDao.deleteByClassroomId(classroomId);
     await deleteByVerse(book, verse);
     await db.verseContentVersionDao.deleteByVerseId(verseId);
-    await db.verseOverallPrgDao.deleteByVerseId(verseId);
     await db.verseReviewDao.deleteByVerseId(verseId);
     await db.verseStatsDao.deleteByVerseId(verseId);
     await db.verseTodayPrgDao.deleteByVerseId(verseId);
@@ -245,6 +243,8 @@ abstract class VerseDao {
       contentVersion: 1,
       note: '',
       noteVersion: 1,
+      next: Date.from(now),
+      progress: 0,
     );
     await addVerses(bookId, book.sort, chapterIndex, [verse]);
     Verse? temp = await getByIndex(bookId, chapterIndex, verseIndex);
@@ -254,15 +254,6 @@ abstract class VerseDao {
     } else {
       verse = temp;
     }
-    var verseOverallPrg = VerseOverallPrg(
-      verseId: verse.id!,
-      classroomId: verse.classroomId,
-      bookId: verse.bookId,
-      chapterId: verse.chapterId,
-      next: Date.from(now),
-      progress: 0,
-    );
-    await db.verseOverallPrgDao.insertOrFail(verseOverallPrg);
     await db.verseContentVersionDao.insertOrFail(VerseContentVersion(
       classroomId: verse.classroomId,
       bookId: verse.bookId,

@@ -9,7 +9,6 @@ import 'package:repeat_flutter/page/gs_cr_settings_el/gs_cr_settings_el_nav.dart
 import 'package:repeat_flutter/page/gs_cr_settings_rel/gs_cr_settings_rel_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_stats/gs_cr_stats_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_stats_detail/gs_cr_stats_detail_nav.dart';
-import 'package:repeat_flutter/page/gs_cr_stats_learn/gs_cr_stats_learn_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_stats_review/gs_cr_stats_review_nav.dart';
 import 'package:repeat_flutter/page/gs_settings/gs_settings_nav.dart';
 import 'package:repeat_flutter/page/gs_settings_data/gs_settings_data_nav.dart';
@@ -30,7 +29,6 @@ enum Nav {
   gsCrSettingsRel("/gs/cr/settings/rel"),
   gsCrStats("/gs/cr/stats"),
   gsCrStatsDetail("/gs/cr/stats/detail"),
-  gsCrStatsLearn("/gs/cr/stats/learn"),
   gsCrStatsReview("/gs/cr/stats/review"),
   gsSettings("/gs/settings"),
   gsSettingsData("/gs/settings/data"),
@@ -75,7 +73,6 @@ enum Nav {
     gsCrSettingsRelNav(gsCrSettingsRel.path),
     gsCrStatsNav(gsCrStats.path),
     gsCrStatsDetailNav(gsCrStatsDetail.path),
-    gsCrStatsLearnNav(gsCrStatsLearn.path),
     gsCrStatsReviewNav(gsCrStatsReview.path),
     gsSettingsNav(gsSettings.path),
     gsSettingsDataNav(gsSettingsData.path),
