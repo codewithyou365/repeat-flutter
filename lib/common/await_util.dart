@@ -8,9 +8,14 @@ class AwaitUtil {
       return false;
     }
     lock = true;
-    callback().then((_) {
+    try {
+      callback().then((_) {
+        lock = false;
+      });
+    } finally {
       lock = false;
-    });
+    }
+
     return true;
   }
 }

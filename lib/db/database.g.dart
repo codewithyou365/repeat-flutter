@@ -2238,7 +2238,7 @@ class _$ScheduleDao extends ScheduleDao {
     Date next,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Verse SET progress=?2,next=?3 WHERE verseId=?1',
+        'UPDATE Verse SET progress=?2,next=?3 WHERE id=?1',
         arguments: [verseId, progress, _dateConverter.encode(next)]);
   }
 
@@ -2248,13 +2248,13 @@ class _$ScheduleDao extends ScheduleDao {
     int progress,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Verse SET progress=?2 WHERE verseId=?1',
+        'UPDATE Verse SET progress=?2 WHERE id=?1',
         arguments: [verseId, progress]);
   }
 
   @override
   Future<int?> getVerseProgress(int verseId) async {
-    return _queryAdapter.query('SELECT progress FROM Verse WHERE verseId=?1',
+    return _queryAdapter.query('SELECT progress FROM Verse WHERE id=?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [verseId]);
   }
@@ -2349,14 +2349,8 @@ class _$ScheduleDao extends ScheduleDao {
 
   @override
   Future<void> deleteVerse(int verseId) async {
-    await _queryAdapter.queryNoReturn('DELETE FROM Verse WHERE verseId=?1',
-        arguments: [verseId]);
-  }
-
-  @override
-  Future<void> deleteVerseKey(int verseId) async {
-    await _queryAdapter.queryNoReturn('DELETE FROM VerseKey WHERE id=?1',
-        arguments: [verseId]);
+    await _queryAdapter
+        .queryNoReturn('DELETE FROM Verse WHERE id=?1', arguments: [verseId]);
   }
 
   @override

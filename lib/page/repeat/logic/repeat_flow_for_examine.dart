@@ -48,8 +48,9 @@ class RepeatFlowForExamine extends RepeatFlow {
 
   @override
   String get leftLabel {
+    VerseTodayPrg? curr = currVerse;
     String nextDiffKey = "";
-    if (currVerse != null && currVerse!.sort + 1 != nextVerse?.sort) {
+    if (curr != null && curr.sort + 1 != nextVerse?.sort) {
       if (nextVerse != null) {
         nextDiffKey = VerseHelp.getVersePos(nextVerse!.verseId);
       }
@@ -58,8 +59,9 @@ class RepeatFlowForExamine extends RepeatFlow {
       case RepeatStep.recall:
         return I18nKey.btnCheck.tr;
       case RepeatStep.evaluate:
-        if (scheduled.length == 1) {
-          if (currVerse!.progress + 1 == ScheduleDao.scheduleConfig.maxRepeatTime) {
+        if (scheduled.length == 1 && curr != null) {
+          if (curr.progress == 0 && DateTime.fromMicrosecondsSinceEpoch(0).compareTo(curr.viewTime) == 0 || //
+              curr.progress + 1 == ScheduleDao.scheduleConfig.maxRepeatTime) {
             return I18nKey.btnFinish.tr;
           }
           return I18nKey.btnNext.tr;
@@ -186,12 +188,15 @@ class RepeatFlowForExamine extends RepeatFlow {
   }
 
   Future<void> next() async {
-    if (currVerse!.progress >= ScheduleDao.scheduleConfig.maxRepeatTime) {
+    var curr = currVerse!;
+    if (curr.progress >= ScheduleDao.scheduleConfig.maxRepeatTime) {
       scheduled.removeAt(0);
     }
     tip = TipLevel.none;
-    scheduled.sort(schedulesCurrentSort);
-    await gameHelper.tryRefreshGame(currVerse!);
+    if (scheduled.isNotEmpty) {
+      scheduled.sort(schedulesCurrentSort);
+    }
+    await gameHelper.tryRefreshGame(curr);
     await timeStatsLogic.updateTimeStats();
   }
 

@@ -341,13 +341,13 @@ abstract class ScheduleDao {
       "")
   Future<List<VerseTodayPrg>> scheduleFullCustom(int classroomId, int bookId, int chapterIndex, int verseIndex, int limit);
 
-  @Query('UPDATE Verse SET progress=:progress,next=:next WHERE verseId=:verseId')
+  @Query('UPDATE Verse SET progress=:progress,next=:next WHERE id=:verseId')
   Future<void> setPrgAndNext4Sop(int verseId, int progress, Date next);
 
-  @Query('UPDATE Verse SET progress=:progress WHERE verseId=:verseId')
+  @Query('UPDATE Verse SET progress=:progress WHERE id=:verseId')
   Future<void> setPrg4Sop(int verseId, int progress);
 
-  @Query("SELECT progress FROM Verse WHERE verseId=:verseId")
+  @Query("SELECT progress FROM Verse WHERE id=:verseId")
   Future<int?> getVerseProgress(int verseId);
 
   /// --- VerseReview
@@ -456,11 +456,8 @@ abstract class ScheduleDao {
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertVerses(List<Verse> entities);
 
-  @Query('DELETE FROM Verse WHERE verseId=:verseId')
+  @Query('DELETE FROM Verse WHERE id=:verseId')
   Future<void> deleteVerse(int verseId);
-
-  @Query('DELETE FROM VerseKey WHERE id=:verseId')
-  Future<void> deleteVerseKey(int verseId);
 
   @Query('DELETE FROM VerseReview WHERE verseId=:verseId')
   Future<void> deleteVerseReview(int verseId);
@@ -494,7 +491,6 @@ abstract class ScheduleDao {
   Future<void> deleteAbnormalVerse(int verseId) async {
     await forUpdate();
     await deleteVerse(verseId);
-    await deleteVerseKey(verseId);
     await deleteVerseReview(verseId);
     await deleteVerseTodayPrg(verseId);
     await db.verseContentVersionDao.deleteByVerseId(verseId);
@@ -1066,8 +1062,6 @@ abstract class ScheduleDao {
 
   @transaction
   Future<void> right(VerseTodayPrg stp) async {
-    await forUpdate();
-
     TodayPrgType prgType = getPrgType(stp);
 
     ProgressState state = ProgressState.unfinished;
