@@ -234,20 +234,7 @@ class GsCrLogic extends GetxController {
     }
   }
 
-  tryStart(List<VerseTodayPrg> list, {bool grouping = false, RepeatType mode = RepeatType.normal}) async {
-    var warning = await Db().db.bookDao.hasWarning(Classroom.curr);
-    if (warning ?? false) {
-      MsgBox.yesOrNo(
-        title: I18nKey.labelTips.tr,
-        desc: I18nKey.labelHaveUnnecessaryVerses.tr,
-        yesBtnTitle: I18nKey.btnHandleNow.tr,
-        yes: () {
-          Get.back();
-          Nav.scCrMaterial.push();
-        },
-      );
-      return;
-    }
+  void tryStart(List<VerseTodayPrg> list, {bool grouping = false, RepeatType mode = RepeatType.normal}) async {
     if (list.isEmpty) {
       Snackbar.show(I18nKey.labelNoLearningContent.tr);
       return;

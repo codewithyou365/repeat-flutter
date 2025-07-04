@@ -17,7 +17,6 @@ class VerseShow {
   int verseIndex;
   Date next;
   int progress;
-  final bool missing;
 
   VerseShow({
     required this.verseId,
@@ -33,7 +32,6 @@ class VerseShow {
     required this.verseIndex,
     required this.next,
     required this.progress,
-    required this.missing,
   });
 
   String toChapterPos() {

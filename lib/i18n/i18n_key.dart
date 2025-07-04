@@ -199,7 +199,6 @@ enum I18nKey {
   labelNotFoundVerse,
   labelContentCantContainNote,
   labelSettingLearningProgressWarning,
-  labelHaveUnnecessaryVerses,
   labelChapterKeyCantBeEmpty,
   labelChapterKeyDuplicated,
   labelEdit,

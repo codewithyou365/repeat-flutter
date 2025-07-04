@@ -31,9 +31,6 @@ abstract class BookDao {
   @Query('SELECT * FROM Book where classroomId=:classroomId and hide=false ORDER BY sort')
   Future<List<Book>> getAll(int classroomId);
 
-  @Query('SELECT max(verseWarning) FROM Book where classroomId=:classroomId and docId!=0 and hide=false')
-  Future<bool?> hasWarning(int classroomId);
-
   @Query('SELECT * FROM Book where classroomId=:classroomId and docId!=0 and hide=false ORDER BY sort')
   Future<List<Book>> getAllEnableBook(int classroomId);
 
@@ -51,18 +48,6 @@ abstract class BookDao {
 
   @Query('UPDATE Book set content=:content,contentVersion=:contentVersion WHERE Book.id=:id')
   Future<void> updateBookContentVersion(int id, String content, int contentVersion);
-
-  @Query('UPDATE Book set docId=:docId,url=:url,chapterWarning=:chapterWarning,verseWarning=:verseWarning,updateTime=:updateTime WHERE Book.id=:id')
-  Future<void> updateBook(int id, int docId, String url, bool chapterWarning, bool verseWarning, int updateTime);
-
-  @Query('UPDATE Book set chapterWarning=:chapterWarning,verseWarning=:verseWarning,updateTime=:updateTime WHERE Book.id=:id')
-  Future<void> updateBookWarning(int id, bool chapterWarning, bool verseWarning, int updateTime);
-
-  @Query('UPDATE Book set chapterWarning=:chapterWarning,updateTime=:updateTime WHERE Book.id=:id')
-  Future<void> updateBookWarningForChapter(int id, bool chapterWarning, int updateTime);
-
-  @Query('UPDATE Book set verseWarning=:verseWarning,updateTime=:updateTime WHERE Book.id=:id')
-  Future<void> updateBookWarningForVerse(int id, bool verseWarning, int updateTime);
 
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertBook(Book entity);
@@ -153,8 +138,6 @@ abstract class BookDao {
         contentVersion: 0,
         sort: sort,
         hide: false,
-        chapterWarning: false,
-        verseWarning: false,
         createTime: now,
         updateTime: now,
       );

@@ -39,7 +39,6 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
   List<ChapterShow> originalChapterShow;
   List<ChapterShow> chapterShow = [];
   VoidCallback onChapterModified;
-  final Future<void> Function()? removeWarning;
 
   bool showSearchDetailPanel = false;
   RxInt bookSelect = 0.obs;
@@ -63,7 +62,6 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     required this.originalBookShow,
     required this.originalChapterShow,
     required this.parentLogic,
-    required this.removeWarning,
     required this.onNext,
     required super.onSearchUnfocus,
     String? initBookNameSelect,

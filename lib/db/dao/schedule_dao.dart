@@ -407,7 +407,6 @@ abstract class ScheduleDao {
       ',Verse.verseIndex'
       ',Verse.next'
       ',Verse.progress'
-      ',0 missing'
       ' FROM Verse'
       ' JOIN Book ON Book.id=Verse.bookId AND Book.docId!=0'
       ' WHERE Verse.classroomId=:classroomId')
@@ -426,7 +425,6 @@ abstract class ScheduleDao {
       ',Verse.verseIndex'
       ',Verse.next'
       ',Verse.progress'
-      ',0 missing'
       ' FROM Verse'
       " JOIN Book ON Book.id=:bookId AND Book.docId!=0"
       ' WHERE Verse.bookId=:bookId'
@@ -446,7 +444,6 @@ abstract class ScheduleDao {
       ',Verse.verseIndex'
       ',Verse.next'
       ',Verse.progress'
-      ',0 missing'
       ' FROM Verse'
       " JOIN Book ON Book.id=Verse.bookId AND Book.docId!=0"
       ' WHERE Verse.bookId=:bookId'
@@ -486,15 +483,6 @@ abstract class ScheduleDao {
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertVerseStats(VerseStats stats);
-
-  @transaction
-  Future<void> deleteAbnormalVerse(int verseId) async {
-    await forUpdate();
-    await deleteVerse(verseId);
-    await deleteVerseReview(verseId);
-    await deleteVerseTodayPrg(verseId);
-    await db.verseContentVersionDao.deleteByVerseId(verseId);
-  }
 
   /// for content
   String getKey(String? key, String answer) {

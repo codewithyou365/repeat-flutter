@@ -24,8 +24,6 @@ class Book {
   int contentVersion;
   int sort;
   bool hide;
-  bool chapterWarning;
-  bool verseWarning;
   int createTime;
   int updateTime;
 
@@ -40,8 +38,6 @@ class Book {
     required this.contentVersion,
     required this.sort,
     required this.hide,
-    required this.chapterWarning,
-    required this.verseWarning,
     required this.createTime,
     required this.updateTime,
   });
@@ -58,8 +54,6 @@ class Book {
       contentVersion: 0,
       sort: 0,
       hide: false,
-      chapterWarning: false,
-      verseWarning: false,
       createTime: 0,
       updateTime: 0,
     );

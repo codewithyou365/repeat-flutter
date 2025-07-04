@@ -62,9 +62,4 @@ class VerseHelp {
     }
     return "";
   }
-
-  static void deleteCache(int verseId) {
-    cache.removeWhere((element) => element.verseId == verseId);
-    verseIdToShow.remove(verseId);
-  }
 }

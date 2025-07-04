@@ -49,9 +49,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
   bool showSearchDetailPanel = false;
   double searchDetailPanelHeight = 3 * (RowWidget.rowHeight + RowWidget.dividerHeight);
 
-  double missPanelHeight = RowWidget.rowHeight + RowWidget.dividerHeight;
   String searchKey = '';
-  List<int> missingVerseIndex = [];
 
   RxInt bookSelect = 0.obs;
 
@@ -64,7 +62,6 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
   List<VerseShow> verseShow = [];
   late HistoryList historyList = HistoryList<T>(parentLogic);
   final T parentLogic;
-  Future<void> Function()? removeWarning;
   VoidCallback onChapterModified;
   List<BookShow> originalBookShow;
   List<ChapterShow> originalChapterShow;
@@ -78,7 +75,6 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     required this.originalBookShow,
     required this.originalChapterShow,
     required this.originalVerseShow,
-    required this.removeWarning,
     required this.onChapterModified,
     required this.selectVerseKeyId,
     required this.onNext,
@@ -182,7 +178,6 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
       verseShow = List.from(originalVerseShow);
     }
     sort(verseShow, sortOptionKeys[selectedSortIndex.value]);
-    refreshMissingVerseIndex(missingVerseIndex, verseShow);
 
     parentLogic.update([ViewLogicVerseList.bodyId]);
   }
@@ -288,48 +283,6 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     return GetBuilder<T>(
         id: ViewLogicVerseList.bodyId,
         builder: (_) {
-          Widget missingPanel = const SizedBox.shrink();
-          if (missingVerseIndex.isNotEmpty) {
-            missingPanel = SizedBox(
-              height: missPanelHeight,
-              width: width,
-              child: Column(
-                children: [
-                  RowWidget.buildWidgetsWithTitle(I18nKey.labelFindUnnecessaryVerses.tr, [
-                    IconButton(
-                        onPressed: () {
-                          if (missingVerseOffset - 1 < 0) {
-                            missingVerseOffset = 0;
-                          } else {
-                            missingVerseOffset--;
-                          }
-                          itemScrollController.scrollTo(
-                            index: missingVerseIndex[missingVerseOffset],
-                            duration: const Duration(milliseconds: 500),
-                            curve: Curves.easeInOut,
-                          );
-                        },
-                        icon: const Icon(Icons.arrow_back)),
-                    IconButton(
-                        onPressed: () {
-                          if (missingVerseOffset + 1 >= missingVerseIndex.length) {
-                            missingVerseOffset = missingVerseIndex.length - 1;
-                          } else {
-                            missingVerseOffset++;
-                          }
-                          itemScrollController.scrollTo(
-                            index: missingVerseIndex[missingVerseOffset],
-                            duration: const Duration(milliseconds: 500),
-                            curve: Curves.easeInOut,
-                          );
-                        },
-                        icon: const Icon(Icons.arrow_forward)),
-                  ]),
-                  RowWidget.buildDividerWithoutColor(),
-                ],
-              ),
-            );
-          }
           Widget searchDetailPanel = const SizedBox.shrink();
           if (showSearchDetailPanel) {
             searchDetailPanel = Container(
@@ -412,7 +365,6 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                 }
                 final verse = list[index];
                 return Card(
-                  color: verse.missing ? Colors.red : null,
                   elevation: 2,
                   margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                   shape: RoundedRectangleBorder(
@@ -544,37 +496,6 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          if (verse.missing)
-                            IconButton(
-                              onPressed: () {
-                                MsgBox.yesOrNo(
-                                  title: I18nKey.labelDelete.tr,
-                                  desc: I18nKey.labelDeleteVerse.tr,
-                                  yes: () {
-                                    showTransparentOverlay(() async {
-                                      await Db().db.scheduleDao.deleteAbnormalVerse(verse.verseId);
-
-                                      VerseHelp.deleteCache(verse.verseId);
-                                      verseShow.removeWhere((element) => element.verseId == verse.verseId);
-
-                                      var bookId2Missing = refreshMissingVerseIndex(missingVerseIndex, verseShow);
-                                      var warning = bookId2Missing[verse.bookId] ?? false;
-                                      if (warning == false) {
-                                        await Db().db.bookDao.updateBookWarningForVerse(verse.bookId, warning, DateTime.now().millisecondsSinceEpoch);
-                                        if (removeWarning != null) {
-                                          await removeWarning!();
-                                        }
-                                      }
-                                      parentLogic.update([ViewLogicVerseList.bodyId]);
-                                      Get.back();
-                                    });
-                                  },
-                                );
-                              },
-                              icon: const Icon(
-                                Icons.delete_forever,
-                              ),
-                            ),
                           PopupMenuButton<String>(
                             icon: const Icon(Icons.more_vert),
                             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -649,7 +570,6 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
           return Column(
             children: [
               searchDetailPanel,
-              missingPanel,
               SizedBox(
                 height: getBodyViewHeight(),
                 width: width,
@@ -658,23 +578,6 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
             ],
           );
         });
-  }
-
-  static Map<int, bool> refreshMissingVerseIndex(
-    List<int> missingVerseIndex,
-    List<VerseShow> verseShow,
-  ) {
-    missingVerseIndex.clear();
-
-    Map<int, bool> bookId2Missing = {};
-    for (int i = 0; i < verseShow.length; i++) {
-      var v = verseShow[i];
-      if (v.missing) {
-        bookId2Missing[v.bookId] = true;
-        missingVerseIndex.add(i);
-      }
-    }
-    return bookId2Missing;
   }
 
   void updateOptions() {
@@ -735,14 +638,10 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
   void collectData() {
     updateOptions();
 
-    missingVerseIndex = [];
     progress = [];
     nextMonth = [];
     for (int i = 0; i < verseShow.length; i++) {
       var v = verseShow[i];
-      if (v.missing) {
-        missingVerseIndex.add(i);
-      }
       if (!progress.contains(v.progress)) {
         progress.add(v.progress);
       }
@@ -809,9 +708,6 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
 
   double getBodyViewHeight() {
     double ret = baseBodyViewHeight;
-    if (missingVerseIndex.isNotEmpty) {
-      ret = ret - missPanelHeight;
-    }
     if (showSearchDetailPanel) {
       ret = ret - searchDetailPanelHeight;
     }

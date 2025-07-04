@@ -115,18 +115,6 @@ class ScCrMaterialPage extends StatelessWidget {
                 style: TextStyle(fontSize: 50.sp),
               ),
             ),
-            if ((book.chapterWarning == true || book.verseWarning == true) && book.docId != 0)
-              IconButton(
-                onPressed: () {
-                  if (book.verseWarning) {
-                    logic.showContent(bookId: book.id!, defaultTap: 2);
-                  } else if (book.chapterWarning) {
-                    logic.showContent(bookId: book.id!, defaultTap: 1);
-                  }
-                },
-                color: Colors.yellow,
-                icon: const Icon(Icons.warning),
-              ),
           ],
         ),
       ),
@@ -134,7 +122,7 @@ class ScCrMaterialPage extends StatelessWidget {
     );
   }
 
-  openDeleteDialog(ScCrMaterialLogic logic, Book model) {
+  void openDeleteDialog(ScCrMaterialLogic logic, Book model) {
     MsgBox.yesOrNo(
       title: I18nKey.labelDelete.tr,
       desc: I18nKey.labelDeleteBook.trArgs([model.name]),
@@ -145,7 +133,7 @@ class ScCrMaterialPage extends StatelessWidget {
     );
   }
 
-  openDownloadDialog(ScCrMaterialLogic logic, Book model) {
+  void openDownloadDialog(ScCrMaterialLogic logic, Book model) {
     final state = logic.state;
     RxString downloadUrl = model.url.obs;
     MsgBox.strInputWithYesOrNo(

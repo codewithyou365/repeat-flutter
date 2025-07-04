@@ -92,7 +92,6 @@ class ContentLogic extends GetxController {
         await Db().db.verseTodayPrgDao.delete(p.id!);
       },
       parentLogic: this,
-      removeWarning: args.removeWarning,
       originalBookShow: originalBookShow,
       originalChapterShow: originalChapterShow,
       originalVerseShow: originalVerseShow,
@@ -118,7 +117,6 @@ class ContentLogic extends GetxController {
         verseList.trySearch(force: true);
       },
       parentLogic: this,
-      removeWarning: args.removeWarning,
       initBookNameSelect: args.bookName,
       initChapterSelect: args.initChapterSelect,
       originalBookShow: originalBookShow,

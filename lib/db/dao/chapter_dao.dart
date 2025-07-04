@@ -27,7 +27,6 @@ abstract class ChapterDao {
       ',Chapter.content chapterContent'
       ',Chapter.contentVersion chapterContentVersion'
       ',Chapter.chapterIndex'
-      ',0 missing'
       ' FROM Chapter'
       " JOIN Book ON Book.id=Chapter.bookId AND Book.docId!=0"
       ' WHERE Chapter.classroomId=:classroomId'

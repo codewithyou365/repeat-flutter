@@ -67,9 +67,6 @@ class ScCrMaterialLogic extends GetxController {
       arguments: ContentArgs(
         bookName: content.name,
         enableEnteringRepeatView: true,
-        removeWarning: () async {
-          await init();
-        },
       ),
     );
   }
