@@ -2,6 +2,7 @@
 
 enum VersionReason {
   import,
+  reimport,
   editor,
 }
 

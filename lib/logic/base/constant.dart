@@ -51,12 +51,6 @@ enum MatchType {
   all;
 }
 
-enum ImportResult {
-  success,
-  error,
-  successButSomeVersesAreSurplus,
-}
-
 enum RepeatViewEnum {
   text,
   audio,

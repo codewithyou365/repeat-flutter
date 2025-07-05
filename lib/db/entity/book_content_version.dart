@@ -6,7 +6,7 @@ import 'content_version.dart';
 
 @Entity(
   indices: [
-    Index(value: ['classroomId', 'version'], unique: true),
+    Index(value: ['classroomId']),
   ],
   primaryKeys: ['bookId', 'version'],
 )

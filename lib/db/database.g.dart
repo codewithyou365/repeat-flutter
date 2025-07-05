@@ -174,7 +174,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE INDEX `index_Book_sort_id` ON `Book` (`sort`, `id`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_BookContentVersion_classroomId_version` ON `BookContentVersion` (`classroomId`, `version`)');
+            'CREATE INDEX `index_BookContentVersion_classroomId` ON `BookContentVersion` (`classroomId`)');
         await database.execute(
             'CREATE INDEX `index_Chapter_classroomId` ON `Chapter` (`classroomId`)');
         await database.execute(
@@ -571,6 +571,31 @@ class _$BookDao extends BookDao {
   }
 
   @override
+  Future<void> updateBookContentVersionAndDocId(
+    int id,
+    String content,
+    int contentVersion,
+    int docId,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE Book set content=?2,contentVersion=?3,docId=?4 WHERE Book.id=?1',
+        arguments: [id, content, contentVersion, docId]);
+  }
+
+  @override
+  Future<void> updateBookContentVersionAndDocIdAndUrl(
+    int id,
+    String content,
+    int contentVersion,
+    int docId,
+    String url,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE Book set content=?2,contentVersion=?3,docId=?4,url=?5 WHERE Book.id=?1',
+        arguments: [id, content, contentVersion, docId, url]);
+  }
+
+  @override
   Future<void> hide(int id) async {
     await _queryAdapter.queryNoReturn(
         'UPDATE Book set hide=true WHERE Book.id=?1',
@@ -656,6 +681,25 @@ class _$BookDao extends BookDao {
       });
     }
   }
+
+  @override
+  Future<void> import(
+    Book book,
+    List<Chapter> chapters,
+    List<Verse> verses,
+  ) async {
+    if (database is sqflite.Transaction) {
+      await super.import(book, chapters, verses);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        await transactionDatabase.bookDao.import(book, chapters, verses);
+      });
+    }
+  }
 }
 
 class _$ChapterContentVersionDao extends ChapterContentVersionDao {
@@ -703,7 +747,7 @@ class _$ChapterContentVersionDao extends ChapterContentVersionDao {
   @override
   Future<List<ChapterContentVersion>> currVersionList(int bookId) async {
     return _queryAdapter.queryList(
-        'SELECT ChapterContentVersion.*  FROM ChapterKey JOIN ChapterContentVersion ON ChapterContentVersion.chapterId=ChapterKey.id  AND ChapterContentVersion.version=ChapterKey.contentVersion WHERE ChapterContentVersion.bookId=?1',
+        'SELECT ChapterContentVersion.*  FROM Chapter JOIN ChapterContentVersion ON ChapterContentVersion.chapterId=Chapter.id  AND ChapterContentVersion.version=Chapter.contentVersion WHERE ChapterContentVersion.bookId=?1',
         mapper: (Map<String, Object?> row) => ChapterContentVersion(classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, version: row['version'] as int, reason: _versionReasonConverter.decode(row['reason'] as int), content: row['content'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [bookId]);
   }
@@ -723,9 +767,9 @@ class _$ChapterContentVersionDao extends ChapterContentVersionDao {
   }
 
   @override
-  Future<void> insertOrFail(ChapterContentVersion entity) async {
-    await _chapterContentVersionInsertionAdapter.insert(
-        entity, OnConflictStrategy.fail);
+  Future<void> insertOrFail(List<ChapterContentVersion> entities) async {
+    await _chapterContentVersionInsertionAdapter.insertList(
+        entities, OnConflictStrategy.fail);
   }
 
   @override
@@ -789,7 +833,7 @@ class _$ChapterDao extends ChapterDao {
   }
 
   @override
-  Future<List<Chapter>> find(int bookId) async {
+  Future<List<Chapter>> findByBookId(int bookId) async {
     return _queryAdapter.queryList('SELECT * FROM Chapter WHERE bookId=?1',
         mapper: (Map<String, Object?> row) => Chapter(
             id: row['id'] as int?,
@@ -2607,9 +2651,9 @@ class _$VerseContentVersionDao extends VerseContentVersionDao {
   }
 
   @override
-  Future<void> insertsOrIgnore(List<VerseContentVersion> entities) async {
+  Future<void> insertsOrFail(List<VerseContentVersion> entities) async {
     await _verseContentVersionInsertionAdapter.insertList(
-        entities, OnConflictStrategy.ignore);
+        entities, OnConflictStrategy.fail);
   }
 }
 
@@ -2696,6 +2740,26 @@ class _$VerseDao extends VerseDao {
             next: _dateConverter.decode(row['next'] as int),
             progress: row['progress'] as int),
         arguments: [id]);
+  }
+
+  @override
+  Future<List<Verse>> findByBookId(int bookId) async {
+    return _queryAdapter.queryList('SELECT * FROM Verse where bookId=?1',
+        mapper: (Map<String, Object?> row) => Verse(
+            id: row['id'] as int?,
+            classroomId: row['classroomId'] as int,
+            bookId: row['bookId'] as int,
+            chapterId: row['chapterId'] as int,
+            chapterIndex: row['chapterIndex'] as int,
+            verseIndex: row['verseIndex'] as int,
+            sort: row['sort'] as int,
+            content: row['content'] as String,
+            contentVersion: row['contentVersion'] as int,
+            note: row['note'] as String,
+            noteVersion: row['noteVersion'] as int,
+            next: _dateConverter.decode(row['next'] as int),
+            progress: row['progress'] as int),
+        arguments: [bookId]);
   }
 
   @override

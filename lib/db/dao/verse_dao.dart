@@ -12,6 +12,7 @@ import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/db/entity/verse_content_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
+import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 @dao
@@ -29,6 +30,9 @@ abstract class VerseDao {
 
   @Query('SELECT * FROM Verse where id=:id')
   Future<Verse?> getById(int id);
+
+  @Query('SELECT * FROM Verse where bookId=:bookId')
+  Future<List<Verse>> findByBookId(int bookId);
 
   @Query('SELECT * FROM Verse'
       ' WHERE bookId=:bookId'
@@ -180,7 +184,7 @@ abstract class VerseDao {
       }
 
       entity.chapterIndex += shift;
-      entity.sort = toVerseSort(bookSort, entity.chapterIndex, entity.verseIndex);
+      entity.sort = VerseHelp.toVerseSort(bookSort, entity.chapterIndex, entity.verseIndex);
       needToInserts.add(entity);
     }
 
@@ -209,7 +213,7 @@ abstract class VerseDao {
       }
 
       entity.verseIndex += shift;
-      entity.sort = toVerseSort(bookSort, entity.chapterIndex, entity.verseIndex);
+      entity.sort = VerseHelp.toVerseSort(bookSort, entity.chapterIndex, entity.verseIndex);
       needToInserts.add(entity);
     }
 
@@ -238,7 +242,7 @@ abstract class VerseDao {
       chapterId: chapterId,
       chapterIndex: chapterIndex,
       verseIndex: verseIndex,
-      sort: toVerseSort(book.sort, chapterIndex, verseIndex),
+      sort: VerseHelp.toVerseSort(book.sort, chapterIndex, verseIndex),
       content: content,
       contentVersion: 1,
       note: '',
@@ -390,7 +394,19 @@ abstract class VerseDao {
     return true;
   }
 
-  int toVerseSort(int bookSort, int chapterIndex, int verseIndex) {
-    return bookSort * 10000000000 + chapterIndex * 100000 + verseIndex;
+  Future<List<Verse>> import(List<Chapter> chapters, List<Verse> list) async {
+    Map<int, Chapter> chapterMap = {for (var chapter in chapters) chapter.chapterIndex: chapter};
+    if (list.isNotEmpty) {
+      for (var verse in list) {
+        final chapter = chapterMap[verse.chapterIndex];
+        if (chapter != null) {
+          verse.chapterId = chapter.id!;
+        }
+      }
+      int bookId = list.first.bookId;
+      await insertOrFail(list);
+      return findByBookId(bookId);
+    }
+    return [];
   }
 }

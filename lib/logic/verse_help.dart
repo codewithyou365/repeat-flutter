@@ -62,4 +62,9 @@ class VerseHelp {
     }
     return "";
   }
+
+  static int toVerseSort(int bookSort, int chapterIndex, int verseIndex) {
+    //4611686118427387904-(99999*10000000000+99999*100000+99999)
+    return bookSort * 10000000000 + chapterIndex * 100000 + verseIndex;
+  }
 }

@@ -34,7 +34,7 @@ abstract class ChapterDao {
   Future<List<ChapterShow>> getAllChapter(int classroomId);
 
   @Query('SELECT * FROM Chapter WHERE bookId=:bookId')
-  Future<List<Chapter>> find(int bookId);
+  Future<List<Chapter>> findByBookId(int bookId);
 
   @Query('SELECT * FROM Chapter WHERE bookId=:bookId and chapterIndex=:chapterIndex')
   Future<Chapter?> one(int bookId, int chapterIndex);
@@ -157,15 +157,17 @@ abstract class ChapterDao {
     }
 
     await db.verseDao.addChapters(bookId, book.sort, [newChapter]);
-    await db.chapterContentVersionDao.insertOrFail(ChapterContentVersion(
-      classroomId: classroomId,
-      bookId: bookId,
-      chapterId: newChapter.id!,
-      reason: VersionReason.editor,
-      version: 1,
-      content: chapterContent,
-      createTime: now,
-    ));
+    await db.chapterContentVersionDao.insertOrFail([
+      ChapterContentVersion(
+        classroomId: classroomId,
+        bookId: bookId,
+        chapterId: newChapter.id!,
+        reason: VersionReason.editor,
+        version: 1,
+        content: chapterContent,
+        createTime: now,
+      )
+    ]);
     return true;
   }
 
@@ -273,5 +275,14 @@ abstract class ChapterDao {
     for (var set in setChapterShowContent) {
       set(chapterId);
     }
+  }
+
+  Future<List<Chapter>> import(List<Chapter> list) async {
+    if (list.isNotEmpty) {
+      int bookId = list.first.bookId;
+      await insertOrFail(list);
+      return findByBookId(bookId);
+    }
+    return [];
   }
 }

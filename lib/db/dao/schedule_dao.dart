@@ -691,7 +691,7 @@ abstract class ScheduleDao {
     // if (warningInChapter == true || warningInVerse == true) {
     //   return ImportResult.successButSomeVersesAreSurplus.index;
     // } else {
-    return ImportResult.success.index;
+    return 0;
     // }
   }
 

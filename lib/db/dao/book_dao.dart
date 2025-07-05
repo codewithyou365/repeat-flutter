@@ -6,9 +6,12 @@ import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/num.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/book_content_version.dart';
+import 'package:repeat_flutter/db/entity/chapter.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/content_version.dart';
+import 'package:repeat_flutter/db/entity/verse.dart';
+import 'package:repeat_flutter/db/entity/verse_content_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -49,6 +52,12 @@ abstract class BookDao {
   @Query('UPDATE Book set content=:content,contentVersion=:contentVersion WHERE Book.id=:id')
   Future<void> updateBookContentVersion(int id, String content, int contentVersion);
 
+  @Query('UPDATE Book set content=:content,contentVersion=:contentVersion,docId=:docId WHERE Book.id=:id')
+  Future<void> updateBookContentVersionAndDocId(int id, String content, int contentVersion, int docId);
+
+  @Query('UPDATE Book set content=:content,contentVersion=:contentVersion,docId=:docId,url=:url WHERE Book.id=:id')
+  Future<void> updateBookContentVersionAndDocIdAndUrl(int id, String content, int contentVersion, int docId, String url);
+
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertBook(Book entity);
 
@@ -70,10 +79,14 @@ abstract class BookDao {
 
   @transaction
   Future<void> updateBookContent(int bookId, String content) async {
-    await innerUpdateBookContent(bookId, content);
+    await innerUpdateBookContent(bookId: bookId, content: content);
   }
 
-  Future<void> innerUpdateBookContent(int bookId, String content) async {
+  Future<void> innerUpdateBookContent({
+    required int bookId,
+    required String content,
+    int? docId,
+  }) async {
     Book? book = await getById(bookId);
     if (book == null) {
       Snackbar.showAndThrow(I18nKey.labelNotFoundVerse.trArgs([bookId.toString()]));
@@ -93,8 +106,13 @@ abstract class BookDao {
     }
 
     var now = DateTime.now();
-    await updateBookContentVersion(bookId, content, book.contentVersion + 1);
-    await db.bookContentVersionDao.insertOrIgnore(BookContentVersion(
+    if (docId == null) {
+      await updateBookContentVersion(bookId, content, book.contentVersion + 1);
+    } else {
+      await updateBookContentVersionAndDocId(bookId, content, book.contentVersion + 1, docId);
+    }
+
+    await db.bookContentVersionDao.insertOrFail(BookContentVersion(
       classroomId: book.classroomId,
       bookId: book.id!,
       version: book.contentVersion + 1,
@@ -148,31 +166,17 @@ abstract class BookDao {
 
   @transaction
   Future<void> create(int bookId, String content) async {
-    await innerUpdateBookContent(bookId, content);
-    await updateDocId(bookId, 1);
+    await innerUpdateBookContent(bookId: bookId, content: content, docId: 1);
   }
 
-  Future<void> import(int bookId, String content) async {
-    Book? oldBook = await getById(bookId);
-    if (oldBook == null) {
-      Snackbar.showAndThrow(I18nKey.labelDataAnomaly.tr);
-      return;
-    }
-    BookContentVersion? oldBookContentVersion = await db.bookContentVersionDao.one(bookId, oldBook.contentVersion);
-
-    if (oldBookContentVersion == null || oldBookContentVersion.content != content) {
-      var maxVersion = oldBook.contentVersion;
-      var nextVersion = maxVersion + 1;
-      BookContentVersion insertBookContentVersion = BookContentVersion(
-        classroomId: oldBook.classroomId,
-        bookId: oldBook.id!,
-        version: nextVersion,
-        reason: VersionReason.import,
-        content: content,
-        createTime: DateTime.now(),
-      );
-      await db.bookContentVersionDao.insertOrIgnore(insertBookContentVersion);
-      await updateBookContentVersion(oldBook.id!, content, nextVersion);
-    }
+  @transaction
+  Future<void> import(Book book, List<Chapter> chapters, List<Verse> verses) async {
+    await updateBookContentVersionAndDocIdAndUrl(book.id!, book.content, 1, 1, book.url);
+    await db.bookContentVersionDao.import(book);
+    chapters = await db.chapterDao.import(chapters);
+    await db.chapterContentVersionDao.import(chapters);
+    verses = await db.verseDao.import(chapters, verses);
+    await db.verseContentVersionDao.import(verses, VerseVersionType.content);
+    await db.verseContentVersionDao.import(verses, VerseVersionType.note);
   }
 }
