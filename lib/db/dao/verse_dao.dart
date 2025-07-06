@@ -24,10 +24,6 @@ abstract class VerseDao {
   @Update(onConflict: OnConflictStrategy.fail)
   Future<void> updateOrFail(List<Verse> entities);
 
-  @Query('SELECT * FROM Verse'
-      ' WHERE bookId=:bookId AND chapterId=:chapterId AND verseIndex=:verseIndex')
-  Future<Verse?> one(int bookId, int chapterId, int verseIndex);
-
   @Query('SELECT * FROM Verse where id=:id')
   Future<Verse?> getById(int id);
 

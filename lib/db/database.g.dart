@@ -188,7 +188,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE UNIQUE INDEX `index_Classroom_sort` ON `Classroom` (`sort`)');
         await database.execute(
-            'CREATE INDEX `index_Verse_chapterId` ON `Verse` (`chapterId`)');
+            'CREATE UNIQUE INDEX `index_Verse_chapterId_verseIndex` ON `Verse` (`chapterId`, `verseIndex`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_Verse_classroomId_sort` ON `Verse` (`classroomId`, `sort`)');
         await database.execute(
@@ -2709,18 +2709,6 @@ class _$VerseDao extends VerseDao {
   final InsertionAdapter<Verse> _verseInsertionAdapter;
 
   final UpdateAdapter<Verse> _verseUpdateAdapter;
-
-  @override
-  Future<Verse?> one(
-    int bookId,
-    int chapterId,
-    int verseIndex,
-  ) async {
-    return _queryAdapter.query(
-        'SELECT * FROM Verse WHERE bookId=?1 AND chapterId=?2 AND verseIndex=?3',
-        mapper: (Map<String, Object?> row) => Verse(id: row['id'] as int?, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int),
-        arguments: [bookId, chapterId, verseIndex]);
-  }
 
   @override
   Future<Verse?> getById(int id) async {

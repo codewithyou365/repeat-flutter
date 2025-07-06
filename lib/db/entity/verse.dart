@@ -5,7 +5,7 @@ import 'package:repeat_flutter/common/date.dart';
 
 @Entity(
   indices: [
-    Index(value: ['chapterId']),
+    Index(value: ['chapterId', 'verseIndex'], unique: true),
     Index(value: ['classroomId', 'sort'], unique: true),
     Index(value: ['bookId', 'chapterIndex', 'verseIndex'], unique: true),
   ],

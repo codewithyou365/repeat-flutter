@@ -180,7 +180,7 @@ abstract class ChapterDao {
     }
     int bookId = chapter.bookId;
     out.value = chapter;
-    var currVerse = await db.verseDao.one(bookId, chapterId, 0);
+    var currVerse = await db.verseDao.getByIndex(bookId, chapter.chapterIndex, 0);
     if (currVerse != null) {
       Snackbar.showAndThrow(I18nKey.labelChapterDeleteBlocked.tr);
       return false;

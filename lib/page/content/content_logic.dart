@@ -50,7 +50,7 @@ class ContentLogic extends GetxController {
         if (!args.enableEnteringRepeatView) {
           return;
         }
-        Verse? verse = await Db().db.verseDao.one(verseShow.bookId, verseShow.chapterIndex, verseShow.verseIndex);
+        Verse? verse = await Db().db.verseDao.getByIndex(verseShow.bookId, verseShow.chapterIndex, verseShow.verseIndex);
         if (verse == null) {
           Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the verseKey data(${verseShow.bookId}-${verseShow.chapterIndex}-${verseShow.verseIndex})"]));
           return;
