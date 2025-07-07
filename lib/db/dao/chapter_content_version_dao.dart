@@ -34,6 +34,10 @@ abstract class ChapterContentVersionDao {
   Future<void> deleteByClassroomId(int classroomId);
 
   @Query('DELETE FROM ChapterContentVersion'
+      ' WHERE bookId=:bookId')
+  Future<void> deleteByBookId(int bookId);
+
+  @Query('DELETE FROM ChapterContentVersion'
       ' WHERE chapterId=:chapterId')
   Future<void> deleteByChapterId(int chapterId);
 

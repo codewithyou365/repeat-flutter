@@ -11,6 +11,9 @@ abstract class VerseStatsDao {
   @Query('DELETE FROM VerseStats WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
 
+  @Query('DELETE FROM VerseStats WHERE bookId=:bookId')
+  Future<void> deleteByBookId(int bookId);
+
   @Query('DELETE FROM VerseStats WHERE chapterId=:chapterId')
   Future<void> deleteByChapterId(int chapterId);
 

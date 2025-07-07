@@ -65,6 +65,9 @@ abstract class GameDao {
   @Query('DELETE FROM Game WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
 
+  @Query('DELETE FROM Game WHERE bookId=:bookId')
+  Future<void> deleteByBookId(int bookId);
+
   @Query('DELETE FROM Game WHERE chapterId=:chapterId')
   Future<void> deleteByChapterId(int chapterId);
 

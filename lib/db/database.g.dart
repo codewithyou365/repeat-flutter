@@ -413,6 +413,13 @@ class _$BookContentVersionDao extends BookContentVersionDao {
   }
 
   @override
+  Future<void> deleteByBookId(int bookId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM BookContentVersion WHERE bookId=?1',
+        arguments: [bookId]);
+  }
+
+  @override
   Future<void> insertOrFail(BookContentVersion entity) async {
     await _bookContentVersionInsertionAdapter.insert(
         entity, OnConflictStrategy.fail);
@@ -627,6 +634,12 @@ class _$BookDao extends BookDao {
   }
 
   @override
+  Future<void> deleteById(int bookId) async {
+    await _queryAdapter.queryNoReturn('DELETE FROM Book WHERE Book.id=?1',
+        arguments: [bookId]);
+  }
+
+  @override
   Future<void> insertBook(Book entity) async {
     await _bookInsertionAdapter.insert(entity, OnConflictStrategy.fail);
   }
@@ -700,6 +713,21 @@ class _$BookDao extends BookDao {
       });
     }
   }
+
+  @override
+  Future<void> deleteAll(int bookId) async {
+    if (database is sqflite.Transaction) {
+      await super.deleteAll(bookId);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        await transactionDatabase.bookDao.deleteAll(bookId);
+      });
+    }
+  }
 }
 
 class _$ChapterContentVersionDao extends ChapterContentVersionDao {
@@ -757,6 +785,13 @@ class _$ChapterContentVersionDao extends ChapterContentVersionDao {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM ChapterContentVersion WHERE classroomId=?1',
         arguments: [classroomId]);
+  }
+
+  @override
+  Future<void> deleteByBookId(int bookId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM ChapterContentVersion WHERE bookId=?1',
+        arguments: [bookId]);
   }
 
   @override
@@ -1603,6 +1638,12 @@ class _$GameDao extends GameDao {
   }
 
   @override
+  Future<void> deleteByBookId(int bookId) async {
+    await _queryAdapter
+        .queryNoReturn('DELETE FROM Game WHERE bookId=?1', arguments: [bookId]);
+  }
+
+  @override
   Future<void> deleteByChapterId(int chapterId) async {
     await _queryAdapter.queryNoReturn('DELETE FROM Game WHERE chapterId=?1',
         arguments: [chapterId]);
@@ -1727,6 +1768,13 @@ class _$GameUserInputDao extends GameUserInputDao {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM GameUserInput WHERE classroomId=?1',
         arguments: [classroomId]);
+  }
+
+  @override
+  Future<void> deleteByBookId(int bookId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM GameUserInput WHERE bookId=?1',
+        arguments: [bookId]);
   }
 
   @override
@@ -2404,39 +2452,6 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<int> importVerse(
-    int bookId,
-    String? url,
-  ) async {
-    if (database is sqflite.Transaction) {
-      return super.importVerse(bookId, url);
-    } else {
-      return (database as sqflite.Database)
-          .transaction<int>((transaction) async {
-        final transactionDatabase = _$AppDatabase(changeListener)
-          ..database = transaction;
-        prepareDb(transactionDatabase);
-        return transactionDatabase.scheduleDao.importVerse(bookId, url);
-      });
-    }
-  }
-
-  @override
-  Future<void> hideContentAndDeleteVerse(int bookId) async {
-    if (database is sqflite.Transaction) {
-      await super.hideContentAndDeleteVerse(bookId);
-    } else {
-      await (database as sqflite.Database)
-          .transaction<void>((transaction) async {
-        final transactionDatabase = _$AppDatabase(changeListener)
-          ..database = transaction;
-        prepareDb(transactionDatabase);
-        await transactionDatabase.scheduleDao.hideContentAndDeleteVerse(bookId);
-      });
-    }
-  }
-
-  @override
   Future<List<VerseTodayPrg>> initToday() async {
     if (database is sqflite.Transaction) {
       return super.initToday();
@@ -2628,6 +2643,13 @@ class _$VerseContentVersionDao extends VerseContentVersionDao {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM VerseContentVersion WHERE classroomId=?1',
         arguments: [classroomId]);
+  }
+
+  @override
+  Future<void> deleteByBookId(int bookId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseContentVersion WHERE bookId=?1',
+        arguments: [bookId]);
   }
 
   @override
@@ -3104,6 +3126,12 @@ class _$VerseReviewDao extends VerseReviewDao {
   }
 
   @override
+  Future<void> deleteByBookId(int bookId) async {
+    await _queryAdapter.queryNoReturn('DELETE FROM VerseReview WHERE bookId=?1',
+        arguments: [bookId]);
+  }
+
+  @override
   Future<void> deleteByChapterId(int chapterId) async {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM VerseReview WHERE chapterId=?1',
@@ -3135,6 +3163,12 @@ class _$VerseStatsDao extends VerseStatsDao {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM VerseStats WHERE classroomId=?1',
         arguments: [classroomId]);
+  }
+
+  @override
+  Future<void> deleteByBookId(int bookId) async {
+    await _queryAdapter.queryNoReturn('DELETE FROM VerseStats WHERE bookId=?1',
+        arguments: [bookId]);
   }
 
   @override
@@ -3207,6 +3241,13 @@ class _$VerseTodayPrgDao extends VerseTodayPrgDao {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM VerseTodayPrg WHERE classroomId=?1',
         arguments: [classroomId]);
+  }
+
+  @override
+  Future<void> deleteByBookId(int bookId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseTodayPrg WHERE bookId=?1',
+        arguments: [bookId]);
   }
 
   @override

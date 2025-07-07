@@ -48,7 +48,7 @@ class ScCrMaterialLogic extends GetxController {
   Future<void> delete(int bookId) async {
     showOverlay(() async {
       state.list.removeWhere((element) => identical(element.id, bookId));
-      await Db().db.scheduleDao.hideContentAndDeleteVerse(bookId);
+      await Db().db.bookDao.deleteAll(bookId);
       Get.find<GsCrLogic>().init();
       update([ScCrMaterialLogic.id]);
     }, I18nKey.labelDeleting.tr);

@@ -77,6 +77,10 @@ abstract class BookDao {
       ' WHERE Book.classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
 
+  @Query('DELETE FROM Book'
+      ' WHERE Book.id=:bookId')
+  Future<void> deleteById(int bookId);
+
   @transaction
   Future<void> updateBookContent(int bookId, String content) async {
     await innerUpdateBookContent(bookId: bookId, content: content);
@@ -178,5 +182,23 @@ abstract class BookDao {
     verses = await db.verseDao.import(chapters, verses);
     await db.verseContentVersionDao.import(verses, VerseVersionType.content);
     await db.verseContentVersionDao.import(verses, VerseVersionType.note);
+  }
+
+  @transaction
+  Future<void> deleteAll(int bookId) async {
+    await deleteById(bookId);
+    await db.bookContentVersionDao.deleteByBookId(bookId);
+    await db.chapterDao.deleteByBookId(bookId);
+    await db.chapterContentVersionDao.deleteByBookId(bookId);
+    //await db.classroomDao.deleteById(classroomId);
+    //await db.crKvDao.deleteByClassroomId(classroomId);
+    await db.gameDao.deleteByBookId(bookId);
+    await db.gameUserInputDao.deleteByBookId(bookId);
+    //await db.timeStatsDao.deleteByClassroomId(classroomId);
+    await db.verseDao.deleteByBookId(bookId);
+    await db.verseContentVersionDao.deleteByBookId(bookId);
+    await db.verseReviewDao.deleteByBookId(bookId);
+    await db.verseStatsDao.deleteByBookId(bookId);
+    await db.verseTodayPrgDao.deleteByBookId(bookId);
   }
 }

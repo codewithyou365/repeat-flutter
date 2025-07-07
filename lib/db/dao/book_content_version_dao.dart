@@ -28,6 +28,9 @@ abstract class BookContentVersionDao {
   @Query('DELETE FROM BookContentVersion'
       ' WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
+  @Query('DELETE FROM BookContentVersion'
+      ' WHERE bookId=:bookId')
+  Future<void> deleteByBookId(int bookId);
 
   Future<void> import(Book book) async {
     BookContentVersion insertBookContentVersion = BookContentVersion(
