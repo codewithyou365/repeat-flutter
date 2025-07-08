@@ -292,9 +292,22 @@ class RowWidget {
     );
   }
 
-  static Widget buildSearch(RxString value, TextEditingController controller, {FocusNode? focusNode, VoidCallback? onClose, VoidCallback? onSearch}) {
+  static Widget buildSearch(
+    RxString value,
+    TextEditingController controller, {
+    required RxBool focus,
+    required FocusNode focusNode,
+    VoidCallback? onClose,
+    VoidCallback? onSearch,
+  }) {
     controller.addListener(() {
       value.value = controller.text;
+      if (onSearch != null) {
+        onSearch();
+      }
+    });
+    focusNode.addListener(() {
+      focus.value = focusNode.hasFocus;
     });
 
     return SizedBox(
@@ -327,15 +340,11 @@ class RowWidget {
                   contentPadding: const EdgeInsets.only(bottom: 3),
                   border: InputBorder.none,
                   suffix: Obx(() {
-                    return value.value.isNotEmpty
+                    return focus.value
                         ? GestureDetector(
                             child: const Text("×", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                             onTap: () {
-                              value.value = '';
-                              if (onSearch != null) {
-                                onSearch();
-                              }
-                              controller.clear();
+                              focusNode.unfocus();
                             },
                           )
                         : const SizedBox(height: 24);

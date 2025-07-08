@@ -193,8 +193,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelSortPositionDesc, "位置 (降序)");
     put(I18nKey.labelSortNextLearnDateAsc, "下次学习时间 (升序)");
     put(I18nKey.labelSortNextLearnDateDesc, "下次学习时间 (降序)");
-    put(I18nKey.labelFindUnnecessaryVerses, "查找多余小节");
-    put(I18nKey.labelFindUnnecessaryChapters, "查找多余篇章");
+    put(I18nKey.labelSortCreateTimeAsc, "创建时间 (升序)");
+    put(I18nKey.labelSortCreateTimeDesc, "创建时间 (降序)");
     put(I18nKey.labelSearch, "搜索...");
     put(I18nKey.labelNotFoundVerse, "未找到小节(%s)");
     put(I18nKey.labelContentCantContainNote, "小节内容中不能包含 'n'(笔记) 字段");

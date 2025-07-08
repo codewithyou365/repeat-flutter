@@ -419,7 +419,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                   qrPagePath: Nav.scan.path,
                                   onHistory: () async {
                                     List<VerseContentVersion> historyData = await Db().db.verseContentVersionDao.list(verse.verseId, VerseVersionType.content);
-                                    await historyList.show(historyData);
+                                    await historyList.show(historyData, focus: true.obs);
                                   },
                                 );
                               },
@@ -447,7 +447,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                   qrPagePath: Nav.scan.path,
                                   onHistory: () async {
                                     List<VerseContentVersion> historyData = await Db().db.verseContentVersionDao.list(verse.verseId, VerseVersionType.note);
-                                    await historyList.show(historyData);
+                                    await historyList.show(historyData, focus: true.obs);
                                   },
                                 );
                               },

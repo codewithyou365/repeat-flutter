@@ -14,7 +14,6 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class HistoryList<T extends GetxController> {
   static const String bodyId = "HistoryList.bodyId";
-  static const String detailSearchId = "HistoryList.searchId";
 
   final T parentLogic;
 
@@ -22,7 +21,7 @@ class HistoryList<T extends GetxController> {
 
   Future<void> show(
     List<ContentVersion> originalVersions, {
-    bool focus = true,
+    required RxBool focus,
   }) {
     RxString search = RxString("");
     bool showSearchDetailPanel = false;
@@ -30,13 +29,14 @@ class HistoryList<T extends GetxController> {
     void tryUpdateDetailSearchPanel(bool newShow) {
       if (showSearchDetailPanel != newShow) {
         showSearchDetailPanel = newShow;
-        parentLogic.update([HistoryList.detailSearchId]);
+        parentLogic.update([HistoryList.bodyId]);
       }
     }
 
     final TextEditingController searchController = TextEditingController(text: search.value);
     final focusNode = FocusNode();
     focusNode.addListener(() {
+      focus.value = focusNode.hasFocus;
       if (focusNode.hasFocus) {
         tryUpdateDetailSearchPanel(true);
       } else {
@@ -44,7 +44,7 @@ class HistoryList<T extends GetxController> {
       }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (focus) {
+      if (focus.value) {
         focusNode.requestFocus();
       }
     });
@@ -53,21 +53,26 @@ class HistoryList<T extends GetxController> {
     List<ContentVersion> versions = List.from(originalVersions);
     RxInt selectedSortIndex = 0.obs;
     List<I18nKey> sortOptionKeys = [
-      I18nKey.labelSortCreateDateDesc,
-      I18nKey.labelSortCreateDateAsc,
+      I18nKey.labelSortCreateTimeDesc,
+      I18nKey.labelSortCreateTimeAsc,
     ];
     List<String> sortOptions = sortOptionKeys.map((key) => key.tr).toList();
     sort(versions, sortOptionKeys[selectedSortIndex.value]);
 
     // for height
     var mediaQueryData = MediaQuery.of(Get.context!);
-    double bodyViewHeight = 0;
     final Size screenSize = mediaQueryData.size;
     final totalHeight = screenSize.height - mediaQueryData.padding.top;
     final baseBodyViewHeight = totalHeight - RowWidget.rowHeight - RowWidget.dividerHeight - Sheet.paddingVertical * 2;
-    bodyViewHeight = baseBodyViewHeight;
+    final searchDetailPanelHeight = 2 * (RowWidget.rowHeight + RowWidget.dividerHeight);
+    double getBodyViewHeight() {
+      double ret = baseBodyViewHeight;
+      if (showSearchDetailPanel) {
+        ret = ret - searchDetailPanelHeight;
+      }
+      return ret;
+    }
 
-    // Collect dates for filtering
     List<int> dates = [];
     for (var version in versions) {
       final DateTime createTime = version.getCreateTime();
@@ -91,7 +96,7 @@ class HistoryList<T extends GetxController> {
     final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
 
     String genSearchKey() {
-      return '${dateSelect.value},${search.value}';
+      return '${dateSelect.value},${search.value},${selectedSortIndex.value}';
     }
 
     String searchKey = genSearchKey();
@@ -123,17 +128,76 @@ class HistoryList<T extends GetxController> {
 
     return Sheet.showBottomSheet(
       Get.context!,
-      Stack(children: [
-        Column(
-          children: [
-            RowWidget.buildSearch(search, searchController, focusNode: focusNode, onClose: Get.back, onSearch: trySearch),
-            RowWidget.buildDividerWithoutColor(),
-            GetBuilder<T>(
-              id: HistoryList.bodyId,
-              builder: (_) {
-                var list = versions;
-                return SizedBox(
-                  height: bodyViewHeight,
+      GetBuilder<T>(
+          id: HistoryList.bodyId,
+          builder: (_) {
+            Widget searchDetailPanel = const SizedBox.shrink();
+            if (showSearchDetailPanel) {
+              searchDetailPanel = SizedBox(
+                height: searchDetailPanelHeight,
+                child: Column(
+                  children: [
+                    Container(
+                      height: searchDetailPanelHeight,
+                      padding: const EdgeInsets.only(bottom: 8),
+                      decoration: BoxDecoration(
+                        color: Theme.of(Get.context!).scaffoldBackgroundColor,
+                        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            spreadRadius: 0,
+                            blurRadius: 4,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: ListView(
+                        children: [
+                          RowWidget.buildCupertinoPicker(
+                            I18nKey.labelCreateTime.tr,
+                            dateOptions,
+                            dateSelect,
+                            changed: (index) {
+                              dateSelect.value = index;
+                              trySearch();
+                            },
+                            pickWidth: 100.w,
+                          ),
+                          RowWidget.buildDividerWithoutColor(),
+                          RowWidget.buildCupertinoPicker(
+                            I18nKey.labelSortBy.tr,
+                            sortOptions,
+                            selectedSortIndex,
+                            changed: (index) {
+                              selectedSortIndex.value = index;
+                              trySearch();
+                            },
+                            pickWidth: 210.w,
+                          ),
+                          RowWidget.buildDividerWithoutColor(),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+            var list = versions;
+            return Column(
+              children: [
+                RowWidget.buildSearch(
+                  search,
+                  searchController,
+                  focus: focus,
+                  focusNode: focusNode,
+                  onClose: Get.back,
+                  onSearch: trySearch,
+                ),
+                RowWidget.buildDividerWithoutColor(),
+                searchDetailPanel,
+                SizedBox(
+                  height: getBodyViewHeight(),
                   width: screenSize.width,
                   child: NotificationListener<ScrollNotification>(
                     onNotification: (ScrollNotification notification) {
@@ -210,72 +274,10 @@ class HistoryList<T extends GetxController> {
                       },
                     ),
                   ),
-                );
-              },
-            ),
-          ],
-        ),
-        GetBuilder<T>(
-            id: HistoryList.detailSearchId,
-            builder: (_) {
-              if (showSearchDetailPanel) {
-                double searchViewHeight = 3 * (RowWidget.rowHeight + RowWidget.dividerHeight);
-                return SizedBox(
-                  height: searchViewHeight,
-                  child: Column(
-                    children: [
-                      const SizedBox(height: RowWidget.rowHeight + RowWidget.dividerHeight / 2 + 1),
-                      Container(
-                        height: searchViewHeight - RowWidget.rowHeight - RowWidget.dividerHeight,
-                        padding: const EdgeInsets.only(bottom: 8),
-                        decoration: BoxDecoration(
-                          color: Theme.of(Get.context!).scaffoldBackgroundColor,
-                          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              spreadRadius: 0,
-                              blurRadius: 4,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: ListView(
-                          children: [
-                            RowWidget.buildCupertinoPicker(
-                              I18nKey.labelCreateTime.tr,
-                              dateOptions,
-                              dateSelect,
-                              changed: (index) {
-                                dateSelect.value = index;
-                              },
-                              pickWidth: 100.w,
-                            ),
-                            RowWidget.buildDividerWithoutColor(),
-                            RowWidget.buildCupertinoPicker(
-                              I18nKey.labelSortBy.tr,
-                              sortOptions,
-                              selectedSortIndex,
-                              changed: (index) {
-                                selectedSortIndex.value = index;
-                                I18nKey key = sortOptionKeys[index];
-                                sort(versions, key);
-                                parentLogic.update([HistoryList.bodyId]);
-                              },
-                              pickWidth: 210.w,
-                            ),
-                            RowWidget.buildDividerWithoutColor(),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              } else {
-                return const SizedBox.shrink();
-              }
-            }),
-      ]),
+                ),
+              ],
+            );
+          }),
       height: totalHeight,
     ).then((_) {
       searchController.dispose();
@@ -285,10 +287,10 @@ class HistoryList<T extends GetxController> {
 
   static void sort(List<ContentVersion> versions, I18nKey key) {
     switch (key) {
-      case I18nKey.labelSortCreateDateAsc:
+      case I18nKey.labelSortCreateTimeAsc:
         versions.sort((a, b) => a.getCreateTime().compareTo(b.getCreateTime()));
         break;
-      case I18nKey.labelSortCreateDateDesc:
+      case I18nKey.labelSortCreateTimeDesc:
         versions.sort((a, b) => b.getCreateTime().compareTo(a.getCreateTime()));
         break;
       default:

@@ -355,7 +355,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                                   qrPagePath: Nav.scan.path,
                                   onHistory: () async {
                                     List<ChapterContentVersion> historyData = await Db().db.chapterContentVersionDao.list(chapter.chapterId);
-                                    await historyList.show(historyData);
+                                    await historyList.show(historyData,focus:true.obs);
                                   },
                                 );
                               },

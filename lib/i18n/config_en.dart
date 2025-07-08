@@ -193,7 +193,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelSortPositionDesc, "Position (Desc)");
     put(I18nKey.labelSortNextLearnDateAsc, "Next Learning Date (Asc)");
     put(I18nKey.labelSortNextLearnDateDesc, "Next Learning Date (Desc)");
-    put(I18nKey.labelFindUnnecessaryVerses, "Find Unnecessary Verses");
+    put(I18nKey.labelSortCreateTimeAsc, "Create Time (Asc)");
+    put(I18nKey.labelSortCreateTimeDesc, "Create Time (Desc)");
     put(I18nKey.labelSearch, "Search...");
     put(I18nKey.labelNotFoundVerse, "not found verse (%s)");
     put(I18nKey.labelContentCantContainNote, "The content of a verse must not include the 'n' (note) field.");

@@ -249,7 +249,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                                       qrPagePath: Nav.scan.path,
                                       onHistory: () async {
                                         List<BookContentVersion> historyData = await Db().db.bookContentVersionDao.list(book.bookId);
-                                        await historyList.show(historyData);
+                                        await historyList.show(historyData,focus:true.obs);
                                       },
                                     );
                                   },
