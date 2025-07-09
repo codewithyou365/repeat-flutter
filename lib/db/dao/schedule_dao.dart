@@ -7,21 +7,16 @@ import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/db/dao/verse_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
-import 'package:repeat_flutter/db/entity/chapter.dart';
 import 'package:repeat_flutter/db/entity/verse_review.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/doc_help.dart';
-import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/verse_review_with_key.dart';
 import 'package:repeat_flutter/db/entity/verse_stats.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
-import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 // ebbinghaus learning config
 class ElConfig {
@@ -210,10 +205,6 @@ abstract class ScheduleDao {
 
   @Query('SELECT * FROM Lock where id=1 for update')
   Future<void> forUpdate();
-
-  @Query('UPDATE Book set hide=true,docId=0'
-      ' WHERE Book.id=:id')
-  Future<void> hideBook(int id);
 
   /// --- CrKv ---
 
@@ -408,7 +399,7 @@ abstract class ScheduleDao {
       ',Verse.next'
       ',Verse.progress'
       ' FROM Verse'
-      ' JOIN Book ON Book.id=Verse.bookId AND Book.docId!=0'
+      ' JOIN Book ON Book.id=Verse.bookId AND Book.enable=true'
       ' WHERE Verse.classroomId=:classroomId')
   Future<List<VerseShow>> getAllVerse(int classroomId);
 
@@ -426,7 +417,7 @@ abstract class ScheduleDao {
       ',Verse.next'
       ',Verse.progress'
       ' FROM Verse'
-      " JOIN Book ON Book.id=:bookId AND Book.docId!=0"
+      " JOIN Book ON Book.id=:bookId AND Book.enable=true"
       ' WHERE Verse.bookId=:bookId'
       '  AND Verse.chapterIndex=:chapterIndex')
   Future<List<VerseShow>> getVerseByChapterIndex(int bookId, int chapterIndex);
@@ -445,7 +436,7 @@ abstract class ScheduleDao {
       ',Verse.next'
       ',Verse.progress'
       ' FROM Verse'
-      " JOIN Book ON Book.id=Verse.bookId AND Book.docId!=0"
+      " JOIN Book ON Book.id=Verse.bookId AND Book.enable=true"
       ' WHERE Verse.bookId=:bookId'
       '  AND Verse.chapterIndex>=:minChapterIndex')
   Future<List<VerseShow>> getVerseByMinChapterIndex(int bookId, int minChapterIndex);

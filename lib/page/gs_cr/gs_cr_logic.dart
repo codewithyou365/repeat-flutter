@@ -11,6 +11,7 @@ import 'package:repeat_flutter/db/dao/chapter_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
@@ -62,7 +63,7 @@ class GsCrLogic extends GetxController {
     ChapterDao.getChapterShow = ChapterHelp.getCache;
     await BookHelp.tryGen(force: true);
     BookDao.getBookShow = BookHelp.getCache;
-    state.forAdd.contents = await Db().db.bookDao.getAllEnableBook(Classroom.curr);
+    state.forAdd.contents = await Db().db.bookDao.getByEnable(Classroom.curr, true);
     state.forAdd.contentNames = state.forAdd.contents.map((e) => e.name).toList();
     var now = DateTime.now();
     List<VerseTodayPrg> allProgresses = [];

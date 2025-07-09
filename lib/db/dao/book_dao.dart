@@ -28,14 +28,14 @@ abstract class BookDao {
       ',sort'
       ',content bookContent'
       ',contentVersion bookContentVersion'
-      ' FROM Book where classroomId=:classroomId and hide=false and docId!=0 ORDER BY sort')
+      ' FROM Book where classroomId=:classroomId and enable=true ORDER BY sort')
   Future<List<BookShow>> getAllBook(int classroomId);
 
-  @Query('SELECT * FROM Book where classroomId=:classroomId and hide=false ORDER BY sort')
+  @Query('SELECT * FROM Book where classroomId=:classroomId ORDER BY sort')
   Future<List<Book>> getAll(int classroomId);
 
-  @Query('SELECT * FROM Book where classroomId=:classroomId and docId!=0 and hide=false ORDER BY sort')
-  Future<List<Book>> getAllEnableBook(int classroomId);
+  @Query('SELECT * FROM Book where classroomId=:classroomId and enable=:enable ORDER BY sort')
+  Future<List<Book>> getByEnable(int classroomId, bool enable);
 
   @Query('SELECT ifnull(max(sort),0) FROM Book WHERE classroomId=:classroomId')
   Future<int?> getMaxSort(int classroomId);
@@ -52,26 +52,18 @@ abstract class BookDao {
   @Query('UPDATE Book set content=:content,contentVersion=:contentVersion WHERE Book.id=:id')
   Future<void> updateBookContentVersion(int id, String content, int contentVersion);
 
-  @Query('UPDATE Book set content=:content,contentVersion=:contentVersion,docId=:docId WHERE Book.id=:id')
-  Future<void> updateBookContentVersionAndDocId(int id, String content, int contentVersion, int docId);
+  @Query('UPDATE Book set content=:content,contentVersion=:contentVersion,enable=:enable WHERE Book.id=:id')
+  Future<void> updateBookContentVersionAndEnable(int id, String content, int contentVersion, bool enable);
 
-  @Query('UPDATE Book set content=:content,contentVersion=:contentVersion,docId=:docId,url=:url WHERE Book.id=:id')
-  Future<void> updateBookContentVersionAndDocIdAndUrl(int id, String content, int contentVersion, int docId, String url);
+  @Query('UPDATE Book set content=:content,contentVersion=:contentVersion,enable=:enable,url=:url WHERE Book.id=:id')
+  Future<void> updateBookContentVersionAndStateAndUrl(int id, String content, int contentVersion, bool enable, String url);
 
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertBook(Book entity);
 
-  @Query('UPDATE Book set hide=true'
+  @Query('UPDATE Book set enable=:enable'
       ' WHERE Book.id=:id')
-  Future<void> hide(int id);
-
-  @Query('UPDATE Book set hide=false'
-      ' WHERE Book.id=:id')
-  Future<void> show(int id);
-
-  @Query('UPDATE Book set docId=:docId'
-      ' WHERE Book.id=:id')
-  Future<void> updateDocId(int id, int docId);
+  Future<void> updateEnable(int id, bool enable);
 
   @Query('DELETE FROM Book'
       ' WHERE Book.classroomId=:classroomId')
@@ -89,7 +81,7 @@ abstract class BookDao {
   Future<void> innerUpdateBookContent({
     required int bookId,
     required String content,
-    int? docId,
+    bool? enable,
   }) async {
     Book? book = await getById(bookId);
     if (book == null) {
@@ -110,10 +102,10 @@ abstract class BookDao {
     }
 
     var now = DateTime.now();
-    if (docId == null) {
+    if (enable == null) {
       await updateBookContentVersion(bookId, content, book.contentVersion + 1);
     } else {
-      await updateBookContentVersionAndDocId(bookId, content, book.contentVersion + 1, docId);
+      await updateBookContentVersionAndEnable(bookId, content, book.contentVersion + 1, enable);
     }
 
     await db.bookContentVersionDao.insertOrFail(BookContentVersion(
@@ -140,11 +132,7 @@ abstract class BookDao {
   Future<Book> add(String name) async {
     var ret = await getBookByName(Classroom.curr, name);
     if (ret != null) {
-      if (ret.hide == false) {
-        Snackbar.show(I18nKey.labelDataDuplication.tr);
-        return ret;
-      }
-      await show(ret.id!);
+      Snackbar.showAndThrow(I18nKey.labelBookNameDuplicated.tr);
     } else {
       var maxSort = await getMaxSort(Classroom.curr);
       var sort = await Num.getNextId(maxSort, id: Classroom.curr, existById2: existBySort);
@@ -154,12 +142,11 @@ abstract class BookDao {
         classroomId: Classroom.curr,
         name: name,
         desc: '',
-        docId: 0,
+        enable: false,
         url: '',
         content: '',
         contentVersion: 0,
         sort: sort,
-        hide: false,
         createTime: now,
         updateTime: now,
       );
@@ -170,12 +157,12 @@ abstract class BookDao {
 
   @transaction
   Future<void> create(int bookId, String content) async {
-    await innerUpdateBookContent(bookId: bookId, content: content, docId: 1);
+    await innerUpdateBookContent(bookId: bookId, content: content, enable: true);
   }
 
   @transaction
   Future<void> import(Book book, List<Chapter> chapters, List<Verse> verses) async {
-    await updateBookContentVersionAndDocIdAndUrl(book.id!, book.content, 1, 1, book.url);
+    await updateBookContentVersionAndStateAndUrl(book.id!, book.content, 1, true, book.url);
     await db.bookContentVersionDao.import(book);
     chapters = await db.chapterDao.import(chapters);
     await db.chapterContentVersionDao.import(chapters);

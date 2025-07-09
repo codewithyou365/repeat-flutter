@@ -28,7 +28,7 @@ import 'repeat_flow.dart';
 class Helper {
   bool initialized = false;
   late RepeatFlow logic;
-  late List<Book> contents;
+  late List<Book> books;
   late String rootPath;
 
   late double screenWidth;
@@ -66,7 +66,7 @@ class Helper {
   Future<void> init(RepeatFlow logic) async {
     initialized = true;
     this.logic = logic;
-    contents = await Db().db.bookDao.getAll(Classroom.curr);
+    books = await Db().db.bookDao.getAll(Classroom.curr);
     rootPath = await DocPath.getContentPath();
   }
 
@@ -108,7 +108,7 @@ class Helper {
     if (logic.currVerse == null) {
       return null;
     }
-    Book ret = contents.firstWhere((c) => c.id! == logic.currVerse!.bookId, orElse: () => Book.empty());
+    Book ret = books.firstWhere((c) => c.id! == logic.currVerse!.bookId, orElse: () => Book.empty());
     if (ret.id == null) {
       return null;
     }

@@ -63,7 +63,7 @@ class ScCrMaterialPage extends StatelessWidget {
   Widget buildButton(ScCrMaterialLogic logic, Book book) {
     var menus = <PopupMenuEntry<String>>[];
 
-    if (book.docId == 0) {
+    if (book.enable == false) {
       menus.add(PopupMenuItem<String>(
         onTap: () {
           openDownloadDialog(logic, book);
@@ -107,7 +107,7 @@ class ScCrMaterialPage extends StatelessWidget {
           alignment: Alignment.topRight,
           children: [
             Container(
-              color: book.docId == 0 ? Colors.red : Colors.green,
+              color: book.enable ? Colors.green : Colors.red,
               padding: const EdgeInsets.only(top: 70, bottom: 70),
               alignment: Alignment.center,
               child: Text(

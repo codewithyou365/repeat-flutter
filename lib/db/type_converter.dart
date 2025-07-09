@@ -5,7 +5,6 @@ import 'package:repeat_flutter/db/entity/content_version.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/db/entity/verse_content_version.dart';
 
-
 class KConverter extends TypeConverter<K, String> {
   @override
   K decode(String databaseValue) {

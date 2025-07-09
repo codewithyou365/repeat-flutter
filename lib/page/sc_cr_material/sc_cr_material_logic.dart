@@ -36,13 +36,9 @@ class ScCrMaterialLogic extends GetxController {
 
   Future<void> init() async {
     state.list.clear();
-    state.list.addAll(await Db().db.bookDao.getAll(Classroom.curr));
+    var books = await Db().db.bookDao.getAll(Classroom.curr);
+    state.list.addAll(books);
     update([ScCrMaterialLogic.id]);
-  }
-
-  Future<void> resetDoc(int bookId) async {
-    await Db().db.bookDao.updateDocId(bookId, 0);
-    await init();
   }
 
   Future<void> delete(int bookId) async {

@@ -18,12 +18,11 @@ class Book {
 
   String name;
   String desc;
-  int docId;
+  bool enable;
   String url;
   String content;
   int contentVersion;
   int sort;
-  bool hide;
   int createTime;
   int updateTime;
 
@@ -32,12 +31,11 @@ class Book {
     required this.classroomId,
     required this.name,
     required this.desc,
-    required this.docId,
+    required this.enable,
     required this.url,
     required this.content,
     required this.contentVersion,
     required this.sort,
-    required this.hide,
     required this.createTime,
     required this.updateTime,
   });
@@ -48,12 +46,11 @@ class Book {
       classroomId: 0,
       name: '',
       desc: '',
-      docId: 0,
+      enable: false,
       url: '',
       content: '',
       contentVersion: 0,
       sort: 0,
-      hide: false,
       createTime: 0,
       updateTime: 0,
     );

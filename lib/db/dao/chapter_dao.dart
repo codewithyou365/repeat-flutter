@@ -28,7 +28,7 @@ abstract class ChapterDao {
       ',Chapter.contentVersion chapterContentVersion'
       ',Chapter.chapterIndex'
       ' FROM Chapter'
-      " JOIN Book ON Book.id=Chapter.bookId AND Book.docId!=0"
+      " JOIN Book ON Book.id=Chapter.bookId AND Book.enable=true"
       ' WHERE Chapter.classroomId=:classroomId'
       ' ORDER BY Chapter.bookId,Chapter.chapterIndex')
   Future<List<ChapterShow>> getAllChapter(int classroomId);
