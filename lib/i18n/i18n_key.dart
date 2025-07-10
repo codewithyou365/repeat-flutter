@@ -7,7 +7,7 @@ enum I18nKey {
   settings,
   material,
   bookShare,
-  createType,
+  selectBookType,
   statistic,
   statisticLearn,
   statisticReview,

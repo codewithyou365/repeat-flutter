@@ -10,6 +10,7 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
@@ -18,9 +19,9 @@ import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
+import 'package:repeat_flutter/widget/select/select.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
-import '../../logic/doc_help.dart' show DocHelp;
 import 'sc_cr_material_state.dart';
 
 class ScCrMaterialLogic extends GetxController {
@@ -42,12 +43,12 @@ class ScCrMaterialLogic extends GetxController {
   }
 
   Future<void> delete(int bookId) async {
-    showOverlay(() async {
+    showTransparentOverlay(() async {
       state.list.removeWhere((element) => identical(element.id, bookId));
       await Db().db.bookDao.deleteAll(bookId);
       Get.find<GsCrLogic>().init();
       update([ScCrMaterialLogic.id]);
-    }, I18nKey.labelDeleting.tr);
+    });
   }
 
   Future<void> showContent({
@@ -139,7 +140,7 @@ class ScCrMaterialLogic extends GetxController {
     return total;
   }
 
-  downloadProgress(int startTime, int count, int total, bool finish) {
+  void downloadProgress(int startTime, int count, int total, bool finish) {
     if (finish) {
       state.indexCount.value++;
       state.contentProgress.value = 1;
@@ -159,7 +160,7 @@ class ScCrMaterialLogic extends GetxController {
     }
   }
 
-  download(int bookId, String url) async {
+  void download(int bookId, String url) async {
     state.indexCount.value = 0;
     state.indexTotal.value = 1;
     var indexPath = DocPath.getRelativeIndexPath(bookId);
@@ -206,8 +207,13 @@ class ScCrMaterialLogic extends GetxController {
   }
 
   void createBook(int bookId) async {
-    String content = await Nav.gsCrContentTemplate.push(arguments: <int>[bookId]);
-    showOverlay(() async {
+    List<String> keys = RepeatViewEnum.values.map((e) => e.name.toUpperCase()).toList();
+    int? index = await Select.showSheet(title: I18nKey.selectBookType.tr, keys: keys);
+    if (index == null) {
+      return;
+    }
+    String content = keys[index].toLowerCase();
+    showTransparentOverlay(() async {
       var rootPath = await DocPath.getContentPath();
       var relativePath = DocPath.getRelativePath(bookId);
       var workPath = rootPath.joinPath(relativePath);
@@ -215,6 +221,6 @@ class ScCrMaterialLogic extends GetxController {
       await Db().db.bookDao.create(bookId, '{"s":"$content"}');
       Get.find<GsCrLogic>().init();
       init();
-    }, I18nKey.labelSaving.tr);
+    });
   }
 }

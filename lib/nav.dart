@@ -3,7 +3,6 @@ import 'package:repeat_flutter/page/content/content_nav.dart';
 import 'package:repeat_flutter/page/gs/gs_nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_content_share/gs_cr_content_share_nav.dart';
-import 'package:repeat_flutter/page/gs_cr_content_template/gs_cr_content_template_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_settings/gs_cr_settings_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_settings_el/gs_cr_settings_el_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_settings_rel/gs_cr_settings_rel_nav.dart';
@@ -23,7 +22,6 @@ enum Nav {
   gs("/gs"),
   gsCr("/gs/cr"),
   gsCrContentShare("/gs/cr/content/share"),
-  gsCrContentTemplate("/gs/cr/content/template"),
   gsCrSettings("/gs/cr/settings"),
   gsCrSettingsEl("/gs/cr/settings/el"),
   gsCrSettingsRel("/gs/cr/settings/rel"),
@@ -67,7 +65,6 @@ enum Nav {
     gsNav(gs.path),
     gsCrNav(gsCr.path),
     gsCrContentShareNav(gsCrContentShare.path),
-    gsCrContentTemplateNav(gsCrContentTemplate.path),
     gsCrSettingsNav(gsCrSettings.path),
     gsCrSettingsElNav(gsCrSettingsEl.path),
     gsCrSettingsRelNav(gsCrSettingsRel.path),

@@ -514,4 +514,29 @@ class RowWidget {
       ),
     );
   }
+
+  static Widget buildSelect({
+    required String title,
+    required GestureTapCallback onTap,
+  }) {
+    return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
+        child: GestureDetector(
+          onTap: onTap,
+          child: SizedBox(
+            height: rowHeight,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(fontSize: titleFontSize),
+                  ),
+                ),
+                const Icon(Icons.navigate_next),
+              ],
+            ),
+          ),
+        ));
+  }
 }

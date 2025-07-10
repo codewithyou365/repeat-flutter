@@ -9,7 +9,7 @@ class ConfigZh extends Config {
     put(I18nKey.settings, "设置");
     put(I18nKey.material, "材料");
     put(I18nKey.bookShare, "学卷分享");
-    put(I18nKey.createType, "创建的类型");
+    put(I18nKey.selectBookType, "请选择学卷类型");
     put(I18nKey.statistic, "统计");
     put(I18nKey.statisticLearn, "统计-学习");
     put(I18nKey.statisticReview, "统计-回顾");
