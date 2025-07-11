@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/folder.dart';
 import 'package:repeat_flutter/common/path.dart';
@@ -18,6 +19,7 @@ import 'package:repeat_flutter/logic/schedule_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -204,6 +206,53 @@ class ScCrMaterialLogic extends GetxController {
     Get.find<GsCrLogic>().init();
     init();
     return true;
+  }
+
+  void importBook(Book book) async {
+    int? index = await Select.showSheet(title: I18nKey.selectImportType.tr, keys: [
+      I18nKey.labelRemoteImport.tr,
+      I18nKey.labelLocalZipImport.tr,
+    ]);
+    if (index == null) {
+      return;
+    }
+    if (index == 0) {
+      openDownloadDialog(book);
+    } else {
+      addByZip(book.id!);
+    }
+  }
+
+  void openDownloadDialog(Book model) {
+    final state = this.state;
+    RxString downloadUrl = model.url.obs;
+    MsgBox.strInputWithYesOrNo(
+      downloadUrl,
+      I18nKey.labelDownloadBook.tr,
+      I18nKey.labelRemoteUrl.tr,
+      nextChildren: [
+        Obx(() {
+          return LinearProgressIndicator(
+            value: state.indexCount.value / state.indexTotal.value,
+            semanticsLabel: "${(state.indexCount.value / state.indexTotal.value * 100).toStringAsFixed(1)}%",
+          );
+        }),
+        const SizedBox(height: 20),
+        Obx(() {
+          return LinearProgressIndicator(
+            value: state.contentProgress.value,
+            semanticsLabel: "${(state.contentProgress.value * 100).toStringAsFixed(1)}%",
+          );
+        }),
+        const SizedBox(height: 10),
+      ],
+      yes: () {
+        download(model.id!, downloadUrl.value);
+      },
+      yesBtnTitle: I18nKey.btnDownload.tr,
+      noBtnTitle: I18nKey.btnClose.tr,
+      qrPagePath: Nav.scan.path,
+    );
   }
 
   void createBook(int bookId) async {

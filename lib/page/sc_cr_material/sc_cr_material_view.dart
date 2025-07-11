@@ -4,7 +4,6 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
 import 'sc_cr_material_logic.dart';
@@ -66,13 +65,9 @@ class ScCrMaterialPage extends StatelessWidget {
     if (book.enable == false) {
       menus.add(PopupMenuItem<String>(
         onTap: () {
-          openDownloadDialog(logic, book);
+          logic.importBook(book);
         },
-        child: Text(I18nKey.labelRemoteImport.tr),
-      ));
-      menus.add(PopupMenuItem<String>(
-        onTap: () => logic.addByZip(book.id!),
-        child: Text(I18nKey.labelLocalZipImport.tr),
+        child: Text(I18nKey.import.tr),
       ));
       menus.add(PopupMenuItem<String>(
         onTap: () {
@@ -130,38 +125,6 @@ class ScCrMaterialPage extends StatelessWidget {
         logic.delete(model.id!);
         Get.back();
       },
-    );
-  }
-
-  void openDownloadDialog(ScCrMaterialLogic logic, Book model) {
-    final state = logic.state;
-    RxString downloadUrl = model.url.obs;
-    MsgBox.strInputWithYesOrNo(
-      downloadUrl,
-      I18nKey.labelDownloadBook.tr,
-      I18nKey.labelRemoteUrl.tr,
-      nextChildren: [
-        Obx(() {
-          return LinearProgressIndicator(
-            value: state.indexCount.value / state.indexTotal.value,
-            semanticsLabel: "${(state.indexCount.value / state.indexTotal.value * 100).toStringAsFixed(1)}%",
-          );
-        }),
-        const SizedBox(height: 20),
-        Obx(() {
-          return LinearProgressIndicator(
-            value: state.contentProgress.value,
-            semanticsLabel: "${(state.contentProgress.value * 100).toStringAsFixed(1)}%",
-          );
-        }),
-        const SizedBox(height: 10),
-      ],
-      yes: () {
-        logic.download(model.id!, downloadUrl.value);
-      },
-      yesBtnTitle: I18nKey.btnDownload.tr,
-      noBtnTitle: I18nKey.btnClose.tr,
-      qrPagePath: Nav.scan.path,
     );
   }
 }

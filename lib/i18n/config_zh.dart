@@ -138,6 +138,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelDataAnomaly, "数据异常! %s");
     put(I18nKey.labelDataAnomalyWithArg, "数据异常! %s");
     put(I18nKey.labelDataMissing, "数据丢失!");
+    put(I18nKey.import, "导入");
+    put(I18nKey.selectImportType, "选择导入类型");
     put(I18nKey.labelRemoteImport, "远程导入");
     put(I18nKey.labelLocalZipImport, "本地ZIP导入");
     put(I18nKey.create, "创建");

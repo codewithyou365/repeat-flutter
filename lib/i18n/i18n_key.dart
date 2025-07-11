@@ -136,6 +136,8 @@ enum I18nKey {
   labelDataAnomaly,
   labelDataAnomalyWithArg,
   labelDataMissing,
+  import,
+  selectImportType,
   labelRemoteImport,
   labelLocalZipImport,
   create,

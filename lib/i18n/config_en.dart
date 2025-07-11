@@ -138,6 +138,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelDataAnomaly, "Data anomaly! %s");
     put(I18nKey.labelDataAnomalyWithArg, "Data anomaly! %s");
     put(I18nKey.labelDataMissing, "Data missing!");
+    put(I18nKey.import, "Import");
+    put(I18nKey.selectImportType, "Select Import Type");
     put(I18nKey.labelRemoteImport, "Remote import");
     put(I18nKey.labelLocalZipImport, "Local ZIP import");
     put(I18nKey.create, "Create");
