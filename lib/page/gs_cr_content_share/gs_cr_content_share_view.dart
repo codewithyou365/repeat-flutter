@@ -37,21 +37,24 @@ class GsCrContentSharePage extends StatelessWidget {
     final state = logic.state;
     return ListView(children: [
       buildItem(
-        state.addresses[0].title,
-        state.addresses[0].address,
+        state.original.title,
+        state.original.address,
         false.obs,
       ),
-      if (state.addresses.length > 1)
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: RowWidget.buildSwitch(I18nKey.labelDoYourShareTheNotes.tr, state.shareNote),
-        ),
-      if (state.addresses.length > 1)
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: RowWidget.buildSwitch(I18nKey.web.tr, state.webStart, logic.switchWeb),
+      ),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: RowWidget.buildSwitch(I18nKey.labelDoYourShareTheNotes.tr, state.shareNote),
+      ),
+      if (state.addresses.isNotEmpty)
         ...List.generate(
-          state.addresses.length - 1,
+          state.addresses.length,
           (index) => buildItem(
-            state.addresses[index + 1].title,
-            state.addresses[index + 1].address,
+            state.addresses[index].title,
+            state.addresses[index].address,
             state.shareNote,
           ),
         )

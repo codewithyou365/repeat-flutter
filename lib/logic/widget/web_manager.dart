@@ -35,7 +35,7 @@ class WebManager<T extends GetxController> {
   WebManager(this.parentLogic);
 
   String get title {
-    return "${I18nKey.btnWeb.tr}(${open.value})";
+    return "${I18nKey.web.tr}(${open.value})";
   }
 
   String getOnline() {
@@ -129,7 +129,7 @@ class WebManager<T extends GetxController> {
         child: Column(
           children: [
             RowWidget.buildSwitch(
-              I18nKey.btnWeb.tr,
+              I18nKey.web.tr,
               open,
               switchWeb,
             ),

@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:repeat_flutter/common/await_util.dart';
 import 'package:repeat_flutter/common/file_util.dart';
 import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/ip.dart';
@@ -35,17 +36,26 @@ class GsCrContentShareLogic extends GetxController {
   void onInit() {
     super.onInit();
     state.book = Get.arguments[0] as Book;
-    state.addresses.add(Address(I18nKey.labelOriginalAddress.tr, state.book.url));
+    state.original = Address(I18nKey.labelOriginalAddress.tr, state.book.url);
     state.lanAddressSuffix = "/${DocPath.getIndexFileName()}";
-    _startHttpService();
+  }
+
+  void switchWeb(bool enable) {
+    AwaitUtil.tryDo(() async {
+      state.addresses.clear();
+      if (enable) {
+        await _startHttpService();
+      } else {
+        await _stopHttpService();
+      }
+      state.webStart.value = enable;
+    });
   }
 
   @override
   void onClose() {
     super.onClose();
-    if (state.lanAddressSuffix.isNotEmpty) {
-      _stopHttpService();
-    }
+    _stopHttpService();
   }
 
   Future<void> _startHttpService() async {
@@ -66,10 +76,12 @@ class GsCrContentShareLogic extends GetxController {
       Snackbar.show('Error starting HTTP service: $e');
       return;
     }
+    state.addresses.clear();
     for (var i = 0; i < ips.length; i++) {
       String ip = ips[i];
       state.addresses.add(Address("${I18nKey.labelLanAddress.tr} $i", 'http://$ip:$port${state.lanAddressSuffix}'));
     }
+    Snackbar.show('HTTP service started');
     update([id]);
   }
 
@@ -78,6 +90,7 @@ class GsCrContentShareLogic extends GetxController {
       await _httpServer!.close();
       Snackbar.show('HTTP service stopped');
       _httpServer = null;
+      update([id]);
     }
   }
 
