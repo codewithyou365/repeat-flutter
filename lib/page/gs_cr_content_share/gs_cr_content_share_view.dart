@@ -41,10 +41,12 @@ class GsCrContentSharePage extends StatelessWidget {
         state.original.address,
         false.obs,
       ),
+      RowWidget.buildDividerWithoutColor(),
       Padding(
         padding: const EdgeInsets.all(8.0),
         child: RowWidget.buildSwitch(I18nKey.web.tr, state.webStart, logic.switchWeb),
       ),
+      RowWidget.buildDividerWithoutColor(),
       Padding(
         padding: const EdgeInsets.all(8.0),
         child: RowWidget.buildSwitch(I18nKey.labelDoYourShareTheNotes.tr, state.shareNote),

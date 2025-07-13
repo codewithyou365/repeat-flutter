@@ -11,7 +11,6 @@ import 'package:repeat_flutter/db/dao/chapter_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';

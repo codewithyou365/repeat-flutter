@@ -146,7 +146,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `CrKv` (`classroomId` INTEGER NOT NULL, `k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`classroomId`, `k`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Verse` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, `verseIndex` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `content` TEXT NOT NULL, `contentVersion` INTEGER NOT NULL, `note` TEXT NOT NULL, `noteVersion` INTEGER NOT NULL, `next` INTEGER NOT NULL, `progress` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `Verse` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, `verseIndex` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `content` TEXT NOT NULL, `contentVersion` INTEGER NOT NULL, `note` TEXT NOT NULL, `noteVersion` INTEGER NOT NULL, `nextLearnDate` INTEGER NOT NULL, `progress` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `VerseContentVersion` (`classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `verseId` INTEGER NOT NULL, `t` INTEGER NOT NULL, `version` INTEGER NOT NULL, `reason` INTEGER NOT NULL, `content` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`verseId`, `t`, `version`))');
         await database.execute(
@@ -2008,7 +2008,7 @@ class _$ScheduleDao extends ScheduleDao {
                   'contentVersion': item.contentVersion,
                   'note': item.note,
                   'noteVersion': item.noteVersion,
-                  'next': _dateConverter.encode(item.next),
+                  'nextLearnDate': _dateConverter.encode(item.nextLearnDate),
                   'progress': item.progress
                 }),
         _verseStatsInsertionAdapter = InsertionAdapter(
@@ -2217,7 +2217,7 @@ class _$ScheduleDao extends ScheduleDao {
     Date now,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM ( SELECT Verse.classroomId,Verse.bookId,Verse.chapterId,Verse.id verseId,0 time,0 type,Verse.sort,Verse.progress progress,0 viewTime,0 reviewCount,0 reviewCreateDate,0 finish FROM Verse WHERE Verse.next<=?2  AND Verse.progress>=?1 ORDER BY Verse.progress,Verse.sort ) Verse order by Verse.sort',
+        'SELECT * FROM ( SELECT Verse.classroomId,Verse.bookId,Verse.chapterId,Verse.id verseId,0 time,0 type,Verse.sort,Verse.progress progress,0 viewTime,0 reviewCount,0 reviewCreateDate,0 finish FROM Verse WHERE Verse.nextLearnDate<=?2  AND Verse.progress>=?1 ORDER BY Verse.progress,Verse.sort ) Verse order by Verse.sort',
         mapper: (Map<String, Object?> row) => VerseTodayPrg(classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, verseId: row['verseId'] as int, time: row['time'] as int, type: row['type'] as int, sort: row['sort'] as int, progress: row['progress'] as int, viewTime: _dateTimeConverter.decode(row['viewTime'] as int), reviewCount: row['reviewCount'] as int, reviewCreateDate: _dateConverter.decode(row['reviewCreateDate'] as int), finish: (row['finish'] as int) != 0, id: row['id'] as int?),
         arguments: [minProgress, _dateConverter.encode(now)]);
   }
@@ -2237,14 +2237,14 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> setPrgAndNext4Sop(
+  Future<void> setPrgAndLearnDate4Sop(
     int verseId,
     int progress,
-    Date next,
+    Date nextLearnDate,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Verse SET progress=?2,next=?3 WHERE id=?1',
-        arguments: [verseId, progress, _dateConverter.encode(next)]);
+        'UPDATE Verse SET progress=?2,nextLearnDate=?3 WHERE id=?1',
+        arguments: [verseId, progress, _dateConverter.encode(nextLearnDate)]);
   }
 
   @override
@@ -2325,8 +2325,8 @@ class _$ScheduleDao extends ScheduleDao {
   @override
   Future<List<VerseShow>> getAllVerse(int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT Verse.id verseId,Book.id bookId,Book.name bookName,Book.sort bookSort,Verse.content verseContent,Verse.contentVersion verseContentVersion,Verse.note verseNote,Verse.noteVersion verseNoteVersion,Verse.chapterId,Verse.chapterIndex,Verse.verseIndex,Verse.next,Verse.progress FROM Verse JOIN Book ON Book.id=Verse.bookId AND Book.enable=true WHERE Verse.classroomId=?1',
-        mapper: (Map<String, Object?> row) => VerseShow(verseId: row['verseId'] as int, bookId: row['bookId'] as int, bookName: row['bookName'] as String, bookSort: row['bookSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, verseNote: row['verseNote'] as String, verseNoteVersion: row['verseNoteVersion'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int),
+        'SELECT Verse.id verseId,Book.id bookId,Book.name bookName,Book.sort bookSort,Verse.content verseContent,Verse.contentVersion verseContentVersion,Verse.note verseNote,Verse.noteVersion verseNoteVersion,Verse.chapterId,Verse.chapterIndex,Verse.verseIndex,Verse.nextLearnDate,Verse.progress FROM Verse JOIN Book ON Book.id=Verse.bookId AND Book.enable=true WHERE Verse.classroomId=?1',
+        mapper: (Map<String, Object?> row) => VerseShow(verseId: row['verseId'] as int, bookId: row['bookId'] as int, bookName: row['bookName'] as String, bookSort: row['bookSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, verseNote: row['verseNote'] as String, verseNoteVersion: row['verseNoteVersion'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, nextLearnDate: _dateConverter.decode(row['nextLearnDate'] as int), progress: row['progress'] as int),
         arguments: [classroomId]);
   }
 
@@ -2336,8 +2336,8 @@ class _$ScheduleDao extends ScheduleDao {
     int chapterIndex,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT Verse.id verseId,Book.id bookId,Book.name bookName,Book.sort bookSort,Verse.content verseContent,Verse.contentVersion verseContentVersion,Verse.note verseNote,Verse.noteVersion verseNoteVersion,Verse.chapterId,Verse.chapterIndex,Verse.verseIndex,Verse.next,Verse.progress FROM Verse JOIN Book ON Book.id=?1 AND Book.enable=true WHERE Verse.bookId=?1  AND Verse.chapterIndex=?2',
-        mapper: (Map<String, Object?> row) => VerseShow(verseId: row['verseId'] as int, bookId: row['bookId'] as int, bookName: row['bookName'] as String, bookSort: row['bookSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, verseNote: row['verseNote'] as String, verseNoteVersion: row['verseNoteVersion'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int),
+        'SELECT Verse.id verseId,Book.id bookId,Book.name bookName,Book.sort bookSort,Verse.content verseContent,Verse.contentVersion verseContentVersion,Verse.note verseNote,Verse.noteVersion verseNoteVersion,Verse.chapterId,Verse.chapterIndex,Verse.verseIndex,Verse.nextLearnDate,Verse.progress FROM Verse JOIN Book ON Book.id=?1 AND Book.enable=true WHERE Verse.bookId=?1  AND Verse.chapterIndex=?2',
+        mapper: (Map<String, Object?> row) => VerseShow(verseId: row['verseId'] as int, bookId: row['bookId'] as int, bookName: row['bookName'] as String, bookSort: row['bookSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, verseNote: row['verseNote'] as String, verseNoteVersion: row['verseNoteVersion'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, nextLearnDate: _dateConverter.decode(row['nextLearnDate'] as int), progress: row['progress'] as int),
         arguments: [bookId, chapterIndex]);
   }
 
@@ -2347,8 +2347,8 @@ class _$ScheduleDao extends ScheduleDao {
     int minChapterIndex,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT Verse.id verseId,Book.id bookId,Book.name bookName,Book.sort bookSort,Verse.content verseContent,Verse.contentVersion verseContentVersion,Verse.note verseNote,Verse.noteVersion verseNoteVersion,Verse.chapterId,Verse.chapterIndex,Verse.verseIndex,Verse.next,Verse.progress FROM Verse JOIN Book ON Book.id=Verse.bookId AND Book.enable=true WHERE Verse.bookId=?1  AND Verse.chapterIndex>=?2',
-        mapper: (Map<String, Object?> row) => VerseShow(verseId: row['verseId'] as int, bookId: row['bookId'] as int, bookName: row['bookName'] as String, bookSort: row['bookSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, verseNote: row['verseNote'] as String, verseNoteVersion: row['verseNoteVersion'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int),
+        'SELECT Verse.id verseId,Book.id bookId,Book.name bookName,Book.sort bookSort,Verse.content verseContent,Verse.contentVersion verseContentVersion,Verse.note verseNote,Verse.noteVersion verseNoteVersion,Verse.chapterId,Verse.chapterIndex,Verse.verseIndex,Verse.nextLearnDate,Verse.progress FROM Verse JOIN Book ON Book.id=Verse.bookId AND Book.enable=true WHERE Verse.bookId=?1  AND Verse.chapterIndex>=?2',
+        mapper: (Map<String, Object?> row) => VerseShow(verseId: row['verseId'] as int, bookId: row['bookId'] as int, bookName: row['bookName'] as String, bookSort: row['bookSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, verseNote: row['verseNote'] as String, verseNoteVersion: row['verseNoteVersion'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, nextLearnDate: _dateConverter.decode(row['nextLearnDate'] as int), progress: row['progress'] as int),
         arguments: [bookId, minChapterIndex]);
   }
 
@@ -2688,7 +2688,7 @@ class _$VerseDao extends VerseDao {
                   'contentVersion': item.contentVersion,
                   'note': item.note,
                   'noteVersion': item.noteVersion,
-                  'next': _dateConverter.encode(item.next),
+                  'nextLearnDate': _dateConverter.encode(item.nextLearnDate),
                   'progress': item.progress
                 }),
         _verseUpdateAdapter = UpdateAdapter(
@@ -2707,7 +2707,7 @@ class _$VerseDao extends VerseDao {
                   'contentVersion': item.contentVersion,
                   'note': item.note,
                   'noteVersion': item.noteVersion,
-                  'next': _dateConverter.encode(item.next),
+                  'nextLearnDate': _dateConverter.encode(item.nextLearnDate),
                   'progress': item.progress
                 });
 
@@ -2736,7 +2736,7 @@ class _$VerseDao extends VerseDao {
             contentVersion: row['contentVersion'] as int,
             note: row['note'] as String,
             noteVersion: row['noteVersion'] as int,
-            next: _dateConverter.decode(row['next'] as int),
+            nextLearnDate: _dateConverter.decode(row['nextLearnDate'] as int),
             progress: row['progress'] as int),
         arguments: [id]);
   }
@@ -2756,7 +2756,7 @@ class _$VerseDao extends VerseDao {
             contentVersion: row['contentVersion'] as int,
             note: row['note'] as String,
             noteVersion: row['noteVersion'] as int,
-            next: _dateConverter.decode(row['next'] as int),
+            nextLearnDate: _dateConverter.decode(row['nextLearnDate'] as int),
             progress: row['progress'] as int),
         arguments: [bookId]);
   }
@@ -2769,7 +2769,7 @@ class _$VerseDao extends VerseDao {
   ) async {
     return _queryAdapter.query(
         'SELECT * FROM Verse WHERE bookId=?1 AND chapterIndex=?2 AND verseIndex=?3',
-        mapper: (Map<String, Object?> row) => Verse(id: row['id'] as int?, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int),
+        mapper: (Map<String, Object?> row) => Verse(id: row['id'] as int?, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, nextLearnDate: _dateConverter.decode(row['nextLearnDate'] as int), progress: row['progress'] as int),
         arguments: [bookId, chapterIndex, verseIndex]);
   }
 
@@ -2780,7 +2780,7 @@ class _$VerseDao extends VerseDao {
   ) async {
     return _queryAdapter.query(
         'SELECT * FROM Verse WHERE bookId=?1 AND chapterIndex>=?2 order by chapterIndex,verseIndex limit 1',
-        mapper: (Map<String, Object?> row) => Verse(id: row['id'] as int?, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int),
+        mapper: (Map<String, Object?> row) => Verse(id: row['id'] as int?, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, nextLearnDate: _dateConverter.decode(row['nextLearnDate'] as int), progress: row['progress'] as int),
         arguments: [bookId, minChapterIndex]);
   }
 
@@ -2792,7 +2792,7 @@ class _$VerseDao extends VerseDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT * FROM Verse WHERE bookId=?1 AND chapterIndex=?2 AND verseIndex>=?3',
-        mapper: (Map<String, Object?> row) => Verse(id: row['id'] as int?, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int),
+        mapper: (Map<String, Object?> row) => Verse(id: row['id'] as int?, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, nextLearnDate: _dateConverter.decode(row['nextLearnDate'] as int), progress: row['progress'] as int),
         arguments: [bookId, chapterIndex, minVerseIndex]);
   }
 
@@ -2814,7 +2814,7 @@ class _$VerseDao extends VerseDao {
   ) async {
     return _queryAdapter.queryList(
         'SELECT * FROM Verse WHERE bookId=?1 AND chapterIndex>=?2 order by chapterIndex,verseIndex',
-        mapper: (Map<String, Object?> row) => Verse(id: row['id'] as int?, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, next: _dateConverter.decode(row['next'] as int), progress: row['progress'] as int),
+        mapper: (Map<String, Object?> row) => Verse(id: row['id'] as int?, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, sort: row['sort'] as int, content: row['content'] as String, contentVersion: row['contentVersion'] as int, note: row['note'] as String, noteVersion: row['noteVersion'] as int, nextLearnDate: _dateConverter.decode(row['nextLearnDate'] as int), progress: row['progress'] as int),
         arguments: [bookId, minChapterIndex]);
   }
 

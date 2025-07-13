@@ -243,7 +243,7 @@ abstract class VerseDao {
       contentVersion: 1,
       note: '',
       noteVersion: 1,
-      next: Date.from(now),
+      nextLearnDate: Date.from(now),
       progress: 0,
     );
     await addVerses(bookId, book.sort, chapterIndex, [verse]);

@@ -70,10 +70,6 @@ class ScheduleHelp {
       for (var verseIndex = 0; verseIndex < chapter.verse.length; verseIndex++) {
         var rawVerse = rawVerses[verseIndex] as Map<String, dynamic>;
         var verse = chapter.verse[verseIndex];
-        if (verse.answer.isEmpty) {
-          Snackbar.show(I18nKey.labelVerseNeedToContainAnswer.tr);
-          return false;
-        }
         Map<String, dynamic> excludeNote = {};
         rawVerse.forEach((k, v) {
           if (k != 'n') {
@@ -93,7 +89,7 @@ class ScheduleHelp {
           contentVersion: 1,
           note: verse.note ?? '',
           noteVersion: 1,
-          next: Date.from(now),
+          nextLearnDate: Date.from(now),
           progress: 0,
         ));
       }

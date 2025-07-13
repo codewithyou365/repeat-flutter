@@ -15,7 +15,7 @@ class VerseShow {
   int chapterId;
   int chapterIndex;
   int verseIndex;
-  Date next;
+  Date nextLearnDate;
   int progress;
 
   VerseShow({
@@ -30,7 +30,7 @@ class VerseShow {
     required this.chapterId,
     required this.chapterIndex,
     required this.verseIndex,
-    required this.next,
+    required this.nextLearnDate,
     required this.progress,
   });
 

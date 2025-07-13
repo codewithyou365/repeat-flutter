@@ -170,7 +170,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
         if (ret && nextMonthSelect.value != 0) {
           int min = nextMonth[nextMonthSelect.value] * 100;
           int max = min + 99;
-          ret = min < e.next.value && e.next.value < max;
+          ret = min < e.nextLearnDate.value && e.nextLearnDate.value < max;
         }
         return ret;
       }).toList();
@@ -483,7 +483,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                       editProgressWithMsgBox(verse);
                                     },
                                     child: Text(
-                                      '${I18nKey.labelSetNextLearnDate.tr}: ${verse.next.format()}',
+                                      '${I18nKey.labelSetNextLearnDate.tr}: ${verse.nextLearnDate.format()}',
                                       style: const TextStyle(fontSize: 12, color: Colors.green),
                                     ),
                                   ),
@@ -645,7 +645,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
       if (!progress.contains(v.progress)) {
         progress.add(v.progress);
       }
-      int month = v.next.value ~/ 100;
+      int month = v.nextLearnDate.value ~/ 100;
       if (!nextMonth.contains(month)) {
         nextMonth.add(month);
       }
@@ -691,13 +691,13 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
         break;
       case I18nKey.labelSortNextLearnDateAsc:
         verseShow.sort((a, b) {
-          int nextComparison = a.next.value.compareTo(b.next.value);
+          int nextComparison = a.nextLearnDate.value.compareTo(b.nextLearnDate.value);
           return nextComparison != 0 ? nextComparison : a.toSort().compareTo(b.toSort());
         });
         break;
       case I18nKey.labelSortNextLearnDateDesc:
         verseShow.sort((a, b) {
-          int nextComparison = b.next.value.compareTo(a.next.value);
+          int nextComparison = b.nextLearnDate.value.compareTo(a.nextLearnDate.value);
           return nextComparison != 0 ? nextComparison : a.toSort().compareTo(b.toSort());
         });
         break;

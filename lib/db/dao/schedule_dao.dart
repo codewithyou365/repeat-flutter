@@ -300,7 +300,7 @@ abstract class ScheduleDao {
       ",0 reviewCreateDate"
       ",0 finish"
       " FROM Verse"
-      " WHERE Verse.next<=:now"
+      " WHERE Verse.nextLearnDate<=:now"
       "  AND Verse.progress>=:minProgress"
       " ORDER BY Verse.progress,Verse.sort"
       " ) Verse order by Verse.sort")
@@ -332,8 +332,8 @@ abstract class ScheduleDao {
       "")
   Future<List<VerseTodayPrg>> scheduleFullCustom(int classroomId, int bookId, int chapterIndex, int verseIndex, int limit);
 
-  @Query('UPDATE Verse SET progress=:progress,next=:next WHERE id=:verseId')
-  Future<void> setPrgAndNext4Sop(int verseId, int progress, Date next);
+  @Query('UPDATE Verse SET progress=:progress,nextLearnDate=:nextLearnDate WHERE id=:verseId')
+  Future<void> setPrgAndLearnDate4Sop(int verseId, int progress, Date nextLearnDate);
 
   @Query('UPDATE Verse SET progress=:progress WHERE id=:verseId')
   Future<void> setPrg4Sop(int verseId, int progress);
@@ -396,7 +396,7 @@ abstract class ScheduleDao {
       ',Verse.chapterId'
       ',Verse.chapterIndex'
       ',Verse.verseIndex'
-      ',Verse.next'
+      ',Verse.nextLearnDate'
       ',Verse.progress'
       ' FROM Verse'
       ' JOIN Book ON Book.id=Verse.bookId AND Book.enable=true'
@@ -414,7 +414,7 @@ abstract class ScheduleDao {
       ',Verse.chapterId'
       ',Verse.chapterIndex'
       ',Verse.verseIndex'
-      ',Verse.next'
+      ',Verse.nextLearnDate'
       ',Verse.progress'
       ' FROM Verse'
       " JOIN Book ON Book.id=:bookId AND Book.enable=true"
@@ -433,7 +433,7 @@ abstract class ScheduleDao {
       ',Verse.chapterId'
       ',Verse.chapterIndex'
       ',Verse.verseIndex'
-      ',Verse.next'
+      ',Verse.nextLearnDate'
       ',Verse.progress'
       ' FROM Verse'
       " JOIN Book ON Book.id=Verse.bookId AND Book.enable=true"
@@ -763,9 +763,9 @@ abstract class ScheduleDao {
     return prgType;
   }
 
-  Future<void> setPrg(int verseId, int progress, Date? next) async {
-    if (next != null) {
-      await setPrgAndNext4Sop(verseId, progress, next);
+  Future<void> setPrg(int verseId, int progress, Date? nextLearnDate) async {
+    if (nextLearnDate != null) {
+      await setPrgAndLearnDate4Sop(verseId, progress, nextLearnDate);
     } else {
       await setPrg4Sop(verseId, progress);
     }
@@ -775,8 +775,8 @@ abstract class ScheduleDao {
       VerseShow? currVerseShow = VerseDao.getVerseShow!(verseId);
       if (currVerseShow != null) {
         currVerseShow.progress = progress;
-        if (next != null) {
-          currVerseShow.next = next;
+        if (nextLearnDate != null) {
+          currVerseShow.nextLearnDate = nextLearnDate;
         }
       }
     }

@@ -70,12 +70,14 @@ class DownloadContent {
 }
 
 class ChapterContent {
+  int? id;
   String? showType;
   String? rootUrl;
   List<DownloadContent>? download;
   List<VerseContent> verse;
 
   ChapterContent({
+    required this.id,
     required this.showType,
     required this.rootUrl,
     required this.download,
@@ -84,6 +86,7 @@ class ChapterContent {
 
   factory ChapterContent.fromJson(Map<String, dynamic> json) {
     return ChapterContent(
+      id: json['i'] as int?,
       showType: json['s'] as String?,
       rootUrl: json['r'] as String?,
       download: DownloadContent.toList(json['d']),
@@ -93,6 +96,7 @@ class ChapterContent {
 
   Map<String, dynamic> toJson() {
     return {
+      'i': id,
       's': showType,
       'r': rootUrl,
       'd': download?.map((e) => e.toJson()).toList(),
@@ -102,6 +106,7 @@ class ChapterContent {
 }
 
 class VerseContent {
+  int? id;
   String? showType;
   String? rootUrl;
   List<DownloadContent>? download;
@@ -110,9 +115,12 @@ class VerseContent {
   String? note;
   String? tip;
   String? question;
-  String answer;
+  String? answer;
+  int? nextLearnDate;
+  int? progress;
 
   VerseContent({
+    required this.id,
     required this.showType,
     required this.rootUrl,
     required this.download,
@@ -122,10 +130,13 @@ class VerseContent {
     required this.tip,
     required this.question,
     required this.answer,
+    required this.nextLearnDate,
+    required this.progress,
   });
 
   factory VerseContent.fromJson(Map<String, dynamic> json) {
     return VerseContent(
+      id: json['i'] as int?,
       showType: json['s'] as String?,
       rootUrl: json['r'] as String?,
       download: DownloadContent.toList(json['d']),
@@ -134,12 +145,15 @@ class VerseContent {
       note: json['n'] as String?,
       tip: json['t'] as String?,
       question: json['q'] as String?,
-      answer: json['a'] as String,
+      answer: json['a'] as String?,
+      nextLearnDate: json['l'] as int?,
+      progress: json['p'] as int?,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'i': id,
       's': showType,
       'r': rootUrl,
       'd': download?.map((e) => e.toJson()).toList(),
@@ -149,6 +163,51 @@ class VerseContent {
       't': tip,
       'q': question,
       'a': answer,
+      'l': nextLearnDate,
+      'p': progress,
+    };
+  }
+}
+
+class OtherVerseContent {
+  List<VerseReviewContent> verseReviewContent;
+
+  OtherVerseContent({
+    required this.verseReviewContent,
+  });
+  factory OtherVerseContent.fromJson(Map<String, dynamic> json) {
+    return OtherVerseContent(
+      verseReviewContent: (json['verseReviewContent'] as List?)?.map((e) => VerseReviewContent.fromJson(e as Map<String, dynamic>)).toList() ?? [],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'verseReviewContent': verseReviewContent,
+    };
+  }
+}
+
+class VerseReviewContent {
+  int createDate;
+  int count;
+
+  VerseReviewContent({
+    required this.createDate,
+    required this.count,
+  });
+
+  factory VerseReviewContent.fromJson(Map<String, dynamic> json) {
+    return VerseReviewContent(
+      createDate: json['createDate'] as int,
+      count: json['count'] as int,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'createDate': createDate,
+      'count': count,
     };
   }
 }

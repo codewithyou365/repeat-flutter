@@ -25,7 +25,7 @@ class Verse {
   final String note;
   int noteVersion;
 
-  final Date next;
+  final Date nextLearnDate;
   final int progress;
 
   Verse({
@@ -40,7 +40,7 @@ class Verse {
     required this.contentVersion,
     required this.note,
     required this.noteVersion,
-    required this.next,
+    required this.nextLearnDate,
     required this.progress,
   });
 
