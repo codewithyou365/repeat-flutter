@@ -84,7 +84,6 @@ part 'database.g.dart'; // the generated code will be there
   CrKConverter,
   DateTimeConverter,
   DateConverter,
-  VerseVersionTypeConverter,
   VersionReasonConverter,
 ])
 abstract class AppDatabase extends FloorDatabase {

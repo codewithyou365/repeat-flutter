@@ -69,27 +69,17 @@ class ScheduleHelp {
       List<dynamic> rawVerses = rawChapter['v'] as List<dynamic>;
       for (var verseIndex = 0; verseIndex < chapter.verse.length; verseIndex++) {
         var rawVerse = rawVerses[verseIndex] as Map<String, dynamic>;
-        var verse = chapter.verse[verseIndex];
-        Map<String, dynamic> excludeNote = {};
-        rawVerse.forEach((k, v) {
-          if (k != 'n') {
-            excludeNote[k] = v;
-          }
-        });
-        String verseContent = convert.jsonEncode(excludeNote);
+        String verseContent = convert.jsonEncode(rawVerse);
         verses.add(Verse(
           classroomId: book.classroomId,
           bookId: book.id!,
           chapterId: 0,
           chapterIndex: chapterIndex,
           verseIndex: verseIndex,
-
           sort: VerseHelp.toVerseSort(book.sort, chapterIndex, verseIndex),
           content: verseContent,
           contentVersion: 1,
-          note: verse.note ?? '',
-          noteVersion: 1,
-          nextLearnDate: Date.from(now),
+          learnDate: Date.from(now),
           progress: 0,
         ));
       }

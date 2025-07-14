@@ -157,8 +157,8 @@ class DocHelp {
             return false;
           }
 
-          if (shareNote && verse.verseNote.isNotEmpty) {
-            verseData['n'] = verse.verseNote;
+          if (!shareNote) {
+            verseData.remove('n');
           }
           if (rootUrl != null) {
             fixDownloadInfo(verseData);

@@ -167,8 +167,7 @@ abstract class BookDao {
     chapters = await db.chapterDao.import(chapters);
     await db.chapterContentVersionDao.import(chapters);
     verses = await db.verseDao.import(chapters, verses);
-    await db.verseContentVersionDao.import(verses, VerseVersionType.content);
-    await db.verseContentVersionDao.import(verses, VerseVersionType.note);
+    await db.verseContentVersionDao.import(verses);
   }
 
   @transaction

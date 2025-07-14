@@ -7,17 +7,15 @@ import 'package:repeat_flutter/db/entity/verse_content_version.dart';
 abstract class VerseContentVersionDao {
   @Query('SELECT * '
       ' FROM VerseContentVersion'
-      ' WHERE verseId=:verseId'
-      ' AND t=:verseVersionType')
-  Future<List<VerseContentVersion>> list(int verseId, VerseVersionType verseVersionType);
+      ' WHERE verseId=:verseId')
+  Future<List<VerseContentVersion>> list(int verseId);
 
   @Query('SELECT VerseContentVersion.* '
       ' FROM VerseKey'
       ' JOIN VerseContentVersion ON VerseContentVersion.verseId=VerseKey.id'
-      '  AND VerseContentVersion.t=:verseVersionType'
       '  AND VerseContentVersion.version=VerseKey.contentVersion'
       ' WHERE VerseContentVersion.bookId=:bookId')
-  Future<List<VerseContentVersion>> currVersionList(int bookId, VerseVersionType verseVersionType);
+  Future<List<VerseContentVersion>> currVersionList(int bookId);
 
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertOrFail(VerseContentVersion entity);
@@ -40,7 +38,7 @@ abstract class VerseContentVersionDao {
       ' WHERE verseId=:verseId')
   Future<void> deleteByVerseId(int verseId);
 
-  Future<void> import(List<Verse> list, VerseVersionType type) async {
+  Future<void> import(List<Verse> list) async {
     List<VerseContentVersion> needToInserts = [];
     for (var v in list) {
       var tv = VerseContentVersion(
@@ -48,7 +46,6 @@ abstract class VerseContentVersionDao {
         bookId: v.bookId,
         chapterId: v.chapterId,
         verseId: v.id!,
-        t: type,
         version: 1,
         reason: VersionReason.import,
         content: v.content,
@@ -61,18 +58,13 @@ abstract class VerseContentVersionDao {
     }
   }
 
-  Future<Map<int, VerseContentVersion>> reimport(List<Verse> list, VerseVersionType verseTextVersionType, int bookId) async {
+  Future<Map<int, VerseContentVersion>> reimport(List<Verse> list, int bookId) async {
     List<VerseContentVersion> insertValues = [];
-    List<VerseContentVersion> contentVersion = await currVersionList(bookId, verseTextVersionType);
+    List<VerseContentVersion> contentVersion = await currVersionList(bookId);
     Map<int, VerseContentVersion> idToContentVersion = {for (var v in contentVersion) v.verseId: v};
     for (var v in list) {
       VerseContentVersion? version = idToContentVersion[v.id!];
-      String text;
-      if (verseTextVersionType == VerseVersionType.note) {
-        text = v.note;
-      } else {
-        text = v.content;
-      }
+      String text = v.content;
       if (version == null || version.content != text) {
         int currVersionNumber = 1;
         if (version != null) {
@@ -83,7 +75,6 @@ abstract class VerseContentVersionDao {
           bookId: v.bookId,
           chapterId: v.chapterId,
           verseId: v.id!,
-          t: verseTextVersionType,
           version: currVersionNumber,
           reason: VersionReason.import,
           content: text,

@@ -17,18 +17,6 @@ class KConverter extends TypeConverter<K, String> {
   }
 }
 
-class VerseVersionTypeConverter extends TypeConverter<VerseVersionType, int> {
-  @override
-  VerseVersionType decode(int databaseValue) {
-    return VerseVersionType.values[databaseValue];
-  }
-
-  @override
-  int encode(VerseVersionType value) {
-    return value.index;
-  }
-}
-
 class VersionReasonConverter extends TypeConverter<VersionReason, int> {
   @override
   VersionReason decode(int databaseValue) {

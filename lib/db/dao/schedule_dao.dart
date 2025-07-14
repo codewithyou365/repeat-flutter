@@ -300,7 +300,7 @@ abstract class ScheduleDao {
       ",0 reviewCreateDate"
       ",0 finish"
       " FROM Verse"
-      " WHERE Verse.nextLearnDate<=:now"
+      " WHERE Verse.learnDate<=:now"
       "  AND Verse.progress>=:minProgress"
       " ORDER BY Verse.progress,Verse.sort"
       " ) Verse order by Verse.sort")
@@ -332,8 +332,8 @@ abstract class ScheduleDao {
       "")
   Future<List<VerseTodayPrg>> scheduleFullCustom(int classroomId, int bookId, int chapterIndex, int verseIndex, int limit);
 
-  @Query('UPDATE Verse SET progress=:progress,nextLearnDate=:nextLearnDate WHERE id=:verseId')
-  Future<void> setPrgAndLearnDate4Sop(int verseId, int progress, Date nextLearnDate);
+  @Query('UPDATE Verse SET progress=:progress,learnDate=:learnDate WHERE id=:verseId')
+  Future<void> setPrgAndLearnDate4Sop(int verseId, int progress, Date learnDate);
 
   @Query('UPDATE Verse SET progress=:progress WHERE id=:verseId')
   Future<void> setPrg4Sop(int verseId, int progress);
@@ -391,12 +391,10 @@ abstract class ScheduleDao {
       ',Book.sort bookSort'
       ',Verse.content verseContent'
       ',Verse.contentVersion verseContentVersion'
-      ',Verse.note verseNote'
-      ',Verse.noteVersion verseNoteVersion'
       ',Verse.chapterId'
       ',Verse.chapterIndex'
       ',Verse.verseIndex'
-      ',Verse.nextLearnDate'
+      ',Verse.learnDate'
       ',Verse.progress'
       ' FROM Verse'
       ' JOIN Book ON Book.id=Verse.bookId AND Book.enable=true'
@@ -409,12 +407,10 @@ abstract class ScheduleDao {
       ',Book.sort bookSort'
       ',Verse.content verseContent'
       ',Verse.contentVersion verseContentVersion'
-      ',Verse.note verseNote'
-      ',Verse.noteVersion verseNoteVersion'
       ',Verse.chapterId'
       ',Verse.chapterIndex'
       ',Verse.verseIndex'
-      ',Verse.nextLearnDate'
+      ',Verse.learnDate'
       ',Verse.progress'
       ' FROM Verse'
       " JOIN Book ON Book.id=:bookId AND Book.enable=true"
@@ -428,12 +424,10 @@ abstract class ScheduleDao {
       ',Book.sort bookSort'
       ',Verse.content verseContent'
       ',Verse.contentVersion verseContentVersion'
-      ',Verse.note verseNote'
-      ',Verse.noteVersion verseNoteVersion'
       ',Verse.chapterId'
       ',Verse.chapterIndex'
       ',Verse.verseIndex'
-      ',Verse.nextLearnDate'
+      ',Verse.learnDate'
       ',Verse.progress'
       ' FROM Verse'
       " JOIN Book ON Book.id=Verse.bookId AND Book.enable=true"
@@ -763,9 +757,9 @@ abstract class ScheduleDao {
     return prgType;
   }
 
-  Future<void> setPrg(int verseId, int progress, Date? nextLearnDate) async {
-    if (nextLearnDate != null) {
-      await setPrgAndLearnDate4Sop(verseId, progress, nextLearnDate);
+  Future<void> setPrg(int verseId, int progress, Date? learnDate) async {
+    if (learnDate != null) {
+      await setPrgAndLearnDate4Sop(verseId, progress, learnDate);
     } else {
       await setPrg4Sop(verseId, progress);
     }
@@ -775,8 +769,8 @@ abstract class ScheduleDao {
       VerseShow? currVerseShow = VerseDao.getVerseShow!(verseId);
       if (currVerseShow != null) {
         currVerseShow.progress = progress;
-        if (nextLearnDate != null) {
-          currVerseShow.nextLearnDate = nextLearnDate;
+        if (learnDate != null) {
+          currVerseShow.learnDate = learnDate;
         }
       }
     }

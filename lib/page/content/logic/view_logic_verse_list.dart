@@ -144,9 +144,6 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
         bool ret = true;
         if (ret && search.value.isNotEmpty) {
           ret = e.verseContent.contains(search.value);
-          if (ret == false) {
-            ret = e.verseNote.contains(search.value);
-          }
         }
         if (ret && bookSelect.value != 0) {
           if (bookSelect.value < options.length) {
@@ -170,7 +167,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
         if (ret && nextMonthSelect.value != 0) {
           int min = nextMonth[nextMonthSelect.value] * 100;
           int max = min + 99;
-          ret = min < e.nextLearnDate.value && e.nextLearnDate.value < max;
+          ret = min < e.learnDate.value && e.learnDate.value < max;
         }
         return ret;
       }).toList();
@@ -418,35 +415,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                   },
                                   qrPagePath: Nav.scan.path,
                                   onHistory: () async {
-                                    List<VerseContentVersion> historyData = await Db().db.verseContentVersionDao.list(verse.verseId, VerseVersionType.content);
-                                    await historyList.show(historyData, focus: true.obs);
-                                  },
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 8),
-                            ExpandableText(
-                              title: I18nKey.labelNote.tr,
-                              text: ': ${verse.verseNote}',
-                              limit: 60,
-                              version: verse.verseNoteVersion,
-                              style: const TextStyle(fontSize: 14),
-                              selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                              versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
-                              selectText: search.value,
-                              onEdit: () {
-                                searchFocusNode.unfocus();
-                                Editor.show(
-                                  Get.context!,
-                                  I18nKey.labelNote.tr,
-                                  verse.verseNote,
-                                  (str) async {
-                                    await Db().db.verseDao.updateVerseNote(verse.verseId, str);
-                                    parentLogic.update([ViewLogicVerseList.bodyId]);
-                                  },
-                                  qrPagePath: Nav.scan.path,
-                                  onHistory: () async {
-                                    List<VerseContentVersion> historyData = await Db().db.verseContentVersionDao.list(verse.verseId, VerseVersionType.note);
+                                    List<VerseContentVersion> historyData = await Db().db.verseContentVersionDao.list(verse.verseId);
                                     await historyList.show(historyData, focus: true.obs);
                                   },
                                 );
@@ -483,7 +452,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                       editProgressWithMsgBox(verse);
                                     },
                                     child: Text(
-                                      '${I18nKey.labelSetNextLearnDate.tr}: ${verse.nextLearnDate.format()}',
+                                      '${I18nKey.labelSetNextLearnDate.tr}: ${verse.learnDate.format()}',
                                       style: const TextStyle(fontSize: 12, color: Colors.green),
                                     ),
                                   ),
@@ -645,7 +614,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
       if (!progress.contains(v.progress)) {
         progress.add(v.progress);
       }
-      int month = v.nextLearnDate.value ~/ 100;
+      int month = v.learnDate.value ~/ 100;
       if (!nextMonth.contains(month)) {
         nextMonth.add(month);
       }
@@ -691,13 +660,13 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
         break;
       case I18nKey.labelSortNextLearnDateAsc:
         verseShow.sort((a, b) {
-          int nextComparison = a.nextLearnDate.value.compareTo(b.nextLearnDate.value);
+          int nextComparison = a.learnDate.value.compareTo(b.learnDate.value);
           return nextComparison != 0 ? nextComparison : a.toSort().compareTo(b.toSort());
         });
         break;
       case I18nKey.labelSortNextLearnDateDesc:
         verseShow.sort((a, b) {
-          int nextComparison = b.nextLearnDate.value.compareTo(a.nextLearnDate.value);
+          int nextComparison = b.learnDate.value.compareTo(a.learnDate.value);
           return nextComparison != 0 ? nextComparison : a.toSort().compareTo(b.toSort());
         });
         break;

@@ -22,10 +22,8 @@ class Verse {
   int sort;
   final String content;
   int contentVersion;
-  final String note;
-  int noteVersion;
 
-  final Date nextLearnDate;
+  final Date learnDate;
   final int progress;
 
   Verse({
@@ -38,9 +36,7 @@ class Verse {
     required this.sort,
     required this.content,
     required this.contentVersion,
-    required this.note,
-    required this.noteVersion,
-    required this.nextLearnDate,
+    required this.learnDate,
     required this.progress,
   });
 

@@ -241,9 +241,7 @@ abstract class VerseDao {
       sort: VerseHelp.toVerseSort(book.sort, chapterIndex, verseIndex),
       content: content,
       contentVersion: 1,
-      note: '',
-      noteVersion: 1,
-      nextLearnDate: Date.from(now),
+      learnDate: Date.from(now),
       progress: 0,
     );
     await addVerses(bookId, book.sort, chapterIndex, [verse]);
@@ -259,21 +257,9 @@ abstract class VerseDao {
       bookId: verse.bookId,
       chapterId: verse.chapterId,
       verseId: verse.id!,
-      t: VerseVersionType.content,
       version: 1,
       reason: VersionReason.editor,
       content: verse.content,
-      createTime: now,
-    ));
-    await db.verseContentVersionDao.insertOrFail(VerseContentVersion(
-      classroomId: verse.classroomId,
-      bookId: verse.bookId,
-      chapterId: verse.chapterId,
-      verseId: verse.id!,
-      t: VerseVersionType.note,
-      version: 1,
-      reason: VersionReason.editor,
-      content: verse.note,
       createTime: now,
     ));
 
@@ -307,39 +293,6 @@ abstract class VerseDao {
   }
 
   @transaction
-  Future<void> updateVerseNote(int id, String note) async {
-    Verse? verse = await getById(id);
-    if (verse == null) {
-      Snackbar.show(I18nKey.labelNotFoundVerse.trArgs([id.toString()]));
-      return;
-    }
-    if (verse.note == note) {
-      return;
-    }
-    var now = DateTime.now();
-    await updateNote(id, note, verse.noteVersion + 1);
-    await db.verseContentVersionDao.insertOrFail(VerseContentVersion(
-      classroomId: verse.classroomId,
-      bookId: verse.bookId,
-      chapterId: verse.chapterId,
-      verseId: id,
-      t: VerseVersionType.note,
-      version: verse.noteVersion + 1,
-      reason: VersionReason.editor,
-      content: note,
-      createTime: now,
-    ));
-    await db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.updateVerseShowTime, now.millisecondsSinceEpoch.toString()));
-    if (getVerseShow != null) {
-      VerseShow? currVerseShow = getVerseShow!(id);
-      if (currVerseShow != null) {
-        currVerseShow.verseNote = note;
-        currVerseShow.verseNoteVersion++;
-      }
-    }
-  }
-
-  @transaction
   Future<bool> updateVerseContent(int id, String content) async {
     Verse? verse = await getById(id);
     if (verse == null) {
@@ -370,7 +323,6 @@ abstract class VerseDao {
       bookId: verse.bookId,
       chapterId: verse.chapterId,
       verseId: id,
-      t: VerseVersionType.content,
       version: verse.contentVersion + 1,
       reason: VersionReason.editor,
       content: content,

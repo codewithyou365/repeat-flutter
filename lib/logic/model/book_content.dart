@@ -116,7 +116,7 @@ class VerseContent {
   String? tip;
   String? question;
   String? answer;
-  int? nextLearnDate;
+  int? learnDate;
   int? progress;
 
   VerseContent({
@@ -130,7 +130,7 @@ class VerseContent {
     required this.tip,
     required this.question,
     required this.answer,
-    required this.nextLearnDate,
+    required this.learnDate,
     required this.progress,
   });
 
@@ -146,7 +146,7 @@ class VerseContent {
       tip: json['t'] as String?,
       question: json['q'] as String?,
       answer: json['a'] as String?,
-      nextLearnDate: json['l'] as int?,
+      learnDate: json['l'] as int?,
       progress: json['p'] as int?,
     );
   }
@@ -163,7 +163,7 @@ class VerseContent {
       't': tip,
       'q': question,
       'a': answer,
-      'l': nextLearnDate,
+      'l': learnDate,
       'p': progress,
     };
   }

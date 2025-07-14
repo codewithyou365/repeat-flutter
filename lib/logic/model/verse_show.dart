@@ -10,12 +10,10 @@ class VerseShow {
   final int bookSort;
   String verseContent;
   int verseContentVersion;
-  String verseNote;
-  int verseNoteVersion;
   int chapterId;
   int chapterIndex;
   int verseIndex;
-  Date nextLearnDate;
+  Date learnDate;
   int progress;
 
   VerseShow({
@@ -25,12 +23,10 @@ class VerseShow {
     required this.bookSort,
     required this.verseContent,
     required this.verseContentVersion,
-    required this.verseNote,
-    required this.verseNoteVersion,
     required this.chapterId,
     required this.chapterIndex,
     required this.verseIndex,
-    required this.nextLearnDate,
+    required this.learnDate,
     required this.progress,
   });
 
