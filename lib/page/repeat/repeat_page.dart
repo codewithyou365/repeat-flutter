@@ -141,6 +141,10 @@ class RepeatPage extends StatelessWidget {
               tooltip: I18nKey.labelDetail.tr,
               onPressed: logic.openContent,
             ),
+          IconButton(
+            icon: const Icon(Icons.note_alt_outlined),
+            onPressed: logic.editNote,
+          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[

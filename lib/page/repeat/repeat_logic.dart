@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert' show jsonEncode;
 
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -11,6 +12,7 @@ import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
 
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
+import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/logic/widget/web_manager.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
@@ -108,6 +110,31 @@ class RepeatLogic extends GetxController {
       Get.back();
       update([RepeatLogic.id]);
     });
+  }
+
+  void editNote() {
+    var curr = getCurr();
+    if (curr == null || repeatLogic == null) {
+      return;
+    }
+    Map<String, dynamic>? map = state.helper.getCurrVerseMap();
+    if (map == null) {
+      return;
+    }
+    String acronym = 'n';
+    String noteStr = map[acronym] ?? '';
+    Editor.show(
+      Get.context!,
+      I18nKey.labelNote.tr,
+      noteStr,
+      (str) async {
+        map[acronym] = str;
+        String jsonStr = jsonEncode(map);
+        var verseId = state.helper.getCurrVerse()!.verseId;
+        await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
+      },
+      qrPagePath: Nav.scan.path,
+    );
   }
 
   void openContent() async {

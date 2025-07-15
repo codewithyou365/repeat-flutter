@@ -40,8 +40,8 @@ class Editor {
     void onCancel() {
       if (textController.text != dbValue) {
         MsgBox.yesOrNo(
- title:         I18nKey.labelTips.tr,
- desc:         I18nKey.labelTextChange.tr,
+          title: I18nKey.labelTips.tr,
+          desc: I18nKey.labelTextChange.tr,
           yesBtnTitle: I18nKey.btnSave.tr,
           no: () {
             Get.back();
@@ -83,7 +83,6 @@ class Editor {
         ],
       ),
       RowWidget.buildEditText(textController, maxLines: 40, minLines: 32),
-      rate: 1,
       onTapBlack: onCancel,
     );
   }

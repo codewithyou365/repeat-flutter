@@ -199,7 +199,6 @@ class ConfigEn extends Config {
     put(I18nKey.labelSortCreateTimeDesc, "Create Time (Desc)");
     put(I18nKey.labelSearch, "Search...");
     put(I18nKey.labelNotFoundVerse, "not found verse (%s)");
-    put(I18nKey.labelContentCantContainNote, "The content of a verse must not include the 'n' (note) field.");
     put(I18nKey.labelSettingLearningProgressWarning, "Setting the learning progress here will not create a learning record");
     put(I18nKey.labelChapterKeyCantBeEmpty, "Chapter key cannot be empty");
     put(I18nKey.labelChapterKeyDuplicated, "Chapter key is duplicated");

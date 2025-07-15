@@ -302,10 +302,6 @@ abstract class VerseDao {
     Map<String, dynamic> contentM;
     try {
       contentM = convert.jsonDecode(content);
-      if (contentM['n'] != null) {
-        Snackbar.show(I18nKey.labelContentCantContainNote.tr);
-        return false;
-      }
       content = convert.jsonEncode(contentM);
     } catch (e) {
       Snackbar.show(e.toString());
