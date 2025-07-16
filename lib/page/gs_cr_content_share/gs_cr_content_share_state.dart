@@ -9,10 +9,12 @@ class Address {
 }
 
 class GsCrContentShareState {
- late Address original;
+  late Address original;
   final List<Address> addresses = <Address>[];
   Book book = Book.empty();
   var lanAddressSuffix = "";
   RxBool shareNote = false.obs;
   RxBool webStart = false.obs;
+  RxString user = "".obs;
+  RxString password = "".obs;
 }

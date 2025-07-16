@@ -32,7 +32,9 @@ class StringUtil {
   }
 
   static const _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+  static const _char09 = '0123456789';
   static final Random _rnd = Random();
 
   static String generateRandomString(int length) => String.fromCharCodes(Iterable.generate(length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
+  static String generateRandom09(int length) => String.fromCharCodes(Iterable.generate(length, (_) => _char09.codeUnitAt(_rnd.nextInt(_char09.length))));
 }

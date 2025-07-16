@@ -40,6 +40,7 @@ class GsCrContentSharePage extends StatelessWidget {
         state.original.title,
         state.original.address,
         false.obs,
+        null,
       ),
       RowWidget.buildDividerWithoutColor(),
       Padding(
@@ -58,12 +59,13 @@ class GsCrContentSharePage extends StatelessWidget {
             state.addresses[index].title,
             state.addresses[index].address,
             state.shareNote,
+            logic.randCredentials,
           ),
         )
     ]);
   }
 
-  Widget buildItem(String itemLabel, String desc, RxBool shareNote) {
+  Widget buildItem(String itemLabel, String desc, RxBool shareNote, VoidCallback? key) {
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: Card(
@@ -82,6 +84,11 @@ class GsCrContentSharePage extends StatelessWidget {
                   Text(itemLabel),
                   const Spacer(),
                   if (shareNote.value) Text(I18nKey.labelSharingNotes.tr),
+                  if (key != null)
+                    IconButton(
+                      icon: const Icon(Icons.key),
+                      onPressed: key,
+                    ),
                 ],
               );
             }),

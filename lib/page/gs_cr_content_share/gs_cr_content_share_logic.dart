@@ -11,6 +11,7 @@ import 'package:repeat_flutter/common/file_util.dart';
 import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/ip.dart';
 import 'package:repeat_flutter/common/path.dart';
+import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/common/url.dart';
 import 'package:repeat_flutter/common/zip.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
@@ -28,7 +29,7 @@ import 'gs_cr_content_share_state.dart';
 
 class GsCrContentShareLogic extends GetxController {
   static const int port = 40321;
-  static const String id = "GsCrContentLogic";
+  static const String id = "GsCrContentShareLogic";
   final GsCrContentShareState state = GsCrContentShareState();
   HttpServer? _httpServer;
 
@@ -38,6 +39,7 @@ class GsCrContentShareLogic extends GetxController {
     state.book = Get.arguments[0] as Book;
     state.original = Address(I18nKey.labelOriginalAddress.tr, state.book.url);
     state.lanAddressSuffix = "/${DocPath.getIndexFileName()}";
+    randCredentials(show: false);
   }
 
   void switchWeb(bool enable) {
@@ -94,8 +96,38 @@ class GsCrContentShareLogic extends GetxController {
     }
   }
 
+  void randCredentials({bool show = true}) {
+    state.user.value = StringUtil.generateRandom09(3);
+    state.password.value = StringUtil.generateRandom09(6);
+    if (show) {
+      MsgBox.yes(
+        I18nKey.keyTitle.tr,
+        I18nKey.keyContent.trParams([state.user.value, state.password.value]),
+        yes: () {
+          randCredentials(show: false);
+          Get.back();
+        },
+      );
+    }
+  }
+
   void _handleRequest(HttpRequest request) async {
     final response = request.response;
+    final username = state.user.value;
+    final password = state.password.value;
+
+    final authHeader = request.headers.value(HttpHeaders.authorizationHeader);
+    final expectedAuth = 'Basic ${base64.encode(utf8.encode('$username:$password'))}';
+
+    if (authHeader != expectedAuth) {
+      response
+        ..statusCode = HttpStatus.unauthorized
+        ..headers.set('WWW-Authenticate', 'Basic realm="GsCrContentShare"')
+        ..write('Unauthorized');
+      await response.close();
+      return;
+    }
+
     if (request.uri.path == '/___hello_world') {
       response.statusCode = HttpStatus.ok;
       response.write('{"message": "Hello, World!"}');

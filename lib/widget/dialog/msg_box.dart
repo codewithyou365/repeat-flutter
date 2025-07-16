@@ -12,7 +12,7 @@ enum InputType {
 }
 
 class MsgBox {
-  static yesOrNo({
+  static void yesOrNo({
     required String title,
     required String desc,
     VoidCallback? yes,
@@ -29,7 +29,7 @@ class MsgBox {
     );
   }
 
-  static checkboxWithYesOrNo({
+  static void checkboxWithYesOrNo({
     required String title,
     String? desc,
     required RxBool select,
@@ -83,7 +83,7 @@ class MsgBox {
     );
   }
 
-  static strInputWithYesOrNo(
+  static void strInputWithYesOrNo(
     Rx model,
     String title,
     String? decoration, {
@@ -206,7 +206,7 @@ class MsgBox {
     ]);
   }
 
-  static yes(
+  static void yes(
     String title,
     String desc, {
     VoidCallback? yes,
@@ -235,7 +235,7 @@ class MsgBox {
     );
   }
 
-  static noWithQrCode(
+  static void noWithQrCode(
     String title,
     String qrContent,
     String? desc, {
@@ -353,7 +353,7 @@ class MsgBox {
     );
   }
 
-  static content(String text) {
+  static Widget content(String text) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Text(text),
