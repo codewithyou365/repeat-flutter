@@ -95,7 +95,8 @@ class DocHelp {
     required int bookId,
     required Map<String, dynamic> ret,
     String? rootUrl,
-    bool shareNote = false,
+    bool note = false,
+    bool databaseData = false,
   }) async {
     await VerseHelp.tryGen(force: true);
     await ChapterHelp.tryGen(force: true);
@@ -118,13 +119,13 @@ class DocHelp {
 
     for (var verse in verseCache) {
       if (verse.bookId == bookId) {
-        int chapterKey = verse.chapterIndex;
+        int chapterIndex = verse.chapterIndex;
 
-        if (!chapterToVerseShow.containsKey(chapterKey)) {
-          chapterToVerseShow[chapterKey] = [];
+        if (!chapterToVerseShow.containsKey(chapterIndex)) {
+          chapterToVerseShow[chapterIndex] = [];
         }
 
-        chapterToVerseShow[chapterKey]!.add(verse);
+        chapterToVerseShow[chapterIndex]!.add(verse);
       }
     }
 
@@ -144,6 +145,9 @@ class DocHelp {
           Snackbar.show('Error parsing chapter content: $e');
           return false;
         }
+        if (databaseData) {
+          chapterData['i'] = chapter.chapterId;
+        }
 
         List<VerseShow> versesForChapter = chapterToVerseShow[chapter.chapterIndex] ?? [];
         List<Map<String, dynamic>> versesList = [];
@@ -156,8 +160,12 @@ class DocHelp {
             Snackbar.show('Error parsing verse content: $e');
             return false;
           }
-
-          if (!shareNote) {
+          if (databaseData) {
+            verseData['i'] = verse.verseId;
+            verseData['l'] = verse.learnDate.value;
+            verseData['p'] = verse.progress;
+          }
+          if (!note) {
             verseData.remove('n');
           }
           if (rootUrl != null) {

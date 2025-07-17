@@ -249,7 +249,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                                       qrPagePath: Nav.scan.path,
                                       onHistory: () async {
                                         List<BookContentVersion> historyData = await Db().db.bookContentVersionDao.list(book.bookId);
-                                        await historyList.show(historyData,focus:true.obs);
+                                        await historyList.show(historyData, focus: true.obs);
                                       },
                                     );
                                   },
@@ -257,6 +257,15 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                               ],
                             ),
                           ),
+                          Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                            IconButton(
+                              onPressed: () {
+                                Nav.bookEditor.push(arguments: [book]);
+                              },
+                              icon: const Icon(Icons.edit_document),
+                              padding: EdgeInsets.zero,
+                            ),
+                          ]),
                         ],
                       ),
                     );

@@ -157,7 +157,7 @@ class GsCrContentShareLogic extends GetxController {
       bool success = await DocHelp.getDocMapFromDb(
         bookId: state.book.id!,
         ret: docMap,
-        shareNote: state.shareNote.value,
+        note: state.shareNote.value,
         rootUrl: url,
       );
       if (success == false) {
@@ -205,7 +205,7 @@ class GsCrContentShareLogic extends GetxController {
               bool success = await DocHelp.getDocMapFromDb(
                 bookId: state.book.id!,
                 ret: docMap,
-                shareNote: state.shareNote.value,
+                note: state.shareNote.value,
               );
               if (!success) {
                 return;

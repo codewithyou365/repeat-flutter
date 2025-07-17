@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:repeat_flutter/page/book_editor/book_editor_nav.dart';
 import 'package:repeat_flutter/page/content/content_nav.dart';
 import 'package:repeat_flutter/page/gs/gs_nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_nav.dart';
@@ -18,6 +19,7 @@ import 'package:repeat_flutter/page/sc_cr_material/sc_cr_material_nav.dart';
 import 'package:repeat_flutter/page/scan/scan_nav.dart';
 
 enum Nav {
+  bookEditor("/book/editor"),
   content("/content"),
   gs("/gs"),
   gsCr("/gs/cr"),
@@ -61,6 +63,7 @@ enum Nav {
   static final String initialRoute = gs.path;
 
   static final List<GetPage> getPages = [
+    bookEditorNav(bookEditor.path),
     contentNav(content.path),
     gsNav(gs.path),
     gsCrNav(gsCr.path),
