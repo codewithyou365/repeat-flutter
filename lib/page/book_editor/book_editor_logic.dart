@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/services.dart' show rootBundle, ByteData;
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/await_util.dart';
 import 'package:repeat_flutter/common/ip.dart';
@@ -17,7 +18,6 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'book_editor_state.dart';
 
-
 class BookEditorLogic extends GetxController {
   static const int port = 40321;
   static const String id = "BookEditorLogic";
@@ -28,7 +28,6 @@ class BookEditorLogic extends GetxController {
   void onInit() {
     super.onInit();
     state.book = Get.arguments[0] as BookShow;
-    state.lanAddressSuffix = "/${DocPath.getIndexFileName()}";
     randCredentials(show: false);
   }
 
@@ -131,18 +130,20 @@ class BookEditorLogic extends GetxController {
   Future<void> _serveFile(List<String> pathVerses, HttpRequest request) async {
     var response = request.response;
     var path = Url.toPath(pathVerses);
+
     if (path == state.lanAddressSuffix) {
       String userAgent = request.headers.value('user-agent') ?? 'Unknown';
-      response.headers.contentType = ContentType.json;
       if (userAgent == DownloadConstant.userAgent) {
         response.headers.set('Content-Disposition', 'attachment; filename="${pathVerses.last}"');
       } else {
         response.headers.set('Content-Disposition', 'inline');
       }
+
       var rootIndex = request.requestedUri.toString().lastIndexOf('/');
       var url = request.requestedUri.toString().substring(0, rootIndex);
       url = url.joinPath(Classroom.curr.toString());
       url = url.joinPath(state.book.bookId.toString());
+
       Map<String, dynamic> docMap = {};
       bool success = await DocHelp.getDocMapFromDb(
         bookId: state.book.bookId,
@@ -151,23 +152,40 @@ class BookEditorLogic extends GetxController {
         databaseData: true,
         rootUrl: url,
       );
-      if (success == false) {
+
+      if (!success) {
+        response.statusCode = HttpStatus.internalServerError;
+        response.write('Failed to get book.');
+        await response.close();
         return;
       }
-      response.write(json.encode(docMap));
+
+      // Serve HTML editor page
+      response.headers.contentType = ContentType.html;
+      const indentEncoder = JsonEncoder.withIndent('  ');
+      String prettyJsonString = indentEncoder.convert(docMap);
+      ByteData content = await rootBundle.load('assets/editor/index.html');
+      String htmlString = utf8.decode(content.buffer.asUint8List());
+      String finalHtml = htmlString.replaceAll('{{BOOK}}', prettyJsonString);
+      response.write(finalHtml);
+      await response.close();
       return;
-    }
-    var directory = await DocPath.getContentPath();
-    var filePath = directory.joinPath(path);
-    final file = File(filePath);
-    if (await file.exists()) {
-      response.headers.contentType = ContentType.binary;
-      response.headers.set('Content-Disposition', 'attachment; filename="${file.uri.pathSegments.last}"');
-      await file.openRead().pipe(response);
-    } else {
-      response
-        ..statusCode = HttpStatus.notFound
-        ..write('File not found');
+    } else if (path == "/upload") {
+      try {
+        final content = await utf8.decoder.bind(request).join();
+        final Map<String, dynamic> jsonData = jsonDecode(content);
+
+        // TODO: Save jsonData to DB or process it
+        print("Received JSON from client: $jsonData");
+
+        response.statusCode = HttpStatus.ok;
+        response.write("Upload successful. Received ${jsonData.length} keys.");
+      } catch (e, st) {
+        response.statusCode = HttpStatus.badRequest;
+        response.write("Invalid JSON: $e");
+        print("Upload error: $e\n$st");
+      }
+      await response.close();
     }
   }
 }

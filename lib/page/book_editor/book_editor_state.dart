@@ -13,7 +13,7 @@ class BookEditorState {
   final List<Address> addresses = <Address>[];
   late BookShow book;
 
-  var lanAddressSuffix = "";
+  var lanAddressSuffix = "/index.html";
   RxBool webStart = false.obs;
   RxString user = "".obs;
   RxString password = "".obs;
