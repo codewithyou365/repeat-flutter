@@ -7,7 +7,7 @@ enum I18nKey {
   settings,
   material,
   bookShare,
-  bookEdit,
+  editBook,
   keyTitle,
   keyContent,
   selectBookType,

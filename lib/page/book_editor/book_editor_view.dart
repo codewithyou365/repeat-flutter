@@ -15,7 +15,7 @@ class BookEditorPage extends StatelessWidget {
     final logic = Get.find<BookEditorLogic>();
     return Scaffold(
       appBar: AppBar(
-        title: Text(I18nKey.bookEdit.tr),
+        title: Text(I18nKey.editBook.tr),
       ),
       body: GetBuilder<BookEditorLogic>(
         id: BookEditorLogic.id,
