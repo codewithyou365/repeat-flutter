@@ -142,6 +142,28 @@ class ContentLogic extends GetxController {
     update([ContentLogic.id]);
   }
 
+  Future<void> change() async {
+    final bookList = viewList[0] as ViewLogicBookList<ContentLogic>;
+    final chapterList = viewList[1] as ViewLogicChapterList<ContentLogic>;
+    final verseList = viewList[2] as ViewLogicVerseList<ContentLogic>;
+    bookList.originalBookShow = await BookHelp.getBooks();
+    bookList.collectData();
+    bookList.trySearch(force: true);
+
+    verseList.originalBookShow = await BookHelp.getBooks();
+    verseList.originalChapterShow = await ChapterHelp.getChapters();
+    verseList.originalVerseShow = await VerseHelp.getVerses();
+    verseList.collectData();
+    verseList.trySearch(force: true);
+
+    chapterList.originalBookShow = await BookHelp.getBooks();
+    chapterList.originalChapterShow = await ChapterHelp.getChapters();
+    chapterList.collectData();
+    chapterList.trySearch(force: true);
+    state.tabIndex.value = 0;
+    update([ContentLogic.id]);
+  }
+
   @override
   void onClose() {
     for (var view in viewList) {

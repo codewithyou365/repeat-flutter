@@ -15,7 +15,7 @@ import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
-import 'package:repeat_flutter/logic/schedule_help.dart';
+import 'package:repeat_flutter/logic/import_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
@@ -199,7 +199,7 @@ class ScCrMaterialLogic extends GetxController {
   }
 
   Future<bool> schedule(int bookId, String url) async {
-    var result = await ScheduleHelp.addBookToSchedule(bookId, url);
+    var result = await ImportHelp.import(bookId, url);
     if (!result) {
       return false;
     }

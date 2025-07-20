@@ -285,4 +285,15 @@ abstract class ChapterDao {
     }
     return [];
   }
+
+  Future<List<Chapter>> reimport(int bookId, List<Chapter> inserts, List<Chapter> updates) async {
+    await db.chapterDao.deleteByBookId(bookId);
+    if (inserts.isNotEmpty) {
+      int bookId = inserts.first.bookId;
+      await db.chapterDao.deleteByBookId(bookId);
+      await insertOrFail(inserts);
+      return findByBookId(bookId);
+    }
+    return [];
+  }
 }

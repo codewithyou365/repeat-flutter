@@ -171,6 +171,21 @@ abstract class BookDao {
   }
 
   @transaction
+  Future<void> reimport(Book book, List<Chapter> insertChapters, List<Chapter> updateChapters, List<Verse> insertVerses, List<Verse> updateVerses) async {
+    // var bookId = book.id!;
+    BookContentVersion? bookContentVersion = await db.bookContentVersionDao.reimport(book);
+    if (bookContentVersion != null) {
+      await updateBookContentVersion(book.id!, book.content, bookContentVersion.version);
+    }
+    // TODD
+    // chapters = await db.chapterDao.reimport(insertChapters, updateChapters);
+    // await db.chapterContentVersionDao.import(chapters);
+    // await db.verseDao.deleteByBookId(bookId);
+    // verses = await db.verseDao.import(chapters, verses);
+    // await db.verseContentVersionDao.import(verses);
+  }
+
+  @transaction
   Future<void> deleteAll(int bookId) async {
     await deleteById(bookId);
     await db.bookContentVersionDao.deleteByBookId(bookId);

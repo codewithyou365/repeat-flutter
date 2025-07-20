@@ -12,7 +12,10 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
+import 'package:repeat_flutter/logic/import_help.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
+import 'package:repeat_flutter/page/content/content_logic.dart';
+import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -175,9 +178,14 @@ class BookEditorLogic extends GetxController {
         final content = await utf8.decoder.bind(request).join();
         final Map<String, dynamic> jsonData = jsonDecode(content);
 
-        // TODO: Save jsonData to DB or process it
-        print("Received JSON from client: $jsonData");
-
+        var result = await ImportHelp.reimport(state.book.bookId, jsonData);
+        if (!result) {
+          response.statusCode = HttpStatus.expectationFailed;
+          response.write("Upload failed.");
+          return;
+        }
+        await Get.find<GsCrLogic>().init();
+        await Get.find<ContentLogic>().change();
         response.statusCode = HttpStatus.ok;
         response.write("Upload successful. Received ${jsonData.length} keys.");
       } catch (e, st) {

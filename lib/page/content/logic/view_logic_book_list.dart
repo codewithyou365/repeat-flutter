@@ -278,6 +278,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   }
 
   void collectData() {
+    bookOptions = [];
     for (int i = 0; i < bookShow.length; i++) {
       var v = bookShow[i];
       if (!bookOptions.contains(v.name)) {

@@ -711,6 +711,29 @@ class _$BookDao extends BookDao {
   }
 
   @override
+  Future<void> reimport(
+    Book book,
+    List<Chapter> insertChapters,
+    List<Chapter> updateChapters,
+    List<Verse> insertVerses,
+    List<Verse> updateVerses,
+  ) async {
+    if (database is sqflite.Transaction) {
+      await super.reimport(
+          book, insertChapters, updateChapters, insertVerses, updateVerses);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        await transactionDatabase.bookDao.reimport(
+            book, insertChapters, updateChapters, insertVerses, updateVerses);
+      });
+    }
+  }
+
+  @override
   Future<void> deleteAll(int bookId) async {
     if (database is sqflite.Transaction) {
       await super.deleteAll(bookId);
