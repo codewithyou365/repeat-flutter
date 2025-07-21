@@ -186,6 +186,28 @@ class ImportHelp {
         }
       }
     }
+    List<int> chaptersIds = updateChapters.map((c) => c.id!).toList();
+    var updateChapterCount = await Db().db.chapterDao.countByIds(chaptersIds);
+    if (updateChapterCount == null) {
+      Snackbar.showAndThrow(I18nKey.labelDataAnomalyWithArg.trArgs(["updateChapterCount is null"]));
+      return false;
+    }
+    if (updateChapterCount != updateChapters.length) {
+      Snackbar.showAndThrow(I18nKey.pleaseDontModifyId.tr);
+      return false;
+    }
+
+    List<int> versesIds = updateVerses.map((c) => c.id!).toList();
+    var updateVerseCount = await Db().db.verseDao.countByIds(versesIds);
+    if (updateVerseCount == null) {
+      Snackbar.showAndThrow(I18nKey.labelDataAnomalyWithArg.trArgs(["updateVerseCount is null"]));
+      return false;
+    }
+    if (updateVerseCount != updateVerses.length) {
+      Snackbar.showAndThrow(I18nKey.pleaseDontModifyId.tr);
+      return false;
+    }
+
     await Db().db.bookDao.reimport(
           book,
           insertChapters,

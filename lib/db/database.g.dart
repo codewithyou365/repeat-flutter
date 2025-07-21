@@ -937,6 +937,20 @@ class _$ChapterDao extends ChapterDao {
   }
 
   @override
+  Future<int?> countByIds(List<int> ids) async {
+    const offset = 1;
+    final _sqliteVariablesForIds =
+        Iterable<String>.generate(ids.length, (i) => '?${i + offset}')
+            .join(',');
+    return _queryAdapter.query(
+        'SELECT count(1) FROM Chapter WHERE id in (' +
+            _sqliteVariablesForIds +
+            ')',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [...ids]);
+  }
+
+  @override
   Future<List<Chapter>> findByMinChapterIndex(
     int bookId,
     int minChapterIndex,
@@ -2843,6 +2857,20 @@ class _$VerseDao extends VerseDao {
   Future<void> deleteByChapterKeyId(int chapterId) async {
     await _queryAdapter.queryNoReturn('DELETE FROM Verse WHERE chapterId=?1',
         arguments: [chapterId]);
+  }
+
+  @override
+  Future<int?> countByIds(List<int> ids) async {
+    const offset = 1;
+    final _sqliteVariablesForIds =
+        Iterable<String>.generate(ids.length, (i) => '?${i + offset}')
+            .join(',');
+    return _queryAdapter.query(
+        'SELECT count(1) FROM Verse WHERE id in (' +
+            _sqliteVariablesForIds +
+            ')',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [...ids]);
   }
 
   @override

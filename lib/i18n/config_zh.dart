@@ -140,6 +140,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelDataDuplication, "数据重复!");
     put(I18nKey.labelDataAnomaly, "数据异常! %s");
     put(I18nKey.labelDataAnomalyWithArg, "数据异常! %s");
+    put(I18nKey.pleaseDontModifyId, "请勿修改ID (i 字段)");
     put(I18nKey.labelDataMissing, "数据丢失!");
     put(I18nKey.import, "导入");
     put(I18nKey.selectImportType, "选择导入类型");

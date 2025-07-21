@@ -138,6 +138,7 @@ enum I18nKey {
   labelDataDuplication,
   labelDataAnomaly,
   labelDataAnomalyWithArg,
+  pleaseDontModifyId,
   labelDataMissing,
   import,
   selectImportType,

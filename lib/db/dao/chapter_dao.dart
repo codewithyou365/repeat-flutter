@@ -46,6 +46,10 @@ abstract class ChapterDao {
       ' WHERE bookId=:bookId')
   Future<int?> count(int bookId);
 
+  @Query('SELECT count(1) FROM Chapter'
+      ' WHERE id in (:ids)')
+  Future<int?> countByIds(List<int> ids);
+
   @Query('SELECT * FROM Chapter'
       ' WHERE bookId=:bookId AND chapterIndex>=:minChapterIndex ORDER BY chapterIndex')
   Future<List<Chapter>> findByMinChapterIndex(int bookId, int minChapterIndex);

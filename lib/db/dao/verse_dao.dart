@@ -66,6 +66,10 @@ abstract class VerseDao {
   @Query('DELETE FROM Verse WHERE chapterId=:chapterId')
   Future<void> deleteByChapterKeyId(int chapterId);
 
+  @Query('SELECT count(1) FROM Verse'
+      ' WHERE id in (:ids)')
+  Future<int?> countByIds(List<int> ids);
+
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertOrFail(List<Verse> entities);
 
