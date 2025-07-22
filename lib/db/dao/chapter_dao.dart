@@ -33,6 +33,16 @@ abstract class ChapterDao {
       ' ORDER BY Chapter.bookId,Chapter.chapterIndex')
   Future<List<ChapterShow>> getAllChapter(int classroomId);
 
+  @Query('UPDATE Chapter '
+      ' JOIN ('
+      '  SELECT chapterId,max(version) version FROM ChapterContentVersion'
+      '  WHERE bookId=:bookId'
+      '  GROUP BY chapterId'
+      ') ChapterContentMaxVersion on ChapterContentMaxVersion.chapterId=Chapter.id'
+      ' set Chapter.contentVersion = ChapterContentMaxVersion.version'
+      ' WHERE Chapter.bookId = :bookId')
+  Future<void> syncContentVersion(int bookId);
+
   @Query('SELECT * FROM Chapter WHERE bookId=:bookId')
   Future<List<Chapter>> findByBookId(int bookId);
 
@@ -290,14 +300,15 @@ abstract class ChapterDao {
     return [];
   }
 
-  Future<List<Chapter>> reimport(int bookId, List<Chapter> inserts, List<Chapter> updates) async {
+  Future<void> reimport(int bookId, List<Chapter> inserts, List<Chapter> updates) async {
     await db.chapterDao.deleteByBookId(bookId);
-    if (inserts.isNotEmpty) {
-      int bookId = inserts.first.bookId;
-      await db.chapterDao.deleteByBookId(bookId);
-      await insertOrFail(inserts);
-      return findByBookId(bookId);
+    await insertOrFail(inserts);
+    var newInserts = await findByBookId(bookId);
+    inserts.sort((a, b) => a.chapterIndex.compareTo(b.chapterIndex));
+    newInserts.sort((a, b) => a.chapterIndex.compareTo(b.chapterIndex));
+    for (int i = 0; i < inserts.length; i++) {
+      inserts[i].id = newInserts[i].id;
     }
-    return [];
+    await insertOrFail(updates);
   }
 }

@@ -1,6 +1,5 @@
 import 'dart:convert' as convert;
 
-import 'package:get/get.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
@@ -39,38 +38,42 @@ class ImportHelp {
     }
     var now = DateTime.now();
 
-    Map<String, dynamic> excludeChapter = {};
+    Map<String, dynamic> bookContent = {};
     jsonData.forEach((k, v) {
       if (k != 'c') {
-        excludeChapter[k] = v;
+        bookContent[k] = v;
       }
     });
-    book.content = convert.jsonEncode(excludeChapter);
+    book.content = convert.jsonEncode(bookContent);
     List<Chapter> chapters = [];
     List<Verse> verses = [];
     List<dynamic> rawChapters = jsonData['c'] as List<dynamic>;
     for (var chapterIndex = 0; chapterIndex < kv.chapter.length; chapterIndex++) {
       Map<String, dynamic> rawChapter = rawChapters[chapterIndex] as Map<String, dynamic>;
-      Map<String, dynamic> excludeVerse = {};
+      Map<String, dynamic> chapterContent = {};
       rawChapter.forEach((k, v) {
-        if (k != 'v') {
-          excludeVerse[k] = v;
+        if (k != 'v' && k != 'i') {
+          chapterContent[k] = v;
         }
       });
-      String chapterContent = convert.jsonEncode(excludeVerse);
 
       var chapter = kv.chapter[chapterIndex];
       chapters.add(Chapter(
         classroomId: book.classroomId,
         bookId: book.id!,
         chapterIndex: chapterIndex,
-        content: chapterContent,
+        content: convert.jsonEncode(chapterContent),
         contentVersion: 1,
       ));
       List<dynamic> rawVerses = rawChapter['v'] as List<dynamic>;
       for (var verseIndex = 0; verseIndex < chapter.verse.length; verseIndex++) {
         var rawVerse = rawVerses[verseIndex] as Map<String, dynamic>;
-        String verseContent = convert.jsonEncode(rawVerse);
+        Map<String, dynamic> verseContent = {};
+        rawVerse.forEach((k, v) {
+          if (k != 'i' && k != 'l' && k != 'p') {
+            verseContent[k] = v;
+          }
+        });
         verses.add(Verse(
           classroomId: book.classroomId,
           bookId: book.id!,
@@ -78,7 +81,7 @@ class ImportHelp {
           chapterIndex: chapterIndex,
           verseIndex: verseIndex,
           sort: VerseHelp.toVerseSort(book.sort, chapterIndex, verseIndex),
-          content: verseContent,
+          content: convert.jsonEncode(verseContent),
           contentVersion: 1,
           learnDate: Date.from(now),
           progress: 0,
@@ -132,7 +135,7 @@ class ImportHelp {
 
       Map<String, dynamic> chapterContent = {};
       rawChapter.forEach((k, v) {
-        if (k != 'v') {
+        if (k != 'v' && k != 'i') {
           chapterContent[k] = v;
         }
       });
@@ -160,7 +163,12 @@ class ImportHelp {
       for (var verseIndex = 0; verseIndex < chapter.verse.length; verseIndex++) {
         var verse = chapter.verse[verseIndex];
         var rawVerse = rawVerses[verseIndex] as Map<String, dynamic>;
-        String verseContent = convert.jsonEncode(rawVerse);
+        Map<String, dynamic> verseContent = {};
+        rawVerse.forEach((k, v) {
+          if (k != 'i' && k != 'l' && k != 'p') {
+            verseContent[k] = v;
+          }
+        });
         var learnDate = Date.from(now);
         if (verse.learnDate != null) {
           learnDate = Date(verse.learnDate!);
@@ -173,7 +181,7 @@ class ImportHelp {
           chapterIndex: chapterIndex,
           verseIndex: verseIndex,
           sort: VerseHelp.toVerseSort(book.sort, chapterIndex, verseIndex),
-          content: verseContent,
+          content: convert.jsonEncode(verseContent),
           contentVersion: 1,
           learnDate: learnDate,
           progress: verse.progress ?? 0,

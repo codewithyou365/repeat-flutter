@@ -792,9 +792,22 @@ class _$ChapterContentVersionDao extends ChapterContentVersionDao {
   }
 
   @override
+  Future<void> remainByChapterIds(List<int> chapterIds) async {
+    const offset = 1;
+    final _sqliteVariablesForChapterIds =
+        Iterable<String>.generate(chapterIds.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM ChapterContentVersion  WHERE chapterId not in (' +
+            _sqliteVariablesForChapterIds +
+            ')',
+        arguments: [...chapterIds]);
+  }
+
+  @override
   Future<List<ChapterContentVersion>> currVersionList(int bookId) async {
     return _queryAdapter.queryList(
-        'SELECT ChapterContentVersion.*  FROM Chapter JOIN ChapterContentVersion ON ChapterContentVersion.chapterId=Chapter.id  AND ChapterContentVersion.version=Chapter.contentVersion WHERE ChapterContentVersion.bookId=?1',
+        'SELECT c.* FROM ChapterContentVersion c   INNER JOIN (     SELECT chapterId, MAX(version) AS max_version     FROM ChapterContentVersion     WHERE bookId = ?1     GROUP BY chapterId   ) sub   ON c.chapterId = sub.chapterId AND c.version = sub.max_version',
         mapper: (Map<String, Object?> row) => ChapterContentVersion(classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, version: row['version'] as int, reason: _versionReasonConverter.decode(row['reason'] as int), content: row['content'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [bookId]);
   }
@@ -884,6 +897,13 @@ class _$ChapterDao extends ChapterDao {
         'SELECT Chapter.id chapterId,Book.id bookId,Book.name bookName,Book.sort bookSort,Chapter.content chapterContent,Chapter.contentVersion chapterContentVersion,Chapter.chapterIndex FROM Chapter JOIN Book ON Book.id=Chapter.bookId AND Book.enable=true WHERE Chapter.classroomId=?1 ORDER BY Chapter.bookId,Chapter.chapterIndex',
         mapper: (Map<String, Object?> row) => ChapterShow(chapterId: row['chapterId'] as int, bookId: row['bookId'] as int, bookName: row['bookName'] as String, bookSort: row['bookSort'] as int, chapterContent: row['chapterContent'] as String, chapterContentVersion: row['chapterContentVersion'] as int, chapterIndex: row['chapterIndex'] as int),
         arguments: [classroomId]);
+  }
+
+  @override
+  Future<void> syncContentVersion(int bookId) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE Chapter  JOIN (  SELECT chapterId,max(version) version FROM ChapterContentVersion  WHERE bookId=?1  GROUP BY chapterId) ChapterContentMaxVersion on ChapterContentMaxVersion.chapterId=Chapter.id set Chapter.contentVersion = ChapterContentMaxVersion.version WHERE Chapter.bookId = ?1',
+        arguments: [bookId]);
   }
 
   @override
