@@ -33,14 +33,14 @@ abstract class ChapterDao {
       ' ORDER BY Chapter.bookId,Chapter.chapterIndex')
   Future<List<ChapterShow>> getAllChapter(int classroomId);
 
-  @Query('UPDATE Chapter '
-      ' JOIN ('
-      '  SELECT chapterId,max(version) version FROM ChapterContentVersion'
-      '  WHERE bookId=:bookId'
-      '  GROUP BY chapterId'
-      ') ChapterContentMaxVersion on ChapterContentMaxVersion.chapterId=Chapter.id'
-      ' set Chapter.contentVersion = ChapterContentMaxVersion.version'
-      ' WHERE Chapter.bookId = :bookId')
+  @Query('UPDATE Chapter'
+      ' SET contentVersion = ('
+      ' SELECT MAX(version)'
+      ' FROM ChapterContentVersion'
+      ' WHERE ChapterContentVersion.chapterId = Chapter.id'
+      ' AND ChapterContentVersion.bookId = Chapter.bookId'
+      ' )'
+      ' WHERE bookId = :bookId')
   Future<void> syncContentVersion(int bookId);
 
   @Query('SELECT * FROM Chapter WHERE bookId=:bookId')

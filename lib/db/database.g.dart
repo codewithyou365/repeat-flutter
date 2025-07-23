@@ -902,7 +902,7 @@ class _$ChapterDao extends ChapterDao {
   @override
   Future<void> syncContentVersion(int bookId) async {
     await _queryAdapter.queryNoReturn(
-        'UPDATE Chapter  JOIN (  SELECT chapterId,max(version) version FROM ChapterContentVersion  WHERE bookId=?1  GROUP BY chapterId) ChapterContentMaxVersion on ChapterContentMaxVersion.chapterId=Chapter.id set Chapter.contentVersion = ChapterContentMaxVersion.version WHERE Chapter.bookId = ?1',
+        'UPDATE Chapter SET contentVersion = ( SELECT MAX(version) FROM ChapterContentVersion WHERE ChapterContentVersion.chapterId = Chapter.id AND ChapterContentVersion.bookId = Chapter.bookId ) WHERE bookId = ?1',
         arguments: [bookId]);
   }
 
