@@ -177,9 +177,12 @@ abstract class BookDao {
     if (bookContentVersion != null) {
       await updateBookContentVersion(bookId, book.content, bookContentVersion.version);
     }
-    await db.chapterDao.reimport(bookId, insertChapters, updateChapters);
+    var deletedChapterIds = await db.chapterDao.reimport(bookId, insertChapters, updateChapters);
     await db.chapterContentVersionDao.reimport(bookId, insertChapters, updateChapters);
     await db.chapterDao.syncContentVersion(bookId);
+
+    await db.gameDao.deleteByChapterIds(deletedChapterIds);
+    await db.gameUserInputDao.deleteByChapterIds(deletedChapterIds);
 
     // await db.chapterContentVersionDao.import(chapters);
     // await db.verseDao.deleteByBookId(bookId);

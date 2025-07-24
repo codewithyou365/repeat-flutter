@@ -1003,6 +1003,14 @@ class _$ChapterDao extends ChapterDao {
   }
 
   @override
+  Future<List<int>> getIds(int bookId) async {
+    return _queryAdapter.queryList(
+        'SELECT id FROM Chapter WHERE Chapter.bookId=?1',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [bookId]);
+  }
+
+  @override
   Future<void> deleteByBookId(int bookId) async {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM Chapter WHERE Chapter.bookId=?1',
@@ -1703,6 +1711,19 @@ class _$GameDao extends GameDao {
   }
 
   @override
+  Future<void> deleteByChapterIds(List<int> chapterIds) async {
+    const offset = 1;
+    final _sqliteVariablesForChapterIds =
+        Iterable<String>.generate(chapterIds.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM Game WHERE chapterId in (' +
+            _sqliteVariablesForChapterIds +
+            ')',
+        arguments: [...chapterIds]);
+  }
+
+  @override
   Future<void> deleteByVerseId(int verseId) async {
     await _queryAdapter.queryNoReturn('DELETE FROM Game WHERE verseId=?1',
         arguments: [verseId]);
@@ -1835,6 +1856,19 @@ class _$GameUserInputDao extends GameUserInputDao {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM GameUserInput WHERE chapterId=?1',
         arguments: [chapterId]);
+  }
+
+  @override
+  Future<void> deleteByChapterIds(List<int> chapterIds) async {
+    const offset = 1;
+    final _sqliteVariablesForChapterIds =
+        Iterable<String>.generate(chapterIds.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM GameUserInput WHERE chapterId in (' +
+            _sqliteVariablesForChapterIds +
+            ')',
+        arguments: [...chapterIds]);
   }
 
   @override

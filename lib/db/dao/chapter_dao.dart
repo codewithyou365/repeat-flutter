@@ -71,6 +71,10 @@ abstract class ChapterDao {
   @Query('UPDATE Chapter set content=:content,contentVersion=:contentVersion WHERE id=:id')
   Future<void> updateKeyAndContent(int id, String content, int contentVersion);
 
+  @Query('SELECT id FROM Chapter'
+      ' WHERE Chapter.bookId=:bookId')
+  Future<List<int>> getIds(int bookId);
+
   @Query('DELETE FROM Chapter'
       ' WHERE Chapter.bookId=:bookId')
   Future<void> deleteByBookId(int bookId);
@@ -187,7 +191,7 @@ abstract class ChapterDao {
 
   @transaction
   Future<bool> deleteChapter(int chapterId, Rx<Chapter> out) async {
-    Chapter? chapter = await db.chapterDao.getById(chapterId);
+    Chapter? chapter = await getById(chapterId);
     if (chapter == null) {
       Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["cant find the chapter data($chapterId)"]));
       return false;
@@ -300,8 +304,9 @@ abstract class ChapterDao {
     return [];
   }
 
-  Future<void> reimport(int bookId, List<Chapter> inserts, List<Chapter> updates) async {
-    await db.chapterDao.deleteByBookId(bookId);
+  Future<List<int>> reimport(int bookId, List<Chapter> inserts, List<Chapter> updates) async {
+    var ids = await getIds(bookId);
+    await deleteByBookId(bookId);
     await insertOrFail(inserts);
     var newInserts = await findByBookId(bookId);
     inserts.sort((a, b) => a.chapterIndex.compareTo(b.chapterIndex));
@@ -310,5 +315,10 @@ abstract class ChapterDao {
       inserts[i].id = newInserts[i].id;
     }
     await insertOrFail(updates);
+  
+    var keptIds = <int>{...inserts.map((c) => c.id!), ...updates.map((c) => c.id!)};
+
+    var deletedIds = ids.where((id) => !keptIds.contains(id)).toList();
+    return deletedIds;
   }
 }
