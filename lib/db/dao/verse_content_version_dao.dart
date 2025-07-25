@@ -10,11 +10,16 @@ abstract class VerseContentVersionDao {
       ' WHERE verseId=:verseId')
   Future<List<VerseContentVersion>> list(int verseId);
 
-  @Query('SELECT VerseContentVersion.* '
-      ' FROM VerseKey'
-      ' JOIN VerseContentVersion ON VerseContentVersion.verseId=VerseKey.id'
-      '  AND VerseContentVersion.version=VerseKey.contentVersion'
-      ' WHERE VerseContentVersion.bookId=:bookId')
+  @Query('''
+  SELECT c.* FROM VerseContentVersion c
+  INNER JOIN (
+    SELECT verseId, MAX(version) AS max_version
+    FROM VerseContentVersion
+    WHERE bookId = :bookId
+    GROUP BY verseId
+  ) sub
+  ON c.verseId = sub.verseId AND c.version = sub.max_version
+''')
   Future<List<VerseContentVersion>> currVersionList(int bookId);
 
   @Insert(onConflict: OnConflictStrategy.fail)
@@ -22,6 +27,10 @@ abstract class VerseContentVersionDao {
 
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertsOrFail(List<VerseContentVersion> entities);
+
+  @Query('DELETE FROM VerseContentVersion '
+      ' WHERE verseId not in (:verseIds)')
+  Future<void> remainByVerseIds(List<int> verseIds);
 
   @Query('DELETE FROM VerseContentVersion'
       ' WHERE classroomId=:classroomId')
@@ -31,6 +40,9 @@ abstract class VerseContentVersionDao {
       ' WHERE bookId=:bookId')
   Future<void> deleteByBookId(int bookId);
 
+  @Query('DELETE FROM VerseContentVersion WHERE chapterId in (:chapterIds)')
+  Future<void> deleteByChapterIds(List<int> chapterIds);
+
   @Query('DELETE FROM VerseContentVersion WHERE chapterId=:chapterId')
   Future<void> deleteByChapterId(int chapterId);
 
@@ -39,6 +51,13 @@ abstract class VerseContentVersionDao {
   Future<void> deleteByVerseId(int verseId);
 
   Future<void> import(List<Verse> list) async {
+    List<VerseContentVersion> needToInserts = toVerseContentVersion(list);
+    if (needToInserts.isNotEmpty) {
+      await insertsOrFail(needToInserts);
+    }
+  }
+
+  List<VerseContentVersion> toVerseContentVersion(List<Verse> list) {
     List<VerseContentVersion> needToInserts = [];
     for (var v in list) {
       var tv = VerseContentVersion(
@@ -53,40 +72,40 @@ abstract class VerseContentVersionDao {
       );
       needToInserts.add(tv);
     }
-    if (needToInserts.isNotEmpty) {
-      await insertsOrFail(needToInserts);
-    }
+    return needToInserts;
   }
 
-  Future<Map<int, VerseContentVersion>> reimport(List<Verse> list, int bookId) async {
-    List<VerseContentVersion> insertValues = [];
+  Future<void> reimport(int bookId, List<Verse> inserts, List<Verse> updates) async {
+    List<int> remainVerseIds = updates.map((v) => v.id!).toList();
+    await remainByVerseIds(remainVerseIds);
+
+    List<VerseContentVersion> needToInserts = toVerseContentVersion(inserts);
     List<VerseContentVersion> contentVersion = await currVersionList(bookId);
     Map<int, VerseContentVersion> idToContentVersion = {for (var v in contentVersion) v.verseId: v};
-    for (var v in list) {
-      VerseContentVersion? version = idToContentVersion[v.id!];
-      String text = v.content;
-      if (version == null || version.content != text) {
+    for (var v in updates) {
+      int id = v.id!;
+      String content = v.content;
+      VerseContentVersion? version = idToContentVersion[id];
+      if (version == null || version.content != content) {
         int currVersionNumber = 1;
         if (version != null) {
           currVersionNumber = version.version + 1;
         }
-        var stv = VerseContentVersion(
+        var tv = VerseContentVersion(
           classroomId: v.classroomId,
           bookId: v.bookId,
           chapterId: v.chapterId,
           verseId: v.id!,
           version: currVersionNumber,
-          reason: VersionReason.import,
-          content: text,
+          reason: VersionReason.reimport,
+          content: v.content,
           createTime: DateTime.now(),
         );
-        insertValues.add(stv);
+        needToInserts.add(tv);
       }
     }
-    if (insertValues.isNotEmpty) {
-      await insertsOrFail(insertValues);
+    if (needToInserts.isNotEmpty) {
+      await insertsOrFail(needToInserts);
     }
-    Map<int, VerseContentVersion> ret = {for (var v in contentVersion) v.verseId: v};
-    return ret;
   }
 }

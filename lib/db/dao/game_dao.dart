@@ -77,6 +77,9 @@ abstract class GameDao {
   @Query('DELETE FROM Game WHERE verseId=:verseId')
   Future<void> deleteByVerseId(int verseId);
 
+  @Query('DELETE FROM Game WHERE verseId in (:verseIds)')
+  Future<void> deleteByVerseIds(List<int> verseIds);
+
   @transaction
   Future<Game> tryInsertGame(Game game) async {
     var ids = await getAllEnableGameIds();

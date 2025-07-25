@@ -1730,6 +1730,19 @@ class _$GameDao extends GameDao {
   }
 
   @override
+  Future<void> deleteByVerseIds(List<int> verseIds) async {
+    const offset = 1;
+    final _sqliteVariablesForVerseIds =
+        Iterable<String>.generate(verseIds.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM Game WHERE verseId in (' +
+            _sqliteVariablesForVerseIds +
+            ')',
+        arguments: [...verseIds]);
+  }
+
+  @override
   Future<void> insertGame(Game game) async {
     await _gameInsertionAdapter.insert(game, OnConflictStrategy.fail);
   }
@@ -2697,9 +2710,22 @@ class _$VerseContentVersionDao extends VerseContentVersionDao {
   @override
   Future<List<VerseContentVersion>> currVersionList(int bookId) async {
     return _queryAdapter.queryList(
-        'SELECT VerseContentVersion.*  FROM VerseKey JOIN VerseContentVersion ON VerseContentVersion.verseId=VerseKey.id  AND VerseContentVersion.version=VerseKey.contentVersion WHERE VerseContentVersion.bookId=?1',
+        'SELECT c.* FROM VerseContentVersion c   INNER JOIN (     SELECT verseId, MAX(version) AS max_version     FROM VerseContentVersion     WHERE bookId = ?1     GROUP BY verseId   ) sub   ON c.verseId = sub.verseId AND c.version = sub.max_version',
         mapper: (Map<String, Object?> row) => VerseContentVersion(classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, verseId: row['verseId'] as int, version: row['version'] as int, reason: _versionReasonConverter.decode(row['reason'] as int), content: row['content'] as String, createTime: _dateTimeConverter.decode(row['createTime'] as int)),
         arguments: [bookId]);
+  }
+
+  @override
+  Future<void> remainByVerseIds(List<int> verseIds) async {
+    const offset = 1;
+    final _sqliteVariablesForVerseIds =
+        Iterable<String>.generate(verseIds.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseContentVersion  WHERE verseId not in (' +
+            _sqliteVariablesForVerseIds +
+            ')',
+        arguments: [...verseIds]);
   }
 
   @override
@@ -2714,6 +2740,19 @@ class _$VerseContentVersionDao extends VerseContentVersionDao {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM VerseContentVersion WHERE bookId=?1',
         arguments: [bookId]);
+  }
+
+  @override
+  Future<void> deleteByChapterIds(List<int> chapterIds) async {
+    const offset = 1;
+    final _sqliteVariablesForChapterIds =
+        Iterable<String>.generate(chapterIds.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseContentVersion WHERE chapterId in (' +
+            _sqliteVariablesForChapterIds +
+            ')',
+        arguments: [...chapterIds]);
   }
 
   @override
@@ -2902,15 +2941,42 @@ class _$VerseDao extends VerseDao {
   }
 
   @override
+  Future<List<int>> getIds(int bookId) async {
+    return _queryAdapter.queryList('SELECT id FROM Verse WHERE bookId=?1',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [bookId]);
+  }
+
+  @override
   Future<void> deleteByBookId(int bookId) async {
     await _queryAdapter.queryNoReturn('DELETE FROM Verse WHERE Verse.bookId=?1',
         arguments: [bookId]);
   }
 
   @override
+  Future<void> deleteByChapterIds(List<int> chapterIds) async {
+    const offset = 1;
+    final _sqliteVariablesForChapterIds =
+        Iterable<String>.generate(chapterIds.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM Verse WHERE chapterId in (' +
+            _sqliteVariablesForChapterIds +
+            ')',
+        arguments: [...chapterIds]);
+  }
+
+  @override
   Future<void> deleteByChapterKeyId(int chapterId) async {
     await _queryAdapter.queryNoReturn('DELETE FROM Verse WHERE chapterId=?1',
         arguments: [chapterId]);
+  }
+
+  @override
+  Future<void> syncContentVersion(int bookId) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE Verse SET contentVersion = ( SELECT MAX(version) FROM VerseContentVersion WHERE VerseContentVersion.verseId = Verse.id AND VerseContentVersion.bookId = Verse.bookId ) WHERE bookId = ?1',
+        arguments: [bookId]);
   }
 
   @override
@@ -3184,6 +3250,19 @@ class _$VerseReviewDao extends VerseReviewDao {
   }
 
   @override
+  Future<void> deleteByChapterIds(List<int> chapterIds) async {
+    const offset = 1;
+    final _sqliteVariablesForChapterIds =
+        Iterable<String>.generate(chapterIds.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseReview WHERE chapterId in (' +
+            _sqliteVariablesForChapterIds +
+            ')',
+        arguments: [...chapterIds]);
+  }
+
+  @override
   Future<void> deleteByChapterId(int chapterId) async {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM VerseReview WHERE chapterId=?1',
@@ -3221,6 +3300,19 @@ class _$VerseStatsDao extends VerseStatsDao {
   Future<void> deleteByBookId(int bookId) async {
     await _queryAdapter.queryNoReturn('DELETE FROM VerseStats WHERE bookId=?1',
         arguments: [bookId]);
+  }
+
+  @override
+  Future<void> deleteByChapterIds(List<int> chapterIds) async {
+    const offset = 1;
+    final _sqliteVariablesForChapterIds =
+        Iterable<String>.generate(chapterIds.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseStats WHERE chapterId in (' +
+            _sqliteVariablesForChapterIds +
+            ')',
+        arguments: [...chapterIds]);
   }
 
   @override
@@ -3300,6 +3392,19 @@ class _$VerseTodayPrgDao extends VerseTodayPrgDao {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM VerseTodayPrg WHERE bookId=?1',
         arguments: [bookId]);
+  }
+
+  @override
+  Future<void> deleteByChapterIds(List<int> chapterIds) async {
+    const offset = 1;
+    final _sqliteVariablesForChapterIds =
+        Iterable<String>.generate(chapterIds.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseTodayPrg WHERE chapterId in (' +
+            _sqliteVariablesForChapterIds +
+            ')',
+        arguments: [...chapterIds]);
   }
 
   @override

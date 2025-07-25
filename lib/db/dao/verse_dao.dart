@@ -59,13 +59,28 @@ abstract class VerseDao {
   @Query('DELETE FROM Verse WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
 
+  @Query('SELECT id FROM Verse'
+      ' WHERE bookId=:bookId')
+  Future<List<int>> getIds(int bookId);
+
   @Query('DELETE FROM Verse'
       ' WHERE Verse.bookId=:bookId')
   Future<void> deleteByBookId(int bookId);
 
+  @Query('DELETE FROM Verse WHERE chapterId in (:chapterIds)')
+  Future<void> deleteByChapterIds(List<int> chapterIds);
+
   @Query('DELETE FROM Verse WHERE chapterId=:chapterId')
   Future<void> deleteByChapterKeyId(int chapterId);
-
+  @Query('UPDATE Verse'
+      ' SET contentVersion = ('
+      ' SELECT MAX(version)'
+      ' FROM VerseContentVersion'
+      ' WHERE VerseContentVersion.verseId = Verse.id'
+      ' AND VerseContentVersion.bookId = Verse.bookId'
+      ' )'
+      ' WHERE bookId = :bookId')
+  Future<void> syncContentVersion(int bookId);
   @Query('SELECT count(1) FROM Verse'
       ' WHERE id in (:ids)')
   Future<int?> countByIds(List<int> ids);
@@ -356,5 +371,40 @@ abstract class VerseDao {
       return findByBookId(bookId);
     }
     return [];
+  }
+
+  void fixChapterId(List<Chapter> insertChapters, List<Chapter> updateChapters, List<Verse> inserts, List<Verse> updates) {
+    Map<int, Chapter> chapterIndex2Chapter = {};
+    for (Chapter chapter in insertChapters) {
+      chapterIndex2Chapter[chapter.chapterIndex] = chapter;
+    }
+    for (Chapter chapter in updateChapters) {
+      chapterIndex2Chapter[chapter.chapterIndex] = chapter;
+    }
+    for (Verse verse in inserts) {
+      verse.chapterId = chapterIndex2Chapter[verse.chapterIndex]!.id!;
+    }
+    for (Verse verse in updates) {
+      verse.chapterId = chapterIndex2Chapter[verse.chapterIndex]!.id!;
+    }
+  }
+
+  Future<List<int>> reimport(int bookId, List<Chapter> insertChapters, List<Chapter> updateChapters, List<Verse> inserts, List<Verse> updates) async {
+    fixChapterId(insertChapters, updateChapters, inserts, updates);
+    var ids = await getIds(bookId);
+    await deleteByBookId(bookId);
+    await insertOrFail(inserts);
+    var newInserts = await findByBookId(bookId);
+    inserts.sort((a, b) => a.sort.compareTo(b.sort));
+    newInserts.sort((a, b) => a.sort.compareTo(b.sort));
+    for (int i = 0; i < inserts.length; i++) {
+      inserts[i].id = newInserts[i].id;
+    }
+    await insertOrFail(updates);
+
+    var keptIds = <int>{...inserts.map((c) => c.id!), ...updates.map((c) => c.id!)};
+
+    var deletedIds = ids.where((id) => !keptIds.contains(id)).toList();
+    return deletedIds;
   }
 }
