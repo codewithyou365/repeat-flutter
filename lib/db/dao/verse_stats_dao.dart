@@ -22,4 +22,7 @@ abstract class VerseStatsDao {
 
   @Query('DELETE FROM VerseStats WHERE verseId=:verseId')
   Future<void> deleteByVerseId(int verseId);
+
+  @Query('DELETE FROM VerseStats WHERE verseId in (:verseIds)')
+  Future<void> deleteByVerseIds(List<int> verseIds);
 }

@@ -1890,6 +1890,19 @@ class _$GameUserInputDao extends GameUserInputDao {
         'DELETE FROM GameUserInput WHERE verseId=?1',
         arguments: [verseId]);
   }
+
+  @override
+  Future<void> deleteByVerseIds(List<int> verseIds) async {
+    const offset = 1;
+    final _sqliteVariablesForVerseIds =
+        Iterable<String>.generate(verseIds.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM GameUserInput WHERE verseId in (' +
+            _sqliteVariablesForVerseIds +
+            ')',
+        arguments: [...verseIds]);
+  }
 }
 
 class _$KvDao extends KvDao {
@@ -2743,19 +2756,6 @@ class _$VerseContentVersionDao extends VerseContentVersionDao {
   }
 
   @override
-  Future<void> deleteByChapterIds(List<int> chapterIds) async {
-    const offset = 1;
-    final _sqliteVariablesForChapterIds =
-        Iterable<String>.generate(chapterIds.length, (i) => '?${i + offset}')
-            .join(',');
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM VerseContentVersion WHERE chapterId in (' +
-            _sqliteVariablesForChapterIds +
-            ')',
-        arguments: [...chapterIds]);
-  }
-
-  @override
   Future<void> deleteByChapterId(int chapterId) async {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM VerseContentVersion WHERE chapterId=?1',
@@ -2951,19 +2951,6 @@ class _$VerseDao extends VerseDao {
   Future<void> deleteByBookId(int bookId) async {
     await _queryAdapter.queryNoReturn('DELETE FROM Verse WHERE Verse.bookId=?1',
         arguments: [bookId]);
-  }
-
-  @override
-  Future<void> deleteByChapterIds(List<int> chapterIds) async {
-    const offset = 1;
-    final _sqliteVariablesForChapterIds =
-        Iterable<String>.generate(chapterIds.length, (i) => '?${i + offset}')
-            .join(',');
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM Verse WHERE chapterId in (' +
-            _sqliteVariablesForChapterIds +
-            ')',
-        arguments: [...chapterIds]);
   }
 
   @override
@@ -3275,6 +3262,19 @@ class _$VerseReviewDao extends VerseReviewDao {
         'DELETE FROM VerseReview WHERE verseId=?1',
         arguments: [verseId]);
   }
+
+  @override
+  Future<void> deleteByVerseIds(List<int> verseIds) async {
+    const offset = 1;
+    final _sqliteVariablesForVerseIds =
+        Iterable<String>.generate(verseIds.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseReview WHERE verseId in (' +
+            _sqliteVariablesForVerseIds +
+            ')',
+        arguments: [...verseIds]);
+  }
 }
 
 class _$VerseStatsDao extends VerseStatsDao {
@@ -3326,6 +3326,19 @@ class _$VerseStatsDao extends VerseStatsDao {
   Future<void> deleteByVerseId(int verseId) async {
     await _queryAdapter.queryNoReturn('DELETE FROM VerseStats WHERE verseId=?1',
         arguments: [verseId]);
+  }
+
+  @override
+  Future<void> deleteByVerseIds(List<int> verseIds) async {
+    const offset = 1;
+    final _sqliteVariablesForVerseIds =
+        Iterable<String>.generate(verseIds.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseStats WHERE verseId in (' +
+            _sqliteVariablesForVerseIds +
+            ')',
+        arguments: [...verseIds]);
   }
 }
 
@@ -3419,6 +3432,19 @@ class _$VerseTodayPrgDao extends VerseTodayPrgDao {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM VerseTodayPrg WHERE verseId=?1',
         arguments: [verseId]);
+  }
+
+  @override
+  Future<void> deleteByVerseIds(List<int> verseIds) async {
+    const offset = 1;
+    final _sqliteVariablesForVerseIds =
+        Iterable<String>.generate(verseIds.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM VerseTodayPrg WHERE verseId in (' +
+            _sqliteVariablesForVerseIds +
+            ')',
+        arguments: [...verseIds]);
   }
 
   @override

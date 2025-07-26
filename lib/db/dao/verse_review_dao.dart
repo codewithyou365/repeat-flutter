@@ -16,4 +16,7 @@ abstract class VerseReviewDao {
 
   @Query('DELETE FROM VerseReview WHERE verseId=:verseId')
   Future<void> deleteByVerseId(int verseId);
+
+  @Query('DELETE FROM VerseReview WHERE verseId in (:verseIds)')
+  Future<void> deleteByVerseIds(List<int> verseIds);
 }

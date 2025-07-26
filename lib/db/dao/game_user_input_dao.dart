@@ -22,4 +22,7 @@ abstract class GameUserInputDao {
 
   @Query('DELETE FROM GameUserInput WHERE verseId=:verseId')
   Future<void> deleteByVerseId(int verseId);
+
+  @Query('DELETE FROM GameUserInput WHERE verseId in (:verseIds)')
+  Future<void> deleteByVerseIds(List<int> verseIds);
 }

@@ -67,11 +67,9 @@ abstract class VerseDao {
       ' WHERE Verse.bookId=:bookId')
   Future<void> deleteByBookId(int bookId);
 
-  @Query('DELETE FROM Verse WHERE chapterId in (:chapterIds)')
-  Future<void> deleteByChapterIds(List<int> chapterIds);
-
   @Query('DELETE FROM Verse WHERE chapterId=:chapterId')
   Future<void> deleteByChapterKeyId(int chapterId);
+
   @Query('UPDATE Verse'
       ' SET contentVersion = ('
       ' SELECT MAX(version)'
@@ -81,6 +79,7 @@ abstract class VerseDao {
       ' )'
       ' WHERE bookId = :bookId')
   Future<void> syncContentVersion(int bookId);
+
   @Query('SELECT count(1) FROM Verse'
       ' WHERE id in (:ids)')
   Future<int?> countByIds(List<int> ids);
