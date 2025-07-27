@@ -72,6 +72,7 @@
             });
             const text = await res.text();
             alert("Server response: " + text);
+            location.reload();
         } catch (err) {
             alert("Error sending data: " + err);
         }
