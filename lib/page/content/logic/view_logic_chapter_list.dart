@@ -355,7 +355,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                                   qrPagePath: Nav.scan.path,
                                   onHistory: () async {
                                     List<ChapterContentVersion> historyData = await Db().db.chapterContentVersionDao.list(chapter.chapterId);
-                                    await historyList.show(historyData,focus:true.obs);
+                                    await historyList.show(historyData, focus: true.obs);
                                   },
                                 );
                               },
@@ -369,16 +369,6 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                           PopupMenuButton<String>(
                             icon: const Icon(Icons.more_vert),
                             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                              PopupMenuItem<String>(
-                                onTap: () {
-                                  MsgBox.yesOrNo(
-                                    title: I18nKey.labelWarning.tr,
-                                    desc: I18nKey.labelDeleteVerse.tr,
-                                    yes: () => delete(chapter: chapter),
-                                  );
-                                },
-                                child: Text(I18nKey.btnDelete.tr),
-                              ),
                               PopupMenuItem<String>(
                                 onTap: () {
                                   MsgBox.myDialog(
@@ -402,6 +392,16 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                                       ]));
                                 },
                                 child: Text(I18nKey.btnCopy.tr),
+                              ),
+                              PopupMenuItem<String>(
+                                onTap: () {
+                                  MsgBox.yesOrNo(
+                                    title: I18nKey.labelWarning.tr,
+                                    desc: I18nKey.labelDeleteVerse.tr,
+                                    yes: () => delete(chapter: chapter),
+                                  );
+                                },
+                                child: Text(I18nKey.btnDelete.tr),
                               ),
                             ],
                           ),

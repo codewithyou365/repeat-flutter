@@ -470,16 +470,6 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                               PopupMenuItem<String>(
                                 onTap: () {
-                                  MsgBox.yesOrNo(
-                                    title: I18nKey.labelWarning.tr,
-                                    desc: I18nKey.labelDeleteVerse.tr,
-                                    yes: () => delete(verse: verse),
-                                  );
-                                },
-                                child: Text(I18nKey.btnDelete.tr),
-                              ),
-                              PopupMenuItem<String>(
-                                onTap: () {
                                   MsgBox.myDialog(
                                       title: I18nKey.labelTips.tr,
                                       content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
@@ -501,6 +491,16 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                       ]));
                                 },
                                 child: Text(I18nKey.btnCopy.tr),
+                              ),
+                              PopupMenuItem<String>(
+                                onTap: () {
+                                  MsgBox.yesOrNo(
+                                    title: I18nKey.labelWarning.tr,
+                                    desc: I18nKey.labelDeleteVerse.tr,
+                                    yes: () => delete(verse: verse),
+                                  );
+                                },
+                                child: Text(I18nKey.btnDelete.tr),
                               ),
                             ],
                           ),

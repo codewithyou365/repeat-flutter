@@ -191,7 +191,7 @@ abstract class BookDao {
     await db.verseDao.syncContentVersion(bookId);
 
     await db.gameDao.deleteByVerseIds(deletedVerseIds);
-     await db.gameUserInputDao.deleteByVerseIds(deletedVerseIds);
+    await db.gameUserInputDao.deleteByVerseIds(deletedVerseIds);
     await db.verseReviewDao.deleteByVerseIds(deletedVerseIds);
     await db.verseStatsDao.deleteByVerseIds(deletedVerseIds);
     await db.verseTodayPrgDao.deleteByVerseIds(deletedVerseIds);
