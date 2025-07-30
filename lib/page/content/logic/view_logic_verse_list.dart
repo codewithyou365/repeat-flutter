@@ -158,6 +158,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
               }
             }
           } else {
+            bookSelect.value = 0;
             ret = false;
           }
         }

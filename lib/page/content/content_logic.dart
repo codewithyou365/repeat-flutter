@@ -147,6 +147,7 @@ class ContentLogic extends GetxController {
     final chapterList = viewList[1] as ViewLogicChapterList<ContentLogic>;
     final verseList = viewList[2] as ViewLogicVerseList<ContentLogic>;
     bookList.originalBookShow = await BookHelp.getBooks();
+    bookList.bookShow = bookList.originalBookShow;
     bookList.collectData();
     bookList.trySearch(force: true);
 

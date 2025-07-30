@@ -6,11 +6,17 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/book_content_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/page/content/content_logic.dart';
+import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart' show GsCrLogic;
+import 'package:repeat_flutter/widget/dialog/msg_box.dart' show MsgBox;
+import 'package:repeat_flutter/widget/overlay/overlay.dart' show showOverlay;
 import 'package:repeat_flutter/widget/row/row_widget.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:repeat_flutter/widget/text/expandable_text.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -18,6 +24,7 @@ import 'view_logic.dart';
 
 class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   static const String bodyId = "BookList.bodyId";
+  final bus = EventBus();
   late HistoryList historyList = HistoryList<T>(parentLogic);
   final void Function(BookShow bookShow) onNext;
   final ItemScrollController itemScrollController = ItemScrollController();
@@ -29,7 +36,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   List<BookShow> bookShow = [];
 
   bool showSearchDetailPanel = false;
-  RxInt contentNameSelect = 0.obs;
+  RxInt bookSelect = 0.obs;
   String searchKey = '';
 
   // for collect search data, and missing book
@@ -73,7 +80,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
     collectData();
 
     if (initContentNameSelect != null) {
-      contentNameSelect.value = bookOptions.indexOf(initContentNameSelect);
+      bookSelect.value = bookOptions.indexOf(initContentNameSelect);
     }
   }
 
@@ -85,7 +92,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   }
 
   String genSearchKey() {
-    return '${contentNameSelect.value},${search.value}';
+    return '${bookSelect.value},${search.value}';
   }
 
   @override
@@ -95,14 +102,18 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
       return;
     }
     searchKey = newSearchKey;
-    if (search.value.isNotEmpty || contentNameSelect.value != 0) {
+    if (search.value.isNotEmpty || bookSelect.value != 0) {
       bookShow = originalBookShow.where((e) {
         bool ret = true;
         if (ret && search.value.isNotEmpty) {
           ret = e.bookContent.contains(search.value);
         }
-        if (ret && contentNameSelect.value != 0) {
-          ret = e.name == bookOptions[contentNameSelect.value];
+        if (ret && bookSelect.value != 0) {
+          if (bookSelect.value < bookOptions.length) {
+            ret = e.name == bookOptions[bookSelect.value];
+          } else {
+            bookSelect.value = 0;
+          }
         }
         return ret;
       }).toList();
@@ -112,6 +123,20 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
     sort(bookShow, sortOptionKeys[selectedSortIndex.value]);
 
     parentLogic.update([ViewLogicBookList.bodyId]);
+  }
+
+  Future<void> delete({required BookShow book}) async {
+    bool success = await showOverlay<bool>(() async {
+      await Db().db.bookDao.deleteAll(book.bookId);
+      await Get.find<GsCrLogic>().init();
+      await Get.find<ContentLogic>().change();
+      bus.publish<int>(EventTopic.deleteBook, book.bookId);
+      return true;
+    }, I18nKey.labelDeleting.tr);
+    if (success) {
+      Snackbar.show(I18nKey.labelDeleted.tr);
+    }
+    Get.back();
   }
 
   @override
@@ -158,9 +183,9 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                   RowWidget.buildCupertinoPicker(
                     I18nKey.labelBookFn.tr,
                     bookOptions,
-                    contentNameSelect,
+                    bookSelect,
                     changed: (index) {
-                      contentNameSelect.value = index;
+                      bookSelect.value = index;
                       trySearch();
                     },
                   ),
@@ -257,15 +282,32 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                               ],
                             ),
                           ),
-                          Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                            IconButton(
-                              onPressed: () {
-                                Nav.bookEditor.push(arguments: [book]);
-                              },
-                              icon: const Icon(Icons.edit_document),
-                              padding: EdgeInsets.zero,
-                            ),
-                          ]),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              PopupMenuButton<String>(
+                                icon: const Icon(Icons.more_vert),
+                                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                  PopupMenuItem<String>(
+                                    onTap: () {
+                                      Nav.bookEditor.push(arguments: [book]);
+                                    },
+                                    child: Text(I18nKey.btnCopy.tr),
+                                  ),
+                                  PopupMenuItem<String>(
+                                    onTap: () {
+                                      MsgBox.yesOrNo(
+                                        title: I18nKey.labelWarning.tr,
+                                        desc: I18nKey.labelDeleteBook.trArgs([book.name]),
+                                        yes: () => delete(book: book),
+                                      );
+                                    },
+                                    child: Text(I18nKey.btnDelete.tr),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     );

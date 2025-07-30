@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -13,6 +14,7 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/download.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/logic/import_help.dart';
@@ -30,11 +32,20 @@ class ScCrMaterialLogic extends GetxController {
   static const String id = "GsCrContentLogic";
   final ScCrMaterialState state = ScCrMaterialState();
   static RegExp reg = RegExp(r'^[0-9A-Z]+$');
+  final bus = EventBus();
+  late StreamSubscription<int?> sub;
 
   @override
   void onInit() {
     super.onInit();
+    sub = bus.on<int>(EventTopic.deleteBook).listen(delete);
     init();
+  }
+
+  @override
+  void onClose() {
+    super.onClose();
+    sub.cancel();
   }
 
   Future<void> init() async {
@@ -44,13 +55,11 @@ class ScCrMaterialLogic extends GetxController {
     update([ScCrMaterialLogic.id]);
   }
 
-  Future<void> delete(int bookId) async {
-    showTransparentOverlay(() async {
+  void delete(int? bookId) {
+    if (bookId != null) {
       state.list.removeWhere((element) => identical(element.id, bookId));
-      await Db().db.bookDao.deleteAll(bookId);
-      Get.find<GsCrLogic>().init();
       update([ScCrMaterialLogic.id]);
-    });
+    }
   }
 
   Future<void> showContent({
@@ -148,7 +157,9 @@ class ScCrMaterialLogic extends GetxController {
       state.contentProgress.value = 1;
     } else {
       if (total == -1) {
-        int elapse = DateTime.now().millisecondsSinceEpoch - startTime;
+        int elapse = DateTime
+            .now()
+            .millisecondsSinceEpoch - startTime;
         int predict = 5 * 60 * 1000;
         double progress = elapse / predict;
         if (progress > 0.9) {

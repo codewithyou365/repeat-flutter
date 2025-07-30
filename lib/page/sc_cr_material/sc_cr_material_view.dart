@@ -89,12 +89,6 @@ class ScCrMaterialPage extends StatelessWidget {
         child: Text(I18nKey.labelContent.tr),
       ));
     }
-    menus.add(PopupMenuItem<String>(
-      onTap: () {
-        openDeleteDialog(logic, book);
-      },
-      child: Text(I18nKey.btnDelete.tr),
-    ));
     return PopupMenuButton<String>(
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16.w),
@@ -114,17 +108,6 @@ class ScCrMaterialPage extends StatelessWidget {
         ),
       ),
       itemBuilder: (BuildContext context) => menus,
-    );
-  }
-
-  void openDeleteDialog(ScCrMaterialLogic logic, Book model) {
-    MsgBox.yesOrNo(
-      title: I18nKey.labelDelete.tr,
-      desc: I18nKey.labelDeleteBook.trArgs([model.name]),
-      yes: () {
-        logic.delete(model.id!);
-        Get.back();
-      },
     );
   }
 }
