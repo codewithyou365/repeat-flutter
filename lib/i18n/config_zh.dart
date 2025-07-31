@@ -10,6 +10,7 @@ class ConfigZh extends Config {
     put(I18nKey.material, "材料");
     put(I18nKey.bookShare, "学卷分享");
     put(I18nKey.editBook, "编辑学卷");
+    put(I18nKey.edit, "编辑");
     put(I18nKey.keyTitle, "凭证");
     put(I18nKey.keyContent, "用户名：@0\n密码：@1");
     put(I18nKey.selectBookType, "请选择学卷类型");

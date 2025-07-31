@@ -292,7 +292,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                                     onTap: () {
                                       Nav.bookEditor.push(arguments: [book]);
                                     },
-                                    child: Text(I18nKey.btnCopy.tr),
+                                    child: Text(I18nKey.edit.tr),
                                   ),
                                   PopupMenuItem<String>(
                                     onTap: () {
