@@ -16,6 +16,7 @@ import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/logic/widget/web_manager.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
+import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'repeat_args.dart';
 import 'repeat_state.dart';
@@ -105,11 +106,15 @@ class RepeatLogic extends GetxController {
     if (curr == null || repeatLogic == null) {
       return;
     }
-    EditProgress.show(curr.verseId, title: I18nKey.btnNext.tr, callback: (p, n) async {
-      await repeatLogic!.jump(progress: p, nextDayValue: n);
-      Get.back();
-      update([RepeatLogic.id]);
-    });
+    EditProgress.show(
+      curr.verseId,
+      title: I18nKey.btnNext.tr,
+      callback: (p, n) async {
+        await repeatLogic!.jump(progress: p, nextDayValue: n);
+        Get.back();
+        update([RepeatLogic.id]);
+      },
+    );
   }
 
   void editNote() {
@@ -123,17 +128,18 @@ class RepeatLogic extends GetxController {
     }
     String acronym = 'n';
     String noteStr = map[acronym] ?? '';
-    Editor.show(
-      Get.context!,
-      I18nKey.labelNote.tr,
-      noteStr,
-      (str) async {
-        map[acronym] = str;
-        String jsonStr = jsonEncode(map);
-        var verseId = state.helper.getCurrVerse()!.verseId;
-        await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
-      },
-      qrPagePath: Nav.scan.path,
+    Nav.editor.push(
+      arguments: EditorArgs(
+        onHistory: null,
+        title: I18nKey.labelNote.tr,
+        value: noteStr,
+        save: (str) async {
+          map[acronym] = str;
+          String jsonStr = jsonEncode(map);
+          var verseId = state.helper.getCurrVerse()!.verseId;
+          await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
+        },
+      ),
     );
   }
 
@@ -154,12 +160,7 @@ class RepeatLogic extends GetxController {
       return;
     }
     await Nav.content.push(
-      arguments: ContentArgs(
-        bookName: content.name,
-        initChapterSelect: chapter.chapterIndex,
-        selectVerseKeyId: curr.verseId,
-        defaultTap: 2,
-      ),
+      arguments: ContentArgs(bookName: content.name, initChapterSelect: chapter.chapterIndex, selectVerseKeyId: curr.verseId, defaultTap: 2),
     );
     update([RepeatLogic.id]);
   }

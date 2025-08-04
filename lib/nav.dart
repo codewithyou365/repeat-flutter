@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:repeat_flutter/page/book_editor/book_editor_nav.dart';
 import 'package:repeat_flutter/page/content/content_nav.dart';
+import 'package:repeat_flutter/page/editor/editor_nav.dart';
 import 'package:repeat_flutter/page/gs/gs_nav.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_content_share/gs_cr_content_share_nav.dart';
@@ -21,6 +22,7 @@ import 'package:repeat_flutter/page/scan/scan_nav.dart';
 enum Nav {
   bookEditor("/book/editor"),
   content("/content"),
+  editor("/editor"),
   gs("/gs"),
   gsCr("/gs/cr"),
   gsCrContentShare("/gs/cr/content/share"),
@@ -65,6 +67,7 @@ enum Nav {
   static final List<GetPage> getPages = [
     bookEditorNav(bookEditor.path),
     contentNav(content.path),
+    editorNav(editor.path),
     gsNav(gs.path),
     gsCrNav(gsCr.path),
     gsCrContentShareNav(gsCrContentShare.path),
