@@ -32,7 +32,7 @@ class RepeatViewForAudio extends RepeatView {
   }
 
   @override
-  Widget body() {
+  Widget body(BuildContext context) {
     double height = 400;
     Helper? helper = this.helper;
     if (helper == null) {
@@ -59,11 +59,14 @@ class RepeatViewForAudio extends RepeatView {
       return SizedBox(height: height);
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      load(path).then((_) {
-        mediaKey.currentState?.playFromStart();
+    final insets = MediaQuery.of(context).viewInsets;
+    if (insets.bottom > 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        load(path).then((_) {
+          mediaKey.currentState?.playFromStart();
+        });
       });
-    });
+    }
 
     double padding = 16;
     if (helper.landscape) {
@@ -80,19 +83,22 @@ class RepeatViewForAudio extends RepeatView {
         mediaBar(helper.screenWidth - padding * 2, mediaBarHeight, range),
         SizedBox(
           height: height,
-          child: ListView(padding: const EdgeInsets.all(0), children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (q != null) q,
-                  if (t != null) t,
-                  if (a != null) a,
-                ],
+          child: ListView(
+            padding: const EdgeInsets.all(0),
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (q != null) q,
+                    if (t != null) t,
+                    if (a != null) a,
+                  ],
+                ),
               ),
-            ),
-          ]),
+            ],
+          ),
         ),
         helper.bottomBar(width: helper.screenWidth),
       ],

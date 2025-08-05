@@ -8,5 +8,5 @@ abstract class RepeatView {
 
   void dispose();
 
-  Widget body();
+  Widget body(BuildContext context);
 }

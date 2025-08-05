@@ -48,7 +48,7 @@ class RepeatViewForVideo extends RepeatView {
   }
 
   @override
-  Widget body() {
+  Widget body(BuildContext context) {
     Helper? helper = this.helper;
     if (helper == null) {
       return emptyBody();
@@ -71,12 +71,14 @@ class RepeatViewForVideo extends RepeatView {
     if (range == null) {
       return emptyBody();
     }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      load(path).then((_) {
-        mediaKey.currentState?.playFromStart();
+    final insets = MediaQuery.of(context).viewInsets;
+    if (insets.bottom == 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        load(path).then((_) {
+          mediaKey.currentState?.playFromStart();
+        });
       });
-    });
+    }
     videoBoardHelper.boards.value = videoBoardHelper.getCurrVideoBoard();
     if (helper.landscape) {
       return landscape(range);
@@ -86,10 +88,12 @@ class RepeatViewForVideo extends RepeatView {
   }
 
   emptyBody() {
-    return Column(children: [
-      const SizedBox(height: 50),
-      if (helper != null) helper!.topBar(),
-    ]);
+    return Column(
+      children: [
+        const SizedBox(height: 50),
+        if (helper != null) helper!.topBar(),
+      ],
+    );
   }
 
   landscape(MediaRange range) {
@@ -111,7 +115,7 @@ class RepeatViewForVideo extends RepeatView {
                 width: helper.screenWidth,
                 height: helper.screenHeight,
               ),
-              Obx(() => videoWidgetForLandscape())
+              Obx(() => videoWidgetForLandscape()),
             ],
           ),
         ),
@@ -133,11 +137,14 @@ class RepeatViewForVideo extends RepeatView {
                       width: helper.screenWidth / 2,
                       child: Padding(
                         padding: EdgeInsets.only(left: padding, right: helper.leftPadding),
-                        child: ListView(padding: const EdgeInsets.all(0), children: [
-                          if (q != null) q,
-                          if (t != null) t,
-                          if (a != null) a,
-                        ]),
+                        child: ListView(
+                          padding: const EdgeInsets.all(0),
+                          children: [
+                            if (q != null) q,
+                            if (t != null) t,
+                            if (a != null) a,
+                          ],
+                        ),
                       ),
                     ),
                   if (videoBoardHelper.showEdit)
@@ -188,20 +195,24 @@ class RepeatViewForVideo extends RepeatView {
               height: height - videoHeightInPortrait.value,
               child: Padding(
                 padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
-                child: ListView(padding: const EdgeInsets.all(0), children: [
-                  if (q != null) q,
-                  if (t != null) t,
-                  if (a != null) a,
-                ]),
+                child: ListView(
+                  padding: const EdgeInsets.all(0),
+                  children: [
+                    if (q != null) q,
+                    if (t != null) t,
+                    if (a != null) a,
+                  ],
+                ),
               ),
             ),
           if (videoBoardHelper.showEdit)
             SizedBox(
-                height: height - videoHeightInPortrait.value,
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
-                  child: videoBoardHelper.editPanel(),
-                )),
+              height: height - videoHeightInPortrait.value,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
+                child: videoBoardHelper.editPanel(),
+              ),
+            ),
           if (!videoBoardHelper.showEdit) helper.bottomBar(width: helper.screenWidth),
         ],
       );
