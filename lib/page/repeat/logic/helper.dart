@@ -43,6 +43,7 @@ class Helper {
   late Widget? Function(QaType type) text;
 
   bool edit = false;
+  bool enableReloadMedia = true;
   Map<int, Map<String, dynamic>> rootMapCache = {};
 
   Map<int, Map<String, dynamic>> chapterMapCache = {};

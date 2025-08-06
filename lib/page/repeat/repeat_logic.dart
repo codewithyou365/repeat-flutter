@@ -116,7 +116,7 @@ class RepeatLogic extends GetxController {
     );
   }
 
-  void editNote() {
+  void editNote() async {
     var curr = getCurr();
     if (curr == null || repeatLogic == null) {
       return;
@@ -127,7 +127,8 @@ class RepeatLogic extends GetxController {
     }
     String acronym = 'n';
     String noteStr = map[acronym] ?? '';
-    Nav.editor.push(
+    state.helper.enableReloadMedia = false;
+    await Nav.editor.push(
       arguments: EditorArgs(
         onHistory: null,
         title: I18nKey.labelNote.tr,
@@ -140,6 +141,7 @@ class RepeatLogic extends GetxController {
         },
       ),
     );
+    state.helper.enableReloadMedia = true;
   }
 
   void openContent() async {
@@ -158,9 +160,11 @@ class RepeatLogic extends GetxController {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
+    state.helper.enableReloadMedia = false;
     await Nav.content.push(
       arguments: ContentArgs(bookName: content.name, initChapterSelect: chapter.chapterIndex, selectVerseKeyId: curr.verseId, defaultTap: 2),
     );
+    state.helper.enableReloadMedia = true;
     update([RepeatLogic.id]);
   }
 

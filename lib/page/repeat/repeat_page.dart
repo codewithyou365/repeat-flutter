@@ -80,7 +80,7 @@ class RepeatPage extends StatelessWidget {
     if (viewName == null) {
       return dataMissing(state);
     } else {
-      return logic.showTypeToRepeatView[viewName]!.body(context);
+      return logic.showTypeToRepeatView[viewName]!.body();
     }
   }
 

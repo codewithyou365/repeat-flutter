@@ -15,7 +15,7 @@ class RepeatViewForText extends RepeatView {
   void dispose() {}
 
   @override
-  Widget body(BuildContext context) {
+  Widget body() {
     double height = 400;
     Helper? helper = this.helper;
     if (helper == null) {

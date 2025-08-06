@@ -32,7 +32,7 @@ class RepeatViewForAudio extends RepeatView {
   }
 
   @override
-  Widget body(BuildContext context) {
+  Widget body() {
     double height = 400;
     Helper? helper = this.helper;
     if (helper == null) {
@@ -59,8 +59,7 @@ class RepeatViewForAudio extends RepeatView {
       return SizedBox(height: height);
     }
 
-    final insets = MediaQuery.of(context).viewInsets;
-    if (insets.bottom > 0) {
+    if (helper.enableReloadMedia) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         load(path).then((_) {
           mediaKey.currentState?.playFromStart();

@@ -111,7 +111,12 @@ class EditorPage extends StatelessWidget {
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back_ios_new),
                   onPressed: () {
-                    Nav.back();
+                    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+                    if (bottomInset > 0) {
+                      FocusScope.of(context).unfocus();
+                    } else {
+                      Nav.back();
+                    }
                   },
                 ),
               ),
