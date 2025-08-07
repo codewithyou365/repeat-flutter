@@ -65,10 +65,10 @@ class Helper {
   }
 
   Future<void> init(RepeatFlow logic) async {
-    initialized = true;
     this.logic = logic;
     books = await Db().db.bookDao.getAll(Classroom.curr);
     rootPath = await DocPath.getContentPath();
+    initialized = true;
   }
 
   void update() {

@@ -172,7 +172,11 @@ class RepeatViewForAudio extends RepeatView {
         if (source == null) {
           return;
         }
-        await audioPlayer.play(source, position: position);
+        try {
+          await audioPlayer.play(source, position: position).timeout(const Duration(milliseconds: 100));
+        } catch (e) {
+          await audioPlayer.play(source, position: position).timeout(const Duration(milliseconds: 100));
+        }
         await audioPlayer.resume();
       },
       onStop: audioPlayer.stop,
