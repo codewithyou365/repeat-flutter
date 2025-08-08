@@ -20,8 +20,6 @@ import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:mustache_template/mustache_template.dart';
 
-import 'editor.dart';
-
 class CopyLogic<T extends GetxController> {
   static const String id = "CopyLogic";
 
