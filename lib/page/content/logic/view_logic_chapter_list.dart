@@ -13,8 +13,8 @@ import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
-import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
@@ -240,215 +240,219 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     });
 
     return GetBuilder<T>(
-        id: ViewLogicChapterList.bodyId,
-        builder: (_) {
-          var list = chapterShow;
+      id: ViewLogicChapterList.bodyId,
+      builder: (_) {
+        var list = chapterShow;
 
-          Widget searchDetailPanel = const SizedBox.shrink();
-          if (showSearchDetailPanel) {
-            searchDetailPanel = Container(
-              height: searchDetailPanelHeight,
-              width: width,
-              padding: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                color: Theme.of(Get.context!).scaffoldBackgroundColor,
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    spreadRadius: 0,
-                    blurRadius: 4,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: ListView(
-                padding: const EdgeInsets.all(0),
-                children: [
-                  RowWidget.buildCascadeCupertinoPicker(
-                    head: [
-                      OptionHead(title: I18nKey.labelBookFn.tr, value: bookSelect),
-                      OptionHead(title: I18nKey.labelChapterName.tr, value: chapterSelect),
-                    ],
-                    body: options,
-                    changed: (index) {
-                      trySearch();
-                    },
-                  ),
-                  RowWidget.buildCupertinoPicker(
-                    I18nKey.labelSortBy.tr,
-                    sortOptions,
-                    selectedSortIndex,
-                    changed: (index) {
-                      selectedSortIndex.value = index;
-                      I18nKey key = sortOptionKeys[index];
-                      sort(chapterShow, key);
-                      parentLogic.update([ViewLogicChapterList.bodyId]);
-                    },
-                    pickWidth: 210.w,
-                  ),
-                  RowWidget.buildDividerWithoutColor(),
-                ],
-              ),
-            );
-          }
-          Widget body = const SizedBox.shrink();
-          if (list.isNotEmpty) {
-            body = ScrollablePositionedList.builder(
-              itemScrollController: itemScrollController,
-              itemPositionsListener: itemPositionsListener,
-              itemCount: list.length,
-              itemBuilder: (context, index) {
-                final chapter = list[index];
-                return Card(
-                  color: null,
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Stack(
-                    alignment: Alignment.topRight,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                onNext(chapter);
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  chapter.toPos(),
-                                  style: const TextStyle(fontSize: 12, color: Colors.blue),
-                                ),
+        Widget searchDetailPanel = const SizedBox.shrink();
+        if (showSearchDetailPanel) {
+          searchDetailPanel = Container(
+            height: searchDetailPanelHeight,
+            width: width,
+            padding: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: Theme.of(Get.context!).scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  spreadRadius: 0,
+                  blurRadius: 4,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: ListView(
+              padding: const EdgeInsets.all(0),
+              children: [
+                RowWidget.buildCascadeCupertinoPicker(
+                  head: [
+                    OptionHead(title: I18nKey.labelBookFn.tr, value: bookSelect),
+                    OptionHead(title: I18nKey.labelChapterName.tr, value: chapterSelect),
+                  ],
+                  body: options,
+                  changed: (index) {
+                    trySearch();
+                  },
+                ),
+                RowWidget.buildCupertinoPicker(
+                  I18nKey.labelSortBy.tr,
+                  sortOptions,
+                  selectedSortIndex,
+                  changed: (index) {
+                    selectedSortIndex.value = index;
+                    I18nKey key = sortOptionKeys[index];
+                    sort(chapterShow, key);
+                    parentLogic.update([ViewLogicChapterList.bodyId]);
+                  },
+                  pickWidth: 210.w,
+                ),
+                RowWidget.buildDividerWithoutColor(),
+              ],
+            ),
+          );
+        }
+        Widget body = const SizedBox.shrink();
+        if (list.isNotEmpty) {
+          body = ScrollablePositionedList.builder(
+            itemScrollController: itemScrollController,
+            itemPositionsListener: itemPositionsListener,
+            itemCount: list.length,
+            itemBuilder: (context, index) {
+              final chapter = list[index];
+              return Card(
+                color: null,
+                elevation: 2,
+                margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Stack(
+                  alignment: Alignment.topRight,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              onNext(chapter);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                chapter.toPos(),
+                                style: const TextStyle(fontSize: 12, color: Colors.blue),
                               ),
                             ),
-                            SizedBox(height: 8, width: width),
-                            ExpandableText(
-                              title: I18nKey.labelChapterName.tr,
-                              text: ': ${chapter.chapterContent}',
-                              version: chapter.chapterContentVersion,
-                              limit: 60,
-                              style: const TextStyle(fontSize: 14),
-                              selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                              versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
-                              selectText: search.value,
-                              onEdit: () {
-                                searchFocusNode.unfocus();
-                                var contentM = jsonDecode(chapter.chapterContent);
-                                var content = const JsonEncoder.withIndent(' ').convert(contentM);
-                                Editor.show(
-                                  Get.context!,
-                                  I18nKey.labelChapterName.tr,
-                                  content,
-                                  (str) async {
+                          ),
+                          SizedBox(height: 8, width: width),
+                          ExpandableText(
+                            title: I18nKey.labelChapterName.tr,
+                            text: ': ${chapter.chapterContent}',
+                            version: chapter.chapterContentVersion,
+                            limit: 60,
+                            style: const TextStyle(fontSize: 14),
+                            selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                            versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
+                            selectText: search.value,
+                            onEdit: () {
+                              searchFocusNode.unfocus();
+                              var contentM = jsonDecode(chapter.chapterContent);
+                              var content = const JsonEncoder.withIndent(' ').convert(contentM);
+                              Nav.editor.push(
+                                arguments: EditorArgs(
+                                  title: I18nKey.labelChapterName.tr,
+                                  value: content,
+                                  save: (str) async {
                                     await Db().db.chapterDao.updateChapterContent(chapter.chapterId, str);
                                     parentLogic.update([ViewLogicChapterList.bodyId]);
                                   },
-                                  qrPagePath: Nav.scan.path,
                                   onHistory: () async {
                                     List<ChapterContentVersion> historyData = await Db().db.chapterContentVersionDao.list(chapter.chapterId);
                                     await historyList.show(historyData, focus: true.obs);
                                   },
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          PopupMenuButton<String>(
-                            icon: const Icon(Icons.more_vert),
-                            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                              PopupMenuItem<String>(
-                                onTap: () {
-                                  MsgBox.myDialog(
-                                      title: I18nKey.labelTips.tr,
-                                      content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
-                                      action: MsgBox.buttonsWithDivider(buttons: [
-                                        MsgBox.button(
-                                          text: I18nKey.btnCancel.tr,
-                                          onPressed: () {
-                                            Get.back();
-                                          },
-                                        ),
-                                        MsgBox.button(
-                                          text: I18nKey.btnAbove.tr,
-                                          onPressed: () => copy(chapter: chapter, below: false),
-                                        ),
-                                        MsgBox.button(
-                                          text: I18nKey.btnBelow.tr,
-                                          onPressed: () => copy(chapter: chapter, below: true),
-                                        ),
-                                      ]));
-                                },
-                                child: Text(I18nKey.btnCopy.tr),
-                              ),
-                              PopupMenuItem<String>(
-                                onTap: () {
-                                  MsgBox.yesOrNo(
-                                    title: I18nKey.labelWarning.tr,
-                                    desc: I18nKey.labelDeleteVerse.tr,
-                                    yes: () => delete(chapter: chapter),
-                                  );
-                                },
-                                child: Text(I18nKey.btnDelete.tr),
-                              ),
-                            ],
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                );
-              },
-            );
-          } else if (bookSelect.value > 0 && search.value.isEmpty) {
-            body = Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        style: TextStyle(color: Theme.of(Get.context!).colorScheme.onSurface),
-                        text: I18nKey.labelChapterTipForAddingContent.trArgs([options[bookSelect.value].label]),
-                      ),
-                      WidgetSpan(
-                        alignment: PlaceholderAlignment.middle,
-                        child: IconButton(
-                          onPressed: addFirst,
-                          icon: const Icon(Icons.add),
-                          padding: EdgeInsets.zero, // Optional: removes extra padding
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_vert),
+                          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                            PopupMenuItem<String>(
+                              onTap: () {
+                                MsgBox.myDialog(
+                                  title: I18nKey.labelTips.tr,
+                                  content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
+                                  action: MsgBox.buttonsWithDivider(
+                                    buttons: [
+                                      MsgBox.button(
+                                        text: I18nKey.btnCancel.tr,
+                                        onPressed: () {
+                                          Get.back();
+                                        },
+                                      ),
+                                      MsgBox.button(
+                                        text: I18nKey.btnAbove.tr,
+                                        onPressed: () => copy(chapter: chapter, below: false),
+                                      ),
+                                      MsgBox.button(
+                                        text: I18nKey.btnBelow.tr,
+                                        onPressed: () => copy(chapter: chapter, below: true),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              child: Text(I18nKey.btnCopy.tr),
+                            ),
+                            PopupMenuItem<String>(
+                              onTap: () {
+                                MsgBox.yesOrNo(
+                                  title: I18nKey.labelWarning.tr,
+                                  desc: I18nKey.labelDeleteVerse.tr,
+                                  yes: () => delete(chapter: chapter),
+                                );
+                              },
+                              child: Text(I18nKey.btnDelete.tr),
+                            ),
+                          ],
                         ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        } else if (bookSelect.value > 0 && search.value.isEmpty) {
+          body = Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      style: TextStyle(color: Theme.of(Get.context!).colorScheme.onSurface),
+                      text: I18nKey.labelChapterTipForAddingContent.trArgs([options[bookSelect.value].label]),
+                    ),
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: IconButton(
+                        onPressed: addFirst,
+                        icon: const Icon(Icons.add),
+                        padding: EdgeInsets.zero, // Optional: removes extra padding
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            );
-          }
-          return Column(
-            children: [
-              searchDetailPanel,
-              SizedBox(
-                height: getBodyViewHeight(),
-                width: width,
-                child: body,
-              ),
-            ],
+            ),
           );
-        });
+        }
+        return Column(
+          children: [
+            searchDetailPanel,
+            SizedBox(
+              height: getBodyViewHeight(),
+              width: width,
+              child: body,
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void updateOptions() {
@@ -484,24 +488,28 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
         );
       }).toList();
 
-      bookOptions.add(OptionBody(
-        label: bookName,
-        value: 0,
-        next: chapterOptions,
-      ));
+      bookOptions.add(
+        OptionBody(
+          label: bookName,
+          value: 0,
+          next: chapterOptions,
+        ),
+      );
     }
 
-    options.add(OptionBody(
-      label: I18nKey.labelAll.tr,
-      value: -1,
-      next: [
-        OptionBody(
-          label: I18nKey.labelAll.tr,
-          value: -1,
-          next: [],
-        )
-      ],
-    ));
+    options.add(
+      OptionBody(
+        label: I18nKey.labelAll.tr,
+        value: -1,
+        next: [
+          OptionBody(
+            label: I18nKey.labelAll.tr,
+            value: -1,
+            next: [],
+          ),
+        ],
+      ),
+    );
 
     options.addAll(bookOptions);
   }

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
+import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'editor_args.dart';
@@ -22,7 +23,7 @@ class EditorLogic extends GetxController {
       state.historyBtn = Button(I18nKey.btnHistory.tr, args.onHistory);
     }
     state.shareBtn = Button(I18nKey.btnShare.tr, () {
-      Editor.showQrCode(Get.context!, textController.text);
+      showQrCode(Get.context!, textController.text);
     });
     state.scanBtn = Button(I18nKey.scan.tr, () async {
       var v = await Get.toNamed(Nav.scan.path);
@@ -53,5 +54,26 @@ class EditorLogic extends GetxController {
   @override
   void onClose() {
     super.onClose();
+  }
+  static void showQrCode(BuildContext context, String value) {
+    final Size screenSize = MediaQuery.of(context).size;
+    Sheet.showBottomSheet(
+      context,
+      ListView(
+        children: [
+          RowWidget.buildButtons([
+            Button(I18nKey.btnCancel.tr),
+            Button(I18nKey.btnCopy.tr, () {
+              Clipboard.setData(ClipboardData(text: value));
+              Snackbar.show(I18nKey.labelQrCodeContentCopiedToClipboard.tr);
+            }),
+          ]),
+          RowWidget.buildDivider(),
+          RowWidget.buildQrCode(value, screenSize.width - Sheet.paddingHorizontal * 2),
+          RowWidget.buildMiddleText(value),
+        ],
+      ),
+      rate: 1,
+    );
   }
 }

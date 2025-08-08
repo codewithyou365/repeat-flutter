@@ -14,9 +14,9 @@ import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
-import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/logic/view_logic.dart';
+import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
@@ -279,275 +279,279 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
       }
     });
     return GetBuilder<T>(
-        id: ViewLogicVerseList.bodyId,
-        builder: (_) {
-          Widget searchDetailPanel = const SizedBox.shrink();
-          if (showSearchDetailPanel) {
-            searchDetailPanel = Container(
-              height: searchDetailPanelHeight,
-              width: width,
-              padding: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                color: Theme.of(Get.context!).scaffoldBackgroundColor,
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    spreadRadius: 1,
-                    blurRadius: 4,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: ListView(
-                padding: const EdgeInsets.all(0),
-                children: [
-                  RowWidget.buildCascadeCupertinoPicker(
-                    head: [
-                      OptionHead(title: I18nKey.labelBookFn.tr, value: bookSelect),
-                      OptionHead(title: I18nKey.labelChapterName.tr, value: chapterSelect),
-                    ],
-                    body: options,
-                    changed: (index) {
-                      trySearch();
-                    },
-                  ),
-                  RowWidget.buildCupertinoPicker(
-                    I18nKey.labelProgress.tr,
-                    progressOptions,
-                    progressSelect,
-                    changed: (index) {
-                      progressSelect.value = index;
-                      trySearch();
-                    },
-                  ),
-                  RowWidget.buildDividerWithoutColor(),
-                  RowWidget.buildCupertinoPicker(
-                    I18nKey.labelMonth.tr,
-                    nextMonthOptions,
-                    nextMonthSelect,
-                    changed: (index) {
-                      nextMonthSelect.value = index;
-                      trySearch();
-                    },
-                  ),
-                  RowWidget.buildDividerWithoutColor(),
-                  RowWidget.buildCupertinoPicker(
-                    I18nKey.labelSortBy.tr,
-                    sortOptions,
-                    selectedSortIndex,
-                    changed: (index) {
-                      selectedSortIndex.value = index;
-                      I18nKey key = sortOptionKeys[index];
-                      sort(verseShow, key);
-                      parentLogic.update([ViewLogicVerseList.bodyId]);
-                    },
-                    pickWidth: 210.w,
-                  ),
-                  RowWidget.buildDividerWithoutColor(),
-                ],
-              ),
-            );
-          }
-          Widget body = const SizedBox.shrink();
-          var list = verseShow;
+      id: ViewLogicVerseList.bodyId,
+      builder: (_) {
+        Widget searchDetailPanel = const SizedBox.shrink();
+        if (showSearchDetailPanel) {
+          searchDetailPanel = Container(
+            height: searchDetailPanelHeight,
+            width: width,
+            padding: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: Theme.of(Get.context!).scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  spreadRadius: 1,
+                  blurRadius: 4,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ListView(
+              padding: const EdgeInsets.all(0),
+              children: [
+                RowWidget.buildCascadeCupertinoPicker(
+                  head: [
+                    OptionHead(title: I18nKey.labelBookFn.tr, value: bookSelect),
+                    OptionHead(title: I18nKey.labelChapterName.tr, value: chapterSelect),
+                  ],
+                  body: options,
+                  changed: (index) {
+                    trySearch();
+                  },
+                ),
+                RowWidget.buildCupertinoPicker(
+                  I18nKey.labelProgress.tr,
+                  progressOptions,
+                  progressSelect,
+                  changed: (index) {
+                    progressSelect.value = index;
+                    trySearch();
+                  },
+                ),
+                RowWidget.buildDividerWithoutColor(),
+                RowWidget.buildCupertinoPicker(
+                  I18nKey.labelMonth.tr,
+                  nextMonthOptions,
+                  nextMonthSelect,
+                  changed: (index) {
+                    nextMonthSelect.value = index;
+                    trySearch();
+                  },
+                ),
+                RowWidget.buildDividerWithoutColor(),
+                RowWidget.buildCupertinoPicker(
+                  I18nKey.labelSortBy.tr,
+                  sortOptions,
+                  selectedSortIndex,
+                  changed: (index) {
+                    selectedSortIndex.value = index;
+                    I18nKey key = sortOptionKeys[index];
+                    sort(verseShow, key);
+                    parentLogic.update([ViewLogicVerseList.bodyId]);
+                  },
+                  pickWidth: 210.w,
+                ),
+                RowWidget.buildDividerWithoutColor(),
+              ],
+            ),
+          );
+        }
+        Widget body = const SizedBox.shrink();
+        var list = verseShow;
 
-          if (list.isNotEmpty) {
-            body = ScrollablePositionedList.builder(
-              itemScrollController: itemScrollController,
-              itemPositionsListener: itemPositionsListener,
-              itemCount: list.length,
-              itemBuilder: (context, index) {
-                if (index >= list.length) {
-                  return const SizedBox.shrink();
-                }
-                final verse = list[index];
-                return Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Stack(
-                    alignment: Alignment.topRight,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                onNext(verse);
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  '${verse.toChapterPos()}${verse.toVersePos()}',
-                                  style: const TextStyle(fontSize: 12, color: Colors.blue),
-                                ),
+        if (list.isNotEmpty) {
+          body = ScrollablePositionedList.builder(
+            itemScrollController: itemScrollController,
+            itemPositionsListener: itemPositionsListener,
+            itemCount: list.length,
+            itemBuilder: (context, index) {
+              if (index >= list.length) {
+                return const SizedBox.shrink();
+              }
+              final verse = list[index];
+              return Card(
+                elevation: 2,
+                margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Stack(
+                  alignment: Alignment.topRight,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              onNext(verse);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '${verse.toChapterPos()}${verse.toVersePos()}',
+                                style: const TextStyle(fontSize: 12, color: Colors.blue),
                               ),
                             ),
-                            SizedBox(height: 8, width: width),
-                            ExpandableText(
-                              title: I18nKey.labelVerseName.tr,
-                              text: ': ${verse.verseContent}',
-                              version: verse.verseContentVersion,
-                              limit: 60,
-                              style: const TextStyle(fontSize: 14),
-                              selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                              versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
-                              selectText: search.value,
-                              onEdit: () {
-                                searchFocusNode.unfocus();
-                                var contentM = jsonDecode(verse.verseContent);
-                                var content = const JsonEncoder.withIndent(' ').convert(contentM);
-                                Editor.show(
-                                  Get.context!,
-                                  I18nKey.labelVerseName.tr,
-                                  content,
-                                  (str) async {
+                          ),
+                          SizedBox(height: 8, width: width),
+                          ExpandableText(
+                            title: I18nKey.labelVerseName.tr,
+                            text: ': ${verse.verseContent}',
+                            version: verse.verseContentVersion,
+                            limit: 60,
+                            style: const TextStyle(fontSize: 14),
+                            selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                            versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
+                            selectText: search.value,
+                            onEdit: () {
+                              searchFocusNode.unfocus();
+                              var contentM = jsonDecode(verse.verseContent);
+                              var content = const JsonEncoder.withIndent(' ').convert(contentM);
+                              Nav.editor.push(
+                                arguments: EditorArgs(
+                                  title: I18nKey.labelVerseName.tr,
+                                  value: content,
+                                  save: (str) async {
                                     await Db().db.verseDao.updateVerseContent(verse.verseId, str);
                                     parentLogic.update([ViewLogicVerseList.bodyId]);
                                   },
-                                  qrPagePath: Nav.scan.path,
                                   onHistory: () async {
                                     List<VerseContentVersion> historyData = await Db().db.verseContentVersionDao.list(verse.verseId);
                                     await historyList.show(historyData, focus: true.obs);
                                   },
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      editProgressWithMsgBox(verse);
-                                    },
-                                    child: Text(
-                                      '${I18nKey.labelProgress.tr}: ${verse.progress}',
-                                      style: const TextStyle(fontSize: 12, color: Colors.green),
-                                    ),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    editProgressWithMsgBox(verse);
+                                  },
+                                  child: Text(
+                                    '${I18nKey.labelProgress.tr}: ${verse.progress}',
+                                    style: const TextStyle(fontSize: 12, color: Colors.green),
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      editProgressWithMsgBox(verse);
-                                    },
-                                    child: Text(
-                                      '${I18nKey.labelSetNextLearnDate.tr}: ${verse.learnDate.format()}',
-                                      style: const TextStyle(fontSize: 12, color: Colors.green),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          PopupMenuButton<String>(
-                            icon: const Icon(Icons.more_vert),
-                            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                              PopupMenuItem<String>(
-                                onTap: () {
-                                  MsgBox.myDialog(
-                                      title: I18nKey.labelTips.tr,
-                                      content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
-                                      action: MsgBox.buttonsWithDivider(buttons: [
-                                        MsgBox.button(
-                                          text: I18nKey.btnCancel.tr,
-                                          onPressed: () {
-                                            Get.back();
-                                          },
-                                        ),
-                                        MsgBox.button(
-                                          text: I18nKey.btnAbove.tr,
-                                          onPressed: () => copy(verse: verse, below: false),
-                                        ),
-                                        MsgBox.button(
-                                          text: I18nKey.btnBelow.tr,
-                                          onPressed: () => copy(verse: verse, below: true),
-                                        ),
-                                      ]));
-                                },
-                                child: Text(I18nKey.btnCopy.tr),
                               ),
-                              PopupMenuItem<String>(
-                                onTap: () {
-                                  MsgBox.yesOrNo(
-                                    title: I18nKey.labelWarning.tr,
-                                    desc: I18nKey.labelDeleteVerse.tr,
-                                    yes: () => delete(verse: verse),
-                                  );
-                                },
-                                child: Text(I18nKey.btnDelete.tr),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    editProgressWithMsgBox(verse);
+                                  },
+                                  child: Text(
+                                    '${I18nKey.labelSetNextLearnDate.tr}: ${verse.learnDate.format()}',
+                                    style: const TextStyle(fontSize: 12, color: Colors.green),
+                                  ),
+                                ),
                               ),
                             ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                );
-              },
-            );
-          } else if (bookSelect.value > 0 && chapterSelect.value > 0 && search.value.isEmpty && progressSelect.value == 0 && nextMonthSelect.value == 0) {
-            body = Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        style: TextStyle(color: Theme.of(Get.context!).colorScheme.onSurface),
-                        text: I18nKey.labelVerseTipForAddingContent.trArgs(["${options[bookSelect.value].label}-${chapterSelect.value}"]),
-                      ),
-                      WidgetSpan(
-                        alignment: PlaceholderAlignment.middle,
-                        child: IconButton(
-                          onPressed: addFirst,
-                          icon: const Icon(Icons.add),
-                          padding: EdgeInsets.zero, // Optional: removes extra padding
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_vert),
+                          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                            PopupMenuItem<String>(
+                              onTap: () {
+                                MsgBox.myDialog(
+                                  title: I18nKey.labelTips.tr,
+                                  content: MsgBox.content(I18nKey.labelCopyToWhere.tr),
+                                  action: MsgBox.buttonsWithDivider(
+                                    buttons: [
+                                      MsgBox.button(
+                                        text: I18nKey.btnCancel.tr,
+                                        onPressed: () {
+                                          Get.back();
+                                        },
+                                      ),
+                                      MsgBox.button(
+                                        text: I18nKey.btnAbove.tr,
+                                        onPressed: () => copy(verse: verse, below: false),
+                                      ),
+                                      MsgBox.button(
+                                        text: I18nKey.btnBelow.tr,
+                                        onPressed: () => copy(verse: verse, below: true),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              child: Text(I18nKey.btnCopy.tr),
+                            ),
+                            PopupMenuItem<String>(
+                              onTap: () {
+                                MsgBox.yesOrNo(
+                                  title: I18nKey.labelWarning.tr,
+                                  desc: I18nKey.labelDeleteVerse.tr,
+                                  yes: () => delete(verse: verse),
+                                );
+                              },
+                              child: Text(I18nKey.btnDelete.tr),
+                            ),
+                          ],
                         ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        } else if (bookSelect.value > 0 && chapterSelect.value > 0 && search.value.isEmpty && progressSelect.value == 0 && nextMonthSelect.value == 0) {
+          body = Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      style: TextStyle(color: Theme.of(Get.context!).colorScheme.onSurface),
+                      text: I18nKey.labelVerseTipForAddingContent.trArgs(["${options[bookSelect.value].label}-${chapterSelect.value}"]),
+                    ),
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: IconButton(
+                        onPressed: addFirst,
+                        icon: const Icon(Icons.add),
+                        padding: EdgeInsets.zero, // Optional: removes extra padding
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-            );
-          }
-          return Column(
-            children: [
-              searchDetailPanel,
-              SizedBox(
-                height: getBodyViewHeight(),
-                width: width,
-                child: body,
-              ),
-            ],
+            ),
           );
-        });
+        }
+        return Column(
+          children: [
+            searchDetailPanel,
+            SizedBox(
+              height: getBodyViewHeight(),
+              width: width,
+              child: body,
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void updateOptions() {
@@ -583,24 +587,28 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
         );
       }).toList();
 
-      bookOptions.add(OptionBody(
-        label: bookName,
-        value: 0,
-        next: chapterOptions,
-      ));
+      bookOptions.add(
+        OptionBody(
+          label: bookName,
+          value: 0,
+          next: chapterOptions,
+        ),
+      );
     }
 
-    options.add(OptionBody(
-      label: I18nKey.labelAll.tr,
-      value: -1,
-      next: [
-        OptionBody(
-          label: I18nKey.labelAll.tr,
-          value: -1,
-          next: [],
-        )
-      ],
-    ));
+    options.add(
+      OptionBody(
+        label: I18nKey.labelAll.tr,
+        value: -1,
+        next: [
+          OptionBody(
+            label: I18nKey.labelAll.tr,
+            value: -1,
+            next: [],
+          ),
+        ],
+      ),
+    );
 
     options.addAll(bookOptions);
   }
@@ -705,11 +713,16 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
   }
 
   Future<void> editProgress(VerseShow verse) async {
-    EditProgress.show(verse.verseId, warning: I18nKey.labelSettingLearningProgressWarning.tr, title: I18nKey.btnOk.tr, callback: (p, n) async {
-      await Db().db.scheduleDao.jumpDirectly(verse.verseId, p, n);
-      Get.back();
-      parentLogic.update([ViewLogicVerseList.bodyId]);
-    });
+    EditProgress.show(
+      verse.verseId,
+      warning: I18nKey.labelSettingLearningProgressWarning.tr,
+      title: I18nKey.btnOk.tr,
+      callback: (p, n) async {
+        await Db().db.scheduleDao.jumpDirectly(verse.verseId, p, n);
+        Get.back();
+        parentLogic.update([ViewLogicVerseList.bodyId]);
+      },
+    );
   }
 
   @override

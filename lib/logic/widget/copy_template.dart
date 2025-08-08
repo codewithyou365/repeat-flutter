@@ -13,6 +13,7 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
@@ -93,7 +94,7 @@ class CopyLogic<T extends GetxController> {
             'question': m['q'] ?? '',
             'answer': m['a'] ?? '',
           };
-        }).toList()
+        }).toList(),
       });
       ret.add(rendered.toString());
     }
@@ -143,54 +144,56 @@ class CopyLogic<T extends GetxController> {
           for (var v in copyText) {
             showText.add(StringUtil.limit(v, 255));
           }
-          return ListView(children: [
-            ...List.generate(
-              showText.length,
-              (index) => RowWidget.buildCard(
-                PopupMenuButton<String>(
-                  child: Padding(
-                    padding: EdgeInsets.all(12.w),
-                    child: Text(showText[index]),
+          return ListView(
+            children: [
+              ...List.generate(
+                showText.length,
+                (index) => RowWidget.buildCard(
+                  PopupMenuButton<String>(
+                    child: Padding(
+                      padding: EdgeInsets.all(12.w),
+                      child: Text(showText[index]),
+                    ),
+                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                      PopupMenuItem<String>(
+                        onTap: () {
+                          Clipboard.setData(ClipboardData(text: copyText[index]));
+                          Snackbar.show(I18nKey.labelCopiedToClipboard.tr);
+                        },
+                        child: Text(I18nKey.labelCopyText.tr),
+                      ),
+                      PopupMenuItem<String>(
+                        onTap: () {
+                          Nav.editor.push(
+                            arguments: EditorArgs(
+                              title: I18nKey.labelDetailConfig.tr,
+                              value: read(index),
+                              save: (str) async {
+                                write(index, str);
+                              },
+                            ),
+                          );
+                        },
+                        child: Text(I18nKey.labelDetailConfig.tr),
+                      ),
+                      PopupMenuItem<String>(
+                        onTap: () {
+                          copy(index);
+                        },
+                        child: Text(I18nKey.labelCopyConfig.tr),
+                      ),
+                      PopupMenuItem<String>(
+                        onTap: () {
+                          delete(index);
+                        },
+                        child: Text(I18nKey.labelDeleteConfig.tr),
+                      ),
+                    ],
                   ),
-                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                    PopupMenuItem<String>(
-                      onTap: () {
-                        Clipboard.setData(ClipboardData(text: copyText[index]));
-                        Snackbar.show(I18nKey.labelCopiedToClipboard.tr);
-                      },
-                      child: Text(I18nKey.labelCopyText.tr),
-                    ),
-                    PopupMenuItem<String>(
-                      onTap: () {
-                        Editor.show(
-                          Get.context!,
-                          I18nKey.labelDetailConfig.tr,
-                          read(index),
-                          (str) async {
-                            write(index, str);
-                          },
-                          qrPagePath: Nav.scan.path,
-                        );
-                      },
-                      child: Text(I18nKey.labelDetailConfig.tr),
-                    ),
-                    PopupMenuItem<String>(
-                      onTap: () {
-                        copy(index);
-                      },
-                      child: Text(I18nKey.labelCopyConfig.tr),
-                    ),
-                    PopupMenuItem<String>(
-                      onTap: () {
-                        delete(index);
-                      },
-                      child: Text(I18nKey.labelDeleteConfig.tr),
-                    ),
-                  ],
                 ),
               ),
-            )
-          ]);
+            ],
+          );
         },
       ),
     );
@@ -200,15 +203,12 @@ class CopyLogic<T extends GetxController> {
     if (list.isEmpty) {
       return false;
     }
-    show(
-        context,
-        '''
+    show(context, '''
 {{#verses}}
 q{{index1}}: {{question}}
 a{{index1}}: {{answer}}
 {{/verses}}
-  ''',
-        list);
+  ''', list);
     return true;
   }
 }

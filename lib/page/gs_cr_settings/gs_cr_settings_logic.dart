@@ -6,9 +6,8 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
-import 'package:repeat_flutter/widget/dialog/msg_box.dart';
+import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -48,19 +47,21 @@ class GsCrSettingsLogic extends GetxController {
   final GsCrSettingsState state = GsCrSettingsState();
 
   void openConfig() {
-    state.configJson = const JsonEncoder.withIndent(' ').convert(InputScheduleConfig(
-      ScheduleDao.scheduleConfig.elConfigs,
-      ScheduleDao.scheduleConfig.relConfigs,
-    ));
-    Editor.show(
-      Get.context!,
-      I18nKey.labelDetailConfig.tr,
-      state.configJson,
-      (str) async {
-        state.configJson = str;
-        inputConfig();
-      },
-      qrPagePath: Nav.scan.path,
+    state.configJson = const JsonEncoder.withIndent(' ').convert(
+      InputScheduleConfig(
+        ScheduleDao.scheduleConfig.elConfigs,
+        ScheduleDao.scheduleConfig.relConfigs,
+      ),
+    );
+    Nav.editor.push(
+      arguments: EditorArgs(
+        title: I18nKey.labelDetailConfig.tr,
+        value: state.configJson,
+        save: (str) async {
+          state.configJson = str;
+          inputConfig();
+        },
+      ),
     );
   }
 

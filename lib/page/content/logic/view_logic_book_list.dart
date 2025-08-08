@@ -9,9 +9,9 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
-import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/content_logic.dart';
+import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart' show GsCrLogic;
 import 'package:repeat_flutter/widget/dialog/msg_box.dart' show MsgBox;
 import 'package:repeat_flutter/widget/overlay/overlay.dart' show showOverlay;
@@ -263,19 +263,19 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                                     searchFocusNode.unfocus();
                                     var contentM = jsonDecode(book.bookContent);
                                     var content = const JsonEncoder.withIndent(' ').convert(contentM);
-                                    Editor.show(
-                                      Get.context!,
-                                      I18nKey.labelBook.tr,
-                                      content,
-                                      (str) async {
-                                        await Db().db.bookDao.updateBookContent(book.bookId, str);
-                                        parentLogic.update([ViewLogicBookList.bodyId]);
-                                      },
-                                      qrPagePath: Nav.scan.path,
-                                      onHistory: () async {
-                                        List<BookContentVersion> historyData = await Db().db.bookContentVersionDao.list(book.bookId);
-                                        await historyList.show(historyData, focus: true.obs);
-                                      },
+                                    Nav.editor.push(
+                                      arguments: EditorArgs(
+                                        title: I18nKey.labelBook.tr,
+                                        value: content,
+                                        save:  (str) async {
+                                          await Db().db.bookDao.updateBookContent(book.bookId, str);
+                                          parentLogic.update([ViewLogicBookList.bodyId]);
+                                        },
+                                        onHistory: () async {
+                                          List<BookContentVersion> historyData = await Db().db.bookContentVersionDao.list(book.bookId);
+                                          await historyList.show(historyData, focus: true.obs);
+                                        },
+                                      ),
                                     );
                                   },
                                 ),

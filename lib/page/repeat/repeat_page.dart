@@ -6,8 +6,8 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
-import 'package:repeat_flutter/logic/widget/editor.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/text/text_button.dart';
 
 import 'repeat_logic.dart';
@@ -19,13 +19,14 @@ class RepeatPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<RepeatLogic>(
-      id: RepeatLogic.id,
-      builder: (_) {
-        return Scaffold(
-          body: buildCore(context),
-        );
-      },
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      body: GetBuilder<RepeatLogic>(
+        id: RepeatLogic.id,
+        builder: (_) {
+          return buildCore(context);
+        },
+      ),
     );
   }
 
@@ -237,7 +238,7 @@ class RepeatPage extends StatelessWidget {
                 ),
                 const Spacer(),
               ],
-            )
+            ),
         ],
       ),
     );
@@ -282,20 +283,22 @@ class RepeatPage extends StatelessWidget {
       logic.repeatLogic!.tip = TipLevel.tip;
       String text = map[type.acronym] ?? '';
       String editText = '${type.i18n.tr}:$text';
-      return MyTextButton.build(() {
-        Editor.show(
-          Get.context!,
-          type.i18n.tr,
-          text,
-          (str) async {
-            map[type.acronym] = str;
-            String jsonStr = jsonEncode(map);
-            var verseId = helper.getCurrVerse()!.verseId;
-            await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
-            logic.update([RepeatLogic.id]);
-          },
-          qrPagePath: Nav.scan.path,
+      return MyTextButton.build(() async {
+        helper.enableReloadMedia = false;
+        await Nav.editor.push(
+          arguments: EditorArgs(
+            title: type.i18n.tr,
+            value: text,
+            save: (str) async {
+              map[type.acronym] = str;
+              String jsonStr = jsonEncode(map);
+              var verseId = helper.getCurrVerse()!.verseId;
+              await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
+              logic.update([RepeatLogic.id]);
+            },
+          ),
         );
+        helper.enableReloadMedia = true;
       }, editText);
     } else {
       String? text = map[type.acronym];
