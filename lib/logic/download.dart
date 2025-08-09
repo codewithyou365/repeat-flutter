@@ -14,7 +14,8 @@ typedef Finish = Future<void> Function(DocLocation fp, bool tempFile);
 Future<bool> downloadDoc(
   String url,
   String path, {
-  String hash = "",
+  String credentials = '',
+  String hash = '',
   DownloadProgressCallback? progressCallback,
 }) async {
   String? rp;
@@ -48,16 +49,27 @@ Future<bool> downloadDoc(
       return true;
     }
     var fl = DocLocation(rootPath, "temp");
-    await dio.download(url, fl.path, onReceiveProgress: (int count, int total) {
-      fileCount = count;
-      if ((DateTime.now().millisecondsSinceEpoch - lastUpdateTime) > 100) {
-        lastUpdateTime = DateTime.now().millisecondsSinceEpoch;
-        fileTotal = total;
-        if (progressCallback != null) {
-          progressCallback(startTime, count, total, false);
+
+    await dio.download(
+      url,
+      fl.path,
+      onReceiveProgress: (int count, int total) {
+        fileCount = count;
+        if ((DateTime.now().millisecondsSinceEpoch - lastUpdateTime) > 100) {
+          lastUpdateTime = DateTime.now().millisecondsSinceEpoch;
+          fileTotal = total;
+          if (progressCallback != null) {
+            progressCallback(startTime, count, total, false);
+          }
         }
-      }
-    }, options: Options(headers: {HttpHeaders.userAgentHeader: DownloadConstant.userAgent}));
+      },
+      options: Options(
+        headers: {
+          HttpHeaders.userAgentHeader: DownloadConstant.userAgent,
+          HttpHeaders.authorizationHeader: credentials,
+        },
+      ),
+    );
     if (fileTotal == -1) {
       fileTotal = fileCount;
     }

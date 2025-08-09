@@ -35,37 +35,42 @@ class GsCrContentSharePage extends StatelessWidget {
 
   Widget _buildList(BuildContext context, GsCrContentShareLogic logic) {
     final state = logic.state;
-    return ListView(children: [
-      buildItem(
-        state.original.title,
-        state.original.address,
-        false.obs,
-        null,
-      ),
-      RowWidget.buildDividerWithoutColor(),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: RowWidget.buildSwitch(I18nKey.web.tr, state.webStart, logic.switchWeb),
-      ),
-      RowWidget.buildDividerWithoutColor(),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: RowWidget.buildSwitch(I18nKey.labelDoYourShareTheNotes.tr, state.shareNote),
-      ),
-      if (state.addresses.isNotEmpty)
-        ...List.generate(
-          state.addresses.length,
-          (index) => buildItem(
-            state.addresses[index].title,
-            state.addresses[index].address,
-            state.shareNote,
-            logic.randCredentials,
+    return ListView(
+      children: [
+        buildItem(
+          state.original.title,
+          state.original.address,
+          "",
+          false.obs,
+          null,
+        ),
+        RowWidget.buildDividerWithoutColor(),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: RowWidget.buildSwitch(I18nKey.web.tr, state.webStart, logic.switchWeb),
+        ),
+        RowWidget.buildDividerWithoutColor(),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: RowWidget.buildSwitch(I18nKey.labelDoYourShareTheNotes.tr, state.shareNote),
+        ),
+        if (state.addresses.isNotEmpty)
+          ...List.generate(
+            state.addresses.length,
+            (index) => buildItem(
+              state.addresses[index].title,
+              state.addresses[index].address,
+              "#${state.user.value}:${state.password.value}",
+              state.shareNote,
+              logic.randCredentials,
+            ),
           ),
-        )
-    ]);
+      ],
+    );
   }
 
-  Widget buildItem(String itemLabel, String desc, RxBool shareNote, VoidCallback? key) {
+  Widget buildItem(String itemLabel, String desc, String credentials, RxBool shareNote, VoidCallback? key) {
+    var withCredentials = "$desc$credentials";
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: Card(
@@ -73,8 +78,8 @@ class GsCrContentSharePage extends StatelessWidget {
           onTap: () {
             MsgBox.noWithQrCode(
               itemLabel,
-              desc,
-              desc,
+              withCredentials,
+              withCredentials,
             );
           },
           child: ListTile(

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -157,9 +158,7 @@ class ScCrMaterialLogic extends GetxController {
       state.contentProgress.value = 1;
     } else {
       if (total == -1) {
-        int elapse = DateTime
-            .now()
-            .millisecondsSinceEpoch - startTime;
+        int elapse = DateTime.now().millisecondsSinceEpoch - startTime;
         int predict = 5 * 60 * 1000;
         double progress = elapse / predict;
         if (progress > 0.9) {
@@ -176,10 +175,18 @@ class ScCrMaterialLogic extends GetxController {
   void download(int bookId, String url) async {
     state.indexCount.value = 0;
     state.indexTotal.value = 1;
+    List<String> urlAndCredentials = url.split("#");
+    String credentials = '';
+    if (urlAndCredentials.length == 2) {
+      url = urlAndCredentials[0];
+      credentials = urlAndCredentials[1];
+      credentials = 'Basic ${base64.encode(utf8.encode(credentials))}';
+    }
     var indexPath = DocPath.getRelativeIndexPath(bookId);
     var success = await downloadDoc(
       url,
       indexPath,
+      credentials: credentials,
       progressCallback: downloadProgress,
     );
     if (!success) {
@@ -197,6 +204,7 @@ class ScCrMaterialLogic extends GetxController {
       var v = allDownloads[i];
       await downloadDoc(
         v.url,
+        credentials: credentials,
         DocPath.getRelativePath(bookId).joinPath(v.path),
         hash: v.hash,
         progressCallback: downloadProgress,
@@ -220,10 +228,13 @@ class ScCrMaterialLogic extends GetxController {
   }
 
   void importBook(Book book) async {
-    int? index = await Select.showSheet(title: I18nKey.selectImportType.tr, keys: [
-      I18nKey.labelRemoteImport.tr,
-      I18nKey.labelLocalZipImport.tr,
-    ]);
+    int? index = await Select.showSheet(
+      title: I18nKey.selectImportType.tr,
+      keys: [
+        I18nKey.labelRemoteImport.tr,
+        I18nKey.labelLocalZipImport.tr,
+      ],
+    );
     if (index == null) {
       return;
     }
