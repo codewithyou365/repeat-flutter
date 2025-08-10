@@ -109,12 +109,12 @@ class CopyLogic<T extends GetxController> {
     return ret;
   }
 
-  void show(BuildContext context, String defaultTemplate, Object data) {
+  Future<T?> show(BuildContext context, String defaultTemplate, Object data) {
     if (copyTemplates.isEmpty) {
       copyTemplates.add(defaultTemplate);
     }
 
-    Sheet.withHeaderAndBody(
+    return Sheet.withHeaderAndBody(
       context,
       Column(
         key: GlobalKey(),

@@ -305,8 +305,10 @@ class RepeatPage extends StatelessWidget {
       if (text == null || text.isEmpty) {
         return null;
       }
-      return MyTextButton.build(() {
-        logic.copyLogic.show(Get.context!, "{{text}}", text);
+      return MyTextButton.build(() async {
+        helper.enableReloadMedia = false;
+        await logic.copyLogic.show(Get.context!, "{{text}}", text);
+        helper.enableReloadMedia = true;
       }, text);
     }
   }
