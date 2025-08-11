@@ -81,7 +81,7 @@ class CopyLogic<T extends GetxController> {
   List<String> getShowVerses(List<VerseShow> verses) {
     List<String> ret = [];
     for (var templateString in copyTemplates) {
-      final template = Template(templateString);
+      final template = Template(templateString, htmlEscapeValues: false);
       final rendered = template.renderString({
         'verses': verses.asMap().entries.map((e) {
           var m = jsonDecode(e.value.verseContent);
@@ -102,7 +102,7 @@ class CopyLogic<T extends GetxController> {
   List<String> getShowText(String text) {
     List<String> ret = [];
     for (var templateString in copyTemplates) {
-      final template = Template(templateString);
+      final template = Template(templateString, htmlEscapeValues: false);
       final rendered = template.renderString({'text': text});
       ret.add(rendered.toString());
     }
