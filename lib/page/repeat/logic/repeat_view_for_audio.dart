@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/widgets.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'constant.dart';
@@ -13,6 +16,8 @@ class RepeatViewForAudio extends RepeatView {
   late AudioPlayer audioPlayer;
   int duration = 0;
   late MediaRangeHelper mediaRangeHelper;
+  final bus = EventBus();
+  late StreamSubscription<bool?> sub;
 
   // Ui
   double mediaBarHeight = 50;
@@ -24,6 +29,9 @@ class RepeatViewForAudio extends RepeatView {
     audioPlayer = AudioPlayer(playerId: playerId);
     this.helper = helper;
     mediaRangeHelper = MediaRangeHelper(helper: helper);
+    sub = bus.on<bool>(EventTopic.setInRepeatView).listen((b) {
+      mediaKey.currentState?.stop();
+    });
   }
 
   @override

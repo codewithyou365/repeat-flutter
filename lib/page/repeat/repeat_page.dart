@@ -284,7 +284,7 @@ class RepeatPage extends StatelessWidget {
       String text = map[type.acronym] ?? '';
       String editText = '${type.i18n.tr}:$text';
       return MyTextButton.build(() async {
-        helper.enableReloadMedia = false;
+        helper.setInRepeatView(false);
         await Nav.editor.push(
           arguments: EditorArgs(
             title: type.i18n.tr,
@@ -298,7 +298,7 @@ class RepeatPage extends StatelessWidget {
             },
           ),
         );
-        helper.enableReloadMedia = true;
+        helper.setInRepeatView(true);
       }, editText);
     } else {
       String? text = map[type.acronym];
@@ -306,9 +306,9 @@ class RepeatPage extends StatelessWidget {
         return null;
       }
       return MyTextButton.build(() async {
-        helper.enableReloadMedia = false;
+        helper.setInRepeatView(false);
         await logic.copyLogic.show(Get.context!, "{{text}}", text);
-        helper.enableReloadMedia = true;
+        helper.setInRepeatView(true);
       }, text);
     }
   }

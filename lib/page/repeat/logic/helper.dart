@@ -17,6 +17,7 @@ import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -39,6 +40,8 @@ class Helper {
   double topBarHeight = 50;
   late Widget Function() topBar;
   double bottomBarHeight = 50;
+
+  final bus = EventBus();
   late Widget Function({required double width}) bottomBar;
   late Widget? Function(QaType type) text;
 
@@ -69,6 +72,11 @@ class Helper {
     books = await Db().db.bookDao.getAll(Classroom.curr);
     rootPath = await DocPath.getContentPath();
     initialized = true;
+  }
+
+  void setInRepeatView(bool b) {
+    enableReloadMedia = b;
+    bus.publish<bool>(EventTopic.setInRepeatView, b);
   }
 
   void update() {

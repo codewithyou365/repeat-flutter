@@ -2,6 +2,7 @@ import 'dart:async';
 
 enum EventTopic {
   deleteBook,
+  setInRepeatView,
 }
 
 class Event<T> {

@@ -88,6 +88,10 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
     });
   }
 
+  Future<void> stop() async {
+    await _stopPlayback();
+  }
+
   void playFromStart() {
     _playAtPosition(timeOffsetMs: widget.verseStartMs);
   }

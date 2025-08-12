@@ -105,7 +105,8 @@ class RepeatLogic extends GetxController {
     if (curr == null || repeatLogic == null) {
       return;
     }
-    EditProgress.show(
+    state.helper.setInRepeatView(false);
+    await EditProgress.show(
       curr.verseId,
       title: I18nKey.btnNext.tr,
       callback: (p, n) async {
@@ -114,6 +115,7 @@ class RepeatLogic extends GetxController {
         update([RepeatLogic.id]);
       },
     );
+    state.helper.setInRepeatView(true);
   }
 
   void editNote() async {
@@ -127,7 +129,7 @@ class RepeatLogic extends GetxController {
     }
     String acronym = 'n';
     String noteStr = map[acronym] ?? '';
-    state.helper.enableReloadMedia = false;
+    state.helper.setInRepeatView(false);
     await Nav.editor.push(
       arguments: EditorArgs(
         onHistory: null,
@@ -141,7 +143,7 @@ class RepeatLogic extends GetxController {
         },
       ),
     );
-    state.helper.enableReloadMedia = true;
+    state.helper.setInRepeatView(true);
   }
 
   void openContent() async {
@@ -160,11 +162,11 @@ class RepeatLogic extends GetxController {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
-    state.helper.enableReloadMedia = false;
+    state.helper.setInRepeatView(false);
     await Nav.content.push(
       arguments: ContentArgs(bookName: content.name, initChapterSelect: chapter.chapterIndex, selectVerseKeyId: curr.verseId, defaultTap: 2),
     );
-    state.helper.enableReloadMedia = true;
+    state.helper.setInRepeatView(true);
     update([RepeatLogic.id]);
   }
 

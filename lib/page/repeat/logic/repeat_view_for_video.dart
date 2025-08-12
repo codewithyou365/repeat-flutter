@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:video_player/video_player.dart';
@@ -19,6 +22,8 @@ class RepeatViewForVideo extends RepeatView {
   late MediaRangeHelper mediaRangeHelper;
   late VideoBoardHelper videoBoardHelper;
   var initialized = false.obs;
+  final bus = EventBus();
+  late StreamSubscription<bool?> sub;
 
   // UI
   var showLandscapeOperateUi = true.obs;
@@ -40,6 +45,9 @@ class RepeatViewForVideo extends RepeatView {
     this.helper = helper;
     mediaRangeHelper = MediaRangeHelper(helper: helper);
     videoBoardHelper = VideoBoardHelper(helper: helper);
+    sub = bus.on<bool>(EventTopic.setInRepeatView).listen((b) {
+      mediaKey.currentState?.stop();
+    });
   }
 
   @override
