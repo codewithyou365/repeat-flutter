@@ -166,7 +166,7 @@ class RepeatLogic extends GetxController {
     await Nav.content.push(
       arguments: ContentArgs(bookName: content.name, initChapterSelect: chapter.chapterIndex, selectVerseKeyId: curr.verseId, defaultTap: 2),
     );
-    state.helper.setInRepeatView(true);
+    state.helper.setInRepeatView(true, withoutPlayingMediaFirstTime: true);
     update([RepeatLogic.id]);
   }
 

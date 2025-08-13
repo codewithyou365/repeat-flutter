@@ -47,6 +47,7 @@ class Helper {
 
   bool edit = false;
   bool enableReloadMedia = true;
+  bool withoutPlayingMediaFirstTime = false;
   Map<int, Map<String, dynamic>> rootMapCache = {};
 
   Map<int, Map<String, dynamic>> chapterMapCache = {};
@@ -74,9 +75,10 @@ class Helper {
     initialized = true;
   }
 
-  void setInRepeatView(bool b) {
-    enableReloadMedia = b;
-    bus.publish<bool>(EventTopic.setInRepeatView, b);
+  void setInRepeatView(bool inRepeatView, {bool withoutPlayingMediaFirstTime = false}) {
+    enableReloadMedia = inRepeatView;
+    this.withoutPlayingMediaFirstTime = withoutPlayingMediaFirstTime;
+    bus.publish<bool>(EventTopic.setInRepeatView, inRepeatView);
   }
 
   void update() {

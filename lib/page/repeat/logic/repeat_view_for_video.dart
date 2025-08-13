@@ -82,6 +82,10 @@ class RepeatViewForVideo extends RepeatView {
     if (helper.enableReloadMedia) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         load(path).then((_) {
+          if (helper.withoutPlayingMediaFirstTime) {
+            helper.withoutPlayingMediaFirstTime = false;
+            return;
+          }
           mediaKey.currentState?.playFromStart();
         });
       });
