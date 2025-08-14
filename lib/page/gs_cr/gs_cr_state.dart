@@ -24,7 +24,7 @@ class VerseTodayPrgInView {
 
 class ForAdd {
   List<Book> contents = [];
-  List<String> contentNames = [];
+  List<String> bookNames = [];
   int maxChapter = 1;
   int maxVerse = 1;
 

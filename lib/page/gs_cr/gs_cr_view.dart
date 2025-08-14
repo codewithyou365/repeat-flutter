@@ -304,26 +304,27 @@ class GsCrPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 GetBuilder<GsCrLogic>(
-                    id: GsCrLogic.idForAdd,
-                    builder: (_) {
-                      return Row(
-                        children: [
-                          Card(
-                            elevation: 8.0,
-                            color: Theme.of(context).secondaryHeaderColor,
-                            child: Row(
-                              children: [
-                                cupertinoItem(['', I18nKey.material.tr], logic.selectContent, null, select: logic.state.forAdd.contentNames),
-                                cupertinoItem([I18nKey.labelFrom.tr, I18nKey.labelChapter.tr], logic.selectChapter, logic.initChapter, count: logic.state.forAdd.maxChapter),
-                                cupertinoItem(['', I18nKey.labelVerse.tr], logic.selectVerse, logic.initVerse, count: logic.state.forAdd.maxVerse),
-                              ],
-                            ),
+                  id: GsCrLogic.idForAdd,
+                  builder: (_) {
+                    return Row(
+                      children: [
+                        Card(
+                          elevation: 8.0,
+                          color: Theme.of(context).secondaryHeaderColor,
+                          child: Row(
+                            children: [
+                              cupertinoItem(['', I18nKey.labelBook.tr], logic.selectContent, null, select: logic.state.forAdd.bookNames),
+                              cupertinoItem([I18nKey.labelFrom.tr, I18nKey.labelChapter.tr], logic.selectChapter, logic.initChapter, count: logic.state.forAdd.maxChapter),
+                              cupertinoItem(['', I18nKey.labelVerse.tr], logic.selectVerse, logic.initVerse, count: logic.state.forAdd.maxVerse),
+                            ],
                           ),
-                          const Spacer(),
-                          cupertinoItem([I18nKey.btnAdd.tr, I18nKey.labelScheduleCount.tr], logic.selectCount, null, count: 100),
-                        ],
-                      );
-                    })
+                        ),
+                        const Spacer(),
+                        cupertinoItem([I18nKey.btnAdd.tr, I18nKey.labelScheduleCount.tr], logic.selectCount, null, count: 100),
+                      ],
+                    );
+                  },
+                ),
               ],
             ),
           ),

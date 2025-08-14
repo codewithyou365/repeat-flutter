@@ -63,7 +63,7 @@ class GsCrLogic extends GetxController {
     await BookHelp.tryGen(force: true);
     BookDao.getBookShow = BookHelp.getCache;
     state.forAdd.contents = await Db().db.bookDao.getByEnable(Classroom.curr, true);
-    state.forAdd.contentNames = state.forAdd.contents.map((e) => e.name).toList();
+    state.forAdd.bookNames = state.forAdd.contents.map((e) => e.name).toList();
     var now = DateTime.now();
     List<VerseTodayPrg> allProgresses = [];
     if (type == null) {
