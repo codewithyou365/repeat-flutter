@@ -150,7 +150,11 @@ class RepeatPage extends StatelessWidget {
             icon: const Icon(Icons.more_vert),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
               PopupMenuItem<String>(
-                onTap: () => logic.webManager.showSheet(),
+                onTap: () async {
+                  state.helper.setInRepeatView(false);
+                  await logic.webManager.showSheet();
+                  state.helper.setInRepeatView(true);
+                },
                 child: Text(logic.webManager.title),
               ),
               PopupMenuItem<String>(

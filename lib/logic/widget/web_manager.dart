@@ -47,12 +47,12 @@ class WebManager<T extends GetxController> {
     await userManager.init();
   }
 
-  setIgnoringPunctuation(bool ignoringPunctuation) {
+  void setIgnoringPunctuation(bool ignoringPunctuation) {
     this.ignoringPunctuation.value = ignoringPunctuation;
     Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame, ignoringPunctuation ? '1' : '0'));
   }
 
-  switchWeb(bool value) async {
+  void switchWeb(bool value) async {
     if (openPending) {
       return;
     }
@@ -90,12 +90,12 @@ class WebManager<T extends GetxController> {
     }
   }
 
-  setMatchType(int matchType) {
+  void setMatchType(int matchType) {
     this.matchType.value = matchType;
     Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.matchTypeInTypingGame, '$matchType'));
   }
 
-  setSkipChar(String skipChar) {
+  void setSkipChar(String skipChar) {
     if (skipChar.isNotEmpty) {
       this.skipChar.value = skipChar[0];
     } else {
@@ -121,6 +121,7 @@ class WebManager<T extends GetxController> {
       skipChar.value = ks;
     }
     online.value = getOnline();
+
     return Sheet.withHeaderAndBody(
       Get.context!,
       Padding(
@@ -139,80 +140,85 @@ class WebManager<T extends GetxController> {
       ),
       Padding(
         padding: EdgeInsets.symmetric(horizontal: 10.0.w, vertical: 0.0),
-        child: ListView(children: [
-          Obx(() {
-            return Column(children: [
-              ...List.generate(
-                open.value ? urls.length : 0,
-                (index) => Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Card(
-                    color: Theme.of(Get.context!).secondaryHeaderColor,
-                    child: InkWell(
-                      onTap: () => {
-                        MsgBox.noWithQrCode(
-                          I18nKey.labelLanAddress.tr,
-                          urls[index],
-                          urls[index],
-                        )
-                      },
-                      child: ListTile(
-                        title: Text('${I18nKey.labelLanAddress.tr}-${index + 1}'),
-                        subtitle: Padding(
-                          padding: EdgeInsets.all(16.w),
-                          child: Text(urls[index]),
+        child: ListView(
+          children: [
+            Obx(() {
+              return Column(
+                children: [
+                  ...List.generate(
+                    open.value ? urls.length : 0,
+                    (index) => Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Card(
+                        color: Theme.of(Get.context!).secondaryHeaderColor,
+                        child: InkWell(
+                          onTap: () => {
+                            MsgBox.noWithQrCode(
+                              I18nKey.labelLanAddress.tr,
+                              urls[index],
+                              urls[index],
+                            ),
+                          },
+                          child: ListTile(
+                            title: Text('${I18nKey.labelLanAddress.tr}-${index + 1}'),
+                            subtitle: Padding(
+                              padding: EdgeInsets.all(16.w),
+                              child: Text(urls[index]),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              )
-            ]);
-          }),
-          Obx(() {
-            return RowWidget.buildTextWithEdit(
-              I18nKey.labelOnlineUserNumber.tr,
-              online,
-              onTap: () async {
-                await userManager.show(Get.context!);
-                online.value = getOnline();
-              },
-            );
-          }),
-          RowWidget.buildDividerWithoutColor(),
-          RowWidget.buildCupertinoPicker(
-            I18nKey.labelGameRuleSettings.tr,
-            [I18nKey.labelWordGuessGame.tr],
-            RxInt(0),
-          ),
-          RowWidget.buildDividerWithoutColor(),
-          RowWidget.buildSwitch(
-            I18nKey.labelIgnorePunctuation.tr,
-            ignoringPunctuation,
-            setIgnoringPunctuation,
-          ),
-          RowWidget.buildDividerWithoutColor(),
-          Obx(() {
-            return RowWidget.buildCupertinoPicker(
-              I18nKey.labelMatchType.tr,
-              [I18nKey.labelWord.tr, I18nKey.labelSingle.tr, I18nKey.labelAll.tr],
-              matchType,
-              changed: setMatchType,
-            );
-          }),
-          RowWidget.buildDividerWithoutColor(),
-          Obx(() {
-            return RowWidget.buildTextWithEdit(
-              I18nKey.labelSkipCharacter.tr,
-              skipChar,
-              yes: () {
-                Get.back();
-                setSkipChar(skipChar.value);
-              },
-            );
-          }),
-          RowWidget.buildDividerWithoutColor(),
-        ]),
+                ],
+              );
+            }),
+            Obx(() {
+              return RowWidget.buildTextWithEdit(
+                I18nKey.labelOnlineUserNumber.tr,
+                online,
+                onTap: () async {
+                  await userManager.show(Get.context!);
+                  online.value = getOnline();
+                },
+              );
+            }),
+            RowWidget.buildDividerWithoutColor(),
+            RowWidget.buildCupertinoPicker(
+              I18nKey.labelGameRuleSettings.tr,
+              [I18nKey.labelWordGuessGame.tr],
+              RxInt(0),
+              pickWidth: 150,
+            ),
+            RowWidget.buildDividerWithoutColor(),
+            RowWidget.buildSwitch(
+              I18nKey.labelIgnorePunctuation.tr,
+              ignoringPunctuation,
+              setIgnoringPunctuation,
+            ),
+            RowWidget.buildDividerWithoutColor(),
+            Obx(() {
+              return RowWidget.buildCupertinoPicker(
+                I18nKey.labelMatchType.tr,
+                [I18nKey.labelWord.tr, I18nKey.labelSingle.tr, I18nKey.labelAll.tr],
+                matchType,
+                changed: setMatchType,
+              );
+            }),
+            RowWidget.buildDividerWithoutColor(),
+            Obx(() {
+              return RowWidget.buildTextWithEdit(
+                I18nKey.labelSkipCharacter.tr,
+                skipChar,
+                yes: () {
+                  Get.back();
+                  setSkipChar(skipChar.value);
+                },
+              );
+            }),
+            RowWidget.buildDividerWithoutColor(),
+          ],
+        ),
       ),
       rate: 1,
     ).then((_) {
