@@ -160,7 +160,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER NOT NULL, `time` INTEGER NOT NULL, `verseContent` TEXT NOT NULL, `verseId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `GameUser` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `password` TEXT NOT NULL, `nonce` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `token` TEXT NOT NULL, `tokenExpiredDate` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `GameUser` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `password` TEXT NOT NULL, `nonce` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `token` TEXT NOT NULL, `tokenExpiredDate` INTEGER NOT NULL, `needToResetPassword` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `GameUserInput` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `gameId` INTEGER NOT NULL, `gameUserId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `verseId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `input` TEXT NOT NULL, `output` TEXT NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL)');
         await database.execute(
@@ -1377,7 +1377,8 @@ class _$GameUserDao extends GameUserDao {
                   'createDate': _dateConverter.encode(item.createDate),
                   'token': item.token,
                   'tokenExpiredDate':
-                      _dateConverter.encode(item.tokenExpiredDate)
+                      _dateConverter.encode(item.tokenExpiredDate),
+                  'needToResetPassword': item.needToResetPassword ? 1 : 0
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -1392,35 +1393,38 @@ class _$GameUserDao extends GameUserDao {
   Future<GameUser?> findUserByName(String name) async {
     return _queryAdapter.query('SELECT * FROM GameUser WHERE name = ?1',
         mapper: (Map<String, Object?> row) => GameUser(
-            row['name'] as String,
-            row['password'] as String,
-            row['nonce'] as String,
-            _dateConverter.decode(row['createDate'] as int),
-            row['token'] as String,
-            _dateConverter.decode(row['tokenExpiredDate'] as int),
+            name: row['name'] as String,
+            password: row['password'] as String,
+            nonce: row['nonce'] as String,
+            createDate: _dateConverter.decode(row['createDate'] as int),
+            token: row['token'] as String,
+            tokenExpiredDate:
+                _dateConverter.decode(row['tokenExpiredDate'] as int),
+            needToResetPassword: (row['needToResetPassword'] as int) != 0,
             id: row['id'] as int?),
         arguments: [name]);
+  }
+
+  @override
+  Future<int?> findUserById(int id) async {
+    return _queryAdapter.query('SELECT id FROM GameUser WHERE id = ?1',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [id]);
   }
 
   @override
   Future<List<GameUser>> getAllUser() async {
     return _queryAdapter.queryList('SELECT * FROM GameUser',
         mapper: (Map<String, Object?> row) => GameUser(
-            row['name'] as String,
-            row['password'] as String,
-            row['nonce'] as String,
-            _dateConverter.decode(row['createDate'] as int),
-            row['token'] as String,
-            _dateConverter.decode(row['tokenExpiredDate'] as int),
+            name: row['name'] as String,
+            password: row['password'] as String,
+            nonce: row['nonce'] as String,
+            createDate: _dateConverter.decode(row['createDate'] as int),
+            token: row['token'] as String,
+            tokenExpiredDate:
+                _dateConverter.decode(row['tokenExpiredDate'] as int),
+            needToResetPassword: (row['needToResetPassword'] as int) != 0,
             id: row['id'] as int?));
-  }
-
-  @override
-  Future<int?> intKv(K k) async {
-    return _queryAdapter.query(
-        'SELECT CAST(value as INTEGER) FROM Kv where `k`=?1',
-        mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [_kConverter.encode(k)]);
   }
 
   @override
@@ -1441,17 +1445,49 @@ class _$GameUserDao extends GameUserDao {
   }
 
   @override
+  Future<void> updateUserTokenWithPassword(
+    int id,
+    String token,
+    Date tokenExpiredDate,
+    String nonce,
+    String password,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE GameUser SET token=?2,tokenExpiredDate=?3,nonce=?4,password=?5,needToResetPassword=0 WHERE id = ?1',
+        arguments: [
+          id,
+          token,
+          _dateConverter.encode(tokenExpiredDate),
+          nonce,
+          password
+        ]);
+  }
+
+  @override
   Future<GameUser?> findUserByToken(String token) async {
     return _queryAdapter.query('SELECT * FROM GameUser WHERE token = ?1',
         mapper: (Map<String, Object?> row) => GameUser(
-            row['name'] as String,
-            row['password'] as String,
-            row['nonce'] as String,
-            _dateConverter.decode(row['createDate'] as int),
-            row['token'] as String,
-            _dateConverter.decode(row['tokenExpiredDate'] as int),
+            name: row['name'] as String,
+            password: row['password'] as String,
+            nonce: row['nonce'] as String,
+            createDate: _dateConverter.decode(row['createDate'] as int),
+            token: row['token'] as String,
+            tokenExpiredDate:
+                _dateConverter.decode(row['tokenExpiredDate'] as int),
+            needToResetPassword: (row['needToResetPassword'] as int) != 0,
             id: row['id'] as int?),
         arguments: [token]);
+  }
+
+  @override
+  Future<void> innerResetPassword(
+    int id,
+    String nonce,
+    String password,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE GameUser SET tokenExpiredDate=0,nonce=?2,password=?3,needToResetPassword=1 WHERE id=?1',
+        arguments: [id, nonce, password]);
   }
 
   @override
@@ -1461,34 +1497,51 @@ class _$GameUserDao extends GameUserDao {
   }
 
   @override
-  Future<String> loginOrRegister(
-    String name,
-    String password,
-  ) async {
+  Future<String> resetPassword(int id) async {
     if (database is sqflite.Transaction) {
-      return super.loginOrRegister(name, password);
+      return super.resetPassword(id);
     } else {
       return (database as sqflite.Database)
           .transaction<String>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        return transactionDatabase.gameUserDao.loginOrRegister(name, password);
+        return transactionDatabase.gameUserDao.resetPassword(id);
       });
     }
   }
 
   @override
-  Future<GameUser> loginByToken(String token) async {
+  Future<GameUser> loginOrRegister(
+    String name,
+    String password,
+    String newPassword,
+  ) async {
     if (database is sqflite.Transaction) {
-      return super.loginByToken(token);
+      return super.loginOrRegister(name, password, newPassword);
     } else {
       return (database as sqflite.Database)
           .transaction<GameUser>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        return transactionDatabase.gameUserDao.loginByToken(token);
+        return transactionDatabase.gameUserDao
+            .loginOrRegister(name, password, newPassword);
+      });
+    }
+  }
+
+  @override
+  Future<GameUser> authByToken(String token) async {
+    if (database is sqflite.Transaction) {
+      return super.authByToken(token);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<GameUser>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        return transactionDatabase.gameUserDao.authByToken(token);
       });
     }
   }
@@ -1943,6 +1996,14 @@ class _$KvDao extends KvDao {
     return _queryAdapter.query('SELECT * FROM Kv where `k`=?1',
         mapper: (Map<String, Object?> row) =>
             Kv(_kConverter.decode(row['k'] as String), row['value'] as String),
+        arguments: [_kConverter.encode(k)]);
+  }
+
+  @override
+  Future<int?> getInt(K k) async {
+    return _queryAdapter.query(
+        'SELECT CAST(value as INTEGER) FROM Kv where `k`=?1',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [_kConverter.encode(k)]);
   }
 

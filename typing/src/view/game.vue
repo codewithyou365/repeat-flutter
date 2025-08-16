@@ -41,7 +41,7 @@ import {bus, EventName, RefreshGameType} from "../api/bus.ts";
 import {GameUserHistoryReq, GameUserHistoryRes, MatchType, Path, SubmitReq, SubmitRes} from "../utils/constant.ts";
 import editor from '../component/editor.vue';
 import reconnect from '../component/reconnect.vue';
-import {Setting, Loading1, Edit} from '@nutui/icons-vue';
+import {Setting, Loading1} from '@nutui/icons-vue';
 import {useI18n} from 'vue-i18n';
 import {onBeforeUnmount, onMounted, ref, nextTick, computed} from 'vue';
 import {client, ClientStatus, Request} from "../api/ws.ts";

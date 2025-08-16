@@ -21,6 +21,12 @@
             clearable
             type="password"/>
       </nut-form-item>
+      <nut-form-item v-if="showNewPasswordView" :label="t('newPassword')" prop="newPassword">
+        <nut-input
+            v-model="form.newPassword"
+            clearable
+            type="password"/>
+      </nut-form-item>
     </nut-form>
 
     <nut-button
@@ -31,6 +37,16 @@
       {{ t('login') }}
     </nut-button>
   </div>
+  <nut-dialog
+      v-model:visible="dialogVisible"
+      :title="t('tips')"
+      :content="dialogContent"
+      :okText="t('confirm')"
+      :no-cancel-btn="true"
+      :cancelText="t('cancel')"
+      :onOk="onOk"
+      :onCancel="onCancel">
+  </nut-dialog>
 </template>
 
 <script setup>
@@ -51,11 +67,17 @@ const {t, locale} = useI18n();
 const form = reactive({
   userName: '',
   password: '',
+  newPassword: '',
 });
+
+const showNewPasswordView = ref(false);
+const dialogVisible = ref(false);
+const dialogContent = ref('');
 
 const rules = ref({
   userName: [{required: true, message: t('inputUserName')}, {regex: /^[A-Z]{2,5}$/, message: t('inputUserNameTip')}],
-  password: [{required: true, message: t('inputPassword')}, {regex: /^.{6,30}$/, message: t('inputPasswordTip')}]
+  password: [{required: true, message: t('inputPassword')}, {regex: /^.{6,30}$/, message: t('inputPasswordTip')}],
+  newPassword: [{required: true, message: t('inputPassword')}, {regex: /^.{6,30}$/, message: t('inputPasswordTip')}]
 });
 
 const formRef = ref(null);
@@ -78,19 +100,19 @@ const handleLogin = () => {
       isLoading.value = true;
       const responsePromise = http.post(Path.loginOrRegister, {
         userName: form.userName,
-        password: form.password
+        password: form.password,
+        newPassword: form.newPassword
       });
       const response = await responsePromise;
       isLoading.value = false;
       if (response.data === '') {
-        showDialog({
-          title: t('tips'),
-          content: t('userNameOrPasswordError'),
-          noCancelBtn: true,
-          okText: t('confirm'),
-          onCancel,
-          onOk
-        })
+        dialogVisible.value = true;
+        if (response.error === 'needToResetPassword') {
+          showNewPasswordView.value = true;
+          dialogContent.value = t('setNewPassword');
+        } else {
+          dialogContent.value = t('userNameOrPasswordError');
+        }
         return;
       }
       await store.dispatch('updateToken', response.data);

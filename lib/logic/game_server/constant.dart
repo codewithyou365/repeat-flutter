@@ -1,5 +1,7 @@
 enum GameServerError {
   tokenExpired,
+  needToResetPassword,
+  userOrPasswordError,
   serviceStopped,
   gameNotFound,
   gameSyncError,

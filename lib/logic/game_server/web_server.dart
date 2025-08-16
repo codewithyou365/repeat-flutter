@@ -114,7 +114,7 @@ class WebServer {
     if (token == null) {
       return null;
     }
-    final user = await Db().db.gameUserDao.loginByToken(token);
+    final user = await Db().db.gameUserDao.authByToken(token);
     if (user.isEmpty()) {
       return null;
     }
@@ -135,11 +135,11 @@ class WebServer {
     return user;
   }
 
-  withGameUser(message.Request req, Future<message.Response?> Function(message.Request req, GameUser? user) handle) {
+  Future<message.Response?> withGameUser(message.Request req, Future<message.Response?> Function(message.Request req, GameUser? user) handle) {
     return handle(req, getGameUser(req));
   }
 
-  withGameUserAndServer(message.Request req, Future<message.Response?> Function(message.Request req, GameUser? user, Server<GameUser> server) handle) {
+  Future<message.Response?> withGameUserAndServer(message.Request req, Future<message.Response?> Function(message.Request req, GameUser? user, Server<GameUser> server) handle) {
     return handle(req, getGameUser(req), server);
   }
 }

@@ -21,19 +21,30 @@ class GameUser extends UserId {
   String token;
   Date tokenExpiredDate;
 
-  GameUser(
-    this.name,
-    this.password,
-    this.nonce,
-    this.createDate,
-    this.token,
-    this.tokenExpiredDate, {
+  bool needToResetPassword;
+
+  GameUser({
+    required this.name,
+    required this.password,
+    required this.nonce,
+    required this.createDate,
+    required this.token,
+    required this.tokenExpiredDate,
+    required this.needToResetPassword,
     this.id,
   });
 
-  static empty() => GameUser('', '', '', Date(0), '', Date(0));
+  static GameUser empty() => GameUser(
+    name: '',
+    password: '',
+    nonce: '',
+    createDate: Date(0),
+    token: '',
+    tokenExpiredDate: Date(0),
+    needToResetPassword: false,
+  );
 
-  isEmpty() => name.isEmpty;
+  bool isEmpty() => name.isEmpty;
 
   @override
   int getId() {

@@ -16,70 +16,136 @@ abstract class GameUserDao {
   @Query('SELECT * FROM GameUser WHERE name = :name')
   Future<GameUser?> findUserByName(String name);
 
+  @Query('SELECT id FROM GameUser WHERE id = :id')
+  Future<int?> findUserById(int id);
+
   @Query('SELECT * FROM GameUser')
   Future<List<GameUser>> getAllUser();
 
-  @Query("SELECT CAST(value as INTEGER) FROM Kv where `k`=:k")
-  Future<int?> intKv(K k);
-
-  // Insert a new user into the database.
   @Insert(onConflict: OnConflictStrategy.abort)
   Future<int> registerUser(GameUser user);
 
   @Query('SELECT count(id) FROM GameUser')
   Future<int?> count();
 
-  @Query('UPDATE GameUser SET token=:token,tokenExpiredDate=:tokenExpiredDate WHERE id = :id')
+  @Query(
+    'UPDATE GameUser SET token=:token,tokenExpiredDate=:tokenExpiredDate'
+    ' WHERE id = :id',
+  )
   Future<void> updateUserToken(int id, String token, Date tokenExpiredDate);
+
+  @Query(
+    'UPDATE GameUser SET token=:token'
+    ',tokenExpiredDate=:tokenExpiredDate'
+    ',nonce=:nonce'
+    ',password=:password'
+    ',needToResetPassword=0'
+    ' WHERE id = :id',
+  )
+  Future<void> updateUserTokenWithPassword(
+    int id,
+    String token,
+    Date tokenExpiredDate,
+    String nonce,
+    String password,
+  );
 
   @Query('SELECT * FROM GameUser WHERE token = :token')
   Future<GameUser?> findUserByToken(String token);
 
+  @Query(
+    'UPDATE GameUser SET'
+    ' tokenExpiredDate=0'
+    ',nonce=:nonce'
+    ',password=:password'
+    ',needToResetPassword=1'
+    ' WHERE id=:id',
+  )
+  Future<void> innerResetPassword(int id, String nonce, String password);
+
   @transaction
-  Future<String> loginOrRegister(String name, String password) async {
+  Future<String> resetPassword(int id) async {
+    final existingUser = await findUserById(id);
+    if (existingUser == null) {
+      return '';
+    }
+    final nonce = StringUtil.generateRandomString(32);
+    final password = StringUtil.generateRandom09(6);
+    final passwordHash = Hash.toSha1ForString(password + nonce);
+    await innerResetPassword(id, nonce, passwordHash);
+    return password;
+  }
+
+  @transaction
+  Future<GameUser> loginOrRegister(String name, String password, String newPassword) async {
     final now = DateTime.now();
+    if (name.isEmpty || password.isEmpty) {
+      return GameUser.empty();
+    }
     final existingUser = await findUserByName(name);
     if (existingUser == null) {
       final nonce = StringUtil.generateRandomString(32);
       final passwordHash = Hash.toSha1ForString(password + nonce);
       int? registrations = await count();
       registrations ??= 0;
-      int allowRegisterNumber = await intKv(K.allowRegisterNumber) ?? 1;
+      int allowRegisterNumber = await db.kvDao.getInt(K.allowRegisterNumber) ?? 1;
       if (registrations >= allowRegisterNumber) {
-        return '';
+        return GameUser.empty();
       }
       final newUser = GameUser(
-        name,
-        passwordHash,
-        nonce,
-        Date.from(now),
-        StringUtil.generateRandomString(32),
-        Date.from(now.add(const Duration(days: 7))),
+        name: name,
+        password: passwordHash,
+        nonce: nonce,
+        createDate: Date.from(now),
+        token: StringUtil.generateRandomString(32),
+        tokenExpiredDate: Date.from(now.add(const Duration(days: 7))),
+        needToResetPassword: false,
       );
       await registerUser(newUser);
-      return newUser.token;
+      return newUser;
     } else {
       final passwordHash = Hash.toSha1ForString(password + existingUser.nonce);
       if (existingUser.password != passwordHash) {
-        return '';
+        return GameUser.empty();
       }
       final String token = StringUtil.generateRandomString(32);
       existingUser.token = token;
       existingUser.tokenExpiredDate = Date.from(now.add(const Duration(days: 7)));
-      await updateUserToken(existingUser.id!, token, existingUser.tokenExpiredDate!);
-      return existingUser.token;
+      if (existingUser.needToResetPassword) {
+        if (newPassword.isEmpty) {
+          return existingUser;
+        }
+        final nonce = StringUtil.generateRandomString(32);
+        final newPasswordHash = Hash.toSha1ForString(newPassword + nonce);
+        await updateUserTokenWithPassword(
+          existingUser.id!,
+          token,
+          existingUser.tokenExpiredDate,
+          nonce,
+          newPasswordHash,
+        );
+        existingUser.needToResetPassword = false;
+      } else {
+        await updateUserToken(
+          existingUser.id!,
+          token,
+          existingUser.tokenExpiredDate,
+        );
+      }
+
+      return existingUser;
     }
   }
 
   @transaction
-  Future<GameUser> loginByToken(String token) async {
+  Future<GameUser> authByToken(String token) async {
     if (token.isEmpty) {
       return GameUser.empty();
     }
     final user = await findUserByToken(token);
     final now = DateTime.now();
     final Date date = Date.from(now);
-    if (user == null || user.tokenExpiredDate == null || user.tokenExpiredDate!.value < date.value) {
+    if (user == null || user.tokenExpiredDate.value < date.value) {
       return GameUser.empty();
     }
 
