@@ -162,6 +162,8 @@ enum I18nKey {
   labelSkipCharacter,
   labelEnableEditVerse,
   labelGameId,
+  online,
+  offline,
   labelOnlineUserNumber,
   labelAllowRegisterNumber,
   labelQuestion,

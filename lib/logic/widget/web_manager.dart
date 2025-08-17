@@ -1,13 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/ip.dart';
+import 'package:repeat_flutter/common/ws/server.dart';
 
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/web_server.dart';
 import 'package:repeat_flutter/logic/widget/user_manager.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -31,6 +35,8 @@ class WebManager<T extends GetxController> {
   RxBool editInGame = RxBool(false);
   RxInt matchType = RxInt(MatchType.all.index);
   RxString skipChar = RxString("");
+  final bus = EventBus();
+  late StreamSubscription<WsEvent?> sub;
 
   WebManager(this.parentLogic);
 
@@ -44,7 +50,7 @@ class WebManager<T extends GetxController> {
 
   Future<void> init(VoidCallback onOpenWeb) async {
     this.onOpenWeb = onOpenWeb;
-    await userManager.init();
+    await userManager.init(web);
   }
 
   void setIgnoringPunctuation(bool ignoringPunctuation) {
@@ -121,7 +127,9 @@ class WebManager<T extends GetxController> {
       skipChar.value = ks;
     }
     online.value = getOnline();
-
+    sub = bus.on<WsEvent>(EventTopic.wsEvent).listen((_) {
+      online.value = getOnline();
+    });
     return Sheet.withHeaderAndBody(
       Get.context!,
       Padding(
@@ -222,8 +230,7 @@ class WebManager<T extends GetxController> {
       ),
       rate: 1,
     ).then((_) {
-      // searchController.dispose();
-      // focusNode.dispose();
+      sub.cancel();
     });
   }
 }

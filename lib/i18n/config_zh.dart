@@ -164,6 +164,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelSkipCharacter, "输入该字符便跳过");
     put(I18nKey.labelEnableEditVerse, "启用编辑小节");
     put(I18nKey.labelGameId, "游戏ID");
+    put(I18nKey.online, "在线");
+    put(I18nKey.offline, "离线");
     put(I18nKey.labelOnlineUserNumber, "在线人数");
     put(I18nKey.labelAllowRegisterNumber, "允许注册人数");
     put(I18nKey.labelQuestion, "问题");

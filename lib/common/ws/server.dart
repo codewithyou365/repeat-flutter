@@ -12,14 +12,35 @@ abstract class UserId {
   int getId();
 }
 
+enum WsEventType {
+  removeAll,
+  remove,
+  add,
+}
+
+class WsEvent {
+  WsEventType wsEventType;
+  int id;
+
+  WsEvent({
+    required this.wsEventType,
+    required this.id,
+  });
+}
+
 enum ServerStatus {
   stopped,
   working,
 }
 
 class Nodes<User extends UserId> {
+  final Function(WsEvent) wsEvent;
   final Map<int, Node<User>> hashCode2Node = {};
   final Map<int, Node<User>> userId2Node = {};
+
+  Nodes({
+    required this.wsEvent,
+  });
 
   Future<void> removeAll() async {
     for (final node in hashCode2Node.values) {
@@ -27,6 +48,7 @@ class Nodes<User extends UserId> {
     }
     hashCode2Node.clear();
     userId2Node.clear();
+    wsEvent(WsEvent(wsEventType: WsEventType.removeAll, id: 0));
   }
 
   Future<void> remove(int hashCode) async {
@@ -35,6 +57,7 @@ class Nodes<User extends UserId> {
       int userId = node.user!.getId();
       userId2Node.remove(userId);
       await node.stop();
+      wsEvent(WsEvent(wsEventType: WsEventType.remove, id: node.user?.getId() ?? 0));
     }
   }
 
@@ -47,6 +70,7 @@ class Nodes<User extends UserId> {
     hashCode2Node[hashCode] = node;
     userId2Node[node.user!.getId()] = node;
     node.start();
+    wsEvent(WsEvent(wsEventType: WsEventType.add, id: userId));
   }
 
   Node<User>? get(int hashCode) {
@@ -68,12 +92,21 @@ class Nodes<User extends UserId> {
 }
 
 class Server<User extends UserId> {
-  final cors = true;
+  final Function(WsEvent) wsEvent;
+  final bool cors;
+
   var status = ServerStatus.working;
   Logger? logger;
   HttpServer? server;
   final Map<String, Controller> controllers = {};
-  final Nodes<User> nodes = Nodes();
+  late final Nodes<User> nodes;
+
+  Server({
+    required this.wsEvent,
+    this.cors = true,
+  }) {
+    nodes = Nodes(wsEvent: wsEvent);
+  }
 
   Future<void> start(int port, Future<User?> Function(HttpRequest request) auth, Future<void> Function(HttpRequest request) handleHttpRequest) async {
     status = ServerStatus.working;

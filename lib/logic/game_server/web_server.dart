@@ -7,6 +7,7 @@ import 'package:repeat_flutter/common/ws/node.dart';
 import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/game_server/controller/get_edit_status.dart';
 import 'package:repeat_flutter/logic/game_server/controller/get_verse_content.dart';
@@ -21,9 +22,14 @@ import 'package:path/path.dart' as path;
 
 class WebServer {
   bool open = false;
-  Server<GameUser> server = Server();
-  Map<String, String> keyToLocalPath = {};
-  List<String> ips = [];
+  late final Server<GameUser> server;
+  final Map<String, String> keyToLocalPath = {};
+  final List<String> ips = [];
+  final bus = EventBus();
+
+  WebServer() {
+    server = Server(wsEvent: wsEvent);
+  }
 
   Future<int> start() async {
     var port = 40321;
@@ -44,6 +50,10 @@ class WebServer {
       return 0;
     }
     return port;
+  }
+
+  void wsEvent(WsEvent event) {
+    bus.publish(EventTopic.wsEvent, event);
   }
 
   Future<void> stop() async {

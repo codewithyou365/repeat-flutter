@@ -1,11 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
 
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
+import 'package:repeat_flutter/logic/game_server/web_server.dart';
 
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -15,15 +20,20 @@ class UserManager<T extends GetxController> {
   static const String id = "UserManager";
 
   List<GameUser> users = [];
+  final Map<int, bool> onlineUsers = {};
   int allowRegisterNumber = 1;
   final T parentLogic;
   String text = "";
+  late WebServer web;
+  final bus = EventBus();
+  late StreamSubscription<WsEvent?> sub;
 
   UserManager(this.parentLogic);
 
-  Future<void> init() async {
+  Future<void> init(WebServer web) async {
     users = await Db().db.gameUserDao.getAllUser();
     allowRegisterNumber = await getAllowRegisterNumber();
+    this.web = web;
   }
 
   static Future<int> getAllowRegisterNumber() async {
@@ -37,7 +47,30 @@ class UserManager<T extends GetxController> {
   }
 
   Future<void> show(BuildContext context) {
-    this.text = text;
+    onlineUsers.clear();
+    for (var userId in web.server.nodes.userId2Node.keys) {
+      onlineUsers[userId] = true;
+    }
+    sub = bus.on<WsEvent>(EventTopic.wsEvent).listen((wsEvent) async {
+      if (wsEvent == null) {
+        return;
+      }
+      switch (wsEvent.wsEventType) {
+        case WsEventType.removeAll:
+          onlineUsers.clear();
+          break;
+        case WsEventType.remove:
+          onlineUsers.remove(wsEvent.id);
+          break;
+        case WsEventType.add:
+          onlineUsers[wsEvent.id] = true;
+          if (!users.any((user) => user.id == wsEvent.id)) {
+            users = await Db().db.gameUserDao.getAllUser();
+          }
+          break;
+      }
+      parentLogic.update([UserManager.id]);
+    });
     return Sheet.showBottomSheet(
       context,
       Padding(
@@ -58,20 +91,16 @@ class UserManager<T extends GetxController> {
                     parentLogic.update([UserManager.id]);
                     Get.back();
                   },
-                  refresh: () async {
-                    await init();
-                    parentLogic.update([UserManager.id]);
-                  },
                 ),
                 RowWidget.buildDivider(),
-                ...List.generate(
-                  users.length,
-                  (index) => Padding(
+                ...List.generate(users.length, (index) {
+                  bool online = onlineUsers[users[index].id!] == true;
+                  return Padding(
                     padding: const EdgeInsets.all(4.0),
                     child: Card(
                       color: Theme.of(context).secondaryHeaderColor,
                       child: PopupMenuButton<String>(
-                        child: RowWidget.buildText(users[index].name, "在线"),
+                        child: RowWidget.buildText(users[index].name, online ? I18nKey.online.tr : I18nKey.offline.tr),
                         itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                           PopupMenuItem<String>(
                             onTap: () async {
@@ -86,13 +115,15 @@ class UserManager<T extends GetxController> {
                         ],
                       ),
                     ),
-                  ),
-                ),
+                  );
+                }),
               ],
             );
           },
         ),
       ),
-    );
+    ).then((_) {
+      sub.cancel();
+    });
   }
 }

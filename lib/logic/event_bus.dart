@@ -3,6 +3,7 @@ import 'dart:async';
 enum EventTopic {
   deleteBook,
   setInRepeatView,
+  wsEvent,
 }
 
 class Event<T> {

@@ -164,6 +164,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelSkipCharacter, "Enter This Char To Skip");
     put(I18nKey.labelEnableEditVerse, "Enable Edit Verse");
     put(I18nKey.labelGameId, "Game ID");
+    put(I18nKey.online, "Online");
+    put(I18nKey.offline, "Offline");
     put(I18nKey.labelOnlineUserNumber, "Online User Number");
     put(I18nKey.labelAllowRegisterNumber, "Allow Reg Number");
     put(I18nKey.labelQuestion, "Question");
