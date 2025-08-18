@@ -32,16 +32,15 @@ class LoginOrRegister {
 
 Future<message.Response?> loginOrRegister(message.Request req) async {
   final data = LoginOrRegister.fromJson(req.data);
-  final user = await Db().db.gameUserDao.loginOrRegister(
+  List<String> error = [];
+  final token = await Db().db.gameUserDao.loginOrRegister(
     data.userName,
     data.password,
     data.newPassword,
+    error,
   );
-  if (!user.isEmpty()) {
-    if (user.needToResetPassword) {
-      return message.Response(error: GameServerError.needToResetPassword.name);
-    }
-    return message.Response(data: user.token);
+  if (token.isEmpty) {
+      return message.Response(error: error.first);
   }
-  return message.Response(error: GameServerError.userOrPasswordError.name);
+  return message.Response(data: token);
 }

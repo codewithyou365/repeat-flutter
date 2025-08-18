@@ -1512,21 +1512,22 @@ class _$GameUserDao extends GameUserDao {
   }
 
   @override
-  Future<GameUser> loginOrRegister(
+  Future<String> loginOrRegister(
     String name,
     String password,
     String newPassword,
+    List<String> error,
   ) async {
     if (database is sqflite.Transaction) {
-      return super.loginOrRegister(name, password, newPassword);
+      return super.loginOrRegister(name, password, newPassword, error);
     } else {
       return (database as sqflite.Database)
-          .transaction<GameUser>((transaction) async {
+          .transaction<String>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
         return transactionDatabase.gameUserDao
-            .loginOrRegister(name, password, newPassword);
+            .loginOrRegister(name, password, newPassword, error);
       });
     }
   }

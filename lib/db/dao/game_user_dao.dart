@@ -7,6 +7,7 @@ import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
+import 'package:repeat_flutter/logic/game_server/constant.dart';
 
 @dao
 abstract class GameUserDao {
@@ -77,10 +78,11 @@ abstract class GameUserDao {
   }
 
   @transaction
-  Future<GameUser> loginOrRegister(String name, String password, String newPassword) async {
+  Future<String> loginOrRegister(String name, String password, String newPassword, List<String> error) async {
     final now = DateTime.now();
     if (name.isEmpty || password.isEmpty) {
-      return GameUser.empty();
+      error.add(GameServerError.userOrPasswordError.name);
+      return '';
     }
     final existingUser = await findUserByName(name);
     if (existingUser == null) {
@@ -90,7 +92,8 @@ abstract class GameUserDao {
       registrations ??= 0;
       int allowRegisterNumber = await db.kvDao.getInt(K.allowRegisterNumber) ?? 1;
       if (registrations >= allowRegisterNumber) {
-        return GameUser.empty();
+        error.add(GameServerError.excessRegisterCount.name);
+        return '';
       }
       final newUser = GameUser(
         name: name,
@@ -102,18 +105,20 @@ abstract class GameUserDao {
         needToResetPassword: false,
       );
       await registerUser(newUser);
-      return newUser;
+      return newUser.token;
     } else {
       final passwordHash = Hash.toSha1ForString(password + existingUser.nonce);
       if (existingUser.password != passwordHash) {
-        return GameUser.empty();
+        error.add(GameServerError.userOrPasswordError.name);
+        return '';
       }
       final String token = StringUtil.generateRandomString(32);
       existingUser.token = token;
       existingUser.tokenExpiredDate = Date.from(now.add(const Duration(days: 7)));
       if (existingUser.needToResetPassword) {
         if (newPassword.isEmpty) {
-          return existingUser;
+          error.add(GameServerError.needToResetPassword.name);
+          return '';
         }
         final nonce = StringUtil.generateRandomString(32);
         final newPasswordHash = Hash.toSha1ForString(newPassword + nonce);
@@ -133,7 +138,7 @@ abstract class GameUserDao {
         );
       }
 
-      return existingUser;
+      return existingUser.token;
     }
   }
 

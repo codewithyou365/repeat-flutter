@@ -110,6 +110,8 @@ const handleLogin = () => {
         if (response.error === 'needToResetPassword') {
           showNewPasswordView.value = true;
           dialogContent.value = t('setNewPassword');
+        } else if (response.error === 'excessRegisterCount') {
+          dialogContent.value = t('excessRegisterCount');
         } else {
           dialogContent.value = t('userNameOrPasswordError');
         }
