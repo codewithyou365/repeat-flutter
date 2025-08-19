@@ -51,6 +51,7 @@ class UserManager<T extends GetxController> {
     for (var userId in web.server.nodes.userId2Node.keys) {
       onlineUsers[userId] = true;
     }
+    users = sortUsersByOnline(onlineUsers, users);
     sub = bus.on<WsEvent>(EventTopic.wsEvent).listen((wsEvent) async {
       if (wsEvent == null) {
         return;
@@ -69,6 +70,7 @@ class UserManager<T extends GetxController> {
           }
           break;
       }
+      users = sortUsersByOnline(onlineUsers, users);
       parentLogic.update([UserManager.id]);
     });
     return Sheet.showBottomSheet(
@@ -125,5 +127,20 @@ class UserManager<T extends GetxController> {
     ).then((_) {
       sub.cancel();
     });
+  }
+
+  List<GameUser> sortUsersByOnline(Map<int, bool> onlineUsers, List<GameUser> users) {
+    List<GameUser> sorted = List<GameUser>.from(users);
+    sorted.sort((a, b) {
+      bool aOnline = onlineUsers[a.id!] == true;
+      bool bOnline = onlineUsers[b.id!] == true;
+      if (aOnline == bOnline) {
+        int aId = a.id ?? 0;
+        int bId = b.id ?? 0;
+        return aId.compareTo(bId);
+      }
+      return aOnline ? -1 : 1;
+    });
+    return sorted;
   }
 }
