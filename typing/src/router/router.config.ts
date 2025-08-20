@@ -12,10 +12,6 @@ export const routes = [
         component: () => import('../view/login.vue'),
     },
     {
-        path: '/home',
-        component: () => import('../view/home.vue'),
-    },
-    {
         path: '/game',
         component: () => import('../view/game.vue'),
     },

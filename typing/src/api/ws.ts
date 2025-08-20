@@ -101,6 +101,11 @@ export class Node {
     }
 
     receive(msg: Message) {
+        if (msg.age !== this.age) {
+            console.log(`[ws] ignoring message - age mismatch: ${msg.age} vs ${this.age}`);
+            return;
+        }
+
         const completer = this.sendId2Res.get(msg.id);
         if (completer) {
             const headers = new Map();
@@ -109,6 +114,7 @@ export class Node {
             completer.resolve(msg.response);
             this.sendId2Res.delete(msg.id);
         }
+
         if (this.sendId2Log.get(msg.id)) {
             console.log('[ws] recv :', msg);
             this.sendId2Log.delete(msg.id);
@@ -117,9 +123,11 @@ export class Node {
 
     async send(req: Request, log: boolean = true): Promise<Response> {
         this.sendId++;
+        const id = this.sendId;
+        const age = this.age;
         const msg = new Message({
-            id: this.sendId,
-            age: this.age,
+            id: id,
+            age: age,
             type: MessageType.REQUEST,
             request: req,
         });
@@ -129,14 +137,14 @@ export class Node {
         this.webSocket.send(JSON.stringify(msg));
 
         const completer = this._createCompleter();
-        this.sendId2Res.set(this.sendId, completer);
-        this.sendId2Log.set(this.sendId, log);
+        this.sendId2Res.set(id, completer);
+        this.sendId2Log.set(id, log);
 
         const timeout = setTimeout(() => {
-            if (this.sendId2Res.delete(this.sendId)) {
-                this.sendId2Log.delete(this.sendId);
+            if (this.sendId2Res.delete(id)) {
+                this.sendId2Log.delete(id);
                 const headers = new Map<string, string>();
-                headers.set(Header.age, `${this.age}`);
+                headers.set(Header.age, `${age}`);
                 completer.resolve(new Response({headers: headers, error: 'timeout', status: 504}));
             }
         }, 10000);
@@ -145,8 +153,8 @@ export class Node {
             return await completer.promise;
         } finally {
             clearTimeout(timeout);
-            this.sendId2Res.delete(this.sendId);
-            this.sendId2Log.delete(this.sendId);
+            this.sendId2Res.delete(id);
+            this.sendId2Log.delete(id);
         }
     }
 

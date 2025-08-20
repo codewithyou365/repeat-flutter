@@ -77,7 +77,7 @@ onMounted(async () => {
     refresh(data);
   });
   bus().on(EventName.WsStatus, (status: number) => {
-    if (status === ClientStatus.CONNECT_FINISH) {
+    if (status === ClientStatus.CONNECT_CLOSE) {
       router.push('/loading');
     }
   });

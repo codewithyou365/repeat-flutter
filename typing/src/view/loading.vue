@@ -6,7 +6,7 @@
 import {client, url, Request, Response, ClientStatus} from '../api/ws';
 import {onMounted} from 'vue';
 import {busReset, bus, EventName, RefreshGameType} from '../api/bus';
-import {useRouter} from "vue-router";
+import {LocationQueryRaw, useRouter} from "vue-router";
 
 const router = useRouter();
 import {useStore} from 'vuex';
@@ -42,7 +42,19 @@ onMounted(() => {
       return Promise.reject(new Error('Client node is unavailable.'));
     }
   });
-  router.push("/home");
+  bus().on(EventName.WsStatus, async (status: number) => {
+    if (status === ClientStatus.CONNECT_FINISH) {
+      const req = new Request({path: Path.entryGame, data: 0});
+      const res = await client.node!.send(req);
+      if (res.error) {
+        console.error('Error starting game:', res.error);
+      } else {
+        const refreshGame = res.data as LocationQueryRaw;
+        await router.push({path: "/game", query: refreshGame});
+      }
+    }
+  });
+
 });
 
 </script>
