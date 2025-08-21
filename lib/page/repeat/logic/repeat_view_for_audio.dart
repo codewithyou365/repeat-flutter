@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:audioplayers/audioplayers.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
@@ -26,7 +26,7 @@ class RepeatViewForAudio extends RepeatView {
 
   @override
   void init(Helper helper) {
-    audioPlayer = AudioPlayer(playerId: playerId);
+    audioPlayer = AudioPlayer();
     this.helper = helper;
     mediaRangeHelper = MediaRangeHelper(helper: helper);
     sub = bus.on<bool>(EventTopic.setInRepeatView).listen((b) {
@@ -127,47 +127,26 @@ class RepeatViewForAudio extends RepeatView {
         return;
       }
       var audioPlayer = this.audioPlayer;
-      String prevPath = '';
       Duration? d;
-      if (audioPlayer.source != null) {
-        final source = audioPlayer.source;
-        if (source is DeviceFileSource) {
-          prevPath = source.path;
+      try {
+        await audioPlayer.setFilePath(path);
+        d = audioPlayer.duration;
+      } catch (e) {
+        var ok = await helper.tryImportMedia(
+          localMediaPath: path,
+          allowedExtensions: ['mp3'],
+        );
+        if (!ok) {
+          return;
         }
-        if (path != prevPath) {
-          try {
-            await audioPlayer.setSource(DeviceFileSource(path));
-            d = await audioPlayer.getDuration();
-          } catch (e) {
-            var ok = await helper.tryImportMedia(
-              localMediaPath: path,
-              allowedExtensions: ['mp3'],
-            );
-            if (!ok) {
-              return;
-            }
-          }
-        }
-      } else {
-        try {
-          await audioPlayer.setSource(DeviceFileSource(path));
-          d = await audioPlayer.getDuration();
-        } catch (e) {
-          var ok = await helper.tryImportMedia(
-            localMediaPath: path,
-            allowedExtensions: ['mp3'],
-          );
-          if (!ok) {
-            return;
-          }
-        }
-        this.audioPlayer = audioPlayer;
+        await audioPlayer.setFilePath(path);
+        d = audioPlayer.duration;
       }
       if (d != null) {
         duration = d.inMilliseconds;
       }
     } catch (e) {
-      Snackbar.show("Error loading video: $e");
+      Snackbar.show("Error loading audio: $e");
     }
   }
 
@@ -180,16 +159,13 @@ class RepeatViewForAudio extends RepeatView {
       key: mediaKey,
       duration: () => duration,
       onPlay: (Duration position) async {
-        var source = audioPlayer.source;
-        if (source == null) {
-          return;
-        }
+        await audioPlayer.seek(position);
         try {
-          await audioPlayer.play(source, position: position).timeout(const Duration(milliseconds: 100));
+          await audioPlayer.play().timeout(const Duration(milliseconds: 50));
         } catch (e) {
-          await audioPlayer.play(source, position: position).timeout(const Duration(milliseconds: 100));
+          if (e is! TimeoutException) rethrow;
+          await audioPlayer.play();
         }
-        await audioPlayer.resume();
       },
       onStop: audioPlayer.stop,
       onEdit: mediaRangeHelper.mediaRangeEdit(range),
