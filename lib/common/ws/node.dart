@@ -45,13 +45,13 @@ class Node<User> {
     }
   }
 
-  cancelTimer() {
+  void cancelTimer() {
     closeTimer?.cancel();
     closeTimer = null;
   }
 
-  stop() async {
-    print('${this.hashCode}:stop');
+  Future<void> stop() async {
+    print('$hashCode:stop');
     final stackTrace = StackTrace.current;
     print('Calling stack: $stackTrace');
     cancelTimer();
@@ -67,8 +67,8 @@ class Node<User> {
     });
   }
 
-  resetCloseTime() {
+  void resetCloseTime() {
     closeTime = DateTime.now().add(const Duration(seconds: 10));
-    print('${this.hashCode}:$closeTime');
+    print('$hashCode:$closeTime');
   }
 }

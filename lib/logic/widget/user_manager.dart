@@ -106,7 +106,11 @@ class UserManager<T extends GetxController> {
                         itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                           PopupMenuItem<String>(
                             onTap: () async {
+                              var node = web.server.nodes.userId2Node[users[index].id!];
                               var password = await Db().db.gameUserDao.resetPassword(users[index].id!);
+                              if (node != null) {
+                                await node.stop();
+                              }
                               MsgBox.yes(
                                 I18nKey.keyTitle.tr,
                                 I18nKey.keyContent.trParams([users[index].name, password]),
