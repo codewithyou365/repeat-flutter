@@ -63,7 +63,7 @@ class RepeatLogic extends GetxController {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
   }
 
-  init() async {
+  Future<void> init() async {
     var args = Get.arguments as RepeatArgs;
     state.enableShowRecallButtons = args.enableShowRecallButtons;
     var all = args.progresses;

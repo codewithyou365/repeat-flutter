@@ -14,6 +14,7 @@ class RepeatViewForAudio extends RepeatView {
   static const String playerId = "RepeatViewForAudio";
   final GlobalKey<MediaBarState> mediaKey = GlobalKey<MediaBarState>();
   late AudioPlayer audioPlayer;
+  var audioPlayerCurrentPath = "";
   int duration = 0;
   late MediaRangeHelper mediaRangeHelper;
   final bus = EventBus();
@@ -126,25 +127,32 @@ class RepeatViewForAudio extends RepeatView {
       if (!ok) {
         return;
       }
+      if (path == audioPlayerCurrentPath) {
+        return;
+      }
       var audioPlayer = this.audioPlayer;
+      await audioPlayer.stop();
       Duration? d;
       try {
         await audioPlayer.setFilePath(path);
-        d = audioPlayer.duration;
+        d = await audioPlayer.durationStream.firstWhere((dur) => dur != null);
       } catch (e) {
         var ok = await helper.tryImportMedia(
           localMediaPath: path,
-          allowedExtensions: ['mp3'],
+          allowedExtensions: ['mp3', 'mp4'],
         );
         if (!ok) {
           return;
         }
         await audioPlayer.setFilePath(path);
-        d = audioPlayer.duration;
+        d = await audioPlayer.durationStream.firstWhere((dur) => dur != null);
       }
       if (d != null) {
         duration = d.inMilliseconds;
+      } else {
+        d = audioPlayer.duration;
       }
+      audioPlayerCurrentPath = path;
     } catch (e) {
       Snackbar.show("Error loading audio: $e");
     }
