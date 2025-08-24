@@ -32,7 +32,7 @@ class WebServer {
   }
 
   Future<int> start() async {
-    var port = 40321;
+    var port = 4321;
     try {
       await server.start(port, authByToken, _serveFile);
       server.logger = Snackbar.show;
