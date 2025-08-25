@@ -22,6 +22,9 @@ class EditorLogic extends GetxController {
     if (args.onHistory != null) {
       state.historyBtn = Button(I18nKey.btnHistory.tr, args.onHistory);
     }
+    if (args.onAdvancedEdit != null) {
+      state.advancedEditBtn = Button(I18nKey.advancedEdit.tr, args.onAdvancedEdit);
+    }
     state.shareBtn = Button(I18nKey.btnShare.tr, () {
       showQrCode(Get.context!, textController.text);
     });
@@ -55,6 +58,7 @@ class EditorLogic extends GetxController {
   void onClose() {
     super.onClose();
   }
+
   static void showQrCode(BuildContext context, String value) {
     final Size screenSize = MediaQuery.of(context).size;
     Sheet.showBottomSheet(

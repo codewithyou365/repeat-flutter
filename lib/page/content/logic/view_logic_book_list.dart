@@ -155,168 +155,172 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
     });
 
     return GetBuilder<T>(
-        id: ViewLogicBookList.bodyId,
-        builder: (_) {
-          var list = bookShow;
+      id: ViewLogicBookList.bodyId,
+      builder: (_) {
+        var list = bookShow;
 
-          Widget searchDetailPanel = const SizedBox.shrink();
-          if (showSearchDetailPanel) {
-            searchDetailPanel = Container(
-              height: searchDetailPanelHeight,
+        Widget searchDetailPanel = const SizedBox.shrink();
+        if (showSearchDetailPanel) {
+          searchDetailPanel = Container(
+            height: searchDetailPanelHeight,
+            width: width,
+            padding: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: Theme.of(Get.context!).scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  spreadRadius: 0,
+                  blurRadius: 4,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: ListView(
+              padding: const EdgeInsets.all(0),
+              children: [
+                RowWidget.buildCupertinoPicker(
+                  I18nKey.labelBookFn.tr,
+                  bookOptions,
+                  bookSelect,
+                  changed: (index) {
+                    bookSelect.value = index;
+                    trySearch();
+                  },
+                ),
+                RowWidget.buildDividerWithoutColor(),
+                RowWidget.buildCupertinoPicker(
+                  I18nKey.labelSortBy.tr,
+                  sortOptions,
+                  selectedSortIndex,
+                  changed: (index) {
+                    selectedSortIndex.value = index;
+                    I18nKey key = sortOptionKeys[index];
+                    sort(bookShow, key);
+                    parentLogic.update([ViewLogicBookList.bodyId]);
+                  },
+                  pickWidth: 210.w,
+                ),
+                RowWidget.buildDividerWithoutColor(),
+              ],
+            ),
+          );
+        }
+        return Column(
+          children: [
+            searchDetailPanel,
+            SizedBox(
+              height: getBodyViewHeight(),
               width: width,
-              padding: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                color: Theme.of(Get.context!).scaffoldBackgroundColor,
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    spreadRadius: 0,
-                    blurRadius: 4,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: ListView(
-                padding: const EdgeInsets.all(0),
-                children: [
-                  RowWidget.buildCupertinoPicker(
-                    I18nKey.labelBookFn.tr,
-                    bookOptions,
-                    bookSelect,
-                    changed: (index) {
-                      bookSelect.value = index;
-                      trySearch();
-                    },
-                  ),
-                  RowWidget.buildDividerWithoutColor(),
-                  RowWidget.buildCupertinoPicker(
-                    I18nKey.labelSortBy.tr,
-                    sortOptions,
-                    selectedSortIndex,
-                    changed: (index) {
-                      selectedSortIndex.value = index;
-                      I18nKey key = sortOptionKeys[index];
-                      sort(bookShow, key);
-                      parentLogic.update([ViewLogicBookList.bodyId]);
-                    },
-                    pickWidth: 210.w,
-                  ),
-                  RowWidget.buildDividerWithoutColor(),
-                ],
-              ),
-            );
-          }
-          return Column(
-            children: [
-              searchDetailPanel,
-              SizedBox(
-                height: getBodyViewHeight(),
-                width: width,
-                child: ScrollablePositionedList.builder(
-                  itemScrollController: itemScrollController,
-                  itemPositionsListener: itemPositionsListener,
-                  itemCount: list.length,
-                  itemBuilder: (context, index) {
-                    final book = list[index];
-                    return Card(
-                      elevation: 2,
-                      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Stack(
-                        alignment: Alignment.topRight,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    onNext(book);
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      book.toPos(),
-                                      style: const TextStyle(fontSize: 12, color: Colors.blue),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: 8, width: width),
-                                ExpandableText(
-                                  title: I18nKey.labelBookFn.tr,
-                                  text: ': ${book.bookContent}',
-                                  version: book.bookContentVersion,
-                                  limit: 60,
-                                  style: const TextStyle(fontSize: 14),
-                                  selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                                  versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
-                                  selectText: search.value,
-                                  onEdit: () {
-                                    searchFocusNode.unfocus();
-                                    var contentM = jsonDecode(book.bookContent);
-                                    var content = const JsonEncoder.withIndent(' ').convert(contentM);
-                                    Nav.editor.push(
-                                      arguments: EditorArgs(
-                                        title: I18nKey.labelBook.tr,
-                                        value: content,
-                                        save:  (str) async {
-                                          await Db().db.bookDao.updateBookContent(book.bookId, str);
-                                          parentLogic.update([ViewLogicBookList.bodyId]);
-                                        },
-                                        onHistory: () async {
-                                          List<BookContentVersion> historyData = await Db().db.bookContentVersionDao.list(book.bookId);
-                                          await historyList.show(historyData, focus: true.obs);
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
+              child: ScrollablePositionedList.builder(
+                itemScrollController: itemScrollController,
+                itemPositionsListener: itemPositionsListener,
+                itemCount: list.length,
+                itemBuilder: (context, index) {
+                  final book = list[index];
+                  return Card(
+                    elevation: 2,
+                    margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Stack(
+                      alignment: Alignment.topRight,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              PopupMenuButton<String>(
-                                icon: const Icon(Icons.more_vert),
-                                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                                  PopupMenuItem<String>(
-                                    onTap: () {
-                                      Nav.bookEditor.push(arguments: [book]);
-                                    },
-                                    child: Text(I18nKey.edit.tr),
+                              GestureDetector(
+                                onTap: () {
+                                  onNext(book);
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(4),
                                   ),
-                                  PopupMenuItem<String>(
-                                    onTap: () {
-                                      MsgBox.yesOrNo(
-                                        title: I18nKey.labelWarning.tr,
-                                        desc: I18nKey.labelDeleteBook.trArgs([book.name]),
-                                        yes: () => delete(book: book),
-                                      );
-                                    },
-                                    child: Text(I18nKey.btnDelete.tr),
+                                  child: Text(
+                                    book.toPos(),
+                                    style: const TextStyle(fontSize: 12, color: Colors.blue),
                                   ),
-                                ],
+                                ),
+                              ),
+                              SizedBox(height: 8, width: width),
+                              ExpandableText(
+                                title: I18nKey.labelBookFn.tr,
+                                text: ': ${book.bookContent}',
+                                version: book.bookContentVersion,
+                                limit: 60,
+                                style: const TextStyle(fontSize: 14),
+                                selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                                versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
+                                selectText: search.value,
+                                onEdit: () {
+                                  searchFocusNode.unfocus();
+                                  var contentM = jsonDecode(book.bookContent);
+                                  var content = const JsonEncoder.withIndent(' ').convert(contentM);
+                                  Nav.editor.push(
+                                    arguments: EditorArgs(
+                                      title: I18nKey.labelBook.tr,
+                                      value: content,
+                                      save: (str) async {
+                                        await Db().db.bookDao.updateBookContent(book.bookId, str);
+                                        parentLogic.update([ViewLogicBookList.bodyId]);
+                                      },
+                                      onAdvancedEdit: () async {
+                                        Nav.bookEditor.push(arguments: [book]);
+                                      },
+                                      onHistory: () async {
+                                        List<BookContentVersion> historyData = await Db().db.bookContentVersionDao.list(book.bookId);
+                                        await historyList.show(historyData, focus: true.obs);
+                                      },
+                                    ),
+                                  );
+                                },
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            PopupMenuButton<String>(
+                              icon: const Icon(Icons.more_vert),
+                              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                PopupMenuItem<String>(
+                                  onTap: () {
+                                    Nav.bookEditor.push(arguments: [book]);
+                                  },
+                                  child: Text(I18nKey.edit.tr),
+                                ),
+                                PopupMenuItem<String>(
+                                  onTap: () {
+                                    MsgBox.yesOrNo(
+                                      title: I18nKey.labelWarning.tr,
+                                      desc: I18nKey.labelDeleteBook.trArgs([book.name]),
+                                      yes: () => delete(book: book),
+                                    );
+                                  },
+                                  child: Text(I18nKey.btnDelete.tr),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
-            ],
-          );
-        });
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void collectData() {

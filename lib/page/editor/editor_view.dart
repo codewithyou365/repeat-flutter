@@ -6,7 +6,7 @@ import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'editor_logic.dart';
 
 class EditorPage extends StatelessWidget {
-  EditorPage({super.key});
+  const EditorPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +30,6 @@ class EditorPage extends StatelessWidget {
       bodyWidth = screenWidth - leftPadding * 2;
     }
     final List<Button> taps = [];
-    if (state.historyBtn != null) {
-      taps.add(state.historyBtn!);
-    }
-    taps.add(state.scanBtn);
     taps.add(state.save);
     return Scaffold(
       body: Column(
@@ -124,14 +120,31 @@ class EditorPage extends StatelessWidget {
               SizedBox(
                 width: icon,
                 height: icon,
-                child: Obx(() {
-                  final theme = Theme.of(Get.context!);
-                  return IconButton(
-                    icon: const Icon(Icons.share),
-                    color: state.shareBtn.enable.value ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.38),
-                    onPressed: state.shareBtn.onPressed,
-                  );
-                }),
+                child: PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert),
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    PopupMenuItem<String>(
+                      onTap: state.shareBtn.onPressed,
+                      enabled: state.shareBtn.enable.value,
+                      child: Text(state.shareBtn.title),
+                    ),
+                    PopupMenuItem<String>(
+                      onTap: state.scanBtn.onPressed,
+                      enabled: state.scanBtn.enable.value,
+                      child: Text(state.scanBtn.title),
+                    ),
+                    if (state.historyBtn != null)
+                      PopupMenuItem<String>(
+                        onTap: state.historyBtn!.onPressed,
+                        child: Text(state.historyBtn!.title),
+                      ),
+                    if (state.advancedEditBtn != null)
+                      PopupMenuItem<String>(
+                        onTap: state.advancedEditBtn!.onPressed,
+                        child: Text(state.advancedEditBtn!.title),
+                      ),
+                  ],
+                ),
               ),
               const SizedBox(width: padding),
             ],

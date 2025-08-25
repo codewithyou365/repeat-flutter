@@ -2,6 +2,7 @@ import 'package:repeat_flutter/widget/row/row_widget.dart';
 
 class EditorState {
   Button? historyBtn;
+  Button? advancedEditBtn;
 
   late Button shareBtn;
 
