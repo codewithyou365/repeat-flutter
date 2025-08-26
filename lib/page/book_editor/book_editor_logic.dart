@@ -133,7 +133,23 @@ class BookEditorLogic extends GetxController {
   Future<void> _serveFile(List<String> pathVerses, HttpRequest request) async {
     var response = request.response;
     var path = Url.toPath(pathVerses);
+    final Map<String, bool> map = {
+      "/ace.js": true,
+      "/json-source-map.js": true,
+      "/keybinding-vim.min.js": true,
+      "/mode-json.js": true,
+      "/theme-github.js": true,
+      "/worker-json.js": true,
+    };
 
+    if (map[path] == true) {
+      response.headers.set('Content-Type', 'application/javascript');
+      ByteData content = await rootBundle.load('assets/editor/$path');
+      String str = utf8.decode(content.buffer.asUint8List());
+      response.write(str);
+      await response.close();
+      return;
+    }
     if (path == state.lanAddressSuffix) {
       String userAgent = request.headers.value('user-agent') ?? 'Unknown';
       if (userAgent == DownloadConstant.userAgent) {

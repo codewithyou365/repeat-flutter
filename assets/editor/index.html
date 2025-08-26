@@ -36,16 +36,46 @@
         .commit-btn:active {
             transform: scale(0.97);
         }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+        }
+
+        #menu {
+            width: 20%;
+            padding: 10px;
+            border-right: 1px solid #ccc;
+            overflow-y: auto;
+            height: 400px;
+            font-family: sans-serif;
+        }
+
+        #editor-container {
+            width: 80%;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 20px;
+        }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.23.4/ace.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.23.4/keybinding-vim.min.js"></script>
+    <script src="/ace.js"></script>
+    <script src="/keybinding-vim.min.js"></script>
+    <script src="/json-source-map.js"></script>
 </head>
 <body>
-<h2>Edit Book<label>
-    <input type="checkbox" id="vimToggle" onchange="toggleVimMode()"> Enable Vim Mode
-</label></h2>
-
-<div id="editor">{{BOOK}}</div>
+<h2>Edit Book
+    <label>
+        <input type="checkbox" id="vimToggle" onchange="toggleVimMode()"> Enable Vim Mode
+    </label>
+</h2>
+<div class="container">
+    <div id="menu"></div>
+    <div id="editor-container">
+        <div id="editor">{{BOOK}}</div>
+    </div>
+</div>
 <br/>
 <button class="commit-btn" onclick="commit()">Commit</button>
 
@@ -54,6 +84,15 @@
     editor.session.setMode("ace/mode/json");
     editor.setTheme("ace/theme/github");
 
+    // Pretty-print the JSON on load
+    var initialValue = editor.getValue();
+    try {
+        var parsed = JSON.parse(initialValue);
+        editor.setValue(JSON.stringify(parsed, null, 2), -1);
+    } catch (e) {
+        console.error("Error pretty-printing JSON:", e);
+    }
+
     function toggleVimMode() {
         if (document.getElementById('vimToggle').checked) {
             editor.setKeyboardHandler("ace/keyboard/vim");
@@ -61,6 +100,72 @@
             editor.setKeyboardHandler(null);
         }
     }
+
+    function generateMenu() {
+        const menuDiv = document.getElementById('menu');
+        menuDiv.innerHTML = ''; // Clear existing menu
+        try {
+            const bookData = JSON.parse(editor.getValue());
+            const map = jsonSourceMap.parse(editor.getValue());
+            const pointers = map.pointers;
+
+            if (bookData && bookData.c && Array.isArray(bookData.c)) {
+                const menuList = document.createElement('ul');
+                bookData.c.forEach((chapter, chapterIndex) => {
+                    const chapterPath = `/c/${chapterIndex}`;
+                    const chapterPointer = pointers[chapterPath];
+                    if (chapterPointer) {
+                        const chapterLine = chapterPointer.value.line; // 0-based
+                        const chapterItem = document.createElement('li');
+                        chapterItem.textContent = `Chapter ${chapterIndex}`;
+                        chapterItem.style.cursor = 'pointer';
+                        chapterItem.onclick = (event) => {
+                            event.stopPropagation();
+                            editor.scrollToLine(chapterLine, true, true, () => {});
+                            editor.gotoLine(chapterLine + 1, 0, true);
+                            editor.focus();
+                        };
+                        menuList.appendChild(chapterItem);
+
+                        if (chapter.v && Array.isArray(chapter.v)) {
+                            const verseList = document.createElement('ul');
+                            chapter.v.forEach((verse, verseIndex) => {
+                                const versePath = `/c/${chapterIndex}/v/${verseIndex}`;
+                                const versePointer = pointers[versePath];
+                                if (versePointer) {
+                                    const verseLine = versePointer.value.line;
+                                    const verseItem = document.createElement('li');
+                                    verseItem.textContent = `Verse ${verseIndex}`;
+                                    verseItem.style.cursor = 'pointer';
+                                    verseItem.onclick = (event) => {
+                                        event.stopPropagation();
+                                        editor.scrollToLine(verseLine, true, true, () => {});
+                                        editor.gotoLine(verseLine + 1, 0, true);
+                                        editor.focus();
+                                    };
+                                    verseList.appendChild(verseItem);
+                                }
+                            });
+                            chapterItem.appendChild(verseList);
+                        }
+                    }
+                });
+                menuDiv.appendChild(menuList);
+            }
+        } catch (err) {
+            console.error("Error parsing JSON for menu:", err);
+        }
+    }
+
+    // Generate menu on load after pretty-print
+    generateMenu();
+
+    // Update menu on editor changes with debounce
+    let timeout;
+    editor.on('change', () => {
+        clearTimeout(timeout);
+        timeout = setTimeout(generateMenu, 500);
+    });
 
     async function commit() {
         const data = editor.getValue();
