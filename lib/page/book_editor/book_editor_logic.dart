@@ -135,6 +135,7 @@ class BookEditorLogic extends GetxController {
     var path = Url.toPath(pathVerses);
     final Map<String, bool> map = {
       "/ace.js": true,
+      "/ext-searchbox.js": true,
       "/json-source-map.js": true,
       "/keybinding-vim.min.js": true,
       "/mode-json.js": true,

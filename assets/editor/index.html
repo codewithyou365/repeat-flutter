@@ -69,6 +69,7 @@
     <label>
         <input type="checkbox" id="vimToggle" onchange="toggleVimMode()"> Enable Vim Mode
     </label>
+    <button class="commit-btn" onclick="formatJSON()">Format JSON</button>
 </h2>
 <div class="container">
     <div id="menu"></div>
@@ -83,8 +84,21 @@
     var editor = ace.edit("editor");
     editor.session.setMode("ace/mode/json");
     editor.setTheme("ace/theme/github");
+    editor.commands.addCommand({
+        name: "format",
+        bindKey: {win: "Ctrl-S", mac: "Cmd-S"},
+        exec: function (_) {
+            formatJSON();
+        }
+    });
+    // Define custom Vim ex command for formatting
+    var Vim = ace.require("ace/keyboard/vim").Vim;
+    Vim.defineEx("fmt", "fmt", function (_, __) {
+        formatJSON();
+    });
+    Vim.map("<Space>", "<Leader>", "normal");
+    Vim.mapCommand("<Leader>fd", "action", "aceCommand", {name: "format"}, {context: "normal"});
 
-    // Pretty-print the JSON on load
     var initialValue = editor.getValue();
     try {
         var parsed = JSON.parse(initialValue);
@@ -98,6 +112,21 @@
             editor.setKeyboardHandler("ace/keyboard/vim");
         } else {
             editor.setKeyboardHandler(null);
+        }
+    }
+
+    function formatJSON() {
+        var currentValue = editor.getValue();
+        try {
+            var parsed = JSON.parse(currentValue);
+            var cursor = editor.getCursorPosition();
+            editor.setValue(JSON.stringify(parsed, null, 2), -1);
+            editor.scrollToLine(cursor.row + 1, true, true, () => {
+            });
+            editor.gotoLine(cursor.row + 1, cursor.column, true);
+            editor.focus();
+        } catch (e) {
+            alert("Invalid JSON: " + e.message);
         }
     }
 
@@ -121,7 +150,8 @@
                         chapterItem.style.cursor = 'pointer';
                         chapterItem.onclick = (event) => {
                             event.stopPropagation();
-                            editor.scrollToLine(chapterLine, true, true, () => {});
+                            editor.scrollToLine(chapterLine, true, true, () => {
+                            });
                             editor.gotoLine(chapterLine + 1, 0, true);
                             editor.focus();
                         };
@@ -139,7 +169,8 @@
                                     verseItem.style.cursor = 'pointer';
                                     verseItem.onclick = (event) => {
                                         event.stopPropagation();
-                                        editor.scrollToLine(verseLine, true, true, () => {});
+                                        editor.scrollToLine(verseLine, true, true, () => {
+                                        });
                                         editor.gotoLine(verseLine + 1, 0, true);
                                         editor.focus();
                                     };
