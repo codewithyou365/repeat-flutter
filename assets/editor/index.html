@@ -74,7 +74,7 @@
 <div class="container">
     <div id="menu"></div>
     <div id="editor-container">
-        <div id="editor">{{BOOK}}</div>
+        <div id="editor"></div>
     </div>
 </div>
 <br/>
@@ -98,14 +98,6 @@
     });
     Vim.map("<Space>", "<Leader>", "normal");
     Vim.mapCommand("<Leader>fd", "action", "aceCommand", {name: "format"}, {context: "normal"});
-
-    var initialValue = editor.getValue();
-    try {
-        var parsed = JSON.parse(initialValue);
-        editor.setValue(JSON.stringify(parsed, null, 2), -1);
-    } catch (e) {
-        console.error("Error pretty-printing JSON:", e);
-    }
 
     function toggleVimMode() {
         if (document.getElementById('vimToggle').checked) {
@@ -188,15 +180,28 @@
         }
     }
 
-    // Generate menu on load after pretty-print
-    generateMenu();
-
-    // Update menu on editor changes with debounce
     let timeout;
     editor.on('change', () => {
         clearTimeout(timeout);
         timeout = setTimeout(generateMenu, 500);
     });
+    initBook();
+    async function initBook() {
+        try {
+            const res = await fetch('/book', {
+                method: 'POST',
+            });
+            const initialValue = await res.text();
+            try {
+                var parsed = JSON.parse(initialValue);
+                editor.setValue(JSON.stringify(parsed, null, 2), -1);
+            } catch (e) {
+                console.error("Error pretty-printing JSON:", e);
+            }
+        } catch (err) {
+            alert("Error sending data: " + err);
+        }
+    }
 
     async function commit() {
         const data = editor.getValue();

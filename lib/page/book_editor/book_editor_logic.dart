@@ -10,7 +10,6 @@ import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/common/url.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/import_help.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
@@ -136,6 +135,7 @@ class BookEditorLogic extends GetxController {
     final Map<String, bool> map = {
       "/ace.js": true,
       "/ext-searchbox.js": true,
+      "/index.html": true,
       "/json-source-map.js": true,
       "/keybinding-vim.min.js": true,
       "/mode-json.js": true,
@@ -144,26 +144,23 @@ class BookEditorLogic extends GetxController {
     };
 
     if (map[path] == true) {
-      response.headers.set('Content-Type', 'application/javascript');
+      if (path.endsWith(".js")) {
+        response.headers.set('Content-Type', 'application/javascript');
+      }
+      if (path.endsWith(".html")) {
+        response.headers.contentType = ContentType.html;
+      }
       ByteData content = await rootBundle.load('assets/editor/$path');
       String str = utf8.decode(content.buffer.asUint8List());
       response.write(str);
       await response.close();
       return;
     }
-    if (path == state.lanAddressSuffix) {
-      String userAgent = request.headers.value('user-agent') ?? 'Unknown';
-      if (userAgent == DownloadConstant.userAgent) {
-        response.headers.set('Content-Disposition', 'attachment; filename="${pathVerses.last}"');
-      } else {
-        response.headers.set('Content-Disposition', 'inline');
-      }
-
+    if (path == "/book") {
       var rootIndex = request.requestedUri.toString().lastIndexOf('/');
       var url = request.requestedUri.toString().substring(0, rootIndex);
       url = url.joinPath(Classroom.curr.toString());
       url = url.joinPath(state.book.bookId.toString());
-
       Map<String, dynamic> docMap = {};
       bool success = await DocHelp.getDocMapFromDb(
         bookId: state.book.bookId,
@@ -180,17 +177,12 @@ class BookEditorLogic extends GetxController {
         return;
       }
 
-      // Serve HTML editor page
-      response.headers.contentType = ContentType.html;
-      const indentEncoder = JsonEncoder.withIndent('  ');
-      String prettyJsonString = indentEncoder.convert(docMap);
-      ByteData content = await rootBundle.load('assets/editor/index.html');
-      String htmlString = utf8.decode(content.buffer.asUint8List());
-      String finalHtml = htmlString.replaceAll('{{BOOK}}', prettyJsonString);
-      response.write(finalHtml);
+      String json = jsonEncode(docMap);
+      response.headers.contentType = ContentType.json;
+      response.write(json);
       await response.close();
-      return;
-    } else if (path == "/upload") {
+    }
+    if (path == "/upload") {
       try {
         final content = await utf8.decoder.bind(request).join();
         final Map<String, dynamic> jsonData = jsonDecode(content);
