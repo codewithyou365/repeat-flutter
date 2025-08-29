@@ -59,6 +59,10 @@
             list-style-type: none;
             padding-left: 20px;
         }
+
+        li.active {
+            background-color: #ffff99;
+        }
     </style>
     <script src="/ace.js"></script>
     <script src="/keybinding-vim.min.js"></script>
@@ -122,6 +126,8 @@
         }
     }
 
+    var clickedMenu = false;
+
     function generateMenu() {
         const menuDiv = document.getElementById('menu');
         menuDiv.innerHTML = ''; // Clear existing menu
@@ -138,6 +144,7 @@
                     if (chapterPointer) {
                         const chapterLine = chapterPointer.value.line; // 0-based
                         const chapterItem = document.createElement('li');
+                        chapterItem.id = `chapter-${chapterIndex}`;
                         chapterItem.textContent = `Chapter ${chapterIndex}`;
                         chapterItem.style.cursor = 'pointer';
                         chapterItem.onclick = (event) => {
@@ -146,6 +153,7 @@
                             });
                             editor.gotoLine(chapterLine + 1, 0, true);
                             editor.focus();
+                            clickedMenu = true;
                         };
                         menuList.appendChild(chapterItem);
 
@@ -157,6 +165,7 @@
                                 if (versePointer) {
                                     const verseLine = versePointer.value.line;
                                     const verseItem = document.createElement('li');
+                                    verseItem.id = `verse-${chapterIndex}-${verseIndex}`;
                                     verseItem.textContent = `Verse ${verseIndex}`;
                                     verseItem.style.cursor = 'pointer';
                                     verseItem.onclick = (event) => {
@@ -165,6 +174,7 @@
                                         });
                                         editor.gotoLine(verseLine + 1, 0, true);
                                         editor.focus();
+                                        clickedMenu = true;
                                     };
                                     verseList.appendChild(verseItem);
                                 }
@@ -180,12 +190,88 @@
         }
     }
 
+    function updateMenuHighlight() {
+        try {
+            const bookData = JSON.parse(editor.getValue());
+            const map = jsonSourceMap.parse(editor.getValue());
+            const pointers = map.pointers;
+            const currentRow = editor.selection.getCursor().row;
+
+            // Remove existing active classes
+            document.querySelectorAll('#menu li.active').forEach(el => el.classList.remove('active'));
+
+            // Find current chapter and verse
+            let selectedChapter = -1;
+            let selectedVerse = -1;
+            for (let chapterIndex = 0; chapterIndex < bookData.c.length; chapterIndex++) {
+                const chapterPath = `/c/${chapterIndex}`;
+                const pointer = pointers[chapterPath];
+                if (pointer && currentRow >= pointer.value.line && currentRow <= pointer.valueEnd.line) {
+                    selectedChapter = chapterIndex;
+
+                    const chapter = bookData.c[chapterIndex];
+                    if (chapter.v && Array.isArray(chapter.v)) {
+                        for (let verseIndex = 0; verseIndex < chapter.v.length; verseIndex++) {
+                            const versePath = `/c/${chapterIndex}/v/${verseIndex}`;
+                            const vPointer = pointers[versePath];
+                            if (vPointer && currentRow >= vPointer.value.line && currentRow <= vPointer.valueEnd.line) {
+                                selectedVerse = verseIndex;
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+
+            let activeEl = null;
+            if (selectedVerse !== -1) {
+                const verseEl = document.getElementById(`verse-${selectedChapter}-${selectedVerse}`);
+                if (verseEl) {
+                    verseEl.classList.add('active');
+                    activeEl = verseEl;
+                }
+            } else if (selectedChapter !== -1) {
+                const chapterEl = document.getElementById(`chapter-${selectedChapter}`);
+                if (chapterEl) {
+                    chapterEl.classList.add('active');
+                    activeEl = chapterEl;
+                }
+            }
+
+            if (activeEl) {
+                if (clickedMenu) {
+                    clickedMenu = false;
+                } else {
+                    activeEl.scrollIntoView({block: 'center'});
+                }
+            }
+        } catch (err) {
+            console.error("Error updating menu highlight:", err);
+        }
+    }
+
+    function debounce(func, wait) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+
     let timeout;
     editor.on('change', () => {
         clearTimeout(timeout);
-        timeout = setTimeout(generateMenu, 500);
+        timeout = setTimeout(() => {
+            generateMenu();
+            updateMenuHighlight();
+        }, 500);
     });
+
+    editor.on('changeSelection', debounce(updateMenuHighlight, 100));
+
     initBook();
+
     async function initBook() {
         try {
             const res = await fetch('/book', {
