@@ -246,6 +246,20 @@
                     activeEl.scrollIntoView({block: 'center'});
                 }
             }
+
+            const newUrl = new URL(window.location);
+            if (selectedChapter !== -1) {
+                newUrl.searchParams.set('c', selectedChapter);
+                if (selectedVerse !== -1) {
+                    newUrl.searchParams.set('v', selectedVerse);
+                } else {
+                    newUrl.searchParams.delete('v');
+                }
+            } else {
+                newUrl.searchParams.delete('c');
+                newUrl.searchParams.delete('v');
+            }
+            history.pushState({}, '', newUrl);
         } catch (err) {
             console.error("Error updating menu highlight:", err);
         }
@@ -284,6 +298,38 @@
             } catch (e) {
                 console.error("Error pretty-printing JSON:", e);
             }
+            generateMenu();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const c = urlParams.get('c');
+            const v = urlParams.get('v');
+            if (c) {
+                const chapterIndex = parseInt(c, 10);
+                if (!isNaN(chapterIndex)) {
+                    const map = jsonSourceMap.parse(editor.getValue());
+                    const pointers = map.pointers;
+                    const chapterPath = `/c/${chapterIndex}`;
+                    const chapterPointer = pointers[chapterPath];
+                    if (chapterPointer) {
+                        editor.scrollToLine(chapterPointer.value.line, true, true, () => {});
+                        editor.gotoLine(chapterPointer.value.line + 1, 0, true);
+                        editor.focus();
+                    }
+                    if (v) {
+                        const verseIndex = parseInt(v, 10);
+                        if (!isNaN(verseIndex)) {
+                            const versePath = `/c/${chapterIndex}/v/${verseIndex}`;
+                            const versePointer = pointers[versePath];
+                            if (versePointer) {
+                                editor.scrollToLine(versePointer.value.line, true, true, () => {});
+                                editor.gotoLine(versePointer.value.line + 1, 0, true);
+                                editor.focus();
+                            }
+                        }
+                    }
+                }
+            }
+            updateMenuHighlight();
         } catch (err) {
             alert("Error sending data: " + err);
         }
