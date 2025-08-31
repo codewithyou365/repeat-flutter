@@ -10,6 +10,7 @@ import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/page/book_editor/book_editor_args.dart';
 import 'package:repeat_flutter/page/content/content_logic.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart' show GsCrLogic;
@@ -272,7 +273,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                                         parentLogic.update([ViewLogicBookList.bodyId]);
                                       },
                                       onAdvancedEdit: () async {
-                                        Nav.bookEditor.push(arguments: [book]);
+                                        Nav.bookEditor.push(arguments: [BookEditorArgs(bookShow: book)]);
                                       },
                                       onHistory: () async {
                                         List<BookContentVersion> historyData = await Db().db.bookContentVersionDao.list(book.bookId);

@@ -15,6 +15,7 @@ import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/page/book_editor/book_editor_args.dart';
 import 'package:repeat_flutter/page/content/logic/view_logic.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
@@ -413,6 +414,18 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                   save: (str) async {
                                     await Db().db.verseDao.updateVerseContent(verse.verseId, str);
                                     parentLogic.update([ViewLogicVerseList.bodyId]);
+                                  },
+                                  onAdvancedEdit: () async {
+                                    final book = originalBookShow.firstWhere((e) => e.bookId == verse.bookId);
+                                    Nav.bookEditor.push(
+                                      arguments: [
+                                        BookEditorArgs(
+                                          bookShow: book,
+                                          chapterIndex: verse.chapterIndex,
+                                          verseIndex: verse.verseIndex,
+                                        ),
+                                      ],
+                                    );
                                   },
                                   onHistory: () async {
                                     List<VerseContentVersion> historyData = await Db().db.verseContentVersionDao.list(verse.verseId);

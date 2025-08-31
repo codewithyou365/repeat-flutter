@@ -12,12 +12,12 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/import_help.dart';
-import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/page/content/content_logic.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
+import 'book_editor_args.dart';
 import 'book_editor_state.dart';
 
 class BookEditorLogic extends GetxController {
@@ -29,7 +29,7 @@ class BookEditorLogic extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    state.book = Get.arguments[0] as BookShow;
+    state.args = Get.arguments[0] as BookEditorArgs;
     randCredentials(show: false);
   }
 
@@ -72,10 +72,28 @@ class BookEditorLogic extends GetxController {
     state.addresses.clear();
     for (var i = 0; i < ips.length; i++) {
       String ip = ips[i];
-      state.addresses.add(Address("${I18nKey.labelLanAddress.tr} $i", 'http://$ip:$port${state.lanAddressSuffix}'));
+      state.addresses.add(Address("${I18nKey.labelLanAddress.tr} $i", getUrl(ip)));
     }
+
     Snackbar.show('HTTP service started1');
     update([id]);
+  }
+
+  String getUrl(String ip) {
+    String url = 'http://$ip:$port${state.lanAddressSuffix}';
+    if (state.args.chapterIndex != null || state.args.verseIndex != null) {
+      url += "?";
+      List<String> params = [];
+      if (state.args.chapterIndex != null) {
+        params.add("c=${state.args.chapterIndex}");
+      }
+      if (state.args.verseIndex != null) {
+        params.add("v=${state.args.verseIndex}");
+      }
+
+      url += params.join("&");
+    }
+    return url;
   }
 
   Future<void> _stopHttpService() async {
@@ -104,8 +122,8 @@ class BookEditorLogic extends GetxController {
 
   void _handleRequest(HttpRequest request) async {
     final response = request.response;
-    final username = state.user.value;
-    final password = state.password.value;
+    final username = "0";
+    final password = "0";
 
     final authHeader = request.headers.value(HttpHeaders.authorizationHeader);
     final expectedAuth = 'Basic ${base64.encode(utf8.encode('$username:$password'))}';
@@ -160,10 +178,10 @@ class BookEditorLogic extends GetxController {
       var rootIndex = request.requestedUri.toString().lastIndexOf('/');
       var url = request.requestedUri.toString().substring(0, rootIndex);
       url = url.joinPath(Classroom.curr.toString());
-      url = url.joinPath(state.book.bookId.toString());
+      url = url.joinPath(state.args.bookShow.bookId.toString());
       Map<String, dynamic> docMap = {};
       bool success = await DocHelp.getDocMapFromDb(
-        bookId: state.book.bookId,
+        bookId: state.args.bookShow.bookId,
         ret: docMap,
         note: true,
         databaseData: true,
@@ -187,7 +205,7 @@ class BookEditorLogic extends GetxController {
         final content = await utf8.decoder.bind(request).join();
         final Map<String, dynamic> jsonData = jsonDecode(content);
 
-        var result = await ImportHelp.reimport(state.book.bookId, jsonData);
+        var result = await ImportHelp.reimport(state.args.bookShow.bookId, jsonData);
         if (!result) {
           response.statusCode = HttpStatus.expectationFailed;
           response.write("Upload failed.");
