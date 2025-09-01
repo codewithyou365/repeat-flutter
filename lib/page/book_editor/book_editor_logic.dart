@@ -124,8 +124,8 @@ class BookEditorLogic extends GetxController {
 
   void _handleRequest(HttpRequest request) async {
     final response = request.response;
-    final username = "0";
-    final password = "0";
+    final username = state.user.value;
+    final password = state.password.value;
 
     final authHeader = request.headers.value(HttpHeaders.authorizationHeader);
     final expectedAuth = 'Basic ${base64.encode(utf8.encode('$username:$password'))}';
