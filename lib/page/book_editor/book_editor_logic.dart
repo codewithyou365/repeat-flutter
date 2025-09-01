@@ -80,15 +80,17 @@ class BookEditorLogic extends GetxController {
   }
 
   String getUrl(String ip) {
+    final chapterIndex = state.args.chapterIndex;
+    final verseIndex = state.args.verseIndex;
     String url = 'http://$ip:$port${state.lanAddressSuffix}';
-    if (state.args.chapterIndex != null || state.args.verseIndex != null) {
+    if (chapterIndex != null || verseIndex != null) {
       url += "?";
       List<String> params = [];
-      if (state.args.chapterIndex != null) {
-        params.add("c=${state.args.chapterIndex}");
+      if (chapterIndex != null) {
+        params.add("c=${chapterIndex + 1}");
       }
-      if (state.args.verseIndex != null) {
-        params.add("v=${state.args.verseIndex}");
+      if (verseIndex != null) {
+        params.add("v=${verseIndex + 1}");
       }
 
       url += params.join("&");
