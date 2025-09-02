@@ -261,26 +261,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                                 versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
                                 selectText: search.value,
                                 onEdit: () {
-                                  searchFocusNode.unfocus();
-                                  var contentM = jsonDecode(book.bookContent);
-                                  var content = const JsonEncoder.withIndent(' ').convert(contentM);
-                                  Nav.editor.push(
-                                    arguments: EditorArgs(
-                                      title: I18nKey.labelBook.tr,
-                                      value: content,
-                                      save: (str) async {
-                                        await Db().db.bookDao.updateBookContent(book.bookId, str);
-                                        parentLogic.update([ViewLogicBookList.bodyId]);
-                                      },
-                                      onAdvancedEdit: () async {
-                                        Nav.bookEditor.push(arguments: [BookEditorArgs(bookShow: book)]);
-                                      },
-                                      onHistory: () async {
-                                        List<BookContentVersion> historyData = await Db().db.bookContentVersionDao.list(book.bookId);
-                                        await historyList.show(historyData, focus: true.obs);
-                                      },
-                                    ),
-                                  );
+                                  onEdit(book);
                                 },
                               ),
                             ],
@@ -294,7 +275,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                                 PopupMenuItem<String>(
                                   onTap: () {
-                                    Nav.bookEditor.push(arguments: [book]);
+                                    onEdit(book);
                                   },
                                   child: Text(I18nKey.edit.tr),
                                 ),
@@ -321,6 +302,29 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
           ],
         );
       },
+    );
+  }
+
+  void onEdit(BookShow book) {
+    searchFocusNode.unfocus();
+    var contentM = jsonDecode(book.bookContent);
+    var content = const JsonEncoder.withIndent(' ').convert(contentM);
+    Nav.editor.push(
+      arguments: EditorArgs(
+        title: I18nKey.labelBook.tr,
+        value: content,
+        save: (str) async {
+          await Db().db.bookDao.updateBookContent(book.bookId, str);
+          parentLogic.update([ViewLogicBookList.bodyId]);
+        },
+        onAdvancedEdit: () async {
+          Nav.bookEditor.push(arguments: [BookEditorArgs(bookShow: book)]);
+        },
+        onHistory: () async {
+          List<BookContentVersion> historyData = await Db().db.bookContentVersionDao.list(book.bookId);
+          await historyList.show(historyData, focus: true.obs);
+        },
+      ),
     );
   }
 

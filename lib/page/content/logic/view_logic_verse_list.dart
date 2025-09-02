@@ -404,35 +404,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                             versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
                             selectText: search.value,
                             onEdit: () {
-                              searchFocusNode.unfocus();
-                              var contentM = jsonDecode(verse.verseContent);
-                              var content = const JsonEncoder.withIndent(' ').convert(contentM);
-                              Nav.editor.push(
-                                arguments: EditorArgs(
-                                  title: I18nKey.labelVerseName.tr,
-                                  value: content,
-                                  save: (str) async {
-                                    await Db().db.verseDao.updateVerseContent(verse.verseId, str);
-                                    parentLogic.update([ViewLogicVerseList.bodyId]);
-                                  },
-                                  onAdvancedEdit: () async {
-                                    final book = originalBookShow.firstWhere((e) => e.bookId == verse.bookId);
-                                    Nav.bookEditor.push(
-                                      arguments: [
-                                        BookEditorArgs(
-                                          bookShow: book,
-                                          chapterIndex: verse.chapterIndex,
-                                          verseIndex: verse.verseIndex,
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                  onHistory: () async {
-                                    List<VerseContentVersion> historyData = await Db().db.verseContentVersionDao.list(verse.verseId);
-                                    await historyList.show(historyData, focus: true.obs);
-                                  },
-                                ),
-                              );
+                              onEdit(verse);
                             },
                           ),
                           const SizedBox(height: 8),
@@ -482,6 +454,12 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                         PopupMenuButton<String>(
                           icon: const Icon(Icons.more_vert),
                           itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                            PopupMenuItem<String>(
+                              onTap: () {
+                                onEdit(verse);
+                              },
+                              child: Text(I18nKey.edit.tr),
+                            ),
                             PopupMenuItem<String>(
                               onTap: () {
                                 MsgBox.myDialog(
@@ -564,6 +542,38 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
           ],
         );
       },
+    );
+  }
+
+  void onEdit(VerseShow verse) {
+    searchFocusNode.unfocus();
+    var contentM = jsonDecode(verse.verseContent);
+    var content = const JsonEncoder.withIndent(' ').convert(contentM);
+    Nav.editor.push(
+      arguments: EditorArgs(
+        title: I18nKey.labelVerseName.tr,
+        value: content,
+        save: (str) async {
+          await Db().db.verseDao.updateVerseContent(verse.verseId, str);
+          parentLogic.update([ViewLogicVerseList.bodyId]);
+        },
+        onAdvancedEdit: () async {
+          final book = originalBookShow.firstWhere((e) => e.bookId == verse.bookId);
+          Nav.bookEditor.push(
+            arguments: [
+              BookEditorArgs(
+                bookShow: book,
+                chapterIndex: verse.chapterIndex,
+                verseIndex: verse.verseIndex,
+              ),
+            ],
+          );
+        },
+        onHistory: () async {
+          List<VerseContentVersion> historyData = await Db().db.verseContentVersionDao.list(verse.verseId);
+          await historyList.show(historyData, focus: true.obs);
+        },
+      ),
     );
   }
 

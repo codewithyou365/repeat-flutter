@@ -343,31 +343,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                             versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
                             selectText: search.value,
                             onEdit: () {
-                              searchFocusNode.unfocus();
-                              var contentM = jsonDecode(chapter.chapterContent);
-                              var content = const JsonEncoder.withIndent(' ').convert(contentM);
-                              Nav.editor.push(
-                                arguments: EditorArgs(
-                                  title: I18nKey.labelChapterName.tr,
-                                  value: content,
-                                  save: (str) async {
-                                    await Db().db.chapterDao.updateChapterContent(chapter.chapterId, str);
-                                    parentLogic.update([ViewLogicChapterList.bodyId]);
-                                  },
-                                  onAdvancedEdit: () async {
-                                    final book = originalBookShow.firstWhere((e) => e.bookId == chapter.bookId);
-                                    Nav.bookEditor.push(
-                                      arguments: [
-                                        BookEditorArgs(bookShow: book, chapterIndex: chapter.chapterIndex),
-                                      ],
-                                    );
-                                  },
-                                  onHistory: () async {
-                                    List<ChapterContentVersion> historyData = await Db().db.chapterContentVersionDao.list(chapter.chapterId);
-                                    await historyList.show(historyData, focus: true.obs);
-                                  },
-                                ),
-                              );
+                              onEdit(chapter);
                             },
                           ),
                         ],
@@ -379,6 +355,12 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                         PopupMenuButton<String>(
                           icon: const Icon(Icons.more_vert),
                           itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                            PopupMenuItem<String>(
+                              onTap: () {
+                                onEdit(chapter);
+                              },
+                              child: Text(I18nKey.edit.tr),
+                            ),
                             PopupMenuItem<String>(
                               onTap: () {
                                 MsgBox.myDialog(
@@ -461,6 +443,34 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
           ],
         );
       },
+    );
+  }
+
+  void onEdit(ChapterShow chapter) {
+    searchFocusNode.unfocus();
+    var contentM = jsonDecode(chapter.chapterContent);
+    var content = const JsonEncoder.withIndent(' ').convert(contentM);
+    Nav.editor.push(
+      arguments: EditorArgs(
+        title: I18nKey.labelChapterName.tr,
+        value: content,
+        save: (str) async {
+          await Db().db.chapterDao.updateChapterContent(chapter.chapterId, str);
+          parentLogic.update([ViewLogicChapterList.bodyId]);
+        },
+        onAdvancedEdit: () async {
+          final book = originalBookShow.firstWhere((e) => e.bookId == chapter.bookId);
+          Nav.bookEditor.push(
+            arguments: [
+              BookEditorArgs(bookShow: book, chapterIndex: chapter.chapterIndex),
+            ],
+          );
+        },
+        onHistory: () async {
+          List<ChapterContentVersion> historyData = await Db().db.chapterContentVersionDao.list(chapter.chapterId);
+          await historyList.show(historyData, focus: true.obs);
+        },
+      ),
     );
   }
 
