@@ -63,6 +63,10 @@
         li.active {
             background-color: #ffff99;
         }
+
+        li.roam-active {
+            background-color: #add8e6;
+        }
     </style>
     <script src="/ace.js"></script>
     <script src="/keybinding-vim.min.js"></script>
@@ -76,7 +80,7 @@
     <button class="commit-btn" onclick="formatJSON()">Format JSON</button>
 </h2>
 <div class="container">
-    <div id="menu"></div>
+    <div id="menu" tabindex="0"></div>
     <div id="editor-container">
         <div id="editor"></div>
     </div>
@@ -93,6 +97,13 @@
         bindKey: {win: "Ctrl-S", mac: "Cmd-S"},
         exec: function (_) {
             formatJSON();
+        }
+    });
+    editor.commands.addCommand({
+        name: "switchFocus",
+        bindKey: {win: "Ctrl-Shift-E", mac: "Command-Shift-E"},
+        exec: function(_) {
+            document.getElementById('menu').focus();
         }
     });
     // Define custom Vim ex command for formatting
@@ -127,6 +138,8 @@
     }
 
     var clickedMenu = false;
+    var menuItems = [];
+    var currentRoamIndex = -1;
 
     function generateMenu() {
         const menuDiv = document.getElementById('menu');
@@ -147,13 +160,22 @@
                         chapterItem.id = `chapter-${chapterIndex}`;
                         chapterItem.textContent = `Chapter ${chapterIndex + 1}`;
                         chapterItem.style.cursor = 'pointer';
-                        chapterItem.onclick = (event) => {
-                            event.stopPropagation();
+                        chapterItem.navigate = () => {
                             editor.scrollToLine(chapterLine, true, true, () => {
                             });
                             editor.gotoLine(chapterLine + 1, 0, true);
                             editor.focus();
                             clickedMenu = true;
+                        };
+                        chapterItem.onclick = (event) => {
+                            event.stopPropagation();
+                            currentRoamIndex = menuItems.indexOf(chapterItem);
+                            highlightRoam();
+                            menuDiv.focus();
+                        };
+                        chapterItem.ondblclick = (event) => {
+                            event.stopPropagation();
+                            chapterItem.navigate();
                         };
                         menuList.appendChild(chapterItem);
 
@@ -168,13 +190,22 @@
                                     verseItem.id = `verse-${chapterIndex}-${verseIndex}`;
                                     verseItem.textContent = `Verse ${verseIndex + 1}`;
                                     verseItem.style.cursor = 'pointer';
-                                    verseItem.onclick = (event) => {
-                                        event.stopPropagation();
+                                    verseItem.navigate = () => {
                                         editor.scrollToLine(verseLine, true, true, () => {
                                         });
                                         editor.gotoLine(verseLine + 1, 0, true);
                                         editor.focus();
                                         clickedMenu = true;
+                                    };
+                                    verseItem.onclick = (event) => {
+                                        event.stopPropagation();
+                                        currentRoamIndex = menuItems.indexOf(verseItem);
+                                        highlightRoam();
+                                        menuDiv.focus();
+                                    };
+                                    verseItem.ondblclick = (event) => {
+                                        event.stopPropagation();
+                                        verseItem.navigate();
                                     };
                                     verseList.appendChild(verseItem);
                                 }
@@ -184,9 +215,18 @@
                     }
                 });
                 menuDiv.appendChild(menuList);
+                menuItems = Array.from(menuDiv.querySelectorAll('li'));
             }
         } catch (err) {
             console.error("Error parsing JSON for menu:", err);
+        }
+    }
+
+    function highlightRoam() {
+        menuItems.forEach(item => item.classList.remove('roam-active'));
+        if (currentRoamIndex >= 0 && currentRoamIndex < menuItems.length) {
+            menuItems[currentRoamIndex].classList.add('roam-active');
+            menuItems[currentRoamIndex].scrollIntoView({block: 'nearest'});
         }
     }
 
@@ -283,6 +323,65 @@
     });
 
     editor.on('changeSelection', debounce(updateMenuHighlight, 100));
+
+    const menuDiv = document.getElementById('menu');
+    menuDiv.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (currentRoamIndex < menuItems.length - 1) {
+                currentRoamIndex++;
+            } else {
+                currentRoamIndex = 0;
+            }
+            highlightRoam();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (currentRoamIndex > 0) {
+                currentRoamIndex--;
+            } else {
+                currentRoamIndex = menuItems.length - 1;
+            }
+            highlightRoam();
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (currentRoamIndex >= 0 && currentRoamIndex < menuItems.length) {
+                const item = menuItems[currentRoamIndex];
+                if (item.navigate) {
+                    item.navigate();
+                }
+            }
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            editor.focus();
+        }
+    });
+
+    menuDiv.addEventListener('focus', () => {
+        const active = menuDiv.querySelector('li.active');
+        if (active && menuItems.includes(active)) {
+            currentRoamIndex = menuItems.indexOf(active);
+        } else if (menuItems.length > 0) {
+            currentRoamIndex = 0;
+        }
+        highlightRoam();
+    });
+
+    menuDiv.addEventListener('blur', () => {
+        menuItems.forEach(item => item.classList.remove('roam-active'));
+        currentRoamIndex = -1;
+    });
+
+    // Add shortcut for switching focus: Command+Shift+E (Mac) or Ctrl+Shift+E (Windows)
+    document.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toUpperCase() === 'E') {
+            e.preventDefault();
+            if (document.activeElement === menuDiv) {
+                editor.focus();
+            } else {
+                menuDiv.focus();
+            }
+        }
+    });
 
     initBook();
 
