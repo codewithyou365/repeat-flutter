@@ -60,6 +60,10 @@
             padding-left: 20px;
         }
 
+        li.verse {
+            background-color: #ffffff;
+        }
+
         li.active {
             background-color: #ffff99;
         }
@@ -102,7 +106,7 @@
     editor.commands.addCommand({
         name: "switchFocus",
         bindKey: {win: "Ctrl-Shift-E", mac: "Command-Shift-E"},
-        exec: function(_) {
+        exec: function (_) {
             document.getElementById('menu').focus();
         }
     });
@@ -189,6 +193,7 @@
                                     const verseItem = document.createElement('li');
                                     verseItem.id = `verse-${chapterIndex}-${verseIndex}`;
                                     verseItem.textContent = `Verse ${verseIndex + 1}`;
+                                    verseItem.classList.add("verse");
                                     verseItem.style.cursor = 'pointer';
                                     verseItem.navigate = () => {
                                         editor.scrollToLine(verseLine, true, true, () => {
