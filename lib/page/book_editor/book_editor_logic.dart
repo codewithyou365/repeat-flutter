@@ -10,6 +10,7 @@ import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/common/url.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/import_help.dart';
 import 'package:repeat_flutter/page/content/content_logic.dart';
@@ -19,18 +20,30 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'book_editor_args.dart';
 import 'book_editor_state.dart';
+import 'logic/browse.dart';
 
 class BookEditorLogic extends GetxController {
   static const int port = 40321;
   static const String id = "BookEditorLogic";
   final BookEditorState state = BookEditorState();
   HttpServer? _httpServer;
+  Directory? editorDir;
 
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
     state.args = Get.arguments[0] as BookEditorArgs;
     randCredentials(show: false);
+    await _initEditorDir(state.args.bookShow.bookId);
+  }
+
+  Future<void> _initEditorDir(int bookId) async {
+    final rootDir = await DocPath.getContentPath();
+    final appDir = rootDir.joinPath(DocPath.getRelativePath(bookId));
+    editorDir = Directory(appDir);
+    if (!await editorDir!.exists()) {
+      await editorDir!.create(recursive: true);
+    }
   }
 
   void switchWeb(bool enable) {
@@ -139,9 +152,12 @@ class BookEditorLogic extends GetxController {
       return;
     }
 
-    if (request.uri.path == '/___hello_world') {
+    final path = request.uri.path;
+    if (path == '/___hello_world') {
       response.statusCode = HttpStatus.ok;
       response.write('{"message": "Hello, World!"}');
+    } else if (path == '/browse') {
+      await handleBrowse(request, editorDir);
     } else {
       await _serveFile(request.uri.pathSegments, request);
     }

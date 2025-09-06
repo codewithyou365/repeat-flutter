@@ -15,8 +15,8 @@ class DocPath {
     return "index.json";
   }
 
-  static String getRelativePath(int bookSerial) {
-    return '${Classroom.curr}'.joinPath('$bookSerial');
+  static String getRelativePath(int bookId) {
+    return '${Classroom.curr}'.joinPath('$bookId');
   }
 
   static Future<String> getContentPath() async {

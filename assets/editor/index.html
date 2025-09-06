@@ -42,9 +42,18 @@
             flex-direction: row;
         }
 
+        #dir {
+            width: 25%;
+            padding: 0px;
+            border-right: 1px solid #ccc;
+            overflow-y: auto;
+            height: 400px;
+            font-family: sans-serif;
+        }
+
         #menu {
-            width: 20%;
-            padding: 10px;
+            width: 8%;
+            padding: 0px;
             border-right: 1px solid #ccc;
             overflow-y: auto;
             height: 400px;
@@ -52,7 +61,7 @@
         }
 
         #editor-container {
-            width: 80%;
+            width: 67%;
         }
 
         ul {
@@ -84,6 +93,7 @@
     <button class="commit-btn" onclick="formatJSON()">Format JSON</button>
 </h2>
 <div class="container">
+    <div id="dir" tabindex="0"></div>
     <div id="menu" tabindex="0"></div>
     <div id="editor-container">
         <div id="editor"></div>
@@ -388,7 +398,29 @@
         }
     });
 
+    initFiles();
     initBook();
+
+    async function initFiles() {
+        try {
+            const res = await fetch('/browse', {
+                method: 'POST',
+            });
+            const paths = await res.json();
+            const dirDiv = document.getElementById('dir');
+            dirDiv.innerHTML = '';
+
+            const ul = document.createElement('ul');
+            paths.forEach(key => {
+                const li = document.createElement('li');
+                li.textContent = key;
+                ul.appendChild(li);
+            });
+            dirDiv.appendChild(ul);
+        } catch (err) {
+            console.error("Error fetching files:", err);
+        }
+    }
 
     async function initBook() {
         try {
