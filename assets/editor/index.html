@@ -320,6 +320,66 @@
         }
     }
 
+    function updateFileHighlight() {
+        try {
+            const bookData = JSON.parse(editor.getValue());
+            const map = jsonSourceMap.parse(editor.getValue());
+            const pointers = map.pointers;
+            const currentRow = editor.selection.getCursor().row;
+
+            let containingPath = '';
+            let maxLength = 0;
+            for (let p in pointers) {
+                const ptr = pointers[p];
+                if (ptr.value && currentRow >= ptr.value.line && currentRow <= ptr.valueEnd.line) {
+                    if (p.length > maxLength) {
+                        maxLength = p.length;
+                        containingPath = p;
+                    }
+                }
+            }
+
+            function getUFromPath(path) {
+                let segments = path.split('/').slice(1);
+                let current = bookData;
+                for (let seg of segments) {
+                    if (seg) current = current[seg];
+                }
+                while (true) {
+                    if (current.d && Array.isArray(current.d)) {
+                        return current.d.map(item => item.u).filter(u => u);
+                    }
+                    if (segments.length === 0) break;
+                    segments.pop();
+                    current = bookData;
+                    for (let seg of segments) {
+                        current = current[seg];
+                    }
+                }
+                return [];
+            }
+
+            const us = getUFromPath(containingPath);
+            document.querySelectorAll('#dir li.active').forEach(item => item.classList.remove('active'));
+            let firstMatched = null;
+            us.forEach(u => {
+                const dirItems = document.querySelectorAll('#dir li');
+                for (let item of dirItems) {
+                    if (item.textContent === u) {
+                        item.classList.add('active');
+                        if (!firstMatched) firstMatched = item;
+                        break;
+                    }
+                }
+            });
+            if (firstMatched) {
+                firstMatched.scrollIntoView({block: 'center'});
+            }
+        } catch (err) {
+            console.error("Error updating file highlight:", err);
+        }
+    }
+
     function debounce(func, wait) {
         let timeout;
         return function (...args) {
@@ -337,7 +397,10 @@
         }, 500);
     });
 
-    editor.on('changeSelection', debounce(updateMenuHighlight, 100));
+    editor.on('changeSelection', debounce(() => {
+        updateMenuHighlight();
+        updateFileHighlight();
+    }, 100));
 
     const menuDiv = document.getElementById('menu');
     menuDiv.addEventListener('keydown', (e) => {
