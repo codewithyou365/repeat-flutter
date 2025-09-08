@@ -6,7 +6,7 @@
     <style>
         #editor {
             width: 100%;
-            height: 400px;
+            height: 93vh;
         }
 
         label {
@@ -18,7 +18,8 @@
             background-color: #4CAF50; /* Green */
             border: none;
             color: white;
-            padding: 10px 22px;
+            margin: 1vh 20px 0 20px;
+            padding: 5px 20px;
             text-align: center;
             text-decoration: none;
             display: inline-block;
@@ -47,7 +48,7 @@
             padding: 0px;
             border-right: 1px solid #ccc;
             overflow-y: auto;
-            height: 400px;
+            height: 93vh;
             font-family: sans-serif;
         }
 
@@ -56,7 +57,7 @@
             padding: 0px;
             border-right: 1px solid #ccc;
             overflow-y: auto;
-            height: 400px;
+            height: 93vh;
             font-family: sans-serif;
         }
 
@@ -66,7 +67,7 @@
 
         ul {
             list-style-type: none;
-            padding-left: 20px;
+            padding-left: 10px;
         }
 
         li.verse {
@@ -86,12 +87,7 @@
     <script src="/json-source-map.js"></script>
 </head>
 <body>
-<h2>Edit Book
-    <label>
-        <input type="checkbox" id="vimToggle" onchange="toggleVimMode()"> Enable Vim Mode
-    </label>
-    <button class="commit-btn" onclick="formatJSON()">Format JSON</button>
-</h2>
+
 <div class="container">
     <div id="dir" tabindex="0"></div>
     <div id="menu" tabindex="0"></div>
@@ -99,8 +95,13 @@
         <div id="editor"></div>
     </div>
 </div>
-<br/>
-<button class="commit-btn" onclick="commit()">Commit</button>
+<div class="container">
+    <label class="commit-btn">
+        <input type="checkbox" id="vimToggle" onchange="toggleVimMode()"> Enable Vim Mode
+    </label>
+    <button class="commit-btn" onclick="formatJSON()">Format JSON</button>
+    <button class="commit-btn" onclick="commit()">Commit</button>
+</div>
 
 <script>
     var editor = ace.edit("editor");
