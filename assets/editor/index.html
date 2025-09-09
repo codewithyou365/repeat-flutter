@@ -538,6 +538,10 @@
     }
 
     async function commit() {
+        const sure = confirm("Are you sure you want to commit the current changes?");
+        if (!sure) {
+            return;
+        }
         const data = editor.getValue();
         try {
             const res = await fetch('/upload', {
