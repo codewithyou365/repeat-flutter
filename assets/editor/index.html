@@ -93,8 +93,8 @@
 <body>
 
 <div class="container">
-    <div id="dir" tabindex="0"></div>
-    <div id="menu" tabindex="0"></div>
+    <div id="dir"></div>
+    <div id="menu"></div>
     <div id="editor-container">
         <div id="editor"></div>
     </div>
@@ -113,9 +113,16 @@
     editor.setTheme("ace/theme/github");
     editor.commands.addCommand({
         name: "format",
-        bindKey: {win: "Ctrl-S", mac: "Cmd-S"},
+        bindKey: {win: "Shift-Alt-F", mac: "Shift-Option-F"},
         exec: function (_) {
             formatJSON();
+        }
+    });
+    editor.commands.addCommand({
+        name: "save",
+        bindKey: {win: "Ctrl-S", mac: "Cmd-S"},
+        exec: function (_) {
+            commit();
         }
     });
     editor.commands.addCommand({
@@ -125,11 +132,8 @@
             document.getElementById('menu').focus();
         }
     });
-    // Define custom Vim ex command for formatting
+
     var Vim = ace.require("ace/keyboard/vim").Vim;
-    Vim.defineEx("fmt", "fmt", function (_, __) {
-        formatJSON();
-    });
     Vim.map("<Space>", "<Leader>", "normal");
     Vim.mapCommand("<Leader>fd", "action", "aceCommand", {name: "format"}, {context: "normal"});
 
