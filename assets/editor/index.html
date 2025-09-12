@@ -85,6 +85,23 @@
         li.roam-active {
             background-color: #add8e6;
         }
+
+        li.selected {
+            background-color: #d3d3d3;
+        }
+
+        #context-menu {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        #context-menu:hover {
+            background-color: #f0f0f0;
+        }
     </style>
     <script src="/ace.js"></script>
     <script src="/keybinding-vim.min.js"></script>
@@ -106,6 +123,8 @@
     <button class="btn" onclick="formatJSON()">Format JSON</button>
     <button class="btn" onclick="commit()">Commit</button>
 </div>
+
+<div id="context-menu" style="display: none;">Play</div>
 
 <script>
     var editor = ace.edit("editor");
@@ -470,6 +489,39 @@
         }
     });
 
+    const contextMenu = document.getElementById('context-menu');
+    let selectedPath = '';
+    let selectedLi = null;
+
+    document.addEventListener('click', (event) => {
+        if (!contextMenu.contains(event.target)) {
+            contextMenu.style.display = 'none';
+            if (selectedLi) {
+                selectedLi.classList.remove('selected');
+                selectedLi = null;
+            }
+        }
+    });
+
+    contextMenu.addEventListener('click', () => {
+        const playUrl = `/play?path=${encodeURIComponent(selectedPath)}`;
+        if (selectedPath.endsWith(".mp3") || selectedPath.endsWith(".mp4")) {
+            window.open(playUrl, 'mediaPlayer', 'width=400,height=200');
+        } else {
+            const link = document.createElement('a');
+            link.href = playUrl;
+            link.download = selectedPath.split('/').pop();
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        contextMenu.style.display = 'none';
+        if (selectedLi) {
+            selectedLi.classList.remove('selected');
+            selectedLi = null;
+        }
+    });
+
     initFiles();
     initBook();
 
@@ -486,6 +538,18 @@
             paths.forEach(key => {
                 const li = document.createElement('li');
                 li.textContent = key;
+                li.style.cursor = 'pointer';
+                li.onclick = (event) => {
+                    event.stopPropagation();
+                    if (selectedLi) selectedLi.classList.remove('selected');
+                    li.classList.add('selected');
+                    selectedLi = li;
+                    selectedPath = key;
+                    contextMenu.textContent = key.endsWith('.mp3') || key.endsWith('.mp4') ? 'Play' : 'Download';
+                    contextMenu.style.display = 'block';
+                    contextMenu.style.left = `${event.pageX}px`;
+                    contextMenu.style.top = `${event.pageY}px`;
+                };
                 ul.appendChild(li);
             });
             dirDiv.appendChild(ul);

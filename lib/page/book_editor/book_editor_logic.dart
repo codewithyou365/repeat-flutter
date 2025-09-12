@@ -13,6 +13,7 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/import_help.dart';
+import 'package:repeat_flutter/page/book_editor/logic/play.dart';
 import 'package:repeat_flutter/page/content/content_logic.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -158,7 +159,9 @@ class BookEditorLogic extends GetxController {
       response.write('{"message": "Hello, World!"}');
     } else if (path == '/browse') {
       await handleBrowse(request, editorDir);
-    } else {
+    } else if (path == '/play') {
+      await handlePlay(request, editorDir);
+    }else {
       await _serveFile(request.uri.pathSegments, request);
     }
 
