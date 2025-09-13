@@ -63,6 +63,7 @@
             overflow-y: auto;
             height: 93vh;
             font-family: sans-serif;
+            outline: none;
         }
 
         #editor-container {
@@ -90,7 +91,7 @@
             background-color: #d3d3d3;
         }
 
-        #context-menu {
+        #file-menu {
             position: absolute;
             background-color: white;
             border: 1px solid #ccc;
@@ -99,7 +100,7 @@
             cursor: pointer;
         }
 
-        #context-menu:hover {
+        #file-menu:hover {
             background-color: #f0f0f0;
         }
     </style>
@@ -124,7 +125,7 @@
     <button class="btn" onclick="commit()">Commit</button>
 </div>
 
-<div id="context-menu" style="display: none;">Play</div>
+<div id="file-menu" style="display: none;">Play</div>
 
 <script>
     var editor = ace.edit("editor");
@@ -463,6 +464,10 @@
     });
 
     menuDiv.addEventListener('focus', () => {
+        clearFileSelected();
+        if (currentRoamIndex >= 0) {
+            return;
+        }
         const active = menuDiv.querySelector('li.active');
         if (active && menuItems.includes(active)) {
             currentRoamIndex = menuItems.indexOf(active);
@@ -489,36 +494,40 @@
         }
     });
 
-    const contextMenu = document.getElementById('context-menu');
-    let selectedPath = '';
-    let selectedLi = null;
+    const fileMenu = document.getElementById('file-menu');
+    let fileSelectedPath = '';
+    let fileSelectedLi = null;
+
+    function clearFileSelected() {
+        fileMenu.style.display = 'none';
+        if (fileSelectedLi) {
+            fileSelectedLi.classList.remove('selected');
+            fileSelectedLi = null;
+        }
+    }
 
     document.addEventListener('click', (event) => {
-        if (!contextMenu.contains(event.target)) {
-            contextMenu.style.display = 'none';
-            if (selectedLi) {
-                selectedLi.classList.remove('selected');
-                selectedLi = null;
-            }
+        if (!fileMenu.contains(event.target)) {
+            clearFileSelected();
         }
     });
 
-    contextMenu.addEventListener('click', () => {
-        const playUrl = `/play?path=${encodeURIComponent(selectedPath)}`;
-        if (selectedPath.endsWith(".mp3") || selectedPath.endsWith(".mp4")) {
+    fileMenu.addEventListener('click', () => {
+        const playUrl = `/play?path=${encodeURIComponent(fileSelectedPath)}`;
+        if (fileSelectedPath.endsWith('.mp3') || fileSelectedPath.endsWith('.mp4')) {
             window.open(playUrl, 'mediaPlayer', 'width=400,height=200');
         } else {
             const link = document.createElement('a');
             link.href = playUrl;
-            link.download = selectedPath.split('/').pop();
+            link.download = fileSelectedPath.split('/').pop();
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
-        contextMenu.style.display = 'none';
-        if (selectedLi) {
-            selectedLi.classList.remove('selected');
-            selectedLi = null;
+        fileMenu.style.display = 'none';
+        if (fileSelectedLi) {
+            fileSelectedLi.classList.remove('selected');
+            fileSelectedLi = null;
         }
     });
 
@@ -541,14 +550,14 @@
                 li.style.cursor = 'pointer';
                 li.onclick = (event) => {
                     event.stopPropagation();
-                    if (selectedLi) selectedLi.classList.remove('selected');
+                    if (fileSelectedLi) fileSelectedLi.classList.remove('selected');
                     li.classList.add('selected');
-                    selectedLi = li;
-                    selectedPath = key;
-                    contextMenu.textContent = key.endsWith('.mp3') || key.endsWith('.mp4') ? 'Play' : 'Download';
-                    contextMenu.style.display = 'block';
-                    contextMenu.style.left = `${event.pageX}px`;
-                    contextMenu.style.top = `${event.pageY}px`;
+                    fileSelectedLi = li;
+                    fileSelectedPath = key;
+                    fileMenu.textContent = key.endsWith('.mp3') || key.endsWith('.mp4') ? 'Play' : 'Download';
+                    fileMenu.style.display = 'block';
+                    fileMenu.style.left = `${event.pageX}px`;
+                    fileMenu.style.top = `${event.pageY}px`;
                 };
                 ul.appendChild(li);
             });
