@@ -13,7 +13,6 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/import_help.dart';
-import 'package:repeat_flutter/page/book_editor/logic/play.dart';
 import 'package:repeat_flutter/page/content/content_logic.dart';
 import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -22,6 +21,8 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'book_editor_args.dart';
 import 'book_editor_state.dart';
 import 'logic/browse.dart';
+import 'logic/delete.dart';
+import 'logic/play.dart';
 
 class BookEditorLogic extends GetxController {
   static const int port = 40321;
@@ -161,7 +162,9 @@ class BookEditorLogic extends GetxController {
       await handleBrowse(request, editorDir);
     } else if (path == '/play') {
       await handlePlay(request, editorDir);
-    }else {
+    } else if (path == '/delete') {
+      await handleDelete(request, editorDir);
+    } else {
       await _serveFile(request.uri.pathSegments, request);
     }
 

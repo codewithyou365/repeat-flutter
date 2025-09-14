@@ -100,8 +100,20 @@
             cursor: pointer;
         }
 
-        #file-menu:hover {
+        #file-menu div {
+            padding: 5px 10px;
+        }
+
+        #file-menu div:hover {
             background-color: #f0f0f0;
+        }
+
+        #file-menu .delete-btn {
+            color: #ff0000;
+        }
+
+        #file-menu .delete-btn:hover {
+            background-color: #ffe6e6;
         }
     </style>
     <script src="/ace.js"></script>
@@ -125,7 +137,10 @@
     <button class="btn" onclick="commit()">Commit</button>
 </div>
 
-<div id="file-menu" style="display: none;">Play</div>
+<div id="file-menu" style="display: none;">
+    <div id="file-menu-action">Play</div>
+    <div id="file-menu-delete" class="delete-btn">Delete</div>
+</div>
 
 <script>
     var editor = ace.edit("editor");
@@ -512,7 +527,7 @@
         }
     });
 
-    fileMenu.addEventListener('click', () => {
+    document.getElementById('file-menu-action').addEventListener('click', () => {
         const playUrl = `/play?path=${encodeURIComponent(fileSelectedPath)}`;
         if (fileSelectedPath.endsWith('.mp3') || fileSelectedPath.endsWith('.mp4')) {
             window.open(playUrl, 'mediaPlayer', 'width=400,height=200');
@@ -524,11 +539,25 @@
             link.click();
             document.body.removeChild(link);
         }
-        fileMenu.style.display = 'none';
-        if (fileSelectedLi) {
-            fileSelectedLi.classList.remove('selected');
-            fileSelectedLi = null;
+        clearFileSelected();
+    });
+
+    document.getElementById('file-menu-delete').addEventListener('click', async () => {
+        const confirmDelete = confirm(`Are you sure you want to delete ${fileSelectedPath}?`);
+        if (confirmDelete) {
+            try {
+                const res = await fetch(`/delete?path=${encodeURIComponent(fileSelectedPath)}`, {
+                    method: 'POST',
+                });
+                const text = await res.text();
+                alert("Server response: " + text);
+                clearFileSelected();
+                initFiles();
+            } catch (err) {
+                alert("Error deleting file: " + err);
+            }
         }
+        clearFileSelected();
     });
 
     initFiles();
@@ -554,7 +583,7 @@
                     li.classList.add('selected');
                     fileSelectedLi = li;
                     fileSelectedPath = key;
-                    fileMenu.textContent = key.endsWith('.mp3') || key.endsWith('.mp4') ? 'Play' : 'Download';
+                    document.getElementById('file-menu-action').textContent = key.endsWith('.mp3') || key.endsWith('.mp4') ? 'Play' : 'Download';
                     fileMenu.style.display = 'block';
                     fileMenu.style.left = `${event.pageX}px`;
                     fileMenu.style.top = `${event.pageY}px`;
