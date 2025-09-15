@@ -23,6 +23,7 @@ import 'book_editor_state.dart';
 import 'logic/browse.dart';
 import 'logic/delete.dart';
 import 'logic/play.dart';
+import 'logic/upload.dart';
 
 class BookEditorLogic extends GetxController {
   static const int port = 40321;
@@ -164,6 +165,8 @@ class BookEditorLogic extends GetxController {
       await handlePlay(request, editorDir);
     } else if (path == '/delete') {
       await handleDelete(request, editorDir);
+    } else if (path == '/upload' && request.method == 'POST') {
+      await handleUpload(request, editorDir);
     } else {
       await _serveFile(request.uri.pathSegments, request);
     }

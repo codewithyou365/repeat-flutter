@@ -22,7 +22,7 @@
             background-color: #4CAF50; /* Green */
             border: none;
             color: white;
-            margin: 1vh 20px 0 20px;
+            margin: 1vh 10px 0 10px;
             padding: 5px 20px;
             text-align: center;
             text-decoration: none;
@@ -43,6 +43,12 @@
         }
 
         .container {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .container2 {
+            justify-content: space-between;
             display: flex;
             flex-direction: row;
         }
@@ -115,6 +121,10 @@
         #file-menu .delete-btn:hover {
             background-color: #ffe6e6;
         }
+
+        #file-input {
+            display: none;
+        }
     </style>
     <script src="/ace.js"></script>
     <script src="/keybinding-vim.min.js"></script>
@@ -129,18 +139,23 @@
         <div id="editor"></div>
     </div>
 </div>
-<div class="container">
-    <label class="btn">
-        <input type="checkbox" id="vimToggle" onchange="toggleVimMode()"> Enable Vim Mode
-    </label>
-    <button class="btn" onclick="formatJSON()">Format JSON</button>
-    <button class="btn" onclick="commit()">Commit</button>
+<div class="container2">
+    <button class="btn" onclick="uploadFile()">Upload File</button>
+    <div class="container">
+        <button class="btn" onclick="commit()">Commit</button>
+        <label class="btn">
+            <input type="checkbox" id="vimToggle" onchange="toggleVimMode()"> Vim Mode
+        </label>
+        <button class="btn" onclick="formatJSON()">Format JSON</button>
+    </div>
 </div>
 
 <div id="file-menu" style="display: none;">
     <div id="file-menu-action">Play</div>
     <div id="file-menu-delete" class="delete-btn">Delete</div>
 </div>
+
+<input type="file" id="file-input"/>
 
 <script>
     var editor = ace.edit("editor");
@@ -665,6 +680,30 @@
         } catch (err) {
             alert("Error sending data: " + err);
         }
+    }
+
+    function uploadFile() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('file', file);
+                try {
+                    const res = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const json = await res.json();
+                    alert(`Upload successful: ${JSON.stringify(json)}`);
+                    initFiles();
+                } catch (err) {
+                    alert("Error uploading file: " + err);
+                }
+            }
+        };
+        input.click();
     }
 </script>
 </body>
