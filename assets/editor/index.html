@@ -125,6 +125,23 @@
         #file-input {
             display: none;
         }
+
+        .notification {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: #45a049;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
     </style>
     <script src="/ace.js"></script>
     <script src="/keybinding-vim.min.js"></script>
@@ -151,7 +168,8 @@
 </div>
 
 <div id="file-menu" style="display: none;">
-    <div id="file-menu-action">Play</div>
+    <div id="file-menu-copy">Copy</div>
+    <div id="file-menu-play">Play</div>
     <div id="file-menu-delete" class="delete-btn">Delete</div>
 </div>
 
@@ -193,6 +211,24 @@
         } else {
             editor.setKeyboardHandler(null);
         }
+    }
+
+    function showNotification(message) {
+        let notification = document.getElementById('notification');
+        if (!notification) {
+            notification = document.createElement('div');
+            notification.id = 'notification';
+            notification.className = 'notification';
+            document.body.appendChild(notification);
+        }
+        notification.textContent = message;
+        notification.classList.add('show');
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 2000);
     }
 
     function formatJSON() {
@@ -542,7 +578,32 @@
         }
     });
 
-    document.getElementById('file-menu-action').addEventListener('click', () => {
+    document.getElementById('file-menu-copy').addEventListener('click', () => {
+        const path = fileSelectedPath;
+        clearFileSelected();
+        if (path) {
+            const textarea = document.createElement('textarea');
+            textarea.value = path;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showNotification('Path copied to clipboard!');
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+                showNotification('Failed to copy path.');
+            }
+            document.body.removeChild(textarea);
+        } else {
+            console.warn('No file selected.');
+            showNotification('No file selected.');
+        }
+    });
+
+    document.getElementById('file-menu-play').addEventListener('click', () => {
         const playUrl = `/play?path=${encodeURIComponent(fileSelectedPath)}`;
         if (fileSelectedPath.endsWith('.mp3') || fileSelectedPath.endsWith('.mp4')) {
             window.open(playUrl, 'mediaPlayer', 'width=400,height=200');
@@ -598,7 +659,7 @@
                     li.classList.add('selected');
                     fileSelectedLi = li;
                     fileSelectedPath = key;
-                    document.getElementById('file-menu-action').textContent = key.endsWith('.mp3') || key.endsWith('.mp4') ? 'Play' : 'Download';
+                    document.getElementById('file-menu-play').textContent = key.endsWith('.mp3') || key.endsWith('.mp4') ? 'Play' : 'Download';
                     fileMenu.style.display = 'block';
                     fileMenu.style.left = `${event.pageX}px`;
                     fileMenu.style.top = `${event.pageY}px`;
