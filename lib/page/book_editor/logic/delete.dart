@@ -21,9 +21,12 @@ Future<void> handleDelete(HttpRequest request, Directory? dir) async {
     if (await file.exists()) {
       await file.delete();
       response.statusCode = HttpStatus.ok;
+      response.write('Delete success');
     } else {
       response.statusCode = HttpStatus.notFound;
+      response.write('Not Found');
     }
+    await response.close();
   } catch (e) {
     response.statusCode = HttpStatus.internalServerError;
   }

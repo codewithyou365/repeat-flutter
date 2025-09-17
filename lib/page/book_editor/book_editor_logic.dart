@@ -170,8 +170,6 @@ class BookEditorLogic extends GetxController {
     } else {
       await _serveFile(request.uri.pathSegments, request);
     }
-
-    await response.close();
   }
 
   Future<void> _serveFile(List<String> pathVerses, HttpRequest request) async {
@@ -226,6 +224,7 @@ class BookEditorLogic extends GetxController {
       response.headers.contentType = ContentType.json;
       response.write(json);
       await response.close();
+      return;
     }
     if (path == "/upload") {
       try {
