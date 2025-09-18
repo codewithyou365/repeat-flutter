@@ -730,7 +730,7 @@
         }
         const data = editor.getValue();
         try {
-            const res = await fetch('/upload', {
+            const res = await fetch('/commit', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: data

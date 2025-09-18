@@ -8,19 +8,16 @@ import 'package:repeat_flutter/common/ip.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/common/url.dart';
-import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/doc_help.dart';
-import 'package:repeat_flutter/logic/import_help.dart';
-import 'package:repeat_flutter/page/content/content_logic.dart';
-import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'book_editor_args.dart';
 import 'book_editor_state.dart';
+import 'logic/book.dart';
 import 'logic/browse.dart';
+import 'logic/commit.dart';
 import 'logic/delete.dart';
 import 'logic/play.dart';
 import 'logic/upload.dart';
@@ -159,14 +156,18 @@ class BookEditorLogic extends GetxController {
     if (path == '/___hello_world') {
       response.statusCode = HttpStatus.ok;
       response.write('{"message": "Hello, World!"}');
-    } else if (path == '/browse') {
+    } else if (path == '/browse' && request.method == 'POST') {
       await handleBrowse(request, editorDir);
     } else if (path == '/play') {
       await handlePlay(request, editorDir);
-    } else if (path == '/delete') {
+    } else if (path == '/delete' && request.method == 'POST') {
       await handleDelete(request, editorDir);
     } else if (path == '/upload' && request.method == 'POST') {
       await handleUpload(request, editorDir);
+    } else if (path == '/commit' && request.method == 'POST') {
+      await handleCommit(request, state.args.bookShow.bookId);
+    } else if (path == '/book' && request.method == 'POST') {
+      await handleBook(request, state.args.bookShow.bookId);
     } else {
       await _serveFile(request.uri.pathSegments, request);
     }
@@ -198,55 +199,6 @@ class BookEditorLogic extends GetxController {
       response.write(str);
       await response.close();
       return;
-    }
-    if (path == "/book") {
-      var rootIndex = request.requestedUri.toString().lastIndexOf('/');
-      var url = request.requestedUri.toString().substring(0, rootIndex);
-      url = url.joinPath(Classroom.curr.toString());
-      url = url.joinPath(state.args.bookShow.bookId.toString());
-      Map<String, dynamic> docMap = {};
-      bool success = await DocHelp.getDocMapFromDb(
-        bookId: state.args.bookShow.bookId,
-        ret: docMap,
-        note: true,
-        databaseData: true,
-        rootUrl: url,
-      );
-
-      if (!success) {
-        response.statusCode = HttpStatus.internalServerError;
-        response.write('Failed to get book.');
-        await response.close();
-        return;
-      }
-
-      String json = jsonEncode(docMap);
-      response.headers.contentType = ContentType.json;
-      response.write(json);
-      await response.close();
-      return;
-    }
-    if (path == "/upload") {
-      try {
-        final content = await utf8.decoder.bind(request).join();
-        final Map<String, dynamic> jsonData = jsonDecode(content);
-
-        var result = await ImportHelp.reimport(state.args.bookShow.bookId, jsonData);
-        if (!result) {
-          response.statusCode = HttpStatus.expectationFailed;
-          response.write("Upload failed.");
-          return;
-        }
-        await Get.find<GsCrLogic>().init();
-        await Get.find<ContentLogic>().change();
-        response.statusCode = HttpStatus.ok;
-        response.write("Upload successful. Received ${jsonData.length} keys.");
-      } catch (e, st) {
-        response.statusCode = HttpStatus.badRequest;
-        response.write("Invalid JSON: $e");
-        print("Upload error: $e\n$st");
-      }
-      await response.close();
     }
   }
 }
