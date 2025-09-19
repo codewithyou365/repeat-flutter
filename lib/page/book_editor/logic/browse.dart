@@ -14,6 +14,7 @@ Future<void> handleBrowse(HttpRequest request, Directory? dir) async {
   } catch (e) {
     request.response.statusCode = HttpStatus.internalServerError;
   }
+  request.response.close();
 }
 
 Future<List<String>> find(Directory dir) async {

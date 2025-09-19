@@ -38,7 +38,6 @@ Future<void> handleUpload(HttpRequest request, Directory? editorDir) async {
 
       final fileHash = await Hash.toSha1(tempFile.path);
       final dc = DownloadContent(url: filename, hash: fileHash);
-      dc.url = dc.path;
 
       final folderPath = p.join(editorDir.path, dc.folder);
       await Directory(folderPath).create(recursive: true);
@@ -49,7 +48,7 @@ Future<void> handleUpload(HttpRequest request, Directory? editorDir) async {
       request.response
         ..statusCode = HttpStatus.ok
         ..headers.contentType = ContentType.json
-        ..write(jsonEncode(dc.toJson()));
+        ..write(dc.path);
       await request.response.close();
       return;
     }

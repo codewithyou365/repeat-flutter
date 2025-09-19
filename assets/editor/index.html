@@ -578,25 +578,33 @@
         }
     });
 
+    function copyText(str) {
+        const textarea = document.createElement('textarea');
+        textarea.value = str;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            return true;
+        } catch (err) {
+            return false;
+        } finally {
+            document.body.removeChild(textarea);
+        }
+    }
+
     document.getElementById('file-menu-copy').addEventListener('click', () => {
         const path = fileSelectedPath;
         clearFileSelected();
         if (path) {
-            const textarea = document.createElement('textarea');
-            textarea.value = path;
-            textarea.style.position = 'fixed';
-            textarea.style.opacity = '0';
-            document.body.appendChild(textarea);
-            textarea.focus();
-            textarea.select();
-            try {
-                document.execCommand('copy');
+            if (copyText(path)) {
                 showNotification('Path copied to clipboard!');
-            } catch (err) {
-                console.error('Fallback copy failed:', err);
+            } else {
                 showNotification('Failed to copy path.');
             }
-            document.body.removeChild(textarea);
         } else {
             console.warn('No file selected.');
             showNotification('No file selected.');
@@ -756,8 +764,9 @@
                         method: 'POST',
                         body: formData
                     });
-                    const json = await res.json();
-                    alert(`Upload successful: ${JSON.stringify(json)}`);
+                    const text = await res.text();
+                    const copyResult = copyText(text) ? " And The path copied to clipboard!" : "!";
+                    alert(`Upload successful${copyResult}\n${text}`);
                     initFiles();
                 } catch (err) {
                     alert("Error uploading file: " + err);
