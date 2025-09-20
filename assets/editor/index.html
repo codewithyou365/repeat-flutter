@@ -206,7 +206,15 @@
     Vim.mapCommand("<Leader>fd", "action", "aceCommand", {name: "format"}, {context: "normal"});
 
     function toggleVimMode() {
+        let switchValue = 0;
         if (document.getElementById('vimToggle').checked) {
+            switchValue = 1;
+        }
+        fetch('/setVimMode', {
+            method: 'POST',
+            body: `${switchValue}`
+        });
+        if (switchValue === 1) {
             editor.setKeyboardHandler("ace/keyboard/vim");
         } else {
             editor.setKeyboardHandler(null);
@@ -646,6 +654,7 @@
 
     initFiles();
     initBook();
+    initVimMode();
 
     async function initFiles() {
         try {
@@ -731,6 +740,19 @@
         }
     }
 
+    async function initVimMode() {
+        const res = await fetch('/getVimMode', {
+            method: 'POST',
+        });
+        const switchValue = await res.text();
+        if (switchValue === '1') {
+            document.getElementById('vimToggle').checked = true;
+            editor.setKeyboardHandler("ace/keyboard/vim");
+        } else {
+            editor.setKeyboardHandler(null);
+        }
+    }
+
     async function commit() {
         const sure = confirm("Are you sure you want to commit the current changes?");
         if (!sure) {
@@ -745,7 +767,6 @@
             });
             const text = await res.text();
             alert("Server response: " + text);
-            location.reload();
         } catch (err) {
             alert("Error sending data: " + err);
         }

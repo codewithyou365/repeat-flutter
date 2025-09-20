@@ -8,6 +8,7 @@ enum K {
   exportUrl,
   importUrl,
   allowRegisterNumber,
+  bookAdvancedEditorVimMode,
 }
 
 @Entity(primaryKeys: ['k'])

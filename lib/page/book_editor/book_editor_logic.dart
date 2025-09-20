@@ -21,6 +21,7 @@ import 'logic/commit.dart';
 import 'logic/delete.dart';
 import 'logic/play.dart';
 import 'logic/upload.dart';
+import 'logic/vim_mode.dart';
 
 class BookEditorLogic extends GetxController {
   static const int port = 40321;
@@ -168,6 +169,10 @@ class BookEditorLogic extends GetxController {
       await handleCommit(request, state.args.bookShow.bookId);
     } else if (path == '/book' && request.method == 'POST') {
       await handleBook(request, state.args.bookShow.bookId);
+    } else if (path == '/getVimMode' && request.method == 'POST') {
+      await handleGetVimMode(request);
+    } else if (path == '/setVimMode' && request.method == 'POST') {
+      await handleSetVimMode(request);
     } else {
       await _serveFile(request.uri.pathSegments, request);
     }
@@ -197,8 +202,7 @@ class BookEditorLogic extends GetxController {
       ByteData content = await rootBundle.load('assets/editor/$path');
       String str = utf8.decode(content.buffer.asUint8List());
       response.write(str);
-      await response.close();
-      return;
     }
+    await response.close();
   }
 }
