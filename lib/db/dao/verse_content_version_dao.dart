@@ -1,13 +1,17 @@
 import 'package:floor/floor.dart';
+import 'package:get/get.dart';
 import 'package:repeat_flutter/db/entity/content_version.dart';
+import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/db/entity/verse_content_version.dart';
 
 @dao
 abstract class VerseContentVersionDao {
-  @Query('SELECT * '
-      ' FROM VerseContentVersion'
-      ' WHERE verseId=:verseId')
+  @Query(
+    'SELECT * '
+    ' FROM VerseContentVersion'
+    ' WHERE verseId=:verseId',
+  )
   Future<List<VerseContentVersion>> list(int verseId);
 
   @Query('''
@@ -28,23 +32,31 @@ abstract class VerseContentVersionDao {
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertsOrFail(List<VerseContentVersion> entities);
 
-  @Query('DELETE FROM VerseContentVersion '
-      ' WHERE verseId not in (:verseIds)')
+  @Query(
+    'DELETE FROM VerseContentVersion '
+    ' WHERE verseId not in (:verseIds)',
+  )
   Future<void> remainByVerseIds(List<int> verseIds);
 
-  @Query('DELETE FROM VerseContentVersion'
-      ' WHERE classroomId=:classroomId')
+  @Query(
+    'DELETE FROM VerseContentVersion'
+    ' WHERE classroomId=:classroomId',
+  )
   Future<void> deleteByClassroomId(int classroomId);
 
-  @Query('DELETE FROM VerseContentVersion'
-      ' WHERE bookId=:bookId')
+  @Query(
+    'DELETE FROM VerseContentVersion'
+    ' WHERE bookId=:bookId',
+  )
   Future<void> deleteByBookId(int bookId);
 
   @Query('DELETE FROM VerseContentVersion WHERE chapterId=:chapterId')
   Future<void> deleteByChapterId(int chapterId);
 
-  @Query('DELETE FROM VerseContentVersion'
-      ' WHERE verseId=:verseId')
+  @Query(
+    'DELETE FROM VerseContentVersion'
+    ' WHERE verseId=:verseId',
+  )
   Future<void> deleteByVerseId(int verseId);
 
   Future<void> import(List<Verse> list) async {
@@ -72,10 +84,11 @@ abstract class VerseContentVersionDao {
     return needToInserts;
   }
 
-  Future<void> reimport(int bookId, List<Verse> inserts, List<Verse> updates) async {
+  Future<void> reimport(int bookId, List<Verse> inserts, List<Verse> updates, RxInt updateCount) async {
     List<int> remainVerseIds = updates.map((v) => v.id!).toList();
     await remainByVerseIds(remainVerseIds);
 
+    updateCount.value = 0;
     List<VerseContentVersion> needToInserts = toVerseContentVersion(inserts);
     List<VerseContentVersion> contentVersion = await currVersionList(bookId);
     Map<int, VerseContentVersion> idToContentVersion = {for (var v in contentVersion) v.verseId: v};
@@ -86,6 +99,7 @@ abstract class VerseContentVersionDao {
       if (version == null || version.content != content) {
         int currVersionNumber = 1;
         if (version != null) {
+          updateCount.value++;
           currVersionNumber = version.version + 1;
         }
         var tv = VerseContentVersion(

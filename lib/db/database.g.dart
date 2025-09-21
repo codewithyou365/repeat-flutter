@@ -717,10 +717,12 @@ class _$BookDao extends BookDao {
     List<Chapter> updateChapters,
     List<Verse> insertVerses,
     List<Verse> updateVerses,
+    RxInt updateVerseCount,
+    RxInt deleteVerseCount,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.reimport(
-          book, insertChapters, updateChapters, insertVerses, updateVerses);
+      await super.reimport(book, insertChapters, updateChapters, insertVerses,
+          updateVerses, updateVerseCount, deleteVerseCount);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
@@ -728,7 +730,13 @@ class _$BookDao extends BookDao {
           ..database = transaction;
         prepareDb(transactionDatabase);
         await transactionDatabase.bookDao.reimport(
-            book, insertChapters, updateChapters, insertVerses, updateVerses);
+            book,
+            insertChapters,
+            updateChapters,
+            insertVerses,
+            updateVerses,
+            updateVerseCount,
+            deleteVerseCount);
       });
     }
   }

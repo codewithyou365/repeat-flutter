@@ -766,7 +766,7 @@
                 body: data
             });
             const text = await res.text();
-            alert("Server response: " + text);
+            alert(text);
         } catch (err) {
             alert("Error sending data: " + err);
         }

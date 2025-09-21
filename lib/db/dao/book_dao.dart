@@ -3,6 +3,7 @@
 import 'dart:convert' as convert;
 
 import 'package:floor/floor.dart';
+import 'package:get/get.dart';
 import 'package:repeat_flutter/common/num.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/book_content_version.dart';
@@ -21,13 +22,15 @@ abstract class BookDao {
   static BookShow? Function(int chapterId)? getBookShow;
   static List<void Function(int chapterId)> setBookShowContent = [];
 
-  @Query('SELECT id bookId'
-      ',classroomId'
-      ',name'
-      ',sort'
-      ',content bookContent'
-      ',contentVersion bookContentVersion'
-      ' FROM Book where classroomId=:classroomId and enable=true ORDER BY sort')
+  @Query(
+    'SELECT id bookId'
+    ',classroomId'
+    ',name'
+    ',sort'
+    ',content bookContent'
+    ',contentVersion bookContentVersion'
+    ' FROM Book where classroomId=:classroomId and enable=true ORDER BY sort',
+  )
   Future<List<BookShow>> getAllBook(int classroomId);
 
   @Query('SELECT * FROM Book where classroomId=:classroomId ORDER BY sort')
@@ -60,16 +63,22 @@ abstract class BookDao {
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertBook(Book entity);
 
-  @Query('UPDATE Book set enable=:enable'
-      ' WHERE Book.id=:id')
+  @Query(
+    'UPDATE Book set enable=:enable'
+    ' WHERE Book.id=:id',
+  )
   Future<void> updateEnable(int id, bool enable);
 
-  @Query('DELETE FROM Book'
-      ' WHERE Book.classroomId=:classroomId')
+  @Query(
+    'DELETE FROM Book'
+    ' WHERE Book.classroomId=:classroomId',
+  )
   Future<void> deleteByClassroomId(int classroomId);
 
-  @Query('DELETE FROM Book'
-      ' WHERE Book.id=:bookId')
+  @Query(
+    'DELETE FROM Book'
+    ' WHERE Book.id=:bookId',
+  )
   Future<void> deleteById(int bookId);
 
   @transaction
@@ -107,14 +116,16 @@ abstract class BookDao {
       await updateBookContentVersionAndEnable(bookId, content, book.contentVersion + 1, enable);
     }
 
-    await db.bookContentVersionDao.insertOrFail(BookContentVersion(
-      classroomId: book.classroomId,
-      bookId: book.id!,
-      version: book.contentVersion + 1,
-      reason: VersionReason.editor,
-      content: content,
-      createTime: now,
-    ));
+    await db.bookContentVersionDao.insertOrFail(
+      BookContentVersion(
+        classroomId: book.classroomId,
+        bookId: book.id!,
+        version: book.contentVersion + 1,
+        reason: VersionReason.editor,
+        content: content,
+        createTime: now,
+      ),
+    );
     if (getBookShow != null) {
       BookShow? bookShow = getBookShow!(bookId);
       if (bookShow != null) {
@@ -170,7 +181,15 @@ abstract class BookDao {
   }
 
   @transaction
-  Future<void> reimport(Book book, List<Chapter> insertChapters, List<Chapter> updateChapters, List<Verse> insertVerses, List<Verse> updateVerses) async {
+  Future<void> reimport(
+    Book book,
+    List<Chapter> insertChapters,
+    List<Chapter> updateChapters,
+    List<Verse> insertVerses,
+    List<Verse> updateVerses,
+    RxInt updateVerseCount,
+    RxInt deleteVerseCount,
+  ) async {
     var bookId = book.id!;
     BookContentVersion? bookContentVersion = await db.bookContentVersionDao.reimport(book);
     if (bookContentVersion != null) {
@@ -187,7 +206,8 @@ abstract class BookDao {
     await db.verseTodayPrgDao.deleteByChapterIds(deletedChapterIds);
 
     var deletedVerseIds = await db.verseDao.reimport(bookId, insertChapters, updateChapters, insertVerses, updateVerses);
-    await db.verseContentVersionDao.reimport(bookId, insertVerses, updateVerses);
+    deleteVerseCount.value = deletedVerseIds.length;
+    await db.verseContentVersionDao.reimport(bookId, insertVerses, updateVerses, updateVerseCount);
     await db.verseDao.syncContentVersion(bookId);
 
     await db.gameDao.deleteByVerseIds(deletedVerseIds);
