@@ -754,16 +754,23 @@
     }
 
     async function commit() {
+        const data = editor.getValue();
+        let jsonData;
+        try {
+            jsonData = JSON.parse(data);
+        } catch (err) {
+            alert("Invalid JSON: " + err.message);
+            return;
+        }
         const sure = confirm("Are you sure you want to commit the current changes?");
         if (!sure) {
             return;
         }
-        const data = editor.getValue();
         try {
             const res = await fetch('/commit', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: data
+                body: JSON.stringify(jsonData)
             });
             const text = await res.text();
             alert(text);
