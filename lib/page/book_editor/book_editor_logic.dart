@@ -8,6 +8,7 @@ import 'package:repeat_flutter/common/ip.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/common/url.dart';
+import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -21,7 +22,7 @@ import 'logic/commit.dart';
 import 'logic/delete.dart';
 import 'logic/play.dart';
 import 'logic/upload.dart';
-import 'logic/vim_mode.dart';
+import 'logic/editor.dart';
 
 class BookEditorLogic extends GetxController {
   static const int port = 40321;
@@ -170,9 +171,13 @@ class BookEditorLogic extends GetxController {
     } else if (path == '/book' && request.method == 'POST') {
       await handleBook(request, state.args.bookShow.bookId);
     } else if (path == '/getVimMode' && request.method == 'POST') {
-      await handleGetVimMode(request);
+      await handleGetEditorStatus(request, K.bookAdvancedEditorVimMode);
     } else if (path == '/setVimMode' && request.method == 'POST') {
-      await handleSetVimMode(request);
+      await handleSetEditorStatus(request, K.bookAdvancedEditorVimMode);
+    } else if (path == '/getRelativeLineNumbers' && request.method == 'POST') {
+      await handleGetEditorStatus(request, K.bookAdvancedEditorRelativeNumbers);
+    } else if (path == '/setRelativeLineNumbers' && request.method == 'POST') {
+      await handleSetEditorStatus(request, K.bookAdvancedEditorRelativeNumbers);
     } else {
       await _serveFile(request.uri.pathSegments, request);
     }

@@ -142,6 +142,20 @@
         .notification.show {
             opacity: 1;
         }
+
+        #settings-menu {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding-bottom: 10px;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+        }
+
+        #settings-menu div {
+            padding: 5px 10px;
+        }
     </style>
     <script src="/ace.js"></script>
     <script src="/keybinding-vim.min.js"></script>
@@ -160,10 +174,8 @@
     <button class="btn" onclick="uploadFile()">Upload File</button>
     <div class="container">
         <button class="btn" onclick="commit()">Commit</button>
-        <label class="btn">
-            <input type="checkbox" id="vimToggle" onchange="toggleVimMode()"> Vim Mode
-        </label>
         <button class="btn" onclick="formatJSON()">Format JSON</button>
+        <button id="settings-menu-btn" class="btn" onclick="toggleSettingsMenu()">Settings</button>
     </div>
 </div>
 
@@ -171,6 +183,19 @@
     <div id="file-menu-copy">Copy</div>
     <div id="file-menu-play">Play</div>
     <div id="file-menu-delete" class="delete-btn">Delete</div>
+</div>
+
+<div id="settings-menu" style="display: none;">
+    <div class="btn">
+        <label>
+            <input type="checkbox" id="vimToggle" onchange="toggleVimMode()"> Vim Mode
+        </label>
+    </div>
+    <div class="btn">
+        <label>
+            <input type="checkbox" id="relativeToggle" onchange="toggleRelativeNumbers()"> Relative Numbers
+        </label>
+    </div>
 </div>
 
 <input type="file" id="file-input"/>
@@ -218,6 +243,35 @@
             editor.setKeyboardHandler("ace/keyboard/vim");
         } else {
             editor.setKeyboardHandler(null);
+        }
+    }
+
+    function toggleRelativeNumbers() {
+        let switchValue = 0;
+        if (document.getElementById('relativeToggle').checked) {
+            switchValue = 1;
+        }
+        fetch('/setRelativeLineNumbers', {
+            method: 'POST',
+            body: `${switchValue}`
+        });
+        editor.setOption('relativeLineNumbers', switchValue === 1);
+    }
+
+    function toggleSettingsMenu() {
+        const settingsMenu = document.getElementById('settings-menu');
+
+        if (settingsMenu.style.display === 'none' || !settingsMenu.style.display) {
+            settingsMenu.style.display = 'flex';
+            const settingsBtn = document.querySelector('.btn[onclick="toggleSettingsMenu()"]');
+            const rect = settingsBtn.getBoundingClientRect();
+
+            const menuHeight = settingsMenu.offsetHeight;
+            settingsMenu.style.left = `${rect.right - settingsMenu.offsetWidth}px`;
+            settingsMenu.style.top = `${rect.top + window.scrollY - menuHeight - 5}px`;
+
+        } else {
+            settingsMenu.style.display = 'none';
         }
     }
 
@@ -285,14 +339,16 @@
                             clickedMenu = true;
                         };
                         chapterItem.onclick = (event) => {
-                            event.stopPropagation();
-                            currentRoamIndex = menuItems.indexOf(chapterItem);
-                            highlightRoam();
-                            menuDiv.focus();
+                            if (event.target === chapterItem) {
+                                currentRoamIndex = menuItems.indexOf(chapterItem);
+                                highlightRoam();
+                                menuDiv.focus();
+                            }
                         };
                         chapterItem.ondblclick = (event) => {
-                            event.stopPropagation();
-                            chapterItem.navigate();
+                            if (event.target === chapterItem) {
+                                chapterItem.navigate();
+                            }
                         };
                         menuList.appendChild(chapterItem);
 
@@ -316,13 +372,11 @@
                                         clickedMenu = true;
                                     };
                                     verseItem.onclick = (event) => {
-                                        event.stopPropagation();
                                         currentRoamIndex = menuItems.indexOf(verseItem);
                                         highlightRoam();
                                         menuDiv.focus();
                                     };
                                     verseItem.ondblclick = (event) => {
-                                        event.stopPropagation();
                                         verseItem.navigate();
                                     };
                                     verseList.appendChild(verseItem);
@@ -538,7 +592,6 @@
     });
 
     menuDiv.addEventListener('focus', () => {
-        clearFileSelected();
         if (currentRoamIndex >= 0) {
             return;
         }
@@ -581,9 +634,19 @@
     }
 
     document.addEventListener('click', (event) => {
-        if (!fileMenu.contains(event.target)) {
-            clearFileSelected();
+        if (fileSelectedLi && !fileMenu.contains(event.target)) {
+            if (!fileSelectedLi.contains(event.target)) {
+                clearFileSelected();
+            }
         }
+        const settingsMenu = document.getElementById('settings-menu');
+        if (!settingsMenu.contains(event.target)) {
+            const settingsMenuBtn = document.getElementById('settings-menu-btn');
+            if (!settingsMenuBtn.contains(event.target)) {
+                settingsMenu.style.display = 'none';
+            }
+        }
+
     });
 
     function copyText(str) {
@@ -635,7 +698,7 @@
     });
 
     document.getElementById('file-menu-delete').addEventListener('click', async () => {
-        const confirmDelete = confirm(`Are you sure you want to delete ${fileSelectedPath}?`);
+        const confirmDelete = confirm(`Are you sure you want to delete\n${fileSelectedPath}?`);
         if (confirmDelete) {
             try {
                 const res = await fetch(`/delete?path=${encodeURIComponent(fileSelectedPath)}`, {
@@ -643,7 +706,6 @@
                 });
                 const text = await res.text();
                 alert("Server response: " + text);
-                clearFileSelected();
                 initFiles();
             } catch (err) {
                 alert("Error deleting file: " + err);
@@ -655,6 +717,7 @@
     initFiles();
     initBook();
     initVimMode();
+    initRelativeNumbers();
 
     async function initFiles() {
         try {
@@ -671,7 +734,6 @@
                 li.textContent = key;
                 li.style.cursor = 'pointer';
                 li.onclick = (event) => {
-                    event.stopPropagation();
                     if (fileSelectedLi) fileSelectedLi.classList.remove('selected');
                     li.classList.add('selected');
                     fileSelectedLi = li;
@@ -750,6 +812,19 @@
             editor.setKeyboardHandler("ace/keyboard/vim");
         } else {
             editor.setKeyboardHandler(null);
+        }
+    }
+
+    async function initRelativeNumbers() {
+        const res = await fetch('/getRelativeLineNumbers', {
+            method: 'POST',
+        });
+        const switchValue = await res.text();
+        if (switchValue === '1') {
+            document.getElementById('relativeToggle').checked = true;
+            editor.setOption('relativeLineNumbers', true);
+        } else {
+            editor.setOption('relativeLineNumbers', false);
         }
     }
 
