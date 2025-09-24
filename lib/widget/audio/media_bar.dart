@@ -18,6 +18,7 @@ class MediaBar extends StatefulWidget {
   final MediaPlayCallback onPlay;
   final MediaStopCallback onStop;
   final MediaEditCallback? onEdit;
+  final bool hideTime;
 
   const MediaBar({
     required this.width,
@@ -28,6 +29,7 @@ class MediaBar extends StatefulWidget {
     required this.onPlay,
     required this.onStop,
     required this.onEdit,
+    required this.hideTime,
     Key? key,
   }) : super(key: key);
 
@@ -177,6 +179,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
                 mediaVerseStartMs: widget.verseStartMs,
                 mediaVerseEndMs: widget.verseEndMs,
                 mediaDurationMs: widget.duration(),
+                hideTime: widget.hideTime,
               ),
             ),
           ),
@@ -251,6 +254,7 @@ class MediaBarPainter extends CustomPainter {
   final int mediaVerseStartMs;
   final int mediaVerseEndMs;
   final int mediaDurationMs;
+  final bool hideTime;
 
   late final Paint _centerLinePaint;
   late final Paint _gridLinePaint;
@@ -261,6 +265,7 @@ class MediaBarPainter extends CustomPainter {
     required this.mediaVerseStartMs,
     required this.mediaVerseEndMs,
     required this.mediaDurationMs,
+    required this.hideTime,
   }) {
     _centerLinePaint = Paint()
       ..color = Colors.blue
@@ -352,21 +357,22 @@ class MediaBarPainter extends CustomPainter {
 
       if (isMainTick) {
         tickHeight = 10.0;
+        if (!hideTime) {
+          final minutes = (tickTimeMs / 60000).floor();
+          final seconds = ((tickTimeMs % 60000) / 1000).floor();
+          final timeLabel = "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
 
-        final minutes = (tickTimeMs / 60000).floor();
-        final seconds = ((tickTimeMs % 60000) / 1000).floor();
-        final timeLabel = "${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}";
+          final textPainter = TextPainter(
+            text: TextSpan(
+              text: timeLabel,
+              style: TextStyle(color: isInVerseRange ? Colors.red.withValues(alpha: 0.8) : Colors.blueGrey, fontSize: 9),
+            ),
+            textDirection: TextDirection.ltr,
+          );
 
-        final textPainter = TextPainter(
-          text: TextSpan(
-            text: timeLabel,
-            style: TextStyle(color: isInVerseRange ? Colors.red.withValues(alpha: 0.8) : Colors.blueGrey, fontSize: 9),
-          ),
-          textDirection: TextDirection.ltr,
-        );
-
-        textPainter.layout();
-        textPainter.paint(canvas, Offset(tickX - textPainter.width / 2, scaleY + 2));
+          textPainter.layout();
+          textPainter.paint(canvas, Offset(tickX - textPainter.width / 2, scaleY + 2));
+        }
       } else {
         tickHeight = 5.0;
       }
@@ -382,6 +388,9 @@ class MediaBarPainter extends CustomPainter {
   }
 
   double _drawTimeText(Canvas canvas, Size size) {
+    if (hideTime) {
+      return 0;
+    }
     final elapsedTimeMs = (-offset / MediaBar.pixelPerMs).floor();
 
     final playPositionMs = mediaVerseStartMs + elapsedTimeMs;

@@ -45,6 +45,7 @@ class Helper {
   late Widget Function({required double width}) bottomBar;
   late Widget? Function(QaType type) text;
 
+  bool concentrationMode = true;
   bool edit = false;
   bool enableReloadMedia = true;
   bool withoutPlayingMediaFirstTime = false;

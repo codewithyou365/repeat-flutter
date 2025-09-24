@@ -91,7 +91,7 @@ class RepeatLogic extends GetxController {
   }
 
   void switchConcentrationMode() {
-    state.concentrationMode = !state.concentrationMode;
+    state.helper.concentrationMode = !state.helper.concentrationMode;
     update([RepeatLogic.id]);
   }
 

@@ -384,6 +384,7 @@ class RepeatViewForVideo extends RepeatView {
         }
       },
       onEdit: mediaRangeHelper.mediaRangeEdit(range),
+      hideTime: helper!.concentrationMode,
     );
   }
 

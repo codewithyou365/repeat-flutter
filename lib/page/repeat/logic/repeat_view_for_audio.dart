@@ -177,6 +177,7 @@ class RepeatViewForAudio extends RepeatView {
       },
       onStop: audioPlayer.stop,
       onEdit: mediaRangeHelper.mediaRangeEdit(range),
+      hideTime: helper!.concentrationMode,
     );
   }
 }
