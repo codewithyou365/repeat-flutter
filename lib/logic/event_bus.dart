@@ -4,6 +4,7 @@ enum EventTopic {
   deleteBook,
   setInRepeatView,
   wsEvent,
+  allowRegisterNumber,
 }
 
 class Event<T> {

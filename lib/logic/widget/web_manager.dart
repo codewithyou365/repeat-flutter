@@ -37,6 +37,7 @@ class WebManager<T extends GetxController> {
   RxString skipChar = RxString("");
   final bus = EventBus();
   late StreamSubscription<WsEvent?> sub;
+  late StreamSubscription<int?> subAllowRegisterNumber;
 
   WebManager(this.parentLogic);
 
@@ -129,6 +130,12 @@ class WebManager<T extends GetxController> {
     online.value = getOnline();
     sub = bus.on<WsEvent>(EventTopic.wsEvent).listen((_) {
       online.value = getOnline();
+    });
+    subAllowRegisterNumber = bus.on<int>(EventTopic.allowRegisterNumber).listen((v) {
+      if (v != null) {
+        userManager.allowRegisterNumber = v;
+        online.value = getOnline();
+      }
     });
     return Sheet.withHeaderAndBody(
       Get.context!,
@@ -231,6 +238,7 @@ class WebManager<T extends GetxController> {
       rate: 1,
     ).then((_) {
       sub.cancel();
+      subAllowRegisterNumber.cancel();
     });
   }
 }

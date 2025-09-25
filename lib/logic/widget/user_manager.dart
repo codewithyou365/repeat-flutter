@@ -91,6 +91,7 @@ class UserManager<T extends GetxController> {
                     allowRegisterNumber = int.parse(localAllowRegisterNumber.value);
                     await setAllowRegisterNumber(allowRegisterNumber);
                     parentLogic.update([UserManager.id]);
+                    bus.publish(EventTopic.allowRegisterNumber, allowRegisterNumber);
                     Get.back();
                   },
                 ),
