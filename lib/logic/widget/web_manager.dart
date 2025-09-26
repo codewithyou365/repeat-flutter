@@ -33,7 +33,7 @@ class WebManager<T extends GetxController> {
   List<String> urls = [];
   RxBool ignoringPunctuation = RxBool(false);
   RxBool editInGame = RxBool(false);
-  RxInt matchType = RxInt(MatchType.all.index);
+  RxInt matchType = RxInt(0);
   RxString skipChar = RxString("");
   final bus = EventBus();
   late StreamSubscription<WsEvent?> sub;
@@ -51,6 +51,10 @@ class WebManager<T extends GetxController> {
 
   Future<void> init(VoidCallback onOpenWeb) async {
     this.onOpenWeb = onOpenWeb;
+    var v = await Db().db.crKvDao.one(Classroom.curr, CrK.matchTypeInTypingGame);
+    if (v == null) {
+      await setMatchType(MatchType.all.index);
+    }
     await userManager.init(web);
   }
 
@@ -97,9 +101,9 @@ class WebManager<T extends GetxController> {
     }
   }
 
-  void setMatchType(int matchType) {
+  Future<void> setMatchType(int matchType) async {
     this.matchType.value = matchType;
-    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.matchTypeInTypingGame, '$matchType'));
+    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.matchTypeInTypingGame, '$matchType'));
   }
 
   void setSkipChar(String skipChar) {
