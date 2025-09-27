@@ -3,8 +3,8 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/widget/learn_config.dart';
 import 'package:repeat_flutter/widget/app_bar/app_bar_widget.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'gs_cr_settings_rel_logic.dart';
@@ -39,7 +39,7 @@ class GsCrSettingsRelPage extends StatelessWidget {
         id: GsCrSettingsRelLogic.elConfigsId,
         builder: (_) => ReorderableListView(
           onReorder: logic.reorder,
-          children: logic.state.relConfigs
+          children: logic.state.reviewLearnConfigs
               .map(
                 (item) => ListTile(
                   key: item.key,
@@ -47,28 +47,37 @@ class GsCrSettingsRelPage extends StatelessWidget {
                   onTap: () {
                     logic.setCurrElConfig(item);
                     var config = logic.state.currRelConfig;
-                    Sheet.showBottomSheet(context, Obx(() {
-                      return ListView(
-                        children: [
-                          LearnConfig.buttonGroup(logic.copyItem, logic.deleteItem, logic.updateItem),
-                          RowWidget.buildMiddleText(RelConfig(
-                            config.title.value,
-                            config.level.value,
-                            config.before.value,
-                            Date(config.from.value),
-                            config.learnCountPerGroup.value,
-                          ).trWithTitle()),
-                          RowWidget.buildDivider(),
-                          RowWidget.buildTextWithEdit(I18nKey.labelTitle.tr, config.title),
-                          RowWidget.buildDividerWithoutColor(),
-                          RowWidget.buildTextWithEdit(I18nKey.labelRelBefore.tr, config.before),
-                          RowWidget.buildDividerWithoutColor(),
-                          RowWidget.buildDateWithEdit(I18nKey.labelRelFrom.tr, config.from, context),
-                          RowWidget.buildDividerWithoutColor(),
-                          RowWidget.buildTextWithEdit(I18nKey.labelLearnCountPerGroup.tr, config.learnCountPerGroup),
-                        ],
-                      );
-                    }));
+                    Sheet.showBottomSheet(
+                      context,
+                      Obx(() {
+                        return ListView(
+                          children: [
+                            RowWidget.buildButtons([
+                              Button(I18nKey.btnCopy.tr, logic.copyItem),
+                              Button(I18nKey.btnDelete.tr, logic.deleteItem),
+                              Button(I18nKey.btnOk.tr, logic.updateItem),
+                            ]),
+                            RowWidget.buildMiddleText(
+                              ReviewLearnConfig(
+                                title: config.title.value,
+                                level: config.level.value,
+                                before: config.before.value,
+                                from: Date(config.from.value),
+                                learnCountPerGroup: config.learnCountPerGroup.value,
+                              ).trWithTitle(),
+                            ),
+                            RowWidget.buildDivider(),
+                            RowWidget.buildTextWithEdit(I18nKey.labelTitle.tr, config.title),
+                            RowWidget.buildDividerWithoutColor(),
+                            RowWidget.buildTextWithEdit(I18nKey.labelRelBefore.tr, config.before),
+                            RowWidget.buildDividerWithoutColor(),
+                            RowWidget.buildDateWithEdit(I18nKey.labelRelFrom.tr, config.from, context),
+                            RowWidget.buildDividerWithoutColor(),
+                            RowWidget.buildTextWithEdit(I18nKey.labelLearnCountPerGroup.tr, config.learnCountPerGroup),
+                          ],
+                        );
+                      }),
+                    );
                     //openEditDialog(logic, context);
                   },
                 ),
@@ -79,32 +88,24 @@ class GsCrSettingsRelPage extends StatelessWidget {
     );
   }
 
-  tryOpenSaveConfirmDialog(GsCrSettingsRelLogic logic) {
+  void tryOpenSaveConfirmDialog(GsCrSettingsRelLogic logic) {
     var same = logic.isSame();
     if (same) {
       Get.back();
       return;
     }
-    Get.defaultDialog(
+    MsgBox.yesOrNo(
       title: I18nKey.labelSavingConfirm.tr,
-      content: Text(I18nKey.labelConfigChange.tr),
-      actions: [
-        TextButton(
-          child: Text(I18nKey.btnCancel.tr),
-          onPressed: () {
-            Get.back();
-            Get.back();
-          },
-        ),
-        TextButton(
-          child: Text(I18nKey.btnOk.tr),
-          onPressed: () {
-            logic.save();
-            Get.back();
-            Get.back();
-          },
-        ),
-      ],
+      desc: I18nKey.labelConfigChange.tr,
+      no: () {
+        Get.back();
+        Get.back();
+      },
+      yes: () {
+        logic.save();
+        Get.back();
+        Get.back();
+      },
     );
   }
 }

@@ -21,19 +21,21 @@ class GsCrSettingsRelLogic extends GetxController {
   Future<void> onInit() async {
     super.onInit();
 
-    for (var index = 0; index < ScheduleDao.scheduleConfig.relConfigs.length; index++) {
-      var value = ScheduleDao.scheduleConfig.relConfigs[index];
-      state.relConfigs.add(RelConfigView(
-        index,
-        ValueKey(valueKey++),
-        RelConfig(
-          value.title,
-          value.level,
-          value.before,
-          value.from,
-          value.learnCountPerGroup,
+    for (var index = 0; index < ScheduleDao.scheduleConfig.reviewLearnConfigs.length; index++) {
+      var value = ScheduleDao.scheduleConfig.reviewLearnConfigs[index];
+      state.reviewLearnConfigs.add(
+        RelConfigView(
+          index,
+          ValueKey(valueKey++),
+          ReviewLearnConfig(
+            title: value.title,
+            level: value.level,
+            before: value.before,
+            from: value.from,
+            learnCountPerGroup: value.learnCountPerGroup,
+          ),
         ),
-      ));
+      );
     }
   }
 
@@ -52,8 +54,8 @@ class GsCrSettingsRelLogic extends GetxController {
     if (oldIndex < newIndex) {
       newIndex -= 1;
     }
-    final item = state.relConfigs.removeAt(oldIndex);
-    state.relConfigs.insert(newIndex, item);
+    final item = state.reviewLearnConfigs.removeAt(oldIndex);
+    state.reviewLearnConfigs.insert(newIndex, item);
     updateIndexAndView();
   }
 
@@ -63,20 +65,22 @@ class GsCrSettingsRelLogic extends GetxController {
       desc: I18nKey.labelResetConfig.tr,
       yes: () {
         valueKey = 0;
-        state.relConfigs = [];
-        for (var index = 0; index < ScheduleDao.defaultScheduleConfig.relConfigs.length; index++) {
-          var value = ScheduleDao.defaultScheduleConfig.relConfigs[index];
-          state.relConfigs.add(RelConfigView(
-            index,
-            ValueKey(valueKey++),
-            RelConfig(
-              value.title,
-              value.level,
-              value.before,
-              value.from,
-              value.learnCountPerGroup,
+        state.reviewLearnConfigs = [];
+        for (var index = 0; index < ScheduleDao.defaultScheduleConfig.reviewLearnConfigs.length; index++) {
+          var value = ScheduleDao.defaultScheduleConfig.reviewLearnConfigs[index];
+          state.reviewLearnConfigs.add(
+            RelConfigView(
+              index,
+              ValueKey(valueKey++),
+              ReviewLearnConfig(
+                title: value.title,
+                level: value.level,
+                before: value.before,
+                from: value.from,
+                learnCountPerGroup: value.learnCountPerGroup,
+              ),
             ),
-          ));
+          );
         }
         updateIndexAndView();
         Get.back();
@@ -85,59 +89,62 @@ class GsCrSettingsRelLogic extends GetxController {
   }
 
   void addItem() {
-    var config = RelConfig(
-      "LR",
-      0,
-      4,
-      Date(20240321),
-      0,
+    var config = ReviewLearnConfig(
+      title: "LR",
+      level: 0,
+      before: 4,
+      from: Date(20240321),
+      learnCountPerGroup: 0,
     );
-    state.relConfigs.add(RelConfigView(0, ValueKey(valueKey++), config));
+    state.reviewLearnConfigs.add(RelConfigView(0, ValueKey(valueKey++), config));
     updateIndexAndView();
   }
 
   void copyItem() {
-    var config = RelConfig(
-      state.currRelConfig.title.value,
-      state.currRelConfig.level.value,
-      state.currRelConfig.before.value,
-      Date(state.currRelConfig.from.value),
-      state.currRelConfig.learnCountPerGroup.value,
+    var config = ReviewLearnConfig(
+      title: state.currRelConfig.title.value,
+      level: state.currRelConfig.level.value,
+      before: state.currRelConfig.before.value,
+      from: Date(state.currRelConfig.from.value),
+      learnCountPerGroup: state.currRelConfig.learnCountPerGroup.value,
     );
-    state.relConfigs.add(RelConfigView(0, ValueKey(valueKey++), config));
+    state.reviewLearnConfigs.add(RelConfigView(0, ValueKey(valueKey++), config));
     updateIndexAndView();
+    Get.back();
   }
 
   void deleteItem() {
     int index = state.currRelConfigIndex;
-    state.relConfigs.removeAt(index);
+    state.reviewLearnConfigs.removeAt(index);
     updateIndexAndView();
+    Get.back();
   }
 
   void updateItem() {
     int index = state.currRelConfigIndex;
-    var config = state.relConfigs[index];
+    var config = state.reviewLearnConfigs[index];
     config.config.title = state.currRelConfig.title.value;
     config.config.level = state.currRelConfig.level.value;
     config.config.before = state.currRelConfig.before.value;
     config.config.from = Date(state.currRelConfig.from.value);
     config.config.learnCountPerGroup = state.currRelConfig.learnCountPerGroup.value;
     updateIndexAndView();
+    Get.back();
   }
 
   void updateIndexAndView() {
-    for (var index = 0; index < state.relConfigs.length; index++) {
-      state.relConfigs[index].index = index;
-      state.relConfigs[index].config.level = index;
+    for (var index = 0; index < state.reviewLearnConfigs.length; index++) {
+      state.reviewLearnConfigs[index].index = index;
+      state.reviewLearnConfigs[index].config.level = index;
     }
     update([elConfigsId]);
   }
 
   bool isSame() {
-    List<RelConfig> a = ScheduleDao.scheduleConfig.relConfigs;
-    List<RelConfig> b = [];
-    for (var index = 0; index < state.relConfigs.length; index++) {
-      b.add(state.relConfigs[index].config);
+    List<ReviewLearnConfig> a = ScheduleDao.scheduleConfig.reviewLearnConfigs;
+    List<ReviewLearnConfig> b = [];
+    for (var index = 0; index < state.reviewLearnConfigs.length; index++) {
+      b.add(state.reviewLearnConfigs[index].config);
     }
     String aStr = json.encode(a);
     String bStr = json.encode(b);
@@ -145,12 +152,12 @@ class GsCrSettingsRelLogic extends GetxController {
   }
 
   void save() {
-    List<RelConfig> newElConfigs = [];
-    for (var index = 0; index < state.relConfigs.length; index++) {
-      newElConfigs.add(state.relConfigs[index].config);
+    List<ReviewLearnConfig> newElConfigs = [];
+    for (var index = 0; index < state.reviewLearnConfigs.length; index++) {
+      newElConfigs.add(state.reviewLearnConfigs[index].config);
     }
-    ScheduleDao.scheduleConfig.relConfigs = newElConfigs;
+    ScheduleDao.scheduleConfig.reviewLearnConfigs = newElConfigs;
     String value = json.encode(ScheduleDao.scheduleConfig);
-    Db().db.scheduleDao.updateKv(Classroom.curr, CrK.todayScheduleConfig, value);
+    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.todayScheduleConfig, value));
   }
 }

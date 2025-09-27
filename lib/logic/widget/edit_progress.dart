@@ -40,8 +40,8 @@ class EditProgress {
             RowWidget.buildMiddleText(I18nKey.labelAdjustLearnProgressDesc.trArgs(["$verseProgress"])),
             RowWidget.buildDivider(),
             RowWidget.buildCupertinoPicker(
-              I18nKey.labelSetLevel.tr,
-              List.generate(verseProgress + ScheduleDao.scheduleConfig.forgettingCurve.length, (i) {
+              I18nKey.level.tr,
+              List.generate(verseProgress + ScheduleDao.scheduleConfig.learnIntervalDays.length, (i) {
                 return '$i';
               }),
               progress,

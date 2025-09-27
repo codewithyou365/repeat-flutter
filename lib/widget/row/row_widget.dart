@@ -71,28 +71,33 @@ class RowWidget {
     List<Button> buttons,
   ) {
     List<Widget> children = [];
+    if (buttons.length == 1) {
+      children.add(const Spacer());
+    }
     for (var i = 0; i < buttons.length; i++) {
       if (i != 0) {
         children.add(const Spacer());
       }
-      children.add(Obx(() {
-        final theme = Theme.of(Get.context!);
-        return TextButton(
-          onPressed: buttons[i].enable.value
-              ? (buttons[i].onPressed ??
-                  () {
-                    Get.back();
-                  })
-              : null,
-          child: Text(
-            buttons[i].title,
-            style: TextStyle(
-              fontSize: 16,
-              color: buttons[i].enable.value ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.38),
+      children.add(
+        Obx(() {
+          final theme = Theme.of(Get.context!);
+          return TextButton(
+            onPressed: buttons[i].enable.value
+                ? (buttons[i].onPressed ??
+                      () {
+                        Get.back();
+                      })
+                : null,
+            child: Text(
+              buttons[i].title,
+              style: TextStyle(
+                fontSize: 18,
+                color: buttons[i].enable.value ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.38),
+              ),
             ),
-          ),
-        );
-      }));
+          );
+        }),
+      );
     }
     return Row(
       children: children,
@@ -279,10 +284,11 @@ class RowWidget {
                 onSelectedItemChanged: changed,
                 children: List.generate(options.length, (index) {
                   return Center(
-                      child: Text(
-                    options[index],
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.normal),
-                  ));
+                    child: Text(
+                      options[index],
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.normal),
+                    ),
+                  );
                 }),
               ),
             ),
@@ -460,7 +466,9 @@ class RowWidget {
     InputType? inputType,
     VoidCallback? yes,
     String Function(Rx)? format,
-    VoidCallback? refresh,
+    VoidCallback? extra,
+    Widget? extraIcon,
+    Widget? extraWidget,
   }) {
     var showValue = value.value.toString();
     if (format != null) {
@@ -504,10 +512,11 @@ class RowWidget {
                 ),
               ),
             ),
-            if (refresh != null)
+            if (extraWidget != null) extraWidget,
+            if (extra != null)
               IconButton(
-                onPressed: refresh,
-                icon: const Icon(Icons.refresh),
+                onPressed: extra,
+                icon: extraIcon ?? const Icon(Icons.refresh),
               ),
           ],
         ),
@@ -520,23 +529,24 @@ class RowWidget {
     required GestureTapCallback onTap,
   }) {
     return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
-        child: GestureDetector(
-          onTap: onTap,
-          child: SizedBox(
-            height: rowHeight,
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: const TextStyle(fontSize: titleFontSize),
-                  ),
+      padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
+      child: GestureDetector(
+        onTap: onTap,
+        child: SizedBox(
+          height: rowHeight,
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(fontSize: titleFontSize),
                 ),
-                const Icon(Icons.navigate_next),
-              ],
-            ),
+              ),
+              const Icon(Icons.navigate_next),
+            ],
           ),
-        ));
+        ),
+      ),
+    );
   }
 }

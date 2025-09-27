@@ -175,7 +175,9 @@ class ConfigEn extends Config {
     put(I18nKey.labelWord, "Word");
     put(I18nKey.labelSingle, "Single");
     put(I18nKey.labelAll, "All");
-    put(I18nKey.labelSetLevel, "Level");
+    put(I18nKey.level, "Level");
+    put(I18nKey.learnIntervalTips, "After a verse reaches Level %s, it will reappear in %s. If the planned number of verses is insufficient, its appearance will be delayed.");
+    put(I18nKey.learnIntervalListCantBeEmpty, "The interval list cannot be empty.");
     put(I18nKey.labelSetNextLearnDate, "Next Learning Date");
     put(I18nKey.labelSummary, "Summary");
     put(I18nKey.labelTodayLearning, "Today Learning");
@@ -268,6 +270,10 @@ class ConfigEn extends Config {
     put(I18nKey.web, "Web");
     put(I18nKey.btnFocus, "Focus");
     put(I18nKey.btnAdd, "Add");
+    put(I18nKey.learnInterval, "Interval");
+    put(I18nKey.learnIntervalConfig, "Learn Interval Config");
+    put(I18nKey.day, "Day");
+    put(I18nKey.days, "Days");
     put(I18nKey.btnReset, "Reset");
     put(I18nKey.btnCopy, "Copy");
     put(I18nKey.btnBelow, "Below");

@@ -7,7 +7,7 @@ import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 class ElConfigView {
   int index;
   final Key key;
-  final ElConfig config;
+  final LearnConfig config;
 
   ElConfigView(
     this.index,
@@ -26,7 +26,7 @@ class ElConfigObs {
 }
 
 class GsCrSettingsState {
-  List<ElConfigView> elConfigs = [];
+  List<ElConfigView> learnConfigs = [];
 
   var currElConfig = ElConfigObs();
   var currElConfigIndex = 0;

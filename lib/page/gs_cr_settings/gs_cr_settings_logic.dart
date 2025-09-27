@@ -14,31 +14,36 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'gs_cr_settings_state.dart';
 
 class InputScheduleConfig {
-  List<ElConfig> elConfigs;
-  List<RelConfig> relConfigs;
+  List<int> learnIntervalDays;
+  List<LearnConfig> learnConfigs;
+  List<ReviewLearnConfig> reviewLearnConfigs;
 
   InputScheduleConfig(
-    this.elConfigs,
-    this.relConfigs,
+    this.learnIntervalDays,
+    this.learnConfigs,
+    this.reviewLearnConfigs,
   );
 
   Map<String, dynamic> toJson() {
-    List<Map<String, dynamic>> elConfigsJson = elConfigs.map((elConfig) => elConfig.toJson()).toList();
-    List<Map<String, dynamic>> relConfigsJson = relConfigs.map((relConfig) => relConfig.toJson()).toList();
+    List<Map<String, dynamic>> elConfigsJson = learnConfigs.map((elConfig) => elConfig.toJson()).toList();
+    List<Map<String, dynamic>> relConfigsJson = reviewLearnConfigs.map((relConfig) => relConfig.toJson()).toList();
 
     return {
-      'elConfigs': elConfigsJson,
-      'relConfigs': relConfigsJson,
+      'learnIntervalDays': learnIntervalDays,
+      'learnConfigs': elConfigsJson,
+      'reviewLearnConfigs': relConfigsJson,
     };
   }
 
   factory InputScheduleConfig.fromJson(Map<String, dynamic> json) {
-    var elConfigsList = json['elConfigs'] as List;
-    var relConfigsList = json['relConfigs'] as List;
+    var learnIntervalDays = (json['learnIntervalDays'] as List).map((e) => e as int).toList();
+    var elConfigsList = (json['learnConfigs'] as List).map((e) => LearnConfig.fromJson(e as Map<String, dynamic>)).toList();
+    var relConfigsList = (json['reviewLearnConfigs'] as List).map((e) => ReviewLearnConfig.fromJson(e as Map<String, dynamic>)).toList();
 
     return InputScheduleConfig(
-      elConfigsList.map((e) => ElConfig.fromJson(e as Map<String, dynamic>)).toList(),
-      relConfigsList.map((e) => RelConfig.fromJson(e as Map<String, dynamic>)).toList(),
+      learnIntervalDays,
+      elConfigsList,
+      relConfigsList,
     );
   }
 }
@@ -49,8 +54,9 @@ class GsCrSettingsLogic extends GetxController {
   void openConfig() {
     state.configJson = const JsonEncoder.withIndent(' ').convert(
       InputScheduleConfig(
-        ScheduleDao.scheduleConfig.elConfigs,
-        ScheduleDao.scheduleConfig.relConfigs,
+        ScheduleDao.scheduleConfig.learnIntervalDays,
+        ScheduleDao.scheduleConfig.learnConfigs,
+        ScheduleDao.scheduleConfig.reviewLearnConfigs,
       ),
     );
     Nav.editor.push(
@@ -70,15 +76,15 @@ class GsCrSettingsLogic extends GetxController {
       Map<String, dynamic> configJson = json.decode(state.configJson);
       InputScheduleConfig inputConfig = InputScheduleConfig.fromJson(configJson);
       ScheduleConfig config = ScheduleConfig(
-        ScheduleDao.defaultScheduleConfig.forgettingCurve,
-        ScheduleDao.defaultScheduleConfig.intervalSeconds,
-        ScheduleDao.defaultScheduleConfig.maxRepeatTime,
-        inputConfig.elConfigs,
-        inputConfig.relConfigs,
+        learnIntervalDays: inputConfig.learnIntervalDays,
+        resetIntervalDays: ScheduleDao.defaultScheduleConfig.resetIntervalDays,
+        maxRepeatTime: ScheduleDao.defaultScheduleConfig.maxRepeatTime,
+        learnConfigs: inputConfig.learnConfigs,
+        reviewLearnConfigs: inputConfig.reviewLearnConfigs,
       );
       ScheduleDao.scheduleConfig = config;
       String value = json.encode(ScheduleDao.scheduleConfig);
-      Db().db.scheduleDao.updateKv(Classroom.curr, CrK.todayScheduleConfig, value);
+      Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.todayScheduleConfig, value));
       Get.back();
       Snackbar.show(I18nKey.labelSaved.tr);
     });

@@ -8,6 +8,7 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
+import 'package:repeat_flutter/logic/widget/learn_interval_config.dart';
 
 import 'gs_cr_settings_el_state.dart';
 
@@ -15,25 +16,28 @@ class GsCrSettingsElLogic extends GetxController {
   static const String elConfigsId = "elConfigsId";
   final GsCrSettingsState state = GsCrSettingsState();
   static int valueKey = 0;
+  late LearnIntervalConfig learnIntervalConfig = LearnIntervalConfig<GsCrSettingsElLogic>(this);
 
   @override
   Future<void> onInit() async {
     super.onInit();
 
-    for (var index = 0; index < ScheduleDao.scheduleConfig.elConfigs.length; index++) {
-      var value = ScheduleDao.scheduleConfig.elConfigs[index];
-      state.elConfigs.add(ElConfigView(
-        index,
-        ValueKey(valueKey++),
-        ElConfig(
-          value.title,
-          value.random,
-          value.level,
-          value.toLevel,
-          value.learnCount,
-          value.learnCountPerGroup,
+    for (var index = 0; index < ScheduleDao.scheduleConfig.learnConfigs.length; index++) {
+      var value = ScheduleDao.scheduleConfig.learnConfigs[index];
+      state.learnConfigs.add(
+        ElConfigView(
+          index,
+          ValueKey(valueKey++),
+          LearnConfig(
+            title: value.title,
+            random: value.random,
+            level: value.level,
+            toLevel: value.toLevel,
+            learnCount: value.learnCount,
+            learnCountPerGroup: value.learnCountPerGroup,
+          ),
         ),
-      ));
+      );
     }
   }
 
@@ -53,8 +57,8 @@ class GsCrSettingsElLogic extends GetxController {
     if (oldIndex < newIndex) {
       newIndex -= 1;
     }
-    final item = state.elConfigs.removeAt(oldIndex);
-    state.elConfigs.insert(newIndex, item);
+    final item = state.learnConfigs.removeAt(oldIndex);
+    state.learnConfigs.insert(newIndex, item);
     updateIndexAndView();
   }
 
@@ -64,21 +68,23 @@ class GsCrSettingsElLogic extends GetxController {
       desc: I18nKey.labelResetConfig.tr,
       yes: () {
         valueKey = 0;
-        state.elConfigs = [];
-        for (var index = 0; index < ScheduleDao.defaultScheduleConfig.elConfigs.length; index++) {
-          var value = ScheduleDao.defaultScheduleConfig.elConfigs[index];
-          state.elConfigs.add(ElConfigView(
-            index,
-            ValueKey(valueKey++),
-            ElConfig(
-              value.title,
-              value.random,
-              value.level,
-              value.toLevel,
-              value.learnCount,
-              value.learnCountPerGroup,
+        state.learnConfigs = [];
+        for (var index = 0; index < ScheduleDao.defaultScheduleConfig.learnConfigs.length; index++) {
+          var value = ScheduleDao.defaultScheduleConfig.learnConfigs[index];
+          state.learnConfigs.add(
+            ElConfigView(
+              index,
+              ValueKey(valueKey++),
+              LearnConfig(
+                title: value.title,
+                random: value.random,
+                level: value.level,
+                toLevel: value.toLevel,
+                learnCount: value.learnCount,
+                learnCountPerGroup: value.learnCountPerGroup,
+              ),
             ),
-          ));
+          );
         }
         updateIndexAndView();
         Get.back();
@@ -86,41 +92,47 @@ class GsCrSettingsElLogic extends GetxController {
     );
   }
 
+  void showLearnInterval() {
+    learnIntervalConfig.showSheet();
+  }
+
   void addItem() {
-    var config = ElConfig(
-      "LR",
-      false,
-      1,
-      1,
-      10,
-      10,
+    var config = LearnConfig(
+      title: "LR",
+      random: false,
+      level: 1,
+      toLevel: 1,
+      learnCount: 10,
+      learnCountPerGroup: 10,
     );
-    state.elConfigs.add(ElConfigView(0, ValueKey(valueKey++), config));
+    state.learnConfigs.add(ElConfigView(0, ValueKey(valueKey++), config));
     updateIndexAndView();
   }
 
   void copyItem() {
-    var config = ElConfig(
-      state.currElConfig.title.value,
-      state.currElConfig.random.value,
-      state.currElConfig.level.value,
-      state.currElConfig.toLevel.value,
-      state.currElConfig.learnCount.value,
-      state.currElConfig.learnCountPerGroup.value,
+    var config = LearnConfig(
+      title: state.currElConfig.title.value,
+      random: state.currElConfig.random.value,
+      level: state.currElConfig.level.value,
+      toLevel: state.currElConfig.toLevel.value,
+      learnCount: state.currElConfig.learnCount.value,
+      learnCountPerGroup: state.currElConfig.learnCountPerGroup.value,
     );
-    state.elConfigs.add(ElConfigView(0, ValueKey(valueKey++), config));
+    state.learnConfigs.add(ElConfigView(0, ValueKey(valueKey++), config));
     updateIndexAndView();
+    Get.back();
   }
 
   void deleteItem() {
     int index = state.currElConfigIndex;
-    state.elConfigs.removeAt(index);
+    state.learnConfigs.removeAt(index);
     updateIndexAndView();
+    Get.back();
   }
 
   void updateItem() {
     int index = state.currElConfigIndex;
-    var config = state.elConfigs[index];
+    var config = state.learnConfigs[index];
     config.config.title = state.currElConfig.title.value;
     config.config.random = state.currElConfig.random.value;
     config.config.level = state.currElConfig.level.value;
@@ -128,20 +140,42 @@ class GsCrSettingsElLogic extends GetxController {
     config.config.learnCount = state.currElConfig.learnCount.value;
     config.config.learnCountPerGroup = state.currElConfig.learnCountPerGroup.value;
     updateIndexAndView();
+    Get.back();
   }
 
   void updateIndexAndView() {
-    for (var index = 0; index < state.elConfigs.length; index++) {
-      state.elConfigs[index].index = index;
+    for (var index = 0; index < state.learnConfigs.length; index++) {
+      state.learnConfigs[index].index = index;
     }
     update([elConfigsId]);
   }
 
+  void tryOpenSaveConfirmDialog(GsCrSettingsElLogic logic) {
+    var same = logic.isSame();
+    if (same) {
+      Get.back();
+      return;
+    }
+    MsgBox.yesOrNo(
+      title: I18nKey.labelSavingConfirm.tr,
+      desc: I18nKey.labelConfigChange.tr,
+      no: () {
+        Get.back();
+        Get.back();
+      },
+      yes: () {
+        logic.save();
+        Get.back();
+        Get.back();
+      },
+    );
+  }
+
   bool isSame() {
-    List<ElConfig> a = ScheduleDao.scheduleConfig.elConfigs;
-    List<ElConfig> b = [];
-    for (var index = 0; index < state.elConfigs.length; index++) {
-      b.add(state.elConfigs[index].config);
+    List<LearnConfig> a = ScheduleDao.scheduleConfig.learnConfigs;
+    List<LearnConfig> b = [];
+    for (var index = 0; index < state.learnConfigs.length; index++) {
+      b.add(state.learnConfigs[index].config);
     }
     String aStr = json.encode(a);
     String bStr = json.encode(b);
@@ -149,12 +183,12 @@ class GsCrSettingsElLogic extends GetxController {
   }
 
   void save() {
-    List<ElConfig> newElConfigs = [];
-    for (var index = 0; index < state.elConfigs.length; index++) {
-      newElConfigs.add(state.elConfigs[index].config);
+    List<LearnConfig> newElConfigs = [];
+    for (var index = 0; index < state.learnConfigs.length; index++) {
+      newElConfigs.add(state.learnConfigs[index].config);
     }
-    ScheduleDao.scheduleConfig.elConfigs = newElConfigs;
+    ScheduleDao.scheduleConfig.learnConfigs = newElConfigs;
     String value = json.encode(ScheduleDao.scheduleConfig);
-    Db().db.scheduleDao.updateKv(Classroom.curr, CrK.todayScheduleConfig, value);
+    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.todayScheduleConfig, value));
   }
 }

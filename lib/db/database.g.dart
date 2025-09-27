@@ -2265,17 +2265,6 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> updateKv(
-    int classroomId,
-    CrK k,
-    String value,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'UPDATE CrKv SET value=?3 WHERE classroomId=?1 and k=?2',
-        arguments: [classroomId, _crKConverter.encode(k), value]);
-  }
-
-  @override
   Future<void> updateVerseNote(
     int id,
     String note,

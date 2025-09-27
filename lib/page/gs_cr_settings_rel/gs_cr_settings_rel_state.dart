@@ -7,7 +7,7 @@ import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 class RelConfigView {
   int index;
   final Key key;
-  final RelConfig config;
+  final ReviewLearnConfig config;
 
   RelConfigView(
     this.index,
@@ -25,7 +25,7 @@ class RelConfigObs {
 }
 
 class GsCrSettingsRelState {
-  List<RelConfigView> relConfigs = [];
+  List<RelConfigView> reviewLearnConfigs = [];
 
   var currRelConfig = RelConfigObs();
   var currRelConfigIndex = 0;

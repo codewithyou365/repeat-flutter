@@ -107,7 +107,7 @@ class GsCrLogic extends GetxController {
       view.verses.add(item);
     }
     int uniqIndex = 0;
-    for (var index = 0; index < scheduleConfig.elConfigs.length; index++) {
+    for (var index = 0; index < scheduleConfig.learnConfigs.length; index++) {
       var prgTypeAndIndex = VerseTodayPrg.toPrgTypeAndIndex(TodayPrgType.learn, index);
       var learnedTotalCount = 0;
       var learnTotalCount = 0;
@@ -119,7 +119,7 @@ class GsCrLogic extends GetxController {
       } else {
         rule = VerseTodayPrgInView([]);
       }
-      var config = scheduleConfig.elConfigs.elementAt(index);
+      var config = scheduleConfig.learnConfigs.elementAt(index);
       rule.index = index;
       rule.uniqIndex = uniqIndex++;
       rule.type = TodayPrgType.learn;
@@ -128,7 +128,7 @@ class GsCrLogic extends GetxController {
       learn.add(rule);
       state.learn.addAll(rule.verses);
     }
-    for (var index = 0; index < scheduleConfig.relConfigs.length; index++) {
+    for (var index = 0; index < scheduleConfig.reviewLearnConfigs.length; index++) {
       var prgTypeAndIndex = VerseTodayPrg.toPrgTypeAndIndex(TodayPrgType.review, index);
       var learnedTotalCount = 0;
       var learnTotalCount = 0;
@@ -140,7 +140,7 @@ class GsCrLogic extends GetxController {
       } else {
         rule = VerseTodayPrgInView([]);
       }
-      var config = scheduleConfig.relConfigs.elementAt(index);
+      var config = scheduleConfig.reviewLearnConfigs.elementAt(index);
       rule.index = index;
       rule.uniqIndex = uniqIndex++;
       rule.type = TodayPrgType.review;
@@ -174,7 +174,7 @@ class GsCrLogic extends GetxController {
     state.verses.addAll(fullCustom);
 
     var todayLearnCreateDate = await Db().db.scheduleDao.intKv(Classroom.curr, CrK.todayScheduleCreateDate) ?? 0;
-    var next = ScheduleDao.getNext(now, ScheduleDao.scheduleConfig.intervalSeconds);
+    var next = ScheduleDao.getNext(now, ScheduleDao.scheduleConfig.resetIntervalDays);
     if (todayLearnCreateDate != 0 && next.value - todayLearnCreateDate > 0 && todayLearnCreateDate == Date.from(now).value) {
       state.learnDeadline = next.toDateTime().millisecondsSinceEpoch;
     }

@@ -175,7 +175,9 @@ class ConfigZh extends Config {
     put(I18nKey.labelWord, "单词");
     put(I18nKey.labelSingle, "单字");
     put(I18nKey.labelAll, "全部");
-    put(I18nKey.labelSetLevel, "等级");
+    put(I18nKey.level, "等级");
+    put(I18nKey.learnIntervalTips, "某节到达等级 %s 后, 该节下次将在 %s 后出现, 如果规划的节数不够，将延迟出现");
+    put(I18nKey.learnIntervalListCantBeEmpty, "间隔列表不能为空");
     put(I18nKey.labelSetNextLearnDate, "下次学习时间");
     put(I18nKey.labelSummary, "概要");
     put(I18nKey.labelTodayLearning, "今日学习");
@@ -268,6 +270,10 @@ class ConfigZh extends Config {
     put(I18nKey.web, "网络");
     put(I18nKey.btnFocus, "专注");
     put(I18nKey.btnAdd, "新增");
+    put(I18nKey.learnInterval, "间隔");
+    put(I18nKey.learnIntervalConfig, "学习间隔配置");
+    put(I18nKey.day, "天");
+    put(I18nKey.days, "天");
     put(I18nKey.btnReset, "重置");
     put(I18nKey.btnCopy, "复制");
     put(I18nKey.btnBelow, "下方");
