@@ -311,7 +311,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
     var content = const JsonEncoder.withIndent(' ').convert(contentM);
     Nav.editor.push(
       arguments: EditorArgs(
-        title: I18nKey.labelBook.tr,
+        title: I18nKey.labelBookFn.tr,
         value: content,
         save: (str) async {
           await Db().db.bookDao.updateBookContent(book.bookId, str);
