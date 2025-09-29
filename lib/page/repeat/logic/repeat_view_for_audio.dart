@@ -177,6 +177,16 @@ class RepeatViewForAudio extends RepeatView {
       },
       onStop: audioPlayer.stop,
       onEdit: mediaRangeHelper.mediaRangeEdit(range),
+      onAdjustSpeed: (double speed) async {
+        try {
+          await audioPlayer.setSpeed(speed);
+        } catch (e) {
+          print('Error setting speed: $e');
+        }
+      },
+      getSpeed: () {
+        return audioPlayer.speed;
+      },
       hideTime: helper!.concentrationMode,
     );
   }

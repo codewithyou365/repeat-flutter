@@ -6,6 +6,8 @@ typedef MediaDurationMsCallback = int Function();
 typedef MediaPlayCallback = Future<void> Function(Duration position);
 typedef MediaStopCallback = Future<void> Function();
 typedef MediaEditCallback = Future<void> Function(int ms);
+typedef MediaAdjustSpeedCallback = Future<void> Function(double speed);
+typedef MediaGetSpeedCallback = double Function();
 
 class MediaBar extends StatefulWidget {
   static const double pixelPerMs = 0.06;
@@ -18,6 +20,8 @@ class MediaBar extends StatefulWidget {
   final MediaPlayCallback onPlay;
   final MediaStopCallback onStop;
   final MediaEditCallback? onEdit;
+  final MediaAdjustSpeedCallback? onAdjustSpeed;
+  final MediaGetSpeedCallback? getSpeed;
   final bool hideTime;
 
   const MediaBar({
@@ -29,6 +33,8 @@ class MediaBar extends StatefulWidget {
     required this.onPlay,
     required this.onStop,
     required this.onEdit,
+    required this.onAdjustSpeed,
+    required this.getSpeed,
     required this.hideTime,
     Key? key,
   }) : super(key: key);
@@ -43,6 +49,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
   double _blockOffset = 0.0;
   double _previousDragOffset = 0.0;
   bool _isPlaying = false;
+  double _currentSpeed = 1.0;
 
   late final AnimationController _animController;
 
@@ -56,13 +63,17 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
     );
 
     _animController.addListener(_updateOffset);
+
+    if (widget.getSpeed != null) {
+      _currentSpeed = widget.getSpeed!();
+    }
   }
 
   void _updateOffset() {
     if (!mounted || !_isPlaying) return;
 
     final nowMs = DateTime.now().millisecondsSinceEpoch;
-    final elapsedMs = nowMs - _startMillisecondsSinceEpoch + _startMediaPositionMs;
+    final double elapsedMs = _startMediaPositionMs + (nowMs - _startMillisecondsSinceEpoch) * _currentSpeed;
     if (_startMediaPositionMs + 50 >= widget.verseEndMs) {
       if (elapsedMs >= widget.duration()) {
         _stopPlayback();
@@ -141,7 +152,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
     _startMillisecondsSinceEpoch = DateTime.now().millisecondsSinceEpoch;
     _startMediaPositionMs = currPositionMs;
 
-    _animController.duration = Duration(milliseconds: durationMs.toInt());
+    _animController.duration = Duration(milliseconds: (durationMs / _currentSpeed).toInt());
     _animController.reset();
 
     _animController.forward().then((_) {
@@ -211,6 +222,56 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
                   iconSize: 20,
                   onPressed: () {
                     widget.onEdit!(widget.verseStartMs + (-_blockOffset / MediaBar.pixelPerMs).floor());
+                  },
+                ),
+              if (widget.onAdjustSpeed != null)
+                PopupMenuButton<double>(
+                  icon: const Icon(Icons.speed, size: 20),
+                  onSelected: (double speed) async {
+                    await widget.onAdjustSpeed!(speed);
+                    setState(() {
+                      _currentSpeed = widget.getSpeed != null ? widget.getSpeed!() : speed;
+                    });
+                    if (_isPlaying) {
+                      await _playAtPosition();
+                    }
+                  },
+                  itemBuilder: (BuildContext context) {
+                    final currentSpeed = widget.getSpeed != null ? widget.getSpeed!() : _currentSpeed;
+                    return [
+                      PopupMenuItem<double>(
+                        value: 0.25,
+                        child: Text('0.25x', style: TextStyle(fontWeight: currentSpeed == 0.25 ? FontWeight.bold : FontWeight.normal)),
+                      ),
+                      PopupMenuItem<double>(
+                        value: 0.5,
+                        child: Text('0.5x', style: TextStyle(fontWeight: currentSpeed == 0.5 ? FontWeight.bold : FontWeight.normal)),
+                      ),
+                      PopupMenuItem<double>(
+                        value: 0.75,
+                        child: Text('0.75x', style: TextStyle(fontWeight: currentSpeed == 0.75 ? FontWeight.bold : FontWeight.normal)),
+                      ),
+                      PopupMenuItem<double>(
+                        value: 1.0,
+                        child: Text('Normal', style: TextStyle(fontWeight: currentSpeed == 1.0 ? FontWeight.bold : FontWeight.normal)),
+                      ),
+                      PopupMenuItem<double>(
+                        value: 1.25,
+                        child: Text('1.25x', style: TextStyle(fontWeight: currentSpeed == 1.25 ? FontWeight.bold : FontWeight.normal)),
+                      ),
+                      PopupMenuItem<double>(
+                        value: 1.5,
+                        child: Text('1.5x', style: TextStyle(fontWeight: currentSpeed == 1.5 ? FontWeight.bold : FontWeight.normal)),
+                      ),
+                      PopupMenuItem<double>(
+                        value: 1.75,
+                        child: Text('1.75x', style: TextStyle(fontWeight: currentSpeed == 1.75 ? FontWeight.bold : FontWeight.normal)),
+                      ),
+                      PopupMenuItem<double>(
+                        value: 2.0,
+                        child: Text('2.0x', style: TextStyle(fontWeight: currentSpeed == 2.0 ? FontWeight.bold : FontWeight.normal)),
+                      ),
+                    ];
                   },
                 ),
               IconButton(
