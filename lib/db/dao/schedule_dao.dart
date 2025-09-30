@@ -315,8 +315,8 @@ abstract class ScheduleDao {
     " FROM VerseReview"
     " JOIN Verse ON Verse.id=VerseReview.verseId"
     " WHERE VerseReview.classroomId=:classroomId"
-    " AND VerseReview.count=:reviewCount"
     " AND VerseReview.createDate=:startDate"
+    " AND VerseReview.count=:reviewCount"
     " ORDER BY Verse.sort",
   )
   Future<List<VerseTodayPrg>> scheduleReview(int classroomId, int reviewCount, Date startDate);
@@ -337,12 +337,13 @@ abstract class ScheduleDao {
     ",0 reviewCreateDate"
     ",0 finish"
     " FROM Verse"
-    " WHERE Verse.learnDate<=:now"
+    " WHERE Verse.classroomId=:classroomId"
+    "  AND Verse.learnDate<=:now"
     "  AND Verse.progress>=:minProgress"
     " ORDER BY Verse.progress,Verse.sort"
     " ) Verse order by Verse.sort",
   )
-  Future<List<VerseTodayPrg>> scheduleLearn(int minProgress, Date now);
+  Future<List<VerseTodayPrg>> scheduleLearn(int classroomId, int minProgress, Date now);
 
   @Query(
     "SELECT"
@@ -634,7 +635,7 @@ abstract class ScheduleDao {
           minLevel = config.level;
         }
       }
-      var all = await scheduleLearn(minLevel, Date.from(now));
+      var all = await scheduleLearn(Classroom.curr, minLevel, Date.from(now));
       for (int i = 0; i < learnConfigs.length; ++i) {
         var config = learnConfigs[i];
         if (!config.random) {

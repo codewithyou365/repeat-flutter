@@ -7,7 +7,7 @@ import 'package:repeat_flutter/common/date.dart';
   primaryKeys: ['createDate', 'verseId'],
   indices: [
     Index(value: ['bookId']),
-    Index(value: ['classroomId', 'createDate']),
+    Index(value: ['classroomId', 'createDate', 'count']),
   ],
 )
 class VerseReview {

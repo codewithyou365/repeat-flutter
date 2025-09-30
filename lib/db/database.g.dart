@@ -192,6 +192,8 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE UNIQUE INDEX `index_Verse_classroomId_sort` ON `Verse` (`classroomId`, `sort`)');
         await database.execute(
+            'CREATE INDEX `index_Verse_classroomId_learnDate` ON `Verse` (`classroomId`, `learnDate`)');
+        await database.execute(
             'CREATE UNIQUE INDEX `index_Verse_bookId_chapterIndex_verseIndex` ON `Verse` (`bookId`, `chapterIndex`, `verseIndex`)');
         await database.execute(
             'CREATE INDEX `index_VerseContentVersion_classroomId` ON `VerseContentVersion` (`classroomId`)');
@@ -202,7 +204,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE INDEX `index_VerseReview_bookId` ON `VerseReview` (`bookId`)');
         await database.execute(
-            'CREATE INDEX `index_VerseReview_classroomId_createDate` ON `VerseReview` (`classroomId`, `createDate`)');
+            'CREATE INDEX `index_VerseReview_classroomId_createDate_count` ON `VerseReview` (`classroomId`, `createDate`, `count`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_VerseTodayPrg_verseId_type` ON `VerseTodayPrg` (`verseId`, `type`)');
         await database.execute(
@@ -2376,7 +2378,7 @@ class _$ScheduleDao extends ScheduleDao {
     Date startDate,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT VerseReview.classroomId,Verse.bookId,Verse.chapterId,VerseReview.verseId,0 time,0 type,Verse.sort,0 progress,0 viewTime,VerseReview.count reviewCount,VerseReview.createDate reviewCreateDate,0 finish FROM VerseReview JOIN Verse ON Verse.id=VerseReview.verseId WHERE VerseReview.classroomId=?1 AND VerseReview.count=?2 AND VerseReview.createDate=?3 ORDER BY Verse.sort',
+        'SELECT VerseReview.classroomId,Verse.bookId,Verse.chapterId,VerseReview.verseId,0 time,0 type,Verse.sort,0 progress,0 viewTime,VerseReview.count reviewCount,VerseReview.createDate reviewCreateDate,0 finish FROM VerseReview JOIN Verse ON Verse.id=VerseReview.verseId WHERE VerseReview.classroomId=?1 AND VerseReview.createDate=?3 AND VerseReview.count=?2 ORDER BY Verse.sort',
         mapper: (Map<String, Object?> row) => VerseTodayPrg(classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, verseId: row['verseId'] as int, time: row['time'] as int, type: row['type'] as int, sort: row['sort'] as int, progress: row['progress'] as int, viewTime: _dateTimeConverter.decode(row['viewTime'] as int), reviewCount: row['reviewCount'] as int, reviewCreateDate: _dateConverter.decode(row['reviewCreateDate'] as int), finish: (row['finish'] as int) != 0, id: row['id'] as int?),
         arguments: [
           classroomId,
@@ -2387,13 +2389,14 @@ class _$ScheduleDao extends ScheduleDao {
 
   @override
   Future<List<VerseTodayPrg>> scheduleLearn(
+    int classroomId,
     int minProgress,
     Date now,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM ( SELECT Verse.classroomId,Verse.bookId,Verse.chapterId,Verse.id verseId,0 time,0 type,Verse.sort,Verse.progress progress,0 viewTime,0 reviewCount,0 reviewCreateDate,0 finish FROM Verse WHERE Verse.learnDate<=?2  AND Verse.progress>=?1 ORDER BY Verse.progress,Verse.sort ) Verse order by Verse.sort',
+        'SELECT * FROM ( SELECT Verse.classroomId,Verse.bookId,Verse.chapterId,Verse.id verseId,0 time,0 type,Verse.sort,Verse.progress progress,0 viewTime,0 reviewCount,0 reviewCreateDate,0 finish FROM Verse WHERE Verse.classroomId=?1  AND Verse.learnDate<=?3  AND Verse.progress>=?2 ORDER BY Verse.progress,Verse.sort ) Verse order by Verse.sort',
         mapper: (Map<String, Object?> row) => VerseTodayPrg(classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, verseId: row['verseId'] as int, time: row['time'] as int, type: row['type'] as int, sort: row['sort'] as int, progress: row['progress'] as int, viewTime: _dateTimeConverter.decode(row['viewTime'] as int), reviewCount: row['reviewCount'] as int, reviewCreateDate: _dateConverter.decode(row['reviewCreateDate'] as int), finish: (row['finish'] as int) != 0, id: row['id'] as int?),
-        arguments: [minProgress, _dateConverter.encode(now)]);
+        arguments: [classroomId, minProgress, _dateConverter.encode(now)]);
   }
 
   @override
