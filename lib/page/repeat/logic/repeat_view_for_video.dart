@@ -384,9 +384,11 @@ class RepeatViewForVideo extends RepeatView {
         }
       },
       onEdit: mediaRangeHelper.mediaRangeEdit(range),
-      onAdjustSpeed: (double speed) async {},
+      onAdjustSpeed: (double speed) async {
+        await _videoPlayerController?.setPlaybackSpeed(speed);
+      },
       getSpeed: () {
-        return 1;
+        return _videoPlayerController?.value.playbackSpeed ?? 1;
       },
       hideTime: helper!.concentrationMode,
     );

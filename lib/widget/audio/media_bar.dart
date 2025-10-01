@@ -253,7 +253,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
                       ),
                       PopupMenuItem<double>(
                         value: 1.0,
-                        child: Text('Normal', style: TextStyle(fontWeight: currentSpeed == 1.0 ? FontWeight.bold : FontWeight.normal)),
+                        child: Text('1x', style: TextStyle(fontWeight: currentSpeed == 1.0 ? FontWeight.bold : FontWeight.normal)),
                       ),
                       PopupMenuItem<double>(
                         value: 1.25,
