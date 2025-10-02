@@ -105,8 +105,18 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
     await _stopPlayback();
   }
 
+  void play() {
+    _playAtPosition();
+  }
+
   void playFromStart() {
     _playAtPosition(timeOffsetMs: widget.verseStartMs);
+  }
+
+  void drawStart() {
+    setState(() {
+      _blockOffset = 0;
+    });
   }
 
   Future<void> _playAtPosition({int? timeOffsetMs, int? incrementMs}) async {
@@ -339,7 +349,7 @@ class MediaBarPainter extends CustomPainter {
 
     _highlightPaint = Paint()
       ..color = Colors.red.withValues(alpha: 0.6)
-      ..strokeWidth = 1.0;
+      ..strokeWidth = 2.0;
   }
 
   @override
@@ -359,7 +369,7 @@ class MediaBarPainter extends CustomPainter {
     );
   }
 
-  void _drawTimeScale(Canvas canvas, start, Size size) {
+  void _drawTimeScale(Canvas canvas, double start, Size size) {
     final centerX = size.width / 2;
     final currentTimeMs = mediaVerseStartMs + (-offset / MediaBar.pixelPerMs).floor();
 
@@ -380,26 +390,35 @@ class MediaBarPainter extends CustomPainter {
     final durationX = centerX + (mediaDurationMs - currentTimeMs) * MediaBar.pixelPerMs;
     final double lineDrawStartX = max(0.0, zeroX);
     final double lineDrawEndX = min(size.width, durationX);
+
     if (lineDrawEndX > lineDrawStartX) {
-      final double clampedHighlightStartX = startHighlightX.clamp(lineDrawStartX, lineDrawEndX);
-      final double clampedHighlightEndX = endHighlightX.clamp(lineDrawStartX, lineDrawEndX);
-      if (clampedHighlightStartX > lineDrawStartX) {
+      if (mediaVerseStartMs <= mediaVerseEndMs) {
+        final double clampedHighlightStartX = startHighlightX.clamp(lineDrawStartX, lineDrawEndX);
+        final double clampedHighlightEndX = endHighlightX.clamp(lineDrawStartX, lineDrawEndX);
+        if (clampedHighlightStartX > lineDrawStartX) {
+          canvas.drawLine(
+            Offset(lineDrawStartX, scaleY),
+            Offset(clampedHighlightStartX, scaleY),
+            _gridLinePaint,
+          );
+        }
+        if (clampedHighlightEndX > clampedHighlightStartX) {
+          canvas.drawLine(
+            Offset(clampedHighlightStartX, scaleY),
+            Offset(clampedHighlightEndX, scaleY),
+            _highlightPaint,
+          );
+        }
+        if (lineDrawEndX > clampedHighlightEndX) {
+          canvas.drawLine(
+            Offset(clampedHighlightEndX, scaleY),
+            Offset(lineDrawEndX, scaleY),
+            _gridLinePaint,
+          );
+        }
+      } else {
         canvas.drawLine(
           Offset(lineDrawStartX, scaleY),
-          Offset(clampedHighlightStartX, scaleY),
-          _gridLinePaint,
-        );
-      }
-      if (clampedHighlightEndX > clampedHighlightStartX) {
-        canvas.drawLine(
-          Offset(clampedHighlightStartX, scaleY),
-          Offset(clampedHighlightEndX, scaleY),
-          _highlightPaint,
-        );
-      }
-      if (lineDrawEndX > clampedHighlightEndX) {
-        canvas.drawLine(
-          Offset(clampedHighlightEndX, scaleY),
           Offset(lineDrawEndX, scaleY),
           _gridLinePaint,
         );
@@ -487,6 +506,6 @@ class MediaBarPainter extends CustomPainter {
     return oldDelegate.mediaVerseStartMs != mediaVerseStartMs || //
         oldDelegate.mediaVerseEndMs != mediaVerseEndMs ||
         oldDelegate.mediaDurationMs != mediaDurationMs ||
-        offset != oldDelegate.offset;
+        oldDelegate.offset != offset;
   }
 }

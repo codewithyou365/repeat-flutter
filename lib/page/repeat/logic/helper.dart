@@ -48,7 +48,7 @@ class Helper {
   bool concentrationMode = true;
   bool edit = false;
   bool enableReloadMedia = true;
-  bool withoutPlayingMediaFirstTime = false;
+  bool withoutPlayingMediaFirstTime = true;
   Map<int, Map<String, dynamic>> rootMapCache = {};
 
   Map<int, Map<String, dynamic>> chapterMapCache = {};

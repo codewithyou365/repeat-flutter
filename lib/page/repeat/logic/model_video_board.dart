@@ -148,7 +148,7 @@ class VideoBoardHelper {
   Widget wrapVideo({
     required double width,
     required double height,
-    required VideoPlayer video,
+    required Widget video,
     required VoidCallback onPressed,
   }) {
     List<VideoBoard> configs = boards.value;
