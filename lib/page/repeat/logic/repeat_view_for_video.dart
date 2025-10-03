@@ -31,6 +31,8 @@ class RepeatViewForVideo extends RepeatView {
   double mediaBarHeight = 50;
   double padding = 16;
 
+  var isPlaying = false.obs;
+
   RepeatViewForVideo();
 
   VideoPlayerController get videoPlayerController {
@@ -296,7 +298,7 @@ class RepeatViewForVideo extends RepeatView {
       child: videoBoardHelper.wrapVideo(
         width: targetWidth,
         height: targetHeight,
-        video: VideoPlayer(_videoPlayerController!),
+        video: _buildVideoWithPlayOverlay(),
         onPressed: () {
           videoBoardHelper.openedVideoBoardSettings.value = true;
         },
@@ -344,7 +346,7 @@ class RepeatViewForVideo extends RepeatView {
         child: videoBoardHelper.wrapVideo(
           width: width,
           height: maxHeight,
-          video: VideoPlayer(_videoPlayerController!),
+          video: _buildVideoWithPlayOverlay(),
           onPressed: onPressed,
         ),
       );
@@ -354,10 +356,40 @@ class RepeatViewForVideo extends RepeatView {
       return videoBoardHelper.wrapVideo(
         width: screenWidth,
         height: height,
-        video: VideoPlayer(_videoPlayerController!),
+        video: _buildVideoWithPlayOverlay(),
         onPressed: onPressed,
       );
     }
+  }
+
+  Widget _buildVideoWithPlayOverlay() {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        VideoPlayer(_videoPlayerController!),
+        Obx(() {
+          if (!isPlaying.value) {
+            return GestureDetector(
+              onTap: () {
+                mediaKey.currentState?.play();
+              },
+              child: Container(
+                color: Colors.black.withValues(alpha: 0.5),
+                child: const Center(
+                  child: Icon(
+                    Icons.play_arrow,
+                    size: 100,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            );
+          } else {
+            return const SizedBox.shrink();
+          }
+        }),
+      ],
+    );
   }
 
   Widget mediaBar(double width, double height, MediaRange range) {
@@ -377,11 +409,13 @@ class RepeatViewForVideo extends RepeatView {
             await _videoPlayerController!.seekTo(position);
           }
           await _videoPlayerController!.play();
+          isPlaying.value = true;
         }
       },
       onStop: () async {
         if (_videoPlayerController != null) {
           await _videoPlayerController!.pause();
+          isPlaying.value = false;
         }
       },
       onEdit: mediaRangeHelper.mediaRangeEdit(range),
