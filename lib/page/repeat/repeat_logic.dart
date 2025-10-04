@@ -92,11 +92,13 @@ class RepeatLogic extends GetxController {
 
   void switchConcentrationMode() {
     state.helper.concentrationMode = !state.helper.concentrationMode;
+    state.helper.withoutPlayingMediaFirstTime = true;
     update([RepeatLogic.id]);
   }
 
   void switchEditMode() {
     state.helper.edit = !state.helper.edit;
+    state.helper.withoutPlayingMediaFirstTime = true;
     update([RepeatLogic.id]);
   }
 

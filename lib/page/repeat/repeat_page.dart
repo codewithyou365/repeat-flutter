@@ -165,14 +165,6 @@ class RepeatPage extends StatelessWidget {
                 onTap: logic.switchEditMode,
                 child: Text("${I18nKey.labelEdit.tr}(${state.helper.edit})"),
               ),
-              // PopupMenuItem<String>(
-              //   onTap: logic.extendTail,
-              //   child: Text("${I18nKey.btnExtendTail.tr}(${state.extendTail})"),
-              // ),
-              // PopupMenuItem<String>(
-              //   onTap: logic.resetTail,
-              //   child: Text(I18nKey.btnResetTail.tr),
-              // ),
             ],
           ),
           const SizedBox(width: 10),
