@@ -8,17 +8,18 @@ import 'package:repeat_flutter/common/folder.dart';
 import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/path.dart';
+import 'package:repeat_flutter/db/dao/book_dao.dart';
 import 'package:repeat_flutter/db/dao/chapter_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/book_help.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
+import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -29,7 +30,6 @@ import 'repeat_flow.dart';
 class Helper {
   bool initialized = false;
   late RepeatFlow logic;
-  late List<Book> books;
   late String rootPath;
 
   late double screenWidth;
@@ -49,7 +49,7 @@ class Helper {
   bool edit = false;
   bool enableReloadMedia = true;
   bool withoutPlayingMediaFirstTime = true;
-  Map<int, Map<String, dynamic>> rootMapCache = {};
+  Map<int, Map<String, dynamic>> bookMapCache = {};
 
   Map<int, Map<String, dynamic>> chapterMapCache = {};
   Map<int, List<String>> chapterPathCache = {};
@@ -57,6 +57,10 @@ class Helper {
   Map<int, Map<String, dynamic>> verseMapCache = {};
 
   Helper() {
+    BookDao.setBookShowContent = [];
+    BookDao.setBookShowContent.add((int id) {
+      bookMapCache.remove(id);
+    });
     ChapterDao.setChapterShowContent = [];
     ChapterDao.setChapterShowContent.add((int id) {
       chapterMapCache.remove(id);
@@ -71,7 +75,6 @@ class Helper {
 
   Future<void> init(RepeatFlow logic) async {
     this.logic = logic;
-    books = await Db().db.bookDao.getAll(Classroom.curr);
     rootPath = await DocPath.getContentPath();
     initialized = true;
   }
@@ -116,23 +119,23 @@ class Helper {
     return chapter.chapterContent;
   }
 
-  String? getCurrRootContent() {
+  String? getCurrBookContent() {
     if (logic.currVerse == null) {
       return null;
     }
-    Book ret = books.firstWhere((c) => c.id! == logic.currVerse!.bookId, orElse: () => Book.empty());
-    if (ret.id == null) {
+    BookShow? ret = BookHelp.getCache(logic.currVerse!.bookId);
+    if (ret == null) {
       return null;
     }
-    return ret.content;
+    return ret.bookContent;
   }
 
-  Map<String, dynamic>? getCurrRootMap() {
+  Map<String, dynamic>? getCurrBookMap() {
     if (logic.currVerse == null) {
       return null;
     }
-    Map<String, dynamic>? ret = rootMapCache[logic.currVerse!.bookId];
-    String? rootContent = getCurrRootContent();
+    Map<String, dynamic>? ret = bookMapCache[logic.currVerse!.bookId];
+    String? rootContent = getCurrBookContent();
     if (rootContent == null) {
       return null;
     }
@@ -140,7 +143,7 @@ class Helper {
     if (ret is! Map<String, dynamic>) {
       return null;
     }
-    rootMapCache[logic.currVerse!.bookId] = ret;
+    bookMapCache[logic.currVerse!.bookId] = ret;
     return ret;
   }
 
@@ -186,7 +189,7 @@ class Helper {
     if (logic.currVerse == null) {
       return null;
     }
-    String? rootContent = getCurrRootContent();
+    String? rootContent = getCurrBookContent();
     if (rootContent == null) {
       return null;
     }
@@ -249,7 +252,7 @@ class Helper {
       }
     }
     if (ret == null) {
-      m = getCurrRootMap();
+      m = getCurrBookMap();
       if (m != null && m['s'] != null) {
         ret = m['s'] as String;
       }

@@ -150,29 +150,30 @@ class MsgBox {
         children: children,
       ),
       action: yesOrNoAction(
-          yes: () {
-            var t = tec.text.trim();
-            if (model is RxString) {
-              model.value = t;
-            } else if (model is RxInt) {
-              model.value = int.tryParse(t) ?? 0;
-            } else if (model is RxDouble) {
-              model.value = double.tryParse(t) ?? 0.0;
-            } else if (model is RxBool) {
-              model.value = (t.toLowerCase() == 'true');
-            } else {
-              print("Unsupported Rx type");
-            }
+        yes: () {
+          var t = tec.text.trim();
+          if (model is RxString) {
+            model.value = t;
+          } else if (model is RxInt) {
+            model.value = int.tryParse(t) ?? 0;
+          } else if (model is RxDouble) {
+            model.value = double.tryParse(t) ?? 0.0;
+          } else if (model is RxBool) {
+            model.value = (t.toLowerCase() == 'true');
+          } else {
+            print("Unsupported Rx type");
+          }
 
-            if (yes != null) {
-              yes();
-            } else {
-              Get.back();
-            }
-          },
-          no: no,
-          yesBtnTitle: yesBtnTitle,
-          noBtnTitle: noBtnTitle),
+          if (yes != null) {
+            yes();
+          } else {
+            Get.back();
+          }
+        },
+        no: no,
+        yesBtnTitle: yesBtnTitle,
+        noBtnTitle: noBtnTitle,
+      ),
     );
   }
 
@@ -182,28 +183,30 @@ class MsgBox {
     VoidCallback? no,
     String? noBtnTitle,
   }) {
-    return buttonsWithDivider(buttons: [
-      button(
-        text: noBtnTitle ?? I18nKey.btnCancel.tr,
-        onPressed: () {
-          if (no != null) {
-            no();
-          } else {
-            Get.back();
-          }
-        },
-      ),
-      button(
-        text: yesBtnTitle ?? I18nKey.btnOk.tr,
-        onPressed: () {
-          if (yes != null) {
-            yes();
-          } else {
-            Get.back();
-          }
-        },
-      )
-    ]);
+    return buttonsWithDivider(
+      buttons: [
+        button(
+          text: noBtnTitle ?? I18nKey.btnCancel.tr,
+          onPressed: () {
+            if (no != null) {
+              no();
+            } else {
+              Get.back();
+            }
+          },
+        ),
+        button(
+          text: yesBtnTitle ?? I18nKey.btnOk.tr,
+          onPressed: () {
+            if (yes != null) {
+              yes();
+            } else {
+              Get.back();
+            }
+          },
+        ),
+      ],
+    );
   }
 
   static void yes(
@@ -229,7 +232,7 @@ class MsgBox {
                 Get.back();
               }
             },
-          )
+          ),
         ],
       ),
     );
@@ -297,24 +300,24 @@ class MsgBox {
               Clipboard.setData(ClipboardData(text: qrContent));
               Snackbar.show(I18nKey.labelQrCodeContentCopiedToClipboard.tr);
             },
-          )
+          ),
         ],
       ),
     );
   }
 
-  static void myDialog({
+  static Future<void> myDialog({
     String title = "",
     required Widget content,
     required Widget action,
     bool barrierDismissible = true,
   }) {
     if (Get.context == null) {
-      return;
+      return Future<void>(() {});
     }
     const borderRadius = 20.0;
 
-    showDialog(
+    return showDialog(
       context: Get.context!,
       barrierDismissible: barrierDismissible,
       builder: (_) => Dialog(

@@ -51,6 +51,12 @@ enum MatchType {
   all;
 }
 
+enum ContentTypeEnum {
+  book,
+  chapter,
+  verse,
+}
+
 enum RepeatViewEnum {
   text,
   audio,

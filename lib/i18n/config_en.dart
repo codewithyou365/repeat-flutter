@@ -300,5 +300,8 @@ class ConfigEn extends Config {
     put(I18nKey.btnClose, "Close");
     put(I18nKey.btnCheck, "CHECK");
     put(I18nKey.btnEditVerse, "Edit Verse");
+    put(I18nKey.adjustFontSize, "Adjust Font Size (%s)");
+    put(I18nKey.fontSize, "Font Size");
+    put(I18nKey.editContent, "Edit Content");
   }
 }

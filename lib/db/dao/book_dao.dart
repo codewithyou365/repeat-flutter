@@ -130,11 +130,11 @@ abstract class BookDao {
       BookShow? bookShow = getBookShow!(bookId);
       if (bookShow != null) {
         bookShow.bookContent = content;
-        for (var set in setBookShowContent) {
-          set(bookId);
-        }
         bookShow.bookContentVersion++;
       }
+    }
+    for (var set in setBookShowContent) {
+      set(bookId);
     }
   }
 

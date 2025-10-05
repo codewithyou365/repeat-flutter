@@ -300,6 +300,9 @@ enum I18nKey {
   btnClose,
   btnCheck,
   btnEditVerse,
+  adjustFontSize,
+  fontSize,
+  editContent,
   ;
 
   String trArgs([List<String> args = const []]) {

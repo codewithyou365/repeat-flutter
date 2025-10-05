@@ -300,5 +300,8 @@ class ConfigZh extends Config {
     put(I18nKey.btnClose, "关闭");
     put(I18nKey.btnCheck, "检查");
     put(I18nKey.btnEditVerse, "编辑小节");
+    put(I18nKey.adjustFontSize, "调整字体大小 (%s)");
+    put(I18nKey.fontSize, "字体大小");
+    put(I18nKey.editContent, "编辑内容");
   }
 }
