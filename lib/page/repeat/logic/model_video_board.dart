@@ -6,7 +6,6 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
-import 'package:video_player/video_player.dart';
 import 'dart:convert';
 import 'constant.dart';
 import 'helper.dart';
@@ -202,10 +201,12 @@ class VideoBoardHelper {
       child: Container(
         color: Colors.black,
         child: openedVideoBoardSettings.value
-            ? Text("$index",
+            ? Text(
+                "$index",
                 style: const TextStyle(
                   color: Colors.white,
-                ))
+                ),
+              )
             : null,
       ),
     );
@@ -326,26 +327,24 @@ class VideoBoardHelper {
                 ],
               ),
         const SizedBox(height: 24),
-        Row(
-          children: [
-            Text(I18nKey.labelSaveAt.tr),
-            Radio<bool>(
-              value: false,
-              groupValue: saveToVerse.value,
-              onChanged: (val) {
-                if (val != null) saveToVerse.value = val;
-              },
-            ),
-            Text(I18nKey.labelChapterName.tr),
-            Radio<bool>(
-              value: true,
-              groupValue: saveToVerse.value,
-              onChanged: (val) {
-                if (val != null) saveToVerse.value = val;
-              },
-            ),
-            Text(I18nKey.labelVerseName.tr),
-          ],
+        RadioGroup<bool>(
+          groupValue: saveToVerse.value,
+          onChanged: (val) {
+            if (val != null) saveToVerse.value = val;
+          },
+          child: Row(
+            children: [
+              Text(I18nKey.labelSaveAt.tr),
+              Radio<bool>(
+                value: false,
+              ),
+              Text(I18nKey.labelChapterName.tr),
+              Radio<bool>(
+                value: true,
+              ),
+              Text(I18nKey.labelVerseName.tr),
+            ],
+          ),
         ),
         const SizedBox(height: 24),
         Row(
