@@ -43,7 +43,9 @@ class GsCrLogic extends GetxController {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showTransparentOverlay(() async {
+        await copyLogic.init();
         await init();
+        startTimer();
       });
     });
   }
@@ -52,10 +54,10 @@ class GsCrLogic extends GetxController {
   void onClose() {
     super.onClose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+    stopTimer();
   }
 
   Future<void> init({TodayPrgType? type}) async {
-    await copyLogic.init();
     await VerseHelp.tryGen(force: true);
     VerseDao.getVerseShow = VerseHelp.getCache;
     await ChapterHelp.tryGen(force: true);
@@ -186,19 +188,19 @@ class GsCrLogic extends GetxController {
     for (var l in learn) {
       var learnedTotalCount = VerseTodayPrg.getFinishedCount(state.learn);
       var learnTotalCount = state.learn.length;
-      l.groupDesc = toGroupName(TodayPrgType.learn) + ": $learnedTotalCount/$learnTotalCount";
+      l.groupDesc = "${toGroupName(TodayPrgType.learn)}: $learnedTotalCount/$learnTotalCount";
     }
 
     for (var l in review) {
       var learnedTotalCount = VerseTodayPrg.getFinishedCount(state.review);
       var learnTotalCount = state.review.length;
-      l.groupDesc = toGroupName(TodayPrgType.review) + ": $learnedTotalCount/$learnTotalCount";
+      l.groupDesc = "${toGroupName(TodayPrgType.review)}: $learnedTotalCount/$learnTotalCount";
     }
 
     for (var l in fullCustom) {
       var learnedTotalCount = VerseTodayPrg.getFinishedCount(state.fullCustom);
       var learnTotalCount = state.fullCustom.length;
-      l.groupDesc = toGroupName(TodayPrgType.fullCustom) + ": $learnedTotalCount/$learnTotalCount";
+      l.groupDesc = "${toGroupName(TodayPrgType.fullCustom)}: $learnedTotalCount/$learnTotalCount";
     }
 
     state.all.sort((a, b) => a.sort.compareTo(b.sort));
@@ -206,15 +208,14 @@ class GsCrLogic extends GetxController {
     state.review.sort((a, b) => a.sort.compareTo(b.sort));
     state.fullCustom.sort((a, b) => a.sort.compareTo(b.sort));
 
-    startTimer();
     update([GsCrLogic.id]);
   }
 
-  tryStartAll({RepeatType mode = RepeatType.normal}) {
+  void tryStartAll({RepeatType mode = RepeatType.normal}) {
     tryStart(state.all, mode: mode);
   }
 
-  tryStartGroup(TodayPrgType type, {RepeatType mode = RepeatType.normal}) {
+  void tryStartGroup(TodayPrgType type, {RepeatType mode = RepeatType.normal}) {
     if (type == TodayPrgType.learn) {
       tryStart(state.learn, mode: mode);
     } else if (type == TodayPrgType.review) {
@@ -224,7 +225,7 @@ class GsCrLogic extends GetxController {
     }
   }
 
-  toGroupName(TodayPrgType type) {
+  String toGroupName(TodayPrgType type) {
     if (type == TodayPrgType.learn) {
       return I18nKey.btnLearn.tr;
     } else if (type == TodayPrgType.review) {
@@ -260,7 +261,7 @@ class GsCrLogic extends GetxController {
     await init();
   }
 
-  resetLearnDeadline() {
+  void resetLearnDeadline() {
     var now = DateTime.now();
     if (now.millisecondsSinceEpoch < state.learnDeadline) {
       state.learnDeadlineTips = I18nKey.labelResetLearningContent.trArgs([formatHm(state.learnDeadline - now.millisecondsSinceEpoch)]);
@@ -277,6 +278,12 @@ class GsCrLogic extends GetxController {
     timer = Timer.periodic(duration, (Timer timer) {
       resetLearnDeadline();
     });
+  }
+
+  void stopTimer() {
+    if (timer != null) {
+      timer!.cancel();
+    }
   }
 
   void config(TodayPrgType type) async {
@@ -413,11 +420,11 @@ class GsCrLogic extends GetxController {
       return;
     }
     await Db().db.scheduleDao.addFullCustom(
-          state.forAdd.fromBook!.id!,
-          state.forAdd.fromChapterIndex,
-          state.forAdd.fromVerseIndex,
-          state.forAdd.count,
-        );
+      state.forAdd.fromBook!.id!,
+      state.forAdd.fromChapterIndex,
+      state.forAdd.fromVerseIndex,
+      state.forAdd.count,
+    );
     await init();
   }
 
