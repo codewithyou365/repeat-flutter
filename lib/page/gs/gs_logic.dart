@@ -24,7 +24,7 @@ class GsLogic extends GetxController {
   select(int classroomId, String classroomName) {
     Classroom.curr = classroomId;
     Classroom.currName = classroomName;
-    Nav.gsCr.push();
+    Nav.scCr.push();
   }
 
   add(String name) async {

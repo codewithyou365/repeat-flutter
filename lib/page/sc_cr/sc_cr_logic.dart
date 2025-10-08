@@ -28,13 +28,13 @@ import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
-import 'gs_cr_state.dart';
+import 'sc_cr_state.dart';
 
-class GsCrLogic extends GetxController {
-  static const String id = "GsCrLogic";
-  static const String idForAdd = "GsCrLogicForAdd";
-  final GsCrState state = GsCrState();
-  late CopyLogic copyLogic = CopyLogic<GsCrLogic>(CrK.copyListTemplate, this);
+class ScCrLogic extends GetxController {
+  static const String id = "ScCrLogic";
+  static const String idForAdd = "ScCrLogicForAdd";
+  final ScCrState state = ScCrState();
+  late CopyLogic copyLogic = CopyLogic<ScCrLogic>(CrK.copyListTemplate, this);
   Timer? timer;
 
   @override
@@ -208,7 +208,7 @@ class GsCrLogic extends GetxController {
     state.review.sort((a, b) => a.sort.compareTo(b.sort));
     state.fullCustom.sort((a, b) => a.sort.compareTo(b.sort));
 
-    update([GsCrLogic.id]);
+    update([ScCrLogic.id]);
   }
 
   void tryStartAll({RepeatType mode = RepeatType.normal}) {
@@ -366,7 +366,7 @@ class GsCrLogic extends GetxController {
       var maxChapter = await Db().db.scheduleDao.getMaxChapterIndex(bookId);
       state.forAdd.maxChapter = (maxChapter ?? 1) + 1;
       if (updateView) {
-        update([GsCrLogic.idForAdd]);
+        update([ScCrLogic.idForAdd]);
       }
     }
   }
@@ -380,7 +380,7 @@ class GsCrLogic extends GetxController {
       var maxVerse = await Db().db.scheduleDao.getMaxVerseIndex(bookId, state.forAdd.fromChapterIndex);
       state.forAdd.maxVerse = (maxVerse ?? 1) + 1;
       if (updateView) {
-        update([GsCrLogic.idForAdd]);
+        update([ScCrLogic.idForAdd]);
       }
     }
   }
@@ -394,14 +394,14 @@ class GsCrLogic extends GetxController {
     state.forAdd.fromChapterIndex = 0;
     state.forAdd.fromVerseIndex = 0;
 
-    update([GsCrLogic.idForAdd]);
+    update([ScCrLogic.idForAdd]);
   }
 
   void selectChapter(int chapterIndex) async {
     state.forAdd.maxVerse = -1;
     state.forAdd.fromChapterIndex = chapterIndex;
     state.forAdd.fromVerseIndex = 0;
-    update([GsCrLogic.idForAdd]);
+    update([ScCrLogic.idForAdd]);
   }
 
   void selectVerse(int verseIndex) async {

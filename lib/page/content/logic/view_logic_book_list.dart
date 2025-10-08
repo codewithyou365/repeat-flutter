@@ -13,7 +13,7 @@ import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/book_editor/book_editor_args.dart';
 import 'package:repeat_flutter/page/content/content_logic.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
-import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart' show GsCrLogic;
+import 'package:repeat_flutter/page/sc_cr/sc_cr_logic.dart' show ScCrLogic;
 import 'package:repeat_flutter/widget/dialog/msg_box.dart' show MsgBox;
 import 'package:repeat_flutter/widget/overlay/overlay.dart' show showOverlay;
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -129,7 +129,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   Future<void> delete({required BookShow book}) async {
     bool success = await showOverlay<bool>(() async {
       await Db().db.bookDao.deleteAll(book.bookId);
-      await Get.find<GsCrLogic>().init();
+      await Get.find<ScCrLogic>().init();
       await Get.find<ContentLogic>().change();
       bus.publish<int>(EventTopic.deleteBook, book.bookId);
       return true;

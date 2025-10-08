@@ -18,7 +18,7 @@ import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/book_editor/book_editor_args.dart';
 import 'package:repeat_flutter/page/content/logic/view_logic.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
-import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
+import 'package:repeat_flutter/page/sc_cr/sc_cr_logic.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -195,7 +195,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
         ),
       );
       trySearch(force: true);
-      await Get.find<GsCrLogic>().init();
+      await Get.find<ScCrLogic>().init();
     }, I18nKey.labelDeleting.tr);
     Snackbar.show(I18nKey.labelDeleted.tr);
     Get.back();

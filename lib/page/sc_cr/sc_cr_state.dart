@@ -35,7 +35,7 @@ class ForAdd {
   int count = 1;
 }
 
-class GsCrState {
+class ScCrState {
   List<VerseTodayPrgInView> verses = [];
   List<VerseTodayPrg> all = [];
   List<VerseTodayPrg> learn = [];

@@ -1,14 +1,14 @@
 import 'package:get/get.dart';
-import 'gs_cr_binding.dart';
-import 'gs_cr_view.dart';
+import 'sc_cr_binding.dart';
+import 'sc_cr_view.dart';
 
-GetPage gsCrNav(String path) {
+GetPage scCrNav(String path) {
   return GetPage(
     name: path,
     transition: Transition.fadeIn,
     fullscreenDialog: true,
     popGesture: false,
-    page: () => GsCrPage(),
-    binding: GsCrBinding(),
+    page: () => ScCrPage(),
+    binding: ScCrBinding(),
   );
 }

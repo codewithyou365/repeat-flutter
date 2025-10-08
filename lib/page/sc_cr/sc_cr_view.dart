@@ -8,17 +8,17 @@ import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/nav.dart';
-import 'package:repeat_flutter/page/gs_cr/gs_cr_state.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
-import 'gs_cr_logic.dart';
+import 'sc_cr_logic.dart';
+import 'sc_cr_state.dart';
 
-class GsCrPage extends StatelessWidget {
-  const GsCrPage({Key? key}) : super(key: key);
+class ScCrPage extends StatelessWidget {
+  const ScCrPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final logic = Get.find<GsCrLogic>();
+    final logic = Get.find<ScCrLogic>();
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
@@ -75,10 +75,10 @@ class GsCrPage extends StatelessWidget {
   }
 
   Widget buildDetailContent(BuildContext context) {
-    final logic = Get.find<GsCrLogic>();
+    final logic = Get.find<ScCrLogic>();
     final state = logic.state;
-    return GetBuilder<GsCrLogic>(
-      id: GsCrLogic.id,
+    return GetBuilder<ScCrLogic>(
+      id: ScCrLogic.id,
       builder: (_) {
         return GroupedListView<VerseTodayPrgInView, String>(
           elements: state.verses,
@@ -272,7 +272,7 @@ class GsCrPage extends StatelessWidget {
     );
   }
 
-  void add(BuildContext context, GsCrLogic logic) async {
+  void add(BuildContext context, ScCrLogic logic) async {
     final Size screenSize = MediaQuery.of(context).size;
     var ok = await logic.initForAdd();
     if (!ok) {
@@ -303,8 +303,8 @@ class GsCrPage extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-                GetBuilder<GsCrLogic>(
-                  id: GsCrLogic.idForAdd,
+                GetBuilder<ScCrLogic>(
+                  id: ScCrLogic.idForAdd,
                   builder: (_) {
                     return Row(
                       children: [

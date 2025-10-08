@@ -21,7 +21,7 @@ import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/logic/import_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
-import 'package:repeat_flutter/page/gs_cr/gs_cr_logic.dart';
+import 'package:repeat_flutter/page/sc_cr/sc_cr_logic.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
@@ -222,7 +222,7 @@ class ScCrMaterialLogic extends GetxController {
     if (!result) {
       return false;
     }
-    Get.find<GsCrLogic>().init();
+    Get.find<ScCrLogic>().init();
     init();
     return true;
   }
@@ -290,7 +290,7 @@ class ScCrMaterialLogic extends GetxController {
       var workPath = rootPath.joinPath(relativePath);
       await Folder.ensureExists(workPath);
       await Db().db.bookDao.create(bookId, '{"s":"$content"}');
-      Get.find<GsCrLogic>().init();
+      Get.find<ScCrLogic>().init();
       init();
     });
   }

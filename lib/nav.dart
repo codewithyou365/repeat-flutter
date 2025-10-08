@@ -3,7 +3,6 @@ import 'package:repeat_flutter/page/book_editor/book_editor_nav.dart';
 import 'package:repeat_flutter/page/content/content_nav.dart';
 import 'package:repeat_flutter/page/editor/editor_nav.dart';
 import 'package:repeat_flutter/page/gs/gs_nav.dart';
-import 'package:repeat_flutter/page/gs_cr/gs_cr_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_content_share/gs_cr_content_share_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_settings/gs_cr_settings_nav.dart';
 import 'package:repeat_flutter/page/gs_cr_settings_el/gs_cr_settings_el_nav.dart';
@@ -16,6 +15,7 @@ import 'package:repeat_flutter/page/gs_settings_data/gs_settings_data_nav.dart';
 import 'package:repeat_flutter/page/gs_settings_lang/gs_settings_lang_nav.dart';
 import 'package:repeat_flutter/page/gs_settings_theme/gs_settings_theme_nav.dart';
 import 'package:repeat_flutter/page/repeat/repeat_nav.dart';
+import 'package:repeat_flutter/page/sc_cr/sc_cr_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_material/sc_cr_material_nav.dart';
 import 'package:repeat_flutter/page/scan/scan_nav.dart';
 
@@ -24,7 +24,6 @@ enum Nav {
   content("/content"),
   editor("/editor"),
   gs("/gs"),
-  gsCr("/gs/cr"),
   gsCrContentShare("/gs/cr/content/share"),
   gsCrSettings("/gs/cr/settings"),
   gsCrSettingsEl("/gs/cr/settings/el"),
@@ -37,6 +36,7 @@ enum Nav {
   gsSettingsLang("/gs/settings/lang"),
   gsSettingsTheme("/gs/settings/theme"),
   repeat("/repeat"),
+  scCr("/sc/cr"),
   scCrMaterial("/sc/cr/material"),
   scan("/scan"),
   ;
@@ -69,7 +69,6 @@ enum Nav {
     contentNav(content.path),
     editorNav(editor.path),
     gsNav(gs.path),
-    gsCrNav(gsCr.path),
     gsCrContentShareNav(gsCrContentShare.path),
     gsCrSettingsNav(gsCrSettings.path),
     gsCrSettingsElNav(gsCrSettingsEl.path),
@@ -82,6 +81,7 @@ enum Nav {
     gsSettingsLangNav(gsSettingsLang.path),
     gsSettingsThemeNav(gsSettingsTheme.path),
     repeatNav(repeat.path),
+    scCrNav(scCr.path),
     scCrMaterialNav(scCrMaterial.path),
     scanNav(scan.path),
   ];
