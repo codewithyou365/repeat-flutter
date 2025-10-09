@@ -22,6 +22,7 @@ import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
+import 'package:repeat_flutter/logic/widget/full_custom.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/repeat/repeat_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -35,6 +36,8 @@ class ScCrLogic extends GetxController {
   static const String idForAdd = "ScCrLogicForAdd";
   final ScCrState state = ScCrState();
   late CopyLogic copyLogic = CopyLogic<ScCrLogic>(CrK.copyListTemplate, this);
+  late FullCustom fullCustom = FullCustom<ScCrLogic>(this);
+
   Timer? timer;
 
   @override
@@ -64,8 +67,7 @@ class ScCrLogic extends GetxController {
     ChapterDao.getChapterShow = ChapterHelp.getCache;
     await BookHelp.tryGen(force: true);
     BookDao.getBookShow = BookHelp.getCache;
-    state.forAdd.contents = await Db().db.bookDao.getByEnable(Classroom.curr, true);
-    state.forAdd.bookNames = state.forAdd.contents.map((e) => e.name).toList();
+
     var now = DateTime.now();
     List<VerseTodayPrg> allProgresses = [];
     if (type == null) {
@@ -340,92 +342,10 @@ class ScCrLogic extends GetxController {
   }
 
   // for add schedule
-
-  Future<bool> initForAdd() async {
-    if (state.forAdd.contents.isEmpty) {
-      Snackbar.show(I18nKey.labelNoContent.tr);
-      return false;
-    }
-    await showTransparentOverlay(() async {
-      state.forAdd.maxChapter = -1;
-      state.forAdd.maxVerse = -1;
-      state.forAdd.fromBook = state.forAdd.contents[0];
-      await initChapter(updateView: false);
-      await initVerse(updateView: false);
-      state.forAdd.fromContentIndex = 0;
-      state.forAdd.fromChapterIndex = 0;
-      state.forAdd.fromVerseIndex = 0;
-      state.forAdd.count = 1;
+  void openFullCustom(BuildContext context) {
+    fullCustom.show(context, () {
+      init();
     });
-    return true;
-  }
-
-  Future<void> initChapter({bool updateView = true}) async {
-    if (state.forAdd.maxChapter < 0) {
-      var bookId = state.forAdd.fromBook!.id!;
-      var maxChapter = await Db().db.scheduleDao.getMaxChapterIndex(bookId);
-      state.forAdd.maxChapter = (maxChapter ?? 1) + 1;
-      if (updateView) {
-        update([ScCrLogic.idForAdd]);
-      }
-    }
-  }
-
-  Future<void> initVerse({bool updateView = true}) async {
-    if (state.forAdd.maxChapter < 0) {
-      return;
-    }
-    if (state.forAdd.maxVerse < 0) {
-      var bookId = state.forAdd.fromBook!.id!;
-      var maxVerse = await Db().db.scheduleDao.getMaxVerseIndex(bookId, state.forAdd.fromChapterIndex);
-      state.forAdd.maxVerse = (maxVerse ?? 1) + 1;
-      if (updateView) {
-        update([ScCrLogic.idForAdd]);
-      }
-    }
-  }
-
-  void selectContent(int contentIndex) async {
-    var content = state.forAdd.contents[contentIndex];
-    state.forAdd.maxChapter = -1;
-    state.forAdd.maxVerse = -1;
-    state.forAdd.fromBook = content;
-    state.forAdd.fromContentIndex = contentIndex;
-    state.forAdd.fromChapterIndex = 0;
-    state.forAdd.fromVerseIndex = 0;
-
-    update([ScCrLogic.idForAdd]);
-  }
-
-  void selectChapter(int chapterIndex) async {
-    state.forAdd.maxVerse = -1;
-    state.forAdd.fromChapterIndex = chapterIndex;
-    state.forAdd.fromVerseIndex = 0;
-    update([ScCrLogic.idForAdd]);
-  }
-
-  void selectVerse(int verseIndex) async {
-    state.forAdd.fromVerseIndex = verseIndex;
-  }
-
-  void selectCount(int count) async {
-    state.forAdd.count = count + 1;
-  }
-
-  void addSchedule() async {
-    if (state.forAdd.maxChapter < 0) {
-      return;
-    }
-    if (state.forAdd.maxVerse < 0) {
-      return;
-    }
-    await Db().db.scheduleDao.addFullCustom(
-      state.forAdd.fromBook!.id!,
-      state.forAdd.fromChapterIndex,
-      state.forAdd.fromVerseIndex,
-      state.forAdd.count,
-    );
-    await init();
   }
 
   // for copy

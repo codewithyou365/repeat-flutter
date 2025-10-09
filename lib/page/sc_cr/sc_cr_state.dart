@@ -22,27 +22,12 @@ class VerseTodayPrgInView {
   });
 }
 
-class ForAdd {
-  List<Book> contents = [];
-  List<String> bookNames = [];
-  int maxChapter = 1;
-  int maxVerse = 1;
-
-  Book? fromBook;
-  int fromContentIndex = 0;
-  int fromChapterIndex = 0;
-  int fromVerseIndex = 0;
-  int count = 1;
-}
-
 class ScCrState {
   List<VerseTodayPrgInView> verses = [];
   List<VerseTodayPrg> all = [];
   List<VerseTodayPrg> learn = [];
   List<VerseTodayPrg> review = [];
   List<VerseTodayPrg> fullCustom = [];
-
-  ForAdd forAdd = ForAdd();
 
   var learnedTotalCount = 0;
   var learnTotalCount = 0;
