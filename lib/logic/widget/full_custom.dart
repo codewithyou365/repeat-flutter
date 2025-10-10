@@ -16,7 +16,7 @@ class ForAdd {
   int maxVerse = 1;
 
   Book? fromBook;
-  int fromContentIndex = 0;
+  int fromBookIndex = 0;
   int fromChapterIndex = 0;
   int fromVerseIndex = 0;
   int count = 1;
@@ -71,7 +71,7 @@ class FullCustom<T extends GetxController> {
                           color: Theme.of(context).secondaryHeaderColor,
                           child: Row(
                             children: [
-                              cupertinoItem(['', I18nKey.labelBook.tr], selectContent, null, select: forAdd.bookNames),
+                              cupertinoItem(['', I18nKey.labelBook.tr], selectBook, null, select: forAdd.bookNames),
                               cupertinoItem([I18nKey.labelFrom.tr, I18nKey.labelChapter.tr], selectChapter, initChapter, count: forAdd.maxChapter),
                               cupertinoItem(['', I18nKey.labelVerse.tr], selectVerse, initVerse, count: forAdd.maxVerse),
                             ],
@@ -141,7 +141,7 @@ class FullCustom<T extends GetxController> {
       forAdd.fromBook = forAdd.books[0];
       await initChapter(updateView: false);
       await initVerse(updateView: false);
-      forAdd.fromContentIndex = 0;
+      forAdd.fromBookIndex = 0;
       forAdd.fromChapterIndex = 0;
       forAdd.fromVerseIndex = 0;
       forAdd.count = 1;
@@ -174,12 +174,12 @@ class FullCustom<T extends GetxController> {
     }
   }
 
-  void selectContent(int contentIndex) async {
-    var content = forAdd.books[contentIndex];
+  void selectBook(int bookIndex) async {
+    var book = forAdd.books[bookIndex];
     forAdd.maxChapter = -1;
     forAdd.maxVerse = -1;
-    forAdd.fromBook = content;
-    forAdd.fromContentIndex = contentIndex;
+    forAdd.fromBook = book;
+    forAdd.fromBookIndex = bookIndex;
     forAdd.fromChapterIndex = 0;
     forAdd.fromVerseIndex = 0;
 

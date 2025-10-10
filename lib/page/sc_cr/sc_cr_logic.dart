@@ -33,7 +33,6 @@ import 'sc_cr_state.dart';
 
 class ScCrLogic extends GetxController {
   static const String id = "ScCrLogic";
-  static const String idForAdd = "ScCrLogicForAdd";
   final ScCrState state = ScCrState();
   late CopyLogic copyLogic = CopyLogic<ScCrLogic>(CrK.copyListTemplate, this);
   late FullCustom fullCustom = FullCustom<ScCrLogic>(this);
