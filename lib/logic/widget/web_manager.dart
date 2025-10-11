@@ -35,9 +35,8 @@ class WebManager<T extends GetxController> {
   RxBool editInGame = RxBool(false);
   RxInt matchType = RxInt(0);
   RxString skipChar = RxString("");
-  final bus = EventBus();
-  late StreamSubscription<WsEvent?> sub;
-  late StreamSubscription<int?> subAllowRegisterNumber;
+  late StreamSub<WsEvent> sub = [];
+  late StreamSub<int> subAllowRegisterNumber = [];
 
   WebManager(this.parentLogic);
 
@@ -132,10 +131,10 @@ class WebManager<T extends GetxController> {
       skipChar.value = ks;
     }
     online.value = getOnline();
-    sub = bus.on<WsEvent>(EventTopic.wsEvent).listen((_) {
+    sub.listen([EventTopic.wsEvent], (_) {
       online.value = getOnline();
     });
-    subAllowRegisterNumber = bus.on<int>(EventTopic.allowRegisterNumber).listen((v) {
+    subAllowRegisterNumber.listen([EventTopic.allowRegisterNumber], (v) {
       if (v != null) {
         userManager.allowRegisterNumber = v;
         online.value = getOnline();

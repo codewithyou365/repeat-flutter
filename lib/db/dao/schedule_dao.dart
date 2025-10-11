@@ -469,25 +469,6 @@ abstract class ScheduleDao {
   )
   Future<List<VerseShow>> getVerseByChapterIndex(int bookId, int chapterIndex);
 
-  @Query(
-    'SELECT Verse.id verseId'
-    ',Book.id bookId'
-    ',Book.name bookName'
-    ',Book.sort bookSort'
-    ',Verse.content verseContent'
-    ',Verse.contentVersion verseContentVersion'
-    ',Verse.chapterId'
-    ',Verse.chapterIndex'
-    ',Verse.verseIndex'
-    ',Verse.learnDate'
-    ',Verse.progress'
-    ' FROM Verse'
-    " JOIN Book ON Book.id=Verse.bookId AND Book.enable=true"
-    ' WHERE Verse.bookId=:bookId'
-    '  AND Verse.chapterIndex>=:minChapterIndex',
-  )
-  Future<List<VerseShow>> getVerseByMinChapterIndex(int bookId, int minChapterIndex);
-
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertVerses(List<Verse> entities);
 

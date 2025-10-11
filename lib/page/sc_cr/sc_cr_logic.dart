@@ -19,6 +19,7 @@ import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/book_help.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
@@ -36,12 +37,17 @@ class ScCrLogic extends GetxController {
   final ScCrState state = ScCrState();
   late CopyLogic copyLogic = CopyLogic<ScCrLogic>(CrK.copyListTemplate, this);
   late FullCustom fullCustom = FullCustom<ScCrLogic>(this);
+  final StreamSub<int> refreshDataSub = [];
 
   Timer? timer;
 
   @override
   void onInit() {
     super.onInit();
+    refreshDataSub.listen([EventTopic.deleteBook], (v) {
+      refreshData();
+    });
+
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showTransparentOverlay(() async {
@@ -55,6 +61,7 @@ class ScCrLogic extends GetxController {
   @override
   void onClose() {
     super.onClose();
+    refreshDataSub.cancel();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     stopTimer();
   }
@@ -66,7 +73,10 @@ class ScCrLogic extends GetxController {
     ChapterDao.getChapterShow = ChapterHelp.getCache;
     await BookHelp.tryGen(force: true);
     BookDao.getBookShow = BookHelp.getCache;
+    await refreshData(type: type);
+  }
 
+  Future<void> refreshData({TodayPrgType? type}) async {
     var now = DateTime.now();
     List<VerseTodayPrg> allProgresses = [];
     if (type == null) {

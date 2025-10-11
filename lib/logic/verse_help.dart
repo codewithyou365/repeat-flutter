@@ -7,12 +7,10 @@ import 'model/verse_show.dart';
 class QueryChapter {
   final int bookId;
   final int? chapterIndex;
-  final int? minChapterIndex;
 
   QueryChapter({
     required this.bookId,
     this.chapterIndex,
-    this.minChapterIndex,
   });
 }
 
@@ -32,10 +30,6 @@ class VerseHelp {
         if (query.chapterIndex != null) {
           List<VerseShow> chapterVerse = await Db().db.scheduleDao.getVerseByChapterIndex(query.bookId, query.chapterIndex!);
           cache.removeWhere((verse) => verse.bookId == query.bookId && verse.chapterIndex == query.chapterIndex!);
-          cache.addAll(chapterVerse);
-        } else if (query.minChapterIndex != null) {
-          List<VerseShow> chapterVerse = await Db().db.scheduleDao.getVerseByMinChapterIndex(query.bookId, query.minChapterIndex!);
-          cache.removeWhere((verse) => verse.bookId == query.bookId && verse.chapterIndex >= query.minChapterIndex!);
           cache.addAll(chapterVerse);
         }
         verseIdToShow = {for (var verse in cache) verse.verseId: verse};

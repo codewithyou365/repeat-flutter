@@ -1,10 +1,16 @@
 import 'dart:async';
 
 enum EventTopic {
-  deleteBook,
   setInRepeatView,
   wsEvent,
   allowRegisterNumber,
+  deleteBook,
+  reimportBook,
+  importBook,
+  deleteVerse,
+  updateBookContent,
+  updateChapterContent,
+  updateVerseContent,
 }
 
 class Event<T> {
@@ -33,5 +39,26 @@ class EventBus {
 
   void dispose() {
     _controller.close();
+  }
+}
+
+typedef StreamSub<T> = List<StreamSubscription<T?>>;
+
+extension StreamSubExt<T> on StreamSub<T> {
+  void listen(
+    List<EventTopic> topics,
+    void Function(T? value) onData,
+  ) {
+    for (var topic in topics) {
+      final sub = EventBus().on<T>(topic).listen(onData);
+      add(sub);
+    }
+  }
+
+  Future<void> cancel() async {
+    for (var sub in this) {
+      await sub.cancel();
+    }
+    clear();
   }
 }

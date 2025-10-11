@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/database.dart';
@@ -8,6 +10,7 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/book_help.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
@@ -27,10 +30,15 @@ class ContentLogic extends GetxController {
   static const String id = "ContentLogicId";
   final ContentState state = ContentState();
   List<ViewLogic?> viewList = [null, null, null];
+  final StreamSub<int> changeSub = [];
 
   @override
   void onInit() async {
     super.onInit();
+    changeSub.listen([EventTopic.deleteBook], (v) {
+      change();
+    });
+
     var args = Get.arguments as ContentArgs;
     List<BookShow> originalBookShow = await BookHelp.getBooks();
     List<ChapterShow> originalChapterShow = await ChapterHelp.getChapters();
@@ -62,20 +70,22 @@ class ContentLogic extends GetxController {
             Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the chapter data(${verse.chapterId})"]));
             return;
           }
-          await Db().db.verseTodayPrgDao.insertOrFail(VerseTodayPrg(
-                classroomId: verse.classroomId,
-                bookId: verse.bookId,
-                chapterId: chapter.id!,
-                verseId: verse.id!,
-                time: 0,
-                type: TodayPrgType.justView.index,
-                sort: 0,
-                progress: 0,
-                viewTime: DateTime.now(),
-                reviewCount: 0,
-                reviewCreateDate: Date(0),
-                finish: false,
-              ));
+          await Db().db.verseTodayPrgDao.insertOrFail(
+            VerseTodayPrg(
+              classroomId: verse.classroomId,
+              bookId: verse.bookId,
+              chapterId: chapter.id!,
+              verseId: verse.id!,
+              time: 0,
+              type: TodayPrgType.justView.index,
+              sort: 0,
+              progress: 0,
+              viewTime: DateTime.now(),
+              reviewCount: 0,
+              reviewCreateDate: Date(0),
+              finish: false,
+            ),
+          );
           p = await Db().db.verseTodayPrgDao.one(verse.classroomId, verse.id!, TodayPrgType.justView.index);
           if (p == null) {
             Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant insert the verse(${verse.classroomId}-${verse.id!}-${TodayPrgType.justView})"]));
@@ -167,6 +177,7 @@ class ContentLogic extends GetxController {
 
   @override
   void onClose() {
+    changeSub.cancel();
     for (var view in viewList) {
       if (view != null) {
         view.dispose();
