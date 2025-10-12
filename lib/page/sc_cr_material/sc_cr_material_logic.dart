@@ -13,6 +13,8 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/book_help.dart';
+import 'package:repeat_flutter/logic/cache_help.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
@@ -21,7 +23,6 @@ import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/logic/import_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
-import 'package:repeat_flutter/page/sc_cr/sc_cr_logic.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
@@ -34,12 +35,12 @@ class ScCrMaterialLogic extends GetxController {
   final ScCrMaterialState state = ScCrMaterialState();
   static RegExp reg = RegExp(r'^[0-9A-Z]+$');
   final bus = EventBus();
-  late StreamSubscription<int?> sub;
+  late StreamSub<int> sub;
 
   @override
   void onInit() {
     super.onInit();
-    sub = bus.on<int>(EventTopic.deleteBook).listen(delete);
+    sub.listen([EventTopic.deleteBook], delete);
     init();
   }
 
@@ -222,8 +223,9 @@ class ScCrMaterialLogic extends GetxController {
     if (!result) {
       return false;
     }
-    Get.find<ScCrLogic>().init();
+    await CacheHelp.refresh();
     init();
+    EventBus().publish<int>(EventTopic.importBook, bookId);
     return true;
   }
 
@@ -290,8 +292,9 @@ class ScCrMaterialLogic extends GetxController {
       var workPath = rootPath.joinPath(relativePath);
       await Folder.ensureExists(workPath);
       await Db().db.bookDao.create(bookId, '{"s":"$content"}');
-      Get.find<ScCrLogic>().init();
+      await BookHelp.tryGen(force: true);
       init();
+      EventBus().publish<int>(EventTopic.createBook, bookId);
     });
   }
 }
