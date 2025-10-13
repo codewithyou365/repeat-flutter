@@ -1046,19 +1046,16 @@ class _$ChapterDao extends ChapterDao {
   }
 
   @override
-  Future<bool> deleteChapter(
-    int chapterId,
-    Rx<Chapter> out,
-  ) async {
+  Future<bool> deleteChapter(int chapterId) async {
     if (database is sqflite.Transaction) {
-      return super.deleteChapter(chapterId, out);
+      return super.deleteChapter(chapterId);
     } else {
       return (database as sqflite.Database)
           .transaction<bool>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        return transactionDatabase.chapterDao.deleteChapter(chapterId, out);
+        return transactionDatabase.chapterDao.deleteChapter(chapterId);
       });
     }
   }
@@ -1067,10 +1064,9 @@ class _$ChapterDao extends ChapterDao {
   Future<bool> addChapter(
     ChapterShow chapterShow,
     int chapterIndex,
-    Rx<Chapter> out,
   ) async {
     if (database is sqflite.Transaction) {
-      return super.addChapter(chapterShow, chapterIndex, out);
+      return super.addChapter(chapterShow, chapterIndex);
     } else {
       return (database as sqflite.Database)
           .transaction<bool>((transaction) async {
@@ -1078,7 +1074,7 @@ class _$ChapterDao extends ChapterDao {
           ..database = transaction;
         prepareDb(transactionDatabase);
         return transactionDatabase.chapterDao
-            .addChapter(chapterShow, chapterIndex, out);
+            .addChapter(chapterShow, chapterIndex);
       });
     }
   }

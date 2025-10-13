@@ -9,6 +9,8 @@ import 'package:repeat_flutter/db/entity/chapter_content_version.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/book_help.dart';
+import 'package:repeat_flutter/logic/cache_help.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
@@ -16,7 +18,6 @@ import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/book_editor/book_editor_args.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
-import 'package:repeat_flutter/page/sc_cr/sc_cr_logic.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -153,8 +154,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     parentLogic.update([ViewLogicChapterList.bodyId]);
   }
 
-  Future<void> refresh(Chapter? chapter) async {
-    await Get.find<ScCrLogic>().init();
+  void refresh() {
     originalChapterShow = ChapterHelp.cache;
     originalBookShow = BookHelp.cache;
     onChapterModified();
@@ -164,12 +164,13 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
 
   Future<void> delete({required ChapterShow chapter}) async {
     bool success = await showOverlay<bool>(() async {
-      Rx<Chapter> out = Rx(Chapter.empty());
-      bool ok = await Db().db.chapterDao.deleteChapter(chapter.chapterId, out);
-      if (!ok || out.value.id == null) {
+      bool ok = await Db().db.chapterDao.deleteChapter(chapter.chapterId);
+      if (!ok) {
         return false;
       }
-      await refresh(out.value);
+      await CacheHelp.refreshChapterAndVerse();
+      refresh();
+      EventBus().publish<int>(EventTopic.deleteChapter, null);
       return true;
     }, I18nKey.labelDeleting.tr);
     if (success) {
@@ -191,7 +192,9 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
         var chapterCount = await Db().db.chapterDao.count(book.id!) ?? 0;
         if (chapterCount == 0) {
           await Db().db.chapterDao.addFirstChapter(book.id!);
-          await refresh(null);
+          await CacheHelp.refreshChapterAndVerse();
+          refresh();
+          EventBus().publish<int>(EventTopic.addChapter, null);
         }
         return true;
       }, I18nKey.labelCopying.tr);
@@ -207,12 +210,13 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
       if (below) {
         chapterIndex++;
       }
-      Rx<Chapter> out = Rx(Chapter.empty());
-      var ok = await Db().db.chapterDao.addChapter(chapter, chapterIndex, out);
-      if (!ok || out.value.id == null) {
+      var ok = await Db().db.chapterDao.addChapter(chapter, chapterIndex);
+      if (!ok) {
         return false;
       }
-      await refresh(out.value);
+      await CacheHelp.refreshChapterAndVerse();
+      refresh();
+      EventBus().publish<int>(EventTopic.addChapter, null);
       return true;
     }, I18nKey.labelCopying.tr);
     if (success) {

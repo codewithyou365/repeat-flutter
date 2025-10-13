@@ -190,14 +190,13 @@ abstract class ChapterDao {
   }
 
   @transaction
-  Future<bool> deleteChapter(int chapterId, Rx<Chapter> out) async {
+  Future<bool> deleteChapter(int chapterId) async {
     Chapter? chapter = await getById(chapterId);
     if (chapter == null) {
       Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["cant find the chapter data($chapterId)"]));
       return false;
     }
     int bookId = chapter.bookId;
-    out.value = chapter;
     var currVerse = await db.verseDao.getByIndex(bookId, chapter.chapterIndex, 0);
     if (currVerse != null) {
       Snackbar.showAndThrow(I18nKey.labelChapterDeleteBlocked.tr);
@@ -226,14 +225,13 @@ abstract class ChapterDao {
   }
 
   @transaction
-  Future<bool> addChapter(ChapterShow chapterShow, int chapterIndex, Rx<Chapter> out) async {
+  Future<bool> addChapter(ChapterShow chapterShow, int chapterIndex) async {
     int chapterId = chapterShow.chapterId;
     Chapter? baseLk = await getById(chapterId);
     if (baseLk == null) {
       Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["cant find the chapter data($chapterId)"]));
       return false;
     }
-    out.value = baseLk;
     return await interAddChapter(
       chapterContent: baseLk.content,
       bookId: baseLk.bookId,

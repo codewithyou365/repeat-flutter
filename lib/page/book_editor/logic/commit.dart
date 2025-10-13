@@ -17,7 +17,7 @@ Future<void> handleCommit(HttpRequest request, int bookId) async {
       response.write("Commit failed.");
       return;
     }
-    await CacheHelp.refresh();
+    await CacheHelp.refreshAll();
     EventBus().publish<int>(EventTopic.reimportBook, bookId);
     response.statusCode = HttpStatus.ok;
     response.write("Commit successful.\n${JsonEncoder.withIndent(' ').convert(result.toJson())}");

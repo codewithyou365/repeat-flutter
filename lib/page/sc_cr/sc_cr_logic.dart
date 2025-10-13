@@ -18,6 +18,7 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/book_help.dart';
+import 'package:repeat_flutter/logic/cache_help.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
@@ -44,7 +45,7 @@ class ScCrLogic extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    refreshDataSub.listen([EventTopic.createBook, EventTopic.importBook, EventTopic.reimportBook, EventTopic.deleteBook], (v) {
+    refreshDataSub.listen([EventTopic.reimportBook, EventTopic.deleteBook, EventTopic.deleteChapter], (v) {
       refreshData();
     });
 
@@ -67,11 +68,9 @@ class ScCrLogic extends GetxController {
   }
 
   Future<void> init({TodayPrgType? type}) async {
-    await VerseHelp.tryGen(force: true);
+    await CacheHelp.refreshAll();
     VerseDao.getVerseShow = VerseHelp.getCache;
-    await ChapterHelp.tryGen(force: true);
     ChapterDao.getChapterShow = ChapterHelp.getCache;
-    await BookHelp.tryGen(force: true);
     BookDao.getBookShow = BookHelp.getCache;
     await refreshData(type: type);
   }

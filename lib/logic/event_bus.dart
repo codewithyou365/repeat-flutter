@@ -8,6 +8,8 @@ enum EventTopic {
   importBook,
   reimportBook,
   deleteBook,
+  deleteChapter,
+  addChapter,
   deleteVerse,
   updateBookContent,
   updateChapterContent,

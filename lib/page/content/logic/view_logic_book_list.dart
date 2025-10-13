@@ -128,7 +128,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   Future<void> delete({required BookShow book}) async {
     bool success = await showOverlay<bool>(() async {
       await Db().db.bookDao.deleteBook(book.bookId);
-      await CacheHelp.refresh();
+      await CacheHelp.refreshAll();
       bus.publish<int>(EventTopic.deleteBook, book.bookId);
       return true;
     }, I18nKey.labelDeleting.tr);
