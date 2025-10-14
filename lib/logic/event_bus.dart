@@ -11,6 +11,7 @@ enum EventTopic {
   deleteChapter,
   addChapter,
   deleteVerse,
+  addVerse,
   updateBookContent,
   updateChapterContent,
   updateVerseContent,

@@ -45,7 +45,7 @@ class ScCrLogic extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    refreshDataSub.listen([EventTopic.reimportBook, EventTopic.deleteBook, EventTopic.deleteChapter], (v) {
+    refreshDataSub.listen([EventTopic.reimportBook, EventTopic.deleteBook, EventTopic.deleteChapter, EventTopic.deleteVerse], (v) {
       refreshData();
     });
 
