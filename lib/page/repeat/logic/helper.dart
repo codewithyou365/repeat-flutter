@@ -8,7 +8,6 @@ import 'package:repeat_flutter/common/folder.dart';
 import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/path.dart';
-import 'package:repeat_flutter/db/dao/book_dao.dart';
 import 'package:repeat_flutter/db/dao/chapter_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
@@ -57,10 +56,6 @@ class Helper {
   Map<int, Map<String, dynamic>> verseMapCache = {};
 
   Helper() {
-    BookDao.setBookShowContent = [];
-    BookDao.setBookShowContent.add((int id) {
-      bookMapCache.remove(id);
-    });
     ChapterDao.setChapterShowContent = [];
     ChapterDao.setChapterShowContent.add((int id) {
       chapterMapCache.remove(id);
@@ -73,10 +68,18 @@ class Helper {
     });
   }
 
+  final SubList<int> updateBookContentSub = [];
+
   Future<void> init(RepeatFlow logic) async {
     this.logic = logic;
     rootPath = await DocPath.getContentPath();
     initialized = true;
+  }
+
+  void onClose() {
+    updateBookContentSub.on([EventTopic.updateBookContent], (int? id) {
+      bookMapCache.remove(id!);
+    });
   }
 
   void setInRepeatView(bool inRepeatView, {bool withoutPlayingMediaFirstTime = false}) {

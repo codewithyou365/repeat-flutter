@@ -59,7 +59,7 @@ class RepeatLogic extends GetxController {
     for (var v in showTypeToRepeatView.values) {
       v.dispose();
     }
-
+    state.helper.onClose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
   }
 

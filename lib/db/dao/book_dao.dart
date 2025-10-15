@@ -21,7 +21,6 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 @dao
 abstract class BookDao {
   late AppDatabase db;
-  static List<void Function(int chapterId)> setBookShowContent = [];
 
   @Query(
     'SELECT id bookId'
@@ -129,9 +128,7 @@ abstract class BookDao {
     );
     book.contentVersion++;
     CacheHelp.refreshBookContent(book);
-    for (var set in setBookShowContent) {
-      set(bookId);
-    }
+    EventBus().publish<int>(EventTopic.updateBookContent, bookId);
   }
 
   @transaction
