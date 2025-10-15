@@ -11,6 +11,8 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/db/entity/verse_content_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/cache_help.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -30,58 +32,78 @@ abstract class VerseDao {
   @Query('SELECT * FROM Verse where bookId=:bookId')
   Future<List<Verse>> findByBookId(int bookId);
 
-  @Query('SELECT * FROM Verse'
-      ' WHERE bookId=:bookId'
-      ' AND chapterIndex=:chapterIndex'
-      ' AND verseIndex=:verseIndex')
+  @Query(
+    'SELECT * FROM Verse'
+    ' WHERE bookId=:bookId'
+    ' AND chapterIndex=:chapterIndex'
+    ' AND verseIndex=:verseIndex',
+  )
   Future<Verse?> getByIndex(int bookId, int chapterIndex, int verseIndex);
 
-  @Query('SELECT * FROM Verse'
-      ' WHERE bookId=:bookId AND chapterIndex>=:minChapterIndex order by chapterIndex,verseIndex limit 1')
+  @Query(
+    'SELECT * FROM Verse'
+    ' WHERE bookId=:bookId AND chapterIndex>=:minChapterIndex order by chapterIndex,verseIndex limit 1',
+  )
   Future<Verse?> last(int bookId, int minChapterIndex);
 
-  @Query('SELECT * FROM Verse'
-      ' WHERE bookId=:bookId AND chapterIndex=:chapterIndex AND verseIndex>=:minVerseIndex')
+  @Query(
+    'SELECT * FROM Verse'
+    ' WHERE bookId=:bookId AND chapterIndex=:chapterIndex AND verseIndex>=:minVerseIndex',
+  )
   Future<List<Verse>> findByMinVerseIndex(int bookId, int chapterIndex, int minVerseIndex);
 
-  @Query('DELETE FROM Verse'
-      ' WHERE bookId=:bookId AND chapterIndex=:chapterIndex AND verseIndex>=:minVerseIndex')
+  @Query(
+    'DELETE FROM Verse'
+    ' WHERE bookId=:bookId AND chapterIndex=:chapterIndex AND verseIndex>=:minVerseIndex',
+  )
   Future<void> deleteByMinVerseIndex(int bookId, int chapterIndex, int minVerseIndex);
 
-  @Query('SELECT * FROM Verse'
-      ' WHERE bookId=:bookId AND chapterIndex>=:minChapterIndex order by chapterIndex,verseIndex')
+  @Query(
+    'SELECT * FROM Verse'
+    ' WHERE bookId=:bookId AND chapterIndex>=:minChapterIndex order by chapterIndex,verseIndex',
+  )
   Future<List<Verse>> findByMinChapterIndex(int bookId, int minChapterIndex);
 
-  @Query('DELETE FROM Verse'
-      ' WHERE bookId=:bookId AND chapterIndex>=:minChapterIndex')
+  @Query(
+    'DELETE FROM Verse'
+    ' WHERE bookId=:bookId AND chapterIndex>=:minChapterIndex',
+  )
   Future<void> deleteByMinChapterIndex(int bookId, int minChapterIndex);
 
   @Query('DELETE FROM Verse WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
 
-  @Query('SELECT id FROM Verse'
-      ' WHERE bookId=:bookId')
+  @Query(
+    'SELECT id FROM Verse'
+    ' WHERE bookId=:bookId',
+  )
   Future<List<int>> getIds(int bookId);
 
-  @Query('DELETE FROM Verse'
-      ' WHERE Verse.bookId=:bookId')
+  @Query(
+    'DELETE FROM Verse'
+    ' WHERE Verse.bookId=:bookId',
+  )
   Future<void> deleteByBookId(int bookId);
 
   @Query('DELETE FROM Verse WHERE chapterId=:chapterId')
   Future<void> deleteByChapterKeyId(int chapterId);
 
-  @Query('UPDATE Verse'
-      ' SET contentVersion = ('
-      ' SELECT MAX(version)'
-      ' FROM VerseContentVersion'
-      ' WHERE VerseContentVersion.verseId = Verse.id'
-      ' AND VerseContentVersion.bookId = Verse.bookId'
-      ' )'
-      ' WHERE bookId = :bookId')
+  @Query(
+    'UPDATE Verse'
+    ' SET contentVersion = ('
+    ' SELECT MAX(version)'
+    ' FROM VerseContentVersion'
+    ' WHERE VerseContentVersion.verseId = Verse.id'
+    ' AND VerseContentVersion.bookId = Verse.bookId'
+    ' )'
+    ' WHERE bookId = :bookId',
+  )
   Future<void> syncContentVersion(int bookId);
 
-  @Query('SELECT count(1) FROM Verse'
-      ' WHERE id in (:ids)')
+  @Query(
+    'SELECT count(1) FROM Verse'
+    ' WHERE id in (:ids)',
+  )
   Future<int?> countByIds(List<int> ids);
 
   @Insert(onConflict: OnConflictStrategy.fail)
@@ -174,6 +196,13 @@ abstract class VerseDao {
     await db.verseReviewDao.deleteByVerseId(verseId);
     await db.verseStatsDao.deleteByVerseId(verseId);
     await db.verseTodayPrgDao.deleteByVerseId(verseId);
+    await CacheHelp.refreshVerse(
+      query: QueryChapter(
+        bookId: verse.bookId,
+        chapterIndex: verse.chapterIndex,
+      ),
+    );
+    EventBus().publish<int>(EventTopic.deleteVerse, null);
     return true;
   }
 
@@ -270,17 +299,25 @@ abstract class VerseDao {
     } else {
       verse = temp;
     }
-    await db.verseContentVersionDao.insertOrFail(VerseContentVersion(
-      classroomId: verse.classroomId,
-      bookId: verse.bookId,
-      chapterId: verse.chapterId,
-      verseId: verse.id!,
-      version: 1,
-      reason: VersionReason.editor,
-      content: verse.content,
-      createTime: now,
-    ));
-
+    await db.verseContentVersionDao.insertOrFail(
+      VerseContentVersion(
+        classroomId: verse.classroomId,
+        bookId: verse.bookId,
+        chapterId: verse.chapterId,
+        verseId: verse.id!,
+        version: 1,
+        reason: VersionReason.editor,
+        content: verse.content,
+        createTime: now,
+      ),
+    );
+    await CacheHelp.refreshVerse(
+      query: QueryChapter(
+        bookId: book.id!,
+        chapterIndex: chapterIndex,
+      ),
+    );
+    EventBus().publish<int>(EventTopic.addVerse, null);
     return verse.id!;
   }
 
@@ -332,16 +369,18 @@ abstract class VerseDao {
 
     var now = DateTime.now();
     await updateContent(id, content, verse.contentVersion + 1);
-    await db.verseContentVersionDao.insertOrFail(VerseContentVersion(
-      classroomId: verse.classroomId,
-      bookId: verse.bookId,
-      chapterId: verse.chapterId,
-      verseId: id,
-      version: verse.contentVersion + 1,
-      reason: VersionReason.editor,
-      content: content,
-      createTime: now,
-    ));
+    await db.verseContentVersionDao.insertOrFail(
+      VerseContentVersion(
+        classroomId: verse.classroomId,
+        bookId: verse.bookId,
+        chapterId: verse.chapterId,
+        verseId: id,
+        version: verse.contentVersion + 1,
+        reason: VersionReason.editor,
+        content: content,
+        createTime: now,
+      ),
+    );
     await db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.updateVerseShowTime, now.millisecondsSinceEpoch.toString()));
     if (getVerseShow != null) {
       VerseShow? currVerseShow = getVerseShow!(id);

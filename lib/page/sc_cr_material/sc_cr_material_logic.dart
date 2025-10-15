@@ -13,7 +13,6 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/cache_help.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
@@ -33,20 +32,19 @@ class ScCrMaterialLogic extends GetxController {
   static const String id = "GsCrContentLogic";
   final ScCrMaterialState state = ScCrMaterialState();
   static RegExp reg = RegExp(r'^[0-9A-Z]+$');
-  final bus = EventBus();
-  late StreamSub<int> sub;
+  final SubList<int> sub = [];
 
   @override
   void onInit() {
     super.onInit();
-    sub.listen([EventTopic.deleteBook], delete);
+    sub.on([EventTopic.deleteBook], delete);
     init();
   }
 
   @override
   void onClose() {
     super.onClose();
-    sub.cancel();
+    sub.off();
   }
 
   Future<void> init() async {
@@ -222,9 +220,7 @@ class ScCrMaterialLogic extends GetxController {
     if (!result) {
       return false;
     }
-    await CacheHelp.refreshAll();
     init();
-    EventBus().publish<int>(EventTopic.importBook, bookId);
     return true;
   }
 
@@ -291,9 +287,7 @@ class ScCrMaterialLogic extends GetxController {
       var workPath = rootPath.joinPath(relativePath);
       await Folder.ensureExists(workPath);
       await Db().db.bookDao.create(bookId, '{"s":"$content"}');
-      await CacheHelp.refreshBook();
       init();
-      EventBus().publish<int>(EventTopic.createBook, bookId);
     });
   }
 }

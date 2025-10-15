@@ -6,8 +6,6 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/book_content_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/cache_help.dart';
-import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -24,7 +22,6 @@ import 'view_logic.dart';
 
 class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   static const String bodyId = "BookList.bodyId";
-  final bus = EventBus();
   late HistoryList historyList = HistoryList<T>(parentLogic);
   final void Function(BookShow bookShow) onNext;
   final ItemScrollController itemScrollController = ItemScrollController();
@@ -128,8 +125,6 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   Future<void> delete({required BookShow book}) async {
     bool success = await showOverlay<bool>(() async {
       await Db().db.bookDao.deleteBook(book.bookId);
-      await CacheHelp.refreshAll();
-      bus.publish<int>(EventTopic.deleteBook, book.bookId);
       return true;
     }, I18nKey.labelDeleting.tr);
     if (success) {

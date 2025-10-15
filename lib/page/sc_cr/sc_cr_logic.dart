@@ -6,7 +6,6 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/time.dart';
-import 'package:repeat_flutter/db/dao/book_dao.dart';
 import 'package:repeat_flutter/db/dao/chapter_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_dao.dart';
@@ -17,7 +16,6 @@ import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/book_help.dart';
 import 'package:repeat_flutter/logic/cache_help.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
@@ -38,22 +36,25 @@ class ScCrLogic extends GetxController {
   final ScCrState state = ScCrState();
   late CopyLogic copyLogic = CopyLogic<ScCrLogic>(CrK.copyListTemplate, this);
   late FullCustom fullCustom = FullCustom<ScCrLogic>(this);
-  final StreamSub<int> refreshDataSub = [];
+  final SubList<int> initSub = [];
 
   Timer? timer;
 
   @override
   void onInit() {
     super.onInit();
-    refreshDataSub.listen([EventTopic.reimportBook, EventTopic.deleteBook, EventTopic.deleteChapter, EventTopic.deleteVerse], (v) {
-      refreshData();
+    initSub.on([EventTopic.reimportBook, EventTopic.deleteBook, EventTopic.deleteChapter, EventTopic.deleteVerse], (v) {
+      init();
     });
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showTransparentOverlay(() async {
         await copyLogic.init();
+        await CacheHelp.refreshAll();
         await init();
+        VerseDao.getVerseShow = VerseHelp.getCache;
+        ChapterDao.getChapterShow = ChapterHelp.getCache;
         startTimer();
       });
     });
@@ -62,20 +63,12 @@ class ScCrLogic extends GetxController {
   @override
   void onClose() {
     super.onClose();
-    refreshDataSub.cancel();
+    initSub.off();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     stopTimer();
   }
 
   Future<void> init({TodayPrgType? type}) async {
-    await CacheHelp.refreshAll();
-    VerseDao.getVerseShow = VerseHelp.getCache;
-    ChapterDao.getChapterShow = ChapterHelp.getCache;
-    BookDao.getBookShow = BookHelp.getCache;
-    await refreshData(type: type);
-  }
-
-  Future<void> refreshData({TodayPrgType? type}) async {
     var now = DateTime.now();
     List<VerseTodayPrg> allProgresses = [];
     if (type == null) {

@@ -23,8 +23,4 @@ class BookHelp {
     return BookHelp.bookIdToShow[bookId];
   }
 
-  static void deleteCache(int bookId) {
-    cache.removeWhere((element) => element.bookId == bookId);
-    bookIdToShow.remove(bookId);
-  }
 }

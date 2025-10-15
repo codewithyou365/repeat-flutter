@@ -8,8 +8,6 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/verse_content_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/cache_help.dart';
-import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
@@ -136,6 +134,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
 
   @override
   void trySearch({force = false}) {
+    originalVerseShow = VerseHelp.cache;
     String newSearchKey = genSearchKey();
     if (!force && newSearchKey == searchKey) {
       return;
@@ -188,14 +187,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
       if (!ok) {
         return false;
       }
-      originalVerseShow = await CacheHelp.refreshVerse(
-        query: QueryChapter(
-          bookId: verse.bookId,
-          chapterIndex: verse.chapterIndex,
-        ),
-      );
       trySearch(force: true);
-      EventBus().publish<int>(EventTopic.deleteVerse, null);
     }, I18nKey.labelDeleting.tr);
     Snackbar.show(I18nKey.labelDeleted.tr);
     Get.back();
@@ -218,14 +210,8 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
         }
 
         await Db().db.verseDao.addFirstVerse(book.id!, chapter.id!, chapterIndex);
-        originalVerseShow = await CacheHelp.refreshVerse(
-          query: QueryChapter(
-            bookId: book.id!,
-            chapterIndex: chapterIndex,
-          ),
-        );
+
         trySearch(force: true);
-        EventBus().publish<int>(EventTopic.addVerse, null);
       }, I18nKey.labelAdding.tr);
       Snackbar.show(I18nKey.labelAddSuccess.tr);
     }
@@ -241,14 +227,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
       if (verseId == 0) {
         return;
       }
-      originalVerseShow = await CacheHelp.refreshVerse(
-        query: QueryChapter(
-          bookId: verse.bookId,
-          chapterIndex: verse.chapterIndex,
-        ),
-      );
       trySearch(force: true);
-      EventBus().publish<int>(EventTopic.addVerse, null);
     }, I18nKey.labelCopying.tr);
     Snackbar.show(I18nKey.labelCopied.tr);
     Get.back();

@@ -8,8 +8,6 @@ import 'package:repeat_flutter/db/entity/chapter_content_version.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/book_help.dart';
-import 'package:repeat_flutter/logic/cache_help.dart';
-import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
@@ -167,9 +165,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
       if (!ok) {
         return false;
       }
-      await CacheHelp.refreshChapterAndVerse();
       refresh();
-      EventBus().publish<int>(EventTopic.deleteChapter, null);
       return true;
     }, I18nKey.labelDeleting.tr);
     if (success) {
@@ -191,9 +187,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
         var chapterCount = await Db().db.chapterDao.count(book.id!) ?? 0;
         if (chapterCount == 0) {
           await Db().db.chapterDao.addFirstChapter(book.id!);
-          await CacheHelp.refreshChapterAndVerse();
           refresh();
-          EventBus().publish<int>(EventTopic.addChapter, null);
         }
         return true;
       }, I18nKey.labelCopying.tr);
@@ -213,9 +207,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
       if (!ok) {
         return false;
       }
-      await CacheHelp.refreshChapterAndVerse();
       refresh();
-      EventBus().publish<int>(EventTopic.addChapter, null);
       return true;
     }, I18nKey.labelCopying.tr);
     if (success) {

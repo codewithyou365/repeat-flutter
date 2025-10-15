@@ -1,3 +1,4 @@
+import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 
 import 'book_help.dart';
@@ -5,6 +6,12 @@ import 'chapter_help.dart';
 import 'verse_help.dart';
 
 class CacheHelp {
+  static void refreshBookContent(Book book)  {
+    var cache = BookHelp.getCache(book.id!);
+    cache?.bookContent = book.content;
+    cache?.bookContentVersion = book.contentVersion;
+  }
+
   static Future<void> refreshBook() async {
     await BookHelp.tryGen(force: true);
   }

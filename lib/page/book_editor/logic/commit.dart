@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:repeat_flutter/logic/cache_help.dart';
-import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/reimport_help.dart';
 
 Future<void> handleCommit(HttpRequest request, int bookId) async {
@@ -17,8 +15,6 @@ Future<void> handleCommit(HttpRequest request, int bookId) async {
       response.write("Commit failed.");
       return;
     }
-    await CacheHelp.refreshAll();
-    EventBus().publish<int>(EventTopic.reimportBook, bookId);
     response.statusCode = HttpStatus.ok;
     response.write("Commit successful.\n${JsonEncoder.withIndent(' ').convert(result.toJson())}");
   } catch (e, st) {

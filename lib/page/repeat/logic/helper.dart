@@ -135,6 +135,9 @@ class Helper {
       return null;
     }
     Map<String, dynamic>? ret = bookMapCache[logic.currVerse!.bookId];
+    if (ret != null) {
+      return ret;
+    }
     String? rootContent = getCurrBookContent();
     if (rootContent == null) {
       return null;

@@ -23,7 +23,7 @@ class RepeatViewForVideo extends RepeatView {
   late VideoBoardHelper videoBoardHelper;
   var initialized = false.obs;
   final bus = EventBus();
-  late StreamSubscription<bool?> sub;
+  late SubList<bool> sub;
 
   // UI
   var showLandscapeOperateUi = true.obs;
@@ -47,7 +47,7 @@ class RepeatViewForVideo extends RepeatView {
     this.helper = helper;
     mediaRangeHelper = MediaRangeHelper(helper: helper);
     videoBoardHelper = VideoBoardHelper(helper: helper);
-    sub = bus.on<bool>(EventTopic.setInRepeatView).listen((b) {
+    sub.on([EventTopic.setInRepeatView], (b) {
       mediaKey.currentState?.stop();
     });
   }
@@ -55,6 +55,7 @@ class RepeatViewForVideo extends RepeatView {
   @override
   void dispose() {
     _videoPlayerController?.dispose();
+    sub.off();
   }
 
   @override

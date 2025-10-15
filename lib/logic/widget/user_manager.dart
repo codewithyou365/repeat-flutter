@@ -26,7 +26,7 @@ class UserManager<T extends GetxController> {
   String text = "";
   late WebServer web;
   final bus = EventBus();
-  late StreamSubscription<WsEvent?> sub;
+  late SubList<WsEvent> sub;
 
   UserManager(this.parentLogic);
 
@@ -52,7 +52,7 @@ class UserManager<T extends GetxController> {
       onlineUsers[userId] = true;
     }
     users = sortUsersByOnline(onlineUsers, users);
-    sub = bus.on<WsEvent>(EventTopic.wsEvent).listen((wsEvent) async {
+    sub.on([EventTopic.wsEvent], (wsEvent) async {
       if (wsEvent == null) {
         return;
       }
@@ -130,7 +130,7 @@ class UserManager<T extends GetxController> {
         ),
       ),
     ).then((_) {
-      sub.cancel();
+      sub.off();
     });
   }
 

@@ -3,7 +3,6 @@
 import 'dart:convert' as convert;
 
 import 'package:floor/floor.dart';
-import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/chapter.dart';
@@ -11,6 +10,8 @@ import 'package:repeat_flutter/db/entity/chapter_content_version.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/cache_help.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -20,27 +21,31 @@ abstract class ChapterDao {
   static ChapterShow? Function(int chapterId)? getChapterShow;
   static List<void Function(int chapterId)> setChapterShowContent = [];
 
-  @Query('SELECT Chapter.id chapterId'
-      ',Book.id bookId'
-      ',Book.name bookName'
-      ',Book.sort bookSort'
-      ',Chapter.content chapterContent'
-      ',Chapter.contentVersion chapterContentVersion'
-      ',Chapter.chapterIndex'
-      ' FROM Chapter'
-      " JOIN Book ON Book.id=Chapter.bookId AND Book.enable=true"
-      ' WHERE Chapter.classroomId=:classroomId'
-      ' ORDER BY Chapter.bookId,Chapter.chapterIndex')
+  @Query(
+    'SELECT Chapter.id chapterId'
+    ',Book.id bookId'
+    ',Book.name bookName'
+    ',Book.sort bookSort'
+    ',Chapter.content chapterContent'
+    ',Chapter.contentVersion chapterContentVersion'
+    ',Chapter.chapterIndex'
+    ' FROM Chapter'
+    " JOIN Book ON Book.id=Chapter.bookId AND Book.enable=true"
+    ' WHERE Chapter.classroomId=:classroomId'
+    ' ORDER BY Chapter.bookId,Chapter.chapterIndex',
+  )
   Future<List<ChapterShow>> getAllChapter(int classroomId);
 
-  @Query('UPDATE Chapter'
-      ' SET contentVersion = ('
-      ' SELECT MAX(version)'
-      ' FROM ChapterContentVersion'
-      ' WHERE ChapterContentVersion.chapterId = Chapter.id'
-      ' AND ChapterContentVersion.bookId = Chapter.bookId'
-      ' )'
-      ' WHERE bookId = :bookId')
+  @Query(
+    'UPDATE Chapter'
+    ' SET contentVersion = ('
+    ' SELECT MAX(version)'
+    ' FROM ChapterContentVersion'
+    ' WHERE ChapterContentVersion.chapterId = Chapter.id'
+    ' AND ChapterContentVersion.bookId = Chapter.bookId'
+    ' )'
+    ' WHERE bookId = :bookId',
+  )
   Future<void> syncContentVersion(int bookId);
 
   @Query('SELECT * FROM Chapter WHERE bookId=:bookId')
@@ -52,35 +57,49 @@ abstract class ChapterDao {
   @Query('SELECT * FROM Chapter WHERE id=:chapterId')
   Future<Chapter?> getById(int chapterId);
 
-  @Query('SELECT count(1) FROM Chapter'
-      ' WHERE bookId=:bookId')
+  @Query(
+    'SELECT count(1) FROM Chapter'
+    ' WHERE bookId=:bookId',
+  )
   Future<int?> count(int bookId);
 
-  @Query('SELECT count(1) FROM Chapter'
-      ' WHERE id in (:ids)')
+  @Query(
+    'SELECT count(1) FROM Chapter'
+    ' WHERE id in (:ids)',
+  )
   Future<int?> countByIds(List<int> ids);
 
-  @Query('SELECT * FROM Chapter'
-      ' WHERE bookId=:bookId AND chapterIndex>=:minChapterIndex ORDER BY chapterIndex')
+  @Query(
+    'SELECT * FROM Chapter'
+    ' WHERE bookId=:bookId AND chapterIndex>=:minChapterIndex ORDER BY chapterIndex',
+  )
   Future<List<Chapter>> findByMinChapterIndex(int bookId, int minChapterIndex);
 
-  @Query('DELETE FROM Chapter'
-      ' WHERE bookId=:bookId AND chapterIndex>=:minChapterIndex')
+  @Query(
+    'DELETE FROM Chapter'
+    ' WHERE bookId=:bookId AND chapterIndex>=:minChapterIndex',
+  )
   Future<void> deleteByMinChapterIndex(int bookId, int minChapterIndex);
 
   @Query('UPDATE Chapter set content=:content,contentVersion=:contentVersion WHERE id=:id')
   Future<void> updateKeyAndContent(int id, String content, int contentVersion);
 
-  @Query('SELECT id FROM Chapter'
-      ' WHERE Chapter.bookId=:bookId')
+  @Query(
+    'SELECT id FROM Chapter'
+    ' WHERE Chapter.bookId=:bookId',
+  )
   Future<List<int>> getIds(int bookId);
 
-  @Query('DELETE FROM Chapter'
-      ' WHERE Chapter.bookId=:bookId')
+  @Query(
+    'DELETE FROM Chapter'
+    ' WHERE Chapter.bookId=:bookId',
+  )
   Future<void> deleteByBookId(int bookId);
 
-  @Query('DELETE FROM Chapter'
-      ' WHERE Chapter.classroomId=:classroomId')
+  @Query(
+    'DELETE FROM Chapter'
+    ' WHERE Chapter.classroomId=:classroomId',
+  )
   Future<void> deleteByClassroomId(int classroomId);
 
   @Insert(onConflict: OnConflictStrategy.fail)
@@ -184,8 +203,10 @@ abstract class ChapterDao {
         version: 1,
         content: chapterContent,
         createTime: now,
-      )
+      ),
     ]);
+    await CacheHelp.refreshChapterAndVerse();
+    EventBus().publish<int>(EventTopic.addChapter, null);
     return true;
   }
 
@@ -221,6 +242,8 @@ abstract class ChapterDao {
     await db.verseReviewDao.deleteByChapterId(chapterId);
     await db.verseStatsDao.deleteByChapterId(chapterId);
     await db.verseTodayPrgDao.deleteByChapterId(chapterId);
+    await CacheHelp.refreshChapterAndVerse();
+    EventBus().publish<int>(EventTopic.deleteChapter, null);
     return true;
   }
 
@@ -272,15 +295,17 @@ abstract class ChapterDao {
 
     var now = DateTime.now();
     await updateKeyAndContent(chapterId, content, chapter.contentVersion + 1);
-    await db.chapterContentVersionDao.insertOrIgnore(ChapterContentVersion(
-      classroomId: chapter.classroomId,
-      bookId: chapter.bookId,
-      chapterId: chapterId,
-      version: chapter.contentVersion + 1,
-      reason: VersionReason.editor,
-      content: content,
-      createTime: now,
-    ));
+    await db.chapterContentVersionDao.insertOrIgnore(
+      ChapterContentVersion(
+        classroomId: chapter.classroomId,
+        bookId: chapter.bookId,
+        chapterId: chapterId,
+        version: chapter.contentVersion + 1,
+        reason: VersionReason.editor,
+        content: content,
+        createTime: now,
+      ),
+    );
     if (getChapterShow != null) {
       ChapterShow? chapterShow = getChapterShow!(chapterId);
       if (chapterShow != null) {
@@ -313,7 +338,7 @@ abstract class ChapterDao {
       inserts[i].id = newInserts[i].id;
     }
     await insertOrFail(updates);
-  
+
     var keptIds = <int>{...inserts.map((c) => c.id!), ...updates.map((c) => c.id!)};
 
     var deletedIds = ids.where((id) => !keptIds.contains(id)).toList();

@@ -13,13 +13,14 @@ import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/content_version.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/cache_help.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 @dao
 abstract class BookDao {
   late AppDatabase db;
-  static BookShow? Function(int chapterId)? getBookShow;
   static List<void Function(int chapterId)> setBookShowContent = [];
 
   @Query(
@@ -126,13 +127,8 @@ abstract class BookDao {
         createTime: now,
       ),
     );
-    if (getBookShow != null) {
-      BookShow? bookShow = getBookShow!(bookId);
-      if (bookShow != null) {
-        bookShow.bookContent = content;
-        bookShow.bookContentVersion++;
-      }
-    }
+    book.contentVersion++;
+    CacheHelp.refreshBookContent(book);
     for (var set in setBookShowContent) {
       set(bookId);
     }
@@ -168,6 +164,8 @@ abstract class BookDao {
   @transaction
   Future<void> create(int bookId, String content) async {
     await innerUpdateBookContent(bookId: bookId, content: content, enable: true);
+    await CacheHelp.refreshBook();
+    EventBus().publish<int>(EventTopic.createBook, bookId);
   }
 
   @transaction
@@ -178,6 +176,8 @@ abstract class BookDao {
     await db.chapterContentVersionDao.import(chapters);
     verses = await db.verseDao.import(chapters, verses);
     await db.verseContentVersionDao.import(verses);
+    await CacheHelp.refreshAll();
+    EventBus().publish<int>(EventTopic.importBook, book.id!);
   }
 
   @transaction
@@ -215,6 +215,8 @@ abstract class BookDao {
     await db.verseReviewDao.deleteByVerseIds(deletedVerseIds);
     await db.verseStatsDao.deleteByVerseIds(deletedVerseIds);
     await db.verseTodayPrgDao.deleteByVerseIds(deletedVerseIds);
+    await CacheHelp.refreshAll();
+    EventBus().publish<int>(EventTopic.reimportBook, bookId);
   }
 
   @transaction
@@ -233,5 +235,7 @@ abstract class BookDao {
     await db.verseReviewDao.deleteByBookId(bookId);
     await db.verseStatsDao.deleteByBookId(bookId);
     await db.verseTodayPrgDao.deleteByBookId(bookId);
+    await CacheHelp.refreshAll();
+    EventBus().publish<int>(EventTopic.deleteBook, bookId);
   }
 }

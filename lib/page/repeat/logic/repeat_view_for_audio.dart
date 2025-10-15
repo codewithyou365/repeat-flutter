@@ -18,7 +18,7 @@ class RepeatViewForAudio extends RepeatView {
   int duration = 0;
   late MediaRangeHelper mediaRangeHelper;
   final bus = EventBus();
-  late StreamSubscription<bool?> sub;
+  late SubList<bool> sub;
 
   // Ui
   double mediaBarHeight = 50;
@@ -30,7 +30,7 @@ class RepeatViewForAudio extends RepeatView {
     audioPlayer = AudioPlayer();
     this.helper = helper;
     mediaRangeHelper = MediaRangeHelper(helper: helper);
-    sub = bus.on<bool>(EventTopic.setInRepeatView).listen((b) {
+    sub.on([EventTopic.setInRepeatView], (b) {
       mediaKey.currentState?.stop();
     });
   }
@@ -38,6 +38,7 @@ class RepeatViewForAudio extends RepeatView {
   @override
   void dispose() {
     audioPlayer.dispose();
+    sub.off();
   }
 
   @override
