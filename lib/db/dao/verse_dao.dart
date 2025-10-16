@@ -20,8 +20,6 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 @dao
 abstract class VerseDao {
   late AppDatabase db;
-  static VerseShow? Function(int verseId)? getVerseShow;
-  static List<void Function(int verseId)> setVerseShowContent = [];
 
   @Update(onConflict: OnConflictStrategy.fail)
   Future<void> updateOrFail(List<Verse> entities);
@@ -381,17 +379,11 @@ abstract class VerseDao {
         createTime: now,
       ),
     );
+    verse.content = content;
+    verse.contentVersion++;
     await db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.updateVerseShowTime, now.millisecondsSinceEpoch.toString()));
-    if (getVerseShow != null) {
-      VerseShow? currVerseShow = getVerseShow!(id);
-      if (currVerseShow != null) {
-        currVerseShow.verseContent = content;
-        for (var set in setVerseShowContent) {
-          set(id);
-        }
-        currVerseShow.verseContentVersion++;
-      }
-    }
+    CacheHelp.refreshVerseContent(verse);
+    EventBus().publish<int>(EventTopic.updateVerseContent, id);
     return true;
   }
 

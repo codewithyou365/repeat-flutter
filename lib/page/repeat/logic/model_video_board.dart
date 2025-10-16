@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/db/dao/chapter_dao.dart';
-import 'package:repeat_flutter/db/dao/verse_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'dart:convert';
@@ -63,17 +62,27 @@ class VideoBoardHelper {
   Map<int, List<VideoBoard>> verseVideoBoardCache = {};
   final Helper helper;
   static const String jsonName = "videoBoard";
+  final SubList<int> updateChapterContentSub = [];
+  final SubList<int> updateVerseContentSub = [];
 
   VideoBoardHelper({
     required this.helper,
   }) {
     boards.value = getCurrVideoBoard();
-    VerseDao.setVerseShowContent.add((int id) {
-      verseVideoBoardCache.remove(id);
-    });
-    ChapterDao.setChapterShowContent.add((int id) {
+  }
+
+  void onInit() {
+    updateChapterContentSub.on([EventTopic.updateChapterContent], (int? id) {
       chapterVideoBoardCache.remove(id);
     });
+    updateVerseContentSub.on([EventTopic.updateVerseContent], (int? id) {
+      verseVideoBoardCache.remove(id);
+    });
+  }
+
+  void onClose() {
+    updateChapterContentSub.off();
+    updateVerseContentSub.off();
   }
 
   List<VideoBoard>? getCurrChapterVideoBoard() {

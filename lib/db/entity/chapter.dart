@@ -15,7 +15,7 @@ class Chapter {
   final int classroomId;
   final int bookId;
   int chapterIndex;
-  final String content;
+  String content;
   int contentVersion;
 
   Chapter({

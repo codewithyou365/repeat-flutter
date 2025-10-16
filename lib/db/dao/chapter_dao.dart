@@ -18,8 +18,6 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 @dao
 abstract class ChapterDao {
   late AppDatabase db;
-  static ChapterShow? Function(int chapterId)? getChapterShow;
-  static List<void Function(int chapterId)> setChapterShowContent = [];
 
   @Query(
     'SELECT Chapter.id chapterId'
@@ -306,16 +304,10 @@ abstract class ChapterDao {
         createTime: now,
       ),
     );
-    if (getChapterShow != null) {
-      ChapterShow? chapterShow = getChapterShow!(chapterId);
-      if (chapterShow != null) {
-        chapterShow.chapterContent = content;
-        chapterShow.chapterContentVersion++;
-      }
-    }
-    for (var set in setChapterShowContent) {
-      set(chapterId);
-    }
+    chapter.content = content;
+    chapter.contentVersion++;
+    CacheHelp.refreshChapterContent(chapter);
+    EventBus().publish<int>(EventTopic.updateChapterContent, chapterId);
   }
 
   Future<List<Chapter>> import(List<Chapter> list) async {

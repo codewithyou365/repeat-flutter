@@ -1,4 +1,6 @@
 import 'package:repeat_flutter/db/entity/book.dart';
+import 'package:repeat_flutter/db/entity/chapter.dart';
+import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 
 import 'book_help.dart';
@@ -6,10 +8,30 @@ import 'chapter_help.dart';
 import 'verse_help.dart';
 
 class CacheHelp {
-  static void refreshBookContent(Book book)  {
+  static void refreshBookContent(Book book) {
     var cache = BookHelp.getCache(book.id!);
     cache?.bookContent = book.content;
     cache?.bookContentVersion = book.contentVersion;
+  }
+
+  static void refreshChapterContent(Chapter chapter) {
+    var cache = ChapterHelp.getCache(chapter.id!);
+    cache?.chapterContent = chapter.content;
+    cache?.chapterContentVersion = chapter.contentVersion;
+  }
+
+  static void refreshVerseContent(Verse verse) {
+    var cache = VerseHelp.getCache(verse.id!);
+    cache?.verseContent = verse.content;
+    cache?.verseContentVersion = verse.contentVersion;
+  }
+
+  static void refreshVerseProgress(Verse verse) {
+    var cache = VerseHelp.getCache(verse.id!);
+    cache?.progress = verse.progress;
+    if (verse.learnDate.value != 0) {
+      cache?.learnDate = verse.learnDate;
+    }
   }
 
   static Future<void> refreshBook() async {

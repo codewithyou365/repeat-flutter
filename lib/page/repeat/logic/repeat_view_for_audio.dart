@@ -33,12 +33,14 @@ class RepeatViewForAudio extends RepeatView {
     sub.on([EventTopic.setInRepeatView], (b) {
       mediaKey.currentState?.stop();
     });
+    mediaRangeHelper.onInit();
   }
 
   @override
   void dispose() {
     audioPlayer.dispose();
     sub.off();
+    mediaRangeHelper.onClose();
   }
 
   @override

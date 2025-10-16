@@ -8,8 +8,6 @@ import 'package:repeat_flutter/common/folder.dart';
 import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/path.dart';
-import 'package:repeat_flutter/db/dao/chapter_dao.dart';
-import 'package:repeat_flutter/db/dao/verse_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
@@ -55,31 +53,30 @@ class Helper {
 
   Map<int, Map<String, dynamic>> verseMapCache = {};
 
-  Helper() {
-    ChapterDao.setChapterShowContent = [];
-    ChapterDao.setChapterShowContent.add((int id) {
-      chapterMapCache.remove(id);
-      chapterPathCache.remove(id);
-    });
-
-    VerseDao.setVerseShowContent = [];
-    VerseDao.setVerseShowContent.add((int id) {
-      verseMapCache.remove(id);
-    });
-  }
-
   final SubList<int> updateBookContentSub = [];
+  final SubList<int> updateChapterContentSub = [];
+  final SubList<int> updateVerseContentSub = [];
 
   Future<void> init(RepeatFlow logic) async {
     this.logic = logic;
     rootPath = await DocPath.getContentPath();
     initialized = true;
-  }
-
-  void onClose() {
     updateBookContentSub.on([EventTopic.updateBookContent], (int? id) {
       bookMapCache.remove(id!);
     });
+    updateChapterContentSub.on([EventTopic.updateChapterContent], (int? id) {
+      chapterMapCache.remove(id);
+      chapterPathCache.remove(id);
+    });
+    updateVerseContentSub.on([EventTopic.updateVerseContent], (int? id) {
+      verseMapCache.remove(id);
+    });
+  }
+
+  void onClose() {
+    updateBookContentSub.off();
+    updateChapterContentSub.off();
+    updateVerseContentSub.off();
   }
 
   void setInRepeatView(bool inRepeatView, {bool withoutPlayingMediaFirstTime = false}) {
@@ -158,6 +155,9 @@ class Helper {
       return null;
     }
     Map<String, dynamic>? ret = chapterMapCache[logic.currVerse!.chapterId];
+    if (ret != null) {
+      return ret;
+    }
     String? chapterContent = getCurrChapterContent();
     if (chapterContent == null) {
       return null;
@@ -179,6 +179,9 @@ class Helper {
       return null;
     }
     Map<String, dynamic>? ret = verseMapCache[logic.currVerse!.verseId];
+    if (ret != null) {
+      return ret;
+    }
     String? verseContent = getCurrVerseContent();
     if (verseContent == null) {
       return null;

@@ -15,6 +15,7 @@ enum EventTopic {
   deleteVerse,
   addVerse,
   updateVerseContent,
+  updateVerseProgress,
 }
 
 class Event<T> {

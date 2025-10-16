@@ -50,12 +50,16 @@ class RepeatViewForVideo extends RepeatView {
     sub.on([EventTopic.setInRepeatView], (b) {
       mediaKey.currentState?.stop();
     });
+    mediaRangeHelper.onInit();
+    videoBoardHelper.onInit();
   }
 
   @override
   void dispose() {
     _videoPlayerController?.dispose();
     sub.off();
+    mediaRangeHelper.onClose();
+    videoBoardHelper.onClose();
   }
 
   @override

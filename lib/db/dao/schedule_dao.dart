@@ -4,7 +4,6 @@ import 'dart:convert' as convert;
 
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/list_util.dart';
-import 'package:repeat_flutter/db/dao/verse_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
@@ -14,6 +13,8 @@ import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/cache_help.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/verse_review_with_key.dart';
 import 'package:repeat_flutter/db/entity/verse_stats.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
@@ -814,15 +815,13 @@ abstract class ScheduleDao {
     }
     var now = DateTime.now();
     await insertKv(CrKv(Classroom.curr, CrK.updateVerseShowTime, now.millisecondsSinceEpoch.toString()));
-    if (VerseDao.getVerseShow != null) {
-      VerseShow? currVerseShow = VerseDao.getVerseShow!(verseId);
-      if (currVerseShow != null) {
-        currVerseShow.progress = progress;
-        if (learnDate != null) {
-          currVerseShow.learnDate = learnDate;
-        }
-      }
+    Verse verse = Verse.empty();
+    verse.progress = progress;
+    if (learnDate != null) {
+      verse.learnDate = learnDate;
     }
+    CacheHelp.refreshVerseProgress(verse);
+    EventBus().publish<int>(EventTopic.updateVerseProgress, verseId);
   }
 
   @transaction

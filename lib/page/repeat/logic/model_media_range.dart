@@ -2,10 +2,9 @@ import 'dart:convert';
 
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/time.dart';
-import 'package:repeat_flutter/db/dao/schedule_dao.dart';
-import 'package:repeat_flutter/db/dao/verse_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
@@ -34,14 +33,21 @@ class MediaRangeHelper {
   final Helper helper;
   static const String defaultStart = "00:00:00,000";
   static const String defaultEnd = "00:00:05,000";
+  final SubList<int> updateVerseContentSub = [];
 
   MediaRangeHelper({
     required this.helper,
-  }) {
-    VerseDao.setVerseShowContent.add((int id) {
+  });
+
+  void onInit() {
+    updateVerseContentSub.on([EventTopic.updateVerseContent], (int? id) {
       answerRangeCache.remove(id);
       questionRangeCache.remove(id);
     });
+  }
+
+  void onClose() {
+    updateVerseContentSub.off();
   }
 
   MediaRange? getCurrAnswerRange() {
@@ -130,26 +136,28 @@ class MediaRangeHelper {
         MsgBox.myDialog(
           title: I18nKey.labelTips.tr,
           content: MsgBox.content(I18nKey.labelStartOrEnd.trArgs([str])),
-          action: MsgBox.buttonsWithDivider(buttons: [
-            MsgBox.button(
-              text: I18nKey.btnCancel.tr,
-              onPressed: () {
-                Get.back();
-              },
-            ),
-            MsgBox.button(
-              text: I18nKey.btnStart.tr,
-              onPressed: () {
-                save(start: true);
-              },
-            ),
-            MsgBox.button(
-              text: I18nKey.btnEnd.tr,
-              onPressed: () {
-                save(start: false);
-              },
-            ),
-          ]),
+          action: MsgBox.buttonsWithDivider(
+            buttons: [
+              MsgBox.button(
+                text: I18nKey.btnCancel.tr,
+                onPressed: () {
+                  Get.back();
+                },
+              ),
+              MsgBox.button(
+                text: I18nKey.btnStart.tr,
+                onPressed: () {
+                  save(start: true);
+                },
+              ),
+              MsgBox.button(
+                text: I18nKey.btnEnd.tr,
+                onPressed: () {
+                  save(start: false);
+                },
+              ),
+            ],
+          ),
         );
       } else {
         Snackbar.show(I18nKey.labelDataNotChange.tr);

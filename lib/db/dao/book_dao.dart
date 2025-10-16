@@ -126,6 +126,7 @@ abstract class BookDao {
         createTime: now,
       ),
     );
+    book.content = content;
     book.contentVersion++;
     CacheHelp.refreshBookContent(book);
     EventBus().publish<int>(EventTopic.updateBookContent, bookId);

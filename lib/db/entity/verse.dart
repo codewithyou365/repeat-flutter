@@ -21,11 +21,11 @@ class Verse {
   int chapterIndex;
   int verseIndex;
   int sort;
-  final String content;
+  String content;
   int contentVersion;
 
-  final Date learnDate;
-  final int progress;
+  Date learnDate;
+  int progress;
 
   Verse({
     this.id,
@@ -43,5 +43,21 @@ class Verse {
 
   String toStringKey() {
     return '$classroomId|$bookId|$chapterIndex|$verseIndex';
+  }
+
+  static Verse empty() {
+    return Verse(
+      id: 0,
+      classroomId: 0,
+      bookId: 0,
+      chapterId: 0,
+      chapterIndex: 0,
+      verseIndex: 0,
+      sort: 0,
+      content: '',
+      contentVersion: 0,
+      learnDate: Date(0),
+      progress: 0,
+    );
   }
 }

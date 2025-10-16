@@ -53,8 +53,6 @@ class ScCrLogic extends GetxController {
         await copyLogic.init();
         await CacheHelp.refreshAll();
         await init();
-        VerseDao.getVerseShow = VerseHelp.getCache;
-        ChapterDao.getChapterShow = ChapterHelp.getCache;
         startTimer();
       });
     });
