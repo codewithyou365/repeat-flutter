@@ -820,8 +820,9 @@ abstract class ScheduleDao {
     if (learnDate != null) {
       verse.learnDate = learnDate;
     }
-    CacheHelp.refreshVerseProgress(verse);
-    EventBus().publish<int>(EventTopic.updateVerseProgress, verseId);
+    CacheHelp.refreshVerseProgress(verse).then((_) {
+      EventBus().publish<int>(EventTopic.updateVerseProgress, verseId);
+    });
   }
 
   @transaction

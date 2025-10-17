@@ -8,25 +8,25 @@ import 'chapter_help.dart';
 import 'verse_help.dart';
 
 class CacheHelp {
-  static void refreshBookContent(Book book) {
+  static Future<void> refreshBookContent(Book book) async {
     var cache = BookHelp.getCache(book.id!);
     cache?.bookContent = book.content;
     cache?.bookContentVersion = book.contentVersion;
   }
 
-  static void refreshChapterContent(Chapter chapter) {
+  static Future<void> refreshChapterContent(Chapter chapter) async {
     var cache = ChapterHelp.getCache(chapter.id!);
     cache?.chapterContent = chapter.content;
     cache?.chapterContentVersion = chapter.contentVersion;
   }
 
-  static void refreshVerseContent(Verse verse) {
+  static Future<void> refreshVerseContent(Verse verse) async {
     var cache = VerseHelp.getCache(verse.id!);
     cache?.verseContent = verse.content;
     cache?.verseContentVersion = verse.contentVersion;
   }
 
-  static void refreshVerseProgress(Verse verse) {
+  static Future<void> refreshVerseProgress(Verse verse) async {
     var cache = VerseHelp.getCache(verse.id!);
     cache?.progress = verse.progress;
     if (verse.learnDate.value != 0) {

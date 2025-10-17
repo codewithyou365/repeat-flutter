@@ -128,8 +128,9 @@ abstract class BookDao {
     );
     book.content = content;
     book.contentVersion++;
-    CacheHelp.refreshBookContent(book);
-    EventBus().publish<int>(EventTopic.updateBookContent, bookId);
+    CacheHelp.refreshBookContent(book).then((_) {
+      EventBus().publish<int>(EventTopic.updateBookContent, bookId);
+    });
   }
 
   @transaction
@@ -162,8 +163,9 @@ abstract class BookDao {
   @transaction
   Future<void> create(int bookId, String content) async {
     await innerUpdateBookContent(bookId: bookId, content: content, enable: true);
-    await CacheHelp.refreshBook();
-    EventBus().publish<int>(EventTopic.createBook, bookId);
+    CacheHelp.refreshBook().then((_) {
+      EventBus().publish<int>(EventTopic.createBook, bookId);
+    });
   }
 
   @transaction
@@ -174,8 +176,9 @@ abstract class BookDao {
     await db.chapterContentVersionDao.import(chapters);
     verses = await db.verseDao.import(chapters, verses);
     await db.verseContentVersionDao.import(verses);
-    await CacheHelp.refreshAll();
-    EventBus().publish<int>(EventTopic.importBook, book.id!);
+    CacheHelp.refreshAll().then((_) {
+      EventBus().publish<int>(EventTopic.importBook, book.id!);
+    });
   }
 
   @transaction
@@ -213,8 +216,9 @@ abstract class BookDao {
     await db.verseReviewDao.deleteByVerseIds(deletedVerseIds);
     await db.verseStatsDao.deleteByVerseIds(deletedVerseIds);
     await db.verseTodayPrgDao.deleteByVerseIds(deletedVerseIds);
-    await CacheHelp.refreshAll();
-    EventBus().publish<int>(EventTopic.reimportBook, bookId);
+    CacheHelp.refreshAll().then((_) {
+      EventBus().publish<int>(EventTopic.reimportBook, bookId);
+    });
   }
 
   @transaction
@@ -233,7 +237,8 @@ abstract class BookDao {
     await db.verseReviewDao.deleteByBookId(bookId);
     await db.verseStatsDao.deleteByBookId(bookId);
     await db.verseTodayPrgDao.deleteByBookId(bookId);
-    await CacheHelp.refreshAll();
-    EventBus().publish<int>(EventTopic.deleteBook, bookId);
+    CacheHelp.refreshAll().then((_) {
+      EventBus().publish<int>(EventTopic.deleteBook, bookId);
+    });
   }
 }

@@ -194,13 +194,14 @@ abstract class VerseDao {
     await db.verseReviewDao.deleteByVerseId(verseId);
     await db.verseStatsDao.deleteByVerseId(verseId);
     await db.verseTodayPrgDao.deleteByVerseId(verseId);
-    await CacheHelp.refreshVerse(
+    CacheHelp.refreshVerse(
       query: QueryChapter(
         bookId: verse.bookId,
         chapterIndex: verse.chapterIndex,
       ),
-    );
-    EventBus().publish<int>(EventTopic.deleteVerse, null);
+    ).then((_) {
+      EventBus().publish<int>(EventTopic.deleteVerse, null);
+    });
     return true;
   }
 
@@ -309,13 +310,14 @@ abstract class VerseDao {
         createTime: now,
       ),
     );
-    await CacheHelp.refreshVerse(
+    CacheHelp.refreshVerse(
       query: QueryChapter(
         bookId: book.id!,
         chapterIndex: chapterIndex,
       ),
-    );
-    EventBus().publish<int>(EventTopic.addVerse, null);
+    ).then((_) {
+      EventBus().publish<int>(EventTopic.addVerse, null);
+    });
     return verse.id!;
   }
 
@@ -382,8 +384,9 @@ abstract class VerseDao {
     verse.content = content;
     verse.contentVersion++;
     await db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.updateVerseShowTime, now.millisecondsSinceEpoch.toString()));
-    CacheHelp.refreshVerseContent(verse);
-    EventBus().publish<int>(EventTopic.updateVerseContent, id);
+    CacheHelp.refreshVerseContent(verse).then((_) {
+      EventBus().publish<int>(EventTopic.updateVerseContent, id);
+    });
     return true;
   }
 

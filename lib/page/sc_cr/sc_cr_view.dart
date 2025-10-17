@@ -120,7 +120,7 @@ class ScCrPage extends StatelessWidget {
           ),
           groupStickyHeaderBuilder: (element) => Container(
             color: Theme.of(context).secondaryHeaderColor,
-            height: 120,
+            height: 125,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(

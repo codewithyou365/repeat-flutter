@@ -203,8 +203,9 @@ abstract class ChapterDao {
         createTime: now,
       ),
     ]);
-    await CacheHelp.refreshChapterAndVerse();
-    EventBus().publish<int>(EventTopic.addChapter, null);
+    CacheHelp.refreshChapterAndVerse().then((_) {
+      EventBus().publish<int>(EventTopic.addChapter, null);
+    });
     return true;
   }
 
@@ -240,8 +241,9 @@ abstract class ChapterDao {
     await db.verseReviewDao.deleteByChapterId(chapterId);
     await db.verseStatsDao.deleteByChapterId(chapterId);
     await db.verseTodayPrgDao.deleteByChapterId(chapterId);
-    await CacheHelp.refreshChapterAndVerse();
-    EventBus().publish<int>(EventTopic.deleteChapter, null);
+    CacheHelp.refreshChapterAndVerse().then((_) {
+      EventBus().publish<int>(EventTopic.deleteChapter, null);
+    });
     return true;
   }
 
@@ -306,8 +308,9 @@ abstract class ChapterDao {
     );
     chapter.content = content;
     chapter.contentVersion++;
-    CacheHelp.refreshChapterContent(chapter);
-    EventBus().publish<int>(EventTopic.updateChapterContent, chapterId);
+    CacheHelp.refreshChapterContent(chapter).then((_) {
+      EventBus().publish<int>(EventTopic.updateChapterContent, chapterId);
+    });
   }
 
   Future<List<Chapter>> import(List<Chapter> list) async {
