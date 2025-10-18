@@ -11,7 +11,6 @@ import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/game_server/controller/get_edit_status.dart';
 import 'package:repeat_flutter/logic/game_server/controller/get_verse_content.dart';
-import 'package:repeat_flutter/logic/game_server/controller/set_verse_content.dart';
 import 'controller/heart.dart';
 import 'controller/game_user_history.dart';
 import 'controller/entry_game.dart';
@@ -25,7 +24,6 @@ class WebServer {
   late final Server<GameUser> server;
   final Map<String, String> keyToLocalPath = {};
   final List<String> ips = [];
-  final bus = EventBus();
 
   WebServer() {
     server = Server(wsEvent: wsEvent);
@@ -43,7 +41,6 @@ class WebServer {
       server.controllers[Path.submit] = (request) => withGameUser(request, submit);
       server.controllers[Path.getEditStatus] = (request) => withGameUser(request, getEditStatus);
       server.controllers[Path.getVerseContent] = (request) => withGameUser(request, getVerseContent);
-      server.controllers[Path.setVerseContent] = (request) => withGameUserAndServer(request, setVerseContent);
       open = true;
     } catch (e) {
       Snackbar.show('Error starting HTTP service: $e');
@@ -53,7 +50,7 @@ class WebServer {
   }
 
   void wsEvent(WsEvent event) {
-    bus.publish(EventTopic.wsEvent, event);
+    EventBus().publish(EventTopic.wsEvent, event);
   }
 
   Future<void> stop() async {

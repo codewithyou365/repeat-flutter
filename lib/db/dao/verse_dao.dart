@@ -168,17 +168,32 @@ abstract class VerseDao {
     await insertOrFail(needToInserts);
   }
 
-  @transaction
   Future<bool> delete(int verseId) async {
+    var verse = await innerDelete(verseId);
+    if (verse.id != null) {
+      await CacheHelp.refreshVerse(
+        query: QueryChapter(
+          bookId: verse.bookId,
+          chapterIndex: verse.chapterIndex,
+        ),
+      );
+      EventBus().publish<int>(EventTopic.deleteVerse, null);
+      return true;
+    }
+    return false;
+  }
+
+  @transaction
+  Future<Verse> innerDelete(int verseId) async {
     var verse = await db.verseDao.getById(verseId);
     if (verse == null) {
       Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["cant find the data($verseId)"]));
-      return false;
+      return Verse.empty();
     }
     Book? book = await db.bookDao.getById(verse.bookId);
     if (book == null) {
       Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["cant find the content data($verse.bookId)"]));
-      return false;
+      return Verse.empty();
     }
     //await db.bookDao.deleteByClassroomId(classroomId);
     //await db.bookContentVersionDao.deleteByClassroomId(classroomId);
@@ -194,15 +209,7 @@ abstract class VerseDao {
     await db.verseReviewDao.deleteByVerseId(verseId);
     await db.verseStatsDao.deleteByVerseId(verseId);
     await db.verseTodayPrgDao.deleteByVerseId(verseId);
-    CacheHelp.refreshVerse(
-      query: QueryChapter(
-        bookId: verse.bookId,
-        chapterIndex: verse.chapterIndex,
-      ),
-    ).then((_) {
-      EventBus().publish<int>(EventTopic.deleteVerse, null);
-    });
-    return true;
+    return verse;
   }
 
   Future<void> addChapters(int bookId, int bookSort, List<Chapter> chapters) async {
@@ -264,7 +271,7 @@ abstract class VerseDao {
     await insertOrFail(needToInserts);
   }
 
-  Future<int> interAddVerse({
+  Future<int> _innerAddVerse({
     required String content,
     required int bookId,
     required int chapterId,
@@ -310,24 +317,35 @@ abstract class VerseDao {
         createTime: now,
       ),
     );
-    CacheHelp.refreshVerse(
-      query: QueryChapter(
-        bookId: book.id!,
-        chapterIndex: chapterIndex,
-      ),
-    ).then((_) {
-      EventBus().publish<int>(EventTopic.addVerse, null);
-    });
+
     return verse.id!;
   }
 
-  @transaction
   Future<int> addFirstVerse(
     int bookId,
     int chapterId,
     int chapterIndex,
   ) async {
-    return interAddVerse(
+    var verseId = await innerAddFirstVerse(bookId, chapterId, chapterIndex);
+    if (verseId != 0) {
+      await CacheHelp.refreshVerse(
+        query: QueryChapter(
+          bookId: bookId,
+          chapterIndex: chapterIndex,
+        ),
+      );
+      EventBus().publish<int>(EventTopic.addVerse, null);
+    }
+    return verseId;
+  }
+
+  @transaction
+  Future<int> innerAddFirstVerse(
+    int bookId,
+    int chapterId,
+    int chapterIndex,
+  ) async {
+    return _innerAddVerse(
       content: "{}",
       bookId: bookId,
       chapterId: chapterId,
@@ -336,9 +354,23 @@ abstract class VerseDao {
     );
   }
 
-  @transaction
   Future<int> addVerse(VerseShow raw, int verseIndex) async {
-    return interAddVerse(
+    var verseId = await innerAddVerse(raw, verseIndex);
+    if (verseId != 0) {
+      await CacheHelp.refreshVerse(
+        query: QueryChapter(
+          bookId: raw.bookId,
+          chapterIndex: raw.chapterIndex,
+        ),
+      );
+      EventBus().publish<int>(EventTopic.addVerse, null);
+    }
+    return verseId;
+  }
+
+  @transaction
+  Future<int> innerAddVerse(VerseShow raw, int verseIndex) async {
+    return _innerAddVerse(
       content: raw.verseContent,
       bookId: raw.bookId,
       chapterId: raw.chapterId,
@@ -348,23 +380,32 @@ abstract class VerseDao {
   }
 
   @transaction
-  Future<bool> updateVerseContent(int id, String content) async {
+  Future<void> updateVerseContent(int id, String content) async {
+    var verse = await innerUpdateVerseContent(id, content);
+    if (verse.id != null) {
+      CacheHelp.updateVerseContent(verse);
+      EventBus().publish<int>(EventTopic.updateVerseContent, id);
+    }
+  }
+
+  @transaction
+  Future<Verse> innerUpdateVerseContent(int id, String content) async {
     Verse? verse = await getById(id);
     if (verse == null) {
-      Snackbar.show(I18nKey.labelNotFoundVerse.trArgs([id.toString()]));
-      return false;
+      Snackbar.showAndThrow(I18nKey.labelNotFoundVerse.trArgs([id.toString()]));
+      return Verse.empty();
     }
     Map<String, dynamic> contentM;
     try {
       contentM = convert.jsonDecode(content);
       content = convert.jsonEncode(contentM);
     } catch (e) {
-      Snackbar.show(e.toString());
-      return false;
+      Snackbar.showAndThrow(e.toString());
+      return Verse.empty();
     }
 
     if (verse.content == content) {
-      return true;
+      return Verse.empty();
     }
 
     var now = DateTime.now();
@@ -383,11 +424,9 @@ abstract class VerseDao {
     );
     verse.content = content;
     verse.contentVersion++;
+    //TODO remove updateVerseShowTime
     await db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.updateVerseShowTime, now.millisecondsSinceEpoch.toString()));
-    CacheHelp.refreshVerseContent(verse).then((_) {
-      EventBus().publish<int>(EventTopic.updateVerseContent, id);
-    });
-    return true;
+    return verse;
   }
 
   Future<List<Verse>> import(List<Chapter> chapters, List<Verse> list) async {

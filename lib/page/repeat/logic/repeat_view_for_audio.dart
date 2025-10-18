@@ -17,8 +17,7 @@ class RepeatViewForAudio extends RepeatView {
   var audioPlayerCurrentPath = "";
   int duration = 0;
   late MediaRangeHelper mediaRangeHelper;
-  final bus = EventBus();
-  late SubList<bool> sub;
+  final SubList<bool> sub = [];
 
   // Ui
   double mediaBarHeight = 50;

@@ -35,8 +35,8 @@ class WebManager<T extends GetxController> {
   RxBool editInGame = RxBool(false);
   RxInt matchType = RxInt(0);
   RxString skipChar = RxString("");
-  late SubList<WsEvent> sub = [];
-  late SubList<int> subAllowRegisterNumber = [];
+  final SubList<WsEvent> sub = [];
+  final SubList<int> subAllowRegisterNumber = [];
 
   WebManager(this.parentLogic);
 

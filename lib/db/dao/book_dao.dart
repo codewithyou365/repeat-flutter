@@ -81,12 +81,20 @@ abstract class BookDao {
   )
   Future<void> deleteById(int bookId);
 
-  @transaction
   Future<void> updateBookContent(int bookId, String content) async {
-    await innerUpdateBookContent(bookId: bookId, content: content);
+    var book = await innerUpdateBookContent(bookId, content);
+    if (book.id != null) {
+      CacheHelp.updateBookContent(book);
+      EventBus().publish<int>(EventTopic.updateBookContent, bookId);
+    }
   }
 
-  Future<void> innerUpdateBookContent({
+  @transaction
+  Future<Book> innerUpdateBookContent(int bookId, String content) async {
+    return await _innerUpdateBookContent(bookId: bookId, content: content);
+  }
+
+  Future<Book> _innerUpdateBookContent({
     required int bookId,
     required String content,
     bool? enable,
@@ -94,7 +102,7 @@ abstract class BookDao {
     Book? book = await getById(bookId);
     if (book == null) {
       Snackbar.showAndThrow(I18nKey.labelNotFoundVerse.trArgs([bookId.toString()]));
-      return;
+      return Book.empty();
     }
 
     try {
@@ -102,11 +110,11 @@ abstract class BookDao {
       content = convert.jsonEncode(contentM);
     } catch (e) {
       Snackbar.showAndThrow(e.toString());
-      return;
+      return Book.empty();
     }
 
     if (book.content == content) {
-      return;
+      return Book.empty();
     }
 
     var now = DateTime.now();
@@ -128,9 +136,7 @@ abstract class BookDao {
     );
     book.content = content;
     book.contentVersion++;
-    CacheHelp.refreshBookContent(book).then((_) {
-      EventBus().publish<int>(EventTopic.updateBookContent, bookId);
-    });
+    return book;
   }
 
   @transaction
@@ -160,29 +166,51 @@ abstract class BookDao {
     return ret;
   }
 
-  @transaction
   Future<void> create(int bookId, String content) async {
-    await innerUpdateBookContent(bookId: bookId, content: content, enable: true);
-    CacheHelp.refreshBook().then((_) {
+    var book = await innerCreate(bookId, content);
+    if (book.id != null) {
+      await CacheHelp.refreshBook();
       EventBus().publish<int>(EventTopic.createBook, bookId);
-    });
+    }
   }
 
   @transaction
+  Future<Book> innerCreate(int bookId, String content) async {
+    return await _innerUpdateBookContent(bookId: bookId, content: content, enable: true);
+  }
+
   Future<void> import(Book book, List<Chapter> chapters, List<Verse> verses) async {
+    await innerImport(book, chapters, verses);
+    await CacheHelp.refreshAll();
+    EventBus().publish<int>(EventTopic.importBook, book.id!);
+  }
+
+  @transaction
+  Future<void> innerImport(Book book, List<Chapter> chapters, List<Verse> verses) async {
     await updateBookContentVersionAndStateAndUrl(book.id!, book.content, 1, true, book.url);
     await db.bookContentVersionDao.import(book);
     chapters = await db.chapterDao.import(chapters);
     await db.chapterContentVersionDao.import(chapters);
     verses = await db.verseDao.import(chapters, verses);
     await db.verseContentVersionDao.import(verses);
-    CacheHelp.refreshAll().then((_) {
-      EventBus().publish<int>(EventTopic.importBook, book.id!);
-    });
+  }
+
+  Future<void> reimport(
+    Book book,
+    List<Chapter> insertChapters,
+    List<Chapter> updateChapters,
+    List<Verse> insertVerses,
+    List<Verse> updateVerses,
+    RxInt updateVerseCount,
+    RxInt deleteVerseCount,
+  ) async {
+    await innerReimport(book, insertChapters, updateChapters, insertVerses, updateVerses, updateVerseCount, deleteVerseCount);
+    await CacheHelp.refreshAll();
+    EventBus().publish<int>(EventTopic.reimportBook, book.id!);
   }
 
   @transaction
-  Future<void> reimport(
+  Future<void> innerReimport(
     Book book,
     List<Chapter> insertChapters,
     List<Chapter> updateChapters,
@@ -216,13 +244,16 @@ abstract class BookDao {
     await db.verseReviewDao.deleteByVerseIds(deletedVerseIds);
     await db.verseStatsDao.deleteByVerseIds(deletedVerseIds);
     await db.verseTodayPrgDao.deleteByVerseIds(deletedVerseIds);
-    CacheHelp.refreshAll().then((_) {
-      EventBus().publish<int>(EventTopic.reimportBook, bookId);
-    });
+  }
+
+  Future<void> deleteBook(int bookId) async {
+    await innerDeleteBook(bookId);
+    await CacheHelp.refreshAll();
+    EventBus().publish<int>(EventTopic.deleteBook, bookId);
   }
 
   @transaction
-  Future<void> deleteBook(int bookId) async {
+  Future<void> innerDeleteBook(int bookId) async {
     await deleteById(bookId);
     await db.bookContentVersionDao.deleteByBookId(bookId);
     await db.chapterDao.deleteByBookId(bookId);
@@ -237,8 +268,5 @@ abstract class BookDao {
     await db.verseReviewDao.deleteByBookId(bookId);
     await db.verseStatsDao.deleteByBookId(bookId);
     await db.verseTodayPrgDao.deleteByBookId(bookId);
-    CacheHelp.refreshAll().then((_) {
-      EventBus().publish<int>(EventTopic.deleteBook, bookId);
-    });
   }
 }

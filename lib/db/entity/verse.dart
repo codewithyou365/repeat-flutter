@@ -47,7 +47,7 @@ class Verse {
 
   static Verse empty() {
     return Verse(
-      id: 0,
+      id: null,
       classroomId: 0,
       bookId: 0,
       chapterId: 0,

@@ -643,19 +643,20 @@ class _$BookDao extends BookDao {
   }
 
   @override
-  Future<void> updateBookContent(
+  Future<Book> innerUpdateBookContent(
     int bookId,
     String content,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.updateBookContent(bookId, content);
+      return super.innerUpdateBookContent(bookId, content);
     } else {
-      await (database as sqflite.Database)
-          .transaction<void>((transaction) async {
+      return (database as sqflite.Database)
+          .transaction<Book>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        await transactionDatabase.bookDao.updateBookContent(bookId, content);
+        return transactionDatabase.bookDao
+            .innerUpdateBookContent(bookId, content);
       });
     }
   }
@@ -676,44 +677,44 @@ class _$BookDao extends BookDao {
   }
 
   @override
-  Future<void> create(
+  Future<Book> innerCreate(
     int bookId,
     String content,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.create(bookId, content);
+      return super.innerCreate(bookId, content);
     } else {
-      await (database as sqflite.Database)
-          .transaction<void>((transaction) async {
+      return (database as sqflite.Database)
+          .transaction<Book>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        await transactionDatabase.bookDao.create(bookId, content);
+        return transactionDatabase.bookDao.innerCreate(bookId, content);
       });
     }
   }
 
   @override
-  Future<void> import(
+  Future<void> innerImport(
     Book book,
     List<Chapter> chapters,
     List<Verse> verses,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.import(book, chapters, verses);
+      await super.innerImport(book, chapters, verses);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        await transactionDatabase.bookDao.import(book, chapters, verses);
+        await transactionDatabase.bookDao.innerImport(book, chapters, verses);
       });
     }
   }
 
   @override
-  Future<void> reimport(
+  Future<void> innerReimport(
     Book book,
     List<Chapter> insertChapters,
     List<Chapter> updateChapters,
@@ -723,15 +724,15 @@ class _$BookDao extends BookDao {
     RxInt deleteVerseCount,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.reimport(book, insertChapters, updateChapters, insertVerses,
-          updateVerses, updateVerseCount, deleteVerseCount);
+      await super.innerReimport(book, insertChapters, updateChapters,
+          insertVerses, updateVerses, updateVerseCount, deleteVerseCount);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        await transactionDatabase.bookDao.reimport(
+        await transactionDatabase.bookDao.innerReimport(
             book,
             insertChapters,
             updateChapters,
@@ -744,16 +745,16 @@ class _$BookDao extends BookDao {
   }
 
   @override
-  Future<void> deleteBook(int bookId) async {
+  Future<void> innerDeleteBook(int bookId) async {
     if (database is sqflite.Transaction) {
-      await super.deleteBook(bookId);
+      await super.innerDeleteBook(bookId);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        await transactionDatabase.bookDao.deleteBook(bookId);
+        await transactionDatabase.bookDao.innerDeleteBook(bookId);
       });
     }
   }
@@ -1046,27 +1047,27 @@ class _$ChapterDao extends ChapterDao {
   }
 
   @override
-  Future<bool> deleteChapter(int chapterId) async {
+  Future<bool> innerDeleteChapter(int chapterId) async {
     if (database is sqflite.Transaction) {
-      return super.deleteChapter(chapterId);
+      return super.innerDeleteChapter(chapterId);
     } else {
       return (database as sqflite.Database)
           .transaction<bool>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        return transactionDatabase.chapterDao.deleteChapter(chapterId);
+        return transactionDatabase.chapterDao.innerDeleteChapter(chapterId);
       });
     }
   }
 
   @override
-  Future<bool> addChapter(
+  Future<bool> innerDddChapter(
     ChapterShow chapterShow,
     int chapterIndex,
   ) async {
     if (database is sqflite.Transaction) {
-      return super.addChapter(chapterShow, chapterIndex);
+      return super.innerDddChapter(chapterShow, chapterIndex);
     } else {
       return (database as sqflite.Database)
           .transaction<bool>((transaction) async {
@@ -1074,41 +1075,41 @@ class _$ChapterDao extends ChapterDao {
           ..database = transaction;
         prepareDb(transactionDatabase);
         return transactionDatabase.chapterDao
-            .addChapter(chapterShow, chapterIndex);
+            .innerDddChapter(chapterShow, chapterIndex);
       });
     }
   }
 
   @override
-  Future<bool> addFirstChapter(int bookId) async {
+  Future<bool> innerAddFirstChapter(int bookId) async {
     if (database is sqflite.Transaction) {
-      return super.addFirstChapter(bookId);
+      return super.innerAddFirstChapter(bookId);
     } else {
       return (database as sqflite.Database)
           .transaction<bool>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        return transactionDatabase.chapterDao.addFirstChapter(bookId);
+        return transactionDatabase.chapterDao.innerAddFirstChapter(bookId);
       });
     }
   }
 
   @override
-  Future<void> updateChapterContent(
+  Future<Chapter> innerUpdateChapterContent(
     int chapterId,
     String content,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.updateChapterContent(chapterId, content);
+      return super.innerUpdateChapterContent(chapterId, content);
     } else {
-      await (database as sqflite.Database)
-          .transaction<void>((transaction) async {
+      return (database as sqflite.Database)
+          .transaction<Chapter>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        await transactionDatabase.chapterDao
-            .updateChapterContent(chapterId, content);
+        return transactionDatabase.chapterDao
+            .innerUpdateChapterContent(chapterId, content);
       });
     }
   }
@@ -2654,70 +2655,71 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
-  Future<void> error(VerseTodayPrg stp) async {
+  Future<Verse> innerError(VerseTodayPrg stp) async {
     if (database is sqflite.Transaction) {
-      await super.error(stp);
+      return super.innerError(stp);
     } else {
-      await (database as sqflite.Database)
-          .transaction<void>((transaction) async {
+      return (database as sqflite.Database)
+          .transaction<Verse>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        await transactionDatabase.scheduleDao.error(stp);
+        return transactionDatabase.scheduleDao.innerError(stp);
       });
     }
   }
 
   @override
-  Future<void> jumpDirectly(
+  Future<Verse> innerJumpDirectly(
     int verseId,
     int progress,
     int nextDayValue,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.jumpDirectly(verseId, progress, nextDayValue);
+      return super.innerJumpDirectly(verseId, progress, nextDayValue);
     } else {
-      await (database as sqflite.Database)
-          .transaction<void>((transaction) async {
+      return (database as sqflite.Database)
+          .transaction<Verse>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        await transactionDatabase.scheduleDao
-            .jumpDirectly(verseId, progress, nextDayValue);
+        return transactionDatabase.scheduleDao
+            .innerJumpDirectly(verseId, progress, nextDayValue);
       });
     }
   }
 
   @override
-  Future<void> jump(
+  Future<Verse> innerJump(
     VerseTodayPrg stp,
     int progress,
     int nextDayValue,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.jump(stp, progress, nextDayValue);
+      return super.innerJump(stp, progress, nextDayValue);
     } else {
-      await (database as sqflite.Database)
-          .transaction<void>((transaction) async {
+      return (database as sqflite.Database)
+          .transaction<Verse>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        await transactionDatabase.scheduleDao.jump(stp, progress, nextDayValue);
+        return transactionDatabase.scheduleDao
+            .innerJump(stp, progress, nextDayValue);
       });
     }
   }
 
   @override
-  Future<void> right(VerseTodayPrg stp) async {
+  Future<Verse> innerRight(VerseTodayPrg stp) async {
     if (database is sqflite.Transaction) {
-      await super.right(stp);
+      return super.innerRight(stp);
     } else {
-      await (database as sqflite.Database)
-          .transaction<void>((transaction) async {
+      return (database as sqflite.Database)
+          .transaction<Verse>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        await transactionDatabase.scheduleDao.right(stp);
+        return transactionDatabase.scheduleDao.innerRight(stp);
       });
     }
   }
@@ -3060,28 +3062,28 @@ class _$VerseDao extends VerseDao {
   }
 
   @override
-  Future<bool> delete(int verseId) async {
+  Future<Verse> innerDelete(int verseId) async {
     if (database is sqflite.Transaction) {
-      return super.delete(verseId);
+      return super.innerDelete(verseId);
     } else {
       return (database as sqflite.Database)
-          .transaction<bool>((transaction) async {
+          .transaction<Verse>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        return transactionDatabase.verseDao.delete(verseId);
+        return transactionDatabase.verseDao.innerDelete(verseId);
       });
     }
   }
 
   @override
-  Future<int> addFirstVerse(
+  Future<int> innerAddFirstVerse(
     int bookId,
     int chapterId,
     int chapterIndex,
   ) async {
     if (database is sqflite.Transaction) {
-      return super.addFirstVerse(bookId, chapterId, chapterIndex);
+      return super.innerAddFirstVerse(bookId, chapterId, chapterIndex);
     } else {
       return (database as sqflite.Database)
           .transaction<int>((transaction) async {
@@ -3089,43 +3091,62 @@ class _$VerseDao extends VerseDao {
           ..database = transaction;
         prepareDb(transactionDatabase);
         return transactionDatabase.verseDao
-            .addFirstVerse(bookId, chapterId, chapterIndex);
+            .innerAddFirstVerse(bookId, chapterId, chapterIndex);
       });
     }
   }
 
   @override
-  Future<int> addVerse(
+  Future<int> innerAddVerse(
     VerseShow raw,
     int verseIndex,
   ) async {
     if (database is sqflite.Transaction) {
-      return super.addVerse(raw, verseIndex);
+      return super.innerAddVerse(raw, verseIndex);
     } else {
       return (database as sqflite.Database)
           .transaction<int>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        return transactionDatabase.verseDao.addVerse(raw, verseIndex);
+        return transactionDatabase.verseDao.innerAddVerse(raw, verseIndex);
       });
     }
   }
 
   @override
-  Future<bool> updateVerseContent(
+  Future<void> updateVerseContent(
     int id,
     String content,
   ) async {
     if (database is sqflite.Transaction) {
-      return super.updateVerseContent(id, content);
+      await super.updateVerseContent(id, content);
     } else {
-      return (database as sqflite.Database)
-          .transaction<bool>((transaction) async {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);
-        return transactionDatabase.verseDao.updateVerseContent(id, content);
+        await transactionDatabase.verseDao.updateVerseContent(id, content);
+      });
+    }
+  }
+
+  @override
+  Future<Verse> innerUpdateVerseContent(
+    int id,
+    String content,
+  ) async {
+    if (database is sqflite.Transaction) {
+      return super.innerUpdateVerseContent(id, content);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<Verse>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        return transactionDatabase.verseDao
+            .innerUpdateVerseContent(id, content);
       });
     }
   }

@@ -38,7 +38,6 @@ class Helper {
   late Widget Function() topBar;
   double bottomBarHeight = 50;
 
-  final bus = EventBus();
   late Widget Function({required double width}) bottomBar;
   late Widget? Function(QaType type) text;
 
@@ -82,7 +81,7 @@ class Helper {
   void setInRepeatView(bool inRepeatView, {bool withoutPlayingMediaFirstTime = false}) {
     enableReloadMedia = inRepeatView;
     this.withoutPlayingMediaFirstTime = withoutPlayingMediaFirstTime;
-    bus.publish<bool>(EventTopic.setInRepeatView, inRepeatView);
+    EventBus().publish<bool>(EventTopic.setInRepeatView, inRepeatView);
   }
 
   void update() {

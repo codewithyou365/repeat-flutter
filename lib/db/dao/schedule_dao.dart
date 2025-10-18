@@ -807,7 +807,7 @@ abstract class ScheduleDao {
     return prgType;
   }
 
-  Future<void> setPrg(int verseId, int progress, Date? learnDate) async {
+  Future<Verse> setPrg(int verseId, int progress, Date? learnDate) async {
     if (learnDate != null) {
       await setPrgAndLearnDate4Sop(verseId, progress, learnDate);
     } else {
@@ -816,31 +816,54 @@ abstract class ScheduleDao {
     var now = DateTime.now();
     await insertKv(CrKv(Classroom.curr, CrK.updateVerseShowTime, now.millisecondsSinceEpoch.toString()));
     Verse verse = Verse.empty();
+    verse.id = verseId;
     verse.progress = progress;
     if (learnDate != null) {
       verse.learnDate = learnDate;
     }
-    CacheHelp.refreshVerseProgress(verse).then((_) {
-      EventBus().publish<int>(EventTopic.updateVerseProgress, verseId);
-    });
+    return verse;
+  }
+
+  Future<void> error(VerseTodayPrg stp) async {
+    var verse = await innerError(stp);
+    if (verse.id != null) {
+      CacheHelp.updateVerseProgress(verse);
+      EventBus().publish<int>(EventTopic.updateVerseProgress, verse.id!);
+    }
   }
 
   @transaction
-  Future<void> error(VerseTodayPrg stp) async {
+  Future<Verse> innerError(VerseTodayPrg stp) async {
     await forUpdate();
     var now = DateTime.now();
     await setTodayPrgWithCache(stp, 0, now);
-    await setPrg(stp.verseId, 0, null);
+    return await setPrg(stp.verseId, 0, null);
   }
 
-  @transaction
   Future<void> jumpDirectly(int verseId, int progress, int nextDayValue) async {
-    await forUpdate();
-    await setPrg(verseId, progress, Date(nextDayValue));
+    var verse = await innerJumpDirectly(verseId, progress, nextDayValue);
+    if (verse.id != null) {
+      CacheHelp.updateVerseProgress(verse);
+      EventBus().publish<int>(EventTopic.updateVerseProgress, verseId);
+    }
   }
 
   @transaction
+  Future<Verse> innerJumpDirectly(int verseId, int progress, int nextDayValue) async {
+    await forUpdate();
+    return await setPrg(verseId, progress, Date(nextDayValue));
+  }
+
   Future<void> jump(VerseTodayPrg stp, int progress, int nextDayValue) async {
+    var verse = await innerJump(stp, progress, nextDayValue);
+    if (verse.id != null) {
+      CacheHelp.updateVerseProgress(verse);
+      EventBus().publish<int>(EventTopic.updateVerseProgress, verse.id);
+    }
+  }
+
+  @transaction
+  Future<Verse> innerJump(VerseTodayPrg stp, int progress, int nextDayValue) async {
     await forUpdate();
 
     TodayPrgType prgType = getPrgType(stp);
@@ -863,7 +886,7 @@ abstract class ScheduleDao {
       await setVerseReviewCount(stp.reviewCreateDate, stp.verseId, stp.reviewCount + 1);
     }
 
-    await setPrg(stp.verseId, progress, Date(nextDayValue));
+    var verse = await setPrg(stp.verseId, progress, Date(nextDayValue));
     await setTodayPrgWithCache(stp, scheduleConfig.maxRepeatTime, now);
     await insertVerseStats(
       VerseStats(
@@ -876,10 +899,20 @@ abstract class ScheduleDao {
         chapterId: stp.chapterId,
       ),
     );
+    return verse;
+  }
+
+  Future<void> right(VerseTodayPrg stp) async {
+    var verse = await innerRight(stp);
+    if (verse.id != null) {
+      CacheHelp.updateVerseProgress(verse);
+      EventBus().publish<int>(EventTopic.updateVerseProgress, verse.id);
+    }
   }
 
   @transaction
-  Future<void> right(VerseTodayPrg stp) async {
+  Future<Verse> innerRight(VerseTodayPrg stp) async {
+    Verse verse = Verse.empty();
     TodayPrgType prgType = getPrgType(stp);
 
     ProgressState state = ProgressState.unfinished;
@@ -900,11 +933,11 @@ abstract class ScheduleDao {
         if (state == ProgressState.familiar) {
           var verseProgress = await getVerseProgress(stp.verseId);
           if (verseProgress == null) {
-            return;
+            return verse;
           }
           nextProgress = verseProgress + 1;
         }
-        await setPrg(stp.verseId, nextProgress, getNextByProgress(todayLearnCreateDate.toDateTime(), nextProgress));
+        verse = await setPrg(stp.verseId, nextProgress, getNextByProgress(todayLearnCreateDate.toDateTime(), nextProgress));
         await insertVerseReview([
           VerseReview(
             createDate: todayLearnCreateDate,
@@ -931,6 +964,7 @@ abstract class ScheduleDao {
         ),
       );
     }
+    return verse;
   }
 
   Future<void> setTodayPrgWithCache(VerseTodayPrg verseTodayPrg, int progress, DateTime now) async {

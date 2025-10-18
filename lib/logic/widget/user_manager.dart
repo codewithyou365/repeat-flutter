@@ -25,8 +25,7 @@ class UserManager<T extends GetxController> {
   final T parentLogic;
   String text = "";
   late WebServer web;
-  final bus = EventBus();
-  late SubList<WsEvent> sub;
+  final SubList<WsEvent> sub = [];
 
   UserManager(this.parentLogic);
 
@@ -91,7 +90,7 @@ class UserManager<T extends GetxController> {
                     allowRegisterNumber = int.parse(localAllowRegisterNumber.value);
                     await setAllowRegisterNumber(allowRegisterNumber);
                     parentLogic.update([UserManager.id]);
-                    bus.publish(EventTopic.allowRegisterNumber, allowRegisterNumber);
+                    EventBus().publish(EventTopic.allowRegisterNumber, allowRegisterNumber);
                     Get.back();
                   },
                 ),

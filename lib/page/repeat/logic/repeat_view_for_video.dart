@@ -22,8 +22,7 @@ class RepeatViewForVideo extends RepeatView {
   late MediaRangeHelper mediaRangeHelper;
   late VideoBoardHelper videoBoardHelper;
   var initialized = false.obs;
-  final bus = EventBus();
-  late SubList<bool> sub;
+  final SubList<bool> sub = [];
 
   // UI
   var showLandscapeOperateUi = true.obs;

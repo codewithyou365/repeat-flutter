@@ -203,14 +203,21 @@ abstract class ChapterDao {
         createTime: now,
       ),
     ]);
-    CacheHelp.refreshChapterAndVerse().then((_) {
-      EventBus().publish<int>(EventTopic.addChapter, null);
-    });
+    return true;
+  }
+
+  Future<bool> deleteChapter(int chapterId) async {
+    bool ok = await innerDeleteChapter(chapterId);
+    if (!ok) {
+      return false;
+    }
+    await CacheHelp.refreshChapterAndVerse();
+    EventBus().publish<int>(EventTopic.deleteChapter, null);
     return true;
   }
 
   @transaction
-  Future<bool> deleteChapter(int chapterId) async {
+  Future<bool> innerDeleteChapter(int chapterId) async {
     Chapter? chapter = await getById(chapterId);
     if (chapter == null) {
       Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["cant find the chapter data($chapterId)"]));
@@ -241,14 +248,21 @@ abstract class ChapterDao {
     await db.verseReviewDao.deleteByChapterId(chapterId);
     await db.verseStatsDao.deleteByChapterId(chapterId);
     await db.verseTodayPrgDao.deleteByChapterId(chapterId);
-    CacheHelp.refreshChapterAndVerse().then((_) {
-      EventBus().publish<int>(EventTopic.deleteChapter, null);
-    });
+    return true;
+  }
+
+  Future<bool> addChapter(ChapterShow chapterShow, int chapterIndex) async {
+    bool ok = await innerDddChapter(chapterShow, chapterIndex);
+    if (!ok) {
+      return false;
+    }
+    await CacheHelp.refreshChapterAndVerse();
+    EventBus().publish<int>(EventTopic.addChapter, null);
     return true;
   }
 
   @transaction
-  Future<bool> addChapter(ChapterShow chapterShow, int chapterIndex) async {
+  Future<bool> innerDddChapter(ChapterShow chapterShow, int chapterIndex) async {
     int chapterId = chapterShow.chapterId;
     Chapter? baseLk = await getById(chapterId);
     if (baseLk == null) {
@@ -262,8 +276,18 @@ abstract class ChapterDao {
     );
   }
 
+  Future<bool> addFirstChapter(int bookId) async {
+    bool ok = await innerAddFirstChapter(bookId);
+    if (!ok) {
+      return false;
+    }
+    await CacheHelp.refreshChapterAndVerse();
+    EventBus().publish<int>(EventTopic.addChapter, null);
+    return true;
+  }
+
   @transaction
-  Future<bool> addFirstChapter(
+  Future<bool> innerAddFirstChapter(
     int bookId,
   ) async {
     return await interAddChapter(
@@ -273,12 +297,20 @@ abstract class ChapterDao {
     );
   }
 
-  @transaction
   Future<void> updateChapterContent(int chapterId, String content) async {
+    var chapter = await innerUpdateChapterContent(chapterId, content);
+    if (chapter.id != null) {
+      CacheHelp.updateChapterContent(chapter);
+      EventBus().publish<int>(EventTopic.updateChapterContent, chapterId);
+    }
+  }
+
+  @transaction
+  Future<Chapter> innerUpdateChapterContent(int chapterId, String content) async {
     Chapter? chapter = await getById(chapterId);
     if (chapter == null) {
       Snackbar.showAndThrow(I18nKey.labelNotFoundVerse.trArgs([chapterId.toString()]));
-      return;
+      return Chapter.empty();
     }
 
     try {
@@ -286,11 +318,11 @@ abstract class ChapterDao {
       content = convert.jsonEncode(contentM);
     } catch (e) {
       Snackbar.showAndThrow(e.toString());
-      return;
+      return Chapter.empty();
     }
 
     if (chapter.content == content) {
-      return;
+      return Chapter.empty();
     }
 
     var now = DateTime.now();
@@ -308,9 +340,7 @@ abstract class ChapterDao {
     );
     chapter.content = content;
     chapter.contentVersion++;
-    CacheHelp.refreshChapterContent(chapter).then((_) {
-      EventBus().publish<int>(EventTopic.updateChapterContent, chapterId);
-    });
+    return chapter;
   }
 
   Future<List<Chapter>> import(List<Chapter> list) async {
