@@ -45,7 +45,8 @@ class UserManager<T extends GetxController> {
     await Db().db.kvDao.insertKv(Kv(K.allowRegisterNumber, "$value"));
   }
 
-  Future<void> show(BuildContext context) {
+  Future<void> show(BuildContext context) async {
+    users = await Db().db.gameUserDao.getAllUser();
     onlineUsers.clear();
     for (var userId in web.server.nodes.userId2Node.keys) {
       onlineUsers[userId] = true;
