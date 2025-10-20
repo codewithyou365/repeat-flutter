@@ -292,14 +292,14 @@ class ScCrLogic extends GetxController {
       return;
     }
     showTransparentOverlay(() async {
-      Nav.gsCrSettings.push();
+      Nav.scCrSettings.push();
       await Future.delayed(const Duration(milliseconds: 700));
     });
     await Future.delayed(const Duration(milliseconds: 400));
     if (type == TodayPrgType.learn) {
-      Nav.gsCrSettingsEl.push();
+      Nav.scCrSettingsEl.push();
     } else {
-      Nav.gsCrSettingsRel.push();
+      Nav.scCrSettingsRel.push();
     }
   }
 

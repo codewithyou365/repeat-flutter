@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'editor_binding.dart';
-import 'editor_view.dart';
+import 'editor_page.dart';
 
 GetPage editorNav(String path) {
   return GetPage(

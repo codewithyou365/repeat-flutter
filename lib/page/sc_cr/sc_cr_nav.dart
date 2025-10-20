@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'sc_cr_binding.dart';
-import 'sc_cr_view.dart';
+import 'sc_cr_page.dart';
 
 GetPage scCrNav(String path) {
   return GetPage(

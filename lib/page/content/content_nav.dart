@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 
 import 'content_binding.dart';
-import 'content_view.dart';
+import 'content_page.dart';
 
 class UpToDownWithFadeTransition extends CustomTransition {
   @override

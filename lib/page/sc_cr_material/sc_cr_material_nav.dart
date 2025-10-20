@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'sc_cr_material_binding.dart';
-import 'sc_cr_material_view.dart';
+import 'sc_cr_material_page.dart';
 
 GetPage scCrMaterialNav(String path) {
   return GetPage(

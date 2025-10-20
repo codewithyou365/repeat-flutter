@@ -41,7 +41,7 @@ cd ./lib || exit 1
   echo "    Get.back(result: result, closeOverlays: closeOverlays, canPop: canPop, id: id);" >>$OUTPUT_FILE
   echo "  }" >>$OUTPUT_FILE
   echo "" >>$OUTPUT_FILE
-  echo "  static final String initialRoute = gs.path;" >>$OUTPUT_FILE
+  echo "  static final String initialRoute = sc.path;" >>$OUTPUT_FILE
   echo "" >>$OUTPUT_FILE
   echo "  static final List<GetPage> getPages = [" >>$OUTPUT_FILE
 

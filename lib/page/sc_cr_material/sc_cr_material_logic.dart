@@ -133,7 +133,7 @@ class ScCrMaterialLogic extends GetxController {
   Future<void> share(Book model) async {
     showTransparentOverlay(() async {
       var args = <dynamic>[model];
-      Nav.gsCrContentShare.push(arguments: args);
+      Nav.scCrMaterialShare.push(arguments: args);
     });
   }
 
