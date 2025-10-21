@@ -1,6 +1,5 @@
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/cr_kv.dart';
 
 import 'model/verse_show.dart';
 
@@ -17,12 +16,6 @@ class QueryChapter {
 class VerseHelp {
   static List<VerseShow> cache = [];
   static Map<int, VerseShow> verseIdToShow = {};
-
-  static Future<String> getVerseKey(int classroomId) async {
-    var progressUpdateTime = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.updateVerseShowTime) ?? '';
-    var contentUpdateTime = await Db().db.scheduleDao.getMaxBookUpdateTime(Classroom.curr) ?? 0;
-    return '$progressUpdateTime-$contentUpdateTime';
-  }
 
   static tryGen({force = false, QueryChapter? query}) async {
     if (cache.isEmpty || force || query != null) {

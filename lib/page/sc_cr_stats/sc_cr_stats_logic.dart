@@ -19,7 +19,15 @@ class ScCrStatsLogic extends GetxController {
     await init();
   }
 
-  init() async {
+  static void onEvent() {
+    ProgressLogic.onEvent();
+  }
+
+  static void offEvent() {
+    ProgressLogic.offEvent();
+  }
+
+  Future<void> init() async {
     await progressLogic.init();
     var all = await Db().db.statsDao.collectAll();
     summaryLogic.init(all[0], all[1], (all[2] / 60000.0).toInt(), (all[3] / 60000.0).toInt());

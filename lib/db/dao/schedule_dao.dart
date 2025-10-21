@@ -495,17 +495,6 @@ abstract class ScheduleDao {
   )
   Future<int?> getMaxVerseIndex(int bookId, int chapterIndex);
 
-  @Query(
-    'SELECT ifnull(max(VerseStats.id),0) FROM VerseStats'
-    ' WHERE VerseStats.classroomId=:classroomId',
-  )
-  Future<int?> getMaxVerseStatsId(int classroomId);
-
-  @Query(
-    'SELECT ifnull(max(Book.updateTime),0) FROM Book'
-    ' WHERE Book.classroomId=:classroomId',
-  )
-  Future<int?> getMaxBookUpdateTime(int classroomId);
 
   /// VerseText end
 
@@ -813,8 +802,6 @@ abstract class ScheduleDao {
     } else {
       await setPrg4Sop(verseId, progress);
     }
-    var now = DateTime.now();
-    await insertKv(CrKv(Classroom.curr, CrK.updateVerseShowTime, now.millisecondsSinceEpoch.toString()));
     Verse verse = Verse.empty();
     verse.id = verseId;
     verse.progress = progress;

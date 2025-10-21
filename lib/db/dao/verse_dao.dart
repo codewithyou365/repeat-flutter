@@ -424,8 +424,6 @@ abstract class VerseDao {
     );
     verse.content = content;
     verse.contentVersion++;
-    //TODO remove updateVerseShowTime
-    await db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.updateVerseShowTime, now.millisecondsSinceEpoch.toString()));
     return verse;
   }
 

@@ -9,11 +9,11 @@ enum EventTopic {
   reimportBook,
   deleteBook,
   updateBookContent,
-  deleteChapter,
   addChapter,
+  deleteChapter,
   updateChapterContent,
-  deleteVerse,
   addVerse,
+  deleteVerse,
   updateVerseContent,
   updateVerseProgress,
 }

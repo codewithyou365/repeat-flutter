@@ -1324,6 +1324,16 @@ class _$CrKvDao extends CrKvDao {
   }
 
   @override
+  Future<void> deleteByKey(
+    int classroomId,
+    CrK k,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM CrKv WHERE classroomId=?1 and k=?2',
+        arguments: [classroomId, _crKConverter.encode(k)]);
+  }
+
+  @override
   Future<void> insertOrReplace(CrKv kv) async {
     await _crKvInsertionAdapter.insert(kv, OnConflictStrategy.replace);
   }
@@ -2558,14 +2568,6 @@ class _$ScheduleDao extends ScheduleDao {
   Future<int?> getMaxVerseStatsId(int classroomId) async {
     return _queryAdapter.query(
         'SELECT ifnull(max(VerseStats.id),0) FROM VerseStats WHERE VerseStats.classroomId=?1',
-        mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [classroomId]);
-  }
-
-  @override
-  Future<int?> getMaxBookUpdateTime(int classroomId) async {
-    return _queryAdapter.query(
-        'SELECT ifnull(max(Book.updateTime),0) FROM Book WHERE Book.classroomId=?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId]);
   }

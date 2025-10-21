@@ -28,4 +28,7 @@ abstract class CrKvDao {
 
   @Query('DELETE FROM CrKv WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
+
+  @Query('DELETE FROM CrKv WHERE classroomId=:classroomId and k=:k')
+  Future<void> deleteByKey(int classroomId, CrK k);
 }

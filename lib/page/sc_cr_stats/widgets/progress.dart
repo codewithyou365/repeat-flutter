@@ -3,6 +3,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 
@@ -11,24 +12,45 @@ class ProgressLogic {
   int learnedCount = 0;
   int totalCount = 0;
 
+  static final SubList<int> changeSub = [];
+
   ProgressLogic();
+
+  static void onEvent() {
+    changeSub.on(
+      [
+        EventTopic.importBook,
+        EventTopic.reimportBook,
+        EventTopic.deleteBook,
+        EventTopic.deleteChapter,
+        EventTopic.addVerse,
+        EventTopic.deleteVerse,
+        EventTopic.updateVerseProgress,
+      ],
+      (_) {
+        Db().db.crKvDao.deleteByKey(Classroom.curr, CrK.lastCache4ProgressStats);
+      },
+    );
+  }
+
+  static void offEvent() {
+    changeSub.off();
+  }
 
   Future<void> init() async {
     learnedCount = 0;
     totalCount = 0;
-    var key = await VerseHelp.getVerseKey(Classroom.curr);
 
-    var cache = await Db().db.scheduleDao.stringKv(Classroom.curr, CrK.lastCache4ProgressStats) ?? ',0,0';
-    var values = cache.split(",");
-    var currKey = values[0];
-    if (currKey == key) {
-      learnedCount = int.parse(values[1]);
-      totalCount = int.parse(values[2]);
+    var cache = await Db().db.crKvDao.getString(Classroom.curr, CrK.lastCache4ProgressStats);
+    if (cache != null) {
+      var values = cache.split(",");
+      learnedCount = int.parse(values[0]);
+      totalCount = int.parse(values[1]);
     } else {
       List<VerseShow> progressRawData = await VerseHelp.getVerses();
       learnedCount = progressRawData.where((e) => e.progress != 0).length;
       totalCount = progressRawData.length;
-      await Db().db.scheduleDao.insertKv(CrKv(Classroom.curr, CrK.lastCache4ProgressStats, '$key,$learnedCount,$totalCount'));
+      await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.lastCache4ProgressStats, '$learnedCount,$totalCount'));
     }
     progress = learnedCount / (totalCount == 0 ? 1 : totalCount);
   }
@@ -56,8 +78,8 @@ class ProgressLogic {
                 Text(
                   I18nKey.labelProgress.tr,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const Spacer(),
                 // IconButton(
@@ -89,15 +111,15 @@ class ProgressLogic {
                     Text(
                       I18nKey.labelLearned.trArgs([learnedCount.toString()]),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const Spacer(),
                     Text(
                       I18nKey.labelTotal.trArgs([totalCount.toString()]),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),

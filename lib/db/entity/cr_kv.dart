@@ -16,7 +16,6 @@ enum CrK {
   lastRecordCreateDate4StatsTotalLearning,
   statsTotalTime,
   statsTotalLearning,
-  updateVerseShowTime,
   lastCache4ProgressStats,
   nextTimeForSettingLearningProgressWarning,
 }
