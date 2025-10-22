@@ -203,7 +203,7 @@ class BookEditorLogic extends GetxController {
       if (path.endsWith(".html")) {
         response.headers.contentType = ContentType.html;
       }
-      ByteData content = await rootBundle.load('assets/editor/$path');
+      ByteData content = await rootBundle.load('assets/editor'.joinPath(path));
       String str = utf8.decode(content.buffer.asUint8List());
       response.write(str);
     }

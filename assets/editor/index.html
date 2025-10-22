@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <title>Edit Book</title>
     <style>
         #editor {
@@ -156,12 +157,24 @@
         #settings-menu div {
             padding: 5px 10px;
         }
+
+        .no-js {
+            text-align: center;
+            margin-top: 20vh;
+            font-size: 24px;
+            color: red;
+        }
     </style>
     <script src="/ace.js"></script>
     <script src="/keybinding-vim.min.js"></script>
     <script src="/json-source-map.js"></script>
 </head>
 <body>
+<noscript>
+    <div class="no-js">
+        Please enable JavaScript
+    </div>
+</noscript>
 
 <div class="container">
     <div id="dir"></div>
