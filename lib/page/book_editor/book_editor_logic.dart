@@ -130,7 +130,6 @@ class BookEditorLogic extends GetxController {
         I18nKey.keyTitle.tr,
         I18nKey.keyContent.trParams([state.user.value, state.password.value]),
         yes: () {
-          randCredentials(show: false);
           Get.back();
         },
       );
