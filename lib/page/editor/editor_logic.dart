@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
@@ -14,6 +15,7 @@ class EditorLogic extends GetxController {
   static const String id = "EditorLogic";
   final EditorState state = EditorState();
   final textController = TextEditingController();
+  final SubList<int> sub = [];
 
   @override
   void onInit() {
@@ -24,6 +26,13 @@ class EditorLogic extends GetxController {
     }
     if (args.onAdvancedEdit != null) {
       state.advancedEditBtn = Button(I18nKey.advancedEdit.tr, args.onAdvancedEdit);
+    }
+    var contentChangeTopics = args.contentChangeTopics;
+    var getContent = args.getContent;
+    if (contentChangeTopics != null && getContent != null) {
+      sub.on(contentChangeTopics, (_) {
+        textController.text = getContent();
+      });
     }
     state.shareBtn = Button(I18nKey.btnShare.tr, () {
       showQrCode(Get.context!, textController.text);
@@ -57,6 +66,7 @@ class EditorLogic extends GetxController {
   @override
   void onClose() {
     super.onClose();
+    sub.off();
   }
 
   static void showQrCode(BuildContext context, String value) {

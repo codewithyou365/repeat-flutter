@@ -6,6 +6,8 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/book_content_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/book_help.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -298,11 +300,11 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
     );
   }
 
-  void onEdit(BookShow book) {
+  void onEdit(BookShow book) async {
     searchFocusNode.unfocus();
     var contentM = jsonDecode(book.bookContent);
     var content = const JsonEncoder.withIndent(' ').convert(contentM);
-    Nav.editor.push(
+    await Nav.editor.push(
       arguments: EditorArgs(
         title: I18nKey.labelBookFn.tr,
         value: content,
@@ -311,11 +313,25 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
           parentLogic.update([ViewLogicBookList.bodyId]);
         },
         onAdvancedEdit: () async {
-          Nav.bookEditor.push(arguments: [BookEditorArgs(bookShow: book)]);
+          await Nav.bookEditor.push(arguments: [BookEditorArgs(bookShow: book)]);
+          var c = BookHelp.getCache(book.bookId);
+          if (c == null) {
+            Get.back();
+            MsgBox.yes(I18nKey.labelTips.tr, I18nKey.theContentHasBeenDeleted.trArgs(["ID:${book.bookId}"]));
+          }
         },
         onHistory: () async {
           List<BookContentVersion> historyData = await Db().db.bookContentVersionDao.list(book.bookId);
           await historyList.show(historyData, focus: true.obs);
+        },
+        contentChangeTopics: [EventTopic.reimportBook],
+        getContent: () {
+          var c = BookHelp.getCache(book.bookId);
+          if (c == null) {
+            return '';
+          }
+          var contentM = jsonDecode(c.bookContent);
+          return JsonEncoder.withIndent(' ').convert(contentM);
         },
       ),
     );

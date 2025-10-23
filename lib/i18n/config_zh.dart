@@ -303,5 +303,6 @@ class ConfigZh extends Config {
     put(I18nKey.adjustFontSize, "调整字体大小 (%s)");
     put(I18nKey.fontSize, "字体大小");
     put(I18nKey.editContent, "编辑内容");
+    put(I18nKey.theContentHasBeenDeleted, "该内容 (%s) 已被删除");
   }
 }

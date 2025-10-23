@@ -8,6 +8,7 @@ import 'package:repeat_flutter/db/entity/chapter_content_version.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/book_help.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
@@ -441,11 +442,11 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     );
   }
 
-  void onEdit(ChapterShow chapter) {
+  void onEdit(ChapterShow chapter) async {
     searchFocusNode.unfocus();
     var contentM = jsonDecode(chapter.chapterContent);
     var content = const JsonEncoder.withIndent(' ').convert(contentM);
-    Nav.editor.push(
+    await Nav.editor.push(
       arguments: EditorArgs(
         title: I18nKey.labelChapterName.tr,
         value: content,
@@ -455,15 +456,29 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
         },
         onAdvancedEdit: () async {
           final book = originalBookShow.firstWhere((e) => e.bookId == chapter.bookId);
-          Nav.bookEditor.push(
+          await Nav.bookEditor.push(
             arguments: [
               BookEditorArgs(bookShow: book, chapterIndex: chapter.chapterIndex),
             ],
           );
+          var c = ChapterHelp.getCache(chapter.chapterId);
+          if (c == null) {
+            Get.back();
+            MsgBox.yes(I18nKey.labelTips.tr, I18nKey.theContentHasBeenDeleted.trArgs(["ID:${chapter.chapterId}"]));
+          }
         },
         onHistory: () async {
           List<ChapterContentVersion> historyData = await Db().db.chapterContentVersionDao.list(chapter.chapterId);
           await historyList.show(historyData, focus: true.obs);
+        },
+        contentChangeTopics: [EventTopic.reimportBook],
+        getContent: () {
+          var c = ChapterHelp.getCache(chapter.chapterId);
+          if (c == null) {
+            return '';
+          }
+          var contentM = jsonDecode(c.chapterContent);
+          return JsonEncoder.withIndent(' ').convert(contentM);
         },
       ),
     );

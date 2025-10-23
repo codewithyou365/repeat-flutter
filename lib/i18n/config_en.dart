@@ -303,5 +303,6 @@ class ConfigEn extends Config {
     put(I18nKey.adjustFontSize, "Adjust Font Size (%s)");
     put(I18nKey.fontSize, "Font Size");
     put(I18nKey.editContent, "Edit Content");
+    put(I18nKey.theContentHasBeenDeleted, "The content (%s) has been deleted");
   }
 }

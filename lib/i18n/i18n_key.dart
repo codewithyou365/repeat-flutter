@@ -303,6 +303,7 @@ enum I18nKey {
   adjustFontSize,
   fontSize,
   editContent,
+  theContentHasBeenDeleted,
   ;
 
   String trArgs([List<String> args = const []]) {

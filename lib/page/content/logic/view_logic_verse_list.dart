@@ -8,6 +8,7 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/verse_content_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
@@ -524,11 +525,11 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     );
   }
 
-  void onEdit(VerseShow verse) {
+  void onEdit(VerseShow verse) async {
     searchFocusNode.unfocus();
     var contentM = jsonDecode(verse.verseContent);
     var content = const JsonEncoder.withIndent(' ').convert(contentM);
-    Nav.editor.push(
+    await Nav.editor.push(
       arguments: EditorArgs(
         title: I18nKey.labelVerseName.tr,
         value: content,
@@ -538,7 +539,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
         },
         onAdvancedEdit: () async {
           final book = originalBookShow.firstWhere((e) => e.bookId == verse.bookId);
-          Nav.bookEditor.push(
+          await Nav.bookEditor.push(
             arguments: [
               BookEditorArgs(
                 bookShow: book,
@@ -547,10 +548,24 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
               ),
             ],
           );
+          var c = VerseHelp.getCache(verse.verseId);
+          if (c == null) {
+            Get.back();
+            MsgBox.yes(I18nKey.labelTips.tr, I18nKey.theContentHasBeenDeleted.trArgs(["ID:${verse.verseId}"]));
+          }
         },
         onHistory: () async {
           List<VerseContentVersion> historyData = await Db().db.verseContentVersionDao.list(verse.verseId);
           await historyList.show(historyData, focus: true.obs);
+        },
+        contentChangeTopics: [EventTopic.reimportBook],
+        getContent: () {
+          var c = VerseHelp.getCache(verse.verseId);
+          if (c == null) {
+            return '';
+          }
+          var contentM = jsonDecode(c.verseContent);
+          return JsonEncoder.withIndent(' ').convert(contentM);
         },
       ),
     );
