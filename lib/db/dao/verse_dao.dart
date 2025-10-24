@@ -158,7 +158,7 @@ abstract class VerseDao {
         continue;
       }
 
-      int shift = verseIndexes.where((idx) => idx < entity.chapterIndex).length;
+      int shift = verseIndexes.where((idx) => idx < entity.verseIndex).length;
       entity.verseIndex -= shift;
       entity.sort = bookSort * 10000000000 + entity.chapterIndex * 100000 + entity.verseIndex;
       needToInserts.add(entity);
