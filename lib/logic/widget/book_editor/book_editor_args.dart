@@ -5,10 +5,12 @@ import 'package:repeat_flutter/logic/model/book_show.dart';
 class BookEditorArgs {
   int? chapterIndex;
   int? verseIndex;
-  BookShow bookShow;
+  int bookId;
+  String bookName;
 
   BookEditorArgs({
-    required this.bookShow,
+    required this.bookId,
+    required this.bookName,
     this.chapterIndex,
     this.verseIndex,
   });

@@ -15,6 +15,7 @@ import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'book_editor_args.dart';
+import 'book_editor_page.dart';
 import 'book_editor_state.dart';
 import 'logic/book.dart';
 import 'logic/browse.dart';
@@ -24,19 +25,29 @@ import 'logic/play.dart';
 import 'logic/upload.dart';
 import 'logic/editor.dart';
 
-class BookEditorLogic extends GetxController {
+class BookEditorLogic<T extends GetxController> {
   static const int port = 40321;
   static const String id = "BookEditorLogic";
   final BookEditorState state = BookEditorState();
+  final BookEditorPage page = BookEditorPage<T>();
   HttpServer? _httpServer;
   Directory? editorDir;
+  final T parentLogic;
 
-  @override
-  void onInit() async {
-    super.onInit();
-    state.args = Get.arguments[0] as BookEditorArgs;
+  BookEditorLogic(this.parentLogic);
+
+  Future<void> open(BookEditorArgs args) async {
+    state.args = args;
     randCredentials(show: false);
-    await _initEditorDir(state.args.bookShow.bookId);
+    await _initEditorDir(state.args.bookId);
+    return page.open(this);
+  }
+
+  String get title {
+    if (state.webStart.value) {
+      return "${I18nKey.advancedEdit.tr}:${state.args.bookName}";
+    }
+    return I18nKey.advancedEdit.tr;
   }
 
   Future<void> _initEditorDir(int bookId) async {
@@ -60,9 +71,7 @@ class BookEditorLogic extends GetxController {
     });
   }
 
-  @override
-  void onClose() {
-    super.onClose();
+  void clear() {
     _stopHttpService();
   }
 
@@ -91,7 +100,7 @@ class BookEditorLogic extends GetxController {
     }
 
     Snackbar.show('HTTP service started1');
-    update([id]);
+    parentLogic.update([id]);
   }
 
   String getUrl(String ip) {
@@ -118,7 +127,7 @@ class BookEditorLogic extends GetxController {
       await _httpServer!.close();
       Snackbar.show('HTTP service stopped');
       _httpServer = null;
-      update([id]);
+      parentLogic.update([id]);
     }
   }
 
@@ -166,9 +175,9 @@ class BookEditorLogic extends GetxController {
     } else if (path == '/upload' && request.method == 'POST') {
       await handleUpload(request, editorDir);
     } else if (path == '/commit' && request.method == 'POST') {
-      await handleCommit(request, state.args.bookShow.bookId);
+      await handleCommit(request, state.args.bookId);
     } else if (path == '/book' && request.method == 'POST') {
-      await handleBook(request, state.args.bookShow.bookId);
+      await handleBook(request, state.args.bookId);
     } else if (path == '/getVimMode' && request.method == 'POST') {
       await handleGetEditorStatus(request, K.bookAdvancedEditorVimMode);
     } else if (path == '/setVimMode' && request.method == 'POST') {

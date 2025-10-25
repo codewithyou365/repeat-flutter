@@ -14,7 +14,6 @@ import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/nav.dart';
-import 'package:repeat_flutter/page/book_editor/book_editor_args.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
@@ -453,19 +452,6 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
         save: (str) async {
           await Db().db.chapterDao.updateChapterContent(chapter.chapterId, str);
           parentLogic.update([ViewLogicChapterList.bodyId]);
-        },
-        onAdvancedEdit: () async {
-          final book = originalBookShow.firstWhere((e) => e.bookId == chapter.bookId);
-          await Nav.bookEditor.push(
-            arguments: [
-              BookEditorArgs(bookShow: book, chapterIndex: chapter.chapterIndex),
-            ],
-          );
-          var c = ChapterHelp.getCache(chapter.chapterId);
-          if (c == null) {
-            Get.back();
-            MsgBox.yes(I18nKey.labelTips.tr, I18nKey.theContentHasBeenDeleted.trArgs(["ID:${chapter.chapterId}"]));
-          }
         },
         onHistory: () async {
           List<ChapterContentVersion> historyData = await Db().db.chapterContentVersionDao.list(chapter.chapterId);

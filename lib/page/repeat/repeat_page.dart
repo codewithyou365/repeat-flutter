@@ -7,6 +7,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
+import 'package:repeat_flutter/logic/widget/book_editor/book_editor_args.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -167,6 +168,10 @@ class RepeatPage extends StatelessWidget {
               PopupMenuItem<String>(
                 onTap: logic.switchEditMode,
                 child: Text("${I18nKey.labelEdit.tr}(${state.helper.edit})"),
+              ),
+              PopupMenuItem<String>(
+                onTap: logic.openAdvancedEditor,
+                child: Text(logic.bookEditor.title),
               ),
             ],
           ),

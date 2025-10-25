@@ -9,11 +9,14 @@ import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
+import 'package:repeat_flutter/logic/verse_help.dart';
+import 'package:repeat_flutter/logic/widget/book_editor/book_editor_args.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
 
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/web_manager.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/logic/widget/book_editor/book_editor_logic.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -42,6 +45,7 @@ class RepeatLogic extends GetxController {
   late CopyLogic copyLogic = CopyLogic<RepeatLogic>(CrK.copyTemplate, this);
   late WebManager webManager = WebManager<RepeatLogic>(this);
   late GameHelper gameHelper = GameHelper(webManager.web);
+  late BookEditorLogic bookEditor = BookEditorLogic<RepeatLogic>(this);
 
   late RepeatFlow? repeatLogic;
 
@@ -100,6 +104,27 @@ class RepeatLogic extends GetxController {
     state.helper.edit = !state.helper.edit;
     state.helper.withoutPlayingMediaFirstTime = true;
     update([RepeatLogic.id]);
+  }
+
+  void openAdvancedEditor() async {
+    var curr = getCurr();
+    if (curr == null) {
+      return;
+    }
+    var verse = VerseHelp.getCache(curr.verseId);
+    if (verse == null) {
+      return;
+    }
+    state.helper.setInRepeatView(false);
+    await bookEditor.open(
+      BookEditorArgs(
+        bookId: verse.bookId,
+        bookName: verse.bookName,
+        chapterIndex: verse.chapterIndex,
+        verseIndex: verse.verseIndex,
+      ),
+    );
+    state.helper.setInRepeatView(true);
   }
 
   void adjustProgress() async {

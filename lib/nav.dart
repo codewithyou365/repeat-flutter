@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:repeat_flutter/page/book_editor/book_editor_nav.dart';
 import 'package:repeat_flutter/page/content/content_nav.dart';
 import 'package:repeat_flutter/page/editor/editor_nav.dart';
 import 'package:repeat_flutter/page/repeat/repeat_nav.dart';
@@ -20,7 +19,6 @@ import 'package:repeat_flutter/page/sc_settings_theme/sc_settings_theme_nav.dart
 import 'package:repeat_flutter/page/scan/scan_nav.dart';
 
 enum Nav {
-  bookEditor("/book/editor"),
   content("/content"),
   editor("/editor"),
   repeat("/repeat"),
@@ -65,7 +63,6 @@ enum Nav {
   static final String initialRoute = sc.path;
 
   static final List<GetPage> getPages = [
-    bookEditorNav(bookEditor.path),
     contentNav(content.path),
     editorNav(editor.path),
     repeatNav(repeat.path),
