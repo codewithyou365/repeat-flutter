@@ -35,6 +35,12 @@ class MediaRangeHelper {
   static const String defaultEnd = "00:00:05,000";
   final SubList<int> updateVerseContentSub = [];
 
+  static MediaRange defaultRange() {
+    final start = Time.parseTimeToMilliseconds(defaultStart).toInt();
+    final end = Time.parseTimeToMilliseconds(defaultEnd).toInt();
+    return MediaRange(start: start, end: end, enable: false);
+  }
+
   MediaRangeHelper({
     required this.helper,
   });

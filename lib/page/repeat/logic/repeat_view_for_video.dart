@@ -75,16 +75,17 @@ class RepeatViewForVideo extends RepeatView {
     }
 
     MediaRange? range;
-    if (helper.step != RepeatStep.recall) {
-      range = mediaRangeHelper.getCurrAnswerRange();
-    }
-    if (range == null || !range.enable) {
-      range = mediaRangeHelper.getCurrQuestionRange();
+    if (path.isNotEmpty) {
+      if (helper.step != RepeatStep.recall) {
+        range = mediaRangeHelper.getCurrAnswerRange();
+      }
+      if (range == null || !range.enable) {
+        range = mediaRangeHelper.getCurrQuestionRange();
+      }
     }
 
-    if (range == null) {
-      return emptyBody();
-    }
+    range ??= MediaRangeHelper.defaultRange();
+
     if (helper.enableReloadMedia) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         load(path).then((_) {

@@ -66,9 +66,7 @@ class RepeatViewForAudio extends RepeatView {
       }
     }
 
-    if (range == null) {
-      return SizedBox(height: height);
-    }
+    range ??= MediaRangeHelper.defaultRange();
 
     if (helper.enableReloadMedia) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
