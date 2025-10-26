@@ -209,13 +209,13 @@ class MsgBox {
     );
   }
 
-  static void yes(
+  static Future<void> yes(
     String title,
     String desc, {
     VoidCallback? yes,
     String? yesBtnTitle,
   }) {
-    myDialog(
+    return myDialog(
       title: title,
       content: Padding(
         padding: const EdgeInsets.all(8.0),

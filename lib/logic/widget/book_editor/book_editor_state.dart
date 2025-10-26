@@ -14,6 +14,12 @@ class Address {
 class BookEditorState {
   final List<Address> addresses = <Address>[];
   late BookEditorArgs args;
+
+  int chapterIndex = 0;
+  int verseIndex = 0;
+  int bookId = 0;
+  String bookName = "";
+
   var lanAddressSuffix = "/index.html";
   RxBool webStart = false.obs;
   RxString user = "".obs;

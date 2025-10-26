@@ -38,14 +38,12 @@ class BookEditorLogic<T extends GetxController> {
 
   Future<void> open(BookEditorArgs args) async {
     state.args = args;
-    randCredentials(show: false);
-    await _initEditorDir(state.args.bookId);
     return page.open(this);
   }
 
   String get title {
     if (state.webStart.value) {
-      return "${I18nKey.advancedEdit.tr}:${state.args.bookName}";
+      return "${I18nKey.advancedEdit.tr}:${state.bookName}";
     }
     return I18nKey.advancedEdit.tr;
   }
@@ -63,6 +61,12 @@ class BookEditorLogic<T extends GetxController> {
     AwaitUtil.tryDo(() async {
       state.addresses.clear();
       if (enable) {
+        state.chapterIndex = state.args.chapterIndex;
+        state.verseIndex = state.args.verseIndex;
+        state.bookId = state.args.bookId;
+        state.bookName = state.args.bookName;
+        randCredentials(show: false);
+        await _initEditorDir(state.bookId);
         await _startHttpService();
       } else {
         await _stopHttpService();
@@ -104,21 +108,15 @@ class BookEditorLogic<T extends GetxController> {
   }
 
   String getUrl(String ip) {
-    final chapterIndex = state.args.chapterIndex;
-    final verseIndex = state.args.verseIndex;
+    final chapterIndex = state.chapterIndex;
+    final verseIndex = state.verseIndex;
     String url = 'http://$ip:$port${state.lanAddressSuffix}';
-    if (chapterIndex != null || verseIndex != null) {
-      url += "?";
-      List<String> params = [];
-      if (chapterIndex != null) {
-        params.add("c=${chapterIndex + 1}");
-      }
-      if (verseIndex != null) {
-        params.add("v=${verseIndex + 1}");
-      }
 
-      url += params.join("&");
-    }
+    url += "?";
+    List<String> params = [];
+    params.add("c=${chapterIndex + 1}");
+    params.add("v=${verseIndex + 1}");
+    url += params.join("&");
     return url;
   }
 
@@ -175,9 +173,9 @@ class BookEditorLogic<T extends GetxController> {
     } else if (path == '/upload' && request.method == 'POST') {
       await handleUpload(request, editorDir);
     } else if (path == '/commit' && request.method == 'POST') {
-      await handleCommit(request, state.args.bookId);
+      await handleCommit(request, state.bookId);
     } else if (path == '/book' && request.method == 'POST') {
-      await handleBook(request, state.args.bookId);
+      await handleBook(request, state.bookId);
     } else if (path == '/getVimMode' && request.method == 'POST') {
       await handleGetEditorStatus(request, K.bookAdvancedEditorVimMode);
     } else if (path == '/setVimMode' && request.method == 'POST') {

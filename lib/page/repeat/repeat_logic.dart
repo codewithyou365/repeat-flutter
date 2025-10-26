@@ -64,6 +64,7 @@ class RepeatLogic extends GetxController {
       v.dispose();
     }
     state.helper.onClose();
+    bookEditor.switchWeb(false);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
   }
 
@@ -191,7 +192,12 @@ class RepeatLogic extends GetxController {
     }
     state.helper.setInRepeatView(false);
     await Nav.content.push(
-      arguments: ContentArgs(bookName: content.name, initChapterSelect: chapter.chapterIndex, selectVerseKeyId: curr.verseId, defaultTap: 2),
+      arguments: ContentArgs(
+        bookName: content.name,
+        initChapterSelect: chapter.chapterIndex,
+        selectVerseKeyId: curr.verseId,
+        defaultTap: 2,
+      ),
     );
     state.helper.setInRepeatView(true, withoutPlayingMediaFirstTime: true);
     update([RepeatLogic.id]);
