@@ -170,13 +170,14 @@ abstract class VerseDao {
   Future<bool> delete(int verseId) async {
     var verse = await innerDelete(verseId);
     if (verse.id != null) {
+      var verseShow = VerseHelp.getCache(verseId);
       await CacheHelp.refreshVerse(
         query: QueryChapter(
           bookId: verse.bookId,
           chapterIndex: verse.chapterIndex,
         ),
       );
-      EventBus().publish<int>(EventTopic.deleteVerse, null);
+      EventBus().publish<VerseShow>(EventTopic.deleteVerse, verseShow);
       return true;
     }
     return false;
@@ -333,7 +334,8 @@ abstract class VerseDao {
           chapterIndex: chapterIndex,
         ),
       );
-      EventBus().publish<int>(EventTopic.addVerse, null);
+      var verseShow = VerseHelp.getCacheByIndex(bookId, chapterIndex, 0);
+      EventBus().publish<VerseShow>(EventTopic.addVerse, verseShow);
     }
     return verseId;
   }
@@ -362,7 +364,8 @@ abstract class VerseDao {
           chapterIndex: raw.chapterIndex,
         ),
       );
-      EventBus().publish<int>(EventTopic.addVerse, null);
+      var verseShow = VerseHelp.getCacheByIndex(raw.bookId, raw.chapterIndex, verseIndex);
+      EventBus().publish<VerseShow>(EventTopic.addVerse, verseShow);
     }
     return verseId;
   }
@@ -383,7 +386,8 @@ abstract class VerseDao {
     var verse = await innerUpdateVerseContent(id, content);
     if (verse.id != null) {
       CacheHelp.updateVerseContent(verse);
-      EventBus().publish<int>(EventTopic.updateVerseContent, id);
+      var verseShow = VerseHelp.getCache(id);
+      EventBus().publish<VerseShow>(EventTopic.updateVerseContent, verseShow);
     }
   }
 

@@ -30,12 +30,12 @@ class ContentLogic extends GetxController {
   static const String id = "ContentLogicId";
   final ContentState state = ContentState();
   List<ViewLogic?> viewList = [null, null, null];
-  final SubList<int> changeSub = [];
+  final SubList changeSub = [];
 
   @override
   void onInit() async {
     super.onInit();
-    changeSub.on([EventTopic.reimportBook, EventTopic.deleteBook], (v) {
+    changeSub.on([EventTopic.reimportBook, EventTopic.deleteBook], (_) {
       change();
     });
 

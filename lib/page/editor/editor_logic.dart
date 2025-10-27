@@ -15,7 +15,7 @@ class EditorLogic extends GetxController {
   static const String id = "EditorLogic";
   final EditorState state = EditorState();
   final textController = TextEditingController();
-  final SubList<int> sub = [];
+  final SubList sub = [];
 
   @override
   void onInit() {

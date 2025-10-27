@@ -12,25 +12,14 @@ class ProgressLogic {
   int learnedCount = 0;
   int totalCount = 0;
 
-  static final SubList<int> changeSub = [];
+  static final SubList changeSub = [];
 
   ProgressLogic();
 
   static void onEvent() {
-    changeSub.on(
-      [
-        EventTopic.importBook,
-        EventTopic.reimportBook,
-        EventTopic.deleteBook,
-        EventTopic.deleteChapter,
-        EventTopic.addVerse,
-        EventTopic.deleteVerse,
-        EventTopic.updateVerseProgress,
-      ],
-      (_) {
-        Db().db.crKvDao.deleteByKey(Classroom.curr, CrK.lastCache4ProgressStats);
-      },
-    );
+    changeSub.on([EventTopic.importBook, EventTopic.reimportBook, EventTopic.deleteBook, EventTopic.deleteChapter, EventTopic.addVerse, EventTopic.deleteVerse, EventTopic.updateVerseProgress], (_) {
+      Db().db.crKvDao.deleteByKey(Classroom.curr, CrK.lastCache4ProgressStats);
+    });
   }
 
   static void offEvent() {

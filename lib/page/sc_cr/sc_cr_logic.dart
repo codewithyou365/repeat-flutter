@@ -6,9 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/time.dart';
-import 'package:repeat_flutter/db/dao/chapter_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
-import 'package:repeat_flutter/db/dao/verse_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
@@ -17,8 +15,8 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/cache_help.dart';
-import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
+import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
@@ -37,15 +35,33 @@ class ScCrLogic extends GetxController {
   final ScCrState state = ScCrState();
   late CopyLogic copyLogic = CopyLogic<ScCrLogic>(CrK.copyListTemplate, this);
   late FullCustom fullCustom = FullCustom<ScCrLogic>(this);
-  final SubList<int> initSub = [];
-
+  final SubList initSub = [];
+  final SubList<int> bookVersionSub = [];
+  final SubList<ChapterShow> bookVersionWithChapterSub = [];
+  final SubList<VerseShow> bookVersionWithVerseSub = [];
   Timer? timer;
 
   @override
   void onInit() {
     super.onInit();
-    initSub.on([EventTopic.reimportBook, EventTopic.deleteBook, EventTopic.deleteChapter, EventTopic.deleteVerse], (v) {
+    initSub.on([EventTopic.reimportBook, EventTopic.deleteBook, EventTopic.deleteChapter, EventTopic.deleteVerse], (_) {
       init();
+    });
+
+    bookVersionSub.on([EventTopic.createBook, EventTopic.importBook, EventTopic.reimportBook, EventTopic.deleteBook, EventTopic.updateBookContent], (int? bookId) {
+      if (bookId != null) {
+        CacheHelp.incCacheVersion(bookId);
+      }
+    });
+
+    bookVersionWithChapterSub.on([EventTopic.addChapter, EventTopic.deleteChapter, EventTopic.updateChapterContent], (ChapterShow? chapterShow) {
+      if (chapterShow == null) return;
+      CacheHelp.incCacheVersion(chapterShow.bookId);
+    });
+
+    bookVersionWithVerseSub.on([EventTopic.addVerse, EventTopic.deleteVerse, EventTopic.updateVerseContent, EventTopic.updateVerseProgress], (VerseShow? verseShow) {
+      if (verseShow == null) return;
+      CacheHelp.incCacheVersion(verseShow.bookId);
     });
     ScCrStatsLogic.onEvent();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
@@ -63,6 +79,9 @@ class ScCrLogic extends GetxController {
   void onClose() {
     super.onClose();
     initSub.off();
+    bookVersionSub.off();
+    bookVersionWithChapterSub.off();
+    bookVersionWithVerseSub.off();
     ScCrStatsLogic.offEvent();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     stopTimer();

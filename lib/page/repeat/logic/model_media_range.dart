@@ -5,6 +5,7 @@ import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
+import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
@@ -33,7 +34,8 @@ class MediaRangeHelper {
   final Helper helper;
   static const String defaultStart = "00:00:00,000";
   static const String defaultEnd = "00:00:05,000";
-  final SubList<int> updateVerseContentSub = [];
+  final SubList<int> reimportBookSub = [];
+  final SubList<VerseShow> updateVerseContentSub = [];
 
   static MediaRange defaultRange() {
     final start = Time.parseTimeToMilliseconds(defaultStart).toInt();
@@ -46,13 +48,19 @@ class MediaRangeHelper {
   });
 
   void onInit() {
-    updateVerseContentSub.on([EventTopic.updateVerseContent], (int? id) {
-      answerRangeCache.remove(id);
-      questionRangeCache.remove(id);
+    reimportBookSub.on([EventTopic.reimportBook], (int? id) {
+      answerRangeCache.clear();
+      questionRangeCache.clear();
+    });
+    updateVerseContentSub.on([EventTopic.updateVerseContent], (VerseShow? v) {
+      if (v == null) return;
+      answerRangeCache.remove(v.verseId);
+      questionRangeCache.remove(v.verseId);
     });
   }
 
   void onClose() {
+    reimportBookSub.off();
     updateVerseContentSub.off();
   }
 

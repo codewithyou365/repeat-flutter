@@ -8,6 +8,16 @@ import 'chapter_help.dart';
 import 'verse_help.dart';
 
 class CacheHelp {
+  static Map<int, int> bookId2CacheVersion = {};
+
+  static void incCacheVersion(int bookId) {
+    bookId2CacheVersion[bookId] = (bookId2CacheVersion[bookId] ?? 0) + 1;
+  }
+
+  static int getCacheVersion(int bookId) {
+    return bookId2CacheVersion[bookId] ?? 0;
+  }
+
   static void updateBookContent(Book book) {
     var cache = BookHelp.getCache(book.id!);
     cache?.bookContent = book.content;

@@ -18,6 +18,7 @@ import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/verse_review_with_key.dart';
 import 'package:repeat_flutter/db/entity/verse_stats.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
+import 'package:repeat_flutter/logic/verse_help.dart';
 
 // learning config
 class LearnConfig {
@@ -495,7 +496,6 @@ abstract class ScheduleDao {
   )
   Future<int?> getMaxVerseIndex(int bookId, int chapterIndex);
 
-
   /// VerseText end
 
   @Insert(onConflict: OnConflictStrategy.replace)
@@ -815,7 +815,7 @@ abstract class ScheduleDao {
     var verse = await innerError(stp);
     if (verse.id != null) {
       CacheHelp.updateVerseProgress(verse);
-      EventBus().publish<int>(EventTopic.updateVerseProgress, verse.id!);
+      EventBus().publish<VerseShow>(EventTopic.updateVerseProgress, VerseHelp.getCache(verse.id!));
     }
   }
 
@@ -831,7 +831,7 @@ abstract class ScheduleDao {
     var verse = await innerJumpDirectly(verseId, progress, nextDayValue);
     if (verse.id != null) {
       CacheHelp.updateVerseProgress(verse);
-      EventBus().publish<int>(EventTopic.updateVerseProgress, verseId);
+      EventBus().publish<VerseShow>(EventTopic.updateVerseProgress, VerseHelp.getCache(verseId));
     }
   }
 
@@ -845,7 +845,7 @@ abstract class ScheduleDao {
     var verse = await innerJump(stp, progress, nextDayValue);
     if (verse.id != null) {
       CacheHelp.updateVerseProgress(verse);
-      EventBus().publish<int>(EventTopic.updateVerseProgress, verse.id);
+      EventBus().publish<VerseShow>(EventTopic.updateVerseProgress, VerseHelp.getCache(verse.id!));
     }
   }
 
@@ -893,7 +893,7 @@ abstract class ScheduleDao {
     var verse = await innerRight(stp);
     if (verse.id != null) {
       CacheHelp.updateVerseProgress(verse);
-      EventBus().publish<int>(EventTopic.updateVerseProgress, verse.id);
+      EventBus().publish<VerseShow>(EventTopic.updateVerseProgress, VerseHelp.getCache(verse.id!));
     }
   }
 

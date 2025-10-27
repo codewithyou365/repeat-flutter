@@ -2,7 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/logic/cache_help.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
+
+import 'constant.dart';
 
 Future<void> handleBook(HttpRequest request, int bookId) async {
   final response = request.response;
@@ -27,6 +30,7 @@ Future<void> handleBook(HttpRequest request, int bookId) async {
       await response.close();
       return;
     }
+    response.headers.add(Header.bookCacheVersion, CacheHelp.getCacheVersion(bookId));
     String json = jsonEncode(docMap);
     response.headers.contentType = ContentType.json;
     response.write(json);

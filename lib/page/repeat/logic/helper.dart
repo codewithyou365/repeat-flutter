@@ -17,6 +17,8 @@ import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
+import 'package:repeat_flutter/logic/model/chapter_show.dart';
+import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -52,27 +54,37 @@ class Helper {
 
   Map<int, Map<String, dynamic>> verseMapCache = {};
 
+  final SubList<int> reimportBookSub = [];
   final SubList<int> updateBookContentSub = [];
-  final SubList<int> updateChapterContentSub = [];
-  final SubList<int> updateVerseContentSub = [];
+  final SubList<ChapterShow> updateChapterContentSub = [];
+  final SubList<VerseShow> updateVerseContentSub = [];
 
   Future<void> init(RepeatFlow logic) async {
     this.logic = logic;
     rootPath = await DocPath.getContentPath();
     initialized = true;
+    reimportBookSub.on([EventTopic.reimportBook], (int? id) {
+      bookMapCache.remove(id!);
+      chapterMapCache.clear();
+      chapterPathCache.clear();
+      verseMapCache.clear();
+    });
     updateBookContentSub.on([EventTopic.updateBookContent], (int? id) {
       bookMapCache.remove(id!);
     });
-    updateChapterContentSub.on([EventTopic.updateChapterContent], (int? id) {
-      chapterMapCache.remove(id);
-      chapterPathCache.remove(id);
+    updateChapterContentSub.on([EventTopic.updateChapterContent], (ChapterShow? v) {
+      if (v == null) return;
+      chapterMapCache.remove(v.chapterId);
+      chapterPathCache.remove(v.chapterId);
     });
-    updateVerseContentSub.on([EventTopic.updateVerseContent], (int? id) {
-      verseMapCache.remove(id);
+    updateVerseContentSub.on([EventTopic.updateVerseContent], (VerseShow? v) {
+      if (v == null) return;
+      verseMapCache.remove(v.verseId);
     });
   }
 
   void onClose() {
+    reimportBookSub.off();
     updateBookContentSub.off();
     updateChapterContentSub.off();
     updateVerseContentSub.off();

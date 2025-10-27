@@ -16,6 +16,7 @@ class QueryChapter {
 class VerseHelp {
   static List<VerseShow> cache = [];
   static Map<int, VerseShow> verseIdToShow = {};
+  static Map<String, VerseShow> bookId2ChapterIndex2VerseIndexToShow = {};
 
   static tryGen({force = false, QueryChapter? query}) async {
     if (cache.isEmpty || force || query != null) {
@@ -26,9 +27,11 @@ class VerseHelp {
           cache.addAll(chapterVerse);
         }
         verseIdToShow = {for (var verse in cache) verse.verseId: verse};
+        bookId2ChapterIndex2VerseIndexToShow = {for (var verse in cache) '${verse.bookId}_${verse.chapterIndex}_${verse.verseIndex}': verse};
       } else {
         cache = await Db().db.scheduleDao.getAllVerse(Classroom.curr);
         verseIdToShow = {for (var verse in cache) verse.verseId: verse};
+        bookId2ChapterIndex2VerseIndexToShow = {for (var verse in cache) '${verse.bookId}_${verse.chapterIndex}_${verse.verseIndex}': verse};
       }
     }
   }
@@ -40,6 +43,10 @@ class VerseHelp {
 
   static VerseShow? getCache(int verseId) {
     return VerseHelp.verseIdToShow[verseId];
+  }
+
+  static VerseShow? getCacheByIndex(int bookId, int chapterIndex, int verseIndex) {
+    return VerseHelp.bookId2ChapterIndex2VerseIndexToShow['${bookId}_${chapterIndex}_$verseIndex'];
   }
 
   static String getVersePos(int verseId) {

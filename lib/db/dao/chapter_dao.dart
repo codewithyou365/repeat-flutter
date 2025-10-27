@@ -11,6 +11,7 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/cache_help.dart';
+import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -207,12 +208,13 @@ abstract class ChapterDao {
   }
 
   Future<bool> deleteChapter(int chapterId) async {
+    var chapterShow = ChapterHelp.getCache(chapterId);
     bool ok = await innerDeleteChapter(chapterId);
     if (!ok) {
       return false;
     }
     await CacheHelp.refreshChapterAndVerse();
-    EventBus().publish<int>(EventTopic.deleteChapter, null);
+    EventBus().publish<ChapterShow>(EventTopic.deleteChapter, chapterShow);
     return true;
   }
 
@@ -252,17 +254,18 @@ abstract class ChapterDao {
   }
 
   Future<bool> addChapter(ChapterShow chapterShow, int chapterIndex) async {
-    bool ok = await innerDddChapter(chapterShow, chapterIndex);
+    bool ok = await innerAddChapter(chapterShow, chapterIndex);
     if (!ok) {
       return false;
     }
     await CacheHelp.refreshChapterAndVerse();
-    EventBus().publish<int>(EventTopic.addChapter, null);
+    var newChapter = ChapterHelp.getCacheByIndex(chapterShow.bookId, chapterIndex);
+    EventBus().publish<ChapterShow>(EventTopic.addChapter, newChapter);
     return true;
   }
 
   @transaction
-  Future<bool> innerDddChapter(ChapterShow chapterShow, int chapterIndex) async {
+  Future<bool> innerAddChapter(ChapterShow chapterShow, int chapterIndex) async {
     int chapterId = chapterShow.chapterId;
     Chapter? baseLk = await getById(chapterId);
     if (baseLk == null) {
@@ -282,7 +285,8 @@ abstract class ChapterDao {
       return false;
     }
     await CacheHelp.refreshChapterAndVerse();
-    EventBus().publish<int>(EventTopic.addChapter, null);
+    var newChapter = ChapterHelp.getCacheByIndex(bookId, 0);
+    EventBus().publish<ChapterShow>(EventTopic.addChapter, newChapter);
     return true;
   }
 
@@ -301,7 +305,7 @@ abstract class ChapterDao {
     var chapter = await innerUpdateChapterContent(chapterId, content);
     if (chapter.id != null) {
       CacheHelp.updateChapterContent(chapter);
-      EventBus().publish<int>(EventTopic.updateChapterContent, chapterId);
+      EventBus().publish<ChapterShow>(EventTopic.updateChapterContent, ChapterHelp.getCache(chapter.id!));
     }
   }
 

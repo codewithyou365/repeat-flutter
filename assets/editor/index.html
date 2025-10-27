@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
     <title>Edit Book</title>
     <style>
         #editor {
@@ -238,7 +238,7 @@
             document.getElementById('menu').focus();
         }
     });
-
+    var bookVersion = -2;
     var Vim = ace.require("ace/keyboard/vim").Vim;
     Vim.map("<Space>", "<Leader>", "normal");
     Vim.mapCommand("<Leader>fd", "action", "aceCommand", {name: "format"}, {context: "normal"});
@@ -769,6 +769,10 @@
             const res = await fetch('/book', {
                 method: 'POST',
             });
+            bookVersion = res.headers.get('book-cache-version');
+            if (bookVersion) {
+                bookVersion = Number(bookVersion);
+            }
             const initialValue = await res.text();
             try {
                 var parsed = JSON.parse(initialValue);
@@ -857,11 +861,15 @@
         try {
             const res = await fetch('/commit', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: {
+                    'Content-Type': 'application/json',
+                    'book-cache-version': bookVersion,
+                },
                 body: JSON.stringify(jsonData)
             });
             const text = await res.text();
             alert(text);
+            await initBook();
         } catch (err) {
             alert("Error sending data: " + err);
         }
@@ -883,7 +891,7 @@
                     const text = await res.text();
                     const copyResult = copyText(text) ? " And The path copied to clipboard!" : "!";
                     alert(`Upload successful${copyResult}\n${text}`);
-                    initFiles();
+                    await initFiles();
                 } catch (err) {
                     alert("Error uploading file: " + err);
                 }

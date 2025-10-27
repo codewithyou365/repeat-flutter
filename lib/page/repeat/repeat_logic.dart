@@ -9,6 +9,7 @@ import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/book_editor/book_editor_args.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
@@ -32,7 +33,7 @@ import 'logic/repeat_view_for_video.dart';
 import 'logic/repeat_view.dart';
 
 class RepeatLogic extends GetxController {
-  static const String id = "GsCrRepeatLogic";
+  static const String id = "RepeatLogic";
   final RepeatState state = RepeatState();
   final Map<String, RepeatView> showTypeToRepeatView = {};
 
@@ -48,16 +49,21 @@ class RepeatLogic extends GetxController {
   late BookEditorLogic bookEditor = BookEditorLogic<RepeatLogic>(this);
 
   late RepeatFlow? repeatLogic;
+  final SubList bookSub = [];
 
   @override
   Future<void> onInit() async {
     super.onInit();
     await init();
+    bookSub.on([EventTopic.reimportBook], (_) {
+      update([RepeatLogic.id]);
+    });
   }
 
   @override
   void onClose() {
     super.onClose();
+    bookSub.off();
     webManager.switchWeb(false);
     repeatLogic?.onClose();
     for (var v in showTypeToRepeatView.values) {

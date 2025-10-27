@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
+import 'package:repeat_flutter/logic/model/chapter_show.dart';
+import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'dart:convert';
@@ -62,8 +64,9 @@ class VideoBoardHelper {
   Map<int, List<VideoBoard>> verseVideoBoardCache = {};
   final Helper helper;
   static const String jsonName = "videoBoard";
-  final SubList<int> updateChapterContentSub = [];
-  final SubList<int> updateVerseContentSub = [];
+  final SubList<int> reimportBookSub = [];
+  final SubList<ChapterShow> updateChapterContentSub = [];
+  final SubList<VerseShow> updateVerseContentSub = [];
 
   VideoBoardHelper({
     required this.helper,
@@ -72,15 +75,22 @@ class VideoBoardHelper {
   }
 
   void onInit() {
-    updateChapterContentSub.on([EventTopic.updateChapterContent], (int? id) {
-      chapterVideoBoardCache.remove(id);
+    reimportBookSub.on([EventTopic.reimportBook], (int? id) {
+      chapterVideoBoardCache.clear();
+      verseVideoBoardCache.clear();
     });
-    updateVerseContentSub.on([EventTopic.updateVerseContent], (int? id) {
-      verseVideoBoardCache.remove(id);
+    updateChapterContentSub.on([EventTopic.updateChapterContent], (ChapterShow? v) {
+      if (v == null) return;
+      chapterVideoBoardCache.remove(v.chapterId);
+    });
+    updateVerseContentSub.on([EventTopic.updateVerseContent], (VerseShow? v) {
+      if (v == null) return;
+      verseVideoBoardCache.remove(v.verseId);
     });
   }
 
   void onClose() {
+    reimportBookSub.off();
     updateChapterContentSub.off();
     updateVerseContentSub.off();
   }

@@ -1062,12 +1062,12 @@ class _$ChapterDao extends ChapterDao {
   }
 
   @override
-  Future<bool> innerDddChapter(
+  Future<bool> innerAddChapter(
     ChapterShow chapterShow,
     int chapterIndex,
   ) async {
     if (database is sqflite.Transaction) {
-      return super.innerDddChapter(chapterShow, chapterIndex);
+      return super.innerAddChapter(chapterShow, chapterIndex);
     } else {
       return (database as sqflite.Database)
           .transaction<bool>((transaction) async {
@@ -1075,7 +1075,7 @@ class _$ChapterDao extends ChapterDao {
           ..database = transaction;
         prepareDb(transactionDatabase);
         return transactionDatabase.chapterDao
-            .innerDddChapter(chapterShow, chapterIndex);
+            .innerAddChapter(chapterShow, chapterIndex);
       });
     }
   }
@@ -2562,14 +2562,6 @@ class _$ScheduleDao extends ScheduleDao {
         'SELECT ifnull(max(Verse.verseIndex),0) FROM Verse WHERE Verse.bookId=?1 AND Verse.chapterIndex=?2',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [bookId, chapterIndex]);
-  }
-
-  @override
-  Future<int?> getMaxVerseStatsId(int classroomId) async {
-    return _queryAdapter.query(
-        'SELECT ifnull(max(VerseStats.id),0) FROM VerseStats WHERE VerseStats.classroomId=?1',
-        mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [classroomId]);
   }
 
   @override
