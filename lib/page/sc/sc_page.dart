@@ -37,9 +37,14 @@ class ScPage extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           RxString classroomName = "".obs;
-          MsgBox.strInputWithYesOrNo(classroomName, I18nKey.btnAdd.tr, I18nKey.labelClassroomName.tr, yes: () {
-            logic.add(classroomName.value);
-          });
+          MsgBox.strInputWithYesOrNo(
+            classroomName,
+            I18nKey.btnAdd.tr,
+            I18nKey.labelClassroomName.tr,
+            yes: () {
+              logic.add(classroomName.value);
+            },
+          );
         },
         child: const Icon(Icons.add),
       ),

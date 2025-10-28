@@ -10,7 +10,7 @@ enum K {
   allowRegisterNumber,
   bookAdvancedEditorVimMode,
   bookAdvancedEditorRelativeNumbers,
-
+  closeEyesDirect,
 }
 
 @Entity(primaryKeys: ['k'])

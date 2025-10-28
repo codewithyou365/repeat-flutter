@@ -37,18 +37,18 @@ class DocPath {
 enum ProgressState {
   unfinished,
   familiar,
-  unfamiliar;
+  unfamiliar,
 }
 
 enum RepeatType {
   normal,
-  justView;
+  justView,
 }
 
 enum MatchType {
   word,
   single,
-  all;
+  all,
 }
 
 enum ContentTypeEnum {
@@ -61,6 +61,12 @@ enum RepeatViewEnum {
   text,
   audio,
   video,
+}
+
+enum CloseEyesEnum {
+  translucence,
+  opacity,
+  none,
 }
 
 class DownloadConstant {

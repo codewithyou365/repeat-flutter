@@ -42,6 +42,7 @@ class Helper {
 
   late Widget Function({required double width}) bottomBar;
   late Widget? Function(QaType type) text;
+  late Widget Function() closeEyesPanel;
 
   bool concentrationMode = true;
   bool edit = false;

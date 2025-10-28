@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:get/get.dart';
 import 'constant.dart';
 import 'helper.dart';
 import 'repeat_view.dart';
@@ -34,27 +35,37 @@ class RepeatViewForText extends RepeatView {
     var q = helper.text(QaType.question);
     var t = helper.edit || helper.tip == TipLevel.tip ? helper.text(QaType.tip) : null;
     var a = helper.edit || helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
-    return Column(
+    return Stack(
       children: [
-        SizedBox(height: helper.topPadding),
-        helper.topBar(),
-        SizedBox(
-          height: height,
-          child: ListView(padding: const EdgeInsets.all(0), children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        Column(
+          children: [
+            SizedBox(height: helper.topPadding),
+            helper.topBar(),
+            SizedBox(
+              height: height,
+              child: ListView(
+                padding: const EdgeInsets.all(0),
                 children: [
-                  if (q != null) q,
-                  if (t != null) t,
-                  if (a != null) a,
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (q != null) q,
+                        if (t != null) t,
+                        if (a != null) a,
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-          ]),
+            helper.bottomBar(width: helper.screenWidth),
+          ],
         ),
-        helper.bottomBar(width: helper.screenWidth),
+        Obx(() {
+          return helper.closeEyesPanel();
+        }),
       ],
     );
   }

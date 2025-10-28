@@ -4,13 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
-import 'package:repeat_flutter/logic/widget/book_editor/book_editor_args.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
+import 'package:repeat_flutter/widget/close_eyes/close_eyes_panel.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
 import 'package:repeat_flutter/widget/text/text_button.dart';
 
@@ -55,6 +56,7 @@ class RepeatPage extends StatelessWidget {
     state.helper.topBar = () => topBar(logic: logic, height: topBarHeight);
     state.helper.bottomBar = ({required double width}) => bottomBar(logic: logic, width: width, height: state.helper.bottomBarHeight);
     state.helper.text = (QaType type) => text(logic, type);
+    state.helper.closeEyesPanel = () => closeEyesPanel(logic);
 
     if (state.lastLandscape == null || state.lastLandscape != landscape) {
       state.lastLandscape = landscape;
@@ -164,6 +166,10 @@ class RepeatPage extends StatelessWidget {
               PopupMenuItem<String>(
                 onTap: logic.switchConcentrationMode,
                 child: Text("${I18nKey.btnFocus.tr}(${state.helper.concentrationMode})"),
+              ),
+              PopupMenuItem<String>(
+                onTap: logic.switchBlindMode,
+                child: Text(I18nKey.closeEyesMode.tr),
               ),
               PopupMenuItem<String>(
                 onTap: logic.switchEditMode,
@@ -276,24 +282,6 @@ class RepeatPage extends StatelessWidget {
     );
   }
 
-  double? fontSize(RepeatLogic logic, QaType type) {
-    final helper = logic.state.helper;
-    final fontSizeKey = "${type.acronym}FontSize";
-    var map = helper.getCurrVerseMap();
-    if (map != null && map[fontSizeKey] != null) {
-      return double.parse(map[fontSizeKey]);
-    }
-    map = helper.getCurrChapterMap();
-    if (map != null && map[fontSizeKey] != null) {
-      return double.parse(map[fontSizeKey]);
-    }
-    map = helper.getCurrBookMap();
-    if (map != null && map[fontSizeKey] != null) {
-      return double.parse(map[fontSizeKey]);
-    }
-    return null;
-  }
-
   Widget? text(RepeatLogic logic, QaType type) {
     var helper = logic.state.helper;
     var edit = helper.edit;
@@ -301,7 +289,7 @@ class RepeatPage extends StatelessWidget {
     if (map == null) {
       return null;
     }
-    double fontSizeVal = fontSize(logic, type) ?? 17;
+    double fontSizeVal = textFontSize(logic, type) ?? 17;
     TextStyle? style = TextStyle(fontSize: fontSizeVal);
     if (edit) {
       logic.repeatLogic!.tip = TipLevel.tip;
@@ -444,6 +432,51 @@ class RepeatPage extends StatelessWidget {
         },
         text,
         style,
+      );
+    }
+  }
+
+  double? textFontSize(RepeatLogic logic, QaType type) {
+    final helper = logic.state.helper;
+    final fontSizeKey = "${type.acronym}FontSize";
+    var map = helper.getCurrVerseMap();
+    if (map != null && map[fontSizeKey] != null) {
+      return double.parse(map[fontSizeKey]);
+    }
+    map = helper.getCurrChapterMap();
+    if (map != null && map[fontSizeKey] != null) {
+      return double.parse(map[fontSizeKey]);
+    }
+    map = helper.getCurrBookMap();
+    if (map != null && map[fontSizeKey] != null) {
+      return double.parse(map[fontSizeKey]);
+    }
+    return null;
+  }
+
+  Widget closeEyesPanel(RepeatLogic logic) {
+    final helper = logic.state.helper;
+    if (logic.state.enableCloseEyesMode.value == CloseEyesEnum.none) {
+      return SizedBox.shrink();
+    } else {
+      return CloseEyesPanel.open(
+        height: helper.screenHeight,
+        width: helper.screenWidth,
+        direct: DirectEnum.values[logic.state.closeEyesDirect],
+        changeDirect: (DirectEnum direct) {
+          logic.state.closeEyesDirect = direct.index;
+          Db().db.kvDao.insertKv(Kv(K.closeEyesDirect, "${direct.index}"));
+        },
+        doubleUpCallback: (int index) {
+          print("doubleUpCallback:$index");
+        },
+        upCallback: (int index) {
+          print("upCallback:$index");
+        },
+        close: () {
+          logic.state.enableCloseEyesMode.value = CloseEyesEnum.none;
+        },
+        backgroundColor: logic.state.enableCloseEyesMode.value == CloseEyesEnum.opacity ? Colors.black : Colors.blue.withValues(alpha: 0.1),
       );
     }
   }

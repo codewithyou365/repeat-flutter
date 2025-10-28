@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
+import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
@@ -20,6 +21,8 @@ import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/logic/widget/book_editor/book_editor_logic.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
+import 'package:repeat_flutter/widget/close_eyes/close_eyes_panel.dart';
+import 'package:repeat_flutter/widget/select/select.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'repeat_args.dart';
 import 'repeat_state.dart';
@@ -54,27 +57,6 @@ class RepeatLogic extends GetxController {
   @override
   Future<void> onInit() async {
     super.onInit();
-    await init();
-    bookSub.on([EventTopic.reimportBook], (_) {
-      update([RepeatLogic.id]);
-    });
-  }
-
-  @override
-  void onClose() {
-    super.onClose();
-    bookSub.off();
-    webManager.switchWeb(false);
-    repeatLogic?.onClose();
-    for (var v in showTypeToRepeatView.values) {
-      v.dispose();
-    }
-    state.helper.onClose();
-    bookEditor.switchWeb(false);
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
-  }
-
-  Future<void> init() async {
     var args = Get.arguments as RepeatArgs;
     state.enableShowRecallButtons = args.enableShowRecallButtons;
     var all = args.progresses;
@@ -98,13 +80,48 @@ class RepeatLogic extends GetxController {
     for (var v in showTypeToRepeatView.values) {
       v.init(state.helper);
     }
+    bookSub.on([EventTopic.reimportBook], (_) {
+      update([RepeatLogic.id]);
+    });
+    state.closeEyesDirect = await Db().db.kvDao.getIntWithDefault(K.closeEyesDirect, 0);
     update([RepeatLogic.id]);
+  }
+
+  @override
+  void onClose() {
+    super.onClose();
+    bookSub.off();
+    webManager.switchWeb(false);
+    repeatLogic?.onClose();
+    for (var v in showTypeToRepeatView.values) {
+      v.dispose();
+    }
+    state.helper.onClose();
+    bookEditor.switchWeb(false);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
   }
 
   void switchConcentrationMode() {
     state.helper.concentrationMode = !state.helper.concentrationMode;
     state.helper.withoutPlayingMediaFirstTime = true;
     update([RepeatLogic.id]);
+  }
+
+  void switchBlindMode() async {
+    int? index = await Select.showSheet(
+      title: I18nKey.enableCloseEyesMode.tr,
+      keys: [
+        I18nKey.translucence.tr,
+        I18nKey.opacity.tr,
+      ],
+    );
+    if (index == 0) {
+      state.enableCloseEyesMode.value = CloseEyesEnum.translucence;
+    } else if (index == 1) {
+      state.enableCloseEyesMode.value = CloseEyesEnum.opacity;
+    } else {
+      state.enableCloseEyesMode.value = CloseEyesEnum.none;
+    }
   }
 
   void switchEditMode() {

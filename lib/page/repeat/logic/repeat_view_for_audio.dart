@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
@@ -89,31 +90,38 @@ class RepeatViewForAudio extends RepeatView {
     var q = helper.text(QaType.question);
     var t = helper.edit || helper.tip == TipLevel.tip ? helper.text(QaType.tip) : null;
     var a = helper.edit || helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
-    return Column(
+    return Stack(
       children: [
-        SizedBox(height: helper.topPadding),
-        helper.topBar(),
-        mediaBar(helper.screenWidth - padding * 2, mediaBarHeight, range),
-        SizedBox(
-          height: height,
-          child: ListView(
-            padding: const EdgeInsets.all(0),
-            children: [
-              Padding(
-                padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (q != null) q,
-                    if (t != null) t,
-                    if (a != null) a,
-                  ],
-                ),
+        Column(
+          children: [
+            SizedBox(height: helper.topPadding),
+            helper.topBar(),
+            mediaBar(helper.screenWidth - padding * 2, mediaBarHeight, range),
+            SizedBox(
+              height: height,
+              child: ListView(
+                padding: const EdgeInsets.all(0),
+                children: [
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (q != null) q,
+                        if (t != null) t,
+                        if (a != null) a,
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            helper.bottomBar(width: helper.screenWidth),
+          ],
         ),
-        helper.bottomBar(width: helper.screenWidth),
+        Obx(() {
+          return helper.closeEyesPanel();
+        }),
       ],
     );
   }

@@ -190,6 +190,9 @@ class RepeatViewForVideo extends RepeatView {
             child: videoBoardHelper.showEdit ? const SizedBox.shrink() : helper.bottomBar(width: helper.screenWidth / 2),
           ),
         ),
+        Obx(() {
+          return helper.closeEyesPanel();
+        }),
       ],
     );
   }
@@ -203,36 +206,41 @@ class RepeatViewForVideo extends RepeatView {
     videoHeightInPortrait.value = videoWidgetHeight(height - helper.bottomBarHeight * 3);
     var bar = mediaBar(helper.screenWidth - padding * 2, mediaBarHeight, range);
     return Obx(() {
-      return Column(
+      return Stack(
         children: [
-          SizedBox(height: helper.topPadding),
-          helper.topBar(),
-          videoWidget(height - helper.bottomBarHeight * 3),
-          bar,
-          if (!videoBoardHelper.showEdit)
-            SizedBox(
-              height: height - videoHeightInPortrait.value,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
-                child: ListView(
-                  padding: const EdgeInsets.all(0),
-                  children: [
-                    if (q != null) q,
-                    if (t != null) t,
-                    if (a != null) a,
-                  ],
+          Column(
+            children: [
+              SizedBox(height: helper.topPadding),
+              helper.topBar(),
+              videoWidget(height - helper.bottomBarHeight * 3),
+              bar,
+              if (!videoBoardHelper.showEdit)
+                SizedBox(
+                  height: height - videoHeightInPortrait.value,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
+                    child: ListView(
+                      padding: const EdgeInsets.all(0),
+                      children: [
+                        if (q != null) q,
+                        if (t != null) t,
+                        if (a != null) a,
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          if (videoBoardHelper.showEdit)
-            SizedBox(
-              height: height - videoHeightInPortrait.value,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
-                child: videoBoardHelper.editPanel(),
-              ),
-            ),
-          if (!videoBoardHelper.showEdit) helper.bottomBar(width: helper.screenWidth),
+              if (videoBoardHelper.showEdit)
+                SizedBox(
+                  height: height - videoHeightInPortrait.value,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(padding, 0, padding, 0),
+                    child: videoBoardHelper.editPanel(),
+                  ),
+                ),
+              if (!videoBoardHelper.showEdit) helper.bottomBar(width: helper.screenWidth),
+            ],
+          ),
+          helper.closeEyesPanel(),
         ],
       );
     });

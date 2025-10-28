@@ -22,4 +22,12 @@ abstract class KvDao {
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertKvs(List<Kv> kv);
+
+  Future<int> getIntWithDefault(K k, int value) async {
+    var ret = await getInt(k);
+    if (ret == null) {
+      return value;
+    }
+    return ret;
+  }
 }
