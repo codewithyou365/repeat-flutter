@@ -10,7 +10,7 @@ import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'sc_logic.dart';
 
 class ScPage extends StatelessWidget {
-  const ScPage({Key? key}) : super(key: key);
+  const ScPage({super.key});
 
   @override
   Widget build(BuildContext context) {

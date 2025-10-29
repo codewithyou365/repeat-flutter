@@ -308,5 +308,6 @@ class ConfigZh extends Config {
     put(I18nKey.enableCloseEyesMode, "开启闭眼模式");
     put(I18nKey.translucence, "半透明");
     put(I18nKey.opacity, "不透明");
+    put(I18nKey.closeEyesTips, "将多个手指放在屏幕上进行操作\n\n第一个手指连续抬起两次：\n点击界面底部左侧按钮\n\n最后一个手指连续抬起两次：\n点击界面底部右侧按钮\n\n其他手指连续抬起两次：\n点击界面底部提示按钮\n\n你可以调整方向来确定哪一个手指是第一个");
   }
 }

@@ -209,6 +209,14 @@ class MsgBox {
     );
   }
 
+  static Future<void> tips({
+    required String desc,
+    VoidCallback? yes,
+    String? yesBtnTitle,
+  }) {
+    return MsgBox.yes(I18nKey.labelTips.tr, desc, yes: yes, yesBtnTitle: yesBtnTitle);
+  }
+
   static Future<void> yes(
     String title,
     String desc, {

@@ -36,9 +36,7 @@ abstract class RepeatFlow {
 
   void onTapRight();
 
-  Function()? getLongTapRight() {
-    return null;
-  }
+  void onLongTapRight();
 
   Future<void> jump({required int progress, required int nextDayValue});
 }

@@ -9,10 +9,11 @@ class CloseEyesPanel {
     required DirectEnum direct,
 
     required void Function(DirectEnum direct) changeDirect,
-    required void Function(int index) upCallback,
+    required void Function(int index, int total) upCallback,
     required VoidCallback close,
+    required VoidCallback help,
     Color? backgroundColor,
-    void Function(int index)? doubleUpCallback,
+    void Function(int index, int total)? doubleUpCallback,
   }) {
     final Map<int, int> lastUpTime = {};
     final Map<int, Timer> pendingUpTimers = {};
@@ -22,7 +23,7 @@ class CloseEyesPanel {
       width: width,
       direct: direct,
       changeDirect: changeDirect,
-      upCallback: (int index) {
+      upCallback: (int index, int total) {
         if (doubleUpCallback != null) {
           final now = DateTime.now().millisecondsSinceEpoch;
           final last = lastUpTime[index];
@@ -30,20 +31,21 @@ class CloseEyesPanel {
             pendingUpTimers[index]?.cancel();
             pendingUpTimers.remove(index);
 
-            doubleUpCallback(index);
+            doubleUpCallback(index, total);
           } else {
             pendingUpTimers[index]?.cancel();
             pendingUpTimers[index] = Timer(const Duration(milliseconds: delayTime), () {
-              upCallback(index);
+              upCallback(index, total);
               pendingUpTimers.remove(index);
             });
           }
           lastUpTime[index] = now;
         } else {
-          upCallback(index);
+          upCallback(index, total);
         }
       },
       close: close,
+      help: help,
       backgroundColor: backgroundColor,
     );
   }
@@ -54,8 +56,9 @@ class _MultiTouchArea extends StatefulWidget {
   final double width;
   final DirectEnum direct;
   final void Function(DirectEnum direct) changeDirect;
-  final void Function(int index) upCallback;
+  final void Function(int index, int total) upCallback;
   final VoidCallback close;
+  final VoidCallback help;
   final Color? backgroundColor;
 
   const _MultiTouchArea({
@@ -65,6 +68,7 @@ class _MultiTouchArea extends StatefulWidget {
     required this.changeDirect,
     required this.upCallback,
     required this.close,
+    required this.help,
     this.backgroundColor,
   });
 
@@ -111,7 +115,7 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
     _activeFingers.remove(event.pointer);
     final label = _fingerLabels[event.pointer];
     if (label != null) {
-      widget.upCallback(label);
+      widget.upCallback(label, _fingerLabels.length);
     }
     setState(() {});
   }
@@ -169,7 +173,7 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
                     color: Colors.red.withValues(alpha: 0.5),
                   ),
                   child: Text(
-                    '$label',
+                    '${label + 1}',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -189,6 +193,10 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
                 ),
                 _directionIcon(direct),
                 const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.help),
+                  onPressed: widget.help,
+                ),
                 IconButton(
                   icon: const Icon(Icons.close),
                   onPressed: widget.close,

@@ -130,6 +130,11 @@ class RepeatFlowForBrowse extends RepeatFlow {
   }
 
   @override
+  void onLongTapRight() {
+    onTapRight();
+  }
+
+  @override
   Future<void> jump({required int progress, required int nextDayValue}) async {
     if (currVerse == null) {
       return;

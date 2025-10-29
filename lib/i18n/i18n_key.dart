@@ -307,7 +307,9 @@ enum I18nKey {
   closeEyesMode,
   enableCloseEyesMode,
   translucence,
-  opacity;
+  opacity,
+  closeEyesTips,
+  _end;
 
   String trArgs([List<String> args = const []]) {
     return name.trArgs(args);

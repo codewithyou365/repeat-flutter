@@ -145,10 +145,8 @@ class RepeatFlowForExamine extends RepeatFlow {
   }
 
   @override
-  Function()? getLongTapRight() {
-    return () {
-      AwaitUtil.tryDo(_getLongTapRight);
-    };
+  void onLongTapRight() {
+    AwaitUtil.tryDo(_getLongTapRight);
   }
 
   Future<void> _getLongTapRight() async {

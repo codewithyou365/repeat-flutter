@@ -20,7 +20,7 @@ import 'repeat_state.dart' show RepeatState;
 import 'logic/constant.dart';
 
 class RepeatPage extends StatelessWidget {
-  const RepeatPage({Key? key}) : super(key: key);
+  const RepeatPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -209,9 +209,6 @@ class RepeatPage extends StatelessWidget {
     final repeatLogic = logic.repeatLogic;
     final leftButtonText = repeatLogic?.leftLabel ?? '';
     final rightButtonText = repeatLogic?.rightLabel ?? '';
-    final void Function() leftButtonLogic = repeatLogic?.onTapLeft ?? () {};
-    final void Function() rightButtonLogic = repeatLogic?.onTapRight ?? () {};
-    final void Function()? rightButtonLongPressLogic = repeatLogic?.getLongTapRight();
     final buttonWidth = width / 2;
     return SizedBox(
       width: width,
@@ -221,18 +218,16 @@ class RepeatPage extends StatelessWidget {
           Row(
             children: [
               bottomBarButton(
-                leftButtonText,
-                logic.onPreClick,
-                leftButtonLogic,
+                text: leftButtonText,
+                onTap: logic.onTapLeft,
                 width: buttonWidth,
               ),
               const Spacer(),
               bottomBarButton(
-                rightButtonText,
-                logic.onPreClick,
-                rightButtonLogic,
+                text: rightButtonText,
+                onTap: logic.onTapRight,
                 width: buttonWidth,
-                onLongPress: rightButtonLongPressLogic,
+                onLongPress: logic.onLongTapRight,
               ),
             ],
           ),
@@ -241,9 +236,8 @@ class RepeatPage extends StatelessWidget {
               children: [
                 const Spacer(),
                 bottomBarButton(
-                  I18nKey.btnTips.tr,
-                  logic.onPreClick,
-                  () => repeatLogic?.onTapMiddle(),
+                  text: I18nKey.btnTips.tr,
+                  onTap: logic.onTapMiddle,
                   width: buttonWidth,
                 ),
                 const Spacer(),
@@ -254,25 +248,16 @@ class RepeatPage extends StatelessWidget {
     );
   }
 
-  Widget bottomBarButton(
-    String text,
-    VoidCallback onPreClick,
-    VoidCallback onTap, {
+  Widget bottomBarButton({
+    required String text,
+    required VoidCallback onTap,
     double height = 60,
     double? width,
     VoidCallback? onLongPress,
   }) {
     return InkWell(
-      onTap: () {
-        onPreClick();
-        onTap();
-      },
-      onLongPress: () {
-        onPreClick();
-        if (onLongPress != null) {
-          onLongPress();
-        }
-      },
+      onTap: onTap,
+      onLongPress: onLongPress,
       child: Container(
         width: width,
         height: height,
@@ -467,14 +452,22 @@ class RepeatPage extends StatelessWidget {
           logic.state.closeEyesDirect = direct.index;
           Db().db.kvDao.insertKv(Kv(K.closeEyesDirect, "${direct.index}"));
         },
-        doubleUpCallback: (int index) {
-          print("doubleUpCallback:$index");
+        doubleUpCallback: (int index, int total) {
+          if (index == 0) {
+            logic.onTapLeft();
+          } else if (index == total - 1) {
+            logic.onLongTapRight();
+          } else {
+            logic.onTapMiddle();
+          }
+          HapticFeedback.lightImpact();
         },
-        upCallback: (int index) {
-          print("upCallback:$index");
-        },
+        upCallback: (int index, int total) {},
         close: () {
           logic.state.enableCloseEyesMode.value = CloseEyesEnum.none;
+        },
+        help: () {
+          MsgBox.tips(desc: I18nKey.closeEyesTips.tr);
         },
         backgroundColor: logic.state.enableCloseEyesMode.value == CloseEyesEnum.opacity ? Colors.black : Colors.blue.withValues(alpha: 0.1),
       );

@@ -21,7 +21,6 @@ import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/logic/widget/book_editor/book_editor_logic.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
-import 'package:repeat_flutter/widget/close_eyes/close_eyes_panel.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'repeat_args.dart';
@@ -99,6 +98,9 @@ class RepeatLogic extends GetxController {
     state.helper.onClose();
     bookEditor.switchWeb(false);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+    if (state.enableCloseEyesMode.value != CloseEyesEnum.none) {
+      HapticFeedback.heavyImpact();
+    }
   }
 
   void switchConcentrationMode() {
@@ -226,8 +228,36 @@ class RepeatLogic extends GetxController {
     update([RepeatLogic.id]);
   }
 
-  void onPreClick() {
+  void preClick() {
     state.needUpdateSystemUiMode = true;
+  }
+
+  void onTapLeft() {
+    preClick();
+    if (repeatLogic != null) {
+      repeatLogic!.onTapLeft();
+    }
+  }
+
+  void onTapRight() {
+    preClick();
+    if (repeatLogic != null) {
+      repeatLogic!.onTapRight();
+    }
+  }
+
+  void onLongTapRight() {
+    preClick();
+    if (repeatLogic != null) {
+      repeatLogic!.onLongTapRight();
+    }
+  }
+
+  void onTapMiddle() {
+    preClick();
+    if (repeatLogic != null) {
+      repeatLogic!.onTapMiddle();
+    }
   }
 
   VerseTodayPrg? getCurr() {
