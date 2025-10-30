@@ -20,7 +20,7 @@ class BookEditorPage<T extends GetxController> {
         child: Column(
           children: [
             RowWidget.buildSwitch(
-              I18nKey.editBook.tr,
+              I18nKey.editBook.trArgs([state.args.bookName]),
               state.webStart,
               logic.switchWeb,
             ),

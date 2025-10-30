@@ -9,7 +9,7 @@ class ConfigEn extends Config {
     put(I18nKey.settings, "Settings");
     put(I18nKey.material, "Material");
     put(I18nKey.bookShare, "Book Share");
-    put(I18nKey.editBook, "Edit Book");
+    put(I18nKey.editBook, "Edit Book: %s");
     put(I18nKey.edit, "Edit");
     put(I18nKey.keyTitle, "Credentials");
     put(I18nKey.keyContent, "Username: @0\nPassword: @1");
