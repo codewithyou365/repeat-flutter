@@ -75,6 +75,9 @@ class RepeatLogic extends GetxController {
       return;
     }
     state.helper.edit = args.defaultEdit;
+    if (args.defaultEdit) {
+      state.helper.concentrationMode = false;
+    }
     await state.helper.init(repeatLogic!);
     for (var v in showTypeToRepeatView.values) {
       v.init(state.helper);
