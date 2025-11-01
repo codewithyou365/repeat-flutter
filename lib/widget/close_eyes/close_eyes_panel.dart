@@ -6,6 +6,7 @@ class CloseEyesPanel {
   static Widget open({
     required double height,
     required double width,
+    required bool showFinger,
     required DirectEnum direct,
 
     required void Function(DirectEnum direct) changeDirect,
@@ -13,6 +14,7 @@ class CloseEyesPanel {
     required VoidCallback close,
     required VoidCallback help,
     Color? backgroundColor,
+    Color? foregroundColor,
     void Function(int index, int total)? doubleUpCallback,
   }) {
     final Map<int, int> lastUpTime = {};
@@ -21,6 +23,7 @@ class CloseEyesPanel {
     return _MultiTouchArea(
       height: height,
       width: width,
+      showFinger: showFinger,
       direct: direct,
       changeDirect: changeDirect,
       upCallback: (int index, int total) {
@@ -47,6 +50,7 @@ class CloseEyesPanel {
       close: close,
       help: help,
       backgroundColor: backgroundColor,
+      foregroundColor: foregroundColor,
     );
   }
 }
@@ -54,22 +58,26 @@ class CloseEyesPanel {
 class _MultiTouchArea extends StatefulWidget {
   final double height;
   final double width;
+  final bool showFinger;
   final DirectEnum direct;
   final void Function(DirectEnum direct) changeDirect;
   final void Function(int index, int total) upCallback;
   final VoidCallback close;
   final VoidCallback help;
   final Color? backgroundColor;
+  final Color? foregroundColor;
 
   const _MultiTouchArea({
     required this.height,
     required this.width,
+    required this.showFinger,
     required this.direct,
     required this.changeDirect,
     required this.upCallback,
     required this.close,
     required this.help,
     this.backgroundColor,
+    this.foregroundColor,
   });
 
   @override
@@ -86,13 +94,15 @@ enum DirectEnum {
 class _MultiTouchAreaState extends State<_MultiTouchArea> {
   final Map<int, Offset> _activeFingers = {};
   final Map<int, int> _fingerLabels = {};
-  final bool show = true;
+  late final bool show;
+
   late DirectEnum direct;
 
   @override
   void initState() {
     super.initState();
     direct = widget.direct;
+    show = widget.showFinger;
   }
 
   void _onPointerDown(PointerDownEvent event) {
@@ -188,17 +198,26 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.refresh),
+                  icon: Icon(
+                    Icons.refresh,
+                    color: widget.foregroundColor,
+                  ),
                   onPressed: _resetAndRotate,
                 ),
                 _directionIcon(direct),
                 const Spacer(),
                 IconButton(
-                  icon: const Icon(Icons.help),
+                  icon: Icon(
+                    Icons.help,
+                    color: widget.foregroundColor,
+                  ),
                   onPressed: widget.help,
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: Icon(
+                    Icons.close,
+                    color: widget.foregroundColor,
+                  ),
                   onPressed: widget.close,
                 ),
               ],
@@ -230,13 +249,25 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
   Widget _directionIcon(DirectEnum d) {
     switch (d) {
       case DirectEnum.leftToRight:
-        return Icon(Icons.keyboard_double_arrow_right_outlined);
+        return Icon(
+          Icons.keyboard_double_arrow_right_outlined,
+          color: widget.foregroundColor,
+        );
       case DirectEnum.rightToLeft:
-        return Icon(Icons.keyboard_double_arrow_left_outlined);
+        return Icon(
+          Icons.keyboard_double_arrow_left_outlined,
+          color: widget.foregroundColor,
+        );
       case DirectEnum.topToBottom:
-        return Icon(Icons.keyboard_double_arrow_down_outlined);
+        return Icon(
+          Icons.keyboard_double_arrow_down_outlined,
+          color: widget.foregroundColor,
+        );
       case DirectEnum.bottomToTop:
-        return Icon(Icons.keyboard_double_arrow_up_outlined);
+        return Icon(
+          Icons.keyboard_double_arrow_up_outlined,
+          color: widget.foregroundColor,
+        );
     }
   }
 }

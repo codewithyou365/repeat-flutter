@@ -156,6 +156,10 @@ class RepeatPage extends StatelessWidget {
             icon: const Icon(Icons.more_vert),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
               PopupMenuItem<String>(
+                onTap: logic.switchBlindMode,
+                child: Text(I18nKey.closeEyesMode.tr),
+              ),
+              PopupMenuItem<String>(
                 onTap: () async {
                   state.helper.setInRepeatView(false);
                   await logic.webManager.showSheet();
@@ -166,10 +170,6 @@ class RepeatPage extends StatelessWidget {
               PopupMenuItem<String>(
                 onTap: logic.switchConcentrationMode,
                 child: Text("${I18nKey.btnFocus.tr}(${state.helper.concentrationMode})"),
-              ),
-              PopupMenuItem<String>(
-                onTap: logic.switchBlindMode,
-                child: Text(I18nKey.closeEyesMode.tr),
               ),
               PopupMenuItem<String>(
                 onTap: logic.switchEditMode,
@@ -447,6 +447,7 @@ class RepeatPage extends StatelessWidget {
       return CloseEyesPanel.open(
         height: helper.screenHeight,
         width: helper.screenWidth,
+        showFinger: logic.state.enableCloseEyesMode.value == CloseEyesEnum.translucence,
         direct: DirectEnum.values[logic.state.closeEyesDirect],
         changeDirect: (DirectEnum direct) {
           logic.state.closeEyesDirect = direct.index;
@@ -469,7 +470,8 @@ class RepeatPage extends StatelessWidget {
         help: () {
           MsgBox.tips(desc: I18nKey.closeEyesTips.tr);
         },
-        backgroundColor: logic.state.enableCloseEyesMode.value == CloseEyesEnum.opacity ? Colors.black : Colors.blue.withValues(alpha: 0.1),
+        backgroundColor: logic.state.enableCloseEyesMode.value == CloseEyesEnum.opacity ? Colors.black : Colors.blue.withValues(alpha: 0.2),
+        foregroundColor: logic.state.enableCloseEyesMode.value == CloseEyesEnum.opacity ? Colors.white.withValues(alpha: 0.3) : null,
       );
     }
   }
