@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/logic/base/constant.dart' show DocPath;
+import 'package:repeat_flutter/logic/base/constant.dart' show DocPath, DownloadConstant;
 import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
@@ -40,6 +40,7 @@ class DocHelp {
   }
 
   static List<DownloadContent> getDownloads(BookContent kv, {String? rootUrl}) {
+    rootUrl ??= DownloadConstant.defaultUrl;
     List<DownloadContent> ret = [];
     Map<String, DownloadContent> hashToDownloads = {};
     void tryAppendDownload(DownloadContent d, String? rootUrl) {

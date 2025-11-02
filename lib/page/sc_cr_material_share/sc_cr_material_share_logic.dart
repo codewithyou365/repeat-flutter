@@ -184,82 +184,83 @@ class ScCrMaterialShareLogic extends GetxController {
     RxBool shareNote = RxBool(state.shareNote.value);
 
     MsgBox.checkboxWithYesOrNo(
-        title: I18nKey.labelTips.tr,
-        select: shareNote,
-        selectDesc: I18nKey.labelDoYourShareTheNotes.tr,
-        yes: () async {
-          await showOverlay(
-            () async {
-              var permissionStatus = await Permission.storage.request();
-              if (permissionStatus != PermissionStatus.granted) {
-                Snackbar.show(I18nKey.labelStoragePermissionDenied.tr);
+      title: I18nKey.labelTips.tr,
+      select: shareNote,
+      selectDesc: I18nKey.labelDoYourShareTheNotes.tr,
+      yes: () async {
+        await showOverlay(
+          () async {
+            var permissionStatus = await Permission.storage.request();
+            if (permissionStatus != PermissionStatus.granted) {
+              Snackbar.show(I18nKey.labelStoragePermissionDenied.tr);
+              return;
+            }
+
+            String relativeIndexPath = DocPath.getRelativeIndexPath(state.book.id!);
+            String relativePath = DocPath.getRelativePath(state.book.id!);
+            var rootPath = await DocPath.getContentPath();
+
+            Map<String, dynamic> docMap = {};
+            bool success = await DocHelp.getDocMapFromDb(
+              bookId: state.book.id!,
+              ret: docMap,
+              note: state.shareNote.value,
+            );
+            if (!success) {
+              return;
+            }
+
+            var docText = json.encode(docMap);
+            String indexHash = Hash.toSha1ForString(docText);
+            String zipFilePath = "$indexHash.zip";
+            File zipFile = File(rootPath.joinPath(relativePath).joinPath(zipFilePath));
+            bool zipFileExist = await zipFile.exists();
+
+            if (!zipFileExist) {
+              var downloads = DocHelp.getDownloads(BookContent.fromJson(docMap));
+              final receivePort = ReceivePort();
+              await Isolate.spawn(
+                _createZipFileInIsolate,
+                {
+                  'sendPort': receivePort.sendPort,
+                  'downloads': downloads,
+                  'docBytes': utf8.encode(docText),
+                  'zipFilePath': zipFilePath,
+                  'indexFilePath': rootPath.joinPath(relativeIndexPath),
+                  'relativePath': relativePath,
+                  'rootPath': rootPath,
+                  'contentUrl': state.book.url,
+                },
+              );
+
+              // Wait for the isolate to complete
+              final result = await receivePort.first as Map<String, dynamic>;
+              if (result['error'] != null) {
+                Snackbar.show("Error creating zip file: ${result['error']}");
                 return;
               }
+            }
 
-              String relativeIndexPath = DocPath.getRelativeIndexPath(state.book.id!);
-              String relativePath = DocPath.getRelativePath(state.book.id!);
-              var rootPath = await DocPath.getContentPath();
-
-              Map<String, dynamic> docMap = {};
-              bool success = await DocHelp.getDocMapFromDb(
-                bookId: state.book.id!,
-                ret: docMap,
-                note: state.shareNote.value,
-              );
-              if (!success) {
-                return;
+            selectedDirectory = await FilePicker.platform.getDirectoryPath(
+              dialogTitle: I18nKey.labelSelectDirectoryToSave.trArgs([zipFilePath]),
+            );
+            if (selectedDirectory != null) {
+              try {
+                String targetZipName = "${Classroom.currName}-${state.book.name}.zip";
+                zipFile.copySync(selectedDirectory!.joinPath(targetZipName));
+                Snackbar.show(I18nKey.labelSaveSuccess.trArgs([targetZipName]));
+              } catch (e) {
+                Snackbar.show(I18nKey.labelDirectoryPermissionDenied.trArgs([selectedDirectory!]));
+                selectedDirectory = null;
               }
-
-              var docText = json.encode(docMap);
-              String indexHash = Hash.toSha1ForString(docText);
-              String zipFilePath = "$indexHash.zip";
-              File zipFile = File(rootPath.joinPath(relativePath).joinPath(zipFilePath));
-              bool zipFileExist = await zipFile.exists();
-
-              if (!zipFileExist) {
-                var downloads = DocHelp.getDownloads(BookContent.fromJson(docMap));
-                final receivePort = ReceivePort();
-                await Isolate.spawn(
-                  _createZipFileInIsolate,
-                  {
-                    'sendPort': receivePort.sendPort,
-                    'downloads': downloads,
-                    'docBytes': utf8.encode(docText),
-                    'zipFilePath': zipFilePath,
-                    'indexFilePath': rootPath.joinPath(relativeIndexPath),
-                    'relativePath': relativePath,
-                    'rootPath': rootPath,
-                    'contentUrl': state.book.url,
-                  },
-                );
-
-                // Wait for the isolate to complete
-                final result = await receivePort.first as Map<String, dynamic>;
-                if (result['error'] != null) {
-                  Snackbar.show("Error creating zip file: ${result['error']}");
-                  return;
-                }
-              }
-
-              selectedDirectory = await FilePicker.platform.getDirectoryPath(
-                dialogTitle: I18nKey.labelSelectDirectoryToSave.trArgs([zipFilePath]),
-              );
-              if (selectedDirectory != null) {
-                try {
-                  String targetZipName = "${Classroom.currName}-${state.book.name}.zip";
-                  zipFile.copySync(selectedDirectory!.joinPath(targetZipName));
-                  Snackbar.show(I18nKey.labelSaveSuccess.trArgs([targetZipName]));
-                } catch (e) {
-                  Snackbar.show(I18nKey.labelDirectoryPermissionDenied.trArgs([selectedDirectory!]));
-                  selectedDirectory = null;
-                }
-              } else {
-                Snackbar.show(I18nKey.labelSaveCancel.tr);
-              }
-            },
-            I18nKey.labelSaving.tr,
-          );
-        });
+            } else {
+              Snackbar.show(I18nKey.labelSaveCancel.tr);
+            }
+          },
+          I18nKey.labelSaving.tr,
+        );
+      },
+    );
     if (selectedDirectory != null) {
       MsgBox.yes(I18nKey.labelFileSaved.tr, selectedDirectory!);
     }
@@ -284,19 +285,25 @@ class ScCrMaterialShareLogic extends GetxController {
       File zipFile = File(rootPath.joinPath(relativePath).joinPath(zipFilePath));
 
       List<ZipArchive> zipFiles = [];
-      zipFiles.add(ZipArchive(
-        path: FileUtil.toFileName(indexFilePath),
-        bytes: docBytes,
-      ));
-      zipFiles.add(ZipArchive(
-        path: FileUtil.toFileName(rootFilePath),
-        file: File(rootFilePath),
-      ));
+      zipFiles.add(
+        ZipArchive(
+          path: FileUtil.toFileName(indexFilePath),
+          bytes: docBytes,
+        ),
+      );
+      zipFiles.add(
+        ZipArchive(
+          path: FileUtil.toFileName(rootFilePath),
+          file: File(rootFilePath),
+        ),
+      );
       for (var download in downloads) {
-        zipFiles.add(ZipArchive(
-          path: download.path,
-          file: File(rootPath.joinPath(relativePath).joinPath(download.path)),
-        ));
+        zipFiles.add(
+          ZipArchive(
+            path: download.path,
+            file: File(rootPath.joinPath(relativePath).joinPath(download.path)),
+          ),
+        );
       }
 
       // Compress zip file
