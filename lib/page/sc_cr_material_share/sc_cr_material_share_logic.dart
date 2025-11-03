@@ -156,8 +156,9 @@ class ScCrMaterialShareLogic extends GetxController {
       bool success = await DocHelp.getDocMapFromDb(
         bookId: state.book.id!,
         ret: docMap,
-        note: state.shareNote.value,
         rootUrl: url,
+        note: state.shareNote.value,
+        databaseData: false,
       );
       if (success == false) {
         return;
@@ -204,7 +205,9 @@ class ScCrMaterialShareLogic extends GetxController {
             bool success = await DocHelp.getDocMapFromDb(
               bookId: state.book.id!,
               ret: docMap,
+              rootUrl: null,
               note: state.shareNote.value,
+              databaseData: false,
             );
             if (!success) {
               return;

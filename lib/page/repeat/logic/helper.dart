@@ -325,7 +325,7 @@ class Helper {
           try {
             var s = getCurrVerse()!;
             String hash = await Hash.toSha1(pickedPath);
-            DownloadContent download = DownloadContent(url: pickedName, hash: hash);
+            DownloadContent download = DownloadContent(url: ".${pickedName.split('.').last}", hash: hash);
             var rootPath = await DocPath.getContentPath();
             String localFolder = rootPath.joinPath(DocPath.getRelativePath(s.bookId).joinPath(download.folder));
             if (!allowedExtensions.containsIgnoreCase(download.extension)) {

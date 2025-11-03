@@ -82,7 +82,6 @@ class DocHelp {
   }
 
   static void fixDownloadInfo(Map<String, dynamic> json) {
-    json.remove('u');
     if (json['d'] != null) {
       List<DownloadContent> list = DownloadContent.toList(json['d']) ?? [];
       for (DownloadContent v in list) {
@@ -95,9 +94,9 @@ class DocHelp {
   static Future<bool> getDocMapFromDb({
     required int bookId,
     required Map<String, dynamic> ret,
-    String? rootUrl,
-    bool note = false,
-    bool databaseData = false,
+    required String? rootUrl,
+    required bool note,
+    required bool databaseData,
   }) async {
     await VerseHelp.tryGen(force: true);
     await ChapterHelp.tryGen(force: true);
