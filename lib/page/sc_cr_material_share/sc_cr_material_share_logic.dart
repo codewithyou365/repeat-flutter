@@ -11,6 +11,7 @@ import 'package:repeat_flutter/common/file_util.dart';
 import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/ip.dart';
 import 'package:repeat_flutter/common/path.dart';
+import 'package:repeat_flutter/common/ssl.dart';
 import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/common/url.dart';
 import 'package:repeat_flutter/common/zip.dart';
@@ -70,27 +71,29 @@ class ScCrMaterialShareLogic extends GetxController {
     }
 
     try {
-      _httpServer = await HttpServer.bind(InternetAddress.anyIPv4, port);
+      var sslPath = await DocPath.getSslPath();
+      var context = SelfSsl.generateSecurityContext(sslPath);
+      _httpServer = await HttpServer.bindSecure(InternetAddress.anyIPv4, port, context);
       _httpServer!.listen((HttpRequest request) async {
         _handleRequest(request);
       });
     } catch (e) {
-      Snackbar.show('Error starting HTTP service: $e');
+      Snackbar.show('Error starting HTTPS service: $e');
       return;
     }
     state.addresses.clear();
     for (var i = 0; i < ips.length; i++) {
       String ip = ips[i];
-      state.addresses.add(Address("${I18nKey.labelLanAddress.tr} $i", 'http://$ip:$port${state.lanAddressSuffix}'));
+      state.addresses.add(Address("${I18nKey.labelLanAddress.tr} $i", 'https://$ip:$port${state.lanAddressSuffix}'));
     }
-    Snackbar.show('HTTP service started');
+    Snackbar.show('HTTPS service started');
     update([id]);
   }
 
   Future<void> _stopHttpService() async {
     if (_httpServer != null) {
       await _httpServer!.close();
-      Snackbar.show('HTTP service stopped');
+      Snackbar.show('HTTPS service stopped');
       _httpServer = null;
       update([id]);
     }
@@ -99,6 +102,7 @@ class ScCrMaterialShareLogic extends GetxController {
   void randCredentials({bool show = true}) {
     state.user.value = StringUtil.generateRandom09(3);
     state.password.value = StringUtil.generateRandom09(6);
+    update([id]);
     if (show) {
       MsgBox.yes(
         I18nKey.keyTitle.tr,

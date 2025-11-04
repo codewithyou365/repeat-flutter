@@ -309,6 +309,8 @@ enum I18nKey {
   translucence,
   opacity,
   closeEyesTips,
+  needToSkipSsl,
+  trust,
   _end;
 
   String trArgs([List<String> args = const []]) {

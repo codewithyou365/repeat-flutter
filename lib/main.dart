@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/extension.dart';
+import 'package:repeat_flutter/common/ssl.dart';
 import 'package:repeat_flutter/nav.dart';
 
 import 'db/database.dart';
 import 'db/entity/kv.dart';
 import 'i18n/i18n_translations.dart';
+import 'logic/base/constant.dart';
 
 void main() async {
   var logic = Get.put<MyAppLogic>(MyAppLogic());
@@ -20,6 +22,9 @@ void main() async {
     ];
     db.kvDao.insertKvs(settings);
   }
+  var sslPath = await DocPath.getSslPath();
+  SelfSsl.tryGenerateSelfSignedCert(sslPath);
+  
   Map<K, String> settingsMap = {for (var kv in settings) kv.k: kv.value};
   logic.themeMode.value = ThemeModeFromString.c(settingsMap[K.settingsTheme]!);
   logic.i18nLocal.value = I18nLocalFromString.c(settingsMap[K.settingsI18n]!);

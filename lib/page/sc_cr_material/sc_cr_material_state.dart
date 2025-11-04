@@ -7,4 +7,5 @@ class ScCrMaterialState {
   var indexCount = 0.obs;
   var indexTotal = 1.obs;
   var contentProgress = 0.0.obs;
+  var skipSsl = false;
 }

@@ -12,7 +12,7 @@ enum InputType {
 }
 
 class MsgBox {
-  static void yesOrNo({
+  static Future<void> yesOrNo({
     required String title,
     required String desc,
     VoidCallback? yes,
@@ -21,7 +21,7 @@ class MsgBox {
     String? noBtnTitle,
     bool barrierDismissible = false,
   }) {
-    myDialog(
+    return myDialog(
       title: title,
       barrierDismissible: barrierDismissible,
       content: content(desc),

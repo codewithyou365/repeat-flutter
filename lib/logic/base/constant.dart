@@ -5,6 +5,7 @@ import 'package:sqflite/sqflite.dart' as sqflite;
 
 class DocPath {
   static const String content = "c";
+  static const String ssl = "s";
   static const String zipRootFile = "__root.json";
 
   static String getRelativeIndexPath(int bookId) {
@@ -21,6 +22,10 @@ class DocPath {
 
   static Future<String> getContentPath() async {
     return await _getPath(content);
+  }
+
+  static Future<String> getSslPath() async {
+    return await _getPath(ssl);
   }
 
   static Future<String> _getPath(String dir, {clearFirst = false}) async {

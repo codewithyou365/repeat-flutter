@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:repeat_flutter/common/folder.dart';
 import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/path.dart';
@@ -11,77 +12,99 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 typedef DownloadProgressCallback = void Function(int startTime, int count, int total, bool finish);
 typedef Finish = Future<void> Function(DocLocation fp, bool tempFile);
 
-Future<bool> downloadDoc(
-  String url,
-  String path, {
-  String credentials = '',
-  String hash = '',
-  DownloadProgressCallback? progressCallback,
-}) async {
-  String? rp;
-  String? ap;
-  if (path.startsWith("/")) {
-    ap = path;
-  } else {
-    rp = path;
-  }
+enum DownloadDocResult {
+  success,
+  fail,
+  needSkipSsl,
+}
 
-  int startTime = DateTime.now().millisecondsSinceEpoch;
-  int lastUpdateTime = 0;
-  int fileCount = 1;
-  int fileTotal = -1;
-  var dio = Dio();
-
-  try {
-    var rootPath = await DocPath.getContentPath();
-    var targetFilePath = ap ?? rootPath.joinPath(rp!);
-    var exist = false;
-    if (hash != "") {
-      String fileHash = await Hash.toSha1(targetFilePath);
-      if (fileHash == hash) {
-        exist = true;
-      }
+class DownloadDoc {
+  static Future<DownloadDocResult> start(
+    String url,
+    String path, {
+    String credentials = '',
+    String hash = '',
+    DownloadProgressCallback? progressCallback,
+    bool skipSsl = false,
+  }) async {
+    String? rp;
+    String? ap;
+    if (path.startsWith("/")) {
+      ap = path;
+    } else {
+      rp = path;
     }
-    if (exist == true) {
-      if (progressCallback != null) {
-        progressCallback(startTime, 100, 100, true);
-      }
-      return true;
-    }
-    var fl = DocLocation(rootPath, "temp");
 
-    await dio.download(
-      url,
-      fl.path,
-      onReceiveProgress: (int count, int total) {
-        fileCount = count;
-        if ((DateTime.now().millisecondsSinceEpoch - lastUpdateTime) > 100) {
-          lastUpdateTime = DateTime.now().millisecondsSinceEpoch;
-          fileTotal = total;
-          if (progressCallback != null) {
-            progressCallback(startTime, count, total, false);
-          }
+    int startTime = DateTime.now().millisecondsSinceEpoch;
+    int lastUpdateTime = 0;
+    int fileCount = 1;
+    int fileTotal = -1;
+    var dio = Dio();
+
+    try {
+      var rootPath = await DocPath.getContentPath();
+      var targetFilePath = ap ?? rootPath.joinPath(rp!);
+      var exist = false;
+      if (hash != "") {
+        String fileHash = await Hash.toSha1(targetFilePath);
+        if (fileHash == hash) {
+          exist = true;
         }
-      },
-      options: Options(
-        headers: {
-          HttpHeaders.userAgentHeader: DownloadConstant.userAgent,
-          HttpHeaders.authorizationHeader: credentials,
+      }
+      if (exist == true) {
+        if (progressCallback != null) {
+          progressCallback(startTime, 100, 100, true);
+        }
+        return DownloadDocResult.success;
+      }
+      var fl = DocLocation(rootPath, "temp");
+      if (skipSsl) {
+        dio = Dio()
+          ..httpClientAdapter = IOHttpClientAdapter(
+            createHttpClient: () {
+              final client = HttpClient();
+              client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+              return client;
+            },
+          );
+      }
+      await dio.download(
+        url,
+        fl.path,
+        onReceiveProgress: (int count, int total) {
+          fileCount = count;
+          if ((DateTime.now().millisecondsSinceEpoch - lastUpdateTime) > 100) {
+            lastUpdateTime = DateTime.now().millisecondsSinceEpoch;
+            fileTotal = total;
+            if (progressCallback != null) {
+              progressCallback(startTime, count, total, false);
+            }
+          }
         },
-      ),
-    );
-    if (fileTotal == -1) {
-      fileTotal = fileCount;
+        options: Options(
+          headers: {
+            HttpHeaders.userAgentHeader: DownloadConstant.userAgent,
+            HttpHeaders.authorizationHeader: credentials,
+          },
+        ),
+      );
+      if (fileTotal == -1) {
+        fileTotal = fileCount;
+      }
+      DocLocation dl = DocLocation.create(path);
+      await Folder.ensureExists(rootPath.joinPath(dl.folderPath));
+      await File(fl.path).rename(targetFilePath);
+      if (progressCallback != null) {
+        progressCallback(startTime, fileTotal, fileTotal, true);
+      }
+      return DownloadDocResult.success;
+    } on Exception catch (e) {
+      var msg = e.toString();
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs([msg]));
+      if (msg.contains('CERTIFICATE_VERIFY_FAILED: self signed certificate')) {
+        return DownloadDocResult.needSkipSsl;
+      }
     }
-    DocLocation dl = DocLocation.create(path);
-    await Folder.ensureExists(rootPath.joinPath(dl.folderPath));
-    await File(fl.path).rename(targetFilePath);
-    if (progressCallback != null) {
-      progressCallback(startTime, fileTotal, fileTotal, true);
-    }
-    return true;
-  } on Exception catch (e) {
-    Snackbar.show(I18nKey.labelDataAnomaly.trArgs([e.toString()]));
+    return DownloadDocResult.fail;
   }
-  return false;
 }

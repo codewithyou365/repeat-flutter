@@ -137,13 +137,10 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
   }
 
   void _resetAndRotate() {
-    if (_fingerLabels.isNotEmpty) {
-      _activeFingers.clear();
-      _fingerLabels.clear();
-    } else {
-      direct = _nextDirection(direct);
-      widget.changeDirect(direct);
-    }
+    _activeFingers.clear();
+    _fingerLabels.clear();
+    direct = _nextDirection(direct);
+    widget.changeDirect(direct);
     setState(() {});
   }
 

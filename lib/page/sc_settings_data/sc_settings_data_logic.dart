@@ -47,7 +47,7 @@ class ScSettingsDataLogic extends GetxController {
     }
     showOverlay(() async {
       var path = await sqflite.getDatabasesPath();
-      var success = await downloadDoc(
+      var downloadDocResult = await DownloadDoc.start(
         url,
         path.joinPath(Db.fileName),
       );
@@ -55,7 +55,7 @@ class ScSettingsDataLogic extends GetxController {
       await Db().init();
       await Db().db.kvDao.insertKv(Kv(K.importUrl, url));
       Get.back();
-      Snackbar.show(success ? I18nKey.labelImportSuccess.tr : I18nKey.labelImportFailed.tr);
+      Snackbar.show(downloadDocResult == DownloadDocResult.success ? I18nKey.labelImportSuccess.tr : I18nKey.labelImportFailed.tr);
     }, I18nKey.labelImporting.tr);
   }
 }

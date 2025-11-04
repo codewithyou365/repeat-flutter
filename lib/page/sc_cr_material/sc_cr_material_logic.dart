@@ -173,6 +173,7 @@ class ScCrMaterialLogic extends GetxController {
   void download(int bookId, String url) async {
     state.indexCount.value = 0;
     state.indexTotal.value = 1;
+    final rawUrl = url;
     List<String> urlAndCredentials = url.split("#");
     String credentials = '';
     if (urlAndCredentials.length == 2) {
@@ -181,13 +182,20 @@ class ScCrMaterialLogic extends GetxController {
       credentials = 'Basic ${base64.encode(utf8.encode(credentials))}';
     }
     var indexPath = DocPath.getRelativeIndexPath(bookId);
-    var success = await downloadDoc(
+    var downloadDocResult = await DownloadDoc.start(
       url,
       indexPath,
       credentials: credentials,
       progressCallback: downloadProgress,
+      skipSsl: state.skipSsl,
     );
-    if (!success) {
+    if (downloadDocResult == DownloadDocResult.needSkipSsl) {
+      trySkipSsl(() {
+        download(bookId, rawUrl);
+      });
+      return;
+    }
+    if (downloadDocResult != DownloadDocResult.success) {
       return;
     }
     BookContent? kv = await DocHelp.fromPath(indexPath);
@@ -200,19 +208,43 @@ class ScCrMaterialLogic extends GetxController {
     state.indexTotal.value = state.indexTotal.value + kv.chapter.length;
     for (int i = 0; i < allDownloads.length; i++) {
       var v = allDownloads[i];
-      await downloadDoc(
+      var downloadDocResult = await DownloadDoc.start(
         v.url,
         credentials: credentials,
         DocPath.getRelativePath(bookId).joinPath(v.path),
         hash: v.hash,
         progressCallback: downloadProgress,
+        skipSsl: state.skipSsl,
       );
+      if (downloadDocResult == DownloadDocResult.needSkipSsl) {
+        trySkipSsl(() {
+          download(bookId, rawUrl);
+        });
+        return;
+      }
+      if (downloadDocResult != DownloadDocResult.success) {
+        return;
+      }
     }
 
     var ok = await schedule(bookId, url);
     if (ok) {
       Nav.back();
     }
+    state.skipSsl = false;
+  }
+
+  void trySkipSsl(VoidCallback yes) {
+    MsgBox.yesOrNo(
+      title: I18nKey.labelTips.tr,
+      desc: I18nKey.needToSkipSsl.tr,
+      yes: () {
+        state.skipSsl = true;
+        yes();
+        Get.back();
+      },
+      yesBtnTitle: I18nKey.trust.tr,
+    );
   }
 
   Future<bool> schedule(int bookId, String url) async {

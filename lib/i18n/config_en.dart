@@ -309,5 +309,7 @@ class ConfigEn extends Config {
     put(I18nKey.translucence, "Translucence");
     put(I18nKey.opacity, "Opacity");
     put(I18nKey.closeEyesTips, "Place multiple fingers on the screen to operate.\n\nIf the first finger is lifted twice in a row,\nit triggers the left button at the bottom of the screen.\n\nIf the last finger is lifted twice in a row,\nit triggers the right button at the bottom of the screen.\n\nIf any other finger is lifted twice in a row,\nit triggers the tips button at the bottom of the screen.\n\nYou can adjust the direction to determine which finger is considered the first one.");
+    put(I18nKey.needToSkipSsl, "The certificate is self-signed. Do you trust it and try again?");
+    put(I18nKey.trust, "Trust");
   }
 }
