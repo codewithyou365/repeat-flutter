@@ -11,6 +11,7 @@ enum K {
   bookAdvancedEditorVimMode,
   bookAdvancedEditorRelativeNumbers,
   closeEyesDirect,
+  generateSslTime,
 }
 
 @Entity(primaryKeys: ['k'])

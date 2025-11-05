@@ -7,10 +7,39 @@ class SelfSsl {
   static final String certFile = 'cert.pem';
   static final String keyFile = 'key.pem';
 
-  static Future<void> tryGenerateSelfSignedCert(String rootPath) async {
-    var exist = File(rootPath.joinPath(certFile)).existsSync();
-    if (!exist) {
+  static Future<void> tryGenerateSelfSignedCert(
+    String rootPath,
+    Future<int> Function() getGenerateSslTime,
+    Future<void> Function(int) setGenerateSslTime,
+  ) async {
+    final certPath = rootPath.joinPath(certFile);
+    final keyPath = rootPath.joinPath(keyFile);
+
+    final exists = File(certPath).existsSync();
+    bool needGenerate = false;
+
+    if (exists) {
+      final generateSslTime = await getGenerateSslTime();
+
+      final last = DateTime.fromMillisecondsSinceEpoch(generateSslTime);
+      final now = DateTime.now();
+
+      final isExpired = now.difference(last).inDays >= 30;
+
+      if (isExpired) {
+        File(certPath).deleteSync();
+        File(keyPath).deleteSync();
+        needGenerate = true;
+      }
+    } else {
+      needGenerate = true;
+    }
+
+    if (needGenerate) {
       await generateSelfSignedCert(rootPath);
+
+      final now = DateTime.now();
+      await setGenerateSslTime(now.millisecondsSinceEpoch);
     }
   }
 

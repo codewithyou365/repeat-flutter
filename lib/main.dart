@@ -23,8 +23,16 @@ void main() async {
     db.kvDao.insertKvs(settings);
   }
   var sslPath = await DocPath.getSslPath();
-  SelfSsl.tryGenerateSelfSignedCert(sslPath);
-  
+  await SelfSsl.tryGenerateSelfSignedCert(
+    sslPath,
+    () async {
+      return await Db().db.kvDao.getInt(K.generateSslTime) ?? 0;
+    },
+    (int genTime) async {
+      await Db().db.kvDao.insertKv(Kv(K.generateSslTime, '$genTime'));
+    },
+  );
+
   Map<K, String> settingsMap = {for (var kv in settings) kv.k: kv.value};
   logic.themeMode.value = ThemeModeFromString.c(settingsMap[K.settingsTheme]!);
   logic.i18nLocal.value = I18nLocalFromString.c(settingsMap[K.settingsI18n]!);
