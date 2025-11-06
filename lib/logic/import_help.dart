@@ -13,6 +13,16 @@ import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class ImportHelp {
+  static void fixDownloadInfo(Map<String, dynamic> json) {
+    if (json['d'] != null) {
+      List<DownloadContent> list = DownloadContent.toList(json['d']) ?? [];
+      for (DownloadContent v in list) {
+        v.url = ".${v.extension}";
+      }
+      json['d'] = list;
+    }
+  }
+
   static Future<bool> import(int bookId, String url) async {
     Book? book = await Db().db.bookDao.getById(bookId);
     if (book == null) {
@@ -44,6 +54,7 @@ class ImportHelp {
         bookContent[k] = v;
       }
     });
+    fixDownloadInfo(bookContent);
     book.content = convert.jsonEncode(bookContent);
     List<Chapter> chapters = [];
     List<Verse> verses = [];
@@ -56,6 +67,7 @@ class ImportHelp {
           chapterContent[k] = v;
         }
       });
+      fixDownloadInfo(chapterContent);
 
       var chapter = kv.chapter[chapterIndex];
       chapters.add(
@@ -76,6 +88,7 @@ class ImportHelp {
             verseContent[k] = v;
           }
         });
+        fixDownloadInfo(verseContent);
         verses.add(
           Verse(
             classroomId: book.classroomId,
