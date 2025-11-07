@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/await_util.dart';
 import 'package:repeat_flutter/common/ip.dart';
 import 'package:repeat_flutter/common/path.dart';
+import 'package:repeat_flutter/common/ssl.dart';
 import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/common/url.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
@@ -89,12 +90,14 @@ class BookEditorLogic<T extends GetxController> {
     }
 
     try {
-      _httpServer = await HttpServer.bind(InternetAddress.anyIPv4, port);
+      var sslPath = await DocPath.getSslPath();
+      var context = SelfSsl.generateSecurityContext(sslPath);
+      _httpServer = await HttpServer.bindSecure(InternetAddress.anyIPv4, port, context);
       _httpServer!.listen((HttpRequest request) async {
         _handleRequest(request);
       });
     } catch (e) {
-      Snackbar.show('Error starting HTTP service: $e');
+      Snackbar.show('Error starting HTTPS service: $e');
       return;
     }
     state.addresses.clear();
@@ -103,14 +106,14 @@ class BookEditorLogic<T extends GetxController> {
       state.addresses.add(Address("${I18nKey.labelLanAddress.tr} $i", getUrl(ip)));
     }
 
-    Snackbar.show('HTTP service started1');
+    Snackbar.show('HTTPS service started1');
     parentLogic.update([id]);
   }
 
   String getUrl(String ip) {
     final chapterIndex = state.chapterIndex;
     final verseIndex = state.verseIndex;
-    String url = 'http://$ip:$port${state.lanAddressSuffix}';
+    String url = 'https://$ip:$port${state.lanAddressSuffix}';
 
     url += "?";
     List<String> params = [];
@@ -123,7 +126,7 @@ class BookEditorLogic<T extends GetxController> {
   Future<void> _stopHttpService() async {
     if (_httpServer != null) {
       await _httpServer!.close();
-      Snackbar.show('HTTP service stopped');
+      Snackbar.show('HTTPS service stopped');
       _httpServer = null;
       parentLogic.update([id]);
     }

@@ -78,7 +78,7 @@ class WebManager<T extends GetxController> {
           var ips = await Ip.getLanIps();
           for (var i = 0; i < ips.length; i++) {
             String url = ips[i];
-            this.urls.add('http://$url:$gamePort');
+            this.urls.add('https://$url:$gamePort');
           }
           onOpenWeb();
         } catch (e) {

@@ -43,7 +43,7 @@ class WebServer {
       server.controllers[Path.getVerseContent] = (request) => withGameUser(request, getVerseContent);
       open = true;
     } catch (e) {
-      Snackbar.show('Error starting HTTP service: $e');
+      Snackbar.show('Error starting HTTPS service: $e');
       return 0;
     }
     return port;
@@ -58,7 +58,7 @@ class WebServer {
       await server.stop();
       open = false;
     } catch (e) {
-      Snackbar.show('Error starting HTTP service: $e');
+      Snackbar.show('Error starting HTTPS service: $e');
       return;
     }
   }

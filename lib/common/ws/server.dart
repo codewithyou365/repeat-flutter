@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:repeat_flutter/common/ssl.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 
 import 'node.dart';
@@ -111,7 +113,9 @@ class Server<User extends UserId> {
   Future<void> start(int port, Future<User?> Function(HttpRequest request) auth, Future<void> Function(HttpRequest request) handleHttpRequest) async {
     status = ServerStatus.working;
     try {
-      server = await HttpServer.bind(InternetAddress.anyIPv4, port);
+      var sslPath = await DocPath.getSslPath();
+      var context = SelfSsl.generateSecurityContext(sslPath);
+      server = await HttpServer.bindSecure(InternetAddress.anyIPv4, port, context);
 
       server!.listen((HttpRequest request) async {
         if (status == ServerStatus.stopped) return;

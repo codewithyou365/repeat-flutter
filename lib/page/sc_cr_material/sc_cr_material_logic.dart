@@ -187,14 +187,8 @@ class ScCrMaterialLogic extends GetxController {
       indexPath,
       credentials: credentials,
       progressCallback: downloadProgress,
-      skipSsl: state.skipSsl,
+      skipSsl: true,
     );
-    if (downloadDocResult == DownloadDocResult.needSkipSsl) {
-      trySkipSsl(() {
-        download(bookId, rawUrl);
-      });
-      return;
-    }
     if (downloadDocResult != DownloadDocResult.success) {
       return;
     }
@@ -214,14 +208,8 @@ class ScCrMaterialLogic extends GetxController {
         DocPath.getRelativePath(bookId).joinPath(v.path),
         hash: v.hash,
         progressCallback: downloadProgress,
-        skipSsl: state.skipSsl,
+        skipSsl: true,
       );
-      if (downloadDocResult == DownloadDocResult.needSkipSsl) {
-        trySkipSsl(() {
-          download(bookId, rawUrl);
-        });
-        return;
-      }
       if (downloadDocResult != DownloadDocResult.success) {
         return;
       }
@@ -231,20 +219,6 @@ class ScCrMaterialLogic extends GetxController {
     if (ok) {
       Nav.back();
     }
-    state.skipSsl = false;
-  }
-
-  void trySkipSsl(VoidCallback yes) {
-    MsgBox.yesOrNo(
-      title: I18nKey.labelTips.tr,
-      desc: I18nKey.needToSkipSsl.tr,
-      yes: () {
-        state.skipSsl = true;
-        yes();
-        Get.back();
-      },
-      yesBtnTitle: I18nKey.trust.tr,
-    );
   }
 
   Future<bool> schedule(int bookId, String url) async {
