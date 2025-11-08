@@ -297,7 +297,7 @@ enum I18nKey {
   btnExport,
   btnImport,
   btnSave,
-  btnClose,
+  close,
   btnCheck,
   btnEditVerse,
   adjustFontSize,
@@ -311,6 +311,9 @@ enum I18nKey {
   closeEyesTips,
   needToSkipSsl,
   trust,
+  rotate,
+  help,
+  showFingers,
   _end;
 
   String trArgs([List<String> args = const []]) {

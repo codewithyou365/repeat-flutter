@@ -297,7 +297,7 @@ class ConfigEn extends Config {
     put(I18nKey.btnExport, "Export");
     put(I18nKey.btnImport, "Import");
     put(I18nKey.btnSave, "Save");
-    put(I18nKey.btnClose, "Close");
+    put(I18nKey.close, "Close");
     put(I18nKey.btnCheck, "CHECK");
     put(I18nKey.btnEditVerse, "Edit Verse");
     put(I18nKey.adjustFontSize, "Adjust Font Size (%s)");
@@ -311,5 +311,9 @@ class ConfigEn extends Config {
     put(I18nKey.closeEyesTips, "Place multiple fingers on the screen to operate.\n\nIf the first finger is lifted twice in a row,\nit triggers the left button at the bottom of the screen.\n\nIf the last finger is lifted twice in a row,\nit triggers the right button at the bottom of the screen.\n\nIf any other finger is lifted twice in a row,\nit triggers the tips button at the bottom of the screen.\n\nYou can adjust the direction to determine which finger is considered the first one.");
     put(I18nKey.needToSkipSsl, "The certificate is self-signed. Do you trust it and try again?");
     put(I18nKey.trust, "Trust");
+    put(I18nKey.rotate, "Rotate");
+    put(I18nKey.help, "Help");
+    put(I18nKey.showFingers, "Show Fingers");
+
   }
 }

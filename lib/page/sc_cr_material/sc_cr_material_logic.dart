@@ -275,7 +275,7 @@ class ScCrMaterialLogic extends GetxController {
         download(model.id!, downloadUrl.value);
       },
       yesBtnTitle: I18nKey.btnDownload.tr,
-      noBtnTitle: I18nKey.btnClose.tr,
+      noBtnTitle: I18nKey.close.tr,
       qrPagePath: Nav.scan.path,
     );
   }

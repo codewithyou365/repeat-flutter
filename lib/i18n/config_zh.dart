@@ -297,7 +297,7 @@ class ConfigZh extends Config {
     put(I18nKey.btnExport, "导出");
     put(I18nKey.btnImport, "导入");
     put(I18nKey.btnSave, "保存");
-    put(I18nKey.btnClose, "关闭");
+    put(I18nKey.close, "关闭");
     put(I18nKey.btnCheck, "检查");
     put(I18nKey.btnEditVerse, "编辑小节");
     put(I18nKey.adjustFontSize, "调整字体大小 (%s)");
@@ -311,5 +311,8 @@ class ConfigZh extends Config {
     put(I18nKey.closeEyesTips, "将多个手指放在屏幕上进行操作\n\n第一个手指连续抬起两次：\n点击界面底部左侧按钮\n\n最后一个手指连续抬起两次：\n点击界面底部右侧按钮\n\n其他手指连续抬起两次：\n点击界面底部提示按钮\n\n你可以调整方向来确定哪一个手指是第一个");
     put(I18nKey.needToSkipSsl, "该证书为自签证书, 需要信任后再重试吗？");
     put(I18nKey.trust, "信任");
+    put(I18nKey.rotate, "旋转");
+    put(I18nKey.help, "帮助");
+    put(I18nKey.showFingers, "显示手指");
   }
 }

@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
 
 class CloseEyesPanel {
   static Widget open({
     required double height,
     required double width,
-    required bool showFinger,
     required DirectEnum direct,
 
     required void Function(DirectEnum direct) changeDirect,
@@ -23,7 +23,6 @@ class CloseEyesPanel {
     return _MultiTouchArea(
       height: height,
       width: width,
-      showFinger: showFinger,
       direct: direct,
       changeDirect: changeDirect,
       upCallback: (int index, int total) {
@@ -58,7 +57,6 @@ class CloseEyesPanel {
 class _MultiTouchArea extends StatefulWidget {
   final double height;
   final double width;
-  final bool showFinger;
   final DirectEnum direct;
   final void Function(DirectEnum direct) changeDirect;
   final void Function(int index, int total) upCallback;
@@ -70,7 +68,6 @@ class _MultiTouchArea extends StatefulWidget {
   const _MultiTouchArea({
     required this.height,
     required this.width,
-    required this.showFinger,
     required this.direct,
     required this.changeDirect,
     required this.upCallback,
@@ -94,7 +91,7 @@ enum DirectEnum {
 class _MultiTouchAreaState extends State<_MultiTouchArea> {
   final Map<int, Offset> _activeFingers = {};
   final Map<int, int> _fingerLabels = {};
-  late final bool show;
+  bool show = false;
 
   late DirectEnum direct;
 
@@ -102,7 +99,6 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
   void initState() {
     super.initState();
     direct = widget.direct;
-    show = widget.showFinger;
   }
 
   void _onPointerDown(PointerDownEvent event) {
@@ -136,11 +132,15 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
     return values[nextIndex];
   }
 
-  void _resetAndRotate() {
-    _activeFingers.clear();
-    _fingerLabels.clear();
+  void rotate() {
     direct = _nextDirection(direct);
     widget.changeDirect(direct);
+    setState(() {});
+  }
+
+  void clearFingers() {
+    _activeFingers.clear();
+    _fingerLabels.clear();
     setState(() {});
   }
 
@@ -192,30 +192,32 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
             }),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.refresh,
-                    color: widget.foregroundColor,
-                  ),
-                  onPressed: _resetAndRotate,
+            child: PopupMenuButton<String>(
+              onOpened: clearFingers,
+              icon: const Icon(Icons.more_vert),
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                PopupMenuItem<String>(
+                  onTap: widget.help,
+                  child: Text(I18nKey.help.tr),
                 ),
-                _directionIcon(direct),
-                const Spacer(),
-                IconButton(
-                  icon: Icon(
-                    Icons.help,
-                    color: widget.foregroundColor,
-                  ),
-                  onPressed: widget.help,
+                PopupMenuItem<String>(
+                  onTap: () => show = !show,
+                  child: Text("${I18nKey.showFingers.tr}($show)"),
                 ),
-                IconButton(
-                  icon: Icon(
-                    Icons.close,
-                    color: widget.foregroundColor,
+                PopupMenuItem<String>(
+                  onTap: rotate,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text("${I18nKey.rotate.tr} :"),
+                      SizedBox(width: 2),
+                      _directionIcon(direct),
+                    ],
                   ),
-                  onPressed: widget.close,
+                ),
+                PopupMenuItem<String>(
+                  onTap: widget.close,
+                  child: Text(I18nKey.close.tr),
                 ),
               ],
             ),

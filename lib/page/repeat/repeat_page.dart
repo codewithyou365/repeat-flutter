@@ -8,10 +8,10 @@ import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
+import 'package:repeat_flutter/logic/widget/close_eyes/close_eyes_panel.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
-import 'package:repeat_flutter/widget/close_eyes/close_eyes_panel.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
 import 'package:repeat_flutter/widget/text/text_button.dart';
 
@@ -447,7 +447,6 @@ class RepeatPage extends StatelessWidget {
       return CloseEyesPanel.open(
         height: helper.screenHeight,
         width: helper.screenWidth,
-        showFinger: logic.state.enableCloseEyesMode.value == CloseEyesEnum.translucence,
         direct: DirectEnum.values[logic.state.closeEyesDirect],
         changeDirect: (DirectEnum direct) {
           logic.state.closeEyesDirect = direct.index;
