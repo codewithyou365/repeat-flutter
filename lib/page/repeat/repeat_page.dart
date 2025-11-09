@@ -469,8 +469,8 @@ class RepeatPage extends StatelessWidget {
         help: () {
           MsgBox.tips(desc: I18nKey.closeEyesTips.tr);
         },
-        backgroundColor: logic.state.enableCloseEyesMode.value == CloseEyesEnum.opacity ? Colors.black : Colors.blue.withValues(alpha: 0.2),
-        foregroundColor: logic.state.enableCloseEyesMode.value == CloseEyesEnum.opacity ? Colors.white.withValues(alpha: 0.3) : null,
+        backgroundColor: logic.state.enableCloseEyesMode.value.backgroundColor,
+        foregroundColor: logic.state.enableCloseEyesMode.value.foregroundColor,
       );
     }
   }

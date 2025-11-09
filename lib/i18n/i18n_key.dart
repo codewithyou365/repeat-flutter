@@ -306,6 +306,7 @@ enum I18nKey {
   theContentHasBeenDeleted,
   closeEyesMode,
   enableCloseEyesMode,
+  transparent,
   translucence,
   opacity,
   closeEyesTips,

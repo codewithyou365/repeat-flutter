@@ -117,14 +117,13 @@ class RepeatLogic extends GetxController {
     int? index = await Select.showSheet(
       title: I18nKey.enableCloseEyesMode.tr,
       keys: [
+        I18nKey.transparent.tr,
         I18nKey.translucence.tr,
         I18nKey.opacity.tr,
       ],
     );
-    if (index == 0) {
-      state.enableCloseEyesMode.value = CloseEyesEnum.translucence;
-    } else if (index == 1) {
-      state.enableCloseEyesMode.value = CloseEyesEnum.opacity;
+    if (index != null && index >= 0) {
+      state.enableCloseEyesMode.value = CloseEyesEnum.values[index];
     } else {
       state.enableCloseEyesMode.value = CloseEyesEnum.none;
     }

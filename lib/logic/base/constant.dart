@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:repeat_flutter/common/folder.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
@@ -69,9 +70,15 @@ enum RepeatViewEnum {
 }
 
 enum CloseEyesEnum {
-  translucence,
-  opacity,
-  none,
+  transparent(null, Color.fromRGBO(0, 0, 0, 0)),
+  translucence(null, Color.fromRGBO(0, 0, 255, 0.1)),
+  opacity(Color.fromRGBO(255, 255, 255, 0.3), Colors.black),
+  none(null, null);
+
+  final Color? foregroundColor;
+  final Color? backgroundColor;
+
+  const CloseEyesEnum(this.foregroundColor, this.backgroundColor);
 }
 
 class DownloadConstant {

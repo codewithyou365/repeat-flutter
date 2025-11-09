@@ -194,7 +194,7 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
             padding: const EdgeInsets.all(8.0),
             child: PopupMenuButton<String>(
               onOpened: clearFingers,
-              icon: const Icon(Icons.more_vert),
+              icon: Icon(Icons.more_vert, color: widget.foregroundColor),
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                 PopupMenuItem<String>(
                   onTap: widget.help,
