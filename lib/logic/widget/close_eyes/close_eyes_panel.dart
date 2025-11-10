@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 
 class CloseEyesPanel {
@@ -93,18 +94,18 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
   final Map<int, int> _fingerLabels = {};
   bool show = false;
 
-  late DirectEnum direct;
+  late Rx<DirectEnum> direct;
 
   @override
   void initState() {
     super.initState();
-    direct = widget.direct;
+    direct = Rx(widget.direct);
   }
 
   void _onPointerDown(PointerDownEvent event) {
     _activeFingers[event.pointer] = event.position;
 
-    final sorted = _sort(_activeFingers.entries.toList(), direct);
+    final sorted = _sort(_activeFingers.entries.toList(), direct.value);
 
     _fingerLabels
       ..clear()
@@ -133,8 +134,8 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
   }
 
   void rotate() {
-    direct = _nextDirection(direct);
-    widget.changeDirect(direct);
+    direct.value = _nextDirection(direct.value);
+    widget.changeDirect(direct.value);
     setState(() {});
   }
 
@@ -205,14 +206,20 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
                   child: Text("${I18nKey.showFingers.tr}($show)"),
                 ),
                 PopupMenuItem<String>(
-                  onTap: rotate,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text("${I18nKey.rotate.tr} :"),
-                      SizedBox(width: 2),
-                      _directionIcon(direct),
-                    ],
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: rotate,
+                    child: Obx(() {
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text("${I18nKey.rotate.tr} :"),
+                          SizedBox(width: 2),
+                          _directionIcon(direct.value),
+                          Spacer(),
+                        ],
+                      );
+                    }),
                   ),
                 ),
                 PopupMenuItem<String>(
@@ -248,24 +255,20 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
   Widget _directionIcon(DirectEnum d) {
     switch (d) {
       case DirectEnum.leftToRight:
-        return Icon(
+        return const Icon(
           Icons.keyboard_double_arrow_right_outlined,
-          color: widget.foregroundColor,
         );
       case DirectEnum.rightToLeft:
-        return Icon(
+        return const Icon(
           Icons.keyboard_double_arrow_left_outlined,
-          color: widget.foregroundColor,
         );
       case DirectEnum.topToBottom:
-        return Icon(
+        return const Icon(
           Icons.keyboard_double_arrow_down_outlined,
-          color: widget.foregroundColor,
         );
       case DirectEnum.bottomToTop:
-        return Icon(
+        return const Icon(
           Icons.keyboard_double_arrow_up_outlined,
-          color: widget.foregroundColor,
         );
     }
   }
