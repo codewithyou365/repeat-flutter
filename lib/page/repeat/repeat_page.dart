@@ -447,6 +447,7 @@ class RepeatPage extends StatelessWidget {
       return CloseEyesPanel.open(
         height: helper.screenHeight,
         width: helper.screenWidth,
+        showFinger: logic.state.enableCloseEyesMode.value != CloseEyesEnum.opacity,
         direct: DirectEnum.values[logic.state.closeEyesDirect],
         changeDirect: (DirectEnum direct) {
           logic.state.closeEyesDirect = direct.index;

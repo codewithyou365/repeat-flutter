@@ -8,6 +8,7 @@ class CloseEyesPanel {
   static Widget open({
     required double height,
     required double width,
+    required bool showFinger,
     required DirectEnum direct,
 
     required void Function(DirectEnum direct) changeDirect,
@@ -24,6 +25,7 @@ class CloseEyesPanel {
     return _MultiTouchArea(
       height: height,
       width: width,
+      showFinger: showFinger,
       direct: direct,
       changeDirect: changeDirect,
       upCallback: (int index, int total) {
@@ -58,6 +60,7 @@ class CloseEyesPanel {
 class _MultiTouchArea extends StatefulWidget {
   final double height;
   final double width;
+  final bool showFinger;
   final DirectEnum direct;
   final void Function(DirectEnum direct) changeDirect;
   final void Function(int index, int total) upCallback;
@@ -69,6 +72,7 @@ class _MultiTouchArea extends StatefulWidget {
   const _MultiTouchArea({
     required this.height,
     required this.width,
+    required this.showFinger,
     required this.direct,
     required this.changeDirect,
     required this.upCallback,
@@ -99,6 +103,7 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
   @override
   void initState() {
     super.initState();
+    show = widget.showFinger;
     direct = Rx(widget.direct);
   }
 
