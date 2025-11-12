@@ -109,7 +109,7 @@ class RepeatLogic extends GetxController {
 
   void switchConcentrationMode() {
     state.helper.concentrationMode = !state.helper.concentrationMode;
-    state.helper.withoutPlayingMediaFirstTime = true;
+    state.helper.enablePlayingPlayMedia = false;
     update([RepeatLogic.id]);
   }
 
@@ -131,7 +131,7 @@ class RepeatLogic extends GetxController {
 
   void switchEditMode() {
     state.helper.edit = !state.helper.edit;
-    state.helper.withoutPlayingMediaFirstTime = true;
+    state.helper.enablePlayingPlayMedia = false;
     update([RepeatLogic.id]);
   }
 
@@ -227,12 +227,13 @@ class RepeatLogic extends GetxController {
         defaultTap: 2,
       ),
     );
-    state.helper.setInRepeatView(true, withoutPlayingMediaFirstTime: true);
+    state.helper.setInRepeatView(true);
     update([RepeatLogic.id]);
   }
 
   void preClick() {
     state.needUpdateSystemUiMode = true;
+    state.helper.enablePlayingPlayMedia = true;
   }
 
   void onTapLeft() {

@@ -72,9 +72,11 @@ class RepeatViewForAudio extends RepeatView {
     if (helper.enableReloadMedia) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         load(path).then((_) {
-          if (helper.withoutPlayingMediaFirstTime) {
-            helper.withoutPlayingMediaFirstTime = false;
+          if (helper.resetMediaStart) {
+            helper.resetMediaStart = false;
             mediaKey.currentState?.drawStart();
+          }
+          if (helper.enablePlayingPlayMedia) {
             return;
           }
           mediaKey.currentState?.playFromStart();
@@ -184,7 +186,10 @@ class RepeatViewForAudio extends RepeatView {
           await audioPlayer.play();
         }
       },
-      onStop: audioPlayer.stop,
+      onStop: () async {
+        helper!.enablePlayingPlayMedia = false;
+        await audioPlayer.stop();
+      },
       onEdit: mediaRangeHelper.mediaRangeEdit(range),
       onAdjustSpeed: (double speed) async {
         try {

@@ -89,9 +89,11 @@ class RepeatViewForVideo extends RepeatView {
     if (helper.enableReloadMedia) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         load(path).then((_) {
-          if (helper.withoutPlayingMediaFirstTime) {
-            helper.withoutPlayingMediaFirstTime = false;
+          if (helper.resetMediaStart) {
+            helper.resetMediaStart = false;
             mediaKey.currentState?.drawStart();
+          }
+          if (!helper.enablePlayingPlayMedia) {
             return;
           }
           mediaKey.currentState?.playFromStart();
@@ -415,6 +417,7 @@ class RepeatViewForVideo extends RepeatView {
       duration: () => duration,
       onPlay: (Duration position) async {
         if (_videoPlayerController != null) {
+          helper!.enablePlayingPlayMedia = true;
           try {
             await _videoPlayerController!.seekTo(position).timeout(const Duration(milliseconds: 100));
           } catch (e) {
@@ -427,6 +430,7 @@ class RepeatViewForVideo extends RepeatView {
       },
       onStop: () async {
         if (_videoPlayerController != null) {
+          helper!.enablePlayingPlayMedia = false;
           await _videoPlayerController!.pause();
           isPlaying.value = false;
         }

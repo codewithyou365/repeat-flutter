@@ -47,7 +47,8 @@ class Helper {
   bool concentrationMode = true;
   bool edit = false;
   bool enableReloadMedia = true;
-  bool withoutPlayingMediaFirstTime = true;
+  bool resetMediaStart = true;
+  bool enablePlayingPlayMedia = false;
   Map<int, Map<String, dynamic>> bookMapCache = {};
 
   Map<int, Map<String, dynamic>> chapterMapCache = {};
@@ -91,9 +92,9 @@ class Helper {
     updateVerseContentSub.off();
   }
 
-  void setInRepeatView(bool inRepeatView, {bool withoutPlayingMediaFirstTime = false}) {
+  void setInRepeatView(bool inRepeatView) {
     enableReloadMedia = inRepeatView;
-    this.withoutPlayingMediaFirstTime = withoutPlayingMediaFirstTime;
+    enablePlayingPlayMedia = false;
     EventBus().publish<bool>(EventTopic.setInRepeatView, inRepeatView);
   }
 

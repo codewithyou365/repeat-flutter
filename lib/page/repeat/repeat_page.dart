@@ -61,7 +61,6 @@ class RepeatPage extends StatelessWidget {
     if (state.lastLandscape == null || state.lastLandscape != landscape) {
       state.lastLandscape = landscape;
       state.needUpdateSystemUiMode = true;
-      state.helper.withoutPlayingMediaFirstTime = true;
     }
     if (state.needUpdateSystemUiMode) {
       state.needUpdateSystemUiMode = false;
