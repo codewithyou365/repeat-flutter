@@ -21,7 +21,6 @@ import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/logic/widget/book_editor/book_editor_logic.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
-import 'package:repeat_flutter/widget/select/select.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'repeat_args.dart';
 import 'repeat_state.dart';
@@ -102,7 +101,7 @@ class RepeatLogic extends GetxController {
     state.helper.onClose();
     bookEditor.switchWeb(false);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
-    if (state.enableCloseEyesMode.value != CloseEyesEnum.none) {
+    if (state.enableCloseEyesMode.value != CloseEyesModeEnum.none) {
       HapticFeedback.heavyImpact();
     }
   }
@@ -114,19 +113,7 @@ class RepeatLogic extends GetxController {
   }
 
   void switchBlindMode() async {
-    int? index = await Select.showSheet(
-      title: I18nKey.enableCloseEyesMode.tr,
-      keys: [
-        I18nKey.transparent.tr,
-        I18nKey.translucence.tr,
-        I18nKey.opacity.tr,
-      ],
-    );
-    if (index != null && index >= 0) {
-      state.enableCloseEyesMode.value = CloseEyesEnum.values[index];
-    } else {
-      state.enableCloseEyesMode.value = CloseEyesEnum.none;
-    }
+    state.enableCloseEyesMode.value = CloseEyesModeEnum.opacity;
   }
 
   void switchEditMode() {

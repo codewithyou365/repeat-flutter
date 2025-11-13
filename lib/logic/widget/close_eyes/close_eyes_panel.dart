@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
 
 class CloseEyesPanel {
   static Widget open({
@@ -15,13 +16,12 @@ class CloseEyesPanel {
     required void Function(int index, int total) upCallback,
     required VoidCallback close,
     required VoidCallback help,
-    Color? backgroundColor,
-    Color? foregroundColor,
     void Function(int index, int total)? doubleUpCallback,
   }) {
     final Map<int, int> lastUpTime = {};
     final Map<int, Timer> pendingUpTimers = {};
     const delayTime = 300;
+
     return _MultiTouchArea(
       height: height,
       width: width,
@@ -51,8 +51,6 @@ class CloseEyesPanel {
       },
       close: close,
       help: help,
-      backgroundColor: backgroundColor,
-      foregroundColor: foregroundColor,
     );
   }
 }
@@ -66,8 +64,6 @@ class _MultiTouchArea extends StatefulWidget {
   final void Function(int index, int total) upCallback;
   final VoidCallback close;
   final VoidCallback help;
-  final Color? backgroundColor;
-  final Color? foregroundColor;
 
   const _MultiTouchArea({
     required this.height,
@@ -78,8 +74,6 @@ class _MultiTouchArea extends StatefulWidget {
     required this.upCallback,
     required this.close,
     required this.help,
-    this.backgroundColor,
-    this.foregroundColor,
   });
 
   @override
@@ -97,6 +91,8 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
   final Map<int, Offset> _activeFingers = {};
   final Map<int, int> _fingerLabels = {};
   bool show = false;
+
+  Rx<CloseEyesModeEnum> closeEyesMode = CloseEyesModeEnum.opacity.obs;
 
   late Rx<DirectEnum> direct;
 
@@ -144,10 +140,36 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
     setState(() {});
   }
 
-  void clearFingers() {
+  void reset() {
     _activeFingers.clear();
     _fingerLabels.clear();
     setState(() {});
+  }
+
+  void loopCloseEyesMode() {
+    switch (closeEyesMode.value) {
+      case CloseEyesModeEnum.opacity:
+        closeEyesMode.value = CloseEyesModeEnum.translucence;
+        break;
+      case CloseEyesModeEnum.translucence:
+        closeEyesMode.value = CloseEyesModeEnum.transparent;
+        break;
+      default:
+        closeEyesMode.value = CloseEyesModeEnum.opacity;
+        break;
+    }
+    setState(() {});
+  }
+
+  String i18nCloseEyesMode() {
+    switch (closeEyesMode.value) {
+      case CloseEyesModeEnum.opacity:
+        return I18nKey.opacity.tr;
+      case CloseEyesModeEnum.translucence:
+        return I18nKey.translucence.tr;
+      default:
+        return I18nKey.transparent.tr;
+    }
   }
 
   @override
@@ -165,7 +187,7 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
             child: Container(
               height: widget.height,
               width: widget.width,
-              color: widget.backgroundColor,
+              color: closeEyesMode.value.backgroundColor,
             ),
           ),
           if (show)
@@ -199,12 +221,27 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: PopupMenuButton<String>(
-              onOpened: clearFingers,
-              icon: Icon(Icons.more_vert, color: widget.foregroundColor),
+              onOpened: reset,
+              icon: Icon(Icons.more_vert, color: closeEyesMode.value.foregroundColor),
               itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                 PopupMenuItem<String>(
                   onTap: widget.help,
                   child: Text(I18nKey.help.tr),
+                ),
+                PopupMenuItem<String>(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: loopCloseEyesMode,
+                    child: Obx(() {
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text("${I18nKey.closeEyesMode.tr}${i18nCloseEyesMode()}"),
+                          Spacer(),
+                        ],
+                      );
+                    }),
+                  ),
                 ),
                 PopupMenuItem<String>(
                   onTap: () => show = !show,

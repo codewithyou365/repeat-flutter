@@ -157,7 +157,7 @@ class RepeatPage extends StatelessWidget {
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
               PopupMenuItem<String>(
                 onTap: logic.switchBlindMode,
-                child: Text(I18nKey.closeEyesMode.tr),
+                child: Text(I18nKey.closeEyes.tr),
               ),
               PopupMenuItem<String>(
                 onTap: () async {
@@ -441,13 +441,13 @@ class RepeatPage extends StatelessWidget {
 
   Widget closeEyesPanel(RepeatLogic logic) {
     final helper = logic.state.helper;
-    if (logic.state.enableCloseEyesMode.value == CloseEyesEnum.none) {
+    if (logic.state.enableCloseEyesMode.value == CloseEyesModeEnum.none) {
       return SizedBox.shrink();
     } else {
       return CloseEyesPanel.open(
         height: helper.screenHeight,
         width: helper.screenWidth,
-        showFinger: logic.state.enableCloseEyesMode.value != CloseEyesEnum.opacity,
+        showFinger: true,
         direct: DirectEnum.values[logic.state.closeEyesDirect],
         changeDirect: (DirectEnum direct) {
           logic.state.closeEyesDirect = direct.index;
@@ -465,13 +465,11 @@ class RepeatPage extends StatelessWidget {
         },
         upCallback: (int index, int total) {},
         close: () {
-          logic.state.enableCloseEyesMode.value = CloseEyesEnum.none;
+          logic.state.enableCloseEyesMode.value = CloseEyesModeEnum.none;
         },
         help: () {
           MsgBox.tips(desc: I18nKey.closeEyesTips.tr);
         },
-        backgroundColor: logic.state.enableCloseEyesMode.value.backgroundColor,
-        foregroundColor: logic.state.enableCloseEyesMode.value.foregroundColor,
       );
     }
   }

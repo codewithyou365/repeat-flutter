@@ -304,8 +304,8 @@ class ConfigEn extends Config {
     put(I18nKey.fontSize, "Font Size");
     put(I18nKey.editContent, "Edit Content");
     put(I18nKey.theContentHasBeenDeleted, "The content (%s) has been deleted");
-    put(I18nKey.closeEyesMode, "Close-Eyes");
-    put(I18nKey.enableCloseEyesMode, "Enable Close-Eyes Mode");
+    put(I18nKey.closeEyes, "Close-Eyes");
+    put(I18nKey.closeEyesMode, "Close-Eyes Mode: ");
     put(I18nKey.transparent, "Transparent");
     put(I18nKey.translucence, "Translucence");
     put(I18nKey.opacity, "Opacity");

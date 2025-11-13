@@ -69,7 +69,7 @@ enum RepeatViewEnum {
   video,
 }
 
-enum CloseEyesEnum {
+enum CloseEyesModeEnum {
   transparent(null, Color.fromRGBO(0, 0, 0, 0)),
   translucence(null, Color.fromRGBO(0, 0, 255, 0.1)),
   opacity(Color.fromRGBO(255, 255, 255, 0.3), Colors.black),
@@ -78,7 +78,10 @@ enum CloseEyesEnum {
   final Color? foregroundColor;
   final Color? backgroundColor;
 
-  const CloseEyesEnum(this.foregroundColor, this.backgroundColor);
+  const CloseEyesModeEnum(
+    this.foregroundColor,
+    this.backgroundColor,
+  );
 }
 
 class DownloadConstant {

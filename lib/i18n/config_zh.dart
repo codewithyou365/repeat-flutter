@@ -304,8 +304,8 @@ class ConfigZh extends Config {
     put(I18nKey.fontSize, "字体大小");
     put(I18nKey.editContent, "编辑内容");
     put(I18nKey.theContentHasBeenDeleted, "该内容 (%s) 已被删除");
-    put(I18nKey.closeEyesMode, "闭眼");
-    put(I18nKey.enableCloseEyesMode, "开启闭眼模式");
+    put(I18nKey.closeEyes, "闭眼");
+    put(I18nKey.closeEyesMode, "闭眼模式: ");
     put(I18nKey.transparent, "透明");
     put(I18nKey.translucence, "半透明");
     put(I18nKey.opacity, "不透明");

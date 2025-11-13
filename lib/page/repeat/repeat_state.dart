@@ -9,7 +9,7 @@ class RepeatState {
 
   var enableShowRecallButtons = false;
   var closeEyesDirect = 0;
-  var enableCloseEyesMode = Rx<CloseEyesEnum>(CloseEyesEnum.none);
+  var enableCloseEyesMode = Rx<CloseEyesModeEnum>(CloseEyesModeEnum.none);
   Helper helper = Helper();
   late double bodyHeight;
   var showBottomBar = true;
