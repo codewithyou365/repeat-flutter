@@ -112,7 +112,7 @@ class RepeatLogic extends GetxController {
     update([RepeatLogic.id]);
   }
 
-  void switchBlindMode() async {
+  void openCloseEyesMode() async {
     state.enableCloseEyesMode.value = CloseEyesModeEnum.opacity;
   }
 

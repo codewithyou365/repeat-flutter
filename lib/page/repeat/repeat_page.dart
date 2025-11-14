@@ -156,7 +156,7 @@ class RepeatPage extends StatelessWidget {
             icon: const Icon(Icons.more_vert),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
               PopupMenuItem<String>(
-                onTap: logic.switchBlindMode,
+                onTap: logic.openCloseEyesMode,
                 child: Text(I18nKey.closeEyes.tr),
               ),
               PopupMenuItem<String>(
@@ -380,17 +380,20 @@ class RepeatPage extends StatelessWidget {
                       switch (ContentTypeEnum.values[saveTo.value]) {
                         case ContentTypeEnum.book:
                           bookMap![fontSizeKey] = '${v.value}';
+                          await Db().db.bookDao.updateBookContent(verse.bookId, jsonEncode(bookMap));
+                          await Db().db.chapterDao.updateChapterContent(verse.chapterId, jsonEncode(chapterMap));
+                          await Db().db.verseDao.updateVerseContent(verse.verseId, jsonEncode(verseMap));
                           break;
                         case ContentTypeEnum.chapter:
                           chapterMap![fontSizeKey] = '${v.value}';
+                          await Db().db.chapterDao.updateChapterContent(verse.chapterId, jsonEncode(chapterMap));
+                          await Db().db.verseDao.updateVerseContent(verse.verseId, jsonEncode(verseMap));
                           break;
                         case ContentTypeEnum.verse:
                           verseMap![fontSizeKey] = '${v.value}';
+                          await Db().db.verseDao.updateVerseContent(verse.verseId, jsonEncode(verseMap));
                           break;
                       }
-                      await Db().db.bookDao.updateBookContent(verse.bookId, jsonEncode(bookMap));
-                      await Db().db.chapterDao.updateChapterContent(verse.chapterId, jsonEncode(chapterMap));
-                      await Db().db.verseDao.updateVerseContent(verse.verseId, jsonEncode(verseMap));
                       logic.update([RepeatLogic.id]);
                       Get.back();
                     },
