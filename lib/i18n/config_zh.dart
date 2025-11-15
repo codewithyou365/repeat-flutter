@@ -315,5 +315,6 @@ class ConfigZh extends Config {
     put(I18nKey.rotate, "旋转");
     put(I18nKey.help, "帮助");
     put(I18nKey.showFingers, "显示手指");
+    put(I18nKey.refresh, "刷新");
   }
 }

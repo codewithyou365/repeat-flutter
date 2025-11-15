@@ -12,6 +12,8 @@ enum K {
   bookAdvancedEditorRelativeNumbers,
   closeEyesDirect,
   generateSslTime,
+  credential,
+  credentialExpireTime,
 }
 
 @Entity(primaryKeys: ['k'])

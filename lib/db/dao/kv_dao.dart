@@ -17,6 +17,9 @@ abstract class KvDao {
   @Query("SELECT CAST(value as INTEGER) FROM Kv where `k`=:k")
   Future<int?> getInt(K k);
 
+  @Query("SELECT value FROM Kv where `k`=:k")
+  Future<String?> getStr(K k);
+
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertKv(Kv kv);
 

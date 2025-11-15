@@ -42,7 +42,7 @@ class BookEditorPage<T extends GetxController> {
         if (state.addresses.isNotEmpty)
           ...List.generate(
             state.addresses.length,
-            (index) => buildItem(state.addresses[index].title, state.addresses[index].address, logic.randCredentials),
+            (index) => buildItem(state.addresses[index].title, state.addresses[index].address, logic.openCredential),
           ),
       ],
     );

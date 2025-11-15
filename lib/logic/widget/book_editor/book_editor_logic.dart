@@ -9,6 +9,7 @@ import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/ssl.dart';
 import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/common/url.dart';
+import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
@@ -66,7 +67,7 @@ class BookEditorLogic<T extends GetxController> {
         state.verseIndex = state.args.verseIndex;
         state.bookId = state.args.bookId;
         state.bookName = state.args.bookName;
-        randCredentials(show: false);
+        openCredential();
         await _initEditorDir(state.bookId);
         await _startHttpService();
       } else {
@@ -132,18 +133,38 @@ class BookEditorLogic<T extends GetxController> {
     }
   }
 
-  void randCredentials({bool show = true}) {
-    state.user.value = StringUtil.generateRandom09(3);
-    state.password.value = StringUtil.generateRandom09(6);
-    if (show) {
-      MsgBox.yes(
-        I18nKey.keyTitle.tr,
-        I18nKey.keyContent.trParams([state.user.value, state.password.value]),
-        yes: () {
-          Get.back();
-        },
-      );
+  Future<void> openCredential() async {
+    String? credential = await Db().db.kvDao.getStr(K.credential);
+    int? credentialExpireTime = await Db().db.kvDao.getInt(K.credentialExpireTime);
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (credential == null || credentialExpireTime == null || credentialExpireTime < now) {
+      credential = StringUtil.generateRandom09(9);
+
+      await Db().db.kvDao.insertKv(Kv(K.credential, credential));
+      final expireAt = now + const Duration(hours: 4).inMilliseconds;
+      await Db().db.kvDao.insertKv(Kv(K.credentialExpireTime, expireAt.toString()));
     }
+    state.user.value = credential.substring(0, 3);
+    state.password.value = credential.substring(3);
+    MsgBox.myDialog(
+      title: title,
+      content: Obx(() {
+        return MsgBox.content(I18nKey.keyContent.trParams([state.user.value, state.password.value]));
+      }),
+      action: MsgBox.yesOrNoAction(
+        yes: () {
+          String credential = StringUtil.generateRandom09(9);
+          state.user.value = credential.substring(0, 3);
+          state.password.value = credential.substring(3);
+          Db().db.kvDao.insertKv(Kv(K.credential, credential));
+          final now = DateTime.now().millisecondsSinceEpoch;
+          final expireAt = now + const Duration(hours: 4).inMilliseconds;
+          Db().db.kvDao.insertKv(Kv(K.credentialExpireTime, expireAt.toString()));
+        },
+        yesBtnTitle: I18nKey.refresh.tr,
+        noBtnTitle: I18nKey.close.tr,
+      ),
+    );
   }
 
   void _handleRequest(HttpRequest request) async {

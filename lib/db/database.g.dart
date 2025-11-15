@@ -2026,6 +2026,13 @@ class _$KvDao extends KvDao {
   }
 
   @override
+  Future<String?> getStr(K k) async {
+    return _queryAdapter.query('SELECT value FROM Kv where `k`=?1',
+        mapper: (Map<String, Object?> row) => row.values.first as String,
+        arguments: [_kConverter.encode(k)]);
+  }
+
+  @override
   Future<void> insertKv(Kv kv) async {
     await _kvInsertionAdapter.insert(kv, OnConflictStrategy.replace);
   }

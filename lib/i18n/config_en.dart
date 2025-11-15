@@ -315,6 +315,6 @@ class ConfigEn extends Config {
     put(I18nKey.rotate, "Rotate");
     put(I18nKey.help, "Help");
     put(I18nKey.showFingers, "Show Fingers");
-
+    put(I18nKey.refresh, "Refresh");
   }
 }

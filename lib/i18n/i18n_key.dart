@@ -315,6 +315,7 @@ enum I18nKey {
   rotate,
   help,
   showFingers,
+  refresh,
   _end;
 
   String trArgs([List<String> args = const []]) {
