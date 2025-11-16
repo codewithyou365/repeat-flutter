@@ -219,6 +219,7 @@ class BookEditorLogic<T extends GetxController> {
     final Map<String, bool> map = {
       "/ace.js": true,
       "/ext-searchbox.js": true,
+      "/history.html": true,
       "/index.html": true,
       "/json-source-map.js": true,
       "/keybinding-vim.min.js": true,

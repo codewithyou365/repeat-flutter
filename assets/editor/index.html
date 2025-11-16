@@ -33,6 +33,7 @@
             border-radius: 6px;
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.1s ease;
+            position: relative;
         }
 
         .btn:hover {
@@ -156,6 +157,24 @@
 
         #settings-menu div {
             padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        #settings-menu div:hover {
+            background-color: #f0f0f0;
+        }
+
+        .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #ff0000;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 10px;
+            margin-left: 0;
+            display: none;
         }
 
         .no-js {
@@ -187,6 +206,7 @@
     <button class="btn" onclick="uploadFile()">Upload File</button>
     <div class="container">
         <button class="btn" onclick="commit()">Commit</button>
+        <button class="btn" onclick="openHistory()"><span>History</span><span id="history-badge" class="badge"></span></button>
         <button class="btn" onclick="formatJSON()">Format JSON</button>
         <button id="settings-menu-btn" class="btn" onclick="toggleSettingsMenu()">Settings</button>
     </div>
@@ -731,6 +751,7 @@
     initBook();
     initVimMode();
     initRelativeNumbers();
+    updateHistoryBadge();
 
     async function initFiles() {
         try {
@@ -858,6 +879,19 @@
         if (!sure) {
             return;
         }
+        const historyKey = 'bookHistory';
+        let history = JSON.parse(localStorage.getItem(historyKey)) || [];
+        history.push({
+            timestamp: new Date().toISOString(),
+            content: data
+        });
+        if (history.length > 20) {
+            history.shift();
+        }
+        localStorage.setItem(historyKey, JSON.stringify(history));
+        let badge = (parseInt(localStorage.getItem('historyBadge')) || 0) + 1;
+        localStorage.setItem('historyBadge', badge);
+        updateHistoryBadge();
         try {
             const res = await fetch('/commit', {
                 method: 'POST',
@@ -898,6 +932,27 @@
             }
         };
         input.click();
+    }
+
+    function openHistory() {
+        const vimEnabled = document.getElementById('vimToggle').checked ? '1' : '0';
+        const relativeEnabled = document.getElementById('relativeToggle').checked ? '1' : '0';
+        window.open(`history.html?vim=${vimEnabled}&relativeLineNumbers=${relativeEnabled}`, '_blank', 'width=800,height=600');
+        localStorage.setItem('historyBadge', 0);
+        updateHistoryBadge();
+    }
+
+    function updateHistoryBadge() {
+        let badgeCount = parseInt(localStorage.getItem('historyBadge')) || 0;
+        const badgeEl = document.getElementById('history-badge');
+        if (badgeEl) {
+            if (badgeCount > 0) {
+                badgeEl.textContent = badgeCount;
+                badgeEl.style.display = 'inline';
+            } else {
+                badgeEl.style.display = 'none';
+            }
+        }
     }
 </script>
 </body>

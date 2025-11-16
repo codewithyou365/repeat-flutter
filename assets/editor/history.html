@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book History</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+        }
+
+        #history-list {
+            width: 30%;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 1px solid #ccc;
+            font-family: sans-serif;
+        }
+
+        #editor-container {
+            width: 70%;
+        }
+
+        #editor {
+            width: 100%;
+            height: 100vh;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        li {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        li:hover {
+            background-color: #f0f0f0;
+        }
+
+        li.active {
+            background-color: #ffff99;
+        }
+    </style>
+    <script src="/ace.js"></script>
+    <script src="/keybinding-vim.min.js"></script>
+    <script src="/json-source-map.js"></script>
+</head>
+<body>
+<div class="container">
+    <div id="history-list"></div>
+    <div id="editor-container">
+        <div id="editor"></div>
+    </div>
+</div>
+
+<script>
+    var editor = ace.edit("editor");
+    editor.session.setMode("ace/mode/json");
+    editor.setTheme("ace/theme/github");
+    editor.setReadOnly(true);
+
+    const query = new URLSearchParams(window.location.search);
+
+    function initVimMode() {
+        if (query.get('vim') === '1') {
+            editor.setKeyboardHandler("ace/keyboard/vim");
+        } else {
+            editor.setKeyboardHandler(null);
+        }
+    }
+
+    function initRelativeNumbers() {
+        if (query.get('relativeLineNumbers') === '1') {
+            editor.setOption('relativeLineNumbers', true);
+        } else {
+            editor.setOption('relativeLineNumbers', false);
+        }
+    }
+
+    function loadHistory() {
+        const historyKey = 'bookHistory';
+        let history = JSON.parse(localStorage.getItem(historyKey)) || [];
+        history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        const listDiv = document.getElementById('history-list');
+        listDiv.innerHTML = '';
+
+        const ul = document.createElement('ul');
+        history.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.textContent = item.timestamp;
+            li.onclick = () => {
+                editor.setValue(item.content, -1);
+                editor.gotoLine(1, 0, false);
+                document.querySelectorAll('#history-list li').forEach(el => el.classList.remove('active'));
+                li.classList.add('active');
+            };
+            ul.appendChild(li);
+        });
+        listDiv.appendChild(ul);
+
+        if (history.length > 0) {
+            ul.firstChild.click();
+        }
+    }
+
+    initVimMode();
+    initRelativeNumbers();
+    loadHistory();
+</script>
+</body>
+</html>
