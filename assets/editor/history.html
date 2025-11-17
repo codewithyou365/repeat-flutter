@@ -14,7 +14,7 @@
         }
 
         #history-list {
-            width: 30%;
+            width: 20%;
             height: 100vh;
             overflow-y: auto;
             border-right: 1px solid #ccc;
@@ -22,7 +22,7 @@
         }
 
         #editor-container {
-            width: 70%;
+            width: 80%;
         }
 
         #editor {
@@ -86,36 +86,84 @@
         }
     }
 
-    function loadHistory() {
-        const historyKey = 'bookHistory';
-        let history = JSON.parse(localStorage.getItem(historyKey)) || [];
-        history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    initVimMode();
+    initRelativeNumbers();
 
-        const listDiv = document.getElementById('history-list');
-        listDiv.innerHTML = '';
+    let historyItems = [];
+    let lastId = null;
+    let loading = false;
+    let hasMore = true;
+    const pageSize = 50;
 
-        const ul = document.createElement('ul');
-        history.forEach((item, index) => {
-            const li = document.createElement('li');
-            li.textContent = item.timestamp;
-            li.onclick = () => {
-                editor.setValue(item.content, -1);
-                editor.gotoLine(1, 0, false);
-                document.querySelectorAll('#history-list li').forEach(el => el.classList.remove('active'));
-                li.classList.add('active');
-            };
-            ul.appendChild(li);
-        });
-        listDiv.appendChild(ul);
+    const listDiv = document.getElementById('history-list');
+    const ul = document.createElement('ul');
+    listDiv.appendChild(ul);
 
-        if (history.length > 0) {
-            ul.firstChild.click();
+    async function loadMore() {
+        if (loading || !hasMore) return;
+        loading = true;
+
+        try {
+            const res = await fetch(`/history`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    pageSize: pageSize,
+                    lastId: lastId,
+                })
+            });
+
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+
+            const data = await res.json();
+            const newItems = data.history;
+
+            if (newItems.length < pageSize) {
+                hasMore = false;
+            }
+
+            historyItems.push(...newItems);
+
+            newItems.forEach((item) => {
+                const li = document.createElement('li');
+                li.textContent = item.commitDate;
+                li.dataset.id = item.id;
+                li.onclick = () => {
+                    var parsed = JSON.parse(item.content);
+                    editor.setValue(JSON.stringify(parsed, null, 2), -1);
+                    editor.gotoLine(1, 0, false);
+                    document.querySelectorAll('#history-list li').forEach(el => el.classList.remove('active'));
+                    li.classList.add('active');
+                };
+                ul.appendChild(li);
+            });
+
+            if (historyItems.length > 0 && ul.children.length === newItems.length) {
+                ul.firstChild.click();
+            }
+
+            if (newItems.length > 0) {
+                lastId = newItems[newItems.length - 1].id;
+            }
+        } catch (error) {
+            console.error('Failed to load history:', error);
+        } finally {
+            loading = false;
         }
     }
 
-    initVimMode();
-    initRelativeNumbers();
-    loadHistory();
+    function onScroll() {
+        if (listDiv.scrollTop + listDiv.clientHeight >= listDiv.scrollHeight - 50) {
+            loadMore();
+        }
+    }
+
+    listDiv.addEventListener('scroll', onScroll);
+    loadMore();
 </script>
 </body>
 </html>

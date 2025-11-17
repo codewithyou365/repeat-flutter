@@ -13,6 +13,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/widget/book_editor/logic/history.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -208,6 +209,8 @@ class BookEditorLogic<T extends GetxController> {
       await handleGetEditorStatus(request, K.bookAdvancedEditorRelativeNumbers);
     } else if (path == '/setRelativeLineNumbers' && request.method == 'POST') {
       await handleSetEditorStatus(request, K.bookAdvancedEditorRelativeNumbers);
+    } else if (path == '/history' && request.method == 'POST') {
+      await handleHistory(request, state.bookId);
     } else {
       await _serveFile(request.uri.pathSegments, request);
     }

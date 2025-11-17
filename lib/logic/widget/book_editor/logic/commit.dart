@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/edit_book_history.dart';
 import 'package:repeat_flutter/logic/cache_help.dart';
 import 'package:repeat_flutter/logic/reimport_help.dart';
 
@@ -10,6 +12,13 @@ Future<void> handleCommit(HttpRequest request, int bookId) async {
   List<String> bookCacheVersionHeader = request.headers[Header.bookCacheVersion] ?? [];
 
   try {
+    final content = await utf8.decoder.bind(request).join();
+    EditBookHistory history = EditBookHistory(
+      bookId: bookId,
+      commitDate: DateTime.now(),
+      content: content,
+    );
+    Db().db.editBookHistoryDao.insertOrFail(history);
     var bookCacheVersion = -1;
     if (bookCacheVersionHeader.isNotEmpty) {
       bookCacheVersion = int.parse(bookCacheVersionHeader.first);
@@ -19,7 +28,6 @@ Future<void> handleCommit(HttpRequest request, int bookId) async {
       response.write("Commit failed because the version is not consistent");
       return;
     }
-    final content = await utf8.decoder.bind(request).join();
     final Map<String, dynamic> jsonData = jsonDecode(content);
 
     var result = await ReimportHelp.reimport(bookId, jsonData);

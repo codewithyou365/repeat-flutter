@@ -10,6 +10,7 @@ import 'package:repeat_flutter/db/dao/chapter_content_version_dao.dart';
 import 'package:repeat_flutter/db/dao/classroom_dao.dart';
 import 'package:repeat_flutter/db/dao/book_dao.dart';
 import 'package:repeat_flutter/db/dao/cr_kv_dao.dart';
+import 'package:repeat_flutter/db/dao/edit_book_history_dao.dart';
 import 'package:repeat_flutter/db/dao/game_dao.dart';
 import 'package:repeat_flutter/db/dao/game_user_dao.dart';
 import 'package:repeat_flutter/db/dao/chapter_dao.dart';
@@ -42,6 +43,7 @@ import 'package:repeat_flutter/db/entity/game_user_input.dart';
 import 'package:repeat_flutter/db/entity/time_stats.dart';
 import 'package:repeat_flutter/db/migration/m1_2.dart';
 import 'package:repeat_flutter/db/migration/m2_3.dart';
+import 'package:repeat_flutter/db/migration/m3_4.dart';
 import 'package:repeat_flutter/db/type_converter.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
@@ -51,34 +53,39 @@ import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 
+import 'entity/edit_book_history.dart';
 import 'entity/kv.dart';
 
 part 'database.g.dart'; // the generated code will be there
 
-@Database(version: 3, entities: [
-  Book,
-  BookContentVersion,
-  Chapter,
-  ChapterContentVersion,
-  Kv,
-  Classroom,
-  CrKv,
-  Verse,
-  VerseContentVersion,
-  KeyId,
-  VerseShow,
-  VerseReview,
-  VerseReviewWithKey,
-  VerseTodayPrg,
-  VerseStats,
-  TimeStats,
-  BookShow,
-  Game,
-  GameUser,
-  GameUserInput,
-  Lock,
-  ChapterShow,
-])
+@Database(
+  version: 4,
+  entities: [
+    Book,
+    BookContentVersion,
+    Chapter,
+    ChapterContentVersion,
+    Kv,
+    Classroom,
+    CrKv,
+    EditBookHistory,
+    Verse,
+    VerseContentVersion,
+    KeyId,
+    VerseShow,
+    VerseReview,
+    VerseReviewWithKey,
+    VerseTodayPrg,
+    VerseStats,
+    TimeStats,
+    BookShow,
+    Game,
+    GameUser,
+    GameUserInput,
+    Lock,
+    ChapterShow,
+  ],
+)
 @TypeConverters([
   KConverter,
   CrKConverter,
@@ -98,6 +105,8 @@ abstract class AppDatabase extends FloorDatabase {
   ClassroomDao get classroomDao;
 
   CrKvDao get crKvDao;
+
+  EditBookHistoryDao get editBookHistoryDao;
 
   LockDao get lockDao;
 
@@ -143,6 +152,7 @@ class Db {
       db = await $FloorAppDatabase.databaseBuilder(fileName).addMigrations([
         m1_2,
         m2_3,
+        m3_4,
       ]).build();
       log("Database path: \n${await sqflite.getDatabasesPath()}/$fileName");
     }

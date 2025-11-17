@@ -84,6 +84,8 @@ class _$AppDatabase extends AppDatabase {
 
   CrKvDao? _crKvDaoInstance;
 
+  EditBookHistoryDao? _editBookHistoryDaoInstance;
+
   LockDao? _lockDaoInstance;
 
   GameUserDao? _gameUserDaoInstance;
@@ -116,7 +118,7 @@ class _$AppDatabase extends AppDatabase {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 3,
+      version: 4,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -145,6 +147,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE TABLE IF NOT EXISTS `Classroom` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `CrKv` (`classroomId` INTEGER NOT NULL, `k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`classroomId`, `k`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `EditBookHistory` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `bookId` INTEGER NOT NULL, `commitDate` INTEGER NOT NULL, `content` TEXT NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Verse` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, `verseIndex` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `content` TEXT NOT NULL, `contentVersion` INTEGER NOT NULL, `learnDate` INTEGER NOT NULL, `progress` INTEGER NOT NULL)');
         await database.execute(
@@ -187,6 +191,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE UNIQUE INDEX `index_Classroom_name` ON `Classroom` (`name`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_Classroom_sort` ON `Classroom` (`sort`)');
+        await database.execute(
+            'CREATE UNIQUE INDEX `index_EditBookHistory_commitDate_bookId` ON `EditBookHistory` (`commitDate`, `bookId`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_Verse_chapterId_verseIndex` ON `Verse` (`chapterId`, `verseIndex`)');
         await database.execute(
@@ -278,6 +284,12 @@ class _$AppDatabase extends AppDatabase {
   @override
   CrKvDao get crKvDao {
     return _crKvDaoInstance ??= _$CrKvDao(database, changeListener);
+  }
+
+  @override
+  EditBookHistoryDao get editBookHistoryDao {
+    return _editBookHistoryDaoInstance ??=
+        _$EditBookHistoryDao(database, changeListener);
   }
 
   @override
@@ -1341,6 +1353,67 @@ class _$CrKvDao extends CrKvDao {
   @override
   Future<void> insertsOrReplace(List<CrKv> kv) async {
     await _crKvInsertionAdapter.insertList(kv, OnConflictStrategy.replace);
+  }
+}
+
+class _$EditBookHistoryDao extends EditBookHistoryDao {
+  _$EditBookHistoryDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _editBookHistoryInsertionAdapter = InsertionAdapter(
+            database,
+            'EditBookHistory',
+            (EditBookHistory item) => <String, Object?>{
+                  'id': item.id,
+                  'bookId': item.bookId,
+                  'commitDate': _dateTimeConverter.encode(item.commitDate),
+                  'content': item.content
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<EditBookHistory> _editBookHistoryInsertionAdapter;
+
+  @override
+  Future<List<EditBookHistory>> getPaginatedList(
+    int bookId,
+    int limit,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM EditBookHistory WHERE bookId = ?1 ORDER BY commitDate DESC LIMIT ?2',
+        mapper: (Map<String, Object?> row) => EditBookHistory(id: row['id'] as int?, bookId: row['bookId'] as int, commitDate: _dateTimeConverter.decode(row['commitDate'] as int), content: row['content'] as String),
+        arguments: [bookId, limit]);
+  }
+
+  @override
+  Future<List<EditBookHistory>> getPaginatedListWithLastId(
+    int bookId,
+    int lastId,
+    int limit,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM EditBookHistory WHERE bookId = ?1 AND id < ?2 ORDER BY commitDate DESC LIMIT ?3',
+        mapper: (Map<String, Object?> row) => EditBookHistory(id: row['id'] as int?, bookId: row['bookId'] as int, commitDate: _dateTimeConverter.decode(row['commitDate'] as int), content: row['content'] as String),
+        arguments: [bookId, lastId, limit]);
+  }
+
+  @override
+  Future<int?> getCount(int bookId) async {
+    return _queryAdapter.query(
+        'SELECT COUNT(*) FROM EditBookHistory WHERE bookId = ?1',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [bookId]);
+  }
+
+  @override
+  Future<void> insertOrFail(EditBookHistory entity) async {
+    await _editBookHistoryInsertionAdapter.insert(
+        entity, OnConflictStrategy.fail);
   }
 }
 

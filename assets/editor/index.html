@@ -879,16 +879,6 @@
         if (!sure) {
             return;
         }
-        const historyKey = 'bookHistory';
-        let history = JSON.parse(localStorage.getItem(historyKey)) || [];
-        history.push({
-            timestamp: new Date().toISOString(),
-            content: data
-        });
-        if (history.length > 20) {
-            history.shift();
-        }
-        localStorage.setItem(historyKey, JSON.stringify(history));
         let badge = (parseInt(localStorage.getItem('historyBadge')) || 0) + 1;
         localStorage.setItem('historyBadge', badge);
         updateHistoryBadge();
@@ -937,7 +927,7 @@
     function openHistory() {
         const vimEnabled = document.getElementById('vimToggle').checked ? '1' : '0';
         const relativeEnabled = document.getElementById('relativeToggle').checked ? '1' : '0';
-        window.open(`history.html?vim=${vimEnabled}&relativeLineNumbers=${relativeEnabled}`, '_blank', 'width=800,height=600');
+        window.open(`history.html?vim=${vimEnabled}&relativeLineNumbers=${relativeEnabled}`, '_blank', 'width=1000,height=600');
         localStorage.setItem('historyBadge', 0);
         updateHistoryBadge();
     }
