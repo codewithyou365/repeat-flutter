@@ -76,7 +76,7 @@ class RepeatViewForAudio extends RepeatView {
             helper.resetMediaStart = false;
             mediaKey.currentState?.drawStart();
           }
-          if (helper.enablePlayingPlayMedia) {
+          if (!helper.enablePlayingPlayMedia) {
             return;
           }
           mediaKey.currentState?.playFromStart();
