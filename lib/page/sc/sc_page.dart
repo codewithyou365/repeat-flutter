@@ -58,15 +58,15 @@ class ScPage extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 28.w),
       child: MasonryGridView.count(
         shrinkWrap: true,
-        crossAxisCount: 2,
-        mainAxisSpacing: 28.w,
-        crossAxisSpacing: 28.w,
+        crossAxisCount: 3,
+        mainAxisSpacing: 28,
+        crossAxisSpacing: 28,
         itemBuilder: (context, index) {
           if (index != 1) {
             return buildButton(logic, state.list[index]);
           }
           return Padding(
-            padding: EdgeInsets.only(top: 28.w),
+            padding: EdgeInsets.only(top: 10),
             child: buildButton(logic, state.list[index]),
           );
         },
@@ -84,14 +84,14 @@ class ScPage extends StatelessWidget {
         openDeleteDialog(logic, model);
       },
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16.w),
+        borderRadius: BorderRadius.circular(8),
         child: Container(
           color: Colors.blue,
-          padding: const EdgeInsets.only(top: 70, bottom: 70),
+          padding: const EdgeInsets.all(8),
           alignment: Alignment.center,
           child: Text(
             model.name,
-            style: TextStyle(fontSize: 50.sp),
+            style: TextStyle(fontSize: 30),
           ),
         ),
       ),
