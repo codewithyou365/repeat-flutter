@@ -183,6 +183,40 @@
             font-size: 24px;
             color: red;
         }
+
+        #loading-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner-background {
+            background: rgba(240, 240, 240, 1);
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #000;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
     <script src="/ace.js"></script>
     <script src="/keybinding-vim.min.js"></script>
@@ -206,7 +240,9 @@
     <button class="btn" onclick="uploadFile()">Upload File</button>
     <div class="container">
         <button class="btn" onclick="commit()">Commit</button>
-        <button class="btn" onclick="openHistory()"><span>History</span><span id="history-badge" class="badge"></span></button>
+        <button class="btn" onclick="openHistory()">
+            <span>History</span><span id="history-badge" class="badge"></span>
+        </button>
         <button class="btn" onclick="formatJSON()">Format JSON</button>
         <button id="settings-menu-btn" class="btn" onclick="toggleSettingsMenu()">Settings</button>
     </div>
@@ -232,6 +268,12 @@
 </div>
 
 <input type="file" id="file-input"/>
+
+<div id="loading-panel">
+    <div class="spinner-background">
+        <div class="spinner"></div>
+    </div>
+</div>
 
 <script>
     var editor = ace.edit("editor");
@@ -715,17 +757,37 @@
         }
     });
 
+    function openLoading() {
+        document.getElementById('loading-panel').style.display = 'flex';
+    }
+
+    function closeLoading() {
+        document.getElementById('loading-panel').style.display = 'none';
+    }
+
     document.getElementById('file-menu-play').addEventListener('click', () => {
         const playUrl = `/play?path=${encodeURIComponent(fileSelectedPath)}`;
         if (fileSelectedPath.endsWith('.mp3') || fileSelectedPath.endsWith('.mp4')) {
             window.open(playUrl, 'mediaPlayer', 'width=400,height=200');
         } else {
-            const link = document.createElement('a');
-            link.href = playUrl;
-            link.download = fileSelectedPath.split('/').pop();
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            const id = Date.now();
+            openLoading();
+            const downloadWindow = window.open(playUrl + "&id=" + id, 'download', 'width=400,height=200');
+            const timer = setInterval(async () => {
+                try {
+                    const res = await fetch(`/checkDownloadStatus?id=${id}`);
+                    const json = await res.json();
+                    if (json.status === 'done') {
+                        clearInterval(timer);
+                        downloadWindow.close();
+                        closeLoading();
+                    }
+                } catch (err) {
+                    console.error("Error checking download status:", err);
+                    clearInterval(timer);
+                    closeLoading();
+                }
+            }, 100);
         }
         clearFileSelected();
     });
@@ -937,7 +999,6 @@
         const badgeEl = document.getElementById('history-badge');
         if (badgeEl) {
             if (badgeCount > 0) {
-                badgeEl.textContent = badgeCount;
                 badgeEl.style.display = 'inline';
             } else {
                 badgeEl.style.display = 'none';

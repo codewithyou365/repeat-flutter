@@ -69,6 +69,7 @@ class BookEditorLogic<T extends GetxController> {
         state.bookId = state.args.bookId;
         state.bookName = state.args.bookName;
         openCredential();
+        clearActiveDownloads();
         await _initEditorDir(state.bookId);
         await _startHttpService();
       } else {
@@ -191,6 +192,8 @@ class BookEditorLogic<T extends GetxController> {
       response.write('{"message": "Hello, World!"}');
     } else if (path == '/browse' && request.method == 'POST') {
       await handleBrowse(request, editorDir);
+    } else if (path == '/checkDownloadStatus') {
+      await handleCheckDownloadStatus(request);
     } else if (path == '/play') {
       await handlePlay(request, editorDir);
     } else if (path == '/delete' && request.method == 'POST') {

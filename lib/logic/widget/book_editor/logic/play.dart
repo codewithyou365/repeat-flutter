@@ -1,5 +1,29 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:path/path.dart' as p;
+
+Set<String> activeDownloads = {};
+
+void clearActiveDownloads() {
+  activeDownloads = {};
+}
+
+Future<void> handleCheckDownloadStatus(HttpRequest request) async {
+  final response = request.response;
+  final id = request.uri.queryParameters['id'];
+
+  if (id == null || id.isEmpty) {
+    response.statusCode = HttpStatus.badRequest;
+    response.write('Missing "id" parameter');
+    await response.close();
+    return;
+  }
+
+  final status = activeDownloads.contains(id) ? 'in_progress' : 'done';
+  response.headers.contentType = ContentType.json;
+  response.write(json.encode({'status': status}));
+  await response.close();
+}
 
 Future<void> handlePlay(HttpRequest request, Directory? dir) async {
   final response = request.response;
@@ -31,12 +55,25 @@ Future<void> handlePlay(HttpRequest request, Directory? dir) async {
     if (file.path.toLowerCase().endsWith('.mp4') || file.path.toLowerCase().endsWith('.mp3')) {
       await _playMedia(request, file);
     } else {
+      final id = request.uri.queryParameters['id'];
+      if (id == null || id.isEmpty) {
+        response.statusCode = HttpStatus.badRequest;
+        response.write('Missing "id" parameter for download');
+        await response.close();
+        return;
+      }
+
+      activeDownloads.add(id);
       response.headers.contentType = ContentType.binary;
 
       final fileName = p.basename(file.path);
       response.headers.set('content-disposition', 'attachment; filename="${Uri.encodeComponent(fileName)}"');
 
-      await file.openRead().pipe(response);
+      try {
+        await file.openRead().pipe(response);
+      } finally {
+        activeDownloads.remove(id);
+      }
     }
   } catch (e, st) {
     print('Error serving media: $e\n$st');
