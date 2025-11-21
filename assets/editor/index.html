@@ -579,7 +579,10 @@
                 }
                 while (true) {
                     if (current.d && Array.isArray(current.d)) {
-                        return current.d.map(item => item.u).filter(u => u);
+                        return current.d.map(item =>
+                            item.h.substring(0, 2) + "/" +
+                            item.h.substring(2) + "." +
+                            item.u.split('.').slice(-1)[0]).filter(u => u);
                     }
                     if (segments.length === 0) break;
                     segments.pop();
