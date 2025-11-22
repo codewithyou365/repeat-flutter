@@ -22,11 +22,12 @@ abstract class RepeatFlow {
 
   String get rightLabel;
 
-  Future<bool> init(
-    List<VerseTodayPrg> all,
-    Function() update,
-    GameHelper gameHelper,
-  );
+  Future<bool> init({
+    required List<VerseTodayPrg> progresses,
+    required int startIndex,
+    required Function() update,
+    required GameHelper gameHelper,
+  });
 
   void onClose();
 

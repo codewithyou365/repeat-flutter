@@ -57,7 +57,6 @@ class RepeatLogic extends GetxController {
     super.onInit();
     var args = Get.arguments as RepeatArgs;
     state.enableShowRecallButtons = args.enableShowRecallButtons;
-    var all = args.progresses;
     if (args.repeatType == RepeatType.justView) {
       repeatLogic = RepeatFlowForBrowse();
     } else {
@@ -66,9 +65,14 @@ class RepeatLogic extends GetxController {
     await webManager.init(() {
       gameHelper.tryRefreshGame(repeatLogic!.currVerse!);
     });
-    var ok = await repeatLogic!.init(all, () {
-      update([RepeatLogic.id]);
-    }, gameHelper);
+    var ok = await repeatLogic!.init(
+      progresses: args.progresses,
+      startIndex: args.startIndex,
+      update: () {
+        update([RepeatLogic.id]);
+      },
+      gameHelper: gameHelper,
+    );
     if (!ok) {
       Get.back();
       return;

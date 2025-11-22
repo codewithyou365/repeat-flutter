@@ -3,8 +3,7 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/chapter.dart';
-import 'package:repeat_flutter/db/entity/verse.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
@@ -54,31 +53,23 @@ class ContentLogic extends GetxController {
         chapterList.collectData();
         chapterList.trySearch(force: true);
       },
-      onNext: (VerseShow verseShow) async {
+      onNext: (List<VerseShow> verseShows, int index) async {
         if (!args.enableEnteringRepeatView) {
           return;
         }
-        Verse? verse = await Db().db.verseDao.getByIndex(verseShow.bookId, verseShow.chapterIndex, verseShow.verseIndex);
-        if (verse == null) {
-          Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the verseKey data(${verseShow.bookId}-${verseShow.chapterIndex}-${verseShow.verseIndex})"]));
-          return;
-        }
-        var p = await Db().db.verseTodayPrgDao.one(verse.classroomId, verse.id!, TodayPrgType.justView.index);
-        if (p == null) {
-          Chapter? chapter = await Db().db.chapterDao.getById(verse.chapterId);
-          if (chapter == null) {
-            Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the chapter data(${verse.chapterId})"]));
-            return;
-          }
-          await Db().db.verseTodayPrgDao.insertOrFail(
+        await Db().db.verseTodayPrgDao.deleteByType(TodayPrgType.justView.index);
+        List<VerseTodayPrg> verseTodayPrg = [];
+        for (int i = 0; i < verseShows.length; i++) {
+          var verseShow = verseShows[i];
+          verseTodayPrg.add(
             VerseTodayPrg(
-              classroomId: verse.classroomId,
-              bookId: verse.bookId,
-              chapterId: chapter.id!,
-              verseId: verse.id!,
+              classroomId: Classroom.curr,
+              bookId: verseShow.bookId,
+              chapterId: verseShow.chapterId,
+              verseId: verseShow.verseId,
               time: 0,
               type: TodayPrgType.justView.index,
-              sort: 0,
+              sort: i,
               progress: 0,
               viewTime: DateTime.now(),
               reviewCount: 0,
@@ -86,20 +77,23 @@ class ContentLogic extends GetxController {
               finish: false,
             ),
           );
-          p = await Db().db.verseTodayPrgDao.one(verse.classroomId, verse.id!, TodayPrgType.justView.index);
-          if (p == null) {
-            Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant insert the verse(${verse.classroomId}-${verse.id!}-${TodayPrgType.justView})"]));
-            return;
-          }
+        }
+        await Db().db.verseTodayPrgDao.insertsOrFail(verseTodayPrg);
+
+        var p = await Db().db.verseTodayPrgDao.findByType(TodayPrgType.justView.index);
+        if (p.isEmpty) {
+          Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant insert the verses"]));
+          return;
         }
         var repeat = RepeatArgs(
-          progresses: [p],
+          progresses: p,
+          startIndex: index,
           repeatType: RepeatType.justView,
           enableShowRecallButtons: false,
           defaultEdit: true,
         );
         await Nav.repeat.push(arguments: repeat);
-        await Db().db.verseTodayPrgDao.delete(p.id!);
+        await Db().db.verseTodayPrgDao.deleteByType(TodayPrgType.justView.index);
       },
       parentLogic: this,
       originalBookShow: originalBookShow,

@@ -29,7 +29,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
   static const String bodyId = "VerseList.bodyId";
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
-  final void Function(VerseShow verseShow) onNext;
+  final void Function(List<VerseShow> verseShow, int index) onNext;
   List<I18nKey> sortOptionKeys = [
     I18nKey.labelSortPositionAsc,
     I18nKey.labelSortPositionDesc,
@@ -358,7 +358,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                         children: [
                           GestureDetector(
                             onTap: () {
-                              onNext(verse);
+                              onNext(list, index);
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

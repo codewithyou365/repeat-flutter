@@ -3518,21 +3518,30 @@ class _$VerseTodayPrgDao extends VerseTodayPrgDao {
   final InsertionAdapter<VerseTodayPrg> _verseTodayPrgInsertionAdapter;
 
   @override
-  Future<VerseTodayPrg?> one(
-    int classroomId,
-    int verseId,
-    int type,
-  ) async {
-    return _queryAdapter.query(
-        'SELECT * FROM VerseTodayPrg where classroomId=?1 and verseId=?2 and type=?3',
-        mapper: (Map<String, Object?> row) => VerseTodayPrg(classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, verseId: row['verseId'] as int, time: row['time'] as int, type: row['type'] as int, sort: row['sort'] as int, progress: row['progress'] as int, viewTime: _dateTimeConverter.decode(row['viewTime'] as int), reviewCount: row['reviewCount'] as int, reviewCreateDate: _dateConverter.decode(row['reviewCreateDate'] as int), finish: (row['finish'] as int) != 0, id: row['id'] as int?),
-        arguments: [classroomId, verseId, type]);
+  Future<List<VerseTodayPrg>> findByType(int type) async {
+    return _queryAdapter.queryList('SELECT * FROM VerseTodayPrg where type=?1',
+        mapper: (Map<String, Object?> row) => VerseTodayPrg(
+            classroomId: row['classroomId'] as int,
+            bookId: row['bookId'] as int,
+            chapterId: row['chapterId'] as int,
+            verseId: row['verseId'] as int,
+            time: row['time'] as int,
+            type: row['type'] as int,
+            sort: row['sort'] as int,
+            progress: row['progress'] as int,
+            viewTime: _dateTimeConverter.decode(row['viewTime'] as int),
+            reviewCount: row['reviewCount'] as int,
+            reviewCreateDate:
+                _dateConverter.decode(row['reviewCreateDate'] as int),
+            finish: (row['finish'] as int) != 0,
+            id: row['id'] as int?),
+        arguments: [type]);
   }
 
   @override
-  Future<void> delete(int id) async {
-    await _queryAdapter.queryNoReturn('DELETE FROM VerseTodayPrg WHERE id=?1',
-        arguments: [id]);
+  Future<void> deleteByType(int type) async {
+    await _queryAdapter.queryNoReturn('DELETE FROM VerseTodayPrg WHERE type=?1',
+        arguments: [type]);
   }
 
   @override
@@ -3590,8 +3599,8 @@ class _$VerseTodayPrgDao extends VerseTodayPrgDao {
   }
 
   @override
-  Future<void> insertOrFail(VerseTodayPrg entity) async {
-    await _verseTodayPrgInsertionAdapter.insert(
+  Future<void> insertsOrFail(List<VerseTodayPrg> entity) async {
+    await _verseTodayPrgInsertionAdapter.insertList(
         entity, OnConflictStrategy.fail);
   }
 }

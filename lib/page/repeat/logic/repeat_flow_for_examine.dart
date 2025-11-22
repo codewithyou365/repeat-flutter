@@ -88,15 +88,20 @@ class RepeatFlowForExamine extends RepeatFlow {
   }
 
   @override
-  Future<bool> init(List<VerseTodayPrg> all, Function() update, GameHelper gameHelper) async {
-    if (all.isEmpty) {
+  Future<bool> init({
+    required List<VerseTodayPrg> progresses,
+    required int startIndex,
+    required Function() update,
+    required GameHelper gameHelper,
+  }) async {
+    if (progresses.isEmpty) {
       Snackbar.show(I18nKey.labelNoLearningContent.tr);
       return false;
     }
     this.update = update;
     this.gameHelper = gameHelper;
-    total = all.length;
-    scheduled = VerseTodayPrg.refineWithFinish(all, false);
+    total = progresses.length;
+    scheduled = VerseTodayPrg.refineWithFinish(progresses, false);
     scheduled.sort(schedulesCurrentSort);
     await gameHelper.tryRefreshGame(currVerse!);
     await timeStatsLogic.tryInsertTimeStats();

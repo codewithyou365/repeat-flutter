@@ -275,6 +275,7 @@ class ScCrLogic extends GetxController {
     }
     var repeat = RepeatArgs(
       progresses: list,
+      startIndex: 0,
       repeatType: mode,
       enableShowRecallButtons: true,
       defaultEdit: false,
