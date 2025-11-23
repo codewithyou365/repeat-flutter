@@ -12,7 +12,6 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/cache_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
@@ -88,7 +87,6 @@ class ScCrLogic extends GetxController {
   }
 
   Future<void> init({TodayPrgType? type}) async {
-    var now = DateTime.now();
     List<VerseTodayPrg> allProgresses = [];
     if (type == null) {
       allProgresses = await Db().db.scheduleDao.initToday();
@@ -197,11 +195,7 @@ class ScCrLogic extends GetxController {
     state.verses.addAll(review);
     state.verses.addAll(fullCustom);
 
-    var todayLearnCreateDate = await Db().db.scheduleDao.intKv(Classroom.curr, CrK.todayScheduleCreateDate) ?? 0;
-    var next = ScheduleDao.getNext(now, ScheduleDao.scheduleConfig.resetIntervalDays);
-    if (todayLearnCreateDate != 0 && next.value - todayLearnCreateDate > 0 && todayLearnCreateDate == Date.from(now).value) {
-      state.learnDeadline = next.toDateTime().millisecondsSinceEpoch;
-    }
+    state.learnDeadline = ScheduleDao.nextDateTime().millisecondsSinceEpoch;
     resetLearnDeadline();
 
     state.learnedTotalCount = VerseTodayPrg.getFinishedCount(allProgresses);

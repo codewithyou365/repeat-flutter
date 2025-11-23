@@ -146,14 +146,12 @@ class ReviewLearnConfig {
 
 class ScheduleConfig {
   List<int> learnIntervalDays;
-  int resetIntervalDays;
   int maxRepeatTime;
   List<LearnConfig> learnConfigs;
   List<ReviewLearnConfig> reviewLearnConfigs;
 
   ScheduleConfig({
     required this.learnIntervalDays,
-    required this.resetIntervalDays,
     required this.maxRepeatTime,
     required this.learnConfigs,
     required this.reviewLearnConfigs,
@@ -165,7 +163,6 @@ class ScheduleConfig {
 
     return {
       'learnIntervalDays': learnIntervalDays,
-      'resetIntervalDays': resetIntervalDays,
       'maxRepeatTime': maxRepeatTime,
       'learnConfigs': elConfigsJson,
       'reviewLearnConfigs': relConfigsJson,
@@ -178,7 +175,6 @@ class ScheduleConfig {
 
     return ScheduleConfig(
       learnIntervalDays: (json['learnIntervalDays'] as List).map((e) => e as int).toList(),
-      resetIntervalDays: json['resetIntervalDays'] as int,
       maxRepeatTime: json['maxRepeatTime'] as int,
       learnConfigs: elConfigsList.map((e) => LearnConfig.fromJson(e as Map<String, dynamic>)).toList(),
       reviewLearnConfigs: relConfigsList.map((e) => ReviewLearnConfig.fromJson(e as Map<String, dynamic>)).toList(),
@@ -192,7 +188,6 @@ abstract class ScheduleDao {
 
   static ScheduleConfig scheduleConfig = ScheduleConfig(
     learnIntervalDays: [],
-    resetIntervalDays: 0,
     maxRepeatTime: 0,
     learnConfigs: [],
     reviewLearnConfigs: [],
@@ -211,7 +206,6 @@ abstract class ScheduleDao {
       6 * 31,
       12 * 31,
     ],
-    resetIntervalDays: 1,
     maxRepeatTime: 3,
     learnConfigs: [
       // LW: listen and write.
@@ -518,13 +512,13 @@ abstract class ScheduleDao {
   Future<List<VerseTodayPrg>> initToday() async {
     await forUpdate();
     List<VerseTodayPrg> todayPrg = [];
-    var now = DateTime.now();
+    var now = currentDate();
     var needToInsert = false;
     var todayLearnCreateDate = await intKv(Classroom.curr, CrK.todayScheduleCreateDate);
     if (todayLearnCreateDate == null) {
       needToInsert = true;
     }
-    if (todayLearnCreateDate != null && Date.from(now).value != todayLearnCreateDate) {
+    if (todayLearnCreateDate != null && now.value != todayLearnCreateDate) {
       needToInsert = true;
     }
 
@@ -532,7 +526,7 @@ abstract class ScheduleDao {
 
     if (needToInsert) {
       await deleteKv(CrKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount, ""));
-      await insertKv(CrKv(Classroom.curr, CrK.todayScheduleCreateDate, "${Date.from(now).value}"));
+      await insertKv(CrKv(Classroom.curr, CrK.todayScheduleCreateDate, "${now.value}"));
       await db.verseTodayPrgDao.deleteByClassroomId(Classroom.curr);
       var learnConfigs = scheduleConfig.learnConfigs;
       await initTodayEl(now, learnConfigs, todayPrg);
@@ -551,7 +545,7 @@ abstract class ScheduleDao {
     scheduleConfig = await getScheduleConfigByKey(CrK.todayScheduleConfig);
     var scheduleConfigInUse = await getScheduleConfigByKey(CrK.todayScheduleConfigInUse);
     List<VerseTodayPrg> todayPrg = [];
-    var now = DateTime.now();
+    var now = currentDate();
     if (type == TodayPrgType.learn || type == TodayPrgType.none) {
       await deleteVerseTodayLearnPrgByClassroomId(Classroom.curr);
       var learnConfigs = scheduleConfig.learnConfigs;
@@ -598,7 +592,7 @@ abstract class ScheduleDao {
     }
   }
 
-  Future<void> initTodayEl(DateTime now, List<LearnConfig> learnConfigs, List<VerseTodayPrg> todayPrg) async {
+  Future<void> initTodayEl(Date now, List<LearnConfig> learnConfigs, List<VerseTodayPrg> todayPrg) async {
     if (learnConfigs.isNotEmpty) {
       int minLevel = (1 << 63) - 1;
       for (var config in learnConfigs) {
@@ -606,7 +600,7 @@ abstract class ScheduleDao {
           minLevel = config.level;
         }
       }
-      var all = await scheduleLearn(Classroom.curr, minLevel, Date.from(now));
+      var all = await scheduleLearn(Classroom.curr, minLevel, now);
       for (int i = 0; i < learnConfigs.length; ++i) {
         var config = learnConfigs[i];
         if (!config.random) {
@@ -623,7 +617,7 @@ abstract class ScheduleDao {
     }
   }
 
-  Future<void> initTodayRel(DateTime now, List<ReviewLearnConfig> reviewLearnConfigs, List<VerseTodayPrg> todayPrg) async {
+  Future<void> initTodayRel(Date now, List<ReviewLearnConfig> reviewLearnConfigs, List<VerseTodayPrg> todayPrg) async {
     for (int index = reviewLearnConfigs.length - 1; index >= 0; --index) {
       var relConfig = reviewLearnConfigs[index];
       if (index != relConfig.level) {
@@ -635,10 +629,10 @@ abstract class ScheduleDao {
       if (relConfig.learnCountPerGroup < 0) {
         continue;
       }
-      if (Date.from(now).value < relConfig.from.value) {
+      if (now.value < relConfig.from.value) {
         continue;
       }
-      var shouldStartDate = Date.from(now.subtract(Duration(days: relConfig.before)));
+      var shouldStartDate = now.subtract(days: relConfig.before);
       if (shouldStartDate.value < relConfig.from.value) {
         continue;
       }
@@ -706,77 +700,11 @@ abstract class ScheduleDao {
     await insertVerseTodayPrg(ret);
   }
 
-  // @transaction
-  // Future<bool> tUpdateVerseContent(int verseId, String content) async {
-  //   VerseKey? verseKey = await getVerseKeyById(verseId);
-  //   if (verseKey == null) {
-  //     Snackbar.showAndThrow(I18nKey.labelNotFoundVerse.trArgs([verseId.toString()]));
-  //     return false;
-  //   }
-  //   dynamic contentM;
-  //   try {
-  //     contentM = convert.jsonDecode(content);
-  //     content = convert.jsonEncode(contentM);
-  //   } catch (e) {
-  //     Snackbar.showAndThrow(e.toString());
-  //     return false;
-  //   }
-  //
-  //   if (verseKey.content == content) {
-  //     return true;
-  //   }
-  //   String key;
-  //   try {
-  //     VerseContent verse = VerseContent.fromJson(contentM);
-  //     key = getKey(verse.key, verse.answer);
-  //   } catch (e) {
-  //     Snackbar.showAndThrow(e.toString());
-  //     return false;
-  //   }
-  //   if (key.isEmpty) {
-  //     Snackbar.showAndThrow(I18nKey.labelVerseKeyCantBeEmpty.tr);
-  //     return false;
-  //   }
-  //
-  //   var otherVerseKey = await getVerseKeyByKey(verseKey.bookId, key);
-  //   if (otherVerseKey != null && otherVerseKey.id != verseKey.id) {
-  //     Snackbar.showAndThrow(I18nKey.labelVerseKeyDuplicated.trArgs([key]));
-  //     return false;
-  //   }
-  //
-  //   var now = DateTime.now();
-  //   await updateVerseKeyAndContent(verseId, key, content, verseKey.contentVersion + 1);
-  //   await db.verseContentVersionDao.insertOrFail(VerseContentVersion(
-  //     classroomId: verseKey.classroomId,
-  //     bookId: verseKey.bookId,
-  //     chapterId: verseKey.chapterId,
-  //     verseId: verseId,
-  //     t: VerseVersionType.content,
-  //     version: verseKey.contentVersion + 1,
-  //     reason: VersionReason.editor,
-  //     content: content,
-  //     createTime: now,
-  //   ));
-  //   await insertKv(CrKv(Classroom.curr, CrK.updateVerseShowTime, now.millisecondsSinceEpoch.toString()));
-  //   if (getVerseShow != null) {
-  //     VerseShow? currVerseShow = getVerseShow!(verseId);
-  //     if (currVerseShow != null) {
-  //       currVerseShow.verseContent = content;
-  //       for (var set in setVerseShowContent) {
-  //         set(verseId);
-  //       }
-  //       currVerseShow.k = key;
-  //       currVerseShow.verseContentVersion++;
-  //     }
-  //   }
-  //   return true;
-  // }
-
   /// adjust progress start
 
-  Future<Date> getTodayLearnCreateDate(DateTime now) async {
+  Future<Date> getTodayLearnCreateDate(Date now) async {
     var todayLearnCreateDate = await intKv(Classroom.curr, CrK.todayScheduleCreateDate);
-    todayLearnCreateDate ??= Date.from(now).value;
+    todayLearnCreateDate ??= now.value;
     return Date(todayLearnCreateDate);
   }
 
@@ -822,8 +750,8 @@ abstract class ScheduleDao {
   @transaction
   Future<Verse> innerError(VerseTodayPrg stp) async {
     await forUpdate();
-    var now = DateTime.now();
-    await setTodayPrgWithCache(stp, 0, now);
+    var viewTime = DateTime.now();
+    await setTodayPrgWithCache(stp, 0, viewTime);
     return await setPrg(stp.verseId, 0, null);
   }
 
@@ -855,7 +783,7 @@ abstract class ScheduleDao {
 
     TodayPrgType prgType = getPrgType(stp);
 
-    var now = DateTime.now();
+    var now = currentDate();
     var todayLearnCreateDate = await getTodayLearnCreateDate(now);
 
     if (prgType == TodayPrgType.learn) {
@@ -874,13 +802,14 @@ abstract class ScheduleDao {
     }
 
     var verse = await setPrg(stp.verseId, progress, Date(nextDayValue));
-    await setTodayPrgWithCache(stp, scheduleConfig.maxRepeatTime, now);
+    var viewTime = DateTime.now();
+    await setTodayPrgWithCache(stp, scheduleConfig.maxRepeatTime, viewTime);
     await insertVerseStats(
       VerseStats(
         verseId: stp.verseId,
         type: getPrgTypeInt(stp),
         createDate: todayLearnCreateDate,
-        createTime: now.millisecondsSinceEpoch,
+        createTime: viewTime.millisecondsSinceEpoch,
         classroomId: Classroom.curr,
         bookId: stp.bookId,
         chapterId: stp.chapterId,
@@ -909,11 +838,12 @@ abstract class ScheduleDao {
       state = ProgressState.unfamiliar;
     }
 
-    var now = DateTime.now();
+    var now = currentDate();
     Date todayLearnCreateDate = await getTodayLearnCreateDate(now);
 
+    var viewTime = DateTime.now();
     if (state == ProgressState.unfinished) {
-      await setTodayPrgWithCache(stp, stp.progress + 1, now);
+      await setTodayPrgWithCache(stp, stp.progress + 1, viewTime);
     } else {
       if (prgType == TodayPrgType.learn) {
         int nextProgress = 0;
@@ -924,7 +854,7 @@ abstract class ScheduleDao {
           }
           nextProgress = verseProgress + 1;
         }
-        verse = await setPrg(stp.verseId, nextProgress, getNextByProgress(todayLearnCreateDate.toDateTime(), nextProgress));
+        verse = await setPrg(stp.verseId, nextProgress, getNextByProgress(todayLearnCreateDate, nextProgress));
         await insertVerseReview([
           VerseReview(
             createDate: todayLearnCreateDate,
@@ -938,13 +868,13 @@ abstract class ScheduleDao {
       } else if (prgType == TodayPrgType.review) {
         await setVerseReviewCount(stp.reviewCreateDate, stp.verseId, stp.reviewCount + 1);
       }
-      await setTodayPrgWithCache(stp, scheduleConfig.maxRepeatTime, now);
+      await setTodayPrgWithCache(stp, scheduleConfig.maxRepeatTime, viewTime);
       await insertVerseStats(
         VerseStats(
           verseId: stp.verseId,
           type: prgType.index,
           createDate: todayLearnCreateDate,
-          createTime: now.millisecondsSinceEpoch,
+          createTime: viewTime.millisecondsSinceEpoch,
           classroomId: Classroom.curr,
           bookId: stp.bookId,
           chapterId: stp.chapterId,
@@ -954,7 +884,7 @@ abstract class ScheduleDao {
     return verse;
   }
 
-  Future<void> setTodayPrgWithCache(VerseTodayPrg verseTodayPrg, int progress, DateTime now) async {
+  Future<void> setTodayPrgWithCache(VerseTodayPrg verseTodayPrg, int progress, DateTime viewTime) async {
     var finish = false;
     if (progress >= scheduleConfig.maxRepeatTime) {
       finish = true;
@@ -963,15 +893,43 @@ abstract class ScheduleDao {
       verseTodayPrg.verseId,
       verseTodayPrg.type,
       progress,
-      now,
+      viewTime,
       finish,
     );
     verseTodayPrg.progress = progress;
-    verseTodayPrg.viewTime = now;
+    verseTodayPrg.viewTime = viewTime;
     verseTodayPrg.finish = finish;
   }
 
-  static Date getNextByProgress(DateTime now, int nextProgress) {
+  static final int delayHour = 1;
+
+  static Date currentDate() {
+    DateTime now = DateTime.now();
+    if (now.hour < delayHour) {
+      return Date.from(now.subtract(Duration(days: 1)));
+    }
+    return Date.from(now);
+  }
+
+  static DateTime nextDateTime() {
+    DateTime now = DateTime.now();
+    if (now.hour < delayHour) {
+      return Date.from(now).toDateTime().add(
+        Duration(
+          hours: delayHour,
+        ),
+      );
+    } else {
+      return Date.from(now).toDateTime().add(
+        Duration(
+          days: 1,
+          hours: delayHour,
+        ),
+      );
+    }
+  }
+
+  static Date getNextByProgress(Date now, int nextProgress) {
     var learnIntervalDays = scheduleConfig.learnIntervalDays;
     if (nextProgress >= learnIntervalDays.length - 1) {
       return getNext(now, learnIntervalDays.last);
@@ -980,11 +938,11 @@ abstract class ScheduleDao {
     }
   }
 
-  static Date getNext(DateTime now, int days) {
-    var a = Date.from(now);
-    var b = Date.from(now.add(Duration(days: days)));
+  static Date getNext(Date now, int days) {
+    var a = now;
+    var b = now.add(days: days);
     if (a.value == b.value) {
-      return Date.from(now.add(const Duration(days: 1)));
+      return now.add(days: 1);
     } else {
       return b;
     }

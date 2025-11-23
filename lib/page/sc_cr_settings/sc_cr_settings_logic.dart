@@ -77,7 +77,6 @@ class ScCrSettingsLogic extends GetxController {
       InputScheduleConfig inputConfig = InputScheduleConfig.fromJson(configJson);
       ScheduleConfig config = ScheduleConfig(
         learnIntervalDays: inputConfig.learnIntervalDays,
-        resetIntervalDays: ScheduleDao.defaultScheduleConfig.resetIntervalDays,
         maxRepeatTime: ScheduleDao.defaultScheduleConfig.maxRepeatTime,
         learnConfigs: inputConfig.learnConfigs,
         reviewLearnConfigs: inputConfig.reviewLearnConfigs,

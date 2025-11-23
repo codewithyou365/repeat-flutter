@@ -13,6 +13,7 @@ enum TodayPrgType {
 
 @Entity(
   indices: [
+    Index(value: ['type']),
     Index(value: ['verseId', 'type'], unique: true),
     Index(value: ['classroomId', 'sort']),
     Index(value: ['bookId']),

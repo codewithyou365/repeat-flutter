@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
@@ -14,7 +15,7 @@ class EditProgress {
       return;
     }
     var progress = (verseProgress + 1).obs;
-    var nextDay = ScheduleDao.getNextByProgress(DateTime.now(), progress.value).value.obs;
+    var nextDay = ScheduleDao.getNextByProgress(Date.now(), progress.value).value.obs;
     return Sheet.showBottomSheet(
       Get.context!,
       Obx(() {
@@ -47,7 +48,7 @@ class EditProgress {
               progress,
               changed: (value) {
                 progress.value = value;
-                nextDay.value = ScheduleDao.getNextByProgress(DateTime.now(), value).value;
+                nextDay.value = ScheduleDao.getNextByProgress(ScheduleDao.currentDate(), value).value;
               },
             ),
             RowWidget.buildDividerWithoutColor(),

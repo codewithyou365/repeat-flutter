@@ -53,4 +53,16 @@ class Date {
 
     return DateTime(year, month, day);
   }
+
+  static Date now() {
+    return from(DateTime.now());
+  }
+
+  Date subtract({required int days}) {
+    return from(toDateTime().subtract(Duration(days: days)));
+  }
+
+  Date add({required int days}) {
+    return from(toDateTime().add(Duration(days: days)));
+  }
 }
