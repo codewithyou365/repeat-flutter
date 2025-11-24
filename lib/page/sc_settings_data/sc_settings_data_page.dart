@@ -16,20 +16,17 @@ class ScSettingsDataPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(I18nKey.data.tr),
       ),
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20.w),
-        child: ListView(
-          children: <Widget>[
-            ListTile(
-              title: Text(I18nKey.btnExport.tr),
-              onTap: () => {openDialog(context, I18nKey.btnExport.tr, state.exportUrl, null, logic.export)},
-            ),
-            ListTile(
-              title: Text(I18nKey.btnImport.tr),
-              onTap: () => {openDialog(context, I18nKey.btnImport.tr, state.importUrl, I18nKey.labelImportMojoTips.tr, logic.import)},
-            ),
-          ],
-        ),
+      body: ListView(
+        children: <Widget>[
+          ListTile(
+            title: Text(I18nKey.btnExport.tr),
+            onTap: () => {openDialog(context, I18nKey.btnExport.tr, state.exportUrl, null, logic.export)},
+          ),
+          ListTile(
+            title: Text(I18nKey.btnImport.tr),
+            onTap: () => {openDialog(context, I18nKey.btnImport.tr, state.importUrl, I18nKey.labelImportMojoTips.tr, logic.import)},
+          ),
+        ],
       ),
     );
   }

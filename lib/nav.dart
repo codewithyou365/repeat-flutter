@@ -12,7 +12,6 @@ import 'package:repeat_flutter/page/sc_cr_settings_rel/sc_cr_settings_rel_nav.da
 import 'package:repeat_flutter/page/sc_cr_stats/sc_cr_stats_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_stats_detail/sc_cr_stats_detail_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_stats_review/sc_cr_stats_review_nav.dart';
-import 'package:repeat_flutter/page/sc_settings/sc_settings_nav.dart';
 import 'package:repeat_flutter/page/sc_settings_data/sc_settings_data_nav.dart';
 import 'package:repeat_flutter/page/sc_settings_lang/sc_settings_lang_nav.dart';
 import 'package:repeat_flutter/page/sc_settings_theme/sc_settings_theme_nav.dart';
@@ -32,7 +31,6 @@ enum Nav {
   scCrStats("/sc/cr/stats"),
   scCrStatsDetail("/sc/cr/stats/detail"),
   scCrStatsReview("/sc/cr/stats/review"),
-  scSettings("/sc/settings"),
   scSettingsData("/sc/settings/data"),
   scSettingsLang("/sc/settings/lang"),
   scSettingsTheme("/sc/settings/theme"),
@@ -76,7 +74,6 @@ enum Nav {
     scCrStatsNav(scCrStats.path),
     scCrStatsDetailNav(scCrStatsDetail.path),
     scCrStatsReviewNav(scCrStatsReview.path),
-    scSettingsNav(scSettings.path),
     scSettingsDataNav(scSettingsData.path),
     scSettingsLangNav(scSettingsLang.path),
     scSettingsThemeNav(scSettingsTheme.path),

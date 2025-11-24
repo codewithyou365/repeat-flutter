@@ -20,11 +20,37 @@ class ScPage extends StatelessWidget {
         actions: <Widget>[
           Padding(
             padding: EdgeInsets.all(8.0.w),
-            child: IconButton(
+            child: PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert),
-              onPressed: () {
-                Nav.scSettings.push();
-              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                PopupMenuItem<String>(
+                  onTap: () {
+                    Nav.scSettingsLang.push();
+                  },
+                  child: ListTile(
+                    leading: const Icon(Icons.language),
+                    title: Text(I18nKey.language.tr),
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  onTap: () {
+                    Nav.scSettingsTheme.push();
+                  },
+                  child: ListTile(
+                    leading: const Icon(Icons.brightness_6),
+                    title: Text(I18nKey.theme.tr),
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  onTap: () {
+                    Nav.scSettingsData.push();
+                  },
+                  child: ListTile(
+                    leading: const Icon(Icons.storage),
+                    title: Text(I18nKey.data.tr),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
