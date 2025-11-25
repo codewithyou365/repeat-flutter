@@ -10,6 +10,7 @@ import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
+import 'logic/learning_settings.dart';
 import 'sc_cr_logic.dart';
 import 'sc_cr_state.dart';
 
@@ -34,10 +35,8 @@ class ScCrPage extends StatelessWidget {
                   child: Text(I18nKey.btnAddSchedule.tr),
                 ),
                 PopupMenuItem<String>(
-                  onTap: () {
-                    Nav.scCrSettings.push();
-                  },
-                  child: Text(I18nKey.btnConfigSettings.tr),
+                  onTap: learningSettings,
+                  child: Text(I18nKey.learningSettings.tr),
                 ),
               ],
             ),

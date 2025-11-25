@@ -528,10 +528,11 @@ class RowWidget {
     required String title,
     required GestureTapCallback onTap,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
-      child: GestureDetector(
-        onTap: onTap,
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
         child: SizedBox(
           height: rowHeight,
           child: Row(

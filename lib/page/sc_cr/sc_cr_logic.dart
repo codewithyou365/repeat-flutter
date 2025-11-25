@@ -27,6 +27,7 @@ import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
+import 'logic/learning_settings.dart';
 import 'sc_cr_state.dart';
 
 class ScCrLogic extends GetxController {
@@ -308,10 +309,9 @@ class ScCrLogic extends GetxController {
       return;
     }
     showTransparentOverlay(() async {
-      Nav.scCrSettings.push();
-      await Future.delayed(const Duration(milliseconds: 700));
+      learningSettings();
+      await Future.delayed(const Duration(milliseconds: 300));
     });
-    await Future.delayed(const Duration(milliseconds: 400));
     if (type == TodayPrgType.learn) {
       Nav.scCrSettingsEl.push();
     } else {
@@ -377,4 +377,5 @@ class ScCrLogic extends GetxController {
       Snackbar.show(I18nKey.labelNoContent.tr);
     }
   }
+
 }

@@ -6,10 +6,27 @@ import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
 
 class Select {
+  static void showSheetWithoutAutoHide({
+    required String title,
+    required List<String> keys,
+    autoHeight = true,
+    required void Function(int index) callback,
+  }) {
+    showSheet(
+      title: title,
+      keys: keys,
+      autoHeight: autoHeight,
+      autoHide: false,
+      callback: callback,
+    );
+  }
+
   static Future<int?> showSheet({
     required String title,
     required List<String> keys,
     autoHeight = true,
+    autoHide = true,
+    void Function(int index)? callback,
   }) async {
     double? height;
     if (autoHeight) {
@@ -26,25 +43,25 @@ class Select {
           RowWidget.buildDividerWithoutColor(),
         ],
       ),
-      Padding(
-        padding: EdgeInsets.symmetric(horizontal: 10.0.w, vertical: 0.0),
-        child: ListView(
-          children: List.generate(keys.length, (index) => index).expand((index) {
-            final widgets = <Widget>[
-              RowWidget.buildSelect(
-                title: keys[index],
-                onTap: () {
-                  ret = index;
-                  Get.back();
-                },
-              ),
-            ];
-            if (index != keys.length - 1) {
-              widgets.add(RowWidget.buildDividerWithoutColor());
-            }
-            return widgets;
-          }).toList(),
-        ),
+      ListView(
+        children: List.generate(keys.length, (index) => index).expand((index) {
+          final widgets = <Widget>[
+            RowWidget.buildSelect(
+              title: keys[index],
+              onTap: () {
+                ret = index;
+                if (callback != null) {
+                  callback(index);
+                }
+                if (autoHide) Get.back();
+              },
+            ),
+          ];
+          if (index != keys.length - 1) {
+            widgets.add(RowWidget.buildDividerWithoutColor());
+          }
+          return widgets;
+        }).toList(),
       ),
       height: height,
     );

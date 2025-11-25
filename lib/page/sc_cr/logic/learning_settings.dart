@@ -9,9 +9,8 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
+import 'package:repeat_flutter/widget/select/select.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
-
-import 'sc_cr_settings_state.dart';
 
 class InputScheduleConfig {
   List<int> learnIntervalDays;
@@ -48,11 +47,29 @@ class InputScheduleConfig {
   }
 }
 
-class ScCrSettingsLogic extends GetxController {
-  final ScCrSettingsState state = ScCrSettingsState();
+void learningSettings() async {
+  Select.showSheetWithoutAutoHide(
+    title: I18nKey.learningSettings.tr,
+    keys: [
+      I18nKey.labelConfigSettingsForEl.tr,
+      I18nKey.labelConfigSettingsForRel.tr,
+      I18nKey.labelDetailConfig.tr,
+    ],
+    callback: (index) {
+      if (index == 0) {
+        Nav.scCrSettingsEl.push();
+      } else if (index == 1) {
+        Nav.scCrSettingsRel.push();
+      } else {
+        openConfig();
+      }
+    },
+  );
+}
 
-  void openConfig() {
-    state.configJson = const JsonEncoder.withIndent(' ').convert(
+void openConfig() {
+  showOverlay(() async {
+    var configJsonStr = const JsonEncoder.withIndent(' ').convert(
       InputScheduleConfig(
         ScheduleDao.scheduleConfig.learnIntervalDays,
         ScheduleDao.scheduleConfig.learnConfigs,
@@ -62,30 +79,25 @@ class ScCrSettingsLogic extends GetxController {
     Nav.editor.push(
       arguments: EditorArgs(
         title: I18nKey.labelDetailConfig.tr,
-        value: state.configJson,
+        value: configJsonStr,
         save: (str) async {
-          state.configJson = str;
-          inputConfig();
+          showTransparentOverlay(() async {
+            Map<String, dynamic> configJson = json.decode(str);
+            InputScheduleConfig inputConfig = InputScheduleConfig.fromJson(configJson);
+            ScheduleConfig config = ScheduleConfig(
+              learnIntervalDays: inputConfig.learnIntervalDays,
+              maxRepeatTime: ScheduleDao.defaultScheduleConfig.maxRepeatTime,
+              learnConfigs: inputConfig.learnConfigs,
+              reviewLearnConfigs: inputConfig.reviewLearnConfigs,
+            );
+            ScheduleDao.scheduleConfig = config;
+            String value = json.encode(ScheduleDao.scheduleConfig);
+            Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.todayScheduleConfig, value));
+            Get.back();
+            Snackbar.show(I18nKey.labelSaved.tr);
+          });
         },
       ),
     );
-  }
-
-  void inputConfig() {
-    showTransparentOverlay(() async {
-      Map<String, dynamic> configJson = json.decode(state.configJson);
-      InputScheduleConfig inputConfig = InputScheduleConfig.fromJson(configJson);
-      ScheduleConfig config = ScheduleConfig(
-        learnIntervalDays: inputConfig.learnIntervalDays,
-        maxRepeatTime: ScheduleDao.defaultScheduleConfig.maxRepeatTime,
-        learnConfigs: inputConfig.learnConfigs,
-        reviewLearnConfigs: inputConfig.reviewLearnConfigs,
-      );
-      ScheduleDao.scheduleConfig = config;
-      String value = json.encode(ScheduleDao.scheduleConfig);
-      Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.todayScheduleConfig, value));
-      Get.back();
-      Snackbar.show(I18nKey.labelSaved.tr);
-    });
-  }
+  }, I18nKey.loading.tr);
 }

@@ -61,6 +61,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelImportMojo, "导入新数据将清除所有现有数据");
     put(I18nKey.labelImportMojoTips, "输入红色文字以继续");
     put(I18nKey.labelImportCanceled, "导入取消");
+    put(I18nKey.loading, "加载中...");
     put(I18nKey.labelImporting, "导入中...");
     put(I18nKey.labelExporting, "导出中...");
     put(I18nKey.labelExecuting, "执行中...");
@@ -246,7 +247,7 @@ class ConfigZh extends Config {
     put(I18nKey.btnHandleNow, "现在处理");
     put(I18nKey.btnStart, "开始");
     put(I18nKey.btnAddSchedule, "添加规划");
-    put(I18nKey.btnConfigSettings, "配置设置");
+    put(I18nKey.learningSettings, "学习设置");
     put(I18nKey.btnSet, "设置");
     put(I18nKey.btnUse, "使用");
     put(I18nKey.btnSetHead, "设置头部");

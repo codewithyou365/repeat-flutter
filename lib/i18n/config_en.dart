@@ -61,6 +61,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelImportMojo, "Importing new data will clear all existing data");
     put(I18nKey.labelImportMojoTips, "Input red words to continue");
     put(I18nKey.labelImportCanceled, "Import canceled");
+    put(I18nKey.loading, "Loading...");
     put(I18nKey.labelImporting, "Importing...");
     put(I18nKey.labelExporting, "Exporting...");
     put(I18nKey.labelExecuting, "Executing...");
@@ -246,7 +247,7 @@ class ConfigEn extends Config {
     put(I18nKey.btnHandleNow, "Handle Now");
     put(I18nKey.btnStart, "Start");
     put(I18nKey.btnAddSchedule, "Add Schedule");
-    put(I18nKey.btnConfigSettings, "Config Settings");
+    put(I18nKey.learningSettings, "Learning Settings");
     put(I18nKey.btnSet, "Set");
     put(I18nKey.btnUse, "Use");
     put(I18nKey.btnSetHead, "Set head");
