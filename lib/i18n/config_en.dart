@@ -264,9 +264,7 @@ class ConfigEn extends Config {
     put(I18nKey.btnDelete, "Delete");
     put(I18nKey.btnShare, "Share");
     put(I18nKey.scan, "Scan");
-    put(I18nKey.btnEditTrack, "Edit Track");
-    put(I18nKey.btnEditNote, "Edit Note");
-    put(I18nKey.btnGameMode, "Game Mode");
+    put(I18nKey.game, "Game");
     put(I18nKey.advancedEdit, "Advanced Edit");
     put(I18nKey.web, "Web");
     put(I18nKey.btnFocus, "Focus");

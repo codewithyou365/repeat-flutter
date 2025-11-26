@@ -19,9 +19,9 @@ import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
-class WebManager<T extends GetxController> {
-  static const String bodyId = "WebManager.bodyId";
-  static const String detailSearchId = "WebManager.searchId";
+class GameManager<T extends GetxController> {
+  static const String bodyId = "GameManager.bodyId";
+  static const String detailSearchId = "GameManager.searchId";
   final T parentLogic;
 
   late UserManager userManager = UserManager<T>(parentLogic);
@@ -38,10 +38,10 @@ class WebManager<T extends GetxController> {
   final SubList<WsEvent> sub = [];
   final SubList<int> subAllowRegisterNumber = [];
 
-  WebManager(this.parentLogic);
+  GameManager(this.parentLogic);
 
   String get title {
-    return "${I18nKey.web.tr}(${open.value})";
+    return "${I18nKey.game.tr}(${open.value})";
   }
 
   String getOnline() {
@@ -148,7 +148,7 @@ class WebManager<T extends GetxController> {
         child: Column(
           children: [
             RowWidget.buildSwitch(
-              I18nKey.web.tr,
+              I18nKey.game.tr,
               open,
               switchWeb,
             ),

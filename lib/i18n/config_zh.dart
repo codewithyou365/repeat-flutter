@@ -264,9 +264,7 @@ class ConfigZh extends Config {
     put(I18nKey.btnDelete, "删除");
     put(I18nKey.btnShare, "分享");
     put(I18nKey.scan, "扫描");
-    put(I18nKey.btnEditTrack, "编辑音轨");
-    put(I18nKey.btnEditNote, "编辑笔记");
-    put(I18nKey.btnGameMode, "游戏模式");
+    put(I18nKey.game, "游戏");
     put(I18nKey.advancedEdit, "高级编辑");
     put(I18nKey.web, "网络");
     put(I18nKey.btnFocus, "专注");

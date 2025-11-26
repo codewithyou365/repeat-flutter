@@ -162,10 +162,10 @@ class RepeatPage extends StatelessWidget {
               PopupMenuItem<String>(
                 onTap: () async {
                   state.helper.setInRepeatView(false);
-                  await logic.webManager.showSheet();
+                  await logic.gameManager.showSheet();
                   state.helper.setInRepeatView(true);
                 },
-                child: Text(logic.webManager.title),
+                child: Text(logic.gameManager.title),
               ),
               PopupMenuItem<String>(
                 onTap: logic.switchConcentrationMode,

@@ -16,7 +16,7 @@ import 'package:repeat_flutter/logic/widget/book_editor/book_editor_args.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
 
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
-import 'package:repeat_flutter/logic/widget/web_manager.dart';
+import 'package:repeat_flutter/logic/widget/game_manager.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/logic/widget/book_editor/book_editor_logic.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
@@ -45,8 +45,8 @@ class RepeatLogic extends GetxController {
   }
 
   late CopyLogic copyLogic = CopyLogic<RepeatLogic>(CrK.copyTemplate, this);
-  late WebManager webManager = WebManager<RepeatLogic>(this);
-  late GameHelper gameHelper = GameHelper(webManager.web);
+  late GameManager gameManager = GameManager<RepeatLogic>(this);
+  late GameHelper gameHelper = GameHelper(gameManager.web);
   late BookEditorLogic bookEditor = BookEditorLogic<RepeatLogic>(this);
 
   late RepeatFlow? repeatLogic;
@@ -62,7 +62,7 @@ class RepeatLogic extends GetxController {
     } else {
       repeatLogic = RepeatFlowForExamine();
     }
-    await webManager.init(() {
+    await gameManager.init(() {
       gameHelper.tryRefreshGame(repeatLogic!.currVerse!);
     });
     var ok = await repeatLogic!.init(
@@ -97,7 +97,7 @@ class RepeatLogic extends GetxController {
   void onClose() {
     super.onClose();
     bookSub.off();
-    webManager.switchWeb(false);
+    gameManager.switchWeb(false);
     repeatLogic?.onClose();
     for (var v in showTypeToRepeatView.values) {
       v.dispose();
