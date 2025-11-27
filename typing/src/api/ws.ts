@@ -1,4 +1,4 @@
-export const url = `ws://${window.location.hostname}:${window.location.port}`;
+export const url = `wss://${window.location.hostname}:${window.location.port}`;
 
 export const MessageType = {
     REQUEST: 0,

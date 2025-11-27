@@ -1,7 +1,7 @@
 import axios, {AxiosInstance} from 'axios';
 
 const http: AxiosInstance = axios.create({
-    baseURL: `http://${window.location.hostname}:${window.location.port}`,
+    baseURL: `https://${window.location.hostname}:${window.location.port}`,
     timeout: 5000, // 请求超时时间
     headers: {
         'Content-Type': 'application/json',
