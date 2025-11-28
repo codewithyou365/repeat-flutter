@@ -162,6 +162,7 @@ enum I18nKey {
   labelMatchType,
   labelSkipCharacter,
   labelEnableEditVerse,
+  editor,
   labelGameId,
   online,
   offline,
@@ -233,7 +234,8 @@ enum I18nKey {
   labelCopyToWhere,
   labelChapterDeleteBlocked,
   labelGameRuleSettings,
-  labelWordGuessGame,
+  typingGame,
+  blankItRightGame,
   labelLastCourseCannotBeDeleted,
   labelFileNotFound,
   labelFileExtensionNotMatch,
@@ -315,7 +317,7 @@ enum I18nKey {
   help,
   showFingers,
   refresh,
-  _end;
+  none;
 
   String trArgs([List<String> args = const []]) {
     return name.trArgs(args);

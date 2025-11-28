@@ -62,7 +62,7 @@ Future<message.Response?> gameUserHistory(message.Request req, GameUser? user) a
   final gus = await Db().db.gameDao.gameUserInput(reqBody.gameId, user.id!, reqBody.time);
   GameUserHistoryRes res = GameUserHistoryRes([], []);
   List<String> tips = [];
-  int matchTypeInt = await Db().db.gameDao.intKv(Classroom.curr, CrK.matchTypeInTypingGame) ?? 0;
+  int matchTypeInt = await Db().db.gameDao.intKv(Classroom.curr, CrK.typingGameForMatchType) ?? 0;
   MatchType matchType = MatchType.values[matchTypeInt];
   for (final gu in gus) {
     res.list.add(SubmitRes(gu.id!, ListUtil.toList(gu.input), ListUtil.toList(gu.output), matchTypeInt));

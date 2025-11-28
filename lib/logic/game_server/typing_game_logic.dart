@@ -3,7 +3,7 @@ import 'package:repeat_flutter/logic/base/constant.dart';
 
 import 'constant.dart';
 
-class GameLogic {
+class TypingGameLogic {
   static List<String> processWord(String original, String input, List<String> next, List<String> prev, MatchType matchType, String? skipChar) {
     List<String> originalFields = StringUtil.fields(original);
     List<String> inputFields = StringUtil.fields(input);

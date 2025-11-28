@@ -164,6 +164,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelMatchType, "匹配类型");
     put(I18nKey.labelSkipCharacter, "输入该字符便跳过");
     put(I18nKey.labelEnableEditVerse, "启用编辑小节");
+    put(I18nKey.editor, "编辑者");
     put(I18nKey.labelGameId, "游戏ID");
     put(I18nKey.online, "在线");
     put(I18nKey.offline, "离线");
@@ -234,7 +235,8 @@ class ConfigZh extends Config {
     put(I18nKey.labelCopyToWhere, "复制到该小节的上方还是下方？");
     put(I18nKey.labelChapterDeleteBlocked, "在该篇章下存在小节，无法删除该篇章");
     put(I18nKey.labelGameRuleSettings, "游戏规则设置");
-    put(I18nKey.labelWordGuessGame, "猜词游戏");
+    put(I18nKey.typingGame, "打字游戏");
+    put(I18nKey.blankItRightGame, "挖空填对游戏");
     put(I18nKey.labelLastCourseCannotBeDeleted, "最后一个篇章不能删除，否则将无法进行复制。");
     put(I18nKey.labelFileNotFound, "文件未找到, 现在导入文件吗？");
     put(I18nKey.labelFileExtensionNotMatch, "文件扩展名与预期格式不符，请确保其为以下之一：%s");

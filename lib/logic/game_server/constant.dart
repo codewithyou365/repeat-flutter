@@ -1,3 +1,5 @@
+import 'package:repeat_flutter/i18n/i18n_key.dart';
+
 enum GameServerError {
   tokenExpired,
   needToResetPassword,
@@ -33,4 +35,14 @@ class Path {
   static const getEditStatus = '/api/getEditStatus';
   static const getVerseContent = '/api/getVerseContent';
   static const setVerseContent = '/api/setVerseContent';
+}
+
+enum GameTypeEnum {
+  none(I18nKey.none),
+  typing(I18nKey.typingGame),
+  blankItRight(I18nKey.blankItRightGame);
+
+  final I18nKey i18n;
+
+  const GameTypeEnum(this.i18n);
 }

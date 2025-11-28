@@ -18,7 +18,13 @@ abstract class GameUserDao {
   Future<GameUser?> findUserByName(String name);
 
   @Query('SELECT id FROM GameUser WHERE id = :id')
-  Future<int?> findUserById(int id);
+  Future<GameUser?> findUserById(int id);
+
+  @Query('SELECT id FROM GameUser WHERE id = :id')
+  Future<int?> findUserIdById(int id);
+
+  @Query('SELECT id FROM GameUser limit 1')
+  Future<int?> findFirstUserId();
 
   @Query('SELECT * FROM GameUser')
   Future<List<GameUser>> getAllUser();
@@ -66,7 +72,7 @@ abstract class GameUserDao {
 
   @transaction
   Future<String> resetPassword(int id) async {
-    final existingUser = await findUserById(id);
+    final existingUser = await findUserIdById(id);
     if (existingUser == null) {
       return '';
     }

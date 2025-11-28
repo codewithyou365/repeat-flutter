@@ -11,7 +11,7 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/game_user_input.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/game_server/game_logic.dart';
+import 'package:repeat_flutter/logic/game_server/typing_game_logic.dart';
 
 @dao
 abstract class GameDao {
@@ -122,16 +122,16 @@ abstract class GameDao {
     if (gameUserInput != null) {
       return ListUtil.toList(gameUserInput.output);
     }
-    int matchTypeInt = await intKv(Classroom.curr, CrK.matchTypeInTypingGame) ?? 1;
+    int matchTypeInt = await intKv(Classroom.curr, CrK.typingGameForMatchType) ?? 1;
     MatchType matchType = MatchType.values[matchTypeInt];
-    int typingGame = await intKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame) ?? 0;
+    int typingGame = await intKv(Classroom.curr, CrK.typingGameForIgnoringPunctuation) ?? 0;
     if (typingGame == 1) {
       var punctuation = getWord(verse).replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), '').trim();
       if (punctuation.isNotEmpty) {
-        return GameLogic.processWord(getWord(verse), punctuation, [], [], matchType, null);
+        return TypingGameLogic.processWord(getWord(verse), punctuation, [], [], matchType, null);
       }
     }
-    return GameLogic.processWord(getWord(verse), "", [], [], matchType, null);
+    return TypingGameLogic.processWord(getWord(verse), "", [], [], matchType, null);
   }
 
   @transaction
@@ -163,20 +163,20 @@ abstract class GameDao {
     if (gameUserInput != null) {
       prevOutput = ListUtil.toList(gameUserInput.output);
     } else {
-      int typingGame = await intKv(Classroom.curr, CrK.ignoringPunctuationInTypingGame) ?? 0;
+      int typingGame = await intKv(Classroom.curr, CrK.typingGameForIgnoringPunctuation) ?? 0;
       if (typingGame == 1) {
         var punctuation = getWord(verse).replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), '').trim();
         if (punctuation.isNotEmpty) {
-          prevOutput = GameLogic.processWord(getWord(verse), punctuation, [], [], matchType, null);
+          prevOutput = TypingGameLogic.processWord(getWord(verse), punctuation, [], [], matchType, null);
         }
       }
     }
     final now = DateTime.now();
-    String? skipChar = await stringKv(Classroom.curr, CrK.skipCharacterInTypingGame);
+    String? skipChar = await stringKv(Classroom.curr, CrK.typingGameForSkipCharacter);
     if (skipChar != null && skipChar.isEmpty) {
       skipChar = null;
     }
-    input = GameLogic.processWord(getWord(verse), userInput, obtainOutput, prevOutput, matchType, skipChar);
+    input = TypingGameLogic.processWord(getWord(verse), userInput, obtainOutput, prevOutput, matchType, skipChar);
     await insertGameUserInput(GameUserInput(
       gameId: game.id,
       gameUserId: gameUserId,

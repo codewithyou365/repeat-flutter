@@ -62,7 +62,7 @@ Future<message.Response?> submit(message.Request req, GameUser? user) async {
     return message.Response(error: GameServerError.serviceStopped.name);
   }
   final reqBody = SubmitReq.fromJson(req.data);
-  int matchTypeInt = await Db().db.gameDao.intKv(Classroom.curr, CrK.matchTypeInTypingGame) ?? 1;
+  int matchTypeInt = await Db().db.gameDao.intKv(Classroom.curr, CrK.typingGameForMatchType) ?? 1;
   List<String> input = [];
   List<String> output = [];
   GameUserInput gameUserInput = await Db().db.gameDao.submit(reqBody.gameId, matchTypeInt, reqBody.prevId, user.id!, reqBody.input, input, output);

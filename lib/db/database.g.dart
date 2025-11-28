@@ -118,7 +118,7 @@ class _$AppDatabase extends AppDatabase {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 4,
+      version: 5,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -162,7 +162,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER NOT NULL, `time` INTEGER NOT NULL, `verseContent` TEXT NOT NULL, `verseId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER NOT NULL, `time` INTEGER NOT NULL, `game` INTEGER NOT NULL, `verseContent` TEXT NOT NULL, `verseId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `GameUser` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `password` TEXT NOT NULL, `nonce` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `token` TEXT NOT NULL, `tokenExpiredDate` INTEGER NOT NULL, `needToResetPassword` INTEGER NOT NULL)');
         await database.execute(
@@ -211,6 +211,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE INDEX `index_VerseReview_bookId` ON `VerseReview` (`bookId`)');
         await database.execute(
             'CREATE INDEX `index_VerseReview_classroomId_createDate_count` ON `VerseReview` (`classroomId`, `createDate`, `count`)');
+        await database.execute(
+            'CREATE INDEX `index_VerseTodayPrg_type` ON `VerseTodayPrg` (`type`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_VerseTodayPrg_verseId_type` ON `VerseTodayPrg` (`verseId`, `type`)');
         await database.execute(
@@ -1496,10 +1498,32 @@ class _$GameUserDao extends GameUserDao {
   }
 
   @override
-  Future<int?> findUserById(int id) async {
+  Future<GameUser?> findUserById(int id) async {
+    return _queryAdapter.query('SELECT id FROM GameUser WHERE id = ?1',
+        mapper: (Map<String, Object?> row) => GameUser(
+            name: row['name'] as String,
+            password: row['password'] as String,
+            nonce: row['nonce'] as String,
+            createDate: _dateConverter.decode(row['createDate'] as int),
+            token: row['token'] as String,
+            tokenExpiredDate:
+                _dateConverter.decode(row['tokenExpiredDate'] as int),
+            needToResetPassword: (row['needToResetPassword'] as int) != 0,
+            id: row['id'] as int?),
+        arguments: [id]);
+  }
+
+  @override
+  Future<int?> findUserIdById(int id) async {
     return _queryAdapter.query('SELECT id FROM GameUser WHERE id = ?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [id]);
+  }
+
+  @override
+  Future<int?> findFirstUserId() async {
+    return _queryAdapter.query('SELECT id FROM GameUser limit 1',
+        mapper: (Map<String, Object?> row) => row.values.first as int);
   }
 
   @override
@@ -1649,6 +1673,7 @@ class _$GameDao extends GameDao {
             (Game item) => <String, Object?>{
                   'id': item.id,
                   'time': item.time,
+                  'game': item.game,
                   'verseContent': item.verseContent,
                   'verseId': item.verseId,
                   'classroomId': item.classroomId,
@@ -1725,6 +1750,7 @@ class _$GameDao extends GameDao {
         mapper: (Map<String, Object?> row) => Game(
             id: row['id'] as int,
             time: row['time'] as int,
+            game: row['game'] as int,
             verseContent: row['verseContent'] as String,
             verseId: row['verseId'] as int,
             classroomId: row['classroomId'] as int,
@@ -1790,6 +1816,7 @@ class _$GameDao extends GameDao {
         mapper: (Map<String, Object?> row) => Game(
             id: row['id'] as int,
             time: row['time'] as int,
+            game: row['game'] as int,
             verseContent: row['verseContent'] as String,
             verseId: row['verseId'] as int,
             classroomId: row['classroomId'] as int,

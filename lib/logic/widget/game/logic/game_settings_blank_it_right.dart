@@ -1,0 +1,103 @@
+import 'package:flutter/cupertino.dart';
+import 'package:get/get.dart';
+import 'package:repeat_flutter/common/ws/server.dart';
+import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/entity/cr_kv.dart';
+import 'package:repeat_flutter/db/entity/game_user.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
+import 'package:repeat_flutter/logic/game_server/constant.dart';
+import 'package:repeat_flutter/widget/row/row_widget.dart';
+
+import 'game_settings.dart';
+
+class GameSettingsBlankItRight extends GameSettings {
+  RxBool ignoringPunctuation = RxBool(false);
+  RxInt userNumber = RxInt(0);
+  RxInt userIndex = RxInt(-1);
+  List<GameUser> users = [];
+  final SubList<WsEvent> sub = [];
+
+  @override
+  GameTypeEnum gameTypeEnum() {
+    return GameTypeEnum.blankItRight;
+  }
+
+  @override
+  Future<void> onInit() async {
+    users = await Db().db.gameUserDao.getAllUser();
+
+    sub.on([EventTopic.wsEvent], (wsEvent) async {
+      if (wsEvent == null) {
+        return;
+      }
+      if (wsEvent.wsEventType == WsEventType.add) {
+        if (!users.any((user) => user.id == wsEvent.id)) {
+          users = await Db().db.gameUserDao.getAllUser();
+        }
+      }
+      userNumber.value = users.length;
+    });
+
+    var userId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForEditorUserId);
+    if (userId != null) {
+      if (users.isNotEmpty) {
+        final index = users.indexWhere((u) => u.id == userId);
+        if (index != -1) {
+          await setUser(index);
+        }
+      }
+    }
+    userNumber.value = users.length;
+
+    var ki = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForIgnoringPunctuation);
+    if (ki != null) {
+      ignoringPunctuation.value = ki == 1;
+    }
+  }
+
+  @override
+  Future<void> onClose() async {
+    sub.off();
+  }
+
+  Future<void> setUser(int index) async {
+    if (users.isEmpty) {
+      return;
+    }
+    GameUser user = users[index];
+    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.blockItRightGameForEditorUserId, "${user.id!}"));
+    userIndex.value = index;
+  }
+
+  void setIgnoringPunctuation(bool ignoringPunctuation) {
+    this.ignoringPunctuation.value = ignoringPunctuation;
+    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.blockItRightGameForIgnoringPunctuation, ignoringPunctuation ? '1' : '0'));
+  }
+
+  @override
+  List<Widget> build() {
+    return [
+      Obx(() {
+        List<String> userNames = [];
+        for (var i = 0; i < userNumber.value; i++) {
+          userNames.add(users[i].name);
+        }
+        return RowWidget.buildCupertinoPicker(
+          I18nKey.editor.tr,
+          userNames,
+          RxInt(userIndex.value),
+          changed: setUser,
+        );
+      }),
+
+      RowWidget.buildDividerWithoutColor(),
+      RowWidget.buildSwitch(
+        I18nKey.labelIgnorePunctuation.tr,
+        ignoringPunctuation,
+        setIgnoringPunctuation,
+      ),
+    ];
+  }
+}

@@ -7,6 +7,7 @@ import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/game_server/web_server.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
+import 'package:repeat_flutter/logic/widget/game/game_state.dart';
 
 class GameHelper {
   final WebServer server;
@@ -23,6 +24,7 @@ class GameHelper {
     var game = Game(
       id: stp.id!,
       time: stp.time,
+      game: GameState.lastGameIndex,
       verseContent: verse.verseContent,
       verseId: verse.verseId,
       classroomId: stp.classroomId,

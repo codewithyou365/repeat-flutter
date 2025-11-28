@@ -164,6 +164,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelMatchType, "Match Type");
     put(I18nKey.labelSkipCharacter, "Enter This Char To Skip");
     put(I18nKey.labelEnableEditVerse, "Enable Edit Verse");
+    put(I18nKey.editor, "Editor");
     put(I18nKey.labelGameId, "Game ID");
     put(I18nKey.online, "Online");
     put(I18nKey.offline, "Offline");
@@ -234,7 +235,8 @@ class ConfigEn extends Config {
     put(I18nKey.labelCopyToWhere, "Should the copy be placed above or below this verse?");
     put(I18nKey.labelChapterDeleteBlocked, "There are verses under this chapter, so it cannot be deleted.");
     put(I18nKey.labelGameRuleSettings, "Game Rule Settings");
-    put(I18nKey.labelWordGuessGame, "Word Guess Game");
+    put(I18nKey.typingGame, "Typing Game");
+    put(I18nKey.blankItRightGame, "Blank It Right Game");
     put(I18nKey.labelLastCourseCannotBeDeleted, "The last course cannot be deleted, otherwise copying will not be possible.");
     put(I18nKey.labelFileNotFound, "File not found. Do you want to import the file now?");
     put(I18nKey.labelFileExtensionNotMatch, "The file extension does not match the expected format. Please ensure it is one of %s");

@@ -1,0 +1,94 @@
+import 'package:flutter/cupertino.dart';
+import 'package:get/get.dart';
+import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/entity/cr_kv.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/game_server/constant.dart';
+import 'package:repeat_flutter/widget/row/row_widget.dart';
+
+import 'game_settings.dart';
+
+class GameSettingsTyping extends GameSettings {
+  RxBool ignoringPunctuation = RxBool(false);
+  RxInt matchType = RxInt(0);
+  RxString skipChar = RxString("");
+
+  @override
+  GameTypeEnum gameTypeEnum() {
+    return GameTypeEnum.typing;
+  }
+
+  @override
+  Future<void> onInit() async {
+    var ki = await Db().db.crKvDao.getInt(Classroom.curr, CrK.typingGameForIgnoringPunctuation);
+    if (ki != null) {
+      ignoringPunctuation.value = ki == 1;
+    }
+    ki = await Db().db.crKvDao.getInt(Classroom.curr, CrK.typingGameForMatchType);
+    if (ki != null) {
+      matchType.value = ki;
+    } else {
+      await setMatchType(MatchType.all.index);
+      matchType.value = MatchType.all.index;
+    }
+    var ks = await Db().db.crKvDao.getString(Classroom.curr, CrK.typingGameForSkipCharacter);
+    if (ks != null) {
+      skipChar.value = ks;
+    }
+  }
+  @override
+  Future<void> onClose() async {
+
+  }
+  void setIgnoringPunctuation(bool ignoringPunctuation) {
+    this.ignoringPunctuation.value = ignoringPunctuation;
+    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.typingGameForIgnoringPunctuation, ignoringPunctuation ? '1' : '0'));
+  }
+
+  Future<void> setMatchType(int matchType) async {
+    this.matchType.value = matchType;
+    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.typingGameForMatchType, '$matchType'));
+  }
+
+  void setSkipChar(String skipChar) {
+    if (skipChar.isNotEmpty) {
+      this.skipChar.value = skipChar[0];
+    } else {
+      this.skipChar.value = '';
+    }
+    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.typingGameForSkipCharacter, skipChar));
+  }
+
+  @override
+  List<Widget> build() {
+    return [
+      RowWidget.buildSwitch(
+        I18nKey.labelIgnorePunctuation.tr,
+        ignoringPunctuation,
+        setIgnoringPunctuation,
+      ),
+      RowWidget.buildDividerWithoutColor(),
+      Obx(() {
+        return RowWidget.buildCupertinoPicker(
+          I18nKey.labelMatchType.tr,
+          [I18nKey.labelWord.tr, I18nKey.labelSingle.tr, I18nKey.labelAll.tr],
+          matchType,
+          changed: setMatchType,
+        );
+      }),
+      RowWidget.buildDividerWithoutColor(),
+      Obx(() {
+        return RowWidget.buildTextWithEdit(
+          I18nKey.labelSkipCharacter.tr,
+          skipChar,
+          yes: () {
+            Get.back();
+            setSkipChar(skipChar.value);
+          },
+        );
+      }),
+    ];
+  }
+}

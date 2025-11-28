@@ -6,13 +6,15 @@ import 'package:repeat_flutter/logic/game_server/constant.dart';
 class LatestGameRes {
   int id;
   int time;
+  int game;
 
-  LatestGameRes(this.id, this.time);
+  LatestGameRes(this.id, this.time, this.game);
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'time': time,
+      'game': game,
     };
   }
 
@@ -20,6 +22,7 @@ class LatestGameRes {
     return LatestGameRes(
       json['id'] as int,
       json['time'] as int,
+      json['game'] as int,
     );
   }
 }
@@ -32,6 +35,6 @@ Future<message.Response?> entryGame(message.Request req, GameUser? user) async {
   if (game == null) {
     return message.Response(error: GameServerError.gameNotFound.name);
   }
-  LatestGameRes res = LatestGameRes(game.id, game.time);
+  LatestGameRes res = LatestGameRes(game.id, game.time, game.game);
   return message.Response(data: res);
 }
