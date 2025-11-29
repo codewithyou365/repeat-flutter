@@ -24,7 +24,6 @@ class GameHelper {
     var game = Game(
       id: stp.id!,
       time: stp.time,
-      game: GameState.lastGameIndex,
       verseContent: verse.verseContent,
       verseId: verse.verseId,
       classroomId: stp.classroomId,

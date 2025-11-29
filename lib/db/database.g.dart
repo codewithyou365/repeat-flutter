@@ -162,7 +162,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER NOT NULL, `time` INTEGER NOT NULL, `game` INTEGER NOT NULL, `verseContent` TEXT NOT NULL, `verseId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER NOT NULL, `time` INTEGER NOT NULL, `verseContent` TEXT NOT NULL, `verseId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `GameUser` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `password` TEXT NOT NULL, `nonce` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `token` TEXT NOT NULL, `tokenExpiredDate` INTEGER NOT NULL, `needToResetPassword` INTEGER NOT NULL)');
         await database.execute(
@@ -1673,7 +1673,6 @@ class _$GameDao extends GameDao {
             (Game item) => <String, Object?>{
                   'id': item.id,
                   'time': item.time,
-                  'game': item.game,
                   'verseContent': item.verseContent,
                   'verseId': item.verseId,
                   'classroomId': item.classroomId,
@@ -1750,7 +1749,6 @@ class _$GameDao extends GameDao {
         mapper: (Map<String, Object?> row) => Game(
             id: row['id'] as int,
             time: row['time'] as int,
-            game: row['game'] as int,
             verseContent: row['verseContent'] as String,
             verseId: row['verseId'] as int,
             classroomId: row['classroomId'] as int,
@@ -1816,7 +1814,6 @@ class _$GameDao extends GameDao {
         mapper: (Map<String, Object?> row) => Game(
             id: row['id'] as int,
             time: row['time'] as int,
-            game: row['game'] as int,
             verseContent: row['verseContent'] as String,
             verseId: row['verseId'] as int,
             classroomId: row['classroomId'] as int,

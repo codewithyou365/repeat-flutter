@@ -16,7 +16,6 @@ class Game {
   final int id;
 
   final int time;
-  final int game;
 
   final String verseContent;
 
@@ -32,7 +31,6 @@ class Game {
   Game({
     required this.id,
     required this.time,
-    required this.game,
     required this.verseContent,
     required this.verseId,
     required this.classroomId,

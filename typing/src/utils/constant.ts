@@ -1,4 +1,4 @@
-import { toNumber } from './convert.ts';
+import {toNumber} from './convert.ts';
 
 export const Path = {
     kick: '/api/kick',
@@ -14,6 +14,33 @@ export const Path = {
     setSegmentContent: '/api/setSegmentContent',
 
 }
+
+export class GameType {
+    constructor(
+        public code: number,
+        public path: string
+    ) {
+    }
+
+    static NONE = new GameType(0, '');
+    static TYPE = new GameType(1, '/game/type-game');
+    static BLANK_IT_RIGHT = new GameType(2, '/game/blank-it-right-game');
+    static INPUT = new GameType(3, '/game/input-game');
+
+    static toGameType(code: number): GameType {
+        switch (code) {
+            case GameType.TYPE.code:
+                return GameType.TYPE;
+            case GameType.BLANK_IT_RIGHT.code:
+                return GameType.BLANK_IT_RIGHT;
+            case GameType.INPUT.code:
+                return GameType.INPUT;
+            default:
+                return GameType.NONE;
+        }
+    }
+}
+
 
 export class GameUserHistoryReq {
     gameId: number;
@@ -68,6 +95,7 @@ export class SubmitReq {
         return ret;
     }
 }
+
 export enum MatchType {
     word = 0,
     single = 1,

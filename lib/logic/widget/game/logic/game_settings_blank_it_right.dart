@@ -7,7 +7,6 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
-import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 
 import 'game_settings.dart';
@@ -18,11 +17,6 @@ class GameSettingsBlankItRight extends GameSettings {
   RxInt userIndex = RxInt(-1);
   List<GameUser> users = [];
   final SubList<WsEvent> sub = [];
-
-  @override
-  GameTypeEnum gameTypeEnum() {
-    return GameTypeEnum.blankItRight;
-  }
 
   @override
   Future<void> onInit() async {

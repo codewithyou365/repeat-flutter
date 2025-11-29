@@ -2,6 +2,7 @@ import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
+import 'package:repeat_flutter/logic/widget/game/game_state.dart';
 
 class LatestGameRes {
   int id;
@@ -35,6 +36,6 @@ Future<message.Response?> entryGame(message.Request req, GameUser? user) async {
   if (game == null) {
     return message.Response(error: GameServerError.gameNotFound.name);
   }
-  LatestGameRes res = LatestGameRes(game.id, game.time, game.game);
+  LatestGameRes res = LatestGameRes(game.id, game.time, GameState.lastGameIndex);
   return message.Response(data: res);
 }

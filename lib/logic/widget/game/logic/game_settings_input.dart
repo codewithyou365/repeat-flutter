@@ -5,35 +5,29 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 
 import 'game_settings.dart';
 
-class GameSettingsTyping extends GameSettings {
+class GameSettingsInput extends GameSettings {
   RxBool ignoringPunctuation = RxBool(false);
   RxInt matchType = RxInt(0);
   RxString skipChar = RxString("");
 
   @override
-  GameTypeEnum gameTypeEnum() {
-    return GameTypeEnum.typing;
-  }
-
-  @override
   Future<void> onInit() async {
-    var ki = await Db().db.crKvDao.getInt(Classroom.curr, CrK.typingGameForIgnoringPunctuation);
+    var ki = await Db().db.crKvDao.getInt(Classroom.curr, CrK.inputGameForIgnoringPunctuation);
     if (ki != null) {
       ignoringPunctuation.value = ki == 1;
     }
-    ki = await Db().db.crKvDao.getInt(Classroom.curr, CrK.typingGameForMatchType);
+    ki = await Db().db.crKvDao.getInt(Classroom.curr, CrK.inputGameForMatchType);
     if (ki != null) {
       matchType.value = ki;
     } else {
       await setMatchType(MatchType.all.index);
       matchType.value = MatchType.all.index;
     }
-    var ks = await Db().db.crKvDao.getString(Classroom.curr, CrK.typingGameForSkipCharacter);
+    var ks = await Db().db.crKvDao.getString(Classroom.curr, CrK.inputGameForSkipCharacter);
     if (ks != null) {
       skipChar.value = ks;
     }
@@ -44,12 +38,12 @@ class GameSettingsTyping extends GameSettings {
   }
   void setIgnoringPunctuation(bool ignoringPunctuation) {
     this.ignoringPunctuation.value = ignoringPunctuation;
-    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.typingGameForIgnoringPunctuation, ignoringPunctuation ? '1' : '0'));
+    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.inputGameForIgnoringPunctuation, ignoringPunctuation ? '1' : '0'));
   }
 
   Future<void> setMatchType(int matchType) async {
     this.matchType.value = matchType;
-    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.typingGameForMatchType, '$matchType'));
+    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.inputGameForMatchType, '$matchType'));
   }
 
   void setSkipChar(String skipChar) {
@@ -58,7 +52,7 @@ class GameSettingsTyping extends GameSettings {
     } else {
       this.skipChar.value = '';
     }
-    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.typingGameForSkipCharacter, skipChar));
+    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.inputGameForSkipCharacter, skipChar));
   }
 
   @override

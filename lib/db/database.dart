@@ -55,7 +55,6 @@ import 'package:sqflite/sqflite.dart' as sqflite;
 
 import 'entity/edit_book_history.dart';
 import 'entity/kv.dart';
-import 'migration/m4_5.dart';
 
 part 'database.g.dart'; // the generated code will be there
 
@@ -154,7 +153,6 @@ class Db {
         m1_2,
         m2_3,
         m3_4,
-        m4_5,
       ]).build();
       log("Database path: \n${await sqflite.getDatabasesPath()}/$fileName");
     }

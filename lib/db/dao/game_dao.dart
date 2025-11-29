@@ -122,9 +122,9 @@ abstract class GameDao {
     if (gameUserInput != null) {
       return ListUtil.toList(gameUserInput.output);
     }
-    int matchTypeInt = await intKv(Classroom.curr, CrK.typingGameForMatchType) ?? 1;
+    int matchTypeInt = await intKv(Classroom.curr, CrK.inputGameForMatchType) ?? 1;
     MatchType matchType = MatchType.values[matchTypeInt];
-    int typingGame = await intKv(Classroom.curr, CrK.typingGameForIgnoringPunctuation) ?? 0;
+    int typingGame = await intKv(Classroom.curr, CrK.inputGameForIgnoringPunctuation) ?? 0;
     if (typingGame == 1) {
       var punctuation = getWord(verse).replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), '').trim();
       if (punctuation.isNotEmpty) {
@@ -163,7 +163,7 @@ abstract class GameDao {
     if (gameUserInput != null) {
       prevOutput = ListUtil.toList(gameUserInput.output);
     } else {
-      int typingGame = await intKv(Classroom.curr, CrK.typingGameForIgnoringPunctuation) ?? 0;
+      int typingGame = await intKv(Classroom.curr, CrK.inputGameForIgnoringPunctuation) ?? 0;
       if (typingGame == 1) {
         var punctuation = getWord(verse).replaceAll(RegExp(r'[\p{L}\p{N}]+', unicode: true), '').trim();
         if (punctuation.isNotEmpty) {
@@ -172,7 +172,7 @@ abstract class GameDao {
       }
     }
     final now = DateTime.now();
-    String? skipChar = await stringKv(Classroom.curr, CrK.typingGameForSkipCharacter);
+    String? skipChar = await stringKv(Classroom.curr, CrK.inputGameForSkipCharacter);
     if (skipChar != null && skipChar.isEmpty) {
       skipChar = null;
     }

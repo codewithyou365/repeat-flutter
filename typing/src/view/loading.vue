@@ -10,7 +10,7 @@ import {LocationQueryRaw, useRouter} from "vue-router";
 
 const router = useRouter();
 import {useStore} from 'vuex';
-import {Path} from "../utils/constant.ts";
+import {GameType, Path} from "../utils/constant.ts";
 
 const store = useStore();
 
@@ -50,7 +50,8 @@ onMounted(() => {
         console.error('Error starting game:', res.error);
       } else {
         const refreshGame = res.data as LocationQueryRaw;
-        await router.push({path: "/game", query: refreshGame});
+        const gameType = GameType.toGameType(res.data.game);
+        await router.push({path: gameType.path, query: refreshGame});
       }
     }
   });

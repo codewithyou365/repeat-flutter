@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
@@ -80,15 +81,15 @@ class GamePage<T extends GetxController> {
                 RowWidget.buildDividerWithoutColor(),
                 RowWidget.buildCupertinoPicker(
                   I18nKey.labelGameRuleSettings.tr,
-                  logic.gameTypeToGameSettings.values.map((gameSettings) {
-                    return gameSettings.gameTypeEnum().i18n.tr;
+                  logic.gameTypeToGameSettings.keys.map((gameSettings) {
+                    return gameSettings.i18n.tr;
                   }).toList(),
                   state.game,
                   pickWidth: 150,
                   changed: logic.changeGame,
                 ),
                 RowWidget.buildDividerWithoutColor(),
-                ...gameSettings(logic.gameTypeToGameSettings.values),
+                ...gameSettings(logic.gameTypeToGameSettings),
                 RowWidget.buildDividerWithoutColor(),
               ],
             );
@@ -99,10 +100,10 @@ class GamePage<T extends GetxController> {
     );
   }
 
-  List<Widget> gameSettings(Iterable<GameSettings> gameSettings) {
-    for (var gs in gameSettings) {
-      if (GameState.lastGameIndex == gs.gameTypeEnum().index) {
-        return gs.build();
+  List<Widget> gameSettings(Map<GameTypeEnum, GameSettings> gameSettings) {
+    for (var k in gameSettings.keys) {
+      if (GameState.lastGameIndex == k.index) {
+        return gameSettings[k]!.build();
       }
     }
     return [];

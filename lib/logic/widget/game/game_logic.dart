@@ -10,20 +10,21 @@ import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/game_server/web_server.dart';
 import 'package:repeat_flutter/logic/widget/game/logic/game_settings.dart';
-import 'package:repeat_flutter/logic/widget/game/logic/game_settings_typing.dart';
+import 'package:repeat_flutter/logic/widget/game/logic/game_settings_type.dart';
 import 'package:repeat_flutter/logic/widget/user_manager.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'game_page.dart';
 import 'game_state.dart';
 import 'logic/game_settings_blank_it_right.dart';
+import 'logic/game_settings_input.dart';
 
 class GameLogic<T extends GetxController> {
   static const String bodyId = "GameLogic.bodyId";
   final T parentLogic;
   late UserManager userManager = UserManager<T>(parentLogic);
   WebServer web = WebServer();
-
+  final GameState state = GameState();
   final SubList<WsEvent> sub = [];
   final SubList<int> subAllowRegisterNumber = [];
 
@@ -33,11 +34,10 @@ class GameLogic<T extends GetxController> {
   final Map<GameTypeEnum, GameSettings> gameTypeToGameSettings = {};
 
   GameLogic(this.parentLogic) {
-    gameTypeToGameSettings[GameTypeEnum.typing] = GameSettingsTyping();
+    gameTypeToGameSettings[GameTypeEnum.type] = GameSettingsType();
     gameTypeToGameSettings[GameTypeEnum.blankItRight] = GameSettingsBlankItRight();
+    gameTypeToGameSettings[GameTypeEnum.input] = GameSettingsInput();
   }
-
-  final GameState state = GameState();
 
   Future<void> init(VoidCallback onOpenWeb) async {
     this.onOpenWeb = onOpenWeb;

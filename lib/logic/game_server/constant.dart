@@ -39,8 +39,9 @@ class Path {
 
 enum GameTypeEnum {
   none(I18nKey.none),
-  typing(I18nKey.typingGame),
-  blankItRight(I18nKey.blankItRightGame);
+  type(I18nKey.typeGame),
+  blankItRight(I18nKey.blankItRightGame),
+  input(I18nKey.inputGame);
 
   final I18nKey i18n;
 

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 
 abstract class GameSettings {
-  GameTypeEnum gameTypeEnum();
-
   Future<void> onInit();
 
   Future<void> onClose();
