@@ -34,6 +34,15 @@ class GameHelper {
       createDate: Date.from(now),
     );
     await Db().db.gameDao.tryInsertGame(game);
-    await server.server.broadcast(Request(path: Path.refreshGame, data: {"id": stp.id, "time": stp.time}));
+    await server.server.broadcast(
+      Request(
+        path: Path.refreshGame,
+        data: {
+          "id": stp.id,
+          "time": stp.time,
+          "verseId": stp.verseId,
+        },
+      ),
+    );
   }
 }

@@ -1,23 +1,23 @@
-
 import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
+import 'package:repeat_flutter/logic/verse_help.dart';
 
 class GetVerseContentReq {
-  int gameId;
+  int verseId;
 
-  GetVerseContentReq(this.gameId);
+  GetVerseContentReq(this.verseId);
 
   Map<String, dynamic> toJson() {
     return {
-      'gameId': gameId,
+      'verseId': verseId,
     };
   }
 
   factory GetVerseContentReq.fromJson(Map<String, dynamic> json) {
     return GetVerseContentReq(
-      json['gameId'] as int,
+      json['verseId'] as int,
     );
   }
 }
@@ -45,10 +45,10 @@ Future<message.Response?> getVerseContent(message.Request req, GameUser? user) a
     return message.Response(error: GameServerError.serviceStopped.name);
   }
   final reqBody = GetVerseContentReq.fromJson(req.data);
-  final game = await Db().db.gameDao.one(reqBody.gameId);
-  if (game == null) {
+  final verse = VerseHelp.getCache(reqBody.verseId);
+  if (verse == null) {
     return message.Response(error: GameServerError.gameNotFound.name);
   }
-  final res = GetVerseContentRes(game.verseContent);
+  final res = GetVerseContentRes(verse.verseContent);
   return message.Response(data: res);
 }

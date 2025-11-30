@@ -8,14 +8,21 @@ class LatestGameRes {
   int id;
   int time;
   int game;
+  int verseId;
 
-  LatestGameRes(this.id, this.time, this.game);
+  LatestGameRes(
+    this.id,
+    this.time,
+    this.game,
+    this.verseId,
+  );
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'time': time,
       'game': game,
+      'verseId': verseId,
     };
   }
 
@@ -24,6 +31,7 @@ class LatestGameRes {
       json['id'] as int,
       json['time'] as int,
       json['game'] as int,
+      json['verseId'] as int,
     );
   }
 }
@@ -36,6 +44,6 @@ Future<message.Response?> entryGame(message.Request req, GameUser? user) async {
   if (game == null) {
     return message.Response(error: GameServerError.gameNotFound.name);
   }
-  LatestGameRes res = LatestGameRes(game.id, game.time, GameState.lastGameIndex);
+  LatestGameRes res = LatestGameRes(game.id, game.time, GameState.lastGameIndex, game.verseId);
   return message.Response(data: res);
 }

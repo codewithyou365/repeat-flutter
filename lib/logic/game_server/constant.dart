@@ -32,7 +32,6 @@ class Path {
   static const heart = '/api/heart';
   static const gameUserHistory = '/api/gameUserHistory';
   static const submit = '/api/submit';
-  static const getEditStatus = '/api/getEditStatus';
   static const getVerseContent = '/api/getVerseContent';
   static const setVerseContent = '/api/setVerseContent';
 }

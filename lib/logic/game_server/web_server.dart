@@ -9,10 +9,9 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
-import 'package:repeat_flutter/logic/game_server/controller/get_edit_status.dart';
-import 'package:repeat_flutter/logic/game_server/controller/get_verse_content.dart';
 import 'controller/heart.dart';
 import 'controller/game_user_history.dart';
+import 'controller/get_verse_content.dart';
 import 'controller/entry_game.dart';
 import 'controller/login_or_register.dart';
 import 'controller/submit.dart';
@@ -39,7 +38,6 @@ class WebServer {
       server.controllers[Path.heart] = (request) => withGameUser(request, heart);
       server.controllers[Path.gameUserHistory] = (request) => withGameUser(request, gameUserHistory);
       server.controllers[Path.submit] = (request) => withGameUser(request, submit);
-      server.controllers[Path.getEditStatus] = (request) => withGameUser(request, getEditStatus);
       server.controllers[Path.getVerseContent] = (request) => withGameUser(request, getVerseContent);
       open = true;
     } catch (e) {

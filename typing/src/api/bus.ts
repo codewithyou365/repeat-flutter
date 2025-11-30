@@ -4,10 +4,12 @@ import {toNumber} from '../utils/convert';
 export class RefreshGameType {
     id: number;
     time: number;
+    verseId: number;
 
     constructor() {
         this.id = 0;
         this.time = 0;
+        this.verseId = 0;
     }
 
     static from(other: any): RefreshGameType {
@@ -15,6 +17,7 @@ export class RefreshGameType {
         if (other) {
             ret.id = toNumber(other.id);
             ret.time = toNumber(other.time);
+            ret.verseId = toNumber(other.verseId);
         }
         return ret;
     }

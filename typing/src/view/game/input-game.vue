@@ -1,21 +1,21 @@
 <template>
-  <nut-navbar left-show @click-back="onClickBack">
-    <template #right>
-      <router-link to="/settings">
-        <Setting width="16px"></Setting>
-      </router-link>
-    </template>
-  </nut-navbar>
-  <reconnect/>
   <div class="container">
     <div v-for="(item, index) in record" :key="index" class="history-item">
       <div v-for="(element, subIndex) in item.input" :key="subIndex" class="history-word">
         <div v-for="(char, subCharIndex) in element" :key="subCharIndex" class="history-char">
-          <span class="input-hit" v-if="char!==replaceChar && item.output[subIndex] && item.output[subIndex][subCharIndex] && item.output[subIndex][subCharIndex]===char">{{ char }}</span>
+          <span class="input-hit"
+                v-if="char!==replaceChar && item.output[subIndex] && item.output[subIndex][subCharIndex] && item.output[subIndex][subCharIndex]===char">{{
+              char
+            }}</span>
           <span class="input-error" v-else-if="char!==replaceChar">{{ char }}</span>
           <span class="input" v-else>{{ char }}</span>
-          <span class="output-finish" v-if="item.output[subIndex] && item.output[subIndex][subCharIndex] && finish(item.output[subIndex])">{{ item.output[subIndex][subCharIndex] }}</span>
-          <span class="output" v-else-if="item.output[subIndex] && item.output[subIndex][subCharIndex]">{{ item.output[subIndex][subCharIndex] }}</span>
+          <span class="output-finish"
+                v-if="item.output[subIndex] && item.output[subIndex][subCharIndex] && finish(item.output[subIndex])">{{
+              item.output[subIndex][subCharIndex]
+            }}</span>
+          <span class="output" v-else-if="item.output[subIndex] && item.output[subIndex][subCharIndex]">{{
+              item.output[subIndex][subCharIndex]
+            }}</span>
           <span class="output-error" v-else>{{ '×' }}</span>
         </div>
       </div>
@@ -27,25 +27,16 @@
       <nut-button size="large" type="info" @click="onGameInput">{{ t('confirm') }}</nut-button>
     </div>
   </dev>
-  <nut-overlay v-model:visible="overlayVisible">
-    <div class="overlay-body">
-      <div class="overlay-content">
-        <Loading1/>
-      </div>
-    </div>
-  </nut-overlay>
+
 </template>
 
 <script setup lang="ts">
 import {bus, EventName, RefreshGameType} from "../../api/bus.ts";
 import {GameUserHistoryReq, GameUserHistoryRes, MatchType, Path, SubmitReq, SubmitRes} from "../../utils/constant.ts";
 import editor from '../../component/editor.vue';
-import reconnect from '../../component/reconnect.vue';
-import {Setting, Loading1} from '@nutui/icons-vue';
 import {useI18n} from 'vue-i18n';
-import {onBeforeUnmount, onMounted, ref, nextTick, computed} from 'vue';
-import {client, ClientStatus, Request} from "../../api/ws.ts";
-import {showDialog} from "@nutui/nutui";
+import {onBeforeUnmount, onMounted, ref, nextTick, inject, computed, Ref} from 'vue';
+import {client, Request} from "../../api/ws.ts";
 
 type History = Array<
     {
@@ -57,8 +48,9 @@ type History = Array<
 const editorComponent = ref<InstanceType<typeof editor> | null>(null);
 const record = ref<History>([]);
 const replaceChar = '•';
-const enableEdit = ref(false);
-const overlayVisible = ref(false);
+const overlayVisible = inject<Ref<boolean>>('overlayVisible')!
+const tipDialogVisible = inject<Ref<boolean>>('tipDialogVisible')!
+const tipDialogContent = inject<Ref<string>>('tipDialogContent')!
 const {t} = useI18n();
 let refreshGame: RefreshGameType;
 let lastGameUserId: number = 0;
@@ -71,36 +63,15 @@ onMounted(async () => {
   refreshGame = RefreshGameType.from(route.query);
 
   await refresh(refreshGame);
-  await refreshEnableEdit();
   bus().on(EventName.RefreshGame, (data: RefreshGameType) => {
     refreshGame = data;
     refresh(data);
-  });
-  bus().on(EventName.WsStatus, (status: number) => {
-    if (status === ClientStatus.CONNECT_CLOSE) {
-      router.push('/loading');
-    }
   });
 });
 
 onBeforeUnmount(() => {
   bus().off(EventName.RefreshGame);
-  bus().off(EventName.WsStatus);
 });
-
-const refreshEnableEdit = async () => {
-  try {
-    overlayVisible.value = true;
-
-    const req = new Request({path: Path.getEditStatus});
-    const res = await client.node!.send(req);
-    enableEdit.value = res.data;
-  } catch (error) {
-    console.error('Failed to refreshEnableEdit:', error);
-  } finally {
-    overlayVisible.value = false;
-  }
-}
 
 const refresh = async (refreshGame: RefreshGameType) => {
   try {
@@ -141,13 +112,6 @@ const refresh = async (refreshGame: RefreshGameType) => {
   }
 }
 
-const onCancel = () => {
-  console.log('event cancel')
-}
-const onOk = () => {
-  router.push('/home');
-}
-
 const onGameInput = async () => {
   let gameInput = '';
   let editorView;
@@ -164,14 +128,8 @@ const onGameInput = async () => {
   req.input = gameInput;
   const res0 = await client.node!.send(new Request({path: Path.submit, data: req}));
   if (res0.error) {
-    showDialog({
-      title: t('tips'),
-      content: t(res0.error),
-      noCancelBtn: true,
-      okText: t('confirm'),
-      onCancel,
-      onOk
-    })
+    tipDialogVisible.value = true;
+    tipDialogContent.value = t(res0.error);
     return;
   }
   const res = res0.data as SubmitRes;
@@ -184,7 +142,7 @@ const onGameInput = async () => {
   await nextTick(() => {
     window.scrollTo(0, document.body.scrollHeight);
   });
-  let insert = "";
+  let insert: string;
   if (res.matchType === MatchType.all) {
     insert = res.output.join(" ");
   } else {
@@ -211,16 +169,10 @@ const finish = (word: string) => {
   }
   return true;
 };
-const onClickBack = () => history.back();
-
 </script>
 <style>
 .container {
   margin: 8px;
-}
-
-.nav-bar {
-  margin: 0 10px;
 }
 
 :root {
