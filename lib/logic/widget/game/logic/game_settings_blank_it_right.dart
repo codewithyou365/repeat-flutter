@@ -88,7 +88,7 @@ class GameSettingsBlankItRight extends GameSettings {
 
       RowWidget.buildDividerWithoutColor(),
       RowWidget.buildSwitch(
-        I18nKey.labelIgnorePunctuation.tr,
+        I18nKey.ignorePunctuation.tr,
         ignoringPunctuation,
         setIgnoringPunctuation,
       ),

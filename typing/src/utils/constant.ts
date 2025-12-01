@@ -8,6 +8,7 @@ export const Path = {
     loginOrRegister: '/api/loginOrRegister',
     entryGame: '/api/entryGame',
     getVerseContent: '/api/getVerseContent',
+    getGameSettings: '/api/getGameSettings',
     gameUserHistory: '/api/gameUserHistory',
     submit: '/api/submit',
 

@@ -33,7 +33,7 @@ class Path {
   static const gameUserHistory = '/api/gameUserHistory';
   static const submit = '/api/submit';
   static const getVerseContent = '/api/getVerseContent';
-  static const setVerseContent = '/api/setVerseContent';
+  static const getGameSettings = '/api/getGameSettings';
 }
 
 enum GameTypeEnum {

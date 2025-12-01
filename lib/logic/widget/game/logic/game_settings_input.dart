@@ -59,7 +59,7 @@ class GameSettingsInput extends GameSettings {
   List<Widget> build() {
     return [
       RowWidget.buildSwitch(
-        I18nKey.labelIgnorePunctuation.tr,
+        I18nKey.ignorePunctuation.tr,
         ignoringPunctuation,
         setIgnoringPunctuation,
       ),

@@ -9,57 +9,48 @@ import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'game_settings.dart';
 
 class GameSettingsType extends GameSettings {
-  RxBool ignoringPunctuation = RxBool(false);
-  RxString skipChar = RxString("");
+  RxBool ignorePunctuation = RxBool(false);
+  RxBool ignoreCase = RxBool(false);
 
   @override
   Future<void> onInit() async {
-    var ki = await Db().db.crKvDao.getInt(Classroom.curr, CrK.typeGameForIgnoringPunctuation);
-    if (ki != null) {
-      ignoringPunctuation.value = ki == 1;
+    var kip = await Db().db.crKvDao.getInt(Classroom.curr, CrK.typeGameForIgnorePunctuation);
+    if (kip != null) {
+      ignorePunctuation.value = kip == 1;
     }
-    var ks = await Db().db.crKvDao.getString(Classroom.curr, CrK.typeGameForSkipCharacter);
-    if (ks != null) {
-      skipChar.value = ks;
+    var kic = await Db().db.crKvDao.getInt(Classroom.curr, CrK.typeGameForIgnoreCase);
+    if (kic != null) {
+      ignoreCase.value = kic == 1;
     }
   }
 
   @override
   Future<void> onClose() async {}
 
-  void setIgnoringPunctuation(bool ignoringPunctuation) {
-    this.ignoringPunctuation.value = ignoringPunctuation;
-    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.typeGameForIgnoringPunctuation, ignoringPunctuation ? '1' : '0'));
+  void setIgnorePunctuation(bool ignorePunctuation) {
+    this.ignorePunctuation.value = ignorePunctuation;
+    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.typeGameForIgnorePunctuation, ignorePunctuation ? '1' : '0'));
   }
 
-  void setSkipChar(String skipChar) {
-    if (skipChar.isNotEmpty) {
-      this.skipChar.value = skipChar[0];
-    } else {
-      this.skipChar.value = '';
-    }
-    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.typeGameForSkipCharacter, skipChar));
+  void setIgnoreCase(bool ignoreCase) {
+    this.ignoreCase.value = ignoreCase;
+    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.typeGameForIgnoreCase, ignoreCase ? '1' : '0'));
   }
 
   @override
   List<Widget> build() {
     return [
       RowWidget.buildSwitch(
-        I18nKey.labelIgnorePunctuation.tr,
-        ignoringPunctuation,
-        setIgnoringPunctuation,
+        I18nKey.ignorePunctuation.tr,
+        ignorePunctuation,
+        setIgnorePunctuation,
       ),
       RowWidget.buildDividerWithoutColor(),
-      Obx(() {
-        return RowWidget.buildTextWithEdit(
-          I18nKey.labelSkipCharacter.tr,
-          skipChar,
-          yes: () {
-            Get.back();
-            setSkipChar(skipChar.value);
-          },
-        );
-      }),
+      RowWidget.buildSwitch(
+        I18nKey.ignoreCase.tr,
+        ignoreCase,
+        setIgnoreCase,
+      ),
     ];
   }
 }

@@ -9,6 +9,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
+import 'package:repeat_flutter/logic/game_server/controller/get_game_settings.dart';
 import 'controller/heart.dart';
 import 'controller/game_user_history.dart';
 import 'controller/get_verse_content.dart';
@@ -39,6 +40,7 @@ class WebServer {
       server.controllers[Path.gameUserHistory] = (request) => withGameUser(request, gameUserHistory);
       server.controllers[Path.submit] = (request) => withGameUser(request, submit);
       server.controllers[Path.getVerseContent] = (request) => withGameUser(request, getVerseContent);
+      server.controllers[Path.getGameSettings] = (request) => withGameUser(request, getGameSettings);
       open = true;
     } catch (e) {
       Snackbar.show('Error starting HTTPS service: $e');
