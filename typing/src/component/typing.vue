@@ -185,14 +185,14 @@ const handleKeydown = (e: KeyboardEvent) => {
   if (isComposing.value) return;
 
   if (e.key === 'Backspace') {
-    if (cursorPos.value > 0) {
+    if (cursorPos.value === userInput.value.length && cursorPos.value > 0) {
       userInput.value = userInput.value.slice(0, cursorPos.value - 1) + userInput.value.slice(cursorPos.value);
       cursorPos.value--;
       positionInput();
     }
     e.preventDefault();
   } else if (e.key === 'Delete') {
-    if (cursorPos.value < userInput.value.length) {
+    if (cursorPos.value === userInput.value.length && cursorPos.value < userInput.value.length) {
       userInput.value = userInput.value.slice(0, cursorPos.value) + userInput.value.slice(cursorPos.value + 1);
       positionInput();  // Cursor stays in place
     }

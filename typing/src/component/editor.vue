@@ -19,7 +19,7 @@ const props = defineProps({
   },
   save: {
     type: Function,
-    required: true,
+    required: false,
   }
 });
 const store = useStore();
