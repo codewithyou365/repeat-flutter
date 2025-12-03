@@ -1,14 +1,14 @@
 import {Kv} from './Kv.ts';
 
-export class GetGameSettingsRes {
+export class KvList {
     list: Kv[];
 
     constructor(list: Kv[]) {
         this.list = list;
     }
 
-    static fromJson(json: any): GetGameSettingsRes {
-        return new GetGameSettingsRes(
+    static fromJson(json: any): KvList {
+        return new KvList(
             (json.list ?? []).map((e: any) => Kv.fromJson(e))
         );
     }

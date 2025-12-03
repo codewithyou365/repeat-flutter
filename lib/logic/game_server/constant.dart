@@ -6,6 +6,11 @@ enum GameServerError {
   userOrPasswordError,
   excessRegisterCount,
   serviceStopped,
+
+  editorUserNeedToBeSpecified,
+  editorUserInvalid,
+  gameNotReady,
+
   gameNotFound,
   gameSyncError,
   gameEntryCodeError,
@@ -32,8 +37,11 @@ class Path {
   static const heart = '/api/heart';
   static const gameUserHistory = '/api/gameUserHistory';
   static const submit = '/api/submit';
-  static const getVerseContent = '/api/getVerseContent';
-  static const getGameSettings = '/api/getGameSettings';
+  static const typeGameSettings = '/api/typeGameSettings';
+  static const typeVerseContent = '/api/typeVerseContent';
+  static const blankItRightSettings = '/api/blankItRightSettings';
+  static const blankItRightContent = '/api/blankItRightContent';
+  static const blankItRightBlank = '/api/blankItRightBlank';
 }
 
 enum GameTypeEnum {

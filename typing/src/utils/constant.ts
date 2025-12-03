@@ -7,9 +7,12 @@ export const Path = {
     heart: '/api/heart',
     loginOrRegister: '/api/loginOrRegister',
     entryGame: '/api/entryGame',
-    getVerseContent: '/api/getVerseContent',
-    getGameSettings: '/api/getGameSettings',
     gameUserHistory: '/api/gameUserHistory',
+    typeGameSettings : '/api/typeGameSettings',
+    typeVerseContent : '/api/typeVerseContent',
+    blankItRightSettings : '/api/blankItRightSettings',
+    blankItRightContent : '/api/blankItRightContent',
+    blankItRightBlank : '/api/blankItRightBlank',
     submit: '/api/submit',
 
 }
@@ -125,32 +128,3 @@ export class SubmitRes {
     }
 }
 
-
-export class GetVerseContentReq {
-    verseId: number;
-
-    constructor() {
-        this.verseId = 0;
-    }
-
-    static from(other: any): GetVerseContentReq {
-        const ret = new GetVerseContentReq();
-        ret.verseId = other.verseId || 0;
-        return ret;
-    }
-}
-
-
-export class GetVerseContentRes {
-    content: string;
-
-    constructor() {
-        this.content = '';
-    }
-
-    static from(other: any): GetVerseContentRes {
-        const ret = new GetVerseContentRes();
-        ret.content = other.content || 0;
-        return ret;
-    }
-}

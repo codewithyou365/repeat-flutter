@@ -9,10 +9,14 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
-import 'package:repeat_flutter/logic/game_server/controller/get_game_settings.dart';
+import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/blank_it_right_blank.dart';
+import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/blank_it_right_content.dart';
+import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/blank_it_right_settings.dart';
+import 'package:repeat_flutter/logic/game_server/controller/type/type_verse_content.dart';
+import 'package:repeat_flutter/logic/game_server/controller/type/type_game_settings.dart';
+import 'package:repeat_flutter/logic/widget/game/game_state.dart';
 import 'controller/heart.dart';
 import 'controller/game_user_history.dart';
-import 'controller/get_verse_content.dart';
 import 'controller/entry_game.dart';
 import 'controller/login_or_register.dart';
 import 'controller/submit.dart';
@@ -39,8 +43,11 @@ class WebServer {
       server.controllers[Path.heart] = (request) => withGameUser(request, heart);
       server.controllers[Path.gameUserHistory] = (request) => withGameUser(request, gameUserHistory);
       server.controllers[Path.submit] = (request) => withGameUser(request, submit);
-      server.controllers[Path.getVerseContent] = (request) => withGameUser(request, getVerseContent);
-      server.controllers[Path.getGameSettings] = (request) => withGameUser(request, getGameSettings);
+      server.controllers[Path.typeGameSettings] = (request) => withGameUserAndGameType(request, GameTypeEnum.type, typeGameSettings);
+      server.controllers[Path.typeVerseContent] = (request) => withGameUserAndGameType(request, GameTypeEnum.type, typeVerseContent);
+      server.controllers[Path.blankItRightSettings] = (request) => withGameUserAndGameType(request, GameTypeEnum.blankItRight, blankItRightSettings);
+      server.controllers[Path.blankItRightContent] = (request) => withGameUserAndGameType(request, GameTypeEnum.blankItRight, blankItRightContent);
+      server.controllers[Path.blankItRightBlank] = (request) => withGameUserAndServer(request, GameTypeEnum.blankItRight, blankItRightBlank);
       open = true;
     } catch (e) {
       Snackbar.show('Error starting HTTPS service: $e');
@@ -142,11 +149,33 @@ class WebServer {
     return user;
   }
 
-  Future<message.Response?> withGameUser(message.Request req, Future<message.Response?> Function(message.Request req, GameUser? user) handle) {
-    return handle(req, getGameUser(req));
+  Future<message.Response?> withGameUser(message.Request req, Future<message.Response?> Function(message.Request req, GameUser user) handle) async {
+    var user = getGameUser(req);
+    if (user == null) {
+      return message.Response(error: GameServerError.tokenExpired.name);
+    }
+    return await handle(req, user);
   }
 
-  Future<message.Response?> withGameUserAndServer(message.Request req, Future<message.Response?> Function(message.Request req, GameUser? user, Server<GameUser> server) handle) {
-    return handle(req, getGameUser(req), server);
+  Future<message.Response?> withGameUserAndGameType(message.Request req, GameTypeEnum gameType, Future<message.Response?> Function(message.Request req, GameUser user) handle) async {
+    if (GameState.lastGameIndex != gameType.index) {
+      return message.Response(error: GameServerError.gameNotFound.name);
+    }
+    var user = getGameUser(req);
+    if (user == null) {
+      return message.Response(error: GameServerError.tokenExpired.name);
+    }
+    return await handle(req, user);
+  }
+
+  Future<message.Response?> withGameUserAndServer(message.Request req, GameTypeEnum gameType, Future<message.Response?> Function(message.Request req, GameUser user, Server<GameUser> server) handle) async {
+    if (GameState.lastGameIndex != gameType.index) {
+      return message.Response(error: GameServerError.gameNotFound.name);
+    }
+    var user = getGameUser(req);
+    if (user == null) {
+      return message.Response(error: GameServerError.tokenExpired.name);
+    }
+    return await handle(req, user, server);
   }
 }

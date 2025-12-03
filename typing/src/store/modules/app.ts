@@ -2,6 +2,7 @@ const state = {
     theme: localStorage.getItem('theme') ?? 'dart',
     language: localStorage.getItem('language') ?? 'en',
     token: localStorage.getItem('token') ?? '',
+    userId: localStorage.getItem('userId') ?? 0,
     enableVim: localStorage.getItem('enableVim') === 'true',
     wsConnected: false,
 };
@@ -39,6 +40,10 @@ const mutations = {
         state.token = token;
         localStorage.setItem('token', token);
     },
+    setUserId(state: any, userId: int) {
+        state.userId = userId;
+        localStorage.setItem('userId', userId);
+    },
     setWsConnected(state: any, wsConnected: boolean) {
         state.wsConnected = wsConnected;
     },
@@ -58,6 +63,9 @@ const actions = {
     updateToken({commit}: any, token: string) {
         commit('setToken', token);
     },
+    updateUserId({commit}: any, userId: int) {
+        commit('setUserId', userId);
+    },
     updateWsConnected({commit}: any, wsConnected: boolean) {
         commit('setWsConnected', wsConnected);
     },
@@ -70,6 +78,7 @@ const getters = {
     currentTheme: (state: any) => state.theme,
     currentLanguage: (state: any) => state.language,
     currentToken: (state: any) => state.token,
+    currentUserId: (state: any) => state.userId,
     currentWsConnected: (state: any) => state.wsConnected,
     currentEnableVim: (state: any) => state.enableVim,
 };

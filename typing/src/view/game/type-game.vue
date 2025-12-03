@@ -1,10 +1,10 @@
-<!-- Parent Component, e.g., TypingGamePage.vue -->
 <template>
   <div>
     <Typing
         :content="content"
         :ignore-case="ignoreCase"
         :ignore-punctuation="ignorePunctuation"
+        :ignore-content-indexes=[]
     />
   </div>
 </template>
@@ -13,8 +13,8 @@
 import {onMounted, ref, onBeforeUnmount, inject, Ref} from 'vue';
 import {bus, EventName, RefreshGameType} from '../../api/bus.ts';
 import {client, Request} from '../../api/ws.ts';
-import {GetVerseContentReq, GetVerseContentRes, Path} from '../../utils/constant.ts';
-import {GetGameSettingsRes} from '../../vo/GetGameSettingsRes.ts';
+import {Path} from '../../utils/constant.ts';
+import {KvList} from '../../vo/KvList.ts';
 import {useRoute, useRouter} from 'vue-router';
 import Typing from '../../component/typing.vue';
 
@@ -27,9 +27,9 @@ const overlayVisible = inject<Ref<boolean>>('overlayVisible')!
 let refreshGame: RefreshGameType;
 
 const getGameSettings = async () => {
-  const req = new Request({path: Path.getGameSettings});
+  const req = new Request({path: Path.typeGameSettings});
   const res0 = await client.node!.send(req);
-  const res = GetGameSettingsRes.fromJson(res0.data);
+  const res = KvList.fromJson(res0.data);
   const settings = res.convertMap();
 
   ignorePunctuation.value = settings.get('typeGameForIgnorePunctuation') === 'true';
@@ -39,14 +39,9 @@ const getGameSettings = async () => {
 const refresh = async (refreshGame: RefreshGameType) => {
   try {
     overlayVisible.value = true;
-    const data: GetVerseContentReq = {
-      verseId: refreshGame.verseId,
-    };
-
-    const req = new Request({path: Path.getVerseContent, data});
-    const res0 = await client.node!.send(req);
-    const res = GetVerseContentRes.from(res0.data);
-    const contentJson = JSON.parse(res.content);
+    const req = new Request({path: Path.typeVerseContent, data: refreshGame.verseId});
+    const res = await client.node!.send(req);
+    const contentJson = JSON.parse(res.data);
     content.value = contentJson?.a ?? '';
     await router.replace({
       query: {

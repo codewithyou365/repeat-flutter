@@ -35,17 +35,16 @@ class GameSettingsBlankItRight extends GameSettings {
     });
 
     var userId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForEditorUserId);
-    if (userId != null) {
-      if (users.isNotEmpty) {
-        final index = users.indexWhere((u) => u.id == userId);
-        if (index != -1) {
-          await setUser(index);
-        }
+    if (users.isNotEmpty) {
+      var index = users.indexWhere((u) => u.id == userId);
+      if (index == -1) {
+        index = 0;
       }
+      await setUser(index);
     }
     userNumber.value = users.length;
 
-    var ki = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForIgnoringPunctuation);
+    var ki = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForIgnorePunctuation);
     if (ki != null) {
       ignoringPunctuation.value = ki == 1;
     }
@@ -67,7 +66,7 @@ class GameSettingsBlankItRight extends GameSettings {
 
   void setIgnoringPunctuation(bool ignoringPunctuation) {
     this.ignoringPunctuation.value = ignoringPunctuation;
-    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.blockItRightGameForIgnoringPunctuation, ignoringPunctuation ? '1' : '0'));
+    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.blockItRightGameForIgnorePunctuation, ignoringPunctuation ? '1' : '0'));
   }
 
   @override

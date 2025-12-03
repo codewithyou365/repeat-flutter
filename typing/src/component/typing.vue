@@ -37,10 +37,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, nextTick, computed, onBeforeUnmount, watch } from 'vue';
+import {onMounted, ref, nextTick, computed, onBeforeUnmount, watch} from 'vue';
 
 const props = defineProps<{
   content: string;
+  ignoreContentIndexes: number[];
   ignoreCase: boolean;
   ignorePunctuation: boolean;
 }>();
@@ -64,23 +65,23 @@ const groups = computed(() => {
   const gs: any[] = [];
   if (isCJK.value) {
     props.content.split('').forEach((char, index) => {
-      gs.push({ type: char === ' ' ? 'space' : 'char', char, index });
+      gs.push({type: char === ' ' ? 'space' : 'char', char, index});
     });
   } else {
     let currentWord: any[] = [];
     props.content.split('').forEach((char, index) => {
       if (char === ' ') {
         if (currentWord.length) {
-          gs.push({ type: 'word', chars: currentWord });
+          gs.push({type: 'word', chars: currentWord});
           currentWord = [];
         }
-        gs.push({ type: 'space', char, index });
+        gs.push({type: 'space', char, index});
       } else {
-        currentWord.push({ char, index });
+        currentWord.push({char, index});
       }
     });
     if (currentWord.length) {
-      gs.push({ type: 'word', chars: currentWord });
+      gs.push({type: 'word', chars: currentWord});
     }
   }
   return gs;
@@ -131,20 +132,25 @@ watch(composingInput, (newValue) => {
   }
 });
 
-const isPunctuation = (c: string) => /\p{P}/u.test(c);
+const isIgnore = (c: string, index: number) => {
+  if (props.ignorePunctuation && /\p{P}/u.test(c)) {
+    return true;
+  }
+
+  return props.ignoreContentIndexes !== undefined &&
+      props.ignoreContentIndexes.includes(index);
+};
 
 const applyInput = (val: string) => {
   let pos = cursorPos.value;
   let temp = userInput.value;
 
   for (const char of val) {
-    if (props.ignorePunctuation) {
-      while (pos < props.content.length && isPunctuation(props.content[pos]) && !isPunctuation(char)) {
-        if (pos >= temp.length) {
-          temp += props.content[pos];
-        }
-        pos++;
+    while (pos < props.content.length && isIgnore(props.content[pos], pos)) {
+      if (pos >= temp.length) {
+        temp += props.content[pos];
       }
+      pos++;
     }
     if (pos < temp.length) {
       temp = temp.slice(0, pos) + char + temp.slice(pos + 1);
@@ -153,14 +159,12 @@ const applyInput = (val: string) => {
     }
     pos++;
   }
-  // Auto-fill trailing punctuation if applicable
-  if (props.ignorePunctuation) {
-    while (pos < props.content.length && isPunctuation(props.content[pos])) {
-      if (pos >= temp.length) {
-        temp += props.content[pos];
-      }
-      pos++;
+
+  while (pos < props.content.length && isIgnore(props.content[pos], pos)) {
+    if (pos >= temp.length) {
+      temp += props.content[pos];
     }
+    pos++;
   }
   userInput.value = temp;
   cursorPos.value = pos;
@@ -194,7 +198,7 @@ const handleKeydown = (e: KeyboardEvent) => {
   } else if (e.key === 'Delete') {
     if (cursorPos.value === userInput.value.length && cursorPos.value < userInput.value.length) {
       userInput.value = userInput.value.slice(0, cursorPos.value) + userInput.value.slice(cursorPos.value + 1);
-      positionInput();  // Cursor stays in place
+      positionInput();
     }
     e.preventDefault();
   } else if (e.key === 'ArrowLeft') {
@@ -216,7 +220,7 @@ const getDisplayChar = (index: number) => {
   const originalChar = chars.value[index];
   if (index >= userInput.value.length) {
     if (originalChar === ' ') return '⎵';
-    if (props.ignorePunctuation && isPunctuation(originalChar)) return originalChar;
+    if (isIgnore(originalChar, index)) return originalChar;
     return '';
   } else {
     return userInput.value[index] === ' ' ? '⎵' : userInput.value[index];
@@ -226,8 +230,8 @@ const getDisplayChar = (index: number) => {
 const getCharClass = (index: number) => {
   const classes: string[] = [];
   if (index >= userInput.value.length) {
-    if (props.ignorePunctuation && isPunctuation(chars.value[index])) {
-      classes.push('pending-punctuation');
+    if (isIgnore(chars.value[index], index)) {
+      classes.push('pending-ignore');
     } else {
       classes.push('pending');
     }
@@ -240,7 +244,7 @@ const getCharClass = (index: number) => {
     }
     classes.push(isCorrect ? 'correct' : 'wrong');
   }
-  if (index === cursorPos.value && index < chars.value.length && !(props.ignorePunctuation && isPunctuation(chars.value[index]))) {
+  if (index === cursorPos.value && index < chars.value.length) {
     classes.push('flashing');
   }
   return classes;
@@ -315,7 +319,7 @@ watch([userInput, groups], async () => {
   color: transparent;
 }
 
-.pending-punctuation {
+.pending-ignore {
   color: #999;
   border-bottom-color: #999;
 }
