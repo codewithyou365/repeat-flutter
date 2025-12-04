@@ -7,6 +7,7 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
+import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/step.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 
 import 'constant.dart';
@@ -39,6 +40,8 @@ class BlankItRightBlankReq {
   }
 }
 
+bool finishBlank = false;
+
 Future<message.Response?> blankItRightBlank(message.Request req, GameUser user, Server<GameUser> server) async {
   var userId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForEditorUserId);
   if (userId == null) {
@@ -57,33 +60,43 @@ Future<message.Response?> blankItRightBlank(message.Request req, GameUser user, 
 
   List<String> blankItRightList = [];
   if (verseMap[MapKeyEnum.blankItRightList.name] != null) {
-    var temp = verseMap[MapKeyEnum.blankItRightList.name] as List<String>;
-    blankItRightList.addAll(temp);
+    var temp = verseMap[MapKeyEnum.blankItRightList.name] as List<dynamic>;
+    for (var t in temp) {
+      blankItRightList.add(t.toString());
+    }
   }
   var blankItRightUsingIndex = -1;
   if (verseMap[MapKeyEnum.blankItRightUsingIndex.name] != null) {
     var temp = verseMap[MapKeyEnum.blankItRightUsingIndex.name] as int;
     blankItRightUsingIndex = temp;
   }
-
+  var needToUpdate = true;
   for (int i = 0; i < blankItRightList.length; i++) {
     var content = blankItRightList[i];
     if (reqBody.content == content) {
       if (blankItRightUsingIndex != i) {
         verseMap[MapKeyEnum.blankItRightUsingIndex.name] = i;
       } else {
-        return message.Response(data: true);
+        needToUpdate = false;
+        break;
       }
     }
   }
-  if (reqBody.clearBeforeAdd) {
-    verseMap[MapKeyEnum.blankItRightList.name] = [reqBody.content];
-  } else {
-    blankItRightList.add(reqBody.content);
-    verseMap[MapKeyEnum.blankItRightList.name] = blankItRightList;
+  if (needToUpdate) {
+    if (reqBody.clearBeforeAdd) {
+      verseMap[MapKeyEnum.blankItRightList.name] = [reqBody.content];
+    } else {
+      blankItRightList.add(reqBody.content);
+      verseMap[MapKeyEnum.blankItRightList.name] = blankItRightList;
+    }
+    final jsonStr = jsonEncode(verseMap);
+    await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
   }
-  final jsonStr = jsonEncode(verseMap);
-  await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
+  final game = await Db().db.gameDao.getOne();
+  if (game == null) {
+    return message.Response(error: GameServerError.gameNotFound.name);
+  }
+  Step.setStepEnum(game.id, game.time, StepEnum.blanked);
   await server.broadcast(
     message.Request(
       path: Path.refreshGame,

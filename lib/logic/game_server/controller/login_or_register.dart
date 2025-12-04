@@ -1,6 +1,5 @@
 import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/logic/game_server/constant.dart';
 
 class LoginOrRegister {
   String userName;
@@ -30,17 +29,46 @@ class LoginOrRegister {
   }
 }
 
+class LoginOrRegisterRes {
+  final int userId;
+  final String token;
+
+  LoginOrRegisterRes({
+    required this.userId,
+    required this.token,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'userId': userId,
+      'token': token,
+    };
+  }
+
+  factory LoginOrRegisterRes.fromJson(Map<String, dynamic> json) {
+    return LoginOrRegisterRes(
+      userId: json['userId'] as int,
+      token: json['token'] as String,
+    );
+  }
+}
+
 Future<message.Response?> loginOrRegister(message.Request req) async {
   final data = LoginOrRegister.fromJson(req.data);
   List<String> error = [];
-  final token = await Db().db.gameUserDao.loginOrRegister(
+  final gameUser = await Db().db.gameUserDao.loginOrRegister(
     data.userName,
     data.password,
     data.newPassword,
     error,
   );
-  if (token.isEmpty) {
-      return message.Response(error: error.first);
+  if (gameUser.id == null) {
+    return message.Response(error: error.first);
   }
-  return message.Response(data: token);
+  return message.Response(
+    data: LoginOrRegisterRes(
+      userId: gameUser.id!,
+      token: gameUser.token,
+    ),
+  );
 }

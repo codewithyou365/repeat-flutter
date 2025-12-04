@@ -2,6 +2,7 @@
   <div>
     <Typing
         :content="content"
+        :disabled="false"
         :ignore-case="ignoreCase"
         :ignore-punctuation="ignorePunctuation"
         :ignore-content-indexes=[]

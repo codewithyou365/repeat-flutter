@@ -1626,7 +1626,7 @@ class _$GameUserDao extends GameUserDao {
   }
 
   @override
-  Future<String> loginOrRegister(
+  Future<GameUser> loginOrRegister(
     String name,
     String password,
     String newPassword,
@@ -1636,7 +1636,7 @@ class _$GameUserDao extends GameUserDao {
       return super.loginOrRegister(name, password, newPassword, error);
     } else {
       return (database as sqflite.Database)
-          .transaction<String>((transaction) async {
+          .transaction<GameUser>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
         prepareDb(transactionDatabase);

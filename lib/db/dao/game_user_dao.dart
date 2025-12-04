@@ -84,13 +84,13 @@ abstract class GameUserDao {
   }
 
   @transaction
-  Future<String> loginOrRegister(String name, String password, String newPassword, List<String> error) async {
+  Future<GameUser> loginOrRegister(String name, String password, String newPassword, List<String> error) async {
     final now = DateTime.now();
     if (name.isEmpty || password.isEmpty) {
       error.add(GameServerError.userOrPasswordError.name);
-      return '';
+      return GameUser.empty();
     }
-    final existingUser = await findUserByName(name);
+    var existingUser = await findUserByName(name);
     if (existingUser == null) {
       final nonce = StringUtil.generateRandomString(32);
       final passwordHash = Hash.toSha1ForString(password + nonce);
@@ -99,7 +99,7 @@ abstract class GameUserDao {
       int allowRegisterNumber = await db.kvDao.getInt(K.allowRegisterNumber) ?? 1;
       if (registrations >= allowRegisterNumber) {
         error.add(GameServerError.excessRegisterCount.name);
-        return '';
+        return GameUser.empty();
       }
       final newUser = GameUser(
         name: name,
@@ -111,12 +111,12 @@ abstract class GameUserDao {
         needToResetPassword: false,
       );
       await registerUser(newUser);
-      return newUser.token;
+      existingUser = await findUserByName(name);
     } else {
       final passwordHash = Hash.toSha1ForString(password + existingUser.nonce);
       if (existingUser.password != passwordHash) {
         error.add(GameServerError.userOrPasswordError.name);
-        return '';
+        return GameUser.empty();
       }
       final String token = StringUtil.generateRandomString(32);
       existingUser.token = token;
@@ -124,7 +124,7 @@ abstract class GameUserDao {
       if (existingUser.needToResetPassword) {
         if (newPassword.isEmpty) {
           error.add(GameServerError.needToResetPassword.name);
-          return '';
+          return GameUser.empty();
         }
         final nonce = StringUtil.generateRandomString(32);
         final newPasswordHash = Hash.toSha1ForString(newPassword + nonce);
@@ -143,9 +143,14 @@ abstract class GameUserDao {
           existingUser.tokenExpiredDate,
         );
       }
-
-      return existingUser.token;
     }
+    if (existingUser == null) {
+      return GameUser.empty();
+    }
+    GameUser ret = GameUser.empty();
+    ret.token = existingUser.token;
+    ret.id = existingUser.id;
+    return ret;
   }
 
   @transaction

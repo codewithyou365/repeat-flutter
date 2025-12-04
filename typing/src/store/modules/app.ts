@@ -60,11 +60,9 @@ const actions = {
     updateLanguage({commit}: any, language: string) {
         commit('setLanguage', language);
     },
-    updateToken({commit}: any, token: string) {
-        commit('setToken', token);
-    },
-    updateUserId({commit}: any, userId: int) {
-        commit('setUserId', userId);
+    updateUser({commit}: any, user: object) {
+        commit('setToken', user.token);
+        commit('setUserId', user.userId);
     },
     updateWsConnected({commit}: any, wsConnected: boolean) {
         commit('setWsConnected', wsConnected);

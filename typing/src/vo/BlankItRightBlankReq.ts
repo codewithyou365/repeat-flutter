@@ -1,0 +1,11 @@
+export class BlankItRightBlankReq {
+    verseId: number;
+    content: string;
+    clearBeforeAdd: boolean;
+
+    constructor() {
+        this.verseId = false;
+        this.content = '';
+        this.clearBeforeAdd = true;
+    }
+}

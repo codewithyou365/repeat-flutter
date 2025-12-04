@@ -21,6 +21,7 @@ const messages = {
         reconnect: 'Reconnecting...',
         pleaseInputGameNumber: 'Please enter the game number.',
         confirm: 'Confirm',
+        reset: 'Reset',
         cancel: 'Cancel',
         entryGameError: 'Entry game error:',
         pleaseInput: 'Please enter',
@@ -29,6 +30,10 @@ const messages = {
         confirmSegmentContent: 'Do you want to modify the content?',
         editModeDisabled: 'The edit mode is disabled.',
         edit: 'Edit',
+        editorBlankingTip: 'Please create blanks — the parts marked in red will be used as fill-in-the-blank sections.',
+        editorBlankedTip: 'Please wait for the other players to fill in the blanks.',
+        blankingTip: 'Please wait for the editor to blank out the text.',
+        blankedTip: 'Please complete your answer.',
     },
     zh: {
         dartMode: '深色模式',
@@ -50,6 +55,7 @@ const messages = {
         reconnect: '重连中...',
         pleaseInputGameNumber: '请输入游戏编号',
         confirm: '确定',
+        reset: '重置',
         cancel: '取消',
         entryGameError: '进入游戏错误:',
         pleaseInput: '请输入',
@@ -58,6 +64,10 @@ const messages = {
         confirmSegmentContent: '是否修改内容?',
         editModeDisabled: '编辑模式已禁用',
         edit: '编辑',
+        editorBlankingTip: '请挖空，红色部分将成为填空部分',
+        editorBlankedTip: '请等待其他玩家进行填空',
+        blankingTip: '请等待编辑者挖空',
+        blankedTip: '请完成你的答案',
     },
 };
 

@@ -9,6 +9,24 @@ import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 
 import 'constant.dart';
+import 'step.dart';
+
+class BlankItRightContentRes {
+  String content;
+  String step;
+
+  BlankItRightContentRes({
+    required this.content,
+    required this.step,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'content': content,
+      'step': step,
+    };
+  }
+}
 
 Future<message.Response?> blankItRightContent(message.Request req, GameUser user) async {
   var userId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForEditorUserId);
@@ -20,8 +38,17 @@ Future<message.Response?> blankItRightContent(message.Request req, GameUser user
   if (verse == null) {
     return message.Response(error: GameServerError.gameNotFound.name);
   }
+  final game = await Db().db.gameDao.getOne();
+  if (game == null) {
+    return message.Response(error: GameServerError.gameNotFound.name);
+  }
   if (userId == user.getId()) {
-    return message.Response(data: verse.verseContent);
+    return message.Response(
+      data: BlankItRightContentRes(
+        content: verse.verseContent,
+        step: Step.getStepEnum(game.id, game.time).name,
+      ),
+    );
   } else {
     var verseMap = jsonDecode(verse.verseContent);
     if (verseMap[MapKeyEnum.blankItRightList.name] == null || verseMap[MapKeyEnum.blankItRightUsingIndex.name] == null) {
@@ -29,6 +56,11 @@ Future<message.Response?> blankItRightContent(message.Request req, GameUser user
     }
     final blankItRightList = verseMap[MapKeyEnum.blankItRightList.name] as List<String>;
     final blankItRightUsingIndex = verseMap[MapKeyEnum.blankItRightUsingIndex.name] as int;
-    return message.Response(data: blankItRightList[blankItRightUsingIndex]);
+    return message.Response(
+      data: BlankItRightContentRes(
+        content: blankItRightList[blankItRightUsingIndex],
+        step: Step.getStepEnum(game.id, game.time).name,
+      ),
+    );
   }
 }

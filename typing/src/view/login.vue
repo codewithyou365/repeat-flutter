@@ -105,7 +105,7 @@ const handleLogin = () => {
       });
       const response = await responsePromise;
       isLoading.value = false;
-      if (response.data === '') {
+      if (!response.data) {
         dialogVisible.value = true;
         if (response.error === 'needToResetPassword') {
           showNewPasswordView.value = true;
@@ -117,7 +117,7 @@ const handleLogin = () => {
         }
         return;
       }
-      await store.dispatch('updateToken', response.data);
+      await store.dispatch('updateUser', response.data);
       await router.push("/loading");
     }
   })

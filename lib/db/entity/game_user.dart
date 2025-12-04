@@ -12,7 +12,7 @@ import 'package:repeat_flutter/common/ws/server.dart';
 )
 class GameUser extends UserId {
   @PrimaryKey(autoGenerate: true)
-  final int? id;
+  int? id;
   String name;
   String password;
   String nonce;

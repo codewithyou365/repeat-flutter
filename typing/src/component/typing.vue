@@ -24,6 +24,7 @@
 
       <input
           ref="inputRef"
+          :disabled="disabled"
           v-model="composingInput"
           @compositionstart="handleCompositionStart"
           @compositionend="handleCompositionEnd"
@@ -40,6 +41,7 @@
 import {onMounted, ref, nextTick, computed, onBeforeUnmount, watch} from 'vue';
 
 const props = defineProps<{
+  disabled: boolean;
   content: string;
   ignoreContentIndexes: number[];
   ignoreCase: boolean;
@@ -60,7 +62,9 @@ const chars = computed<string[]>(() => {
 const isCJK = computed(() => {
   return /[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff]/.test(props.content);
 });
-
+const disabled = computed(() => {
+  return props.disabled;
+});
 const groups = computed(() => {
   const gs: any[] = [];
   if (isCJK.value) {
@@ -283,11 +287,22 @@ watch([userInput, groups], async () => {
   await nextTick();
   positionInput();
 });
+
+defineExpose({
+  initUserInput(val: string) {
+    userInput.value = val
+    cursorPos.value = val.length
+    nextTick(positionInput)
+  },
+
+  getUserInput() {
+    return userInput.value;
+  },
+})
 </script>
 
 <style scoped>
 .typing {
-  padding: 8px;
   cursor: text;
   user-select: none;
   position: relative;
