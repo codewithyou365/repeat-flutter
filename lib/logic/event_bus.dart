@@ -3,6 +3,7 @@ import 'dart:async';
 enum EventTopic {
   setInRepeatView,
   wsEvent,
+  newGame,
   allowRegisterNumber,
   createBook,
   importBook,

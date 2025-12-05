@@ -9,7 +9,9 @@ enum GameServerError {
 
   editorUserNeedToBeSpecified,
   editorUserInvalid,
+  submitUserInvalid,
   gameNotReady,
+  gameStateInvalid,
 
   gameNotFound,
   gameSyncError,
@@ -42,6 +44,7 @@ class Path {
   static const blankItRightSettings = '/api/blankItRightSettings';
   static const blankItRightContent = '/api/blankItRightContent';
   static const blankItRightBlank = '/api/blankItRightBlank';
+  static const blankItRightSubmit = '/api/blankItRightSubmit';
 }
 
 enum GameTypeEnum {

@@ -54,6 +54,7 @@ const inputRef = ref<HTMLInputElement | null>(null);
 const containerRef = ref<HTMLElement | null>(null);
 const charRefs = ref<HTMLElement[]>([]);
 const cursorPos = ref(0);
+const minCursorPos = ref(0);
 
 const chars = computed<string[]>(() => {
   return props.content ? props.content.split('') : [];
@@ -183,37 +184,73 @@ const applyInput = (val: string) => {
 };
 
 const handleCharClick = (index: number) => {
+  if (disabled.value) {
+    return;
+  }
   cursorPos.value = Math.min(index, userInput.value.length);
   composingInput.value = '';
   positionInput();
   focusInput();
 };
-
+const fixCursorPos = () => {
+  if (cursorPos.value < minCursorPos.value) {
+    userInput.value = props.content.slice(0, minCursorPos.value)
+    cursorPos.value = minCursorPos.value;
+  }
+}
 const handleKeydown = (e: KeyboardEvent) => {
   if (isComposing.value) return;
 
   if (e.key === 'Backspace') {
-    if (cursorPos.value === userInput.value.length && cursorPos.value > 0) {
-      userInput.value = userInput.value.slice(0, cursorPos.value - 1) + userInput.value.slice(cursorPos.value);
-      cursorPos.value--;
-      positionInput();
-    }
-    e.preventDefault();
-  } else if (e.key === 'Delete') {
-    if (cursorPos.value === userInput.value.length && cursorPos.value < userInput.value.length) {
-      userInput.value = userInput.value.slice(0, cursorPos.value) + userInput.value.slice(cursorPos.value + 1);
+    let p = cursorPos.value;
+    if (cursorPos.value !== userInput.value.length && !isIgnore(props.content[p], p)) {
+      p++;
+      while (isIgnore(props.content[p], p) && p < userInput.value.length) {
+        p++;
+      }
+      if (p === userInput.value.length) {
+        userInput.value = userInput.value.slice(0, cursorPos.value);
+        cursorPos.value = userInput.value.length;
+      }
+    } else {
+      p = cursorPos.value;
+      while (isIgnore(props.content[p], p) && p < userInput.value.length) {
+        p++;
+      }
+      if (p === userInput.value.length) {
+        userInput.value = userInput.value.slice(0, cursorPos.value);
+        cursorPos.value = userInput.value.length;
+      }
+      if (cursorPos.value === userInput.value.length && cursorPos.value > 0) {
+        userInput.value = userInput.value.slice(0, cursorPos.value - 1) + userInput.value.slice(cursorPos.value);
+        cursorPos.value--;
+        while (isIgnore(props.content[cursorPos.value], cursorPos.value)) {
+          userInput.value = userInput.value.slice(0, cursorPos.value - 1) + userInput.value.slice(cursorPos.value);
+          cursorPos.value--;
+          if (cursorPos.value == 0) {
+            break;
+          }
+        }
+      }
+      fixCursorPos();
       positionInput();
     }
     e.preventDefault();
   } else if (e.key === 'ArrowLeft') {
     if (cursorPos.value > 0) {
       cursorPos.value--;
+      while (isIgnore(props.content[cursorPos.value], cursorPos.value)) {
+        cursorPos.value--;
+      }
       positionInput();
     }
     e.preventDefault();
   } else if (e.key === 'ArrowRight') {
     if (cursorPos.value < userInput.value.length) {
       cursorPos.value++;
+      while (isIgnore(props.content[cursorPos.value], cursorPos.value)) {
+        cursorPos.value++;
+      }
       positionInput();
     }
     e.preventDefault();
@@ -279,6 +316,11 @@ watch(() => props.content, async () => {
   cursorPos.value = 0;
   charRefs.value = new Array(props.content.length);
   await nextTick();
+  minCursorPos.value = 0;
+  while (isIgnore(props.content[minCursorPos.value], minCursorPos.value)) {
+    minCursorPos.value++;
+  }
+  fixCursorPos();
   positionInput();
   inputRef.value?.focus();
 });

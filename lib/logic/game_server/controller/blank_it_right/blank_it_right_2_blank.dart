@@ -50,6 +50,9 @@ Future<message.Response?> blankItRightBlank(message.Request req, GameUser user, 
   if (userId != user.getId()) {
     return message.Response(error: GameServerError.editorUserInvalid.name);
   }
+  if (Step.getStepEnum(userId: user.getId()) != StepEnum.blanking) {
+    return message.Response(error: GameServerError.gameStateInvalid.name);
+  }
   final reqBody = BlankItRightBlankReq.fromJson(req.data);
   final verseId = reqBody.verseId;
   final verse = VerseHelp.getCache(verseId);
@@ -96,7 +99,7 @@ Future<message.Response?> blankItRightBlank(message.Request req, GameUser user, 
   if (game == null) {
     return message.Response(error: GameServerError.gameNotFound.name);
   }
-  Step.setStepEnum(game.id, game.time, StepEnum.blanked);
+  Step.blanked();
   await server.broadcast(
     message.Request(
       path: Path.refreshGame,

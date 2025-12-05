@@ -4,7 +4,7 @@ export class BlankItRightBlankReq {
     clearBeforeAdd: boolean;
 
     constructor() {
-        this.verseId = false;
+        this.verseId = 0;
         this.content = '';
         this.clearBeforeAdd = true;
     }

@@ -4,9 +4,11 @@ import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
+import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
+import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/step.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 
 import 'game_settings.dart';
@@ -17,11 +19,16 @@ class GameSettingsBlankItRight extends GameSettings {
   RxInt userIndex = RxInt(-1);
   List<GameUser> users = [];
   final SubList<WsEvent> sub = [];
+  final SubList<Game> subNewGame = [];
 
   @override
   Future<void> onInit() async {
     users = await Db().db.gameUserDao.getAllUser();
-
+    List<int> userIds = users.map((user) => user.getId()).toList();
+    Step.blanking(userIds: userIds);
+    subNewGame.on([EventTopic.newGame], (game) async {
+      Step.blanking(userIds: userIds);
+    });
     sub.on([EventTopic.wsEvent], (wsEvent) async {
       if (wsEvent == null) {
         return;

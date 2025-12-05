@@ -10,27 +10,31 @@ import 'package:repeat_flutter/logic/verse_help.dart';
 
 import 'constant.dart';
 import 'step.dart';
+import 'utils.dart';
 
 class BlankItRightContentRes {
   String content;
   String step;
+  String submit;
 
   BlankItRightContentRes({
     required this.content,
     required this.step,
+    required this.submit,
   });
 
   Map<String, dynamic> toJson() {
     return {
       'content': content,
       'step': step,
+      'submit': submit,
     };
   }
 }
 
 Future<message.Response?> blankItRightContent(message.Request req, GameUser user) async {
-  var userId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForEditorUserId);
-  if (userId == null) {
+  var editorId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForEditorUserId);
+  if (editorId == null) {
     return message.Response(error: GameServerError.editorUserNeedToBeSpecified.name);
   }
   final reqBody = req.data as int;
@@ -42,11 +46,12 @@ Future<message.Response?> blankItRightContent(message.Request req, GameUser user
   if (game == null) {
     return message.Response(error: GameServerError.gameNotFound.name);
   }
-  if (userId == user.getId()) {
+  if (editorId == user.getId()) {
     return message.Response(
       data: BlankItRightContentRes(
         content: verse.verseContent,
-        step: Step.getStepEnum(game.id, game.time).name,
+        step: Step.getStepEnum(userId: user.getId()).name,
+        submit: '',
       ),
     );
   } else {
@@ -54,12 +59,20 @@ Future<message.Response?> blankItRightContent(message.Request req, GameUser user
     if (verseMap[MapKeyEnum.blankItRightList.name] == null || verseMap[MapKeyEnum.blankItRightUsingIndex.name] == null) {
       return message.Response(error: GameServerError.gameNotReady.name);
     }
-    final blankItRightList = verseMap[MapKeyEnum.blankItRightList.name] as List<String>;
-    final blankItRightUsingIndex = verseMap[MapKeyEnum.blankItRightUsingIndex.name] as int;
+    var content = '';
+    var submit = '';
+    final step = Step.getStepEnum(userId: user.getId());
+    if (step == StepEnum.finished) {
+      content = verseMap['a'] ?? '';
+      submit = Step.getSubmit(userId: user.getId());
+    } else {
+      content = BlankItRightUtils.getBlank(verseMap);
+    }
     return message.Response(
       data: BlankItRightContentRes(
-        content: blankItRightList[blankItRightUsingIndex],
-        step: Step.getStepEnum(game.id, game.time).name,
+        content: content,
+        step: step.name,
+        submit: submit,
       ),
     );
   }

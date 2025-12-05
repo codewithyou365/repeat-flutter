@@ -34,6 +34,7 @@ const messages = {
         editorBlankedTip: 'Please wait for the other players to fill in the blanks.',
         blankingTip: 'Please wait for the editor to blank out the text.',
         blankedTip: 'Please complete your answer.',
+        answer: 'answer: \n',
     },
     zh: {
         dartMode: '深色模式',
@@ -68,6 +69,7 @@ const messages = {
         editorBlankedTip: '请等待其他玩家进行填空',
         blankingTip: '请等待编辑者挖空',
         blankedTip: '请完成你的答案',
+        answer: '答案: \n',
     },
 };
 

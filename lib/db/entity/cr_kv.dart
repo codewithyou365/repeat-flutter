@@ -9,6 +9,7 @@ enum CrK {
   todayFullCustomScheduleConfigCount,
   typeGameForIgnorePunctuation,
   typeGameForIgnoreCase,
+  blockItRightGameForMaxScore,
   blockItRightGameForEditorUserId,
   blockItRightGameForIgnorePunctuation,
   blockItRightGameForIgnoreCase,

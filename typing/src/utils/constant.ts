@@ -13,6 +13,7 @@ export const Path = {
     blankItRightSettings : '/api/blankItRightSettings',
     blankItRightContent : '/api/blankItRightContent',
     blankItRightBlank : '/api/blankItRightBlank',
+    blankItRightSubmit : '/api/blankItRightSubmit',
     submit: '/api/submit',
 
 }

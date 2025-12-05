@@ -3,11 +3,11 @@ import 'package:repeat_flutter/common/ws/message.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/game_server/web_server.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
-import 'package:repeat_flutter/logic/widget/game/game_state.dart';
 
 class GameHelper {
   final WebServer server;
@@ -34,6 +34,7 @@ class GameHelper {
       createDate: Date.from(now),
     );
     await Db().db.gameDao.tryInsertGame(game);
+    EventBus().publish(EventTopic.newGame, game);
     await server.server.broadcast(
       Request(
         path: Path.refreshGame,
