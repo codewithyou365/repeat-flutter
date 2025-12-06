@@ -22,6 +22,14 @@
       </div>
       <div v-else-if="editorUserId != store.getters.currentUserId && step == StepName.finished">
         <nut-cell>{{ '+' + score }}</nut-cell>
+        <nut-row :gutter="10">
+          <nut-col :span="12">
+            <nut-button block type="info" @click="onViewAnswer">{{ t('viewAnswer') }}</nut-button>
+          </nut-col>
+          <nut-col :span="12">
+            <nut-button block type="info" @click="onViewSubmit">{{ t('viewSubmit') }}</nut-button>
+          </nut-col>
+        </nut-row>
       </div>
       <div v-else>
         <nut-row :gutter="10">
@@ -59,6 +67,8 @@ const ignorePunctuation = ref(false);
 const editorUserId = ref(0);
 const score = ref(0);
 const content = ref('');
+const answer = ref('');
+let submit = '';
 const ignoreContentIndexes = ref<number[]>([]);
 const typingRef = ref<InstanceType<typeof Typing>>();
 
@@ -80,7 +90,7 @@ const tips = computed(() => {
   } else if (editorUserId.value != store.getters.currentUserId && step.value === StepName.blanked) {
     return t('blankedTip')
   } else if (editorUserId.value != store.getters.currentUserId && step.value === StepName.finished) {
-    return t('answer') + content.value
+    return t('answer') + answer.value
   }
   return '??';
 
@@ -125,17 +135,22 @@ const refresh = async (refreshGame: RefreshGameType) => {
         });
       }
     } else {
-      content.value = res.data.content ?? '';
+      const currContent = res.data.content ?? '';
+      for (let i = 0; i < currContent.length; i++) {
+        if (currContent[i] !== '•') {
+          ignoreContentIndexes.value.push(i);
+        }
+      }
       if (step.value === StepName.finished) {
+        content.value = res.data.answer ?? '';
+        submit = res.data.submit;
+        answer.value = res.data.answer ?? '';
+        score.value = res.data.score ?? 0;
         await nextTick(() => {
           typingRef.value?.initUserInput(res.data.submit);
         });
       } else {
-        for (let i = 0; i < content.value.length; i++) {
-          if (content.value[i] !== '•') {
-            ignoreContentIndexes.value.push(i);
-          }
-        }
+        content.value = currContent;
       }
     }
     if (editorUserId.value == store.getters.currentUserId && step.value === StepName.blanking) {
@@ -145,6 +160,8 @@ const refresh = async (refreshGame: RefreshGameType) => {
     } else if (editorUserId.value != store.getters.currentUserId && step.value === StepName.blanking) {
       typingDisabled.value = true;
     } else if (editorUserId.value != store.getters.currentUserId && step.value === StepName.blanked) {
+      typingDisabled.value = false;
+    } else if (editorUserId.value != store.getters.currentUserId && step.value === StepName.finished) {
       typingDisabled.value = false;
     }
     await router.replace({
@@ -189,6 +206,15 @@ const onBlank = async () => {
   }
   overlayVisible.value = false;
 }
+
+
+const onViewAnswer = async () => {
+  typingRef.value?.initUserInput(answer.value);
+}
+const onViewSubmit = async () => {
+  typingRef.value?.initUserInput(submit);
+}
+
 const onSubmit = async () => {
   overlayVisible.value = true;
   const req = new BlankItRightSubmitReq();
@@ -202,10 +228,12 @@ const onSubmit = async () => {
   }
   const blankItRightSubmitRes = BlankItRightSubmitRes.fromJson(res.data);
   content.value = blankItRightSubmitRes.answer;
+  answer.value = blankItRightSubmitRes.answer;
+  submit = req.content;
   score.value = blankItRightSubmitRes.score;
   step.value = StepName.finished;
   await nextTick(() => {
-    typingRef.value?.initUserInput(req.content);
+    typingRef.value?.initUserInput(submit);
   });
   overlayVisible.value = false;
 }

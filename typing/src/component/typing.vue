@@ -270,8 +270,9 @@ const getDisplayChar = (index: number) => {
 
 const getCharClass = (index: number) => {
   const classes: string[] = [];
+  const ignored = isIgnore(chars.value[index], index);
   if (index >= userInput.value.length) {
-    if (isIgnore(chars.value[index], index)) {
+    if (ignored) {
       classes.push('pending-ignore');
     } else {
       classes.push('pending');
@@ -283,7 +284,13 @@ const getCharClass = (index: number) => {
     if (props.ignoreCase) {
       isCorrect = userCh.toLowerCase() === origCh.toLowerCase();
     }
-    classes.push(isCorrect ? 'correct' : 'wrong');
+    if (ignored && isCorrect) {
+      classes.push('ignore-correct');
+    } else if (isCorrect) {
+      classes.push('correct');
+    } else {
+      classes.push('wrong');
+    }
   }
   if (index === cursorPos.value && index < chars.value.length) {
     classes.push('flashing');
@@ -389,6 +396,11 @@ defineExpose({
 .wrong {
   color: #ef4444;
   border-bottom-color: #ef4444;
+}
+
+.ignore-correct {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
 }
 
 .space {

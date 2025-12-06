@@ -35,6 +35,8 @@ const messages = {
         blankingTip: 'Please wait for the editor to blank out the text.',
         blankedTip: 'Please complete your answer.',
         answer: 'answer: \n',
+        viewAnswer: 'View Answer',
+        viewSubmit: 'View Submit',
     },
     zh: {
         dartMode: '深色模式',
@@ -70,6 +72,8 @@ const messages = {
         blankingTip: '请等待编辑者挖空',
         blankedTip: '请完成你的答案',
         answer: '答案: \n',
+        viewAnswer: '查看答案',
+        viewSubmit: '查看提交',
     },
 };
 

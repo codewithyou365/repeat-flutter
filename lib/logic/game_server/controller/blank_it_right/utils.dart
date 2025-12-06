@@ -2,8 +2,14 @@ import 'constant.dart';
 
 class BlankItRightUtils {
   static String getBlank(Map<String, dynamic> verseMap) {
+    if (verseMap[MapKeyEnum.blankItRightList.name] == null) {
+      return '';
+    }
     final blankItRightList = verseMap[MapKeyEnum.blankItRightList.name] as List<dynamic>;
-    final blankItRightUsingIndex = verseMap[MapKeyEnum.blankItRightUsingIndex.name] as int;
+    var blankItRightUsingIndex = 0;
+    if (verseMap[MapKeyEnum.blankItRightUsingIndex.name] == null) {
+      blankItRightUsingIndex = verseMap[MapKeyEnum.blankItRightUsingIndex.name] as int;
+    }
     final String a = verseMap['a'] ?? '';
     final String b = blankItRightList[blankItRightUsingIndex].toString();
     final buffer = StringBuffer();
