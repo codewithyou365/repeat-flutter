@@ -65,6 +65,7 @@ Future<message.Response?> blankItRightContent(message.Request req, GameUser user
     var content = '';
     var answer = '';
     var submit = '';
+    var score = 0;
     final step = Step.getStepEnum(userId: user.getId());
     switch (step) {
       case StepEnum.blanked:
@@ -75,6 +76,7 @@ Future<message.Response?> blankItRightContent(message.Request req, GameUser user
         content = BlankItRightUtils.getBlank(verseMap);
         answer = verseMap['a'] ?? '';
         submit = Step.getSubmit(userId: user.getId());
+        score = Step.getScore(userId: user.getId());
         break;
       default:
         break;
@@ -85,7 +87,7 @@ Future<message.Response?> blankItRightContent(message.Request req, GameUser user
         step: step.name,
         answer: answer,
         submit: submit,
-        score: 9999,
+        score: score,
       ),
     );
   }

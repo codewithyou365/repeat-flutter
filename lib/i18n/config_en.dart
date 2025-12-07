@@ -319,5 +319,6 @@ class ConfigEn extends Config {
     put(I18nKey.help, "Help");
     put(I18nKey.showFingers, "Show Fingers");
     put(I18nKey.refresh, "Refresh");
+    put(I18nKey.obtainedInTheGame, "Obtained In The Game");
   }
 }

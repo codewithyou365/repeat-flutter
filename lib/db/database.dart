@@ -15,6 +15,8 @@ import 'package:repeat_flutter/db/dao/game_dao.dart';
 import 'package:repeat_flutter/db/dao/game_user_dao.dart';
 import 'package:repeat_flutter/db/dao/chapter_dao.dart';
 import 'package:repeat_flutter/db/dao/game_user_input_dao.dart';
+import 'package:repeat_flutter/db/dao/game_user_score_dao.dart';
+import 'package:repeat_flutter/db/dao/game_user_score_history_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/kv_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_content_version_dao.dart';
@@ -30,6 +32,8 @@ import 'package:repeat_flutter/db/entity/chapter_content_version.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
+import 'package:repeat_flutter/db/entity/game_user_score.dart';
+import 'package:repeat_flutter/db/entity/game_user_score_history.dart';
 import 'package:repeat_flutter/db/entity/lock.dart';
 import 'package:repeat_flutter/db/entity/chapter.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
@@ -55,6 +59,7 @@ import 'package:sqflite/sqflite.dart' as sqflite;
 
 import 'entity/edit_book_history.dart';
 import 'entity/kv.dart';
+import 'migration/m4_5.dart';
 
 part 'database.g.dart'; // the generated code will be there
 
@@ -82,6 +87,8 @@ part 'database.g.dart'; // the generated code will be there
     Game,
     GameUser,
     GameUserInput,
+    GameUserScore,
+    GameUserScoreHistory,
     Lock,
     ChapterShow,
   ],
@@ -92,6 +99,7 @@ part 'database.g.dart'; // the generated code will be there
   DateTimeConverter,
   DateConverter,
   VersionReasonConverter,
+  GameTypeConverter,
 ])
 abstract class AppDatabase extends FloorDatabase {
   BookContentVersionDao get bookContentVersionDao;
@@ -115,6 +123,10 @@ abstract class AppDatabase extends FloorDatabase {
   GameDao get gameDao;
 
   GameUserInputDao get gameUserInputDao;
+
+  GameUserScoreDao get gameUserScoreDao;
+
+  GameUserScoreHistoryDao get gameUserScoreHistoryDao;
 
   KvDao get kvDao;
 
@@ -153,6 +165,7 @@ class Db {
         m1_2,
         m2_3,
         m3_4,
+        m4_5,
       ]).build();
       log("Database path: \n${await sqflite.getDatabasesPath()}/$fileName");
     }
@@ -172,4 +185,5 @@ void prepareDb(AppDatabase db) {
   db.scheduleDao.db = db;
   db.statsDao.db = db;
   db.verseDao.db = db;
+  db.gameUserScoreDao.db = db;
 }

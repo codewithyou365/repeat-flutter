@@ -6,6 +6,8 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
+import 'package:repeat_flutter/db/entity/game_user_score.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 
@@ -77,15 +79,17 @@ Future<message.Response?> blankItRightSubmit(message.Request req, GameUser user,
   if (verse == null) {
     return message.Response(error: GameServerError.gameNotFound.name);
   }
-  Step.finished(userId: user.getId(), submit: reqBody.content);
   var verseMap = jsonDecode(verse.verseContent);
   final String userAnswer = reqBody.content;
   final String correctAnswer = verseMap['a'] ?? '';
   final String blank = BlankItRightUtils.getBlank(verseMap);
   final int maxScore = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForMaxScore) ?? 10;
+  final int currScore = BlankItRightUtils.getScore(userAnswer, correctAnswer, blank, maxScore);
+  Step.finished(userId: user.getId(), submit: reqBody.content, score: currScore);
+  await Db().db.gameUserScoreDao.inc(userId, GameType.blankItRight, currScore, "i:${I18nKey.obtainedInTheGame.name}");
   return message.Response(
     data: BlankItRightSubmitRes(
-      score: BlankItRightUtils.getScore(userAnswer, correctAnswer, blank, maxScore),
+      score: currScore,
       answer: correctAnswer,
     ),
   );

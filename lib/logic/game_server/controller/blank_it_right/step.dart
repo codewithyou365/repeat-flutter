@@ -8,10 +8,12 @@ enum StepEnum {
 class UserData {
   StepEnum step;
   String submit;
+  int score;
 
   UserData({
     required this.step,
     required this.submit,
+    required this.score,
   });
 }
 
@@ -23,18 +25,34 @@ class Step {
   }) {
     userStep.clear();
     for (var userId in userIds) {
-      userStep[userId] = UserData(step: StepEnum.blanking, submit: '');
+      userStep[userId] = UserData(
+        step: StepEnum.blanking,
+        submit: '',
+        score: 0,
+      );
     }
   }
 
   static void blanked() {
     for (var userId in userStep.keys) {
-      userStep[userId] = UserData(step: StepEnum.blanked, submit: '');
+      userStep[userId] = UserData(
+        step: StepEnum.blanked,
+        submit: '',
+        score: 0,
+      );
     }
   }
 
-  static void finished({required int userId, required String submit}) {
-    userStep[userId] = UserData(step: StepEnum.finished, submit: submit);
+  static void finished({
+    required int userId,
+    required String submit,
+    required int score,
+  }) {
+    userStep[userId] = UserData(
+      step: StepEnum.finished,
+      submit: submit,
+      score: score,
+    );
   }
 
   static StepEnum getStepEnum({
@@ -55,5 +73,15 @@ class Step {
       return '';
     }
     return ret.submit;
+  }
+
+  static int getScore({
+    required int userId,
+  }) {
+    var ret = userStep[userId];
+    if (ret == null) {
+      return 0;
+    }
+    return ret.score;
   }
 }

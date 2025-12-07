@@ -319,6 +319,7 @@ enum I18nKey {
   help,
   showFingers,
   refresh,
+  obtainedInTheGame,
   none;
 
   String trArgs([List<String> args = const []]) {

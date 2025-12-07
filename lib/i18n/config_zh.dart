@@ -319,5 +319,6 @@ class ConfigZh extends Config {
     put(I18nKey.help, "帮助");
     put(I18nKey.showFingers, "显示手指");
     put(I18nKey.refresh, "刷新");
+    put(I18nKey.obtainedInTheGame, "游戏中获得");
   }
 }

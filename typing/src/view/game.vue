@@ -1,6 +1,10 @@
 <template>
   <nut-navbar>
     <template #right>
+      <router-link to="/game_score">
+        <Order width="16px"></Order>
+      </router-link>
+      <div style="width: 10px"></div>
       <router-link to="/settings">
         <Setting width="16px"></Setting>
       </router-link>
@@ -30,7 +34,7 @@
 <script setup lang="ts">
 import {bus, EventName} from "../api/bus.ts";
 import reconnect from '../component/reconnect.vue';
-import {Setting, Loading1} from '@nutui/icons-vue';
+import {Setting, Order, Loading1} from '@nutui/icons-vue';
 import {onBeforeUnmount, onMounted, provide, ref} from 'vue';
 import {ClientStatus} from "../api/ws.ts";
 import {useRouter} from 'vue-router';

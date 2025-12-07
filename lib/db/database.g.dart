@@ -94,6 +94,10 @@ class _$AppDatabase extends AppDatabase {
 
   GameUserInputDao? _gameUserInputDaoInstance;
 
+  GameUserScoreDao? _gameUserScoreDaoInstance;
+
+  GameUserScoreHistoryDao? _gameUserScoreHistoryDaoInstance;
+
   KvDao? _kvDaoInstance;
 
   TimeStatsDao? _timeStatsDaoInstance;
@@ -167,6 +171,10 @@ class _$AppDatabase extends AppDatabase {
             'CREATE TABLE IF NOT EXISTS `GameUser` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `password` TEXT NOT NULL, `nonce` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `token` TEXT NOT NULL, `tokenExpiredDate` INTEGER NOT NULL, `needToResetPassword` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `GameUserInput` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `gameId` INTEGER NOT NULL, `gameUserId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `verseId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `input` TEXT NOT NULL, `output` TEXT NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL)');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `GameUserScore` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userId` INTEGER NOT NULL, `gameType` INTEGER NOT NULL, `score` INTEGER NOT NULL, `createDate` INTEGER NOT NULL)');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `GameUserScoreHistory` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userId` INTEGER NOT NULL, `gameType` INTEGER NOT NULL, `inc` INTEGER NOT NULL, `before` INTEGER NOT NULL, `after` INTEGER NOT NULL, `remark` TEXT NOT NULL, `createDate` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Lock` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
@@ -249,6 +257,12 @@ class _$AppDatabase extends AppDatabase {
             'CREATE INDEX `index_GameUserInput_createDate` ON `GameUserInput` (`createDate`)');
         await database.execute(
             'CREATE INDEX `index_GameUserInput_gameId_gameUserId_time` ON `GameUserInput` (`gameId`, `gameUserId`, `time`)');
+        await database.execute(
+            'CREATE UNIQUE INDEX `index_GameUserScore_userId_gameType` ON `GameUserScore` (`userId`, `gameType`)');
+        await database.execute(
+            'CREATE INDEX `index_GameUserScoreHistory_userId_gameType` ON `GameUserScoreHistory` (`userId`, `gameType`)');
+        await database.execute(
+            'CREATE INDEX `index_GameUserScoreHistory_remark` ON `GameUserScoreHistory` (`remark`)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -313,6 +327,18 @@ class _$AppDatabase extends AppDatabase {
   GameUserInputDao get gameUserInputDao {
     return _gameUserInputDaoInstance ??=
         _$GameUserInputDao(database, changeListener);
+  }
+
+  @override
+  GameUserScoreDao get gameUserScoreDao {
+    return _gameUserScoreDaoInstance ??=
+        _$GameUserScoreDao(database, changeListener);
+  }
+
+  @override
+  GameUserScoreHistoryDao get gameUserScoreHistoryDao {
+    return _gameUserScoreHistoryDaoInstance ??=
+        _$GameUserScoreHistoryDao(database, changeListener);
   }
 
   @override
@@ -2073,6 +2099,163 @@ class _$GameUserInputDao extends GameUserInputDao {
   }
 }
 
+class _$GameUserScoreDao extends GameUserScoreDao {
+  _$GameUserScoreDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _gameUserScoreInsertionAdapter = InsertionAdapter(
+            database,
+            'GameUserScore',
+            (GameUserScore item) => <String, Object?>{
+                  'id': item.id,
+                  'userId': item.userId,
+                  'gameType': _gameTypeConverter.encode(item.gameType),
+                  'score': item.score,
+                  'createDate': _dateTimeConverter.encode(item.createDate)
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<GameUserScore> _gameUserScoreInsertionAdapter;
+
+  @override
+  Future<void> addScore(
+    int score,
+    int id,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE GameUserScore SET score = score + ?1 WHERE id = ?2',
+        arguments: [score, id]);
+  }
+
+  @override
+  Future<GameUserScore?> get(
+    int userId,
+    GameType gameType,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT * FROM GameUserScore WHERE userId = ?1 AND gameType = ?2 LIMIT 1',
+        mapper: (Map<String, Object?> row) => GameUserScore(userId: row['userId'] as int, gameType: _gameTypeConverter.decode(row['gameType'] as int), score: row['score'] as int, createDate: _dateTimeConverter.decode(row['createDate'] as int), id: row['id'] as int?),
+        arguments: [userId, _gameTypeConverter.encode(gameType)]);
+  }
+
+  @override
+  Future<void> insertOrFail(GameUserScore entity) async {
+    await _gameUserScoreInsertionAdapter.insert(
+        entity, OnConflictStrategy.fail);
+  }
+
+  @override
+  Future<void> inc(
+    int userId,
+    GameType gameType,
+    int score,
+    String remark,
+  ) async {
+    if (database is sqflite.Transaction) {
+      await super.inc(userId, gameType, score, remark);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        await transactionDatabase.gameUserScoreDao
+            .inc(userId, gameType, score, remark);
+      });
+    }
+  }
+}
+
+class _$GameUserScoreHistoryDao extends GameUserScoreHistoryDao {
+  _$GameUserScoreHistoryDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _gameUserScoreHistoryInsertionAdapter = InsertionAdapter(
+            database,
+            'GameUserScoreHistory',
+            (GameUserScoreHistory item) => <String, Object?>{
+                  'id': item.id,
+                  'userId': item.userId,
+                  'gameType': _gameTypeConverter.encode(item.gameType),
+                  'inc': item.inc,
+                  'before': item.before,
+                  'after': item.after,
+                  'remark': item.remark,
+                  'createDate': _dateTimeConverter.encode(item.createDate)
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<GameUserScoreHistory>
+      _gameUserScoreHistoryInsertionAdapter;
+
+  @override
+  Future<List<GameUserScoreHistory>> getPaginatedList(
+    int userId,
+    GameType gameType,
+    int limit,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM GameUserScoreHistory WHERE userId=?1 and gameType=?2 ORDER BY commitDate DESC LIMIT ?3',
+        mapper: (Map<String, Object?> row) => GameUserScoreHistory(userId: row['userId'] as int, gameType: _gameTypeConverter.decode(row['gameType'] as int), inc: row['inc'] as int, before: row['before'] as int, after: row['after'] as int, remark: row['remark'] as String, createDate: _dateTimeConverter.decode(row['createDate'] as int), id: row['id'] as int?),
+        arguments: [userId, _gameTypeConverter.encode(gameType), limit]);
+  }
+
+  @override
+  Future<List<GameUserScoreHistory>> getPaginatedListWithLastId(
+    int userId,
+    GameType gameType,
+    int lastId,
+    int limit,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM GameUserScoreHistory WHERE userId=?1 and gameType=?2 AND id < ?3 ORDER BY commitDate DESC LIMIT ?4',
+        mapper: (Map<String, Object?> row) => GameUserScoreHistory(userId: row['userId'] as int, gameType: _gameTypeConverter.decode(row['gameType'] as int), inc: row['inc'] as int, before: row['before'] as int, after: row['after'] as int, remark: row['remark'] as String, createDate: _dateTimeConverter.decode(row['createDate'] as int), id: row['id'] as int?),
+        arguments: [
+          userId,
+          _gameTypeConverter.encode(gameType),
+          lastId,
+          limit
+        ]);
+  }
+
+  @override
+  Future<int?> getCount(
+    int userId,
+    GameType gameType,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT COUNT(*) FROM GameUserScoreHistory WHERE userId=?1 and gameType=?2',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [userId, _gameTypeConverter.encode(gameType)]);
+  }
+
+  @override
+  Future<GameUserScoreHistory?> getLast(String remark) async {
+    return _queryAdapter.query(
+        'SELECT * FROM GameUserScoreHistory WHERE remark=?1 ORDER BY id DESC LIMIT 1',
+        mapper: (Map<String, Object?> row) => GameUserScoreHistory(userId: row['userId'] as int, gameType: _gameTypeConverter.decode(row['gameType'] as int), inc: row['inc'] as int, before: row['before'] as int, after: row['after'] as int, remark: row['remark'] as String, createDate: _dateTimeConverter.decode(row['createDate'] as int), id: row['id'] as int?),
+        arguments: [remark]);
+  }
+
+  @override
+  Future<void> insertOrFail(GameUserScoreHistory entity) async {
+    await _gameUserScoreHistoryInsertionAdapter.insert(
+        entity, OnConflictStrategy.fail);
+  }
+}
+
 class _$KvDao extends KvDao {
   _$KvDao(
     this.database,
@@ -3635,3 +3818,4 @@ final _crKConverter = CrKConverter();
 final _dateTimeConverter = DateTimeConverter();
 final _dateConverter = DateConverter();
 final _versionReasonConverter = VersionReasonConverter();
+final _gameTypeConverter = GameTypeConverter();

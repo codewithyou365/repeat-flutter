@@ -5,7 +5,6 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/game_server/constant.dart';
 
 import 'submit.dart';
 
@@ -54,10 +53,7 @@ class GameUserHistoryRes {
   }
 }
 
-Future<message.Response?> gameUserHistory(message.Request req, GameUser? user) async {
-  if (user == null) {
-    return message.Response(error: GameServerError.serviceStopped.name);
-  }
+Future<message.Response?> gameUserHistory(message.Request req, GameUser user) async {
   final reqBody = GameUserHistoryReq.fromJson(req.data);
   final gus = await Db().db.gameDao.gameUserInput(reqBody.gameId, user.id!, reqBody.time);
   GameUserHistoryRes res = GameUserHistoryRes([], []);

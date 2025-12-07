@@ -1,5 +1,9 @@
 export const routes = [
     {
+        path: '/game_score',
+        component: () => import('../view/game_score.vue'),
+    },
+    {
         path: '/settings',
         component: () => import('../view/settings.vue'),
     },

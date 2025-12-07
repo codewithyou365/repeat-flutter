@@ -1,6 +1,6 @@
 <template>
   <div class='container'>
-    <nut-cell>{{ tips }}</nut-cell>
+    <nut-cell v-html='tips.replace(/\n/g, "<br>")'></nut-cell>
     <Typing
         :content="content"
         :disabled="typingDisabled"
@@ -9,37 +9,35 @@
         :ignore-content-indexes="ignoreContentIndexes"
         ref="typingRef"
     />
-    <div v-if="!typingDisabled" class="container">
-      <div v-if="editorUserId == store.getters.currentUserId">
-        <nut-row :gutter="10">
-          <nut-col :span="12">
-            <nut-button block type="info" @click="onBlank">{{ t('confirm') }}</nut-button>
-          </nut-col>
-          <nut-col :span="12">
-            <nut-button block type="info" @click="onBlankReset">{{ t('reset') }}</nut-button>
-          </nut-col>
-        </nut-row>
-      </div>
-      <div v-else-if="editorUserId != store.getters.currentUserId && step == StepName.finished">
-        <nut-cell>{{ '+' + score }}</nut-cell>
-        <nut-row :gutter="10">
-          <nut-col :span="12">
-            <nut-button block type="info" @click="onViewAnswer">{{ t('viewAnswer') }}</nut-button>
-          </nut-col>
-          <nut-col :span="12">
-            <nut-button block type="info" @click="onViewSubmit">{{ t('viewSubmit') }}</nut-button>
-          </nut-col>
-        </nut-row>
-      </div>
-      <div v-else>
-        <nut-row :gutter="10">
-          <nut-col :span="24">
-            <nut-button block type="info" @click="onSubmit">{{ t('confirm') }}</nut-button>
-          </nut-col>
-        </nut-row>
-      </div>
-
+    <div v-if="editorUserId == store.getters.currentUserId && step == StepName.blanking" class="container">
+      <nut-row :gutter="10">
+        <nut-col :span="12">
+          <nut-button block type="info" @click="onBlank">{{ t('confirm') }}</nut-button>
+        </nut-col>
+        <nut-col :span="12">
+          <nut-button block type="info" @click="onBlankReset">{{ t('reset') }}</nut-button>
+        </nut-col>
+      </nut-row>
     </div>
+    <div v-else-if="editorUserId != store.getters.currentUserId && step == StepName.blanked" class="container">
+      <nut-row :gutter="10">
+        <nut-col :span="24">
+          <nut-button block type="info" @click="onSubmit">{{ t('confirm') }}</nut-button>
+        </nut-col>
+      </nut-row>
+    </div>
+    <div v-else-if="editorUserId != store.getters.currentUserId && step == StepName.finished" class="container">
+      <nut-cell>{{ '+' + score }}</nut-cell>
+      <nut-row :gutter="10">
+        <nut-col :span="12">
+          <nut-button block type="info" @click="onViewAnswer">{{ t('viewAnswer') }}</nut-button>
+        </nut-col>
+        <nut-col :span="12">
+          <nut-button block type="info" @click="onViewSubmit">{{ t('viewSubmit') }}</nut-button>
+        </nut-col>
+      </nut-row>
+    </div>
+
   </div>
 </template>
 
@@ -135,6 +133,7 @@ const refresh = async (refreshGame: RefreshGameType) => {
         });
       }
     } else {
+      ignoreContentIndexes.value = [];
       const currContent = res.data.content ?? '';
       for (let i = 0; i < currContent.length; i++) {
         if (currContent[i] !== '•') {
@@ -162,7 +161,7 @@ const refresh = async (refreshGame: RefreshGameType) => {
     } else if (editorUserId.value != store.getters.currentUserId && step.value === StepName.blanked) {
       typingDisabled.value = false;
     } else if (editorUserId.value != store.getters.currentUserId && step.value === StepName.finished) {
-      typingDisabled.value = false;
+      typingDisabled.value = true;
     }
     await router.replace({
       query: {

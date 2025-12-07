@@ -7,12 +7,14 @@ import 'package:repeat_flutter/common/ws/node.dart';
 import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
+import 'package:repeat_flutter/db/entity/game_user_score.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/blank_it_right_2_blank.dart';
 import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/blank_it_right_1_content.dart';
 import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/blank_it_right_0_settings.dart';
 import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/blank_it_right_3_submit.dart';
+import 'package:repeat_flutter/logic/game_server/controller/game_user_score_history.dart';
 import 'package:repeat_flutter/logic/game_server/controller/type/type_verse_content.dart';
 import 'package:repeat_flutter/logic/game_server/controller/type/type_game_settings.dart';
 import 'package:repeat_flutter/logic/widget/game/game_state.dart';
@@ -44,12 +46,13 @@ class WebServer {
       server.controllers[Path.heart] = (request) => withGameUser(request, heart);
       server.controllers[Path.gameUserHistory] = (request) => withGameUser(request, gameUserHistory);
       server.controllers[Path.submit] = (request) => withGameUser(request, submit);
-      server.controllers[Path.typeGameSettings] = (request) => withGameUserAndGameType(request, GameTypeEnum.type, typeGameSettings);
-      server.controllers[Path.typeVerseContent] = (request) => withGameUserAndGameType(request, GameTypeEnum.type, typeVerseContent);
-      server.controllers[Path.blankItRightSettings] = (request) => withGameUserAndGameType(request, GameTypeEnum.blankItRight, blankItRightSettings);
-      server.controllers[Path.blankItRightContent] = (request) => withGameUserAndGameType(request, GameTypeEnum.blankItRight, blankItRightContent);
-      server.controllers[Path.blankItRightBlank] = (request) => withGameUserAndServer(request, GameTypeEnum.blankItRight, blankItRightBlank);
-      server.controllers[Path.blankItRightSubmit] = (request) => withGameUserAndServer(request, GameTypeEnum.blankItRight, blankItRightSubmit);
+      server.controllers[Path.gameUserScoreHistory] = (request) => withGameUser(request, gameUserScoreHistory);
+      server.controllers[Path.typeGameSettings] = (request) => withGameUserAndGameType(request, GameType.type, typeGameSettings);
+      server.controllers[Path.typeVerseContent] = (request) => withGameUserAndGameType(request, GameType.type, typeVerseContent);
+      server.controllers[Path.blankItRightSettings] = (request) => withGameUserAndGameType(request, GameType.blankItRight, blankItRightSettings);
+      server.controllers[Path.blankItRightContent] = (request) => withGameUserAndGameType(request, GameType.blankItRight, blankItRightContent);
+      server.controllers[Path.blankItRightBlank] = (request) => withGameUserAndServer(request, GameType.blankItRight, blankItRightBlank);
+      server.controllers[Path.blankItRightSubmit] = (request) => withGameUserAndServer(request, GameType.blankItRight, blankItRightSubmit);
       open = true;
     } catch (e) {
       Snackbar.show('Error starting HTTPS service: $e');
@@ -159,7 +162,7 @@ class WebServer {
     return await handle(req, user);
   }
 
-  Future<message.Response?> withGameUserAndGameType(message.Request req, GameTypeEnum gameType, Future<message.Response?> Function(message.Request req, GameUser user) handle) async {
+  Future<message.Response?> withGameUserAndGameType(message.Request req, GameType gameType, Future<message.Response?> Function(message.Request req, GameUser user) handle) async {
     if (GameState.lastGameIndex != gameType.index) {
       return message.Response(error: GameServerError.gameNotFound.name);
     }
@@ -170,7 +173,7 @@ class WebServer {
     return await handle(req, user);
   }
 
-  Future<message.Response?> withGameUserAndServer(message.Request req, GameTypeEnum gameType, Future<message.Response?> Function(message.Request req, GameUser user, Server<GameUser> server) handle) async {
+  Future<message.Response?> withGameUserAndServer(message.Request req, GameType gameType, Future<message.Response?> Function(message.Request req, GameUser user, Server<GameUser> server) handle) async {
     if (GameState.lastGameIndex != gameType.index) {
       return message.Response(error: GameServerError.gameNotFound.name);
     }

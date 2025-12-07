@@ -4,10 +4,10 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/ip.dart';
 import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/game_user_score.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
-import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/game_server/web_server.dart';
 import 'package:repeat_flutter/logic/widget/game/logic/game_settings.dart';
 import 'package:repeat_flutter/logic/widget/game/logic/game_settings_type.dart';
@@ -31,12 +31,12 @@ class GameLogic<T extends GetxController> {
   final GamePage page = GamePage<T>();
 
   late VoidCallback onOpenWeb;
-  final Map<GameTypeEnum, GameSettings> gameTypeToGameSettings = {};
+  final Map<GameType, GameSettings> gameTypeToGameSettings = {};
 
   GameLogic(this.parentLogic) {
-    gameTypeToGameSettings[GameTypeEnum.type] = GameSettingsType();
-    gameTypeToGameSettings[GameTypeEnum.blankItRight] = GameSettingsBlankItRight();
-    gameTypeToGameSettings[GameTypeEnum.input] = GameSettingsInput();
+    gameTypeToGameSettings[GameType.type] = GameSettingsType();
+    gameTypeToGameSettings[GameType.blankItRight] = GameSettingsBlankItRight();
+    gameTypeToGameSettings[GameType.input] = GameSettingsInput();
   }
 
   Future<void> init(VoidCallback onOpenWeb) async {
