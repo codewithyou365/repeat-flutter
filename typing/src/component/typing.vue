@@ -11,12 +11,16 @@
                 :class="getCharClass(ch.index)"
                 :ref="el => setCharRef(el, ch.index)"
                 @click="handleCharClick(ch.index)"
+                @pointerover="handleCharTouch($event, ch.index)"
+                @pointerdown="handleCharTouch($event, ch.index)"
             >
               {{ getDisplayChar(ch.index) }}
             </span>
           </span>
-          <span v-else class="typing-char" :class="[getCharClass(group.index), group.type === 'space' ? 'space' : '']"
-                :ref="el => setCharRef(el, group.index)" @click="handleCharClick(group.index)">
+          <span v-else class="typing-char"
+                :class="[getCharClass(group.index), group.type === 'space' ? 'space' : '']"
+                :ref="el => setCharRef(el, group.index)"
+          >
             {{ getDisplayChar(group.index) }}
           </span>
         </template>
@@ -40,13 +44,16 @@
 <script setup lang="ts">
 import {onMounted, ref, nextTick, computed, onBeforeUnmount, watch} from 'vue';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   disabled: boolean;
   content: string;
+  clickFillCharWhenDisabled?: string;
   ignoreContentIndexes: number[];
   ignoreCase: boolean;
   ignorePunctuation: boolean;
-}>();
+}>(), {
+  clickFillCharWhenDisabled: '',
+});
 
 const userInput = ref('');
 const composingInput = ref('');
@@ -182,7 +189,25 @@ const applyInput = (val: string) => {
     cursorPos.value = props.content.length;
   }
 };
-
+const handleCharTouch = (e: PointerEvent, index: number) => {
+  if (disabled.value && e.buttons === 1) {
+    if (props.clickFillCharWhenDisabled.length === 1) {
+      composingInput.value = '';
+      const pos = index;
+      if (pos >= 0 && pos < userInput.value.length) {
+        let fillChar = props.clickFillCharWhenDisabled;
+        if (userInput.value[index] === props.clickFillCharWhenDisabled) {
+          fillChar = props.content[index];
+        }
+        userInput.value =
+            userInput.value.slice(0, pos) +
+            fillChar +
+            userInput.value.slice(pos + 1);
+      }
+    }
+    return;
+  }
+}
 const handleCharClick = (index: number) => {
   if (disabled.value) {
     return;

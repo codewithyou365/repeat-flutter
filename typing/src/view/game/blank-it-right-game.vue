@@ -7,6 +7,7 @@
         :ignore-case="ignoreCase"
         :ignore-punctuation="ignorePunctuation"
         :ignore-content-indexes="ignoreContentIndexes"
+        :click-fill-char-when-disabled='clickFillCharWhenDisabled'
         ref="typingRef"
     />
     <div v-if="editorUserId == store.getters.currentUserId && step == StepName.blanking" class="container">
@@ -66,6 +67,7 @@ const editorUserId = ref(0);
 const score = ref(0);
 const content = ref('');
 const answer = ref('');
+const clickFillCharWhenDisabled = ref('•');
 let submit = '';
 const ignoreContentIndexes = ref<number[]>([]);
 const typingRef = ref<InstanceType<typeof Typing>>();
@@ -152,8 +154,10 @@ const refresh = async (refreshGame: RefreshGameType) => {
         content.value = currContent;
       }
     }
+    clickFillCharWhenDisabled.value = '';
     if (editorUserId.value == store.getters.currentUserId && step.value === StepName.blanking) {
-      typingDisabled.value = false;
+      typingDisabled.value = true;
+      clickFillCharWhenDisabled.value = '•';
     } else if (editorUserId.value == store.getters.currentUserId && step.value === StepName.blanked) {
       typingDisabled.value = true;
     } else if (editorUserId.value != store.getters.currentUserId && step.value === StepName.blanking) {
