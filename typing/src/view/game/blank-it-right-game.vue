@@ -30,11 +30,11 @@
     <div v-else-if="editorUserId != store.getters.currentUserId && step == StepName.finished" class="container">
       <nut-cell>{{ '+' + score }}</nut-cell>
       <nut-row :gutter="10">
-        <nut-col :span="12">
-          <nut-button block type="info" @click="onViewAnswer">{{ t('viewAnswer') }}</nut-button>
-        </nut-col>
-        <nut-col :span="12">
-          <nut-button block type="info" @click="onViewSubmit">{{ t('viewSubmit') }}</nut-button>
+        <nut-col :span="24">
+          <nut-button block type="info" @click="onSwitchView">{{
+              showAnswer ? t('viewSubmit') : t('viewAnswer')
+            }}
+          </nut-button>
         </nut-col>
       </nut-row>
     </div>
@@ -154,18 +154,16 @@ const refresh = async (refreshGame: RefreshGameType) => {
         content.value = currContent;
       }
     }
-    clickFillCharWhenDisabled.value = '';
+
     if (editorUserId.value == store.getters.currentUserId && step.value === StepName.blanking) {
       typingDisabled.value = true;
       clickFillCharWhenDisabled.value = '•';
-    } else if (editorUserId.value == store.getters.currentUserId && step.value === StepName.blanked) {
-      typingDisabled.value = true;
-    } else if (editorUserId.value != store.getters.currentUserId && step.value === StepName.blanking) {
-      typingDisabled.value = true;
     } else if (editorUserId.value != store.getters.currentUserId && step.value === StepName.blanked) {
       typingDisabled.value = false;
-    } else if (editorUserId.value != store.getters.currentUserId && step.value === StepName.finished) {
+      clickFillCharWhenDisabled.value = '';
+    } else {
       typingDisabled.value = true;
+      clickFillCharWhenDisabled.value = '';
     }
     await router.replace({
       query: {
@@ -210,12 +208,14 @@ const onBlank = async () => {
   overlayVisible.value = false;
 }
 
-
-const onViewAnswer = async () => {
-  typingRef.value?.initUserInput(answer.value);
-}
-const onViewSubmit = async () => {
-  typingRef.value?.initUserInput(submit);
+const showAnswer = ref(false);
+const onSwitchView = async () => {
+  if (showAnswer.value) {
+    typingRef.value?.initUserInput(submit);
+  } else {
+    typingRef.value?.initUserInput(answer.value);
+  }
+  showAnswer.value = !showAnswer.value;
 }
 
 const onSubmit = async () => {
