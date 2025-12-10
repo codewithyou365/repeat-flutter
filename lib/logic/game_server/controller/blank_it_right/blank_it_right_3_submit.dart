@@ -63,11 +63,11 @@ class BlankItRightSubmitRes {
 }
 
 Future<message.Response?> blankItRightSubmit(message.Request req, GameUser user, Server<GameUser> server) async {
-  var userId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForEditorUserId);
-  if (userId == null) {
+  var editorUserId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForEditorUserId);
+  if (editorUserId == null) {
     return message.Response(error: GameServerError.editorUserNeedToBeSpecified.name);
   }
-  if (userId == user.getId()) {
+  if (editorUserId == user.getId()) {
     return message.Response(error: GameServerError.submitUserInvalid.name);
   }
   if (Step.getStepEnum(userId: user.getId()) != StepEnum.blanked) {
@@ -86,7 +86,7 @@ Future<message.Response?> blankItRightSubmit(message.Request req, GameUser user,
   final int maxScore = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForMaxScore) ?? 10;
   final int currScore = BlankItRightUtils.getScore(userAnswer, correctAnswer, blank, maxScore);
   Step.finished(userId: user.getId(), submit: reqBody.content, score: currScore);
-  await Db().db.gameUserScoreDao.inc(userId, GameType.blankItRight, currScore, "i:${I18nKey.obtainedInTheGame.name}");
+  await Db().db.gameUserScoreDao.inc(user.getId(), GameType.blankItRight, currScore, "i:${I18nKey.obtainedInTheGame.name}");
   return message.Response(
     data: BlankItRightSubmitRes(
       score: currScore,

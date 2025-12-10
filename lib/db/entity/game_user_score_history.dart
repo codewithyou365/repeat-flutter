@@ -46,6 +46,7 @@ class GameUserScoreHistory {
   }
 
   Map<String, dynamic> toJson() => {
+    'id': id!,
     'userId': userId,
     'gameType': gameType.index,
     'inc': inc,

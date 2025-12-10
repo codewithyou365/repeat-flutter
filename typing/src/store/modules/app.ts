@@ -40,9 +40,9 @@ const mutations = {
         state.token = token;
         localStorage.setItem('token', token);
     },
-    setUserId(state: any, userId: int) {
+    setUserId(state: any, userId: number) {
         state.userId = userId;
-        localStorage.setItem('userId', userId);
+        localStorage.setItem('userId', `${userId}`);
     },
     setWsConnected(state: any, wsConnected: boolean) {
         state.wsConnected = wsConnected;

@@ -9,10 +9,10 @@ abstract class GameUserScoreHistoryDao {
   @Insert(onConflict: OnConflictStrategy.fail)
   Future<void> insertOrFail(GameUserScoreHistory entity);
 
-  @Query('SELECT * FROM GameUserScoreHistory WHERE userId=:userId and gameType=:gameType ORDER BY commitDate DESC LIMIT :limit')
+  @Query('SELECT * FROM GameUserScoreHistory WHERE userId=:userId and gameType=:gameType ORDER BY id DESC LIMIT :limit')
   Future<List<GameUserScoreHistory>> getPaginatedList(int userId, GameType gameType, int limit);
 
-  @Query('SELECT * FROM GameUserScoreHistory WHERE userId=:userId and gameType=:gameType AND id < :lastId ORDER BY commitDate DESC LIMIT :limit')
+  @Query('SELECT * FROM GameUserScoreHistory WHERE userId=:userId and gameType=:gameType AND id < :lastId ORDER BY id DESC LIMIT :limit')
   Future<List<GameUserScoreHistory>> getPaginatedListWithLastId(int userId, GameType gameType, int lastId, int limit);
 
   @Query('SELECT COUNT(*) FROM GameUserScoreHistory WHERE userId=:userId and gameType=:gameType')

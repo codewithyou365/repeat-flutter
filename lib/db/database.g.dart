@@ -2207,7 +2207,7 @@ class _$GameUserScoreHistoryDao extends GameUserScoreHistoryDao {
     int limit,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM GameUserScoreHistory WHERE userId=?1 and gameType=?2 ORDER BY commitDate DESC LIMIT ?3',
+        'SELECT * FROM GameUserScoreHistory WHERE userId=?1 and gameType=?2 ORDER BY id DESC LIMIT ?3',
         mapper: (Map<String, Object?> row) => GameUserScoreHistory(userId: row['userId'] as int, gameType: _gameTypeConverter.decode(row['gameType'] as int), inc: row['inc'] as int, before: row['before'] as int, after: row['after'] as int, remark: row['remark'] as String, createDate: _dateTimeConverter.decode(row['createDate'] as int), id: row['id'] as int?),
         arguments: [userId, _gameTypeConverter.encode(gameType), limit]);
   }
@@ -2220,7 +2220,7 @@ class _$GameUserScoreHistoryDao extends GameUserScoreHistoryDao {
     int limit,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM GameUserScoreHistory WHERE userId=?1 and gameType=?2 AND id < ?3 ORDER BY commitDate DESC LIMIT ?4',
+        'SELECT * FROM GameUserScoreHistory WHERE userId=?1 and gameType=?2 AND id < ?3 ORDER BY id DESC LIMIT ?4',
         mapper: (Map<String, Object?> row) => GameUserScoreHistory(userId: row['userId'] as int, gameType: _gameTypeConverter.decode(row['gameType'] as int), inc: row['inc'] as int, before: row['before'] as int, after: row['after'] as int, remark: row['remark'] as String, createDate: _dateTimeConverter.decode(row['createDate'] as int), id: row['id'] as int?),
         arguments: [
           userId,

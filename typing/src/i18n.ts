@@ -37,6 +37,13 @@ const messages = {
         answer: 'answer: \n',
         viewAnswer: 'View Answer',
         viewSubmit: 'View Submit',
+        score: "Score",
+        obtainedInTheGame: "Obtained In The Game",
+        balance: 'Balance : ',
+        loadMoreTxt: 'Oops, this is the bottom already!',
+        loading: 'Loading',
+        pullToRefresh: 'Pull To Refresh',
+        looseToRefresh: 'Loose To Refresh',
     },
     zh: {
         dartMode: '深色模式',
@@ -74,6 +81,13 @@ const messages = {
         answer: '答案: \n',
         viewAnswer: '查看答案',
         viewSubmit: '查看提交',
+        score: "分数",
+        obtainedInTheGame: "游戏中获得",
+        balance: '余额 : ',
+        loadMoreTxt: '哎呀，这里是底部了啦',
+        loading: '加载中',
+        pullToRefresh: '下拉刷新',
+        looseToRefresh: '释放刷新',
     },
 };
 
