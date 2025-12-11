@@ -62,7 +62,7 @@ import {useI18n} from 'vue-i18n'
 import {client, Request} from "../api/ws.ts";
 import {Path} from "../utils/constant.ts";
 import {GameUserScoreHistoryReq} from "../vo/GameUserScoreHistoryReq.ts";
-
+import { showToast } from '@nutui/nutui'
 const tipDialogVisible = ref(false);
 const tipDialogContent = ref('');
 const {t} = useI18n()
@@ -140,6 +140,9 @@ const refreshList = async () => {
   lastId.value = undefined;
   hasMore.value = true;
   await loadMore();
+  showToast.text("", {
+    title: t('loadingSuccess'),
+  })
 }
 
 const onClickBack = () => history.back()

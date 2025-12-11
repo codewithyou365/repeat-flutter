@@ -44,6 +44,7 @@ const messages = {
         loading: 'Loading',
         pullToRefresh: 'Pull To Refresh',
         looseToRefresh: 'Loose To Refresh',
+        loadingSuccess: 'Loading Success',
     },
     zh: {
         dartMode: '深色模式',
@@ -88,6 +89,7 @@ const messages = {
         loading: '加载中',
         pullToRefresh: '下拉刷新',
         looseToRefresh: '释放刷新',
+        loadingSuccess: '加载成功',
     },
 };
 
