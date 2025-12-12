@@ -45,6 +45,7 @@ const messages = {
         pullToRefresh: 'Pull To Refresh',
         looseToRefresh: 'Loose To Refresh',
         loadingSuccess: 'Loading Success',
+        noData: 'No data available',
     },
     zh: {
         dartMode: '深色模式',
@@ -90,6 +91,7 @@ const messages = {
         pullToRefresh: '下拉刷新',
         looseToRefresh: '释放刷新',
         loadingSuccess: '加载成功',
+        noData: '暂无数据',
     },
 };
 

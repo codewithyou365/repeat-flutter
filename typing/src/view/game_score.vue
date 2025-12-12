@@ -11,6 +11,7 @@
       :loosing-txt="t('looseToRefresh')"
       @refresh="refreshList">
     <nut-infinite-loading
+        v-if="historyList.length>0"
         v-model="infinityValue"
         :has-more="hasMore"
         :load-txt="t('loading')"
@@ -43,7 +44,11 @@
         </div>
       </div>
     </nut-infinite-loading>
+    <div v-else class="score-outline">
+      <nut-cell>{{ t('noData') }}</nut-cell>
+    </div>
   </nut-pull-refresh>
+
   <nut-dialog
       v-model:visible="tipDialogVisible"
       :title="t('tips')"
@@ -62,7 +67,8 @@ import {useI18n} from 'vue-i18n'
 import {client, Request} from "../api/ws.ts";
 import {Path} from "../utils/constant.ts";
 import {GameUserScoreHistoryReq} from "../vo/GameUserScoreHistoryReq.ts";
-import { showToast } from '@nutui/nutui'
+import {showToast} from '@nutui/nutui'
+
 const tipDialogVisible = ref(false);
 const tipDialogContent = ref('');
 const {t} = useI18n()
