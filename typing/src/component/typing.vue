@@ -3,11 +3,15 @@
     <div class="typing" ref="containerRef" @click="focusInput">
       <div class="typing-line">
         <template v-for="(group, gIndex) in groups" :key="gIndex">
-          <span v-if="group.type === 'word'" class="word">
+          <span v-if="group.type === 'word'" class="word"
+                @touchstart="handleTouch($event, 'start')"
+                @touchmove="handleTouch($event, 'move')"
+                @touchend="handleTouch($event, 'end')">
             <span
                 v-for="(ch, cIndex) in group.chars"
                 :key="cIndex"
                 class="typing-char"
+                :data-index="ch.index"
                 :class="getCharClass(ch.index)"
                 :ref="el => setCharRef(el, ch.index)"
                 @click="handleCharClick(ch.index)"
@@ -62,7 +66,7 @@ const containerRef = ref<HTMLElement | null>(null);
 const charRefs = ref<HTMLElement[]>([]);
 const cursorPos = ref(0);
 const minCursorPos = ref(0);
-
+const lastHoveredIndex = ref(0);
 const chars = computed<string[]>(() => {
   return props.content ? props.content.split('') : [];
 });
@@ -189,8 +193,38 @@ const applyInput = (val: string) => {
     cursorPos.value = props.content.length;
   }
 };
-const handleCharTouch = (e: PointerEvent, index: number) => {
-  if (disabled.value && e.buttons === 1) {
+const handleTouch = (e: PointerEvent, type: 'start' | 'move' | 'end') => {
+  if (disabled.value) {
+    if (props.clickFillCharWhenDisabled.length === 1) {
+
+      if (type === 'end') {
+        lastHoveredIndex.value = null;
+        return;
+      }
+
+      const touch = e.touches[0];
+      const x = touch.clientX;
+      const y = touch.clientY;
+      const elem = document.elementFromPoint(x, y) as HTMLElement | null;
+
+      if (elem?.classList.contains('typing-char')) {
+        const index = Number(elem.dataset.index);
+        if (!Number.isNaN(index) && index !== lastHoveredIndex.value) {
+          handleCharTouch(null, index);
+          lastHoveredIndex.value = index;
+        }
+      } else {
+        lastHoveredIndex.value = null;
+      }
+
+      if (type === 'move') {
+        e.preventDefault();
+      }
+    }
+  }
+};
+const handleCharTouch = (e: PointerEvent | null, index: number) => {
+  if (disabled.value && (e == null || e.buttons === 1)) {
     if (props.clickFillCharWhenDisabled.length === 1) {
       composingInput.value = '';
       const pos = index;
