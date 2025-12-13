@@ -28,7 +28,7 @@
       </nut-row>
     </div>
     <div v-else-if="editorUserId != store.getters.currentUserId && step == StepName.finished" class="container">
-      <nut-cell>{{ '+' + score }}</nut-cell>
+      <nut-cell>{{ t('score') + ': +' + score }}</nut-cell>
       <nut-row :gutter="10">
         <nut-col :span="24">
           <nut-button block type="info" @click="onSwitchView">{{

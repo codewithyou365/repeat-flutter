@@ -9,6 +9,7 @@
       :loading-txt="t('loading')"
       :pulling-txt="t('pullToRefresh')"
       :loosing-txt="t('looseToRefresh')"
+      :complete-txt="t('loadingSuccess')"
       @refresh="refreshList">
     <nut-infinite-loading
         v-if="historyList.length>0"
