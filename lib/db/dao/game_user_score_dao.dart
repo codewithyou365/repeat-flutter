@@ -19,13 +19,18 @@ abstract class GameUserScoreDao {
   )
   Future<void> addScore(int score, int id);
 
-
   @Query(
     'SELECT * FROM GameUserScore '
     'WHERE userId = :userId AND gameType = :gameType '
     'LIMIT 1',
   )
   Future<GameUserScore?> get(int userId, GameType gameType);
+
+  @Query(
+    'SELECT * FROM GameUserScore '
+    'WHERE userId in (:userIds) AND gameType = :gameType ',
+  )
+  Future<List<GameUserScore>> list(List<int> userIds, GameType gameType);
 
   @transaction
   Future<void> inc(

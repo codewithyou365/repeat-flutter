@@ -6,6 +6,7 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
+import 'package:repeat_flutter/db/entity/game_user_score.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/step.dart';
@@ -18,6 +19,7 @@ class GameSettingsBlankItRight extends GameSettings {
   RxInt userNumber = RxInt(0);
   RxInt userIndex = RxInt(-1);
   List<GameUser> users = [];
+  Map<int, int> userIdToScore = {};
   final SubList<WsEvent> sub = [];
   final SubList<Game> subNewGame = [];
 
@@ -38,7 +40,7 @@ class GameSettingsBlankItRight extends GameSettings {
           users = await Db().db.gameUserDao.getAllUser();
         }
       }
-      userNumber.value = users.length;
+      await setScore();
     });
 
     var userId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForEditorUserId);
@@ -49,12 +51,22 @@ class GameSettingsBlankItRight extends GameSettings {
       }
       await setUser(index);
     }
-    userNumber.value = users.length;
+    await setScore();
 
     var ki = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForIgnorePunctuation);
     if (ki != null) {
       ignoringPunctuation.value = ki == 1;
     }
+  }
+
+  Future<void> setScore() async {
+    final userIds = users.map((u) => u.id!).toList();
+    var userScores = await Db().db.gameUserScoreDao.list(userIds, GameType.blankItRight);
+    for (final s in userScores) {
+      userIdToScore[s.userId] = s.score;
+    }
+    // refresh ui.
+    userNumber.value = users.length;
   }
 
   @override
@@ -82,7 +94,8 @@ class GameSettingsBlankItRight extends GameSettings {
       Obx(() {
         List<String> userNames = [];
         for (var i = 0; i < userNumber.value; i++) {
-          userNames.add(users[i].name);
+          final user = users[i];
+          userNames.add('${user.name}(${userIdToScore[user.id!] ?? 0})');
         }
         return RowWidget.buildCupertinoPicker(
           I18nKey.editor.tr,

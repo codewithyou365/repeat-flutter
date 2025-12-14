@@ -2145,6 +2145,28 @@ class _$GameUserScoreDao extends GameUserScoreDao {
   }
 
   @override
+  Future<List<GameUserScore>> list(
+    List<int> userIds,
+    GameType gameType,
+  ) async {
+    const offset = 2;
+    final _sqliteVariablesForUserIds =
+        Iterable<String>.generate(userIds.length, (i) => '?${i + offset}')
+            .join(',');
+    return _queryAdapter.queryList(
+        'SELECT * FROM GameUserScore WHERE userId in (' +
+            _sqliteVariablesForUserIds +
+            ') AND gameType = ?1',
+        mapper: (Map<String, Object?> row) => GameUserScore(
+            userId: row['userId'] as int,
+            gameType: _gameTypeConverter.decode(row['gameType'] as int),
+            score: row['score'] as int,
+            createDate: _dateTimeConverter.decode(row['createDate'] as int),
+            id: row['id'] as int?),
+        arguments: [_gameTypeConverter.encode(gameType), ...userIds]);
+  }
+
+  @override
   Future<void> insertOrFail(GameUserScore entity) async {
     await _gameUserScoreInsertionAdapter.insert(
         entity, OnConflictStrategy.fail);
