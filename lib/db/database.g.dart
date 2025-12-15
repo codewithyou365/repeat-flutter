@@ -2134,6 +2134,19 @@ class _$GameUserScoreDao extends GameUserScoreDao {
   }
 
   @override
+  Future<List<GameUserScore>> listByUserId(int userId) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM GameUserScore WHERE userId = ?1',
+        mapper: (Map<String, Object?> row) => GameUserScore(
+            userId: row['userId'] as int,
+            gameType: _gameTypeConverter.decode(row['gameType'] as int),
+            score: row['score'] as int,
+            createDate: _dateTimeConverter.decode(row['createDate'] as int),
+            id: row['id'] as int?),
+        arguments: [userId]);
+  }
+
+  @override
   Future<GameUserScore?> get(
     int userId,
     GameType gameType,

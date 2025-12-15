@@ -21,6 +21,12 @@ abstract class GameUserScoreDao {
 
   @Query(
     'SELECT * FROM GameUserScore '
+    'WHERE userId = :userId',
+  )
+  Future<List<GameUserScore>> listByUserId(int userId);
+
+  @Query(
+    'SELECT * FROM GameUserScore '
     'WHERE userId = :userId AND gameType = :gameType '
     'LIMIT 1',
   )

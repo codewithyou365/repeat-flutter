@@ -14,7 +14,9 @@ import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/blank
 import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/blank_it_right_1_content.dart';
 import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/blank_it_right_0_settings.dart';
 import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/blank_it_right_3_submit.dart';
+import 'package:repeat_flutter/logic/game_server/controller/game_user_score.dart';
 import 'package:repeat_flutter/logic/game_server/controller/game_user_score_history.dart';
+import 'package:repeat_flutter/logic/game_server/controller/game_user_score_minus.dart';
 import 'package:repeat_flutter/logic/game_server/controller/type/type_verse_content.dart';
 import 'package:repeat_flutter/logic/game_server/controller/type/type_game_settings.dart';
 import 'package:repeat_flutter/logic/widget/game/game_state.dart';
@@ -46,7 +48,9 @@ class WebServer {
       server.controllers[Path.heart] = (request) => withGameUser(request, heart);
       server.controllers[Path.gameUserHistory] = (request) => withGameUser(request, gameUserHistory);
       server.controllers[Path.submit] = (request) => withGameUser(request, submit);
+      server.controllers[Path.gameUserScore] = (request) => withGameUser(request, gameUserScore);
       server.controllers[Path.gameUserScoreHistory] = (request) => withGameUser(request, gameUserScoreHistory);
+      server.controllers[Path.gameUserScoreMinus] = (request) => withGameUser(request, gameUserScoreMinus);
       server.controllers[Path.typeGameSettings] = (request) => withGameUserAndGameType(request, GameType.type, typeGameSettings);
       server.controllers[Path.typeVerseContent] = (request) => withGameUserAndGameType(request, GameType.type, typeVerseContent);
       server.controllers[Path.blankItRightSettings] = (request) => withGameUserAndGameType(request, GameType.blankItRight, blankItRightSettings);

@@ -3,7 +3,13 @@
       :title="t('score')"
       left-show
       @click-back="onClickBack"
-  />
+  >
+    <template #right>
+      <router-link to="/game_score_minus">
+        <Shop width="16px"></Shop>
+      </router-link>
+    </template>
+  </nut-navbar>
   <nut-pull-refresh
       v-model="isRefreshing"
       :loading-txt="t('loading')"
@@ -69,6 +75,7 @@ import {client, Request} from "../api/ws.ts";
 import {Path} from "../utils/constant.ts";
 import {GameUserScoreHistoryReq} from "../vo/GameUserScoreHistoryReq.ts";
 import {showToast} from '@nutui/nutui'
+import {Shop} from "@nutui/icons-vue";
 
 const tipDialogVisible = ref(false);
 const tipDialogContent = ref('');
