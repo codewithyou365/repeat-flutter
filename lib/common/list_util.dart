@@ -1,6 +1,19 @@
 import 'dart:convert' as convert;
 
 class ListUtil {
+  static T? getValue<T>(List<Map<String, dynamic>?> v, String key) {
+    for (final m in v) {
+      if (m == null) {
+        continue;
+      }
+      final value = m[key];
+      if (value is T) {
+        return value;
+      }
+    }
+    return null;
+  }
+
   static List<List<String>> toListList(String? json) {
     try {
       var decodedJson = convert.jsonDecode(json ?? "[]");

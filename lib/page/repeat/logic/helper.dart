@@ -261,28 +261,19 @@ class Helper {
     return ret;
   }
 
+  String? getString(String key) {
+    return ListUtil.getValue<String>(
+      [
+        getCurrVerseMap(),
+        getCurrChapterMap(),
+        getCurrBookMap(),
+      ],
+      key,
+    );
+  }
+
   String? getCurrViewName() {
-    String? ret;
-    var m = getCurrVerseMap();
-    if (m != null && m['s'] != null) {
-      ret = m['s'] as String;
-    }
-    if (ret == null) {
-      m = getCurrChapterMap();
-      if (m != null && m['s'] != null) {
-        ret = m['s'] as String;
-      }
-    }
-    if (ret == null) {
-      m = getCurrBookMap();
-      if (m != null && m['s'] != null) {
-        ret = m['s'] as String;
-      }
-    }
-    if (ret != null) {
-      return ret.toLowerCase();
-    }
-    return null;
+    return getString('s');
   }
 
   Future<bool> tryImportMedia({

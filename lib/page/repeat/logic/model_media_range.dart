@@ -1,9 +1,13 @@
 import 'dart:convert';
 
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/book_help.dart';
+import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
@@ -177,5 +181,52 @@ class MediaRangeHelper {
         Snackbar.show(I18nKey.labelDataNotChange.tr);
       }
     };
+  }
+
+  static VerseShow? improveLastCopyContent(VerseShow v) {
+    final c = ChapterHelp.getCache(v.chapterId);
+    final b = BookHelp.getCache(v.bookId);
+    if (c == null) {
+      return null;
+    }
+    if (b == null) {
+      return null;
+    }
+    var vm = jsonDecode(v.verseContent);
+    String? viewName = ListUtil.getValue<String>([
+      vm,
+      jsonDecode(c.chapterContent),
+      jsonDecode(b.bookContent),
+    ], 's');
+
+    if (viewName == null) {
+      return null;
+    }
+    RepeatViewEnum? view = RepeatViewEnum.values.firstWhereOrNull((e) => e.name == viewName);
+    switch (view) {
+      case RepeatViewEnum.audio:
+      case RepeatViewEnum.video:
+        final Map<String, dynamic> m = Map<String, dynamic>.from(vm);
+        if (vm['aEnd'] != null) {
+          final int aEndMs = Time.parseTimeToMilliseconds(vm['aEnd']).toInt();
+          final int aStartMs = aEndMs - 500;
+
+          m['aStart'] = Time.convertMsToString(aStartMs);
+          m['aEnd'] = Time.convertMsToString(aStartMs + 6000);
+        }
+
+        if (vm['qEnd'] != null) {
+          final int qEndMs = Time.parseTimeToMilliseconds(vm['qEnd']).toInt();
+          final int qStartMs = qEndMs - 500;
+
+          m['qStart'] = Time.convertMsToString(qStartMs);
+          m['qEnd'] = Time.convertMsToString(qStartMs + 6000);
+        }
+        var newVerseShow = v.copy();
+        newVerseShow.verseContent = jsonEncode(m);
+        return newVerseShow;
+      default:
+        return null;
+    }
   }
 }

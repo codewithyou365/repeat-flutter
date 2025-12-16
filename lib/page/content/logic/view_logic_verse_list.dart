@@ -18,6 +18,7 @@ import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/logic/view_logic.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
+import 'package:repeat_flutter/page/repeat/logic/model_media_range.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -217,11 +218,17 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     }
   }
 
-  Future<void> copy({required VerseShow verse, required bool below}) async {
+  Future<void> copy({required VerseShow verse, required bool below, bool? last}) async {
     await showOverlay(() async {
       int verseIndex = verse.verseIndex;
       if (below) {
         verseIndex++;
+      }
+      if (last != null && last && below) {
+        var newVerse = MediaRangeHelper.improveLastCopyContent(verse);
+        if (newVerse != null) {
+          verse = newVerse;
+        }
       }
       int verseId = await Db().db.verseDao.addVerse(verse, verseIndex);
       if (verseId == 0) {
@@ -458,7 +465,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                       ),
                                       MsgBox.button(
                                         text: I18nKey.btnBelow.tr,
-                                        onPressed: () => copy(verse: verse, below: true),
+                                        onPressed: () => copy(verse: verse, below: true, last: index + 1 == list.length),
                                       ),
                                     ],
                                   ),

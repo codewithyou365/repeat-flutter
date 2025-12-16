@@ -33,11 +33,28 @@ class VerseShow {
   String toChapterPos() {
     return '$bookName-${chapterIndex + 1}';
   }
+
   String toVersePos() {
     return '-${verseIndex + 1}';
   }
 
   int toSort() {
     return bookSort * 10000000000 + chapterIndex * 100000 + verseIndex;
+  }
+
+  VerseShow copy() {
+    return VerseShow(
+      verseId: verseId,
+      bookId: bookId,
+      bookName: bookName,
+      bookSort: bookSort,
+      verseContent: verseContent,
+      verseContentVersion: verseContentVersion,
+      chapterId: chapterId,
+      chapterIndex: chapterIndex,
+      verseIndex: verseIndex,
+      learnDate: learnDate,
+      progress: progress,
+    );
   }
 }
