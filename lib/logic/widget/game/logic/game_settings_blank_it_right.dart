@@ -39,10 +39,19 @@ class GameSettingsBlankItRight extends GameSettings {
         if (!users.any((user) => user.id == wsEvent.id)) {
           users = await Db().db.gameUserDao.getAllUser();
         }
+        await initUsers();
       }
-      await setScore();
     });
 
+    await initUsers();
+
+    var ki = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForIgnorePunctuation);
+    if (ki != null) {
+      ignoringPunctuation.value = ki == 1;
+    }
+  }
+
+  Future<void> initUsers() async {
     var userId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForEditorUserId);
     if (users.isNotEmpty) {
       var index = users.indexWhere((u) => u.id == userId);
@@ -50,13 +59,12 @@ class GameSettingsBlankItRight extends GameSettings {
         index = 0;
       }
       await setUser(index);
+      if (userId == null) {
+        List<int> userIds = users.map((user) => user.getId()).toList();
+        Step.blanking(userIds: userIds);
+      }
     }
     await setScore();
-
-    var ki = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForIgnorePunctuation);
-    if (ki != null) {
-      ignoringPunctuation.value = ki == 1;
-    }
   }
 
   Future<void> setScore() async {

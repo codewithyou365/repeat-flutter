@@ -7,7 +7,7 @@ class BlankItRightUtils {
     }
     final blankItRightList = verseMap[MapKeyEnum.blankItRightList.name] as List<dynamic>;
     var blankItRightUsingIndex = 0;
-    if (verseMap[MapKeyEnum.blankItRightUsingIndex.name] == null) {
+    if (verseMap[MapKeyEnum.blankItRightUsingIndex.name] != null) {
       blankItRightUsingIndex = verseMap[MapKeyEnum.blankItRightUsingIndex.name] as int;
     }
     final String a = verseMap['a'] ?? '';
