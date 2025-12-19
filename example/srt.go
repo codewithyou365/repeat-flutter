@@ -10,6 +10,7 @@ import (
 )
 
 const ListenMode = "l"
+const ListenFullMode = "lf"
 const QaMode = "qa"
 const NormalMode = "n"
 const NormalWithPerfectPunctuationMode = "npp"
@@ -58,6 +59,9 @@ func main() {
 			} else if line == ListenMode {
 				mode = ListenMode
 				continue
+			} else if line == ListenFullMode {
+				mode = ListenFullMode
+				continue
 			} else if line == NormalWithPerfectPunctuationMode {
 				mode = NormalWithPerfectPunctuationMode
 				continue
@@ -82,7 +86,7 @@ func main() {
 				fmt.Println(curr.A)
 			}
 			if offset%3 == 1 {
-				if mode == ListenMode {
+				if mode == ListenMode || mode == ListenFullMode {
 					se := strings.Split(line, "-->")
 					if curr.QStart == "" {
 						curr.QStart = strings.TrimSpace(se[0])
@@ -111,7 +115,7 @@ func main() {
 				}
 			}
 			if offset%3 == 2 {
-				if mode == ListenMode {
+				if mode == ListenMode || mode == ListenFullMode {
 					curr.A = line
 					segments = append(segments, curr)
 					curr = &segment{}
@@ -214,6 +218,26 @@ func main() {
 				}
 				segments[i].QStart = forStart(cs, middleGap)
 				segments[i-1].QEnd = forEnd(pe, middleGap)
+			}
+		}
+		const Padding = 500
+		if mode == ListenFullMode {
+			start := timeRangeToMillis(segments[0].QStart)
+			segments[0].QStart = forStart(start, Padding)
+
+			for i := 1; i < len(segments); i++ {
+				prevEnd := timeRangeToMillis(segments[i-1].QEnd)
+
+				origStart := timeRangeToMillis(segments[i].QStart)
+				origEnd := timeRangeToMillis(segments[i].QEnd)
+
+				newStart := origStart - Padding
+				if newStart < prevEnd {
+					newStart = prevEnd
+				}
+
+				segments[i].QStart = millisToTimeRange(newStart)
+				segments[i].QEnd = millisToTimeRange(origEnd + Padding)
 			}
 		}
 	}
