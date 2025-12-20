@@ -68,7 +68,7 @@ class BookEditorLogic<T extends GetxController> {
         state.verseIndex = state.args.verseIndex;
         state.bookId = state.args.bookId;
         state.bookName = state.args.bookName;
-        openCredential();
+        tryRefreshCredential();
         clearActiveDownloads();
         await _initEditorDir(state.bookId);
         await _startHttpService();
@@ -135,7 +135,7 @@ class BookEditorLogic<T extends GetxController> {
     }
   }
 
-  Future<void> openCredential() async {
+  Future<String> tryRefreshCredential() async {
     String? credential = await Db().db.kvDao.getStr(K.credential);
     int? credentialExpireTime = await Db().db.kvDao.getInt(K.credentialExpireTime);
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -146,6 +146,11 @@ class BookEditorLogic<T extends GetxController> {
       final expireAt = now + const Duration(hours: 4).inMilliseconds;
       await Db().db.kvDao.insertKv(Kv(K.credentialExpireTime, expireAt.toString()));
     }
+    return credential;
+  }
+
+  Future<void> openCredentialDialog() async {
+    String credential = await tryRefreshCredential();
     state.user.value = credential.substring(0, 3);
     state.password.value = credential.substring(3);
     MsgBox.myDialog(
