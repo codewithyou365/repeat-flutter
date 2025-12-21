@@ -948,6 +948,7 @@
         localStorage.setItem('historyBadge', badge);
         updateHistoryBadge();
         try {
+            openLoading();
             const res = await fetch('/commit', {
                 method: 'POST',
                 headers: {
@@ -960,7 +961,13 @@
             alert(text);
             await initBook();
         } catch (err) {
-            alert("Error sending data: " + err);
+            if (err.toString() === 'TypeError: Failed to fetch') {
+                alert("The network has been closed");
+            } else {
+                alert("Error sending data: " + err);
+            }
+        } finally {
+            closeLoading();
         }
     }
 
