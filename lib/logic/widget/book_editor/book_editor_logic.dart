@@ -6,13 +6,16 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/await_util.dart';
 import 'package:repeat_flutter/common/ip.dart';
 import 'package:repeat_flutter/common/path.dart';
-import 'package:repeat_flutter/common/ssl.dart';
 import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/common/url.dart';
+import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
+import 'package:repeat_flutter/logic/model/chapter_show.dart';
+import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/widget/book_editor/logic/history.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -27,21 +30,53 @@ import 'logic/delete.dart';
 import 'logic/play.dart';
 import 'logic/upload.dart';
 import 'logic/editor.dart';
+import 'ws/user.dart';
+import 'ws/web_server.dart';
 
 class BookEditorLogic<T extends GetxController> {
   static const int port = 40321;
   static const String id = "BookEditorLogic";
   final BookEditorState state = BookEditorState();
   final BookEditorPage page = BookEditorPage<T>();
-  HttpServer? _httpServer;
   Directory? editorDir;
   final T parentLogic;
+  late final WebServer server;
+  final SubList<int> bookVersionSub = [];
+  final SubList<ChapterShow> bookVersionWithChapterSub = [];
+  final SubList<VerseShow> bookVersionWithVerseSub = [];
 
-  BookEditorLogic(this.parentLogic);
+  BookEditorLogic(this.parentLogic) {
+    server = WebServer();
+  }
+
+  void onEvent() {
+    bookVersionSub.on([EventTopic.deleteBook, EventTopic.updateBookContent], (int? bookId) {
+      if (bookId != null) {
+        pushRefresh(bookId);
+      }
+    });
+
+    bookVersionWithChapterSub.on([EventTopic.addChapter, EventTopic.deleteChapter, EventTopic.updateChapterContent], (ChapterShow? chapterShow) {
+      if (chapterShow == null) return;
+      pushRefresh(chapterShow.bookId);
+    });
+
+    bookVersionWithVerseSub.on([EventTopic.addVerse, EventTopic.deleteVerse, EventTopic.updateVerseContent, EventTopic.updateVerseProgress], (VerseShow? verseShow) {
+      if (verseShow == null) return;
+      pushRefresh(verseShow.bookId);
+    });
+  }
+
+  void offEvent() {
+    bookVersionSub.off();
+    bookVersionWithChapterSub.off();
+    bookVersionWithVerseSub.off();
+  }
 
   Future<void> open(BookEditorArgs args) async {
     state.args = args;
-    return page.open(this);
+
+    await page.open(this);
   }
 
   String get title {
@@ -49,6 +84,16 @@ class BookEditorLogic<T extends GetxController> {
       return "${I18nKey.advancedEdit.tr}:${state.bookName}";
     }
     return I18nKey.advancedEdit.tr;
+  }
+
+  void pushRefresh(int bookId) {
+    if (bookId == state.bookId) {
+      server.broadcast(
+        message.Request(
+          path: "refresh",
+        ),
+      );
+    }
   }
 
   Future<void> _initEditorDir(int bookId) async {
@@ -83,6 +128,19 @@ class BookEditorLogic<T extends GetxController> {
     _stopHttpService();
   }
 
+  Future<EditorUser?> auth(HttpRequest request) async {
+    final username = state.user.value;
+    final password = state.password.value;
+    final authHeader = request.headers.value(HttpHeaders.authorizationHeader);
+    final expectedAuth = 'Basic ${base64.encode(utf8.encode('$username:$password'))}';
+
+    if (authHeader == expectedAuth) {
+      return EditorUser(credential: int.parse("$username$password"));
+    } else {
+      return null;
+    }
+  }
+
   Future<void> _startHttpService() async {
     List<String> ips = [];
     try {
@@ -93,12 +151,8 @@ class BookEditorLogic<T extends GetxController> {
     }
 
     try {
-      var sslPath = await DocPath.getSslPath();
-      var context = SelfSsl.generateSecurityContext(sslPath);
-      _httpServer = await HttpServer.bindSecure(InternetAddress.anyIPv4, port, context);
-      _httpServer!.listen((HttpRequest request) async {
-        _handleRequest(request);
-      });
+      server.start(port, auth, _handleRequest);
+      onEvent();
     } catch (e) {
       Snackbar.show('Error starting HTTPS service: $e');
       return;
@@ -127,11 +181,14 @@ class BookEditorLogic<T extends GetxController> {
   }
 
   Future<void> _stopHttpService() async {
-    if (_httpServer != null) {
-      await _httpServer!.close();
+    try {
+      await server.stop();
+      offEvent();
       Snackbar.show('HTTPS service stopped');
-      _httpServer = null;
       parentLogic.update([id]);
+    } catch (e) {
+      Snackbar.show('Error starting HTTPS service: $e');
+      return;
     }
   }
 
@@ -174,7 +231,7 @@ class BookEditorLogic<T extends GetxController> {
     );
   }
 
-  void _handleRequest(HttpRequest request) async {
+  Future<void> _handleRequest(HttpRequest request) async {
     final response = request.response;
     final username = state.user.value;
     final password = state.password.value;
@@ -237,6 +294,7 @@ class BookEditorLogic<T extends GetxController> {
       "/mode-json.js": true,
       "/theme-github.js": true,
       "/worker-json.js": true,
+      "/ws.js": true,
     };
 
     if (map[path] == true) {

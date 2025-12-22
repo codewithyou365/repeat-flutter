@@ -274,8 +274,9 @@
         <div class="spinner"></div>
     </div>
 </div>
+<script type="module">
+    import {url, client, ClientStatusName, Request, Response} from '/ws.js';
 
-<script>
     var editor = ace.edit("editor");
     editor.session.setMode("ace/mode/json");
     editor.setTheme("ace/theme/github");
@@ -301,6 +302,7 @@
         }
     });
     var bookVersion = -2;
+    var initialValue = '';
     var Vim = ace.require("ace/keyboard/vim").Vim;
     Vim.map("<Space>", "<Leader>", "normal");
     Vim.mapCommand("<Leader>fd", "action", "aceCommand", {name: "format"}, {context: "normal"});
@@ -818,6 +820,7 @@
     initRelativeNumbers();
     updateHistoryBadge();
 
+
     async function initFiles() {
         try {
             const res = await fetch('/browse', {
@@ -855,11 +858,16 @@
             const res = await fetch('/book', {
                 method: 'POST',
             });
+            if (res.status !== 200) {
+                return;
+            }
             bookVersion = res.headers.get('book-cache-version');
             if (bookVersion) {
                 bookVersion = Number(bookVersion);
             }
-            const initialValue = await res.text();
+
+            initialValue = await res.text();
+
             try {
                 var parsed = JSON.parse(initialValue);
                 editor.setValue(JSON.stringify(parsed, null, 2), -1);
@@ -1015,6 +1023,52 @@
             }
         }
     }
+
+    let finishDealReceivedWsMsg = true;
+    const dealReceivedWsMsg = async (req) => {
+        if (!finishDealReceivedWsMsg) {
+            return new Response();
+        }
+        const data = editor.getValue();
+        let jsonData;
+        try {
+            jsonData = JSON.parse(data);
+        } catch (err) {
+            return new Response();
+        }
+        const currentValue = JSON.stringify(jsonData);
+        if (initialValue !== currentValue) {
+            return new Response();
+        }
+        finishDealReceivedWsMsg = false;
+        try {
+            await initBook();
+        } finally {
+            finishDealReceivedWsMsg = true;
+        }
+
+        return new Response();
+    };
+
+    function initWs() {
+        client.controllers.set('refresh', dealReceivedWsMsg);
+        client.controllers.set('kick', dealReceivedWsMsg);
+        client.start(url, (status) => {
+            console.log('WS status:', ClientStatusName.get(status));
+        }, async () => {
+            return await client.send(new Request({path: 'heart'}), false);
+        });
+    }
+
+    initWs();
+    window.toggleVimMode = toggleVimMode;
+    window.toggleRelativeNumbers = toggleRelativeNumbers;
+    window.toggleSettingsMenu = toggleSettingsMenu;
+    window.showNotification = showNotification;
+    window.formatJSON = formatJSON;
+    window.commit = commit;
+    window.uploadFile = uploadFile;
+    window.openHistory = openHistory;
 </script>
 </body>
 </html>

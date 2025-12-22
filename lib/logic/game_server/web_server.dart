@@ -35,7 +35,7 @@ class WebServer {
   final List<String> ips = [];
 
   WebServer() {
-    server = Server(wsEvent: wsEvent);
+    server = Server(wsEvent: wsEvent, kickPath: Path.kick);
   }
 
   Future<int> start() async {

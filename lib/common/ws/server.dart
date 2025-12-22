@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:repeat_flutter/common/ssl.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/game_server/constant.dart';
 
 import 'node.dart';
 
@@ -95,6 +94,7 @@ class Nodes<User extends UserId> {
 
 class Server<User extends UserId> {
   final Function(WsEvent) wsEvent;
+  final String kickPath;
   final bool cors;
 
   var status = ServerStatus.working;
@@ -105,6 +105,7 @@ class Server<User extends UserId> {
 
   Server({
     required this.wsEvent,
+    required this.kickPath,
     this.cors = true,
   }) {
     nodes = Nodes(wsEvent: wsEvent);
@@ -182,7 +183,7 @@ class Server<User extends UserId> {
     final hashCode = socket.hashCode;
     final node = Node(socket, user);
     if (user == null) {
-      Request req = Request(path: Path.kick);
+      Request req = Request(path: kickPath);
       node.send(req, true);
       node.stop();
       return;
