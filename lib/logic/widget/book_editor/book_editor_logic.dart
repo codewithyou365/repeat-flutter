@@ -124,10 +124,6 @@ class BookEditorLogic<T extends GetxController> {
     });
   }
 
-  void clear() {
-    _stopHttpService();
-  }
-
   Future<EditorUser?> auth(HttpRequest request) async {
     final username = state.user.value;
     final password = state.password.value;
@@ -182,8 +178,8 @@ class BookEditorLogic<T extends GetxController> {
 
   Future<void> _stopHttpService() async {
     try {
-      await server.stop();
       offEvent();
+      await server.stop();
       Snackbar.show('HTTPS service stopped');
       parentLogic.update([id]);
     } catch (e) {

@@ -67,7 +67,7 @@ class RepeatPage extends StatelessWidget {
       if (landscape) {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
       } else {
-        if (state.helper.concentrationMode) {
+        if (state.helper.focusMode) {
           SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
         } else {
           SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
@@ -169,7 +169,7 @@ class RepeatPage extends StatelessWidget {
               ),
               PopupMenuItem<String>(
                 onTap: logic.switchConcentrationMode,
-                child: Text("${I18nKey.btnFocus.tr}(${state.helper.concentrationMode})"),
+                child: Text("${I18nKey.btnFocus.tr}(${state.helper.focusMode})"),
               ),
               PopupMenuItem<String>(
                 onTap: logic.switchEditMode,
@@ -190,7 +190,7 @@ class RepeatPage extends StatelessWidget {
   Widget topBarTitle({required RepeatLogic logic, double? fontSize}) {
     var state = logic.state;
     String text = '';
-    if (!state.helper.concentrationMode && logic.repeatLogic != null) {
+    if (!state.helper.focusMode && logic.repeatLogic != null) {
       text = logic.repeatLogic!.titleLabel;
     }
     return Text(

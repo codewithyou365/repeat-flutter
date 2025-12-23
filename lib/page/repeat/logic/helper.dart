@@ -20,6 +20,9 @@ import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
+import 'package:repeat_flutter/logic/widget/media_share/media_share_args.dart';
+import 'package:repeat_flutter/logic/widget/media_share/media_share_logic.dart';
+import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -29,6 +32,7 @@ import 'repeat_flow.dart';
 class Helper {
   bool initialized = false;
   late RepeatFlow logic;
+  MediaShareLogic mediaShareLogic = MediaShareLogic();
   late String rootPath;
 
   late double screenWidth;
@@ -44,7 +48,7 @@ class Helper {
   late Widget? Function(QaType type) text;
   late Widget Function() closeEyesPanel;
 
-  bool concentrationMode = true;
+  bool focusMode = true;
   bool edit = false;
   bool enableReloadMedia = true;
   bool resetMediaStart = true;
@@ -52,7 +56,6 @@ class Helper {
   Map<int, Map<String, dynamic>> bookMapCache = {};
 
   Map<int, Map<String, dynamic>> chapterMapCache = {};
-  Map<int, List<String>> chapterPathCache = {};
 
   Map<int, Map<String, dynamic>> verseMapCache = {};
 
@@ -68,7 +71,6 @@ class Helper {
     reimportBookSub.on([EventTopic.reimportBook], (int? id) {
       bookMapCache.remove(id!);
       chapterMapCache.clear();
-      chapterPathCache.clear();
       verseMapCache.clear();
     });
     updateBookContentSub.on([EventTopic.updateBookContent], (int? id) {
@@ -77,7 +79,6 @@ class Helper {
     updateChapterContentSub.on([EventTopic.updateChapterContent], (ChapterShow? v) {
       if (v == null) return;
       chapterMapCache.remove(v.chapterId);
-      chapterPathCache.remove(v.chapterId);
     });
     updateVerseContentSub.on([EventTopic.updateVerseContent], (VerseShow? v) {
       if (v == null) return;
@@ -239,25 +240,32 @@ class Helper {
     return BookContent.fromJson(map);
   }
 
-  List<String>? getChapterPaths() {
-    if (logic.currVerse == null) {
-      return null;
-    }
-    List<String>? ret = chapterPathCache[logic.currVerse!.chapterId];
-    if (ret != null) {
+  List<String> getRelativePaths() {
+    var raw = ListUtil.getValue<List<dynamic>>(
+      [
+        getCurrVerseMap(),
+        getCurrChapterMap(),
+        getCurrBookMap(),
+      ],
+      'd',
+    );
+    List<String> ret = [];
+    var downloads = DownloadContent.toList(raw);
+    if (downloads == null) {
       return ret;
     }
-    var doc = getCurrChapterMap();
-    if (doc == null) {
-      return null;
-    }
-    ChapterContent chapter = ChapterContent.fromJson(doc);
-    var downloads = chapter.download ?? [];
-    ret = [];
     for (var download in downloads) {
-      ret.add(rootPath.joinPath(DocPath.getRelativePath(logic.currVerse!.bookId)).joinPath(download.path));
+      ret.add(download.path);
     }
-    chapterPathCache[logic.currVerse!.chapterId] = ret;
+    return ret;
+  }
+
+  List<String> getPaths() {
+    List<String> ret = [];
+    var paths = getRelativePaths();
+    for (var path in paths) {
+      ret.add(rootPath.joinPath(DocPath.getRelativePath(logic.currVerse!.bookId)).joinPath(path));
+    }
     return ret;
   }
 
@@ -341,5 +349,26 @@ class Helper {
       );
       return false;
     }
+  }
+
+  MediaShareCallback? openMediaShare() {
+    return () {
+      final verse = getCurrVerse();
+      if (verse == null) {
+        return;
+      }
+      String path = "";
+      List<String> paths = getRelativePaths();
+      if (paths.isNotEmpty) {
+        path = paths.first;
+      } else {
+        return;
+      }
+      mediaShareLogic.open(MediaShareArgs(bookId: verse.bookId, path: path));
+    };
+  }
+
+  void closeMediaShareWeb() {
+    mediaShareLogic.switchWeb(false);
   }
 }

@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/widget/slider/full_slider.dart';
 
 typedef MediaDurationMsCallback = int Function();
 typedef MediaPlayCallback = Future<void> Function(Duration position);
 typedef MediaStopCallback = Future<void> Function();
 typedef MediaEditCallback = Future<void> Function(int ms);
+typedef MediaShareCallback = void Function();
 typedef MediaAdjustSpeedCallback = Future<void> Function(double speed);
 typedef MediaGetSpeedCallback = double Function();
 
@@ -20,6 +23,7 @@ class MediaBar extends StatefulWidget {
   final MediaPlayCallback onPlay;
   final MediaStopCallback onStop;
   final MediaEditCallback? onEdit;
+  final MediaShareCallback? onShare;
   final MediaAdjustSpeedCallback? onAdjustSpeed;
   final MediaGetSpeedCallback? getSpeed;
   final bool hideTime;
@@ -33,11 +37,12 @@ class MediaBar extends StatefulWidget {
     required this.onPlay,
     required this.onStop,
     required this.onEdit,
+    required this.onShare,
     required this.onAdjustSpeed,
     required this.getSpeed,
     required this.hideTime,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   MediaBarState createState() => MediaBarState();
@@ -50,7 +55,8 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
   double _previousDragOffset = 0.0;
   bool _isPlaying = false;
   double _currentSpeed = 1.0;
-
+  static bool initMenuWidth = false;
+  static double menuWidth = 224;
   late final AnimationController _animController;
 
   @override
@@ -186,6 +192,17 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
 
   @override
   Widget build(BuildContext context) {
+    bool hasMoreOptions = widget.onShare != null || widget.onAdjustSpeed != null;
+    if (!initMenuWidth) {
+      final Size screenSize = MediaQuery.of(context).size;
+      double screenWidth = screenSize.width;
+      final double screenHeight = screenSize.height;
+      if (screenWidth > screenHeight) {
+        screenWidth = screenHeight;
+      }
+      menuWidth = screenWidth / 2;
+      initMenuWidth = true;
+    }
     return Stack(
       children: [
         GestureDetector(
@@ -234,54 +251,52 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
                     widget.onEdit!(widget.verseStartMs + (-_blockOffset / MediaBar.pixelPerMs).floor());
                   },
                 ),
-              if (widget.onAdjustSpeed != null)
-                PopupMenuButton<double>(
-                  icon: const Icon(Icons.speed, size: 20),
-                  onSelected: (double speed) async {
-                    await widget.onAdjustSpeed!(speed);
-                    setState(() {
-                      _currentSpeed = widget.getSpeed != null ? widget.getSpeed!() : speed;
-                    });
-                    if (_isPlaying) {
-                      await _playAtPosition();
+              if (hasMoreOptions)
+                PopupMenuButton<String>(
+                  constraints: BoxConstraints(
+                    minWidth: menuWidth,
+                    maxWidth: menuWidth,
+                  ),
+                  padding: EdgeInsets.zero,
+                  icon: const Icon(Icons.more_vert, size: 20),
+                  onSelected: (String value) {
+                    if (value == 'share' && widget.onShare != null) {
+                      widget.onShare!();
                     }
                   },
                   itemBuilder: (BuildContext context) {
-                    final currentSpeed = widget.getSpeed != null ? widget.getSpeed!() : _currentSpeed;
-                    return [
-                      PopupMenuItem<double>(
-                        value: 0.25,
-                        child: Text('0.25x', style: TextStyle(fontWeight: currentSpeed == 0.25 ? FontWeight.bold : FontWeight.normal)),
-                      ),
-                      PopupMenuItem<double>(
-                        value: 0.5,
-                        child: Text('0.5x', style: TextStyle(fontWeight: currentSpeed == 0.5 ? FontWeight.bold : FontWeight.normal)),
-                      ),
-                      PopupMenuItem<double>(
-                        value: 0.75,
-                        child: Text('0.75x', style: TextStyle(fontWeight: currentSpeed == 0.75 ? FontWeight.bold : FontWeight.normal)),
-                      ),
-                      PopupMenuItem<double>(
-                        value: 1.0,
-                        child: Text('1x', style: TextStyle(fontWeight: currentSpeed == 1.0 ? FontWeight.bold : FontWeight.normal)),
-                      ),
-                      PopupMenuItem<double>(
-                        value: 1.25,
-                        child: Text('1.25x', style: TextStyle(fontWeight: currentSpeed == 1.25 ? FontWeight.bold : FontWeight.normal)),
-                      ),
-                      PopupMenuItem<double>(
-                        value: 1.5,
-                        child: Text('1.5x', style: TextStyle(fontWeight: currentSpeed == 1.5 ? FontWeight.bold : FontWeight.normal)),
-                      ),
-                      PopupMenuItem<double>(
-                        value: 1.75,
-                        child: Text('1.75x', style: TextStyle(fontWeight: currentSpeed == 1.75 ? FontWeight.bold : FontWeight.normal)),
-                      ),
-                      PopupMenuItem<double>(
-                        value: 2.0,
-                        child: Text('2.0x', style: TextStyle(fontWeight: currentSpeed == 2.0 ? FontWeight.bold : FontWeight.normal)),
-                      ),
-                    ];
+                    List<PopupMenuEntry<String>> items = [];
+                    if (widget.onAdjustSpeed != null) {
+                      items.add(
+                        _SpeedSliderEntry(
+                          currentSpeed: _currentSpeed,
+                          onSpeedChanged: (double speed) async {
+                            await widget.onAdjustSpeed!(speed);
+                            setState(() {
+                              _currentSpeed = widget.getSpeed != null ? widget.getSpeed!() : speed;
+                            });
+                            if (_isPlaying) {
+                              await _playAtPosition();
+                            }
+                          },
+                        ),
+                      );
+                    }
+                    if (widget.onShare != null) {
+                      if (items.isNotEmpty) {
+                        items.add(const PopupMenuDivider());
+                      }
+                      items.add(
+                        PopupMenuItem<String>(
+                          value: 'share',
+                          child: ListTile(
+                            leading: Icon(Icons.share),
+                            title: Text(I18nKey.share.tr),
+                          ),
+                        ),
+                      );
+                    }
+                    return items;
                   },
                 ),
               IconButton(
@@ -313,6 +328,84 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
       _blockOffset += delta;
       _previousDragOffset = currentOffset;
     });
+  }
+}
+
+class _SpeedSliderEntry extends PopupMenuEntry<String> {
+  final double currentSpeed;
+  final Function(double) onSpeedChanged;
+
+  const _SpeedSliderEntry({
+    required this.currentSpeed,
+    required this.onSpeedChanged,
+  });
+
+  @override
+  double get height => 60.0;
+
+  @override
+  bool represents(String? value) => false;
+
+  @override
+  _SpeedSliderEntryState createState() => _SpeedSliderEntryState();
+}
+
+class _SpeedSliderEntryState extends State<_SpeedSliderEntry> {
+  late double _tempSpeed;
+
+  @override
+  void initState() {
+    super.initState();
+    _tempSpeed = widget.currentSpeed;
+  }
+
+  String _formatSpeed(double speed) {
+    String fixed = speed.toStringAsFixed(2);
+    if (fixed.endsWith('.00')) {
+      return fixed.substring(0, fixed.length - 3);
+    } else if (fixed.endsWith('0')) {
+      return fixed.substring(0, fixed.length - 1);
+    }
+    return fixed;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        FullSlider(
+          width: MediaBarState.menuWidth,
+          height: widget.height,
+          min: 0.25,
+          max: 2.0,
+          divisions: 7,
+          value: _tempSpeed,
+          onChanged: (value) {
+            setState(() {
+              _tempSpeed = double.parse(value.toStringAsFixed(2));
+            });
+          },
+          onChangeEnd: (value) {
+            widget.onSpeedChanged(_tempSpeed);
+          },
+        ),
+        const Positioned(
+          left: 8.0,
+          child: Text(
+            'Speed',
+            style: TextStyle(fontSize: 14),
+          ),
+        ),
+        Positioned(
+          right: 8.0,
+          child: Text(
+            '${_formatSpeed(_tempSpeed)}x',
+            style: const TextStyle(fontSize: 14),
+          ),
+        ),
+      ],
+    );
   }
 }
 

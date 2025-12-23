@@ -189,7 +189,9 @@ class ConfigEn extends Config {
     put(I18nKey.labelTotalTime, "Total Time");
     put(I18nKey.labelMin, "Min");
     put(I18nKey.labelNote, "Note");
-    put(I18nKey.labelShare, "Share");
+    put(I18nKey.share, "Share");
+    put(I18nKey.mediaShare, "Media Share");
+    put(I18nKey.speed, "Speed");
     put(I18nKey.labelCalendar, "Calendar");
     put(I18nKey.labelCopyTemplateCount, "Copy Template Count");
     put(I18nKey.labelVerseNeedToContainAnswer, "Verse Need To Contain Answer");

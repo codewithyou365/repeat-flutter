@@ -69,8 +69,8 @@ class RepeatViewForVideo extends RepeatView {
     }
 
     var path = '';
-    List<String>? paths = helper.getChapterPaths();
-    if (paths != null && paths.isNotEmpty) {
+    List<String> paths = helper.getPaths();
+    if (paths.isNotEmpty) {
       path = paths.first;
     }
 
@@ -199,7 +199,7 @@ class RepeatViewForVideo extends RepeatView {
     );
   }
 
-  portrait(MediaRange range) {
+  Widget portrait(MediaRange range) {
     var helper = this.helper!;
     double height = helper.screenHeight - helper.topPadding - helper.topBarHeight - mediaBarHeight - helper.bottomBarHeight;
     var q = helper.text(QaType.question);
@@ -436,13 +436,14 @@ class RepeatViewForVideo extends RepeatView {
         }
       },
       onEdit: mediaRangeHelper.mediaRangeEdit(range),
+      onShare: helper!.openMediaShare(),
       onAdjustSpeed: (double speed) async {
         await _videoPlayerController?.setPlaybackSpeed(speed);
       },
       getSpeed: () {
         return _videoPlayerController?.value.playbackSpeed ?? 1;
       },
-      hideTime: helper!.concentrationMode,
+      hideTime: helper!.focusMode,
     );
   }
 

@@ -79,7 +79,7 @@ class RepeatLogic extends GetxController {
     }
     state.helper.edit = args.defaultEdit;
     if (args.defaultEdit) {
-      state.helper.concentrationMode = false;
+      state.helper.focusMode = false;
       state.needUpdateSystemUiMode = true;
     }
     await state.helper.init(repeatLogic!);
@@ -103,6 +103,7 @@ class RepeatLogic extends GetxController {
       v.dispose();
     }
     state.helper.onClose();
+    state.helper.closeMediaShareWeb();
     bookEditor.switchWeb(false);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     if (state.enableCloseEyesMode.value != CloseEyesModeEnum.none) {
@@ -111,7 +112,7 @@ class RepeatLogic extends GetxController {
   }
 
   void switchConcentrationMode() {
-    state.helper.concentrationMode = !state.helper.concentrationMode;
+    state.helper.focusMode = !state.helper.focusMode;
     state.helper.enablePlayingPlayMedia = false;
     update([RepeatLogic.id]);
   }

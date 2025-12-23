@@ -52,7 +52,7 @@ class RepeatViewForAudio extends RepeatView {
     }
 
     var path = '';
-    List<String>? paths = helper.getChapterPaths();
+    List<String>? paths = helper.getPaths();
     if (paths != null && paths.isNotEmpty) {
       path = paths.first;
     }
@@ -191,6 +191,7 @@ class RepeatViewForAudio extends RepeatView {
         await audioPlayer.stop();
       },
       onEdit: mediaRangeHelper.mediaRangeEdit(range),
+      onShare: helper!.openMediaShare(),
       onAdjustSpeed: (double speed) async {
         try {
           await audioPlayer.setSpeed(speed);
@@ -201,7 +202,7 @@ class RepeatViewForAudio extends RepeatView {
       getSpeed: () {
         return audioPlayer.speed;
       },
-      hideTime: helper!.concentrationMode,
+      hideTime: helper!.focusMode,
     );
   }
 }

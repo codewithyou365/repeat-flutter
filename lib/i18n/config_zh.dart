@@ -189,7 +189,9 @@ class ConfigZh extends Config {
     put(I18nKey.labelTotalTime, "总计时长");
     put(I18nKey.labelMin, "分钟");
     put(I18nKey.labelNote, "笔记");
-    put(I18nKey.labelShare, "分享");
+    put(I18nKey.share, "分享");
+    put(I18nKey.mediaShare, "媒体分享");
+    put(I18nKey.speed, "速度");
     put(I18nKey.labelCalendar, "日历");
     put(I18nKey.labelCopyTemplateCount, "复制模版数量");
     put(I18nKey.labelVerseNeedToContainAnswer, "小节需要包含答案字段");
