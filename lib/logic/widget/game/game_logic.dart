@@ -49,7 +49,7 @@ class GameLogic<T extends GetxController> {
 
   Future<void> open() async {
     for (var v in gameTypeToGameSettings.values) {
-      v.onInit();
+      v.onInit(web);
     }
     sub.off();
     subAllowRegisterNumber.off();

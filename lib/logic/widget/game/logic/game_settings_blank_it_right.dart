@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
@@ -10,12 +11,17 @@ import 'package:repeat_flutter/db/entity/game_user_score.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/step.dart';
+import 'package:repeat_flutter/logic/game_server/web_server.dart';
+import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 
 import 'game_settings.dart';
 
 class GameSettingsBlankItRight extends GameSettings {
   RxBool ignoringPunctuation = RxBool(false);
+  RxBool ignoreCase = RxBool(false);
+  late WebServer web;
+  int verseId = 0;
   RxInt userNumber = RxInt(0);
   RxInt userIndex = RxInt(-1);
   List<GameUser> users = [];
@@ -24,12 +30,13 @@ class GameSettingsBlankItRight extends GameSettings {
   final SubList<Game> subNewGame = [];
 
   @override
-  Future<void> onInit() async {
+  Future<void> onInit(WebServer web) async {
+    this.web = web;
     users = await Db().db.gameUserDao.getAllUser();
-    List<int> userIds = users.map((user) => user.getId()).toList();
-    Step.blanking(userIds: userIds);
+    Step.blanking(userIds: users.map((user) => user.getId()).toList());
     subNewGame.on([EventTopic.newGame], (game) async {
-      Step.blanking(userIds: userIds);
+      verseId = game?.verseId ?? 0;
+      Step.blanking(userIds: users.map((user) => user.getId()).toList());
     });
     sub.on([EventTopic.wsEvent], (wsEvent) async {
       if (wsEvent == null) {
@@ -38,8 +45,8 @@ class GameSettingsBlankItRight extends GameSettings {
       if (wsEvent.wsEventType == WsEventType.add) {
         if (!users.any((user) => user.id == wsEvent.id)) {
           users = await Db().db.gameUserDao.getAllUser();
+          await initUsers(broadcast: true);
         }
-        await initUsers();
       }
     });
 
@@ -49,9 +56,13 @@ class GameSettingsBlankItRight extends GameSettings {
     if (ki != null) {
       ignoringPunctuation.value = ki == 1;
     }
+    var kic = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForIgnoreCase);
+    if (kic != null) {
+      ignoreCase.value = kic == 1;
+    }
   }
 
-  Future<void> initUsers() async {
+  Future<void> initUsers({bool broadcast = false}) async {
     var userId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForEditorUserId);
     if (users.isNotEmpty) {
       var index = users.indexWhere((u) => u.id == userId);
@@ -59,9 +70,17 @@ class GameSettingsBlankItRight extends GameSettings {
         index = 0;
       }
       await setUser(index);
-      if (userId == null) {
-        List<int> userIds = users.map((user) => user.getId()).toList();
-        Step.blanking(userIds: userIds);
+      List<int> userIds = users.map((user) => user.getId()).toList();
+      Step.blanking(userIds: userIds);
+      if (broadcast) {
+        await web.server.broadcast(
+          message.Request(
+            path: Path.refreshGame,
+            data: {
+              "verseId": verseId,
+            },
+          ),
+        );
       }
     }
     await setScore();
@@ -96,6 +115,11 @@ class GameSettingsBlankItRight extends GameSettings {
     Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.blockItRightGameForIgnorePunctuation, ignoringPunctuation ? '1' : '0'));
   }
 
+  void setIgnoreCase(bool ignoreCase) {
+    this.ignoreCase.value = ignoreCase;
+    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.blockItRightGameForIgnoreCase, ignoreCase ? '1' : '0'));
+  }
+
   @override
   List<Widget> build() {
     return [
@@ -118,6 +142,12 @@ class GameSettingsBlankItRight extends GameSettings {
         I18nKey.ignorePunctuation.tr,
         ignoringPunctuation,
         setIgnoringPunctuation,
+      ),
+      RowWidget.buildDividerWithoutColor(),
+      RowWidget.buildSwitch(
+        I18nKey.ignoreCase.tr,
+        ignoreCase,
+        setIgnoreCase,
       ),
     ];
   }
