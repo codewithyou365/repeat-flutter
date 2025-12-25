@@ -66,7 +66,7 @@ const containerRef = ref<HTMLElement | null>(null);
 const charRefs = ref<HTMLElement[]>([]);
 const cursorPos = ref(0);
 const minCursorPos = ref(0);
-const lastHoveredIndex = ref(0);
+const lastHoveredIndex = ref<number | null>(0);
 const chars = computed<string[]>(() => {
   return props.content ? props.content.split('') : [];
 });
@@ -228,7 +228,10 @@ const handleCharTouch = (e: PointerEvent | null, index: number) => {
     if (props.clickFillCharWhenDisabled.length === 1) {
       composingInput.value = '';
       const pos = index;
-      if (pos >= 0 && pos < userInput.value.length) {
+      if (pos >= 0 && pos < userInput.value.length && pos < props.content.length) {
+        if (isIgnore(props.content[pos], pos)) {
+          return;
+        }
         let fillChar = props.clickFillCharWhenDisabled;
         if (userInput.value[index] === props.clickFillCharWhenDisabled) {
           fillChar = props.content[index];
@@ -480,6 +483,10 @@ defineExpose({
   padding: 0;
   margin: 0;
   z-index: 10;
+}
+
+.overlay-input:disabled {
+  pointer-events: none;
 }
 
 .flashing {

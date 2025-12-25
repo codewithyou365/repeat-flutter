@@ -7,21 +7,15 @@ import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/game_server/vo/kv_list.dart';
 import 'package:repeat_flutter/logic/game_server/vo/kv.dart';
 
+import 'utils.dart';
+
 Future<message.Response?> blankItRightSettings(message.Request req, GameUser user) async {
   var userId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForEditorUserId);
   if (userId == null) {
     return message.Response(error: GameServerError.editorUserNeedToBeSpecified.name);
   }
-  var ignorePunctuation = false;
-  var kip = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForIgnorePunctuation);
-  if (kip != null) {
-    ignorePunctuation = kip == 1;
-  }
-  var ignoreCase = false;
-  var kic = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForIgnoreCase);
-  if (kic != null) {
-    ignoreCase = kic == 1;
-  }
+  var ignorePunctuation = await BlankItRightUtils.getIgnorePunctuation();
+  var ignoreCase = await BlankItRightUtils.getIgnoreCase();
   var res = KvList([]);
   res.list.add(Kv(k: CrK.blockItRightGameForEditorUserId.name, v: "$userId"));
   res.list.add(Kv(k: CrK.blockItRightGameForIgnorePunctuation.name, v: "$ignorePunctuation"));

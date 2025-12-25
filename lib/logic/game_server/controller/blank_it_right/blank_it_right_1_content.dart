@@ -42,6 +42,7 @@ Future<message.Response?> blankItRightContent(message.Request req, GameUser user
   if (editorId == null) {
     return message.Response(error: GameServerError.editorUserNeedToBeSpecified.name);
   }
+  var ignorePunctuation = await BlankItRightUtils.getIgnorePunctuation();
   final reqBody = req.data as int;
   final verse = VerseHelp.getCache(reqBody);
   if (verse == null) {
@@ -69,11 +70,11 @@ Future<message.Response?> blankItRightContent(message.Request req, GameUser user
     final step = Step.getStepEnum(userId: user.getId());
     switch (step) {
       case StepEnum.blanked:
-        content = BlankItRightUtils.getBlank(jsonDecode(verse.verseContent));
+        content = BlankItRightUtils.getBlank(jsonDecode(verse.verseContent), ignorePunctuation);
         break;
       case StepEnum.finished:
         var verseMap = jsonDecode(verse.verseContent);
-        content = BlankItRightUtils.getBlank(verseMap);
+        content = BlankItRightUtils.getBlank(verseMap, ignorePunctuation);
         answer = verseMap['a'] ?? '';
         submit = Step.getSubmit(userId: user.getId());
         score = Step.getScore(userId: user.getId());

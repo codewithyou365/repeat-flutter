@@ -5,7 +5,7 @@
         :content="content"
         :disabled="typingDisabled"
         :ignore-case="ignoreCase"
-        :ignore-punctuation="ignorePunctuation"
+        :ignore-punctuation="ignorePunctuation && editorUserId == store.getters.currentUserId"
         :ignore-content-indexes="ignoreContentIndexes"
         :click-fill-char-when-disabled='clickFillCharWhenDisabled'
         ref="typingRef"
@@ -67,7 +67,8 @@ const editorUserId = ref(0);
 const score = ref(0);
 const content = ref('');
 const answer = ref('');
-const clickFillCharWhenDisabled = ref('•');
+const blankChar = '•';
+const clickFillCharWhenDisabled = ref(blankChar);
 let submit = '';
 const ignoreContentIndexes = ref<number[]>([]);
 const typingRef = ref<InstanceType<typeof Typing>>();
@@ -107,13 +108,14 @@ const getGameSettings = async () => {
   const settings = res.convertMap();
 
   editorUserId.value = toNumber(settings.get('blockItRightGameForEditorUserId'));
-  ignorePunctuation.value = settings.get('typeGameForIgnorePunctuation') === 'true';
-  ignoreCase.value = settings.get('typeGameForIgnoreCase') === 'true';
+  ignorePunctuation.value = settings.get('blockItRightGameForIgnorePunctuation') === 'true';
+  ignoreCase.value = settings.get('blockItRightGameForIgnoreCase') === 'true';
 };
 
 const refresh = async (refreshGame: RefreshGameType) => {
   try {
     overlayVisible.value = true;
+    await getGameSettings();
     const req = new Request({path: Path.blankItRightContent, data: refreshGame.verseId});
     const res = await client.node!.send(req);
     if (res.error) {
@@ -127,8 +129,23 @@ const refresh = async (refreshGame: RefreshGameType) => {
       if (contentJson) {
         content.value = contentJson.a ?? '';
         await nextTick(() => {
-          if (contentJson.blankItRightList && contentJson.blankItRightList.length > 0) {
-            typingRef.value?.initUserInput(contentJson.blankItRightList[0]);
+          if (
+              Array.isArray(contentJson.blankItRightList) &&
+              contentJson.blankItRightList.length > 0
+          ) {
+            const source = content.value;
+            const blankSource = contentJson.blankItRightList[0];
+            const blankContent = [...blankSource];
+            for (let i = 0; i < source.length; i++) {
+              if (i >= blankContent.length) {
+                blankContent.push(source[i]);
+              } else if (ignorePunctuation.value && /\p{P}/u.test(source[i])) {
+                blankContent[i] = source[i];
+              } else if (blankContent[i] !== source[i]) {
+                blankContent[i] = blankChar;
+              }
+            }
+            typingRef.value?.initUserInput(blankContent.join(''));
           } else {
             typingRef.value?.initUserInput(content.value);
           }
@@ -179,7 +196,6 @@ const refresh = async (refreshGame: RefreshGameType) => {
 
 onMounted(async () => {
   refreshGame = RefreshGameType.from(route.query);
-  await getGameSettings();
   await refresh(refreshGame);
   bus().on(EventName.RefreshGame, (data: RefreshGameType) => {
     refreshGame = data;

@@ -73,6 +73,7 @@ Future<message.Response?> blankItRightSubmit(message.Request req, GameUser user,
   if (Step.getStepEnum(userId: user.getId()) != StepEnum.blanked) {
     return message.Response(error: GameServerError.gameStateInvalid.name);
   }
+  var ignorePunctuation = await BlankItRightUtils.getIgnorePunctuation();
   final reqBody = BlankItRightSubmitReq.fromJson(req.data);
   final verseId = reqBody.verseId;
   final verse = VerseHelp.getCache(verseId);
@@ -82,7 +83,7 @@ Future<message.Response?> blankItRightSubmit(message.Request req, GameUser user,
   var verseMap = jsonDecode(verse.verseContent);
   final String userAnswer = reqBody.content;
   final String correctAnswer = verseMap['a'] ?? '';
-  final String blank = BlankItRightUtils.getBlank(verseMap);
+  final String blank = BlankItRightUtils.getBlank(verseMap, ignorePunctuation);
   final int maxScore = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForMaxScore) ?? 10;
   final int currScore = BlankItRightUtils.getScore(userAnswer, correctAnswer, blank, maxScore);
   Step.finished(userId: user.getId(), submit: reqBody.content, score: currScore);
