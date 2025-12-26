@@ -160,6 +160,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelChapterName, "篇章");
     put(I18nKey.labelVerse, "节");
     put(I18nKey.labelVerseName, "小节");
+    put(I18nKey.maxScore, "最大分数");
     put(I18nKey.ignorePunctuation, "忽略标点符号");
     put(I18nKey.ignoreCase, "忽略大小写");
     put(I18nKey.labelMatchType, "匹配类型");

@@ -74,6 +74,7 @@ Future<message.Response?> blankItRightSubmit(message.Request req, GameUser user,
     return message.Response(error: GameServerError.gameStateInvalid.name);
   }
   var ignorePunctuation = await BlankItRightUtils.getIgnorePunctuation();
+  var ignoreCase = await BlankItRightUtils.getIgnoreCase();
   final reqBody = BlankItRightSubmitReq.fromJson(req.data);
   final verseId = reqBody.verseId;
   final verse = VerseHelp.getCache(verseId);
@@ -84,8 +85,8 @@ Future<message.Response?> blankItRightSubmit(message.Request req, GameUser user,
   final String userAnswer = reqBody.content;
   final String correctAnswer = verseMap['a'] ?? '';
   final String blank = BlankItRightUtils.getBlank(verseMap, ignorePunctuation);
-  final int maxScore = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForMaxScore) ?? 10;
-  final int currScore = BlankItRightUtils.getScore(userAnswer, correctAnswer, blank, maxScore);
+  final int maxScore = await BlankItRightUtils.getMaxScore();
+  final int currScore = BlankItRightUtils.getScore(userAnswer, correctAnswer, blank, maxScore, ignoreCase);
   Step.finished(userId: user.getId(), submit: reqBody.content, score: currScore);
   await Db().db.gameUserScoreDao.inc(user.getId(), GameType.blankItRight, currScore, "i:${I18nKey.obtainedInTheGame.name}");
   return message.Response(

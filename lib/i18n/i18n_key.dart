@@ -158,6 +158,7 @@ enum I18nKey {
   labelChapterName,
   labelVerse,
   labelVerseName,
+  maxScore,
   ignorePunctuation,
   ignoreCase,
   labelMatchType,

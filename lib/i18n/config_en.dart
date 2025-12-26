@@ -160,6 +160,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelChapterName, "Chapter");
     put(I18nKey.labelVerse, "Verse");
     put(I18nKey.labelVerseName, "Verse");
+    put(I18nKey.maxScore, "Max Score");
     put(I18nKey.ignorePunctuation, "Ignore Punctuation");
     put(I18nKey.ignoreCase, "Ignore Case");
     put(I18nKey.labelMatchType, "Match Type");

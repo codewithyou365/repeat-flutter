@@ -179,8 +179,10 @@ class BookEditorLogic<T extends GetxController> {
   Future<void> _stopHttpService() async {
     try {
       offEvent();
+      if (server.open) {
+        Snackbar.show('HTTPS service stopped');
+      }
       await server.stop();
-      Snackbar.show('HTTPS service stopped');
       parentLogic.update([id]);
     } catch (e) {
       Snackbar.show('Error starting HTTPS service: $e');

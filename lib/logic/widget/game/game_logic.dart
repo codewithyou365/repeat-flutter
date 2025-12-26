@@ -49,7 +49,7 @@ class GameLogic<T extends GetxController> {
 
   Future<void> open() async {
     for (var v in gameTypeToGameSettings.values) {
-      v.onInit(web);
+      await v.onInit(web);
     }
     sub.off();
     subAllowRegisterNumber.off();
@@ -73,11 +73,10 @@ class GameLogic<T extends GetxController> {
     });
   }
 
-  void changeGame(int index)  {
+  void changeGame(int index) {
     GameState.lastGameIndex = index + 1;
     parentLogic.update([bodyId]);
     Db().db.kvDao.insertKv(Kv(K.lastGameIndex, "${GameState.lastGameIndex}"));
-
   }
 
   String get title {

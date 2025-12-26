@@ -11,6 +11,7 @@ import 'package:repeat_flutter/db/entity/game_user_score.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/step.dart';
+import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/utils.dart';
 import 'package:repeat_flutter/logic/game_server/web_server.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -20,6 +21,7 @@ import 'game_settings.dart';
 class GameSettingsBlankItRight extends GameSettings {
   RxBool ignoringPunctuation = RxBool(false);
   RxBool ignoreCase = RxBool(false);
+  RxInt maxScoreIndex = RxInt(10);
   late WebServer web;
   int verseId = 0;
   RxInt userNumber = RxInt(0);
@@ -52,14 +54,9 @@ class GameSettingsBlankItRight extends GameSettings {
 
     await initUsers();
 
-    var ki = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForIgnorePunctuation);
-    if (ki != null) {
-      ignoringPunctuation.value = ki == 1;
-    }
-    var kic = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForIgnoreCase);
-    if (kic != null) {
-      ignoreCase.value = kic == 1;
-    }
+    maxScoreIndex.value = await BlankItRightUtils.getMaxScore() - 1;
+    ignoringPunctuation.value = await BlankItRightUtils.getIgnorePunctuation();
+    ignoreCase.value = await BlankItRightUtils.getIgnoreCase();
   }
 
   Future<void> initUsers({bool broadcast = false}) async {
@@ -110,6 +107,10 @@ class GameSettingsBlankItRight extends GameSettings {
     userIndex.value = index;
   }
 
+  void setMaxScore(int index) {
+    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.blockItRightGameForMaxScore, '${index + 1}'));
+  }
+
   void setIgnoringPunctuation(bool ignoringPunctuation) {
     this.ignoringPunctuation.value = ignoringPunctuation;
     Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.blockItRightGameForIgnorePunctuation, ignoringPunctuation ? '1' : '0'));
@@ -136,7 +137,13 @@ class GameSettingsBlankItRight extends GameSettings {
           changed: setUser,
         );
       }),
-
+      RowWidget.buildDividerWithoutColor(),
+      RowWidget.buildCupertinoPicker(
+        I18nKey.maxScore.tr,
+        List.generate(100, (i) => '${i + 1}'),
+        maxScoreIndex,
+        changed: setMaxScore,
+      ),
       RowWidget.buildDividerWithoutColor(),
       RowWidget.buildSwitch(
         I18nKey.ignorePunctuation.tr,

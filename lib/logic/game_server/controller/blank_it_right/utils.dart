@@ -5,6 +5,11 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'constant.dart';
 
 class BlankItRightUtils {
+  static Future<int> getMaxScore() async {
+    var ret = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForMaxScore);
+    return ret ?? 10;
+  }
+
   static Future<bool> getIgnorePunctuation() async {
     var ignorePunctuation = false;
     var kip = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForIgnorePunctuation);
@@ -60,7 +65,7 @@ class BlankItRightUtils {
     return buffer.toString();
   }
 
-  static int getScore(String userAnswer, String correctAnswer, String blank, int maxScore) {
+  static int getScore(String userAnswer, String correctAnswer, String blank, int maxScore, bool ignoreCase) {
     int blankCount = 0;
     int rightCount = 0;
 
@@ -73,7 +78,9 @@ class BlankItRightUtils {
     for (int i = 0; i < len; i++) {
       if (blank[i] == '•') {
         blankCount++;
-        if (userAnswer[i] == correctAnswer[i]) {
+        if (ignoreCase && userAnswer[i].toLowerCase() == correctAnswer[i].toLowerCase()) {
+          rightCount++;
+        } else if (userAnswer[i] == correctAnswer[i]) {
           rightCount++;
         }
       }
