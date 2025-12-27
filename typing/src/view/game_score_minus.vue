@@ -83,9 +83,9 @@ const form = ref({
 })
 
 const showGameTypePicker = ref(false)
-const tempGameType = ref([])
+const tempGameType = ref<number[]>([])
 const showReasonPicker = ref(false)
-const tempReason = ref([])
+const tempReason = ref<string[]>([])
 
 const reasonColumns = [
   {text: t('watchTv'), value: 'watchTv'},
@@ -120,8 +120,6 @@ watch(() => form.value.customReason, (newVal) => {
 
 const scores = ref<{ [key: number]: number }>({})
 
-const currentScore = computed(() => scores.value[form.value.gameType] ?? 0)
-
 const gameTypeColumns = computed(() => [
   {text: t('gameTypeBlankItRight') + ` (${scores.value[2] ?? 0})`, value: 2},
 ])
@@ -153,7 +151,7 @@ const openReasonPicker = () => {
 }
 
 const submit = async () => {
-  const scoreNum = parseInt(form.value.score, 10);
+  const scoreNum = form.value.score;
   if (isNaN(scoreNum) || scoreNum <= 0) {
     tipDialogVisible.value = true;
     tipDialogContent.value = t('scoreMustBePositive');
@@ -235,6 +233,20 @@ const onClickBack = () => history.back()
   --negative-color: #e74c3c;
   --border-color: #444;
   --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.6);
+  --nut-picker-ok-color: var(--positive-color);
+  --nut-overlay-bg: rgba(0, 0, 0, 0.7);
+}
+
+.nut-picker__bar {
+  background-color: var(--background-color);
+}
+
+.nut-picker-roller {
+  background-color: var(--background-color);
+}
+
+.nut-picker__list {
+  background-color: var(--nut-overlay-bg);
 }
 
 .form-container {
