@@ -55,7 +55,17 @@ class GamePage<T extends GetxController> {
                                 ),
                               },
                               child: ListTile(
-                                title: Text('${I18nKey.labelLanAddress.tr}-${index + 1}'),
+                                title: Row(
+                                  children: [
+                                    Text('${I18nKey.labelLanAddress.tr}-${index + 1}'),
+                                    const Spacer(),
+                                    IconButton(
+                                      icon: const Icon(Icons.key),
+                                      onPressed: logic.openCredentialDialog,
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                  ],
+                                ),
                                 subtitle: Padding(
                                   padding: EdgeInsets.all(16.w),
                                   child: Text(state.urls[index]),

@@ -8,6 +8,7 @@ import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/db/entity/game_user_score.dart';
+import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/blank_it_right_2_blank.dart';
@@ -140,6 +141,13 @@ class WebServer {
     final user = await Db().db.gameUserDao.authByToken(token);
     if (user.isEmpty()) {
       return null;
+    }
+    var gamePassword = await Db().db.kvDao.getStr(K.gamePassword) ?? '';
+    if (gamePassword.isNotEmpty) {
+      final gamePasswordCreateTime = await Db().db.kvDao.getInt(K.gamePasswordCreateTime) ?? 0;
+      if (user.tokenExpiredDate < gamePasswordCreateTime) {
+        return null;
+      }
     }
     return user;
   }

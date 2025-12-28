@@ -19,7 +19,7 @@ class GameUser extends UserId {
   Date createDate;
 
   String token;
-  Date tokenExpiredDate;
+  int tokenExpiredDate;
 
   bool needToResetPassword;
 
@@ -40,7 +40,7 @@ class GameUser extends UserId {
     nonce: '',
     createDate: Date(0),
     token: '',
-    tokenExpiredDate: Date(0),
+    tokenExpiredDate: 0,
     needToResetPassword: false,
   );
 

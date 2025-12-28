@@ -27,6 +27,12 @@
             clearable
             type="password"/>
       </nut-form-item>
+      <nut-form-item v-if="showGamePasswordView" :label="t('gamePassword')" prop="gamePassword">
+        <nut-input
+            v-model="form.gamePassword"
+            clearable
+            type="password"/>
+      </nut-form-item>
     </nut-form>
 
     <nut-button
@@ -68,16 +74,19 @@ const form = reactive({
   userName: '',
   password: '',
   newPassword: '',
+  gamePassword: '',
 });
 
 const showNewPasswordView = ref(false);
+const showGamePasswordView = ref(false);
 const dialogVisible = ref(false);
 const dialogContent = ref('');
 
 const rules = ref({
   userName: [{required: true, message: t('inputUserName')}, {regex: /^[A-Z]{2,5}$/, message: t('inputUserNameTip')}],
   password: [{required: true, message: t('inputPassword')}, {regex: /^.{6,30}$/, message: t('inputPasswordTip')}],
-  newPassword: [{required: true, message: t('inputPassword')}, {regex: /^.{6,30}$/, message: t('inputPasswordTip')}]
+  newPassword: [{required: true, message: t('inputPassword')}, {regex: /^.{6,30}$/, message: t('inputPasswordTip')}],
+  gamePassword: [{required: true, message: t('inputPassword')}, {regex: /^.{6,9}$/, message: t('inputPasswordTip')}]
 });
 
 const formRef = ref(null);
@@ -101,19 +110,20 @@ const handleLogin = () => {
       const responsePromise = http.post(Path.loginOrRegister, {
         userName: form.userName,
         password: form.password,
-        newPassword: form.newPassword
+        newPassword: form.newPassword,
+        gamePassword: form.gamePassword
       });
       const response = await responsePromise;
       isLoading.value = false;
       if (!response.data) {
         dialogVisible.value = true;
+        showNewPasswordView.value = false;
+        showGamePasswordView.value = false;
+        dialogContent.value = t(response.error);
         if (response.error === 'needToResetPassword') {
           showNewPasswordView.value = true;
-          dialogContent.value = t('setNewPassword');
-        } else if (response.error === 'excessRegisterCount') {
-          dialogContent.value = t('excessRegisterCount');
-        } else {
-          dialogContent.value = t('userNameOrPasswordError');
+        } else if (response.error === 'gamePasswordError') {
+          showGamePasswordView.value = true;
         }
         return;
       }

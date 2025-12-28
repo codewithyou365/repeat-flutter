@@ -1494,8 +1494,7 @@ class _$GameUserDao extends GameUserDao {
                   'nonce': item.nonce,
                   'createDate': _dateConverter.encode(item.createDate),
                   'token': item.token,
-                  'tokenExpiredDate':
-                      _dateConverter.encode(item.tokenExpiredDate),
+                  'tokenExpiredDate': item.tokenExpiredDate,
                   'needToResetPassword': item.needToResetPassword ? 1 : 0
                 });
 
@@ -1516,8 +1515,7 @@ class _$GameUserDao extends GameUserDao {
             nonce: row['nonce'] as String,
             createDate: _dateConverter.decode(row['createDate'] as int),
             token: row['token'] as String,
-            tokenExpiredDate:
-                _dateConverter.decode(row['tokenExpiredDate'] as int),
+            tokenExpiredDate: row['tokenExpiredDate'] as int,
             needToResetPassword: (row['needToResetPassword'] as int) != 0,
             id: row['id'] as int?),
         arguments: [name]);
@@ -1532,8 +1530,7 @@ class _$GameUserDao extends GameUserDao {
             nonce: row['nonce'] as String,
             createDate: _dateConverter.decode(row['createDate'] as int),
             token: row['token'] as String,
-            tokenExpiredDate:
-                _dateConverter.decode(row['tokenExpiredDate'] as int),
+            tokenExpiredDate: row['tokenExpiredDate'] as int,
             needToResetPassword: (row['needToResetPassword'] as int) != 0,
             id: row['id'] as int?),
         arguments: [id]);
@@ -1561,8 +1558,7 @@ class _$GameUserDao extends GameUserDao {
             nonce: row['nonce'] as String,
             createDate: _dateConverter.decode(row['createDate'] as int),
             token: row['token'] as String,
-            tokenExpiredDate:
-                _dateConverter.decode(row['tokenExpiredDate'] as int),
+            tokenExpiredDate: row['tokenExpiredDate'] as int,
             needToResetPassword: (row['needToResetPassword'] as int) != 0,
             id: row['id'] as int?));
   }
@@ -1577,30 +1573,24 @@ class _$GameUserDao extends GameUserDao {
   Future<void> updateUserToken(
     int id,
     String token,
-    Date tokenExpiredDate,
+    int tokenExpiredDate,
   ) async {
     await _queryAdapter.queryNoReturn(
         'UPDATE GameUser SET token=?2,tokenExpiredDate=?3 WHERE id = ?1',
-        arguments: [id, token, _dateConverter.encode(tokenExpiredDate)]);
+        arguments: [id, token, tokenExpiredDate]);
   }
 
   @override
   Future<void> updateUserTokenWithPassword(
     int id,
     String token,
-    Date tokenExpiredDate,
+    int tokenExpiredDate,
     String nonce,
     String password,
   ) async {
     await _queryAdapter.queryNoReturn(
         'UPDATE GameUser SET token=?2,tokenExpiredDate=?3,nonce=?4,password=?5,needToResetPassword=0 WHERE id = ?1',
-        arguments: [
-          id,
-          token,
-          _dateConverter.encode(tokenExpiredDate),
-          nonce,
-          password
-        ]);
+        arguments: [id, token, tokenExpiredDate, nonce, password]);
   }
 
   @override
@@ -1612,8 +1602,7 @@ class _$GameUserDao extends GameUserDao {
             nonce: row['nonce'] as String,
             createDate: _dateConverter.decode(row['createDate'] as int),
             token: row['token'] as String,
-            tokenExpiredDate:
-                _dateConverter.decode(row['tokenExpiredDate'] as int),
+            tokenExpiredDate: row['tokenExpiredDate'] as int,
             needToResetPassword: (row['needToResetPassword'] as int) != 0,
             id: row['id'] as int?),
         arguments: [token]);

@@ -322,6 +322,8 @@ enum I18nKey {
   help,
   showFingers,
   refresh,
+  clear,
+  noPassword,
   obtainedInTheGame,
   none;
 

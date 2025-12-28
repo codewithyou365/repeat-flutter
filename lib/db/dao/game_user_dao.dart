@@ -39,7 +39,7 @@ abstract class GameUserDao {
     'UPDATE GameUser SET token=:token,tokenExpiredDate=:tokenExpiredDate'
     ' WHERE id = :id',
   )
-  Future<void> updateUserToken(int id, String token, Date tokenExpiredDate);
+  Future<void> updateUserToken(int id, String token, int tokenExpiredDate);
 
   @Query(
     'UPDATE GameUser SET token=:token'
@@ -52,7 +52,7 @@ abstract class GameUserDao {
   Future<void> updateUserTokenWithPassword(
     int id,
     String token,
-    Date tokenExpiredDate,
+    int tokenExpiredDate,
     String nonce,
     String password,
   );
@@ -107,7 +107,7 @@ abstract class GameUserDao {
         nonce: nonce,
         createDate: Date.from(now),
         token: StringUtil.generateRandomString(32),
-        tokenExpiredDate: Date.from(now.add(const Duration(days: 7))),
+        tokenExpiredDate: now.add(const Duration(days: 7)).millisecondsSinceEpoch,
         needToResetPassword: false,
       );
       await registerUser(newUser);
@@ -120,7 +120,7 @@ abstract class GameUserDao {
       }
       final String token = StringUtil.generateRandomString(32);
       existingUser.token = token;
-      existingUser.tokenExpiredDate = Date.from(now.add(const Duration(days: 7)));
+      existingUser.tokenExpiredDate = now.add(const Duration(days: 7)).millisecondsSinceEpoch;
       if (existingUser.needToResetPassword) {
         if (newPassword.isEmpty) {
           error.add(GameServerError.needToResetPassword.name);
@@ -160,8 +160,7 @@ abstract class GameUserDao {
     }
     final user = await findUserByToken(token);
     final now = DateTime.now();
-    final Date date = Date.from(now);
-    if (user == null || user.tokenExpiredDate.value < date.value) {
+    if (user == null || user.tokenExpiredDate < now.millisecondsSinceEpoch) {
       return GameUser.empty();
     }
 

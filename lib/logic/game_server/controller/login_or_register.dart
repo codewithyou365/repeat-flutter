@@ -1,15 +1,19 @@
 import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/kv.dart';
+import 'package:repeat_flutter/logic/game_server/constant.dart';
 
 class LoginOrRegister {
   String userName;
   String password;
   String newPassword;
+  String gamePassword;
 
   LoginOrRegister(
     this.userName,
     this.password,
     this.newPassword,
+    this.gamePassword,
   );
 
   Map<String, dynamic> toJson() {
@@ -17,6 +21,7 @@ class LoginOrRegister {
       'userName': userName,
       'password': password,
       'newPassword': newPassword,
+      'gamePassword': gamePassword,
     };
   }
 
@@ -25,6 +30,7 @@ class LoginOrRegister {
       json['userName'] as String,
       json['password'] as String,
       json['newPassword'] as String,
+      json['gamePassword'] as String,
     );
   }
 }
@@ -64,6 +70,10 @@ Future<message.Response?> loginOrRegister(message.Request req) async {
   );
   if (gameUser.id == null) {
     return message.Response(error: error.first);
+  }
+  var gamePassword = await Db().db.kvDao.getStr(K.gamePassword) ?? '';
+  if (gamePassword.isNotEmpty && data.gamePassword != gamePassword) {
+    return message.Response(error: GameServerError.gamePasswordError.name);
   }
   return message.Response(
     data: LoginOrRegisterRes(
