@@ -12,6 +12,17 @@ export const routes = [
                 component: () => import('../view/game/blank-it-right-game.vue'),
             },
             {
+                path: 'word-slicer',
+                component: () => import('../view/game/word-slicer.vue'),
+                children: [
+                    {
+                        path: 'lobby',
+                        component: () => import('../view/game/word-slicer/lobby.vue'),
+                    },
+                ]
+            },
+
+            {
                 path: 'input-game',
                 component: () => import('../view/game/input-game.vue'),
             },

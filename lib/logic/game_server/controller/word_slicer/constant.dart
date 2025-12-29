@@ -1,0 +1,4 @@
+enum MapKeyEnum {
+  blankItRightUsingIndex,
+  blankItRightList,
+}

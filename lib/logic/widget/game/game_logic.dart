@@ -14,6 +14,7 @@ import 'package:repeat_flutter/logic/game_server/web_server.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/widget/game/logic/game_settings.dart';
 import 'package:repeat_flutter/logic/widget/game/logic/game_settings_type.dart';
+import 'package:repeat_flutter/logic/widget/game/logic/game_settings_word_slicer.dart';
 import 'package:repeat_flutter/logic/widget/user_manager.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -40,6 +41,7 @@ class GameLogic<T extends GetxController> {
   GameLogic(this.parentLogic) {
     gameTypeToGameSettings[GameType.type] = GameSettingsType();
     gameTypeToGameSettings[GameType.blankItRight] = GameSettingsBlankItRight();
+    gameTypeToGameSettings[GameType.wordSlicer] = GameSettingsWordSlicer();
     gameTypeToGameSettings[GameType.input] = GameSettingsInput();
   }
 

@@ -17,6 +17,11 @@ export const Path = {
     blankItRightContent: '/api/blankItRightContent',
     blankItRightBlank: '/api/blankItRightBlank',
     blankItRightSubmit: '/api/blankItRightSubmit',
+    wordSlicerStatus: '/api/wordSlicerStatus',
+    wordSlicerStatusUpdate: '/api/wordSlicerStatusUpdate',
+    wordSlicerSelectRole: '/api/wordSlicerSelectRole',
+    wordSlicerChooseColor: '/api/wordSlicerChooseColor',
+    wordSlicerStartGame: '/api/wordSlicerStartGame',
     submit: '/api/submit',
 
 }
@@ -31,7 +36,8 @@ export class GameType {
     static NONE = new GameType(0, '');
     static TYPE = new GameType(1, '/game/type-game');
     static BLANK_IT_RIGHT = new GameType(2, '/game/blank-it-right-game');
-    static INPUT = new GameType(3, '/game/input-game');
+    static WORD_SLICER = new GameType(3, '/game/word-slicer');
+    static INPUT = new GameType(4, '/game/input-game');
 
     static toGameType(code: number): GameType {
         switch (code) {
@@ -39,6 +45,8 @@ export class GameType {
                 return GameType.TYPE;
             case GameType.BLANK_IT_RIGHT.code:
                 return GameType.BLANK_IT_RIGHT;
+            case GameType.WORD_SLICER.code:
+                return GameType.WORD_SLICER;
             case GameType.INPUT.code:
                 return GameType.INPUT;
             default:

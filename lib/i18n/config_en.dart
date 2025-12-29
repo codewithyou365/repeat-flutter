@@ -241,6 +241,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelGameRuleSettings, "Game Rule Settings");
     put(I18nKey.typeGame, "Type");
     put(I18nKey.blankItRightGame, "Blank It Right");
+    put(I18nKey.workSlicer, "Work Slicer");
     put(I18nKey.inputGame, "Input");
     put(I18nKey.labelLastCourseCannotBeDeleted, "The last course cannot be deleted, otherwise copying will not be possible.");
     put(I18nKey.labelFileNotFound, "File not found. Do you want to import the file now?");

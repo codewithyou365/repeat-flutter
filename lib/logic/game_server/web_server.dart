@@ -20,6 +20,8 @@ import 'package:repeat_flutter/logic/game_server/controller/game_user_score_hist
 import 'package:repeat_flutter/logic/game_server/controller/game_user_score_minus.dart';
 import 'package:repeat_flutter/logic/game_server/controller/type/type_verse_content.dart';
 import 'package:repeat_flutter/logic/game_server/controller/type/type_game_settings.dart';
+import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_slicer_0_status.dart';
+import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_slicer_1_select_role.dart';
 import 'package:repeat_flutter/logic/widget/game/game_state.dart';
 import 'controller/heart.dart';
 import 'controller/game_user_history.dart';
@@ -58,6 +60,9 @@ class WebServer {
       server.controllers[Path.blankItRightContent] = (request) => withGameUserAndGameType(request, GameType.blankItRight, blankItRightContent);
       server.controllers[Path.blankItRightBlank] = (request) => withGameUserAndServer(request, GameType.blankItRight, blankItRightBlank);
       server.controllers[Path.blankItRightSubmit] = (request) => withGameUserAndServer(request, GameType.blankItRight, blankItRightSubmit);
+      server.controllers[Path.wordSlicerStatus] = (request) => withGameUserAndGameType(request, GameType.wordSlicer, wordSlicerStatus);
+      server.controllers[Path.wordSlicerSelectRole] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerSelectRole);
+
       open = true;
     } catch (e) {
       Snackbar.show('Error starting HTTPS service: $e');

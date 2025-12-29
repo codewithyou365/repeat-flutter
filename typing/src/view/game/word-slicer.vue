@@ -1,0 +1,70 @@
+<template>
+  <Lobby v-if="status.gameStep==GameStepEnum.selectRule"
+         ref="lobbyRef"
+  ></Lobby>
+</template>
+
+<script setup lang="ts">
+
+import {ref, inject, onMounted, Ref} from "vue";
+import {bus, EventName, RefreshGameType} from "../../api/bus.ts";
+import {useI18n} from "vue-i18n";
+import {useStore} from "vuex";
+import {useRoute, useRouter} from "vue-router";
+import {client, Request, Response} from "../../api/ws.ts";
+import {Path} from "../../utils/constant.ts";
+import {GameStepEnum, WordSlicerStatus} from "../../vo/WordSlicerStatus.ts";
+import Lobby from './word-slicer/lobby.vue';
+
+const lobbyRef = ref<InstanceType<typeof Lobby>>();
+
+
+const {t} = useI18n();
+const store = useStore();
+const route = useRoute();
+const router = useRouter();
+
+const overlayVisible = inject<Ref<boolean>>('overlayVisible')!
+const tipDialogVisible = inject<Ref<boolean>>('tipDialogVisible')!
+const tipDialogContent = inject<Ref<string>>('tipDialogContent')!
+const status = ref<WordSlicerStatus>(new WordSlicerStatus());
+let refreshGame: RefreshGameType;
+onMounted(async () => {
+  refreshGame = RefreshGameType.from(route.query);
+  await refresh(refreshGame);
+  client.controllers.set(Path.wordSlicerStatusUpdate, async (req: Request) => {
+    bus().emit(EventName.WordSlicerStatusUpdate, WordSlicerStatus.fromJson(req.data));
+    return new Response();
+  });
+  bus().on(EventName.RefreshGame, (data: RefreshGameType) => {
+    refreshGame = data;
+    refresh(data);
+  });
+});
+
+const refresh = async (refreshGame: RefreshGameType) => {
+  try {
+    overlayVisible.value = true;
+    await getGameStatus();
+    await router.replace({
+      query: {
+        verseId: refreshGame.verseId,
+      },
+    });
+  } catch (error) {
+    console.error('Failed to refresh game:', error);
+  } finally {
+    overlayVisible.value = false;
+  }
+};
+
+const getGameStatus = async () => {
+  const req = new Request({path: Path.wordSlicerStatus});
+  const res0 = await client.node!.send(req);
+  status.value = WordSlicerStatus.fromJson(res0.data);
+  bus().emit(EventName.WordSlicerStatusUpdate, status.value);
+};
+</script>
+<style>
+
+</style>

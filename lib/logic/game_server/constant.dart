@@ -32,6 +32,7 @@ class PlaceholderToken {
 class Path {
   static const kick = '/api/kick';
   static const refreshGame = '/api/refreshGame';
+  static const wordSlicerStatusUpdate = '/api/wordSlicerStatusUpdate';
 
   static const loginOrRegister = '/api/loginOrRegister';
   static const entryGame = '/api/entryGame';
@@ -47,4 +48,6 @@ class Path {
   static const blankItRightContent = '/api/blankItRightContent';
   static const blankItRightBlank = '/api/blankItRightBlank';
   static const blankItRightSubmit = '/api/blankItRightSubmit';
+  static const wordSlicerStatus = '/api/wordSlicerStatus';
+  static const wordSlicerSelectRole = '/api/wordSlicerSelectRole';
 }

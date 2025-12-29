@@ -6,6 +6,7 @@ enum GameType {
   none,
   type,
   blankItRight,
+  wordSlicer,
   input,
 }
 

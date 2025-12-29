@@ -1,5 +1,6 @@
 import mitt, {Emitter} from 'mitt';
 import {toNumber} from '../utils/convert';
+import {WordSlicerStatus} from "../vo/WordSlicerStatus.ts";
 
 export class RefreshGameType {
     id: number;
@@ -26,11 +27,13 @@ export class RefreshGameType {
 type Events = {
     wsStatus: number;
     refreshGame: RefreshGameType;
+    wordSlicerStatusUpdate: WordSlicerStatus;
 };
 
 export enum EventName {
     WsStatus = 'wsStatus',
     RefreshGame = 'refreshGame',
+    WordSlicerStatusUpdate = 'wordSlicerStatusUpdate',
 }
 
 const b = {
