@@ -35,7 +35,6 @@ class GameSettingsWordSlicer extends GameSettings {
   @override
   Future<void> onInit(WebServer web) async {
     this.web = web;
-    wordSlicerGame.clear();
     users = await Db().db.gameUserDao.getAllUser();
     Step.blanking(userIds: users.map((user) => user.getId()).toList());
     subNewGame.on([EventTopic.newGame], (game) async {
@@ -59,6 +58,11 @@ class GameSettingsWordSlicer extends GameSettings {
     maxScoreIndex.value = await BlankItRightUtils.getMaxScore() - 1;
     ignoringPunctuation.value = await BlankItRightUtils.getIgnorePunctuation();
     ignoreCase.value = await BlankItRightUtils.getIgnoreCase();
+  }
+
+  @override
+  Future<void> onWebOpen() async {
+    wordSlicerGame.clear();
   }
 
   Future<void> initUsers({bool broadcast = false}) async {

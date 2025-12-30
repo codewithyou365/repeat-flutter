@@ -59,6 +59,9 @@ class GameSettingsBlankItRight extends GameSettings {
     ignoreCase.value = await BlankItRightUtils.getIgnoreCase();
   }
 
+  @override
+  Future<void> onWebOpen() async {}
+
   Future<void> initUsers({bool broadcast = false}) async {
     var userId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForEditorUserId);
     if (users.isNotEmpty) {

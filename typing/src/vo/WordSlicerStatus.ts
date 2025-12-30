@@ -1,11 +1,11 @@
 export enum GameStepEnum {
     none,
     selectRule,
-    selectedRule,
+    started,
 }
 
 export class WordSlicerStatus {
-    gameStep: GameStepEnum = GameStepEnum.selectRule;
+    gameStep: GameStepEnum = GameStepEnum.none;
     colorIndexToUserId: number[][] = [[], [], []];
     userIds: number[] = [];
     userIdToUserName: Record<number, string> = {};
@@ -15,10 +15,10 @@ export class WordSlicerStatus {
     static fromJson(json: any): WordSlicerStatus {
         const status = new WordSlicerStatus();
 
-        status.gameStep =
-            typeof json.gameStep === "number"
-                ? json.gameStep
-                : GameStepEnum.selectRule;
+        if (json.gameStep) {
+            status.gameStep = GameStepEnum[json.gameStep as keyof typeof GameStepEnum] ?? GameStepEnum.none;
+        }
+
 
         status.colorIndexToUserId = Array.isArray(json.colorIndexToUserId)
             ? json.colorIndexToUserId

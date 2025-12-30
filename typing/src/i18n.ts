@@ -77,6 +77,7 @@ const messages = {
         needJudgeToStart: 'A judge is required to start the game',
         startGame: 'Start Game',
         isJudge: 'Judge',
+        minPlayersRequired: 'At least 2 players are required to start',
     },
     zh: {
         dartMode: '深色模式',
@@ -154,6 +155,7 @@ const messages = {
         needJudgeToStart: '需要一名评判官才能开始游戏',
         startGame: '开始游戏',
         isJudge: '评判官',
+        minPlayersRequired: '至少需要2名玩家才能开始游戏',
     },
 };
 

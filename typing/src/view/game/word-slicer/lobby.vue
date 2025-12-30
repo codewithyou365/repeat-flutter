@@ -13,6 +13,7 @@
       >
         {{ index + 1 }}. {{ status.userIdToUserName[userId] }}
         <b v-if="userId === status.judgeUserId"> (⚖️)</b>
+        <b v-else> ({{ colorIcons[index] }})</b>
       </span>
           <span v-if="index < status.userIds.length - 1" class="separator">➡️</span>
         </template>
@@ -45,8 +46,10 @@
     <nut-cell v-if="!hasJudge">
       {{ t('needJudgeToStart') }}
     </nut-cell>
-
-    <nut-cell v-if="hasJudge">
+    <nut-cell v-if="!enoughUsers">
+      {{ t('minPlayersRequired') }}
+    </nut-cell>
+    <nut-cell v-if="canStart">
       <nut-button shape="square" type="primary"
                   @click="startGame"
                   :disabled="!canStart">
@@ -57,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import {ref, computed, onMounted, onBeforeUnmount} from 'vue';
+import {ref, computed, onMounted, onBeforeUnmount, inject, Ref} from 'vue';
 import {client, Request} from '../../../api/ws';
 import {Path} from '../../../utils/constant.ts';
 import {WordSlicerStatus} from "../../../vo/WordSlicerStatus.ts";
@@ -76,6 +79,8 @@ const colorNames = [t('red'), t('green'), t('blue')];
 const colorIcons = ['🔴', '🟢', '🔵'];
 const colorHex = ['#f00', '#52c41a', '#00f'];
 
+const tipDialogVisible = inject<Ref<boolean>>('tipDialogVisible')!
+const tipDialogContent = inject<Ref<string>>('tipDialogContent')!
 const getOccupiedNames = (index: number) => {
   const ids = status.value.colorIndexToUserId[index] || [];
   if (ids.length === 0) return "";
@@ -84,6 +89,7 @@ const getOccupiedNames = (index: number) => {
 };
 
 const hasJudge = computed(() => status.value.judgeUserId !== -1);
+const enoughUsers = computed(() => status.value.userIds.length >= 2);
 const canStart = computed(() => hasJudge.value && status.value.userIds.length >= 2);
 
 const handleSelectionChange = (val: string) => {
@@ -94,8 +100,12 @@ const handleSelectionChange = (val: string) => {
   }
 };
 
-const startGame = () => {
-  client.send(new Request(Path.wordSlicerStartGame, {}));
+const startGame = async () => {
+  const res = await client.send(new Request({path: Path.wordSlicerStartGame}));
+  if (res!.error) {
+    tipDialogVisible.value = true;
+    tipDialogContent.value = t(res!.error);
+  }
 };
 const refresh = () => {
   const currentUserId = toNumber(store.getters.currentUserId);

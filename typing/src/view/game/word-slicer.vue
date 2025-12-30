@@ -1,7 +1,5 @@
 <template>
-  <Lobby v-if="status.gameStep==GameStepEnum.selectRule"
-         ref="lobbyRef"
-  ></Lobby>
+  <Lobby v-if="status.gameStep==GameStepEnum.selectRule"></Lobby>
 </template>
 
 <script setup lang="ts">
@@ -15,9 +13,6 @@ import {client, Request, Response} from "../../api/ws.ts";
 import {Path} from "../../utils/constant.ts";
 import {GameStepEnum, WordSlicerStatus} from "../../vo/WordSlicerStatus.ts";
 import Lobby from './word-slicer/lobby.vue';
-
-const lobbyRef = ref<InstanceType<typeof Lobby>>();
-
 
 const {t} = useI18n();
 const store = useStore();
@@ -33,7 +28,8 @@ onMounted(async () => {
   refreshGame = RefreshGameType.from(route.query);
   await refresh(refreshGame);
   client.controllers.set(Path.wordSlicerStatusUpdate, async (req: Request) => {
-    bus().emit(EventName.WordSlicerStatusUpdate, WordSlicerStatus.fromJson(req.data));
+    status.value = WordSlicerStatus.fromJson(req.data);
+    bus().emit(EventName.WordSlicerStatusUpdate, status.value);
     return new Response();
   });
   bus().on(EventName.RefreshGame, (data: RefreshGameType) => {

@@ -1,7 +1,7 @@
 enum GameStepEnum {
   none,
   selectRule,
-  selectedRule,
+  started,
 }
 
 WordSlicerGame wordSlicerGame = WordSlicerGame();

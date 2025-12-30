@@ -33,10 +33,13 @@ class GameSettingsInput extends GameSettings {
       skipChar.value = ks;
     }
   }
-  @override
-  Future<void> onClose() async {
 
-  }
+  @override
+  Future<void> onWebOpen() async {}
+
+  @override
+  Future<void> onClose() async {}
+
   void setIgnoringPunctuation(bool ignoringPunctuation) {
     this.ignoringPunctuation.value = ignoringPunctuation;
     Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.inputGameForIgnoringPunctuation, ignoringPunctuation ? '1' : '0'));

@@ -104,6 +104,9 @@ class GameLogic<T extends GetxController> {
       }
       if (value) {
         try {
+          for (var v in gameTypeToGameSettings.values) {
+            await v.onWebOpen();
+          }
           int gamePort = await web.start();
           state.urls = [];
           var ips = await Ip.getLanIps();

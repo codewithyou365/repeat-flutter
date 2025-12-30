@@ -6,6 +6,9 @@ import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'game.dart';
 
 Future<message.Response?> wordSlicerSelectRole(message.Request req, GameUser user, Server<GameUser> server) async {
+  if (wordSlicerGame.gameStep != GameStepEnum.selectRule) {
+    return message.Response(error: GameServerError.gameStateInvalid.name);
+  }
   String role = req.data['role'];
   int userId = user.id!;
 

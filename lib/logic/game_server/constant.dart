@@ -18,6 +18,8 @@ enum GameServerError {
   contentNotFound,
   editModeDisabled,
   contentCantBeSave,
+  wordSlicerMustHaveJudge,
+  wordSlicerUserCountMustBeMoreThanTwo,
 }
 
 class GameConstant {
@@ -50,4 +52,5 @@ class Path {
   static const blankItRightSubmit = '/api/blankItRightSubmit';
   static const wordSlicerStatus = '/api/wordSlicerStatus';
   static const wordSlicerSelectRole = '/api/wordSlicerSelectRole';
+  static const wordSlicerStartGame = '/api/wordSlicerStartGame';
 }
