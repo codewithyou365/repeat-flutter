@@ -12,8 +12,6 @@
         }"
       >
         {{ index + 1 }}. {{ status.userIdToUserName[userId] }}
-        <b v-if="userId === status.judgeUserId"> (⚖️)</b>
-        <b v-else> ({{ colorIcons[index] }})</b>
       </span>
           <span v-if="index < status.userIds.length - 1" class="separator">➡️</span>
         </template>
@@ -28,31 +26,20 @@
                    :key="index"
                    :label="index.toString()">
         <span :style="{ color: colorHex[index] }">
-          {{ colorIcons[index] }} {{ colorName }}
+          {{ colorName }}
           {{ getOccupiedNames(index) }}
         </span>
-        </nut-radio>
-
-        <nut-radio label="judge"
-                   :disabled="status.judgeUserId !== -1 && status.judgeUserId !== toNumber(store.getters.currentUserId)"
-        >
-          ⚖️ {{ t('isJudge') }} {{
-            status.judgeUserId !== -1 ? `(${status.userIdToUserName[status.judgeUserId]})` : ''
-          }}
         </nut-radio>
       </nut-radio-group>
     </nut-cell>
 
-    <nut-cell v-if="!hasJudge">
-      {{ t('needJudgeToStart') }}
-    </nut-cell>
     <nut-cell v-if="!enoughUsers">
       {{ t('minPlayersRequired') }}
     </nut-cell>
-    <nut-cell v-if="canStart">
+    <nut-cell v-if="enoughUsers">
       <nut-button shape="square" type="primary"
                   @click="startGame"
-                  :disabled="!canStart">
+                  :disabled="!enoughUsers">
         {{ t('startGame') }}
       </nut-button>
     </nut-cell>
@@ -74,11 +61,10 @@ const store = useStore();
 const status = ref<WordSlicerStatus>(new WordSlicerStatus());
 const selectedOption = ref<string>("");
 
-// 静态配置
-const colorNames = [t('red'), t('green'), t('blue')];
-const colorIcons = ['🔴', '🟢', '🔵'];
-const colorHex = ['#f00', '#52c41a', '#00f'];
+const colorNames = [t('orange'), t('violet'), t('blue')];
+const colorHex = ['#f1ac40', '#e18be5', '#0608f1'];
 
+const overlayVisible = inject<Ref<boolean>>('overlayVisible')!
 const tipDialogVisible = inject<Ref<boolean>>('tipDialogVisible')!
 const tipDialogContent = inject<Ref<string>>('tipDialogContent')!
 const getOccupiedNames = (index: number) => {
@@ -88,33 +74,33 @@ const getOccupiedNames = (index: number) => {
   return `(${names.join(', ')})`;
 };
 
-const hasJudge = computed(() => status.value.judgeUserId !== -1);
-const enoughUsers = computed(() => status.value.userIds.length >= 2);
-const canStart = computed(() => hasJudge.value && status.value.userIds.length >= 2);
+const enoughUsers = computed(() => {
+  let count = 0;
+  for (let i = 0; i < 3; i++) {
+    if (status.value.colorIndexToUserId[i].length > 0) {
+      count++;
+    }
+  }
+  return count >= 2;
+});
 
 const handleSelectionChange = (val: string) => {
-  if (val === "judge") {
-    client.send(new Request({path: Path.wordSlicerSelectRole, data: {role: 'judge'}}));
-  } else {
-    client.send(new Request({path: Path.wordSlicerSelectRole, data: {role: 'color', index: parseInt(val)}}));
-  }
+  client.send(new Request({path: Path.wordSlicerSelectRole, data: {index: parseInt(val)}}));
 };
 
 const startGame = async () => {
+  overlayVisible.value = true;
   const res = await client.send(new Request({path: Path.wordSlicerStartGame}));
   if (res!.error) {
     tipDialogVisible.value = true;
     tipDialogContent.value = t(res!.error);
   }
+  overlayVisible.value = false;
 };
 const refresh = () => {
   const currentUserId = toNumber(store.getters.currentUserId);
-  if (status.value.judgeUserId === currentUserId) {
-    selectedOption.value = "judge";
-  } else {
-    const colorIdx = status.value.colorIndexToUserId.findIndex(ids => ids.includes(currentUserId));
-    if (colorIdx !== -1) selectedOption.value = colorIdx.toString();
-  }
+  const colorIdx = status.value.colorIndexToUserId.findIndex(ids => ids.includes(currentUserId));
+  if (colorIdx !== -1) selectedOption.value = colorIdx.toString();
 }
 onMounted(() => {
   bus().on(EventName.WordSlicerStatusUpdate, (data: WordSlicerStatus) => {
@@ -127,7 +113,7 @@ onBeforeUnmount(() => {
 });
 const getUserColor = (userId: number) => {
   const colorIndex = status.value.colorIndexToUserId.findIndex(ids => ids.includes(userId));
-  if (colorIndex !== -1 && userId !== status.value.judgeUserId) {
+  if (colorIndex !== -1) {
     return colorHex[colorIndex];
   }
   return '';
@@ -144,11 +130,15 @@ defineExpose({
 .nut-theme-light {
   --nut-radio-icon-disable-color2: #fa2c19;
 }
+
+.nut-theme-dark {
+  --nut-radio-icon-disable-color2: #fa2c19;
+}
 </style>
 
 <style scoped>
 .lobby {
-  margin: 40px;
+  margin: 12px;
 }
 
 .player-order {

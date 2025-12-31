@@ -2,6 +2,7 @@ import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/common/ws/message.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
+import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
@@ -18,6 +19,7 @@ class GameHelper {
     if (!server.open) {
       return;
     }
+    await Db().db.kvDao.insertKv(Kv(K.lastVerseId, '${stp.verseId}'));
     VerseShow verse = VerseHelp.getCache(stp.verseId)!;
     var now = DateTime.now();
     stp.time += 1;
@@ -34,7 +36,7 @@ class GameHelper {
       createDate: Date.from(now),
     );
     await Db().db.gameDao.tryInsertGame(game);
-    EventBus().publish(EventTopic.newGame, game);
+    EventBus().publish(EventTopic.newGame, stp.verseId);
     await server.server.broadcast(
       Request(
         path: Path.refreshGame,

@@ -1,6 +1,8 @@
 import 'dart:math';
 
 class StringUtil {
+  static final punctuationRegex = RegExp(r'\p{P}', unicode: true);
+
   static List<String> fields(String rawText) {
     return rawText.split(RegExp(r'\s+')).where((element) => element.isNotEmpty).toList();
   }

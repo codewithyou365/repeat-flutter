@@ -29,6 +29,9 @@ class GameSettingsType extends GameSettings {
   Future<void> onWebOpen() async {}
 
   @override
+  Future<void> onWebClose() async {}
+
+  @override
   Future<void> onClose() async {}
 
   void setIgnorePunctuation(bool ignorePunctuation) {

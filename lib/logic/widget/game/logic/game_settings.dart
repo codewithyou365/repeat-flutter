@@ -6,6 +6,7 @@ abstract class GameSettings {
   Future<void> onInit(WebServer web);
 
   Future<void> onWebOpen();
+  Future<void> onWebClose();
 
   Future<void> onClose();
 

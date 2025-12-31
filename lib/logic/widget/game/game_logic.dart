@@ -104,9 +104,6 @@ class GameLogic<T extends GetxController> {
       }
       if (value) {
         try {
-          for (var v in gameTypeToGameSettings.values) {
-            await v.onWebOpen();
-          }
           int gamePort = await web.start();
           state.urls = [];
           var ips = await Ip.getLanIps();
@@ -115,12 +112,18 @@ class GameLogic<T extends GetxController> {
             state.urls.add('https://$url:$gamePort');
           }
           onOpenWeb();
+          for (var v in gameTypeToGameSettings.values) {
+            await v.onWebOpen();
+          }
         } catch (e) {
           Snackbar.show('Error Start Web: $e');
           return;
         }
       } else {
         try {
+          for (var v in gameTypeToGameSettings.values) {
+            await v.onWebClose();
+          }
           await web.stop();
           state.urls = [];
         } catch (e) {

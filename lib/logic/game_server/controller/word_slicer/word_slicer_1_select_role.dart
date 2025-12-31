@@ -9,30 +9,18 @@ Future<message.Response?> wordSlicerSelectRole(message.Request req, GameUser use
   if (wordSlicerGame.gameStep != GameStepEnum.selectRule) {
     return message.Response(error: GameServerError.gameStateInvalid.name);
   }
-  String role = req.data['role'];
   int userId = user.id!;
 
-  if (wordSlicerGame.judgeUserId == userId) {
-    wordSlicerGame.judgeUserId = -1;
-  }
   for (var usersInColor in wordSlicerGame.colorIndexToUserId) {
     usersInColor.removeWhere((id) => id == userId);
   }
 
-  if (role == 'judge') {
-    wordSlicerGame.judgeUserId = userId;
-  } else if (role == 'color') {
-    int? colorIndex = req.data['index'];
-    if (colorIndex != null && colorIndex >= 0 && colorIndex < wordSlicerGame.colorIndexToUserId.length) {
-      wordSlicerGame.colorIndexToUserId[colorIndex].add(userId);
-    }
+  int? colorIndex = req.data['index'];
+  if (colorIndex != null && colorIndex >= 0 && colorIndex < wordSlicerGame.colorIndexToUserId.length) {
+    wordSlicerGame.colorIndexToUserId[colorIndex].add(userId);
   }
   wordSlicerGame.userIds.removeWhere((id) => id == userId);
   wordSlicerGame.userIds.add(userId);
-  if (wordSlicerGame.judgeUserId != -1) {
-    wordSlicerGame.userIds.removeWhere((id) => id == wordSlicerGame.judgeUserId);
-    wordSlicerGame.userIds.add(wordSlicerGame.judgeUserId);
-  }
 
   wordSlicerGame.userIdToUserName['$userId'] = user.name;
 

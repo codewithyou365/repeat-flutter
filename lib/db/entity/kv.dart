@@ -17,6 +17,7 @@ enum K {
   lastGameIndex,
   gamePassword,
   gamePasswordCreateTime,
+  lastVerseId,
 }
 
 @Entity(primaryKeys: ['k'])

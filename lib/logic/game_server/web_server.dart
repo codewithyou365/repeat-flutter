@@ -23,6 +23,7 @@ import 'package:repeat_flutter/logic/game_server/controller/type/type_game_setti
 import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_slicer_0_status.dart';
 import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_slicer_1_select_role.dart';
 import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_slicer_2_start_game.dart';
+import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_slicer_3_submit.dart';
 import 'package:repeat_flutter/logic/widget/game/game_state.dart';
 import 'controller/heart.dart';
 import 'controller/game_user_history.dart';
@@ -64,6 +65,7 @@ class WebServer {
       server.controllers[Path.wordSlicerStatus] = (request) => withGameUserAndGameType(request, GameType.wordSlicer, wordSlicerStatus);
       server.controllers[Path.wordSlicerSelectRole] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerSelectRole);
       server.controllers[Path.wordSlicerStartGame] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerStartGame);
+      server.controllers[Path.wordSlicerSubmit] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerSubmit);
 
       open = true;
     } catch (e) {

@@ -1,3 +1,4 @@
+import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
@@ -28,7 +29,6 @@ class BlankItRightUtils {
     return ignoreCase;
   }
 
-  static final punctuationRegex = RegExp(r'\p{P}', unicode: true);
 
   static String getBlank(Map<String, dynamic> verseMap, bool ignorePunctuation) {
     if (verseMap[MapKeyEnum.blankItRightList.name] == null) {
@@ -45,7 +45,7 @@ class BlankItRightUtils {
 
     for (int i = 0; i < a.length; i++) {
       final aChar = a[i];
-      if (ignorePunctuation && punctuationRegex.hasMatch(aChar)) {
+      if (ignorePunctuation && StringUtil.punctuationRegex.hasMatch(aChar)) {
         buffer.write(aChar);
         continue;
       }

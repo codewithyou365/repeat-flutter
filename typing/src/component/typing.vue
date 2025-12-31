@@ -12,6 +12,7 @@
                 :key="cIndex"
                 class="typing-char"
                 :data-index="ch.index"
+                :style="getCharStyle(ch.index)"
                 :class="getCharClass(ch.index)"
                 :ref="el => setCharRef(el, ch.index)"
                 @click="handleCharClick(ch.index)"
@@ -55,10 +56,13 @@ const props = withDefaults(defineProps<{
   ignoreContentIndexes: number[];
   ignoreCase: boolean;
   ignorePunctuation: boolean;
+  touchColor?: string;
 }>(), {
   clickFillCharWhenDisabled: '',
+  touchColor: '',
 });
 
+const contentIndexToColor = ref<Record<number, string>>({});
 const userInput = ref('');
 const composingInput = ref('');
 const inputRef = ref<HTMLInputElement | null>(null);
@@ -195,7 +199,7 @@ const applyInput = (val: string) => {
 };
 const handleTouch = (e: PointerEvent, type: 'start' | 'move' | 'end') => {
   if (disabled.value) {
-    if (props.clickFillCharWhenDisabled.length === 1) {
+    if (props.clickFillCharWhenDisabled.length === 1 || props.touchColor) {
 
       if (type === 'end') {
         lastHoveredIndex.value = null;
@@ -240,6 +244,16 @@ const handleCharTouch = (e: PointerEvent | null, index: number) => {
             userInput.value.slice(0, pos) +
             fillChar +
             userInput.value.slice(pos + 1);
+      }
+    } else if (props.touchColor) {
+      const pos = index;
+      if (isIgnore(props.content[pos], pos)) {
+        return;
+      }
+      if (contentIndexToColor.value[pos]) {
+        delete contentIndexToColor.value[pos];
+      } else {
+        contentIndexToColor.value[pos] = props.touchColor;
       }
     }
     return;
@@ -329,6 +343,22 @@ const getDisplayChar = (index: number) => {
     return userInput.value[index] === ' ' ? '⎵' : userInput.value[index];
   }
 };
+const getCharStyle = (index: number) => {
+  const originalChar = chars.value[index];
+  const color = contentIndexToColor.value[index];
+  if (color) {
+    let borderBottomColor = color;
+    if (isIgnore(originalChar, index)) {
+      borderBottomColor = '#999';
+    }
+    return {
+      color: color,
+      borderBottomColor: borderBottomColor,
+      opacity: 1
+    };
+  }
+  return {};
+};
 
 const getCharClass = (index: number) => {
   const classes: string[] = [];
@@ -406,8 +436,16 @@ defineExpose({
     nextTick(positionInput)
   },
 
+  initContentIndexToColor(val: Record<number, string>) {
+    contentIndexToColor.value = val
+  },
+
   getUserInput() {
     return userInput.value;
+  },
+
+  getContentIndexToColor() {
+    return contentIndexToColor.value;
   },
 })
 </script>

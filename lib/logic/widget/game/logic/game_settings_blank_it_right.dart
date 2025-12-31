@@ -8,6 +8,7 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/db/entity/game_user_score.dart';
+import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/step.dart';
@@ -29,15 +30,15 @@ class GameSettingsBlankItRight extends GameSettings {
   List<GameUser> users = [];
   Map<int, int> userIdToScore = {};
   final SubList<WsEvent> sub = [];
-  final SubList<Game> subNewGame = [];
+  final SubList<int> subNewGame = [];
 
   @override
   Future<void> onInit(WebServer web) async {
     this.web = web;
     users = await Db().db.gameUserDao.getAllUser();
     Step.blanking(userIds: users.map((user) => user.getId()).toList());
-    subNewGame.on([EventTopic.newGame], (game) async {
-      verseId = game?.verseId ?? 0;
+    subNewGame.on([EventTopic.newGame], (verseId) async {
+      this.verseId = verseId ?? 0;
       Step.blanking(userIds: users.map((user) => user.getId()).toList());
     });
     sub.on([EventTopic.wsEvent], (wsEvent) async {
@@ -60,7 +61,12 @@ class GameSettingsBlankItRight extends GameSettings {
   }
 
   @override
-  Future<void> onWebOpen() async {}
+  Future<void> onWebOpen() async {
+    verseId = await Db().db.kvDao.getInt(K.lastVerseId) ?? 0;
+  }
+
+  @override
+  Future<void> onWebClose() async {}
 
   Future<void> initUsers({bool broadcast = false}) async {
     var userId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForEditorUserId);
