@@ -57,6 +57,7 @@ class GameLogic<T extends GetxController> {
     for (var v in gameTypeToGameSettings.values) {
       await v.onInit(web);
     }
+    state.game.value = GameState.lastGameIndex - 1;
     sub.off();
     subAllowRegisterNumber.off();
     state.online.value = getOnline();
