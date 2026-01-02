@@ -35,6 +35,41 @@
       <nut-button style="width: 50%" shape="square" type="info" @click="refresh">{{ t('reset') }}</nut-button>
     </div>
 
+    <div v-if="status.gameStep === GameStepEnum.finished">
+      <nut-cell-group :title="scoreDescription">
+        <nut-cell
+            v-for="(stat, index) in status.colorIndexToStat"
+            :key="index"
+        >
+          <template #title>
+        <span :style="{ color: colorHex[index], fontWeight: 'bold' }">
+          {{ colorNames[index] }}
+        </span>
+          </template>
+          <template #desc>
+            {{ t('correctChar') }} {{ stat.rightCount }} <br/>
+            {{ t('wrongChar') }} {{ stat.errorCount }} <br/>
+            {{ t('scoreTitle') }} <strong>{{ stat.score }}</strong>
+          </template>
+        </nut-cell>
+      </nut-cell-group>
+
+      <nut-cell-group :title="t('playerScore')">
+        <nut-cell
+            v-for="(userId, index) in status.userIds"
+            :key="index"
+        >
+          <template #title>
+        <span :style="{ color: colorHex[getColorIndex(userId)], fontWeight: 'bold' }">
+          {{ status.userIdToUserName[userId] }}
+        </span>
+          </template>
+          <template #desc>
+            {{ t('scoreTitle') }} {{ getUserScore(userId) }} <br/>
+          </template>
+        </nut-cell>
+      </nut-cell-group>
+    </div>
   </div>
 </template>
 
@@ -42,7 +77,7 @@
 import {ref, computed, onMounted, onBeforeUnmount, inject, Ref, nextTick} from 'vue';
 import {client, Request} from '../../../api/ws';
 import {Path} from '../../../utils/constant.ts';
-import {WordSlicerStatus} from "../../../vo/WordSlicerStatus.ts";
+import {GameStepEnum, WordSlicerStatus, Word} from "../../../vo/WordSlicerStatus.ts";
 import {bus, EventName} from "../../../api/bus.ts";
 import {useI18n} from "vue-i18n";
 import {useStore} from "vuex";
@@ -54,15 +89,21 @@ const store = useStore();
 const status = ref<WordSlicerStatus>(new WordSlicerStatus());
 const ignoreContentIndexes = ref<number[]>([]);
 const typingRef = ref<InstanceType<typeof Typing>>();
-const colorHex = ['#f1ac40', '#e18be5', '#0608f1'];
+const colorNames = [t('orange'), t('violet'), t('cyan')];
+const colorHex = ['#f1ac40', '#e18be5', '#78fbfd'];
 
 const overlayVisible = inject<Ref<boolean>>('overlayVisible')!;
 const tipDialogVisible = inject<Ref<boolean>>('tipDialogVisible')!;
 const tipDialogContent = inject<Ref<string>>('tipDialogContent')!;
-
+const scoreDescription = computed(() =>
+    t('eachCharScore', {score: status.value.scoreEachChar()})
+);
 const currentUserId = computed(() => toNumber(store.getters.currentUserId));
 
 const isMyTurn = computed(() => {
+  if (status.value.gameStep == GameStepEnum.finished) {
+    return false;
+  }
   return status.value.userIds[status.value.currUserIndex] === currentUserId.value;
 });
 
@@ -75,6 +116,9 @@ const getUserColor = (userId: number) => {
   return idx !== -1 ? colorHex[idx] : '#999';
 };
 
+const getUserScore = (userId: number) => {
+  return status.value.userIdToScore[userId];
+};
 
 const getCurrUserColor = computed(() => {
   if (isMyTurn.value) {
@@ -137,14 +181,27 @@ const submit = async () => {
 const refresh = async () => {
   const ignoreIndexes: number[] = [];
   const contentIndexToColor: Record<number, string> = {};
-  for (let i = 0; i < colorHex.length; i++) {
-    const selectedContentIndex = i < status.value.colorIndexToSelectedContentIndex.length ? status.value.colorIndexToSelectedContentIndex[i] : null;
-    if (!selectedContentIndex) {
-      continue;
+  if (status.value.gameStep == GameStepEnum.finished) {
+    const words: Word[] = status.value.getResult();
+    for (const word of words) {
+      const baseColor = colorHex[word.colorIndex];
+      const resultColor = word.right ? '#0f0' : '#f00';
+
+      for (let i = word.start; i <= word.end; i++) {
+        contentIndexToColor[i] = `${baseColor},${resultColor}`;
+        ignoreIndexes.push(i);
+      }
     }
-    for (let j = 0; j < selectedContentIndex.length; j++) {
-      contentIndexToColor[selectedContentIndex[j]] = colorHex[i];
-      ignoreIndexes.push(selectedContentIndex[j]);
+  } else {
+    for (let i = 0; i < colorHex.length; i++) {
+      const selectedContentIndex = i < status.value.colorIndexToSelectedContentIndex.length ? status.value.colorIndexToSelectedContentIndex[i] : null;
+      if (!selectedContentIndex) {
+        continue;
+      }
+      for (let j = 0; j < selectedContentIndex.length; j++) {
+        contentIndexToColor[selectedContentIndex[j]] = colorHex[i];
+        ignoreIndexes.push(selectedContentIndex[j]);
+      }
     }
   }
   ignoreContentIndexes.value = ignoreIndexes.sort();
@@ -165,7 +222,11 @@ onBeforeUnmount(() => {
   bus().off(EventName.WordSlicerStatusUpdate);
 });
 </script>
-
+<style>
+.nut-theme-light {
+  --nut-cell-desc-color: black;
+}
+</style>
 <style scoped>
 .lobby {
   margin: 12px;

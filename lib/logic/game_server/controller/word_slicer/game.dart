@@ -1,6 +1,12 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:repeat_flutter/common/string_util.dart';
+import 'package:repeat_flutter/common/ws/message.dart' as message;
+import 'package:repeat_flutter/common/ws/server.dart';
+import 'package:repeat_flutter/logic/game_server/constant.dart';
+import 'package:repeat_flutter/db/entity/game_user.dart';
+
 class Word {
   int start;
   int end;
@@ -26,9 +32,16 @@ enum GameStepEnum {
 
 WordSlicerGame wordSlicerGame = WordSlicerGame();
 
+class Stat {
+  int rightCount = 0;
+  int errorCount = 0;
+  int score = 0;
+}
+
 class WordSlicerGame {
   Timer? _timer;
   int timerInterval = 10;
+  int maxScore = 10;
   int verseId = -1;
   GameStepEnum gameStep = GameStepEnum.selectRule;
   List<List<int>> colorIndexToUserId = [[], [], []];
@@ -37,12 +50,13 @@ class WordSlicerGame {
   int currUserIndex = -1;
   String content = '';
   String rawContent = '';
+  String answer = '';
   List<List<int>> colorIndexToSelectedContentIndex = [[], [], []];
-  List<int> colorIndexToScore = [0, 0, 0];
+  List<Stat> colorIndexToStat = [Stat(), Stat(), Stat()];
+  Map<String, int> userIdToScore = {};
 
   void clear() {
     _timer?.cancel();
-    timerInterval = 10;
     verseId = -1;
     gameStep = GameStepEnum.selectRule;
     colorIndexToUserId = [[], [], []];
@@ -51,8 +65,33 @@ class WordSlicerGame {
     currUserIndex = -1;
     content = '';
     rawContent = '';
+    answer = '';
     colorIndexToSelectedContentIndex = [[], [], []];
-    colorIndexToScore = [0, 0, 0];
+    colorIndexToStat = [Stat(), Stat(), Stat()];
+    userIdToScore = {};
+  }
+
+  void setForNewGame(String answer, Server<GameUser> server) {
+    if (gameStep == GameStepEnum.selectRule) {
+      clear();
+      return;
+    }
+    gameStep = GameStepEnum.started;
+    currUserIndex = 0;
+    content = answer.replaceAll(" ", "").replaceAll(StringUtil.punctuationRegex, "").toLowerCase();
+    answer = answer.replaceAll(StringUtil.punctuationRegex, " ");
+    while (answer.contains("  ")) {
+      answer = answer.replaceAll("  ", " ");
+    }
+    rawContent = answer.toLowerCase().trim();
+    this.answer = '';
+    colorIndexToSelectedContentIndex = [[], [], []];
+    colorIndexToStat = [Stat(), Stat(), Stat()];
+    userIdToScore = {};
+    wordSlicerGame.start(() {
+      wordSlicerGame.nextUser();
+      server.broadcast(message.Request(path: Path.wordSlicerStatusUpdate, data: wordSlicerGame.toJson()));
+    });
   }
 
   void start(VoidCallback onTick) {
@@ -84,7 +123,7 @@ class WordSlicerGame {
     return true;
   }
 
-  List<Word> extractConsecutiveWord(List<int> indexes, int colorIndex) {
+  List<Word> _extractConsecutiveWord(List<int> indexes, int colorIndex) {
     if (indexes.isEmpty) return [];
 
     indexes.sort();
@@ -106,12 +145,12 @@ class WordSlicerGame {
     return ranges;
   }
 
-  List<Word> getColorIndexToWords() {
+  List<Word> _getColorIndexToWords() {
     final List<Word> result = [];
 
     for (int i = 0; i < 3; i++) {
       final selectedIndexes = colorIndexToSelectedContentIndex[i].toSet().toList();
-      result.addAll(extractConsecutiveWord(selectedIndexes, i));
+      result.addAll(_extractConsecutiveWord(selectedIndexes, i));
     }
 
     result.sort((a, b) => a.start.compareTo(b.start));
@@ -124,7 +163,7 @@ class WordSlicerGame {
     return result;
   }
 
-  List<Word> getAnswerWords() {
+  List<Word> _getAnswerWords() {
     final List<Word> result = [];
     if (rawContent.isEmpty || content.isEmpty) return result;
     final words = rawContent.split(' ');
@@ -148,17 +187,16 @@ class WordSlicerGame {
     return result;
   }
 
-  List<int> getColorIndexToScore() {
+  void setResult() {
     final List<double> temp = [0, 0, 0];
-    final List<int> result = [0, 0, 0];
-    const int maxScore = 10;
+    colorIndexToStat = [Stat(), Stat(), Stat()];
 
-    if (content.isEmpty) return result;
+    if (content.isEmpty) return;
 
     final double scoreEachChar = maxScore / content.length;
 
-    final List<Word> answerWords = getAnswerWords();
-    final List<Word> selectedWords = getColorIndexToWords();
+    final List<Word> answerWords = _getAnswerWords();
+    final List<Word> selectedWords = _getColorIndexToWords();
 
     for (final selected in selectedWords) {
       final double delta = (selected.word.length * scoreEachChar);
@@ -168,9 +206,11 @@ class WordSlicerGame {
           hit = true;
           if (answer.word != selected.word) {
             temp[selected.colorIndex] -= delta;
+            colorIndexToStat[selected.colorIndex].errorCount += selected.word.length;
             selected.right = false;
           } else {
             temp[selected.colorIndex] += delta;
+            colorIndexToStat[selected.colorIndex].rightCount += selected.word.length;
             selected.right = true;
           }
           break;
@@ -178,13 +218,23 @@ class WordSlicerGame {
       }
       if (!hit) {
         temp[selected.colorIndex] -= delta;
+        colorIndexToStat[selected.colorIndex].errorCount += selected.word.length;
         selected.right = false;
       }
     }
     for (final entry in temp.asMap().entries) {
-      result[entry.key] = entry.value.round();
+      colorIndexToStat[entry.key].score = entry.value.round();
     }
-    return result;
+
+    for (var userId in userIds) {
+      final idx = getColorIndex(userId);
+      if (idx == -1) continue;
+
+      final userCount = colorIndexToUserId[idx].length;
+      if (userCount == 0) continue;
+
+      userIdToScore[userId.toString()] = (colorIndexToStat[idx].score / userCount).round();
+    }
   }
 
   int differentColorUsers() {
@@ -208,6 +258,7 @@ class WordSlicerGame {
 
   Map<String, dynamic> toJson() {
     return {
+      'maxScore': maxScore,
       'verseId': verseId,
       'gameStep': gameStep.name,
       'colorIndexToUserId': colorIndexToUserId,
@@ -215,8 +266,10 @@ class WordSlicerGame {
       'userIdToUserName': userIdToUserName,
       'currUserIndex': currUserIndex,
       'content': content,
+      'answer': answer,
       'colorIndexToSelectedContentIndex': colorIndexToSelectedContentIndex,
-      'colorIndexToScore': colorIndexToScore,
+      'colorIndexToStat': colorIndexToStat.map((s) => {'rightCount': s.rightCount, 'errorCount': s.errorCount, 'score': s.score}).toList(),
+      'userIdToScore': userIdToScore,
     };
   }
 }

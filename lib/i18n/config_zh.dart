@@ -326,5 +326,6 @@ class ConfigZh extends Config {
     put(I18nKey.clear, "清除");
     put(I18nKey.noPassword, "无密码");
     put(I18nKey.obtainedInTheGame, "游戏中获得");
+    put(I18nKey.deductedInTheGame, "游戏中扣除");
   }
 }

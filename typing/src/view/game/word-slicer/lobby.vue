@@ -61,8 +61,8 @@ const store = useStore();
 const status = ref<WordSlicerStatus>(new WordSlicerStatus());
 const selectedOption = ref<string>("");
 
-const colorNames = [t('orange'), t('violet'), t('blue')];
-const colorHex = ['#f1ac40', '#e18be5', '#0608f1'];
+const colorNames = [t('orange'), t('violet'), t('cyan')];
+const colorHex = ['#f1ac40', '#e18be5', '#78fbfd'];
 
 const overlayVisible = inject<Ref<boolean>>('overlayVisible')!
 const tipDialogVisible = inject<Ref<boolean>>('tipDialogVisible')!

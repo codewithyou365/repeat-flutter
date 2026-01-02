@@ -345,10 +345,14 @@ const getDisplayChar = (index: number) => {
 };
 const getCharStyle = (index: number) => {
   const originalChar = chars.value[index];
-  const color = contentIndexToColor.value[index];
+  let color: string = contentIndexToColor.value[index];
   if (color) {
     let borderBottomColor = color;
-    if (isIgnore(originalChar, index)) {
+    if (color.indexOf(',') != -1) {
+      const colors: string[] = color.split(',');
+      color = colors[0];
+      borderBottomColor = colors[1];
+    } else if (isIgnore(originalChar, index)) {
       borderBottomColor = '#999';
     }
     return {

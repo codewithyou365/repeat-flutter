@@ -326,5 +326,6 @@ class ConfigEn extends Config {
     put(I18nKey.clear, "Clear");
     put(I18nKey.noPassword, "No Password");
     put(I18nKey.obtainedInTheGame, "Obtained In The Game");
+    put(I18nKey.deductedInTheGame, "Deducted In The Game");
   }
 }

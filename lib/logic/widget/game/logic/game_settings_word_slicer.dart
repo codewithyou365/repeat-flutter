@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/ws/server.dart';
@@ -13,6 +15,7 @@ import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/step.
 import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/utils.dart';
 import 'package:repeat_flutter/logic/game_server/controller/word_slicer/game.dart';
 import 'package:repeat_flutter/logic/game_server/web_server.dart';
+import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 
 import 'game_settings.dart';
@@ -35,8 +38,13 @@ class GameSettingsWordSlicer extends GameSettings {
     users = await Db().db.gameUserDao.getAllUser();
     Step.blanking(userIds: users.map((user) => user.getId()).toList());
     subNewGame.on([EventTopic.newGame], (verseId) async {
-      wordSlicerGame.clear();
       wordSlicerGame.verseId = verseId ?? 0;
+      final verse = VerseHelp.getCache(wordSlicerGame.verseId);
+      if (verse != null) {
+        final verseMap = jsonDecode(verse.verseContent);
+        String answer = verseMap['a'] ?? '';
+        wordSlicerGame.setForNewGame(answer, this.web.server);
+      }
     });
     sub.on([EventTopic.wsEvent], (wsEvent) async {
       if (wsEvent == null) {

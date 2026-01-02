@@ -18,7 +18,6 @@ Future<message.Response?> wordSlicerStartGame(message.Request req, GameUser user
   if (wordSlicerGame.differentColorUsers() < 2) {
     return message.Response(error: GameServerError.wordSlicerDifferentColorUserCountMustBeMoreThanTwo.name);
   }
-  wordSlicerGame.gameStep = GameStepEnum.started;
   final verse = VerseHelp.getCache(wordSlicerGame.verseId);
   if (verse == null) {
     return message.Response(error: GameServerError.gameNotFound.name);
@@ -26,19 +25,9 @@ Future<message.Response?> wordSlicerStartGame(message.Request req, GameUser user
   final verseMap = jsonDecode(verse.verseContent);
   String answer = verseMap['a'] ?? '';
 
-  wordSlicerGame.content = answer.replaceAll(" ", "").replaceAll(StringUtil.punctuationRegex, "").toLowerCase();
+  wordSlicerGame.gameStep = GameStepEnum.started;
+  wordSlicerGame.setForNewGame(answer, server);
 
-  answer = answer.replaceAll(StringUtil.punctuationRegex, " ");
-  while (answer.contains("  ")) {
-    answer = answer.replaceAll("  ", " ");
-  }
-  wordSlicerGame.rawContent = answer;
-
-  wordSlicerGame.currUserIndex = 0;
-  wordSlicerGame.start(() {
-    wordSlicerGame.nextUser();
-    server.broadcast(message.Request(path: Path.wordSlicerStatusUpdate, data: wordSlicerGame.toJson()));
-  });
   server.broadcast(message.Request(path: Path.wordSlicerStatusUpdate, data: wordSlicerGame.toJson()));
   return message.Response();
 }

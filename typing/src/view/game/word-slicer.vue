@@ -1,6 +1,6 @@
 <template>
   <Lobby v-if="status.gameStep==GameStepEnum.selectRule"></Lobby>
-  <Game v-if="status.gameStep==GameStepEnum.started|| status.gameStep==GameStepEnum.finished"></Game>
+  <Game v-if="status.gameStep==GameStepEnum.started || status.gameStep==GameStepEnum.finished"></Game>
 </template>
 
 <script setup lang="ts">
