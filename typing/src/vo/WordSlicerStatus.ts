@@ -179,7 +179,7 @@ export class WordSlicerStatus {
         return selectedWords;
     }
 
-    private extractConsecutiveWord(
+    extractConsecutiveWord(
         indexes: number[],
         colorIndex: number,
     ): Word[] {

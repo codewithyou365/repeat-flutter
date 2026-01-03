@@ -7,8 +7,6 @@
 
 import {ref, inject, onMounted, Ref, nextTick} from "vue";
 import {bus, EventName, RefreshGameType} from "../../api/bus.ts";
-import {useI18n} from "vue-i18n";
-import {useStore} from "vuex";
 import {useRoute, useRouter} from "vue-router";
 import {client, Request, Response} from "../../api/ws.ts";
 import {Path} from "../../utils/constant.ts";
@@ -16,14 +14,10 @@ import {GameStepEnum, WordSlicerStatus} from "../../vo/WordSlicerStatus.ts";
 import Lobby from './word-slicer/lobby.vue';
 import Game from './word-slicer/game.vue';
 
-const {t} = useI18n();
-const store = useStore();
 const route = useRoute();
 const router = useRouter();
 
 const overlayVisible = inject<Ref<boolean>>('overlayVisible')!
-const tipDialogVisible = inject<Ref<boolean>>('tipDialogVisible')!
-const tipDialogContent = inject<Ref<string>>('tipDialogContent')!
 const status = ref<WordSlicerStatus>(new WordSlicerStatus());
 let refreshGame: RefreshGameType;
 onMounted(async () => {

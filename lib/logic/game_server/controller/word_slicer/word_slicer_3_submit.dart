@@ -16,9 +16,16 @@ Future<message.Response?> wordSlicerSubmit(message.Request req, GameUser user, S
   }
 
   int colorIndex = wordSlicerGame.getColorIndex(user.getId());
-  wordSlicerGame.colorIndexToSelectedContentIndex[colorIndex].addAll(List<int>.from(req.data));
+  List<int> selectedIndexed = List<int>.from(req.data);
+  if (selectedIndexed.isEmpty) {
+    wordSlicerGame.abandonUserIds[user.getId()] = true;
+  } else {
+    wordSlicerGame.abandonUserIds.remove(user.getId());
+  }
+
+  wordSlicerGame.colorIndexToSelectedContentIndex[colorIndex].addAll(selectedIndexed);
   bool selectedAll = wordSlicerGame.isSelectedAll();
-  if (selectedAll) {
+  if (selectedAll || wordSlicerGame.abandonUserIds.length == wordSlicerGame.userIds.length) {
     wordSlicerGame.gameStep = GameStepEnum.finished;
     wordSlicerGame.answer = wordSlicerGame.rawContent;
     wordSlicerGame.setResult();

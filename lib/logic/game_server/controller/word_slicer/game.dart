@@ -1,11 +1,4 @@
-import 'dart:async';
-import 'dart:ui';
-
 import 'package:repeat_flutter/common/string_util.dart';
-import 'package:repeat_flutter/common/ws/message.dart' as message;
-import 'package:repeat_flutter/common/ws/server.dart';
-import 'package:repeat_flutter/logic/game_server/constant.dart';
-import 'package:repeat_flutter/db/entity/game_user.dart';
 
 class Word {
   int start;
@@ -39,8 +32,9 @@ class Stat {
 }
 
 class WordSlicerGame {
-  Timer? _timer;
-  int timerInterval = 10;
+  String rawContent = '';
+  Map<int, bool> abandonUserIds = {};
+
   int maxScore = 10;
   int verseId = -1;
   GameStepEnum gameStep = GameStepEnum.selectRule;
@@ -49,14 +43,15 @@ class WordSlicerGame {
   Map<String, String> userIdToUserName = {};
   int currUserIndex = -1;
   String content = '';
-  String rawContent = '';
   String answer = '';
   List<List<int>> colorIndexToSelectedContentIndex = [[], [], []];
   List<Stat> colorIndexToStat = [Stat(), Stat(), Stat()];
   Map<String, int> userIdToScore = {};
 
   void clear() {
-    _timer?.cancel();
+    rawContent = '';
+    abandonUserIds = {};
+
     verseId = -1;
     gameStep = GameStepEnum.selectRule;
     colorIndexToUserId = [[], [], []];
@@ -64,18 +59,19 @@ class WordSlicerGame {
     userIdToUserName = {};
     currUserIndex = -1;
     content = '';
-    rawContent = '';
     answer = '';
     colorIndexToSelectedContentIndex = [[], [], []];
     colorIndexToStat = [Stat(), Stat(), Stat()];
     userIdToScore = {};
   }
 
-  void setForNewGame(String answer, Server<GameUser> server) {
+  void setForNewGame(String answer) {
     if (gameStep == GameStepEnum.selectRule) {
       clear();
       return;
     }
+    abandonUserIds = {};
+
     gameStep = GameStepEnum.started;
     currUserIndex = 0;
     content = answer.replaceAll(" ", "").replaceAll(StringUtil.punctuationRegex, "").toLowerCase();
@@ -88,17 +84,6 @@ class WordSlicerGame {
     colorIndexToSelectedContentIndex = [[], [], []];
     colorIndexToStat = [Stat(), Stat(), Stat()];
     userIdToScore = {};
-    wordSlicerGame.start(() {
-      wordSlicerGame.nextUser();
-      server.broadcast(message.Request(path: Path.wordSlicerStatusUpdate, data: wordSlicerGame.toJson()));
-    });
-  }
-
-  void start(VoidCallback onTick) {
-    _timer?.cancel();
-    // _timer = Timer.periodic(Duration(seconds: timerInterval), (t) {
-    //   onTick();
-    // });
   }
 
   void nextUser() {

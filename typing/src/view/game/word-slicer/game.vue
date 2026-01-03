@@ -7,7 +7,7 @@
               class="player-tag"
               :class="{
                 'is-me': userId === currentUserId,
-                'is-active': index === status.currUserIndex
+                'is-active': index === status.currUserIndex && status.gameStep == GameStepEnum.started
               }"
               :style="{
                 borderLeft: getUserColor(userId) ? `8px solid ${getUserColor(userId)}` : 'none',
@@ -34,7 +34,9 @@
       <nut-button style="width: 50%" shape="square" type="primary" @click="submit">{{ t('submit') }}</nut-button>
       <nut-button style="width: 50%" shape="square" type="info" @click="refresh">{{ t('reset') }}</nut-button>
     </div>
-
+    <div v-if="status.gameStep === GameStepEnum.started">
+      <nut-cell> {{ t('wordSlicerEndDesc') }}</nut-cell>
+    </div>
     <div v-if="status.gameStep === GameStepEnum.finished">
       <nut-cell-group :title="scoreDescription">
         <nut-cell
@@ -245,11 +247,21 @@ onBeforeUnmount(() => {
   font-size: 14px;
 }
 
+
+.separator {
+  color: #ccc;
+  font-size: 12px;
+}
+
+.actions {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
 .player-tag {
   padding: 2px 8px;
   background: #f0f0f0;
   border-radius: 4px;
-  color: #666;
   transition: all 0.2s;
   border: 1px solid transparent;
 }
@@ -260,32 +272,23 @@ onBeforeUnmount(() => {
 }
 
 .player-tag.is-active {
-  background-color: #fff;
-  box-shadow: 0 0 0 2px #fa2c19;
+  border-right-width: 3px;
+  border-right-color: #fa2c19;
 }
 
-.separator {
-  color: #ccc;
-  font-size: 12px;
-}
-
-
-.actions {
-  margin-top: 20px;
-  margin-bottom: 20px;
+.nut-theme-dark .player-tag.is-me {
+  color: white;
 }
 
 .nut-theme-dark .player-tag {
+  color: #e5e5e5;
   background: #333;
-  color: #bbb;
-  border-color: #444;
-}
-
-.nut-theme-dark .player-tag.is-active {
-  box-shadow: 0 0 0 2px #fa2c19;
+  border-top-color: #444;
+  border-bottom-color: #444;
 }
 
 .nut-theme-dark {
   background: #1e1e1e;
 }
+
 </style>

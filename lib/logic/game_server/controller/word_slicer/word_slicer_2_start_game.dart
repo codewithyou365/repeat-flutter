@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ui';
 
-import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
@@ -26,7 +24,7 @@ Future<message.Response?> wordSlicerStartGame(message.Request req, GameUser user
   String answer = verseMap['a'] ?? '';
 
   wordSlicerGame.gameStep = GameStepEnum.started;
-  wordSlicerGame.setForNewGame(answer, server);
+  wordSlicerGame.setForNewGame(answer);
 
   server.broadcast(message.Request(path: Path.wordSlicerStatusUpdate, data: wordSlicerGame.toJson()));
   return message.Response();

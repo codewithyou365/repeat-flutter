@@ -43,7 +43,7 @@ class GameSettingsWordSlicer extends GameSettings {
       if (verse != null) {
         final verseMap = jsonDecode(verse.verseContent);
         String answer = verseMap['a'] ?? '';
-        wordSlicerGame.setForNewGame(answer, this.web.server);
+        wordSlicerGame.setForNewGame(answer);
       }
     });
     sub.on([EventTopic.wsEvent], (wsEvent) async {
