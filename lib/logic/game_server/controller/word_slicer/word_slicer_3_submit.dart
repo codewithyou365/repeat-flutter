@@ -35,9 +35,9 @@ Future<message.Response?> wordSlicerSubmit(message.Request req, GameUser user, S
       final remark = score > 0 ? "i:${I18nKey.obtainedInTheGame.name}" : "i:${I18nKey.deductedInTheGame.name}";
       await Db().db.gameUserScoreDao.inc(int.parse(userId), GameType.wordSlicer, score, remark);
     }
-  } else {
-    wordSlicerGame.nextUser();
   }
+
+  wordSlicerGame.nextUser();
 
   server.broadcast(message.Request(path: Path.wordSlicerStatusUpdate, data: wordSlicerGame.toJson()));
   return message.Response();

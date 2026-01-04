@@ -73,7 +73,6 @@ class WordSlicerGame {
     abandonUserIds = {};
 
     gameStep = GameStepEnum.started;
-    currUserIndex = 0;
     content = answer.replaceAll(" ", "").replaceAll(StringUtil.punctuationRegex, "").toLowerCase();
     answer = answer.replaceAll(StringUtil.punctuationRegex, " ");
     while (answer.contains("  ")) {
