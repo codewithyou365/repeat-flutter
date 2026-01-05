@@ -34,12 +34,14 @@ export class Response {
     data: any;
     error: string;
     status: number;
+    age: number;
 
-    constructor({headers = new Map(), data = '', error = '', status = 200}: Partial<Response> = {}) {
+    constructor({headers = new Map(), data = '', error = '', status = 200, age = 0}: Partial<Response> = {}) {
         this.headers = headers;
         this.data = data;
         this.error = error;
         this.status = status;
+        this.age = age;
     }
 
     static fromJson(json: Partial<Response>): Response {
@@ -108,9 +110,7 @@ export class Node {
 
         const completer = this.sendId2Res.get(msg.id);
         if (completer) {
-            const headers = new Map();
-            headers.set(Header.age, `${this.age}`);
-            msg.response!.headers = headers;
+            msg.response!.age = this.age;
             completer.resolve(msg.response);
             this.sendId2Res.delete(msg.id);
         }
@@ -144,8 +144,12 @@ export class Node {
             if (this.sendId2Res.delete(id)) {
                 this.sendId2Log.delete(id);
                 const headers = new Map<string, string>();
-                headers.set(Header.age, `${age}`);
-                completer.resolve(new Response({headers: headers, error: 'timeout', status: 504}));
+                completer.resolve(new Response({
+                    headers: headers,
+                    error: 'timeout',
+                    status: 504,
+                    age: age,
+                }));
             }
         }, 10000);
 
@@ -259,7 +263,7 @@ class Client {
         let age = -1;
         try {
             const res = await this.heartSender();
-            age = parseInt(res.headers.get(Header.age) ?? '-1');
+            age = res.age;
             if (res.status === 200 && res.error === '') {
                 this.heart = setTimeout(() => {
                     this._loopHeart();

@@ -25,10 +25,6 @@ class LatestGameRes {
 }
 
 Future<message.Response?> heart(message.Request req, GameUser? user) async {
-  if (req.headers[Header.age.name] == null) {
-    return message.Response(error: GameServerError.serviceStopped.name);
-  }
-
   if (user == null) {
     return message.Response(error: GameServerError.serviceStopped.name);
   }

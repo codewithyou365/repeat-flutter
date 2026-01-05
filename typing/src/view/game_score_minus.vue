@@ -68,7 +68,7 @@
 import {computed, onMounted, ref, watch} from 'vue'
 import {useI18n} from 'vue-i18n'
 import {client, Request} from "../api/ws.ts";
-import {Path} from "../utils/constant.ts";
+import {GameType, Path} from "../utils/constant.ts";
 import {showToast} from '@nutui/nutui'
 
 const tipDialogVisible = ref(false);
@@ -121,7 +121,8 @@ watch(() => form.value.customReason, (newVal) => {
 const scores = ref<{ [key: number]: number }>({})
 
 const gameTypeColumns = computed(() => [
-  {text: t('gameTypeBlankItRight') + ` (${scores.value[2] ?? 0})`, value: 2},
+  {text: t('gameTypeBlankItRight') + ` (${scores.value[GameType.BLANK_IT_RIGHT.code] ?? 0})`, value: 2},
+  {text: t('gameTypeWordSlicer') + ` (${scores.value[GameType.WORD_SLICER.code] ?? 0})`, value: 2},
 ])
 
 onMounted(async () => {

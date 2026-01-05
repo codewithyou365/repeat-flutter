@@ -1,4 +1,3 @@
 enum MapKeyEnum {
-  blankItRightUsingIndex,
-  blankItRightList,
+  wordSlicerText,
 }

@@ -13,13 +13,11 @@ Future<void> responseHandler(
 ) async {
   Response? res;
   final req = msg.request!;
-  req.headers[Header.age.name] = msg.age.toString();
   final controller = controllers[req.path];
   if (controller != null) {
     try {
       res = await controller(req) ?? Response(status: 501);
     } catch (e) {
-      print(e.toString());
       res = Response(status: 500, error: e.toString());
     }
   } else {
@@ -34,7 +32,6 @@ Future<void> responseHandler(
 
 enum Header {
   wsHashCode,
-  age,
 }
 
 enum MessageType {

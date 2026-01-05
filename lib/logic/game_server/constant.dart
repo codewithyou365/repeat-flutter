@@ -54,5 +54,7 @@ class Path {
   static const wordSlicerSelectRole = '/api/wordSlicerSelectRole';
   static const wordSlicerStartGame = '/api/wordSlicerStartGame';
   static const wordSlicerSubmit = '/api/wordSlicerSubmit';
+  static const wordSlicerEdit = '/api/wordSlicerEdit';
+
 
 }

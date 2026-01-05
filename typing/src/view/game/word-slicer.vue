@@ -5,7 +5,7 @@
 
 <script setup lang="ts">
 
-import {ref, inject, onMounted, Ref, nextTick} from "vue";
+import {ref, inject, onMounted, Ref, nextTick, provide} from "vue";
 import {bus, EventName, RefreshGameType} from "../../api/bus.ts";
 import {useRoute, useRouter} from "vue-router";
 import {client, Request, Response} from "../../api/ws.ts";
@@ -16,6 +16,11 @@ import Game from './word-slicer/game.vue';
 
 const route = useRoute();
 const router = useRouter();
+
+const editorContent = ref<string>('');
+provide('editorContent', editorContent);
+const editorEnable = ref<boolean>(false);
+provide('editorEnable', editorEnable);
 
 const overlayVisible = inject<Ref<boolean>>('overlayVisible')!
 const status = ref<WordSlicerStatus>(new WordSlicerStatus());
@@ -54,8 +59,11 @@ const refresh = async (refreshGame: RefreshGameType) => {
 
 const getGameStatus = async () => {
   const req = new Request({path: Path.wordSlicerStatus});
-  const res0 = await client.node!.send(req);
-  status.value = WordSlicerStatus.fromJson(res0.data);
+  const res = await client.node!.send(req);
+  debugger
+  status.value = WordSlicerStatus.fromJson(res.data);
+  editorContent.value = res.headers['editorContent'] ?? '';
+  editorEnable.value = res.headers['editorEnable'] === '1';
   await nextTick(() => {
     bus().emit(EventName.WordSlicerStatusUpdate, status.value);
   });

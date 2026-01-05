@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
@@ -11,11 +10,9 @@ import 'package:repeat_flutter/db/entity/game_user_score.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
-import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/step.dart';
-import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/utils.dart';
 import 'package:repeat_flutter/logic/game_server/controller/word_slicer/game.dart';
+import 'package:repeat_flutter/logic/game_server/controller/word_slicer/utils.dart';
 import 'package:repeat_flutter/logic/game_server/web_server.dart';
-import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 
 import 'game_settings.dart';
@@ -36,14 +33,11 @@ class GameSettingsWordSlicer extends GameSettings {
   Future<void> onInit(WebServer web) async {
     this.web = web;
     users = await Db().db.gameUserDao.getAllUser();
-    Step.blanking(userIds: users.map((user) => user.getId()).toList());
     subNewGame.on([EventTopic.newGame], (verseId) async {
       wordSlicerGame.verseId = verseId ?? 0;
-      final verse = VerseHelp.getCache(wordSlicerGame.verseId);
-      if (verse != null) {
-        final verseMap = jsonDecode(verse.verseContent);
-        String answer = verseMap['a'] ?? '';
-        wordSlicerGame.setForNewGame(answer);
+      final text = WordSlicerUtils.getText(wordSlicerGame.verseId);
+      if (text != null) {
+        wordSlicerGame.setForNewGame(text);
       }
     });
     sub.on([EventTopic.wsEvent], (wsEvent) async {
@@ -60,9 +54,7 @@ class GameSettingsWordSlicer extends GameSettings {
 
     await initUsers();
 
-    maxScoreIndex.value = await BlankItRightUtils.getMaxScore() - 1;
-    ignoringPunctuation.value = await BlankItRightUtils.getIgnorePunctuation();
-    ignoreCase.value = await BlankItRightUtils.getIgnoreCase();
+    maxScoreIndex.value = await WordSlicerUtils.getMaxScore() - 1;
   }
 
   @override
@@ -77,23 +69,20 @@ class GameSettingsWordSlicer extends GameSettings {
   }
 
   Future<void> initUsers({bool broadcast = false}) async {
-    var userId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForEditorUserId);
+    var userId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.wordSlicerGameForEditorUserId);
     if (users.isNotEmpty) {
       var index = users.indexWhere((u) => u.id == userId);
       if (index == -1) {
         index = 0;
       }
       await setUser(index);
-      List<int> userIds = users.map((user) => user.getId()).toList();
-      Step.blanking(userIds: userIds);
-      if (broadcast) {}
     }
     await setScore();
   }
 
   Future<void> setScore() async {
     final userIds = users.map((u) => u.id!).toList();
-    var userScores = await Db().db.gameUserScoreDao.list(userIds, GameType.blankItRight);
+    var userScores = await Db().db.gameUserScoreDao.list(userIds, GameType.wordSlicer);
     for (final s in userScores) {
       userIdToScore[s.userId] = s.score;
     }
@@ -111,22 +100,12 @@ class GameSettingsWordSlicer extends GameSettings {
       return;
     }
     GameUser user = users[index];
-    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.blockItRightGameForEditorUserId, "${user.id!}"));
+    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.wordSlicerGameForEditorUserId, "${user.id!}"));
     userIndex.value = index;
   }
 
   void setMaxScore(int index) {
-    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.blockItRightGameForMaxScore, '${index + 1}'));
-  }
-
-  void setIgnoringPunctuation(bool ignoringPunctuation) {
-    this.ignoringPunctuation.value = ignoringPunctuation;
-    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.blockItRightGameForIgnorePunctuation, ignoringPunctuation ? '1' : '0'));
-  }
-
-  void setIgnoreCase(bool ignoreCase) {
-    this.ignoreCase.value = ignoreCase;
-    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.blockItRightGameForIgnoreCase, ignoreCase ? '1' : '0'));
+    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.wordSlicerGameForMaxScore, '${index + 1}'));
   }
 
   @override
@@ -151,18 +130,6 @@ class GameSettingsWordSlicer extends GameSettings {
         List.generate(100, (i) => '${i + 1}'),
         maxScoreIndex,
         changed: setMaxScore,
-      ),
-      RowWidget.buildDividerWithoutColor(),
-      RowWidget.buildSwitch(
-        I18nKey.ignorePunctuation.tr,
-        ignoringPunctuation,
-        setIgnoringPunctuation,
-      ),
-      RowWidget.buildDividerWithoutColor(),
-      RowWidget.buildSwitch(
-        I18nKey.ignoreCase.tr,
-        ignoreCase,
-        setIgnoreCase,
       ),
     ];
   }

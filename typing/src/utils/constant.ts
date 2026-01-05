@@ -23,6 +23,7 @@ export const Path = {
     wordSlicerChooseColor: '/api/wordSlicerChooseColor',
     wordSlicerStartGame: '/api/wordSlicerStartGame',
     wordSlicerSubmit: '/api/wordSlicerSubmit',
+    wordSlicerEdit: '/api/wordSlicerEdit',
     submit: '/api/submit',
 
 }

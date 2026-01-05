@@ -24,6 +24,7 @@ import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_sli
 import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_slicer_1_select_role.dart';
 import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_slicer_2_start_game.dart';
 import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_slicer_3_submit.dart';
+import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_slicer_edit.dart';
 import 'package:repeat_flutter/logic/widget/game/game_state.dart';
 import 'controller/heart.dart';
 import 'controller/game_user_history.dart';
@@ -32,6 +33,7 @@ import 'controller/login_or_register.dart';
 import 'controller/submit.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:path/path.dart' as path;
+import 'package:synchronized/synchronized.dart';
 
 class WebServer {
   bool open = false;
@@ -66,6 +68,7 @@ class WebServer {
       server.controllers[Path.wordSlicerSelectRole] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerSelectRole);
       server.controllers[Path.wordSlicerStartGame] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerStartGame);
       server.controllers[Path.wordSlicerSubmit] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerSubmit);
+      server.controllers[Path.wordSlicerEdit] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerEdit);
 
       open = true;
     } catch (e) {
@@ -161,6 +164,10 @@ class WebServer {
     return user;
   }
 
+  final Lock lock = Lock();
+
+  // critical section
+
   GameUser? getGameUser(message.Request req) {
     String? hashCodeStr = req.headers[Header.wsHashCode.name];
     if (hashCodeStr == null) {
@@ -180,7 +187,9 @@ class WebServer {
     if (user == null) {
       return message.Response(error: GameServerError.tokenExpired.name);
     }
-    return await handle(req, user);
+    return await lock.synchronized(() async {
+      return await handle(req, user);
+    });
   }
 
   Future<message.Response?> withGameUserAndGameType(message.Request req, GameType gameType, Future<message.Response?> Function(message.Request req, GameUser user) handle) async {
@@ -191,7 +200,9 @@ class WebServer {
     if (user == null) {
       return message.Response(error: GameServerError.tokenExpired.name);
     }
-    return await handle(req, user);
+    return await lock.synchronized(() async {
+      return await handle(req, user);
+    });
   }
 
   Future<message.Response?> withGameUserAndServer(message.Request req, GameType gameType, Future<message.Response?> Function(message.Request req, GameUser user, Server<GameUser> server) handle) async {
@@ -202,6 +213,8 @@ class WebServer {
     if (user == null) {
       return message.Response(error: GameServerError.tokenExpired.name);
     }
-    return await handle(req, user, server);
+    return await lock.synchronized(() async {
+      return await handle(req, user, server);
+    });
   }
 }

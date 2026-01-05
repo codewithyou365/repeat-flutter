@@ -13,6 +13,8 @@ enum CrK {
   blockItRightGameForMaxScore,
   blockItRightGameForIgnorePunctuation,
   blockItRightGameForIgnoreCase,
+  wordSlicerGameForEditorUserId,
+  wordSlicerGameForMaxScore,
   inputGameForIgnoringPunctuation,
   inputGameForMatchType,
   inputGameForSkipCharacter,

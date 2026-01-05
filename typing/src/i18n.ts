@@ -62,6 +62,7 @@ const messages = {
         reasonRequired: 'Reason is required',
         operationSuccess: 'Operation successful',
         gameTypeBlankItRight: 'Blank It Right',
+        gameTypeWordSlicer: 'Word Slicer',
         changeCurrency: 'Change Currency',
         watchTv: 'Watch TV',
         playGame: 'Play Game',
@@ -88,6 +89,7 @@ const messages = {
         wrongChar: 'Wrong char: ',
         scoreTitle: 'Score: ',
         playerScore: 'Player Score',
+        refreshAfterModify: 'Refresh game after modification',
     },
     zh: {
         dartMode: '深色模式',
@@ -150,6 +152,7 @@ const messages = {
         reasonRequired: '原因必填',
         operationSuccess: '操作成功',
         gameTypeBlankItRight: '挖空填对',
+        gameTypeWordSlicer: '划词',
         changeCurrency: '兑换货币',
         watchTv: '看电视',
         playGame: '玩游戏',
@@ -176,6 +179,7 @@ const messages = {
         wrongChar: '错误字: ',
         scoreTitle: '分数: ',
         playerScore: '玩家分数',
+        refreshAfterModify: '修改后将刷新游戏',
     },
 };
 

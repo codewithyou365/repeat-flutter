@@ -1,25 +1,13 @@
 <template>
   <div class="lobby">
-    <nut-cell>
-      <div class="player-order">
-        <template v-for="(userId, index) in status.userIds" :key="userId">
-          <span
-              class="player-tag"
-              :class="{
-                'is-me': userId === currentUserId,
-                'is-active': index === status.currUserIndex && status.gameStep == GameStepEnum.started
-              }"
-              :style="{
-                borderLeft: getUserColor(userId) ? `8px solid ${getUserColor(userId)}` : 'none',
-                paddingLeft: getUserColor(userId) ? '6px' : '8px'
-              }"
-          >
-            {{ index + 1 }}. {{ status.userIdToUserName[userId] }}
-          </span>
-          <span v-if="index < status.userIds.length - 1" class="separator">➡️</span>
-        </template>
-      </div>
-    </nut-cell>
+    <Player
+        :user-ids="status.userIds"
+        :user-id-to-user-name="status.userIdToUserName"
+        :current-user-id="currentUserId"
+        :curr-user-index="status.currUserIndex"
+        :game-step="status.gameStep"
+        :get-user-color="getUserColor">
+    </Player>
 
     <Typing
         ref="typingRef"
@@ -85,6 +73,7 @@ import {useI18n} from "vue-i18n";
 import {useStore} from "vuex";
 import {toNumber} from "../../../utils/convert.ts";
 import Typing from "../../../component/typing.vue";
+import Player from "./widget/player.vue";
 
 const {t} = useI18n();
 const store = useStore();
@@ -256,35 +245,6 @@ onBeforeUnmount(() => {
 .actions {
   margin-top: 20px;
   margin-bottom: 20px;
-}
-
-.player-tag {
-  padding: 2px 8px;
-  background: #f0f0f0;
-  border-radius: 4px;
-  transition: all 0.2s;
-  border: 1px solid transparent;
-}
-
-.player-tag.is-me {
-  color: black;
-  font-weight: bold;
-}
-
-.player-tag.is-active {
-  border-right-width: 3px;
-  border-right-color: #fa2c19;
-}
-
-.nut-theme-dark .player-tag.is-me {
-  color: white;
-}
-
-.nut-theme-dark .player-tag {
-  color: #e5e5e5;
-  background: #333;
-  border-top-color: #444;
-  border-bottom-color: #444;
 }
 
 .nut-theme-dark {
