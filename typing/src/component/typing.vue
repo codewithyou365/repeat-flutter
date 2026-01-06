@@ -380,6 +380,12 @@ const getCharClass = (index: number) => {
     if (props.ignoreCase) {
       isCorrect = userCh.toLowerCase() === origCh.toLowerCase();
     }
+    if (props.ignoreCase && isCorrect && userCh !== origCh) {
+      userInput.value =
+          userInput.value.slice(0, index) +
+          origCh +
+          userInput.value.slice(index + 1);
+    }
     if (ignored && isCorrect) {
       classes.push('ignore-correct');
     } else if (isCorrect) {
