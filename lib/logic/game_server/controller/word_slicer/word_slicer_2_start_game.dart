@@ -24,6 +24,7 @@ Future<message.Response?> wordSlicerStartGame(message.Request req, GameUser user
   wordSlicerGame.gameStep = GameStepEnum.started;
   wordSlicerGame.currUserIndex = 0;
   wordSlicerGame.maxScore = await WordSlicerUtils.getMaxScore();
+  wordSlicerGame.hiddenContentPercent = await WordSlicerUtils.getHiddenContentPercent();
   wordSlicerGame.setForNewGame(text);
 
   server.broadcast(message.Request(path: Path.wordSlicerStatusUpdate, data: wordSlicerGame.toJson()));

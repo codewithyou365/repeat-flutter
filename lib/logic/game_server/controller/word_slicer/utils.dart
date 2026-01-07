@@ -14,6 +14,11 @@ class WordSlicerUtils {
     return ret ?? 10;
   }
 
+  static Future<int> getHiddenContentPercent() async {
+    var ret = await Db().db.crKvDao.getInt(Classroom.curr, CrK.wordSlicerGameForHiddenContentPercent);
+    return ret ?? 0;
+  }
+
   static String? getText(int verseId) {
     final verse = VerseHelp.getCache(verseId);
     if (verse == null) {

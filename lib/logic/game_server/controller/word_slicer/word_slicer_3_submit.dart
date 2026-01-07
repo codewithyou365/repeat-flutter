@@ -24,10 +24,20 @@ Future<message.Response?> wordSlicerSubmit(message.Request req, GameUser user, S
   }
 
   wordSlicerGame.colorIndexToSelectedContentIndex[colorIndex].addAll(selectedIndexed);
+
+  final contentChars = wordSlicerGame.content.split('');
+  final originChars = wordSlicerGame.originContent.split('');
+  for (final index in selectedIndexed) {
+    if (index >= 0 && index < contentChars.length) {
+      contentChars[index] = originChars[index];
+    }
+  }
+  wordSlicerGame.content = contentChars.join();
+
   bool selectedAll = wordSlicerGame.isSelectedAll();
   if (selectedAll || wordSlicerGame.abandonUserIds.length == wordSlicerGame.userIds.length) {
     wordSlicerGame.gameStep = GameStepEnum.finished;
-    wordSlicerGame.answer = wordSlicerGame.rawContent;
+    wordSlicerGame.answer = wordSlicerGame.originContentWithSpace;
     wordSlicerGame.setResult();
     for (final entry in wordSlicerGame.userIdToScore.entries) {
       final userId = entry.key;

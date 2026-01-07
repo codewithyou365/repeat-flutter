@@ -32,8 +32,10 @@ class Stat {
 }
 
 class WordSlicerGame {
-  String rawContent = '';
+  String originContentWithSpace = '';
+  String originContent = '';
   Map<int, bool> abandonUserIds = {};
+  int hiddenContentPercent = 0;
 
   int maxScore = 10;
   int verseId = -1;
@@ -49,7 +51,8 @@ class WordSlicerGame {
   Map<String, int> userIdToScore = {};
 
   void clear() {
-    rawContent = '';
+    originContentWithSpace = '';
+    originContent = '';
     abandonUserIds = {};
 
     verseId = -1;
@@ -74,11 +77,22 @@ class WordSlicerGame {
 
     gameStep = GameStepEnum.started;
     content = answer.replaceAll(" ", "").replaceAll(StringUtil.punctuationRegex, "").toLowerCase();
+    originContent = content;
+    if (hiddenContentPercent > 0 && hiddenContentPercent <= 100 && content.isNotEmpty) {
+      final chars = content.split('');
+      final hideCount = (chars.length * hiddenContentPercent / 100).round();
+      final indexes = List<int>.generate(chars.length, (i) => i)..shuffle();
+      for (int i = 0; i < hideCount; i++) {
+        chars[indexes[i]] = '•';
+      }
+      content = chars.join();
+    }
+
     answer = answer.replaceAll(StringUtil.punctuationRegex, " ");
     while (answer.contains("  ")) {
       answer = answer.replaceAll("  ", " ");
     }
-    rawContent = answer.toLowerCase().trim();
+    originContentWithSpace = answer.toLowerCase().trim();
     this.answer = '';
     colorIndexToSelectedContentIndex = [[], [], []];
     colorIndexToStat = [Stat(), Stat(), Stat()];
@@ -149,8 +163,8 @@ class WordSlicerGame {
 
   List<Word> _getAnswerWords() {
     final List<Word> result = [];
-    if (rawContent.isEmpty || content.isEmpty) return result;
-    final words = rawContent.split(' ');
+    if (originContentWithSpace.isEmpty || content.isEmpty) return result;
+    final words = originContentWithSpace.split(' ');
     int cursor = 0;
     for (final w in words) {
       final start = cursor;

@@ -15,6 +15,7 @@ enum CrK {
   blockItRightGameForIgnoreCase,
   wordSlicerGameForEditorUserId,
   wordSlicerGameForMaxScore,
+  wordSlicerGameForHiddenContentPercent,
   inputGameForIgnoringPunctuation,
   inputGameForMatchType,
   inputGameForSkipCharacter,

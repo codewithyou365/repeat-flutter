@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/ws/server.dart';
@@ -21,6 +20,7 @@ class GameSettingsWordSlicer extends GameSettings {
   RxBool ignoringPunctuation = RxBool(false);
   RxBool ignoreCase = RxBool(false);
   RxInt maxScoreIndex = RxInt(10);
+  RxInt hideContentPercent = RxInt(0);
   late WebServer web;
   RxInt userNumber = RxInt(0);
   RxInt userIndex = RxInt(-1);
@@ -55,6 +55,7 @@ class GameSettingsWordSlicer extends GameSettings {
     await initUsers();
 
     maxScoreIndex.value = await WordSlicerUtils.getMaxScore() - 1;
+    hideContentPercent.value = await WordSlicerUtils.getHiddenContentPercent();
   }
 
   @override
@@ -108,6 +109,10 @@ class GameSettingsWordSlicer extends GameSettings {
     Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.wordSlicerGameForMaxScore, '${index + 1}'));
   }
 
+  void setHiddenContentPercent(int index) {
+    Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.wordSlicerGameForHiddenContentPercent, '$index'));
+  }
+
   @override
   List<Widget> build() {
     return [
@@ -130,6 +135,13 @@ class GameSettingsWordSlicer extends GameSettings {
         List.generate(100, (i) => '${i + 1}'),
         maxScoreIndex,
         changed: setMaxScore,
+      ),
+      RowWidget.buildDividerWithoutColor(),
+      RowWidget.buildCupertinoPicker(
+        I18nKey.hiddenContent.tr,
+        List.generate(101, (i) => '$i%'),
+        hideContentPercent,
+        changed: setHiddenContentPercent,
       ),
     ];
   }
