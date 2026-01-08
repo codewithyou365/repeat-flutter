@@ -66,9 +66,10 @@ class GameSettingsInput extends GameSettings {
   List<Widget> build() {
     return [
       RowWidget.buildSwitch(
-        I18nKey.ignorePunctuation.tr,
-        ignoringPunctuation,
-        setIgnoringPunctuation,
+        title:I18nKey.ignorePunctuation.tr,
+        value:ignoringPunctuation,
+        disabled:false.obs,
+        set:setIgnoringPunctuation,
       ),
       RowWidget.buildDividerWithoutColor(),
       Obx(() {

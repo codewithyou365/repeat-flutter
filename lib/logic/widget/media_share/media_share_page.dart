@@ -20,9 +20,10 @@ class MediaSharePage {
         child: Column(
           children: [
             RowWidget.buildSwitch(
-              I18nKey.mediaShare.tr,
-              state.webStart,
-              logic.switchWeb,
+              title: I18nKey.mediaShare.tr,
+              value: state.webStart,
+              disabled: false.obs,
+              set: logic.switchWeb,
             ),
             RowWidget.buildDivider(),
           ],

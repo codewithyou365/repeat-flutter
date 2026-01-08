@@ -78,9 +78,9 @@ class WordSlicerGame {
     gameStep = GameStepEnum.started;
     content = answer.replaceAll(" ", "").replaceAll(StringUtil.punctuationRegex, "").toLowerCase();
     originContent = content;
-    if (hiddenContentPercent > 0 && hiddenContentPercent <= 100 && content.isNotEmpty) {
+    if (hiddenContentPercent > 0 && hiddenContentPercent <= 10 && content.isNotEmpty) {
       final chars = content.split('');
-      final hideCount = (chars.length * hiddenContentPercent / 100).round();
+      final hideCount = (chars.length * hiddenContentPercent / 10).round();
       final indexes = List<int>.generate(chars.length, (i) => i)..shuffle();
       for (int i = 0; i < hideCount; i++) {
         chars[indexes[i]] = '•';

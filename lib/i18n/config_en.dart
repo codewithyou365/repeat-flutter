@@ -161,13 +161,15 @@ class ConfigEn extends Config {
     put(I18nKey.labelVerse, "Verse");
     put(I18nKey.labelVerseName, "Verse");
     put(I18nKey.maxScore, "Max Score");
-    put(I18nKey.hiddenContent, "Hidden content");
+    put(I18nKey.hiddenContent, "Hidden Content");
+    put(I18nKey.blankContent, "Blank Content");
     put(I18nKey.ignorePunctuation, "Ignore Punctuation");
     put(I18nKey.ignoreCase, "Ignore Case");
     put(I18nKey.labelMatchType, "Match Type");
     put(I18nKey.labelSkipCharacter, "Enter This Char To Skip");
     put(I18nKey.labelEnableEditVerse, "Enable Edit Verse");
     put(I18nKey.editor, "Editor");
+    put(I18nKey.autoBlank, "Automatic Character Blank");
     put(I18nKey.labelGameId, "Game ID");
     put(I18nKey.online, "Online");
     put(I18nKey.offline, "Offline");

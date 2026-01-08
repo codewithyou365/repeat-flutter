@@ -38,7 +38,7 @@ export class GameType {
     static NONE = new GameType(0, '');
     static TYPE = new GameType(1, '/game/type-game');
     static BLANK_IT_RIGHT = new GameType(2, '/game/blank-it-right-game');
-    static WORD_SLICER = new GameType(3, '/game/word-slicer');
+    static WORD_SLICER = new GameType(3, '/game/word-slicer-game');
     static INPUT = new GameType(4, '/game/input-game');
 
     static toGameType(code: number): GameType {

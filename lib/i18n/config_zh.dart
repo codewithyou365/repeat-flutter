@@ -162,12 +162,14 @@ class ConfigZh extends Config {
     put(I18nKey.labelVerseName, "小节");
     put(I18nKey.maxScore, "最大分数");
     put(I18nKey.hiddenContent, "隐藏内容");
+    put(I18nKey.blankContent, "挖空内容");
     put(I18nKey.ignorePunctuation, "忽略标点符号");
     put(I18nKey.ignoreCase, "忽略大小写");
     put(I18nKey.labelMatchType, "匹配类型");
     put(I18nKey.labelSkipCharacter, "输入该字符便跳过");
     put(I18nKey.labelEnableEditVerse, "启用编辑小节");
     put(I18nKey.editor, "编辑者");
+    put(I18nKey.autoBlank, "自动挖空");
     put(I18nKey.labelGameId, "游戏ID");
     put(I18nKey.online, "在线");
     put(I18nKey.offline, "离线");

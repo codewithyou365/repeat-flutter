@@ -106,7 +106,7 @@ SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   just_audio: 4e391f57b79cad2b0674030a00453ca5ce817eed
   MTBBarcodeScanner: f453b33c4b7dfe545d8c6484ed744d55671788cb
-  path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
+  path_provider_foundation: bb55f6dbba17d0dccd6737fe6f7f34fbd0376880
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
   qr_code_scanner_plus: 7e087021bc69873140e0754750eb87d867bed755
   SDWebImage: 981fd7e860af070920f249fd092420006014c3eb

@@ -47,12 +47,21 @@ class ScCrContentSharePage extends StatelessWidget {
         RowWidget.buildDividerWithoutColor(),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: RowWidget.buildSwitch(I18nKey.web.tr, state.webStart, logic.switchWeb),
+          child: RowWidget.buildSwitch(
+            title: I18nKey.web.tr,
+            value: state.webStart,
+            disabled: false.obs,
+            set: logic.switchWeb,
+          ),
         ),
         RowWidget.buildDividerWithoutColor(),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: RowWidget.buildSwitch(I18nKey.labelDoYourShareTheNotes.tr, state.shareNote),
+          child: RowWidget.buildSwitch(
+            title: I18nKey.labelDoYourShareTheNotes.tr,
+            value: state.shareNote,
+            disabled: false.obs,
+          ),
         ),
         if (state.addresses.isNotEmpty)
           ...List.generate(

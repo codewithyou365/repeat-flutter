@@ -389,7 +389,12 @@ class RowWidget {
     );
   }
 
-  static Widget buildSwitch(String title, RxBool value, [Function(bool)? set]) {
+  static Widget buildSwitch({
+    required String title,
+    required RxBool value,
+    required RxBool disabled,
+    Function(bool)? set,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
       child: SizedBox(
@@ -402,7 +407,16 @@ class RowWidget {
             ),
             const Spacer(),
             Obx(() {
-              return Switch(value: value.value, onChanged: set != null ? (v) => set(v) : (v) => {value.value = v});
+              return Switch(
+                value: value.value,
+                onChanged: disabled.value
+                    ? null
+                    : set != null
+                    ? (v) => set(v)
+                    : (v) => {value.value = v},
+                inactiveThumbColor: disabled.value ? Colors.grey : null,
+                inactiveTrackColor: disabled.value ? Colors.grey.shade300 : null,
+              );
             }),
           ],
         ),

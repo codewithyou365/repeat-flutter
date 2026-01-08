@@ -74,7 +74,7 @@ class ScCrSettingsElPage extends StatelessWidget {
                             RowWidget.buildDivider(),
                             RowWidget.buildTextWithEdit(I18nKey.labelTitle.tr, config.title),
                             RowWidget.buildDividerWithoutColor(),
-                            RowWidget.buildSwitch(I18nKey.labelElRandom.tr, config.random),
+                            RowWidget.buildSwitch(title: I18nKey.labelElRandom.tr, value: config.random, disabled: false.obs),
                             RowWidget.buildDividerWithoutColor(),
                             RowWidget.buildTextWithEdit(I18nKey.labelElLevel.tr, config.level),
                             RowWidget.buildDividerWithoutColor(),

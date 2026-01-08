@@ -20,9 +20,10 @@ class BookEditorPage<T extends GetxController> {
         child: Column(
           children: [
             RowWidget.buildSwitch(
-              I18nKey.editBook.trArgs([state.args.bookName]),
-              state.webStart,
-              logic.switchWeb,
+              title: I18nKey.editBook.trArgs([state.args.bookName]),
+              value: state.webStart,
+              disabled: false.obs,
+              set: logic.switchWeb,
             ),
             RowWidget.buildDivider(),
           ],

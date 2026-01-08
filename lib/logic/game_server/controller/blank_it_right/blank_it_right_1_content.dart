@@ -2,14 +2,11 @@ import 'dart:convert';
 
 import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 
-import 'step.dart';
-import 'utils.dart';
+import 'game.dart';
 
 class BlankItRightContentRes {
   String content;
@@ -38,11 +35,10 @@ class BlankItRightContentRes {
 }
 
 Future<message.Response?> blankItRightContent(message.Request req, GameUser user) async {
-  var editorId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForEditorUserId);
-  if (editorId == null) {
+  var editorUserId = blankItRightGame.getEditorUserId();
+  if (editorUserId == 0) {
     return message.Response(error: GameServerError.editorUserNeedToBeSpecified.name);
   }
-  var ignorePunctuation = await BlankItRightUtils.getIgnorePunctuation();
   final reqBody = req.data as int;
   final verse = VerseHelp.getCache(reqBody);
   if (verse == null) {
@@ -52,11 +48,11 @@ Future<message.Response?> blankItRightContent(message.Request req, GameUser user
   if (game == null) {
     return message.Response(error: GameServerError.gameNotFound.name);
   }
-  if (editorId == user.getId()) {
+  if (editorUserId == user.getId()) {
     return message.Response(
       data: BlankItRightContentRes(
         content: verse.verseContent,
-        step: Step.getStepEnum(userId: user.getId()).name,
+        step: blankItRightGame.getStepEnum(userId: user.getId()).name,
         answer: '',
         submit: '',
         score: 0,
@@ -67,17 +63,23 @@ Future<message.Response?> blankItRightContent(message.Request req, GameUser user
     var answer = '';
     var submit = '';
     var score = 0;
-    final step = Step.getStepEnum(userId: user.getId());
+    final step = blankItRightGame.getStepEnum(userId: user.getId());
     switch (step) {
       case StepEnum.blanked:
-        content = BlankItRightUtils.getBlank(jsonDecode(verse.verseContent), ignorePunctuation);
+        content = blankItRightGame.getBlankContent(
+          verse: jsonDecode(verse.verseContent),
+          focusRefresh: false,
+        );
         break;
       case StepEnum.finished:
         var verseMap = jsonDecode(verse.verseContent);
-        content = BlankItRightUtils.getBlank(verseMap, ignorePunctuation);
+        content = blankItRightGame.getBlankContent(
+          verse: verseMap,
+          focusRefresh: false,
+        );
         answer = verseMap['a'] ?? '';
-        submit = Step.getSubmit(userId: user.getId());
-        score = Step.getScore(userId: user.getId());
+        submit = blankItRightGame.getSubmit(userId: user.getId());
+        score = blankItRightGame.getScore(userId: user.getId());
         break;
       default:
         break;

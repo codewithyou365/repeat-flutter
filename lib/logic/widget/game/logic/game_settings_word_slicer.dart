@@ -139,7 +139,7 @@ class GameSettingsWordSlicer extends GameSettings {
       RowWidget.buildDividerWithoutColor(),
       RowWidget.buildCupertinoPicker(
         I18nKey.hiddenContent.tr,
-        List.generate(101, (i) => '$i%'),
+        List.generate(11, (i) => '${i * 10}%'),
         hideContentPercent,
         changed: setHiddenContentPercent,
       ),

@@ -48,15 +48,17 @@ class GameSettingsType extends GameSettings {
   List<Widget> build() {
     return [
       RowWidget.buildSwitch(
-        I18nKey.ignorePunctuation.tr,
-        ignorePunctuation,
-        setIgnorePunctuation,
+        title: I18nKey.ignorePunctuation.tr,
+        value: ignorePunctuation,
+        disabled: false.obs,
+        set: setIgnorePunctuation,
       ),
       RowWidget.buildDividerWithoutColor(),
       RowWidget.buildSwitch(
-        I18nKey.ignoreCase.tr,
-        ignoreCase,
-        setIgnoreCase,
+        title: I18nKey.ignoreCase.tr,
+        value: ignoreCase,
+        disabled: false.obs,
+        set: setIgnoreCase,
       ),
     ];
   }

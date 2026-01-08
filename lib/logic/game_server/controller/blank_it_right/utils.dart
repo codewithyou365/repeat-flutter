@@ -6,8 +6,22 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'constant.dart';
 
 class BlankItRightUtils {
+  static Future<bool> getAutoBlank() async {
+    var ret = true;
+    var v = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForAutoBlank);
+    if (v != null) {
+      ret = v == 1;
+    }
+    return ret;
+  }
+
   static Future<int> getMaxScore() async {
     var ret = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForMaxScore);
+    return ret ?? 10;
+  }
+
+  static Future<int> getBlankContentPercent() async {
+    var ret = await Db().db.crKvDao.getInt(Classroom.curr, CrK.blockItRightGameForBlankContentPercent);
     return ret ?? 10;
   }
 
@@ -29,18 +43,13 @@ class BlankItRightUtils {
     return ignoreCase;
   }
 
-
   static String getBlank(Map<String, dynamic> verseMap, bool ignorePunctuation) {
-    if (verseMap[MapKeyEnum.blankItRightList.name] == null) {
+    if (verseMap[MapKeyEnum.blankItRightText.name] == null) {
       return '';
     }
-    final blankItRightList = verseMap[MapKeyEnum.blankItRightList.name] as List<dynamic>;
-    var blankItRightUsingIndex = 0;
-    if (verseMap[MapKeyEnum.blankItRightUsingIndex.name] != null) {
-      blankItRightUsingIndex = verseMap[MapKeyEnum.blankItRightUsingIndex.name] as int;
-    }
+    final blankItRightText = verseMap[MapKeyEnum.blankItRightText.name] as String;
     final String a = verseMap['a'] ?? '';
-    final String b = blankItRightList[blankItRightUsingIndex].toString();
+    final String b = blankItRightText;
     final buffer = StringBuffer();
 
     for (int i = 0; i < a.length; i++) {

@@ -22,9 +22,10 @@ class GamePage<T extends GetxController> {
         child: Column(
           children: [
             RowWidget.buildSwitch(
-              I18nKey.game.tr,
-              state.open,
-              logic.switchWeb,
+              title: I18nKey.game.tr,
+              value: state.open,
+              disabled: false.obs,
+              set: logic.switchWeb,
             ),
             RowWidget.buildDivider(),
           ],
