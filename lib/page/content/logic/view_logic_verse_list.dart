@@ -300,9 +300,9 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                   },
                 ),
                 RowWidget.buildCupertinoPicker(
-                  I18nKey.labelProgress.tr,
-                  progressOptions,
-                  progressSelect,
+                  title: I18nKey.labelProgress.tr,
+                  options: progressOptions,
+                  value: progressSelect,
                   changed: (index) {
                     progressSelect.value = index;
                     trySearch();
@@ -310,9 +310,9 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                 ),
                 RowWidget.buildDividerWithoutColor(),
                 RowWidget.buildCupertinoPicker(
-                  I18nKey.labelMonth.tr,
-                  nextMonthOptions,
-                  nextMonthSelect,
+                  title: I18nKey.labelMonth.tr,
+                  options: nextMonthOptions,
+                  value: nextMonthSelect,
                   changed: (index) {
                     nextMonthSelect.value = index;
                     trySearch();
@@ -320,9 +320,9 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                 ),
                 RowWidget.buildDividerWithoutColor(),
                 RowWidget.buildCupertinoPicker(
-                  I18nKey.labelSortBy.tr,
-                  sortOptions,
-                  selectedSortIndex,
+                  title: I18nKey.labelSortBy.tr,
+                  options: sortOptions,
+                  value: selectedSortIndex,
                   changed: (index) {
                     selectedSortIndex.value = index;
                     I18nKey key = sortOptionKeys[index];

@@ -107,10 +107,12 @@ class GameSettingsBlankItRight extends GameSettings {
   }
 
   void setMaxScore(int index) {
+    maxScoreIndex.value = index;
     Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.blockItRightGameForMaxScore, '${index + 1}'));
   }
 
   void setBlankContentPercent(int index) {
+    blankContentPercent.value = index;
     Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.blockItRightGameForBlankContentPercent, '${index + 1}'));
   }
 
@@ -135,7 +137,7 @@ class GameSettingsBlankItRight extends GameSettings {
       RowWidget.buildSwitch(
         title: I18nKey.autoBlank.tr,
         value: autoBlank,
-        disabled: false.obs,
+        disabled: webOpen,
         set: setAutoBlank,
       ),
       RowWidget.buildDividerWithoutColor(),
@@ -147,39 +149,42 @@ class GameSettingsBlankItRight extends GameSettings {
         }
         if (autoBlank.value) {
           return RowWidget.buildCupertinoPicker(
-            I18nKey.blankContent.tr,
-            List.generate(10, (i) => '${i * 10 + 10}%'),
-            blankContentPercent,
+            title: I18nKey.blankContent.tr,
+            options: List.generate(10, (i) => '${i * 10 + 10}%'),
+            value: blankContentPercent,
             changed: setBlankContentPercent,
+            disabled: webOpen,
           );
         } else {
           return RowWidget.buildCupertinoPicker(
-            I18nKey.editor.tr,
-            userNames,
-            RxInt(userIndex.value),
+            title: I18nKey.editor.tr,
+            options: userNames,
+            value: userIndex,
             changed: setUser,
+            disabled: webOpen,
           );
         }
       }),
       RowWidget.buildDividerWithoutColor(),
       RowWidget.buildCupertinoPicker(
-        I18nKey.maxScore.tr,
-        List.generate(100, (i) => '${i + 1}'),
-        maxScoreIndex,
+        title: I18nKey.maxScore.tr,
+        options: List.generate(100, (i) => '${i + 1}'),
+        value: maxScoreIndex,
         changed: setMaxScore,
+        disabled: webOpen,
       ),
       RowWidget.buildDividerWithoutColor(),
       RowWidget.buildSwitch(
         title: I18nKey.ignorePunctuation.tr,
         value: ignoringPunctuation,
-        disabled: false.obs,
+        disabled: webOpen,
         set: setIgnoringPunctuation,
       ),
       RowWidget.buildDividerWithoutColor(),
       RowWidget.buildSwitch(
         title: I18nKey.ignoreCase.tr,
         value: ignoreCase,
-        disabled: false.obs,
+        disabled: webOpen,
         set: setIgnoreCase,
       ),
     ];

@@ -8,7 +8,7 @@ import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'sc_cr_material_share_logic.dart';
 
 class ScCrContentSharePage extends StatelessWidget {
-  const ScCrContentSharePage({Key? key}) : super(key: key);
+  const ScCrContentSharePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +50,6 @@ class ScCrContentSharePage extends StatelessWidget {
           child: RowWidget.buildSwitch(
             title: I18nKey.web.tr,
             value: state.webStart,
-            disabled: false.obs,
             set: logic.switchWeb,
           ),
         ),
@@ -60,7 +59,6 @@ class ScCrContentSharePage extends StatelessWidget {
           child: RowWidget.buildSwitch(
             title: I18nKey.labelDoYourShareTheNotes.tr,
             value: state.shareNote,
-            disabled: false.obs,
           ),
         ),
         if (state.addresses.isNotEmpty)

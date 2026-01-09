@@ -24,7 +24,6 @@ class GamePage<T extends GetxController> {
             RowWidget.buildSwitch(
               title: I18nKey.game.tr,
               value: state.open,
-              disabled: false.obs,
               set: logic.switchWeb,
             ),
             RowWidget.buildDivider(),
@@ -91,8 +90,8 @@ class GamePage<T extends GetxController> {
                 }),
                 RowWidget.buildDividerWithoutColor(),
                 RowWidget.buildCupertinoPicker(
-                  I18nKey.labelGameRuleSettings.tr,
-                  logic.gameTypeToGameSettings.keys.map((gameSettings) {
+                  title: I18nKey.labelGameRuleSettings.tr,
+                  options: logic.gameTypeToGameSettings.keys.map((gameSettings) {
                     switch (gameSettings) {
                       case GameType.type:
                         return I18nKey.typeGame.tr;
@@ -106,9 +105,10 @@ class GamePage<T extends GetxController> {
                         return '';
                     }
                   }).toList(),
-                  state.game,
+                  value: state.game,
                   pickWidth: 150,
                   changed: logic.changeGame,
+                  disabled: state.open,
                 ),
                 RowWidget.buildDividerWithoutColor(),
                 ...gameSettings(logic.gameTypeToGameSettings),

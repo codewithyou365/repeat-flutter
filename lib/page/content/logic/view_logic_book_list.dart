@@ -176,9 +176,9 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
               padding: const EdgeInsets.all(0),
               children: [
                 RowWidget.buildCupertinoPicker(
-                  I18nKey.labelBookFn.tr,
-                  bookOptions,
-                  bookSelect,
+                  title: I18nKey.labelBookFn.tr,
+                  options: bookOptions,
+                  value: bookSelect,
                   changed: (index) {
                     bookSelect.value = index;
                     trySearch();
@@ -186,9 +186,9 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                 ),
                 RowWidget.buildDividerWithoutColor(),
                 RowWidget.buildCupertinoPicker(
-                  I18nKey.labelSortBy.tr,
-                  sortOptions,
-                  selectedSortIndex,
+                  title: I18nKey.labelSortBy.tr,
+                  options: sortOptions,
+                  value: selectedSortIndex,
                   changed: (index) {
                     selectedSortIndex.value = index;
                     I18nKey key = sortOptionKeys[index];

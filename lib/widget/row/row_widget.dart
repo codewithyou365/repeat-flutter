@@ -216,7 +216,6 @@ class RowWidget {
           if (i.isEven) {
             int index = i ~/ 2;
             return Obx(() {
-              // Walk the options tree to get the current level's options
               List<OptionBody> currentOptions = body;
               for (int j = 0; j < index; j++) {
                 int selected = head[j].value.value;
@@ -228,28 +227,24 @@ class RowWidget {
                 }
               }
 
-              // Get the string labels for the picker
               List<String> labels = currentOptions.map((e) => e.label).toList();
 
-              // Clamp initValue to safe range
               if (head[index].value.value >= labels.length) {
                 head[index].value.value = 0;
               }
 
               return buildCupertinoPicker(
-                head[index].title,
-                labels,
-                head[index].value,
+                title: head[index].title,
+                options: labels,
+                value: head[index].value,
                 pickWidth: head[index].optionWidth,
                 changed: (selectedIndex) {
                   head[index].value.value = selectedIndex;
 
-                  // Reset all following pickers to 0
                   for (int k = index + 1; k < head.length; k++) {
                     head[k].value.value = 0;
                   }
 
-                  // Notify final selection
                   final result = head.map((h) => h.value.value).toList();
                   changed?.call(result);
                 },
@@ -263,7 +258,14 @@ class RowWidget {
     );
   }
 
-  static Widget buildCupertinoPicker(String title, List<String> options, RxInt initialValue, {ValueChanged<int>? changed, double? pickWidth}) {
+  static Widget buildCupertinoPicker({
+    required String title,
+    required List<String> options,
+    required RxInt value,
+    ValueChanged<int>? changed,
+    double? pickWidth,
+    RxBool? disabled,
+  }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(paddingHorizontal, 0, 0, 0),
       child: SizedBox(
@@ -275,23 +277,37 @@ class RowWidget {
               style: const TextStyle(fontSize: titleFontSize),
             ),
             const Spacer(),
-            SizedBox(
-              width: pickWidth ?? 80.w,
-              height: 64,
-              child: CupertinoPicker(
-                scrollController: FixedExtentScrollController(initialItem: initialValue.value),
-                itemExtent: 32.0,
-                onSelectedItemChanged: changed,
-                children: List.generate(options.length, (index) {
-                  return Center(
-                    child: Text(
-                      options[index],
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.normal),
+            Obx(() {
+              final bool isDisabled = disabled?.value ?? false;
+              return SizedBox(
+                width: pickWidth ?? 80.w,
+                height: 64,
+                child: AbsorbPointer(
+                  absorbing: isDisabled,
+                  child: Opacity(
+                    opacity: isDisabled ? 0.5 : 1.0,
+                    child: CupertinoPicker(
+                      scrollController: FixedExtentScrollController(
+                        initialItem: value.value,
+                      ),
+                      itemExtent: 32.0,
+                      onSelectedItemChanged: isDisabled ? null : changed,
+                      children: List.generate(options.length, (index) {
+                        return Center(
+                          child: Text(
+                            options[index],
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                        );
+                      }),
                     ),
-                  );
-                }),
-              ),
-            ),
+                  ),
+                ),
+              );
+            }),
           ],
         ),
       ),
@@ -392,8 +408,8 @@ class RowWidget {
   static Widget buildSwitch({
     required String title,
     required RxBool value,
-    required RxBool disabled,
     Function(bool)? set,
+    RxBool? disabled,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
@@ -407,15 +423,16 @@ class RowWidget {
             ),
             const Spacer(),
             Obx(() {
+              final isDisabled = disabled?.value ?? false;
               return Switch(
                 value: value.value,
-                onChanged: disabled.value
+                onChanged: isDisabled
                     ? null
                     : set != null
                     ? (v) => set(v)
                     : (v) => {value.value = v},
-                inactiveThumbColor: disabled.value ? Colors.grey : null,
-                inactiveTrackColor: disabled.value ? Colors.grey.shade300 : null,
+                inactiveThumbColor: isDisabled ? Colors.grey : null,
+                inactiveTrackColor: isDisabled ? Colors.grey.shade300 : null,
               );
             }),
           ],

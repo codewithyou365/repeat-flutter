@@ -66,20 +66,19 @@ class GameSettingsInput extends GameSettings {
   List<Widget> build() {
     return [
       RowWidget.buildSwitch(
-        title:I18nKey.ignorePunctuation.tr,
-        value:ignoringPunctuation,
-        disabled:false.obs,
-        set:setIgnoringPunctuation,
+        title: I18nKey.ignorePunctuation.tr,
+        value: ignoringPunctuation,
+        disabled: webOpen,
+        set: setIgnoringPunctuation,
       ),
       RowWidget.buildDividerWithoutColor(),
-      Obx(() {
-        return RowWidget.buildCupertinoPicker(
-          I18nKey.labelMatchType.tr,
-          [I18nKey.labelWord.tr, I18nKey.labelSingle.tr, I18nKey.labelAll.tr],
-          matchType,
-          changed: setMatchType,
-        );
-      }),
+      RowWidget.buildCupertinoPicker(
+        title: I18nKey.labelMatchType.tr,
+        options: [I18nKey.labelWord.tr, I18nKey.labelSingle.tr, I18nKey.labelAll.tr],
+        value: matchType,
+        changed: setMatchType,
+        disabled: webOpen,
+      ),
       RowWidget.buildDividerWithoutColor(),
       Obx(() {
         return RowWidget.buildTextWithEdit(

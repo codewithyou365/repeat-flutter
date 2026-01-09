@@ -42,7 +42,6 @@ class GameLogic<T extends GetxController> {
     gameTypeToGameSettings[GameType.type] = GameSettingsType();
     gameTypeToGameSettings[GameType.blankItRight] = GameSettingsBlankItRight();
     gameTypeToGameSettings[GameType.wordSlicer] = GameSettingsWordSlicer();
-    gameTypeToGameSettings[GameType.input] = GameSettingsInput();
   }
 
   Future<void> init(VoidCallback onOpenWeb) async {
@@ -114,6 +113,7 @@ class GameLogic<T extends GetxController> {
           }
           onOpenWeb();
           for (var v in gameTypeToGameSettings.values) {
+            v.setWebOpen(true);
             await v.onWebOpen();
           }
         } catch (e) {
@@ -124,6 +124,7 @@ class GameLogic<T extends GetxController> {
         try {
           for (var v in gameTypeToGameSettings.values) {
             await v.onWebClose();
+            v.setWebOpen(false);
           }
           await web.stop();
           state.urls = [];

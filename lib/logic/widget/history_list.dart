@@ -129,155 +129,156 @@ class HistoryList<T extends GetxController> {
     return Sheet.showBottomSheet(
       Get.context!,
       GetBuilder<T>(
-          id: HistoryList.bodyId,
-          builder: (_) {
-            Widget searchDetailPanel = const SizedBox.shrink();
-            if (showSearchDetailPanel) {
-              searchDetailPanel = SizedBox(
-                height: searchDetailPanelHeight,
-                child: Column(
-                  children: [
-                    Container(
-                      height: searchDetailPanelHeight,
-                      padding: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                        color: Theme.of(Get.context!).scaffoldBackgroundColor,
-                        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            spreadRadius: 0,
-                            blurRadius: 4,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: ListView(
-                        children: [
-                          RowWidget.buildCupertinoPicker(
-                            I18nKey.labelCreateTime.tr,
-                            dateOptions,
-                            dateSelect,
-                            changed: (index) {
-                              dateSelect.value = index;
-                              trySearch();
-                            },
-                            pickWidth: 100.w,
-                          ),
-                          RowWidget.buildDividerWithoutColor(),
-                          RowWidget.buildCupertinoPicker(
-                            I18nKey.labelSortBy.tr,
-                            sortOptions,
-                            selectedSortIndex,
-                            changed: (index) {
-                              selectedSortIndex.value = index;
-                              trySearch();
-                            },
-                            pickWidth: 210.w,
-                          ),
-                          RowWidget.buildDividerWithoutColor(),
-                        ],
-                      ),
+        id: HistoryList.bodyId,
+        builder: (_) {
+          Widget searchDetailPanel = const SizedBox.shrink();
+          if (showSearchDetailPanel) {
+            searchDetailPanel = SizedBox(
+              height: searchDetailPanelHeight,
+              child: Column(
+                children: [
+                  Container(
+                    height: searchDetailPanelHeight,
+                    padding: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(Get.context!).scaffoldBackgroundColor,
+                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(8)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          spreadRadius: 0,
+                          blurRadius: 4,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              );
-            }
-            var list = versions;
-            return Column(
-              children: [
-                RowWidget.buildSearch(
-                  search,
-                  searchController,
-                  focus: focus,
-                  focusNode: focusNode,
-                  onClose: Get.back,
-                  onSearch: trySearch,
-                ),
-                RowWidget.buildDividerWithoutColor(),
-                searchDetailPanel,
-                SizedBox(
-                  height: getBodyViewHeight(),
-                  width: screenSize.width,
-                  child: NotificationListener<ScrollNotification>(
-                    onNotification: (ScrollNotification notification) {
-                      if (notification is ScrollStartNotification) {
-                        if (focusNode.hasFocus) {
-                          List<String> searches = StringUtil.splitN(searchKey, ",", 2);
-                          if (searches.length == 2) {
-                            dateSelect.value = int.parse(searches[0]);
-                            search.value = searches[1];
-                            searchController.text = search.value;
-                          }
-                          focusNode.unfocus();
-                        }
-                      }
-                      return true;
-                    },
-                    child: ScrollablePositionedList.builder(
-                      itemScrollController: itemScrollController,
-                      itemPositionsListener: itemPositionsListener,
-                      itemCount: list.length,
-                      itemBuilder: (context, index) {
-                        final version = list[index];
-                        return Card(
-                          elevation: 2,
-                          margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Stack(
-                            alignment: Alignment.topRight,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey.withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: Text(
-                                        '${I18nKey.labelCreateTime.tr}: ${DateTimeUtil.format(version.getCreateTime())}',
-                                        style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                      ),
-                                    ),
-                                    SizedBox(height: 8, width: screenSize.width),
-                                    ExpandableText(
-                                      title: "",
-                                      text: version.getContent(),
-                                      version: version.getVersion(),
-                                      limit: 60,
-                                      style: const TextStyle(fontSize: 14),
-                                      selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
-                                      versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
-                                      selectText: search.value,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              IconButton(
-                                onPressed: () {
-                                  Clipboard.setData(ClipboardData(text: version.getContent()));
-                                  Snackbar.show(I18nKey.labelCopiedToClipboard.tr);
-                                },
-                                icon: const Icon(
-                                  Icons.copy,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                    child: ListView(
+                      children: [
+                        RowWidget.buildCupertinoPicker(
+                          title: I18nKey.labelCreateTime.tr,
+                          options: dateOptions,
+                          value: dateSelect,
+                          changed: (index) {
+                            dateSelect.value = index;
+                            trySearch();
+                          },
+                          pickWidth: 100.w,
+                        ),
+                        RowWidget.buildDividerWithoutColor(),
+                        RowWidget.buildCupertinoPicker(
+                          title: I18nKey.labelSortBy.tr,
+                          options: sortOptions,
+                          value: selectedSortIndex,
+                          changed: (index) {
+                            selectedSortIndex.value = index;
+                            trySearch();
+                          },
+                          pickWidth: 210.w,
+                        ),
+                        RowWidget.buildDividerWithoutColor(),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
-          }),
+          }
+          var list = versions;
+          return Column(
+            children: [
+              RowWidget.buildSearch(
+                search,
+                searchController,
+                focus: focus,
+                focusNode: focusNode,
+                onClose: Get.back,
+                onSearch: trySearch,
+              ),
+              RowWidget.buildDividerWithoutColor(),
+              searchDetailPanel,
+              SizedBox(
+                height: getBodyViewHeight(),
+                width: screenSize.width,
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: (ScrollNotification notification) {
+                    if (notification is ScrollStartNotification) {
+                      if (focusNode.hasFocus) {
+                        List<String> searches = StringUtil.splitN(searchKey, ",", 2);
+                        if (searches.length == 2) {
+                          dateSelect.value = int.parse(searches[0]);
+                          search.value = searches[1];
+                          searchController.text = search.value;
+                        }
+                        focusNode.unfocus();
+                      }
+                    }
+                    return true;
+                  },
+                  child: ScrollablePositionedList.builder(
+                    itemScrollController: itemScrollController,
+                    itemPositionsListener: itemPositionsListener,
+                    itemCount: list.length,
+                    itemBuilder: (context, index) {
+                      final version = list[index];
+                      return Card(
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Stack(
+                          alignment: Alignment.topRight,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      '${I18nKey.labelCreateTime.tr}: ${DateTimeUtil.format(version.getCreateTime())}',
+                                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                    ),
+                                  ),
+                                  SizedBox(height: 8, width: screenSize.width),
+                                  ExpandableText(
+                                    title: "",
+                                    text: version.getContent(),
+                                    version: version.getVersion(),
+                                    limit: 60,
+                                    style: const TextStyle(fontSize: 14),
+                                    selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
+                                    versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
+                                    selectText: search.value,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                Clipboard.setData(ClipboardData(text: version.getContent()));
+                                Snackbar.show(I18nKey.labelCopiedToClipboard.tr);
+                              },
+                              icon: const Icon(
+                                Icons.copy,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
       height: totalHeight,
     ).then((_) {
       searchController.dispose();

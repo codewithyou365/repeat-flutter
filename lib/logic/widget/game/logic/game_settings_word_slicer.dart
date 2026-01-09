@@ -106,10 +106,12 @@ class GameSettingsWordSlicer extends GameSettings {
   }
 
   void setMaxScore(int index) {
+    maxScoreIndex.value = index;
     Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.wordSlicerGameForMaxScore, '${index + 1}'));
   }
 
   void setHiddenContentPercent(int index) {
+    hideContentPercent.value = index;
     Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.wordSlicerGameForHiddenContentPercent, '$index'));
   }
 
@@ -123,25 +125,28 @@ class GameSettingsWordSlicer extends GameSettings {
           userNames.add('${user.name}(${userIdToScore[user.id!] ?? 0})');
         }
         return RowWidget.buildCupertinoPicker(
-          I18nKey.editor.tr,
-          userNames,
-          RxInt(userIndex.value),
+          title: I18nKey.editor.tr,
+          options: userNames,
+          value: userIndex,
           changed: setUser,
+          disabled: webOpen,
         );
       }),
       RowWidget.buildDividerWithoutColor(),
       RowWidget.buildCupertinoPicker(
-        I18nKey.maxScore.tr,
-        List.generate(100, (i) => '${i + 1}'),
-        maxScoreIndex,
+        title: I18nKey.maxScore.tr,
+        options: List.generate(100, (i) => '${i + 1}'),
+        value: maxScoreIndex,
         changed: setMaxScore,
+        disabled: webOpen,
       ),
       RowWidget.buildDividerWithoutColor(),
       RowWidget.buildCupertinoPicker(
-        I18nKey.hiddenContent.tr,
-        List.generate(11, (i) => '${i * 10}%'),
-        hideContentPercent,
+        title: I18nKey.hiddenContent.tr,
+        options: List.generate(11, (i) => '${i * 10}%'),
+        value: hideContentPercent,
         changed: setHiddenContentPercent,
+        disabled: webOpen,
       ),
     ];
   }
