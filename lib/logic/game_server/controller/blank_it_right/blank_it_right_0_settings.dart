@@ -13,7 +13,7 @@ Future<message.Response?> blankItRightSettings(message.Request req, GameUser use
   if (editorUserId == 0) {
     return message.Response(error: GameServerError.editorUserNeedToBeSpecified.name);
   }
-  blankItRightGame.join(userId: user.getId());
+  blankItRightGame.tryJoin(userId: user.getId());
   var ignorePunctuation = await BlankItRightUtils.getIgnorePunctuation();
   var ignoreCase = await BlankItRightUtils.getIgnoreCase();
   var res = KvList([]);

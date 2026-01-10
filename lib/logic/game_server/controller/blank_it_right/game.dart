@@ -102,9 +102,12 @@ class BlankItRightGame {
     return blankContent!;
   }
 
-  void join({
+  void tryJoin({
     required int userId,
   }) {
+    if (userStep.containsKey(userId)) {
+      return;
+    }
     userStep[userId] = UserData(
       step: gameStep,
       submit: '',

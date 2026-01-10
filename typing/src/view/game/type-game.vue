@@ -4,6 +4,7 @@
         :content="content"
         :disabled="false"
         :ignore-case="ignoreCase"
+        :change-to-right-case-when-ignore-case="true"
         :ignore-punctuation="ignorePunctuation"
         :ignore-content-indexes=[]
     />

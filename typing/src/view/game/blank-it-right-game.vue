@@ -5,6 +5,7 @@
         :content="content"
         :disabled="typingDisabled"
         :ignore-case="ignoreCase"
+        :change-to-right-case-when-ignore-case="false"
         :ignore-punctuation="ignorePunctuation && editorUserId == store.getters.currentUserId"
         :ignore-content-indexes="ignoreContentIndexes"
         :click-fill-char-when-disabled='clickFillCharWhenDisabled'

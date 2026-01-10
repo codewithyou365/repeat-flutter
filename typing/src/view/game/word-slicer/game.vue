@@ -15,6 +15,7 @@
         :disabled="true"
         :touch-color="getCurrUserColor"
         :ignore-case="false"
+        :change-to-right-case-when-ignore-case="false"
         :ignore-punctuation="false"
         :ignore-content-indexes="ignoreContentIndexes"/>
 

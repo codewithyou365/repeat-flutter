@@ -55,6 +55,7 @@ const props = withDefaults(defineProps<{
   clickFillCharWhenDisabled?: string;
   ignoreContentIndexes: number[];
   ignoreCase: boolean;
+  changeToRightCaseWhenIgnoreCase: boolean;
   ignorePunctuation: boolean;
   touchColor?: string;
 }>(), {
@@ -380,7 +381,7 @@ const getCharClass = (index: number) => {
     if (props.ignoreCase) {
       isCorrect = userCh.toLowerCase() === origCh.toLowerCase();
     }
-    if (props.ignoreCase && isCorrect && userCh !== origCh) {
+    if (props.ignoreCase && isCorrect && userCh !== origCh && props.changeToRightCaseWhenIgnoreCase) {
       userInput.value =
           userInput.value.slice(0, index) +
           origCh +

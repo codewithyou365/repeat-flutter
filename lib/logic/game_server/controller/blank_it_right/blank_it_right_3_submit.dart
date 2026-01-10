@@ -83,7 +83,7 @@ Future<message.Response?> blankItRightSubmit(message.Request req, GameUser user,
   final String blank = blankItRightGame.getBlankContent(verse: verseMap, focusRefresh: false);
   final int maxScore = blankItRightGame.maxScore;
   final int currScore = BlankItRightUtils.getScore(userAnswer, correctAnswer, blank, maxScore, blankItRightGame.ignoreCase);
-  blankItRightGame.finished(userId: user.getId(), submit: reqBody.content, score: currScore);
+  blankItRightGame.finished(userId: user.getId(), submit: userAnswer, score: currScore);
   await Db().db.gameUserScoreDao.inc(user.getId(), GameType.blankItRight, currScore, "i:${I18nKey.obtainedInTheGame.name}");
   return message.Response(
     data: BlankItRightSubmitRes(

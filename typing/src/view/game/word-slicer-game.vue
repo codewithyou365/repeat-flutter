@@ -60,7 +60,6 @@ const refresh = async (refreshGame: RefreshGameType) => {
 const getGameStatus = async () => {
   const req = new Request({path: Path.wordSlicerStatus});
   const res = await client.node!.send(req);
-  debugger
   status.value = WordSlicerStatus.fromJson(res.data);
   editorContent.value = res.headers['editorContent'] ?? '';
   editorEnable.value = res.headers['editorEnable'] === '1';
