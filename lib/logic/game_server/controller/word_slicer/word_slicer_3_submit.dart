@@ -14,9 +14,21 @@ Future<message.Response?> wordSlicerSubmit(message.Request req, GameUser user, S
   if (wordSlicerGame.gameStep != GameStepEnum.started) {
     return message.Response(error: GameServerError.gameStateInvalid.name);
   }
+  List<int> selectedIndexed = List<int>.from(req.data);
+  if (wordSlicerGame.userIds.length > 1) {
+    final isConsecutive = selectedIndexed.asMap().entries.every((entry) {
+      final i = entry.key;
+      final val = entry.value;
+      if (i == 0) return true;
+      return val == selectedIndexed[i - 1] + 1;
+    });
+
+    if (!isConsecutive) {
+      return message.Response(error: GameServerError.wordSlicerYourCommitMustBeConsecutive.name);
+    }
+  }
 
   int colorIndex = wordSlicerGame.getColorIndex(user.getId());
-  List<int> selectedIndexed = List<int>.from(req.data);
   if (selectedIndexed.isEmpty) {
     wordSlicerGame.abandonUserIds[user.getId()] = true;
   } else {
@@ -38,6 +50,7 @@ Future<message.Response?> wordSlicerSubmit(message.Request req, GameUser user, S
   if (selectedAll || wordSlicerGame.abandonUserIds.length == wordSlicerGame.userIds.length) {
     wordSlicerGame.gameStep = GameStepEnum.finished;
     wordSlicerGame.answer = wordSlicerGame.originContentWithSpace;
+    wordSlicerGame.content = wordSlicerGame.originContent;
     wordSlicerGame.setResult();
     for (final entry in wordSlicerGame.userIdToScore.entries) {
       final userId = entry.key;

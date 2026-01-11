@@ -12,8 +12,8 @@ Future<message.Response?> wordSlicerStartGame(message.Request req, GameUser user
   if (wordSlicerGame.gameStep != GameStepEnum.selectRule) {
     return message.Response(error: GameServerError.gameStateInvalid.name);
   }
-  if (wordSlicerGame.differentColorUsers() < 2) {
-    return message.Response(error: GameServerError.wordSlicerDifferentColorUserCountMustBeMoreThanTwo.name);
+  if (wordSlicerGame.userIds.isEmpty) {
+    return message.Response(error: GameServerError.wordSlicerNoPlayers.name);
   }
 
   final text = WordSlicerUtils.getText(wordSlicerGame.verseId);

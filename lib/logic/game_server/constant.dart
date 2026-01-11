@@ -19,7 +19,8 @@ enum GameServerError {
   editModeDisabled,
   contentCantBeSave,
   wordSlicerMustHaveJudge,
-  wordSlicerDifferentColorUserCountMustBeMoreThanTwo,
+  wordSlicerNoPlayers,
+  wordSlicerYourCommitMustBeConsecutive,
 }
 
 class GameConstant {

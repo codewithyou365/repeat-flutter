@@ -69,13 +69,7 @@ const getOccupiedNames = (index: number) => {
 };
 
 const enoughUsers = computed(() => {
-  let count = 0;
-  for (let i = 0; i < 3; i++) {
-    if (status.value.colorIndexToUserId[i].length > 0) {
-      count++;
-    }
-  }
-  return count >= 2;
+  return status.value.userIds.length > 0
 });
 
 const handleSelectionChange = (val: string) => {

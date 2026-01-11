@@ -141,16 +141,17 @@ const submit = async () => {
       }));
       return;
     }
+    if (status.value.userIds.length > 1) {
+      const isConsecutive = selectedContentIndexes.every((val, i) => {
+        if (i === 0) return true;
+        return val === selectedContentIndexes[i - 1] + 1;
+      });
 
-    const isConsecutive = selectedContentIndexes.every((val, i) => {
-      if (i === 0) return true;
-      return val === selectedContentIndexes[i - 1] + 1;
-    });
-
-    if (!isConsecutive) {
-      tipDialogVisible.value = true;
-      tipDialogContent.value = t('wordSlicerConsecutiveError');
-      return;
+      if (!isConsecutive) {
+        tipDialogVisible.value = true;
+        tipDialogContent.value = t('wordSlicerYourCommitMustBeConsecutive');
+        return;
+      }
     }
 
     res = await client.send(new Request({
