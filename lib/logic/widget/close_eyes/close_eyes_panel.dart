@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:screenshot_guard/screenshot_guard.dart';
 
+final _guard = ScreenshotGuard();
 class CloseEyesPanel {
   static Widget open({
     required double height,
@@ -101,6 +103,13 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
     super.initState();
     show = widget.showFinger;
     direct = Rx(widget.direct);
+    _guard.enableSecureFlag(enable: true);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _guard.enableSecureFlag(enable: false);
   }
 
   void _onPointerDown(PointerDownEvent event) {
