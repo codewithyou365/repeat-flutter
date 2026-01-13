@@ -47,7 +47,7 @@ class GameLogic<T extends GetxController> {
   Future<void> init(VoidCallback onOpenWeb) async {
     this.onOpenWeb = onOpenWeb;
     var lastGameIndex = await Db().db.kvDao.getInt(K.lastGameIndex) ?? 1;
-    state.game.value = lastGameIndex - 1;
+    state.game = lastGameIndex - 1;
     GameState.lastGameIndex = lastGameIndex;
     await userManager.init(web);
   }
@@ -56,7 +56,7 @@ class GameLogic<T extends GetxController> {
     for (var v in gameTypeToGameSettings.values) {
       await v.onInit(web);
     }
-    state.game.value = GameState.lastGameIndex - 1;
+    state.game = GameState.lastGameIndex - 1;
     sub.off();
     subAllowRegisterNumber.off();
     state.online.value = getOnline();

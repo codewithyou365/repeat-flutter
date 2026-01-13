@@ -34,14 +34,14 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   List<BookShow> bookShow = [];
 
   bool showSearchDetailPanel = false;
-  RxInt bookSelect = 0.obs;
+  int bookSelect = 0;
   String searchKey = '';
 
   // for collect search data, and missing book
   int missingBookOffset = -1;
   List<String> bookOptions = [];
   List<String> sortOptions = [];
-  RxInt selectedSortIndex = 0.obs;
+  int selectedSortIndex = 0;
   List<I18nKey> sortOptionKeys = [
     I18nKey.labelSortPositionAsc,
     I18nKey.labelSortPositionDesc,
@@ -73,12 +73,12 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
 
     // for sorting and content
     sortOptions = sortOptionKeys.map((key) => key.tr).toList();
-    sort(bookShow, sortOptionKeys[selectedSortIndex.value]);
+    sort(bookShow, sortOptionKeys[selectedSortIndex]);
 
     collectData();
 
     if (initContentNameSelect != null) {
-      bookSelect.value = bookOptions.indexOf(initContentNameSelect);
+      bookSelect = bookOptions.indexOf(initContentNameSelect);
     }
   }
 
@@ -90,7 +90,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   }
 
   String genSearchKey() {
-    return '${bookSelect.value},${search.value}';
+    return '$bookSelect,${search.value}';
   }
 
   @override
@@ -100,17 +100,17 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
       return;
     }
     searchKey = newSearchKey;
-    if (search.value.isNotEmpty || bookSelect.value != 0) {
+    if (search.value.isNotEmpty || bookSelect != 0) {
       bookShow = originalBookShow.where((e) {
         bool ret = true;
         if (ret && search.value.isNotEmpty) {
           ret = e.bookContent.contains(search.value);
         }
-        if (ret && bookSelect.value != 0) {
-          if (bookSelect.value < bookOptions.length) {
-            ret = e.name == bookOptions[bookSelect.value];
+        if (ret && bookSelect != 0) {
+          if (bookSelect < bookOptions.length) {
+            ret = e.name == bookOptions[bookSelect];
           } else {
-            bookSelect.value = 0;
+            bookSelect = 0;
           }
         }
         return ret;
@@ -118,7 +118,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
     } else {
       bookShow = List.from(originalBookShow);
     }
-    sort(bookShow, sortOptionKeys[selectedSortIndex.value]);
+    sort(bookShow, sortOptionKeys[selectedSortIndex]);
 
     parentLogic.update([ViewLogicBookList.bodyId]);
   }
@@ -180,7 +180,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                   options: bookOptions,
                   value: bookSelect,
                   changed: (index) {
-                    bookSelect.value = index;
+                    bookSelect = index;
                     trySearch();
                   },
                 ),
@@ -190,7 +190,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                   options: sortOptions,
                   value: selectedSortIndex,
                   changed: (index) {
-                    selectedSortIndex.value = index;
+                    selectedSortIndex = index;
                     I18nKey key = sortOptionKeys[index];
                     sort(bookShow, key);
                     parentLogic.update([ViewLogicBookList.bodyId]);

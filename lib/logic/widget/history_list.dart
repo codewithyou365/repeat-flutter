@@ -51,13 +51,13 @@ class HistoryList<T extends GetxController> {
 
     // for sorting and content
     List<ContentVersion> versions = List.from(originalVersions);
-    RxInt selectedSortIndex = 0.obs;
+    int selectedSortIndex = 0;
     List<I18nKey> sortOptionKeys = [
       I18nKey.labelSortCreateTimeDesc,
       I18nKey.labelSortCreateTimeAsc,
     ];
     List<String> sortOptions = sortOptionKeys.map((key) => key.tr).toList();
-    sort(versions, sortOptionKeys[selectedSortIndex.value]);
+    sort(versions, sortOptionKeys[selectedSortIndex]);
 
     // for height
     var mediaQueryData = MediaQuery.of(Get.context!);
@@ -84,7 +84,7 @@ class HistoryList<T extends GetxController> {
     dates.sort();
     dates.insert(0, -1); // Add "All" option
 
-    RxInt dateSelect = 0.obs;
+    int dateSelect = 0;
     List<String> dateOptions = dates.map((d) {
       if (d == -1) {
         return I18nKey.labelAll.tr;
@@ -96,7 +96,7 @@ class HistoryList<T extends GetxController> {
     final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
 
     String genSearchKey() {
-      return '${dateSelect.value},${search.value},${selectedSortIndex.value}';
+      return '$dateSelect,${search.value},$selectedSortIndex';
     }
 
     String searchKey = genSearchKey();
@@ -106,23 +106,23 @@ class HistoryList<T extends GetxController> {
         return;
       }
       searchKey = newSearchKey;
-      if (search.value.isNotEmpty || dateSelect.value != 0) {
+      if (search.value.isNotEmpty || dateSelect != 0) {
         versions = originalVersions.where((e) {
           bool ret = true;
           if (ret && search.value.isNotEmpty) {
             ret = e.getContent().contains(search.value);
           }
-          if (ret && dateSelect.value != 0) {
+          if (ret && dateSelect != 0) {
             DateTime createTime = e.getCreateTime();
             int date = createTime.year * 10000 + createTime.month * 100 + createTime.day;
-            ret = date == dates[dateSelect.value];
+            ret = date == dates[dateSelect];
           }
           return ret;
         }).toList();
       } else {
         versions = List.from(originalVersions);
       }
-      sort(versions, sortOptionKeys[selectedSortIndex.value]);
+      sort(versions, sortOptionKeys[selectedSortIndex]);
       parentLogic.update([HistoryList.bodyId]);
     }
 
@@ -159,7 +159,7 @@ class HistoryList<T extends GetxController> {
                           options: dateOptions,
                           value: dateSelect,
                           changed: (index) {
-                            dateSelect.value = index;
+                            dateSelect = index;
                             trySearch();
                           },
                           pickWidth: 100.w,
@@ -170,7 +170,7 @@ class HistoryList<T extends GetxController> {
                           options: sortOptions,
                           value: selectedSortIndex,
                           changed: (index) {
-                            selectedSortIndex.value = index;
+                            selectedSortIndex = index;
                             trySearch();
                           },
                           pickWidth: 210.w,
@@ -205,7 +205,7 @@ class HistoryList<T extends GetxController> {
                       if (focusNode.hasFocus) {
                         List<String> searches = StringUtil.splitN(searchKey, ",", 2);
                         if (searches.length == 2) {
-                          dateSelect.value = int.parse(searches[0]);
+                          dateSelect = int.parse(searches[0]);
                           search.value = searches[1];
                           searchController.text = search.value;
                         }

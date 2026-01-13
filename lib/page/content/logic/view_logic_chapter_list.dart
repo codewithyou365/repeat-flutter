@@ -48,7 +48,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
   // for collect search data, and missing chapter
   int missingChapterOffset = -1;
   List<String> sortOptions = [];
-  RxInt selectedSortIndex = 0.obs;
+  int selectedSortIndex = 0;
   List<I18nKey> sortOptionKeys = [
     I18nKey.labelSortPositionAsc,
     I18nKey.labelSortPositionDesc,
@@ -83,7 +83,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
 
     // for sorting and content
     sortOptions = sortOptionKeys.map((key) => key.tr).toList();
-    sort(chapterShow, sortOptionKeys[selectedSortIndex.value]);
+    sort(chapterShow, sortOptionKeys[selectedSortIndex]);
 
     collectData();
 
@@ -108,7 +108,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
   }
 
   String genSearchKey() {
-    return '${bookSelect.value},${chapterSelect.value},${search.value}';
+    return '$bookSelect,$chapterSelect,${search.value}';
   }
 
   @override
@@ -146,7 +146,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     } else {
       chapterShow = List.from(originalChapterShow);
     }
-    sort(chapterShow, sortOptionKeys[selectedSortIndex.value]);
+    sort(chapterShow, sortOptionKeys[selectedSortIndex]);
 
     parentLogic.update([ViewLogicChapterList.bodyId]);
   }
@@ -276,7 +276,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                   options: sortOptions,
                   value: selectedSortIndex,
                   changed: (index) {
-                    selectedSortIndex.value = index;
+                    selectedSortIndex = index;
                     I18nKey key = sortOptionKeys[index];
                     sort(chapterShow, key);
                     parentLogic.update([ViewLogicChapterList.bodyId]);

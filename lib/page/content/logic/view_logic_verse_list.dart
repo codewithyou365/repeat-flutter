@@ -40,13 +40,13 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     I18nKey.labelSortNextLearnDateDesc,
   ];
   RxString search = RxString("");
-  RxInt selectedSortIndex = 0.obs;
+  int selectedSortIndex = 0;
 
   List<OptionBody> options = [];
 
   RxInt chapterSelect = 0.obs;
-  RxInt progressSelect = 0.obs;
-  RxInt nextMonthSelect = 0.obs;
+  int progressSelect = 0;
+  int nextMonthSelect = 0;
   bool showSearchDetailPanel = false;
   double searchDetailPanelHeight = 3 * (RowWidget.rowHeight + RowWidget.dividerHeight);
 
@@ -97,7 +97,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     verseShow = List.from(originalVerseShow);
 
     sortOptions = sortOptionKeys.map((key) => key.tr).toList();
-    sort(verseShow, sortOptionKeys[selectedSortIndex.value]);
+    sort(verseShow, sortOptionKeys[selectedSortIndex]);
 
     collectData();
 
@@ -115,7 +115,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
   }
 
   String genSearchKey() {
-    return '${bookSelect.value},${chapterSelect.value},${progressSelect.value},${nextMonthSelect.value},${search.value}';
+    return '${bookSelect.value},${chapterSelect.value},$progressSelect,$nextMonthSelect,${search.value}';
   }
 
   void scrollTo(int selectVerseKeyId) {
@@ -141,7 +141,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
       return;
     }
     searchKey = newSearchKey;
-    if (search.value.isNotEmpty || bookSelect.value != 0 || chapterSelect.value != 0 || progressSelect.value != 0 || nextMonthSelect.value != 0) {
+    if (search.value.isNotEmpty || bookSelect.value != 0 || chapterSelect.value != 0 || progressSelect != 0 || nextMonthSelect != 0) {
       verseShow = originalVerseShow.where((e) {
         bool ret = true;
         if (ret && search.value.isNotEmpty) {
@@ -164,11 +164,11 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
             ret = false;
           }
         }
-        if (ret && progressSelect.value != 0) {
-          ret = e.progress == progress[progressSelect.value];
+        if (ret && progressSelect != 0) {
+          ret = e.progress == progress[progressSelect];
         }
-        if (ret && nextMonthSelect.value != 0) {
-          int min = nextMonth[nextMonthSelect.value] * 100;
+        if (ret && nextMonthSelect != 0) {
+          int min = nextMonth[nextMonthSelect] * 100;
           int max = min + 99;
           ret = min < e.learnDate.value && e.learnDate.value < max;
         }
@@ -177,7 +177,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     } else {
       verseShow = List.from(originalVerseShow);
     }
-    sort(verseShow, sortOptionKeys[selectedSortIndex.value]);
+    sort(verseShow, sortOptionKeys[selectedSortIndex]);
 
     parentLogic.update([ViewLogicVerseList.bodyId]);
   }
@@ -304,7 +304,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                   options: progressOptions,
                   value: progressSelect,
                   changed: (index) {
-                    progressSelect.value = index;
+                    progressSelect = index;
                     trySearch();
                   },
                 ),
@@ -314,7 +314,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                   options: nextMonthOptions,
                   value: nextMonthSelect,
                   changed: (index) {
-                    nextMonthSelect.value = index;
+                    nextMonthSelect = index;
                     trySearch();
                   },
                 ),
@@ -324,7 +324,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                   options: sortOptions,
                   value: selectedSortIndex,
                   changed: (index) {
-                    selectedSortIndex.value = index;
+                    selectedSortIndex = index;
                     I18nKey key = sortOptionKeys[index];
                     sort(verseShow, key);
                     parentLogic.update([ViewLogicVerseList.bodyId]);
@@ -492,7 +492,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
               );
             },
           );
-        } else if (bookSelect.value > 0 && chapterSelect.value > 0 && search.value.isEmpty && progressSelect.value == 0 && nextMonthSelect.value == 0) {
+        } else if (bookSelect.value > 0 && chapterSelect.value > 0 && search.value.isEmpty && progressSelect == 0 && nextMonthSelect == 0) {
           body = Center(
             child: Padding(
               padding: const EdgeInsets.all(16.0),

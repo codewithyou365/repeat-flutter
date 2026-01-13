@@ -20,11 +20,14 @@ class GameSettingsBlankItRight extends GameSettings {
   RxBool ignoringPunctuation = RxBool(false);
   RxBool ignoreCase = RxBool(false);
   RxBool autoBlank = RxBool(false);
-  RxInt maxScoreIndex = RxInt(10);
-  RxInt blankContentPercent = RxInt(0);
+  Key maxScoreIndexKey = GlobalKey();
+  int maxScoreIndex = 10;
+  Key blankContentPercentKey = GlobalKey();
+  int blankContentPercent = 0;
   late WebServer web;
   int verseId = 0;
   RxInt userNumber = RxInt(0);
+  Key userIndexKey = GlobalKey();
   RxInt userIndex = RxInt(-1);
   List<GameUser> users = [];
   Map<int, int> userIdToScore = {};
@@ -54,8 +57,8 @@ class GameSettingsBlankItRight extends GameSettings {
     await initUsers();
 
     autoBlank.value = await BlankItRightUtils.getAutoBlank();
-    maxScoreIndex.value = await BlankItRightUtils.getMaxScore() - 1;
-    blankContentPercent.value = await BlankItRightUtils.getBlankContentPercent();
+    maxScoreIndex = await BlankItRightUtils.getMaxScore() - 1;
+    blankContentPercent = await BlankItRightUtils.getBlankContentPercent();
     ignoringPunctuation.value = await BlankItRightUtils.getIgnorePunctuation();
     ignoreCase.value = await BlankItRightUtils.getIgnoreCase();
   }
@@ -107,12 +110,12 @@ class GameSettingsBlankItRight extends GameSettings {
   }
 
   void setMaxScore(int index) {
-    maxScoreIndex.value = index;
+    maxScoreIndex = index;
     Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.blockItRightGameForMaxScore, '${index + 1}'));
   }
 
   void setBlankContentPercent(int index) {
-    blankContentPercent.value = index;
+    blankContentPercent = index;
     Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.blockItRightGameForBlankContentPercent, '${index + 1}'));
   }
 
@@ -149,6 +152,7 @@ class GameSettingsBlankItRight extends GameSettings {
         }
         if (autoBlank.value) {
           return RowWidget.buildCupertinoPicker(
+            key: blankContentPercentKey,
             title: I18nKey.blankContent.tr,
             options: List.generate(10, (i) => '${i * 10 + 10}%'),
             value: blankContentPercent,
@@ -157,9 +161,10 @@ class GameSettingsBlankItRight extends GameSettings {
           );
         } else {
           return RowWidget.buildCupertinoPicker(
+            key: userIndexKey,
             title: I18nKey.editor.tr,
             options: userNames,
-            value: userIndex,
+            value: userIndex.value,
             changed: setUser,
             disabled: webOpen,
           );
@@ -167,6 +172,7 @@ class GameSettingsBlankItRight extends GameSettings {
       }),
       RowWidget.buildDividerWithoutColor(),
       RowWidget.buildCupertinoPicker(
+        key: maxScoreIndexKey,
         title: I18nKey.maxScore.tr,
         options: List.generate(100, (i) => '${i + 1}'),
         value: maxScoreIndex,

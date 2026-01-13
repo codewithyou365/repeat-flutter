@@ -19,10 +19,13 @@ import 'game_settings.dart';
 class GameSettingsWordSlicer extends GameSettings {
   RxBool ignoringPunctuation = RxBool(false);
   RxBool ignoreCase = RxBool(false);
-  RxInt maxScoreIndex = RxInt(10);
-  RxInt hideContentPercent = RxInt(0);
+  Key maxScoreIndexKey = GlobalKey();
+  int maxScoreIndex = 10;
+  Key hideContentPercentKey = GlobalKey();
+  int hideContentPercent = 0;
   late WebServer web;
   RxInt userNumber = RxInt(0);
+  Key userIndexKey = GlobalKey();
   RxInt userIndex = RxInt(-1);
   List<GameUser> users = [];
   Map<int, int> userIdToScore = {};
@@ -54,8 +57,8 @@ class GameSettingsWordSlicer extends GameSettings {
 
     await initUsers();
 
-    maxScoreIndex.value = await WordSlicerUtils.getMaxScore() - 1;
-    hideContentPercent.value = await WordSlicerUtils.getHiddenContentPercent();
+    maxScoreIndex = await WordSlicerUtils.getMaxScore() - 1;
+    hideContentPercent = await WordSlicerUtils.getHiddenContentPercent();
   }
 
   @override
@@ -106,12 +109,12 @@ class GameSettingsWordSlicer extends GameSettings {
   }
 
   void setMaxScore(int index) {
-    maxScoreIndex.value = index;
+    maxScoreIndex = index;
     Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.wordSlicerGameForMaxScore, '${index + 1}'));
   }
 
   void setHiddenContentPercent(int index) {
-    hideContentPercent.value = index;
+    hideContentPercent = index;
     Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.wordSlicerGameForHiddenContentPercent, '$index'));
   }
 
@@ -125,15 +128,17 @@ class GameSettingsWordSlicer extends GameSettings {
           userNames.add('${user.name}(${userIdToScore[user.id!] ?? 0})');
         }
         return RowWidget.buildCupertinoPicker(
+          key: userIndexKey,
           title: I18nKey.editor.tr,
           options: userNames,
-          value: userIndex,
+          value: userIndex.value,
           changed: setUser,
           disabled: webOpen,
         );
       }),
       RowWidget.buildDividerWithoutColor(),
       RowWidget.buildCupertinoPicker(
+        key: maxScoreIndexKey,
         title: I18nKey.maxScore.tr,
         options: List.generate(100, (i) => '${i + 1}'),
         value: maxScoreIndex,
@@ -142,6 +147,7 @@ class GameSettingsWordSlicer extends GameSettings {
       ),
       RowWidget.buildDividerWithoutColor(),
       RowWidget.buildCupertinoPicker(
+        key: hideContentPercentKey,
         title: I18nKey.hiddenContent.tr,
         options: List.generate(11, (i) => '${i * 10}%'),
         value: hideContentPercent,

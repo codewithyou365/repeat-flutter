@@ -12,7 +12,8 @@ import 'game_settings.dart';
 
 class GameSettingsInput extends GameSettings {
   RxBool ignoringPunctuation = RxBool(false);
-  RxInt matchType = RxInt(0);
+  Key matchTypeKey = GlobalKey();
+  int matchType = 0;
   RxString skipChar = RxString("");
 
   @override
@@ -23,10 +24,10 @@ class GameSettingsInput extends GameSettings {
     }
     ki = await Db().db.crKvDao.getInt(Classroom.curr, CrK.inputGameForMatchType);
     if (ki != null) {
-      matchType.value = ki;
+      matchType = ki;
     } else {
       await setMatchType(MatchType.all.index);
-      matchType.value = MatchType.all.index;
+      matchType = MatchType.all.index;
     }
     var ks = await Db().db.crKvDao.getString(Classroom.curr, CrK.inputGameForSkipCharacter);
     if (ks != null) {
@@ -49,7 +50,7 @@ class GameSettingsInput extends GameSettings {
   }
 
   Future<void> setMatchType(int matchType) async {
-    this.matchType.value = matchType;
+    this.matchType = matchType;
     await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.inputGameForMatchType, '$matchType'));
   }
 
@@ -73,6 +74,7 @@ class GameSettingsInput extends GameSettings {
       ),
       RowWidget.buildDividerWithoutColor(),
       RowWidget.buildCupertinoPicker(
+        key: matchTypeKey,
         title: I18nKey.labelMatchType.tr,
         options: [I18nKey.labelWord.tr, I18nKey.labelSingle.tr, I18nKey.labelAll.tr],
         value: matchType,

@@ -5,6 +5,6 @@ class GameState {
   bool openPending = false;
   RxBool open = RxBool(false);
   RxString online = RxString("");
-  RxInt game = RxInt(0);
+  int game = 0;
   List<String> urls = [];
 }

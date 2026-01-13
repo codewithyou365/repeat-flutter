@@ -45,7 +45,7 @@ class EditProgress {
               options: List.generate(verseProgress + ScheduleDao.scheduleConfig.learnIntervalDays.length, (i) {
                 return '$i';
               }),
-              value: progress,
+              value: progress.value,
               changed: (value) {
                 progress.value = value;
                 nextDay.value = ScheduleDao.getNextByProgress(ScheduleDao.currentDate(), value).value;

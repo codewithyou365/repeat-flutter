@@ -236,7 +236,7 @@ class RowWidget {
               return buildCupertinoPicker(
                 title: head[index].title,
                 options: labels,
-                value: head[index].value,
+                value: head[index].value.value,
                 pickWidth: head[index].optionWidth,
                 changed: (selectedIndex) {
                   head[index].value.value = selectedIndex;
@@ -259,13 +259,46 @@ class RowWidget {
   }
 
   static Widget buildCupertinoPicker({
+    Key? key,
     required String title,
     required List<String> options,
-    required RxInt value,
+    required int value,
     ValueChanged<int>? changed,
     double? pickWidth,
     RxBool? disabled,
   }) {
+    Widget picker({required bool isDisabled}) {
+      return SizedBox(
+        width: pickWidth ?? 80.w,
+        height: 64,
+        child: AbsorbPointer(
+          absorbing: isDisabled,
+          child: Opacity(
+            opacity: isDisabled ? 0.5 : 1.0,
+            child: CupertinoPicker(
+              key: key,
+              scrollController: FixedExtentScrollController(
+                initialItem: value,
+              ),
+              itemExtent: 32.0,
+              onSelectedItemChanged: isDisabled ? null : changed,
+              children: List.generate(options.length, (index) {
+                return Center(
+                  child: Text(
+                    options[index],
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(paddingHorizontal, 0, 0, 0),
       child: SizedBox(
@@ -277,37 +310,12 @@ class RowWidget {
               style: const TextStyle(fontSize: titleFontSize),
             ),
             const Spacer(),
-            Obx(() {
-              final bool isDisabled = disabled?.value ?? false;
-              return SizedBox(
-                width: pickWidth ?? 80.w,
-                height: 64,
-                child: AbsorbPointer(
-                  absorbing: isDisabled,
-                  child: Opacity(
-                    opacity: isDisabled ? 0.5 : 1.0,
-                    child: CupertinoPicker(
-                      scrollController: FixedExtentScrollController(
-                        initialItem: value.value,
-                      ),
-                      itemExtent: 32.0,
-                      onSelectedItemChanged: isDisabled ? null : changed,
-                      children: List.generate(options.length, (index) {
-                        return Center(
-                          child: Text(
-                            options[index],
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.normal,
-                            ),
-                          ),
-                        );
-                      }),
-                    ),
-                  ),
-                ),
-              );
-            }),
+            if (disabled == null)
+              picker(isDisabled: false)
+            else
+              Obx(() {
+                return picker(isDisabled: disabled.value);
+              }),
           ],
         ),
       ),
