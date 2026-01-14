@@ -11,6 +11,9 @@ class ConfigEn extends Config {
     put(I18nKey.bookShare, "Book Share");
     put(I18nKey.editBook, "Edit Book: %s");
     put(I18nKey.edit, "Edit");
+    put(I18nKey.showMode, "Show Mode: %s");
+    put(I18nKey.closedBook, "Closed Book");
+    put(I18nKey.openBook, "Open Book");
     put(I18nKey.keyTitle, "Credentials");
     put(I18nKey.keyContent, "Username: @0\nPassword: @1");
     put(I18nKey.selectBookType, "Select Book Type");
@@ -220,7 +223,6 @@ class ConfigEn extends Config {
     put(I18nKey.labelSettingLearningProgressWarning, "Setting the learning progress here will not create a learning record");
     put(I18nKey.labelChapterKeyCantBeEmpty, "Chapter key cannot be empty");
     put(I18nKey.labelChapterKeyDuplicated, "Chapter key is duplicated");
-    put(I18nKey.labelEdit, "Edit");
     put(I18nKey.labelDoYourShareTheNotes, "Do you share your notes?");
     put(I18nKey.labelSharingNotes, "Sharing notes");
     put(I18nKey.labelDataNotChange, "Data not changed");

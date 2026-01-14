@@ -2,11 +2,13 @@ import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'game_helper.dart';
 
 import 'constant.dart';
+import 'helper.dart';
 
 abstract class RepeatFlow {
   late Function() update;
 
   late GameHelper gameHelper;
+  late Helper helper;
 
   RepeatStep step = RepeatStep.recall;
 
@@ -27,6 +29,7 @@ abstract class RepeatFlow {
     required int startIndex,
     required Function() update,
     required GameHelper gameHelper,
+    required Helper helper,
   });
 
   void onClose();

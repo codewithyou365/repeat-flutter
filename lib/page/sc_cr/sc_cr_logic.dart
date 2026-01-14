@@ -21,6 +21,7 @@ import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
 import 'package:repeat_flutter/logic/widget/full_custom.dart';
 import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/page/repeat/repeat_args.dart';
 import 'package:repeat_flutter/page/sc_cr_stats/sc_cr_stats_logic.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -273,7 +274,7 @@ class ScCrLogic extends GetxController {
       startIndex: 0,
       repeatType: mode,
       enableShowRecallButtons: true,
-      defaultEdit: false,
+      showMode: mode == RepeatType.normal ? ShowMode.closedBook : ShowMode.openBook,
     );
     await Nav.repeat.push(arguments: repeat);
     await init();
@@ -377,5 +378,4 @@ class ScCrLogic extends GetxController {
       Snackbar.show(I18nKey.labelNoContent.tr);
     }
   }
-
 }

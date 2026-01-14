@@ -527,7 +527,7 @@ class RowWidget {
             InkWell(
               onTap: () {
                 if (onTap == null) {
-                  MsgBox.strInputWithYesOrNo(value, I18nKey.labelEdit.tr, title, inputType: inputType, yes: yes);
+                  MsgBox.strInputWithYesOrNo(value, I18nKey.edit.tr, title, inputType: inputType, yes: yes);
                 } else {
                   onTap();
                 }

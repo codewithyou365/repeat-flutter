@@ -18,6 +18,7 @@ import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/content/logic/view_logic_book_list.dart';
 import 'package:repeat_flutter/page/content/logic/view_logic_chapter_list.dart';
+import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/page/repeat/repeat_args.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -90,7 +91,7 @@ class ContentLogic extends GetxController {
           startIndex: index,
           repeatType: RepeatType.justView,
           enableShowRecallButtons: false,
-          defaultEdit: true,
+          showMode: ShowMode.edit,
         );
         await Nav.repeat.push(arguments: repeat);
         await Db().db.verseTodayPrgDao.deleteByType(TodayPrgType.justView.index);

@@ -174,7 +174,7 @@ class VideoBoardHelper {
       configs = [];
     }
     bool showSettings = false;
-    if (helper.edit && !openedVideoBoardSettings.value) {
+    if (helper.showMode.value == ShowMode.edit && !openedVideoBoardSettings.value) {
       showSettings = true;
     }
 
@@ -232,7 +232,7 @@ class VideoBoardHelper {
   }
 
   bool get showEdit {
-    return openedVideoBoardSettings.value && helper.edit;
+    return openedVideoBoardSettings.value && helper.showMode.value == ShowMode.edit;
   }
 
   Rx<List<VideoBoard>> boards = Rx([]);

@@ -49,7 +49,7 @@ class Helper {
   late Widget Function() closeEyesPanel;
 
   bool focusMode = true;
-  bool edit = false;
+  Rx<ShowMode> showMode = ShowMode.closedBook.obs;
   bool enableReloadMedia = true;
   bool resetMediaStart = true;
   bool enablePlayingPlayMedia = false;

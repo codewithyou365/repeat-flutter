@@ -21,6 +21,7 @@ import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/logic/widget/book_editor/book_editor_logic.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
+import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'repeat_args.dart';
 import 'repeat_state.dart';
@@ -65,6 +66,7 @@ class RepeatLogic extends GetxController {
     await gameLogic.init(() {
       gameHelper.tryRefreshGame(repeatLogic!.currVerse!);
     });
+    state.helper.showMode.value = args.showMode;
     var ok = await repeatLogic!.init(
       progresses: args.progresses,
       startIndex: args.startIndex,
@@ -72,13 +74,13 @@ class RepeatLogic extends GetxController {
         update([RepeatLogic.id]);
       },
       gameHelper: gameHelper,
+      helper: state.helper,
     );
     if (!ok) {
       Get.back();
       return;
     }
-    state.helper.edit = args.defaultEdit;
-    if (args.defaultEdit) {
+    if (args.showMode == ShowMode.edit) {
       state.helper.focusMode = false;
       state.needUpdateSystemUiMode = true;
     }
@@ -121,8 +123,18 @@ class RepeatLogic extends GetxController {
     state.enableCloseEyesMode.value = CloseEyesModeEnum.opacity;
   }
 
-  void switchEditMode() {
-    state.helper.edit = !state.helper.edit;
+  void switchShowMode() {
+    switch (state.helper.showMode.value) {
+      case ShowMode.closedBook:
+        state.helper.showMode.value = ShowMode.openBook;
+        break;
+      case ShowMode.openBook:
+        state.helper.showMode.value = ShowMode.edit;
+        break;
+      default:
+        state.helper.showMode.value = ShowMode.closedBook;
+        break;
+    }
     state.helper.enablePlayingPlayMedia = false;
     update([RepeatLogic.id]);
   }

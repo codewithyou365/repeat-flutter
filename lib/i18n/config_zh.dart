@@ -10,6 +10,9 @@ class ConfigZh extends Config {
     put(I18nKey.material, "材料");
     put(I18nKey.bookShare, "学卷分享");
     put(I18nKey.editBook, "编辑学卷: %s");
+    put(I18nKey.showMode, "显示模式: %s");
+    put(I18nKey.closedBook, "闭卷");
+    put(I18nKey.openBook, "开卷");
     put(I18nKey.edit, "编辑");
     put(I18nKey.keyTitle, "凭证");
     put(I18nKey.keyContent, "用户名：@0\n密码：@1");
@@ -220,7 +223,6 @@ class ConfigZh extends Config {
     put(I18nKey.labelSettingLearningProgressWarning, "在此处设置学习进度将不会有学习记录");
     put(I18nKey.labelChapterKeyCantBeEmpty, "篇章键不能为空");
     put(I18nKey.labelChapterKeyDuplicated, "篇章键重复");
-    put(I18nKey.labelEdit, "编辑");
     put(I18nKey.labelDoYourShareTheNotes, "是否分享你的笔记");
     put(I18nKey.labelSharingNotes, "分享笔记");
     put(I18nKey.labelDataNotChange, "数据没有发生变化");

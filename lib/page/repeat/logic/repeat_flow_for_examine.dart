@@ -10,6 +10,7 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'constant.dart';
 import 'game_helper.dart';
+import 'helper.dart';
 import 'repeat_flow.dart';
 import 'time_stats_logic.dart';
 
@@ -93,6 +94,7 @@ class RepeatFlowForExamine extends RepeatFlow {
     required int startIndex,
     required Function() update,
     required GameHelper gameHelper,
+    required Helper helper,
   }) async {
     if (progresses.isEmpty) {
       Snackbar.show(I18nKey.labelNoLearningContent.tr);
@@ -100,9 +102,11 @@ class RepeatFlowForExamine extends RepeatFlow {
     }
     this.update = update;
     this.gameHelper = gameHelper;
+    this.helper = helper;
     total = progresses.length;
     scheduled = VerseTodayPrg.refineWithFinish(progresses, false);
     scheduled.sort(schedulesCurrentSort);
+    step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
     await gameHelper.tryRefreshGame(currVerse!);
     await timeStatsLogic.tryInsertTimeStats();
     return true;
@@ -185,7 +189,7 @@ class RepeatFlowForExamine extends RepeatFlow {
   }
 
   Future<void> right() async {
-    step = RepeatStep.recall;
+    step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
     await Db().db.scheduleDao.right(currVerse!);
     await next();
   }
@@ -204,7 +208,7 @@ class RepeatFlowForExamine extends RepeatFlow {
   }
 
   Future<void> error() async {
-    step = RepeatStep.recall;
+    step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
     tip = TipLevel.none;
     await Db().db.scheduleDao.error(currVerse!);
     scheduled.sort(schedulesCurrentSort);

@@ -10,6 +10,7 @@ import 'package:repeat_flutter/logic/book_help.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
+import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
@@ -109,7 +110,7 @@ class MediaRangeHelper {
   }
 
   MediaEditCallback? mediaRangeEdit(MediaRange range) {
-    if (!helper.edit) {
+    if (helper.showMode.value != ShowMode.edit) {
       return null;
     }
     return (int currMs) async {

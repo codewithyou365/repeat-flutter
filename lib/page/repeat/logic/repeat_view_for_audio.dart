@@ -90,8 +90,8 @@ class RepeatViewForAudio extends RepeatView {
     }
     height = helper.screenHeight - helper.topPadding - helper.topBarHeight - helper.bottomBarHeight - mediaBarHeight;
     var q = helper.text(QaType.question);
-    var t = helper.edit || helper.tip == TipLevel.tip ? helper.text(QaType.tip) : null;
-    var a = helper.edit || helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
+    var t = helper.showMode.value == ShowMode.edit || helper.tip == TipLevel.tip ? helper.text(QaType.tip) : null;
+    var a = helper.showMode.value == ShowMode.edit || helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
     return Stack(
       children: [
         Column(

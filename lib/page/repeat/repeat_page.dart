@@ -172,8 +172,19 @@ class RepeatPage extends StatelessWidget {
                 child: Text("${I18nKey.btnFocus.tr}(${state.helper.focusMode})"),
               ),
               PopupMenuItem<String>(
-                onTap: logic.switchEditMode,
-                child: Text("${I18nKey.labelEdit.tr}(${state.helper.edit})"),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: logic.switchShowMode,
+                  child: Obx(() {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(I18nKey.showMode.trArgs([state.helper.showMode.value.i18n.tr])),
+                        Spacer(),
+                      ],
+                    );
+                  }),
+                ),
               ),
               PopupMenuItem<String>(
                 onTap: logic.openAdvancedEditor,
@@ -269,7 +280,7 @@ class RepeatPage extends StatelessWidget {
 
   Widget? text(RepeatLogic logic, QaType type) {
     var helper = logic.state.helper;
-    var edit = helper.edit;
+    var edit = helper.showMode == ShowMode.edit;
     var map = helper.getCurrVerseMap();
     if (map == null) {
       return null;
@@ -309,7 +320,7 @@ class RepeatPage extends StatelessWidget {
             var v = RxDouble(fontSizeVal);
             var saveTo = RxInt(0);
             await MsgBox.myDialog(
-              title: I18nKey.labelEdit.tr,
+              title: I18nKey.edit.tr,
               content: Obx(
                 () => Column(
                   mainAxisSize: MainAxisSize.min,

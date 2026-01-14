@@ -9,6 +9,7 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'constant.dart';
 import 'game_helper.dart';
+import 'helper.dart';
 import 'repeat_flow.dart';
 import 'time_stats_logic.dart';
 
@@ -77,6 +78,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
     required int startIndex,
     required Function() update,
     required GameHelper gameHelper,
+    required Helper helper,
   }) async {
     if (progresses.isEmpty) {
       Snackbar.show(I18nKey.labelNoLearningContent.tr);
@@ -85,8 +87,9 @@ class RepeatFlowForBrowse extends RepeatFlow {
     index = startIndex;
     this.update = update;
     this.gameHelper = gameHelper;
+    this.helper = helper;
     scheduled = progresses;
-
+    step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
     await gameHelper.tryRefreshGame(currVerse!);
     await timeStatsLogic.tryInsertTimeStats();
     return true;
@@ -159,7 +162,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
 
   Future<void> next() async {
     tip = TipLevel.none;
-    step = RepeatStep.recall;
+    step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
     if (index < scheduled.length - 1) {
       index++;
     }
@@ -169,7 +172,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
 
   Future<void> prev() async {
     tip = TipLevel.none;
-    step = RepeatStep.recall;
+    step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
     if (index > 0) {
       index--;
     }

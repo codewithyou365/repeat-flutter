@@ -1,5 +1,15 @@
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 
+enum ShowMode {
+  closedBook(i18n: I18nKey.closedBook),
+  openBook(i18n: I18nKey.openBook),
+  edit(i18n: I18nKey.edit);
+
+  const ShowMode({required this.i18n});
+
+  final I18nKey i18n;
+}
+
 enum RepeatStep { recall, evaluate, finish }
 
 enum TipLevel { none, tip }
