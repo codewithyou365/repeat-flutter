@@ -48,7 +48,7 @@ class Helper {
   late Widget? Function(QaType type) text;
   late Widget Function() closeEyesPanel;
 
-  bool focusMode = true;
+  RxBool focusMode = true.obs;
   Rx<ShowMode> showMode = ShowMode.closedBook.obs;
   bool enableReloadMedia = true;
   bool resetMediaStart = true;

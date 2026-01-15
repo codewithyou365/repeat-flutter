@@ -443,7 +443,7 @@ class RepeatViewForVideo extends RepeatView {
       getSpeed: () {
         return _videoPlayerController?.value.playbackSpeed ?? 1;
       },
-      hideTime: helper!.focusMode,
+      hideTime: helper!.focusMode.value,
     );
   }
 

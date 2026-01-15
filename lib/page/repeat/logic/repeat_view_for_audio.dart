@@ -202,7 +202,7 @@ class RepeatViewForAudio extends RepeatView {
       getSpeed: () {
         return audioPlayer.speed;
       },
-      hideTime: helper!.focusMode,
+      hideTime: helper!.focusMode.value,
     );
   }
 }

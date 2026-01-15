@@ -81,7 +81,7 @@ class RepeatLogic extends GetxController {
       return;
     }
     if (args.showMode == ShowMode.edit) {
-      state.helper.focusMode = false;
+      state.helper.focusMode.value = false;
       state.needUpdateSystemUiMode = true;
     }
     await state.helper.init(repeatLogic!);
@@ -113,8 +113,8 @@ class RepeatLogic extends GetxController {
     }
   }
 
-  void switchConcentrationMode() {
-    state.helper.focusMode = !state.helper.focusMode;
+  void switchFocusMode() {
+    state.helper.focusMode.value = !state.helper.focusMode.value;
     state.helper.enablePlayingPlayMedia = false;
     update([RepeatLogic.id]);
   }

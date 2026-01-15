@@ -67,7 +67,7 @@ class RepeatPage extends StatelessWidget {
       if (landscape) {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
       } else {
-        if (state.helper.focusMode) {
+        if (state.helper.focusMode.value) {
           SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
         } else {
           SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
@@ -168,8 +168,19 @@ class RepeatPage extends StatelessWidget {
                 child: Text(logic.gameLogic.title),
               ),
               PopupMenuItem<String>(
-                onTap: logic.switchConcentrationMode,
-                child: Text("${I18nKey.btnFocus.tr}(${state.helper.focusMode})"),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: logic.switchFocusMode,
+                  child: Obx(() {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text("${I18nKey.btnFocus.tr}(${state.helper.focusMode.value})"),
+                        Spacer(),
+                      ],
+                    );
+                  }),
+                ),
               ),
               PopupMenuItem<String>(
                 child: GestureDetector(
@@ -201,7 +212,7 @@ class RepeatPage extends StatelessWidget {
   Widget topBarTitle({required RepeatLogic logic, double? fontSize}) {
     var state = logic.state;
     String text = '';
-    if (!state.helper.focusMode && logic.repeatLogic != null) {
+    if (!state.helper.focusMode.value && logic.repeatLogic != null) {
       text = logic.repeatLogic!.titleLabel;
     }
     return Text(
