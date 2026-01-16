@@ -108,7 +108,7 @@ class RepeatViewForVideo extends RepeatView {
     }
   }
 
-  emptyBody() {
+  Widget emptyBody() {
     return Column(
       children: [
         const SizedBox(height: 50),

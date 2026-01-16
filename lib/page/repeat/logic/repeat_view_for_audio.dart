@@ -52,8 +52,8 @@ class RepeatViewForAudio extends RepeatView {
     }
 
     var path = '';
-    List<String>? paths = helper.getPaths();
-    if (paths != null && paths.isNotEmpty) {
+    List<String> paths = helper.getPaths();
+    if (paths.isNotEmpty) {
       path = paths.first;
     }
 

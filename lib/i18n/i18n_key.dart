@@ -332,6 +332,7 @@ enum I18nKey {
   noPassword,
   obtainedInTheGame,
   deductedInTheGame,
+  showButtons,
   none;
 
   String trArgs([List<String> args = const []]) {

@@ -20,7 +20,9 @@ import 'repeat_state.dart' show RepeatState;
 import 'logic/constant.dart';
 
 class RepeatPage extends StatelessWidget {
-  const RepeatPage({super.key});
+  RepeatPage({super.key});
+
+  final GlobalKey closeEyeKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -291,7 +293,7 @@ class RepeatPage extends StatelessWidget {
 
   Widget? text(RepeatLogic logic, QaType type) {
     var helper = logic.state.helper;
-    var edit = helper.showMode == ShowMode.edit;
+    var edit = helper.showMode.value == ShowMode.edit;
     var map = helper.getCurrVerseMap();
     if (map == null) {
       return null;
@@ -469,7 +471,8 @@ class RepeatPage extends StatelessWidget {
     if (logic.state.enableCloseEyesMode.value == CloseEyesModeEnum.none) {
       return SizedBox.shrink();
     } else {
-      return CloseEyesPanel.open(
+      return CloseEyesPanel.build(
+        key: closeEyeKey,
         height: helper.screenHeight,
         width: helper.screenWidth,
         showFinger: true,
@@ -488,7 +491,6 @@ class RepeatPage extends StatelessWidget {
           }
           HapticFeedback.lightImpact();
         },
-        upCallback: (int index, int total) {},
         close: () {
           logic.state.enableCloseEyesMode.value = CloseEyesModeEnum.none;
         },

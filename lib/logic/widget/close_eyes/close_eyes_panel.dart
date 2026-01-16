@@ -7,18 +7,19 @@ import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:screenshot_guard/screenshot_guard.dart';
 
 final _guard = ScreenshotGuard();
+
 class CloseEyesPanel {
-  static Widget open({
+  static Widget build({
+    required Key key,
     required double height,
     required double width,
     required bool showFinger,
     required DirectEnum direct,
 
     required void Function(DirectEnum direct) changeDirect,
-    required void Function(int index, int total) upCallback,
     required VoidCallback close,
     required VoidCallback help,
-    void Function(int index, int total)? doubleUpCallback,
+    required void Function(int index, int total) doubleUpCallback,
   }) {
     final Map<int, int> lastUpTime = {};
     final Map<int, Timer> pendingUpTimers = {};
@@ -31,28 +32,25 @@ class CloseEyesPanel {
       direct: direct,
       changeDirect: changeDirect,
       upCallback: (int index, int total) {
-        if (doubleUpCallback != null) {
-          final now = DateTime.now().millisecondsSinceEpoch;
-          final last = lastUpTime[index];
-          if (last != null && now - last < delayTime) {
-            pendingUpTimers[index]?.cancel();
-            pendingUpTimers.remove(index);
+        final now = DateTime.now().millisecondsSinceEpoch;
+        final last = lastUpTime[index];
+        if (last != null && now - last < delayTime) {
+          pendingUpTimers[index]?.cancel();
+          pendingUpTimers.remove(index);
 
-            doubleUpCallback(index, total);
-          } else {
-            pendingUpTimers[index]?.cancel();
-            pendingUpTimers[index] = Timer(const Duration(milliseconds: delayTime), () {
-              upCallback(index, total);
-              pendingUpTimers.remove(index);
-            });
-          }
-          lastUpTime[index] = now;
+          doubleUpCallback(index, total);
         } else {
-          upCallback(index, total);
+          pendingUpTimers[index]?.cancel();
+          pendingUpTimers[index] = Timer(const Duration(milliseconds: delayTime), () {
+            pendingUpTimers.remove(index);
+          });
         }
+        lastUpTime[index] = now;
       },
+      doubleUpCallback: doubleUpCallback,
       close: close,
       help: help,
+      key: key,
     );
   }
 }
@@ -64,6 +62,7 @@ class _MultiTouchArea extends StatefulWidget {
   final DirectEnum direct;
   final void Function(DirectEnum direct) changeDirect;
   final void Function(int index, int total) upCallback;
+  final void Function(int index, int total) doubleUpCallback;
   final VoidCallback close;
   final VoidCallback help;
 
@@ -74,8 +73,10 @@ class _MultiTouchArea extends StatefulWidget {
     required this.direct,
     required this.changeDirect,
     required this.upCallback,
+    required this.doubleUpCallback,
     required this.close,
     required this.help,
+    required super.key,
   });
 
   @override
@@ -92,7 +93,8 @@ enum DirectEnum {
 class _MultiTouchAreaState extends State<_MultiTouchArea> {
   final Map<int, Offset> _activeFingers = {};
   final Map<int, int> _fingerLabels = {};
-  bool show = false;
+  RxBool show = false.obs;
+  RxBool showButton = false.obs;
 
   Rx<CloseEyesModeEnum> closeEyesMode = CloseEyesModeEnum.opacity.obs;
 
@@ -101,15 +103,15 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
   @override
   void initState() {
     super.initState();
-    show = widget.showFinger;
+    show.value = widget.showFinger;
     direct = Rx(widget.direct);
     _guard.enableSecureFlag(enable: true);
   }
 
   @override
   void dispose() {
-    super.dispose();
     _guard.enableSecureFlag(enable: false);
+    super.dispose();
   }
 
   void _onPointerDown(PointerDownEvent event) {
@@ -199,7 +201,7 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
               color: closeEyesMode.value.backgroundColor,
             ),
           ),
-          if (show)
+          if (show.value)
             ..._activeFingers.entries.map((entry) {
               final pointer = entry.key;
               final position = entry.value;
@@ -229,56 +231,41 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
             }),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: PopupMenuButton<String>(
-              onOpened: reset,
-              icon: Icon(Icons.more_vert, color: closeEyesMode.value.foregroundColor),
-              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                PopupMenuItem<String>(
-                  onTap: widget.help,
-                  child: Text(I18nKey.help.tr),
-                ),
-                PopupMenuItem<String>(
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: loopCloseEyesMode,
-                    child: Obx(() {
-                      return Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text("${I18nKey.closeEyesMode.tr}${i18nCloseEyesMode()}"),
-                          Spacer(),
-                        ],
-                      );
-                    }),
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  onTap: () => show = !show,
-                  child: Text("${I18nKey.showFingers.tr}($show)"),
-                ),
-                PopupMenuItem<String>(
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: rotate,
-                    child: Obx(() {
-                      return Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text("${I18nKey.rotate.tr} :"),
-                          SizedBox(width: 2),
-                          _directionIcon(direct.value),
-                          Spacer(),
-                        ],
-                      );
-                    }),
-                  ),
-                ),
-                PopupMenuItem<String>(
-                  onTap: widget.close,
-                  child: Text(I18nKey.close.tr),
-                ),
-              ],
-            ),
+            child: Obx(() {
+              if (direct.value == DirectEnum.bottomToTop || direct.value == DirectEnum.topToBottom) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (showButton.value)
+                      ...List.generate(
+                        3,
+                        (index) {
+                          final isNormalOrder = direct.value == DirectEnum.topToBottom;
+                          final i = isNormalOrder ? index : (2 - index);
+                          return buildButton(i);
+                        },
+                      ),
+                    buildMenu(),
+                  ],
+                );
+              } else {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (showButton.value)
+                      ...List.generate(
+                        3,
+                        (index) {
+                          final isNormalOrder = direct.value == DirectEnum.leftToRight;
+                          final i = isNormalOrder ? index : (2 - index);
+                          return buildButton(i);
+                        },
+                      ),
+                    buildMenu(),
+                  ],
+                );
+              }
+            }),
           ),
         ],
       ),
@@ -301,6 +288,98 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
         break;
     }
     return list;
+  }
+
+  Widget buildButton(int index) {
+    return Expanded(
+      child: TextButton(
+        onPressed: () => widget.doubleUpCallback.call(index, 3),
+        child: Text(
+          '${index + 1}',
+          style: TextStyle(color: closeEyesMode.value.foregroundColor),
+        ),
+      ),
+    );
+  }
+
+  Widget buildMenu() {
+    return PopupMenuButton<String>(
+      onOpened: reset,
+      icon: Icon(Icons.more_vert, color: closeEyesMode.value.foregroundColor),
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        PopupMenuItem<String>(
+          onTap: widget.help,
+          child: Text(I18nKey.help.tr),
+        ),
+        PopupMenuItem<String>(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: loopCloseEyesMode,
+            child: Obx(() {
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text("${I18nKey.closeEyesMode.tr}${i18nCloseEyesMode()}"),
+                  Spacer(),
+                ],
+              );
+            }),
+          ),
+        ),
+        PopupMenuItem<String>(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => show.value = !show.value,
+            child: Obx(() {
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text("${I18nKey.showFingers.tr}($show)"),
+                  Spacer(),
+                ],
+              );
+            }),
+          ),
+        ),
+
+        PopupMenuItem<String>(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => showButton.value = !showButton.value,
+            child: Obx(() {
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text("${I18nKey.showButtons.tr}($showButton)"),
+                  Spacer(),
+                ],
+              );
+            }),
+          ),
+        ),
+        PopupMenuItem<String>(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: rotate,
+            child: Obx(() {
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text("${I18nKey.rotate.tr} :"),
+                  SizedBox(width: 2),
+                  _directionIcon(direct.value),
+                  Spacer(),
+                ],
+              );
+            }),
+          ),
+        ),
+        PopupMenuItem<String>(
+          onTap: widget.close,
+          child: Text(I18nKey.close.tr),
+        ),
+      ],
+    );
   }
 
   Widget _directionIcon(DirectEnum d) {
