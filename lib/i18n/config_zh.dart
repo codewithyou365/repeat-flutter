@@ -198,6 +198,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelNote, "笔记");
     put(I18nKey.share, "分享");
     put(I18nKey.mediaShare, "媒体分享");
+    put(I18nKey.enableSsl, "启用SSL");
     put(I18nKey.speed, "速度");
     put(I18nKey.labelCalendar, "日历");
     put(I18nKey.labelCopyTemplateCount, "复制模版数量");

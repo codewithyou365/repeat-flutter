@@ -16,4 +16,5 @@ class MediaShareState {
 
   var lanAddressSuffix = "/p";
   RxBool webStart = false.obs;
+  RxBool enableSsl = false.obs;
 }

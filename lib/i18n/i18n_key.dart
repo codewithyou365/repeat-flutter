@@ -196,6 +196,7 @@ enum I18nKey {
   labelNote,
   share,
   mediaShare,
+  enableSsl,
   speed,
   labelCalendar,
   labelCopyTemplateCount,

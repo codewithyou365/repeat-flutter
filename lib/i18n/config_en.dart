@@ -198,6 +198,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelNote, "Note");
     put(I18nKey.share, "Share");
     put(I18nKey.mediaShare, "Media Share");
+    put(I18nKey.enableSsl, "Enable SSL");
     put(I18nKey.speed, "Speed");
     put(I18nKey.labelCalendar, "Calendar");
     put(I18nKey.labelCopyTemplateCount, "Copy Template Count");

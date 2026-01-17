@@ -50,14 +50,18 @@ class MediaShareLogic {
     }
 
     try {
-      var sslPath = await DocPath.getSslPath();
-      var context = SelfSsl.generateSecurityContext(sslPath);
-      _httpServer = await HttpServer.bindSecure(InternetAddress.anyIPv4, port, context);
+      if (state.enableSsl.value) {
+        var sslPath = await DocPath.getSslPath();
+        var context = SelfSsl.generateSecurityContext(sslPath);
+        _httpServer = await HttpServer.bindSecure(InternetAddress.anyIPv4, port, context);
+      } else {
+        _httpServer = await HttpServer.bind(InternetAddress.anyIPv4, port);
+      }
       _httpServer!.listen((HttpRequest request) async {
         _handleRequest(request);
       });
     } catch (e) {
-      Snackbar.show('Error starting HTTPS service: $e');
+      Snackbar.show('Error starting media service: $e');
       return;
     }
     state.addresses.clear();
@@ -67,11 +71,15 @@ class MediaShareLogic {
     }
     state.addressesLength.value = state.addresses.length;
 
-    Snackbar.show('HTTPS media share started');
+    Snackbar.show('media share started');
   }
 
   String getUrl(String ip) {
-    String url = 'https://$ip:$port${state.lanAddressSuffix}';
+    String url = "http";
+    if (state.enableSsl.value) {
+      url = "https";
+    }
+    url += '://$ip:$port${state.lanAddressSuffix}';
     String path = Uri.encodeComponent('${DocPath.getRelativePath(state.args.bookId)}/${state.args.path}');
     url += "?path=$path";
     return url;
@@ -80,7 +88,7 @@ class MediaShareLogic {
   Future<void> _stopHttpService() async {
     if (_httpServer != null) {
       await _httpServer!.close();
-      Snackbar.show('HTTPS service stopped');
+      Snackbar.show('media service stopped');
       _httpServer = null;
     }
   }

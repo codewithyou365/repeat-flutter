@@ -35,7 +35,14 @@ class MediaSharePage {
   Widget _buildList(BuildContext context, MediaShareLogic logic) {
     final state = logic.state;
     return Obx(() {
-      List<Widget> items = [];
+      List<Widget> items = [
+        RowWidget.buildSwitch(
+          title: I18nKey.enableSsl.tr,
+          value: state.enableSsl,
+          disabled: state.webStart,
+        ),
+        RowWidget.buildDivider(),
+      ];
       for (var i = 0; i < state.addressesLength.value; i++) {
         items.add(buildItem(state.addresses[i].title, state.addresses[i].address));
       }
