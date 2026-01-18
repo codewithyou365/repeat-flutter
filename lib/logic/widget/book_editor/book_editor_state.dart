@@ -18,7 +18,6 @@ class BookEditorState {
   int chapterIndex = 0;
   int verseIndex = 0;
   int bookId = 0;
-  String bookName = "";
 
   var lanAddressSuffix = "/index.html";
   RxBool webStart = false.obs;

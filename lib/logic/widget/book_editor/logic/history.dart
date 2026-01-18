@@ -5,7 +5,10 @@ import 'package:repeat_flutter/common/date_time_util.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/edit_book_history.dart';
 
+import 'util.dart';
+
 Future<void> handleHistory(HttpRequest request, int bookId) async {
+  bookId = await Util.getBookId(request, bookId);
   try {
     final dao = Db().db.editBookHistoryDao;
 

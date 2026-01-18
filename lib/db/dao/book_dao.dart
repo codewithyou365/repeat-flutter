@@ -23,6 +23,12 @@ abstract class BookDao {
   late AppDatabase db;
 
   @Query(
+    'SELECT *'
+    ' FROM Book WHERE enable=true ORDER BY classroomId,sort',
+  )
+  Future<List<Book>> all();
+
+  @Query(
     'SELECT id bookId'
     ',classroomId'
     ',name'

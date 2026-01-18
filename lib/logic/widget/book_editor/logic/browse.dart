@@ -1,11 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'util.dart';
+
 Future<void> handleBrowse(HttpRequest request, Directory? dir) async {
+  dir = await Util.getDir(request, dir);
   if (dir == null) {
     request.response.statusCode = HttpStatus.internalServerError;
     return;
   }
+
   try {
     final list = await find(dir);
     request.response

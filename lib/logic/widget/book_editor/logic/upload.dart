@@ -6,8 +6,11 @@ import 'package:mime/mime.dart' show MimeMultipartTransformer;
 import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 
-Future<void> handleUpload(HttpRequest request, Directory? editorDir) async {
-  if (editorDir == null) {
+import 'util.dart';
+
+Future<void> handleUpload(HttpRequest request, Directory? dir) async {
+  dir = await Util.getDir(request, dir);
+  if (dir == null) {
     request.response.statusCode = HttpStatus.internalServerError;
     await request.response.close();
     return;
@@ -31,7 +34,7 @@ Future<void> handleUpload(HttpRequest request, Directory? editorDir) async {
 
       final filename = RegExp(r'filename="([^"]+)"').firstMatch(contentDisposition)?.group(1) ?? 'upload.tmp';
 
-      final tempFile = File(p.join(editorDir.path, filename));
+      final tempFile = File(p.join(dir.path, filename));
       final sink = tempFile.openWrite();
       await part.pipe(sink);
       await sink.close();
@@ -39,7 +42,7 @@ Future<void> handleUpload(HttpRequest request, Directory? editorDir) async {
       final fileHash = await Hash.toSha1(tempFile.path);
       final dc = DownloadContent(url: filename, hash: fileHash);
 
-      final folderPath = p.join(editorDir.path, dc.folder);
+      final folderPath = p.join(dir.path, dc.folder);
       await Directory(folderPath).create(recursive: true);
 
       final finalPath = p.join(folderPath, dc.name);

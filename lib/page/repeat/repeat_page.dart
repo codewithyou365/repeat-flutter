@@ -158,6 +158,21 @@ class RepeatPage extends StatelessWidget {
             icon: const Icon(Icons.more_vert),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
               PopupMenuItem<String>(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: logic.switchShowMode,
+                  child: Obx(() {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(I18nKey.showMode.trArgs([state.helper.showMode.value.i18n.tr])),
+                        Spacer(),
+                      ],
+                    );
+                  }),
+                ),
+              ),
+              PopupMenuItem<String>(
                 onTap: logic.openCloseEyesMode,
                 child: Text(I18nKey.closeEyes.tr),
               ),
@@ -178,21 +193,6 @@ class RepeatPage extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text("${I18nKey.btnFocus.tr}(${state.helper.focusMode.value})"),
-                        Spacer(),
-                      ],
-                    );
-                  }),
-                ),
-              ),
-              PopupMenuItem<String>(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: logic.switchShowMode,
-                  child: Obx(() {
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(I18nKey.showMode.trArgs([state.helper.showMode.value.i18n.tr])),
                         Spacer(),
                       ],
                     );

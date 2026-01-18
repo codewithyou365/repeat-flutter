@@ -16,6 +16,7 @@ import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
+import 'package:repeat_flutter/logic/widget/book_editor/logic/classroom.dart';
 import 'package:repeat_flutter/logic/widget/book_editor/logic/history.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -80,10 +81,7 @@ class BookEditorLogic<T extends GetxController> {
   }
 
   String get title {
-    if (state.webStart.value) {
-      return "${I18nKey.advancedEdit.tr}:${state.bookName}";
-    }
-    return I18nKey.advancedEdit.tr;
+    return "${I18nKey.advancedEdit.tr}(${state.webStart.value})";
   }
 
   void pushRefresh(int bookId) {
@@ -112,7 +110,6 @@ class BookEditorLogic<T extends GetxController> {
         state.chapterIndex = state.args.chapterIndex;
         state.verseIndex = state.args.verseIndex;
         state.bookId = state.args.bookId;
-        state.bookName = state.args.bookName;
         tryRefreshCredential();
         clearActiveDownloads();
         await _initEditorDir(state.bookId);
@@ -164,14 +161,13 @@ class BookEditorLogic<T extends GetxController> {
   }
 
   String getUrl(String ip) {
-    final chapterIndex = state.chapterIndex;
-    final verseIndex = state.verseIndex;
     String url = 'https://$ip:$port${state.lanAddressSuffix}';
 
     url += "?";
     List<String> params = [];
-    params.add("c=${chapterIndex + 1}");
-    params.add("v=${verseIndex + 1}");
+    params.add("b=${state.bookId}");
+    params.add("c=${state.chapterIndex + 1}");
+    params.add("v=${state.verseIndex + 1}");
     url += params.join("&");
     return url;
   }
@@ -252,6 +248,8 @@ class BookEditorLogic<T extends GetxController> {
       response.write('{"message": "Hello, World!"}');
     } else if (path == '/browse' && request.method == 'POST') {
       await handleBrowse(request, editorDir);
+    } else if (path == '/classroom' && request.method == 'POST') {
+      await handleClassroom(request, state.bookId);
     } else if (path == '/checkDownloadStatus') {
       await handleCheckDownloadStatus(request);
     } else if (path == '/play') {

@@ -152,7 +152,6 @@ class RepeatLogic extends GetxController {
     await bookEditor.open(
       BookEditorArgs(
         bookId: verse.bookId,
-        bookName: verse.bookName,
         chapterIndex: verse.chapterIndex,
         verseIndex: verse.verseIndex,
       ),

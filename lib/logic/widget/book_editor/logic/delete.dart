@@ -1,8 +1,11 @@
 import 'dart:io';
 import 'package:path/path.dart' as p;
 
+import 'util.dart';
+
 Future<void> handleDelete(HttpRequest request, Directory? dir) async {
   final response = request.response;
+  dir = await Util.getDir(request, dir);
   if (dir == null) {
     response.statusCode = HttpStatus.internalServerError;
     return;

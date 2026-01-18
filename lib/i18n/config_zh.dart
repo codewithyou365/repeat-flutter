@@ -9,7 +9,7 @@ class ConfigZh extends Config {
     put(I18nKey.settings, "设置");
     put(I18nKey.material, "材料");
     put(I18nKey.bookShare, "学卷分享");
-    put(I18nKey.editBook, "编辑学卷: %s");
+    put(I18nKey.editBook, "编辑学卷");
     put(I18nKey.showMode, "显示模式: %s");
     put(I18nKey.closedBook, "闭卷");
     put(I18nKey.openBook, "开卷");

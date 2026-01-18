@@ -5,9 +5,10 @@ import 'package:repeat_flutter/db/entity/edit_book_history.dart';
 import 'package:repeat_flutter/logic/cache_help.dart';
 import 'package:repeat_flutter/logic/reimport_help.dart';
 
-import 'constant.dart';
+import 'util.dart';
 
 Future<void> handleCommit(HttpRequest request, int bookId) async {
+  bookId = await Util.getBookId(request, bookId);
   final response = request.response;
   List<String> bookCacheVersionHeader = request.headers[Header.bookCacheVersion] ?? [];
 

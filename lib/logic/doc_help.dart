@@ -5,10 +5,8 @@ import 'dart:io';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/logic/base/constant.dart' show DocPath, DownloadConstant;
-import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
-import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class DocHelp {
@@ -98,13 +96,14 @@ class DocHelp {
     required bool note,
     required bool databaseData,
   }) async {
-    await VerseHelp.tryGen(force: true);
-    await ChapterHelp.tryGen(force: true);
     var content = await Db().db.bookDao.getById(bookId);
-    var verseCache = VerseHelp.cache;
-    var chapterCache = ChapterHelp.cache;
+    if (content == null) {
+      return false;
+    }
+    var verseCache = await Db().db.scheduleDao.getAllVerse(content.classroomId);
+    var chapterCache = await Db().db.chapterDao.getAllChapter(content.classroomId);
 
-    Map<String, dynamic> contentJson = jsonDecode(content!.content);
+    Map<String, dynamic> contentJson = jsonDecode(content.content);
     contentJson.forEach((k, v) {
       if (k != 'c') {
         ret[k] = v;

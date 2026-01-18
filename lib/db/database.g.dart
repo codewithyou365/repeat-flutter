@@ -511,6 +511,24 @@ class _$BookDao extends BookDao {
   final InsertionAdapter<Book> _bookInsertionAdapter;
 
   @override
+  Future<List<Book>> all() async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM Book WHERE enable=true ORDER BY classroomId,sort',
+        mapper: (Map<String, Object?> row) => Book(
+            id: row['id'] as int?,
+            classroomId: row['classroomId'] as int,
+            name: row['name'] as String,
+            desc: row['desc'] as String,
+            enable: (row['enable'] as int) != 0,
+            url: row['url'] as String,
+            content: row['content'] as String,
+            contentVersion: row['contentVersion'] as int,
+            sort: row['sort'] as int,
+            createTime: row['createTime'] as int,
+            updateTime: row['updateTime'] as int));
+  }
+
+  @override
   Future<List<BookShow>> getAllBook(int classroomId) async {
     return _queryAdapter.queryList(
         'SELECT id bookId,classroomId,name,sort,content bookContent,contentVersion bookContentVersion FROM Book where classroomId=?1 and enable=true ORDER BY sort',

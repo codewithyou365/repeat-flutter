@@ -3,9 +3,10 @@ import 'dart:io';
 import 'package:repeat_flutter/logic/cache_help.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 
-import 'constant.dart';
+import 'util.dart';
 
 Future<void> handleBook(HttpRequest request, int bookId) async {
+  bookId = await Util.getBookId(request, bookId);
   final response = request.response;
 
   try {
