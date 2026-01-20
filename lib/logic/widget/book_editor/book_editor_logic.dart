@@ -85,13 +85,12 @@ class BookEditorLogic<T extends GetxController> {
   }
 
   void pushRefresh(int bookId) {
-    if (bookId == state.bookId) {
-      server.broadcast(
-        message.Request(
-          path: "refresh",
-        ),
-      );
-    }
+    server.broadcast(
+      message.Request(
+        path: "refresh",
+        data: bookId,
+      ),
+    );
   }
 
   Future<void> _initEditorDir(int bookId) async {

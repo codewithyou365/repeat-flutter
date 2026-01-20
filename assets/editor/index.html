@@ -893,7 +893,7 @@
 
         if (!cls || !book) return;
 
-        currentBook = book;
+        currentBook = Number(book);
         const newUrl = new URL(window.location);
         newUrl.searchParams.set('b', book);
         history.pushState({}, '', newUrl);
@@ -1153,6 +1153,14 @@
         if (!finishDealReceivedWsMsg) {
             return new Response();
         }
+
+        if (req.data) {
+            const refreshBookId = Number(req.data);
+            if (refreshBookId !== currentBook) {
+                return new Response();
+            }
+        }
+
         const data = editor.getValue();
         let jsonData;
         try {
