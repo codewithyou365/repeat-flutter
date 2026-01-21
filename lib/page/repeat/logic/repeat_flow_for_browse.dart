@@ -122,12 +122,6 @@ class RepeatFlowForBrowse extends RepeatFlow {
   }
 
   @override
-  void onTapMiddle() {
-    tip = TipLevel.tip;
-    update();
-  }
-
-  @override
   void onTapRight() {
     if (ticker.isStuck()) {
       return;
@@ -161,7 +155,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
   }
 
   Future<void> next() async {
-    tip = TipLevel.none;
+    helper.tip = TipLevel.none;
     step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
     if (index < scheduled.length - 1) {
       index++;
@@ -171,7 +165,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
   }
 
   Future<void> prev() async {
-    tip = TipLevel.none;
+    helper.tip = TipLevel.none;
     step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
     if (index > 0) {
       index--;

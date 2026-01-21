@@ -143,12 +143,6 @@ class RepeatFlowForExamine extends RepeatFlow {
   }
 
   @override
-  void onTapMiddle() {
-    tip = TipLevel.tip;
-    update();
-  }
-
-  @override
   void onTapRight() async {
     Snackbar.show(I18nKey.labelOnTapError.tr);
   }
@@ -199,7 +193,7 @@ class RepeatFlowForExamine extends RepeatFlow {
     if (curr.progress >= ScheduleDao.scheduleConfig.maxRepeatTime) {
       scheduled.removeAt(0);
     }
-    tip = TipLevel.none;
+    helper.tip = TipLevel.none;
     if (scheduled.isNotEmpty) {
       scheduled.sort(schedulesCurrentSort);
     }
@@ -209,7 +203,7 @@ class RepeatFlowForExamine extends RepeatFlow {
 
   Future<void> error() async {
     step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
-    tip = TipLevel.none;
+    helper.tip = TipLevel.none;
     await Db().db.scheduleDao.error(currVerse!);
     scheduled.sort(schedulesCurrentSort);
     await gameHelper.tryRefreshGame(currVerse!);

@@ -30,7 +30,7 @@ class ProgressLogic {
     learnedCount = 0;
     totalCount = 0;
 
-    var cache = await Db().db.crKvDao.getString(Classroom.curr, CrK.lastCache4ProgressStats);
+    var cache = await Db().db.crKvDao.getStr(Classroom.curr, CrK.lastCache4ProgressStats);
     if (cache != null) {
       var values = cache.split(",");
       learnedCount = int.parse(values[0]);

@@ -22,6 +22,7 @@ import 'package:repeat_flutter/logic/widget/book_editor/book_editor_logic.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/page/repeat/logic/constant.dart';
+import 'package:repeat_flutter/page/repeat/logic/tts_helper.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'repeat_args.dart';
 import 'repeat_state.dart';
@@ -38,6 +39,7 @@ class RepeatLogic extends GetxController {
   static const String id = "RepeatLogic";
   final RepeatState state = RepeatState();
   final Map<String, RepeatView> showTypeToRepeatView = {};
+  final TtsHelper ttsHelper = TtsHelper();
 
   RepeatLogic() {
     showTypeToRepeatView[RepeatViewEnum.audio.name] = RepeatViewForAudio();
@@ -56,6 +58,7 @@ class RepeatLogic extends GetxController {
   @override
   Future<void> onInit() async {
     super.onInit();
+    ttsHelper.init();
     var args = Get.arguments as RepeatArgs;
     state.enableShowRecallButtons = args.enableShowRecallButtons;
     if (args.repeatType == RepeatType.justView) {
@@ -148,7 +151,7 @@ class RepeatLogic extends GetxController {
     if (verse == null) {
       return;
     }
-    state.helper.setInRepeatView(false);
+    state.helper.stopMedia(false);
     await bookEditor.open(
       BookEditorArgs(
         bookId: verse.bookId,
@@ -156,7 +159,7 @@ class RepeatLogic extends GetxController {
         verseIndex: verse.verseIndex,
       ),
     );
-    state.helper.setInRepeatView(true);
+    state.helper.stopMedia(true);
   }
 
   void adjustProgress() async {
@@ -164,7 +167,7 @@ class RepeatLogic extends GetxController {
     if (curr == null || repeatLogic == null) {
       return;
     }
-    state.helper.setInRepeatView(false);
+    state.helper.stopMedia(false);
     await EditProgress.show(
       curr.verseId,
       title: I18nKey.btnNext.tr,
@@ -174,7 +177,7 @@ class RepeatLogic extends GetxController {
         update([RepeatLogic.id]);
       },
     );
-    state.helper.setInRepeatView(true);
+    state.helper.stopMedia(true);
   }
 
   void editNote() async {
@@ -188,7 +191,7 @@ class RepeatLogic extends GetxController {
     }
     String acronym = 'n';
     String noteStr = map[acronym] ?? '';
-    state.helper.setInRepeatView(false);
+    state.helper.stopMedia(false);
     await Nav.editor.push(
       arguments: EditorArgs(
         onHistory: null,
@@ -202,7 +205,7 @@ class RepeatLogic extends GetxController {
         },
       ),
     );
-    state.helper.setInRepeatView(true);
+    state.helper.stopMedia(true);
   }
 
   void openContent() async {
@@ -221,7 +224,7 @@ class RepeatLogic extends GetxController {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
-    state.helper.setInRepeatView(false);
+    state.helper.stopMedia(false);
     await Nav.content.push(
       arguments: ContentArgs(
         bookName: content.name,
@@ -230,13 +233,14 @@ class RepeatLogic extends GetxController {
         defaultTap: 2,
       ),
     );
-    state.helper.setInRepeatView(true);
+    state.helper.stopMedia(true);
     update([RepeatLogic.id]);
   }
 
   void preClick() {
     state.needUpdateSystemUiMode = true;
     state.helper.enablePlayingPlayMedia = true;
+    ttsHelper.stop();
   }
 
   void onTapLeft() {
@@ -262,9 +266,16 @@ class RepeatLogic extends GetxController {
 
   void onTapMiddle() {
     preClick();
-    if (repeatLogic != null) {
-      repeatLogic!.onTapMiddle();
-    }
+    state.helper.tip = TipLevel.tip;
+    update([RepeatLogic.id]);
+  }
+
+  void onLongTapMiddle() async {
+    preClick();
+    state.helper.tip = TipLevel.tip;
+    state.helper.stopMedia(true);
+    ttsHelper.speak(state.helper);
+    update([RepeatLogic.id]);
   }
 
   VerseTodayPrg? getCurr() {

@@ -93,10 +93,10 @@ class Helper {
     updateVerseContentSub.off();
   }
 
-  void setInRepeatView(bool inRepeatView) {
-    enableReloadMedia = inRepeatView;
+  void stopMedia(bool enableReloadMedia) {
+    this.enableReloadMedia = enableReloadMedia;
     enablePlayingPlayMedia = false;
-    EventBus().publish<bool>(EventTopic.setInRepeatView, inRepeatView);
+    EventBus().publish<bool>(EventTopic.stopMedia, true);
   }
 
   void update() {
@@ -107,9 +107,7 @@ class Helper {
     return logic.step;
   }
 
-  TipLevel get tip {
-    return logic.tip;
-  }
+  TipLevel tip = TipLevel.none;
 
   String? getCurrVerseContent() {
     if (logic.currVerse == null) {

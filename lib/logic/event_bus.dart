@@ -1,7 +1,7 @@
 import 'dart:async';
 
 enum EventTopic {
-  setInRepeatView,
+  stopMedia,
   wsEvent,
   newGame,
   allowRegisterNumber,

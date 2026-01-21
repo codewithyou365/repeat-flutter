@@ -46,7 +46,7 @@ class RepeatViewForVideo extends RepeatView {
     this.helper = helper;
     mediaRangeHelper = MediaRangeHelper(helper: helper);
     videoBoardHelper = VideoBoardHelper(helper: helper);
-    sub.on([EventTopic.setInRepeatView], (b) {
+    sub.on([EventTopic.stopMedia], (b) {
       mediaKey.currentState?.stop();
     });
     mediaRangeHelper.onInit();
@@ -120,8 +120,8 @@ class RepeatViewForVideo extends RepeatView {
   Widget landscape(MediaRange range) {
     var helper = this.helper!;
     var q = helper.text(QaType.question);
-    var t = helper.showMode.value == ShowMode.edit || helper.tip == TipLevel.tip ? helper.text(QaType.tip) : null;
-    var a = helper.showMode.value == ShowMode.edit || helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
+    var t = helper.text(QaType.tip);
+    var a = helper.text(QaType.answer);
     return Stack(
       alignment: Alignment.topCenter,
       children: [
@@ -203,8 +203,8 @@ class RepeatViewForVideo extends RepeatView {
     var helper = this.helper!;
     double height = helper.screenHeight - helper.topPadding - helper.topBarHeight - mediaBarHeight - helper.bottomBarHeight;
     var q = helper.text(QaType.question);
-    var t = helper.showMode.value == ShowMode.edit || helper.tip == TipLevel.tip ? helper.text(QaType.tip) : null;
-    var a = helper.showMode.value == ShowMode.edit || helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
+    var t = helper.text(QaType.tip);
+    var a = helper.text(QaType.answer);
     videoHeightInPortrait.value = videoWidgetHeight(height - helper.bottomBarHeight * 3);
     var bar = mediaBar(helper.screenWidth - padding * 2, mediaBarHeight, range);
     return Obx(() {

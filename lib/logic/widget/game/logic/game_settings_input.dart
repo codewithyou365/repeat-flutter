@@ -29,7 +29,7 @@ class GameSettingsInput extends GameSettings {
       await setMatchType(MatchType.all.index);
       matchType = MatchType.all.index;
     }
-    var ks = await Db().db.crKvDao.getString(Classroom.curr, CrK.inputGameForSkipCharacter);
+    var ks = await Db().db.crKvDao.getStr(Classroom.curr, CrK.inputGameForSkipCharacter);
     if (ks != null) {
       skipChar.value = ks;
     }

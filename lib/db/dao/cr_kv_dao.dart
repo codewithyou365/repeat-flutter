@@ -18,7 +18,7 @@ abstract class CrKvDao {
   Future<int?> getInt(int classroomId, CrK k);
 
   @Query("SELECT value FROM CrKv WHERE classroomId=:classroomId and k=:k")
-  Future<String?> getString(int classroomId, CrK k);
+  Future<String?> getStr(int classroomId, CrK k);
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertOrReplace(CrKv kv);

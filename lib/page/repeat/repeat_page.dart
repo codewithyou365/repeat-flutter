@@ -178,9 +178,9 @@ class RepeatPage extends StatelessWidget {
               ),
               PopupMenuItem<String>(
                 onTap: () async {
-                  state.helper.setInRepeatView(false);
+                  state.helper.stopMedia(false);
                   await logic.gameLogic.open();
-                  state.helper.setInRepeatView(true);
+                  state.helper.stopMedia(true);
                 },
                 child: Text(logic.gameLogic.title),
               ),
@@ -263,6 +263,7 @@ class RepeatPage extends StatelessWidget {
                   text: I18nKey.btnTips.tr,
                   onTap: logic.onTapMiddle,
                   width: buttonWidth,
+                  onLongPress: logic.onLongTapMiddle,
                 ),
                 const Spacer(),
               ],
@@ -293,6 +294,18 @@ class RepeatPage extends StatelessWidget {
 
   Widget? text(RepeatLogic logic, QaType type) {
     var helper = logic.state.helper;
+    if (type == QaType.tip) {
+      if (helper.showMode.value != ShowMode.edit && //
+          helper.tip != TipLevel.tip) {
+        return null;
+      }
+    }
+    if (type == QaType.answer) {
+      if (helper.showMode.value != ShowMode.edit && //
+          helper.step == RepeatStep.recall) {
+        return null;
+      }
+    }
     var edit = helper.showMode.value == ShowMode.edit;
     var map = helper.getCurrVerseMap();
     if (map == null) {
@@ -301,16 +314,18 @@ class RepeatPage extends StatelessWidget {
     double fontSizeVal = textFontSize(logic, type) ?? 17;
     TextStyle? style = TextStyle(fontSize: fontSizeVal);
     if (edit) {
-      logic.repeatLogic!.tip = TipLevel.tip;
       String text = map[type.acronym] ?? '';
       String editText = '${type.i18n.tr}:$text';
       return MyTextButton.build(
         () async {
-          helper.setInRepeatView(false);
+          helper.stopMedia(false);
           var keys = [
             I18nKey.adjustFontSize.trArgs(['$fontSizeVal']),
             I18nKey.editContent.tr,
           ];
+          if (type == QaType.tip) {
+            keys.add(I18nKey.ttsSettings.tr);
+          }
           int? index = await Select.showSheet(title: I18nKey.edit.tr, keys: keys);
           if (index == null) {
             return;
@@ -329,6 +344,8 @@ class RepeatPage extends StatelessWidget {
                 },
               ),
             );
+          } else if (keys[index] == I18nKey.ttsSettings.tr) {
+            logic.ttsHelper.open();
           } else {
             var v = RxDouble(fontSizeVal);
             var saveTo = RxInt(0);
@@ -426,7 +443,7 @@ class RepeatPage extends StatelessWidget {
               ),
             );
           }
-          helper.setInRepeatView(true);
+          helper.stopMedia(true);
         },
         editText,
         style,
@@ -438,9 +455,9 @@ class RepeatPage extends StatelessWidget {
       }
       return MyTextButton.build(
         () async {
-          helper.setInRepeatView(false);
+          helper.stopMedia(false);
           await logic.copyLogic.show(Get.context!, "{{text}}", text);
-          helper.setInRepeatView(true);
+          helper.stopMedia(true);
         },
         text,
         style,
@@ -486,6 +503,8 @@ class RepeatPage extends StatelessWidget {
             logic.onTapLeft();
           } else if (index == total - 1) {
             logic.onLongTapRight();
+          } else if (total >= 4 && index == 2) {
+            logic.onLongTapMiddle();
           } else {
             logic.onTapMiddle();
           }

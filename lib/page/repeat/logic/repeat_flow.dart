@@ -12,8 +12,6 @@ abstract class RepeatFlow {
 
   RepeatStep step = RepeatStep.recall;
 
-  TipLevel tip = TipLevel.none;
-
   VerseTodayPrg? get currVerse;
 
   VerseTodayPrg? get nextVerse;
@@ -35,8 +33,6 @@ abstract class RepeatFlow {
   void onClose();
 
   void onTapLeft();
-
-  void onTapMiddle();
 
   void onTapRight();
 

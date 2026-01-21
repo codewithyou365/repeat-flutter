@@ -238,7 +238,7 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
                   children: [
                     if (showButton.value)
                       ...List.generate(
-                        3,
+                        4,
                         (index) {
                           final isNormalOrder = direct.value == DirectEnum.topToBottom;
                           final i = isNormalOrder ? index : (2 - index);
@@ -254,7 +254,7 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
                   children: [
                     if (showButton.value)
                       ...List.generate(
-                        3,
+                        4,
                         (index) {
                           final isNormalOrder = direct.value == DirectEnum.leftToRight;
                           final i = isNormalOrder ? index : (2 - index);
@@ -293,7 +293,7 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
   Widget buildButton(int index) {
     return Expanded(
       child: TextButton(
-        onPressed: () => widget.doubleUpCallback.call(index, 3),
+        onPressed: () => widget.doubleUpCallback.call(index, 4),
         child: Text(
           '${index + 1}',
           style: TextStyle(color: closeEyesMode.value.foregroundColor),

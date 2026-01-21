@@ -30,7 +30,7 @@ class RepeatViewForAudio extends RepeatView {
     audioPlayer = AudioPlayer();
     this.helper = helper;
     mediaRangeHelper = MediaRangeHelper(helper: helper);
-    sub.on([EventTopic.setInRepeatView], (b) {
+    sub.on([EventTopic.stopMedia], (b) {
       mediaKey.currentState?.stop();
     });
     mediaRangeHelper.onInit();
@@ -90,8 +90,8 @@ class RepeatViewForAudio extends RepeatView {
     }
     height = helper.screenHeight - helper.topPadding - helper.topBarHeight - helper.bottomBarHeight - mediaBarHeight;
     var q = helper.text(QaType.question);
-    var t = helper.showMode.value == ShowMode.edit || helper.tip == TipLevel.tip ? helper.text(QaType.tip) : null;
-    var a = helper.showMode.value == ShowMode.edit || helper.step != RepeatStep.recall ? helper.text(QaType.answer) : null;
+    var t = helper.text(QaType.tip);
+    var a = helper.text(QaType.answer);
     return Stack(
       children: [
         Column(

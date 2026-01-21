@@ -29,6 +29,11 @@ enum CrK {
   statsTotalLearning,
   lastCache4ProgressStats,
   nextTimeForSettingLearningProgressWarning,
+  ttsEngine,
+  ttsLanguageIndex,
+  ttsVoiceIndex,
+  ttsRateIndex,
+  ttsPitchIndex,
 }
 
 @Entity(primaryKeys: ['classroomId', 'k'])

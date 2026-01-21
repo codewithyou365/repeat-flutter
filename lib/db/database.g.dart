@@ -1365,7 +1365,7 @@ class _$CrKvDao extends CrKvDao {
   }
 
   @override
-  Future<String?> getString(
+  Future<String?> getStr(
     int classroomId,
     CrK k,
   ) async {

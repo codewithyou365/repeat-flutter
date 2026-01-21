@@ -279,6 +279,12 @@ class ConfigZh extends Config {
     put(I18nKey.btnShare, "分享");
     put(I18nKey.scan, "扫描");
     put(I18nKey.game, "游戏");
+    put(I18nKey.ttsSettings, "TTS设置");
+    put(I18nKey.ttsEngine, "TTS引擎");
+    put(I18nKey.ttsLanguage, "语言");
+    put(I18nKey.ttsVoice, "声音");
+    put(I18nKey.ttsPitch, "语调");
+    put(I18nKey.ttsSpeechRate, "语速");
     put(I18nKey.advancedEdit, "高级编辑");
     put(I18nKey.web, "网络");
     put(I18nKey.btnFocus, "专注");
