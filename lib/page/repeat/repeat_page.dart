@@ -255,7 +255,7 @@ class RepeatPage extends StatelessWidget {
               ),
             ],
           ),
-          if (helper.tip == TipLevel.none && tip != null && tip.isNotEmpty)
+          if (tip != null && tip.isNotEmpty)
             Row(
               children: [
                 const Spacer(),

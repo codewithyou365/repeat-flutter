@@ -50,7 +50,7 @@ class TtsHelper {
     ttsPage.open(tts, availableEngines, currEngine);
   }
 
-  void speak(Helper helper) async {
+  Future<void> speak(Helper helper) async {
     final currVerseMap = helper.getCurrVerseMap();
 
     if (currVerseMap == null) return;

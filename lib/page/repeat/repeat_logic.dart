@@ -266,7 +266,11 @@ class RepeatLogic extends GetxController {
 
   void onTapMiddle() {
     preClick();
-    state.helper.tip = TipLevel.tip;
+    if (state.helper.tip == TipLevel.tip) {
+      state.helper.tip = TipLevel.none;
+    } else {
+      state.helper.tip = TipLevel.tip;
+    }
     update([RepeatLogic.id]);
   }
 
@@ -274,8 +278,8 @@ class RepeatLogic extends GetxController {
     preClick();
     state.helper.tip = TipLevel.tip;
     state.helper.stopMedia(true);
-    ttsHelper.speak(state.helper);
     update([RepeatLogic.id]);
+    ttsHelper.speak(state.helper);
   }
 
   VerseTodayPrg? getCurr() {
