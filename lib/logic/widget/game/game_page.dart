@@ -98,7 +98,7 @@ class GamePage<T extends GetxController> {
                       case GameType.blankItRight:
                         return I18nKey.blankItRightGame.tr;
                       case GameType.wordSlicer:
-                        return I18nKey.workSlicer.tr;
+                        return I18nKey.wordSlicer.tr;
                       case GameType.input:
                         return I18nKey.inputGame.tr;
                       default:

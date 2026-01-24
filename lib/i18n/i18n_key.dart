@@ -246,7 +246,7 @@ enum I18nKey {
   labelGameRuleSettings,
   typeGame,
   blankItRightGame,
-  workSlicer,
+  wordSlicer,
   inputGame,
   labelLastCourseCannotBeDeleted,
   labelFileNotFound,

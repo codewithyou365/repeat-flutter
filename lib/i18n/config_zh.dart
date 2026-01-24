@@ -247,7 +247,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelGameRuleSettings, "游戏规则设置");
     put(I18nKey.typeGame, "打字");
     put(I18nKey.blankItRightGame, "挖空填对");
-    put(I18nKey.workSlicer, "划词");
+    put(I18nKey.wordSlicer, "划词");
     put(I18nKey.inputGame, "输入");
     put(I18nKey.labelLastCourseCannotBeDeleted, "最后一个篇章不能删除，否则将无法进行复制。");
     put(I18nKey.labelFileNotFound, "文件未找到, 现在导入文件吗？");
