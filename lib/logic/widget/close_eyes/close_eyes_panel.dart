@@ -241,7 +241,7 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
                         4,
                         (index) {
                           final isNormalOrder = direct.value == DirectEnum.topToBottom;
-                          final i = isNormalOrder ? index : (2 - index);
+                          final i = isNormalOrder ? index : (3 - index);
                           return buildButton(i);
                         },
                       ),
@@ -257,7 +257,7 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
                         4,
                         (index) {
                           final isNormalOrder = direct.value == DirectEnum.leftToRight;
-                          final i = isNormalOrder ? index : (2 - index);
+                          final i = isNormalOrder ? index : (3 - index);
                           return buildButton(i);
                         },
                       ),
