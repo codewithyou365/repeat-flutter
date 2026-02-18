@@ -7,6 +7,7 @@ import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/ssl.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'media_share_args.dart';
@@ -105,7 +106,9 @@ class MediaShareLogic {
     final rootPath = await DocPath.getContentPath();
     final filePath = rootPath.joinPath(pathParam);
     final file = File(filePath);
-    if (file.path.toLowerCase().endsWith('.mp4') || file.path.toLowerCase().endsWith('.mp3')) {
+    List<String> allowedExtensions = MediaType.audio.allowedExtensions;
+    final lowerPath = file.path.toLowerCase();
+    if (allowedExtensions.any((ext) => lowerPath.endsWith(ext.toLowerCase()))) {
       await HttpMedia.play(request, file);
     } else {
       response.statusCode = HttpStatus.badRequest;
