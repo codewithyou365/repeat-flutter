@@ -272,6 +272,8 @@ enum I18nKey {
   btnCut,
   btnDeleteCurr,
   btnCancel,
+  openAlbum,
+  openFile,
   btnHistory,
   btnContinue,
   btnOk,

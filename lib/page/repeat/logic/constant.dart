@@ -1,5 +1,16 @@
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 
+enum MediaType {
+  audio(allowedExtensions: ['mp3', 'mp4', 'mov']),
+  video(allowedExtensions: ['mp4', 'mov']);
+
+  const MediaType({
+    required this.allowedExtensions,
+  });
+
+  final List<String> allowedExtensions;
+}
+
 enum ShowMode {
   closedBook(i18n: I18nKey.closedBook),
   openBook(i18n: I18nKey.openBook),

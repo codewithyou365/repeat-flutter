@@ -272,6 +272,8 @@ class ConfigZh extends Config {
     put(I18nKey.btnCut, "切割并保留前后");
     put(I18nKey.btnDeleteCurr, "删除当前");
     put(I18nKey.btnCancel, "取消");
+    put(I18nKey.openAlbum, "打开相册");
+    put(I18nKey.openFile, "打开文件");
     put(I18nKey.btnHistory, "历史");
     put(I18nKey.btnContinue, "继续");
     put(I18nKey.btnOk, "确定");

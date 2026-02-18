@@ -133,7 +133,7 @@ class RepeatViewForAudio extends RepeatView {
       var helper = this.helper!;
       var ok = await helper.tryImportMedia(
         localMediaPath: path,
-        allowedExtensions: ['mp3', 'mp4'],
+        mediaType: MediaType.audio,
       );
       if (!ok) {
         return;
@@ -150,7 +150,7 @@ class RepeatViewForAudio extends RepeatView {
       } catch (e) {
         var ok = await helper.tryImportMedia(
           localMediaPath: path,
-          allowedExtensions: ['mp3', 'mp4'],
+          mediaType: MediaType.audio,
         );
         if (!ok) {
           return;

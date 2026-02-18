@@ -452,7 +452,7 @@ class RepeatViewForVideo extends RepeatView {
       var helper = this.helper!;
       var ok = await helper.tryImportMedia(
         localMediaPath: path,
-        allowedExtensions: ['mp4'],
+        mediaType: MediaType.video,
       );
       if (!ok) {
         return;
@@ -476,7 +476,7 @@ class RepeatViewForVideo extends RepeatView {
         } catch (e) {
           var ok = await helper.tryImportMedia(
             localMediaPath: path,
-            allowedExtensions: ['mp4'],
+            mediaType: MediaType.video,
           );
           if (!ok) {
             return;

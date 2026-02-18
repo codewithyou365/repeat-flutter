@@ -272,6 +272,8 @@ class ConfigEn extends Config {
     put(I18nKey.btnCut, "Cut and retain front and back");
     put(I18nKey.btnDeleteCurr, "Delete current");
     put(I18nKey.btnCancel, "Cancel");
+    put(I18nKey.openAlbum, "Open Album");
+    put(I18nKey.openFile, "Open File");
     put(I18nKey.btnHistory, "History");
     put(I18nKey.btnContinue, "Continue");
     put(I18nKey.btnOk, "Ok");

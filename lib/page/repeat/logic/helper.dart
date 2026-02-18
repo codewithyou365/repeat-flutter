@@ -284,68 +284,97 @@ class Helper {
 
   Future<bool> tryImportMedia({
     required String localMediaPath,
-    required List<String> allowedExtensions,
+    required MediaType mediaType,
   }) async {
     var file = File(localMediaPath);
     var exist = await file.exists();
     if (exist) {
       return true;
     } else {
-      MsgBox.yesOrNo(
+      MsgBox.myDialog(
         title: I18nKey.labelTips.tr,
-        desc: I18nKey.labelFileNotFound.tr,
-        no: () async {
-          Get.back();
-          Get.back();
-        },
-        yes: () async {
-          FilePickerResult? result;
-          if (allowedExtensions.length == 1 && allowedExtensions.first == 'mp4') {
-            result = await FilePicker.platform.pickFiles(
-              type: FileType.video,
-            );
-          } else {
-            result = await FilePicker.platform.pickFiles(
-              type: FileType.media,
-            );
-          }
-
-          String pickedPath = "";
-          String pickedName = "";
-          if (result != null && result.files.single.path != null) {
-            pickedPath = result.files.single.path!;
-            pickedName = result.files.single.name;
-          } else {
-            Snackbar.show(I18nKey.labelLocalImportCancel.tr);
-            return;
-          }
-
-          try {
-            var s = getCurrVerse()!;
-            String hash = await Hash.toSha1(pickedPath);
-            DownloadContent download = DownloadContent(url: ".${pickedName.split('.').last}", hash: hash);
-            var rootPath = await DocPath.getContentPath();
-            String localFolder = rootPath.joinPath(DocPath.getRelativePath(s.bookId).joinPath(download.folder));
-            if (!allowedExtensions.containsIgnoreCase(download.extension)) {
-              Snackbar.show(I18nKey.labelFileExtensionNotMatch.trArgs([jsonEncode(allowedExtensions)]));
-              return;
-            }
-
-            await Folder.ensureExists(localFolder);
-            await File(pickedPath).copy(localFolder.joinPath(download.name));
-            var chapterId = s.chapterId;
-            var m = getCurrChapterMap()!;
-            m['d'] = [download];
-            Db().db.chapterDao.updateChapterContent(chapterId, jsonEncode(m));
-            Get.back();
-            Get.back();
-          } catch (e) {
-            Snackbar.show(e.toString());
-            return;
-          }
-        },
+        content: MsgBox.content(I18nKey.labelFileNotFound.tr),
+        action: MsgBox.buttonsWithDivider(
+          buttons: [
+            MsgBox.button(
+              text: I18nKey.btnCancel.tr,
+              onPressed: () {
+                Get.back();
+                Get.back();
+              },
+            ),
+            if (Platform.isIOS)
+              MsgBox.button(
+                text: I18nKey.openAlbum.tr,
+                onPressed: () async {
+                  FilePickerResult? result = await FilePicker.platform.pickFiles(
+                    type: FileType.video,
+                  );
+                  await importPickedFile(mediaType, result);
+                },
+              ),
+            if (Platform.isIOS)
+              MsgBox.button(
+                text: I18nKey.openFile.tr,
+                onPressed: () async {
+                  FilePickerResult? result = await FilePicker.platform.pickFiles(
+                    type: FileType.custom,
+                    allowedExtensions: mediaType.allowedExtensions,
+                  );
+                  await importPickedFile(mediaType, result);
+                },
+              ),
+            if (!Platform.isIOS)
+              MsgBox.button(
+                text: I18nKey.btnOk.tr,
+                onPressed: () async {
+                  FilePickerResult? result = await FilePicker.platform.pickFiles(
+                    type: FileType.custom,
+                    allowedExtensions: mediaType.allowedExtensions,
+                  );
+                  await importPickedFile(mediaType, result);
+                },
+              ),
+          ],
+        ),
       );
       return false;
+    }
+  }
+
+  Future<void> importPickedFile(MediaType mediaType, FilePickerResult? result) async {
+    String pickedPath = "";
+    String pickedName = "";
+    if (result != null && result.files.single.path != null) {
+      pickedPath = result.files.single.path!;
+      pickedName = result.files.single.name;
+    } else {
+      Snackbar.show(I18nKey.labelLocalImportCancel.tr);
+      return;
+    }
+
+    try {
+      var s = getCurrVerse()!;
+      String hash = await Hash.toSha1(pickedPath);
+      DownloadContent download = DownloadContent(url: ".${pickedName.split('.').last}", hash: hash);
+      var rootPath = await DocPath.getContentPath();
+      String localFolder = rootPath.joinPath(DocPath.getRelativePath(s.bookId).joinPath(download.folder));
+      if (!mediaType.allowedExtensions.containsIgnoreCase(download.extension)) {
+        Snackbar.show(I18nKey.labelFileExtensionNotMatch.trArgs([jsonEncode(mediaType.allowedExtensions)]));
+        return;
+      }
+
+      await Folder.ensureExists(localFolder);
+      await File(pickedPath).copy(localFolder.joinPath(download.name));
+      var chapterId = s.chapterId;
+      var m = getCurrChapterMap()!;
+      m['d'] = [download];
+      Db().db.chapterDao.updateChapterContent(chapterId, jsonEncode(m));
+      Get.back();
+      Get.back();
+    } catch (e) {
+      Snackbar.show(e.toString());
+      return;
     }
   }
 
