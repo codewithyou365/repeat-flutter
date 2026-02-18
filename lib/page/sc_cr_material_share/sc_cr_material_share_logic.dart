@@ -38,12 +38,15 @@ class ScCrMaterialShareLogic extends GetxController {
   HttpServer? _httpServer;
 
   @override
-  void onInit() async {
+  void onInit() {
     super.onInit();
     state.book = Get.arguments[0] as Book;
     state.original = Address(I18nKey.labelOriginalAddress.tr, state.book.url);
     state.lanAddressSuffix = "/${DocPath.getIndexFileName()}";
     randCredentials(show: false);
+  }
+
+  Future<void> initPort() async {
     port.value = await Db().db.kvDao.getIntWithDefault(K.materialSharePort, port.value);
     if (port.value > 50000) {
       port.value = defaultPort;
@@ -52,6 +55,7 @@ class ScCrMaterialShareLogic extends GetxController {
 
   void switchWeb(bool enable) {
     AwaitUtil.tryDo(() async {
+      await initPort();
       state.addresses.clear();
       if (enable) {
         await _startHttpService();
