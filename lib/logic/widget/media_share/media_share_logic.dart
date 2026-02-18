@@ -1,10 +1,13 @@
 import 'dart:io';
 
+import 'package:get/get.dart';
 import 'package:repeat_flutter/common/await_util.dart';
 import 'package:repeat_flutter/common/http_media.dart';
 import 'package:repeat_flutter/common/ip.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/ssl.dart';
+import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/page/repeat/logic/constant.dart';
@@ -15,7 +18,8 @@ import 'media_share_page.dart';
 import 'media_share_state.dart';
 
 class MediaShareLogic {
-  static const int port = 40322;
+  static const int defaultPort = 4324;
+  RxInt port = defaultPort.obs;
   static const String id = "MediaShareLogic";
   HttpServer? _httpServer;
   final MediaShareState state = MediaShareState();
@@ -25,6 +29,10 @@ class MediaShareLogic {
 
   Future<void> open(MediaShareArgs args) async {
     state.args = args;
+    port.value = await Db().db.kvDao.getIntWithDefault(K.mediaSharePort, port.value);
+    if (port.value > 50000) {
+      port.value = defaultPort;
+    }
     await page.open(this);
   }
 
@@ -54,15 +62,18 @@ class MediaShareLogic {
       if (state.enableSsl.value) {
         var sslPath = await DocPath.getSslPath();
         var context = SelfSsl.generateSecurityContext(sslPath);
-        _httpServer = await HttpServer.bindSecure(InternetAddress.anyIPv4, port, context);
+        _httpServer = await HttpServer.bindSecure(InternetAddress.anyIPv4, port.value, context);
       } else {
-        _httpServer = await HttpServer.bind(InternetAddress.anyIPv4, port);
+        _httpServer = await HttpServer.bind(InternetAddress.anyIPv4, port.value);
       }
       _httpServer!.listen((HttpRequest request) async {
         _handleRequest(request);
       });
     } catch (e) {
-      Snackbar.show('Error starting media service: $e');
+      await Db().db.kvDao.insertOrReplace(Kv(K.mediaSharePort, '${port.value + 10}'));
+      Snackbar.show('Error starting media service: $e \n System has changed the port, please try again');
+      _stopHttpService(tip: false);
+      Get.back();
       return;
     }
     state.addresses.clear();
@@ -86,10 +97,12 @@ class MediaShareLogic {
     return url;
   }
 
-  Future<void> _stopHttpService() async {
+  Future<void> _stopHttpService({tip = true}) async {
     if (_httpServer != null) {
       await _httpServer!.close();
-      Snackbar.show('media service stopped');
+      if (tip) {
+        Snackbar.show('media service stopped');
+      }
       _httpServer = null;
     }
   }

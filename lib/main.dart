@@ -29,7 +29,7 @@ void main() async {
       return await Db().db.kvDao.getInt(K.generateSslTime) ?? 0;
     },
     (int genTime) async {
-      await Db().db.kvDao.insertKv(Kv(K.generateSslTime, '$genTime'));
+      await Db().db.kvDao.insertOrReplace(Kv(K.generateSslTime, '$genTime'));
     },
   );
 

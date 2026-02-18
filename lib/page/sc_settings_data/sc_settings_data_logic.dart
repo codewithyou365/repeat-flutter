@@ -28,7 +28,7 @@ class ScSettingsDataLogic extends GetxController {
   void export(BuildContext context, String url, String? mojo) async {
     showOverlay(() async {
       state.exportUrl = url;
-      await Db().db.kvDao.insertKv(Kv(K.exportUrl, url));
+      await Db().db.kvDao.insertOrReplace(Kv(K.exportUrl, url));
       var path = await sqflite.getDatabasesPath();
       var res = await upload(url, path.joinPath(Db.fileName), Db.fileName);
       Get.back();
@@ -38,7 +38,7 @@ class ScSettingsDataLogic extends GetxController {
 
   void import(BuildContext context, String url, String? mojo) async {
     state.importUrl = url;
-    await Db().db.kvDao.insertKv(Kv(K.importUrl, url));
+    await Db().db.kvDao.insertOrReplace(Kv(K.importUrl, url));
     String key = I18nKey.labelImportMojo.tr;
     if (key != mojo) {
       Get.back();
@@ -53,7 +53,7 @@ class ScSettingsDataLogic extends GetxController {
       );
       await Db().db.close();
       await Db().init();
-      await Db().db.kvDao.insertKv(Kv(K.importUrl, url));
+      await Db().db.kvDao.insertOrReplace(Kv(K.importUrl, url));
       Get.back();
       Snackbar.show(downloadDocResult == DownloadDocResult.success ? I18nKey.labelImportSuccess.tr : I18nKey.labelImportFailed.tr);
     }, I18nKey.labelImporting.tr);

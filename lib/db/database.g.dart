@@ -2355,7 +2355,7 @@ class _$KvDao extends KvDao {
   }
 
   @override
-  Future<void> insertKv(Kv kv) async {
+  Future<void> insertOrReplace(Kv kv) async {
     await _kvInsertionAdapter.insert(kv, OnConflictStrategy.replace);
   }
 

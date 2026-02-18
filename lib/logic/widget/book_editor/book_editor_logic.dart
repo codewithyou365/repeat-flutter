@@ -35,7 +35,8 @@ import 'ws/user.dart';
 import 'ws/web_server.dart';
 
 class BookEditorLogic<T extends GetxController> {
-  static const int port = 40321;
+  static const int defaultPort = 4322;
+  RxInt port = defaultPort.obs;
   static const String id = "BookEditorLogic";
   final BookEditorState state = BookEditorState();
   final BookEditorPage page = BookEditorPage<T>();
@@ -76,7 +77,10 @@ class BookEditorLogic<T extends GetxController> {
 
   Future<void> open(BookEditorArgs args) async {
     state.args = args;
-
+    port.value = await Db().db.kvDao.getIntWithDefault(K.bookEditorPort, port.value);
+    if (port.value > 50000) {
+      port.value = defaultPort;
+    }
     await page.open(this);
   }
 
@@ -143,10 +147,13 @@ class BookEditorLogic<T extends GetxController> {
     }
 
     try {
-      server.start(port, auth, _handleRequest);
+      server.start(port.value, auth, _handleRequest);
       onEvent();
     } catch (e) {
-      Snackbar.show('Error starting HTTPS service: $e');
+      await Db().db.kvDao.insertOrReplace(Kv(K.bookEditorPort, '${port.value + 10}'));
+      Snackbar.show('Error starting HTTPS service: $e \n System has changed the port, please try again');
+      _stopHttpService(tip: false);
+      Get.back();
       return;
     }
     state.addresses.clear();
@@ -160,7 +167,7 @@ class BookEditorLogic<T extends GetxController> {
   }
 
   String getUrl(String ip) {
-    String url = 'https://$ip:$port${state.lanAddressSuffix}';
+    String url = 'https://$ip:${port.value}${state.lanAddressSuffix}';
 
     url += "?";
     List<String> params = [];
@@ -171,16 +178,18 @@ class BookEditorLogic<T extends GetxController> {
     return url;
   }
 
-  Future<void> _stopHttpService() async {
+  Future<void> _stopHttpService({tip = true}) async {
     try {
       offEvent();
-      if (server.open) {
+      if (server.open && tip) {
         Snackbar.show('HTTPS service stopped');
       }
       await server.stop();
       parentLogic.update([id]);
     } catch (e) {
-      Snackbar.show('Error starting HTTPS service: $e');
+      if (tip) {
+        Snackbar.show('Error stopping HTTPS service: $e');
+      }
       return;
     }
   }
@@ -192,9 +201,9 @@ class BookEditorLogic<T extends GetxController> {
     if (credential == null || credentialExpireTime == null || credentialExpireTime < now) {
       credential = StringUtil.generateRandom09(9);
 
-      await Db().db.kvDao.insertKv(Kv(K.credential, credential));
+      await Db().db.kvDao.insertOrReplace(Kv(K.credential, credential));
       final expireAt = now + const Duration(hours: 4).inMilliseconds;
-      await Db().db.kvDao.insertKv(Kv(K.credentialExpireTime, expireAt.toString()));
+      await Db().db.kvDao.insertOrReplace(Kv(K.credentialExpireTime, expireAt.toString()));
     }
     return credential;
   }
@@ -213,10 +222,10 @@ class BookEditorLogic<T extends GetxController> {
           String credential = StringUtil.generateRandom09(9);
           state.user.value = credential.substring(0, 3);
           state.password.value = credential.substring(3);
-          Db().db.kvDao.insertKv(Kv(K.credential, credential));
+          Db().db.kvDao.insertOrReplace(Kv(K.credential, credential));
           final now = DateTime.now().millisecondsSinceEpoch;
           final expireAt = now + const Duration(hours: 4).inMilliseconds;
-          Db().db.kvDao.insertKv(Kv(K.credentialExpireTime, expireAt.toString()));
+          Db().db.kvDao.insertOrReplace(Kv(K.credentialExpireTime, expireAt.toString()));
         },
         yesBtnTitle: I18nKey.refresh.tr,
         noBtnTitle: I18nKey.close.tr,

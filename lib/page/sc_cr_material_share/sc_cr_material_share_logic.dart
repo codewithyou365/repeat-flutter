@@ -15,8 +15,10 @@ import 'package:repeat_flutter/common/ssl.dart';
 import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/common/url.dart';
 import 'package:repeat_flutter/common/zip.dart';
+import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
+import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
@@ -29,18 +31,23 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'sc_cr_material_share_state.dart';
 
 class ScCrMaterialShareLogic extends GetxController {
-  static const int port = 40321;
+  static const int defaultPort = 4323;
+  RxInt port = defaultPort.obs;
   static const String id = "ScCrMaterialShareLogic";
   final ScCrMaterialShareState state = ScCrMaterialShareState();
   HttpServer? _httpServer;
 
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
     state.book = Get.arguments[0] as Book;
     state.original = Address(I18nKey.labelOriginalAddress.tr, state.book.url);
     state.lanAddressSuffix = "/${DocPath.getIndexFileName()}";
     randCredentials(show: false);
+    port.value = await Db().db.kvDao.getIntWithDefault(K.materialSharePort, port.value);
+    if (port.value > 50000) {
+      port.value = defaultPort;
+    }
   }
 
   void switchWeb(bool enable) {
@@ -73,27 +80,32 @@ class ScCrMaterialShareLogic extends GetxController {
     try {
       var sslPath = await DocPath.getSslPath();
       var context = SelfSsl.generateSecurityContext(sslPath);
-      _httpServer = await HttpServer.bindSecure(InternetAddress.anyIPv4, port, context);
+      _httpServer = await HttpServer.bindSecure(InternetAddress.anyIPv4, port.value, context);
       _httpServer!.listen((HttpRequest request) async {
         _handleRequest(request);
       });
     } catch (e) {
-      Snackbar.show('Error starting HTTPS service: $e');
+      await Db().db.kvDao.insertOrReplace(Kv(K.materialSharePort, '${port.value + 10}'));
+      Snackbar.show('Error starting HTTPS service: $e \n System has changed the port, please try again');
+      _stopHttpService(tip: false);
+      Get.back();
       return;
     }
     state.addresses.clear();
     for (var i = 0; i < ips.length; i++) {
       String ip = ips[i];
-      state.addresses.add(Address("${I18nKey.labelLanAddress.tr} $i", 'https://$ip:$port${state.lanAddressSuffix}'));
+      state.addresses.add(Address("${I18nKey.labelLanAddress.tr} $i", 'https://$ip:${port.value}${state.lanAddressSuffix}'));
     }
     Snackbar.show('HTTPS service started');
     update([id]);
   }
 
-  Future<void> _stopHttpService() async {
+  Future<void> _stopHttpService({tip = true}) async {
     if (_httpServer != null) {
       await _httpServer!.close();
-      Snackbar.show('HTTPS service stopped');
+      if (tip) {
+        Snackbar.show('HTTPS service stopped');
+      }
       _httpServer = null;
       update([id]);
     }

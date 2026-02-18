@@ -42,7 +42,7 @@ class UserManager<T extends GetxController> {
 
   Future<void> setAllowRegisterNumber(int value) async {
     allowRegisterNumber = value;
-    await Db().db.kvDao.insertKv(Kv(K.allowRegisterNumber, "$value"));
+    await Db().db.kvDao.insertOrReplace(Kv(K.allowRegisterNumber, "$value"));
   }
 
   Future<void> show(BuildContext context) async {

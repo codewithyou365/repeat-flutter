@@ -13,7 +13,7 @@ class ScSettingsLangLogic extends GetxController {
     var myAppLogic = Get.find<MyAppLogic>();
     myAppLogic.i18nLocal.value = lang;
     var kv = Kv(K.settingsI18n, myAppLogic.i18nLocal.value.name);
-    Db().db.kvDao.insertKv(kv);
+    Db().db.kvDao.insertOrReplace(kv);
     Get.updateLocale(lang.locale);
   }
 }

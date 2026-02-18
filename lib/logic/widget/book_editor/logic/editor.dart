@@ -21,7 +21,7 @@ Future<void> handleSetEditorStatus(HttpRequest request, K k) async {
 
   try {
     String req = await request.bytesToString();
-    await Db().db.kvDao.insertKv(Kv(k, "${int.parse(req)}"));
+    await Db().db.kvDao.insertOrReplace(Kv(k, "${int.parse(req)}"));
     response.statusCode = HttpStatus.ok;
   } catch (e) {
     response.statusCode = HttpStatus.internalServerError;

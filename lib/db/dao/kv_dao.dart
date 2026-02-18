@@ -21,7 +21,7 @@ abstract class KvDao {
   Future<String?> getStr(K k);
 
   @Insert(onConflict: OnConflictStrategy.replace)
-  Future<void> insertKv(Kv kv);
+  Future<void> insertOrReplace(Kv kv);
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertKvs(List<Kv> kv);

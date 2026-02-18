@@ -15,7 +15,7 @@ class GameHelper {
     if (!server.open) {
       return;
     }
-    await Db().db.kvDao.insertKv(Kv(K.lastVerseId, '${stp.verseId}'));
+    await Db().db.kvDao.insertOrReplace(Kv(K.lastVerseId, '${stp.verseId}'));
     stp.time += 1;
     EventBus().publish(EventTopic.newGame, stp.verseId);
     await server.server.broadcast(

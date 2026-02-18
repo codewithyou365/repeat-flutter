@@ -45,8 +45,7 @@ class WebServer {
     server = Server(wsEvent: wsEvent, kickPath: Path.kick);
   }
 
-  Future<int> start() async {
-    var port = 4321;
+  Future<int> start(int port) async {
     try {
       await server.start(port, authByToken, _serveFile);
       server.logger = Snackbar.show;

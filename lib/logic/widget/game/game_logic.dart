@@ -22,9 +22,10 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'game_page.dart';
 import 'game_state.dart';
 import 'logic/game_settings_blank_it_right.dart';
-import 'logic/game_settings_input.dart';
 
 class GameLogic<T extends GetxController> {
+  static const int defaultPort = 4321;
+  RxInt port = defaultPort.obs;
   static const String bodyId = "GameLogic.bodyId";
   final T parentLogic;
   late UserManager userManager = UserManager<T>(parentLogic);
@@ -49,6 +50,10 @@ class GameLogic<T extends GetxController> {
     var lastGameIndex = await Db().db.kvDao.getInt(K.lastGameIndex) ?? 1;
     state.game = lastGameIndex - 1;
     GameState.lastGameIndex = lastGameIndex;
+    port.value = await Db().db.kvDao.getIntWithDefault(K.gameServerPort, port.value);
+    if (port.value > 50000) {
+      port.value = defaultPort;
+    }
     await userManager.init(web);
   }
 
@@ -82,7 +87,7 @@ class GameLogic<T extends GetxController> {
   void changeGame(int index) {
     GameState.lastGameIndex = index + 1;
     parentLogic.update([bodyId]);
-    Db().db.kvDao.insertKv(Kv(K.lastGameIndex, "${GameState.lastGameIndex}"));
+    Db().db.kvDao.insertOrReplace(Kv(K.lastGameIndex, "${GameState.lastGameIndex}"));
   }
 
   String get title {
@@ -104,7 +109,7 @@ class GameLogic<T extends GetxController> {
       }
       if (value) {
         try {
-          int gamePort = await web.start();
+          int gamePort = await web.start(port.value);
           state.urls = [];
           var ips = await Ip.getLanIps();
           for (var i = 0; i < ips.length; i++) {
@@ -117,25 +122,34 @@ class GameLogic<T extends GetxController> {
             await v.onWebOpen();
           }
         } catch (e) {
-          Snackbar.show('Error Start Web: $e');
+          await Db().db.kvDao.insertOrReplace(Kv(K.gameServerPort, '${port.value + 10}'));
+          Snackbar.show('Error starting game server: $e \n System has changed the port, please try again');
+          closeWeb(tip: false);
+          Get.back();
           return;
         }
       } else {
-        try {
-          for (var v in gameTypeToGameSettings.values) {
-            await v.onWebClose();
-            v.setWebOpen(false);
-          }
-          await web.stop();
-          state.urls = [];
-        } catch (e) {
-          Snackbar.show('Error Stop Web: $e');
-          return;
-        }
+        closeWeb();
       }
     } finally {
       state.openPending = false;
       state.open.value = value;
+    }
+  }
+
+  Future<void> closeWeb({tip = true}) async {
+    try {
+      for (var v in gameTypeToGameSettings.values) {
+        await v.onWebClose();
+        v.setWebOpen(false);
+      }
+      await web.stop();
+      state.urls = [];
+    } catch (e) {
+      if (tip) {
+        Snackbar.show('Error Stop Web: $e');
+      }
+      return;
     }
   }
 
@@ -182,14 +196,14 @@ class GameLogic<T extends GetxController> {
   Future<String> refreshGamePassword() async {
     var password = StringUtil.generateRandom09(6);
     final now = DateTime.now().millisecondsSinceEpoch;
-    await Db().db.kvDao.insertKv(Kv(K.gamePassword, password));
-    await Db().db.kvDao.insertKv(Kv(K.gamePasswordCreateTime, now.toString()));
+    await Db().db.kvDao.insertOrReplace(Kv(K.gamePassword, password));
+    await Db().db.kvDao.insertOrReplace(Kv(K.gamePasswordCreateTime, now.toString()));
     web.server.broadcast(message.Request(path: Path.kick));
     return password;
   }
 
   Future<void> clearGamePassword() async {
-    await Db().db.kvDao.insertKv(Kv(K.gamePassword, ''));
-    await Db().db.kvDao.insertKv(Kv(K.gamePasswordCreateTime, '0'));
+    await Db().db.kvDao.insertOrReplace(Kv(K.gamePassword, ''));
+    await Db().db.kvDao.insertOrReplace(Kv(K.gamePasswordCreateTime, '0'));
   }
 }

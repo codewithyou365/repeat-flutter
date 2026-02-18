@@ -13,6 +13,6 @@ class ScSettingsThemeLogic extends GetxController {
     var myAppLogic = Get.find<MyAppLogic>();
     myAppLogic.themeMode.value = mode;
     var kv = Kv(K.settingsTheme, myAppLogic.themeMode.value.name);
-    Db().db.kvDao.insertKv(kv);
+    Db().db.kvDao.insertOrReplace(kv);
   }
 }

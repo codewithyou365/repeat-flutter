@@ -496,7 +496,7 @@ class RepeatPage extends StatelessWidget {
         direct: DirectEnum.values[logic.state.closeEyesDirect],
         changeDirect: (DirectEnum direct) {
           logic.state.closeEyesDirect = direct.index;
-          Db().db.kvDao.insertKv(Kv(K.closeEyesDirect, "${direct.index}"));
+          Db().db.kvDao.insertOrReplace(Kv(K.closeEyesDirect, "${direct.index}"));
         },
         doubleUpCallback: (int index, int total) {
           if (index == 0) {

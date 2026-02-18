@@ -18,6 +18,10 @@ enum K {
   gamePassword,
   gamePasswordCreateTime,
   lastVerseId,
+  mediaSharePort,
+  gameServerPort,
+  bookEditorPort,
+  materialSharePort,
 }
 
 @Entity(primaryKeys: ['k'])
