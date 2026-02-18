@@ -118,7 +118,7 @@ class RepeatLogic extends GetxController {
 
   void switchFocusMode() {
     state.helper.focusMode.value = !state.helper.focusMode.value;
-    state.helper.enablePlayingPlayMedia = false;
+    state.helper.enablePlayingMedia = false;
     update([RepeatLogic.id]);
   }
 
@@ -138,7 +138,7 @@ class RepeatLogic extends GetxController {
         state.helper.showMode.value = ShowMode.closedBook;
         break;
     }
-    state.helper.enablePlayingPlayMedia = false;
+    state.helper.enablePlayingMedia = false;
     update([RepeatLogic.id]);
   }
 
@@ -239,7 +239,7 @@ class RepeatLogic extends GetxController {
 
   void preClick() {
     state.needUpdateSystemUiMode = true;
-    state.helper.enablePlayingPlayMedia = true;
+    state.helper.enablePlayingMedia = true;
     ttsHelper.stop();
   }
 

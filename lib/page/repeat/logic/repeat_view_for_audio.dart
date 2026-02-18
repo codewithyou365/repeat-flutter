@@ -76,10 +76,10 @@ class RepeatViewForAudio extends RepeatView {
             helper.resetMediaStart = false;
             mediaKey.currentState?.drawStart();
           }
-          if (!helper.enablePlayingPlayMedia) {
-            return;
+          if (helper.enablePlayingMedia) {
+            helper.enablePlayingMedia = false;
+            mediaKey.currentState?.playFromStart();
           }
-          mediaKey.currentState?.playFromStart();
         });
       });
     }
@@ -187,7 +187,7 @@ class RepeatViewForAudio extends RepeatView {
         }
       },
       onStop: () async {
-        helper!.enablePlayingPlayMedia = false;
+        helper!.enablePlayingMedia = false;
         await audioPlayer.stop();
       },
       onEdit: mediaRangeHelper.mediaRangeEdit(range),

@@ -52,7 +52,7 @@ class Helper {
   Rx<ShowMode> showMode = ShowMode.closedBook.obs;
   bool enableReloadMedia = true;
   bool resetMediaStart = true;
-  bool enablePlayingPlayMedia = false;
+  bool enablePlayingMedia = false;
   Map<int, Map<String, dynamic>> bookMapCache = {};
 
   Map<int, Map<String, dynamic>> chapterMapCache = {};
@@ -95,7 +95,7 @@ class Helper {
 
   void stopMedia(bool enableReloadMedia) {
     this.enableReloadMedia = enableReloadMedia;
-    enablePlayingPlayMedia = false;
+    enablePlayingMedia = false;
     EventBus().publish<bool>(EventTopic.stopMedia, true);
   }
 

@@ -93,10 +93,10 @@ class RepeatViewForVideo extends RepeatView {
             helper.resetMediaStart = false;
             mediaKey.currentState?.drawStart();
           }
-          if (!helper.enablePlayingPlayMedia) {
-            return;
+          if (helper.enablePlayingMedia) {
+            helper.enablePlayingMedia = false;
+            mediaKey.currentState?.playFromStart();
           }
-          mediaKey.currentState?.playFromStart();
         });
       });
     }
@@ -417,7 +417,6 @@ class RepeatViewForVideo extends RepeatView {
       duration: () => duration,
       onPlay: (Duration position) async {
         if (_videoPlayerController != null) {
-          helper!.enablePlayingPlayMedia = true;
           try {
             await _videoPlayerController!.seekTo(position).timeout(const Duration(milliseconds: 100));
           } catch (e) {
@@ -430,7 +429,7 @@ class RepeatViewForVideo extends RepeatView {
       },
       onStop: () async {
         if (_videoPlayerController != null) {
-          helper!.enablePlayingPlayMedia = false;
+          helper!.enablePlayingMedia = false;
           await _videoPlayerController!.pause();
           isPlaying.value = false;
         }
