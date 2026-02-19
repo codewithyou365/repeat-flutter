@@ -16,6 +16,8 @@ import 'package:repeat_flutter/logic/widget/game/logic/game_settings.dart';
 import 'package:repeat_flutter/logic/widget/game/logic/game_settings_type.dart';
 import 'package:repeat_flutter/logic/widget/game/logic/game_settings_word_slicer.dart';
 import 'package:repeat_flutter/logic/widget/user_manager.dart';
+import 'package:repeat_flutter/nav.dart';
+import 'package:repeat_flutter/page/webview/webview_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -109,12 +111,12 @@ class GameLogic<T extends GetxController> {
       }
       if (value) {
         try {
-          int gamePort = await web.start(port.value);
+          await web.start(port.value);
           state.urls = [];
           var ips = await Ip.getLanIps();
           for (var i = 0; i < ips.length; i++) {
             String url = ips[i];
-            state.urls.add('https://$url:$gamePort');
+            state.urls.add('https://$url:${port.value}');
           }
           onOpenWeb();
           for (var v in gameTypeToGameSettings.values) {
@@ -151,6 +153,15 @@ class GameLogic<T extends GetxController> {
       }
       return;
     }
+  }
+
+  Future<void> openWebview() async {
+    Nav.webview.push(
+      arguments: WebviewArgs(
+        initialUrl: "https://127.0.0.1:${port.value}",
+        pageTitle: toStringByGameType(GameType.values[GameState.lastGameIndex]),
+      ),
+    );
   }
 
   Future<void> openCredentialDialog() async {
@@ -205,5 +216,20 @@ class GameLogic<T extends GetxController> {
   Future<void> clearGamePassword() async {
     await Db().db.kvDao.insertOrReplace(Kv(K.gamePassword, ''));
     await Db().db.kvDao.insertOrReplace(Kv(K.gamePasswordCreateTime, '0'));
+  }
+
+  String toStringByGameType(GameType gameType) {
+    switch (gameType) {
+      case GameType.type:
+        return I18nKey.typeGame.tr;
+      case GameType.blankItRight:
+        return I18nKey.blankItRightGame.tr;
+      case GameType.wordSlicer:
+        return I18nKey.wordSlicer.tr;
+      case GameType.input:
+        return I18nKey.inputGame.tr;
+      default:
+        return '';
+    }
   }
 }

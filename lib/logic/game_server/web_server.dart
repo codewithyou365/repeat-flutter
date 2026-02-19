@@ -45,36 +45,32 @@ class WebServer {
     server = Server(wsEvent: wsEvent, kickPath: Path.kick);
   }
 
-  Future<int> start(int port) async {
-    try {
-      await server.start(port, authByToken, _serveFile);
-      server.logger = Snackbar.show;
-      server.controllers[Path.loginOrRegister] = loginOrRegister;
-      server.controllers[Path.entryGame] = (request) => withGameUser(request, entryGame);
-      server.controllers[Path.heart] = (request) => withGameUser(request, heart);
-      server.controllers[Path.gameUserHistory] = (request) => withGameUser(request, gameUserHistory);
-      server.controllers[Path.submit] = (request) => withGameUser(request, submit);
-      server.controllers[Path.gameUserScore] = (request) => withGameUser(request, gameUserScore);
-      server.controllers[Path.gameUserScoreHistory] = (request) => withGameUser(request, gameUserScoreHistory);
-      server.controllers[Path.gameUserScoreMinus] = (request) => withGameUser(request, gameUserScoreMinus);
-      server.controllers[Path.typeGameSettings] = (request) => withGameUserAndGameType(request, GameType.type, typeGameSettings);
-      server.controllers[Path.typeVerseContent] = (request) => withGameUserAndGameType(request, GameType.type, typeVerseContent);
-      server.controllers[Path.blankItRightSettings] = (request) => withGameUserAndGameType(request, GameType.blankItRight, blankItRightSettings);
-      server.controllers[Path.blankItRightContent] = (request) => withGameUserAndGameType(request, GameType.blankItRight, blankItRightContent);
-      server.controllers[Path.blankItRightBlank] = (request) => withGameUserAndServer(request, GameType.blankItRight, blankItRightBlank);
-      server.controllers[Path.blankItRightSubmit] = (request) => withGameUserAndServer(request, GameType.blankItRight, blankItRightSubmit);
-      server.controllers[Path.wordSlicerStatus] = (request) => withGameUserAndGameType(request, GameType.wordSlicer, wordSlicerStatus);
-      server.controllers[Path.wordSlicerSelectRole] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerSelectRole);
-      server.controllers[Path.wordSlicerStartGame] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerStartGame);
-      server.controllers[Path.wordSlicerSubmit] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerSubmit);
-      server.controllers[Path.wordSlicerEdit] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerEdit);
+  Future<void> start(int port) async {
+    await server.start(port, authByToken, _serveFile);
+    server.logger = Snackbar.show;
+    server.controllers[Path.loginOrRegister] = loginOrRegister;
+    server.controllers[Path.entryGame] = (request) => withGameUser(request, entryGame);
+    server.controllers[Path.heart] = (request) => withGameUser(request, heart);
+    server.controllers[Path.gameUserHistory] = (request) => withGameUser(request, gameUserHistory);
+    server.controllers[Path.submit] = (request) => withGameUser(request, submit);
+    server.controllers[Path.gameUserScore] = (request) => withGameUser(request, gameUserScore);
+    server.controllers[Path.gameUserScoreHistory] = (request) => withGameUser(request, gameUserScoreHistory);
+    server.controllers[Path.gameUserScoreMinus] = (request) => withGameUser(request, gameUserScoreMinus);
+    server.controllers[Path.typeGameSettings] = (request) => withGameUserAndGameType(request, GameType.type, typeGameSettings);
+    server.controllers[Path.typeVerseContent] = (request) => withGameUserAndGameType(request, GameType.type, typeVerseContent);
+    server.controllers[Path.blankItRightSettings] = (request) => withGameUserAndGameType(request, GameType.blankItRight, blankItRightSettings);
+    server.controllers[Path.blankItRightContent] = (request) => withGameUserAndGameType(request, GameType.blankItRight, blankItRightContent);
+    server.controllers[Path.blankItRightBlank] = (request) => withGameUserAndServer(request, GameType.blankItRight, blankItRightBlank);
+    server.controllers[Path.blankItRightSubmit] = (request) => withGameUserAndServer(request, GameType.blankItRight, blankItRightSubmit);
+    server.controllers[Path.wordSlicerStatus] = (request) => withGameUserAndGameType(request, GameType.wordSlicer, wordSlicerStatus);
+    server.controllers[Path.wordSlicerSelectRole] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerSelectRole);
+    server.controllers[Path.wordSlicerStartGame] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerStartGame);
+    server.controllers[Path.wordSlicerSubmit] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerSubmit);
+    server.controllers[Path.wordSlicerEdit] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerEdit);
 
-      open = true;
-    } catch (e) {
-      Snackbar.show('Error starting HTTPS service: $e');
-      return 0;
-    }
-    return port;
+    open = true;
+
+    return;
   }
 
   void wsEvent(WsEvent event) {

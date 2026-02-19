@@ -64,6 +64,11 @@ class GamePage<T extends GetxController> {
                                       onPressed: logic.openCredentialDialog,
                                       padding: EdgeInsets.zero,
                                     ),
+                                    IconButton(
+                                      icon: const Icon(Icons.play_arrow),
+                                      onPressed: logic.openWebview,
+                                      padding: EdgeInsets.zero,
+                                    ),
                                   ],
                                 ),
                                 subtitle: Padding(
@@ -92,18 +97,7 @@ class GamePage<T extends GetxController> {
                 RowWidget.buildCupertinoPicker(
                   title: I18nKey.labelGameRuleSettings.tr,
                   options: logic.gameTypeToGameSettings.keys.map((gameSettings) {
-                    switch (gameSettings) {
-                      case GameType.type:
-                        return I18nKey.typeGame.tr;
-                      case GameType.blankItRight:
-                        return I18nKey.blankItRightGame.tr;
-                      case GameType.wordSlicer:
-                        return I18nKey.wordSlicer.tr;
-                      case GameType.input:
-                        return I18nKey.inputGame.tr;
-                      default:
-                        return '';
-                    }
+                    return logic.toStringByGameType(gameSettings);
                   }).toList(),
                   value: state.game,
                   pickWidth: 150,
