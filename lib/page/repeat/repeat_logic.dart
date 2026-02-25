@@ -11,12 +11,14 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
+import 'package:repeat_flutter/logic/font_help.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/book_editor/book_editor_args.dart';
 import 'package:repeat_flutter/logic/widget/copy_template.dart';
 
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/game/game_logic.dart';
+import 'package:repeat_flutter/logic/widget/adjust_font.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/logic/widget/book_editor/book_editor_logic.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
@@ -47,6 +49,7 @@ class RepeatLogic extends GetxController {
     showTypeToRepeatView[RepeatViewEnum.video.name] = RepeatViewForVideo();
   }
 
+  late AdjustFont adjustFont = AdjustFont<RepeatLogic>(this);
   late CopyLogic copyLogic = CopyLogic<RepeatLogic>(CrK.copyTemplate, this);
   late GameLogic gameLogic = GameLogic<RepeatLogic>(this);
   late GameHelper gameHelper = GameHelper(gameLogic.web);
@@ -83,6 +86,7 @@ class RepeatLogic extends GetxController {
       Get.back();
       return;
     }
+    await FontHelp.registerAllFont(args.progresses);
     if (args.showMode == ShowMode.edit) {
       state.helper.focusMode.value = false;
       state.needUpdateSystemUiMode = true;

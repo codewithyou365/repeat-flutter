@@ -10,6 +10,7 @@ import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class DocHelp {
+
   static Future<String?> toJsonString(String path) async {
     var rootPath = await DocPath.getContentPath();
     File file = File(rootPath.joinPath(path));

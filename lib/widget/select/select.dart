@@ -40,7 +40,7 @@ class Select {
         mainAxisSize: MainAxisSize.min,
         children: [
           RowWidget.buildMiddleText(title),
-          RowWidget.buildDividerWithoutColor(),
+          RowWidget.buildDivider(),
         ],
       ),
       ListView(

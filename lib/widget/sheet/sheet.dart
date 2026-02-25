@@ -2,15 +2,62 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 
+class SheetHead {
+  final List<Widget> widgets;
+  final double height;
+
+  SheetHead({
+    required this.widgets,
+    required this.height,
+  });
+}
+
 class Sheet {
   static const double paddingHorizontal = 10;
   static const double paddingVertical = 20;
   static final Logger logger = Logger();
 
-  static Future<T?> showBottomSheet<T>(BuildContext context, Widget w, {double? rate, double? height, GestureTapCallback? onTapBlack}) {
+  static Future<T?> showBottomSheet<T>(BuildContext context, Widget w, {SheetHead? head, double? rate, double? height, GestureTapCallback? onTapBlack}) {
     final Size screenSize = MediaQuery.of(context).size;
     rate ??= 2 / 3;
-    height ??= screenSize.height * rate - MediaQuery.of(context).padding.top;
+    if (height == null) {
+      height = screenSize.height * rate - MediaQuery.of(context).padding.top;
+    } else if (head != null) {
+      height += paddingVertical*2;
+    }
+    Widget child;
+    if (head != null) {
+      child = Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              paddingHorizontal,
+              paddingVertical,
+              paddingHorizontal,
+              0,
+            ),
+            child: Column(
+              children: [
+                ...head.widgets,
+              ],
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: paddingHorizontal),
+            child: SizedBox(
+              width: screenSize.width - paddingHorizontal * 2,
+              height: height - head.height - paddingVertical,
+              child: w,
+            ),
+          ),
+        ],
+      );
+    } else {
+      child = Padding(
+        padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: paddingVertical),
+        child: w,
+      );
+    }
     return showModalBottomSheet<T>(
       context: context,
       isScrollControlled: true,
@@ -41,10 +88,7 @@ class Sheet {
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
               ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: paddingVertical),
-                child: w,
-              ),
+              child: child,
             ),
           ],
         );
@@ -63,10 +107,12 @@ class Sheet {
     }
     return showBottomSheet<T>(
       context,
-      Column(children: [
-        header,
-        SheetBody(headerKey, screenSize.width, height, body,key: sheetBodyKey),
-      ]),
+      Column(
+        children: [
+          header,
+          SheetBody(headerKey, screenSize.width, height, body, key: sheetBodyKey),
+        ],
+      ),
       height: height,
       onTapBlack: onTapBlack,
     );

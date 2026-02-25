@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/font_help.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/close_eyes/close_eyes_panel.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -311,8 +313,11 @@ class RepeatPage extends StatelessWidget {
     if (map == null) {
       return null;
     }
-    double fontSizeVal = textFontSize(logic, type) ?? 17;
-    TextStyle? style = TextStyle(fontSize: fontSizeVal);
+    double fontSizeVal = fontSize(logic, type) ?? 17;
+    TextStyle? style = TextStyle(
+      fontSize: fontSizeVal,
+      fontFamily: fontAlias(logic, type),
+    );
     if (edit) {
       String text = map[type.acronym] ?? '';
       String editText = '${type.i18n.tr}:$text';
@@ -320,7 +325,7 @@ class RepeatPage extends StatelessWidget {
         () async {
           helper.stopMedia(false);
           var keys = [
-            I18nKey.adjustFontSize.trArgs(['$fontSizeVal']),
+            I18nKey.adjustFont.tr,
             I18nKey.editContent.tr,
           ];
           if (type == QaType.tip) {
@@ -330,7 +335,21 @@ class RepeatPage extends StatelessWidget {
           if (index == null) {
             return;
           }
-          if (keys[index] == I18nKey.editContent.tr) {
+          if (keys[index] == I18nKey.adjustFont.tr) {
+            final verse = helper.getCurrVerse();
+            if (verse == null) {
+              return;
+            }
+            final bookMap = helper.getCurrBookMap();
+            if (bookMap == null) {
+              return;
+            }
+            logic.adjustFont.open(
+              bookId: verse.bookId,
+              fontPrefix: type.acronym,
+              bookMap: bookMap,
+            );
+          } else if (keys[index] == I18nKey.editContent.tr) {
             await Nav.editor.push(
               arguments: EditorArgs(
                 title: type.i18n.tr,
@@ -346,102 +365,6 @@ class RepeatPage extends StatelessWidget {
             );
           } else if (keys[index] == I18nKey.ttsSettings.tr) {
             logic.ttsHelper.open();
-          } else {
-            var v = RxDouble(fontSizeVal);
-            var saveTo = RxInt(0);
-            await MsgBox.myDialog(
-              title: I18nKey.edit.tr,
-              content: Obx(
-                () => Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(height: 10),
-                    Text(
-                      '${I18nKey.fontSize.tr}: ${v.value.round()}',
-                      style: TextStyle(fontSize: v.value),
-                    ),
-                    Slider(
-                      value: v.value,
-                      min: 10,
-                      max: 40,
-                      divisions: 30,
-                      label: '${v.value.round()}',
-                      onChanged: (newVal) {
-                        v.value = newVal;
-                      },
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 14.0),
-                      child: RadioGroup<int>(
-                        groupValue: saveTo.value,
-                        onChanged: (val) {
-                          if (val != null) saveTo.value = val;
-                        },
-                        child: Row(
-                          children: [
-                            Text(I18nKey.labelSaveAt.tr),
-                            Radio<int>(
-                              value: ContentTypeEnum.book.index,
-                            ),
-                            Text(I18nKey.labelBookFn.tr),
-                            Radio<int>(
-                              value: ContentTypeEnum.chapter.index,
-                            ),
-                            Text(I18nKey.labelChapterName.tr),
-                            Radio<int>(
-                              value: ContentTypeEnum.verse.index,
-                            ),
-                            Text(I18nKey.labelVerseName.tr),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              action: MsgBox.buttonsWithDivider(
-                buttons: [
-                  MsgBox.button(
-                    text: I18nKey.btnCancel.tr,
-                    onPressed: () {
-                      Get.back();
-                    },
-                  ),
-                  MsgBox.button(
-                    text: I18nKey.btnSave.tr,
-                    onPressed: () async {
-                      final fontSizeKey = "${type.acronym}FontSize";
-                      final verse = helper.getCurrVerse()!;
-                      var bookMap = helper.getCurrBookMap();
-                      bookMap?.remove(fontSizeKey);
-                      var chapterMap = helper.getCurrChapterMap();
-                      chapterMap?.remove(fontSizeKey);
-                      var verseMap = helper.getCurrVerseMap();
-                      verseMap?.remove(fontSizeKey);
-                      switch (ContentTypeEnum.values[saveTo.value]) {
-                        case ContentTypeEnum.book:
-                          bookMap![fontSizeKey] = '${v.value}';
-                          await Db().db.bookDao.updateBookContent(verse.bookId, jsonEncode(bookMap));
-                          await Db().db.chapterDao.updateChapterContent(verse.chapterId, jsonEncode(chapterMap));
-                          await Db().db.verseDao.updateVerseContent(verse.verseId, jsonEncode(verseMap));
-                          break;
-                        case ContentTypeEnum.chapter:
-                          chapterMap![fontSizeKey] = '${v.value}';
-                          await Db().db.chapterDao.updateChapterContent(verse.chapterId, jsonEncode(chapterMap));
-                          await Db().db.verseDao.updateVerseContent(verse.verseId, jsonEncode(verseMap));
-                          break;
-                        case ContentTypeEnum.verse:
-                          verseMap![fontSizeKey] = '${v.value}';
-                          await Db().db.verseDao.updateVerseContent(verse.verseId, jsonEncode(verseMap));
-                          break;
-                      }
-                      logic.update([RepeatLogic.id]);
-                      Get.back();
-                    },
-                  ),
-                ],
-              ),
-            );
           }
           helper.stopMedia(true);
         },
@@ -465,20 +388,26 @@ class RepeatPage extends StatelessWidget {
     }
   }
 
-  double? textFontSize(RepeatLogic logic, QaType type) {
+  double? fontSize(RepeatLogic logic, QaType type) {
     final helper = logic.state.helper;
-    final fontSizeKey = "${type.acronym}FontSize";
-    var map = helper.getCurrVerseMap();
-    if (map != null && map[fontSizeKey] != null) {
-      return double.parse(map[fontSizeKey]);
+    final fontSizeKey = "${type.acronym}${FontHelp.fontSizeSuffix}";
+    final val = ListUtil.getValue([
+      helper.getCurrBookMap(),
+    ], fontSizeKey);
+    if (val != null) {
+      return double.parse(val);
     }
-    map = helper.getCurrChapterMap();
-    if (map != null && map[fontSizeKey] != null) {
-      return double.parse(map[fontSizeKey]);
-    }
-    map = helper.getCurrBookMap();
-    if (map != null && map[fontSizeKey] != null) {
-      return double.parse(map[fontSizeKey]);
+    return null;
+  }
+
+  String? fontAlias(RepeatLogic logic, QaType type) {
+    final helper = logic.state.helper;
+    final key = "${type.acronym}${FontHelp.fontAliasSuffix}";
+    final val = ListUtil.getValue([
+      helper.getCurrBookMap(),
+    ], key);
+    if (val != null) {
+      return val as String;
     }
     return null;
   }

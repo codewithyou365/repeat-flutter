@@ -56,7 +56,7 @@ class LearnIntervalConfig<T extends GetxController> {
                     '${I18nKey.level.tr} ${index + 1}',
                     intervals[index],
                     format: (v) => days,
-                    extraWidget: PopupMenuButton<String>(
+                    extra: PopupMenuButton<String>(
                       icon: const Icon(Icons.more_vert),
                       itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                         PopupMenuItem<String>(

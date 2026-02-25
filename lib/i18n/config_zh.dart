@@ -321,8 +321,11 @@ class ConfigZh extends Config {
     put(I18nKey.close, "关闭");
     put(I18nKey.btnCheck, "检查");
     put(I18nKey.btnEditVerse, "编辑小节");
-    put(I18nKey.adjustFontSize, "调整字体大小 (%s)");
+    put(I18nKey.adjustFont, "调整字体");
     put(I18nKey.fontSize, "字体大小");
+    put(I18nKey.font, "字体");
+    put(I18nKey.fontNotExist, "字体不存在");
+    put(I18nKey.importFontFail, "字体导入失败");
     put(I18nKey.editContent, "编辑内容");
     put(I18nKey.theContentHasBeenDeleted, "该内容 (%s) 已被删除");
     put(I18nKey.closeEyes, "闭眼");

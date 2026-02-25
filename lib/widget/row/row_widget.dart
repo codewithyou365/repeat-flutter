@@ -158,22 +158,6 @@ class RowWidget {
     );
   }
 
-  static Widget buildEditText(TextEditingController textController, {FocusNode? focusNode, int? maxLines, int? minLines, String? decoration}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: paddingVertical),
-      child: TextFormField(
-        controller: textController,
-        maxLines: maxLines,
-        minLines: minLines,
-        autofocus: true,
-        focusNode: focusNode,
-        decoration: InputDecoration(
-          labelText: decoration,
-        ),
-      ),
-    );
-  }
-
   static Widget buildQrCode(String value, [double? width]) {
     Color color = Colors.black;
     double size = 280.w;
@@ -388,7 +372,7 @@ class RowWidget {
     );
   }
 
-  static Widget buildText(String title, String value) {
+  static Widget buildText(String title, [String value = '']) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
       child: SizedBox(
@@ -503,11 +487,9 @@ class RowWidget {
     Rx value, {
     GestureTapCallback? onTap,
     InputType? inputType,
-    VoidCallback? yes,
+    VoidCallback? onTextModify,
     String Function(Rx)? format,
-    VoidCallback? extra,
-    Widget? extraIcon,
-    Widget? extraWidget,
+    Widget? extra,
   }) {
     var showValue = value.value.toString();
     if (format != null) {
@@ -527,7 +509,7 @@ class RowWidget {
             InkWell(
               onTap: () {
                 if (onTap == null) {
-                  MsgBox.strInputWithYesOrNo(value, I18nKey.edit.tr, title, inputType: inputType, yes: yes);
+                  MsgBox.strInputWithYesOrNo(value, I18nKey.edit.tr, title, inputType: inputType, yes: onTextModify);
                 } else {
                   onTap();
                 }
@@ -551,12 +533,7 @@ class RowWidget {
                 ),
               ),
             ),
-            if (extraWidget != null) extraWidget,
-            if (extra != null)
-              IconButton(
-                onPressed: extra,
-                icon: extraIcon ?? const Icon(Icons.refresh),
-              ),
+            if (extra != null) extra,
           ],
         ),
       ),

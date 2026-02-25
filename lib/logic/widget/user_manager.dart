@@ -87,7 +87,7 @@ class UserManager<T extends GetxController> {
                   I18nKey.labelAllowRegisterNumber.tr,
                   localAllowRegisterNumber,
                   inputType: InputType.number,
-                  yes: () async {
+                  onTextModify: () async {
                     allowRegisterNumber = int.parse(localAllowRegisterNumber.value);
                     await setAllowRegisterNumber(allowRegisterNumber);
                     parentLogic.update([UserManager.id]);

@@ -86,7 +86,7 @@ class GameSettingsInput extends GameSettings {
         return RowWidget.buildTextWithEdit(
           I18nKey.labelSkipCharacter.tr,
           skipChar,
-          yes: () {
+          onTextModify: () {
             Get.back();
             setSkipChar(skipChar.value);
           },

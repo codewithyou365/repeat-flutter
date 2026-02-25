@@ -321,8 +321,11 @@ class ConfigEn extends Config {
     put(I18nKey.close, "Close");
     put(I18nKey.btnCheck, "CHECK");
     put(I18nKey.btnEditVerse, "Edit Verse");
-    put(I18nKey.adjustFontSize, "Adjust Font Size (%s)");
+    put(I18nKey.adjustFont, "Adjust Font");
     put(I18nKey.fontSize, "Font Size");
+    put(I18nKey.font, "Font");
+    put(I18nKey.fontNotExist, "Font is not exist");
+    put(I18nKey.importFontFail, "Import font fail");
     put(I18nKey.editContent, "Edit Content");
     put(I18nKey.theContentHasBeenDeleted, "The content (%s) has been deleted");
     put(I18nKey.closeEyes, "Close-Eyes");

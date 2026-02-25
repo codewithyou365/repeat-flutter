@@ -19,6 +19,7 @@ import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
+import 'package:repeat_flutter/logic/picker_help.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/media_share/media_share_args.dart';
 import 'package:repeat_flutter/logic/widget/media_share/media_share_logic.dart';
@@ -343,29 +344,16 @@ class Helper {
   }
 
   Future<void> importPickedFile(MediaType mediaType, FilePickerResult? result) async {
-    String pickedPath = "";
-    String pickedName = "";
-    if (result != null && result.files.single.path != null) {
-      pickedPath = result.files.single.path!;
-      pickedName = result.files.single.name;
-    } else {
-      Snackbar.show(I18nKey.labelLocalImportCancel.tr);
-      return;
-    }
-
     try {
       var s = getCurrVerse()!;
-      String hash = await Hash.toSha1(pickedPath);
-      DownloadContent download = DownloadContent(url: ".${pickedName.split('.').last}", hash: hash);
-      var rootPath = await DocPath.getContentPath();
-      String localFolder = rootPath.joinPath(DocPath.getRelativePath(s.bookId).joinPath(download.folder));
-      if (!mediaType.allowedExtensions.containsIgnoreCase(download.extension)) {
-        Snackbar.show(I18nKey.labelFileExtensionNotMatch.trArgs([jsonEncode(mediaType.allowedExtensions)]));
+      var download = await PickerHelp.tryCopy(
+        bookId: s.bookId,
+        result: result,
+        allowedExtensions: mediaType.allowedExtensions,
+      );
+      if (download == null) {
         return;
       }
-
-      await Folder.ensureExists(localFolder);
-      await File(pickedPath).copy(localFolder.joinPath(download.name));
       var chapterId = s.chapterId;
       var m = getCurrChapterMap()!;
       m['d'] = [download];
