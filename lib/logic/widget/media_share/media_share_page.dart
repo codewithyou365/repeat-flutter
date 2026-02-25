@@ -12,21 +12,22 @@ class MediaSharePage {
   Future<void> open(MediaShareLogic logic) {
     var context = Get.context!;
     final state = logic.state;
-    return Sheet.withHeaderAndBody(
+    return Sheet.showBottomSheet(
       context,
-      Padding(
-        key: GlobalKey(),
-        padding: EdgeInsets.symmetric(horizontal: 10.0.w, vertical: 0.0),
-        child: Column(
-          children: [
-            RowWidget.buildSwitch(
-              title: I18nKey.mediaShare.tr,
-              value: state.webStart,
-              set: logic.switchWeb,
-            ),
-            RowWidget.buildDivider(),
-          ],
-        ),
+      head: SheetHead(
+        widgets: [
+          Column(
+            children: [
+              RowWidget.buildSwitch(
+                title: I18nKey.mediaShare.tr,
+                value: state.webStart,
+                set: logic.switchWeb,
+              ),
+              RowWidget.buildDivider(),
+            ],
+          ),
+        ],
+        height: RowWidget.rowHeight + RowWidget.dividerHeight,
       ),
       _buildList(context, logic),
     );
