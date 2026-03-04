@@ -388,7 +388,7 @@ class RepeatPage extends StatelessWidget {
       return MyTextButton.build(
         () async {
           helper.stopMedia(false);
-          await logic.copyLogic.show(TextTemplateMode.copy, Get.context!, text);
+          await logic.copyLogic.show(TextTemplateMode.editAndCopy, Get.context!, text);
           helper.stopMedia(true);
         },
         text,

@@ -159,7 +159,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelDocNotBeDownloaded, "还未下载文件:%s");
     put(I18nKey.labelDocCantBeFound, "无法找到文件:%s");
     put(I18nKey.labelInputPathError, "路径错误");
-    put(I18nKey.labelScheduleCount, "规划数量");
+    put(I18nKey.count, "数量");
     put(I18nKey.labelFrom, "开始于");
     put(I18nKey.labelChapter, "章");
     put(I18nKey.labelChapterName, "篇章");
@@ -203,7 +203,7 @@ class ConfigZh extends Config {
     put(I18nKey.enableSsl, "启用SSL");
     put(I18nKey.speed, "速度");
     put(I18nKey.labelCalendar, "日历");
-    put(I18nKey.labelCopyTemplateCount, "复制模版数量");
+    put(I18nKey.textTemplate, "模版");
     put(I18nKey.labelVerseNeedToContainAnswer, "小节需要包含答案字段");
     put(I18nKey.labelVerseKeyDuplicated, "小节KEY重复： %s");
     put(I18nKey.labelVerseKeyCantBeEmpty, "小节KEY不能为空");

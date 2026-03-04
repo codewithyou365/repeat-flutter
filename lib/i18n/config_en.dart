@@ -159,7 +159,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelDocNotBeDownloaded, "The content (%s) is not downloaded");
     put(I18nKey.labelDocCantBeFound, "The content (%s) cannot be found");
     put(I18nKey.labelInputPathError, "The inputting path is error");
-    put(I18nKey.labelScheduleCount, "Count");
+    put(I18nKey.count, "Count");
     put(I18nKey.labelFrom, "From");
     put(I18nKey.labelChapter, "Chapter");
     put(I18nKey.labelChapterName, "Chapter");
@@ -203,7 +203,7 @@ class ConfigEn extends Config {
     put(I18nKey.enableSsl, "Enable SSL");
     put(I18nKey.speed, "Speed");
     put(I18nKey.labelCalendar, "Calendar");
-    put(I18nKey.labelCopyTemplateCount, "Copy Template Count");
+    put(I18nKey.textTemplate, "Template");
     put(I18nKey.labelVerseNeedToContainAnswer, "Verse Need To Contain Answer");
     put(I18nKey.labelVerseKeyDuplicated, "Verse Key duplicated: %s");
     put(I18nKey.labelVerseKeyCantBeEmpty, "Verse Key can't be empty");

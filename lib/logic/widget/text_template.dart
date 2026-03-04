@@ -21,9 +21,8 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:mustache_template/mustache_template.dart';
 
 enum TextTemplateMode {
-  copy,
   editAndGet,
-  edit,
+  editAndCopy,
 }
 
 class TextTemplate<T extends GetxController> {
@@ -153,7 +152,7 @@ a{{index1}}: {{answer}}
           GetBuilder<T>(
             id: TextTemplate.id,
             builder: (_) {
-              return RowWidget.buildText(I18nKey.labelCopyTemplateCount.tr, '${copyTemplates.length}');
+              return RowWidget.buildText(I18nKey.textTemplate.tr, '${I18nKey.count.tr}(${copyTemplates.length})');
             },
           ),
           RowWidget.buildDivider(),
@@ -188,62 +187,50 @@ a{{index1}}: {{answer}}
       child: Text(previewText),
     );
 
-    switch (mode) {
-      case TextTemplateMode.copy:
-        return InkWell(
-          onTap: () {
-            Clipboard.setData(ClipboardData(text: fullText));
-            Snackbar.show(I18nKey.labelCopiedToClipboard.tr);
-            getV.value = fullText;
-          },
-          child: content,
-        );
-      default:
-        Widget firstWidget = Text(I18nKey.labelCopyText.tr);
-        if (TextTemplateMode.editAndGet == mode) {
-          firstWidget = Text(I18nKey.getText.tr);
-        }
-        return PopupMenuButton<int>(
-          child: content,
-          onSelected: (value) async {
-            if (value == 0) {
-              getV.value = fullText;
-              if (TextTemplateMode.editAndGet == mode) {
-                Get.back();
-                return;
-              }
-              Clipboard.setData(ClipboardData(text: fullText));
-              Snackbar.show(I18nKey.labelCopiedToClipboard.tr);
-            } else if (value == 1) {
-              Nav.editor.push(
-                arguments: EditorArgs(
-                  title: I18nKey.labelDetailConfig.tr,
-                  value: read(index),
-                  save: (str) => write(index, str),
-                ),
-              );
-            } else if (value == 2) {
-              copy(index);
-            } else if (value == 3) {
-              delete(index);
-            }
-          },
-
-          itemBuilder: (context) => [
-            PopupMenuItem(value: 0, child: firstWidget),
-            PopupMenuItem(value: 1, child: Text(I18nKey.labelDetailConfig.tr)),
-            PopupMenuItem(value: 2, child: Text(I18nKey.labelCopyConfig.tr)),
-            PopupMenuItem(value: 3, child: Text(I18nKey.labelDeleteConfig.tr)),
-          ],
-        );
+    Widget firstWidget = Text(I18nKey.labelCopyText.tr);
+    if (TextTemplateMode.editAndGet == mode) {
+      firstWidget = Text(I18nKey.getText.tr);
     }
+    return PopupMenuButton<int>(
+      child: content,
+      onSelected: (value) async {
+        if (value == 0) {
+          getV.value = fullText;
+          if (TextTemplateMode.editAndGet == mode) {
+            Get.back();
+            return;
+          }
+          Clipboard.setData(ClipboardData(text: fullText));
+          Snackbar.show(I18nKey.labelCopiedToClipboard.tr);
+        } else if (value == 1) {
+          Nav.editor.push(
+            arguments: EditorArgs(
+              title: I18nKey.labelDetailConfig.tr,
+              value: read(index),
+              save: (str) => write(index, str),
+            ),
+          );
+        } else if (value == 2) {
+          copy(index);
+        } else if (value == 3) {
+          delete(index);
+        }
+      },
+
+      itemBuilder: (context) => [
+        PopupMenuItem(value: 0, child: firstWidget),
+        PopupMenuItem(value: 1, child: Text(I18nKey.labelDetailConfig.tr)),
+        PopupMenuItem(value: 2, child: Text(I18nKey.labelCopyConfig.tr)),
+        PopupMenuItem(value: 3, child: Text(I18nKey.labelDeleteConfig.tr)),
+      ],
+    );
   }
 
   bool showQaList(BuildContext context, List<VerseShow> list) {
     if (list.isEmpty) {
       return false;
     }
-    show(TextTemplateMode.edit, context, list);
+    show(TextTemplateMode.editAndCopy, context, list);
     return true;
   }
 }

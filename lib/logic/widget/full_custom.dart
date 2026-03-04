@@ -78,7 +78,7 @@ class FullCustom<T extends GetxController> {
                           ),
                         ),
                         const Spacer(),
-                        cupertinoItem([I18nKey.btnAdd.tr, I18nKey.labelScheduleCount.tr], selectCount, null, count: 100),
+                        cupertinoItem([I18nKey.btnAdd.tr, I18nKey.count.tr], selectCount, null, count: 100),
                       ],
                     );
                   },
