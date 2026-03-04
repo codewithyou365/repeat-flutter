@@ -178,8 +178,8 @@ class ConfigZh extends Config {
     put(I18nKey.offline, "离线");
     put(I18nKey.labelOnlineUserNumber, "在线人数");
     put(I18nKey.labelAllowRegisterNumber, "允许注册人数");
-    put(I18nKey.labelQuestion, "问题");
-    put(I18nKey.labelAnswer, "答案");
+    put(I18nKey.question, "问题");
+    put(I18nKey.answer, "答案");
     put(I18nKey.labelQuestionAndAnswer, "问与答");
     put(I18nKey.labelCopyMode, "复制模式");
     put(I18nKey.labelWord, "单词");
@@ -282,6 +282,7 @@ class ConfigZh extends Config {
     put(I18nKey.scan, "扫描");
     put(I18nKey.game, "游戏");
     put(I18nKey.ttsSettings, "TTS设置");
+    put(I18nKey.expand, "扩展");
     put(I18nKey.ttsEngine, "TTS引擎");
     put(I18nKey.ttsLanguage, "语言");
     put(I18nKey.ttsVoice, "声音");
@@ -308,7 +309,7 @@ class ConfigZh extends Config {
     put(I18nKey.btnRepeat, "重复");
     put(I18nKey.btnSchedule, "安排");
     put(I18nKey.btnShow, "展示");
-    put(I18nKey.btnTips, "提示");
+    put(I18nKey.tips, "提示");
     put(I18nKey.btnUnknown, "不知道");
     put(I18nKey.btnKnow, "知道");
     put(I18nKey.btnError, "错误");

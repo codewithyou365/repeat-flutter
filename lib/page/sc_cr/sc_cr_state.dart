@@ -1,4 +1,3 @@
-import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 
 class VerseTodayPrgInView {

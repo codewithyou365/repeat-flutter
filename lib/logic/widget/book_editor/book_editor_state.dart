@@ -1,6 +1,4 @@
 import 'package:get/get.dart';
-import 'package:repeat_flutter/db/entity/book.dart';
-import 'package:repeat_flutter/logic/model/book_show.dart';
 
 import 'book_editor_args.dart';
 

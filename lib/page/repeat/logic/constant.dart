@@ -1,7 +1,7 @@
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 
 enum MediaType {
-  audio(allowedExtensions: ['mp3', 'mp4', 'mov']),
+  audio(allowedExtensions: ['mp3', 'wav', 'mp4', 'mov']),
   video(allowedExtensions: ['mp4', 'mov']);
 
   const MediaType({
@@ -26,9 +26,9 @@ enum RepeatStep { recall, evaluate, finish }
 enum TipLevel { none, tip }
 
 enum QaType {
-  question(acronym: 'q', i18n: I18nKey.labelQuestion),
+  question(acronym: 'q', i18n: I18nKey.question),
   tip(acronym: 't', i18n: I18nKey.labelTips),
-  answer(acronym: 'a', i18n: I18nKey.labelAnswer);
+  answer(acronym: 'a', i18n: I18nKey.answer);
 
   final String acronym;
 

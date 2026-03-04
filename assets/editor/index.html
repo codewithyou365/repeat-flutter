@@ -802,9 +802,11 @@
         document.getElementById('loading-panel').style.display = 'none';
     }
 
+    let mediaExtensions = [".mp3", ".wav", ".mp4", ".mov"];
     document.getElementById('file-menu-play').addEventListener('click', () => {
         const playUrl = `/play?path=${encodeURIComponent(fileSelectedPath)}` + bookParam('&');
-        if (fileSelectedPath.endsWith('.mp3') || fileSelectedPath.endsWith('.mp4')) {
+        const isMedia = mediaExtensions.some(ext => fileSelectedPath.toLowerCase().endsWith(ext));
+        if (isMedia) {
             window.open(playUrl, 'mediaPlayer', 'width=400,height=200');
         } else {
             const id = Date.now();
@@ -964,7 +966,8 @@
                     li.classList.add('selected');
                     fileSelectedLi = li;
                     fileSelectedPath = key;
-                    document.getElementById('file-menu-play').textContent = key.endsWith('.mp3') || key.endsWith('.mp4') ? 'Play' : 'Download';
+                    const isMedia = mediaExtensions.some(ext => key.toLowerCase().endsWith(ext));
+                    document.getElementById('file-menu-play').textContent = isMedia ? 'Play' : 'Download';
                     fileMenu.style.display = 'block';
                     fileMenu.style.left = `${event.pageX}px`;
                     fileMenu.style.top = `${event.pageY}px`;

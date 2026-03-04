@@ -14,9 +14,9 @@ import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/font_help.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/book_editor/book_editor_args.dart';
-import 'package:repeat_flutter/logic/widget/copy_template.dart';
-
+import 'package:repeat_flutter/logic/widget/text_template.dart';
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
+import 'package:repeat_flutter/logic/widget/expand/expand_sheet.dart';
 import 'package:repeat_flutter/logic/widget/game/game_logic.dart';
 import 'package:repeat_flutter/logic/widget/adjust_font.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -42,6 +42,7 @@ class RepeatLogic extends GetxController {
   final RepeatState state = RepeatState();
   final Map<String, RepeatView> showTypeToRepeatView = {};
   final TtsHelper ttsHelper = TtsHelper();
+  final ExpandSheet expandSheet = ExpandSheet();
 
   RepeatLogic() {
     showTypeToRepeatView[RepeatViewEnum.audio.name] = RepeatViewForAudio();
@@ -50,7 +51,7 @@ class RepeatLogic extends GetxController {
   }
 
   late AdjustFont adjustFont = AdjustFont<RepeatLogic>(this);
-  late CopyLogic copyLogic = CopyLogic<RepeatLogic>(CrK.copyTemplate, this);
+  late TextTemplate copyLogic = TextTemplate<RepeatLogic>(CrK.copyTemplate, this);
   late GameLogic gameLogic = GameLogic<RepeatLogic>(this);
   late GameHelper gameHelper = GameHelper(gameLogic.web);
   late BookEditorLogic bookEditor = BookEditorLogic<RepeatLogic>(this);
@@ -62,6 +63,7 @@ class RepeatLogic extends GetxController {
   Future<void> onInit() async {
     super.onInit();
     ttsHelper.init();
+    expandSheet.init(copyLogic);
     var args = Get.arguments as RepeatArgs;
     state.enableShowRecallButtons = args.enableShowRecallButtons;
     if (args.repeatType == RepeatType.justView) {

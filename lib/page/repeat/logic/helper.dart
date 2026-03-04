@@ -4,8 +4,6 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/common/folder.dart';
-import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
@@ -14,12 +12,12 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/book_help.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
+import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
-import 'package:repeat_flutter/logic/picker_help.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/media_share/media_share_args.dart';
 import 'package:repeat_flutter/logic/widget/media_share/media_share_logic.dart';
@@ -346,7 +344,7 @@ class Helper {
   Future<void> importPickedFile(MediaType mediaType, FilePickerResult? result) async {
     try {
       var s = getCurrVerse()!;
-      var download = await PickerHelp.tryCopy(
+      var download = await DocHelp.tryCopyToDocDir(
         bookId: s.bookId,
         result: result,
         allowedExtensions: mediaType.allowedExtensions,

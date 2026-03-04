@@ -50,7 +50,7 @@ class Zip {
     final zipEncoder = ZipEncoder();
     final zipData = zipEncoder.encode(archive);
 
-    await zipFile.writeAsBytes(zipData!);
+    await zipFile.writeAsBytes(zipData);
 
     return zipFile;
   }

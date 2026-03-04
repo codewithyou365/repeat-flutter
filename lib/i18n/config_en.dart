@@ -178,8 +178,8 @@ class ConfigEn extends Config {
     put(I18nKey.offline, "Offline");
     put(I18nKey.labelOnlineUserNumber, "Online User Number");
     put(I18nKey.labelAllowRegisterNumber, "Allow Reg Number");
-    put(I18nKey.labelQuestion, "Question");
-    put(I18nKey.labelAnswer, "Answer");
+    put(I18nKey.question, "Question");
+    put(I18nKey.answer, "Answer");
     put(I18nKey.labelQuestionAndAnswer, "Q&A");
     put(I18nKey.labelCopyMode, "Copy Mode");
     put(I18nKey.labelWord, "Word");
@@ -282,6 +282,7 @@ class ConfigEn extends Config {
     put(I18nKey.scan, "Scan");
     put(I18nKey.game, "Game");
     put(I18nKey.ttsSettings, "TTS Settings");
+    put(I18nKey.expand, "Expand");
     put(I18nKey.ttsEngine, "TTS Engine");
     put(I18nKey.ttsLanguage, "Language");
     put(I18nKey.ttsVoice, "Voice");
@@ -308,7 +309,7 @@ class ConfigEn extends Config {
     put(I18nKey.btnRepeat, "Repeat");
     put(I18nKey.btnSchedule, "Schedule");
     put(I18nKey.btnShow, "SHOW");
-    put(I18nKey.btnTips, "TIPS");
+    put(I18nKey.tips, "TIPS");
     put(I18nKey.btnUnknown, "UNKNOWN");
     put(I18nKey.btnKnow, "KNOW");
     put(I18nKey.btnError, "ERROR");

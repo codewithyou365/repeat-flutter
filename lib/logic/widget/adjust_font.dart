@@ -7,9 +7,9 @@ import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/font_help.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
-import 'package:repeat_flutter/logic/picker_help.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
@@ -62,7 +62,7 @@ class AdjustFont<T extends GetxController> {
                   type: FileType.custom,
                   allowedExtensions: allowedExtensions,
                 );
-                var download = await PickerHelp.tryCopy(
+                var download = await DocHelp.tryCopyToDocDir(
                   bookId: bookId,
                   result: result,
                   allowedExtensions: allowedExtensions,

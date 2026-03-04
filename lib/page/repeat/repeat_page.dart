@@ -11,6 +11,7 @@ import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/font_help.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/close_eyes/close_eyes_panel.dart';
+import 'package:repeat_flutter/logic/widget/text_template.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -262,7 +263,7 @@ class RepeatPage extends StatelessWidget {
               children: [
                 const Spacer(),
                 bottomBarButton(
-                  text: I18nKey.btnTips.tr,
+                  text: I18nKey.tips.tr,
                   onTap: logic.onTapMiddle,
                   width: buttonWidth,
                   onLongPress: logic.onLongTapMiddle,
@@ -327,6 +328,7 @@ class RepeatPage extends StatelessWidget {
           var keys = [
             I18nKey.adjustFont.tr,
             I18nKey.editContent.tr,
+            I18nKey.expand.tr,
           ];
           if (type == QaType.tip) {
             keys.add(I18nKey.ttsSettings.tr);
@@ -363,6 +365,13 @@ class RepeatPage extends StatelessWidget {
                 },
               ),
             );
+          } else if (keys[index] == I18nKey.expand.tr) {
+            final verse = helper.getCurrVerse();
+            if (verse == null) {
+              return;
+            }
+            await logic.expandSheet.open(text, verse, map);
+            logic.update([RepeatLogic.id]);
           } else if (keys[index] == I18nKey.ttsSettings.tr) {
             logic.ttsHelper.open();
           }
@@ -379,7 +388,7 @@ class RepeatPage extends StatelessWidget {
       return MyTextButton.build(
         () async {
           helper.stopMedia(false);
-          await logic.copyLogic.show(Get.context!, "{{text}}", text);
+          await logic.copyLogic.show(TextTemplateMode.copy, Get.context!, text);
           helper.stopMedia(true);
         },
         text,

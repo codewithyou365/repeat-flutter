@@ -1,5 +1,3 @@
-import 'package:flutter/cupertino.dart';
-
 class AwaitUtil {
   static var lock = false;
 

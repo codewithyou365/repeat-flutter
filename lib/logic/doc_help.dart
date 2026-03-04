@@ -2,15 +2,19 @@ import 'dart:convert';
 import 'dart:convert' as convert;
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
+import 'package:repeat_flutter/common/folder.dart';
+import 'package:repeat_flutter/common/hash.dart';
+import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart' show DocPath, DownloadConstant;
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class DocHelp {
-
   static Future<String?> toJsonString(String path) async {
     var rootPath = await DocPath.getContentPath();
     File file = File(rootPath.joinPath(path));
@@ -186,5 +190,61 @@ class DocHelp {
     ret['c'] = chaptersList;
 
     return true;
+  }
+
+  static Future<DownloadContent?> tryCopyToDocDir({
+    required int bookId,
+    required FilePickerResult? result,
+    required List<String> allowedExtensions,
+  }) async {
+    String pickedPath = "";
+    String pickedName = "";
+    if (result != null && result.files.single.path != null) {
+      pickedPath = result.files.single.path!;
+      pickedName = result.files.single.name;
+    } else {
+      Snackbar.show(I18nKey.labelLocalImportCancel.tr);
+      return null;
+    }
+
+    try {
+      final extension = ".${pickedName.split('.').last}";
+      if (!allowedExtensions.containsIgnoreCase(extension)) {
+        Snackbar.show(I18nKey.labelFileExtensionNotMatch.trArgs([jsonEncode(allowedExtensions)]));
+        return null;
+      }
+      return await moveToDocDir(pickedPath, bookId, true);
+    } catch (e) {
+      Snackbar.show(e.toString());
+      return null;
+    }
+  }
+
+  static Future<DownloadContent> moveToDocDir(String fromAbsolutePath, int toBookId, [bool copy = false]) async {
+    String hash = await Hash.toSha1(fromAbsolutePath);
+    String extension = fromAbsolutePath.split('.').last;
+    DownloadContent download = DownloadContent(url: ".$extension", hash: hash);
+
+    var rootPath = await DocPath.getContentPath();
+    String relativeFolder = DocPath.getRelativePath(toBookId).joinPath(download.folder);
+    String localFolder = rootPath.joinPath(relativeFolder);
+    String targetPath = localFolder.joinPath(download.name);
+
+    await Folder.ensureExists(localFolder);
+
+    File sourceFile = File(fromAbsolutePath);
+
+    if (copy) {
+      await sourceFile.copy(targetPath);
+    } else {
+      try {
+        await sourceFile.rename(targetPath);
+      } catch (e) {
+        await sourceFile.copy(targetPath);
+        await sourceFile.delete();
+      }
+    }
+
+    return download;
   }
 }

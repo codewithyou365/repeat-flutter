@@ -1,7 +1,6 @@
 import 'package:floor/floor.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/entity/content_version.dart';
-import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/db/entity/verse_content_version.dart';
 

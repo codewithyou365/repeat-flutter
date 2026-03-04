@@ -173,7 +173,6 @@ class ScCrMaterialLogic extends GetxController {
   void download(int bookId, String url) async {
     state.indexCount.value = 0;
     state.indexTotal.value = 1;
-    final rawUrl = url;
     List<String> urlAndCredentials = url.split("#");
     String credentials = '';
     if (urlAndCredentials.length == 2) {

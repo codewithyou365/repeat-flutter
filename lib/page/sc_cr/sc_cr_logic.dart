@@ -18,7 +18,7 @@ import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
-import 'package:repeat_flutter/logic/widget/copy_template.dart';
+import 'package:repeat_flutter/logic/widget/text_template.dart';
 import 'package:repeat_flutter/logic/widget/full_custom.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/repeat/logic/constant.dart';
@@ -34,7 +34,7 @@ import 'sc_cr_state.dart';
 class ScCrLogic extends GetxController {
   static const String id = "ScCrLogic";
   final ScCrState state = ScCrState();
-  late CopyLogic copyLogic = CopyLogic<ScCrLogic>(CrK.copyListTemplate, this);
+  late TextTemplate copyLogic = TextTemplate<ScCrLogic>(CrK.copyListTemplate, this);
   late FullCustom fullCustom = FullCustom<ScCrLogic>(this);
   final SubList initSub = [];
   final SubList<int> bookVersionSub = [];

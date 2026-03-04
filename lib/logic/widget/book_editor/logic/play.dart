@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:path/path.dart' as p;
 import 'package:repeat_flutter/common/http_media.dart';
+import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 
 import 'util.dart';
 
@@ -55,8 +56,7 @@ Future<void> handlePlay(HttpRequest request, Directory? dir) async {
       await response.close();
       return;
     }
-
-    if (file.path.toLowerCase().endsWith('.mp4') || file.path.toLowerCase().endsWith('.mp3')) {
+    if (MediaType.audio.allowedExtensions.any((ext) => file.path.toLowerCase().endsWith(ext))) {
       await HttpMedia.play(request, file);
     } else {
       final id = request.uri.queryParameters['id'];
