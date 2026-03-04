@@ -25,6 +25,7 @@ class ExpandLogic {
   static const String serverUrl = "http://127.0.0.1:8080";
   final TextEditingController textController = TextEditingController();
 
+  var hasContent = false;
   var status = ExpandStatus.init.obs;
   var isInit = true.obs;
   var disabled = false.obs;
@@ -65,6 +66,9 @@ class ExpandLogic {
         if (response.statusCode == 200) {
           _startPolling();
           await _taskCompleter?.future;
+          if (hasContent) {
+            Get.back();
+          }
         } else {
           logs.add("启动失败: ${response.statusCode}");
           status.value = ExpandStatus.finish;
@@ -122,13 +126,11 @@ class ExpandLogic {
                   await _onTaskComplete(result);
                 }
                 status.value = ExpandStatus.finish;
-                Get.back();
                 _taskCompleter?.complete();
               });
             } else {
               await _onTaskComplete(result);
               status.value = ExpandStatus.finish;
-              Get.back();
               _taskCompleter?.complete();
             }
           }
@@ -144,7 +146,12 @@ class ExpandLogic {
 
   Future<void> _onTaskComplete(Map<String, dynamic> result, {DownloadContent? dc}) async {
     String text = result['text'] ?? "";
-
+    if (text.isEmpty) {
+      hasContent = false;
+      return;
+    } else {
+      hasContent = true;
+    }
     String key = "";
     if (targetIndex.value == 0) {
       key = QaType.answer.acronym;
