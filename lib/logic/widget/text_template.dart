@@ -22,7 +22,7 @@ import 'package:mustache_template/mustache_template.dart';
 
 enum TextTemplateMode {
   copy,
-  get,
+  editAndGet,
   edit,
 }
 
@@ -98,29 +98,41 @@ a{{index1}}: {{answer}}
     List<String> ret = [];
     for (var templateString in copyTemplates) {
       final template = Template(templateString, htmlEscapeValues: false);
-      final rendered = template.renderString({
-        'verses': verses.asMap().entries.map((e) {
-          var m = jsonDecode(e.value.verseContent);
-          return {
-            'index0': e.key,
-            'index1': e.key + 1,
-            'indexA': Num.toBase26(e.key),
-            'question': m['q'] ?? '',
-            'answer': m['a'] ?? '',
-          };
-        }).toList(),
-      });
-      ret.add(rendered.toString());
+      var result = "";
+      try {
+        final rendered = template.renderString({
+          'verses': verses.asMap().entries.map((e) {
+            var m = jsonDecode(e.value.verseContent);
+            return {
+              'index0': e.key,
+              'index1': e.key + 1,
+              'indexA': Num.toBase26(e.key),
+              'question': m['q'] ?? '',
+              'answer': m['a'] ?? '',
+              'tip': m['t'] ?? '',
+            };
+          }).toList(),
+        });
+        result = rendered.toString();
+      } catch (e) {}
+      ret.add(result);
     }
     return ret;
   }
 
   List<String> getShowText(String text) {
     List<String> ret = [];
+    if (copyTemplates.isEmpty) {
+      copyTemplates.add(defaultStringTemplate);
+    }
     for (var templateString in copyTemplates) {
       final template = Template(templateString, htmlEscapeValues: false);
-      final rendered = template.renderString({'text': text});
-      ret.add(rendered.toString());
+      var result = text;
+      try {
+        final rendered = template.renderString({'text': text});
+        result = rendered.toString();
+      } catch (e) {}
+      ret.add(result);
     }
     return ret;
   }
@@ -177,15 +189,6 @@ a{{index1}}: {{answer}}
     );
 
     switch (mode) {
-      case TextTemplateMode.get:
-        return InkWell(
-          onTap: () {
-            getV.value = fullText;
-            Get.back();
-          },
-          child: content,
-        );
-
       case TextTemplateMode.copy:
         return InkWell(
           onTap: () {
@@ -195,13 +198,20 @@ a{{index1}}: {{answer}}
           },
           child: content,
         );
-
       default:
+        Widget firstWidget = Text(I18nKey.labelCopyText.tr);
+        if (TextTemplateMode.editAndGet == mode) {
+          firstWidget = Text(I18nKey.getText.tr);
+        }
         return PopupMenuButton<int>(
           child: content,
           onSelected: (value) async {
             if (value == 0) {
               getV.value = fullText;
+              if (TextTemplateMode.editAndGet == mode) {
+                Get.back();
+                return;
+              }
               Clipboard.setData(ClipboardData(text: fullText));
               Snackbar.show(I18nKey.labelCopiedToClipboard.tr);
             } else if (value == 1) {
@@ -218,8 +228,9 @@ a{{index1}}: {{answer}}
               delete(index);
             }
           },
+
           itemBuilder: (context) => [
-            PopupMenuItem(value: 0, child: Text(I18nKey.labelCopyText.tr)),
+            PopupMenuItem(value: 0, child: firstWidget),
             PopupMenuItem(value: 1, child: Text(I18nKey.labelDetailConfig.tr)),
             PopupMenuItem(value: 2, child: Text(I18nKey.labelCopyConfig.tr)),
             PopupMenuItem(value: 3, child: Text(I18nKey.labelDeleteConfig.tr)),

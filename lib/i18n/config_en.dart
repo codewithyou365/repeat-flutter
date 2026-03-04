@@ -133,6 +133,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelDetail, "Detail");
     put(I18nKey.labelCopyConfig, "Copy Config");
     put(I18nKey.labelDeleteConfig, "Delete Config");
+    put(I18nKey.getText, "Get Text");
     put(I18nKey.labelCopyText, "Copy Text");
     put(I18nKey.labelResetPassword, "Reset Password");
     put(I18nKey.labelResetConfigDesc, "After resetting the configuration, the system's default configuration will be used.");

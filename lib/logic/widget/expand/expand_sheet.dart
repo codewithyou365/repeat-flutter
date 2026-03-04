@@ -17,12 +17,11 @@ class ExpandSheet {
   }
 
   Future<void> open(String text, VerseTodayPrg verse, Map<String, dynamic> verseMap) async {
-    final templateString = copyLogic.read(0);
-    final template = Template(templateString, htmlEscapeValues: false);
+    final templateString = copyLogic.getShowText(text)[0];
     logic.bookId = verse.bookId;
     logic.verseId = verse.verseId;
     logic.verseMap = verseMap;
-    logic.textController.text = template.renderString({'text': text});
+    logic.textController.text = templateString;
     return Sheet.showBottomSheet(
       Get.context!,
       head: SheetHead(
@@ -61,7 +60,7 @@ class ExpandSheet {
                       icon: const Icon(Icons.auto_fix_high, size: 20),
                       onPressed: logic.isInit.value
                           ? () async {
-                              var result = await copyLogic.show(TextTemplateMode.get, Get.context!, text);
+                              var result = await copyLogic.show(TextTemplateMode.editAndGet, Get.context!, text);
                               if (result.isNotEmpty) {
                                 logic.textController.text = result;
                               }

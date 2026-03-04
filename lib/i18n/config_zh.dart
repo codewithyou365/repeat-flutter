@@ -133,6 +133,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelDetail, "详情");
     put(I18nKey.labelCopyConfig, "复制配置");
     put(I18nKey.labelDeleteConfig, "删除配置");
+    put(I18nKey.getText, "获取文本");
     put(I18nKey.labelCopyText, "复制文本");
     put(I18nKey.labelResetPassword, "重置密码");
     put(I18nKey.labelResetConfigDesc, "执行重置配置后，将使用系统默认的配置？");

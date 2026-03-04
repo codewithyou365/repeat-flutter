@@ -131,6 +131,7 @@ enum I18nKey {
   labelDetail,
   labelCopyConfig,
   labelDeleteConfig,
+  getText,
   labelCopyText,
   labelResetPassword,
   labelResetConfigDesc,

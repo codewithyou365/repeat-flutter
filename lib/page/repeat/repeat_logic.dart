@@ -63,6 +63,7 @@ class RepeatLogic extends GetxController {
   Future<void> onInit() async {
     super.onInit();
     ttsHelper.init();
+    copyLogic.init();
     expandSheet.init(copyLogic);
     var args = Get.arguments as RepeatArgs;
     state.enableShowRecallButtons = args.enableShowRecallButtons;
