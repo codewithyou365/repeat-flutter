@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mustache_template/mustache_template.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/widget/text_template.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -14,6 +14,7 @@ class ExpandSheet {
 
   void init(TextTemplate copyLogic) {
     this.copyLogic = copyLogic;
+    logic.loadSettings();
   }
 
   Future<void> open(String text, VerseTodayPrg verse, Map<String, dynamic> verseMap) async {
@@ -27,14 +28,20 @@ class ExpandSheet {
       head: SheetHead(
         height: RowWidget.rowHeight + RowWidget.dividerHeight,
         widgets: [
-          RowWidget.buildMiddleText("扩展助手配置"),
+          RowWidget.buildMiddleText(I18nKey.expandAssistant.tr),
           RowWidget.buildDivider(),
         ],
       ),
       ListView(
         shrinkWrap: true,
         children: [
-          RowWidget.buildText("在此编辑发送给助手的指令"),
+          RowWidget.buildTextWithEdit(
+            I18nKey.serviceUrl.tr,
+            logic.serviceUrl,
+            onTextModify: () => logic.saveServiceUrl(),
+          ),
+          RowWidget.buildDividerWithoutColor(),
+          RowWidget.buildText(I18nKey.editInstructionTips.tr),
           RowWidget.buildCard(
             Obx(() {
               return Stack(
@@ -46,9 +53,9 @@ class ExpandSheet {
                       maxLines: 5,
                       enabled: logic.isInit.value,
                       minLines: 1,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         border: InputBorder.none,
-                        hintText: "在此编辑发送给助手的指令...",
+                        hintText: I18nKey.editInstructionTips.tr,
                       ),
                       style: const TextStyle(fontSize: 14),
                     ),
@@ -74,7 +81,7 @@ class ExpandSheet {
           ),
           RowWidget.buildDividerWithoutColor(),
           RowWidget.buildCupertinoPicker(
-            title: "附加位置",
+            title: I18nKey.appendPosition.tr,
             options: logic.targetOptions,
             value: logic.targetIndex.value,
             changed: (index) => logic.targetIndex.value = index,
@@ -82,16 +89,15 @@ class ExpandSheet {
           ),
           RowWidget.buildDividerWithoutColor(),
           RowWidget.buildSwitch(
-            title: "同步生成音频",
+            title: I18nKey.syncGenerateAudio.tr,
             value: logic.enableAudio,
             disabled: logic.disabled,
           ),
           RowWidget.buildDividerWithoutColor(),
-
           Obx(() {
             if (logic.status.value == ExpandStatus.init) {
               return RowWidget.buildButtons([
-                Button("开始执行", () {
+                Button(I18nKey.startExecution.tr, () {
                   logic.startTask(logic.textController.text);
                 }),
               ]);
@@ -119,7 +125,7 @@ class ExpandSheet {
           Obx(() {
             if (logic.status.value == ExpandStatus.finish) {
               return RowWidget.buildButtons([
-                Button("关闭日志", () {
+                Button(I18nKey.closeLog.tr, () {
                   logic.reset();
                 }),
               ]);

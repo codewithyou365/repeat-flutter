@@ -40,6 +40,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelBookNameError, "The book name should be 3 letters or less and consist of alphanumeric characters in uppercase.");
     put(I18nKey.labelBookNameDuplicated, "The book name is duplicated.");
     put(I18nKey.labelDelete, "Delete");
+    put(I18nKey.serviceUrl, "Service URL");
     put(I18nKey.labelRemoteUrl, "Remote URL");
     put(I18nKey.labelOriginalAddress, "Original address");
     put(I18nKey.labelLanAddress, "LAN address");
@@ -347,5 +348,11 @@ class ConfigEn extends Config {
     put(I18nKey.obtainedInTheGame, "Obtained In The Game");
     put(I18nKey.deductedInTheGame, "Deducted In The Game");
     put(I18nKey.showButtons, "Show Buttons");
+    put(I18nKey.expandAssistant, "Expansion Assistant");
+    put(I18nKey.editInstructionTips, "Edit instructions sent\nto the assistant here");
+    put(I18nKey.appendPosition, "Append Position");
+    put(I18nKey.syncGenerateAudio, "Sync Generate Audio");
+    put(I18nKey.startExecution, "Start Execution");
+    put(I18nKey.closeLog, "Close Log");
   }
 }

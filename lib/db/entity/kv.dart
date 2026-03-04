@@ -22,6 +22,7 @@ enum K {
   gameServerPort,
   bookEditorPort,
   materialSharePort,
+  expandServiceUrl,
 }
 
 @Entity(primaryKeys: ['k'])

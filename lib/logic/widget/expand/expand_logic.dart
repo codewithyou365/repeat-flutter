@@ -7,6 +7,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
@@ -22,7 +23,7 @@ enum ExpandStatus {
 }
 
 class ExpandLogic {
-  static const String serverUrl = "http://127.0.0.1:8080";
+  var serviceUrl = "http://127.0.0.1:8080".obs;
   final TextEditingController textController = TextEditingController();
 
   var hasContent = false;
@@ -44,6 +45,14 @@ class ExpandLogic {
 
   Completer<void>? _taskCompleter;
 
+  Future<void> loadSettings() async {
+    serviceUrl.value = await Db().db.kvDao.getStr(K.expandServiceUrl) ?? "http://127.0.0.1:8080";
+  }
+
+  Future<void> saveServiceUrl() async {
+    await Db().db.kvDao.insertOrReplace(Kv(K.expandServiceUrl, serviceUrl.value));
+  }
+
   Future<void> startTask(String msg) async {
     await showOverlay(() async {
       try {
@@ -58,7 +67,7 @@ class ExpandLogic {
         String runnerType = enableAudio.value ? "withSpeak" : "standard";
 
         final response = await http.post(
-          Uri.parse("$serverUrl/start?runner=$runnerType"),
+          Uri.parse("$serviceUrl/start?runner=$runnerType"),
           headers: {"Content-Type": "text/plain; charset=utf-8"},
           body: msg,
         );
@@ -92,7 +101,7 @@ class ExpandLogic {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       try {
-        final response = await http.get(Uri.parse("$serverUrl/status"));
+        final response = await http.get(Uri.parse("$serviceUrl/status"));
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
 
@@ -106,7 +115,7 @@ class ExpandLogic {
 
             if (enableAudio.value && audioUrl.isNotEmpty) {
               logs.add("正在下载音频文件...");
-              String downloadUrl = "$serverUrl/download?path=$audioUrl";
+              String downloadUrl = "$serviceUrl/download?path=$audioUrl";
               String savePath = "audio/$audioUrl";
 
               DownloadDoc.start(

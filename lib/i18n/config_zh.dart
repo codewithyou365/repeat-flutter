@@ -40,6 +40,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelBookNameError, "学卷名字应为 3 个字母或更少，并且由大写字母数字字符组成。");
     put(I18nKey.labelBookNameDuplicated, "学卷名字重复。");
     put(I18nKey.labelDelete, "删除");
+    put(I18nKey.serviceUrl, "服务地址");
     put(I18nKey.labelRemoteUrl, "远程地址");
     put(I18nKey.labelOriginalAddress, "原始地址");
     put(I18nKey.labelLanAddress, "局域网地址");
@@ -347,5 +348,11 @@ class ConfigZh extends Config {
     put(I18nKey.obtainedInTheGame, "游戏中获得");
     put(I18nKey.deductedInTheGame, "游戏中扣除");
     put(I18nKey.showButtons, "显示按钮");
+    put(I18nKey.expandAssistant, "扩展助手");
+    put(I18nKey.editInstructionTips, "在此编辑发送给\n助手的指令");
+    put(I18nKey.appendPosition, "附加位置");
+    put(I18nKey.syncGenerateAudio, "同步生成音频");
+    put(I18nKey.startExecution, "开始执行");
+    put(I18nKey.closeLog, "关闭日志");
   }
 }

@@ -38,6 +38,7 @@ enum I18nKey {
   labelBookNameError,
   labelBookNameDuplicated,
   labelDelete,
+  serviceUrl,
   labelRemoteUrl,
   labelOriginalAddress,
   labelLanAddress,
@@ -347,6 +348,12 @@ enum I18nKey {
   obtainedInTheGame,
   deductedInTheGame,
   showButtons,
+  expandAssistant,
+  editInstructionTips,
+  appendPosition,
+  syncGenerateAudio,
+  startExecution,
+  closeLog,
   none;
 
   String trArgs([List<String> args = const []]) {
