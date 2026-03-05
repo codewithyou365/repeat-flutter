@@ -211,7 +211,7 @@ class ScCrMaterialShareLogic extends GetxController {
       yes: () async {
         await showOverlay(
           () async {
-            var permissionStatus = await Permission.storage.request();
+            var permissionStatus = await Permission.manageExternalStorage.request();
             if (permissionStatus != PermissionStatus.granted) {
               Snackbar.show(I18nKey.labelStoragePermissionDenied.tr);
               return;
@@ -256,7 +256,6 @@ class ScCrMaterialShareLogic extends GetxController {
                 },
               );
 
-              // Wait for the isolate to complete
               final result = await receivePort.first as Map<String, dynamic>;
               if (result['error'] != null) {
                 Snackbar.show("Error creating zip file: ${result['error']}");
@@ -271,6 +270,7 @@ class ScCrMaterialShareLogic extends GetxController {
               try {
                 String targetZipName = "${Classroom.currName}-${state.book.name}.zip";
                 zipFile.copySync(selectedDirectory!.joinPath(targetZipName));
+                Get.back();
                 Snackbar.show(I18nKey.labelSaveSuccess.trArgs([targetZipName]));
               } catch (e) {
                 Snackbar.show(I18nKey.labelDirectoryPermissionDenied.trArgs([selectedDirectory!]));

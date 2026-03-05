@@ -37,29 +37,25 @@ class ScCrContentSharePage extends StatelessWidget {
     final state = logic.state;
     return ListView(
       children: [
-        buildItem(
-          state.original.title,
-          state.original.address,
-          "",
-          false.obs,
-          null,
+        if (state.original.address.isNotEmpty)
+          buildItem(
+            state.original.title,
+            state.original.address,
+            "",
+            false.obs,
+            null,
+          ),
+        if (state.original.address.isNotEmpty) RowWidget.buildDividerWithoutColor(),
+        if (state.original.address.isEmpty) RowWidget.buildDivider(),
+        RowWidget.buildSwitch(
+          title: I18nKey.web.tr,
+          value: state.webStart,
+          set: logic.switchWeb,
         ),
         RowWidget.buildDividerWithoutColor(),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: RowWidget.buildSwitch(
-            title: I18nKey.web.tr,
-            value: state.webStart,
-            set: logic.switchWeb,
-          ),
-        ),
-        RowWidget.buildDividerWithoutColor(),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: RowWidget.buildSwitch(
-            title: I18nKey.labelDoYourShareTheNotes.tr,
-            value: state.shareNote,
-          ),
+        RowWidget.buildSwitch(
+          title: I18nKey.labelDoYourShareTheNotes.tr,
+          value: state.shareNote,
         ),
         if (state.addresses.isNotEmpty)
           ...List.generate(
