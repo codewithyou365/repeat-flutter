@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/await_util.dart';
 import 'package:repeat_flutter/common/ip.dart';
 import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/common/ws/message.dart' as message;
@@ -100,7 +101,13 @@ class GameLogic<T extends GetxController> {
     return "${web.server.nodes.userId2Node.length} / ${userManager.allowRegisterNumber}";
   }
 
-  void switchWeb(bool value) async {
+  void switchWebForBtn(bool value) async {
+    AwaitUtil.tryDo(() async {
+      await switchWeb(value);
+    });
+  }
+
+  Future<void> switchWeb(bool value) async {
     if (state.openPending) {
       return;
     }
@@ -123,15 +130,16 @@ class GameLogic<T extends GetxController> {
             v.setWebOpen(true);
             await v.onWebOpen();
           }
+          Snackbar.show('game service started');
         } catch (e) {
           await Db().db.kvDao.insertOrReplace(Kv(K.gameServerPort, '${port.value + 10}'));
+          await closeWeb();
           Snackbar.show('Error starting game server: $e \n System has changed the port, please try again');
-          closeWeb(tip: false);
           Get.back();
           return;
         }
       } else {
-        closeWeb();
+        await closeWeb();
       }
     } finally {
       state.openPending = false;
@@ -139,7 +147,7 @@ class GameLogic<T extends GetxController> {
     }
   }
 
-  Future<void> closeWeb({tip = true}) async {
+  Future<void> closeWeb() async {
     try {
       for (var v in gameTypeToGameSettings.values) {
         await v.onWebClose();
@@ -147,10 +155,9 @@ class GameLogic<T extends GetxController> {
       }
       await web.stop();
       state.urls = [];
+      Snackbar.show('game service stopped');
     } catch (e) {
-      if (tip) {
-        Snackbar.show('Error Stop Web: $e');
-      }
+      Snackbar.show('Error Stop Web: $e');
       return;
     }
   }

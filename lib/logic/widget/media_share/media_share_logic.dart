@@ -36,17 +36,21 @@ class MediaShareLogic {
     await page.open(this);
   }
 
-  void switchWeb(bool enable) {
+  Future<void> switchWebForBtn(bool enable) async {
     AwaitUtil.tryDo(() async {
-      state.addressesLength.value = 0;
-      state.addresses.clear();
-      if (enable) {
-        await _startHttpService();
-      } else {
-        await _stopHttpService();
-      }
-      state.webStart.value = enable;
+      await switchWeb(enable);
     });
+  }
+
+  Future<void> switchWeb(bool enable) async {
+    state.addressesLength.value = 0;
+    state.addresses.clear();
+    if (enable) {
+      await _startHttpService();
+    } else {
+      await _stopHttpService();
+    }
+    state.webStart.value = enable;
   }
 
   Future<void> _startHttpService() async {

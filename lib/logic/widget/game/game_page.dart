@@ -24,7 +24,7 @@ class GamePage<T extends GetxController> {
             RowWidget.buildSwitch(
               title: I18nKey.game.tr,
               value: state.open,
-              set: logic.switchWeb,
+              set: logic.switchWebForBtn,
             ),
             RowWidget.buildDivider(),
           ],

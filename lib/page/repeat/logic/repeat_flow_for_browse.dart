@@ -101,7 +101,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
   }
 
   @override
-  void onTapLeft() {
+  void onTapLeft() async {
     if (ticker.isStuck()) {
       return;
     }
@@ -110,7 +110,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
         show();
         break;
       case RepeatStep.evaluate:
-        if (!AwaitUtil.tryDo(next)) {
+        if (!await AwaitUtil.tryDo(next)) {
           return;
         }
         break;
@@ -122,11 +122,11 @@ class RepeatFlowForBrowse extends RepeatFlow {
   }
 
   @override
-  void onTapRight() {
+  void onTapRight() async {
     if (ticker.isStuck()) {
       return;
     }
-    if (!AwaitUtil.tryDo(prev)) {
+    if (!await AwaitUtil.tryDo(prev)) {
       return;
     }
     update();

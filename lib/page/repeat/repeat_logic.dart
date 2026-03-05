@@ -106,17 +106,17 @@ class RepeatLogic extends GetxController {
   }
 
   @override
-  void onClose() {
+  void onClose() async {
     super.onClose();
     bookSub.off();
-    gameLogic.switchWeb(false);
+    await gameLogic.switchWeb(false);
     repeatLogic?.onClose();
     for (var v in showTypeToRepeatView.values) {
       v.dispose();
     }
     state.helper.onClose();
-    state.helper.closeMediaShareWeb();
-    bookEditor.switchWeb(false);
+    await state.helper.mediaShareLogic.switchWeb(false);
+    await bookEditor.switchWeb(false);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     if (state.enableCloseEyesMode.value != CloseEyesModeEnum.none) {
       HapticFeedback.heavyImpact();

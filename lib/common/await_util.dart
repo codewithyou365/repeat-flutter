@@ -1,19 +1,17 @@
 class AwaitUtil {
   static var lock = false;
 
-  static bool tryDo(Future<void> Function() callback) {
-    if (lock) {
-      return false;
-    }
+  static Future<bool> tryDo(Future<void> Function() callback) async {
+    if (lock) return false;
     lock = true;
+
     try {
-      callback().then((_) {
-        lock = false;
-      });
+      await callback();
+      return true;
+    } catch (e) {
+      rethrow;
     } finally {
       lock = false;
     }
-
-    return true;
   }
 }

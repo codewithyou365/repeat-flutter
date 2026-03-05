@@ -155,7 +155,7 @@ class Server<User extends UserId> {
           }
         }
       });
-      logger?.call('HTTP server started');
+      logger?.call('server started');
     } catch (e) {
       logger?.call('Error starting HTTP server: $e');
     }
@@ -166,7 +166,7 @@ class Server<User extends UserId> {
     if (server != null) {
       await nodes.removeAll();
       await server!.close();
-      logger?.call('HTTP server stopped');
+      logger?.call('server stopped');
       server = null;
     }
   }

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
@@ -21,13 +22,13 @@ class ScLogic extends GetxController {
     update([ScLogic.id]);
   }
 
-  select(int classroomId, String classroomName) {
+  void select(int classroomId, String classroomName) {
     Classroom.curr = classroomId;
     Classroom.currName = classroomName;
     Nav.scCr.push();
   }
 
-  add(String name) async {
+  void add(String name) async {
     if (name.isEmpty) {
       Snackbar.show(I18nKey.labelClassroomNameEmpty.tr);
       return;

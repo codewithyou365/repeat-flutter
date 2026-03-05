@@ -388,10 +388,6 @@ class Helper {
     };
   }
 
-  void closeMediaShareWeb() {
-    mediaShareLogic.switchWeb(false);
-  }
-
   MediaTrimCallback? trimMedia({
     required String path,
     required MediaRange range,

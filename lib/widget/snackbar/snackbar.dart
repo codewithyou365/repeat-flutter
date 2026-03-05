@@ -22,9 +22,8 @@ class Snackbar {
     var overlay = Navigator.of(context, rootNavigator: true).overlay;
     if (overlay == null) return;
     _lastContent = content;
-    // Create an animation controller
     var animationController = AnimationController(
-      duration: const Duration(milliseconds: 300), // Animation duration
+      duration: const Duration(milliseconds: 300),
       vsync: Navigator.of(context),
     );
 
@@ -35,15 +34,16 @@ class Snackbar {
       ),
     );
 
-    var slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.2), // Start slightly lower
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: animationController,
-        curve: Curves.easeInOut,
-      ),
-    );
+    var slideAnimation =
+        Tween<Offset>(
+          begin: const Offset(0, 0.2),
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(
+            parent: animationController,
+            curve: Curves.easeInOut,
+          ),
+        );
 
     late OverlayEntry overlayEntry;
 
@@ -88,11 +88,11 @@ class Snackbar {
     );
 
     overlay.insert(overlayEntry);
-    animationController.forward(); // Start the animation
+    animationController.forward();
 
-    // Remove snackbar after duration with fade-out animation
     Future.delayed(const Duration(seconds: 2), () async {
-      await animationController.reverse(); // Fade out
+      animationController.reverse();
+      await Future.delayed(const Duration(milliseconds: 500));
       overlayEntry.remove();
     });
   }

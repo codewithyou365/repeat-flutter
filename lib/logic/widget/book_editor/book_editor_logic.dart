@@ -106,22 +106,26 @@ class BookEditorLogic<T extends GetxController> {
     }
   }
 
-  void switchWeb(bool enable) {
+  void switchWebForBtn(bool enable) {
     AwaitUtil.tryDo(() async {
-      state.addresses.clear();
-      if (enable) {
-        state.chapterIndex = state.args.chapterIndex;
-        state.verseIndex = state.args.verseIndex;
-        state.bookId = state.args.bookId;
-        tryRefreshCredential();
-        clearActiveDownloads();
-        await _initEditorDir(state.bookId);
-        await _startHttpService();
-      } else {
-        await _stopHttpService();
-      }
-      state.webStart.value = enable;
+      await switchWeb(enable);
     });
+  }
+
+  Future<void> switchWeb(bool enable) async {
+    state.addresses.clear();
+    if (enable) {
+      state.chapterIndex = state.args.chapterIndex;
+      state.verseIndex = state.args.verseIndex;
+      state.bookId = state.args.bookId;
+      tryRefreshCredential();
+      clearActiveDownloads();
+      await _initEditorDir(state.bookId);
+      await _startHttpService();
+    } else {
+      await _stopHttpService();
+    }
+    state.webStart.value = enable;
   }
 
   Future<EditorUser?> auth(HttpRequest request) async {
@@ -151,8 +155,8 @@ class BookEditorLogic<T extends GetxController> {
       onEvent();
     } catch (e) {
       await Db().db.kvDao.insertOrReplace(Kv(K.bookEditorPort, '${port.value + 10}'));
+      _stopHttpService();
       Snackbar.show('Error starting HTTPS service: $e \n System has changed the port, please try again');
-      _stopHttpService(tip: false);
       Get.back();
       return;
     }
@@ -162,7 +166,7 @@ class BookEditorLogic<T extends GetxController> {
       state.addresses.add(Address("${I18nKey.labelLanAddress.tr} $i", getUrl(ip)));
     }
 
-    Snackbar.show('HTTPS service started1');
+    Snackbar.show('editor service started');
     parentLogic.update([id]);
   }
 
@@ -178,18 +182,14 @@ class BookEditorLogic<T extends GetxController> {
     return url;
   }
 
-  Future<void> _stopHttpService({tip = true}) async {
+  Future<void> _stopHttpService() async {
     try {
       offEvent();
-      if (server.open && tip) {
-        Snackbar.show('HTTPS service stopped');
-      }
       await server.stop();
+      Snackbar.show('editor service stopped');
       parentLogic.update([id]);
     } catch (e) {
-      if (tip) {
-        Snackbar.show('Error stopping HTTPS service: $e');
-      }
+      Snackbar.show('Error stopping HTTPS service: $e');
       return;
     }
   }

@@ -22,7 +22,7 @@ class BookEditorPage<T extends GetxController> {
             RowWidget.buildSwitch(
               title: I18nKey.editBook.tr,
               value: state.webStart,
-              set: logic.switchWeb,
+              set: logic.switchWebForBtn,
             ),
             RowWidget.buildDivider(),
           ],

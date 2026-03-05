@@ -21,7 +21,7 @@ class MediaSharePage {
               RowWidget.buildSwitch(
                 title: I18nKey.mediaShare.tr,
                 value: state.webStart,
-                set: logic.switchWeb,
+                set: logic.switchWebForBtn,
               ),
               RowWidget.buildDivider(),
             ],
