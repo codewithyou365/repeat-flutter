@@ -388,7 +388,7 @@ class Helper {
     };
   }
 
-  MediaTrimCallback? trimMedia({
+  MediaCropAndSaveCallback? cropAndSaveMedia({
     required String path,
     required MediaRange range,
   }) {

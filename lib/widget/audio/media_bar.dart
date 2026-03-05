@@ -9,7 +9,7 @@ typedef MediaPlayCallback = Future<void> Function(Duration position);
 typedef MediaStopCallback = Future<void> Function();
 typedef MediaEditCallback = Future<void> Function(int ms);
 typedef MediaShareCallback = void Function();
-typedef MediaTrimCallback = Future<void> Function();
+typedef MediaCropAndSaveCallback = Future<void> Function();
 typedef MediaAdjustSpeedCallback = Future<void> Function(double speed);
 typedef MediaGetSpeedCallback = double Function();
 
@@ -25,7 +25,7 @@ class MediaBar extends StatefulWidget {
   final MediaStopCallback onStop;
   final MediaEditCallback? onEdit;
   final MediaShareCallback? onShare;
-  final MediaTrimCallback? onCropAndSave;
+  final MediaCropAndSaveCallback? onCropAndSave;
   final MediaAdjustSpeedCallback? onAdjustSpeed;
   final MediaGetSpeedCallback? getSpeed;
   final bool hideTime;
@@ -302,7 +302,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
                         ),
                       );
                     }
-                    if (widget.onCropAndSave != null) {
+                    if (widget.onCropAndSave != null && !_isPlaying) {
                       if (items.isNotEmpty) {
                         items.add(const PopupMenuDivider());
                       }
