@@ -99,9 +99,9 @@ class RepeatViewForAudio extends RepeatView {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ?q,
-                        ?t,
-                        ?a,
+                        if (q != null) q,
+                        if (t != null) t,
+                        if (a != null) a,
                       ],
                     ),
                   ),

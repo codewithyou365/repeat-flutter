@@ -1,4 +1,5 @@
 import 'package:floor/floor.dart';
+import 'package:repeat_flutter/db/entity/verse_review.dart';
 
 @dao
 abstract class VerseReviewDao {
@@ -19,4 +20,7 @@ abstract class VerseReviewDao {
 
   @Query('DELETE FROM VerseReview WHERE verseId in (:verseIds)')
   Future<void> deleteByVerseIds(List<int> verseIds);
+
+  @Insert(onConflict: OnConflictStrategy.ignore)
+  Future<void> insertOrIgnore(List<VerseReview> review);
 }

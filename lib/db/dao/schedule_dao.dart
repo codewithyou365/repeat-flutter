@@ -396,9 +396,6 @@ abstract class ScheduleDao {
   )
   Future<List<VerseReviewWithKey>> getAllVerseReview(int classroomId, Date start, Date end);
 
-  @Insert(onConflict: OnConflictStrategy.fail)
-  Future<void> insertVerseReview(List<VerseReview> review);
-
   @Query('UPDATE VerseReview SET count=:count WHERE createDate=:createDate and `verseId`=:verseId')
   Future<void> setVerseReviewCount(Date createDate, int verseId, int count);
 
@@ -787,7 +784,7 @@ abstract class ScheduleDao {
     var todayLearnCreateDate = await getTodayLearnCreateDate(now);
 
     if (prgType == TodayPrgType.learn) {
-      await insertVerseReview([
+      await db.verseReviewDao.insertOrIgnore([
         VerseReview(
           createDate: todayLearnCreateDate,
           verseId: stp.verseId,
@@ -855,7 +852,7 @@ abstract class ScheduleDao {
           nextProgress = verseProgress + 1;
         }
         verse = await setPrg(stp.verseId, nextProgress, getNextByProgress(todayLearnCreateDate, nextProgress));
-        await insertVerseReview([
+        await db.verseReviewDao.insertOrIgnore([
           VerseReview(
             createDate: todayLearnCreateDate,
             verseId: stp.verseId,

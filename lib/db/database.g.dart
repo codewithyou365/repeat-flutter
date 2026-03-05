@@ -2507,17 +2507,6 @@ class _$ScheduleDao extends ScheduleDao {
                       _dateConverter.encode(item.reviewCreateDate),
                   'finish': item.finish ? 1 : 0
                 }),
-        _verseReviewInsertionAdapter = InsertionAdapter(
-            database,
-            'VerseReview',
-            (VerseReview item) => <String, Object?>{
-                  'createDate': _dateConverter.encode(item.createDate),
-                  'verseId': item.verseId,
-                  'classroomId': item.classroomId,
-                  'bookId': item.bookId,
-                  'chapterId': item.chapterId,
-                  'count': item.count
-                }),
         _verseInsertionAdapter = InsertionAdapter(
             database,
             'Verse',
@@ -2565,8 +2554,6 @@ class _$ScheduleDao extends ScheduleDao {
   final InsertionAdapter<CrKv> _crKvInsertionAdapter;
 
   final InsertionAdapter<VerseTodayPrg> _verseTodayPrgInsertionAdapter;
-
-  final InsertionAdapter<VerseReview> _verseReviewInsertionAdapter;
 
   final InsertionAdapter<Verse> _verseInsertionAdapter;
 
@@ -2902,12 +2889,6 @@ class _$ScheduleDao extends ScheduleDao {
   Future<void> insertVerseTodayPrg(List<VerseTodayPrg> entities) async {
     await _verseTodayPrgInsertionAdapter.insertList(
         entities, OnConflictStrategy.fail);
-  }
-
-  @override
-  Future<void> insertVerseReview(List<VerseReview> review) async {
-    await _verseReviewInsertionAdapter.insertList(
-        review, OnConflictStrategy.fail);
   }
 
   @override
@@ -3606,13 +3587,26 @@ class _$VerseReviewDao extends VerseReviewDao {
   _$VerseReviewDao(
     this.database,
     this.changeListener,
-  ) : _queryAdapter = QueryAdapter(database);
+  )   : _queryAdapter = QueryAdapter(database),
+        _verseReviewInsertionAdapter = InsertionAdapter(
+            database,
+            'VerseReview',
+            (VerseReview item) => <String, Object?>{
+                  'createDate': _dateConverter.encode(item.createDate),
+                  'verseId': item.verseId,
+                  'classroomId': item.classroomId,
+                  'bookId': item.bookId,
+                  'chapterId': item.chapterId,
+                  'count': item.count
+                });
 
   final sqflite.DatabaseExecutor database;
 
   final StreamController<String> changeListener;
 
   final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<VerseReview> _verseReviewInsertionAdapter;
 
   @override
   Future<void> deleteByClassroomId(int classroomId) async {
@@ -3665,6 +3659,12 @@ class _$VerseReviewDao extends VerseReviewDao {
             _sqliteVariablesForVerseIds +
             ')',
         arguments: [...verseIds]);
+  }
+
+  @override
+  Future<void> insertOrIgnore(List<VerseReview> review) async {
+    await _verseReviewInsertionAdapter.insertList(
+        review, OnConflictStrategy.ignore);
   }
 }
 
