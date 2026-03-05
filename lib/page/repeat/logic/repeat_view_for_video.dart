@@ -83,8 +83,8 @@ class RepeatViewForVideo extends RepeatView {
             helper.resetMediaStart = false;
             mediaKey.currentState?.drawStart();
           }
-          if (helper.enablePlayingMedia) {
-            helper.enablePlayingMedia = false;
+          if (helper.playMediaAtNextFlame) {
+            helper.playMediaAtNextFlame = false;
             mediaKey.currentState?.playFromStart();
           }
         });
@@ -419,7 +419,7 @@ class RepeatViewForVideo extends RepeatView {
       },
       onStop: () async {
         if (_videoPlayerController != null) {
-          helper!.enablePlayingMedia = false;
+          helper!.playMediaAtNextFlame = false;
           await _videoPlayerController!.pause();
           isPlaying.value = false;
         }
