@@ -136,8 +136,9 @@ abstract class VerseDao {
       inserts.add(entity);
     }
 
+    // delete first and then insert, it's for unique indexes.
     await deleteByMinChapterIndex(bookId, minIndex);
-    await updateOrFail(inserts);
+    await insertOrFail(inserts);
   }
 
   Future<void> deleteByVerse(Book book, Verse verse) async {

@@ -387,7 +387,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                               onTap: () {
                                 MsgBox.yesOrNo(
                                   title: I18nKey.labelWarning.tr,
-                                  desc: I18nKey.labelDeleteVerse.tr,
+                                  desc: I18nKey.labelDeleteChapter.tr,
                                   yes: () => delete(chapter: chapter),
                                 );
                               },
