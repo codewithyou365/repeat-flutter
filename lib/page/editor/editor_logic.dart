@@ -44,7 +44,7 @@ class EditorLogic extends GetxController {
         textController.text = v;
       }
     });
-    state.save = Button(I18nKey.btnSave.tr, () async {
+    state.save = Button(I18nKey.save.tr, () async {
       await args.save(textController.text);
       state.dbValue = textController.text;
       textChange();

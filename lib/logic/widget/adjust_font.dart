@@ -165,7 +165,7 @@ class AdjustFont<T extends GetxController> {
             },
           ),
           MsgBox.button(
-            text: I18nKey.btnSave.tr,
+            text: I18nKey.save.tr,
             onPressed: () async {
               final fontSizeKey = "$fontPrefix${FontHelp.fontSizeSuffix}";
               var bookMap = map;

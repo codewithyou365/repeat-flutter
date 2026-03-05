@@ -60,7 +60,7 @@ class ExpandLogic {
         isInit.value = false;
         disabled.value = true;
         logs.clear();
-        logs.add("正在发起请求...");
+        logs.add("Initiating request...");
 
         _taskCompleter = Completer<void>();
 
@@ -79,11 +79,11 @@ class ExpandLogic {
             Get.back();
           }
         } else {
-          logs.add("启动失败: ${response.statusCode}");
+          logs.add("Start failed: ${response.statusCode}");
           status.value = ExpandStatus.finish;
         }
       } catch (e) {
-        logs.add("网络错误: $e");
+        logs.add("Network error: $e");
         status.value = ExpandStatus.finish;
       }
     }, I18nKey.labelExecuting.tr);
@@ -114,7 +114,7 @@ class ExpandLogic {
             String audioUrl = result['file'] ?? "";
 
             if (enableAudio.value && audioUrl.isNotEmpty) {
-              logs.add("正在下载音频文件...");
+              logs.add("Downloading audio file...");
               String downloadUrl = "$serviceUrl/download?path=$audioUrl";
               String savePath = "audio/$audioUrl";
 
@@ -122,7 +122,7 @@ class ExpandLogic {
                 downloadUrl,
                 savePath,
                 progressCallback: (startTime, count, total, finish) {
-                  if (finish) logs.add("音频下载完成");
+                  if (finish) logs.add("Audio download complete");
                 },
               ).then((downloadResult) async {
                 if (downloadResult == DownloadDocResult.success) {
@@ -131,7 +131,7 @@ class ExpandLogic {
                   final dc = await DocHelp.moveToDocDir(fullPath, bookId);
                   await _onTaskComplete(result, dc: dc);
                 } else {
-                  logs.add("音频下载失败: $downloadResult");
+                  logs.add("Audio download failed: $downloadResult");
                   await _onTaskComplete(result);
                 }
                 status.value = ExpandStatus.finish;
@@ -145,7 +145,7 @@ class ExpandLogic {
           }
         }
       } catch (e) {
-        logs.add("轮询异常: $e");
+        logs.add("Polling exception: $e");
         timer.cancel();
         status.value = ExpandStatus.finish;
         if (_taskCompleter?.isCompleted == false) _taskCompleter?.complete();
@@ -172,7 +172,7 @@ class ExpandLogic {
     if (key.isNotEmpty && text.isNotEmpty) {
       String current = verseMap[key] ?? "";
       verseMap[key] = current.isEmpty ? text : "$current\n$text";
-      logs.add("已附加内容到: ${targetOptions[targetIndex.value]}");
+      logs.add("Content appended to: ${targetOptions[targetIndex.value]}");
     }
 
     if (enableAudio.value && dc != null) {
@@ -191,11 +191,11 @@ class ExpandLogic {
 
         verseMap['${key}Start'] = "00:00:00,000";
         verseMap['${key}End'] = Time.convertMsToString(ms);
-        logs.add("音频模型已保存，时长: ${Time.convertMsToString(ms)}");
+        logs.add("Audio saved. Duration: ${Time.convertMsToString(ms)}");
       } catch (e) {
         verseMap['${key}Start'] = "00:00:00,000";
         verseMap['${key}End'] = "00:00:05,000";
-        logs.add("读取时长失败，已设为默认值: $e");
+        logs.add("Failed to read duration, using default: $e");
       }
     } else {
       verseMap['s'] = RepeatViewEnum.text.name;

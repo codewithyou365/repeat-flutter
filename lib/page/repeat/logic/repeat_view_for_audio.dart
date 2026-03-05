@@ -192,6 +192,7 @@ class RepeatViewForAudio extends RepeatView {
       },
       onEdit: mediaRangeHelper.mediaRangeEdit(range),
       onShare: helper!.openMediaShare(),
+      onCropAndSave: helper!.trimMedia(path: audioPlayerCurrentPath, range: range),
       onAdjustSpeed: (double speed) async {
         try {
           await audioPlayer.setSpeed(speed);

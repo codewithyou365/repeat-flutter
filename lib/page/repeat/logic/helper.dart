@@ -1,11 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_new/return_code.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:path/path.dart' as p;
+import 'package:repeat_flutter/common/folder.dart';
 import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/path.dart';
+import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
@@ -23,9 +28,11 @@ import 'package:repeat_flutter/logic/widget/media_share/media_share_args.dart';
 import 'package:repeat_flutter/logic/widget/media_share/media_share_logic.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
+import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'constant.dart';
+import 'model_media_range.dart';
 import 'repeat_flow.dart';
 
 class Helper {
@@ -383,5 +390,64 @@ class Helper {
 
   void closeMediaShareWeb() {
     mediaShareLogic.switchWeb(false);
+  }
+
+  MediaTrimCallback? trimMedia({
+    required String path,
+    required MediaRange range,
+  }) {
+    if (showMode.value != ShowMode.edit) {
+      return null;
+    }
+    var verse = getCurrVerse();
+    if (verse == null) {
+      return null;
+    }
+    return () async {
+      await innerTrimMedia(verse, path, range);
+    };
+  }
+
+  Future<void> innerTrimMedia(VerseTodayPrg verse, String path, MediaRange range) async {
+    try {
+      double startSeconds = range.start / 1000.0;
+      int durationMs = range.end - range.start;
+      double durationSeconds = durationMs / 1000.0;
+
+      var rootPath = await DocPath.getContentPath();
+      String directory = rootPath.joinPath('media');
+      final String extension = p.extension(path);
+      final String fileName = p.basenameWithoutExtension(path);
+      await Folder.ensureExists(directory);
+      final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      final String outputPath = p.join(directory, "${fileName}_trimmed_$timestamp$extension");
+
+      showOverlay(() async {
+        final session = await FFmpegKit.execute("-ss $startSeconds -t $durationSeconds -i '$path' -acodec copy '$outputPath'");
+
+        final returnCode = await session.getReturnCode();
+
+        if (ReturnCode.isSuccess(returnCode)) {
+          final dc = await DocHelp.moveToDocDir(outputPath, verse.bookId);
+          var verseMap = getCurrVerseMap();
+          if (verseMap == null) {
+            return null;
+          }
+          verseMap['d'] = [dc];
+          verseMap[range.jsonStartName] = "00:00:00,000";
+          verseMap[range.jsonEndName] = Time.convertMsToString(durationMs + 100);
+          String jsonStr = jsonEncode(verseMap);
+          await Db().db.verseDao.updateVerseContent(verse.verseId, jsonStr);
+          logic.update();
+          Snackbar.show(I18nKey.labelSaved.tr);
+        } else {
+          final failStackTrace = await session.getFailStackTrace();
+          Get.back();
+          Snackbar.show("Trim failed: $failStackTrace");
+        }
+      }, I18nKey.cutting.tr);
+    } catch (e) {
+      Snackbar.show("Error during trimming: $e");
+    }
   }
 }

@@ -408,6 +408,8 @@ class RepeatViewForVideo extends RepeatView {
   }
 
   Widget mediaBar(double width, double height, MediaRange range) {
+    final uri = Uri.parse(_videoPlayerController!.dataSource);
+    final path = uri.toFilePath();
     return MediaBar(
       width: width,
       height: height,
@@ -436,6 +438,7 @@ class RepeatViewForVideo extends RepeatView {
       },
       onEdit: mediaRangeHelper.mediaRangeEdit(range),
       onShare: helper!.openMediaShare(),
+      onCropAndSave: helper!.trimMedia(path: path, range: range),
       onAdjustSpeed: (double speed) async {
         await _videoPlayerController?.setPlaybackSpeed(speed);
       },

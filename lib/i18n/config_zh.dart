@@ -73,6 +73,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelSaving, "保存中...");
     put(I18nKey.labelCopying, "复制中...");
     put(I18nKey.labelAdding, "添加中...");
+    put(I18nKey.cutting, "剪切中...");
     put(I18nKey.labelSelectDirectoryToSave, "选择一个目录进行保存 %s");
     put(I18nKey.labelFileSaved, "文件已保存");
     put(I18nKey.labelSaveSuccess, "保存成功 : %s");
@@ -320,7 +321,8 @@ class ConfigZh extends Config {
     put(I18nKey.btnFinish, "完成");
     put(I18nKey.btnExport, "导出");
     put(I18nKey.btnImport, "导入");
-    put(I18nKey.btnSave, "保存");
+    put(I18nKey.save, "保存");
+    put(I18nKey.cropAndSave, "裁剪后保存");
     put(I18nKey.close, "关闭");
     put(I18nKey.btnCheck, "检查");
     put(I18nKey.btnEditVerse, "编辑小节");

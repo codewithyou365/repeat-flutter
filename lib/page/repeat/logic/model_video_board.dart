@@ -372,7 +372,7 @@ class VideoBoardHelper {
             Expanded(
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.save),
-                label: Text(I18nKey.btnSave.tr),
+                label: Text(I18nKey.save.tr),
                 onPressed: () {
                   _saveBoards();
                   openedVideoBoardSettings.value = false;

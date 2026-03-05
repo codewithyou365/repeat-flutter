@@ -73,6 +73,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelSaving, "Saving...");
     put(I18nKey.labelCopying, "Copying...");
     put(I18nKey.labelAdding, "Adding...");
+    put(I18nKey.cutting, "Cutting...");
     put(I18nKey.labelSelectDirectoryToSave, "Select a directory to save %s");
     put(I18nKey.labelFileSaved, "The file has been saved.");
     put(I18nKey.labelSaveSuccess, "Save success : %s");
@@ -320,7 +321,8 @@ class ConfigEn extends Config {
     put(I18nKey.btnFinish, "FINISH");
     put(I18nKey.btnExport, "Export");
     put(I18nKey.btnImport, "Import");
-    put(I18nKey.btnSave, "Save");
+    put(I18nKey.save, "Save");
+    put(I18nKey.cropAndSave, "Crop & Save");
     put(I18nKey.close, "Close");
     put(I18nKey.btnCheck, "CHECK");
     put(I18nKey.btnEditVerse, "Edit Verse");

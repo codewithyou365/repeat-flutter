@@ -9,6 +9,7 @@ typedef MediaPlayCallback = Future<void> Function(Duration position);
 typedef MediaStopCallback = Future<void> Function();
 typedef MediaEditCallback = Future<void> Function(int ms);
 typedef MediaShareCallback = void Function();
+typedef MediaTrimCallback = Future<void> Function();
 typedef MediaAdjustSpeedCallback = Future<void> Function(double speed);
 typedef MediaGetSpeedCallback = double Function();
 
@@ -24,6 +25,7 @@ class MediaBar extends StatefulWidget {
   final MediaStopCallback onStop;
   final MediaEditCallback? onEdit;
   final MediaShareCallback? onShare;
+  final MediaTrimCallback? onCropAndSave;
   final MediaAdjustSpeedCallback? onAdjustSpeed;
   final MediaGetSpeedCallback? getSpeed;
   final bool hideTime;
@@ -38,6 +40,7 @@ class MediaBar extends StatefulWidget {
     required this.onStop,
     required this.onEdit,
     required this.onShare,
+    required this.onCropAndSave,
     required this.onAdjustSpeed,
     required this.getSpeed,
     required this.hideTime,
@@ -263,6 +266,9 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
                     if (value == 'share' && widget.onShare != null) {
                       widget.onShare!();
                     }
+                    if (value == 'cropAndSave' && widget.onCropAndSave != null) {
+                      widget.onCropAndSave!();
+                    }
                   },
                   itemBuilder: (BuildContext context) {
                     List<PopupMenuEntry<String>> items = [];
@@ -292,6 +298,20 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
                           child: ListTile(
                             leading: Icon(Icons.share),
                             title: Text(I18nKey.share.tr),
+                          ),
+                        ),
+                      );
+                    }
+                    if (widget.onCropAndSave != null) {
+                      if (items.isNotEmpty) {
+                        items.add(const PopupMenuDivider());
+                      }
+                      items.add(
+                        PopupMenuItem<String>(
+                          value: 'cropAndSave',
+                          child: ListTile(
+                            leading: Icon(Icons.save),
+                            title: Text(I18nKey.cropAndSave.tr),
                           ),
                         ),
                       );
@@ -390,10 +410,10 @@ class _SpeedSliderEntryState extends State<_SpeedSliderEntry> {
             widget.onSpeedChanged(_tempSpeed);
           },
         ),
-        const Positioned(
+        Positioned(
           left: 8.0,
           child: Text(
-            'Speed',
+            I18nKey.speed.tr,
             style: TextStyle(fontSize: 14),
           ),
         ),

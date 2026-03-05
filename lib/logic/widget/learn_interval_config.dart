@@ -35,7 +35,7 @@ class LearnIntervalConfig<T extends GetxController> {
         child: Column(
           children: [
             RowWidget.buildButtons([
-              Button(I18nKey.btnSave.tr, save),
+              Button(I18nKey.save.tr, save),
             ]),
             RowWidget.buildDivider(),
           ],
