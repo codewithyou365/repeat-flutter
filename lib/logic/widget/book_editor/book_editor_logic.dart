@@ -256,6 +256,8 @@ class BookEditorLogic<T extends GetxController> {
       response.write('{"message": "Hello, World!"}');
     } else if (path == '/browse' && request.method == 'POST') {
       await handleBrowse(request, editorDir);
+    } else if (path == '/removeUselessFiles' && request.method == 'POST') {
+      await handleRemoveUselessFiles(request, state.bookId, editorDir);
     } else if (path == '/classroom' && request.method == 'POST') {
       await handleClassroom(request, state.bookId);
     } else if (path == '/checkDownloadStatus') {

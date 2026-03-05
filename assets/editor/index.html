@@ -256,7 +256,12 @@
         <select id="select-book" class="material-select" disabled>
         </select>
 
-        <label class="material-label">Files / Media</label>
+        <label class="material-label" style="display: flex; justify-content: space-between; align-items: center;">
+            Files / Media
+            <button class="btn" style="margin: 0; padding: 2px 10px; font-size: 12px;" onclick="removeUselessFiles()">
+                Clean
+            </button>
+        </label>
         <div id="dir"></div>
     </div>
 
@@ -943,6 +948,10 @@
         }
         if (currentBook) {
             return p + 'b=' + currentBook;
+        } else {
+            const params = new URLSearchParams(window.location.search);
+            const cb = Number(params.get('b')) || defaultCurrentBook;
+            return p + 'b=' + cb;
         }
         return '';
     }
@@ -1214,6 +1223,34 @@
             closeLoading();
         }
     })();
+
+    async function removeUselessFiles() {
+        const confirmClean = confirm("This will permanently delete all files in this book's directory that are not referenced in the JSON. \n\nAre you sure?");
+
+        if (!confirmClean) return;
+
+        try {
+            openLoading();
+            const res = await fetch('/removeUselessFiles' + bookParam('?'), {
+                method: 'POST'
+            });
+
+            if (res.ok) {
+                const result = await res.json();
+                showNotification(result.message || 'Cleanup successful');
+                await initFiles();
+            } else {
+                const errorText = await res.text();
+                alert("Failed to clean files: " + errorText);
+            }
+        } catch (err) {
+            alert("Error during cleanup: " + err);
+        } finally {
+            closeLoading();
+        }
+    }
+
+    window.removeUselessFiles = removeUselessFiles;
     window.toggleVimMode = toggleVimMode;
     window.toggleRelativeNumbers = toggleRelativeNumbers;
     window.toggleSettingsMenu = toggleSettingsMenu;
