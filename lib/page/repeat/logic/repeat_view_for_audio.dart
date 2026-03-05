@@ -98,7 +98,7 @@ class RepeatViewForAudio extends RepeatView {
           children: [
             SizedBox(height: helper.topPadding),
             helper.topBar(),
-            mediaBar(helper.screenWidth - padding * 2, mediaBarHeight, range),
+            mediaBar(path, helper.screenWidth - padding * 2, mediaBarHeight, range),
             SizedBox(
               height: height,
               child: ListView(
@@ -109,9 +109,9 @@ class RepeatViewForAudio extends RepeatView {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (q != null) q,
-                        if (t != null) t,
-                        if (a != null) a,
+                        ?q,
+                        ?t,
+                        ?a,
                       ],
                     ),
                   ),
@@ -169,7 +169,7 @@ class RepeatViewForAudio extends RepeatView {
     }
   }
 
-  Widget mediaBar(double width, double height, MediaRange range) {
+  Widget mediaBar(String path, double width, double height, MediaRange range) {
     return MediaBar(
       width: width,
       height: height,
@@ -192,7 +192,7 @@ class RepeatViewForAudio extends RepeatView {
       },
       onEdit: mediaRangeHelper.mediaRangeEdit(range),
       onShare: helper!.openMediaShare(),
-      onCropAndSave: helper!.trimMedia(path: audioPlayerCurrentPath, range: range),
+      onCropAndSave: helper!.trimMedia(path: path, range: range),
       onAdjustSpeed: (double speed) async {
         try {
           await audioPlayer.setSpeed(speed);

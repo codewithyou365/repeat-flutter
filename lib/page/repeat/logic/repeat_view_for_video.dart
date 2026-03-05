@@ -102,9 +102,9 @@ class RepeatViewForVideo extends RepeatView {
     }
     videoBoardHelper.boards.value = videoBoardHelper.getCurrVideoBoard();
     if (helper.landscape) {
-      return landscape(range);
+      return landscape(path, range);
     } else {
-      return portrait(range);
+      return portrait(path, range);
     }
   }
 
@@ -117,7 +117,7 @@ class RepeatViewForVideo extends RepeatView {
     );
   }
 
-  Widget landscape(MediaRange range) {
+  Widget landscape(String path, MediaRange range) {
     var helper = this.helper!;
     var q = helper.text(QaType.question);
     var t = helper.text(QaType.tip);
@@ -151,7 +151,7 @@ class RepeatViewForVideo extends RepeatView {
               child: Column(
                 children: [
                   SizedBox(height: helper.topBarHeight),
-                  mediaBar(helper.screenWidth / 2, mediaBarHeight, range),
+                  mediaBar(path, helper.screenWidth / 2, mediaBarHeight, range),
                   if (!videoBoardHelper.showEdit)
                     SizedBox(
                       height: helper.screenHeight - helper.topBarHeight - helper.bottomBarHeight - mediaBarHeight,
@@ -199,14 +199,14 @@ class RepeatViewForVideo extends RepeatView {
     );
   }
 
-  Widget portrait(MediaRange range) {
+  Widget portrait(String path, MediaRange range) {
     var helper = this.helper!;
     double height = helper.screenHeight - helper.topPadding - helper.topBarHeight - mediaBarHeight - helper.bottomBarHeight;
     var q = helper.text(QaType.question);
     var t = helper.text(QaType.tip);
     var a = helper.text(QaType.answer);
     videoHeightInPortrait.value = videoWidgetHeight(height - helper.bottomBarHeight * 3);
-    var bar = mediaBar(helper.screenWidth - padding * 2, mediaBarHeight, range);
+    var bar = mediaBar(path, helper.screenWidth - padding * 2, mediaBarHeight, range);
     return Obx(() {
       return Stack(
         children: [
@@ -407,9 +407,7 @@ class RepeatViewForVideo extends RepeatView {
     );
   }
 
-  Widget mediaBar(double width, double height, MediaRange range) {
-    final uri = Uri.parse(_videoPlayerController!.dataSource);
-    final path = uri.toFilePath();
+  Widget mediaBar(String path, double width, double height, MediaRange range) {
     return MediaBar(
       width: width,
       height: height,
