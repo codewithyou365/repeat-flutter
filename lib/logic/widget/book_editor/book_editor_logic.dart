@@ -185,6 +185,9 @@ class BookEditorLogic<T extends GetxController> {
   Future<void> _stopHttpService() async {
     try {
       offEvent();
+      if (server.open == false) {
+        return;
+      }
       await server.stop();
       Snackbar.show('editor service stopped');
       parentLogic.update([id]);
