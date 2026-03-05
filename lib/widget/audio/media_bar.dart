@@ -92,6 +92,10 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
       _stopPlayback();
       return;
     }
+    if (elapsedMs >= widget.duration()) {
+      _stopPlayback();
+      return;
+    }
     final newOffset = -(elapsedMs - widget.verseStartMs) * MediaBar.pixelPerMs;
     if (_blockOffset != newOffset) {
       setState(() {

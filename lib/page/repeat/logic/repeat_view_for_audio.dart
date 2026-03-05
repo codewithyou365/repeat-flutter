@@ -57,17 +57,7 @@ class RepeatViewForAudio extends RepeatView {
       path = paths.first;
     }
 
-    MediaRange? range;
-    if (path.isNotEmpty) {
-      if (helper.step != RepeatStep.recall) {
-        range = mediaRangeHelper.getCurrAnswerRange();
-      }
-      if (range == null || !range.enable) {
-        range = mediaRangeHelper.getCurrQuestionRange();
-      }
-    }
-
-    range ??= MediaRangeHelper.defaultRange();
+    final range = mediaRangeHelper.getCurrRange();
 
     if (helper.enableReloadMedia) {
       WidgetsBinding.instance.addPostFrameCallback((_) {

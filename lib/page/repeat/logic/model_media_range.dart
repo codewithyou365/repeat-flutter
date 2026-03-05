@@ -69,6 +69,26 @@ class MediaRangeHelper {
     updateVerseContentSub.off();
   }
 
+  MediaRange getCurrRange() {
+    MediaRange? range;
+    if (helper.step == RepeatStep.recall) {
+      range = getCurrQuestionRange();
+      if (range == null || !range.enable) {
+        range = getCurrAnswerRange();
+      }
+    } else {
+      range = getCurrAnswerRange();
+      if (range == null || !range.enable) {
+        range = getCurrQuestionRange();
+      }
+    }
+
+    if (range == null || !range.enable) {
+      range = defaultRange();
+    }
+    return range;
+  }
+
   MediaRange? getCurrAnswerRange() {
     return _getCurrRange(answerRangeCache, "aStart", "aEnd");
   }
