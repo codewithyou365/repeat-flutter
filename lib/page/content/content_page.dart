@@ -8,7 +8,7 @@ import 'content_logic.dart';
 import 'logic/helper.dart';
 
 class ContentPage extends StatelessWidget {
-  const ContentPage({Key? key}) : super(key: key);
+  const ContentPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +17,7 @@ class ContentPage extends StatelessWidget {
     final Size screenSize = MediaQuery.of(context).size;
     final double topPadding = MediaQuery.of(context).padding.top;
     final double leftPadding = MediaQuery.of(context).padding.left;
+    final double inset = MediaQuery.of(context).viewInsets.bottom;
     final double screenWidth = screenSize.width;
     double screenHeight = screenSize.height;
     var landscape = false;
@@ -24,7 +25,7 @@ class ContentPage extends StatelessWidget {
       landscape = true;
     }
     double topBarHeight = 50;
-    double bodyHeight = screenHeight - topPadding - topBarHeight - RowWidget.dividerHeight;
+    double bodyHeight = screenHeight - inset - topPadding - topBarHeight - RowWidget.dividerHeight;
     double bodyWidth = screenWidth;
     if (landscape) {
       bodyWidth = screenWidth - leftPadding * 2;
@@ -37,19 +38,20 @@ class ContentPage extends StatelessWidget {
           topBar(logic: logic, width: screenWidth, height: topBarHeight),
           RowWidget.buildDividerWithoutColor(),
           GetBuilder<ContentLogic>(
-              id: ContentLogic.id,
-              builder: (context) {
-                var list = logic.viewList[state.tabIndex.value];
-                if (list == null) {
-                  return const SizedBox.shrink();
-                } else {
-                  return list.show(
-                    focus: false,
-                    height: bodyHeight,
-                    width: bodyWidth,
-                  );
-                }
-              })
+            id: ContentLogic.id,
+            builder: (context) {
+              var list = logic.viewList[state.tabIndex.value];
+              if (list == null) {
+                return const SizedBox.shrink();
+              } else {
+                return list.show(
+                  focus: false,
+                  height: bodyHeight,
+                  width: bodyWidth,
+                );
+              }
+            },
+          ),
         ],
       ),
     );
