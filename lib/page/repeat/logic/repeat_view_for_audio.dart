@@ -178,7 +178,6 @@ class RepeatViewForAudio extends RepeatView {
         }
       },
       onStop: () async {
-        helper!.tryToPlayMedia = false;
         await audioPlayer.stop();
       },
       onEdit: mediaRangeHelper.mediaRangeEdit(range),

@@ -418,7 +418,6 @@ class RepeatViewForVideo extends RepeatView {
         }
       },
       onStop: () async {
-        helper?.tryToPlayMedia = false;
         if (_videoPlayerController != null) {
           await _videoPlayerController!.pause();
           isPlaying.value = false;
