@@ -177,7 +177,10 @@ class RepeatViewForAudio extends RepeatView {
           Snackbar.show("Error playing audio: $e");
         }
       },
-      onStop: () async {
+      onStop: (bool click) async {
+        if (click) {
+          helper!.doNotPlayMedia = true;
+        }
         await audioPlayer.stop();
       },
       onEdit: mediaRangeHelper.mediaRangeEdit(range),

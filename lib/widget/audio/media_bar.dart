@@ -6,7 +6,7 @@ import 'package:repeat_flutter/widget/slider/full_slider.dart';
 
 typedef MediaDurationMsCallback = int Function();
 typedef MediaPlayCallback = Future<void> Function(Duration position);
-typedef MediaStopCallback = Future<void> Function();
+typedef MediaStopCallback = Future<void> Function(bool click);
 typedef MediaEditCallback = Future<void> Function(int ms);
 typedef MediaShareCallback = void Function();
 typedef MediaCropAndSaveCallback = Future<void> Function();
@@ -86,15 +86,15 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
     final double elapsedMs = _startMediaPositionMs + (nowMs - _startMillisecondsSinceEpoch) * _currentSpeed;
     if (_startMediaPositionMs + 50 >= widget.verseEndMs) {
       if (elapsedMs >= widget.duration()) {
-        _stopPlayback();
+        _stopPlayback(false);
         return;
       }
     } else if (elapsedMs >= widget.verseEndMs) {
-      _stopPlayback();
+      _stopPlayback(false);
       return;
     }
     if (elapsedMs >= widget.duration()) {
-      _stopPlayback();
+      _stopPlayback(false);
       return;
     }
     final newOffset = -(elapsedMs - widget.verseStartMs) * MediaBar.pixelPerMs;
@@ -105,10 +105,10 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
     }
   }
 
-  Future<void> _stopPlayback() async {
+  Future<void> _stopPlayback(bool click) async {
     if (!_isPlaying && _isLoading) return;
 
-    await widget.onStop();
+    await widget.onStop(click);
     _animController.stop();
     setState(() {
       _isPlaying = false;
@@ -116,7 +116,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
   }
 
   Future<void> stop() async {
-    await _stopPlayback();
+    await _stopPlayback(false);
   }
 
   void play() {
@@ -177,7 +177,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
 
     final position = Duration(milliseconds: currPositionMs);
 
-    await _stopPlayback();
+    await _stopPlayback(false);
 
     await widget.onPlay(position);
 
@@ -188,7 +188,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
     _animController.reset();
 
     _animController.forward().then((_) {
-      _stopPlayback();
+      _stopPlayback(false);
     });
 
     setState(() {
@@ -200,7 +200,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
 
   @override
   void dispose() {
-    widget.onStop();
+    widget.onStop(false);
     _animController.removeListener(_updateOffset);
     _animController.dispose();
     super.dispose();
@@ -339,7 +339,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
               IconButton(
                 icon: _isPlaying ? const Icon(Icons.pause) : const Icon(Icons.play_arrow),
                 iconSize: 20,
-                onPressed: _isPlaying ? _stopPlayback : () => _playAtPosition(),
+                onPressed: _isPlaying ? () => _stopPlayback(true) : () => _playAtPosition(),
               ),
             ],
           ),
@@ -351,7 +351,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
   void _onDragStart(DragStartDetails details) {
     if (_isLoading) return;
     _previousDragOffset = details.localPosition.dx;
-    _stopPlayback();
+    _stopPlayback(false);
   }
 
   void _onDragEnd(DragEndDetails details) {
