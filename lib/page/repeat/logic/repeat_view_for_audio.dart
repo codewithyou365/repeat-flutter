@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
+import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'constant.dart';
@@ -15,13 +16,14 @@ class RepeatViewForAudio extends RepeatView {
   static const String playerId = "RepeatViewForAudio";
   final GlobalKey<MediaBarState> mediaKey = GlobalKey<MediaBarState>();
   late AudioPlayer audioPlayer;
-  var audioPlayerCurrentPath = "";
+  var lastCurrentPath = "";
   int duration = 0;
   late MediaRangeHelper mediaRangeHelper;
   final SubList<bool> sub = [];
 
   // Ui
   double mediaBarHeight = 50;
+  var currentPath = ''.obs;
 
   RepeatViewForAudio();
 
@@ -51,23 +53,21 @@ class RepeatViewForAudio extends RepeatView {
       return SizedBox(height: height);
     }
 
-    var path = '';
     List<String> paths = helper.getPaths();
     if (paths.isNotEmpty) {
-      path = paths.first;
+      currentPath.value = paths.first;
     }
 
     final range = mediaRangeHelper.getCurrRange();
 
     if (helper.enableReloadMedia) {
+      helper.enableReloadMedia = false;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        load(path).then((_) {
-          if (helper.resetMediaStart) {
-            helper.resetMediaStart = false;
+        load(currentPath).then((_) {
+          if (helper.doNotPlayMedia) {
             mediaKey.currentState?.drawStart();
-          }
-          if (helper.playMediaAtNextFlame) {
-            helper.playMediaAtNextFlame = false;
+          } else if (helper.tryToPlayMedia) {
+            helper.tryToPlayMedia = false;
             mediaKey.currentState?.playFromStart();
           }
         });
@@ -88,7 +88,7 @@ class RepeatViewForAudio extends RepeatView {
           children: [
             SizedBox(height: helper.topPadding),
             helper.topBar(),
-            mediaBar(path, helper.screenWidth - padding * 2, mediaBarHeight, range),
+            mediaBar(currentPath, helper.screenWidth - padding * 2, mediaBarHeight, range),
             SizedBox(
               height: height,
               child: ListView(
@@ -118,48 +118,49 @@ class RepeatViewForAudio extends RepeatView {
     );
   }
 
-  Future<void> load(String path) async {
+  bool _isLoading = false;
+
+  Future<void> load(RxString path) async {
+    if (_isLoading) return;
+    _isLoading = true;
+    mediaKey.currentState?.setLoading(_isLoading);
+
     try {
       var helper = this.helper!;
+      final out = DownloadContent(url: '', hash: '');
       var ok = await helper.tryImportMedia(
-        localMediaPath: path,
+        localMediaPath: path.value,
         mediaType: MediaType.audio,
+        out: out,
       );
       if (!ok) {
         return;
       }
-      if (path == audioPlayerCurrentPath) {
+      if (out.hash.isNotEmpty) {
+        path.value = helper.getPath(out.path);
+      }
+
+      if (path.value == lastCurrentPath && audioPlayer.processingState != ProcessingState.idle) {
         return;
       }
-      var audioPlayer = this.audioPlayer;
-      await audioPlayer.stop();
-      Duration? d;
-      try {
-        await audioPlayer.setFilePath(path);
-        d = await audioPlayer.durationStream.firstWhere((dur) => dur != null);
-      } catch (e) {
-        var ok = await helper.tryImportMedia(
-          localMediaPath: path,
-          mediaType: MediaType.audio,
-        );
-        if (!ok) {
-          return;
-        }
-        await audioPlayer.setFilePath(path);
-        d = await audioPlayer.durationStream.firstWhere((dur) => dur != null);
+
+      if (audioPlayer.playing) {
+        await audioPlayer.stop();
       }
-      if (d != null) {
-        duration = d.inMilliseconds;
-      } else {
-        d = audioPlayer.duration;
-      }
-      audioPlayerCurrentPath = path;
+
+      await audioPlayer.setFilePath(path.value);
+
+      duration = audioPlayer.duration?.inMilliseconds ?? 0;
+      lastCurrentPath = path.value;
     } catch (e) {
       Snackbar.show("Error loading audio: $e");
+    } finally {
+      _isLoading = false;
+      mediaKey.currentState?.setLoading(_isLoading);
     }
   }
 
-  Widget mediaBar(String path, double width, double height, MediaRange range) {
+  Widget mediaBar(RxString path, double width, double height, MediaRange range) {
     return MediaBar(
       width: width,
       height: height,
@@ -168,31 +169,25 @@ class RepeatViewForAudio extends RepeatView {
       key: mediaKey,
       duration: () => duration,
       onPlay: (Duration position) async {
-        await audioPlayer.seek(position);
         try {
-          await audioPlayer.play().timeout(const Duration(milliseconds: 50));
+          helper!.doNotPlayMedia = false;
+          await audioPlayer.seek(position);
+          audioPlayer.play();
         } catch (e) {
-          if (e is! TimeoutException) rethrow;
-          await audioPlayer.play();
+          Snackbar.show("Error playing audio: $e");
         }
       },
       onStop: () async {
-        helper!.playMediaAtNextFlame = false;
+        helper!.tryToPlayMedia = false;
         await audioPlayer.stop();
       },
       onEdit: mediaRangeHelper.mediaRangeEdit(range),
       onShare: helper!.openMediaShare(),
       onCropAndSave: helper!.cropAndSaveMedia(path: path, range: range),
       onAdjustSpeed: (double speed) async {
-        try {
-          await audioPlayer.setSpeed(speed);
-        } catch (e) {
-          print('Error setting speed: $e');
-        }
+        await audioPlayer.setSpeed(speed);
       },
-      getSpeed: () {
-        return audioPlayer.speed;
-      },
+      getSpeed: () => audioPlayer.speed,
       hideTime: helper!.focusMode.value,
     );
   }

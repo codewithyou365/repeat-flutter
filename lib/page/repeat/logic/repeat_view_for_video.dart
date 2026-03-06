@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
+import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:video_player/video_player.dart';
@@ -31,6 +32,7 @@ class RepeatViewForVideo extends RepeatView {
   double padding = 16;
 
   var isPlaying = false.obs;
+  var currentPath = ''.obs;
 
   RepeatViewForVideo();
 
@@ -68,23 +70,21 @@ class RepeatViewForVideo extends RepeatView {
       return emptyBody();
     }
 
-    var path = '';
     List<String> paths = helper.getPaths();
     if (paths.isNotEmpty) {
-      path = paths.first;
+      currentPath.value = paths.first;
     }
 
     final range = mediaRangeHelper.getCurrRange();
 
     if (helper.enableReloadMedia) {
+      helper.enableReloadMedia = false;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        load(path).then((_) {
-          if (helper.resetMediaStart) {
-            helper.resetMediaStart = false;
+        load(currentPath).then((_) {
+          if (helper.doNotPlayMedia) {
             mediaKey.currentState?.drawStart();
-          }
-          if (helper.playMediaAtNextFlame) {
-            helper.playMediaAtNextFlame = false;
+          } else if (helper.tryToPlayMedia) {
+            helper.tryToPlayMedia = false;
             mediaKey.currentState?.playFromStart();
           }
         });
@@ -92,9 +92,9 @@ class RepeatViewForVideo extends RepeatView {
     }
     videoBoardHelper.boards.value = videoBoardHelper.getCurrVideoBoard();
     if (helper.landscape) {
-      return landscape(path, range);
+      return landscape(currentPath, range);
     } else {
-      return portrait(path, range);
+      return portrait(currentPath, range);
     }
   }
 
@@ -107,7 +107,7 @@ class RepeatViewForVideo extends RepeatView {
     );
   }
 
-  Widget landscape(String path, MediaRange range) {
+  Widget landscape(RxString path, MediaRange range) {
     var helper = this.helper!;
     var q = helper.text(QaType.question);
     var t = helper.text(QaType.tip);
@@ -189,7 +189,7 @@ class RepeatViewForVideo extends RepeatView {
     );
   }
 
-  Widget portrait(String path, MediaRange range) {
+  Widget portrait(RxString path, MediaRange range) {
     var helper = this.helper!;
     double height = helper.screenHeight - helper.topPadding - helper.topBarHeight - mediaBarHeight - helper.bottomBarHeight;
     var q = helper.text(QaType.question);
@@ -397,7 +397,7 @@ class RepeatViewForVideo extends RepeatView {
     );
   }
 
-  Widget mediaBar(String path, double width, double height, MediaRange range) {
+  Widget mediaBar(RxString path, double width, double height, MediaRange range) {
     return MediaBar(
       width: width,
       height: height,
@@ -406,20 +406,20 @@ class RepeatViewForVideo extends RepeatView {
       key: mediaKey,
       duration: () => duration,
       onPlay: (Duration position) async {
+        helper?.doNotPlayMedia = false;
         if (_videoPlayerController != null) {
           try {
-            await _videoPlayerController!.seekTo(position).timeout(const Duration(milliseconds: 100));
-          } catch (e) {
-            await _videoPlayerController!.initialize();
             await _videoPlayerController!.seekTo(position);
+            await _videoPlayerController!.play();
+            isPlaying.value = true;
+          } catch (e) {
+            Snackbar.show("视频寻址或播放失败: $e");
           }
-          await _videoPlayerController!.play();
-          isPlaying.value = true;
         }
       },
       onStop: () async {
+        helper?.tryToPlayMedia = false;
         if (_videoPlayerController != null) {
-          helper!.playMediaAtNextFlame = false;
           await _videoPlayerController!.pause();
           isPlaying.value = false;
         }
@@ -437,40 +437,59 @@ class RepeatViewForVideo extends RepeatView {
     );
   }
 
-  Future<void> load(String path) async {
+  bool _isLoading = false;
+
+  Future<void> load(RxString path) async {
+    if (_isLoading) return;
+    _isLoading = true;
+    mediaKey.currentState?.setLoading(_isLoading);
     try {
       var helper = this.helper!;
+      var out = DownloadContent(url: '', hash: '');
       var ok = await helper.tryImportMedia(
-        localMediaPath: path,
+        localMediaPath: path.value,
         mediaType: MediaType.video,
+        out: out,
       );
       if (!ok) {
         return;
       }
+      if (out.hash.isNotEmpty) {
+        path.value = helper.getPath(out.path);
+      }
+
       bool needsInitialization = true;
 
       if (_videoPlayerController != null) {
         final uri = Uri.parse(_videoPlayerController!.dataSource);
-        if (uri.toFilePath() == path) {
+        if (uri.toFilePath() == path.value) {
           needsInitialization = false;
         } else {
           initialized.value = false;
           await _videoPlayerController!.dispose();
+          _videoPlayerController = null;
         }
       }
 
       if (needsInitialization) {
         try {
-          _videoPlayerController = VideoPlayerController.file(File(path));
+          _videoPlayerController = VideoPlayerController.file(File(path.value));
           await _videoPlayerController!.initialize();
         } catch (e) {
+          out = DownloadContent(url: '', hash: '');
           var ok = await helper.tryImportMedia(
-            localMediaPath: path,
+            localMediaPath: path.value,
             mediaType: MediaType.video,
+            out: out,
           );
           if (!ok) {
             return;
           }
+          if (out.hash.isNotEmpty) {
+            path.value = helper.getPath(out.path);
+          }
+          _videoPlayerController = VideoPlayerController.file(File(path.value));
+          await _videoPlayerController!.initialize();
         }
 
         if (_videoPlayerController!.value.isInitialized) {
@@ -480,6 +499,9 @@ class RepeatViewForVideo extends RepeatView {
       }
     } catch (e) {
       Snackbar.show("Error loading video: $e");
+    } finally {
+      _isLoading = false;
+      mediaKey.currentState?.setLoading(_isLoading);
     }
   }
 }

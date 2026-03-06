@@ -57,8 +57,8 @@ class Helper {
   RxBool focusMode = true.obs;
   Rx<ShowMode> showMode = ShowMode.closedBook.obs;
   bool enableReloadMedia = true;
-  bool resetMediaStart = true;
-  bool playMediaAtNextFlame = false;
+  bool doNotPlayMedia = true;
+  bool tryToPlayMedia = false;
   Map<int, Map<String, dynamic>> bookMapCache = {};
 
   Map<int, Map<String, dynamic>> chapterMapCache = {};
@@ -100,8 +100,7 @@ class Helper {
   }
 
   void stopMedia(bool enableReloadMedia) {
-    this.enableReloadMedia = enableReloadMedia;
-    playMediaAtNextFlame = false;
+    tryToPlayMedia = false;
     EventBus().publish<bool>(EventTopic.stopMedia, true);
   }
 
@@ -264,11 +263,15 @@ class Helper {
     return ret;
   }
 
+  String getPath(String downloadPath) {
+    return rootPath.joinPath(DocPath.getRelativePath(logic.currVerse!.bookId)).joinPath(downloadPath);
+  }
+
   List<String> getPaths() {
     List<String> ret = [];
     var paths = getRelativePaths();
     for (var path in paths) {
-      ret.add(rootPath.joinPath(DocPath.getRelativePath(logic.currVerse!.bookId)).joinPath(path));
+      ret.add(getPath(path));
     }
     return ret;
   }
@@ -291,6 +294,7 @@ class Helper {
   Future<bool> tryImportMedia({
     required String localMediaPath,
     required MediaType mediaType,
+    required DownloadContent out,
   }) async {
     var file = File(localMediaPath);
     var exist = await file.exists();
@@ -309,38 +313,29 @@ class Helper {
                 Get.back();
               },
             ),
-            if (Platform.isIOS)
-              MsgBox.button(
-                text: I18nKey.openAlbum.tr,
-                onPressed: () async {
-                  FilePickerResult? result = await FilePicker.platform.pickFiles(
-                    type: FileType.video,
-                  );
-                  await importPickedFile(mediaType, result);
-                },
-              ),
-            if (Platform.isIOS)
-              MsgBox.button(
-                text: I18nKey.openFile.tr,
-                onPressed: () async {
-                  FilePickerResult? result = await FilePicker.platform.pickFiles(
-                    type: FileType.custom,
-                    allowedExtensions: mediaType.allowedExtensions,
-                  );
-                  await importPickedFile(mediaType, result);
-                },
-              ),
-            if (!Platform.isIOS)
-              MsgBox.button(
-                text: I18nKey.btnOk.tr,
-                onPressed: () async {
-                  FilePickerResult? result = await FilePicker.platform.pickFiles(
-                    type: FileType.custom,
-                    allowedExtensions: mediaType.allowedExtensions,
-                  );
-                  await importPickedFile(mediaType, result);
-                },
-              ),
+            MsgBox.button(
+              text: I18nKey.openAlbum.tr,
+              onPressed: () async {
+                FilePickerResult? result = await FilePicker.platform.pickFiles(
+                  type: FileType.video,
+                );
+                var download = await importPickedFile(mediaType, result);
+                out.url = download?.url ?? '';
+                out.hash = download?.hash ?? '';
+              },
+            ),
+            MsgBox.button(
+              text: I18nKey.openFile.tr,
+              onPressed: () async {
+                FilePickerResult? result = await FilePicker.platform.pickFiles(
+                  type: FileType.custom,
+                  allowedExtensions: mediaType.allowedExtensions,
+                );
+                var download = await importPickedFile(mediaType, result);
+                out.url = download?.url ?? '';
+                out.hash = download?.hash ?? '';
+              },
+            ),
           ],
         ),
       );
@@ -348,7 +343,7 @@ class Helper {
     }
   }
 
-  Future<void> importPickedFile(MediaType mediaType, FilePickerResult? result) async {
+  Future<DownloadContent?> importPickedFile(MediaType mediaType, FilePickerResult? result) async {
     try {
       var s = getCurrVerse()!;
       var download = await DocHelp.tryCopyToDocDir(
@@ -357,7 +352,7 @@ class Helper {
         allowedExtensions: mediaType.allowedExtensions,
       );
       if (download == null) {
-        return;
+        return null;
       }
       var chapterId = s.chapterId;
       var m = getCurrChapterMap()!;
@@ -365,9 +360,10 @@ class Helper {
       Db().db.chapterDao.updateChapterContent(chapterId, jsonEncode(m));
       Get.back();
       Get.back();
+      return download;
     } catch (e) {
       Snackbar.show(e.toString());
-      return;
+      return null;
     }
   }
 
@@ -389,7 +385,7 @@ class Helper {
   }
 
   MediaCropAndSaveCallback? cropAndSaveMedia({
-    required String path,
+    required RxString path,
     required MediaRange range,
   }) {
     if (showMode.value != ShowMode.edit) {
@@ -404,7 +400,7 @@ class Helper {
     };
   }
 
-  Future<void> innerTrimMedia(VerseTodayPrg verse, String path, MediaRange range) async {
+  Future<void> innerTrimMedia(VerseTodayPrg verse, RxString path, MediaRange range) async {
     try {
       double startSeconds = range.start / 1000.0;
       int durationMs = range.end - range.start;
@@ -412,8 +408,8 @@ class Helper {
 
       var rootPath = await DocPath.getContentPath();
       String directory = rootPath.joinPath('media');
-      final String extension = p.extension(path);
-      final String fileName = p.basenameWithoutExtension(path);
+      final String extension = p.extension(path.value);
+      final String fileName = p.basenameWithoutExtension(path.value);
       await Folder.ensureExists(directory);
       final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
       final String outputPath = p.join(directory, "${fileName}_trimmed_$timestamp$extension");

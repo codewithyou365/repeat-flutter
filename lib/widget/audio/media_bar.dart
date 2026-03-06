@@ -52,6 +52,7 @@ class MediaBar extends StatefulWidget {
 }
 
 class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin {
+  bool _isLoading = true;
   int _startMillisecondsSinceEpoch = 0;
   int _startMediaPositionMs = 0;
   double _blockOffset = 0.0;
@@ -79,7 +80,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
   }
 
   void _updateOffset() {
-    if (!mounted || !_isPlaying) return;
+    if (!mounted || !_isPlaying || _isLoading) return;
 
     final nowMs = DateTime.now().millisecondsSinceEpoch;
     final double elapsedMs = _startMediaPositionMs + (nowMs - _startMillisecondsSinceEpoch) * _currentSpeed;
@@ -105,7 +106,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
   }
 
   Future<void> _stopPlayback() async {
-    if (!_isPlaying) return;
+    if (!_isPlaying && _isLoading) return;
 
     await widget.onStop();
     _animController.stop();
@@ -123,7 +124,14 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
   }
 
   void playFromStart() {
+    if (_isLoading) return;
     _playAtPosition(timeOffsetMs: widget.verseStartMs);
+  }
+
+  void setLoading(bool isLoading) {
+    setState(() {
+      _isLoading = isLoading;
+    });
   }
 
   void drawStart() {
@@ -133,6 +141,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
   }
 
   Future<void> _playAtPosition({int? timeOffsetMs, int? incrementMs}) async {
+    if (_isLoading) return;
     int currPositionMs;
 
     if (timeOffsetMs != null) {
@@ -255,6 +264,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
                   icon: const Icon(Icons.cut),
                   iconSize: 20,
                   onPressed: () {
+                    if (_isLoading) return;
                     widget.onEdit!(widget.verseStartMs + (-_blockOffset / MediaBar.pixelPerMs).floor());
                   },
                 ),
@@ -268,9 +278,11 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
                   icon: const Icon(Icons.more_vert, size: 20),
                   onSelected: (String value) {
                     if (value == 'share' && widget.onShare != null) {
+                      if (_isLoading) return;
                       widget.onShare!();
                     }
                     if (value == 'cropAndSave' && widget.onCropAndSave != null) {
+                      if (_isLoading) return;
                       widget.onCropAndSave!();
                     }
                   },
@@ -281,6 +293,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
                         _SpeedSliderEntry(
                           currentSpeed: _currentSpeed,
                           onSpeedChanged: (double speed) async {
+                            if (_isLoading) return;
                             await widget.onAdjustSpeed!(speed);
                             setState(() {
                               _currentSpeed = widget.getSpeed != null ? widget.getSpeed!() : speed;
@@ -306,7 +319,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
                         ),
                       );
                     }
-                    if (widget.onCropAndSave != null && !_isPlaying) {
+                    if (widget.onCropAndSave != null && !_isPlaying && !_isLoading) {
                       if (items.isNotEmpty) {
                         items.add(const PopupMenuDivider());
                       }
@@ -336,15 +349,18 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
   }
 
   void _onDragStart(DragStartDetails details) {
+    if (_isLoading) return;
     _previousDragOffset = details.localPosition.dx;
     _stopPlayback();
   }
 
   void _onDragEnd(DragEndDetails details) {
+    if (_isLoading) return;
     _playAtPosition();
   }
 
   void _onDragUpdate(DragUpdateDetails details) {
+    if (_isLoading) return;
     final currentOffset = details.localPosition.dx;
     final delta = currentOffset - _previousDragOffset;
 
