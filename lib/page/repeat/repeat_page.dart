@@ -536,7 +536,7 @@ class RepeatPage extends StatelessWidget {
     if (type == QaType.tip) {
       keys.add(I18nKey.ttsSettings.tr);
     }
-    int? index = await Select.showSheet(title: I18nKey.edit.tr, keys: keys);
+    int? index = await Select.showSheet(title: I18nKey.editWhat.trArgs([type.i18n.tr]), keys: keys);
     if (index == null) {
       return;
     }

@@ -12,6 +12,7 @@ enum I18nKey {
   closedBook,
   openBook,
   edit,
+  editWhat,
   keyTitle,
   keyContent,
   selectBookType,

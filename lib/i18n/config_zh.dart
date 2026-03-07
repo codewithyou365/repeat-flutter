@@ -14,6 +14,7 @@ class ConfigZh extends Config {
     put(I18nKey.closedBook, "闭卷");
     put(I18nKey.openBook, "开卷");
     put(I18nKey.edit, "编辑");
+    put(I18nKey.editWhat, "编辑%s");
     put(I18nKey.keyTitle, "凭证");
     put(I18nKey.keyContent, "用户名：@0\n密码：@1");
     put(I18nKey.selectBookType, "请选择学卷类型");
