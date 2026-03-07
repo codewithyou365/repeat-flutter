@@ -39,7 +39,7 @@ class _ExpandableTextState extends State<ExpandableText> {
     final selectText = widget.selectText;
 
     String displayText = fullText;
-    if (!isExpanded) {
+    if (!isExpanded && widget.limit != null) {
       int newLineIndex = displayText.indexOf('\n');
       if (newLineIndex != -1) {
         displayText = displayText.substring(0, newLineIndex);
