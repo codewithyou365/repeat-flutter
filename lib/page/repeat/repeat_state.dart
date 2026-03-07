@@ -19,5 +19,5 @@ class RepeatState {
 
   RxInt currentTipTabIndex = 0.obs;
 
-  RxBool isExerciseMode = false.obs;
+  RxBool isPracticeMode = false.obs;
 }

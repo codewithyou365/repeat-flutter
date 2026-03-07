@@ -116,7 +116,7 @@ class RepeatLogic extends GetxController {
     await state.helper.mediaShareLogic.switchWeb(false);
     await bookEditor.switchWeb(false);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
-    state.helper.exerciseController.dispose();
+    state.helper.practiceController.dispose();
     if (state.enableCloseEyesMode.value != CloseEyesModeEnum.none) {
       HapticFeedback.heavyImpact();
     }
@@ -269,10 +269,10 @@ class RepeatLogic extends GetxController {
     return repeatLogic!.currVerse;
   }
 
-  void toggleExerciseMode() {
-    state.isExerciseMode.value = !state.isExerciseMode.value;
-    if (!state.isExerciseMode.value) {
-      state.helper.exerciseController.clear();
+  void togglePracticeMode() {
+    state.isPracticeMode.value = !state.isPracticeMode.value;
+    if (!state.isPracticeMode.value) {
+      state.helper.practiceController.clear();
     }
   }
 }

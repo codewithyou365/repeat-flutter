@@ -112,7 +112,7 @@ class RepeatViewForVideo extends RepeatView {
     var helper = this.helper!;
     var q = helper.text(QaType.question);
     var a = helper.text(QaType.answer);
-    var exerciseAreaWidget = helper.exerciseArea.call();
+    var practiceAreaWidget = helper.practiceArea.call();
     var tipAreaWidget = helper.tipArea.call();
     return Stack(
       alignment: Alignment.topCenter,
@@ -157,7 +157,7 @@ class RepeatViewForVideo extends RepeatView {
                             if (q != null) SizedBox(height: RowWidget.dividerHeight),
                             if (a != null) a,
                             if (a != null) SizedBox(height: RowWidget.dividerHeight),
-                            if (exerciseAreaWidget != null) exerciseAreaWidget,
+                            if (practiceAreaWidget != null) practiceAreaWidget,
                             if (tipAreaWidget != null) tipAreaWidget,
                           ],
                         ),
@@ -199,7 +199,7 @@ class RepeatViewForVideo extends RepeatView {
     double height = helper.screenHeight - helper.topPadding - helper.topBarHeight - mediaBarHeight - helper.bottomBarHeight;
     var q = helper.text(QaType.question);
     var a = helper.text(QaType.answer);
-    var exerciseAreaWidget = helper.exerciseArea.call();
+    var practiceAreaWidget = helper.practiceArea.call();
     var tipAreaWidget = helper.tipArea.call();
     videoHeightInPortrait.value = videoWidgetHeight(height - helper.bottomBarHeight * 3);
     var bar = mediaBar(path, helper.screenWidth - padding * 2, mediaBarHeight, range);
@@ -224,7 +224,7 @@ class RepeatViewForVideo extends RepeatView {
                         if (q != null) SizedBox(height: RowWidget.dividerHeight),
                         if (a != null) a,
                         if (a != null) SizedBox(height: RowWidget.dividerHeight),
-                        if (exerciseAreaWidget != null) exerciseAreaWidget,
+                        if (practiceAreaWidget != null) practiceAreaWidget,
                         if (tipAreaWidget != null) tipAreaWidget,
                       ],
                     ),

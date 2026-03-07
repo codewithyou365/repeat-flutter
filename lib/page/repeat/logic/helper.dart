@@ -39,7 +39,7 @@ class Helper {
   bool initialized = false;
   late RepeatFlow logic;
   MediaShareLogic mediaShareLogic = MediaShareLogic();
-  TextEditingController exerciseController = TextEditingController();
+  TextEditingController practiceController = TextEditingController();
   late String rootPath;
 
   late double screenWidth;
@@ -52,7 +52,7 @@ class Helper {
   double bottomBarHeight = 50;
 
   late Widget Function({required double width}) bottomBar;
-  late Widget? Function() exerciseArea;
+  late Widget? Function() practiceArea;
   late Widget? Function() tipArea;
   late Widget? Function(QaType type) text;
   late Widget Function() closeEyesPanel;

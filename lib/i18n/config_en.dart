@@ -262,7 +262,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelCopyToWhere, "Should the copy be placed above or below this verse?");
     put(I18nKey.labelChapterDeleteBlocked, "There are verses under this chapter, so it cannot be deleted.");
     put(I18nKey.labelGameRuleSettings, "Game Rule Settings");
-    put(I18nKey.exercise, "Exercise");
+    put(I18nKey.practice, "Practice");
     put(I18nKey.typeGame, "Type");
     put(I18nKey.blankItRightGame, "Blank It Right");
     put(I18nKey.wordSlicer, "Word Slicer");
@@ -371,6 +371,6 @@ class ConfigEn extends Config {
     put(I18nKey.syncGenerateAudio, "Sync Generate Audio");
     put(I18nKey.startExecution, "Start Execution");
     put(I18nKey.closeLog, "Close Log");
-    put(I18nKey.exerciseHint, "Type here to practice...");
+    put(I18nKey.practiceHint, "Type here to practice...");
   }
 }

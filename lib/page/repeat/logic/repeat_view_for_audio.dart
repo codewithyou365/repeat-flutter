@@ -82,7 +82,7 @@ class RepeatViewForAudio extends RepeatView {
     height = helper.screenHeight - helper.topPadding - helper.topBarHeight - helper.bottomBarHeight - mediaBarHeight;
     var q = helper.text(QaType.question);
     var a = helper.text(QaType.answer);
-    var exerciseAreaWidget = helper.exerciseArea.call();
+    var practiceAreaWidget = helper.practiceArea.call();
     var tipAreaWidget = helper.tipArea.call();
     return Stack(
       children: [
@@ -105,7 +105,7 @@ class RepeatViewForAudio extends RepeatView {
                         if (q != null) SizedBox(height: RowWidget.dividerHeight),
                         if (a != null) a,
                         if (a != null) SizedBox(height: RowWidget.dividerHeight),
-                        if (exerciseAreaWidget != null) exerciseAreaWidget,
+                        if (practiceAreaWidget != null) practiceAreaWidget,
                         if (tipAreaWidget != null) tipAreaWidget,
                       ],
                     ),

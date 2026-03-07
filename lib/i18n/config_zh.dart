@@ -260,7 +260,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelCopyToWhere, "复制到该小节的上方还是下方？");
     put(I18nKey.labelChapterDeleteBlocked, "在该篇章下存在小节，无法删除该篇章");
     put(I18nKey.labelGameRuleSettings, "游戏规则设置");
-    put(I18nKey.exercise, "练习");
+    put(I18nKey.practice, "练习");
     put(I18nKey.typeGame, "打字");
     put(I18nKey.blankItRightGame, "挖空填对");
     put(I18nKey.wordSlicer, "划词");
@@ -369,6 +369,6 @@ class ConfigZh extends Config {
     put(I18nKey.syncGenerateAudio, "同步生成音频");
     put(I18nKey.startExecution, "开始执行");
     put(I18nKey.closeLog, "关闭日志");
-    put(I18nKey.exerciseHint, "在此输入练习内容...");
+    put(I18nKey.practiceHint, "在此输入练习内容...");
   }
 }

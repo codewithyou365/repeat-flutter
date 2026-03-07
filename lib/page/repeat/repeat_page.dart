@@ -62,7 +62,7 @@ class RepeatPage extends StatelessWidget {
     state.helper.topBar = () => topBar(logic: logic, height: topBarHeight);
     state.helper.bottomBar = ({required double width}) => bottomBar(logic: logic, width: width, height: state.helper.bottomBarHeight);
     state.helper.text = (QaType type) => text(logic, type);
-    state.helper.exerciseArea = () => exerciseArea(logic);
+    state.helper.practiceArea = () => practiceArea(logic);
     state.helper.tipArea = () => tipArea(logic);
     state.helper.closeEyesPanel = () => closeEyesPanel(logic);
 
@@ -182,15 +182,15 @@ class RepeatPage extends StatelessWidget {
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () {
-                    logic.toggleExerciseMode();
+                    logic.togglePracticeMode();
                   },
                   child: Obx(() {
                     return Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(I18nKey.exercise.tr),
+                        Text(I18nKey.practice.tr),
                         const Spacer(),
-                        if (state.isExerciseMode.value) const Icon(Icons.check, size: 18, color: Colors.blue),
+                        if (state.isPracticeMode.value) const Icon(Icons.check, size: 18, color: Colors.blue),
                       ],
                     );
                   }),
@@ -324,9 +324,9 @@ class RepeatPage extends StatelessWidget {
     );
   }
 
-  Widget exerciseArea(RepeatLogic logic) {
+  Widget practiceArea(RepeatLogic logic) {
     return Obx(() {
-      if (!logic.state.isExerciseMode.value) {
+      if (!logic.state.isPracticeMode.value) {
         return const SizedBox.shrink();
       }
       return Container(
@@ -337,7 +337,7 @@ class RepeatPage extends StatelessWidget {
           border: Border.all(color: Colors.blueAccent.withAlpha(100), width: 1),
         ),
         child: TextField(
-          controller: logic.state.helper.exerciseController,
+          controller: logic.state.helper.practiceController,
           maxLines: null,
           minLines: 3,
           textInputAction: TextInputAction.newline,
@@ -346,14 +346,14 @@ class RepeatPage extends StatelessWidget {
             fontFamily: fontAlias(logic, QaType.answer),
           ),
           decoration: InputDecoration(
-            hintText: I18nKey.exerciseHint.tr,
+            hintText: I18nKey.practiceHint.tr,
             hintStyle: const TextStyle(color: Colors.grey),
             contentPadding: const EdgeInsets.all(12.0),
             border: InputBorder.none,
             suffixIcon: IconButton(
               icon: const Icon(Icons.clear, size: 20, color: Colors.grey),
               onPressed: () {
-                logic.state.helper.exerciseController.clear();
+                logic.state.helper.practiceController.clear();
               },
             ),
           ),
