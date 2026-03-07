@@ -258,6 +258,7 @@ enum I18nKey {
   labelCopyToWhere,
   labelChapterDeleteBlocked,
   labelGameRuleSettings,
+  exercise,
   typeGame,
   blankItRightGame,
   wordSlicer,
@@ -367,6 +368,7 @@ enum I18nKey {
   syncGenerateAudio,
   startExecution,
   closeLog,
+  exerciseHint,
   none;
 
   String trArgs([List<String> args = const []]) {

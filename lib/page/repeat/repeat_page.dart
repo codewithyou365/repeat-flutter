@@ -46,6 +46,7 @@ class RepeatPage extends StatelessWidget {
     final Size screenSize = MediaQuery.of(context).size;
     final double topPadding = MediaQuery.of(context).padding.top;
     final double leftPadding = MediaQuery.of(context).padding.left;
+    final double inset = MediaQuery.of(context).viewInsets.bottom;
     final double screenWidth = screenSize.width;
     double screenHeight = screenSize.height;
     var landscape = false;
@@ -53,7 +54,7 @@ class RepeatPage extends StatelessWidget {
       landscape = true;
     }
     state.helper.screenWidth = screenWidth;
-    state.helper.screenHeight = screenHeight;
+    state.helper.screenHeight = screenHeight - inset;
     state.helper.landscape = landscape;
     state.helper.leftPadding = leftPadding;
     state.helper.topPadding = topPadding;
@@ -61,6 +62,7 @@ class RepeatPage extends StatelessWidget {
     state.helper.topBar = () => topBar(logic: logic, height: topBarHeight);
     state.helper.bottomBar = ({required double width}) => bottomBar(logic: logic, width: width, height: state.helper.bottomBarHeight);
     state.helper.text = (QaType type) => text(logic, type);
+    state.helper.exerciseArea = () => exerciseArea(logic);
     state.helper.tipArea = () => tipArea(logic);
     state.helper.closeEyesPanel = () => closeEyesPanel(logic);
 
@@ -177,12 +179,39 @@ class RepeatPage extends StatelessWidget {
                 child: Text(I18nKey.closeEyes.tr),
               ),
               PopupMenuItem<String>(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    logic.toggleExerciseMode();
+                  },
+                  child: Obx(() {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(I18nKey.exercise.tr),
+                        const Spacer(),
+                        if (state.isExerciseMode.value) const Icon(Icons.check, size: 18, color: Colors.blue),
+                      ],
+                    );
+                  }),
+                ),
+              ),
+              PopupMenuItem<String>(
                 onTap: () async {
                   state.helper.stopMedia(false);
                   await logic.gameLogic.open();
                   state.helper.stopMedia(true);
                 },
-                child: Text(logic.gameLogic.title),
+                child: Obx(() {
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(I18nKey.game.tr),
+                      const Spacer(),
+                      if (logic.gameLogic.state.open.value) const Icon(Icons.check, size: 18, color: Colors.blue),
+                    ],
+                  );
+                }),
               ),
               PopupMenuItem<String>(
                 child: GestureDetector(
@@ -192,8 +221,9 @@ class RepeatPage extends StatelessWidget {
                     return Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text("${I18nKey.btnFocus.tr}(${state.helper.focusMode.value})"),
-                        Spacer(),
+                        Text(I18nKey.btnFocus.tr),
+                        const Spacer(),
+                        if (state.helper.focusMode.value) const Icon(Icons.check, size: 18, color: Colors.blue),
                       ],
                     );
                   }),
@@ -201,7 +231,16 @@ class RepeatPage extends StatelessWidget {
               ),
               PopupMenuItem<String>(
                 onTap: logic.openAdvancedEditor,
-                child: Text(logic.bookEditor.title),
+                child: Obx(() {
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(I18nKey.advancedEdit.tr),
+                      const Spacer(),
+                      if (logic.bookEditor.state.webStart.value) const Icon(Icons.check, size: 18, color: Colors.blue),
+                    ],
+                  );
+                }),
               ),
             ],
           ),
@@ -283,6 +322,44 @@ class RepeatPage extends StatelessWidget {
         child: Text(text),
       ),
     );
+  }
+
+  Widget exerciseArea(RepeatLogic logic) {
+    return Obx(() {
+      if (!logic.state.isExerciseMode.value) {
+        return const SizedBox.shrink();
+      }
+      return Container(
+        margin: const EdgeInsets.symmetric(vertical: 8.0),
+        decoration: BoxDecoration(
+          color: Colors.grey.withAlpha(20),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.blueAccent.withAlpha(100), width: 1),
+        ),
+        child: TextField(
+          controller: logic.state.helper.exerciseController,
+          maxLines: null,
+          minLines: 3,
+          textInputAction: TextInputAction.newline,
+          style: TextStyle(
+            fontSize: fontSize(logic, QaType.answer) ?? 17,
+            fontFamily: fontAlias(logic, QaType.answer),
+          ),
+          decoration: InputDecoration(
+            hintText: I18nKey.exerciseHint.tr,
+            hintStyle: const TextStyle(color: Colors.grey),
+            contentPadding: const EdgeInsets.all(12.0),
+            border: InputBorder.none,
+            suffixIcon: IconButton(
+              icon: const Icon(Icons.clear, size: 20, color: Colors.grey),
+              onPressed: () {
+                logic.state.helper.exerciseController.clear();
+              },
+            ),
+          ),
+        ),
+      );
+    });
   }
 
   Widget? tipArea(RepeatLogic logic) {

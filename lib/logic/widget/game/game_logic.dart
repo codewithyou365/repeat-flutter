@@ -93,10 +93,6 @@ class GameLogic<T extends GetxController> {
     Db().db.kvDao.insertOrReplace(Kv(K.lastGameIndex, "${GameState.lastGameIndex}"));
   }
 
-  String get title {
-    return "${I18nKey.game.tr}(${state.open.value})";
-  }
-
   String getOnline() {
     return "${web.server.nodes.userId2Node.length} / ${userManager.allowRegisterNumber}";
   }

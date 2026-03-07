@@ -107,6 +107,7 @@ class RepeatFlowForExamine extends RepeatFlow {
     scheduled = VerseTodayPrg.refineWithFinish(progresses, false);
     scheduled.sort(schedulesCurrentSort);
     step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
+    helper.exerciseController.clear();
     await gameHelper.tryRefreshGame(currVerse!);
     await timeStatsLogic.tryInsertTimeStats();
     return true;
@@ -197,6 +198,7 @@ class RepeatFlowForExamine extends RepeatFlow {
     if (scheduled.isNotEmpty) {
       scheduled.sort(schedulesCurrentSort);
     }
+    helper.exerciseController.clear();
     await gameHelper.tryRefreshGame(curr);
     await timeStatsLogic.updateTimeStats();
   }
@@ -206,6 +208,7 @@ class RepeatFlowForExamine extends RepeatFlow {
     helper.tip = TipLevel.none;
     await Db().db.scheduleDao.error(currVerse!);
     scheduled.sort(schedulesCurrentSort);
+    helper.exerciseController.clear();
     await gameHelper.tryRefreshGame(currVerse!);
   }
 

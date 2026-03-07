@@ -90,6 +90,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
     this.helper = helper;
     scheduled = progresses;
     step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
+    helper.exerciseController.clear();
     await gameHelper.tryRefreshGame(currVerse!);
     await timeStatsLogic.tryInsertTimeStats();
     return true;
@@ -160,6 +161,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
     if (index < scheduled.length - 1) {
       index++;
     }
+    helper.exerciseController.clear();
     await gameHelper.tryRefreshGame(currVerse!);
     await timeStatsLogic.updateTimeStats();
   }
@@ -170,6 +172,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
     if (index > 0) {
       index--;
     }
+    helper.exerciseController.clear();
     await gameHelper.tryRefreshGame(currVerse!);
     await timeStatsLogic.updateTimeStats();
   }

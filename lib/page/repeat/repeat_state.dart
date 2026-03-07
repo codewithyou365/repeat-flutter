@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 
@@ -17,4 +18,6 @@ class RepeatState {
   var lastRecallTime = 0;
 
   RxInt currentTipTabIndex = 0.obs;
+
+  RxBool isExerciseMode = false.obs;
 }
