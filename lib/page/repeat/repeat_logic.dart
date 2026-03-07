@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert' show jsonEncode;
 
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -22,7 +21,6 @@ import 'package:repeat_flutter/logic/widget/adjust_font.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/logic/widget/book_editor/book_editor_logic.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
-import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/page/repeat/logic/tts_helper.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -139,6 +137,7 @@ class RepeatLogic extends GetxController {
         state.helper.showMode.value = ShowMode.openBook;
         break;
       case ShowMode.openBook:
+        state.helper.tip = TipLevel.tip;
         state.helper.showMode.value = ShowMode.edit;
         break;
       default:

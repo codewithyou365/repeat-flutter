@@ -17,7 +17,6 @@ import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
 import 'package:repeat_flutter/widget/text/expandable_text.dart';
-import 'package:repeat_flutter/widget/text/text_button.dart';
 
 import 'repeat_logic.dart';
 import 'repeat_state.dart' show RepeatState;
@@ -317,7 +316,7 @@ class RepeatPage extends StatelessWidget {
                 behavior: HitTestBehavior.opaque,
                 onTap: () => logic.state.currentTipTabIndex.value = 0,
                 child: Text(
-                  I18nKey.tips.tr,
+                  I18nKey.labelTips.tr,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: isTip ? FontWeight.bold : FontWeight.normal,
@@ -403,31 +402,29 @@ class RepeatPage extends StatelessWidget {
       fontSize: fontSizeVal,
       fontFamily: fontAlias(logic, type),
     );
-    if (edit) {
-      String text = map[type.acronym] ?? '';
-      String editText = '${type.i18n.tr}:$text';
-      return MyTextButton.build(
-        () async {
-          await fullModify(map, logic, type);
-        },
-        editText,
-        style,
-      );
-    } else {
-      String? text = map[type.acronym];
-      if (text == null || text.isEmpty) {
-        return null;
-      }
-      return MyTextButton.build(
-        () async {
-          helper.stopMedia(false);
-          await logic.copyLogic.show(TextTemplateMode.editAndCopy, Get.context!, text);
-          helper.stopMedia(true);
-        },
-        text,
-        style,
-      );
-    }
+    String text = map[type.acronym] ?? '';
+    return ExpandableText(
+      title: "",
+      text: text,
+      style: style,
+      onEdit: edit
+          ? () async {
+              await fullModify(map, logic, type);
+            }
+          : null,
+      onTouch: () async {
+        if (text.isEmpty) {
+          return;
+        }
+        helper.stopMedia(false);
+        await logic.copyLogic.show(
+          TextTemplateMode.editAndCopy,
+          Get.context!,
+          text,
+        );
+        helper.stopMedia(true);
+      },
+    );
   }
 
   Future<void> modify(Map<String, dynamic> map, RepeatLogic logic, QaType type) async {
