@@ -30,12 +30,27 @@ class ExpandLogic {
   var status = ExpandStatus.init.obs;
   var isInit = true.obs;
   var disabled = false.obs;
+  var disabledAudioWidget = true.obs;
   var logs = <String>[].obs;
   var targetOptions = [
     QaType.answer.i18n.tr,
     QaType.tip.i18n.tr,
     QaType.question.i18n.tr,
+    QaType.note.i18n.tr,
   ];
+
+  QaType toQaType(int targetIndex) {
+    if (targetIndex == 0) {
+      return QaType.answer;
+    } else if (targetIndex == 1) {
+      return QaType.tip;
+    } else if (targetIndex == 2) {
+      return QaType.question;
+    } else {
+      return QaType.note;
+    }
+  }
+
   var targetIndex = 0.obs;
   var enableAudio = true.obs;
   int bookId = 0;
@@ -59,6 +74,7 @@ class ExpandLogic {
         status.value = ExpandStatus.pending;
         isInit.value = false;
         disabled.value = true;
+        disabledAudioWidget.value = true;
         logs.clear();
         logs.add("Initiating request...");
 
@@ -93,6 +109,13 @@ class ExpandLogic {
     _timer?.cancel();
     status.value = ExpandStatus.init;
     isInit.value = true;
+    disabled.value = false;
+    final qaType = toQaType(targetIndex.value);
+    if (qaType == QaType.note || qaType == QaType.tip) {
+      disabledAudioWidget.value = true;
+    } else {
+      disabledAudioWidget.value = false;
+    }
     disabled.value = false;
     logs.clear();
   }
@@ -161,14 +184,7 @@ class ExpandLogic {
     } else {
       hasContent = true;
     }
-    String key = "";
-    if (targetIndex.value == 0) {
-      key = QaType.answer.acronym;
-    } else if (targetIndex.value == 1) {
-      key = QaType.tip.acronym;
-    } else if (targetIndex.value == 2) {
-      key = QaType.question.acronym;
-    }
+    String key = toQaType(targetIndex.value).acronym;
     if (key.isNotEmpty && text.isNotEmpty) {
       String current = verseMap[key] ?? "";
       verseMap[key] = current.isEmpty ? text : "$current\n$text";

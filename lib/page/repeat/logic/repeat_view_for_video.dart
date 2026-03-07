@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
+import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:video_player/video_player.dart';
 
@@ -110,8 +111,8 @@ class RepeatViewForVideo extends RepeatView {
   Widget landscape(RxString path, MediaRange range) {
     var helper = this.helper!;
     var q = helper.text(QaType.question);
-    var t = helper.text(QaType.tip);
     var a = helper.text(QaType.answer);
+    var tipAreaWidget = helper.tipArea.call();
     return Stack(
       alignment: Alignment.topCenter,
       children: [
@@ -152,8 +153,10 @@ class RepeatViewForVideo extends RepeatView {
                           padding: const EdgeInsets.all(0),
                           children: [
                             if (q != null) q,
-                            if (t != null) t,
+                            if (q != null) SizedBox(height: RowWidget.dividerHeight),
                             if (a != null) a,
+                            if (a != null) SizedBox(height: RowWidget.dividerHeight),
+                            if (tipAreaWidget != null) tipAreaWidget,
                           ],
                         ),
                       ),
@@ -193,8 +196,8 @@ class RepeatViewForVideo extends RepeatView {
     var helper = this.helper!;
     double height = helper.screenHeight - helper.topPadding - helper.topBarHeight - mediaBarHeight - helper.bottomBarHeight;
     var q = helper.text(QaType.question);
-    var t = helper.text(QaType.tip);
     var a = helper.text(QaType.answer);
+    var tipAreaWidget = helper.tipArea.call();
     videoHeightInPortrait.value = videoWidgetHeight(height - helper.bottomBarHeight * 3);
     var bar = mediaBar(path, helper.screenWidth - padding * 2, mediaBarHeight, range);
     return Obx(() {
@@ -215,8 +218,10 @@ class RepeatViewForVideo extends RepeatView {
                       padding: const EdgeInsets.all(0),
                       children: [
                         if (q != null) q,
-                        if (t != null) t,
+                        if (q != null) SizedBox(height: RowWidget.dividerHeight),
                         if (a != null) a,
+                        if (a != null) SizedBox(height: RowWidget.dividerHeight),
+                        if (tipAreaWidget != null) tipAreaWidget,
                       ],
                     ),
                   ),

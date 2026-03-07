@@ -51,6 +51,7 @@ class Helper {
   double bottomBarHeight = 50;
 
   late Widget Function({required double width}) bottomBar;
+  late Widget? Function() tipArea;
   late Widget? Function(QaType type) text;
   late Widget Function() closeEyesPanel;
 

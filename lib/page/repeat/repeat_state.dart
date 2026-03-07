@@ -15,4 +15,6 @@ class RepeatState {
   var showBottomBar = true;
 
   var lastRecallTime = 0;
+
+  RxInt currentTipTabIndex = 0.obs;
 }

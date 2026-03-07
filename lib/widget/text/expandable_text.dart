@@ -4,12 +4,13 @@ class ExpandableText extends StatefulWidget {
   final String title;
   final String text;
   final String selectText;
-  final int limit;
+  final int? limit;
   final int? version;
   final TextStyle? style;
   final TextStyle? selectedStyle;
   final TextStyle? versionStyle;
   final VoidCallback? onEdit;
+  final VoidCallback? onTouch;
 
   const ExpandableText({
     Key? key,
@@ -17,11 +18,12 @@ class ExpandableText extends StatefulWidget {
     required this.text,
     this.version,
     this.selectText = "",
-    required this.limit,
+    this.limit,
     this.style,
     this.selectedStyle,
     this.versionStyle,
     this.onEdit,
+    this.onTouch,
   }) : super(key: key);
 
   @override
@@ -42,7 +44,7 @@ class _ExpandableTextState extends State<ExpandableText> {
       if (newLineIndex != -1) {
         displayText = displayText.substring(0, newLineIndex);
       }
-      if (displayText.length > widget.limit) {
+      if (widget.limit != null && displayText.length > widget.limit!) {
         displayText = displayText.substring(0, widget.limit);
       }
     }
@@ -131,6 +133,7 @@ class _ExpandableTextState extends State<ExpandableText> {
 
     return GestureDetector(
       onTap: () {
+        widget.onTouch?.call();
         setState(() {
           isExpanded = !isExpanded;
         });

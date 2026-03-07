@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/widget/text_template.dart';
+import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 
@@ -84,14 +85,23 @@ class ExpandSheet {
             title: I18nKey.appendPosition.tr,
             options: logic.targetOptions,
             value: logic.targetIndex.value,
-            changed: (index) => logic.targetIndex.value = index,
+            changed: (index) {
+              logic.targetIndex.value = index;
+              final qaType = logic.toQaType(index);
+              if (qaType == QaType.note || qaType == QaType.tip) {
+                logic.enableAudio.value = false;
+                logic.disabledAudioWidget.value = true;
+              } else {
+                logic.disabledAudioWidget.value = false;
+              }
+            },
             disabled: logic.disabled,
           ),
           RowWidget.buildDividerWithoutColor(),
           RowWidget.buildSwitch(
             title: I18nKey.syncGenerateAudio.tr,
             value: logic.enableAudio,
-            disabled: logic.disabled,
+            disabled: logic.disabledAudioWidget,
           ),
           RowWidget.buildDividerWithoutColor(),
           Obx(() {

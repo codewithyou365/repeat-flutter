@@ -187,34 +187,6 @@ class RepeatLogic extends GetxController {
     state.helper.stopMedia(true);
   }
 
-  void editNote() async {
-    var curr = getCurr();
-    if (curr == null || repeatLogic == null) {
-      return;
-    }
-    Map<String, dynamic>? map = state.helper.getCurrVerseMap();
-    if (map == null) {
-      return;
-    }
-    String acronym = 'n';
-    String noteStr = map[acronym] ?? '';
-    state.helper.stopMedia(false);
-    await Nav.editor.push(
-      arguments: EditorArgs(
-        onHistory: null,
-        title: I18nKey.labelNote.tr,
-        value: noteStr,
-        save: (str) async {
-          map[acronym] = str;
-          String jsonStr = jsonEncode(map);
-          var verseId = state.helper.getCurrVerse()!.verseId;
-          await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
-        },
-      ),
-    );
-    state.helper.stopMedia(true);
-  }
-
   void openContent() async {
     var curr = getCurr();
     if (curr == null) {

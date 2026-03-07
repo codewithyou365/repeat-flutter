@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'constant.dart';
 import 'helper.dart';
 import 'repeat_view.dart';
@@ -33,8 +34,8 @@ class RepeatViewForText extends RepeatView {
     }
     height = helper.screenHeight - helper.topPadding - helper.topBarHeight - helper.bottomBarHeight;
     var q = helper.text(QaType.question);
-    var t = helper.text(QaType.tip);
     var a = helper.text(QaType.answer);
+    var tipAreaWidget = helper.tipArea.call();
     return Stack(
       children: [
         Column(
@@ -52,8 +53,10 @@ class RepeatViewForText extends RepeatView {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (q != null) q,
-                        if (t != null) t,
+                        if (q != null) SizedBox(height: RowWidget.dividerHeight),
                         if (a != null) a,
+                        if (a != null) SizedBox(height: RowWidget.dividerHeight),
+                        if (tipAreaWidget != null) tipAreaWidget,
                       ],
                     ),
                   ),

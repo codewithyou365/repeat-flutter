@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
+import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'constant.dart';
 import 'model_media_range.dart';
@@ -80,8 +81,8 @@ class RepeatViewForAudio extends RepeatView {
     }
     height = helper.screenHeight - helper.topPadding - helper.topBarHeight - helper.bottomBarHeight - mediaBarHeight;
     var q = helper.text(QaType.question);
-    var t = helper.text(QaType.tip);
     var a = helper.text(QaType.answer);
+    var tipAreaWidget = helper.tipArea.call();
     return Stack(
       children: [
         Column(
@@ -100,8 +101,10 @@ class RepeatViewForAudio extends RepeatView {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (q != null) q,
-                        if (t != null) t,
+                        if (q != null) SizedBox(height: RowWidget.dividerHeight),
                         if (a != null) a,
+                        if (a != null) SizedBox(height: RowWidget.dividerHeight),
+                        if (tipAreaWidget != null) tipAreaWidget,
                       ],
                     ),
                   ),

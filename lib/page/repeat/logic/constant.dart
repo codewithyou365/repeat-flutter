@@ -28,7 +28,8 @@ enum TipLevel { none, tip }
 enum QaType {
   question(acronym: 'q', i18n: I18nKey.question),
   tip(acronym: 't', i18n: I18nKey.labelTips),
-  answer(acronym: 'a', i18n: I18nKey.answer);
+  answer(acronym: 'a', i18n: I18nKey.answer),
+  note(acronym: 'n', i18n: I18nKey.labelNote);
 
   final String acronym;
 

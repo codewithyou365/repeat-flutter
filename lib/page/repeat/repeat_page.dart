@@ -16,6 +16,7 @@ import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
+import 'package:repeat_flutter/widget/text/expandable_text.dart';
 import 'package:repeat_flutter/widget/text/text_button.dart';
 
 import 'repeat_logic.dart';
@@ -61,6 +62,7 @@ class RepeatPage extends StatelessWidget {
     state.helper.topBar = () => topBar(logic: logic, height: topBarHeight);
     state.helper.bottomBar = ({required double width}) => bottomBar(logic: logic, width: width, height: state.helper.bottomBarHeight);
     state.helper.text = (QaType type) => text(logic, type);
+    state.helper.tipArea = () => tipArea(logic);
     state.helper.closeEyesPanel = () => closeEyesPanel(logic);
 
     if (state.lastLandscape == null || state.lastLandscape != landscape) {
@@ -153,10 +155,6 @@ class RepeatPage extends StatelessWidget {
               tooltip: I18nKey.labelDetail.tr,
               onPressed: logic.openContent,
             ),
-          IconButton(
-            icon: const Icon(Icons.note_alt_outlined),
-            onPressed: logic.editNote,
-          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -227,12 +225,6 @@ class RepeatPage extends StatelessWidget {
   }
 
   Widget bottomBar({required RepeatLogic logic, required double width, required double height}) {
-    final helper = logic.state.helper;
-    var m = helper.getCurrVerseMap();
-    String? tip;
-    if (m != null) {
-      tip = m[QaType.tip.acronym];
-    }
     final repeatLogic = logic.repeatLogic;
     final leftButtonText = repeatLogic?.leftLabel ?? '';
     final rightButtonText = repeatLogic?.rightLabel ?? '';
@@ -258,19 +250,18 @@ class RepeatPage extends StatelessWidget {
               ),
             ],
           ),
-          if (tip != null && tip.isNotEmpty)
-            Row(
-              children: [
-                const Spacer(),
-                bottomBarButton(
-                  text: I18nKey.tips.tr,
-                  onTap: logic.onTapMiddle,
-                  width: buttonWidth,
-                  onLongPress: logic.onLongTapMiddle,
-                ),
-                const Spacer(),
-              ],
-            ),
+          Row(
+            children: [
+              const Spacer(),
+              bottomBarButton(
+                text: I18nKey.tips.tr,
+                onTap: logic.onTapMiddle,
+                width: buttonWidth,
+                onLongPress: logic.onLongTapMiddle,
+              ),
+              const Spacer(),
+            ],
+          ),
         ],
       ),
     );
@@ -293,6 +284,99 @@ class RepeatPage extends StatelessWidget {
         child: Text(text),
       ),
     );
+  }
+
+  Widget? tipArea(RepeatLogic logic) {
+    final helper = logic.state.helper;
+    if (helper.tip != TipLevel.tip) {
+      return null;
+    }
+    var map = helper.getCurrVerseMap();
+
+    if (map == null) return null;
+
+    return Obx(() {
+      int tabIndex = logic.state.currentTipTabIndex.value;
+      bool isTip = tabIndex == 0;
+      bool isEditMode = helper.showMode.value == ShowMode.edit;
+
+      String tipText = map[QaType.tip.acronym] ?? I18nKey.labelNoContent.tr;
+      String noteText = map[QaType.note.acronym] ?? '';
+
+      String displayText = isTip ? tipText : noteText;
+
+      bool canEdit = isTip ? isEditMode : true;
+      final qaType = isTip ? QaType.tip : QaType.note;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => logic.state.currentTipTabIndex.value = 0,
+                child: Text(
+                  I18nKey.tips.tr,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: isTip ? FontWeight.bold : FontWeight.normal,
+                    color: isTip ? Colors.blue : Colors.grey,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 24),
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => logic.state.currentTipTabIndex.value = 1,
+                child: Text(
+                  I18nKey.labelNote.tr,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: !isTip ? FontWeight.bold : FontWeight.normal,
+                    color: !isTip ? Colors.blue : Colors.grey,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 16),
+
+          if (displayText.isNotEmpty || canEdit)
+            ExpandableText(
+              title: "",
+              text: displayText,
+              style: TextStyle(
+                fontSize: fontSize(logic, qaType) ?? 17,
+                fontFamily: fontAlias(logic, qaType),
+              ),
+              onEdit: canEdit
+                  ? () async {
+                      if (helper.showMode.value != ShowMode.edit && qaType == QaType.note) {
+                        await modify(map, logic, qaType);
+                      } else {
+                        await fullModify(map, logic, qaType);
+                      }
+                    }
+                  : null,
+              onTouch: () async {
+                final String text = map[qaType.acronym] ?? '';
+                if (text.isEmpty) {
+                  return;
+                }
+                helper.stopMedia(false);
+                await logic.copyLogic.show(
+                  TextTemplateMode.editAndCopy,
+                  Get.context!,
+                  map[qaType.acronym] ?? '',
+                );
+                helper.stopMedia(true);
+              },
+            ),
+          const SizedBox(height: 12),
+        ],
+      );
+    });
   }
 
   Widget? text(RepeatLogic logic, QaType type) {
@@ -324,58 +408,7 @@ class RepeatPage extends StatelessWidget {
       String editText = '${type.i18n.tr}:$text';
       return MyTextButton.build(
         () async {
-          helper.stopMedia(false);
-          var keys = [
-            I18nKey.adjustFont.tr,
-            I18nKey.editContent.tr,
-            I18nKey.expand.tr,
-          ];
-          if (type == QaType.tip) {
-            keys.add(I18nKey.ttsSettings.tr);
-          }
-          int? index = await Select.showSheet(title: I18nKey.edit.tr, keys: keys);
-          if (index == null) {
-            return;
-          }
-          if (keys[index] == I18nKey.adjustFont.tr) {
-            final verse = helper.getCurrVerse();
-            if (verse == null) {
-              return;
-            }
-            final bookMap = helper.getCurrBookMap();
-            if (bookMap == null) {
-              return;
-            }
-            logic.adjustFont.open(
-              bookId: verse.bookId,
-              fontPrefix: type.acronym,
-              bookMap: bookMap,
-            );
-          } else if (keys[index] == I18nKey.editContent.tr) {
-            await Nav.editor.push(
-              arguments: EditorArgs(
-                title: type.i18n.tr,
-                value: text,
-                save: (str) async {
-                  map[type.acronym] = str;
-                  String jsonStr = jsonEncode(map);
-                  var verseId = helper.getCurrVerse()!.verseId;
-                  await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
-                  logic.update([RepeatLogic.id]);
-                },
-              ),
-            );
-          } else if (keys[index] == I18nKey.expand.tr) {
-            final verse = helper.getCurrVerse();
-            if (verse == null) {
-              return;
-            }
-            await logic.expandSheet.open(text, verse, map);
-            logic.update([RepeatLogic.id]);
-          } else if (keys[index] == I18nKey.ttsSettings.tr) {
-            logic.ttsHelper.open();
-          }
-          helper.stopMedia(true);
+          await fullModify(map, logic, type);
         },
         editText,
         style,
@@ -395,6 +428,83 @@ class RepeatPage extends StatelessWidget {
         style,
       );
     }
+  }
+
+  Future<void> modify(Map<String, dynamic> map, RepeatLogic logic, QaType type) async {
+    var helper = logic.state.helper;
+    helper.stopMedia(false);
+
+    await Nav.editor.push(
+      arguments: EditorArgs(
+        title: type.i18n.tr,
+        value: map[type.acronym] ?? '',
+        save: (str) async {
+          map[type.acronym] = str;
+          String jsonStr = jsonEncode(map);
+          var verseId = helper.getCurrVerse()!.verseId;
+          await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
+          logic.update([RepeatLogic.id]);
+        },
+      ),
+    );
+    helper.stopMedia(true);
+  }
+
+  Future<void> fullModify(Map<String, dynamic> map, RepeatLogic logic, QaType type) async {
+    var helper = logic.state.helper;
+    helper.stopMedia(false);
+    String text = map[type.acronym] ?? '';
+    var keys = [
+      I18nKey.adjustFont.tr,
+      I18nKey.editContent.tr,
+      I18nKey.expand.tr,
+    ];
+    if (type == QaType.tip) {
+      keys.add(I18nKey.ttsSettings.tr);
+    }
+    int? index = await Select.showSheet(title: I18nKey.edit.tr, keys: keys);
+    if (index == null) {
+      return;
+    }
+    if (keys[index] == I18nKey.adjustFont.tr) {
+      final verse = helper.getCurrVerse();
+      if (verse == null) {
+        return;
+      }
+      final bookMap = helper.getCurrBookMap();
+      if (bookMap == null) {
+        return;
+      }
+      logic.adjustFont.open(
+        bookId: verse.bookId,
+        fontPrefix: type.acronym,
+        bookMap: bookMap,
+      );
+    } else if (keys[index] == I18nKey.editContent.tr) {
+      await Nav.editor.push(
+        arguments: EditorArgs(
+          title: type.i18n.tr,
+          value: text,
+          save: (str) async {
+            map[type.acronym] = str;
+            String jsonStr = jsonEncode(map);
+            var verseId = helper.getCurrVerse()!.verseId;
+            await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
+            logic.update([RepeatLogic.id]);
+          },
+        ),
+      );
+    } else if (keys[index] == I18nKey.expand.tr) {
+      final verse = helper.getCurrVerse();
+      if (verse == null) {
+        return;
+      }
+      await logic.expandSheet.open(text, verse, map);
+      logic.update([RepeatLogic.id]);
+    } else if (keys[index] == I18nKey.ttsSettings.tr) {
+      logic.ttsHelper.open();
+    }
+    helper.stopMedia(true);
   }
 
   double? fontSize(RepeatLogic logic, QaType type) {
