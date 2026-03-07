@@ -20,10 +20,27 @@ import 'package:repeat_flutter/db/entity/verse_stats.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 
+enum SortEnum {
+  asc(I18nKey.asc),
+  desc(I18nKey.desc),
+  random(I18nKey.random);
+
+  final I18nKey i18n;
+
+  const SortEnum(this.i18n);
+
+  static SortEnum fromInt(int? sortIndex) {
+    if (sortIndex != null && sortIndex >= 0 && sortIndex < SortEnum.values.length) {
+      return SortEnum.values[sortIndex];
+    }
+    return SortEnum.asc;
+  }
+}
+
 // learning config
 class LearnConfig {
   String title;
-  bool random;
+  SortEnum sort;
   int level;
   int toLevel;
   int learnCount;
@@ -31,7 +48,7 @@ class LearnConfig {
 
   LearnConfig({
     required this.title,
-    required this.random,
+    required this.sort,
     required this.level,
     required this.toLevel,
     required this.learnCount,
@@ -41,7 +58,7 @@ class LearnConfig {
   Map<String, dynamic> toJson() {
     return {
       'title': title,
-      'random': random,
+      'sort': sort.index,
       'level': level,
       'toLevel': toLevel,
       'learnCount': learnCount,
@@ -52,7 +69,7 @@ class LearnConfig {
   factory LearnConfig.fromJson(Map<String, dynamic> json) {
     return LearnConfig(
       title: json['title'],
-      random: json['random'],
+      sort: SortEnum.fromInt(json['sort']),
       level: json['level'],
       toLevel: json['toLevel'] ?? 0,
       learnCount: json['learnCount'],
@@ -63,7 +80,7 @@ class LearnConfig {
   String tr() {
     var key = "labelElConfig";
     List<String> args = [level.toString()];
-    key += random ? "1" : "0";
+    key += sort.index.toString();
     key += level != toLevel ? "1" : "0";
     if (level != toLevel) args.add(toLevel.toString());
     key += learnCount > 0 ? "1" : "0";
@@ -214,7 +231,7 @@ abstract class ScheduleDao {
       // TW: tip and write.
       LearnConfig(
         title: "LW1",
-        random: false,
+        sort: SortEnum.asc,
         level: 0,
         toLevel: 0,
         learnCount: 10,
@@ -222,7 +239,7 @@ abstract class ScheduleDao {
       ),
       LearnConfig(
         title: "LR2",
-        random: false,
+        sort: SortEnum.asc,
         level: 1,
         toLevel: 5,
         learnCount: 90,
@@ -600,14 +617,19 @@ abstract class ScheduleDao {
       var all = await scheduleLearn(Classroom.curr, minLevel, now);
       for (int i = 0; i < learnConfigs.length; ++i) {
         var config = learnConfigs[i];
-        if (!config.random) {
+        if (config.sort != SortEnum.random) {
+          if (config.sort == SortEnum.desc) {
+            all.sort((a, b) => b.sort.compareTo(a.sort));
+          } else {
+            all.sort((a, b) => a.sort.compareTo(b.sort));
+          }
           todayPrg.addAll(refineEl(all, i, config));
         }
       }
       all.shuffle();
       for (int i = 0; i < learnConfigs.length; ++i) {
         var config = learnConfigs[i];
-        if (config.random) {
+        if (config.sort == SortEnum.random) {
           todayPrg.addAll(refineEl(all, i, config));
         }
       }
@@ -669,7 +691,8 @@ abstract class ScheduleDao {
     } else {
       ret = curr.sublist(0, curr.length < config.learnCount ? curr.length : config.learnCount);
     }
-    all.removeWhere((a) => ret.any((b) => a.verseId == b.verseId));
+    var selectedIds = ret.map((e) => e.verseId).toSet();
+    all.removeWhere((a) => selectedIds.contains(a.verseId));
 
     for (int i = 0; i < ret.length; i++) {
       ret[i].progress = 0;

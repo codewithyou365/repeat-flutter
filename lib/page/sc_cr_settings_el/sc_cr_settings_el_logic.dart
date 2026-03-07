@@ -30,7 +30,7 @@ class ScCrSettingsElLogic extends GetxController {
           ValueKey(valueKey++),
           LearnConfig(
             title: value.title,
-            random: value.random,
+            sort: value.sort,
             level: value.level,
             toLevel: value.toLevel,
             learnCount: value.learnCount,
@@ -46,7 +46,7 @@ class ScCrSettingsElLogic extends GetxController {
     var config = configView.config;
     state.currElConfigIndex = index;
     state.currElConfig.title.value = config.title;
-    state.currElConfig.random.value = config.random;
+    state.currElConfig.sort.value = config.sort.index;
     state.currElConfig.level.value = config.level;
     state.currElConfig.toLevel.value = config.toLevel;
     state.currElConfig.learnCount.value = config.learnCount;
@@ -77,7 +77,7 @@ class ScCrSettingsElLogic extends GetxController {
               ValueKey(valueKey++),
               LearnConfig(
                 title: value.title,
-                random: value.random,
+                sort: value.sort,
                 level: value.level,
                 toLevel: value.toLevel,
                 learnCount: value.learnCount,
@@ -99,7 +99,7 @@ class ScCrSettingsElLogic extends GetxController {
   void addItem() {
     var config = LearnConfig(
       title: "LR",
-      random: false,
+      sort: SortEnum.asc,
       level: 1,
       toLevel: 1,
       learnCount: 10,
@@ -112,7 +112,7 @@ class ScCrSettingsElLogic extends GetxController {
   void copyItem() {
     var config = LearnConfig(
       title: state.currElConfig.title.value,
-      random: state.currElConfig.random.value,
+      sort: SortEnum.values[state.currElConfig.sort.value],
       level: state.currElConfig.level.value,
       toLevel: state.currElConfig.toLevel.value,
       learnCount: state.currElConfig.learnCount.value,
@@ -134,7 +134,7 @@ class ScCrSettingsElLogic extends GetxController {
     int index = state.currElConfigIndex;
     var config = state.learnConfigs[index];
     config.config.title = state.currElConfig.title.value;
-    config.config.random = state.currElConfig.random.value;
+    config.config.sort = SortEnum.fromInt(state.currElConfig.sort.value);
     config.config.level = state.currElConfig.level.value;
     config.config.toLevel = state.currElConfig.toLevel.value;
     config.config.learnCount = state.currElConfig.learnCount.value;

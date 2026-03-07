@@ -64,7 +64,7 @@ class ScCrSettingsElPage extends StatelessWidget {
                             RowWidget.buildMiddleText(
                               LearnConfig(
                                 title: config.title.value,
-                                random: config.random.value,
+                                sort: SortEnum.fromInt(config.sort.value),
                                 level: config.level.value,
                                 toLevel: config.toLevel.value,
                                 learnCount: config.learnCount.value,
@@ -74,7 +74,18 @@ class ScCrSettingsElPage extends StatelessWidget {
                             RowWidget.buildDivider(),
                             RowWidget.buildTextWithEdit(I18nKey.labelTitle.tr, config.title),
                             RowWidget.buildDividerWithoutColor(),
-                            RowWidget.buildSwitch(title: I18nKey.labelElRandom.tr, value: config.random),
+                            RowWidget.buildCupertinoPicker(
+                              title: I18nKey.labelElSort.tr,
+                              options: [
+                                SortEnum.asc.i18n.tr,
+                                SortEnum.desc.i18n.tr,
+                                SortEnum.random.i18n.tr,
+                              ],
+                              value: config.sort.value,
+                              changed: (index) {
+                                config.sort.value = index;
+                              },
+                            ),
                             RowWidget.buildDividerWithoutColor(),
                             RowWidget.buildTextWithEdit(I18nKey.labelElLevel.tr, config.level),
                             RowWidget.buildDividerWithoutColor(),

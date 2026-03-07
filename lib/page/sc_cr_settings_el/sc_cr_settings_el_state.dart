@@ -18,7 +18,7 @@ class ElConfigView {
 
 class ElConfigObs {
   var title = "".obs;
-  var random = false.obs;
+  var sort = 0.obs;
   var level = 0.obs;
   var toLevel = 0.obs;
   var learnCount = 2.obs;
