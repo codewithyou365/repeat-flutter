@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/path.dart';
-import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
+import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/book_help.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 
 class FontHelp {
@@ -15,19 +15,17 @@ class FontHelp {
   static const fontHashSuffix = "FontHash";
   static const fontSizeSuffix = "FontSize";
 
-  static Future<void> registerAllFont(List<VerseTodayPrg> all) async {
+  static Future<void> registerAllFont() async {
     try {
-      final bookIds = all.map((e) => e.bookId).toSet().toList();
+      var books = await Db().db.bookDao.getAll(Classroom.curr);
       final rootPath = await DocPath.getContentPath();
-      for (var bookId in bookIds) {
-        var s = BookHelp.getCache(bookId);
-        if (s == null) continue;
-        if (s.bookContent.isEmpty) continue;
+      for (var s in books) {
+        if (s.content.isEmpty) continue;
 
-        Map<String, dynamic> bookMap = jsonDecode(s.bookContent);
+        Map<String, dynamic> bookMap = jsonDecode(s.content);
         List<DownloadContent> downloads = DownloadContent.toList(bookMap['d']) ?? [];
 
-        const prefixes = ["q", "t", "a"];
+        const prefixes = ["q", "t", "a", "n"];
 
         for (var prefix in prefixes) {
           String alias = bookMap['$prefix$fontAliasSuffix'] ?? '';
@@ -36,7 +34,7 @@ class FontHelp {
           if (alias.isNotEmpty && hash.isNotEmpty) {
             final download = downloads.firstWhereOrNull((e) => e.hash == hash);
             if (download != null) {
-              final localFolder = rootPath.joinPath(DocPath.getRelativePath(bookId).joinPath(download.folder));
+              final localFolder = rootPath.joinPath(DocPath.getRelativePath(s.id!).joinPath(download.folder));
               final filePath = localFolder.joinPath(download.name);
 
               await registerCustomFont(alias, filePath);

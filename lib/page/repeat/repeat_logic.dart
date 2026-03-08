@@ -87,7 +87,7 @@ class RepeatLogic extends GetxController {
       Get.back();
       return;
     }
-    await FontHelp.registerAllFont(args.progresses);
+    await FontHelp.registerAllFont();
     if (args.showMode == ShowMode.edit) {
       state.helper.focusMode.value = false;
       state.needUpdateSystemUiMode = true;
