@@ -88,13 +88,7 @@ class ScPage extends StatelessWidget {
         mainAxisSpacing: 28,
         crossAxisSpacing: 28,
         itemBuilder: (context, index) {
-          if (index != 1) {
-            return buildButton(logic, state.list[index]);
-          }
-          return Padding(
-            padding: EdgeInsets.only(top: 10),
-            child: buildButton(logic, state.list[index]),
-          );
+          return buildButton(logic, state.list[index]);
         },
         itemCount: state.list.length,
       ),
@@ -124,7 +118,7 @@ class ScPage extends StatelessWidget {
     );
   }
 
-  openDeleteDialog(ScLogic logic, Classroom model) {
+  void openDeleteDialog(ScLogic logic, Classroom model) {
     RxBool deleteAll = false.obs;
     MsgBox.checkboxWithYesOrNo(
       title: I18nKey.labelDelete.tr,
