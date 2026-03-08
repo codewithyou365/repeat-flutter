@@ -1695,6 +1695,19 @@ class _$GameDao extends GameDao {
                   'hash': item.hash,
                   'ownerUserId': item.ownerUserId,
                   'createTime': item.createTime
+                }),
+        _gameUpdateAdapter = UpdateAdapter(
+            database,
+            'Game',
+            ['id'],
+            (Game item) => <String, Object?>{
+                  'id': item.id,
+                  'classroomId': item.classroomId,
+                  'bookId': item.bookId,
+                  'name': item.name,
+                  'hash': item.hash,
+                  'ownerUserId': item.ownerUserId,
+                  'createTime': item.createTime
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -1705,13 +1718,11 @@ class _$GameDao extends GameDao {
 
   final InsertionAdapter<Game> _gameInsertionAdapter;
 
+  final UpdateAdapter<Game> _gameUpdateAdapter;
+
   @override
-  Future<Game?> one(
-    int classroomId,
-    String gameName,
-  ) async {
-    return _queryAdapter.query(
-        'SELECT * FROM Game WHERE classroomId=?1 AND gameName=?2',
+  Future<Game?> getById(int id) async {
+    return _queryAdapter.query('SELECT * FROM Game WHERE id=?1',
         mapper: (Map<String, Object?> row) => Game(
             classroomId: row['classroomId'] as int,
             bookId: row['bookId'] as int,
@@ -1720,7 +1731,18 @@ class _$GameDao extends GameDao {
             ownerUserId: row['ownerUserId'] as int,
             createTime: row['createTime'] as int,
             id: row['id'] as int?),
-        arguments: [classroomId, gameName]);
+        arguments: [id]);
+  }
+
+  @override
+  Future<int?> getIdByName(
+    int classroomId,
+    String name,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT id FROM Game WHERE classroomId=?1 AND name=?2',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [classroomId, name]);
   }
 
   @override
@@ -1762,6 +1784,11 @@ class _$GameDao extends GameDao {
   @override
   Future<void> insertOrReplace(Game kv) async {
     await _gameInsertionAdapter.insert(kv, OnConflictStrategy.replace);
+  }
+
+  @override
+  Future<void> updateOrReplace(Game kv) async {
+    await _gameUpdateAdapter.update(kv, OnConflictStrategy.replace);
   }
 }
 

@@ -14,15 +14,21 @@ import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 
 class GameContent {
+  int? id;
   String hash;
   String name;
 
-  GameContent({required this.hash, required this.name});
+  GameContent({
+    this.id,
+    required this.hash,
+    required this.name,
+  });
 
   factory GameContent.fromJson(Map<String, dynamic> json) {
     return GameContent(
-      hash: json['hash'] ?? '',
-      name: json['name'] ?? '',
+      id: json['i'] as int?,
+      hash: json['h'] ?? '',
+      name: json['n'] ?? '',
     );
   }
 }
@@ -44,7 +50,7 @@ class ClassroomHelp {
         Map<String, dynamic> bookMap = jsonDecode(book.content);
         List<DownloadContent> downloads = DownloadContent.toList(bookMap['d']) ?? [];
 
-        const prefixes = ["q", "t", "a", "n"];
+        const prefixes = ['q', 't', 'a', 'n'];
         for (var prefix in prefixes) {
           String alias = bookMap['$prefix$fontAliasSuffix'] ?? '';
           String hash = bookMap['$prefix$fontHashSuffix'] ?? '';
@@ -60,10 +66,11 @@ class ClassroomHelp {
           }
         }
 
-        if (bookMap["game"] != null) {
-          var gameData = bookMap["game"] as List<dynamic>;
+        if (bookMap['g'] != null) {
+          var gameData = bookMap['g'] as List<dynamic>;
           List<GameContent> games = gameData.map((e) => GameContent.fromJson(e)).toList();
-          for (var game in games) {
+          for (var i = 0; i < games.length; i++) {
+            final game = games[i];
             if (game.name.isNotEmpty && game.hash.isNotEmpty) {
               final download = downloads.firstWhereOrNull((e) => e.hash == game.hash);
               if (download != null) {
@@ -72,24 +79,38 @@ class ClassroomHelp {
                 final destinationDir = localFolder.joinPath(download.folder).joinPath(download.pureName);
                 bool ok = await unzipGame(zipFilePath, destinationDir);
                 if (ok) {
-                  await Db().db.gameDao.insertOrReplace(
-                    Game(
-                      classroomId: Classroom.curr,
-                      bookId: book.id!,
-                      name: game.name,
-                      hash: game.hash,
-                      ownerUserId: 0,
-                      createTime: DateTime.now().millisecondsSinceEpoch,
-                    ),
-                  );
+                  Game? gameEntity;
+                  if (game.id != null) {
+                    gameEntity = await Db().db.gameDao.getById(game.id!);
+                    if (gameEntity == null || gameEntity.bookId != book.id!) {
+                      gameEntity = null;
+                    }
+                  }
+                  if (gameEntity == null) {
+                    await Db().db.gameDao.insertOrReplace(
+                      Game(
+                        classroomId: Classroom.curr,
+                        bookId: book.id!,
+                        name: game.name,
+                        hash: game.hash,
+                        ownerUserId: 0,
+                        createTime: DateTime.now().millisecondsSinceEpoch,
+                      ),
+                    );
+                    gameData[i]['i'] = await Db().db.gameDao.getIdByName(Classroom.curr, game.name);
+                  } else {
+                    gameEntity.name = game.name;
+                    gameEntity.hash = game.hash;
+                    await Db().db.gameDao.updateOrReplace(gameEntity);
+                  }
                   currentGameNames.add(game.name);
                 }
               }
             }
           }
         }
+        Db().db.bookDao.updateBookContent(book.id!, jsonEncode(bookMap));
       }
-
       final dbGames = await Db().db.gameDao.getByClassroomId(Classroom.curr);
       for (var dbGame in dbGames) {
         if (!currentGameNames.contains(dbGame.name)) {

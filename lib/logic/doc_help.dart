@@ -113,6 +113,13 @@ class DocHelp {
       if (k != 'c') {
         ret[k] = v;
       }
+      if (k == 'g' && v is List) {
+        for (var game in v) {
+          if (!databaseData && game is Map) {
+            game.remove('i');
+          }
+        }
+      }
     });
 
     if (rootUrl != null) {

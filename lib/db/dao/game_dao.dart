@@ -8,8 +8,11 @@ import 'package:repeat_flutter/db/entity/game.dart';
 abstract class GameDao {
   late AppDatabase db;
 
-  @Query('SELECT * FROM Game WHERE classroomId=:classroomId AND gameName=:gameName')
-  Future<Game?> one(int classroomId, String gameName);
+  @Query('SELECT * FROM Game WHERE id=:id')
+  Future<Game?> getById(int id);
+
+  @Query('SELECT id FROM Game WHERE classroomId=:classroomId AND name=:name')
+  Future<int?> getIdByName(int classroomId, String name);
 
   @Query('SELECT * FROM Game WHERE classroomId=:classroomId')
   Future<List<Game>> getByClassroomId(int classroomId);
@@ -25,4 +28,7 @@ abstract class GameDao {
 
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertOrReplace(Game kv);
+
+  @Update(onConflict: OnConflictStrategy.replace)
+  Future<void> updateOrReplace(Game kv);
 }

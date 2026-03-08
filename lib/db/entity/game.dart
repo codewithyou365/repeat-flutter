@@ -15,8 +15,8 @@ class Game {
 
   final int classroomId;
   final int bookId;
-  final String name;
-  final String hash;
+   String name;
+  String hash;
 
   final int ownerUserId;
   final int createTime;
