@@ -43,7 +43,6 @@ import 'package:repeat_flutter/db/entity/verse_stats.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
-import 'package:repeat_flutter/db/entity/game_user_input.dart';
 import 'package:repeat_flutter/db/entity/time_stats.dart';
 import 'package:repeat_flutter/db/migration/m1_2.dart';
 import 'package:repeat_flutter/db/migration/m2_3.dart';
@@ -86,7 +85,6 @@ part 'database.g.dart'; // the generated code will be there
     BookShow,
     Game,
     GameUser,
-    GameUserInput,
     GameUserScore,
     GameUserScoreHistory,
     Lock,
@@ -99,7 +97,6 @@ part 'database.g.dart'; // the generated code will be there
   DateTimeConverter,
   DateConverter,
   VersionReasonConverter,
-  GameTypeConverter,
 ])
 abstract class AppDatabase extends FloorDatabase {
   BookContentVersionDao get bookContentVersionDao;

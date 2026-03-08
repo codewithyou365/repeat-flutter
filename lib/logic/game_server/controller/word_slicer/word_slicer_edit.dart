@@ -40,10 +40,6 @@ Future<message.Response?> wordSlicerEdit(message.Request req, GameUser user, Ser
     final jsonStr = jsonEncode(verseMap);
     await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
   }
-  final game = await Db().db.gameDao.getOne();
-  if (game == null) {
-    return message.Response(error: GameServerError.gameNotFound.name);
-  }
   await server.broadcast(
     message.Request(
       path: Path.refreshGame,

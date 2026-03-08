@@ -234,7 +234,7 @@ abstract class BookDao {
     await db.chapterContentVersionDao.reimport(bookId, insertChapters, updateChapters);
     await db.chapterDao.syncContentVersion(bookId);
 
-    await db.gameDao.deleteByChapterIds(deletedChapterIds);
+    //await db.gameDao.deleteByChapterIds(deletedChapterIds);
     await db.gameUserInputDao.deleteByChapterIds(deletedChapterIds);
     await db.verseReviewDao.deleteByChapterIds(deletedChapterIds);
     await db.verseStatsDao.deleteByChapterIds(deletedChapterIds);
@@ -245,7 +245,7 @@ abstract class BookDao {
     await db.verseContentVersionDao.reimport(bookId, insertVerses, updateVerses, updateVerseCount);
     await db.verseDao.syncContentVersion(bookId);
 
-    await db.gameDao.deleteByVerseIds(deletedVerseIds);
+    //await db.gameDao.deleteByVerseIds(deletedVerseIds);
     await db.gameUserInputDao.deleteByVerseIds(deletedVerseIds);
     await db.verseReviewDao.deleteByVerseIds(deletedVerseIds);
     await db.verseStatsDao.deleteByVerseIds(deletedVerseIds);

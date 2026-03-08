@@ -4,24 +4,24 @@ import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/db/entity/game_user_score.dart';
 
 class GameUserScoreRes {
-  final int gameType;
+  final int gameId;
   final int score;
 
   GameUserScoreRes({
-    required this.gameType,
+    required this.gameId,
     required this.score,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      'gameType': gameType,
+      'gameId': gameId,
       'score': score,
     };
   }
 
   factory GameUserScoreRes.fromJson(Map<String, dynamic> json) {
     return GameUserScoreRes(
-      gameType: json['gameType'] as int,
+      gameId: json['gameId'] as int,
       score: json['score'] as int,
     );
   }
@@ -34,7 +34,7 @@ Future<message.Response?> gameUserScore(message.Request req, GameUser user) asyn
   final res = scores
       .map(
         (s) => GameUserScoreRes(
-          gameType: s.gameType.index,
+          gameId: s.gameId,
           score: s.score,
         ),
       )

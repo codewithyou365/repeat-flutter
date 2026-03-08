@@ -2,7 +2,6 @@ import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/content_version.dart';
-import 'package:repeat_flutter/db/entity/game_user_score.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 
 class KConverter extends TypeConverter<K, String> {
@@ -62,17 +61,5 @@ class DateConverter extends TypeConverter<Date, int> {
   @override
   int encode(Date value) {
     return value.value;
-  }
-}
-
-class GameTypeConverter extends TypeConverter<GameType, int> {
-  @override
-  GameType decode(int index) {
-    return GameType.values[index];
-  }
-
-  @override
-  int encode(GameType value) {
-    return value.index;
   }
 }

@@ -44,10 +44,6 @@ Future<message.Response?> blankItRightContent(message.Request req, GameUser user
   if (verse == null) {
     return message.Response(error: GameServerError.gameNotFound.name);
   }
-  final game = await Db().db.gameDao.getOne();
-  if (game == null) {
-    return message.Response(error: GameServerError.gameNotFound.name);
-  }
   if (editorUserId == user.getId()) {
     return message.Response(
       data: BlankItRightContentRes(

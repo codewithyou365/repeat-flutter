@@ -7,15 +7,15 @@ import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/game_user_score.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/entity/cr_kv.dart';
+import 'package:repeat_flutter/db/entity/game.dart';
+import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/web_server.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
-import 'package:repeat_flutter/logic/widget/game/logic/game_settings.dart';
-import 'package:repeat_flutter/logic/widget/game/logic/game_settings_type.dart';
-import 'package:repeat_flutter/logic/widget/game/logic/game_settings_word_slicer.dart';
 import 'package:repeat_flutter/logic/widget/user_manager.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/webview/webview_args.dart';
@@ -24,7 +24,6 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'game_page.dart';
 import 'game_state.dart';
-import 'logic/game_settings_blank_it_right.dart';
 
 class GameLogic<T extends GetxController> {
   static const int defaultPort = 4321;
@@ -40,36 +39,45 @@ class GameLogic<T extends GetxController> {
   final GamePage page = GamePage<T>();
 
   late VoidCallback onOpenWeb;
-  final Map<GameType, GameSettings> gameTypeToGameSettings = {};
 
-  GameLogic(this.parentLogic) {
-    gameTypeToGameSettings[GameType.type] = GameSettingsType();
-    gameTypeToGameSettings[GameType.blankItRight] = GameSettingsBlankItRight();
-    gameTypeToGameSettings[GameType.wordSlicer] = GameSettingsWordSlicer();
-  }
+  GameLogic(this.parentLogic);
 
-  Future<void> init(VoidCallback onOpenWeb) async {
+  Future<bool> init(VoidCallback onOpenWeb) async {
     this.onOpenWeb = onOpenWeb;
-    var lastGameIndex = await Db().db.kvDao.getInt(K.lastGameIndex) ?? 1;
-    state.game = lastGameIndex - 1;
-    GameState.lastGameIndex = lastGameIndex;
+    state.games = await Db().db.gameDao.getByClassroomId(Classroom.curr);
+    if (state.games.isEmpty) {
+      return false;
+    }
+    var lastGameIndex = await Db().db.crKvDao.getInt(Classroom.curr, CrK.lastGameIndex) ?? 0;
+    if (lastGameIndex >= state.games.length) {
+      lastGameIndex = 0;
+      await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.lastGameIndex, '0'));
+    }
+    state.lastGameIndex = lastGameIndex;
     port.value = await Db().db.kvDao.getIntWithDefault(K.gameServerPort, port.value);
     if (port.value > 50000) {
       port.value = defaultPort;
     }
     await userManager.init(web);
+    return true;
   }
 
   Future<void> open() async {
-    for (var v in gameTypeToGameSettings.values) {
-      await v.onInit(web);
-    }
-    state.game = GameState.lastGameIndex - 1;
     sub.off();
     subAllowRegisterNumber.off();
     state.online.value = getOnline();
-    sub.on([EventTopic.wsEvent], (_) {
+    state.users = await Db().db.gameUserDao.getAllUser();
+    sub.on([EventTopic.wsEvent], (wsEvent) async {
       state.online.value = getOnline();
+      if (wsEvent == null) {
+        return;
+      }
+      if (wsEvent.wsEventType == WsEventType.add) {
+        if (!state.users.any((user) => user.id == wsEvent.id)) {
+          state.users = await Db().db.gameUserDao.getAllUser();
+          await initUsers();
+        }
+      }
     });
     subAllowRegisterNumber.on([EventTopic.allowRegisterNumber], (v) {
       if (v != null) {
@@ -81,16 +89,43 @@ class GameLogic<T extends GetxController> {
     return page.open(this).then((_) {
       sub.off();
       subAllowRegisterNumber.off();
-      for (var v in gameTypeToGameSettings.values) {
-        v.onClose();
-      }
     });
   }
 
+  Future<Game?> getGame() async {
+    if (state.games.isEmpty) {
+      return null;
+    }
+    if (state.lastGameIndex >= state.games.length) {
+      state.lastGameIndex = 0;
+      await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.lastGameIndex, '0'));
+    }
+    state.lastGameIndex = 0;
+    return state.games[state.lastGameIndex];
+  }
+
+  Future<void> initUsers() async {
+    int? userId;
+    var game = await getGame();
+    if (game != null) {
+      userId = game.ownerUserId;
+    }
+    if (state.users.isNotEmpty) {
+      var index = state.users.indexWhere((u) => u.id == userId);
+      if (index == -1) {
+        index = 0;
+      }
+      await setUser(index);
+    }
+    if (game != null) {
+      await setScore(game);
+    }
+  }
+
   void changeGame(int index) {
-    GameState.lastGameIndex = index + 1;
+    state.lastGameIndex = index;
     parentLogic.update([bodyId]);
-    Db().db.kvDao.insertOrReplace(Kv(K.lastGameIndex, "${GameState.lastGameIndex}"));
+    Db().db.kvDao.insertOrReplace(Kv(K.lastGameIndex, "${state.lastGameIndex}"));
   }
 
   String getOnline() {
@@ -114,7 +149,12 @@ class GameLogic<T extends GetxController> {
       }
       if (value) {
         try {
-          await web.start(port.value);
+          final game = await getGame();
+          if (game == null) {
+            return;
+          }
+          GameState.game = game;
+          await web.start(game.bookId, game.hash, port.value);
           state.urls = [];
           var ips = await Ip.getLanIps();
           for (var i = 0; i < ips.length; i++) {
@@ -122,10 +162,6 @@ class GameLogic<T extends GetxController> {
             state.urls.add('https://$url:${port.value}');
           }
           onOpenWeb();
-          for (var v in gameTypeToGameSettings.values) {
-            v.setWebOpen(true);
-            await v.onWebOpen();
-          }
           Snackbar.show('game service started');
         } catch (e) {
           await Db().db.kvDao.insertOrReplace(Kv(K.gameServerPort, '${port.value + 10}'));
@@ -136,6 +172,7 @@ class GameLogic<T extends GetxController> {
         }
       } else {
         await closeWeb();
+        GameState.game = null;
       }
     } finally {
       state.openPending = false;
@@ -145,10 +182,6 @@ class GameLogic<T extends GetxController> {
 
   Future<void> closeWeb() async {
     try {
-      for (var v in gameTypeToGameSettings.values) {
-        await v.onWebClose();
-        v.setWebOpen(false);
-      }
       await web.stop();
       state.urls = [];
       Snackbar.show('game service stopped');
@@ -162,7 +195,7 @@ class GameLogic<T extends GetxController> {
     Nav.webview.push(
       arguments: WebviewArgs(
         initialUrl: "https://127.0.0.1:${port.value}",
-        pageTitle: toStringByGameType(GameType.values[GameState.lastGameIndex]),
+        pageTitle: GameState.game?.name ?? '',
       ),
     );
   }
@@ -221,18 +254,26 @@ class GameLogic<T extends GetxController> {
     await Db().db.kvDao.insertOrReplace(Kv(K.gamePasswordCreateTime, '0'));
   }
 
-  String toStringByGameType(GameType gameType) {
-    switch (gameType) {
-      case GameType.type:
-        return I18nKey.typeGame.tr;
-      case GameType.blankItRight:
-        return I18nKey.blankItRightGame.tr;
-      case GameType.wordSlicer:
-        return I18nKey.wordSlicer.tr;
-      case GameType.input:
-        return I18nKey.inputGame.tr;
-      default:
-        return '';
+  Future<void> setUser(int index) async {
+    if (state.users.isEmpty) {
+      return;
     }
+    GameUser user = state.users[index];
+    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.wordSlicerGameForEditorUserId, "${user.id!}"));
+    state.userIndex.value = index;
+  }
+
+  List<String> listGameNames() {
+    return state.games.map((game) => game.name).toList();
+  }
+
+  Future<void> setScore(Game game) async {
+    final userIds = state.users.map((u) => u.id!).toList();
+    var userScores = await Db().db.gameUserScoreDao.list(userIds, game.id ?? 0);
+    for (final s in userScores) {
+      state.userIdToScore[s.userId] = s.score;
+    }
+    // refresh ui.
+    state.userNumber.value = state.users.length;
   }
 }

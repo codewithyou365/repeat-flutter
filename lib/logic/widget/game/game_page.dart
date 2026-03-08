@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/db/entity/game_user_score.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/widget/game/game_state.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
 
 import 'game_logic.dart';
-import 'game_state.dart';
-import 'logic/game_settings.dart';
 
 class GamePage<T extends GetxController> {
+  Key userIndexKey = GlobalKey();
+
   Future<void> open(GameLogic<T> logic) async {
     var state = logic.state;
     return Sheet.withHeaderAndBody(
@@ -96,17 +96,28 @@ class GamePage<T extends GetxController> {
                 RowWidget.buildDividerWithoutColor(),
                 RowWidget.buildCupertinoPicker(
                   title: I18nKey.labelGameRuleSettings.tr,
-                  options: logic.gameTypeToGameSettings.keys.map((gameSettings) {
-                    return logic.toStringByGameType(gameSettings);
-                  }).toList(),
-                  value: state.game,
+                  options: logic.listGameNames(),
+                  value: GameState.game?.id ?? 0,
                   pickWidth: 150,
                   changed: logic.changeGame,
                   disabled: state.open,
                 ),
                 RowWidget.buildDividerWithoutColor(),
-                ...gameSettings(logic.gameTypeToGameSettings),
-                RowWidget.buildDividerWithoutColor(),
+                Obx(() {
+                  List<String> userNames = [];
+                  for (var i = 0; i < state.userNumber.value; i++) {
+                    final user = state.users[i];
+                    userNames.add('${user.name}(${state.userIdToScore[user.id!] ?? 0})');
+                  }
+                  return RowWidget.buildCupertinoPicker(
+                    key: userIndexKey,
+                    title: I18nKey.editor.tr,
+                    options: userNames,
+                    value: state.userIndex.value,
+                    changed: logic.setUser,
+                    disabled: state.open,
+                  );
+                }),
               ],
             );
           },
@@ -114,14 +125,5 @@ class GamePage<T extends GetxController> {
       ),
       rate: 1,
     );
-  }
-
-  List<Widget> gameSettings(Map<GameType, GameSettings> gameSettings) {
-    for (var k in gameSettings.keys) {
-      if (GameState.lastGameIndex == k.index) {
-        return gameSettings[k]!.build();
-      }
-    }
-    return [];
   }
 }

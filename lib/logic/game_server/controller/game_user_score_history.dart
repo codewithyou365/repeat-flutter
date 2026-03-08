@@ -53,11 +53,10 @@ class GameUserScoreHistoryRes {
 Future<message.Response?> gameUserScoreHistory(message.Request req, GameUser user) async {
   final dao = Db().db.gameUserScoreHistoryDao;
 
-  final lastGameIndex = GameState.lastGameIndex;
   final reqData = GameUserScoreHistoryReq.fromJson(req.data);
   final int? totalCount = await dao.getCount(
     user.id!,
-    GameType.values[lastGameIndex],
+    GameState.game!.id!,
   );
   if (totalCount == null) {
     return message.Response(error: GameServerError.noData.name);
@@ -70,14 +69,14 @@ Future<message.Response?> gameUserScoreHistory(message.Request req, GameUser use
   if (lastId != null) {
     historyList = await dao.getPaginatedListWithLastId(
       user.id!,
-      GameType.values[lastGameIndex],
+      GameState.game!.id!,
       lastId,
       pageSize,
     );
   } else {
     historyList = await dao.getPaginatedList(
       user.id!,
-      GameType.values[lastGameIndex],
+      GameState.game!.id!,
       pageSize,
     );
   }

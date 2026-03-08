@@ -3,11 +3,9 @@
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date_time_util.dart';
 
-import 'game_user_score.dart';
-
 @Entity(
   indices: [
-    Index(value: ['userId', 'gameType']),
+    Index(value: ['userId', 'gameId']),
     Index(value: ['remark']),
   ],
 )
@@ -15,7 +13,7 @@ class GameUserScoreHistory {
   @PrimaryKey(autoGenerate: true)
   int? id;
   int userId;
-  GameType gameType;
+  int gameId;
   int inc;
   int before;
   int after;
@@ -24,7 +22,7 @@ class GameUserScoreHistory {
 
   GameUserScoreHistory({
     required this.userId,
-    required this.gameType,
+    required this.gameId,
     required this.inc,
     required this.before,
     required this.after,
@@ -36,7 +34,7 @@ class GameUserScoreHistory {
   factory GameUserScoreHistory.fromJson(Map<String, dynamic> json) {
     return GameUserScoreHistory(
       userId: json['userId'] as int,
-      gameType: GameType.values[json['gameType'] as int],
+      gameId: json['gameId'] as int,
       inc: json['inc'] as int,
       before: json['before'] as int,
       after: json['after'] as int,
@@ -48,7 +46,7 @@ class GameUserScoreHistory {
   Map<String, dynamic> toJson() => {
     'id': id!,
     'userId': userId,
-    'gameType': gameType.index,
+    'gameId': gameId,
     'inc': inc,
     'before': before,
     'after': after,

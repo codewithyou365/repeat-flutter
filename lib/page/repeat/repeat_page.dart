@@ -8,7 +8,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/font_help.dart';
+import 'package:repeat_flutter/logic/classroom_help.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/close_eyes/close_eyes_panel.dart';
 import 'package:repeat_flutter/logic/widget/text_template.dart';
@@ -196,23 +196,24 @@ class RepeatPage extends StatelessWidget {
                   }),
                 ),
               ),
-              PopupMenuItem<String>(
-                onTap: () async {
-                  state.helper.stopMedia(false);
-                  await logic.gameLogic.open();
-                  state.helper.stopMedia(true);
-                },
-                child: Obx(() {
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(I18nKey.game.tr),
-                      const Spacer(),
-                      if (logic.gameLogic.state.open.value) const Icon(Icons.check, size: 18, color: Colors.blue),
-                    ],
-                  );
-                }),
-              ),
+              if (state.gameLogicInitSuccess)
+                PopupMenuItem<String>(
+                  onTap: () async {
+                    state.helper.stopMedia(false);
+                    await logic.gameLogic.open();
+                    state.helper.stopMedia(true);
+                  },
+                  child: Obx(() {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(I18nKey.game.tr),
+                        const Spacer(),
+                        if (logic.gameLogic.state.open.value) const Icon(Icons.check, size: 18, color: Colors.blue),
+                      ],
+                    );
+                  }),
+                ),
               PopupMenuItem<String>(
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
@@ -583,7 +584,7 @@ class RepeatPage extends StatelessWidget {
 
   double? fontSize(RepeatLogic logic, QaType type) {
     final helper = logic.state.helper;
-    final fontSizeKey = "${type.acronym}${FontHelp.fontSizeSuffix}";
+    final fontSizeKey = "${type.acronym}${ClassroomHelp.fontSizeSuffix}";
     final val = ListUtil.getValue([
       helper.getCurrBookMap(),
     ], fontSizeKey);
@@ -595,7 +596,7 @@ class RepeatPage extends StatelessWidget {
 
   String? fontAlias(RepeatLogic logic, QaType type) {
     final helper = logic.state.helper;
-    final key = "${type.acronym}${FontHelp.fontAliasSuffix}";
+    final key = "${type.acronym}${ClassroomHelp.fontAliasSuffix}";
     final val = ListUtil.getValue([
       helper.getCurrBookMap(),
     ], key);

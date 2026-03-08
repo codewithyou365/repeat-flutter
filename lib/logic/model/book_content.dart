@@ -38,7 +38,9 @@ class DownloadContent {
 
   String get folder => hash.substring(0, 2);
 
-  String get name => "${hash.substring(2)}.$extension";
+  String get pureName => hash.substring(2);
+
+  String get name => "$pureName.$extension";
 
   String get path => "$folder/$name";
 
@@ -175,6 +177,7 @@ class OtherVerseContent {
   OtherVerseContent({
     required this.verseReviewContent,
   });
+
   factory OtherVerseContent.fromJson(Map<String, dynamic> json) {
     return OtherVerseContent(
       verseReviewContent: (json['verseReviewContent'] as List?)?.map((e) => VerseReviewContent.fromJson(e as Map<String, dynamic>)).toList() ?? [],

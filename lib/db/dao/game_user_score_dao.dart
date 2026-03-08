@@ -27,16 +27,16 @@ abstract class GameUserScoreDao {
 
   @Query(
     'SELECT * FROM GameUserScore '
-    'WHERE userId = :userId AND gameType = :gameType '
+    'WHERE userId = :userId AND gameId = :gameId '
     'LIMIT 1',
   )
-  Future<GameUserScore?> get(int userId, GameType gameType);
+  Future<GameUserScore?> get(int userId, int gameId);
 
   @Query(
     'SELECT * FROM GameUserScore '
-    'WHERE userId in (:userIds) AND gameType = :gameType ',
+    'WHERE userId in (:userIds) AND gameId = :gameId ',
   )
-  Future<List<GameUserScore>> list(List<int> userIds, GameType gameType);
+  Future<List<GameUserScore>> list(List<int> userIds, int gameId);
 
   @transaction
   Future<void> inc(
@@ -49,13 +49,13 @@ abstract class GameUserScoreDao {
       return;
     }
     final now = DateTime.now();
-
-    final existing = await get(userId, gameType);
+    int gameId = 0;
+    final existing = await get(userId, gameId);
 
     if (existing == null) {
       final newScore = GameUserScore(
         userId: userId,
-        gameType: gameType,
+        gameId: gameId,
         score: score,
         createDate: now,
       );
@@ -65,7 +65,7 @@ abstract class GameUserScoreDao {
       await db.gameUserScoreHistoryDao.insertOrFail(
         GameUserScoreHistory(
           userId: userId,
-          gameType: gameType,
+          gameId: gameId,
           inc: score,
           before: 0,
           after: score,
@@ -82,7 +82,7 @@ abstract class GameUserScoreDao {
       await db.gameUserScoreHistoryDao.insertOrFail(
         GameUserScoreHistory(
           userId: userId,
-          gameType: gameType,
+          gameId: gameId,
           inc: score,
           before: before,
           after: after,

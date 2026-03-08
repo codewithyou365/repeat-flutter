@@ -87,7 +87,7 @@ class GameSettingsBlankItRight extends GameSettings {
 
   Future<void> setScore() async {
     final userIds = users.map((u) => u.id!).toList();
-    var userScores = await Db().db.gameUserScoreDao.list(userIds, GameType.blankItRight);
+    var userScores = await Db().db.gameUserScoreDao.list(userIds, 0);
     for (final s in userScores) {
       userIdToScore[s.userId] = s.score;
     }

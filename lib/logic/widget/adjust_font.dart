@@ -8,7 +8,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
-import 'package:repeat_flutter/logic/font_help.dart';
+import 'package:repeat_flutter/logic/classroom_help.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -26,7 +26,7 @@ class AdjustFont<T extends GetxController> {
     required Map<String, dynamic> bookMap,
   }) async {
     List<DownloadContent> list = DownloadContent.toList(bookMap['d']) ?? [];
-    String alias = bookMap['$fontPrefix${FontHelp.fontAliasSuffix}'] ?? '';
+    String alias = bookMap['$fontPrefix${ClassroomHelp.fontAliasSuffix}'] ?? '';
     final fontSizeVal = RxDouble(textFontSize(fontPrefix, bookMap));
     RxString fontDisplay = RxString(alias);
     return Sheet.showBottomSheet<void>(
@@ -83,15 +83,15 @@ class AdjustFont<T extends GetxController> {
                 final localFolder = rootPath.joinPath(DocPath.getRelativePath(bookId).joinPath(download.folder));
                 final filePath = localFolder.joinPath(download.name);
 
-                var ok = await FontHelp.registerCustomFont(fileName, filePath);
+                var ok = await ClassroomHelp.registerCustomFont(fileName, filePath);
                 if (!ok) {
                   Snackbar.show(I18nKey.importFontFail.tr);
                   return;
                 }
 
                 bookMap['d'] = list.map((e) => e.toJson()).toList();
-                bookMap['$fontPrefix${FontHelp.fontAliasSuffix}'] = fileName;
-                bookMap['$fontPrefix${FontHelp.fontHashSuffix}'] = download.hash;
+                bookMap['$fontPrefix${ClassroomHelp.fontAliasSuffix}'] = fileName;
+                bookMap['$fontPrefix${ClassroomHelp.fontHashSuffix}'] = download.hash;
                 await Db().db.bookDao.updateBookContent(bookId, jsonEncode(bookMap));
 
                 fontDisplay.value = fileName;
@@ -102,8 +102,8 @@ class AdjustFont<T extends GetxController> {
                   ? null
                   : IconButton(
                       onPressed: () async {
-                        bookMap['$fontPrefix${FontHelp.fontAliasSuffix}'] = "";
-                        bookMap['$fontPrefix${FontHelp.fontHashSuffix}'] = "";
+                        bookMap['$fontPrefix${ClassroomHelp.fontAliasSuffix}'] = "";
+                        bookMap['$fontPrefix${ClassroomHelp.fontHashSuffix}'] = "";
 
                         fontDisplay.value = "";
 
@@ -122,7 +122,7 @@ class AdjustFont<T extends GetxController> {
   }
 
   double textFontSize(String fontPrefix, Map<String, dynamic> map) {
-    final fontSizeKey = "$fontPrefix${FontHelp.fontSizeSuffix}";
+    final fontSizeKey = "$fontPrefix${ClassroomHelp.fontSizeSuffix}";
     if (map[fontSizeKey] != null) {
       return double.parse(map[fontSizeKey]);
     }
@@ -167,7 +167,7 @@ class AdjustFont<T extends GetxController> {
           MsgBox.button(
             text: I18nKey.save.tr,
             onPressed: () async {
-              final fontSizeKey = "$fontPrefix${FontHelp.fontSizeSuffix}";
+              final fontSizeKey = "$fontPrefix${ClassroomHelp.fontSizeSuffix}";
               var bookMap = map;
               bookMap[fontSizeKey] = '${v.value}';
               await Db().db.bookDao.updateBookContent(bookId, jsonEncode(bookMap));

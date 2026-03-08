@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:repeat_flutter/common/ws/message.dart' as message;
-import 'package:flutter/services.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/ws/message.dart';
 import 'package:repeat_flutter/common/ws/node.dart';
@@ -9,6 +8,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/db/entity/game_user_score.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/blank_it_right_2_blank.dart';
@@ -25,12 +25,10 @@ import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_sli
 import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_slicer_2_start_game.dart';
 import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_slicer_3_submit.dart';
 import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_slicer_edit.dart';
+import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/widget/game/game_state.dart';
 import 'controller/heart.dart';
-import 'controller/game_user_history.dart';
-import 'controller/entry_game.dart';
 import 'controller/login_or_register.dart';
-import 'controller/submit.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:path/path.dart' as path;
 import 'package:synchronized/synchronized.dart';
@@ -38,21 +36,23 @@ import 'package:synchronized/synchronized.dart';
 class WebServer {
   bool open = false;
   late final Server<GameUser> server;
-  final Map<String, String> keyToLocalPath = {};
   final List<String> ips = [];
+  String destinationDir = '';
 
   WebServer() {
     server = Server(wsEvent: wsEvent, kickPath: Path.kick);
   }
 
-  Future<void> start(int port) async {
+  Future<void> start(int bookId, String hash, int port) async {
+    final rootPath = await DocPath.getContentPath();
+    final localFolder = rootPath.joinPath(DocPath.getRelativePath(bookId));
+    DownloadContent download = DownloadContent(url: '', hash: hash);
+    destinationDir = localFolder.joinPath(download.folder).joinPath(download.pureName);
+
     await server.start(port, authByToken, _serveFile);
     server.logger = Snackbar.show;
     server.controllers[Path.loginOrRegister] = loginOrRegister;
-    server.controllers[Path.entryGame] = (request) => withGameUser(request, entryGame);
     server.controllers[Path.heart] = (request) => withGameUser(request, heart);
-    server.controllers[Path.gameUserHistory] = (request) => withGameUser(request, gameUserHistory);
-    server.controllers[Path.submit] = (request) => withGameUser(request, submit);
     server.controllers[Path.gameUserScore] = (request) => withGameUser(request, gameUserScore);
     server.controllers[Path.gameUserScoreHistory] = (request) => withGameUser(request, gameUserScoreHistory);
     server.controllers[Path.gameUserScoreMinus] = (request) => withGameUser(request, gameUserScoreMinus);
@@ -89,12 +89,7 @@ class WebServer {
 
   Future<void> _serveFile(HttpRequest request) async {
     final requestedPath = request.uri.path == '/' ? '/index.html' : request.uri.path;
-    // If it is necessary to access a local file, use a random key to map the local file path.
-    if (keyToLocalPath.containsKey(requestedPath)) {
-      var localPath = keyToLocalPath[requestedPath];
-      // TODO...
-    }
-    final filePath = GameConstant.assetsPath.joinPath(requestedPath);
+    final filePath = destinationDir.joinPath(requestedPath);
     var contentType = _getContentType(filePath);
     if (contentType.isEmpty) {
       request.response.redirect(Uri(path: "/"));
@@ -102,10 +97,17 @@ class WebServer {
       return;
     }
     try {
-      ByteData content = await rootBundle.load(filePath);
-      request.response
-        ..headers.contentType = ContentType.parse(_getContentType(filePath))
-        ..add(content.buffer.asInt8List());
+      final file = File(filePath);
+      if (await file.exists()) {
+        final content = await file.readAsBytes();
+        request.response
+          ..headers.contentType = ContentType.parse(contentType)
+          ..add(content);
+      } else {
+        request.response
+          ..statusCode = HttpStatus.notFound
+          ..write('404 Not Found');
+      }
       await request.response.close();
     } catch (e) {
       request.response
@@ -188,7 +190,7 @@ class WebServer {
   }
 
   Future<message.Response?> withGameUserAndGameType(message.Request req, GameType gameType, Future<message.Response?> Function(message.Request req, GameUser user) handle) async {
-    if (GameState.lastGameIndex != gameType.index) {
+    if (GameState.game!.id! != gameType.index) {
       return message.Response(error: GameServerError.gameNotFound.name);
     }
     var user = getGameUser(req);
@@ -201,7 +203,7 @@ class WebServer {
   }
 
   Future<message.Response?> withGameUserAndServer(message.Request req, GameType gameType, Future<message.Response?> Function(message.Request req, GameUser user, Server<GameUser> server) handle) async {
-    if (GameState.lastGameIndex != gameType.index) {
+    if (GameState.game!.id! != gameType.index) {
       return message.Response(error: GameServerError.gameNotFound.name);
     }
     var user = getGameUser(req);

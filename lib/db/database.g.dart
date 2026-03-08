@@ -166,15 +166,13 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER NOT NULL, `time` INTEGER NOT NULL, `verseContent` TEXT NOT NULL, `verseId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `finish` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `name` TEXT NOT NULL, `hash` TEXT NOT NULL, `ownerUserId` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `GameUser` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `password` TEXT NOT NULL, `nonce` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `token` TEXT NOT NULL, `tokenExpiredDate` INTEGER NOT NULL, `needToResetPassword` INTEGER NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `GameUserInput` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `gameId` INTEGER NOT NULL, `gameUserId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `verseId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `input` TEXT NOT NULL, `output` TEXT NOT NULL, `createTime` INTEGER NOT NULL, `createDate` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `GameUserScore` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userId` INTEGER NOT NULL, `gameId` INTEGER NOT NULL, `score` INTEGER NOT NULL, `createDate` INTEGER NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `GameUserScore` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userId` INTEGER NOT NULL, `gameType` INTEGER NOT NULL, `score` INTEGER NOT NULL, `createDate` INTEGER NOT NULL)');
-        await database.execute(
-            'CREATE TABLE IF NOT EXISTS `GameUserScoreHistory` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userId` INTEGER NOT NULL, `gameType` INTEGER NOT NULL, `inc` INTEGER NOT NULL, `before` INTEGER NOT NULL, `after` INTEGER NOT NULL, `remark` TEXT NOT NULL, `createDate` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `GameUserScoreHistory` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userId` INTEGER NOT NULL, `gameId` INTEGER NOT NULL, `inc` INTEGER NOT NULL, `before` INTEGER NOT NULL, `after` INTEGER NOT NULL, `remark` TEXT NOT NULL, `createDate` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Lock` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
@@ -234,33 +232,19 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE INDEX `index_VerseStats_classroomId_createTime` ON `VerseStats` (`classroomId`, `createTime`)');
         await database.execute(
-            'CREATE INDEX `index_Game_classroomId` ON `Game` (`classroomId`)');
+            'CREATE UNIQUE INDEX `index_Game_classroomId_name` ON `Game` (`classroomId`, `name`)');
         await database
             .execute('CREATE INDEX `index_Game_bookId` ON `Game` (`bookId`)');
-        await database
-            .execute('CREATE INDEX `index_Game_verseId` ON `Game` (`verseId`)');
         await database.execute(
-            'CREATE INDEX `index_Game_createDate` ON `Game` (`createDate`)');
+            'CREATE INDEX `index_Game_classroomId_hash` ON `Game` (`classroomId`, `hash`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_GameUser_name` ON `GameUser` (`name`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_GameUser_token` ON `GameUser` (`token`)');
         await database.execute(
-            'CREATE INDEX `index_GameUserInput_classroomId` ON `GameUserInput` (`classroomId`)');
+            'CREATE UNIQUE INDEX `index_GameUserScore_userId_gameId` ON `GameUserScore` (`userId`, `gameId`)');
         await database.execute(
-            'CREATE INDEX `index_GameUserInput_bookId` ON `GameUserInput` (`bookId`)');
-        await database.execute(
-            'CREATE INDEX `index_GameUserInput_chapterId` ON `GameUserInput` (`chapterId`)');
-        await database.execute(
-            'CREATE INDEX `index_GameUserInput_verseId` ON `GameUserInput` (`verseId`)');
-        await database.execute(
-            'CREATE INDEX `index_GameUserInput_createDate` ON `GameUserInput` (`createDate`)');
-        await database.execute(
-            'CREATE INDEX `index_GameUserInput_gameId_gameUserId_time` ON `GameUserInput` (`gameId`, `gameUserId`, `time`)');
-        await database.execute(
-            'CREATE UNIQUE INDEX `index_GameUserScore_userId_gameType` ON `GameUserScore` (`userId`, `gameType`)');
-        await database.execute(
-            'CREATE INDEX `index_GameUserScoreHistory_userId_gameType` ON `GameUserScoreHistory` (`userId`, `gameType`)');
+            'CREATE INDEX `index_GameUserScoreHistory_userId_gameId` ON `GameUserScoreHistory` (`userId`, `gameId`)');
         await database.execute(
             'CREATE INDEX `index_GameUserScoreHistory_remark` ON `GameUserScoreHistory` (`remark`)');
 
@@ -1705,32 +1689,12 @@ class _$GameDao extends GameDao {
             'Game',
             (Game item) => <String, Object?>{
                   'id': item.id,
-                  'time': item.time,
-                  'verseContent': item.verseContent,
-                  'verseId': item.verseId,
                   'classroomId': item.classroomId,
                   'bookId': item.bookId,
-                  'chapterId': item.chapterId,
-                  'finish': item.finish ? 1 : 0,
-                  'createTime': item.createTime,
-                  'createDate': _dateConverter.encode(item.createDate)
-                }),
-        _gameUserInputInsertionAdapter = InsertionAdapter(
-            database,
-            'GameUserInput',
-            (GameUserInput item) => <String, Object?>{
-                  'id': item.id,
-                  'gameId': item.gameId,
-                  'gameUserId': item.gameUserId,
-                  'time': item.time,
-                  'verseId': item.verseId,
-                  'classroomId': item.classroomId,
-                  'bookId': item.bookId,
-                  'chapterId': item.chapterId,
-                  'input': item.input,
-                  'output': item.output,
-                  'createTime': item.createTime,
-                  'createDate': _dateConverter.encode(item.createDate)
+                  'name': item.name,
+                  'hash': item.hash,
+                  'ownerUserId': item.ownerUserId,
+                  'createTime': item.createTime
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -1741,156 +1705,46 @@ class _$GameDao extends GameDao {
 
   final InsertionAdapter<Game> _gameInsertionAdapter;
 
-  final InsertionAdapter<GameUserInput> _gameUserInputInsertionAdapter;
-
   @override
-  Future<int?> intKv(
+  Future<Game?> one(
     int classroomId,
-    CrK k,
+    String gameName,
   ) async {
     return _queryAdapter.query(
-        'SELECT CAST(value as INTEGER) FROM CrKv WHERE classroomId=?1 and k=?2',
-        mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [classroomId, _crKConverter.encode(k)]);
-  }
-
-  @override
-  Future<String?> stringKv(
-    int classroomId,
-    CrK k,
-  ) async {
-    return _queryAdapter.query(
-        'SELECT value FROM CrKv WHERE classroomId=?1 and k=?2',
-        mapper: (Map<String, Object?> row) => row.values.first as String,
-        arguments: [classroomId, _crKConverter.encode(k)]);
-  }
-
-  @override
-  Future<void> updateKv(
-    int classroomId,
-    CrK k,
-    String value,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'UPDATE CrKv SET value=?3 WHERE classroomId=?1 and k=?2',
-        arguments: [classroomId, _crKConverter.encode(k), value]);
-  }
-
-  @override
-  Future<Game?> getOne() async {
-    return _queryAdapter.query('SELECT * FROM Game where finish=false',
+        'SELECT * FROM Game WHERE classroomId=?1 AND gameName=?2',
         mapper: (Map<String, Object?> row) => Game(
-            id: row['id'] as int,
-            time: row['time'] as int,
-            verseContent: row['verseContent'] as String,
-            verseId: row['verseId'] as int,
             classroomId: row['classroomId'] as int,
             bookId: row['bookId'] as int,
-            chapterId: row['chapterId'] as int,
-            finish: (row['finish'] as int) != 0,
+            name: row['name'] as String,
+            hash: row['hash'] as String,
+            ownerUserId: row['ownerUserId'] as int,
             createTime: row['createTime'] as int,
-            createDate: _dateConverter.decode(row['createDate'] as int)));
+            id: row['id'] as int?),
+        arguments: [classroomId, gameName]);
   }
 
   @override
-  Future<void> refreshGame(
-    int gameId,
-    int time,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'UPDATE Game set time=?2,finish=false where id=?1',
-        arguments: [gameId, time]);
-  }
-
-  @override
-  Future<void> refreshGameContent(
-    int gameId,
-    String verseContent,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'UPDATE Game set verseContent=?2 where id=?1',
-        arguments: [gameId, verseContent]);
-  }
-
-  @override
-  Future<void> refreshVerseTodayPrg(
-    int gameId,
-    int time,
-  ) async {
-    await _queryAdapter.queryNoReturn(
-        'UPDATE VerseTodayPrg set time=?2 where id=?1',
-        arguments: [gameId, time]);
-  }
-
-  @override
-  Future<List<int>> getAllEnableGameIds() async {
-    return _queryAdapter.queryList('SELECT id FROM Game where finish=false',
-        mapper: (Map<String, Object?> row) => row.values.first as int);
-  }
-
-  @override
-  Future<void> disableGames(List<int> gameIds) async {
-    const offset = 1;
-    final _sqliteVariablesForGameIds =
-        Iterable<String>.generate(gameIds.length, (i) => '?${i + offset}')
-            .join(',');
-    await _queryAdapter.queryNoReturn(
-        'UPDATE Game set finish=true where id in (' +
-            _sqliteVariablesForGameIds +
-            ')',
-        arguments: [...gameIds]);
-  }
-
-  @override
-  Future<Game?> one(int gameId) async {
-    return _queryAdapter.query('SELECT * FROM Game WHERE id=?1',
+  Future<List<Game>> getByClassroomId(int classroomId) async {
+    return _queryAdapter.queryList('SELECT * FROM Game WHERE classroomId=?1',
         mapper: (Map<String, Object?> row) => Game(
-            id: row['id'] as int,
-            time: row['time'] as int,
-            verseContent: row['verseContent'] as String,
-            verseId: row['verseId'] as int,
             classroomId: row['classroomId'] as int,
             bookId: row['bookId'] as int,
-            chapterId: row['chapterId'] as int,
-            finish: (row['finish'] as int) != 0,
+            name: row['name'] as String,
+            hash: row['hash'] as String,
+            ownerUserId: row['ownerUserId'] as int,
             createTime: row['createTime'] as int,
-            createDate: _dateConverter.decode(row['createDate'] as int)),
-        arguments: [gameId]);
+            id: row['id'] as int?),
+        arguments: [classroomId]);
   }
 
   @override
-  Future<GameUserInput?> lastUserInput(
-    int gameId,
-    int gameUserId,
-    int time,
-  ) async {
-    return _queryAdapter.query(
-        'SELECT * FROM GameUserInput WHERE gameId=?1 and gameUserId=?2 and time=?3 order by id desc limit 1',
-        mapper: (Map<String, Object?> row) => GameUserInput(gameId: row['gameId'] as int, gameUserId: row['gameUserId'] as int, time: row['time'] as int, verseId: row['verseId'] as int, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, input: row['input'] as String, output: row['output'] as String, createTime: row['createTime'] as int, createDate: _dateConverter.decode(row['createDate'] as int), id: row['id'] as int?),
-        arguments: [gameId, gameUserId, time]);
-  }
-
-  @override
-  Future<List<GameUserInput>> gameUserInput(
-    int gameId,
-    int gameUserId,
-    int time,
-  ) async {
-    return _queryAdapter.queryList(
-        'SELECT * FROM GameUserInput WHERE gameId=?1 and gameUserId=?2 and time=?3',
-        mapper: (Map<String, Object?> row) => GameUserInput(gameId: row['gameId'] as int, gameUserId: row['gameUserId'] as int, time: row['time'] as int, verseId: row['verseId'] as int, classroomId: row['classroomId'] as int, bookId: row['bookId'] as int, chapterId: row['chapterId'] as int, input: row['input'] as String, output: row['output'] as String, createTime: row['createTime'] as int, createDate: _dateConverter.decode(row['createDate'] as int), id: row['id'] as int?),
-        arguments: [gameId, gameUserId, time]);
-  }
-
-  @override
-  Future<void> clearGameUser(
-    int gameId,
-    int gameUserId,
-    int time,
+  Future<void> deleteByName(
+    int classroomId,
+    String name,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM GameUserInput WHERE gameId=?1 and gameUserId=?2 and time=?3',
-        arguments: [gameId, gameUserId, time]);
+        'DELETE FROM Game WHERE classroomId=?1 AND name=?2',
+        arguments: [classroomId, name]);
   }
 
   @override
@@ -1906,136 +1760,8 @@ class _$GameDao extends GameDao {
   }
 
   @override
-  Future<void> deleteByChapterId(int chapterId) async {
-    await _queryAdapter.queryNoReturn('DELETE FROM Game WHERE chapterId=?1',
-        arguments: [chapterId]);
-  }
-
-  @override
-  Future<void> deleteByChapterIds(List<int> chapterIds) async {
-    const offset = 1;
-    final _sqliteVariablesForChapterIds =
-        Iterable<String>.generate(chapterIds.length, (i) => '?${i + offset}')
-            .join(',');
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM Game WHERE chapterId in (' +
-            _sqliteVariablesForChapterIds +
-            ')',
-        arguments: [...chapterIds]);
-  }
-
-  @override
-  Future<void> deleteByVerseId(int verseId) async {
-    await _queryAdapter.queryNoReturn('DELETE FROM Game WHERE verseId=?1',
-        arguments: [verseId]);
-  }
-
-  @override
-  Future<void> deleteByVerseIds(List<int> verseIds) async {
-    const offset = 1;
-    final _sqliteVariablesForVerseIds =
-        Iterable<String>.generate(verseIds.length, (i) => '?${i + offset}')
-            .join(',');
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM Game WHERE verseId in (' +
-            _sqliteVariablesForVerseIds +
-            ')',
-        arguments: [...verseIds]);
-  }
-
-  @override
-  Future<void> insertGame(Game game) async {
-    await _gameInsertionAdapter.insert(game, OnConflictStrategy.fail);
-  }
-
-  @override
-  Future<void> insertGameUserInput(GameUserInput gameUserInput) async {
-    await _gameUserInputInsertionAdapter.insert(
-        gameUserInput, OnConflictStrategy.fail);
-  }
-
-  @override
-  Future<Game> tryInsertGame(Game game) async {
-    if (database is sqflite.Transaction) {
-      return super.tryInsertGame(game);
-    } else {
-      return (database as sqflite.Database)
-          .transaction<Game>((transaction) async {
-        final transactionDatabase = _$AppDatabase(changeListener)
-          ..database = transaction;
-        prepareDb(transactionDatabase);
-        return transactionDatabase.gameDao.tryInsertGame(game);
-      });
-    }
-  }
-
-  @override
-  Future<void> clearGame(
-    int gameId,
-    int userId,
-    String verseContent,
-  ) async {
-    if (database is sqflite.Transaction) {
-      await super.clearGame(gameId, userId, verseContent);
-    } else {
-      await (database as sqflite.Database)
-          .transaction<void>((transaction) async {
-        final transactionDatabase = _$AppDatabase(changeListener)
-          ..database = transaction;
-        prepareDb(transactionDatabase);
-        await transactionDatabase.gameDao
-            .clearGame(gameId, userId, verseContent);
-      });
-    }
-  }
-
-  @override
-  Future<List<String>> getTip(
-    int gameId,
-    int gameUserId,
-  ) async {
-    if (database is sqflite.Transaction) {
-      return super.getTip(gameId, gameUserId);
-    } else {
-      return (database as sqflite.Database)
-          .transaction<List<String>>((transaction) async {
-        final transactionDatabase = _$AppDatabase(changeListener)
-          ..database = transaction;
-        prepareDb(transactionDatabase);
-        return transactionDatabase.gameDao.getTip(gameId, gameUserId);
-      });
-    }
-  }
-
-  @override
-  Future<GameUserInput> submit(
-    int gameId,
-    int matchTypeInt,
-    int preGameUserInputId,
-    int gameUserId,
-    String userInput,
-    List<String> obtainInput,
-    List<String> obtainOutput,
-  ) async {
-    if (database is sqflite.Transaction) {
-      return super.submit(gameId, matchTypeInt, preGameUserInputId, gameUserId,
-          userInput, obtainInput, obtainOutput);
-    } else {
-      return (database as sqflite.Database)
-          .transaction<GameUserInput>((transaction) async {
-        final transactionDatabase = _$AppDatabase(changeListener)
-          ..database = transaction;
-        prepareDb(transactionDatabase);
-        return transactionDatabase.gameDao.submit(
-            gameId,
-            matchTypeInt,
-            preGameUserInputId,
-            gameUserId,
-            userInput,
-            obtainInput,
-            obtainOutput);
-      });
-    }
+  Future<void> insertOrReplace(Game kv) async {
+    await _gameInsertionAdapter.insert(kv, OnConflictStrategy.replace);
   }
 }
 
@@ -2117,7 +1843,7 @@ class _$GameUserScoreDao extends GameUserScoreDao {
             (GameUserScore item) => <String, Object?>{
                   'id': item.id,
                   'userId': item.userId,
-                  'gameType': _gameTypeConverter.encode(item.gameType),
+                  'gameId': item.gameId,
                   'score': item.score,
                   'createDate': _dateTimeConverter.encode(item.createDate)
                 });
@@ -2146,7 +1872,7 @@ class _$GameUserScoreDao extends GameUserScoreDao {
         'SELECT * FROM GameUserScore WHERE userId = ?1',
         mapper: (Map<String, Object?> row) => GameUserScore(
             userId: row['userId'] as int,
-            gameType: _gameTypeConverter.decode(row['gameType'] as int),
+            gameId: row['gameId'] as int,
             score: row['score'] as int,
             createDate: _dateTimeConverter.decode(row['createDate'] as int),
             id: row['id'] as int?),
@@ -2156,18 +1882,23 @@ class _$GameUserScoreDao extends GameUserScoreDao {
   @override
   Future<GameUserScore?> get(
     int userId,
-    GameType gameType,
+    int gameId,
   ) async {
     return _queryAdapter.query(
-        'SELECT * FROM GameUserScore WHERE userId = ?1 AND gameType = ?2 LIMIT 1',
-        mapper: (Map<String, Object?> row) => GameUserScore(userId: row['userId'] as int, gameType: _gameTypeConverter.decode(row['gameType'] as int), score: row['score'] as int, createDate: _dateTimeConverter.decode(row['createDate'] as int), id: row['id'] as int?),
-        arguments: [userId, _gameTypeConverter.encode(gameType)]);
+        'SELECT * FROM GameUserScore WHERE userId = ?1 AND gameId = ?2 LIMIT 1',
+        mapper: (Map<String, Object?> row) => GameUserScore(
+            userId: row['userId'] as int,
+            gameId: row['gameId'] as int,
+            score: row['score'] as int,
+            createDate: _dateTimeConverter.decode(row['createDate'] as int),
+            id: row['id'] as int?),
+        arguments: [userId, gameId]);
   }
 
   @override
   Future<List<GameUserScore>> list(
     List<int> userIds,
-    GameType gameType,
+    int gameId,
   ) async {
     const offset = 2;
     final _sqliteVariablesForUserIds =
@@ -2176,14 +1907,14 @@ class _$GameUserScoreDao extends GameUserScoreDao {
     return _queryAdapter.queryList(
         'SELECT * FROM GameUserScore WHERE userId in (' +
             _sqliteVariablesForUserIds +
-            ') AND gameType = ?1',
+            ') AND gameId = ?1',
         mapper: (Map<String, Object?> row) => GameUserScore(
             userId: row['userId'] as int,
-            gameType: _gameTypeConverter.decode(row['gameType'] as int),
+            gameId: row['gameId'] as int,
             score: row['score'] as int,
             createDate: _dateTimeConverter.decode(row['createDate'] as int),
             id: row['id'] as int?),
-        arguments: [_gameTypeConverter.encode(gameType), ...userIds]);
+        arguments: [gameId, ...userIds]);
   }
 
   @override
@@ -2225,7 +1956,7 @@ class _$GameUserScoreHistoryDao extends GameUserScoreHistoryDao {
             (GameUserScoreHistory item) => <String, Object?>{
                   'id': item.id,
                   'userId': item.userId,
-                  'gameType': _gameTypeConverter.encode(item.gameType),
+                  'gameId': item.gameId,
                   'inc': item.inc,
                   'before': item.before,
                   'after': item.after,
@@ -2245,49 +1976,44 @@ class _$GameUserScoreHistoryDao extends GameUserScoreHistoryDao {
   @override
   Future<List<GameUserScoreHistory>> getPaginatedList(
     int userId,
-    GameType gameType,
+    int gameId,
     int limit,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM GameUserScoreHistory WHERE userId=?1 and gameType=?2 ORDER BY id DESC LIMIT ?3',
-        mapper: (Map<String, Object?> row) => GameUserScoreHistory(userId: row['userId'] as int, gameType: _gameTypeConverter.decode(row['gameType'] as int), inc: row['inc'] as int, before: row['before'] as int, after: row['after'] as int, remark: row['remark'] as String, createDate: _dateTimeConverter.decode(row['createDate'] as int), id: row['id'] as int?),
-        arguments: [userId, _gameTypeConverter.encode(gameType), limit]);
+        'SELECT * FROM GameUserScoreHistory WHERE userId=?1 and gameId=?2 ORDER BY id DESC LIMIT ?3',
+        mapper: (Map<String, Object?> row) => GameUserScoreHistory(userId: row['userId'] as int, gameId: row['gameId'] as int, inc: row['inc'] as int, before: row['before'] as int, after: row['after'] as int, remark: row['remark'] as String, createDate: _dateTimeConverter.decode(row['createDate'] as int), id: row['id'] as int?),
+        arguments: [userId, gameId, limit]);
   }
 
   @override
   Future<List<GameUserScoreHistory>> getPaginatedListWithLastId(
     int userId,
-    GameType gameType,
+    int gameId,
     int lastId,
     int limit,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM GameUserScoreHistory WHERE userId=?1 and gameType=?2 AND id < ?3 ORDER BY id DESC LIMIT ?4',
-        mapper: (Map<String, Object?> row) => GameUserScoreHistory(userId: row['userId'] as int, gameType: _gameTypeConverter.decode(row['gameType'] as int), inc: row['inc'] as int, before: row['before'] as int, after: row['after'] as int, remark: row['remark'] as String, createDate: _dateTimeConverter.decode(row['createDate'] as int), id: row['id'] as int?),
-        arguments: [
-          userId,
-          _gameTypeConverter.encode(gameType),
-          lastId,
-          limit
-        ]);
+        'SELECT * FROM GameUserScoreHistory WHERE userId=?1 and gameId=?2 AND id < ?3 ORDER BY id DESC LIMIT ?4',
+        mapper: (Map<String, Object?> row) => GameUserScoreHistory(userId: row['userId'] as int, gameId: row['gameId'] as int, inc: row['inc'] as int, before: row['before'] as int, after: row['after'] as int, remark: row['remark'] as String, createDate: _dateTimeConverter.decode(row['createDate'] as int), id: row['id'] as int?),
+        arguments: [userId, gameId, lastId, limit]);
   }
 
   @override
   Future<int?> getCount(
     int userId,
-    GameType gameType,
+    int gameId,
   ) async {
     return _queryAdapter.query(
-        'SELECT COUNT(*) FROM GameUserScoreHistory WHERE userId=?1 and gameType=?2',
+        'SELECT COUNT(*) FROM GameUserScoreHistory WHERE userId=?1 and gameId=?2',
         mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [userId, _gameTypeConverter.encode(gameType)]);
+        arguments: [userId, gameId]);
   }
 
   @override
   Future<GameUserScoreHistory?> getLast(String remark) async {
     return _queryAdapter.query(
         'SELECT * FROM GameUserScoreHistory WHERE remark=?1 ORDER BY id DESC LIMIT 1',
-        mapper: (Map<String, Object?> row) => GameUserScoreHistory(userId: row['userId'] as int, gameType: _gameTypeConverter.decode(row['gameType'] as int), inc: row['inc'] as int, before: row['before'] as int, after: row['after'] as int, remark: row['remark'] as String, createDate: _dateTimeConverter.decode(row['createDate'] as int), id: row['id'] as int?),
+        mapper: (Map<String, Object?> row) => GameUserScoreHistory(userId: row['userId'] as int, gameId: row['gameId'] as int, inc: row['inc'] as int, before: row['before'] as int, after: row['after'] as int, remark: row['remark'] as String, createDate: _dateTimeConverter.decode(row['createDate'] as int), id: row['id'] as int?),
         arguments: [remark]);
   }
 
@@ -3860,4 +3586,3 @@ final _crKConverter = CrKConverter();
 final _dateTimeConverter = DateTimeConverter();
 final _dateConverter = DateConverter();
 final _versionReasonConverter = VersionReasonConverter();
-final _gameTypeConverter = GameTypeConverter();

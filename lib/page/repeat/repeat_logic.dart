@@ -10,7 +10,7 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
-import 'package:repeat_flutter/logic/font_help.dart';
+import 'package:repeat_flutter/logic/classroom_help.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/book_editor/book_editor_args.dart';
 import 'package:repeat_flutter/logic/widget/text_template.dart';
@@ -70,7 +70,9 @@ class RepeatLogic extends GetxController {
     } else {
       repeatLogic = RepeatFlowForExamine();
     }
-    await gameLogic.init(() {
+
+    await ClassroomHelp.registerRes();
+    state.gameLogicInitSuccess = await gameLogic.init(() {
       gameHelper.tryRefreshGame(repeatLogic!.currVerse!);
     });
     state.helper.showMode.value = args.showMode;
@@ -87,7 +89,7 @@ class RepeatLogic extends GetxController {
       Get.back();
       return;
     }
-    await FontHelp.registerAllFont();
+
     if (args.showMode == ShowMode.edit) {
       state.helper.focusMode.value = false;
       state.needUpdateSystemUiMode = true;
