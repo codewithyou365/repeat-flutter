@@ -215,7 +215,7 @@ class DocHelp {
     }
 
     try {
-      final extension = ".${pickedName.split('.').last}";
+      final extension = pickedName.split('.').last;
       if (!allowedExtensions.containsIgnoreCase(extension)) {
         Snackbar.show(I18nKey.labelFileExtensionNotMatch.trArgs([jsonEncode(allowedExtensions)]));
         return null;
