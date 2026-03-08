@@ -9,6 +9,7 @@ import 'package:repeat_flutter/common/folder.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
@@ -37,10 +38,17 @@ class ClassroomHelp {
   static const fontAliasSuffix = "FontAlias";
   static const fontHashSuffix = "FontHash";
   static const fontSizeSuffix = "FontSize";
+  static Map<int, String> savedVersionSigCacheMap = {};
 
   static Future<void> registerRes() async {
     try {
       var books = await Db().db.bookDao.getAll(Classroom.curr);
+      String savedVersionSigCache = savedVersionSigCacheMap[Classroom.curr] ?? '';
+      books.sort((a, b) => a.id!.compareTo(b.id!));
+      var currentVersionSig = books.map((e) => '${e.id}:${e.contentVersion}').join(',');
+
+      if (currentVersionSig == savedVersionSigCache) return;
+
       final rootPath = await DocPath.getContentPath();
       final Set<String> currentGameNames = {};
 
@@ -65,7 +73,10 @@ class ClassroomHelp {
             }
           }
         }
+        savedVersionSigCacheMap[Classroom.curr] = currentVersionSig;
+        final savedVersionSig = await Db().db.crKvDao.getStr(Classroom.curr, CrK.classroomResourceVersion);
 
+        if (currentVersionSig == savedVersionSig) return;
         if (bookMap['g'] != null) {
           var gameData = bookMap['g'] as List<dynamic>;
           List<GameContent> games = gameData.map((e) => GameContent.fromJson(e)).toList();
@@ -117,6 +128,17 @@ class ClassroomHelp {
           await Db().db.gameDao.deleteByName(Classroom.curr, dbGame.name);
         }
       }
+      books = await Db().db.bookDao.getAll(Classroom.curr);
+      books.sort((a, b) => a.id!.compareTo(b.id!));
+      currentVersionSig = books.map((e) => '${e.id}:${e.contentVersion}').join(',');
+      Db().db.crKvDao.insertOrReplace(
+        CrKv(
+          Classroom.curr,
+          CrK.classroomResourceVersion,
+          currentVersionSig,
+        ),
+      );
+      savedVersionSigCacheMap[Classroom.curr] = currentVersionSig;
     } catch (e) {
       debugPrint("Error registering fonts: $e");
     }

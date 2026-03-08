@@ -35,6 +35,7 @@ enum CrK {
   ttsRateIndex,
   ttsPitchIndex,
   lastGameIndex,
+  classroomResourceVersion,
 }
 
 @Entity(primaryKeys: ['classroomId', 'k'])
