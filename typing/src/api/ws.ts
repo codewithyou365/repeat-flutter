@@ -11,10 +11,10 @@ export const Header = {
 
 export class Request {
     path: string;
-    headers: Map<string, string>;
+    headers: Record<string, string>;
     data: any;
 
-    constructor({path = '', headers = new Map(), data = ''}: Partial<Request> = {}) {
+    constructor({path = '', headers = {}, data = ''}: Partial<Request> = {}) {
         this.path = path;
         this.headers = headers;
         this.data = data;
@@ -23,7 +23,7 @@ export class Request {
     static fromJson(json: Partial<Request>): Request {
         return new Request({
             path: json.path ?? '',
-            headers: json.headers || new Map(),
+            headers: json.headers ?? {},
             data: json.data ?? '',
         });
     }
@@ -102,7 +102,7 @@ export class Node {
         this.age = age;
     }
 
-    receive(msg: Message) {
+    receive(rawMsg: String, msg: Message) {
         if (msg.age !== this.age) {
             console.log(`[ws] ignoring message - age mismatch: ${msg.age} vs ${this.age}`);
             return;
@@ -116,7 +116,7 @@ export class Node {
         }
 
         if (this.sendId2Log.get(msg.id)) {
-            console.log('[ws] recv :', msg);
+            console.log('[ws] recv :', rawMsg);
             this.sendId2Log.delete(msg.id);
         }
     }
@@ -132,7 +132,7 @@ export class Node {
             request: req,
         });
         if (log) {
-            console.log('[ws] send :', msg);
+            console.log('[ws] send :', JSON.stringify(msg));
         }
         this.webSocket.send(JSON.stringify(msg));
 
@@ -345,13 +345,13 @@ class Client {
                     if (msg.age !== this.age) {
                         return;
                     }
-                    this.node!.receive(msg);
+                    this.node!.receive(message, msg);
 
                 } else if (msg.type === MessageType.REQUEST) {
-                    console.log('[ws] recv :', msg);
+                    console.log('[ws] recv :', message);
                     await this._responseHandler(this.controllers, msg, socket);
                 } else {
-                    console.log('[ws] recv :', msg);
+                    console.log('[ws] recv :', message);
                     this.logger(`Unknown message type: ${msg.type}`);
                 }
             } catch (e) {

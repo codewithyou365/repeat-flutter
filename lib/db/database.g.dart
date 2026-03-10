@@ -166,7 +166,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `name` TEXT NOT NULL, `hash` TEXT NOT NULL, `ownerUserId` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `key` TEXT NOT NULL, `name` TEXT NOT NULL, `hash` TEXT NOT NULL, `data` TEXT NOT NULL, `ownerUserId` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `GameUser` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `password` TEXT NOT NULL, `nonce` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `token` TEXT NOT NULL, `tokenExpiredDate` INTEGER NOT NULL, `needToResetPassword` INTEGER NOT NULL)');
         await database.execute(
@@ -233,6 +233,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE INDEX `index_VerseStats_classroomId_createTime` ON `VerseStats` (`classroomId`, `createTime`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_Game_classroomId_name` ON `Game` (`classroomId`, `name`)');
+        await database.execute(
+            'CREATE UNIQUE INDEX `index_Game_classroomId_key` ON `Game` (`classroomId`, `key`)');
         await database
             .execute('CREATE INDEX `index_Game_bookId` ON `Game` (`bookId`)');
         await database.execute(
@@ -1691,8 +1693,10 @@ class _$GameDao extends GameDao {
                   'id': item.id,
                   'classroomId': item.classroomId,
                   'bookId': item.bookId,
+                  'key': item.key,
                   'name': item.name,
                   'hash': item.hash,
+                  'data': item.data,
                   'ownerUserId': item.ownerUserId,
                   'createTime': item.createTime
                 }),
@@ -1704,8 +1708,10 @@ class _$GameDao extends GameDao {
                   'id': item.id,
                   'classroomId': item.classroomId,
                   'bookId': item.bookId,
+                  'key': item.key,
                   'name': item.name,
                   'hash': item.hash,
+                  'data': item.data,
                   'ownerUserId': item.ownerUserId,
                   'createTime': item.createTime
                 });
@@ -1726,8 +1732,10 @@ class _$GameDao extends GameDao {
         mapper: (Map<String, Object?> row) => Game(
             classroomId: row['classroomId'] as int,
             bookId: row['bookId'] as int,
+            key: row['key'] as String,
             name: row['name'] as String,
             hash: row['hash'] as String,
+            data: row['data'] as String,
             ownerUserId: row['ownerUserId'] as int,
             createTime: row['createTime'] as int,
             id: row['id'] as int?),
@@ -1751,8 +1759,10 @@ class _$GameDao extends GameDao {
         mapper: (Map<String, Object?> row) => Game(
             classroomId: row['classroomId'] as int,
             bookId: row['bookId'] as int,
+            key: row['key'] as String,
             name: row['name'] as String,
             hash: row['hash'] as String,
+            data: row['data'] as String,
             ownerUserId: row['ownerUserId'] as int,
             createTime: row['createTime'] as int,
             id: row['id'] as int?),
@@ -1779,6 +1789,22 @@ class _$GameDao extends GameDao {
   Future<void> deleteByBookId(int bookId) async {
     await _queryAdapter
         .queryNoReturn('DELETE FROM Game WHERE bookId=?1', arguments: [bookId]);
+  }
+
+  @override
+  Future<void> setData(
+    int id,
+    String data,
+  ) async {
+    await _queryAdapter.queryNoReturn('UPDATE Game SET data=?2 WHERE id=?1',
+        arguments: [id, data]);
+  }
+
+  @override
+  Future<String?> getData(int id) async {
+    return _queryAdapter.query('SELECT data FROM Game WHERE id=?1',
+        mapper: (Map<String, Object?> row) => row.values.first as String,
+        arguments: [id]);
   }
 
   @override

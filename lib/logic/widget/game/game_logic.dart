@@ -154,7 +154,7 @@ class GameLogic<T extends GetxController> {
             return;
           }
           GameState.game = game;
-          await web.start(game.bookId, game.hash, port.value);
+          await web.start(game.bookId, game.hash, '', port.value);
           state.urls = [];
           var ips = await Ip.getLanIps();
           for (var i = 0; i < ips.length; i++) {

@@ -23,9 +23,6 @@ class LatestGameRes {
   }
 }
 
-Future<message.Response?> heart(message.Request req, GameUser? user) async {
-  if (user == null) {
-    return message.Response(error: GameServerError.serviceStopped.name);
-  }
+Future<message.Response?> heart(message.Request req, GameUser user) async {
   return message.Response();
 }

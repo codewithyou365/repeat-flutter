@@ -38,13 +38,13 @@ class Path {
   static const wordSlicerStatusUpdate = '/api/wordSlicerStatusUpdate';
 
   static const loginOrRegister = '/api/loginOrRegister';
-  static const entryGame = '/api/entryGame';
+  static const gameKey = '/api/gameKey';
   static const heart = '/api/heart';
-  static const gameUserHistory = '/api/gameUserHistory';
-  static const submit = '/api/submit';
   static const gameUserScore = '/api/gameUserScore';
   static const gameUserScoreHistory = '/api/gameUserScoreHistory';
   static const gameUserScoreMinus = '/api/gameUserScoreMinus';
+  static const game = '/api/game';
+
   static const typeGameSettings = '/api/typeGameSettings';
   static const typeVerseContent = '/api/typeVerseContent';
   static const blankItRightSettings = '/api/blankItRightSettings';

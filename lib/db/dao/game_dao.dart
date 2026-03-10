@@ -31,4 +31,10 @@ abstract class GameDao {
 
   @Update(onConflict: OnConflictStrategy.replace)
   Future<void> updateOrReplace(Game kv);
+
+  @Query('UPDATE Game SET data=:data WHERE id=:id')
+  Future<void> setData(int id, String data);
+
+  @Query('SELECT data FROM Game WHERE id=:id')
+  Future<String?> getData(int id);
 }

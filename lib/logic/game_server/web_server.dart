@@ -6,28 +6,18 @@ import 'package:repeat_flutter/common/ws/node.dart';
 import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
-import 'package:repeat_flutter/db/entity/game_user_score.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
-import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/blank_it_right_2_blank.dart';
-import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/blank_it_right_1_content.dart';
-import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/blank_it_right_0_settings.dart';
-import 'package:repeat_flutter/logic/game_server/controller/blank_it_right/blank_it_right_3_submit.dart';
+import 'package:repeat_flutter/logic/game_server/controller/game.dart';
 import 'package:repeat_flutter/logic/game_server/controller/game_user_score.dart';
 import 'package:repeat_flutter/logic/game_server/controller/game_user_score_history.dart';
 import 'package:repeat_flutter/logic/game_server/controller/game_user_score_minus.dart';
-import 'package:repeat_flutter/logic/game_server/controller/type/type_verse_content.dart';
-import 'package:repeat_flutter/logic/game_server/controller/type/type_game_settings.dart';
-import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_slicer_0_status.dart';
-import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_slicer_1_select_role.dart';
-import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_slicer_2_start_game.dart';
-import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_slicer_3_submit.dart';
-import 'package:repeat_flutter/logic/game_server/controller/word_slicer/word_slicer_edit.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
-import 'package:repeat_flutter/logic/widget/game/game_state.dart';
+import 'controller/game_key.dart';
 import 'controller/heart.dart';
+import 'controller/js/js_runtime.dart';
 import 'controller/login_or_register.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:path/path.dart' as path;
@@ -38,35 +28,33 @@ class WebServer {
   late final Server<GameUser> server;
   final List<String> ips = [];
   String destinationDir = '';
+  JsRuntime jsRuntime = JsRuntime();
 
   WebServer() {
     server = Server(wsEvent: wsEvent, kickPath: Path.kick);
   }
 
-  Future<void> start(int bookId, String hash, int port) async {
+  Future<void> start(int bookId, String hash, String jsFile, int port) async {
     final rootPath = await DocPath.getContentPath();
     final localFolder = rootPath.joinPath(DocPath.getRelativePath(bookId));
     DownloadContent download = DownloadContent(url: '', hash: hash);
     destinationDir = localFolder.joinPath(download.folder).joinPath(download.pureName);
 
+    final file = File(destinationDir.joinPath('service.js'));
+    var content = '';
+    if (await file.exists()) {
+      content = await file.readAsString();
+    }
+    await jsRuntime.init(content);
     await server.start(port, authByToken, _serveFile);
     server.logger = Snackbar.show;
     server.controllers[Path.loginOrRegister] = loginOrRegister;
+    server.controllers[Path.gameKey] = (request) => withGameUser(request, gameKey);
     server.controllers[Path.heart] = (request) => withGameUser(request, heart);
+    server.controllers[Path.game] = (request) => withGameUserAndServer(request, game);
     server.controllers[Path.gameUserScore] = (request) => withGameUser(request, gameUserScore);
     server.controllers[Path.gameUserScoreHistory] = (request) => withGameUser(request, gameUserScoreHistory);
     server.controllers[Path.gameUserScoreMinus] = (request) => withGameUser(request, gameUserScoreMinus);
-    server.controllers[Path.typeGameSettings] = (request) => withGameUserAndGameType(request, GameType.type, typeGameSettings);
-    server.controllers[Path.typeVerseContent] = (request) => withGameUserAndGameType(request, GameType.type, typeVerseContent);
-    server.controllers[Path.blankItRightSettings] = (request) => withGameUserAndGameType(request, GameType.blankItRight, blankItRightSettings);
-    server.controllers[Path.blankItRightContent] = (request) => withGameUserAndGameType(request, GameType.blankItRight, blankItRightContent);
-    server.controllers[Path.blankItRightBlank] = (request) => withGameUserAndServer(request, GameType.blankItRight, blankItRightBlank);
-    server.controllers[Path.blankItRightSubmit] = (request) => withGameUserAndServer(request, GameType.blankItRight, blankItRightSubmit);
-    server.controllers[Path.wordSlicerStatus] = (request) => withGameUserAndGameType(request, GameType.wordSlicer, wordSlicerStatus);
-    server.controllers[Path.wordSlicerSelectRole] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerSelectRole);
-    server.controllers[Path.wordSlicerStartGame] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerStartGame);
-    server.controllers[Path.wordSlicerSubmit] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerSubmit);
-    server.controllers[Path.wordSlicerEdit] = (request) => withGameUserAndServer(request, GameType.wordSlicer, wordSlicerEdit);
 
     open = true;
 
@@ -80,6 +68,7 @@ class WebServer {
   Future<void> stop() async {
     try {
       await server.stop();
+      jsRuntime.dispose();
       open = false;
     } catch (e) {
       Snackbar.show('Error starting HTTPS service: $e');
@@ -189,29 +178,13 @@ class WebServer {
     });
   }
 
-  Future<message.Response?> withGameUserAndGameType(message.Request req, GameType gameType, Future<message.Response?> Function(message.Request req, GameUser user) handle) async {
-    if (GameState.game!.id! != gameType.index) {
-      return message.Response(error: GameServerError.gameNotFound.name);
-    }
+  Future<message.Response?> withGameUserAndServer(message.Request req, Future<message.Response?> Function(message.Request req, GameUser user, Server<GameUser> server, JsRuntime jsRuntime) handle) async {
     var user = getGameUser(req);
     if (user == null) {
       return message.Response(error: GameServerError.tokenExpired.name);
     }
     return await lock.synchronized(() async {
-      return await handle(req, user);
-    });
-  }
-
-  Future<message.Response?> withGameUserAndServer(message.Request req, GameType gameType, Future<message.Response?> Function(message.Request req, GameUser user, Server<GameUser> server) handle) async {
-    if (GameState.game!.id! != gameType.index) {
-      return message.Response(error: GameServerError.gameNotFound.name);
-    }
-    var user = getGameUser(req);
-    if (user == null) {
-      return message.Response(error: GameServerError.tokenExpired.name);
-    }
-    return await lock.synchronized(() async {
-      return await handle(req, user, server);
+      return await handle(req, user, server, jsRuntime);
     });
   }
 }

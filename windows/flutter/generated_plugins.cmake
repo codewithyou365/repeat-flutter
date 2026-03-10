@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   flutter_inappwebview_windows
+  flutter_js
   flutter_tts
   permission_handler_windows
   screenshot_guard

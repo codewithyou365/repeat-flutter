@@ -16,7 +16,6 @@ import {onMounted, ref, onBeforeUnmount, inject, Ref} from 'vue';
 import {bus, EventName, RefreshGameType} from '../../api/bus.ts';
 import {client, Request} from '../../api/ws.ts';
 import {Path} from '../../utils/constant.ts';
-import {KvList} from '../../vo/KvList.ts';
 import {useRoute, useRouter} from 'vue-router';
 import Typing from '../../component/typing.vue';
 
@@ -29,22 +28,25 @@ const overlayVisible = inject<Ref<boolean>>('overlayVisible')!
 let refreshGame: RefreshGameType;
 
 const getGameSettings = async () => {
-  const req = new Request({path: Path.typeGameSettings});
+  const req = new Request({
+    path: Path.game,
+    headers: {'jsMethod': 'TypeGame.settings'},
+  });
   const res0 = await client.node!.send(req);
-  const res = KvList.fromJson(res0.data);
-  const settings = res.convertMap();
-
-  ignorePunctuation.value = settings.get('typeGameForIgnorePunctuation') === 'true';
-  ignoreCase.value = settings.get('typeGameForIgnoreCase') === 'true';
+  const res = res0.data;
+  ignorePunctuation.value = res['ignorePunctuation'];
+  ignoreCase.value = res['ignoreCase'];
 };
 
 const refresh = async (refreshGame: RefreshGameType) => {
   try {
     overlayVisible.value = true;
-    const req = new Request({path: Path.typeVerseContent, data: refreshGame.verseId});
+    const req = new Request({
+      path: Path.game,
+      headers: {'jsMethod': 'TypeGame.answer'},
+    });
     const res = await client.node!.send(req);
-    const contentJson = JSON.parse(res.data);
-    content.value = contentJson?.a ?? '';
+    content.value = res.data;
     await router.replace({
       query: {
         verseId: refreshGame.verseId,

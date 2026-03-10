@@ -44,14 +44,14 @@ onMounted(() => {
   });
   bus().on(EventName.WsStatus, async (status: number) => {
     if (status === ClientStatus.CONNECT_FINISH) {
-      const req = new Request({path: Path.entryGame, data: 0});
+      const req = new Request({path: Path.gameKey, data: 0});
       const res = await client.node!.send(req);
       if (res.error) {
         console.error('Error starting game:', res.error);
+        alert(res.error);
       } else {
-        const refreshGame = res.data as LocationQueryRaw;
-        const gameType = GameType.toGameType(res.data.game);
-        await router.push({path: gameType.path, query: refreshGame});
+        const gameType = GameType.toGameType(res.data);
+        await router.push({path: gameType.path});
       }
     }
   });

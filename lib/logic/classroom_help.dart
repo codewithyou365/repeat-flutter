@@ -18,11 +18,13 @@ class GameContent {
   int? id;
   String hash;
   String name;
+  String key;
 
   GameContent({
     this.id,
     required this.hash,
     required this.name,
+    required this.key,
   });
 
   factory GameContent.fromJson(Map<String, dynamic> json) {
@@ -30,6 +32,7 @@ class GameContent {
       id: json['i'] as int?,
       hash: json['h'] ?? '',
       name: json['n'] ?? '',
+      key: json['k'] ?? '',
     );
   }
 }
@@ -102,8 +105,10 @@ class ClassroomHelp {
                       Game(
                         classroomId: Classroom.curr,
                         bookId: book.id!,
+                        key: game.key,
                         name: game.name,
                         hash: game.hash,
+                        data: '',
                         ownerUserId: 0,
                         createTime: DateTime.now().millisecondsSinceEpoch,
                       ),

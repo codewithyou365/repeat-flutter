@@ -6,11 +6,12 @@ export const Path = {
 
     heart: '/api/heart',
     loginOrRegister: '/api/loginOrRegister',
-    entryGame: '/api/entryGame',
+    gameKey: '/api/gameKey',
     gameUserHistory: '/api/gameUserHistory',
     gameUserScore: '/api/gameUserScore',
     gameUserScoreHistory: '/api/gameUserScoreHistory',
     gameUserScoreMinus: '/api/gameUserScoreMinus',
+    game: '/api/game',
     typeGameSettings: '/api/typeGameSettings',
     typeVerseContent: '/api/typeVerseContent',
     blankItRightSettings: '/api/blankItRightSettings',
@@ -41,15 +42,15 @@ export class GameType {
     static WORD_SLICER = new GameType(3, '/game/word-slicer-game');
     static INPUT = new GameType(4, '/game/input-game');
 
-    static toGameType(code: number): GameType {
+    static toGameType(code: String): GameType {
         switch (code) {
-            case GameType.TYPE.code:
+            case 'Type':
                 return GameType.TYPE;
-            case GameType.BLANK_IT_RIGHT.code:
+            case 'BlankItRight':
                 return GameType.BLANK_IT_RIGHT;
-            case GameType.WORD_SLICER.code:
+            case 'WordSlicer':
                 return GameType.WORD_SLICER;
-            case GameType.INPUT.code:
+            case 'Input':
                 return GameType.INPUT;
             default:
                 return GameType.NONE;
