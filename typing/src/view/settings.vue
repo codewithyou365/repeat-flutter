@@ -12,11 +12,6 @@
         <nut-switch v-model="theme" @change="changeTheme"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('enableVimMode')">
-      <template #link>
-        <nut-switch v-model="enableVim" @change="changeEnableVim"/>
-      </template>
-    </nut-cell>
   </div>
 </template>
 

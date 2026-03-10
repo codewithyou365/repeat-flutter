@@ -23,6 +23,7 @@ enum K {
   bookEditorPort,
   materialSharePort,
   expandServiceUrl,
+  adminId,
 }
 
 @Entity(primaryKeys: ['k'])

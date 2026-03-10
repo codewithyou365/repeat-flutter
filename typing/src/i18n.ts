@@ -91,6 +91,10 @@ const messages = {
         scoreTitle: 'Score: ',
         playerScore: 'Player Score',
         refreshAfterModify: 'Refresh game after modification',
+        ignorePunctuation: "Ignore Punctuation",
+        ignoreCase: "Ignore Case",
+        enabled: 'Enabled',
+        disabled: 'Disabled',
     },
     zh: {
         dartMode: '深色模式',
@@ -182,6 +186,10 @@ const messages = {
         scoreTitle: '分数: ',
         playerScore: '玩家分数',
         refreshAfterModify: '修改后将刷新游戏',
+        ignorePunctuation: "忽略标点符号",
+        ignoreCase: "忽略大小写",
+        enabled: '已开启',
+        disabled: '已关闭',
     },
 };
 

@@ -166,7 +166,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `key` TEXT NOT NULL, `name` TEXT NOT NULL, `hash` TEXT NOT NULL, `data` TEXT NOT NULL, `ownerUserId` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `key` TEXT NOT NULL, `name` TEXT NOT NULL, `hash` TEXT NOT NULL, `data` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `GameUser` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `password` TEXT NOT NULL, `nonce` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `token` TEXT NOT NULL, `tokenExpiredDate` INTEGER NOT NULL, `needToResetPassword` INTEGER NOT NULL)');
         await database.execute(
@@ -1697,7 +1697,6 @@ class _$GameDao extends GameDao {
                   'name': item.name,
                   'hash': item.hash,
                   'data': item.data,
-                  'ownerUserId': item.ownerUserId,
                   'createTime': item.createTime
                 }),
         _gameUpdateAdapter = UpdateAdapter(
@@ -1712,7 +1711,6 @@ class _$GameDao extends GameDao {
                   'name': item.name,
                   'hash': item.hash,
                   'data': item.data,
-                  'ownerUserId': item.ownerUserId,
                   'createTime': item.createTime
                 });
 
@@ -1736,7 +1734,6 @@ class _$GameDao extends GameDao {
             name: row['name'] as String,
             hash: row['hash'] as String,
             data: row['data'] as String,
-            ownerUserId: row['ownerUserId'] as int,
             createTime: row['createTime'] as int,
             id: row['id'] as int?),
         arguments: [id]);
@@ -1763,7 +1760,6 @@ class _$GameDao extends GameDao {
             name: row['name'] as String,
             hash: row['hash'] as String,
             data: row['data'] as String,
-            ownerUserId: row['ownerUserId'] as int,
             createTime: row['createTime'] as int,
             id: row['id'] as int?),
         arguments: [classroomId]);

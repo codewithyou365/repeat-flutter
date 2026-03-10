@@ -21,7 +21,6 @@ class Game {
   String hash;
   String data;
 
-  final int ownerUserId;
   final int createTime;
 
   Game({
@@ -31,7 +30,6 @@ class Game {
     required this.name,
     required this.hash,
     required this.data,
-    required this.ownerUserId,
     required this.createTime,
     this.id,
   });

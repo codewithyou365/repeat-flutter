@@ -40,6 +40,13 @@ class JsRuntime {
     _jsRuntime = getJavascriptRuntime();
 
     try {
+      _jsRuntime!.onMessage('adminId', (dynamic args) {
+        final game = GameState.game;
+        if (game == null) {
+          return '';
+        }
+        return '${GameState.adminId}';
+      });
       _jsRuntime!.onMessage('repeatFlow', (dynamic args) {
         final game = GameState.game;
         if (game == null) {
@@ -128,7 +135,7 @@ class JsRuntime {
         if (game == null) {
           return '';
         }
-        final String data = args['data'];
+        final String data = jsonEncode(args);
         await Db().db.gameDao.setData(game.id ?? 0, data);
         return '';
       });
@@ -169,8 +176,6 @@ class JsRuntime {
 
       // 1. 同步 evaluate（可能返回 Promise）
       final JsEvalResult evalResult = _jsRuntime!.evaluate(jsCommand);
-      print("DEBUG: [Dart] JS 执行初步结果文本: ${evalResult.stringResult}");
-
       JsEvalResult finalResult = evalResult;
 
       // 2. 如果是 Promise，handlePromise 会等待它完成并返回最终 JsEvalResult
@@ -181,7 +186,7 @@ class JsRuntime {
         // 超时或不是 Promise：按原结果继续（并记录）
         print("⚠️ handlePromise warning / timeout / not-a-promise: $e");
       }
-
+      print("DEBUG: [Dart] JS 执行结果文本: ${evalResult.stringResult}");
       // 3. 检查错误
       if (finalResult.isError) {
         print("⚠️ JS Execution Error (final): ${finalResult.stringResult}");

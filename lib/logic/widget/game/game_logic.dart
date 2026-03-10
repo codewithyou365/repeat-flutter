@@ -89,7 +89,7 @@ class GameLogic<T extends GetxController> {
       if (wsEvent.wsEventType == WsEventType.add) {
         if (!state.users.any((user) => user.id == wsEvent.id)) {
           state.users = await Db().db.gameUserDao.getAllUser();
-          await initUsers();
+          await refreshUsers();
         }
       }
     });
@@ -99,7 +99,7 @@ class GameLogic<T extends GetxController> {
         state.online.value = getOnline();
       }
     });
-
+    await refreshUsers();
     return page.open(this).then((_) {
       sub.off();
       subAllowRegisterNumber.off();
@@ -118,12 +118,8 @@ class GameLogic<T extends GetxController> {
     return state.games[state.lastGameIndex];
   }
 
-  Future<void> initUsers() async {
-    int? userId;
-    var game = await getGame();
-    if (game != null) {
-      userId = game.ownerUserId;
-    }
+  Future<void> refreshUsers() async {
+    var userId = await Db().db.kvDao.getInt(K.adminId);
     if (state.users.isNotEmpty) {
       var index = state.users.indexWhere((u) => u.id == userId);
       if (index == -1) {
@@ -131,15 +127,14 @@ class GameLogic<T extends GetxController> {
       }
       await setUser(index);
     }
-    if (game != null) {
-      await setScore(game);
-    }
+    await setScore();
   }
 
-  void changeGame(int index) {
+  void changeGame(int index) async {
     state.lastGameIndex = index;
     parentLogic.update([bodyId]);
-    Db().db.kvDao.insertOrReplace(Kv(K.lastGameIndex, "${state.lastGameIndex}"));
+    await Db().db.kvDao.insertOrReplace(Kv(K.lastGameIndex, "${state.lastGameIndex}"));
+    await setScore();
   }
 
   String getOnline() {
@@ -168,6 +163,7 @@ class GameLogic<T extends GetxController> {
             return;
           }
           GameState.game = game;
+          GameState.adminId = await Db().db.kvDao.getInt(K.adminId) ?? 0;
           await web.start(game.bookId, game.hash, '', port.value);
           state.urls = [];
           var ips = await Ip.getLanIps();
@@ -187,6 +183,7 @@ class GameLogic<T extends GetxController> {
       } else {
         await closeWeb();
         GameState.game = null;
+        GameState.adminId = 0;
       }
     } finally {
       state.openPending = false;
@@ -273,7 +270,7 @@ class GameLogic<T extends GetxController> {
       return;
     }
     GameUser user = state.users[index];
-    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.wordSlicerGameForEditorUserId, "${user.id!}"));
+    await Db().db.kvDao.insertOrReplace(Kv(K.adminId, "${user.id!}"));
     state.userIndex.value = index;
   }
 
@@ -281,7 +278,11 @@ class GameLogic<T extends GetxController> {
     return state.games.map((game) => game.name).toList();
   }
 
-  Future<void> setScore(Game game) async {
+  Future<void> setScore() async {
+    var game = await getGame();
+    if (game == null) {
+      return;
+    }
     final userIds = state.users.map((u) => u.id!).toList();
     var userScores = await Db().db.gameUserScoreDao.list(userIds, game.id ?? 0);
     for (final s in userScores) {

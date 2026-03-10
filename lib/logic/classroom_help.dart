@@ -109,7 +109,6 @@ class ClassroomHelp {
                         name: game.name,
                         hash: game.hash,
                         data: '',
-                        ownerUserId: 0,
                         createTime: DateTime.now().millisecondsSinceEpoch,
                       ),
                     );

@@ -6,6 +6,7 @@ class GameState {
   int lastGameIndex = 0;
   List<Game> games = [];
   static Game? game;
+  static int adminId = 0;
 
   bool openPending = false;
   RxBool open = RxBool(false);
