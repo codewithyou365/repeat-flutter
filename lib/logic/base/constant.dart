@@ -47,8 +47,8 @@ enum ProgressState {
 }
 
 enum RepeatType {
-  normal,
-  justView,
+  browse,
+  examine,
 }
 
 enum MatchType {

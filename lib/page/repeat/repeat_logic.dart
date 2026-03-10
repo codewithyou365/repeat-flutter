@@ -50,33 +50,41 @@ class RepeatLogic extends GetxController {
 
   late AdjustFont adjustFont = AdjustFont<RepeatLogic>(this);
   late TextTemplate copyLogic = TextTemplate<RepeatLogic>(CrK.copyTemplate, this);
-  late GameLogic gameLogic = GameLogic<RepeatLogic>(this);
-  late GameHelper gameHelper = GameHelper(gameLogic.web);
+  late GameLogic<RepeatLogic> gameLogic;
+  late GameHelper gameHelper;
   late BookEditorLogic bookEditor = BookEditorLogic<RepeatLogic>(this);
 
-  late RepeatFlow? repeatLogic;
+  late RepeatFlow? repeatFlow;
   final SubList bookSub = [];
 
   @override
   Future<void> onInit() async {
     super.onInit();
+    gameLogic = GameLogic<RepeatLogic>(
+      parentLogic: this,
+      tapLeft: onTapLeft,
+      tapRight: onLongTapRight,
+      tapMiddle: onTapMiddle,
+      longTapMiddle: onLongTapMiddle,
+    );
+    gameHelper = GameHelper(gameLogic.web);
     ttsHelper.init();
     copyLogic.init();
     expandSheet.init(copyLogic);
     var args = Get.arguments as RepeatArgs;
     state.enableShowRecallButtons = args.enableShowRecallButtons;
-    if (args.repeatType == RepeatType.justView) {
-      repeatLogic = RepeatFlowForBrowse();
+    if (args.repeatFlowType == RepeatType.browse) {
+      repeatFlow = RepeatFlowForBrowse();
     } else {
-      repeatLogic = RepeatFlowForExamine();
+      repeatFlow = RepeatFlowForExamine();
     }
 
     await ClassroomHelp.registerRes();
     state.gameLogicInitSuccess = await gameLogic.init(() {
-      gameHelper.tryRefreshGame(repeatLogic!.currVerse!);
+      gameHelper.tryRefreshGame(repeatFlow!.currVerse!);
     });
     state.helper.showMode.value = args.showMode;
-    var ok = await repeatLogic!.init(
+    var ok = await repeatFlow!.init(
       progresses: args.progresses,
       startIndex: args.startIndex,
       update: () {
@@ -94,7 +102,7 @@ class RepeatLogic extends GetxController {
       state.helper.focusMode.value = false;
       state.needUpdateSystemUiMode = true;
     }
-    await state.helper.init(repeatLogic!);
+    await state.helper.init(repeatFlow!);
     for (var v in showTypeToRepeatView.values) {
       v.init(state.helper);
     }
@@ -110,7 +118,7 @@ class RepeatLogic extends GetxController {
     super.onClose();
     bookSub.off();
     await gameLogic.switchWeb(false);
-    repeatLogic?.onClose();
+    repeatFlow?.onClose();
     for (var v in showTypeToRepeatView.values) {
       v.dispose();
     }
@@ -173,7 +181,7 @@ class RepeatLogic extends GetxController {
 
   void adjustProgress() async {
     var curr = getCurr();
-    if (curr == null || repeatLogic == null) {
+    if (curr == null || repeatFlow == null) {
       return;
     }
     state.helper.stopMedia(false);
@@ -181,7 +189,7 @@ class RepeatLogic extends GetxController {
       curr.verseId,
       title: I18nKey.btnNext.tr,
       callback: (p, n) async {
-        await repeatLogic!.jump(progress: p, nextDayValue: n);
+        await repeatFlow!.jump(progress: p, nextDayValue: n);
         Get.back();
         update([RepeatLogic.id]);
       },
@@ -227,22 +235,22 @@ class RepeatLogic extends GetxController {
 
   void onTapLeft() {
     preClick();
-    if (repeatLogic != null) {
-      repeatLogic!.onTapLeft();
+    if (repeatFlow != null) {
+      repeatFlow!.onTapLeft();
     }
   }
 
   void onTapRight() {
     preClick();
-    if (repeatLogic != null) {
-      repeatLogic!.onTapRight();
+    if (repeatFlow != null) {
+      repeatFlow!.onTapRight();
     }
   }
 
   void onLongTapRight() {
     preClick();
-    if (repeatLogic != null) {
-      repeatLogic!.onLongTapRight();
+    if (repeatFlow != null) {
+      repeatFlow!.onLongTapRight();
     }
   }
 
@@ -265,10 +273,10 @@ class RepeatLogic extends GetxController {
   }
 
   VerseTodayPrg? getCurr() {
-    if (repeatLogic == null) {
+    if (repeatFlow == null) {
       return null;
     }
-    return repeatLogic!.currVerse;
+    return repeatFlow!.currVerse;
   }
 
   void togglePracticeMode() {

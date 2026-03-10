@@ -7,8 +7,6 @@ enum CrK {
   todayScheduleConfig,
   todayScheduleConfigInUse,
   todayFullCustomScheduleConfigCount,
-  typeGameForIgnorePunctuation,
-  typeGameForIgnoreCase,
   blockItRightGameForAutoBlank,
   blockItRightGameForEditorUserId,
   blockItRightGameForBlankContentPercent,

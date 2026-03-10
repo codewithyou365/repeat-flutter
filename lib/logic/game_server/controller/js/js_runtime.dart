@@ -1,27 +1,116 @@
 import 'dart:convert';
+import 'dart:ui';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_js/flutter_js.dart';
+import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
+import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/game/game_state.dart';
+import 'package:repeat_flutter/page/repeat/logic/repeat_flow_for_browse.dart';
+import 'package:repeat_flutter/page/repeat/repeat_logic.dart';
 
-String defaultCode = '';
+part 'js_code.dart';
 
 class JsRuntime {
+  final VoidCallback tapLeft;
+  final VoidCallback tapRight;
+  final VoidCallback tapMiddle;
+  final VoidCallback longTapMiddle;
+
   JavascriptRuntime? _jsRuntime;
   bool _isInitialized = false;
 
-  /// 1. 初始化 (预热 JS 引擎并加载核心逻辑)
+  JsRuntime({
+    required this.tapLeft,
+    required this.tapRight,
+    required this.tapMiddle,
+    required this.longTapMiddle,
+  });
+
   Future<void> init(String coreJsCode) async {
+    if (_isInitialized) return;
+
+    await loadDefaultCode();
     if (defaultCode.isNotEmpty) {
       coreJsCode = defaultCode;
     }
-    if (_isInitialized) return;
-
     _jsRuntime = getJavascriptRuntime();
 
     try {
+      _jsRuntime!.onMessage('repeatFlow', (dynamic args) {
+        final game = GameState.game;
+        if (game == null) {
+          return '';
+        }
+        final logic = Get.find<RepeatLogic>();
+        final repeatFlow = logic.repeatFlow;
+        if (repeatFlow == null) {
+          return '';
+        }
+        if (repeatFlow is RepeatFlowForBrowse) {
+          return 'browse';
+        } else {
+          return 'examine';
+        }
+      });
+      _jsRuntime!.onMessage('uiLabel', (dynamic args) {
+        final game = GameState.game;
+        if (game == null) {
+          return '';
+        }
+        if (args is! Map || !args.containsKey('name')) {
+          return '';
+        }
+        final k = args['name'];
+        if (k is! String) {
+          return '';
+        }
+        final logic = Get.find<RepeatLogic>();
+        switch (k) {
+          case 'left':
+            return logic.repeatFlow?.leftLabel ?? '';
+          case 'right':
+            return logic.repeatFlow?.rightLabel ?? '';
+          case 'middle':
+            return I18nKey.tips.tr;
+          default:
+            return '';
+        }
+      });
+      _jsRuntime!.onMessage('uiTap', (dynamic args) {
+        final game = GameState.game;
+        if (game == null) {
+          return 'error: game_not_initialized';
+        }
+        if (args is! Map) {
+          return 'error: invalid_arguments';
+        }
+        final k = args['event'];
+        if (k is! String) {
+          return 'error: event_must_be_string';
+        }
+        switch (k) {
+          case 'tapLeft':
+            tapLeft();
+            break;
+          case 'tapRight':
+            tapRight();
+            break;
+          case 'tapMiddle':
+            tapMiddle();
+            break;
+          case 'longTapMiddle':
+            longTapMiddle();
+            break;
+          default:
+            return 'error: unknown_event_type';
+        }
+        return 'success';
+      });
+
       _jsRuntime!.onMessage('getVerse', (dynamic args) async {
         final game = GameState.game;
         if (game == null) {
@@ -44,27 +133,15 @@ class JsRuntime {
         return '';
       });
       _jsRuntime!.onMessage('getData', (dynamic args) async {
-        // 使用醒目的标记，方便你在控制台刷新的海量日志中一眼看到它
-        print("🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥");
-        print("DEBUG: [Dart] ⚡ 收到 JS 的 'getData' 请求! ⚡");
-        print("DEBUG: [Dart] ⚡ 接收到的 args: $args");
-        print("🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥");
-
         final game = GameState.game;
         if (game == null) {
-          print("DEBUG: [Dart] ❌ GameState.game 为 null");
           return '{}';
         }
 
         try {
-          print("DEBUG: [Dart] 正在查询数据库: gameId = ${game.id}");
           final ret = await Db().db.gameDao.getData(game.id ?? 0);
-          print("DEBUG: [Dart] 数据库查询结果: $ret");
-
-          // 确保返回的是 String
           return ret?.toString() ?? '{}';
         } catch (e) {
-          print("DEBUG: [Dart] ❌ 数据库查询异常: $e");
           return '{}';
         }
       });
@@ -75,9 +152,7 @@ class JsRuntime {
         throw Exception("JS Engine Initialization Failed: ${result.stringResult}");
       }
       _isInitialized = true;
-      print("🚀 JS Runtime initialized successfully.");
     } catch (e) {
-      print("❌ JS Runtime init error: $e");
       dispose(); // 初始化失败时及时清理
       rethrow;
     }

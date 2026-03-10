@@ -31,7 +31,8 @@ class GameLogic<T extends GetxController> {
   static const String bodyId = "GameLogic.bodyId";
   final T parentLogic;
   late UserManager userManager = UserManager<T>(parentLogic);
-  WebServer web = WebServer();
+  late WebServer web;
+
   final GameState state = GameState();
   final SubList<WsEvent> sub = [];
   final SubList<int> subAllowRegisterNumber = [];
@@ -40,7 +41,20 @@ class GameLogic<T extends GetxController> {
 
   late VoidCallback onOpenWeb;
 
-  GameLogic(this.parentLogic);
+  GameLogic({
+    required this.parentLogic,
+    required VoidCallback tapLeft,
+    required VoidCallback tapRight,
+    required VoidCallback tapMiddle,
+    required VoidCallback longTapMiddle,
+  }) {
+    web = WebServer(
+      tapLeft: tapLeft,
+      tapRight: tapRight,
+      tapMiddle: tapMiddle,
+      longTapMiddle: longTapMiddle,
+    );
+  }
 
   Future<bool> init(VoidCallback onOpenWeb) async {
     this.onOpenWeb = onOpenWeb;

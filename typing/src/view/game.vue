@@ -1,34 +1,39 @@
 <template>
-  <nut-navbar>
-    <template #right>
-      <router-link to="/game_score">
-        <Order width="16px"></Order>
-      </router-link>
-      <div style="width: 10px"></div>
-      <router-link to="/settings">
-        <Setting width="16px"></Setting>
-      </router-link>
-    </template>
-  </nut-navbar>
-  <reconnect/>
-  <router-view/>
-  <nut-overlay v-model:visible="overlayVisible">
-    <div class="overlay-body">
-      <div class="overlay-content">
-        <Loading1/>
-      </div>
+  <div class="game-layout">
+    <nut-navbar>
+      <template #right>
+        <router-link to="/game_score">
+          <Order width="16px"></Order>
+        </router-link>
+        <div style="width: 10px"></div>
+        <router-link to="/settings">
+          <Setting width="16px"></Setting>
+        </router-link>
+      </template>
+    </nut-navbar>
+
+    <reconnect/>
+    <div class="game-main">
+      <router-view/>
     </div>
-  </nut-overlay>
-  <nut-dialog
-      v-model:visible="tipDialogVisible"
-      :title="t('tips')"
-      :content="tipDialogContent"
-      :okText="t('confirm')"
-      :no-cancel-btn="true"
-      :cancelText="t('cancel')"
-      :onOk="onOk"
-      :onCancel="onCancel">
-  </nut-dialog>
+    <nut-overlay v-model:visible="overlayVisible">
+      <div class="overlay-body">
+        <div class="overlay-content">
+          <Loading1/>
+        </div>
+      </div>
+    </nut-overlay>
+    <nut-dialog
+        v-model:visible="tipDialogVisible"
+        :title="t('tips')"
+        :content="tipDialogContent"
+        :okText="t('confirm')"
+        :no-cancel-btn="true"
+        :cancelText="t('cancel')"
+        :onOk="onOk"
+        :onCancel="onCancel">
+    </nut-dialog>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -69,6 +74,22 @@ const onOk = () => {
   console.log('event ok')
 }
 </script>
-<style>
+<style scoped>
+.game-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* 撑满整个屏幕 */
+  overflow: hidden; /* 防止父容器本身产生滚动 */
+}
 
+.nav-header {
+  flex-shrink: 0; /* 导航栏高度固定，不被压缩 */
+}
+
+.game-main {
+  flex: 1; /* 占据剩余的所有空间 */
+  overflow-y: auto; /* 如果内容过长，允许内部滚动 */
+  display: flex;
+  flex-direction: column;
+}
 </style>

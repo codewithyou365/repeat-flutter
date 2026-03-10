@@ -130,7 +130,7 @@ class RepeatPage extends StatelessWidget {
   }
 
   Widget topBar({required RepeatLogic logic, required double height}) {
-    final repeatLogic = logic.repeatLogic;
+    final repeatLogic = logic.repeatFlow;
     final state = logic.state;
     return SizedBox(
       height: height,
@@ -254,8 +254,8 @@ class RepeatPage extends StatelessWidget {
   Widget topBarTitle({required RepeatLogic logic, double? fontSize}) {
     var state = logic.state;
     String text = '';
-    if (!state.helper.focusMode.value && logic.repeatLogic != null) {
-      text = logic.repeatLogic!.titleLabel;
+    if (!state.helper.focusMode.value && logic.repeatFlow != null) {
+      text = logic.repeatFlow!.titleLabel;
     }
     return Text(
       text,
@@ -264,7 +264,7 @@ class RepeatPage extends StatelessWidget {
   }
 
   Widget bottomBar({required RepeatLogic logic, required double width, required double height}) {
-    final repeatLogic = logic.repeatLogic;
+    final repeatLogic = logic.repeatFlow;
     final leftButtonText = repeatLogic?.leftLabel ?? '';
     final rightButtonText = repeatLogic?.rightLabel ?? '';
     final buttonWidth = width / 2;

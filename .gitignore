@@ -1,4 +1,5 @@
 # Miscellaneous
+assets/editor/service.js
 *.class
 *.log
 *.pyc

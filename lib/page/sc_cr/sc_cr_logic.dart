@@ -229,11 +229,11 @@ class ScCrLogic extends GetxController {
     update([ScCrLogic.id]);
   }
 
-  void tryStartAll({RepeatType mode = RepeatType.normal}) {
+  void tryStartAll({RepeatType mode = RepeatType.examine}) {
     tryStart(state.all, mode: mode);
   }
 
-  void tryStartGroup(TodayPrgType type, {RepeatType mode = RepeatType.normal}) {
+  void tryStartGroup(TodayPrgType type, {RepeatType mode = RepeatType.examine}) {
     if (type == TodayPrgType.learn) {
       tryStart(state.learn, mode: mode);
     } else if (type == TodayPrgType.review) {
@@ -253,7 +253,7 @@ class ScCrLogic extends GetxController {
     }
   }
 
-  void tryStart(List<VerseTodayPrg> list, {bool grouping = false, RepeatType mode = RepeatType.normal}) async {
+  void tryStart(List<VerseTodayPrg> list, {bool grouping = false, RepeatType mode = RepeatType.examine}) async {
     if (list.isEmpty) {
       Snackbar.show(I18nKey.labelNoLearningContent.tr);
       return;
@@ -261,7 +261,7 @@ class ScCrLogic extends GetxController {
     if (grouping) {
       list = VerseTodayPrg.getFirstUnfinishedGroup(list);
     }
-    if (mode == RepeatType.normal) {
+    if (mode == RepeatType.examine) {
       var learnedTotalCount = VerseTodayPrg.getFinishedCount(list);
       var learnTotalCount = list.length;
       if (learnTotalCount - learnedTotalCount == 0) {
@@ -272,9 +272,9 @@ class ScCrLogic extends GetxController {
     var repeat = RepeatArgs(
       progresses: list,
       startIndex: 0,
-      repeatType: mode,
+      repeatFlowType: mode,
       enableShowRecallButtons: true,
-      showMode: mode == RepeatType.normal ? ShowMode.closedBook : ShowMode.openBook,
+      showMode: mode == RepeatType.examine ? ShowMode.closedBook : ShowMode.openBook,
     );
     await Nav.repeat.push(arguments: repeat);
     await init();

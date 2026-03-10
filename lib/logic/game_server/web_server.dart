@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/ws/message.dart';
@@ -28,9 +29,20 @@ class WebServer {
   late final Server<GameUser> server;
   final List<String> ips = [];
   String destinationDir = '';
-  JsRuntime jsRuntime = JsRuntime();
+  late JsRuntime jsRuntime;
 
-  WebServer() {
+  WebServer({
+    required VoidCallback tapLeft,
+    required VoidCallback tapRight,
+    required VoidCallback tapMiddle,
+    required VoidCallback longTapMiddle,
+  }) {
+    jsRuntime = JsRuntime(
+      tapLeft: tapLeft,
+      tapRight: tapRight,
+      tapMiddle: tapMiddle,
+      longTapMiddle: longTapMiddle,
+    );
     server = Server(wsEvent: wsEvent, kickPath: Path.kick);
   }
 

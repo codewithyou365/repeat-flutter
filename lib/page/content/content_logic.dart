@@ -89,7 +89,7 @@ class ContentLogic extends GetxController {
         var repeat = RepeatArgs(
           progresses: p,
           startIndex: index,
-          repeatType: RepeatType.justView,
+          repeatFlowType: RepeatType.browse,
           enableShowRecallButtons: false,
           showMode: ShowMode.edit,
         );
