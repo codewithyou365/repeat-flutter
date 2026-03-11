@@ -52,8 +52,10 @@ class WebServer {
     final localFolder = rootPath.joinPath(DocPath.getRelativePath(bookId));
     DownloadContent download = DownloadContent(url: '', hash: hash);
     destinationDir = localFolder.joinPath(download.folder).joinPath(download.pureName);
-
-    final file = File(destinationDir.joinPath('service.js'));
+    if (jsFile.isEmpty) {
+      jsFile = 'service.js';
+    }
+    final file = File(destinationDir.joinPath(jsFile));
     var content = '';
     if (await file.exists()) {
       content = await file.readAsString();

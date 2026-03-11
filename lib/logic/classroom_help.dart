@@ -19,12 +19,14 @@ class GameContent {
   String hash;
   String name;
   String key;
+  String service;
 
   GameContent({
     this.id,
     required this.hash,
     required this.name,
     required this.key,
+    required this.service,
   });
 
   factory GameContent.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,7 @@ class GameContent {
       hash: json['h'] ?? '',
       name: json['n'] ?? '',
       key: json['k'] ?? '',
+      service: json['s'] ?? '',
     );
   }
 }
@@ -109,6 +112,7 @@ class ClassroomHelp {
                         name: game.name,
                         hash: game.hash,
                         data: '',
+                        service: game.service,
                         createTime: DateTime.now().millisecondsSinceEpoch,
                       ),
                     );
@@ -116,6 +120,7 @@ class ClassroomHelp {
                   } else {
                     gameEntity.name = game.name;
                     gameEntity.hash = game.hash;
+                    gameEntity.service = game.service;
                     await Db().db.gameDao.updateOrReplace(gameEntity);
                   }
                   currentGameNames.add(game.name);

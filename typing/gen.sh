@@ -4,13 +4,11 @@ rm -f dist.zip
 rm -rf dist/
 pnpm build
 
-if [ -f "../assets/editor/service.js" ]; then
-  cp ../assets/editor/service.js dist/
-  echo "Copied service.js from assets."
-else
-  cp service.js dist/
-  echo "Copied local service.js."
+if [ -f "../assets/editor/service/type.js" ]; then
+  cp ../assets/editor/service/type.js service/type.js
 fi
+
+cp service/type.js dist/
 
 (cd dist && zip -r ../dist.zip .)
 

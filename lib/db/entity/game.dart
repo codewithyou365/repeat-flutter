@@ -20,6 +20,7 @@ class Game {
   String name;
   String hash;
   String data;
+  String service;
 
   final int createTime;
 
@@ -30,6 +31,7 @@ class Game {
     required this.name,
     required this.hash,
     required this.data,
+    required this.service,
     required this.createTime,
     this.id,
   });
