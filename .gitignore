@@ -1,5 +1,5 @@
 # Miscellaneous
-assets/editor/service/
+assets/service/
 *.class
 *.log
 *.pyc

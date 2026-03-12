@@ -6,7 +6,7 @@
 import {client, url, Request, Response, ClientStatus} from '../api/ws';
 import {onMounted} from 'vue';
 import {busReset, bus, EventName, RefreshGameType} from '../api/bus';
-import {LocationQueryRaw, useRouter} from "vue-router";
+import {useRouter} from "vue-router";
 
 const router = useRouter();
 import {useStore} from 'vuex';
@@ -47,8 +47,11 @@ onMounted(() => {
       const req = new Request({path: Path.gameKey, data: 0});
       const res = await client.node!.send(req);
       if (res.error) {
-        console.error('Error starting game:', res.error);
-        alert(res.error);
+        if (res.error === 'token-invalid') {
+          await router.push("/login");
+        } else {
+          console.error('Error starting game:', res.error);
+        }
       } else {
         const gameType = GameType.toGameType(res.data);
         await router.push({path: gameType.path});

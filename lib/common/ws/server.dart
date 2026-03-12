@@ -119,10 +119,16 @@ class Server<User extends UserId> {
       server = await HttpServer.bindSecure(InternetAddress.anyIPv4, port, context);
 
       server!.listen((HttpRequest request) async {
-        if (status == ServerStatus.stopped) return;
+        if (status == ServerStatus.stopped) {
+          return;
+        }
         if (WebSocketTransformer.isUpgradeRequest(request)) {
           User? user = await auth(request);
           WebSocket socket = await WebSocketTransformer.upgrade(request);
+          if (user == null) {
+            await socket.close(4001, "token error");
+            return;
+          }
           await handleWebSocket(socket, user);
         } else {
           if (cors) {

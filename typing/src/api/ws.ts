@@ -89,7 +89,10 @@ export class Message {
 
 export class Node {
     sendId: number;
-    sendId2Res: Map<number, { resolve: (value: any) => void; reject: (reason?: any) => void }>;
+    sendId2Res: Map<number, {
+        completer: { promise: Promise<any>, resolve: (value: any) => void; reject: (reason?: any) => void },
+        timeoutId: NodeJS.Timeout
+    }>;
     sendId2Log: Map<number, boolean>;
     webSocket: WebSocket;
     age: number;
@@ -102,16 +105,31 @@ export class Node {
         this.age = age;
     }
 
+    destroy(reason: string = 'node destroyed') {
+        for (const [_, req] of this.sendId2Res.entries()) {
+            clearTimeout(req.timeoutId);
+            req.completer.resolve(new Response({
+                headers: new Map<string, string>(),
+                error: reason,
+                status: 504,
+                age: this.age,
+            }));
+        }
+        this.sendId2Res.clear();
+        this.sendId2Log.clear();
+    }
+
     receive(rawMsg: String, msg: Message) {
         if (msg.age !== this.age) {
             console.log(`[ws] ignoring message - age mismatch: ${msg.age} vs ${this.age}`);
             return;
         }
 
-        const completer = this.sendId2Res.get(msg.id);
-        if (completer) {
+        const req = this.sendId2Res.get(msg.id);
+        if (req) {
+            clearTimeout(req.timeoutId);
             msg.response!.age = this.age;
-            completer.resolve(msg.response);
+            req.completer.resolve(msg.response);
             this.sendId2Res.delete(msg.id);
         }
 
@@ -134,31 +152,38 @@ export class Node {
         if (log) {
             console.log('[ws] send :', JSON.stringify(msg));
         }
-        this.webSocket.send(JSON.stringify(msg));
-
         const completer = this._createCompleter();
-        this.sendId2Res.set(id, completer);
         this.sendId2Log.set(id, log);
 
-        const timeout = setTimeout(() => {
-            if (this.sendId2Res.delete(id)) {
+        const timeoutId = setTimeout(() => {
+            if (this.sendId2Res.has(id)) {
+                console.warn(`[ws] TIMEOUT - ID: ${id}, Age: ${age} (Wait for 10s)`);
+                this.sendId2Res.delete(id);
                 this.sendId2Log.delete(id);
-                const headers = new Map<string, string>();
                 completer.resolve(new Response({
-                    headers: headers,
-                    error: 'timeout',
+                    headers: new Map<string, string>(),
+                    error: 'timeout_' + id,
                     status: 504,
                     age: age,
                 }));
             }
         }, 10000);
 
+        this.sendId2Res.set(id, {completer, timeoutId});
+
         try {
+            if (this.webSocket.readyState !== WebSocket.OPEN) {
+                throw new Error('WebSocket is not open');
+            }
+            const payload = JSON.stringify(msg);
+            this.webSocket.send(payload);
+
             return await completer.promise;
-        } finally {
-            clearTimeout(timeout);
+        } catch (error) {
+            clearTimeout(timeoutId);
             this.sendId2Res.delete(id);
             this.sendId2Log.delete(id);
+            throw error;
         }
     }
 
@@ -179,10 +204,11 @@ export const ClientStatus = {
     CONNECT_FAILED: 2,
     CONNECT_FINISH: 3,
     CONNECT_CLOSE: 4,
-    STOP_START: 5,
-    STOP_FINISH: 6,
-    STOP_FOR_RECONNECT_START: 7,
-    STOP_FOR_RECONNECT_FINISH: 8,
+    CONNECT_CLOSE_FOR_TOKEN_INVALID: 5,
+    STOP_START: 6,
+    STOP_FINISH: 7,
+    STOP_FOR_RECONNECT_START: 8,
+    STOP_FOR_RECONNECT_FINISH: 9,
 };
 const ClientStatusName: Map<number, string> = new Map<number, string>([
     [0, 'INIT'],
@@ -190,10 +216,11 @@ const ClientStatusName: Map<number, string> = new Map<number, string>([
     [2, 'CONNECT_FAILED'],
     [3, 'CONNECT_FINISH'],
     [4, 'CONNECT_CLOSE'],
-    [5, 'STOP_START'],
-    [6, 'STOP_FINISH'],
-    [7, 'STOP_FOR_RECONNECT_START'],
-    [8, 'STOP_FOR_RECONNECT_FINISH'],
+    [5, 'CONNECT_CLOSE_FOR_TOKEN_INVALID'],
+    [6, 'STOP_START'],
+    [7, 'STOP_FINISH'],
+    [8, 'STOP_FOR_RECONNECT_START'],
+    [9, 'STOP_FOR_RECONNECT_FINISH'],
 ]);
 
 type ClientStatusRelationship = Map<
@@ -221,7 +248,8 @@ add(ClientStatus.CONNECT_START, true, [ClientStatus.INIT, ClientStatus.STOP_FOR_
 add(ClientStatus.CONNECT_FAILED, false, [ClientStatus.CONNECT_START, ClientStatus.CONNECT_FINISH]);
 add(ClientStatus.CONNECT_FINISH, false, [ClientStatus.CONNECT_START]);
 add(ClientStatus.CONNECT_CLOSE, true, [ClientStatus.CONNECT_FINISH]);
-add(ClientStatus.STOP_START, true, [ClientStatus.CONNECT_FAILED, ClientStatus.CONNECT_FINISH]);
+add(ClientStatus.CONNECT_CLOSE_FOR_TOKEN_INVALID, true, [ClientStatus.CONNECT_FINISH]);
+add(ClientStatus.STOP_START, true, [ClientStatus.CONNECT_FAILED, ClientStatus.CONNECT_FINISH, ClientStatus.CONNECT_CLOSE_FOR_TOKEN_INVALID]);
 add(ClientStatus.STOP_FINISH, true, [ClientStatus.STOP_START]);
 add(ClientStatus.STOP_FOR_RECONNECT_START, true, [ClientStatus.CONNECT_FAILED, ClientStatus.CONNECT_FINISH]);
 add(ClientStatus.STOP_FOR_RECONNECT_FINISH, true, [ClientStatus.STOP_FOR_RECONNECT_START]);
@@ -324,7 +352,10 @@ class Client {
     }
 
     private _close() {
-        this.node!.webSocket.close();
+        if (this.node) {
+            this.node.destroy('client close');
+            this.node.webSocket.close();
+        }
     }
 
     private _start(url: string, statusChange: (status: number) => void, heartSender: () => Promise<Response>) {
@@ -332,6 +363,11 @@ class Client {
         this.url = url;
         this.statusChange = statusChange;
         this.heartSender = heartSender;
+
+        if (this.node) {
+            this.node.destroy('reconnecting');
+        }
+
         const socket = new WebSocket(url);
         this.node = new Node(socket, this.age);
         socket.onmessage = async (event) => {
@@ -359,9 +395,19 @@ class Client {
             }
         };
 
-        socket.onclose = (_) => {
+        socket.onclose = (event) => {
+            const closeEvent = event as CloseEvent;
+            if (closeEvent.code === 4001) {
+                this.node?.destroy('token-invalid');
+            } else {
+                this.node?.destroy('socket-closed');
+            }
             if (this.status === ClientStatus.CONNECT_FINISH) {
-                this.setStatus(ClientStatus.CONNECT_CLOSE, null);
+                if (closeEvent.code === 4001) {
+                    this.setStatus(ClientStatus.CONNECT_CLOSE_FOR_TOKEN_INVALID, null);
+                } else {
+                    this.setStatus(ClientStatus.CONNECT_CLOSE, null);
+                }
             } else if (this.status === ClientStatus.STOP_START) {
                 this.setStatus(ClientStatus.STOP_FINISH, null);
             } else if (this.status === ClientStatus.STOP_FOR_RECONNECT_START) {
@@ -408,8 +454,9 @@ class Client {
                 this._start(arg!.url, arg!.statusChange, arg!.heartSender);
                 break;
             case ClientStatus.CONNECT_FAILED:
-                this.stop(true, 'connect failed');
+                this.stop(false, 'connect failed');
                 break;
+
             case ClientStatus.CONNECT_FINISH:
                 this._loopHeart();
                 break;
@@ -420,11 +467,14 @@ class Client {
             case ClientStatus.STOP_FINISH:
             case ClientStatus.STOP_FOR_RECONNECT_FINISH:
             case ClientStatus.CONNECT_CLOSE:
+            case ClientStatus.CONNECT_CLOSE_FOR_TOKEN_INVALID:
                 if (this.heart) {
                     clearTimeout(this.heart);
+                    this.heart = null;
                 }
                 if (this.retry) {
                     clearTimeout(this.retry);
+                    this.retry = null;
                 }
                 if (toStatus === ClientStatus.STOP_FOR_RECONNECT_FINISH
                     || toStatus === ClientStatus.CONNECT_CLOSE) {
