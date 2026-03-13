@@ -185,6 +185,8 @@ class ConfigEn extends Config {
     put(I18nKey.blankContent, "Blank Content");
     put(I18nKey.ignorePunctuation, "Ignore Punctuation");
     put(I18nKey.ignoreCase, "Ignore Case");
+    put(I18nKey.adminModel, "Admin Model");
+    put(I18nKey.admin, "Admin");
     put(I18nKey.labelMatchType, "Match Type");
     put(I18nKey.labelSkipCharacter, "Enter This Char To Skip");
     put(I18nKey.labelEnableEditVerse, "Enable Edit Verse");

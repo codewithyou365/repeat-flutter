@@ -20,6 +20,9 @@ abstract class KvDao {
   @Query("SELECT value FROM Kv where `k`=:k")
   Future<String?> getStr(K k);
 
+  @Query('DELETE FROM Kv where `k` in (:k)')
+  Future<void> delete(List<K> k);
+
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertOrReplace(Kv kv);
 
@@ -32,5 +35,14 @@ abstract class KvDao {
       return value;
     }
     return ret;
+  }
+
+  Future<void> clearAtAppStart() async {
+    await delete([
+      K.mediaSharePort,
+      K.gameServerPort,
+      K.bookEditorPort,
+      K.materialSharePort,
+    ]);
   }
 }

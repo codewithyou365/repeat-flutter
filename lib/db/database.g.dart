@@ -2134,6 +2134,16 @@ class _$KvDao extends KvDao {
   }
 
   @override
+  Future<void> delete(List<K> k) async {
+    const offset = 1;
+    final _sqliteVariablesForK =
+        Iterable<String>.generate(k.length, (i) => '?${i + offset}').join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM Kv where `k` in (' + _sqliteVariablesForK + ')',
+        arguments: [...k.map((element) => _kConverter.encode(element))]);
+  }
+
+  @override
   Future<void> insertOrReplace(Kv kv) async {
     await _kvInsertionAdapter.insert(kv, OnConflictStrategy.replace);
   }

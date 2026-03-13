@@ -6,9 +6,11 @@ class GameState {
   int lastGameIndex = 0;
   List<Game> games = [];
   static Game? game;
+  static bool adminEnable = false;
   static int adminId = 0;
 
   bool openPending = false;
+  RxBool adminEnableRx = RxBool(false);
   RxBool open = RxBool(false);
   RxString online = RxString("");
   List<String> urls = [];

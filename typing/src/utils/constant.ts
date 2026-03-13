@@ -7,7 +7,7 @@ export const Path = {
     loginOrRegister: '/api/loginOrRegister',
     gameKey: '/api/gameKey',
     heart: '/api/heart',
-    gameAdminId: '/api/gameAdminId',
+    gameAdmin: '/api/gameAdmin',
     game: '/api/game',
     gameUserScoreHistory: '/api/gameUserScoreHistory',
     gameUserScore: '/api/gameUserScore',

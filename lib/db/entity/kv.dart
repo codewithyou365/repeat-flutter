@@ -24,6 +24,7 @@ enum K {
   materialSharePort,
   expandServiceUrl,
   adminId,
+  adminEnable,
 }
 
 @Entity(primaryKeys: ['k'])

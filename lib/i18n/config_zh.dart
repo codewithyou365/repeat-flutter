@@ -183,6 +183,8 @@ class ConfigZh extends Config {
     put(I18nKey.blankContent, "挖空内容");
     put(I18nKey.ignorePunctuation, "忽略标点符号");
     put(I18nKey.ignoreCase, "忽略大小写");
+    put(I18nKey.adminModel, "管理模式");
+    put(I18nKey.admin, "管理员");
     put(I18nKey.labelMatchType, "匹配类型");
     put(I18nKey.labelSkipCharacter, "输入该字符便跳过");
     put(I18nKey.labelEnableEditVerse, "启用编辑小节");

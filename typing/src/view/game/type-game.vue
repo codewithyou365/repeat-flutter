@@ -11,6 +11,9 @@
       </template>
     </nut-cell>
   </div>
+  <nut-cell v-else-if="cantPlayForMaintain">
+    {{ t('cantPlayForMaintain') }}
+  </nut-cell>
   <div v-else-if="ready" class="type-game-container">
     <div class="info-bar">
       <Ask class="info-icon" width="18px" height="18px" @click="showTips"/>
@@ -54,6 +57,7 @@ const store = useStore();
 
 const ignoreCase = ref(false);
 const ignorePunctuation = ref(false);
+const adminEnable = ref(false);
 const adminId = ref(0);
 const content = ref('');
 const labels = reactive({
@@ -69,8 +73,12 @@ const tipDialogContent = inject<Ref<string>>('tipDialogContent')!
 const ready = computed(() => {
   return adminId.value !== 0;
 });
+const cantPlayForMaintain = computed(() => {
+  return adminEnable.value && adminId.value != store.getters.currentUserId;
+});
+
 const isAdmin = computed(() => {
-  return adminId.value == store.getters.currentUserId;
+  return adminEnable.value && adminId.value == store.getters.currentUserId;
 });
 const showTips = () => {
   const caseStatus = ignoreCase.value ? t('enabled') : t('disabled');
@@ -102,13 +110,16 @@ const getConfig = async () => {
   ignorePunctuation.value = res['ignorePunctuation'];
   ignoreCase.value = res['ignoreCase'];
 };
-const getAdminId = async () => {
+const getAdmin = async () => {
   const req = new Request({
-    path: Path.gameAdminId,
+    path: Path.gameAdmin,
   });
   const res0 = await client.node!.send(req);
-  adminId.value = res0.data;
+  const admin = res0.data;
+  adminEnable.value = admin.adminEnable;
+  adminId.value = admin.adminId;
 };
+
 const tap = async (event: String) => {
   const req = new Request({
     path: Path.game,
@@ -158,7 +169,7 @@ const refresh = async () => {
 onMounted(async () => {
   await getConfig();
   await refresh();
-  await getAdminId();
+  await getAdmin();
   bus().on(EventName.RefreshGame, () => {
     refresh();
   });
@@ -192,9 +203,11 @@ onBeforeUnmount(() => {
 .actions .nut-button {
   width: 32%; /* 留一点空隙更美观 */
 }
+
 .nut-theme-dark .info-icon {
   color: white;
 }
+
 .info-bar {
   display: flex;
   justify-content: flex-end;

@@ -2,6 +2,7 @@ import {createI18n} from 'vue-i18n';
 
 const messages = {
     en: {
+        cantPlayForMaintain: 'The administrator is performing maintenance; gameplay is currently unavailable.',
         dartMode: 'Dart Mode',
         enableVimMode: 'Enable VIM Mode',
         settings: 'Settings',
@@ -97,6 +98,7 @@ const messages = {
         disabled: 'Disabled',
     },
     zh: {
+        cantPlayForMaintain:'管理员正在维护中，无法游玩',
         dartMode: '深色模式',
         enableVimMode: '启用VIM模式',
         settings: '设置',

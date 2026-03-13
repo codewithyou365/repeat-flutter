@@ -40,7 +40,7 @@ class Path {
   static const loginOrRegister = '/api/loginOrRegister';
   static const gameKey = '/api/gameKey';
   static const heart = '/api/heart';
-  static const gameAdminId = '/api/gameAdminId';
+  static const gameAdmin = '/api/gameAdmin';
   static const game = '/api/game';
   static const gameUserScoreHistory = '/api/gameUserScoreHistory';
   static const gameUserScore = '/api/gameUserScore';

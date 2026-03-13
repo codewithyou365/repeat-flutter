@@ -12,7 +12,7 @@ import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/game_server/controller/game.dart';
-import 'package:repeat_flutter/logic/game_server/controller/game_admin_id.dart';
+import 'package:repeat_flutter/logic/game_server/controller/game_admin.dart';
 import 'package:repeat_flutter/logic/game_server/controller/game_user_score.dart';
 import 'package:repeat_flutter/logic/game_server/controller/game_user_score_history.dart';
 import 'package:repeat_flutter/logic/game_server/controller/game_user_score_minus.dart';
@@ -66,7 +66,7 @@ class WebServer {
     server.controllers[Path.loginOrRegister] = loginOrRegister;
     server.controllers[Path.gameKey] = (request) => withGameUser(request, gameKey);
     server.controllers[Path.heart] = (request) => withGameUser(request, heart);
-    server.controllers[Path.gameAdminId] = (request) => withGameUser(request, gameAdminId);
+    server.controllers[Path.gameAdmin] = (request) => withGameUser(request, gameAdmin);
     server.controllers[Path.game] = (request) => withGameUserAndServer(request, game);
     server.controllers[Path.gameUserScoreHistory] = (request) => withGameUser(request, gameUserScoreHistory);
     server.controllers[Path.gameUserScore] = (request) => withGameUser(request, gameUserScore);

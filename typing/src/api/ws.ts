@@ -454,7 +454,7 @@ class Client {
                 this._start(arg!.url, arg!.statusChange, arg!.heartSender);
                 break;
             case ClientStatus.CONNECT_FAILED:
-                this.stop(false, 'connect failed');
+                this.stop(true, 'connect failed');
                 break;
 
             case ClientStatus.CONNECT_FINISH:
@@ -476,8 +476,7 @@ class Client {
                     clearTimeout(this.retry);
                     this.retry = null;
                 }
-                if (toStatus === ClientStatus.STOP_FOR_RECONNECT_FINISH
-                    || toStatus === ClientStatus.CONNECT_CLOSE) {
+                if (toStatus === ClientStatus.STOP_FOR_RECONNECT_FINISH) {
                     this.retry = setTimeout(() => {
                         this.start(this.url, this.statusChange, this.heartSender);
                     }, 1000);

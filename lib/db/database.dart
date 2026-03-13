@@ -167,6 +167,7 @@ class Db {
       log("Database path: \n${await sqflite.getDatabasesPath()}/$fileName");
     }
     db.lockDao.insertLock(Lock(1));
+    db.kvDao.clearAtAppStart();
     return db;
   }
 }

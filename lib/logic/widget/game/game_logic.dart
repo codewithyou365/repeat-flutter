@@ -72,6 +72,8 @@ class GameLogic<T extends GetxController> {
     if (port.value > 50000) {
       port.value = defaultPort;
     }
+    final adminEnable = await Db().db.kvDao.getInt(K.adminEnable) ?? 0;
+    state.adminEnableRx.value = adminEnable != 0;
     await userManager.init(web);
     return true;
   }
@@ -114,7 +116,6 @@ class GameLogic<T extends GetxController> {
       state.lastGameIndex = 0;
       await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.lastGameIndex, '0'));
     }
-    state.lastGameIndex = 0;
     return state.games[state.lastGameIndex];
   }
 
@@ -163,6 +164,8 @@ class GameLogic<T extends GetxController> {
             return;
           }
           GameState.game = game;
+          final enable = await Db().db.kvDao.getInt(K.adminEnable) ?? 0;
+          GameState.adminEnable = enable != 0;
           GameState.adminId = await Db().db.kvDao.getInt(K.adminId) ?? 0;
           await web.start(game.bookId, game.hash, game.service, port.value);
           state.urls = [];
@@ -183,6 +186,7 @@ class GameLogic<T extends GetxController> {
       } else {
         await closeWeb();
         GameState.game = null;
+        GameState.adminEnable = false;
         GameState.adminId = 0;
       }
     } finally {
@@ -263,6 +267,12 @@ class GameLogic<T extends GetxController> {
   Future<void> clearGamePassword() async {
     await Db().db.kvDao.insertOrReplace(Kv(K.gamePassword, ''));
     await Db().db.kvDao.insertOrReplace(Kv(K.gamePasswordCreateTime, '0'));
+  }
+
+  Future<void> setAdminEnable(bool v) async {
+    final i = v == true ? 1 : 0;
+    state.adminEnableRx.value = v;
+    await Db().db.kvDao.insertOrReplace(Kv(K.adminEnable, "$i"));
   }
 
   Future<void> setUser(int index) async {

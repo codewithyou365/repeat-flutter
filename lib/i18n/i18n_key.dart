@@ -181,6 +181,8 @@ enum I18nKey {
   blankContent,
   ignorePunctuation,
   ignoreCase,
+  adminModel,
+  admin,
   labelMatchType,
   labelSkipCharacter,
   labelEnableEditVerse,
