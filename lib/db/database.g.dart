@@ -1986,12 +1986,12 @@ class _$GameUserScoreDao extends GameUserScoreDao {
   @override
   Future<void> inc(
     int userId,
-    GameType gameType,
+    int gameId,
     int score,
     String remark,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.inc(userId, gameType, score, remark);
+      await super.inc(userId, gameId, score, remark);
     } else {
       await (database as sqflite.Database)
           .transaction<void>((transaction) async {
@@ -1999,7 +1999,7 @@ class _$GameUserScoreDao extends GameUserScoreDao {
           ..database = transaction;
         prepareDb(transactionDatabase);
         await transactionDatabase.gameUserScoreDao
-            .inc(userId, gameType, score, remark);
+            .inc(userId, gameId, score, remark);
       });
     }
   }

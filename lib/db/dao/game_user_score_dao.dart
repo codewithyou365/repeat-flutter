@@ -41,7 +41,7 @@ abstract class GameUserScoreDao {
   @transaction
   Future<void> inc(
     int userId,
-    GameType gameType,
+    int gameId,
     int score,
     String remark,
   ) async {
@@ -49,7 +49,6 @@ abstract class GameUserScoreDao {
       return;
     }
     final now = DateTime.now();
-    int gameId = 0;
     final existing = await get(userId, gameId);
 
     if (existing == null) {

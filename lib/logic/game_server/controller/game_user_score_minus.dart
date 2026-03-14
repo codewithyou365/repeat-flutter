@@ -54,7 +54,7 @@ Future<message.Response?> gameUserScoreMinus(
 
   dao.inc(
     user.getId(),
-    GameType.values[reqData.gameType],
+    0,
     -reqData.score,
     remark,
   );

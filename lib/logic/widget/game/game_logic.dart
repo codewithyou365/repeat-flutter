@@ -43,12 +43,14 @@ class GameLogic<T extends GetxController> {
 
   GameLogic({
     required this.parentLogic,
+    required VoidCallback tapNext,
     required VoidCallback tapLeft,
     required VoidCallback tapRight,
     required VoidCallback tapMiddle,
     required VoidCallback longTapMiddle,
   }) {
     web = WebServer(
+      tapNext: tapNext,
       tapLeft: tapLeft,
       tapRight: tapRight,
       tapMiddle: tapMiddle,

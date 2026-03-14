@@ -2,6 +2,8 @@ import {createI18n} from 'vue-i18n';
 
 const messages = {
     en: {
+        nextGame: 'Next Game',
+        waitingForOthers: 'Waiting for others...',
         join: 'Join',
         leave: 'Leave',
         cantPlayForMaintain: 'The administrator is performing maintenance; gameplay is currently unavailable.',
@@ -41,7 +43,7 @@ const messages = {
         blankedTip: 'Please complete your answer.',
         answer: 'answer: \n',
         viewAnswer: 'View Answer',
-        viewSubmit: 'View Submit',
+        viewSubmit: 'View Mine',
         score: "Score",
         obtainedInTheGame: "Obtained In The Game",
         deductedInTheGame: "Deducted In The Game",
@@ -100,6 +102,8 @@ const messages = {
         disabled: 'Disabled',
     },
     zh: {
+        nextGame: '进入下一关',
+        waitingForOthers: '等待其他玩家...',
         join: '加入',
         leave: '离开',
         cantPlayForMaintain: '管理员正在维护中，无法游玩',
@@ -139,7 +143,7 @@ const messages = {
         blankedTip: '请完成你的答案',
         answer: '答案: \n',
         viewAnswer: '查看答案',
-        viewSubmit: '查看提交',
+        viewSubmit: '查看我的',
         score: "分数",
         obtainedInTheGame: "游戏中获得",
         deductedInTheGame: "游戏中扣除",

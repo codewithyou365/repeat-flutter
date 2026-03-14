@@ -1,13 +1,19 @@
 const Util = {
     getConfig: async function () {
+        const defaultValue = {
+            ignorePunctuation: true,
+            ignoreCase: true,
+            maxScore: 10,
+            shouldRememberIfPassingRate: 0.8,
+        };
         try {
             let data = await sendMessage('getData', '{}');
             if (data == null || data === '') {
-                return {"ignorePunctuation": true, "ignoreCase": true};
+                return defaultValue;
             }
             return JSON.parse(data);
         } catch (e) {
-            return {"ignorePunctuation": true, "ignoreCase": true};
+            return defaultValue;
         }
     },
 
@@ -24,7 +30,6 @@ const Util = {
                 return {};
             }
             let ret = JSON.parse(data);
-            ret['a'] = 'apple';
             return ret;
         } catch (e) {
             return {};
@@ -72,13 +77,34 @@ const Util = {
             console.error("GetUserName failed:", e);
             return '';
         }
-    }
+    },
+
+    gameScoreInc: async function (userId, score, remark = '') {
+        try {
+            const payload = {
+                userId: userId,
+                score: score,
+                remark: remark
+            };
+            return await sendMessage('gameScoreInc', JSON.stringify(payload));
+        } catch (e) {
+            console.error("gameScoreInc failed:", e);
+            return '';
+        }
+    },
+
+    repeatFlow: function () {
+        try {
+            return sendMessage('repeatFlow', '{}');
+        } catch (e) {
+            return 'examine';
+        }
+    },
 }
 
 const GameEnum = {
     init: 'init',
     started: 'started',
-    finished: 'finished',
 };
 const StepEnum = {
     blanking: 'blanking',
@@ -90,6 +116,7 @@ const Game = {
     key: 'blankItRightText',
     punctuationRegex: /[.,\/#!$%\^&\*;:{}=\-_`~()？。，！；：“”‘’「」《》]/g,
     userIdToUserStatus: {},
+    userIds: [],
     gameStatus: GameEnum.init,
     // 内部状态
     _config: null,             // 用于存储缓存的配置对象
@@ -114,14 +141,15 @@ const Game = {
             const userId = args.userId;
             if (!userId) throw new Error("Missing userId");
 
-            // 如果用户不存在，初始化状态
             if (!this.userIdToUserStatus[userId]) {
+                this.userIds.push(userId);
                 const userName = await Util.getUserName(userId);
                 this.userIdToUserStatus[userId] = {
                     step: StepEnum.blanking,
                     submit: '',
                     name: userName,
-                    score: 0
+                    score: 0,
+                    nexted: false,
                 };
             }
             await Util.broadcast(this.gameRefreshPath, this.getBroadcastData());
@@ -137,6 +165,7 @@ const Game = {
 
             if (this.userIdToUserStatus[userId]) {
                 delete this.userIdToUserStatus[userId];
+                this.userIds = this.userIds.filter(id => id !== userId);
                 await Util.broadcast(this.gameRefreshPath, this.getBroadcastData());
                 return JSON.stringify({status: 200, data: `User ${userId} left`});
             } else {
@@ -148,19 +177,87 @@ const Game = {
     },
     start: async function (args) {
         this.gameStatus = GameEnum.started;
+        await this.clear();
+
+        return JSON.stringify({status: 200, data: "Game started"});
+    },
+    submit: async function (args) {
+        const userId = args.userId;
+        const userTyped = args.data.content;
+        const verse = await Util.getVerse();
+        const config = await this.getConfigWithCache();
+
+        // 计算分数
+        const score = this.getScore(userTyped, verse.a, this.blankContent, config.maxScore, config.ignoreCase);
+
+        // 更新用户状态
+        if (this.userIdToUserStatus[userId]) {
+            this.userIdToUserStatus[userId].score = score;
+            this.userIdToUserStatus[userId].submit = userTyped;
+            this.userIdToUserStatus[userId].step = StepEnum.finished; // 标记已提交
+        }
+
+        try {
+            await Util.gameScoreInc(userId, score, 'i:obtainedInTheGame');
+        } catch (e) {
+            console.error("Sync score to DB failed", e);
+        }
+        await Util.broadcast(this.gameRefreshPath, this.getBroadcastData());
+        return JSON.stringify({status: 200});
+    },
+
+    next: async function (args) {
+        try {
+            const userId = args.userId;
+
+            const player = this.userIdToUserStatus[userId];
+            if (player.step === StepEnum.finished) {
+                player.nexted = true;
+            } else {
+                return JSON.stringify({status: 400, error: "You are not finish"});
+            }
+            const players = Object.values(this.userIdToUserStatus);
+            if (players.length === 0) return JSON.stringify({status: 400, error: "No players"});
+
+            const allFinished = players.every(u => u.step === StepEnum.finished);
+            const allNeedToNext = players.every(u => u.nexted);
+
+            if (allFinished && allNeedToNext) {
+                const config = await this.getConfigWithCache();
+                const maxScore = config.maxScore || 10;
+                const passingRate = config.shouldRememberIfPassingRate || 0.8;
+                if (Util.repeatFlow() === 'examine') {
+                    const isAllPassed = players.every(u => (u.score / maxScore) >= passingRate);
+                    if (isAllPassed) {
+                        Util.uiTap("tapNext");
+                    } else {
+                        Util.uiTap("tapRight");
+                    }
+                } else {
+                    Util.uiTap("tapNext");
+                }
+                return JSON.stringify({status: 200, data: "navigated"});
+            } else {
+                await Util.broadcast(this.gameRefreshPath, this.getBroadcastData());
+                return JSON.stringify({status: 202, data: "waiting_for_others"});
+            }
+        } catch (e) {
+            return JSON.stringify({status: 500, error: e.toString()});
+        }
+    },
+
+    clear: async function () {
         for (let id in this.userIdToUserStatus) {
             this.userIdToUserStatus[id].step = StepEnum.blanking;
             this.userIdToUserStatus[id].submit = '';
             this.userIdToUserStatus[id].score = 0;
+            this.userIdToUserStatus[id].nexted = false;
         }
         this.blankContent = await this.getBlankMix();
         await Util.broadcast(this.gameRefreshPath, this.getBroadcastData());
-        return JSON.stringify({status: 200, data: "Game started"});
     },
-
     getBroadcastData: function () {
-        const userIdsAsStrings = Object.keys(this.userIdToUserStatus);
-        const userIds = userIdsAsStrings.map(Number);
+        const userIds = this.userIds;
         const userIdToUserName = {};
 
         const players = userIds.map(id => {
@@ -172,6 +269,7 @@ const Game = {
                 userId: id,
                 name: user.name,
                 step: user.step,
+                nexted: user.nexted || false,
             };
             if (this.gameStatus === GameEnum.finished) {
                 ret.submit = user.submit;
@@ -200,6 +298,7 @@ const Game = {
                 autoBlank: remoteConfig.autoBlank ?? true,
                 blankContentPercent: remoteConfig.blankContentPercent ?? 5,
                 ignorePunctuation: remoteConfig.ignorePunctuation ?? true,
+                maxScore: remoteConfig.maxScore ?? 10,
                 ...remoteConfig
             };
 
@@ -209,7 +308,8 @@ const Game = {
             return {
                 autoBlank: true,
                 blankContentPercent: 5,
-                ignorePunctuation: true
+                ignorePunctuation: true,
+                maxScore: 10,
             };
         }
     },
@@ -222,11 +322,7 @@ const Game = {
         return array;
     },
 
-    getBlankMix: async function (focusRefresh = false) {
-        if (this.blankContent != null && !focusRefresh) {
-            return this.blankContent;
-        }
-
+    getBlankMix: async function () {
         const config = await this.getConfigWithCache();
         const verse = await Util.getVerse();
         const ignorePunctuation = config.ignorePunctuation ?? true;
@@ -317,31 +413,7 @@ const Game = {
         }
         return result;
     },
-    submit: async function (args) {
-        const userId = args.userId; // 需要前端传过来或从 context 取
-        const userTyped = args.data.content;
-        const verse = await Util.getVerse();
-        const config = await this.getConfigWithCache();
 
-        // 计算分数
-        const score = this.getScore(userTyped, verse.a, this.blankContent, 100, config.ignoreCase);
-
-        // 更新用户状态
-        if (this.userIdToUserStatus[userId]) {
-            this.userIdToUserStatus[userId].score = score;
-            this.userIdToUserStatus[userId].submit = userTyped;
-            this.userIdToUserStatus[userId].step = StepEnum.finished; // 标记已提交
-        }
-
-        // 检查是否全员完成
-        const allFinished = Object.values(this.userIdToUserStatus).every(u => u.step === StepEnum.finished);
-        if (allFinished) {
-            this.gameStatus = GameEnum.finished;
-        }
-
-        await Util.broadcast(this.gameRefreshPath, this.getBroadcastData());
-        return JSON.stringify({status: 200, data: {score, answer: verse.a}});
-    },
     getScore: function (userAnswer, correctAnswer, blank, maxScore, ignoreCase) {
         let blankCount = 0;
         let rightCount = 0;
@@ -391,7 +463,7 @@ const Game = {
             const user = this.userIdToUserStatus[userId];
 
             if (!user) {
-                return JSON.stringify({ status: 404, error: "User not found" });
+                return JSON.stringify({status: 404, error: "User not found"});
             }
 
             if (user.step === StepEnum.finished) {

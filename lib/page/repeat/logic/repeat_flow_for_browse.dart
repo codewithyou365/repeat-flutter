@@ -102,6 +102,24 @@ class RepeatFlowForBrowse extends RepeatFlow {
   }
 
   @override
+  void onNext() async {
+    if (ticker.isStuck()) {
+      return;
+    }
+    switch (step) {
+      case RepeatStep.finish:
+        Get.back();
+        break;
+      default:
+        if (!await AwaitUtil.tryDo(next)) {
+          return;
+        }
+        break;
+    }
+    update();
+  }
+
+  @override
   void onTapLeft() async {
     if (ticker.isStuck()) {
       return;

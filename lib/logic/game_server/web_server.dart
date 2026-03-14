@@ -33,12 +33,14 @@ class WebServer {
   late JsRuntime jsRuntime;
 
   WebServer({
+    required VoidCallback tapNext,
     required VoidCallback tapLeft,
     required VoidCallback tapRight,
     required VoidCallback tapMiddle,
     required VoidCallback longTapMiddle,
   }) {
     jsRuntime = JsRuntime(
+      tapNext: tapNext,
       tapLeft: tapLeft,
       tapRight: tapRight,
       tapMiddle: tapMiddle,

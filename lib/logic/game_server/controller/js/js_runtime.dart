@@ -9,6 +9,7 @@ import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/game/game_state.dart';
 import 'package:repeat_flutter/page/repeat/logic/repeat_flow_for_browse.dart';
@@ -17,6 +18,7 @@ import 'package:repeat_flutter/page/repeat/repeat_logic.dart';
 part 'js_code.dart';
 
 class JsRuntime {
+  final VoidCallback tapNext;
   final VoidCallback tapLeft;
   final VoidCallback tapRight;
   final VoidCallback tapMiddle;
@@ -24,8 +26,10 @@ class JsRuntime {
 
   JavascriptRuntime? _jsRuntime;
   bool _isInitialized = false;
+  final SubList<int> subNewGame = [];
 
   JsRuntime({
+    required this.tapNext,
     required this.tapLeft,
     required this.tapRight,
     required this.tapMiddle,
@@ -34,7 +38,9 @@ class JsRuntime {
 
   Future<void> init(String coreJsCode, Server server) async {
     if (_isInitialized) return;
-
+    subNewGame.on([EventTopic.newGame], (verseId) async {
+      await invoke("Game.clear", {});
+    });
     await loadDefaultCode();
     if (defaultCode.isNotEmpty) {
       coreJsCode = defaultCode;
@@ -42,6 +48,30 @@ class JsRuntime {
     _jsRuntime = getJavascriptRuntime();
 
     try {
+      _jsRuntime!.onMessage('gameScoreInc', (dynamic args) async {
+        final game = GameState.game;
+        if (game == null) return 'no_active_game';
+        if (args is! Map) return 'invalid_arguments';
+
+        try {
+          final userId = int.tryParse(args['userId']?.toString() ?? '');
+          final score = int.tryParse(args['score']?.toString() ?? '0') ?? 0;
+          final remark = args['remark']?.toString() ?? '';
+          final gameId = game.id ?? 0;
+
+          if (userId == null) return 'invalid_user_id';
+
+          await Db().db.gameUserScoreDao.inc(
+            userId,
+            gameId,
+            score,
+            remark,
+          );
+          return '';
+        } catch (e) {
+          return e.toString();
+        }
+      });
       _jsRuntime!.onMessage('getUserName', (dynamic args) async {
         final game = GameState.game;
         if (game == null) return '';
@@ -62,7 +92,6 @@ class JsRuntime {
           return '';
         }
       });
-
       _jsRuntime!.onMessage('broadcast', (dynamic args) {
         final game = GameState.game;
         if (game == null) return 'no_game';
@@ -144,6 +173,9 @@ class JsRuntime {
           return 'error: event_must_be_string';
         }
         switch (k) {
+          case 'tapNext':
+            tapNext();
+            break;
           case 'tapLeft':
             tapLeft();
             break;
@@ -253,6 +285,7 @@ class JsRuntime {
   /// 3. 析构代码 (非常重要：释放底层内存)
   void dispose() {
     if (_jsRuntime != null) {
+      subNewGame.off();
       // 释放 C/C++ 层的内存资源，防止长时间运行导致 OOM
       _jsRuntime!.dispose();
       _jsRuntime = null;

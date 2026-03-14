@@ -4,6 +4,7 @@ export class PlayerStatus {
     step: string = 'blanking';
     submit: string = '';
     score: number = 0;
+    nexted: boolean = false;
 
     constructor(init?: Partial<PlayerStatus>) {
         Object.assign(this, init);

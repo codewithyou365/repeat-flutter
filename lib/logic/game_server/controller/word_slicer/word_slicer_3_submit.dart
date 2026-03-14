@@ -56,7 +56,7 @@ Future<message.Response?> wordSlicerSubmit(message.Request req, GameUser user, S
       final userId = entry.key;
       final score = entry.value;
       final remark = score > 0 ? "i:${I18nKey.obtainedInTheGame.name}" : "i:${I18nKey.deductedInTheGame.name}";
-      await Db().db.gameUserScoreDao.inc(int.parse(userId), GameType.wordSlicer, score, remark);
+      await Db().db.gameUserScoreDao.inc(int.parse(userId), 0, score, remark);
     }
   }
 

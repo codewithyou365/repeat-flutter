@@ -118,6 +118,28 @@ class RepeatFlowForExamine extends RepeatFlow {
     timeStatsLogic.updateTimeStats();
   }
 
+  void onNext() {
+    AwaitUtil.tryDo(_onNext);
+  }
+
+  Future<void> _onNext() async {
+    if (ticker.isStuck()) {
+      return;
+    }
+    switch (step) {
+      case RepeatStep.recall:
+      case RepeatStep.evaluate:
+        await right();
+        if (scheduled.isEmpty) {
+          Get.back();
+        }
+        break;
+      default:
+        break;
+    }
+    update();
+  }
+
   @override
   void onTapLeft() {
     AwaitUtil.tryDo(_onTapLeft);

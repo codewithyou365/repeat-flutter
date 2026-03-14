@@ -16,22 +16,30 @@
         :change-to-right-case-when-ignore-case="false"
         :ignore-punctuation="false"
         :ignore-content-indexes="ignoreContentIndexes"
-        :click-fill-char-when-disabled="clickFillCharWhenDisabled"
+        :click-fill-char-when-disabled="''"
         ref="typingRef"
     />
 
-    <div v-if="step === StepName.blanked" class="action-container">
-      <nut-button block type="info" @click="onSubmit" :loading="overlayVisible">
+    <div v-if="currUserIndex>=0 && step === 'blanking'" class="action-container">
+      <nut-button shape="square" type="info" @click="onSubmit" :loading="overlayVisible">
         {{ t('confirm') }}
       </nut-button>
     </div>
 
-    <div v-else-if="step === StepName.finished" class="action-container">
+    <div v-else-if="currUserIndex>=0 && step === 'finished'" class="action-container">
       <nut-cell class="score-cell">
         {{ t('score') }}: <span class="score-num">+{{ score }}</span>
       </nut-cell>
-      <nut-button block type="info" @click="onSwitchView">
+      <nut-button shape="square" type="info" @click="onSwitchView">
         {{ showAnswer ? t('viewSubmit') : t('viewAnswer') }}
+      </nut-button>
+      <nut-button
+          shape="square"
+          type="info"
+          @click="onNext"
+          :disabled="nexted"
+      >
+        {{ nexted ? t('waitingForOthers') : t('nextGame') }}
       </nut-button>
     </div>
   </div>
@@ -67,24 +75,21 @@ let userSubmitContent = ''; // 暂存用户提交的文本内容
 const ignoreContentIndexes = ref<number[]>([]);
 const typingRef = ref<InstanceType<typeof Typing>>();
 
-enum StepName {
-  none = 0,
-  blanked = 2,
-  finished = 3,
-}
-
-const step = ref<StepName>(StepName.blanked);
+const step = ref('');
+const nexted = ref(false);
 
 // 2. 计算属性
 const currentUserId = computed(() => toNumber(store.getters.currentUserId));
 const currUserIndex = computed(() => status.value.userIds.indexOf(currentUserId.value));
-const clickFillCharWhenDisabled = computed(() => (step.value === StepName.finished ? '' : ''));
 
 const getUserColor = (userId: number) => {
   const player = status.value.players.find(p => p.userId === userId);
 
-  if (player && player.step === 'finished') {
+  if (player && player.nexted) {
     return '#22c55e';
+  }
+  if (player && player.step === 'finished') {
+    return '#f1ac40';
   }
   return '#ef4444';
 };
@@ -125,7 +130,33 @@ const onSubmit = async () => {
     overlayVisible.value = false;
   }
 };
+// 下一个游戏/下一题
+const onNext = async () => {
+  overlayVisible.value = true;
+  try {
+    const res = await client.node!.send(new Request({
+      path: Path.game,
+      headers: {'jsMethod': 'Game.next'},
+      data: {
+        userId: currentUserId.value
+      }
+    }));
 
+    if (res.error) {
+      tipDialogContent.value = t(res.error);
+      tipDialogVisible.value = true;
+    } else if (res.data === 'waiting_for_others') {
+      const self = status.value.players.find(p => p.userId === currentUserId.value);
+      if (self) {
+        self.nexted = true;
+      }
+      nexted.value = true;
+    }
+    // 注意：如果全员达标，Dart 侧会直接切走页面，前端无需额外操作
+  } finally {
+    overlayVisible.value = false;
+  }
+};
 // 切换查看“我的答案”和“标准答案”
 const onSwitchView = () => {
   showAnswer.value = !showAnswer.value;
@@ -145,13 +176,15 @@ onMounted(async () => {
   // 监听后端广播的状态更新
   bus().on(EventName.BlankItRightStatusUpdate, async (newData: BlankItRightStatus) => {
     status.value = newData;
+    answer.value = '';
+    typingDisabled.value = false;
     updateIgnoreIndexes(newData.blankContent || '');
 
     // 获取当前玩家在服务器端的状态
     const selfStatus = newData.players.find(p => p.userId === currentUserId.value);
-
+    step.value = selfStatus?.step ?? '';
+    nexted.value = selfStatus?.nexted ?? false;
     if (selfStatus?.step === 'finished') {
-      step.value = StepName.finished;
       typingDisabled.value = true;
       const res = await client.node!.send(new Request({
         path: Path.game,
@@ -160,8 +193,9 @@ onMounted(async () => {
       score.value = res.data.score || 0;
       userSubmitContent = res.data.submit || '';
       answer.value = res.data.answer || '';
+      showAnswer.value = false;
       await nextTick(() => {
-        typingRef.value?.initUserInput(answer.value);
+        typingRef.value?.initUserInput(userSubmitContent);
       });
     }
   });

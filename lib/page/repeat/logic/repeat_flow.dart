@@ -32,6 +32,8 @@ abstract class RepeatFlow {
 
   void onClose();
 
+  void onNext();
+
   void onTapLeft();
 
   void onTapRight();

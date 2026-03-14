@@ -62,6 +62,7 @@ class RepeatLogic extends GetxController {
     super.onInit();
     gameLogic = GameLogic<RepeatLogic>(
       parentLogic: this,
+      tapNext: onNext,
       tapLeft: onTapLeft,
       tapRight: onLongTapRight,
       tapMiddle: onTapMiddle,
@@ -231,6 +232,13 @@ class RepeatLogic extends GetxController {
     state.needUpdateSystemUiMode = true;
     state.helper.tryToPlayMedia = true;
     ttsHelper.stop();
+  }
+
+  void onNext() {
+    preClick();
+    if (repeatFlow != null) {
+      repeatFlow!.onNext();
+    }
   }
 
   void onTapLeft() {

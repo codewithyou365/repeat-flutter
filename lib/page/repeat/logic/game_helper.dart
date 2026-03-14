@@ -18,15 +18,5 @@ class GameHelper {
     await Db().db.kvDao.insertOrReplace(Kv(K.lastVerseId, '${stp.verseId}'));
     stp.time += 1;
     EventBus().publish(EventTopic.newGame, stp.verseId);
-    await server.server.broadcast(
-      Request(
-        path: Path.refreshGame,
-        data: {
-          "id": stp.id,
-          "time": stp.time,
-          "verseId": stp.verseId,
-        },
-      ),
-    );
   }
 }
