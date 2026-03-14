@@ -433,7 +433,7 @@ watch(() => props.content, async () => {
   fixCursorPos();
   positionInput();
   inputRef.value?.focus();
-});
+}, { immediate: true });
 
 watch([userInput, groups], async () => {
   await nextTick();

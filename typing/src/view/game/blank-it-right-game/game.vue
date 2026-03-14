@@ -21,7 +21,9 @@
     />
 
     <div v-if="currUserIndex>=0 && step === 'blanking'" class="action-container">
-      <nut-button shape="square" type="info" @click="onSubmit" :loading="overlayVisible">
+      <nut-button
+          :disabled="!isFilled"
+          shape="square" type="info" @click="onSubmit" :loading="overlayVisible">
         {{ t('confirm') }}
       </nut-button>
     </div>
@@ -94,7 +96,12 @@ const getUserColor = (userId: number) => {
   return '#ef4444';
 };
 
-// 3. 核心逻辑方法
+const isFilled = computed(() => {
+  const input = typingRef.value?.getUserInput() || '';
+  const target = status.value.blankContent || '';
+  return input.length >= target.length && target.length > 0;
+});
+
 const updateIgnoreIndexes = (content: string) => {
   const indexes: number[] = [];
   for (let i = 0; i < content.length; i++) {

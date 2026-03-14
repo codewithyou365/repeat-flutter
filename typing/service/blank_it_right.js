@@ -186,10 +186,13 @@ const Game = {
         const userTyped = args.data.content;
         const verse = await Util.getVerse();
         const config = await this.getConfigWithCache();
+        const passingRate = config.shouldRememberIfPassingRate || 0.8;
 
         // 计算分数
-        const score = this.getScore(userTyped, verse.a, this.blankContent, config.maxScore, config.ignoreCase);
-
+        let score = this.getScore(userTyped, verse.a, this.blankContent, config.maxScore, config.ignoreCase);
+        if ((score / config.maxScore) < passingRate) {
+            score = 0;
+        }
         // 更新用户状态
         if (this.userIdToUserStatus[userId]) {
             this.userIdToUserStatus[userId].score = score;
