@@ -1541,6 +1541,13 @@ class _$GameUserDao extends GameUserDao {
   }
 
   @override
+  Future<String?> getUserNameById(int id) async {
+    return _queryAdapter.query('SELECT name FROM GameUser WHERE id = ?1',
+        mapper: (Map<String, Object?> row) => row.values.first as String,
+        arguments: [id]);
+  }
+
+  @override
   Future<int?> findUserIdById(int id) async {
     return _queryAdapter.query('SELECT id FROM GameUser WHERE id = ?1',
         mapper: (Map<String, Object?> row) => row.values.first as int,

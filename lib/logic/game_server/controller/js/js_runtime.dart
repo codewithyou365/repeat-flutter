@@ -4,6 +4,8 @@ import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:flutter_js/flutter_js.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/ws/message.dart' as message;
+import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
@@ -30,7 +32,7 @@ class JsRuntime {
     required this.longTapMiddle,
   });
 
-  Future<void> init(String coreJsCode) async {
+  Future<void> init(String coreJsCode, Server server) async {
     if (_isInitialized) return;
 
     await loadDefaultCode();
@@ -40,6 +42,48 @@ class JsRuntime {
     _jsRuntime = getJavascriptRuntime();
 
     try {
+      _jsRuntime!.onMessage('getUserName', (dynamic args) async {
+        final game = GameState.game;
+        if (game == null) return '';
+
+        if (args is! Map) return '';
+
+        final userIdRaw = args['userId'];
+
+        if (userIdRaw == null) return '';
+
+        try {
+          final userId = int.parse(userIdRaw.toString());
+
+          final String? name = await Db().db.gameUserDao.getUserNameById(userId);
+
+          return name ?? '';
+        } catch (e) {
+          return '';
+        }
+      });
+
+      _jsRuntime!.onMessage('broadcast', (dynamic args) {
+        final game = GameState.game;
+        if (game == null) return 'no_game';
+
+        if (args is! Map) return 'invalid_args';
+
+        final path = args['path'];
+        final rawData = args['data'];
+
+        if (path is! String) return 'invalid_path';
+
+        try {
+          final decodedData = rawData is String ? jsonDecode(rawData) : rawData;
+
+          server.broadcast(message.Request(path: path, data: decodedData));
+
+          return 'ok';
+        } catch (e) {
+          return 'error: ${e.toString()}';
+        }
+      });
       _jsRuntime!.onMessage('adminId', (dynamic args) {
         final game = GameState.game;
         if (game == null) {

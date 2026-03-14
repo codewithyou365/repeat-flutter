@@ -1,10 +1,4 @@
 <template>
-  <div v-if="editorEnable">
-    <nut-textarea v-model="editorContent" :rows="3" autosize/>
-    <nut-button shape="square" type="primary" block @click="submit">
-      {{ t('refreshAfterModify') }}
-    </nut-button>
-  </div>
   <nut-cell>
     <div class="player-order">
       <template v-for="(userId, index) in userIds" :key="userId">
@@ -31,54 +25,22 @@
 </template>
 
 <script setup lang="ts">
-import {GameStepEnum} from '../../../../vo/WordSlicerStatus';
-import {inject, Ref} from "vue";
-import {useI18n} from "vue-i18n";
-import {client, Request} from "../../../../api/ws.ts";
-import {Path} from "../../../../utils/constant.ts";
-
-const {t} = useI18n();
 
 interface Props {
   userIds: number[]
   userIdToUserName: Record<number, string>
   currentUserId: number
   currUserIndex: number
-  gameStep: GameStepEnum
+  gameStarted: boolean
   getUserColor: (userId: number) => string
 }
 
 const props = defineProps<Props>()
 
-const editorContent = inject<Ref<string>>('editorContent')!
-const editorEnable = inject<Ref<boolean>>('editorEnable')!
-
-const overlayVisible = inject<Ref<boolean>>('overlayVisible')!;
-const tipDialogVisible = inject<Ref<boolean>>('tipDialogVisible')!;
-const tipDialogContent = inject<Ref<string>>('tipDialogContent')!;
 const isActive = (index: number) =>
     index === props.currUserIndex &&
-    props.gameStep === GameStepEnum.started
+    props.gameStarted
 
-const submit = async () => {
-  let res = null;
-  try {
-    overlayVisible.value = true;
-    res = await client.send(new Request({
-      path: Path.wordSlicerEdit,
-      data: editorContent.value
-    }));
-  } catch (e) {
-    tipDialogVisible.value = true;
-    tipDialogContent.value = String(e);
-  } finally {
-    if (res != null && res.error) {
-      tipDialogVisible.value = true;
-      tipDialogContent.value = t(res!.error);
-    }
-    overlayVisible.value = false;
-  }
-}
 const playerStyle = (userId: number) => {
   const color = props.getUserColor(userId)
   return {

@@ -74,7 +74,7 @@ import {useI18n} from "vue-i18n";
 import {useStore} from "vuex";
 import {toNumber} from "../../../utils/convert.ts";
 import Typing from "../../../component/typing.vue";
-import Player from "./widget/player.vue";
+import Player from "../widget/player.vue";
 
 const {t} = useI18n();
 const store = useStore();

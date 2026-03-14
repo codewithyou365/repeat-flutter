@@ -19,6 +19,8 @@ abstract class GameUserDao {
 
   @Query('SELECT id FROM GameUser WHERE id = :id')
   Future<GameUser?> findUserById(int id);
+  @Query('SELECT name FROM GameUser WHERE id = :id')
+  Future<String?> getUserNameById(int id);
 
   @Query('SELECT id FROM GameUser WHERE id = :id')
   Future<int?> findUserIdById(int id);

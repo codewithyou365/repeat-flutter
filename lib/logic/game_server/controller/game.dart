@@ -27,6 +27,7 @@ Future<message.Response?> game(
     "data": req.data,
     "userId": user.id,
   };
+
   final jsResult = await jsRuntime.invoke(jsMethod, payload);
   if (jsResult != null) {
     return message.Response(

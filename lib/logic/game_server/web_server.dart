@@ -60,8 +60,8 @@ class WebServer {
     if (await file.exists()) {
       content = await file.readAsString();
     }
-    await jsRuntime.init(content);
     await server.start(port, authByToken, _serveFile);
+    await jsRuntime.init(content, server);
     server.logger = Snackbar.show;
     server.controllers[Path.loginOrRegister] = loginOrRegister;
     server.controllers[Path.gameKey] = (request) => withGameUser(request, gameKey);

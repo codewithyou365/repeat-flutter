@@ -46,8 +46,6 @@ class Path {
   static const gameUserScore = '/api/gameUserScore';
   static const gameUserScoreMinus = '/api/gameUserScoreMinus';
 
-  static const typeGameSettings = '/api/typeGameSettings';
-  static const typeVerseContent = '/api/typeVerseContent';
   static const blankItRightSettings = '/api/blankItRightSettings';
   static const blankItRightContent = '/api/blankItRightContent';
   static const blankItRightBlank = '/api/blankItRightBlank';
