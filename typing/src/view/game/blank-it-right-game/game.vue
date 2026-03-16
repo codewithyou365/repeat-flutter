@@ -1,4 +1,9 @@
 <template>
+  <div class="top-bar">
+    <Ask color="#888" size="22px" @click="onShowHelp" class="ask-icon"/>
+  </div>
+
+
   <Player
       :user-ids="status.userIds"
       :user-id-to-user-name="status.userIdToUserName"
@@ -59,6 +64,7 @@ import Typing from '../../../component/typing.vue';
 import Player from "../widget/player.vue";
 import {BlankItRightStatus} from "../../../vo/BlankItRightStatus.ts";
 import {toNumber} from "../../../utils/convert.ts";
+import {Ask} from "@nutui/icons-vue";
 
 const {t} = useI18n();
 const store = useStore();
@@ -110,7 +116,40 @@ const updateIgnoreIndexes = (content: string) => {
   ignoreContentIndexes.value = indexes;
 };
 
-// 提交答案
+const onShowHelp = () => {
+  const config = status.value.config;
+  if (!config) return;
+
+  const formatStatus = (val: boolean) => val ? t('enabled') : t('disabled');
+
+  const rows = [
+    { label: t('autoBlank'), value: formatStatus(config.autoBlank) },
+    { label: t('blankPercent'), value: `${Math.round((config.blankContentPercent || 0.8) * 100)}%` },
+    { label: t('ignoreCase'), value: formatStatus(config.ignoreCase) },
+    { label: t('ignorePunctuation'), value: formatStatus(config.ignorePunctuation) },
+    { label: t('maxScore'), value: config.maxScore },
+    { label: t('passingRate'), value: `${Math.round((config.shouldRememberIfPassingRate || 0.8) * 100)}%` }
+  ];
+
+  let html = `<div style="display: flex; flex-direction: column; gap: 10px; text-align: left;">`;
+
+  html += rows.map((row, index) => {
+    const isLast = index === rows.length - 1;
+    const borderStyle = isLast ? '' : 'border-bottom: 1px solid rgba(128,128,128,0.15);';
+
+    return `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: ${isLast ? '0' : '6px'}; ${borderStyle}">
+        <b style="font-size: 14px;">${row.label}</b>
+        <span style="font-size: 14px; opacity: 0.8;">${row.value}</span>
+      </div>
+    `.replace(/\n/g, ''); // 依旧去掉换行符，确保在 pre-wrap 环境下也万无一失
+  }).join('');
+
+  html += `</div>`;
+
+  tipDialogContent.value = html;
+  tipDialogVisible.value = true;
+};
 const onSubmit = async () => {
   const userInput = typingRef.value?.getUserInput() || '';
   if (!userInput) return;
@@ -233,5 +272,11 @@ onBeforeUnmount(() => {
 .score-num {
   color: #fa2c19;
   font-size: 18px;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px 0 0;
 }
 </style>

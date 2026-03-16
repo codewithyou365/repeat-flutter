@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import {client, url, Request, Response, ClientStatus} from '../api/ws';
 import {onMounted} from 'vue';
-import {busReset, bus, EventName, RefreshGameType} from '../api/bus';
+import {busReset, bus, EventName} from '../api/bus';
 import {useRouter} from "vue-router";
 
 const router = useRouter();
@@ -22,11 +22,6 @@ onMounted(() => {
     await router.push("/login");
     return new Response();
   });
-  client.controllers.set(Path.refreshGame, async (req: Request) => {
-    bus().emit(EventName.RefreshGame, RefreshGameType.from(req.data));
-    return new Response();
-  });
-
   client.start(url + `?token=${store.getters.currentToken}`, (status: number) => {
     bus().emit(EventName.WsStatus, status);
   }, async () => {

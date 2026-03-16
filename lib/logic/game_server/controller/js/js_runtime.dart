@@ -120,6 +120,43 @@ class JsRuntime {
         }
         return '${GameState.adminId}';
       });
+      _jsRuntime!.onMessage('adminEnable', (dynamic args) {
+        final game = GameState.game;
+        if (game == null) {
+          return '';
+        }
+        return '${GameState.adminEnable}';
+      });
+      _jsRuntime!.onMessage('updateCurrVerseContent', (dynamic args) async {
+        final game = GameState.game;
+        if (game == null) return 'no_game';
+        if (args is! Map) return 'invalid_args';
+
+        try {
+          final verseId = await Db().db.kvDao.getInt(K.lastVerseId) ?? 0;
+          if (verseId == 0) return 'no_verse_id';
+
+          final String type = args['type']?.toString() ?? '';
+          final String newStr = args['content']?.toString() ?? '';
+
+          if (type.isEmpty) return 'invalid_type';
+
+          final verse = await Db().db.verseDao.getById(verseId);
+          if (verse == null) return 'verse_not_found';
+
+          Map<String, dynamic> contentMap = jsonDecode(verse.content);
+          contentMap[type] = newStr;
+
+          String jsonStr = jsonEncode(contentMap);
+          await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
+
+          return 'ok';
+        } catch (e) {
+          return e.toString();
+        }
+      });
+
+
       _jsRuntime!.onMessage('repeatFlow', (dynamic args) {
         final game = GameState.game;
         if (game == null) {

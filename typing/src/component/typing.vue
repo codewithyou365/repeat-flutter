@@ -1,12 +1,17 @@
 <template>
   <label>
-    <div class="typing" ref="containerRef" @click="focusInput">
+    <div class="typing" ref="containerRef" @click="focusInput"
+         @touchstart="handleTouch($event, 'start')"
+         @touchmove="handleTouch($event, 'move')"
+         @touchend="handleTouch($event, 'end')"
+         @touchcancel="handleTouch($event, 'end')"
+         @pointerdown="handleTouch($event, 'start')"
+         @pointermove="handleTouch($event, 'move')"
+         @pointerup="handleTouch($event, 'end')"
+    >
       <div class="typing-line">
         <template v-for="(group, gIndex) in groups" :key="gIndex">
-          <span v-if="group.type === 'word'" class="word"
-                @touchstart="handleTouch($event, 'start')"
-                @touchmove="handleTouch($event, 'move')"
-                @touchend="handleTouch($event, 'end')">
+          <span v-if="group.type === 'word'" class="word">
             <span
                 v-for="(ch, cIndex) in group.chars"
                 :key="cIndex"
@@ -16,15 +21,15 @@
                 :class="getCharClass(ch.index)"
                 :ref="el => setCharRef(el, ch.index)"
                 @click="handleCharClick(ch.index)"
-                @pointerover="handleCharTouch($event, ch.index)"
-                @pointerdown="handleCharTouch($event, ch.index)"
             >
               {{ getDisplayChar(ch.index) }}
             </span>
           </span>
           <span v-else class="typing-char"
+                :data-index="group.index"
                 :class="[getCharClass(group.index), group.type === 'space' ? 'space' : '']"
                 :ref="el => setCharRef(el, group.index)"
+                @click="handleCharClick(group.index)"
           >
             {{ getDisplayChar(group.index) }}
           </span>
@@ -53,7 +58,7 @@ const props = withDefaults(defineProps<{
   disabled: boolean;
   content: string;
   clickFillCharWhenDisabled?: string;
-  ignoreContentIndexes: number[];
+  ignoreContentIndexes?: number[];
   ignoreCase: boolean;
   changeToRightCaseWhenIgnoreCase: boolean;
   ignorePunctuation: boolean;
@@ -61,6 +66,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   clickFillCharWhenDisabled: '',
   touchColor: '',
+  ignoreContentIndexes: () => [],
 });
 
 const contentIndexToColor = ref<Record<number, string>>({});
@@ -71,7 +77,8 @@ const containerRef = ref<HTMLElement | null>(null);
 const charRefs = ref<HTMLElement[]>([]);
 const cursorPos = ref(0);
 const minCursorPos = ref(0);
-const lastHoveredIndex = ref<number | null>(0);
+const lastHoveredIndex = ref<number | null>(null); // 防抖用的上一个索引
+
 const chars = computed<string[]>(() => {
   return props.content ? props.content.split('') : [];
 });
@@ -79,9 +86,11 @@ const chars = computed<string[]>(() => {
 const isCJK = computed(() => {
   return /[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff]/.test(props.content);
 });
+
 const disabled = computed(() => {
   return props.disabled;
 });
+
 const groups = computed(() => {
   const gs: any[] = [];
   if (isCJK.value) {
@@ -144,9 +153,7 @@ const handleCompositionEnd = (e: Event) => {
 };
 
 watch(composingInput, (newValue) => {
-  if (isComposing.value) {
-    return;
-  }
+  if (isComposing.value) return;
   if (newValue.length > 0) {
     applyInput(newValue);
     composingInput.value = '';
@@ -157,9 +164,7 @@ const isIgnore = (c: string, index: number) => {
   if (props.ignorePunctuation && /\p{P}/u.test(c)) {
     return true;
   }
-
-  return props.ignoreContentIndexes !== undefined &&
-      props.ignoreContentIndexes.includes(index);
+  return props.ignoreContentIndexes && props.ignoreContentIndexes.includes(index);
 };
 
 const applyInput = (val: string) => {
@@ -168,9 +173,7 @@ const applyInput = (val: string) => {
 
   for (const char of val) {
     while (pos < props.content.length && isIgnore(props.content[pos], pos)) {
-      if (pos >= temp.length) {
-        temp += props.content[pos];
-      }
+      if (pos >= temp.length) temp += props.content[pos];
       pos++;
     }
     if (pos < temp.length) {
@@ -182,15 +185,12 @@ const applyInput = (val: string) => {
   }
 
   while (pos < props.content.length && isIgnore(props.content[pos], pos)) {
-    if (pos >= temp.length) {
-      temp += props.content[pos];
-    }
+    if (pos >= temp.length) temp += props.content[pos];
     pos++;
   }
   userInput.value = temp;
   cursorPos.value = pos;
 
-  // Truncate
   if (userInput.value.length > props.content.length) {
     userInput.value = userInput.value.slice(0, props.content.length);
   }
@@ -198,49 +198,70 @@ const applyInput = (val: string) => {
     cursorPos.value = props.content.length;
   }
 };
-const handleTouch = (e: PointerEvent, type: 'start' | 'move' | 'end') => {
-  if (disabled.value) {
-    if (props.clickFillCharWhenDisabled.length === 1 || props.touchColor) {
 
-      if (type === 'end') {
-        lastHoveredIndex.value = null;
-        return;
+// 统一滑动处理枢纽
+const handleTouch = (e: any, type: 'start' | 'move' | 'end') => {
+  if (!disabled.value) return;
+
+  if (props.clickFillCharWhenDisabled.length === 1 || props.touchColor) {
+    if (type === 'end') {
+      console.log(`[Touch End] Resetting lastHoveredIndex`);
+      lastHoveredIndex.value = null;
+      return;
+    }
+
+    // 坐标提取：兼容 touch 和 mouse
+    let clientX = 0, clientY = 0;
+    if (e.touches && e.touches.length > 0) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+      // 鼠标模式下：如果没有按住左键，直接退出
+      if (e.type === 'pointermove' && e.buttons !== 1) return;
+    }
+
+    const elem = document.elementFromPoint(clientX, clientY) as HTMLElement | null;
+
+    if (elem?.classList.contains('typing-char')) {
+      const index = Number(elem.dataset.index);
+
+      // 关键防抖：只有当前划到的 Index 和上一次不一样，才触发修改
+      if (!Number.isNaN(index) && index !== lastHoveredIndex.value) {
+        console.log(`[Target Hit] Safe Index: ${index}`);
+        handleCharTouch(null, index);
+        lastHoveredIndex.value = index;
       }
+    } else {
+      // 划出文字区域时，也要重置索引
+      lastHoveredIndex.value = null;
+    }
 
-      const touch = e.touches[0];
-      const x = touch.clientX;
-      const y = touch.clientY;
-      const elem = document.elementFromPoint(x, y) as HTMLElement | null;
-
-      if (elem?.classList.contains('typing-char')) {
-        const index = Number(elem.dataset.index);
-        if (!Number.isNaN(index) && index !== lastHoveredIndex.value) {
-          handleCharTouch(null, index);
-          lastHoveredIndex.value = index;
-        }
-      } else {
-        lastHoveredIndex.value = null;
-      }
-
-      if (type === 'move') {
-        e.preventDefault();
-      }
+    // 阻止页面滚动
+    if (type === 'move' && e.cancelable) {
+      e.preventDefault();
     }
   }
 };
+
+// 真正的修改逻辑，现在被 handleTouch 严格保护，不会被乱触发
 const handleCharTouch = (e: PointerEvent | null, index: number) => {
   if (disabled.value && (e == null || e.buttons === 1)) {
     if (props.clickFillCharWhenDisabled.length === 1) {
       composingInput.value = '';
       const pos = index;
+
       if (pos >= 0 && pos < userInput.value.length && pos < props.content.length) {
-        if (isIgnore(props.content[pos], pos)) {
-          return;
-        }
+        if (isIgnore(props.content[pos], pos)) return;
+
         let fillChar = props.clickFillCharWhenDisabled;
         if (userInput.value[index] === props.clickFillCharWhenDisabled) {
           fillChar = props.content[index];
         }
+
+        console.log(`[Update Done] Index: ${index}, Changed: ${userInput.value[index]} -> ${fillChar}`);
+
         userInput.value =
             userInput.value.slice(0, pos) +
             fillChar +
@@ -248,33 +269,31 @@ const handleCharTouch = (e: PointerEvent | null, index: number) => {
       }
     } else if (props.touchColor) {
       const pos = index;
-      if (isIgnore(props.content[pos], pos)) {
-        return;
-      }
+      if (isIgnore(props.content[pos], pos)) return;
       if (contentIndexToColor.value[pos]) {
         delete contentIndexToColor.value[pos];
       } else {
         contentIndexToColor.value[pos] = props.touchColor;
       }
     }
-    return;
   }
-}
+};
+
 const handleCharClick = (index: number) => {
-  if (disabled.value) {
-    return;
-  }
+  if (disabled.value) return;
   cursorPos.value = Math.min(index, userInput.value.length);
   composingInput.value = '';
   positionInput();
   focusInput();
 };
+
 const fixCursorPos = () => {
   if (cursorPos.value < minCursorPos.value) {
-    userInput.value = props.content.slice(0, minCursorPos.value)
+    userInput.value = props.content.slice(0, minCursorPos.value);
     cursorPos.value = minCursorPos.value;
   }
-}
+};
+
 const handleKeydown = (e: KeyboardEvent) => {
   if (isComposing.value) return;
 
@@ -282,18 +301,14 @@ const handleKeydown = (e: KeyboardEvent) => {
     let p = cursorPos.value;
     if (cursorPos.value !== userInput.value.length && !isIgnore(props.content[p], p)) {
       p++;
-      while (isIgnore(props.content[p], p) && p < userInput.value.length) {
-        p++;
-      }
+      while (isIgnore(props.content[p], p) && p < userInput.value.length) p++;
       if (p === userInput.value.length) {
         userInput.value = userInput.value.slice(0, cursorPos.value);
         cursorPos.value = userInput.value.length;
       }
     } else {
       p = cursorPos.value;
-      while (isIgnore(props.content[p], p) && p < userInput.value.length) {
-        p++;
-      }
+      while (isIgnore(props.content[p], p) && p < userInput.value.length) p++;
       if (p === userInput.value.length) {
         userInput.value = userInput.value.slice(0, cursorPos.value);
         cursorPos.value = userInput.value.length;
@@ -304,9 +319,7 @@ const handleKeydown = (e: KeyboardEvent) => {
         while (isIgnore(props.content[cursorPos.value], cursorPos.value)) {
           userInput.value = userInput.value.slice(0, cursorPos.value - 1) + userInput.value.slice(cursorPos.value);
           cursorPos.value--;
-          if (cursorPos.value == 0) {
-            break;
-          }
+          if (cursorPos.value == 0) break;
         }
       }
       fixCursorPos();
@@ -316,18 +329,14 @@ const handleKeydown = (e: KeyboardEvent) => {
   } else if (e.key === 'ArrowLeft') {
     if (cursorPos.value > 0) {
       cursorPos.value--;
-      while (isIgnore(props.content[cursorPos.value], cursorPos.value)) {
-        cursorPos.value--;
-      }
+      while (isIgnore(props.content[cursorPos.value], cursorPos.value)) cursorPos.value--;
       positionInput();
     }
     e.preventDefault();
   } else if (e.key === 'ArrowRight') {
     if (cursorPos.value < userInput.value.length) {
       cursorPos.value++;
-      while (isIgnore(props.content[cursorPos.value], cursorPos.value)) {
-        cursorPos.value++;
-      }
+      while (isIgnore(props.content[cursorPos.value], cursorPos.value)) cursorPos.value++;
       positionInput();
     }
     e.preventDefault();
@@ -344,6 +353,7 @@ const getDisplayChar = (index: number) => {
     return userInput.value[index] === ' ' ? '⎵' : userInput.value[index];
   }
 };
+
 const getCharStyle = (index: number) => {
   const originalChar = chars.value[index];
   let color: string = contentIndexToColor.value[index];
@@ -356,11 +366,7 @@ const getCharStyle = (index: number) => {
     } else if (isIgnore(originalChar, index)) {
       borderBottomColor = '#999';
     }
-    return {
-      color: color,
-      borderBottomColor: borderBottomColor,
-      opacity: 1
-    };
+    return { color: color, borderBottomColor: borderBottomColor, opacity: 1 };
   }
   return {};
 };
@@ -369,11 +375,8 @@ const getCharClass = (index: number) => {
   const classes: string[] = [];
   const ignored = isIgnore(chars.value[index], index);
   if (index >= userInput.value.length) {
-    if (ignored) {
-      classes.push('pending-ignore');
-    } else {
-      classes.push('pending');
-    }
+    if (ignored) classes.push('pending-ignore');
+    else classes.push('pending');
   } else {
     const userCh = userInput.value[index];
     const origCh = chars.value[index];
@@ -387,13 +390,9 @@ const getCharClass = (index: number) => {
           origCh +
           userInput.value.slice(index + 1);
     }
-    if (ignored && isCorrect) {
-      classes.push('ignore-correct');
-    } else if (isCorrect) {
-      classes.push('correct');
-    } else {
-      classes.push('wrong');
-    }
+    if (ignored && isCorrect) classes.push('ignore-correct');
+    else if (isCorrect) classes.push('correct');
+    else classes.push('wrong');
   }
   if (index === cursorPos.value && index < chars.value.length) {
     classes.push('flashing');
@@ -403,15 +402,12 @@ const getCharClass = (index: number) => {
 
 const positionInput = () => {
   if (!inputRef.value || !containerRef.value || !charRefs.value.length) return;
-
   const pos = cursorPos.value;
   const targetPos = pos < props.content.length ? pos : props.content.length - 1;
   const targetEl = charRefs.value[targetPos];
-
   if (targetEl) {
     const targetRect = targetEl.getBoundingClientRect();
     const containerRect = containerRef.value.getBoundingClientRect();
-
     inputRef.value.style.left = `${targetRect.left - containerRect.left}px`;
     inputRef.value.style.top = `${targetRect.top - containerRect.top}px`;
     inputRef.value.style.width = `${targetRect.width}px`;
@@ -442,23 +438,20 @@ watch([userInput, groups], async () => {
 
 defineExpose({
   initUserInput(val: string) {
-    userInput.value = val
-    cursorPos.value = val.length
-    nextTick(positionInput)
+    userInput.value = val;
+    cursorPos.value = val.length;
+    nextTick(positionInput);
   },
-
   initContentIndexToColor(val: Record<number, string>) {
-    contentIndexToColor.value = val
+    contentIndexToColor.value = val;
   },
-
   getUserInput() {
     return userInput.value;
   },
-
   getContentIndexToColor() {
     return contentIndexToColor.value;
   },
-})
+});
 </script>
 
 <style scoped>
@@ -466,6 +459,7 @@ defineExpose({
   cursor: text;
   user-select: none;
   position: relative;
+  touch-action: none; /* 防止页面跟着手指滚动 */
 }
 
 .typing-line {
@@ -483,44 +477,28 @@ defineExpose({
 }
 
 .typing-char {
-  min-width: 14px;
+  /* 固定宽度，防止日文和圆点切换时抖动 */
+  width: 1.2em;
+  min-width: 1.2em;
   text-align: center;
+  font-family: 'Courier New', Courier, monospace;
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+
   border-bottom: 2px solid #ccc;
   min-height: 1.6em;
   position: relative;
 }
 
-.pending {
-  color: transparent;
-}
+.pending { color: transparent; }
+.pending-ignore { color: #999; border-bottom-color: #999; }
+.correct { color: #22c55e; border-bottom-color: #22c55e; }
+.wrong { color: #ef4444; border-bottom-color: #ef4444; }
+.ignore-correct { color: #3b82f6; border-bottom-color: #3b82f6; }
 
-.pending-ignore {
-  color: #999;
-  border-bottom-color: #999;
-}
-
-.correct {
-  color: #22c55e;
-  border-bottom-color: #22c55e;
-}
-
-.wrong {
-  color: #ef4444;
-  border-bottom-color: #ef4444;
-}
-
-.ignore-correct {
-  color: #3b82f6;
-  border-bottom-color: #3b82f6;
-}
-
-.space {
-  border-bottom: none;
-}
-
-.pending.space {
-  color: #ccc;
-}
+.space { border-bottom-color: transparent; }
+.pending.space { color: #ccc; }
 
 .overlay-input {
   position: absolute;
@@ -533,10 +511,7 @@ defineExpose({
   margin: 0;
   z-index: 10;
 }
-
-.overlay-input:disabled {
-  pointer-events: none;
-}
+.overlay-input:disabled { pointer-events: none; }
 
 .flashing {
   display: inline-block;
@@ -545,20 +520,7 @@ defineExpose({
 }
 
 @keyframes blink {
-  0%, 50% {
-    opacity: 1;
-  }
-  50.01%, 100% {
-    opacity: 0.3;
-  }
-}
-
-@keyframes flash {
-  from {
-    border-bottom-color: currentColor;
-  }
-  to {
-    border-bottom-color: transparent;
-  }
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0.3; }
 }
 </style>

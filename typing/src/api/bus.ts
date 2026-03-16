@@ -27,14 +27,12 @@ export class RefreshGameType {
 
 type Events = {
     wsStatus: number;
-    refreshGame: RefreshGameType;
     wordSlicerStatusUpdate: WordSlicerStatus;
     blankItRightStatusUpdate: BlankItRightStatus;
 };
 
 export enum EventName {
     WsStatus = 'wsStatus',
-    RefreshGame = 'refreshGame',
     WordSlicerStatusUpdate = 'wordSlicerStatusUpdate',
     BlankItRightStatusUpdate = 'blankItRightStatusUpdate',
 }

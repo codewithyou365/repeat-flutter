@@ -2,6 +2,7 @@ import {createI18n} from 'vue-i18n';
 
 const messages = {
     en: {
+        passingRateTip: 'In exam mode, skip to next if everyone passes this rate; otherwise, retry current one.',
         nextGame: 'Next Game',
         waitingForOthers: 'Waiting for others...',
         join: 'Join',
@@ -100,8 +101,14 @@ const messages = {
         ignoreCase: "Ignore Case",
         enabled: 'Enabled',
         disabled: 'Disabled',
+        autoBlank: 'Auto Blanking',
+        blankPercent: 'Blanking Percentage',
+        gameSettings: 'Game Settings',
+        passingRate: 'Passing Rate',
+        maxScore: 'Max Obtainable Score',
     },
     zh: {
+        passingRateTip: '考试模式下，若全员正确率达到此阈值则进入下一条，否则重记当前条。',
         nextGame: '进入下一关',
         waitingForOthers: '等待其他玩家...',
         join: '加入',
@@ -200,6 +207,11 @@ const messages = {
         ignoreCase: "忽略大小写",
         enabled: '已开启',
         disabled: '已关闭',
+        autoBlank: '自动挖空',
+        blankPercent: '挖空比例',
+        gameSettings: '游戏设置',
+        passingRate: '全员达标率',
+        maxScore: '最高可获取分数',
     },
 };
 

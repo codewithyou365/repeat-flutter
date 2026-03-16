@@ -23,22 +23,20 @@
         </div>
       </div>
     </nut-overlay>
-    <nut-dialog
+    <MyDialog
         v-model:visible="tipDialogVisible"
         :title="t('tips')"
         :content="tipDialogContent"
-        :okText="t('confirm')"
-        :no-cancel-btn="true"
-        :cancelText="t('cancel')"
-        :onOk="onOk"
-        :onCancel="onCancel">
-    </nut-dialog>
+        :ok-text="t('confirm')"
+        @ok="onOk"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import {bus, EventName} from "../api/bus.ts";
 import reconnect from '../component/reconnect.vue';
+import MyDialog from '../component/mydialog.vue';
 import {Setting, Order, Loading1} from '@nutui/icons-vue';
 import {onBeforeUnmount, onMounted, provide, ref} from 'vue';
 import {ClientStatus} from "../api/ws.ts";

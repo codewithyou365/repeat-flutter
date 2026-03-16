@@ -1,19 +1,8 @@
 <template>
-  <!--  <div v-if="isAdmin" style="margin: 8px">-->
-  <!--    <nut-cell :title="t('ignoreCase')">-->
-  <!--      <template #link>-->
-  <!--        <nut-switch v-model="status.config.ignoreCase" @change="(val) => updateConfig('ignoreCase', val)"/>-->
-  <!--      </template>-->
-  <!--    </nut-cell>-->
-  <!--    <nut-cell :title="t('ignorePunctuation')">-->
-  <!--      <template #link>-->
-  <!--        <nut-switch v-model="status.config.ignorePunctuation"-->
-  <!--                    @change="(val) => updateConfig('ignorePunctuation', val)"/>-->
-  <!--      </template>-->
-  <!--    </nut-cell>-->
-  <!--  </div>-->
+  <Settings v-if="isAdmin">
+  </Settings>
 
-  <nut-cell v-if="cantPlayForMaintain">
+  <nut-cell v-else-if="cantPlayForMaintain">
     {{ t('cantPlayForMaintain') }}
   </nut-cell>
 
@@ -33,6 +22,7 @@ import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import Lobby from "./blank-it-right-game/lobby.vue";
 import Game from "./blank-it-right-game/game.vue";
+import Settings from "./blank-it-right-game/settings.vue";
 import {BlankItRightStatus} from "../../vo/BlankItRightStatus.ts";
 
 const {t} = useI18n();
@@ -54,9 +44,7 @@ const ready = computed(() => adminId.value !== 0);
 const isAdmin = computed(() => adminEnable.value && adminId.value == currentUserId.value);
 const cantPlayForMaintain = computed(() => adminEnable.value && adminId.value != currentUserId.value);
 
-/**
- * Fetch game status and map it to the local 'status' ref
- */
+
 const refresh = async () => {
   try {
     overlayVisible.value = true;
@@ -64,8 +52,6 @@ const refresh = async () => {
       path: Path.game,
       headers: {
         'jsMethod': 'Game.getStatus',
-        // 建议把当前用户ID传过去，这样 JS 端的 currUserIndex 才能算对
-        'userId': store.getters.currentUserId
       },
     });
 
@@ -95,21 +81,9 @@ const getAdmin = async () => {
   adminId.value = admin.adminId;
 };
 
-const updateConfig = async (key: string, value: any) => {
-  await client.node!.send(new Request({
-    path: Path.game,
-    headers: {'jsMethod': 'Game.setConfig'},
-    data: {key, value}
-  }));
-  refresh(); // Refresh to sync the _config cache in JS
-};
-
 onMounted(async () => {
   await getAdmin();
   await refresh();
-
-  // Listen for broadcast updates from other players
-  bus().on(EventName.RefreshGame, () => refresh());
   client.controllers.set('gameRefresh', async (req: Request) => {
     status.value = new BlankItRightStatus(req.data);
     await nextTick(() => {
@@ -123,7 +97,6 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  bus().off(EventName.RefreshGame);
   bus().off(EventName.BlankItRightStatusUpdate);
 });
 </script>
