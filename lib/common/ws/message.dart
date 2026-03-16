@@ -122,7 +122,7 @@ class Response {
       headers: Map<String, String>.from(json['headers'] ?? {}),
       data: json['data'] ?? '',
       error: json['error'] ?? '',
-      status: json['status'] ?? '',
+      status: json['status'] ?? 200,
     );
   }
 

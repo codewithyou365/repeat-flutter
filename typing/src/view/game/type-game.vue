@@ -43,9 +43,8 @@
   </div>
 </template>
 <script setup lang="ts">
-import {onMounted, ref, onBeforeUnmount, inject, Ref, reactive, computed} from 'vue';
-import {bus, EventName} from '../../api/bus.ts';
-import {client, Request} from '../../api/ws.ts';
+import {onMounted, ref, inject, Ref, reactive, computed} from 'vue';
+import {client, Request, Response} from '../../api/ws.ts';
 import {Path} from '../../utils/constant.ts';
 import Typing from '../../component/typing.vue';
 import {useStore} from "vuex";
@@ -80,18 +79,40 @@ const cantPlayForMaintain = computed(() => {
 const isAdmin = computed(() => {
   return adminEnable.value && adminId.value == store.getters.currentUserId;
 });
+
+
 const showTips = () => {
-  const caseStatus = ignoreCase.value ? t('enabled') : t('disabled');
-  const punctStatus = ignorePunctuation.value ? t('enabled') : t('disabled');
-  tipDialogContent.value = `
-    <b>${t('ignoreCase')}:</b> ${caseStatus}<br/>
-    <b>${t('ignorePunctuation')}:</b> ${punctStatus}`;
+
+  const formatStatus = (val: boolean) => val ? t('enabled') : t('disabled');
+
+  const rows = [
+    {label: t('ignoreCase'), value: formatStatus(ignoreCase.value)},
+    {label: t('ignorePunctuation'), value: formatStatus(ignorePunctuation.value)}
+  ];
+
+  let html = `<div style="display: flex; flex-direction: column; gap: 10px; text-align: left;">`;
+
+  html += rows.map((row, index) => {
+    const isLast = index === rows.length - 1;
+    const borderStyle = isLast ? '' : 'border-bottom: 1px solid rgba(128,128,128,0.15);';
+
+    return `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: ${isLast ? '0' : '6px'}; ${borderStyle}">
+        <b style="font-size: 14px;">${row.label}</b>
+        <span style="font-size: 14px; opacity: 0.8;">${row.value}</span>
+      </div>
+    `.replace(/\n/g, '');
+  }).join('');
+
+  html += `</div>`;
+
+  tipDialogContent.value = html;
   tipDialogVisible.value = true;
 };
 const getLabel = async () => {
   const req = new Request({
     path: Path.game,
-    headers: {'jsMethod': 'TypeGame.label'},
+    headers: {'jsMethod': 'Game.label'},
   });
   const res = await client.node!.send(req);
 
@@ -103,7 +124,7 @@ const getLabel = async () => {
 const getConfig = async () => {
   const req = new Request({
     path: Path.game,
-    headers: {'jsMethod': 'TypeGame.getConfig'},
+    headers: {'jsMethod': 'Game.getConfig'},
   });
   const res0 = await client.node!.send(req);
   const res = res0.data;
@@ -123,7 +144,7 @@ const getAdmin = async () => {
 const tap = async (event: String) => {
   const req = new Request({
     path: Path.game,
-    headers: {'jsMethod': 'TypeGame.tap'},
+    headers: {'jsMethod': 'Game.tap'},
     data: event,
   });
   await client.node!.send(req);
@@ -142,7 +163,7 @@ const setConfig = async (key: String, value: boolean) => {
   overlayVisible.value = true;
   const req = new Request({
     path: Path.game,
-    headers: {'jsMethod': 'TypeGame.setConfig'},
+    headers: {'jsMethod': 'Game.setConfig'},
     data: {key: key, value: value},
   });
   await client.node!.send(req);
@@ -153,7 +174,7 @@ const refresh = async () => {
     overlayVisible.value = true;
     const req = new Request({
       path: Path.game,
-      headers: {'jsMethod': 'TypeGame.answer'},
+      headers: {'jsMethod': 'Game.answer'},
     });
     const res = await client.node!.send(req);
     content.value = res.data;
@@ -168,16 +189,14 @@ const refresh = async () => {
 
 onMounted(async () => {
   await getConfig();
-  await refresh();
   await getAdmin();
-  bus().on(EventName.RefreshGame, () => {
-    refresh();
+  await refresh();
+  client.controllers.set('gameRefresh', async (_: Request) => {
+    await refresh();
+    return new Response();
   });
 });
 
-onBeforeUnmount(() => {
-  bus().off(EventName.RefreshGame);
-});
 </script>
 <style scoped>
 .type-game-container {
@@ -197,11 +216,12 @@ onBeforeUnmount(() => {
   justify-content: space-around;
   padding: 10px 0;
   padding-bottom: env(safe-area-inset-bottom); /* 适配手机底部安全区 */
-  flex-shrink: 0; /* 确保按钮高度不被挤压 */
+  flex-shrink: 0;
 }
 
 .actions .nut-button {
-  width: 32%; /* 留一点空隙更美观 */
+  line-height: 1.1;
+  width: 32%;
 }
 
 .nut-theme-dark .info-icon {
