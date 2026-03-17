@@ -176,8 +176,8 @@ const fetchAll = async () => {
 
   if (resConfig.data) {
     config.value = {...config.value, ...resConfig.data};
-    passingRatePercent.value = Math.round((config.value.shouldRememberIfPassingRate || 0.8) * 100);
-    hiddenContentPercent.value = Math.round((config.value.hiddenContentPercent || 0.5) * 100);
+    passingRatePercent.value = Math.round((config.value.shouldRememberIfPassingRate) * 100);
+    hiddenContentPercent.value = Math.round((config.value.hiddenContentPercent) * 100);
   }
 
   await fetchManualContent();

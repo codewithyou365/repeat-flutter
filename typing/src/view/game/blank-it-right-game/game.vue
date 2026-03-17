@@ -123,12 +123,12 @@ const onShowHelp = () => {
   const formatStatus = (val: boolean) => val ? t('enabled') : t('disabled');
 
   const rows = [
-    { label: t('autoBlank'), value: formatStatus(config.autoBlank) },
-    { label: t('blankPercent'), value: `${Math.round((config.blankContentPercent || 0.8) * 100)}%` },
-    { label: t('ignoreCase'), value: formatStatus(config.ignoreCase) },
-    { label: t('ignorePunctuation'), value: formatStatus(config.ignorePunctuation) },
-    { label: t('maxScore'), value: config.maxScore },
-    { label: t('passingRate'), value: `${Math.round((config.shouldRememberIfPassingRate || 0.8) * 100)}%` }
+    {label: t('autoBlank'), value: formatStatus(config.autoBlank)},
+    {label: t('blankPercent'), value: `${Math.round((config.blankContentPercent) * 100)}%`},
+    {label: t('ignoreCase'), value: formatStatus(config.ignoreCase)},
+    {label: t('ignorePunctuation'), value: formatStatus(config.ignorePunctuation)},
+    {label: t('maxScore'), value: config.maxScore},
+    {label: t('passingRate'), value: `${Math.round((config.shouldRememberIfPassingRate) * 100)}%`}
   ];
 
   let html = `<div style="display: flex; flex-direction: column; gap: 10px; text-align: left;">`;

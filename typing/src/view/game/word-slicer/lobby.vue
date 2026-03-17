@@ -1,5 +1,8 @@
 <template>
   <div class="lobby">
+    <div class="top-bar">
+      <Ask color="#888" size="22px" @click="onShowHelp" class="ask-icon"/>
+    </div>
     <Player
         :user-ids="status.userIds"
         :user-id-to-user-name="status.userIdToUserName"
@@ -12,14 +15,17 @@
     <nut-cell>{{ t('wordSlicerSelectRole') }}</nut-cell>
 
     <nut-cell>
-      <nut-radio-group v-model="selectedOption" @change="handleSelectionChange">
-        <nut-radio v-for="(colorName, index) in colorNames"
-                   :key="index"
-                   :label="index.toString()">
-        <span :style="{ color: colorHex[index] }">
-          {{ colorName }}
-          {{ getOccupiedNames(index) }}
-        </span>
+      <nut-radio-group v-model="selectedOption">
+        <nut-radio
+            v-for="(colorName, index) in colorNames"
+            :key="index"
+            :label="index.toString()"
+            @click.prevent="handleRadioClick(index.toString())"
+        >
+    <span :style="{ color: colorHex[index] }">
+      {{ colorName }}
+      {{ getOccupiedNames(index) }}
+    </span>
         </nut-radio>
       </nut-radio-group>
     </nut-cell>
@@ -47,6 +53,7 @@ import {useI18n} from "vue-i18n";
 import {useStore} from "vuex";
 import {toNumber} from "../../../utils/convert.ts";
 import Player from "../widget/player.vue";
+import {Ask} from "@nutui/icons-vue";
 
 const {t} = useI18n();
 const store = useStore();
@@ -72,16 +79,59 @@ const enoughUsers = computed(() => {
   return status.value.userIds.length > 0
 });
 
-const handleSelectionChange = (val: string) => {
-  client.send(new Request({
-    path: Path.game,
-    headers: {
-      'jsMethod': 'Game.selectRole',
-    },
-    data: {index: parseInt(val)}
-  }));
-};
+const onShowHelp = () => {
+  const config = status.value.config;
+  if (!config) return;
 
+  const rows = [
+    {label: t('hiddenPercent'), value: `${Math.round((config.hiddenContentPercent) * 100)}%`},
+    {label: t('maxScore'), value: config.maxScore},
+    {label: t('passingRate'), value: `${Math.round((config.shouldRememberIfPassingRate) * 100)}%`}
+  ];
+
+  let html = `<div style="display: flex; flex-direction: column; gap: 10px; text-align: left;">`;
+
+  html += rows.map((row, index) => {
+    const isLast = index === rows.length - 1;
+    const borderStyle = isLast ? '' : 'border-bottom: 1px solid rgba(128,128,128,0.15);';
+
+    return `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: ${isLast ? '0' : '6px'}; ${borderStyle}">
+        <b style="font-size: 14px;">${row.label}</b>
+        <span style="font-size: 14px; opacity: 0.8;">${row.value}</span>
+      </div>
+    `.replace(/\n/g, ''); // 依旧去掉换行符，确保在 pre-wrap 环境下也万无一失
+  }).join('');
+
+  html += `</div>`;
+
+  tipDialogContent.value = html;
+  tipDialogVisible.value = true;
+};
+const handleRadioClick = (val: string) => {
+  const targetIndex = parseInt(val);
+  const userId = currentUserId.value;
+
+  const isAlreadyInThisColor = status.value.colorIndexToUserId[targetIndex]?.includes(userId);
+
+  if (isAlreadyInThisColor) {
+    selectedOption.value = "";
+    client.send(new Request({
+      path: Path.game,
+      headers: {
+        'jsMethod': 'Game.leave',
+      }
+    }));
+  } else {
+    client.send(new Request({
+      path: Path.game,
+      headers: {
+        'jsMethod': 'Game.selectRole',
+      },
+      data: {index: targetIndex}
+    }));
+  }
+};
 const startGame = async () => {
   overlayVisible.value = true;
   const res = await client.send(new Request({
@@ -139,5 +189,9 @@ defineExpose({
 .lobby {
   margin: 12px;
 }
-
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px 0 0;
+}
 </style>

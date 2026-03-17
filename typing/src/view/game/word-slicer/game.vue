@@ -1,5 +1,9 @@
 <template>
   <div class="lobby">
+
+    <div class="top-bar">
+      <Ask color="#888" size="22px" @click="onShowHelp" class="ask-icon"/>
+    </div>
     <Player
         :user-ids="status.userIds"
         :user-id-to-user-name="status.userIdToUserName"
@@ -29,14 +33,21 @@
     <div v-if="status.gameStep === GameStepEnum.finished">
       <div class="actions">
         <nut-button
-            block
+            style="width: 50%"
             shape="square"
             type="primary"
             @click="onNext"
-            style="margin-bottom: 12px;"
             :disabled="nexted"
         >
           {{ nexted ? t('waitingForOthers') : t('nextGame') }}
+        </nut-button>
+        <nut-button
+            style="width: 50%"
+            shape="square"
+            type="info"
+            @click="onSwitchView"
+        >
+          {{ isShowingAnswer ? t('viewResult') : t('viewAnswer') }}
         </nut-button>
       </div>
       <nut-cell-group :title="scoreDescription">
@@ -87,6 +98,7 @@ import {useStore} from "vuex";
 import {toNumber} from "../../../utils/convert.ts";
 import Typing from "../../../component/typing.vue";
 import Player from "../widget/player.vue";
+import {Ask} from "@nutui/icons-vue";
 
 const {t} = useI18n();
 const store = useStore();
@@ -96,6 +108,8 @@ const typingRef = ref<InstanceType<typeof Typing>>();
 const colorNames = [t('orange'), t('violet'), t('cyan')];
 const colorHex = ['#f1ac40', '#e18be5', '#78fbfd'];
 
+const isShowingAnswer = ref<boolean>(false);
+
 const overlayVisible = inject<Ref<boolean>>('overlayVisible')!;
 const tipDialogVisible = inject<Ref<boolean>>('tipDialogVisible')!;
 const tipDialogContent = inject<Ref<string>>('tipDialogContent')!;
@@ -104,7 +118,6 @@ const scoreDescription = computed(() =>
 );
 const currentUserId = computed(() => toNumber(store.getters.currentUserId));
 const nexted = computed(() => status.value.userIdToNexted[store.getters.currentUserId] === true);
-
 
 const isMyTurn = computed(() => {
   if (status.value.gameStep == GameStepEnum.finished) {
@@ -191,18 +204,66 @@ const submit = async () => {
   }
 };
 
+const onShowHelp = () => {
+  const config = status.value.config;
+  if (!config) return;
+
+  const rows = [
+    {label: t('hiddenPercent'), value: `${Math.round((config.hiddenContentPercent) * 100)}%`},
+    {label: t('maxScore'), value: config.maxScore},
+    {label: t('passingRate'), value: `${Math.round((config.shouldRememberIfPassingRate) * 100)}%`}
+  ];
+
+  let html = `<div style="display: flex; flex-direction: column; gap: 10px; text-align: left;">`;
+
+  html += rows.map((row, index) => {
+    const isLast = index === rows.length - 1;
+    const borderStyle = isLast ? '' : 'border-bottom: 1px solid rgba(128,128,128,0.15);';
+
+    return `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: ${isLast ? '0' : '6px'}; ${borderStyle}">
+        <b style="font-size: 14px;">${row.label}</b>
+        <span style="font-size: 14px; opacity: 0.8;">${row.value}</span>
+      </div>
+    `.replace(/\n/g, ''); // 依旧去掉换行符，确保在 pre-wrap 环境下也万无一失
+  }).join('');
+
+  html += `</div>`;
+
+  tipDialogContent.value = html;
+  tipDialogVisible.value = true;
+};
 const refresh = async () => {
   const ignoreIndexes: number[] = [];
   const contentIndexToColor: Record<number, string> = {};
-  if (status.value.gameStep == GameStepEnum.finished) {
-    const words: Word[] = status.value.getResult();
-    for (const word of words) {
-      const baseColor = colorHex[word.colorIndex];
-      const resultColor = word.right ? '#0f0' : '#f00';
 
-      for (let i = word.start; i <= word.end; i++) {
-        contentIndexToColor[i] = `${baseColor},${resultColor}`;
-        ignoreIndexes.push(i);
+  if (status.value.gameStep == GameStepEnum.finished) {
+    if (isShowingAnswer.value) {
+      const words: Word[] = status.value.getAnswerWords();
+      let isBlue = true;
+
+      for (const w of words) {
+        const baseColor = colorHex[w.colorIndex];
+
+        for (let i = w.start; i <= w.end; i++) {
+          if (isBlue) {
+            contentIndexToColor[i] = `${baseColor},#1e90ff`;
+          } else {
+            contentIndexToColor[i] = `${baseColor},#999`;
+          }
+        }
+        isBlue = !isBlue;
+      }
+    } else {
+      const words: Word[] = status.value.getResult();
+      for (const word of words) {
+        const baseColor = colorHex[word.colorIndex];
+        const resultColor = word.right ? '#0f0' : '#f00';
+
+        for (let i = word.start; i <= word.end; i++) {
+          contentIndexToColor[i] = `${baseColor},${resultColor}`;
+          ignoreIndexes.push(i);
+        }
       }
     }
   } else {
@@ -217,12 +278,19 @@ const refresh = async () => {
       }
     }
   }
-  ignoreContentIndexes.value = ignoreIndexes.sort();
+
+  ignoreContentIndexes.value = ignoreIndexes.sort((a, b) => a - b);
   await nextTick(() => {
     typingRef.value?.initContentIndexToColor(contentIndexToColor);
     typingRef.value?.initUserInput(status.value.content);
   });
 };
+
+const onSwitchView = () => {
+  isShowingAnswer.value = !isShowingAnswer.value;
+  refresh();
+}
+
 const onNext = async () => {
   overlayVisible.value = true;
   try {
@@ -242,9 +310,13 @@ const onNext = async () => {
     overlayVisible.value = false;
   }
 };
+
 onMounted(() => {
   bus().on(EventName.WordSlicerStatusUpdate, (data: WordSlicerStatus) => {
     status.value = data;
+    if (data.gameStep !== GameStepEnum.finished) {
+      isShowingAnswer.value = false;
+    }
     refresh();
   });
 });
@@ -291,4 +363,9 @@ onBeforeUnmount(() => {
   background: #1e1e1e;
 }
 
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px 0 0;
+}
 </style>

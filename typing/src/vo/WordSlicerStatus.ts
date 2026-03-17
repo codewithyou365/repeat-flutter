@@ -46,12 +46,14 @@ export class Word {
 export class WordSlicerConfig {
     maxScore: number = 10;
     hiddenContentPercent: number = 0;
+    shouldRememberIfPassingRate: number = 0.8;
 
     static fromJson(json: any): WordSlicerConfig {
         const config = new WordSlicerConfig();
         if (json) {
-            config.maxScore = typeof json.maxScore === 'number' ? json.maxScore : 10;
+            config.maxScore = parseInt(json.maxScore);
             config.hiddenContentPercent = typeof json.hiddenContentPercent === 'number' ? json.hiddenContentPercent : 0;
+            config.shouldRememberIfPassingRate = typeof json.shouldRememberIfPassingRate === 'number' ? json.shouldRememberIfPassingRate : 0.8;
         }
         return config;
     }
@@ -144,25 +146,24 @@ export class WordSlicerStatus {
 
     getAnswerWords(): Word[] {
         const result: Word[] = [];
-        if (!this.answer || !this.content) return result;
+        if (!this.answer) return result;
 
         const words = this.answer.split(' ');
         let cursor = 0;
+
         for (const w of words) {
-            if (!w) continue;
+            if (w.length > 0) {
+                const start = cursor;
+                const end = cursor + w.length - 1;
 
-            const start = cursor;
-            const end = cursor + w.length - 1;
+                result.push(new Word({
+                    start: start,
+                    end: end,
+                    word: w
+                }));
 
-            result.push(
-                new Word({
-                    start,
-                    end,
-                    word: w,
-                }),
-            );
-
-            cursor += w.length;
+                cursor += w.length;
+            }
         }
 
         return result;
