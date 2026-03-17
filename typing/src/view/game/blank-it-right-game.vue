@@ -83,17 +83,19 @@ const getAdmin = async () => {
 
 onMounted(async () => {
   await getAdmin();
-  await refresh();
-  client.controllers.set('gameRefresh', async (req: Request) => {
-    status.value = new BlankItRightStatus(req.data);
-    await nextTick(() => {
-      bus().emit(EventName.BlankItRightStatusUpdate, status.value);
+  if (!adminEnable.value) {
+    await refresh();
+    client.controllers.set('gameRefresh', async (req: Request) => {
+      status.value = new BlankItRightStatus(req.data);
+      await nextTick(() => {
+        bus().emit(EventName.BlankItRightStatusUpdate, status.value);
+      });
+      return new Response();
     });
-    return new Response();
-  });
-  bus().on(EventName.BlankItRightStatusUpdate, (data) => {
-    status.value = new BlankItRightStatus(data);
-  });
+    bus().on(EventName.BlankItRightStatusUpdate, (data) => {
+      status.value = new BlankItRightStatus(data);
+    });
+  }
 });
 
 onBeforeUnmount(() => {

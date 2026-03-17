@@ -1,6 +1,6 @@
 export enum GameStepEnum {
     none,
-    selectRule,
+    selectRole,
     started,
     finished,
 }
@@ -43,13 +43,28 @@ export class Word {
     }
 }
 
-export class WordSlicerStatus {
+export class WordSlicerConfig {
     maxScore: number = 10;
+    hiddenContentPercent: number = 0;
+
+    static fromJson(json: any): WordSlicerConfig {
+        const config = new WordSlicerConfig();
+        if (json) {
+            config.maxScore = typeof json.maxScore === 'number' ? json.maxScore : 10;
+            config.hiddenContentPercent = typeof json.hiddenContentPercent === 'number' ? json.hiddenContentPercent : 0;
+        }
+        return config;
+    }
+}
+
+export class WordSlicerStatus {
+    config: WordSlicerConfig = new WordSlicerConfig();
     verseId: number = -1;
     gameStep: GameStepEnum = GameStepEnum.none;
     colorIndexToUserId: number[][] = [[], [], []];
     userIds: number[] = [];
     userIdToUserName: Record<number, string> = {};
+    userIdToNexted: Record<number, boolean> = {};
     currUserIndex: number = -1;
     content: string = '';
     answer: string = '';
@@ -59,8 +74,7 @@ export class WordSlicerStatus {
 
     static fromJson(json: any): WordSlicerStatus {
         const status = new WordSlicerStatus();
-
-        status.maxScore = json.maxScore;
+        status.config = WordSlicerConfig.fromJson(json.config);
         status.verseId = json.verseId;
 
         if (json.gameStep !== undefined) {
@@ -82,6 +96,10 @@ export class WordSlicerStatus {
         status.userIdToUserName =
             json.userIdToUserName && typeof json.userIdToUserName === "object"
                 ? json.userIdToUserName
+                : {};
+        status.userIdToNexted =
+            json.userIdToNexted && typeof json.userIdToNexted === "object"
+                ? json.userIdToNexted
                 : {};
 
         status.currUserIndex =
@@ -151,7 +169,7 @@ export class WordSlicerStatus {
     }
 
     scoreEachChar(): string {
-        return (this.maxScore / this.content.length).toFixed(2);
+        return (this.config.maxScore / this.content.length).toFixed(2);
     }
 
     getResult(): Word[] {

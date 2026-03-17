@@ -5,7 +5,7 @@
         :user-id-to-user-name="status.userIdToUserName"
         :current-user-id="currentUserId"
         :curr-user-index="status.currUserIndex"
-        :game-step="status.gameStep"
+        :game-started="status.gameStep===GameStepEnum.started"
         :get-user-color="getUserColor">
     </Player>
 
@@ -38,10 +38,10 @@
 </template>
 
 <script setup lang="ts">
-import {ref, computed, onMounted, onBeforeUnmount, inject, Ref} from 'vue';
+import {computed, inject, onBeforeUnmount, onMounted, ref, Ref} from 'vue';
 import {client, Request} from '../../../api/ws';
 import {Path} from '../../../utils/constant.ts';
-import {WordSlicerStatus} from "../../../vo/WordSlicerStatus.ts";
+import {GameStepEnum, WordSlicerStatus} from "../../../vo/WordSlicerStatus.ts";
 import {bus, EventName} from "../../../api/bus.ts";
 import {useI18n} from "vue-i18n";
 import {useStore} from "vuex";
@@ -73,12 +73,23 @@ const enoughUsers = computed(() => {
 });
 
 const handleSelectionChange = (val: string) => {
-  client.send(new Request({path: Path.wordSlicerSelectRole, data: {index: parseInt(val)}}));
+  client.send(new Request({
+    path: Path.game,
+    headers: {
+      'jsMethod': 'Game.selectRole',
+    },
+    data: {index: parseInt(val)}
+  }));
 };
 
 const startGame = async () => {
   overlayVisible.value = true;
-  const res = await client.send(new Request({path: Path.wordSlicerStartGame}));
+  const res = await client.send(new Request({
+    path: Path.game,
+    headers: {
+      'jsMethod': 'Game.start',
+    },
+  }));
   if (res!.error) {
     tipDialogVisible.value = true;
     tipDialogContent.value = t(res!.error);

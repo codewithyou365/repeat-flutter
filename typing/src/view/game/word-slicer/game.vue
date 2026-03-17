@@ -5,7 +5,7 @@
         :user-id-to-user-name="status.userIdToUserName"
         :current-user-id="currentUserId"
         :curr-user-index="status.currUserIndex"
-        :game-step="status.gameStep"
+        :game-started="status.gameStep===GameStepEnum.started"
         :get-user-color="getUserColor">
     </Player>
 
@@ -27,6 +27,18 @@
       <nut-cell> {{ t('wordSlicerEndDesc') }}</nut-cell>
     </div>
     <div v-if="status.gameStep === GameStepEnum.finished">
+      <div class="actions">
+        <nut-button
+            block
+            shape="square"
+            type="primary"
+            @click="onNext"
+            style="margin-bottom: 12px;"
+            :disabled="nexted"
+        >
+          {{ nexted ? t('waitingForOthers') : t('nextGame') }}
+        </nut-button>
+      </div>
       <nut-cell-group :title="scoreDescription">
         <nut-cell
             v-for="(stat, index) in status.colorIndexToStat"
@@ -91,6 +103,8 @@ const scoreDescription = computed(() =>
     t('eachCharScore', {score: status.value.scoreEachChar()})
 );
 const currentUserId = computed(() => toNumber(store.getters.currentUserId));
+const nexted = computed(() => status.value.userIdToNexted[store.getters.currentUserId] === true);
+
 
 const isMyTurn = computed(() => {
   if (status.value.gameStep == GameStepEnum.finished) {
@@ -136,7 +150,10 @@ const submit = async () => {
 
     if (selectedContentIndexes.length === 0) {
       res = await client.send(new Request({
-        path: Path.wordSlicerSubmit,
+        path: Path.game,
+        headers: {
+          'jsMethod': 'Game.submit',
+        },
         data: []
       }));
       return;
@@ -155,7 +172,10 @@ const submit = async () => {
     }
 
     res = await client.send(new Request({
-      path: Path.wordSlicerSubmit,
+      path: Path.game,
+      headers: {
+        'jsMethod': 'Game.submit',
+      },
       data: selectedContentIndexes
     }));
 
@@ -203,7 +223,25 @@ const refresh = async () => {
     typingRef.value?.initUserInput(status.value.content);
   });
 };
+const onNext = async () => {
+  overlayVisible.value = true;
+  try {
+    const res = await client.node!.send(new Request({
+      path: Path.game,
+      headers: {'jsMethod': 'Game.next'},
+      data: {
+        userId: currentUserId.value
+      }
+    }));
 
+    if (res.error) {
+      tipDialogContent.value = t(res.error);
+      tipDialogVisible.value = true;
+    }
+  } finally {
+    overlayVisible.value = false;
+  }
+};
 onMounted(() => {
   bus().on(EventName.WordSlicerStatusUpdate, (data: WordSlicerStatus) => {
     status.value = data;

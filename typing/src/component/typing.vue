@@ -27,6 +27,7 @@
           </span>
           <span v-else class="typing-char"
                 :data-index="group.index"
+                :style="getCharStyle(group.index)"
                 :class="[getCharClass(group.index), group.type === 'space' ? 'space' : '']"
                 :ref="el => setCharRef(el, group.index)"
                 @click="handleCharClick(group.index)"
@@ -205,7 +206,6 @@ const handleTouch = (e: any, type: 'start' | 'move' | 'end') => {
 
   if (props.clickFillCharWhenDisabled.length === 1 || props.touchColor) {
     if (type === 'end') {
-      console.log(`[Touch End] Resetting lastHoveredIndex`);
       lastHoveredIndex.value = null;
       return;
     }
@@ -229,7 +229,6 @@ const handleTouch = (e: any, type: 'start' | 'move' | 'end') => {
 
       // 关键防抖：只有当前划到的 Index 和上一次不一样，才触发修改
       if (!Number.isNaN(index) && index !== lastHoveredIndex.value) {
-        console.log(`[Target Hit] Safe Index: ${index}`);
         handleCharTouch(null, index);
         lastHoveredIndex.value = index;
       }
@@ -259,8 +258,6 @@ const handleCharTouch = (e: PointerEvent | null, index: number) => {
         if (userInput.value[index] === props.clickFillCharWhenDisabled) {
           fillChar = props.content[index];
         }
-
-        console.log(`[Update Done] Index: ${index}, Changed: ${userInput.value[index]} -> ${fillChar}`);
 
         userInput.value =
             userInput.value.slice(0, pos) +

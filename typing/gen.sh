@@ -15,6 +15,11 @@ if [ -f "../assets/service/blank_it_right.js" ]; then
 fi
 cp service/blank_it_right.js dist/service/
 
+if [ -f "../assets/service/word_slicer.js" ]; then
+  cp ../assets/service/word_slicer.js service/word_slicer.js
+fi
+cp service/word_slicer.js dist/service/
+
 (cd dist && zip -r ../dist.zip .)
 
 echo "Build and packaging complete: dist.zip"

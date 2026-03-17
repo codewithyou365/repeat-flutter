@@ -106,6 +106,8 @@ const messages = {
         gameSettings: 'Game Settings',
         passingRate: 'Passing Rate',
         maxScore: 'Max Obtainable Score',
+        hiddenPercent: 'Hidden Percentage',
+        modifyWordSlicerContentTip: 'Insert spaces to define segments for players to color.',
     },
     zh: {
         passingRateTip: '考试模式下，若全员正确率达到此阈值则进入下一条，否则重记当前条。',
@@ -212,6 +214,8 @@ const messages = {
         gameSettings: '游戏设置',
         passingRate: '全员达标率',
         maxScore: '最高可获取分数',
+        hiddenPercent: '隐藏比例',
+        modifyWordSlicerContentTip: '在文字中插入空格，用于定义玩家涂色的分段',
     },
 };
 
