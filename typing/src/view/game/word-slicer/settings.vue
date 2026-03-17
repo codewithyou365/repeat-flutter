@@ -80,7 +80,7 @@
 <script setup lang="ts">
 import {ref, onMounted, inject, Ref, nextTick, reactive, watch} from 'vue';
 import {useI18n} from 'vue-i18n';
-import {client, Request} from '../../../api/ws.ts';
+import {client, Request, Response} from '../../../api/ws.ts';
 import {Path} from '../../../utils/constant.ts';
 import {Ask} from "@nutui/icons-vue";
 import {showToast} from "@nutui/nutui";
@@ -223,8 +223,12 @@ const showHelp = () => {
   tipDialogVisible.value = true;
 };
 
-onMounted(() => {
-  fetchAll();
+onMounted(async () => {
+  await fetchAll();
+  client.controllers.set('gameRefresh', async (_: Request) => {
+    await fetchAll();
+    return new Response();
+  });
 });
 
 </script>

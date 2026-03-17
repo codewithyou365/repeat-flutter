@@ -233,7 +233,10 @@ const Game = {
         return JSON.stringify({status: 200, data: "Game started"});
     },
     clear: async function () {
-        if (Util.adminEnable()) return;
+        if (Util.adminEnable()) {
+            await Util.broadcast(this.gameRefreshPath, '{}');
+            return;
+        }
         if (this.gameStatus === GameStepEnum.finished) {
             this.gameStatus = GameStepEnum.started;
         }
