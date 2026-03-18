@@ -428,6 +428,10 @@ const Game = {
         }
     },
     clear: async function () {
+        if (Util.adminEnable()) {
+            await Util.broadcast(this.gameRefreshPath, '{}');
+            return;
+        }
         for (let id in this.userIdToUserStatus) {
             this.userIdToUserStatus[id].step = StepEnum.blanking;
             this.userIdToUserStatus[id].submit = '';
@@ -437,9 +441,7 @@ const Game = {
         const verse = await Util.getVerse();
         this.answer = verse.a || '';
         this.blankContent = await this.getBlankMix();
-        if (!Util.adminEnable()) {
-            await Util.broadcast(this.gameRefreshPath, this.getBroadcastData());
-        }
+        await Util.broadcast(this.gameRefreshPath, this.getBroadcastData());
     },
     getBroadcastData: function () {
         const userIds = this.userIds;

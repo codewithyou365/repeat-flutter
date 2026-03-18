@@ -263,7 +263,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelWarning, "Warning");
     put(I18nKey.labelCopyToWhere, "Should the copy be placed above or below this verse?");
     put(I18nKey.labelChapterDeleteBlocked, "There are verses under this chapter, so it cannot be deleted.");
-    put(I18nKey.labelGameRuleSettings, "Game Rule Settings");
+    put(I18nKey.gameWeb, "Game Web");
     put(I18nKey.practice, "Practice");
     put(I18nKey.typeGame, "Type");
     put(I18nKey.blankItRightGame, "Blank It Right");

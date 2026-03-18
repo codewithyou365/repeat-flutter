@@ -14,7 +14,7 @@ abstract class GameDao {
   @Query('SELECT id FROM Game WHERE classroomId=:classroomId AND name=:name')
   Future<int?> getIdByName(int classroomId, String name);
 
-  @Query('SELECT * FROM Game WHERE classroomId=:classroomId')
+  @Query('SELECT * FROM Game WHERE classroomId=:classroomId ORDER BY id DESC')
   Future<List<Game>> getByClassroomId(int classroomId);
 
   @Query('DELETE FROM Game WHERE classroomId=:classroomId AND name=:name')

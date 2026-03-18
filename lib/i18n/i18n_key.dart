@@ -260,7 +260,7 @@ enum I18nKey {
   labelWarning,
   labelCopyToWhere,
   labelChapterDeleteBlocked,
-  labelGameRuleSettings,
+  gameWeb,
   practice,
   typeGame,
   blankItRightGame,

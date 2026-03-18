@@ -20,7 +20,7 @@ class GamePage<T extends GetxController> {
         height: RowWidget.rowHeight + RowWidget.dividerHeight,
         widgets: [
           RowWidget.buildSwitch(
-            title: I18nKey.game.tr,
+            title: I18nKey.gameWeb.tr,
             value: state.open,
             set: logic.switchWebForBtn,
           ),
@@ -89,14 +89,16 @@ class GamePage<T extends GetxController> {
                 );
               }),
               RowWidget.buildDividerWithoutColor(),
-              RowWidget.buildCupertinoPicker(
-                title: I18nKey.labelGameRuleSettings.tr,
-                options: logic.listGameNames(),
-                value: GameState.game?.id ?? 0,
-                pickWidth: 150,
-                changed: logic.changeGame,
-                disabled: state.open,
-              ),
+              Obx(() {
+                return RowWidget.buildCupertinoPicker(
+                  title: I18nKey.game.tr,
+                  options: logic.listGameNames(),
+                  value: state.lastGameIndex.value,
+                  pickWidth: 150,
+                  changed: logic.changeGame,
+                  disabled: state.open,
+                );
+              }),
 
               RowWidget.buildDividerWithoutColor(),
               RowWidget.buildSwitch(

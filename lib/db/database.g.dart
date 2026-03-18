@@ -1762,7 +1762,8 @@ class _$GameDao extends GameDao {
 
   @override
   Future<List<Game>> getByClassroomId(int classroomId) async {
-    return _queryAdapter.queryList('SELECT * FROM Game WHERE classroomId=?1',
+    return _queryAdapter.queryList(
+        'SELECT * FROM Game WHERE classroomId=?1 ORDER BY id DESC',
         mapper: (Map<String, Object?> row) => Game(
             classroomId: row['classroomId'] as int,
             bookId: row['bookId'] as int,

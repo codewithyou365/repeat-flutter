@@ -69,7 +69,7 @@ class GameLogic<T extends GetxController> {
       lastGameIndex = 0;
       await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.lastGameIndex, '0'));
     }
-    state.lastGameIndex = lastGameIndex;
+    state.lastGameIndex.value = lastGameIndex;
     port.value = await Db().db.kvDao.getIntWithDefault(K.gameServerPort, port.value);
     if (port.value > 50000) {
       port.value = defaultPort;
@@ -114,11 +114,11 @@ class GameLogic<T extends GetxController> {
     if (state.games.isEmpty) {
       return null;
     }
-    if (state.lastGameIndex >= state.games.length) {
-      state.lastGameIndex = 0;
+    if (state.lastGameIndex.value >= state.games.length) {
+      state.lastGameIndex.value = 0;
       await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.lastGameIndex, '0'));
     }
-    return state.games[state.lastGameIndex];
+    return state.games[state.lastGameIndex.value];
   }
 
   Future<void> refreshUsers() async {
@@ -134,10 +134,10 @@ class GameLogic<T extends GetxController> {
   }
 
   void changeGame(int index) async {
-    state.lastGameIndex = index;
-    parentLogic.update([bodyId]);
+    state.lastGameIndex.value = index;
     await Db().db.kvDao.insertOrReplace(Kv(K.lastGameIndex, "${state.lastGameIndex}"));
     await setScore();
+    parentLogic.update([bodyId]);
   }
 
   String getOnline() {
@@ -295,6 +295,7 @@ class GameLogic<T extends GetxController> {
     if (game == null) {
       return;
     }
+    state.userIdToScore = {};
     final userIds = state.users.map((u) => u.id!).toList();
     var userScores = await Db().db.gameUserScoreDao.list(userIds, game.id ?? 0);
     for (final s in userScores) {

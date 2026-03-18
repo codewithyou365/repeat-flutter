@@ -22,7 +22,7 @@
       </div>
       <div class="manual-actions">
         <nut-button size="small" shape="square" type="info" @click="onTap('tapLeft')">
-          {{ labels.left  }}
+          {{ labels.left }}
         </nut-button>
         <nut-button size="small" shape="square" type="info" @click="onTap('tapMiddle')">
           {{ labels.middle }}
@@ -95,9 +95,9 @@
 </template>
 
 <script setup lang="ts">
-import {ref, onMounted,  inject, Ref, nextTick, reactive, watch} from 'vue';
+import {ref, onMounted, inject, Ref, nextTick, reactive, watch} from 'vue';
 import {useI18n} from 'vue-i18n';
-import {client, Request} from '../../../api/ws.ts';
+import {client, Request, Response} from '../../../api/ws.ts';
 import {Path} from '../../../utils/constant.ts';
 import {Ask} from "@nutui/icons-vue";
 import Typing from "../../../component/typing.vue";
@@ -246,10 +246,14 @@ const showHelp = () => {
   tipDialogVisible.value = true;
 };
 
-onMounted(() => {
-  fetchAll();
-});
 
+onMounted(async () => {
+  await fetchAll();
+  client.controllers.set('gameRefresh', async (_: Request) => {
+    await fetchAll();
+    return new Response();
+  });
+});
 </script>
 
 <style scoped>
