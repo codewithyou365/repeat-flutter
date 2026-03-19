@@ -30,13 +30,13 @@
     </div>
 
     <div class="actions">
-      <nut-button shape="square" type="info" @click="tap('tapLeft')">
+      <nut-button shape="square" type="info" @pointerdown.prevent="tap('tapLeft')">
         {{ labels.left }}
       </nut-button>
-      <nut-button shape="square" type="info" @click="tap('tapMiddle')">
+      <nut-button shape="square" type="info" @pointerdown.prevent="tap('tapMiddle')">
         {{ labels.middle }}
       </nut-button>
-      <nut-button shape="square" type="info" @click="tap('tapRight')">
+      <nut-button shape="square" type="info" @pointerdown.prevent="tap('tapRight')">
         {{ labels.right }}
       </nut-button>
     </div>

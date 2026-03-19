@@ -363,7 +363,7 @@ const getCharStyle = (index: number) => {
     } else if (isIgnore(originalChar, index)) {
       borderBottomColor = '#999';
     }
-    return { color: color, borderBottomColor: borderBottomColor, opacity: 1 };
+    return {color: color, borderBottomColor: borderBottomColor, opacity: 1};
   }
   return {};
 };
@@ -426,7 +426,7 @@ watch(() => props.content, async () => {
   fixCursorPos();
   positionInput();
   inputRef.value?.focus();
-}, { immediate: true });
+}, {immediate: true});
 
 watch([userInput, groups], async () => {
   await nextTick();
@@ -441,6 +441,9 @@ defineExpose({
   },
   initContentIndexToColor(val: Record<number, string>) {
     contentIndexToColor.value = val;
+  },
+  focus() {
+    inputRef.value?.focus();
   },
   getUserInput() {
     return userInput.value;
@@ -488,14 +491,37 @@ defineExpose({
   position: relative;
 }
 
-.pending { color: transparent; }
-.pending-ignore { color: #999; border-bottom-color: #999; }
-.correct { color: #22c55e; border-bottom-color: #22c55e; }
-.wrong { color: #ef4444; border-bottom-color: #ef4444; }
-.ignore-correct { color: #3b82f6; border-bottom-color: #3b82f6; }
+.pending {
+  color: transparent;
+}
 
-.space { border-bottom-color: transparent; }
-.pending.space { color: #ccc; }
+.pending-ignore {
+  color: #999;
+  border-bottom-color: #999;
+}
+
+.correct {
+  color: #22c55e;
+  border-bottom-color: #22c55e;
+}
+
+.wrong {
+  color: #ef4444;
+  border-bottom-color: #ef4444;
+}
+
+.ignore-correct {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+
+.space {
+  border-bottom-color: transparent;
+}
+
+.pending.space {
+  color: #ccc;
+}
 
 .overlay-input {
   position: absolute;
@@ -508,7 +534,10 @@ defineExpose({
   margin: 0;
   z-index: 10;
 }
-.overlay-input:disabled { pointer-events: none; }
+
+.overlay-input:disabled {
+  pointer-events: none;
+}
 
 .flashing {
   display: inline-block;
@@ -517,7 +546,11 @@ defineExpose({
 }
 
 @keyframes blink {
-  0%, 50% { opacity: 1; }
-  50.01%, 100% { opacity: 0.3; }
+  0%, 50% {
+    opacity: 1;
+  }
+  50.01%, 100% {
+    opacity: 0.3;
+  }
 }
 </style>

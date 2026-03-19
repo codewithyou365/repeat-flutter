@@ -1,4 +1,12 @@
 <template>
+  <input
+      ref="tempInputRef"
+      v-model="tempValue"
+      style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; z-index: -1;"
+      autocomplete="off"
+      autocorrect="off"
+      spellcheck="false"
+  />
   <div class="top-bar">
     <Ask color="#888" size="22px" @click="onShowHelp" class="ask-icon"/>
   </div>
@@ -28,7 +36,7 @@
     <div v-if="currUserIndex>=0 && step === 'blanking'" class="action-container">
       <nut-button
           :disabled="!isFilled"
-          shape="square" type="info" @click="onSubmit" :loading="overlayVisible">
+          shape="square" type="info" @pointerdown.prevent="onSubmit" :loading="overlayVisible">
         {{ t('confirm') }}
       </nut-button>
     </div>
@@ -37,13 +45,13 @@
       <nut-cell class="score-cell">
         {{ t('score') }}: <span class="score-num">+{{ score }}</span>
       </nut-cell>
-      <nut-button shape="square" type="info" @click="onSwitchView">
+      <nut-button shape="square" type="info" @pointerdown.prevent="onSwitchView">
         {{ showAnswer ? t('viewSubmit') : t('viewAnswer') }}
       </nut-button>
       <nut-button
           shape="square"
           type="info"
-          @click="onNext"
+          @pointerdown.prevent="onNext"
           :disabled="nexted"
       >
         {{ nexted ? t('waitingForOthers') : t('nextGame') }}
@@ -81,6 +89,8 @@ const showAnswer = ref(false);
 let userSubmitContent = ''; // 暂存用户提交的文本内容
 
 const ignoreContentIndexes = ref<number[]>([]);
+const tempInputRef = ref<HTMLInputElement | null>(null);
+const tempValue = ref('');
 const typingRef = ref<InstanceType<typeof Typing>>();
 
 const step = ref('');
@@ -89,7 +99,11 @@ const nexted = ref(false);
 // 2. 计算属性
 const currentUserId = computed(() => toNumber(store.getters.currentUserId));
 const currUserIndex = computed(() => status.value.userIds.indexOf(currentUserId.value));
-
+watch(tempValue, (val) => {
+  if (val.length > 0 && typingDisabled.value) {
+    tempValue.value = '';
+  }
+});
 const getUserColor = (userId: number) => {
   const player = status.value.players.find(p => p.userId === userId);
 
@@ -169,8 +183,7 @@ const onSubmit = async () => {
       tipDialogContent.value = t(res.error);
       tipDialogVisible.value = true;
     } else {
-      // 提交成功后，本地先行进入“等待结算”状态，或者等待广播刷新
-      typingDisabled.value = true;
+      switchInput(false);
     }
   } finally {
     overlayVisible.value = false;
@@ -214,7 +227,17 @@ const onSwitchView = () => {
 const overlayVisible = inject<Ref<boolean>>('overlayVisible')!;
 const tipDialogVisible = inject<Ref<boolean>>('tipDialogVisible')!;
 const tipDialogContent = inject<Ref<string>>('tipDialogContent')!;
-
+const switchInput = async (typingMode: boolean) => {
+  if (typingMode) {
+    typingDisabled.value = false;
+    typingRef.value?.focus();
+    tempValue.value = '';
+  } else {
+    tempInputRef.value?.focus({preventScroll: true});
+    typingDisabled.value = true;
+    tempValue.value = '';
+  }
+};
 onMounted(async () => {
   // 初始处理
   updateIgnoreIndexes(status.value.blankContent || '');
@@ -223,7 +246,7 @@ onMounted(async () => {
   bus().on(EventName.BlankItRightStatusUpdate, async (newData: BlankItRightStatus) => {
     status.value = newData;
     answer.value = '';
-    typingDisabled.value = false;
+    switchInput(true);
     updateIgnoreIndexes(newData.blankContent || '');
 
     // 获取当前玩家在服务器端的状态
@@ -231,7 +254,7 @@ onMounted(async () => {
     step.value = selfStatus?.step ?? '';
     nexted.value = selfStatus?.nexted ?? false;
     if (selfStatus?.step === 'finished') {
-      typingDisabled.value = true;
+      switchInput(false);
       const res = await client.node!.send(new Request({
         path: Path.game,
         headers: {'jsMethod': 'Game.myStatus'}
