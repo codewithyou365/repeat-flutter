@@ -146,7 +146,7 @@ const updateVerse = async () => {
     }));
 
     if (res.status === 200) {
-      showToast.success(t('updateSuccess') || 'Success');
+      showToast.text(t('success') || 'Success');
     } else {
       showToast.warn(res.error || 'Update Failed');
     }

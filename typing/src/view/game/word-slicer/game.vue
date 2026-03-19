@@ -24,7 +24,7 @@
         :ignore-content-indexes="ignoreContentIndexes"/>
 
     <div class="actions" v-if="isMyTurn">
-      <nut-button style="width: 50%" shape="square" type="primary" @click="submit">{{ t('submit') }}</nut-button>
+      <nut-button style="width: 50%" shape="square" type="primary" @click="submit">{{ submitButtonText }}</nut-button>
       <nut-button style="width: 50%" shape="square" type="info" @click="refresh">{{ t('reset') }}</nut-button>
     </div>
     <div v-if="status.gameStep === GameStepEnum.started">
@@ -99,6 +99,7 @@ import {toNumber} from "../../../utils/convert.ts";
 import Typing from "../../../component/typing.vue";
 import Player from "../widget/player.vue";
 import {Ask} from "@nutui/icons-vue";
+import {showToast} from "@nutui/nutui";
 
 const {t} = useI18n();
 const store = useStore();
@@ -126,6 +127,19 @@ const isMyTurn = computed(() => {
   return status.value.userIds[status.value.currUserIndex] === currentUserId.value;
 });
 
+const submitButtonText = computed(() => {
+  if (!typingRef.value) return t('submit');
+
+  const contentIndexToColor: Record<number, string> = typingRef.value.getContentIndexToColor();
+  if (!contentIndexToColor) return t('submit');
+
+  const allIndexes = Object.keys(contentIndexToColor).map(Number);
+  const selectedCount = allIndexes.filter(
+      idx => !ignoreContentIndexes.value.includes(idx)
+  ).length;
+
+  return selectedCount === 0 ? t('skip') : t('submit');
+});
 const getColorIndex = (userId: number) => {
   return status.value.colorIndexToUserId.findIndex(ids => ids.includes(userId));
 };
@@ -196,6 +210,9 @@ const submit = async () => {
     tipDialogVisible.value = true;
     tipDialogContent.value = String(e);
   } finally {
+    if (res != null && res.status === 200) {
+      showToast.text(t('success') || 'Success');
+    }
     if (res != null && res.error) {
       tipDialogVisible.value = true;
       tipDialogContent.value = t(res!.error);

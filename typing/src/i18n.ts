@@ -91,7 +91,7 @@ const messages = {
         isJudge: 'Judge',
         wordSlicerYourCommitMustBeConsecutive: 'Commits must be consecutive, when playing multiplayer games',
         minPlayersRequired: 'At least one player is required to start the game.',
-        wordSlicerEndDesc: 'If everyone keeps submitting empty answers or all the characters are marked, the game will end and be settled.',
+        wordSlicerEndDesc: 'If everyone keeps skipping answers or all the characters are marked, the game will end and be settled.',
         eachCharScore: 'Each character: {score} points, correct adds, wrong subtracts',
         correctChar: 'Correct char: ',
         wrongChar: 'Wrong char: ',
@@ -109,6 +109,7 @@ const messages = {
         maxScore: 'Max Obtainable Score',
         hiddenPercent: 'Hidden Percentage',
         modifyWordSlicerContentTip: 'Insert spaces to define segments for players to color.',
+        skip: 'Skip',
     },
     zh: {
         passingRateTip: '考试模式下，若全员正确率达到此阈值则进入下一条，否则重记当前条。',
@@ -200,7 +201,7 @@ const messages = {
         isJudge: '评判官',
         wordSlicerYourCommitMustBeConsecutive: '多人游戏时, 提交内容需连续',
         minPlayersRequired: '至少需要1名玩家才能开始游戏',
-        wordSlicerEndDesc: '所有人连续提交空答案或所有字都被标记, 将结算游戏',
+        wordSlicerEndDesc: '所有人连续跳过或所有字都被标记, 将结算游戏',
         eachCharScore: '每个字为 {score} 分，正确加分，错误扣分',
         correctChar: '正确字: ',
         wrongChar: '错误字: ',
@@ -218,6 +219,7 @@ const messages = {
         maxScore: '最高可获取分数',
         hiddenPercent: '隐藏比例',
         modifyWordSlicerContentTip: '在文字中插入空格，用于定义玩家涂色的分段',
+        skip: '跳过',
     },
 };
 
