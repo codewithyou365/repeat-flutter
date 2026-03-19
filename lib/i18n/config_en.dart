@@ -301,6 +301,7 @@ class ConfigEn extends Config {
     put(I18nKey.btnShare, "Share");
     put(I18nKey.scan, "Scan");
     put(I18nKey.game, "Game");
+    put(I18nKey.tts, "TTS");
     put(I18nKey.ttsSettings, "TTS Settings");
     put(I18nKey.expand, "Expand");
     put(I18nKey.ttsEngine, "TTS Engine");
@@ -348,7 +349,7 @@ class ConfigEn extends Config {
     put(I18nKey.font, "Font");
     put(I18nKey.fontNotExist, "Font is not exist");
     put(I18nKey.importFontFail, "Import font fail");
-    put(I18nKey.editContent, "Edit Content");
+    put(I18nKey.content, "Content");
     put(I18nKey.theContentHasBeenDeleted, "The content (%s) has been deleted");
     put(I18nKey.closeEyes, "Close-Eyes");
     put(I18nKey.closeEyesMode, "Close-Eyes Mode: ");

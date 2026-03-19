@@ -534,18 +534,18 @@ class RepeatPage extends StatelessWidget {
     helper.stopMedia(false);
     String text = map[type.acronym] ?? '';
     var keys = [
-      I18nKey.adjustFont.tr,
-      I18nKey.editContent.tr,
+      I18nKey.font.tr,
+      I18nKey.content.tr,
       I18nKey.expand.tr,
     ];
     if (type == QaType.tip) {
-      keys.add(I18nKey.ttsSettings.tr);
+      keys.add(I18nKey.tts.tr);
     }
     int? index = await Select.showSheet(title: I18nKey.editWhat.trArgs([type.i18n.tr]), keys: keys);
     if (index == null) {
       return;
     }
-    if (keys[index] == I18nKey.adjustFont.tr) {
+    if (keys[index] == I18nKey.font.tr) {
       final verse = helper.getCurrVerse();
       if (verse == null) {
         return;
@@ -559,7 +559,7 @@ class RepeatPage extends StatelessWidget {
         fontPrefix: type.acronym,
         bookMap: bookMap,
       );
-    } else if (keys[index] == I18nKey.editContent.tr) {
+    } else if (keys[index] == I18nKey.content.tr) {
       await Nav.editor.push(
         arguments: EditorArgs(
           title: type.i18n.tr,
@@ -580,7 +580,7 @@ class RepeatPage extends StatelessWidget {
       }
       await logic.expandSheet.open(text, verse, map);
       logic.update([RepeatLogic.id]);
-    } else if (keys[index] == I18nKey.ttsSettings.tr) {
+    } else if (keys[index] == I18nKey.tts.tr) {
       logic.ttsHelper.open();
     }
     helper.stopMedia(true);
