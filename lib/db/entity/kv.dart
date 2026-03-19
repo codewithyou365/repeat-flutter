@@ -25,6 +25,7 @@ enum K {
   expandServiceUrl,
   adminId,
   adminEnable,
+  webviewHandlePos,
 }
 
 @Entity(primaryKeys: ['k'])

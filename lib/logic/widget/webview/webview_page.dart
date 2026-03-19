@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/kv.dart';
+
+// 假设你的数据库相关引用如下，请根据实际路径调整
+// import 'package:repeat_flutter/logic/db/db.dart';
+// import 'package:repeat_flutter/logic/db/entity/kv.dart';
 import 'webview_logic.dart';
 
 class WebviewPage {
   static const double _topBarHeight = 50.0;
   static const double _progressHeight = 4.0;
-  static const double _handleHeight = 30.0; // 增加了拉钩的触控高度，更容易点
+  static const double _handleHeight = 30.0;
 
   static Widget build(WebviewLogic logic, BuildContext context) {
     final state = logic.state;
     final args = state.args;
 
-    if (args == null) {
-      return const SizedBox.shrink();
-    }
+    if (args == null) return const SizedBox.shrink();
 
     final Size screenSize = MediaQuery.of(context).size;
     final double topPadding = MediaQuery.of(context).padding.top;
@@ -22,21 +26,16 @@ class WebviewPage {
     final double inset = MediaQuery.of(context).viewInsets.bottom;
     final double screenWidth = screenSize.width;
     final theme = Theme.of(context);
-
-    // 组合 TopBar 和 ProgressBar 的总高度
     final double floatingBarHeight = _topBarHeight + _progressHeight;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      // 使用 Stack 布局，所有组件像图层一样堆叠
       body: Stack(
         children: [
-          // 1. 底层：WebView (铺满剩余空间，一点不浪费)
+          // 1. WebView 层
           Positioned(
             top: topPadding,
-            // 从状态栏下方开始
             bottom: inset,
-            // 避开键盘
             left: (screenWidth > screenSize.height) ? leftPadding : 0,
             right: 0,
             child: InAppWebView(
@@ -52,9 +51,7 @@ class WebviewPage {
                 state.currentUrl.value = url.toString();
                 await logic.updateNavigationState();
               },
-              onProgressChanged: (controller, progress) {
-                state.progress.value = progress / 100;
-              },
+              onProgressChanged: (controller, progress) => state.progress.value = progress / 100,
               onReceivedServerTrustAuthRequest: logic.handleSslChallenge,
               onReceivedError: (controller, request, error) {
                 state.isLoading.value = false;
@@ -63,7 +60,7 @@ class WebviewPage {
             ),
           ),
 
-          // 2. 遮罩层：防止 TopBar 隐藏时，网页内容透出状态栏
+          // 2. 状态栏遮罩
           Positioned(
             top: 0,
             left: 0,
@@ -72,13 +69,12 @@ class WebviewPage {
             child: Container(color: theme.scaffoldBackgroundColor),
           ),
 
-          // 3. 悬浮 TopBar + ProgressBar (带滑动动画)
+          // 3. 悬浮 TopBar
           Obx(() {
             final isVisible = state.isTopBarVisible.value;
             return AnimatedPositioned(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
-              // 如果显示，贴着状态栏；如果隐藏，向上缩回屏幕外
               top: isVisible ? topPadding : topPadding - floatingBarHeight,
               left: 0,
               right: 0,
@@ -92,7 +88,7 @@ class WebviewPage {
                     boxShadow: [
                       if (isVisible)
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -114,26 +110,19 @@ class WebviewPage {
             );
           }),
 
-          // 4. 悬浮 & 可拖拽的拉钩
+          // 4. 悬浮拉钩 (Handle)
           Obx(() {
             final isVisible = state.isTopBarVisible.value;
             return AnimatedPositioned(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
-              // Y 轴跟随 TopBar：显示时在 TopBar 下方，隐藏时贴着状态栏
               top: isVisible ? topPadding + floatingBarHeight : topPadding,
               left: 0,
               right: 0,
               height: _handleHeight,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // 使用我们自定义的局部状态组件，处理 X 轴的独立拖拽
-                  _DraggableHandle(
-                    screenWidth: screenWidth,
-                    onTap: () => state.isTopBarVisible.value = !isVisible,
-                  ),
-                ],
+              child: _DraggableHandle(
+                screenWidth: screenWidth,
+                onTap: () => state.isTopBarVisible.value = !isVisible,
               ),
             );
           }),
@@ -141,8 +130,6 @@ class WebviewPage {
       ),
     );
   }
-
-  // --- 辅助构建方法 ---
 
   static Widget _buildProgressBar(
     WebviewLogic logic,
@@ -157,7 +144,7 @@ class WebviewPage {
       child: state.isLoading.value
           ? LinearProgressIndicator(
               value: state.progress.value,
-              backgroundColor: theme.dividerColor.withOpacity(0.1),
+              backgroundColor: theme.dividerColor.withValues(alpha: 0.1),
               valueColor: AlwaysStoppedAnimation<Color>(theme.primaryColor),
             )
           : SizedBox(height: _progressHeight, width: screenWidth),
@@ -209,18 +196,13 @@ class WebviewPage {
               onPressed: state.canGoForward.value ? logic.goForward : null,
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: logic.reload,
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: logic.reload),
         ],
       ),
     );
   }
 }
 
-/// 局部的可拖拽拉钩组件
-/// 单独提取出来是为了用 StatefulWidget 维护拉钩的 X 轴位置，不污染原有的 Logic/State
 class _DraggableHandle extends StatefulWidget {
   final double screenWidth;
   final VoidCallback onTap;
@@ -232,58 +214,83 @@ class _DraggableHandle extends StatefulWidget {
 }
 
 class _DraggableHandleState extends State<_DraggableHandle> {
-  late double _xPos;
-  final double _handleWidth = 60.0; // 拉钩触控区域的总宽度
+  double? _xPos;
+  final double _handleWidth = 60.0;
 
   @override
   void initState() {
     super.initState();
-    // 初始居中显示
-    _xPos = (widget.screenWidth - _handleWidth) / 2;
+    _loadPosition();
+  }
+
+  /// 从数据库加载位置
+  Future<void> _loadPosition() async {
+    try {
+      String? savedPos = await Db().db.kvDao.getStr(K.webviewHandlePos);
+
+      if (savedPos != null) {
+        double parsed = double.tryParse(savedPos) ?? 0;
+        // 简单校验，防止屏幕旋转或变更后位置越界
+        if (parsed > widget.screenWidth - _handleWidth) {
+          parsed = widget.screenWidth - _handleWidth;
+        }
+        setState(() => _xPos = parsed);
+      } else {
+        // 没存过则居中
+        setState(() => _xPos = (widget.screenWidth - _handleWidth) / 2);
+      }
+    } catch (e) {
+      setState(() => _xPos = (widget.screenWidth - _handleWidth) / 2);
+    }
+  }
+
+  /// 保存位置到数据库
+  Future<void> _savePosition() async {
+    if (_xPos == null) return;
+    try {
+      await Db().db.kvDao.insertOrReplace(Kv(K.webviewHandlePos, _xPos.toString()));
+    } catch (e) {
+      debugPrint("Save position failed: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      left: _xPos,
-      top: 0,
-      bottom: 0,
-      width: _handleWidth,
-      child: GestureDetector(
-        // 点击切换 TopBar 状态
-        onTap: widget.onTap,
-        // 水平拖拽更新 X 轴坐标
-        onPanUpdate: (details) {
-          setState(() {
-            _xPos += details.delta.dx;
-            // 限制拖拽范围，防止拉钩飞出屏幕外
-            if (_xPos < 0) _xPos = 0;
-            if (_xPos > widget.screenWidth - _handleWidth) {
-              _xPos = widget.screenWidth - _handleWidth;
-            }
-          });
-        },
-        child: Container(
-          color: Colors.transparent, // 设置为透明确保能接收触控事件
-          alignment: Alignment.center,
-          child: Container(
-            width: 40, // 视觉上的拉钩宽度
-            height: 6, // 视觉上的拉钩厚度
-            decoration: BoxDecoration(
-              // 半透明背景，带一点阴影，让悬浮感更强
-              color: Theme.of(context).dividerColor.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(3),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 2,
-                  offset: const Offset(0, 1),
+    if (_xPos == null) return const SizedBox.shrink();
+
+    return Stack(
+      children: [
+        Positioned(
+          left: _xPos,
+          top: 0,
+          bottom: 0,
+          width: _handleWidth,
+          child: GestureDetector(
+            onTap: widget.onTap,
+            onPanUpdate: (details) {
+              setState(() {
+                _xPos = (_xPos! + details.delta.dx).clamp(0.0, widget.screenWidth - _handleWidth);
+              });
+            },
+            onPanEnd: (_) => _savePosition(),
+            child: Container(
+              color: Colors.transparent,
+              alignment: Alignment.center,
+              child: Container(
+                width: 40,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(3),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 2, offset: const Offset(0, 1)),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }
