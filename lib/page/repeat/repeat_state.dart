@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/widget/webview/webview_args.dart';
 
 import 'logic/helper.dart';
 
@@ -9,8 +10,12 @@ class RepeatState {
   bool needUpdateSystemUiMode = true;
 
   var enableShowRecallButtons = false;
+  WebviewArgs? webviewArgs;
+  var fullScreenMode = Rx<RepeatFullScreenMode>(RepeatFullScreenMode.none);
+
   var closeEyesDirect = 0;
-  var enableCloseEyesMode = Rx<CloseEyesModeEnum>(CloseEyesModeEnum.none);
+  var enableCloseEyesMode = Rx<CloseEyesModeEnum>(CloseEyesModeEnum.opacity);
+
   Helper helper = Helper();
   late double bodyHeight;
   var showBottomBar = true;

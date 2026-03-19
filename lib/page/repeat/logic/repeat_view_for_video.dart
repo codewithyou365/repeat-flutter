@@ -188,7 +188,7 @@ class RepeatViewForVideo extends RepeatView {
           ),
         ),
         Obx(() {
-          return helper.closeEyesPanel();
+          return helper.fullScreenPanel();
         }),
       ],
     );
@@ -241,7 +241,7 @@ class RepeatViewForVideo extends RepeatView {
               if (!videoBoardHelper.showEdit) helper.bottomBar(width: helper.screenWidth),
             ],
           ),
-          helper.closeEyesPanel(),
+          helper.fullScreenPanel(),
         ],
       );
     });

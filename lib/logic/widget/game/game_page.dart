@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/widget/game/game_state.dart';
+import 'package:repeat_flutter/logic/widget/webview/webview_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
@@ -12,9 +12,9 @@ import 'game_logic.dart';
 class GamePage<T extends GetxController> {
   Key userIndexKey = GlobalKey();
 
-  Future<void> open(GameLogic<T> logic) async {
+  Future<WebviewArgs?> open(GameLogic<T> logic) async {
     var state = logic.state;
-    return Sheet.showBottomSheet(
+    return await Sheet.showBottomSheet<WebviewArgs?>(
       Get.context!,
       head: SheetHead(
         height: RowWidget.rowHeight + RowWidget.dividerHeight,

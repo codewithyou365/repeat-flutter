@@ -18,6 +18,8 @@ import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/expand/expand_sheet.dart';
 import 'package:repeat_flutter/logic/widget/game/game_logic.dart';
 import 'package:repeat_flutter/logic/widget/adjust_font.dart';
+import 'package:repeat_flutter/logic/widget/webview/webview_args.dart';
+import 'package:repeat_flutter/logic/widget/webview/webview_logic.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/logic/widget/book_editor/book_editor_logic.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
@@ -41,6 +43,7 @@ class RepeatLogic extends GetxController {
   final Map<String, RepeatView> showTypeToRepeatView = {};
   final TtsHelper ttsHelper = TtsHelper();
   final ExpandSheet expandSheet = ExpandSheet();
+  final WebviewLogic webviewLogic = WebviewLogic();
 
   RepeatLogic() {
     showTypeToRepeatView[RepeatViewEnum.audio.name] = RepeatViewForAudio();
@@ -128,7 +131,7 @@ class RepeatLogic extends GetxController {
     await bookEditor.switchWeb(false);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     state.helper.practiceController.dispose();
-    if (state.enableCloseEyesMode.value != CloseEyesModeEnum.none) {
+    if (state.fullScreenMode.value == RepeatFullScreenMode.closeEyes) {
       HapticFeedback.heavyImpact();
     }
   }
@@ -139,8 +142,13 @@ class RepeatLogic extends GetxController {
     update([RepeatLogic.id]);
   }
 
-  void openCloseEyesMode() async {
-    state.enableCloseEyesMode.value = CloseEyesModeEnum.opacity;
+  void openGameMode(WebviewArgs args) {
+    state.fullScreenMode.value = RepeatFullScreenMode.game;
+    state.webviewArgs = args;
+  }
+
+  void openCloseEyesMode() {
+    state.fullScreenMode.value = RepeatFullScreenMode.closeEyes;
   }
 
   void switchShowMode() {

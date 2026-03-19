@@ -55,7 +55,7 @@ class Helper {
   late Widget? Function() practiceArea;
   late Widget? Function() tipArea;
   late Widget? Function(QaType type) text;
-  late Widget Function() closeEyesPanel;
+  late Widget Function() fullScreenPanel;
 
   RxBool focusMode = true.obs;
   Rx<ShowMode> showMode = ShowMode.closedBook.obs;

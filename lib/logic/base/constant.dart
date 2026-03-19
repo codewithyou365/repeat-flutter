@@ -72,8 +72,7 @@ enum RepeatViewEnum {
 enum CloseEyesModeEnum {
   transparent(null, Color.fromRGBO(0, 0, 0, 0)),
   translucence(null, Color.fromRGBO(0, 0, 255, 0.1)),
-  opacity(Color.fromRGBO(255, 255, 255, 0.3), Colors.black),
-  none(null, null);
+  opacity(Color.fromRGBO(255, 255, 255, 0.3), Colors.black);
 
   final Color? foregroundColor;
   final Color? backgroundColor;
@@ -82,6 +81,12 @@ enum CloseEyesModeEnum {
     this.foregroundColor,
     this.backgroundColor,
   );
+}
+
+enum RepeatFullScreenMode {
+  game,
+  closeEyes,
+  none,
 }
 
 class DownloadConstant {

@@ -12,6 +12,7 @@ import 'package:repeat_flutter/logic/classroom_help.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/close_eyes/close_eyes_panel.dart';
 import 'package:repeat_flutter/logic/widget/text_template.dart';
+import 'package:repeat_flutter/logic/widget/webview/webview_args.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -64,7 +65,7 @@ class RepeatPage extends StatelessWidget {
     state.helper.text = (QaType type) => text(logic, type);
     state.helper.practiceArea = () => practiceArea(logic);
     state.helper.tipArea = () => tipArea(logic);
-    state.helper.closeEyesPanel = () => closeEyesPanel(logic);
+    state.helper.fullScreenPanel = () => fullScreenPanel(logic);
 
     if (state.lastLandscape == null || state.lastLandscape != landscape) {
       state.lastLandscape = landscape;
@@ -200,8 +201,11 @@ class RepeatPage extends StatelessWidget {
                 PopupMenuItem<String>(
                   onTap: () async {
                     state.helper.stopMedia(false);
-                    await logic.gameLogic.open();
+                    WebviewArgs? next = await logic.gameLogic.open();
                     state.helper.stopMedia(true);
+                    if (next != null) {
+                      logic.openGameMode(next);
+                    }
                   },
                   child: Obx(() {
                     return Row(
@@ -606,10 +610,24 @@ class RepeatPage extends StatelessWidget {
     return null;
   }
 
-  Widget closeEyesPanel(RepeatLogic logic) {
+  Widget fullScreenPanel(RepeatLogic logic) {
     final helper = logic.state.helper;
-    if (logic.state.enableCloseEyesMode.value == CloseEyesModeEnum.none) {
+    if (logic.state.fullScreenMode.value == RepeatFullScreenMode.none) {
       return SizedBox.shrink();
+    } else if (logic.state.fullScreenMode.value == RepeatFullScreenMode.game) {
+      var webviewArgs = logic.state.webviewArgs;
+      if (webviewArgs == null) {
+        return SizedBox.shrink();
+      }
+      webviewArgs.height = helper.screenHeight;
+      webviewArgs.width = helper.screenWidth;
+      return logic.webviewLogic.build(
+        webviewArgs,
+        () {
+          logic.state.fullScreenMode.value = RepeatFullScreenMode.none;
+        },
+        Get.context!,
+      );
     } else {
       return CloseEyesPanel.build(
         key: closeEyeKey,
@@ -634,7 +652,7 @@ class RepeatPage extends StatelessWidget {
           HapticFeedback.lightImpact();
         },
         close: () {
-          logic.state.enableCloseEyesMode.value = CloseEyesModeEnum.none;
+          logic.state.fullScreenMode.value = RepeatFullScreenMode.none;
         },
         help: () {
           MsgBox.tips(desc: I18nKey.closeEyesTips.tr);

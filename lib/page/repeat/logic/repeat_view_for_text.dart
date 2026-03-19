@@ -69,7 +69,7 @@ class RepeatViewForText extends RepeatView {
           ],
         ),
         Obx(() {
-          return helper.closeEyesPanel();
+          return helper.fullScreenPanel();
         }),
       ],
     );

@@ -17,8 +17,7 @@ import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/web_server.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/widget/user_manager.dart';
-import 'package:repeat_flutter/nav.dart';
-import 'package:repeat_flutter/page/webview/webview_args.dart';
+import 'package:repeat_flutter/logic/widget/webview/webview_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -80,7 +79,7 @@ class GameLogic<T extends GetxController> {
     return true;
   }
 
-  Future<void> open() async {
+  Future<WebviewArgs?> open() async {
     sub.off();
     subAllowRegisterNumber.off();
     state.online.value = getOnline();
@@ -104,10 +103,13 @@ class GameLogic<T extends GetxController> {
       }
     });
     await refreshUsers();
-    return page.open(this).then((_) {
+    WebviewArgs? ret;
+    await page.open(this).then((r) {
       sub.off();
       subAllowRegisterNumber.off();
+      ret = r;
     });
+    return ret;
   }
 
   Future<Game?> getGame() async {
@@ -208,9 +210,9 @@ class GameLogic<T extends GetxController> {
     }
   }
 
-  Future<void> openWebview() async {
-    Nav.webview.push(
-      arguments: WebviewArgs(
+  void openWebview() async {
+    Get.back(
+      result: WebviewArgs(
         initialUrl: "https://127.0.0.1:${port.value}",
         pageTitle: GameState.game?.name ?? '',
       ),
