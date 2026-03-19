@@ -173,24 +173,27 @@ class RepeatFlowForBrowse extends RepeatFlow {
     }
   }
 
-  Future<void> next() async {
+  @override
+  void refresh() {
     helper.tip = TipLevel.none;
     step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
+    helper.practiceController.clear();
+  }
+
+  Future<void> next() async {
     if (index < scheduled.length - 1) {
       index++;
     }
-    helper.practiceController.clear();
+    refresh();
     await gameHelper.tryRefreshGame(currVerse!);
     await timeStatsLogic.updateTimeStats();
   }
 
   Future<void> prev() async {
-    helper.tip = TipLevel.none;
-    step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
     if (index > 0) {
       index--;
     }
-    helper.practiceController.clear();
+    refresh();
     await gameHelper.tryRefreshGame(currVerse!);
     await timeStatsLogic.updateTimeStats();
   }

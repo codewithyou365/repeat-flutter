@@ -30,6 +30,8 @@ abstract class RepeatFlow {
     required Helper helper,
   });
 
+  void refresh();
+
   void onClose();
 
   void onNext();

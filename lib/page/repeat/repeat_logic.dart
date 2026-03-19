@@ -164,6 +164,7 @@ class RepeatLogic extends GetxController {
         state.helper.showMode.value = ShowMode.closedBook;
         break;
     }
+    repeatFlow?.refresh();
     state.helper.tryToPlayMedia = false;
     update([RepeatLogic.id]);
   }

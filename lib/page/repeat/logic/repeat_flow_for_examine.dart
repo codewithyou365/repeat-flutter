@@ -193,12 +193,19 @@ class RepeatFlowForExamine extends RepeatFlow {
   }
 
   @override
+  void refresh() {
+    helper.tip = TipLevel.none;
+    step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
+    helper.practiceController.clear();
+  }
+
+  @override
   Future<void> jump({required int progress, required int nextDayValue}) async {
     if (currVerse == null) {
       return;
     }
     await Db().db.scheduleDao.jump(currVerse!, progress, nextDayValue);
-    next();
+    await next();
   }
 
   void show() {
@@ -206,7 +213,6 @@ class RepeatFlowForExamine extends RepeatFlow {
   }
 
   Future<void> right() async {
-    step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
     await Db().db.scheduleDao.right(currVerse!);
     await next();
   }
@@ -216,21 +222,18 @@ class RepeatFlowForExamine extends RepeatFlow {
     if (curr.progress >= ScheduleDao.scheduleConfig.maxRepeatTime) {
       scheduled.removeAt(0);
     }
-    helper.tip = TipLevel.none;
     if (scheduled.isNotEmpty) {
       scheduled.sort(schedulesCurrentSort);
     }
-    helper.practiceController.clear();
+    refresh();
     await gameHelper.tryRefreshGame(curr);
     await timeStatsLogic.updateTimeStats();
   }
 
   Future<void> error() async {
-    step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
-    helper.tip = TipLevel.none;
     await Db().db.scheduleDao.error(currVerse!);
     scheduled.sort(schedulesCurrentSort);
-    helper.practiceController.clear();
+    refresh();
     await gameHelper.tryRefreshGame(currVerse!);
   }
 
