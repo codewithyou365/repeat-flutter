@@ -407,19 +407,27 @@ const Game = {
     },
     getBlankContent: async function (args) {
         try {
-            const verse = await Util.getVerse();
-            let savedContent = verse[Game.key];
-            if (!savedContent || savedContent === '') {
-                savedContent = verse['a'] || '';
+            const userId = args.userId;
+            const adminId = Util.adminId();
+            const adminEnable = Util.adminEnable();
+            if (userId === adminId && adminEnable) {
+                const verse = await Util.getVerse();
+                const answer = verse['a'];
+                let savedContent = verse[Game.key];
+                if (!savedContent || savedContent === '') {
+                    savedContent = answer || '';
+                }
+                return JSON.stringify({
+                    status: 200,
+                    data: {
+                        blank: savedContent,
+                        answer: answer,
+                    },
+                });
+            } else {
+                return JSON.stringify({status: 500, error: "not admin"});
             }
 
-            return JSON.stringify({
-                status: 200,
-                data: {
-                    blank: savedContent,
-                    answer: this.answer,
-                },
-            });
         } catch (e) {
             return JSON.stringify({
                 status: 500,
