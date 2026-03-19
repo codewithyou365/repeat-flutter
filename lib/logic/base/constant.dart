@@ -84,7 +84,7 @@ enum CloseEyesModeEnum {
 }
 
 enum RepeatFullScreenMode {
-  game,
+  gameWebView,
   closeEyes,
   none,
 }

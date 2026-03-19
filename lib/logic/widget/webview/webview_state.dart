@@ -7,6 +7,8 @@ class WebviewState {
   // 加载进度
   final RxDouble progress = 0.0.obs;
 
+  RxBool isTopBarVisible = false.obs;
+
   // 是否正在加载
   final RxBool isLoading = true.obs;
 

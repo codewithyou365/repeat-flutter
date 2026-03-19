@@ -142,8 +142,17 @@ class RepeatLogic extends GetxController {
     update([RepeatLogic.id]);
   }
 
-  void openGameMode(WebviewArgs args) {
-    state.fullScreenMode.value = RepeatFullScreenMode.game;
+  Future<void> openGame() async {
+    state.helper.stopMedia(false);
+    WebviewArgs? next = await gameLogic.open();
+    state.helper.stopMedia(true);
+    if (next != null) {
+      openGameWebView(next);
+    }
+  }
+
+  void openGameWebView(WebviewArgs args) {
+    state.fullScreenMode.value = RepeatFullScreenMode.gameWebView;
     state.webviewArgs = args;
   }
 

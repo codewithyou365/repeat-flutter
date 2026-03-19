@@ -12,7 +12,6 @@ import 'package:repeat_flutter/logic/classroom_help.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/close_eyes/close_eyes_panel.dart';
 import 'package:repeat_flutter/logic/widget/text_template.dart';
-import 'package:repeat_flutter/logic/widget/webview/webview_args.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -199,14 +198,7 @@ class RepeatPage extends StatelessWidget {
               ),
               if (state.gameLogicInitSuccess)
                 PopupMenuItem<String>(
-                  onTap: () async {
-                    state.helper.stopMedia(false);
-                    WebviewArgs? next = await logic.gameLogic.open();
-                    state.helper.stopMedia(true);
-                    if (next != null) {
-                      logic.openGameMode(next);
-                    }
-                  },
+                  onTap: logic.openGame,
                   child: Obx(() {
                     return Row(
                       mainAxisSize: MainAxisSize.min,
@@ -614,17 +606,16 @@ class RepeatPage extends StatelessWidget {
     final helper = logic.state.helper;
     if (logic.state.fullScreenMode.value == RepeatFullScreenMode.none) {
       return SizedBox.shrink();
-    } else if (logic.state.fullScreenMode.value == RepeatFullScreenMode.game) {
+    } else if (logic.state.fullScreenMode.value == RepeatFullScreenMode.gameWebView) {
       var webviewArgs = logic.state.webviewArgs;
       if (webviewArgs == null) {
         return SizedBox.shrink();
       }
-      webviewArgs.height = helper.screenHeight;
-      webviewArgs.width = helper.screenWidth;
       return logic.webviewLogic.build(
         webviewArgs,
-        () {
+        () async {
           logic.state.fullScreenMode.value = RepeatFullScreenMode.none;
+          await logic.openGame();
         },
         Get.context!,
       );
