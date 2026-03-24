@@ -1,17 +1,68 @@
+/**
+ * 外部注入的方法声明
+ */
+declare function sendMessage(method: string, args: string): any;
+
+/**
+ * 接口定义
+ */
+interface GameConfig {
+    autoBlank: boolean;
+    blankContentPercent: number;
+    ignorePunctuation: boolean;
+    ignoreCase?: boolean;
+    maxScore: number;
+    shouldRememberIfPassingRate?: number;
+}
+
+interface Verse {
+    a: string; // 原文/答案
+    [key: string]: any; // 允许动态键值，如 blankItRightText
+}
+
+interface UserStatus {
+    step: StepEnum;
+    submit: string;
+    name: string;
+    score: number;
+    nexted: boolean;
+}
+
+interface LabelSet {
+    left: string;
+    right: string;
+    middle: string;
+}
+
+/**
+ * 枚举定义
+ */
+enum GameEnum {
+    init = 'init',
+    started = 'started',
+    finished = 'finished'
+}
+
+enum StepEnum {
+    blanking = 'blanking',
+    finished = 'finished'
+}
+
+/**
+ * 工具函数
+ */
 const Util = {
-    updateCurrVerseContent: async function (type, content) {
+    updateCurrVerseContent: async function (type: string, content: string): Promise<string> {
         try {
-            const payload = {
-                type: type,
-                content: content
-            };
+            const payload = {type, content};
             return await sendMessage('updateCurrVerseContent', JSON.stringify(payload));
         } catch (e) {
             console.error("Update Verse Content failed:", e);
             return 'error';
         }
     },
-    adminId: function () {
+
+    adminId: function (): number | string {
         try {
             let userId = sendMessage('adminId', '{}');
             return parseInt(userId, 10);
@@ -19,16 +70,18 @@ const Util = {
             return '';
         }
     },
-    adminEnable: function () {
+
+    adminEnable: function (): boolean {
         try {
             let res = sendMessage('adminEnable', '{}');
-            return res === 'true';
+            return res === 'true' || res === true;
         } catch (e) {
             return false;
         }
     },
-    getConfig: async function () {
-        const defaultValue = {
+
+    getConfig: async function (): Promise<GameConfig> {
+        const defaultValue: GameConfig = {
             autoBlank: true,
             blankContentPercent: 0.5,
             ignorePunctuation: true,
@@ -41,55 +94,49 @@ const Util = {
             if (data == null || data === '') {
                 return defaultValue;
             }
-            return JSON.parse(data);
+            return typeof data === 'string' ? JSON.parse(data) : data;
         } catch (e) {
             return defaultValue;
         }
     },
 
-    setConfig: async function (key, value) {
+    setConfig: async function (key: keyof GameConfig, value: any): Promise<void> {
         let data = await this.getConfig();
-        data[key] = value;
+        (data as any)[key] = value;
         await sendMessage('setData', JSON.stringify(data));
     },
 
-    getVerse: async function () {
+    getVerse: async function (): Promise<Verse> {
         try {
             let data = await sendMessage('getVerse', '{}');
-            if (data == null || data === '') {
-                return {};
-            }
-            let ret = JSON.parse(data);
-            return ret;
+            if (data == null || data === '') return {} as Verse;
+            return typeof data === 'string' ? JSON.parse(data) : data;
         } catch (e) {
-            return {};
+            return {} as Verse;
         }
     },
-    getLabel: function () {
+
+    getLabel: function (): LabelSet | Record<string, never> {
         try {
             let left = sendMessage('uiLabel', JSON.stringify({'name': 'left'}));
             let right = sendMessage('uiLabel', JSON.stringify({'name': 'right'}));
             let middle = sendMessage('uiLabel', JSON.stringify({'name': 'middle'}));
-            let ret = {
-                'left': left,
-                'right': right,
-                'middle': middle,
-            };
-            return ret;
+            return {left, right, middle};
         } catch (e) {
             return {};
         }
     },
-    uiTap: function (event) {
+
+    uiTap: function (event: string): string {
         try {
             return sendMessage('uiTap', JSON.stringify({'event': event}));
         } catch (e) {
             return '';
         }
     },
-    broadcast: async function (path, data) {
+
+    broadcast: async function (path: string, data: any): Promise<any> {
         try {
-            // 确保 data 是字符串格式，符合 Dart 侧 jsonDecode 的预期
             const payload = {
                 path: path,
                 data: typeof data === 'string' ? data : JSON.stringify(data)
@@ -100,7 +147,8 @@ const Util = {
             return 'error';
         }
     },
-    getUserName: async function (userId) {
+
+    getUserName: async function (userId: string | number): Promise<string> {
         try {
             return await sendMessage('getUserName', JSON.stringify({'userId': userId}));
         } catch (e) {
@@ -109,13 +157,9 @@ const Util = {
         }
     },
 
-    gameScoreInc: async function (userId, score, remark = '') {
+    gameScoreInc: async function (userId: string | number, score: number, remark: string = ''): Promise<any> {
         try {
-            const payload = {
-                userId: userId,
-                score: score,
-                remark: remark
-            };
+            const payload = {userId, score, remark};
             return await sendMessage('gameScoreInc', JSON.stringify(payload));
         } catch (e) {
             console.error("gameScoreInc failed:", e);
@@ -123,51 +167,46 @@ const Util = {
         }
     },
 
-    repeatFlow: function () {
+    repeatFlow: function (): string {
         try {
             return sendMessage('repeatFlow', '{}');
         } catch (e) {
             return 'examine';
         }
     },
-}
-
-const GameEnum = {
-    init: 'init',
-    started: 'started',
-};
-const StepEnum = {
-    blanking: 'blanking',
-    finished: 'finished',
 };
 
+/**
+ * 游戏主逻辑
+ */
 const Game = {
     gameRefreshPath: 'gameRefresh',
     key: 'blankItRightText',
     punctuationRegex: /[\p{P}\p{S}]/gu,
-    userIdToUserStatus: {},
-    userIds: [],
-    gameStatus: GameEnum.init,
-    // 内部状态
-    _config: null,             // 用于存储缓存的配置对象
+    userIdToUserStatus: {} as Record<string, UserStatus>,
+    userIds: [] as string[],
+    gameStatus: GameEnum.init as GameEnum,
+
+    _config: null as GameConfig | null,
     answer: '',
-    blankContent: null,        // 存储当前挖空后的文本结果
-    getStatus: function (args) {
+    blankContent: '' as string,
+
+    getStatus: function (_: { userId: string }) {
         try {
-            const userId = args.userId;
             const broadcastData = this.getBroadcastData();
             return JSON.stringify({
                 status: 200,
                 data: broadcastData
             });
-        } catch (e) {
+        } catch (e: any) {
             return JSON.stringify({
                 status: 500,
                 error: e.toString()
             });
         }
     },
-    join: async function (args) {
+
+    join: async function (args: { userId: string }) {
         try {
             const userId = args.userId;
             if (!userId) throw new Error("Missing userId");
@@ -185,11 +224,12 @@ const Game = {
             }
             await Util.broadcast(this.gameRefreshPath, this.getBroadcastData());
             return JSON.stringify({status: 200, data: "User joined"});
-        } catch (e) {
+        } catch (e: any) {
             return JSON.stringify({status: 500, error: e.toString()});
         }
     },
-    leave: async function (args) {
+
+    leave: async function (args: { userId: string }) {
         try {
             const userId = args.userId;
             if (!userId) throw new Error("Missing userId");
@@ -202,33 +242,33 @@ const Game = {
             } else {
                 return JSON.stringify({status: 404, error: "User not found"});
             }
-        } catch (e) {
+        } catch (e: any) {
             return JSON.stringify({status: 500, error: e.toString()});
         }
     },
-    start: async function (args) {
+
+    start: async function (_: any) {
         this.gameStatus = GameEnum.started;
         await this.clear();
-
         return JSON.stringify({status: 200, data: "Game started"});
     },
-    submit: async function (args) {
+
+    submit: async function (args: { userId: string, data: { content: string } }) {
         const userId = args.userId;
         const userTyped = args.data.content;
         const verse = await Util.getVerse();
         const config = await this.getConfigWithCache();
         const passingRate = config.shouldRememberIfPassingRate || 0.8;
 
-        // 计算分数
-        let score = this.getScore(userTyped, verse.a, this.blankContent, config.maxScore, config.ignoreCase);
+        let score = this.getScore(userTyped, verse.a, this.blankContent, config.maxScore, config.ignoreCase ?? true);
         if ((score / config.maxScore) < passingRate) {
             score = 0;
         }
-        // 更新用户状态
+
         if (this.userIdToUserStatus[userId]) {
             this.userIdToUserStatus[userId].score = score;
             this.userIdToUserStatus[userId].submit = userTyped;
-            this.userIdToUserStatus[userId].step = StepEnum.finished; // 标记已提交
+            this.userIdToUserStatus[userId].step = StepEnum.finished;
         }
 
         try {
@@ -239,28 +279,34 @@ const Game = {
         await Util.broadcast(this.gameRefreshPath, this.getBroadcastData());
         return JSON.stringify({status: 200});
     },
-    next: async function (args) {
+
+    next: async function (args: { userId: string }) {
         try {
             const userId = args.userId;
-
             const player = this.userIdToUserStatus[userId];
+            if (!player) return JSON.stringify({status: 404, error: "User not found"});
+
             if (player.step === StepEnum.finished) {
                 player.nexted = true;
             } else {
-                return JSON.stringify({status: 400, error: "You are not finish"});
+                return JSON.stringify({status: 400, error: "You are not finished"});
             }
-            const players = Object.values(this.userIdToUserStatus);
+
+            // 【关键修改点】: 显式声明 players 是 UserStatus 数组
+            const players: UserStatus[] = Object.values(this.userIdToUserStatus);
+
             if (players.length === 0) return JSON.stringify({status: 400, error: "No players"});
 
-            const allFinished = players.every(u => u.step === StepEnum.finished);
-            const allNeedToNext = players.every(u => u.nexted);
+            const allFinished = players.every((u: UserStatus) => u.step === StepEnum.finished);
+            const allNeedToNext = players.every((u: UserStatus) => u.nexted);
 
             if (allFinished && allNeedToNext) {
                 const config = await this.getConfigWithCache();
                 const maxScore = config.maxScore || 10;
                 const passingRate = config.shouldRememberIfPassingRate || 0.8;
+
                 if (Util.repeatFlow() === 'examine') {
-                    const isAllPassed = players.every(u => (u.score / maxScore) >= passingRate);
+                    const isAllPassed = players.every((u: UserStatus) => (u.score / maxScore) >= passingRate);
                     if (isAllPassed) {
                         Util.uiTap("tapNext");
                     } else {
@@ -274,11 +320,11 @@ const Game = {
                 await Util.broadcast(this.gameRefreshPath, this.getBroadcastData());
                 return JSON.stringify({status: 202, data: "waiting_for_others"});
             }
-        } catch (e) {
+        } catch (e: any) {
             return JSON.stringify({status: 500, error: e.toString()});
         }
     },
-    myStatus: async function (args) {
+    myStatus: async function (args: { userId: string }) {
         try {
             const userId = args.userId;
             const user = this.userIdToUserStatus[userId];
@@ -300,141 +346,118 @@ const Game = {
             } else {
                 return JSON.stringify({
                     status: 200,
-                    data: {
-                        answer: '',
-                        score: 0,
-                        submit: ''
-                    }
+                    data: {answer: '', score: 0, submit: ''}
                 });
             }
-        } catch (error) {
-            return JSON.stringify({
-                status: 500,
-                error: error.toString()
-            });
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
         }
     },
 
-    setConfig: async function (args) {
+    setConfig: async function (args: { userId: string, data: { key: keyof GameConfig, value: any } }) {
         try {
             const userId = args.userId;
             const adminId = Util.adminId();
             const adminEnable = Util.adminEnable();
-            if (userId === adminId && adminEnable) {
+            if (userId == adminId && adminEnable) {
                 let data = args.data;
                 await Util.setConfig(data.key, data.value);
                 return JSON.stringify({});
             } else {
                 return JSON.stringify({status: 500, error: "not admin"});
             }
-        } catch (e) {
+        } catch (e: any) {
             return JSON.stringify({status: 500, error: e.toString()});
         }
     },
+
     getConfig: async function () {
         try {
             let configData = await Util.getConfig();
-            return JSON.stringify({
-                data: configData,
-            });
-        } catch (error) {
-            return JSON.stringify({
-                status: 500,
-                error: error.toString()
-            });
+            return JSON.stringify({data: configData});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
         }
     },
+
     label: function () {
         try {
             let label = Util.getLabel();
-            return JSON.stringify({
-                data: label,
-            });
-        } catch (error) {
-            return JSON.stringify({
-                status: 500,
-                error: error.toString()
-            });
+            return JSON.stringify({data: label});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
         }
     },
-    tap: function (args) {
+
+    tap: function (args: { data: string }) {
         try {
             let result = Util.uiTap(args.data);
             if (result !== 'success') {
-                return JSON.stringify({
-                    status: 500,
-                    error: result + '',
-                });
+                return JSON.stringify({status: 500, error: result + ''});
             }
             return JSON.stringify({});
-        } catch (error) {
-            return JSON.stringify({
-                status: 500,
-                error: error.toString()
-            });
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
         }
     },
-    resetManualBlank: async function (args) {
+
+    resetManualBlank: async function (args: { userId: string }) {
         try {
             const userId = args.userId;
             const adminId = Util.adminId();
             const adminEnable = Util.adminEnable();
-            if (userId === adminId && adminEnable) {
-                await Util.updateCurrVerseContent(Game.key, '');
+            if (userId == adminId && adminEnable) {
+                await Util.updateCurrVerseContent(this.key, '');
                 return JSON.stringify({status: 200, data: "Manual content resetted"});
             } else {
                 return JSON.stringify({status: 500, error: "not admin"});
             }
-        } catch (e) {
+        } catch (e: any) {
             return JSON.stringify({status: 500, error: e.toString()});
         }
     },
-    setBlankContent: async function (args) {
+
+    setBlankContent: async function (args: { userId: string, data: string }) {
         try {
             const userId = args.userId;
             const adminId = Util.adminId();
             const adminEnable = Util.adminEnable();
-            if (userId === adminId && adminEnable) {
+            if (userId == adminId && adminEnable) {
                 const content = args.data;
-                await Util.updateCurrVerseContent(Game.key, content);
+                await Util.updateCurrVerseContent(this.key, content);
                 return JSON.stringify({status: 200, data: "Manual content updated"});
             } else {
                 return JSON.stringify({status: 500, error: "not admin"});
             }
-        } catch (e) {
+        } catch (e: any) {
             return JSON.stringify({status: 500, error: e.toString()});
         }
     },
-    getBlankContent: async function (args) {
+
+    getBlankContent: async function (args: { userId: string }) {
         try {
             const userId = args.userId;
             const adminId = Util.adminId();
             const adminEnable = Util.adminEnable();
-            if (userId === adminId && adminEnable) {
+            if (userId == adminId && adminEnable) {
                 const verse = await Util.getVerse();
                 const answer = verse['a'];
-                let savedContent = verse[Game.key];
+                let savedContent = verse[this.key];
                 if (!savedContent || savedContent === '') {
                     savedContent = answer || '';
                 }
                 return JSON.stringify({
                     status: 200,
-                    data: {
-                        blank: savedContent,
-                        answer: answer,
-                    },
+                    data: {blank: savedContent, answer: answer},
                 });
             } else {
                 return JSON.stringify({status: 500, error: "not admin"});
             }
-
-        } catch (e) {
-            return JSON.stringify({
-                status: 500,
-                error: e.toString()
-            });
+        } catch (e: any) {
+            return JSON.stringify({status: 500, error: e.toString()});
         }
     },
+
     clear: async function () {
         if (Util.adminEnable()) {
             await Util.broadcast(this.gameRefreshPath, '{}');
@@ -451,16 +474,16 @@ const Game = {
         this.blankContent = await this.getBlankMix();
         await Util.broadcast(this.gameRefreshPath, this.getBroadcastData());
     },
+
     getBroadcastData: function () {
         const userIds = this.userIds;
-        const userIdToUserName = {};
+        const userIdToUserName: Record<string, string> = {};
 
         const players = userIds.map(id => {
             const user = this.userIdToUserStatus[id];
-
             userIdToUserName[id] = user.name;
 
-            let ret = {
+            let ret: any = {
                 userId: id,
                 name: user.name,
                 step: user.step,
@@ -472,7 +495,7 @@ const Game = {
             }
             return ret;
         });
-        let blankContent = this.blankContent;
+
         return {
             gameStatus: this.gameStatus,
             config: this._config,
@@ -483,7 +506,7 @@ const Game = {
         };
     },
 
-    getConfigWithCache: async function (forceRefresh = false) {
+    getConfigWithCache: async function (forceRefresh = false): Promise<GameConfig> {
         if (this._config && !forceRefresh) {
             return this._config;
         }
@@ -502,7 +525,7 @@ const Game = {
         }
     },
 
-    _shuffle: function (array) {
+    _shuffle: function <T>(array: T[]): T[] {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [array[i], array[j]] = [array[j], array[i]];
@@ -510,7 +533,7 @@ const Game = {
         return array;
     },
 
-    getBlankMix: async function () {
+    getBlankMix: async function (): Promise<string> {
         const config = await this.getConfigWithCache();
         const verse = await Util.getVerse();
         const ignorePunctuation = config.ignorePunctuation ?? true;
@@ -526,7 +549,8 @@ const Game = {
 
         return this.blankContent || '';
     },
-    getBlankAuto: function (verse, config) {
+
+    getBlankAuto: function (verse: Verse, config: GameConfig): string {
         const content = verse.a || '';
         const percent = config.blankContentPercent ?? 0.5;
         const ignorePunctuation = config.ignorePunctuation ?? true;
@@ -536,30 +560,25 @@ const Game = {
         }
 
         const chars = content.split('');
-        const blankableIndexes = [];
+        const blankableIndexes: number[] = [];
 
-        // 1. 筛选哪些位置可以被挖空
         for (let i = 0; i < chars.length; i++) {
             const char = chars[i];
-            if (char === ' ') continue; // 跳过空格
+            if (char === ' ') continue;
 
             if (ignorePunctuation && this.punctuationRegex.test(char)) {
-                this.punctuationRegex.lastIndex = 0; // 重置正则状态
+                this.punctuationRegex.lastIndex = 0;
                 continue;
             }
             blankableIndexes.push(i);
         }
 
-        // 2. 执行挖空操作
         if (blankableIndexes.length > 0) {
-            // 计算需要隐藏的数量 (至少 1 个)
             let hideCount = Math.round(blankableIndexes.length * percent);
             hideCount = Math.max(1, hideCount);
 
-            // 随机打乱索引
             this._shuffle(blankableIndexes);
 
-            // 将选中索引处的字符替换为圆点
             for (let i = 0; i < hideCount && i < blankableIndexes.length; i++) {
                 chars[blankableIndexes[i]] = '•';
             }
@@ -568,26 +587,22 @@ const Game = {
         return chars.join('');
     },
 
-    getBlankManual: function (verseMap, ignorePunctuation) {
+    getBlankManual: function (verseMap: Verse, ignorePunctuation: boolean): string {
         const a = verseMap.a || '';
-        const b = verseMap[this.key] || ''; // 用户当前输入或已保存的进度
-        if (b === '') {
-            return ''
-        }
+        const b = verseMap[this.key] || '';
+        if (b === '') return '';
         if (!b && !ignorePunctuation) return '•'.repeat(a.length);
 
         let result = '';
         for (let i = 0; i < a.length; i++) {
             const aChar = a[i];
 
-            // 如果是标点且开启了忽略，直接显示
             if (ignorePunctuation && this.punctuationRegex.test(aChar)) {
                 this.punctuationRegex.lastIndex = 0;
                 result += aChar;
                 continue;
             }
 
-            // 如果超出用户输入长度，显示圆点
             if (i >= b.length) {
                 result += (aChar === ' ') ? ' ' : '•';
                 continue;
@@ -605,7 +620,7 @@ const Game = {
         return result;
     },
 
-    getScore: function (userAnswer, correctAnswer, blank, maxScore, ignoreCase) {
+    getScore: function (userAnswer: string, correctAnswer: string, blank: string, maxScore: number, ignoreCase: boolean): number {
         let blankCount = 0;
         let rightCount = 0;
         const len = Math.min(userAnswer.length, correctAnswer.length, blank.length);
@@ -615,13 +630,11 @@ const Game = {
                 blankCount++;
                 let u = userAnswer[i];
                 let c = correctAnswer[i];
-                if (ignoreCase ? u.toLowerCase() === c.toLowerCase() : u === c) {
+                if (u && c && (ignoreCase ? u.toLowerCase() === c.toLowerCase() : u === c)) {
                     rightCount++;
                 }
             }
         }
         return blankCount > 0 ? Math.floor((rightCount / blankCount) * maxScore) : 0;
     }
-
-
 };

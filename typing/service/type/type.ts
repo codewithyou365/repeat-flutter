@@ -1,7 +1,27 @@
+declare function sendMessage(method: string, payload: string): any;
+
+type JsonRecord = Record<string, any>;
+
+type Config = {
+    ignorePunctuation: boolean;
+    ignoreCase: boolean;
+    [key: string]: any;
+};
+
+type Verse = {
+    a?: string;
+    [key: string]: any;
+};
+
+type GameArgs = {
+    userId: number;
+    data: any;
+};
+
 const Util = {
-    getConfig: async function () {
+    getConfig: async function (): Promise<Config> {
         try {
-            let data = await sendMessage('getData', '{}');
+            const data = await sendMessage('getData', '{}');
             if (data == null || data === '') {
                 return {"ignorePunctuation": true, "ignoreCase": true};
             }
@@ -11,15 +31,15 @@ const Util = {
         }
     },
 
-    setConfig: async function (key, value) {
-        let data = await this.getConfig();
+    setConfig: async function (key: string, value: any): Promise<void> {
+        const data = await this.getConfig();
         data[key] = value;
         await sendMessage('setData', JSON.stringify(data));
     },
 
-    getVerse: async function () {
+    getVerse: async function (): Promise<Verse> {
         try {
-            let data = await sendMessage('getVerse', '{}');
+            const data = await sendMessage('getVerse', '{}');
             if (data == null || data === '') {
                 return {};
             }
@@ -28,12 +48,12 @@ const Util = {
             return {};
         }
     },
-    getLabel: function () {
+    getLabel: function (): JsonRecord {
         try {
-            let left = sendMessage('uiLabel', JSON.stringify({'name': 'left'}));
-            let right = sendMessage('uiLabel', JSON.stringify({'name': 'right'}));
-            let middle = sendMessage('uiLabel', JSON.stringify({'name': 'middle'}));
-            let ret = {
+            const left = sendMessage('uiLabel', JSON.stringify({'name': 'left'}));
+            const right = sendMessage('uiLabel', JSON.stringify({'name': 'right'}));
+            const middle = sendMessage('uiLabel', JSON.stringify({'name': 'middle'}));
+            const ret = {
                 'left': left,
                 'right': right,
                 'middle': middle,
@@ -43,30 +63,30 @@ const Util = {
             return {};
         }
     },
-    uiTap: function (event) {
+    uiTap: function (event: string): string {
         try {
             return sendMessage('uiTap', JSON.stringify({'event': event}));
         } catch (e) {
             return '';
         }
     },
-    adminId: function () {
+    adminId: function (): number | '' {
         try {
-            let userId = sendMessage('adminId', '{}');
+            const userId = sendMessage('adminId', '{}');
             return parseInt(userId, 10);
         } catch (e) {
             return '';
         }
     },
-    adminEnable: function () {
+    adminEnable: function (): boolean {
         try {
-            let res = sendMessage('adminEnable', '{}');
+            const res = sendMessage('adminEnable', '{}');
             return res === 'true';
         } catch (e) {
             return false;
         }
     },
-    broadcast: async function (path, data) {
+    broadcast: async function (path: string, data: any): Promise<string> {
         try {
             const payload = {
                 path: path,
@@ -78,39 +98,38 @@ const Util = {
             return 'error';
         }
     },
-}
-
+};
 
 const Game = {
     gameRefreshPath: 'gameRefresh',
-    clear: async function () {
+    clear: async function (): Promise<void> {
         if (!Util.adminEnable()) {
             await Util.broadcast(this.gameRefreshPath, {});
         }
     },
-    setConfig: async function (args) {
+    setConfig: async function (args: GameArgs): Promise<string> {
         try {
             const userId = args.userId;
             const adminId = Util.adminId();
             const adminEnable = Util.adminEnable();
             if (userId === adminId && adminEnable) {
-                let data = args.data;
+                const data = args.data;
                 await Util.setConfig(data.key, data.value);
                 return JSON.stringify({});
             } else {
                 return JSON.stringify({status: 500, error: "not admin"});
             }
-        } catch (e) {
+        } catch (e: any) {
             return JSON.stringify({status: 500, error: e.toString()});
         }
     },
-    getConfig: async function () {
+    getConfig: async function (): Promise<string> {
         try {
-            let configData = await Util.getConfig();
+            const configData = await Util.getConfig();
             return JSON.stringify({
                 data: configData,
             });
-        } catch (error) {
+        } catch (error: any) {
             return JSON.stringify({
                 status: 500,
                 error: error.toString()
@@ -118,9 +137,9 @@ const Game = {
         }
     },
 
-    answer: async function () {
+    answer: async function (): Promise<string> {
         try {
-            let verse = await Util.getVerse();
+            const verse = await Util.getVerse();
             let answer = '';
             if (verse && verse.a) {
                 answer = verse.a;
@@ -128,7 +147,7 @@ const Game = {
             return JSON.stringify({
                 data: answer,
             });
-        } catch (error) {
+        } catch (error: any) {
             return JSON.stringify({
                 status: 500,
                 error: error.toString()
@@ -136,13 +155,13 @@ const Game = {
         }
     },
 
-    label: function () {
+    label: function (): string {
         try {
-            let label = Util.getLabel();
+            const label = Util.getLabel();
             return JSON.stringify({
                 data: label,
             });
-        } catch (error) {
+        } catch (error: any) {
             return JSON.stringify({
                 status: 500,
                 error: error.toString()
@@ -150,9 +169,9 @@ const Game = {
         }
     },
 
-    tap: function (args) {
+    tap: function (args: GameArgs): string {
         try {
-            let result = Util.uiTap(args.data);
+            const result = Util.uiTap(args.data);
             if (result !== 'success') {
                 return JSON.stringify({
                     status: 500,
@@ -160,7 +179,7 @@ const Game = {
                 });
             }
             return JSON.stringify({});
-        } catch (error) {
+        } catch (error: any) {
             return JSON.stringify({
                 status: 500,
                 error: error.toString()

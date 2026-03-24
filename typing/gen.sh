@@ -1,25 +1,42 @@
 #!/bin/bash
 
+deal() {
+  local name="$1"
+  local src_ts="service/${name}.ts"
+  local src_ts_dir="service/${name}/${name}.ts"
+  local out_js="dist/service/${name}.js"
+  local test_js="../assets/service/${name}.js"
+
+  local ts_path="$src_ts"
+  local root_dir="service"
+  if [ -f "$src_ts_dir" ]; then
+    ts_path="$src_ts_dir"
+    root_dir="service/${name}"
+  fi
+
+  pnpm exec tsc "$ts_path" \
+    --target ES2020 \
+    --module ES2020 \
+    --moduleResolution Node \
+    --rootDir "$root_dir" \
+    --outDir dist/service \
+    --esModuleInterop \
+    --skipLibCheck
+  if [ -f "$out_js" ]; then
+    cp "$out_js" "$test_js"
+  else
+    echo "Missing service source for: $name" >&2
+    exit 1
+  fi
+}
+
 rm -f dist.zip
 rm -rf dist/
 pnpm build
-
-mkdir dist/service
-if [ -f "../assets/service/type.js" ]; then
-  cp ../assets/service/type.js service/type.js
-fi
-cp service/type.js dist/service/
-
-if [ -f "../assets/service/blank_it_right.js" ]; then
-  cp ../assets/service/blank_it_right.js service/blank_it_right.js
-fi
-cp service/blank_it_right.js dist/service/
-
-if [ -f "../assets/service/word_slicer.js" ]; then
-  cp ../assets/service/word_slicer.js service/word_slicer.js
-fi
-cp service/word_slicer.js dist/service/
-
+mkdir -p dist/service
+deal type
+deal blank_it_right
+deal word_slicer
 (cd dist && zip -r ../dist.zip .)
 
 echo "Build and packaging complete: dist.zip"
