@@ -32,7 +32,7 @@ class WebviewPage {
           // 1. WebView 层
           Positioned(
             top: topPadding,
-            bottom: inset,
+            bottom: 0,
             left: (screenWidth > screenSize.height) ? leftPadding : 0,
             right: 0,
             child: InAppWebView(
