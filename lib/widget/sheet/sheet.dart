@@ -17,7 +17,15 @@ class Sheet {
   static const double paddingVertical = 20;
   static final Logger logger = Logger();
 
-  static Future<T?> showBottomSheet<T>(BuildContext context, Widget w, {SheetHead? head, double? rate, double? height, GestureTapCallback? onTapBlack}) {
+  static Future<T?> showBottomSheet<T>(
+    BuildContext context,
+    Widget w, {
+    SheetHead? head,
+    double? rate,
+    double? height,
+    GestureTapCallback? onTapBlack,
+    EdgeInsets? padding,
+  }) {
     final Size screenSize = MediaQuery.of(context).size;
     rate ??= 2 / 3;
     if (height == null) {
@@ -53,8 +61,9 @@ class Sheet {
         ],
       );
     } else {
+      final EdgeInsets resolvedPadding = padding ?? const EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: paddingVertical);
       child = Padding(
-        padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: paddingVertical),
+        padding: resolvedPadding,
         child: w,
       );
     }

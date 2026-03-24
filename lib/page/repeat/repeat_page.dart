@@ -480,6 +480,7 @@ class RepeatPage extends StatelessWidget {
     String text = map[type.acronym] ?? '';
 
     Future<void> Function()? onIconCallback;
+    IconData? onIconData;
     if (edit) {
       onIconCallback = () async {
         await fullModify(map, logic, type);
@@ -491,6 +492,7 @@ class RepeatPage extends StatelessWidget {
         onIconCallback = () async {
           await logic.openTip(tip);
         };
+        onIconData = Icons.tips_and_updates;
       } else {
         onIconCallback = null;
       }
@@ -500,6 +502,8 @@ class RepeatPage extends StatelessWidget {
       text: text,
       style: style,
       onIcon: onIconCallback,
+      iconDecoration: const BoxDecoration(),
+      icon: onIconData,
       onText: () async {
         if (text.isEmpty) {
           return;

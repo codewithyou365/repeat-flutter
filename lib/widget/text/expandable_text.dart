@@ -11,6 +11,8 @@ class ExpandableText extends StatefulWidget {
   final TextStyle? versionStyle;
   final VoidCallback? onIcon;
   final VoidCallback? onText;
+  final IconData? icon;
+  final BoxDecoration? iconDecoration;
 
   const ExpandableText({
     Key? key,
@@ -24,6 +26,8 @@ class ExpandableText extends StatefulWidget {
     this.versionStyle,
     this.onIcon,
     this.onText,
+    this.icon,
+    this.iconDecoration,
   }) : super(key: key);
 
   @override
@@ -111,17 +115,20 @@ class _ExpandableTextState extends State<ExpandableText> {
     }
 
     if (widget.onIcon != null && displayText == fullText) {
+      final IconData iconData = widget.icon ?? Icons.edit;
+      final BoxDecoration decoration = widget.iconDecoration ??
+          const BoxDecoration(
+            border: Border(bottom: BorderSide(color: Color(0xFF007BFF), width: 1)),
+          );
       spans.add(
         WidgetSpan(
           child: GestureDetector(
             onTap: widget.onIcon,
             child: Container(
               width: 25,
-              decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: Color(0xFF007BFF), width: 1)),
-              ),
-              child: const Icon(
-                Icons.edit,
+              decoration: decoration,
+              child: Icon(
+                iconData,
                 color: Color(0xFF007BFF),
                 size: 16, // Adjusted icon size
               ),

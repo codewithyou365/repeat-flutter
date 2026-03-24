@@ -18,9 +18,8 @@ class WebviewPage {
     if (args == null) return const SizedBox.shrink();
 
     final Size screenSize = MediaQuery.of(context).size;
-    final double topPadding = MediaQuery.of(context).padding.top;
+    final double topPadding = args.showTopBar ? MediaQuery.of(context).padding.top : 0;
     final double leftPadding = MediaQuery.of(context).padding.left;
-    final double inset = MediaQuery.of(context).viewInsets.bottom;
     final double screenWidth = screenSize.width;
     final theme = Theme.of(context);
     final double floatingBarHeight = _topBarHeight + _progressHeight;
@@ -58,71 +57,75 @@ class WebviewPage {
           ),
 
           // 2. 状态栏遮罩
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: topPadding,
-            child: Container(color: theme.scaffoldBackgroundColor),
-          ),
+          if (args.showTopBar)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: topPadding,
+              child: Container(color: theme.scaffoldBackgroundColor),
+            ),
 
           // 3. 悬浮 TopBar
-          Obx(() {
-            final isVisible = state.isTopBarVisible.value;
-            return AnimatedPositioned(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              top: isVisible ? topPadding : topPadding - floatingBarHeight,
-              left: 0,
-              right: 0,
-              height: floatingBarHeight,
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 250),
-                opacity: isVisible ? 1.0 : 0.0,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: theme.scaffoldBackgroundColor,
-                    boxShadow: [
-                      if (isVisible)
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
+          if (args.showTopBar)
+            Obx(() {
+              final isVisible = state.isTopBarVisible.value;
+              return AnimatedPositioned(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                top: isVisible ? topPadding : topPadding - floatingBarHeight,
+                left: 0,
+                right: 0,
+                height: floatingBarHeight,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 250),
+                  opacity: isVisible ? 1.0 : 0.0,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: theme.scaffoldBackgroundColor,
+                      boxShadow: [
+                        if (isVisible)
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        _topBar(
+                          logic: logic,
+                          context: context,
+                          width: screenWidth,
+                          height: _topBarHeight,
+                          showNavigateBar: args.showNavigationBar,
                         ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      _topBar(
-                        logic: logic,
-                        context: context,
-                        width: screenWidth,
-                        height: _topBarHeight,
-                      ),
-                      _buildProgressBar(logic, context, screenWidth, theme),
-                    ],
+                        _buildProgressBar(logic, context, screenWidth, theme),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          }),
+              );
+            }),
 
           // 4. 悬浮拉钩 (Handle)
-          Obx(() {
-            final isVisible = state.isTopBarVisible.value;
-            return AnimatedPositioned(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              top: isVisible ? topPadding + floatingBarHeight : topPadding,
-              left: 0,
-              right: 0,
-              height: _handleHeight,
-              child: _DraggableHandle(
-                screenWidth: screenWidth,
-                onTap: () => state.isTopBarVisible.value = !isVisible,
-              ),
-            );
-          }),
+          if (args.showTopBar)
+            Obx(() {
+              final isVisible = state.isTopBarVisible.value;
+              return AnimatedPositioned(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                top: isVisible ? topPadding + floatingBarHeight : topPadding,
+                left: 0,
+                right: 0,
+                height: _handleHeight,
+                child: _DraggableHandle(
+                  screenWidth: screenWidth,
+                  onTap: () => state.isTopBarVisible.value = !isVisible,
+                ),
+              );
+            }),
         ],
       ),
     );
@@ -153,6 +156,7 @@ class WebviewPage {
     required BuildContext context,
     required double width,
     required double height,
+    required bool showNavigateBar,
   }) {
     final state = logic.state;
     return Container(
@@ -180,20 +184,22 @@ class WebviewPage {
               ),
             ),
           ),
-          const Spacer(),
-          Obx(
-            () => IconButton(
-              icon: const Icon(Icons.arrow_back_ios, size: 20),
-              onPressed: state.canGoBack.value ? logic.goBack : null,
+          if (showNavigateBar) ...[
+            const Spacer(),
+            Obx(
+              () => IconButton(
+                icon: const Icon(Icons.arrow_back_ios, size: 20),
+                onPressed: state.canGoBack.value ? logic.goBack : null,
+              ),
             ),
-          ),
-          Obx(
-            () => IconButton(
-              icon: const Icon(Icons.arrow_forward_ios, size: 20),
-              onPressed: state.canGoForward.value ? logic.goForward : null,
+            Obx(
+              () => IconButton(
+                icon: const Icon(Icons.arrow_forward_ios, size: 20),
+                onPressed: state.canGoForward.value ? logic.goForward : null,
+              ),
             ),
-          ),
-          IconButton(icon: const Icon(Icons.refresh), onPressed: logic.reload),
+            IconButton(icon: const Icon(Icons.refresh), onPressed: logic.reload),
+          ],
         ],
       ),
     );

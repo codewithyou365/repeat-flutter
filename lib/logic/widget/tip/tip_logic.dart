@@ -48,18 +48,17 @@ class TipLogic<T extends GetxController> {
       final args = WebviewArgs(
         initialUrl: "http://127.0.0.1:${port.value}",
         pageTitle: tip.k,
+        showTopBar: false,
       );
       await Sheet.showBottomSheet<void>(
         context,
         webviewLogic.build(args, () async {
           await _closeTipWeb(closeSheet: true);
         }, context),
-        rate: 2 / 3,
-        onTapBlack: () async {
-          await _closeTipWeb(closeSheet: true);
-        },
+        padding: EdgeInsets.zero,
       );
     } finally {
+      await _closeTipWeb(closeSheet: true);
       state.openPending = false;
     }
   }
