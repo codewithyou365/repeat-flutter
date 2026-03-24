@@ -226,7 +226,7 @@ class RepeatFlowForExamine extends RepeatFlow {
       scheduled.sort(schedulesCurrentSort);
     }
     refresh();
-    await gameHelper.tryRefreshGame(curr);
+    await gameHelper.tryRefreshGame(currVerse!);
     await timeStatsLogic.updateTimeStats();
   }
 
