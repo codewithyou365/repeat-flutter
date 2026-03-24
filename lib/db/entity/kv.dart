@@ -26,6 +26,7 @@ enum K {
   adminId,
   adminEnable,
   webviewHandlePos,
+  tipServerPort,
 }
 
 @Entity(primaryKeys: ['k'])

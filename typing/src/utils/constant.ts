@@ -40,6 +40,7 @@ export class GameType {
     static BLANK_IT_RIGHT = new GameType(2, '/game/blank-it-right-game');
     static WORD_SLICER = new GameType(3, '/game/word-slicer-game');
     static INPUT = new GameType(4, '/game/input-game');
+    static JAPAN = new GameType(5, '/game/japan-game');
 
     static toGameType(code: String): GameType {
         switch (code) {
@@ -51,6 +52,8 @@ export class GameType {
                 return GameType.WORD_SLICER;
             case 'Input':
                 return GameType.INPUT;
+            case 'Japan':
+                return GameType.JAPAN;
             default:
                 return GameType.NONE;
         }
@@ -141,4 +144,3 @@ export class SubmitRes {
         return ret;
     }
 }
-

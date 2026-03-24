@@ -11,31 +11,35 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
+import 'package:repeat_flutter/db/entity/tip.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 
-class GameContent {
+class ContentEntry {
   int? id;
   String hash;
   String name;
   String key;
   String service;
+  String? mapKey;
 
-  GameContent({
+  ContentEntry({
     this.id,
     required this.hash,
     required this.name,
     required this.key,
     required this.service,
+    this.mapKey,
   });
 
-  factory GameContent.fromJson(Map<String, dynamic> json) {
-    return GameContent(
+  factory ContentEntry.fromJson(Map<String, dynamic> json, {String? mapKey}) {
+    return ContentEntry(
       id: json['i'] as int?,
       hash: json['h'] ?? '',
       name: json['n'] ?? '',
       key: json['k'] ?? '',
       service: json['s'] ?? '',
+      mapKey: mapKey,
     );
   }
 }
@@ -57,6 +61,7 @@ class ClassroomHelp {
 
       final rootPath = await DocPath.getContentPath();
       final Set<String> currentGameNames = {};
+      final Set<String> currentTipKeys = {};
 
       for (var book in books) {
         if (book.content.isEmpty) continue;
@@ -85,48 +90,79 @@ class ClassroomHelp {
         if (currentVersionSig == savedVersionSig) return;
         if (bookMap['g'] != null) {
           var gameData = bookMap['g'] as List<dynamic>;
-          List<GameContent> games = gameData.map((e) => GameContent.fromJson(e)).toList();
+          final games = _entriesFromList(gameData);
           for (var i = 0; i < games.length; i++) {
             final game = games[i];
-            if (game.name.isNotEmpty && game.hash.isNotEmpty) {
-              final download = downloads.firstWhereOrNull((e) => e.hash == game.hash);
-              if (download != null) {
-                final localFolder = rootPath.joinPath(DocPath.getRelativePath(book.id!));
-                final zipFilePath = localFolder.joinPath(download.folder).joinPath(download.name);
-                final destinationDir = localFolder.joinPath(download.folder).joinPath(download.pureName);
-                bool ok = await unzipGame(zipFilePath, destinationDir);
-                if (ok) {
-                  Game? gameEntity;
-                  if (game.id != null) {
-                    gameEntity = await Db().db.gameDao.getById(game.id!);
-                    if (gameEntity == null || gameEntity.bookId != book.id!) {
-                      gameEntity = null;
-                    }
-                  }
-                  if (gameEntity == null) {
-                    await Db().db.gameDao.insertOrReplace(
-                      Game(
-                        classroomId: Classroom.curr,
-                        bookId: book.id!,
-                        key: game.key,
-                        name: game.name,
-                        hash: game.hash,
-                        data: '',
-                        service: game.service,
-                        createTime: DateTime.now().millisecondsSinceEpoch,
-                      ),
-                    );
-                    gameData[i]['i'] = await Db().db.gameDao.getIdByName(Classroom.curr, game.name);
-                  } else {
-                    gameEntity.name = game.name;
-                    gameEntity.hash = game.hash;
-                    gameEntity.service = game.service;
-                    await Db().db.gameDao.updateOrReplace(gameEntity);
-                  }
-                  currentGameNames.add(game.name);
-                }
+            final ok = await _ensureContentReady(game, downloads, book.id!);
+            if (!ok) continue;
+
+            Game? gameEntity;
+            if (game.id != null) {
+              gameEntity = await Db().db.gameDao.getById(game.id!);
+              if (gameEntity == null || gameEntity.bookId != book.id!) {
+                gameEntity = null;
               }
             }
+            if (gameEntity == null) {
+              await Db().db.gameDao.insertOrReplace(
+                Game(
+                  classroomId: Classroom.curr,
+                  bookId: book.id!,
+                  k: game.key,
+                  name: game.name,
+                  hash: game.hash,
+                  data: '',
+                  service: game.service,
+                  createTime: DateTime.now().millisecondsSinceEpoch,
+                ),
+              );
+              gameData[i]['i'] = await Db().db.gameDao.getIdByName(Classroom.curr, game.name);
+            } else {
+              gameEntity.name = game.name;
+              gameEntity.hash = game.hash;
+              gameEntity.service = game.service;
+              await Db().db.gameDao.updateOrReplace(gameEntity);
+            }
+            currentGameNames.add(game.name);
+          }
+        }
+        if (bookMap['t'] != null) {
+          var tipMap = bookMap['t'] as Map<String, dynamic>;
+          final tips = _entriesFromMap(tipMap, {'a', 'q', 't', 'n'});
+          for (final tip in tips) {
+            final ok = await _ensureContentReady(tip, downloads, book.id!);
+            if (!ok) continue;
+
+            Tip? tipEntity;
+            if (tip.id != null) {
+              tipEntity = await Db().db.tipDao.getById(tip.id!);
+              if (tipEntity == null || tipEntity.bookId != book.id!) {
+                tipEntity = null;
+              }
+            }
+            if (tipEntity == null) {
+              await Db().db.tipDao.insertOrReplace(
+                Tip(
+                  classroomId: Classroom.curr,
+                  bookId: book.id!,
+                  k: tip.key,
+                  hash: tip.hash,
+                  service: tip.service,
+                  createTime: DateTime.now().millisecondsSinceEpoch,
+                ),
+              );
+              if (tip.mapKey != null) {
+                final entryMap = tipMap[tip.mapKey];
+                if (entryMap is Map<String, dynamic>) {
+                  entryMap['i'] = await Db().db.tipDao.getIdByKey(Classroom.curr, tip.key);
+                }
+              }
+            } else {
+              tipEntity.hash = tip.hash;
+              tipEntity.service = tip.service;
+              await Db().db.tipDao.updateOrReplace(tipEntity);
+            }
+            currentTipKeys.add(tip.key);
           }
         }
         Db().db.bookDao.updateBookContent(book.id!, jsonEncode(bookMap));
@@ -135,6 +171,12 @@ class ClassroomHelp {
       for (var dbGame in dbGames) {
         if (!currentGameNames.contains(dbGame.name)) {
           await Db().db.gameDao.deleteByName(Classroom.curr, dbGame.name);
+        }
+      }
+      final dbTips = await Db().db.tipDao.getByClassroomId(Classroom.curr);
+      for (var dbTip in dbTips) {
+        if (!currentTipKeys.contains(dbTip.k)) {
+          await Db().db.tipDao.deleteByKey(Classroom.curr, dbTip.k);
         }
       }
       books = await Db().db.bookDao.getAll(Classroom.curr);
@@ -151,6 +193,44 @@ class ClassroomHelp {
     } catch (e) {
       debugPrint("Error registering fonts: $e");
     }
+  }
+
+  static List<ContentEntry> _entriesFromList(dynamic data) {
+    if (data == null) return [];
+    if (data is! List) return [];
+    return data.map((e) => ContentEntry.fromJson(e)).toList();
+  }
+
+  static List<ContentEntry> _entriesFromMap(dynamic data, Set<String> allowedKeys) {
+    if (data == null) return [];
+    if (data is! Map) return [];
+    final entries = <ContentEntry>[];
+    data.forEach((key, value) {
+      if (!allowedKeys.contains(key)) return;
+      if (value is Map<String, dynamic>) {
+        entries.add(ContentEntry.fromJson(value, mapKey: key));
+      }
+    });
+    return entries;
+  }
+
+  static Future<bool> _ensureContentReady(
+      ContentEntry entry,
+      List<DownloadContent> downloads,
+      int bookId,
+      ) async {
+    if (entry.hash.isEmpty) {
+      return false;
+    }
+    final download = downloads.firstWhereOrNull((e) => e.hash == entry.hash);
+    if (download == null) {
+      return false;
+    }
+    final rootPath = await DocPath.getContentPath();
+    final localFolder = rootPath.joinPath(DocPath.getRelativePath(bookId));
+    final zipFilePath = localFolder.joinPath(download.folder).joinPath(download.name);
+    final destinationDir = localFolder.joinPath(download.folder).joinPath(download.pureName);
+    return await unzipGame(zipFilePath, destinationDir);
   }
 
   static Future<bool> unzipGame(String zipFilePath, String destPath) async {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/db/entity/tip.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/widget/webview/webview_args.dart';
 
@@ -27,4 +28,6 @@ class RepeatState {
   RxBool isPracticeMode = false.obs;
 
   bool gameLogicInitSuccess = false;
+
+  Map<int, Map<String, Tip?>> bookIdToTip = {};
 }

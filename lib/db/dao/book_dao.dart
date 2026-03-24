@@ -50,7 +50,8 @@ abstract class BookDao {
 
   @Query('SELECT ifnull(sort,0) FROM Book WHERE classroomId=:classroomId and sort=:sort')
   Future<int?> existBySort(int classroomId, int sort);
-
+  @Query('SELECT content FROM Book WHERE id=:id')
+  Future<String?> getContentById(int id);
   @Query('SELECT * FROM Book WHERE id=:id')
   Future<Book?> getById(int id);
 

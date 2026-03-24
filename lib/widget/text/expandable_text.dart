@@ -9,8 +9,8 @@ class ExpandableText extends StatefulWidget {
   final TextStyle? style;
   final TextStyle? selectedStyle;
   final TextStyle? versionStyle;
-  final VoidCallback? onEdit;
-  final VoidCallback? onTouch;
+  final VoidCallback? onIcon;
+  final VoidCallback? onText;
 
   const ExpandableText({
     Key? key,
@@ -22,8 +22,8 @@ class ExpandableText extends StatefulWidget {
     this.style,
     this.selectedStyle,
     this.versionStyle,
-    this.onEdit,
-    this.onTouch,
+    this.onIcon,
+    this.onText,
   }) : super(key: key);
 
   @override
@@ -110,11 +110,11 @@ class _ExpandableTextState extends State<ExpandableText> {
       ];
     }
 
-    if (widget.onEdit != null && displayText == fullText) {
+    if (widget.onIcon != null && displayText == fullText) {
       spans.add(
         WidgetSpan(
           child: GestureDetector(
-            onTap: widget.onEdit,
+            onTap: widget.onIcon,
             child: Container(
               width: 25,
               decoration: const BoxDecoration(
@@ -133,7 +133,7 @@ class _ExpandableTextState extends State<ExpandableText> {
 
     return GestureDetector(
       onTap: () {
-        widget.onTouch?.call();
+        widget.onText?.call();
         setState(() {
           isExpanded = !isExpanded;
         });

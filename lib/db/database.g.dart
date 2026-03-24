@@ -92,6 +92,8 @@ class _$AppDatabase extends AppDatabase {
 
   GameDao? _gameDaoInstance;
 
+  TipDao? _tipDaoInstance;
+
   GameUserInputDao? _gameUserInputDaoInstance;
 
   GameUserScoreDao? _gameUserScoreDaoInstance;
@@ -166,7 +168,9 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `key` TEXT NOT NULL, `name` TEXT NOT NULL, `hash` TEXT NOT NULL, `data` TEXT NOT NULL, `service` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `k` TEXT NOT NULL, `name` TEXT NOT NULL, `hash` TEXT NOT NULL, `data` TEXT NOT NULL, `service` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `Tip` (`id` INTEGER, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `k` TEXT NOT NULL, `hash` TEXT NOT NULL, `service` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `GameUser` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `password` TEXT NOT NULL, `nonce` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `token` TEXT NOT NULL, `tokenExpiredDate` INTEGER NOT NULL, `needToResetPassword` INTEGER NOT NULL)');
         await database.execute(
@@ -234,11 +238,17 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE UNIQUE INDEX `index_Game_classroomId_name` ON `Game` (`classroomId`, `name`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_Game_classroomId_key` ON `Game` (`classroomId`, `key`)');
+            'CREATE UNIQUE INDEX `index_Game_classroomId_k` ON `Game` (`classroomId`, `k`)');
         await database
             .execute('CREATE INDEX `index_Game_bookId` ON `Game` (`bookId`)');
         await database.execute(
             'CREATE INDEX `index_Game_classroomId_hash` ON `Game` (`classroomId`, `hash`)');
+        await database.execute(
+            'CREATE UNIQUE INDEX `index_Tip_classroomId_k` ON `Tip` (`classroomId`, `k`)');
+        await database
+            .execute('CREATE INDEX `index_Tip_bookId` ON `Tip` (`bookId`)');
+        await database.execute(
+            'CREATE INDEX `index_Tip_classroomId_hash` ON `Tip` (`classroomId`, `hash`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_GameUser_name` ON `GameUser` (`name`)');
         await database.execute(
@@ -307,6 +317,11 @@ class _$AppDatabase extends AppDatabase {
   @override
   GameDao get gameDao {
     return _gameDaoInstance ??= _$GameDao(database, changeListener);
+  }
+
+  @override
+  TipDao get tipDao {
+    return _tipDaoInstance ??= _$TipDao(database, changeListener);
   }
 
   @override
@@ -580,6 +595,13 @@ class _$BookDao extends BookDao {
         'SELECT ifnull(sort,0) FROM Book WHERE classroomId=?1 and sort=?2',
         mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId, sort]);
+  }
+
+  @override
+  Future<String?> getContentById(int id) async {
+    return _queryAdapter.query('SELECT content FROM Book WHERE id=?1',
+        mapper: (Map<String, Object?> row) => row.values.first as String,
+        arguments: [id]);
   }
 
   @override
@@ -1700,7 +1722,7 @@ class _$GameDao extends GameDao {
                   'id': item.id,
                   'classroomId': item.classroomId,
                   'bookId': item.bookId,
-                  'key': item.key,
+                  'k': item.k,
                   'name': item.name,
                   'hash': item.hash,
                   'data': item.data,
@@ -1715,7 +1737,7 @@ class _$GameDao extends GameDao {
                   'id': item.id,
                   'classroomId': item.classroomId,
                   'bookId': item.bookId,
-                  'key': item.key,
+                  'k': item.k,
                   'name': item.name,
                   'hash': item.hash,
                   'data': item.data,
@@ -1739,7 +1761,7 @@ class _$GameDao extends GameDao {
         mapper: (Map<String, Object?> row) => Game(
             classroomId: row['classroomId'] as int,
             bookId: row['bookId'] as int,
-            key: row['key'] as String,
+            k: row['k'] as String,
             name: row['name'] as String,
             hash: row['hash'] as String,
             data: row['data'] as String,
@@ -1767,7 +1789,7 @@ class _$GameDao extends GameDao {
         mapper: (Map<String, Object?> row) => Game(
             classroomId: row['classroomId'] as int,
             bookId: row['bookId'] as int,
-            key: row['key'] as String,
+            k: row['k'] as String,
             name: row['name'] as String,
             hash: row['hash'] as String,
             data: row['data'] as String,
@@ -1823,6 +1845,120 @@ class _$GameDao extends GameDao {
   @override
   Future<void> updateOrReplace(Game kv) async {
     await _gameUpdateAdapter.update(kv, OnConflictStrategy.replace);
+  }
+}
+
+class _$TipDao extends TipDao {
+  _$TipDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _tipInsertionAdapter = InsertionAdapter(
+            database,
+            'Tip',
+            (Tip item) => <String, Object?>{
+                  'id': item.id,
+                  'classroomId': item.classroomId,
+                  'bookId': item.bookId,
+                  'k': item.k,
+                  'hash': item.hash,
+                  'service': item.service,
+                  'createTime': item.createTime
+                }),
+        _tipUpdateAdapter = UpdateAdapter(
+            database,
+            'Tip',
+            ['id'],
+            (Tip item) => <String, Object?>{
+                  'id': item.id,
+                  'classroomId': item.classroomId,
+                  'bookId': item.bookId,
+                  'k': item.k,
+                  'hash': item.hash,
+                  'service': item.service,
+                  'createTime': item.createTime
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<Tip> _tipInsertionAdapter;
+
+  final UpdateAdapter<Tip> _tipUpdateAdapter;
+
+  @override
+  Future<Tip?> getById(int id) async {
+    return _queryAdapter.query('SELECT * FROM Tip WHERE id=?1',
+        mapper: (Map<String, Object?> row) => Tip(
+            classroomId: row['classroomId'] as int,
+            bookId: row['bookId'] as int,
+            k: row['k'] as String,
+            hash: row['hash'] as String,
+            service: row['service'] as String,
+            createTime: row['createTime'] as int,
+            id: row['id'] as int?),
+        arguments: [id]);
+  }
+
+  @override
+  Future<int?> getIdByKey(
+    int classroomId,
+    String key,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT id FROM Tip WHERE classroomId=?1 AND k=?2',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [classroomId, key]);
+  }
+
+  @override
+  Future<List<Tip>> getByClassroomId(int classroomId) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM Tip WHERE classroomId=?1 ORDER BY id DESC',
+        mapper: (Map<String, Object?> row) => Tip(
+            classroomId: row['classroomId'] as int,
+            bookId: row['bookId'] as int,
+            k: row['k'] as String,
+            hash: row['hash'] as String,
+            service: row['service'] as String,
+            createTime: row['createTime'] as int,
+            id: row['id'] as int?),
+        arguments: [classroomId]);
+  }
+
+  @override
+  Future<void> deleteByKey(
+    int classroomId,
+    String key,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM Tip WHERE classroomId=?1 AND k=?2',
+        arguments: [classroomId, key]);
+  }
+
+  @override
+  Future<void> deleteByClassroomId(int classroomId) async {
+    await _queryAdapter.queryNoReturn('DELETE FROM Tip WHERE classroomId=?1',
+        arguments: [classroomId]);
+  }
+
+  @override
+  Future<void> deleteByBookId(int bookId) async {
+    await _queryAdapter
+        .queryNoReturn('DELETE FROM Tip WHERE bookId=?1', arguments: [bookId]);
+  }
+
+  @override
+  Future<void> insertOrReplace(Tip kv) async {
+    await _tipInsertionAdapter.insert(kv, OnConflictStrategy.replace);
+  }
+
+  @override
+  Future<void> updateOrReplace(Tip kv) async {
+    await _tipUpdateAdapter.update(kv, OnConflictStrategy.replace);
   }
 }
 

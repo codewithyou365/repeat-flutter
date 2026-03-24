@@ -43,6 +43,7 @@ abstract class KvDao {
       K.gameServerPort,
       K.bookEditorPort,
       K.materialSharePort,
+      K.tipServerPort,
     ]);
   }
 }

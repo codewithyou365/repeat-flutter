@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
+import 'package:repeat_flutter/db/entity/tip.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/classroom_help.dart';
@@ -423,7 +424,7 @@ class RepeatPage extends StatelessWidget {
                 fontSize: fontSize(logic, qaType) ?? 17,
                 fontFamily: fontAlias(logic, qaType),
               ),
-              onEdit: canEdit
+              onIcon: canEdit
                   ? () async {
                       if (helper.showMode.value != ShowMode.edit && qaType == QaType.note) {
                         await modify(map, logic, qaType);
@@ -432,7 +433,7 @@ class RepeatPage extends StatelessWidget {
                       }
                     }
                   : null,
-              onTouch: () async {
+              onText: () async {
                 final String text = map[qaType.acronym] ?? '';
                 if (text.isEmpty) {
                   return;
@@ -477,16 +478,29 @@ class RepeatPage extends StatelessWidget {
       fontFamily: fontAlias(logic, type),
     );
     String text = map[type.acronym] ?? '';
+
+    Future<void> Function()? onIconCallback;
+    if (edit) {
+      onIconCallback = () async {
+        await fullModify(map, logic, type);
+      };
+    } else {
+      int? bookId = helper.logic.currVerse?.bookId;
+      Tip? tip = logic.state.bookIdToTip[bookId]?[type.acronym];
+      if (tip != null) {
+        onIconCallback = () async {
+          await logic.openTip(tip);
+        };
+      } else {
+        onIconCallback = null;
+      }
+    }
     return ExpandableText(
       title: "",
       text: text,
       style: style,
-      onEdit: edit
-          ? () async {
-              await fullModify(map, logic, type);
-            }
-          : null,
-      onTouch: () async {
+      onIcon: onIconCallback,
+      onText: () async {
         if (text.isEmpty) {
           return;
         }

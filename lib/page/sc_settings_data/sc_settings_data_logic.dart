@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/path.dart';
@@ -47,6 +49,16 @@ class ScSettingsDataLogic extends GetxController {
     }
     showOverlay(() async {
       var path = await sqflite.getDatabasesPath();
+      try {
+        final dbPath = path.joinPath(Db.fileName);
+        final dbFile = File(dbPath);
+        String timestamp = DateTime.now().toIso8601String().replaceAll(RegExp(r'[:.-]'), '').substring(0, 15);
+        if (await dbFile.exists()) {
+          await dbFile.copy('$dbPath.bak_$timestamp');
+        }
+      } catch (e) {
+        debugPrint('Backup database failed: $e');
+      }
       var downloadDocResult = await DownloadDoc.start(
         url,
         path.joinPath(Db.fileName),

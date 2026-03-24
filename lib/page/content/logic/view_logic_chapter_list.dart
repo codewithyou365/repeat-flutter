@@ -337,7 +337,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                             selectedStyle: search.value.isNotEmpty ? const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue) : null,
                             versionStyle: const TextStyle(fontSize: 10, color: Colors.blueGrey),
                             selectText: search.value,
-                            onEdit: () {
+                            onIcon: () {
                               onEdit(chapter);
                             },
                           ),

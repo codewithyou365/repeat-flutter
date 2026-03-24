@@ -20,6 +20,10 @@ export const routes = [
                 path: 'input-game',
                 component: () => import('../view/game/input-game.vue'),
             },
+            {
+                path: 'japan-game',
+                component: () => import('../view/game/japan-game.vue'),
+            },
         ]
     },
     {

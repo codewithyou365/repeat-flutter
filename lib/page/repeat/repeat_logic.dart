@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
+import 'package:repeat_flutter/db/entity/tip.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
@@ -20,6 +22,7 @@ import 'package:repeat_flutter/logic/widget/game/game_logic.dart';
 import 'package:repeat_flutter/logic/widget/adjust_font.dart';
 import 'package:repeat_flutter/logic/widget/webview/webview_args.dart';
 import 'package:repeat_flutter/logic/widget/webview/webview_logic.dart';
+import 'package:repeat_flutter/logic/widget/tip/tip_logic.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/logic/widget/book_editor/book_editor_logic.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
@@ -54,6 +57,7 @@ class RepeatLogic extends GetxController {
   late AdjustFont adjustFont = AdjustFont<RepeatLogic>(this);
   late TextTemplate copyLogic = TextTemplate<RepeatLogic>(CrK.copyTemplate, this);
   late GameLogic<RepeatLogic> gameLogic;
+  late TipLogic<RepeatLogic> tipLogic;
   late GameHelper gameHelper;
   late BookEditorLogic bookEditor = BookEditorLogic<RepeatLogic>(this);
 
@@ -64,6 +68,14 @@ class RepeatLogic extends GetxController {
   Future<void> onInit() async {
     super.onInit();
     gameLogic = GameLogic<RepeatLogic>(
+      parentLogic: this,
+      tapNext: onNext,
+      tapLeft: onTapLeft,
+      tapRight: onLongTapRight,
+      tapMiddle: onTapMiddle,
+      longTapMiddle: onLongTapMiddle,
+    );
+    tipLogic = TipLogic<RepeatLogic>(
       parentLogic: this,
       tapNext: onNext,
       tapLeft: onTapLeft,
@@ -82,8 +94,8 @@ class RepeatLogic extends GetxController {
     } else {
       repeatFlow = RepeatFlowForExamine();
     }
-
     await ClassroomHelp.registerRes();
+    await initTips(args.progresses);
     state.gameLogicInitSuccess = await gameLogic.init(() {
       gameHelper.tryRefreshGame(repeatFlow!.currVerse!);
     });
@@ -115,6 +127,44 @@ class RepeatLogic extends GetxController {
     });
     state.closeEyesDirect = await Db().db.kvDao.getIntWithDefault(K.closeEyesDirect, 0);
     update([RepeatLogic.id]);
+  }
+
+  Future<void> initTips(List<VerseTodayPrg> progresses) async {
+    final bookIds = progresses.map((p) => p.bookId).toSet();
+
+    state.bookIdToTip = <int, Map<String, Tip?>>{};
+    final keys = ['a', 'q', 't', 'n'];
+
+    for (var bookId in bookIds) {
+      final Map<String, Tip?> bookTips = {for (var k in keys) k: null};
+      state.bookIdToTip[bookId] = bookTips;
+
+      final bookContent = await Db().db.bookDao.getContentById(bookId);
+      if (bookContent == null) continue;
+
+      final dynamic bookMap = jsonDecode(bookContent);
+      final tipMap = bookMap['t'];
+      if (tipMap is! Map) continue;
+
+      for (var k in keys) {
+        final entry = tipMap[k];
+        if (entry is! Map<String, dynamic>) continue;
+
+        final tipId = entry['i'];
+        if (tipId == null) continue;
+
+        final tip = await Db().db.tipDao.getById(tipId);
+        bookTips[k] = tip;
+      }
+    }
+  }
+
+  Future<void> openTip(Tip tip) async {
+    final ctx = Get.context;
+    if (ctx == null) {
+      return;
+    }
+    await tipLogic.openTipSheet(ctx, tip);
   }
 
   @override

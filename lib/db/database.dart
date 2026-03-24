@@ -19,6 +19,7 @@ import 'package:repeat_flutter/db/dao/game_user_score_dao.dart';
 import 'package:repeat_flutter/db/dao/game_user_score_history_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/dao/kv_dao.dart';
+import 'package:repeat_flutter/db/dao/tip_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_content_version_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_dao.dart';
 import 'package:repeat_flutter/db/dao/stats_dao.dart';
@@ -43,6 +44,7 @@ import 'package:repeat_flutter/db/entity/verse_stats.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
+import 'package:repeat_flutter/db/entity/tip.dart';
 import 'package:repeat_flutter/db/entity/time_stats.dart';
 import 'package:repeat_flutter/db/migration/m1_2.dart';
 import 'package:repeat_flutter/db/migration/m2_3.dart';
@@ -84,6 +86,7 @@ part 'database.g.dart'; // the generated code will be there
     TimeStats,
     BookShow,
     Game,
+    Tip,
     GameUser,
     GameUserScore,
     GameUserScoreHistory,
@@ -118,6 +121,8 @@ abstract class AppDatabase extends FloorDatabase {
   GameUserDao get gameUserDao;
 
   GameDao get gameDao;
+
+  TipDao get tipDao;
 
   GameUserInputDao get gameUserInputDao;
 
@@ -175,6 +180,7 @@ class Db {
 void prepareDb(AppDatabase db) {
   db.gameUserDao.db = db;
   db.gameDao.db = db;
+  db.tipDao.db = db;
   db.kvDao.db = db;
   db.chapterContentVersionDao.db = db;
   db.chapterDao.db = db;

@@ -14,5 +14,5 @@ Future<message.Response?> gameKey(
   if (GameState.game == null) {
     return message.Response(error: GameServerError.gameNotFound.name);
   }
-  return message.Response(data: GameState.game!.key);
+  return message.Response(data: GameState.game!.k);
 }

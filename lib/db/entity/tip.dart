@@ -4,33 +4,28 @@ import 'package:floor/floor.dart';
 
 @Entity(
   indices: [
-    Index(value: ['classroomId', 'name'], unique: true),
     Index(value: ['classroomId', 'k'], unique: true),
     Index(value: ['bookId']),
     Index(value: ['classroomId', 'hash']),
   ],
 )
-class Game {
+class Tip {
   @primaryKey
   final int? id;
 
   final int classroomId;
   final int bookId;
   final String k;
-  String name;
   String hash;
-  String data;
   String service;
 
   final int createTime;
 
-  Game({
+  Tip({
     required this.classroomId,
     required this.bookId,
     required this.k,
-    required this.name,
     required this.hash,
-    required this.data,
     required this.service,
     required this.createTime,
     this.id,
