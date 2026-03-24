@@ -44,12 +44,13 @@ const Util = {
             return 'error';
         }
     },
-    adminId: function (): number | '' {
+    adminId: function (): number {
         try {
             const userId = sendMessage('adminId', '{}');
-            return parseInt(userId, 10);
+            const parsed = parseInt(userId, 10);
+            return Number.isNaN(parsed) ? -1 : parsed;
         } catch (e) {
-            return '';
+            return -1;
         }
     },
     adminEnable: function (): boolean {

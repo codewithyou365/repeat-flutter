@@ -62,12 +62,13 @@ const Util = {
         }
     },
 
-    adminId: function (): number | string {
+    adminId: function (): number {
         try {
-            let userId = sendMessage('adminId', '{}');
-            return parseInt(userId, 10);
+            const userId = sendMessage('adminId', '{}');
+            const parsed = parseInt(userId, 10);
+            return Number.isNaN(parsed) ? -1 : parsed;
         } catch (e) {
-            return '';
+            return -1;
         }
     },
 
@@ -148,7 +149,7 @@ const Util = {
         }
     },
 
-    getUserName: async function (userId: string | number): Promise<string> {
+    getUserName: async function (userId: number): Promise<string> {
         try {
             return await sendMessage('getUserName', JSON.stringify({'userId': userId}));
         } catch (e) {
@@ -157,7 +158,7 @@ const Util = {
         }
     },
 
-    gameScoreInc: async function (userId: string | number, score: number, remark: string = ''): Promise<any> {
+    gameScoreInc: async function (userId: number, score: number, remark: string = ''): Promise<any> {
         try {
             const payload = {userId, score, remark};
             return await sendMessage('gameScoreInc', JSON.stringify(payload));
@@ -184,14 +185,14 @@ const Game = {
     key: 'blankItRightText',
     punctuationRegex: /[\p{P}\p{S}]/gu,
     userIdToUserStatus: {} as Record<string, UserStatus>,
-    userIds: [] as string[],
+    userIds: [] as number[],
     gameStatus: GameEnum.init as GameEnum,
 
     _config: null as GameConfig | null,
     answer: '',
     blankContent: '' as string,
 
-    getStatus: function (_: { userId: string }) {
+    getStatus: function (_: { userId: number }) {
         try {
             const broadcastData = this.getBroadcastData();
             return JSON.stringify({
@@ -206,7 +207,7 @@ const Game = {
         }
     },
 
-    join: async function (args: { userId: string }) {
+    join: async function (args: { userId: number }) {
         try {
             const userId = args.userId;
             if (!userId) throw new Error("Missing userId");
@@ -229,7 +230,7 @@ const Game = {
         }
     },
 
-    leave: async function (args: { userId: string }) {
+    leave: async function (args: { userId: number }) {
         try {
             const userId = args.userId;
             if (!userId) throw new Error("Missing userId");
@@ -253,7 +254,7 @@ const Game = {
         return JSON.stringify({status: 200, data: "Game started"});
     },
 
-    submit: async function (args: { userId: string, data: { content: string } }) {
+    submit: async function (args: { userId: number, data: { content: string } }) {
         const userId = args.userId;
         const userTyped = args.data.content;
         const verse = await Util.getVerse();
@@ -280,7 +281,7 @@ const Game = {
         return JSON.stringify({status: 200});
     },
 
-    next: async function (args: { userId: string }) {
+    next: async function (args: { userId: number }) {
         try {
             const userId = args.userId;
             const player = this.userIdToUserStatus[userId];
@@ -324,7 +325,7 @@ const Game = {
             return JSON.stringify({status: 500, error: e.toString()});
         }
     },
-    myStatus: async function (args: { userId: string }) {
+    myStatus: async function (args: { userId: number }) {
         try {
             const userId = args.userId;
             const user = this.userIdToUserStatus[userId];
@@ -354,12 +355,12 @@ const Game = {
         }
     },
 
-    setConfig: async function (args: { userId: string, data: { key: keyof GameConfig, value: any } }) {
+    setConfig: async function (args: { userId: number, data: { key: keyof GameConfig, value: any } }) {
         try {
             const userId = args.userId;
             const adminId = Util.adminId();
             const adminEnable = Util.adminEnable();
-            if (userId == adminId && adminEnable) {
+            if (userId === adminId && adminEnable) {
                 let data = args.data;
                 await Util.setConfig(data.key, data.value);
                 return JSON.stringify({});
@@ -401,12 +402,12 @@ const Game = {
         }
     },
 
-    resetManualBlank: async function (args: { userId: string }) {
+    resetManualBlank: async function (args: { userId: number }) {
         try {
             const userId = args.userId;
             const adminId = Util.adminId();
             const adminEnable = Util.adminEnable();
-            if (userId == adminId && adminEnable) {
+            if (userId === adminId && adminEnable) {
                 await Util.updateCurrVerseContent(this.key, '');
                 return JSON.stringify({status: 200, data: "Manual content resetted"});
             } else {
@@ -417,12 +418,12 @@ const Game = {
         }
     },
 
-    setBlankContent: async function (args: { userId: string, data: string }) {
+    setBlankContent: async function (args: { userId: number, data: string }) {
         try {
             const userId = args.userId;
             const adminId = Util.adminId();
             const adminEnable = Util.adminEnable();
-            if (userId == adminId && adminEnable) {
+            if (userId === adminId && adminEnable) {
                 const content = args.data;
                 await Util.updateCurrVerseContent(this.key, content);
                 return JSON.stringify({status: 200, data: "Manual content updated"});
@@ -434,12 +435,12 @@ const Game = {
         }
     },
 
-    getBlankContent: async function (args: { userId: string }) {
+    getBlankContent: async function (args: { userId: number }) {
         try {
             const userId = args.userId;
             const adminId = Util.adminId();
             const adminEnable = Util.adminEnable();
-            if (userId == adminId && adminEnable) {
+            if (userId === adminId && adminEnable) {
                 const verse = await Util.getVerse();
                 const answer = verse['a'];
                 let savedContent = verse[this.key];
