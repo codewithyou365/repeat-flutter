@@ -14,6 +14,7 @@ import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/tip.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class ContentEntry {
   int? id;
@@ -118,6 +119,7 @@ class ClassroomHelp {
               );
               gameData[i]['i'] = await Db().db.gameDao.getIdByName(Classroom.curr, game.name);
             } else {
+              gameEntity.k = game.key;
               gameEntity.name = game.name;
               gameEntity.hash = game.hash;
               gameEntity.service = game.service;
@@ -158,6 +160,7 @@ class ClassroomHelp {
                 }
               }
             } else {
+              tipEntity.k = tip.key;
               tipEntity.hash = tip.hash;
               tipEntity.service = tip.service;
               await Db().db.tipDao.updateOrReplace(tipEntity);
@@ -191,7 +194,7 @@ class ClassroomHelp {
       );
       savedVersionSigCacheMap[Classroom.curr] = currentVersionSig;
     } catch (e) {
-      debugPrint("Error registering fonts: $e");
+      Snackbar.showAndThrow(e.toString());
     }
   }
 
@@ -215,10 +218,10 @@ class ClassroomHelp {
   }
 
   static Future<bool> _ensureContentReady(
-      ContentEntry entry,
-      List<DownloadContent> downloads,
-      int bookId,
-      ) async {
+    ContentEntry entry,
+    List<DownloadContent> downloads,
+    int bookId,
+  ) async {
     if (entry.hash.isEmpty) {
       return false;
     }

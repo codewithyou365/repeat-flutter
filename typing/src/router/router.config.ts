@@ -14,16 +14,7 @@ export const routes = [
             {
                 path: 'word-slicer-game',
                 component: () => import('../view/game/word-slicer-game.vue'),
-            },
-
-            {
-                path: 'input-game',
-                component: () => import('../view/game/input-game.vue'),
-            },
-            {
-                path: 'japan-game',
-                component: () => import('../view/game/japan-game.vue'),
-            },
+            }
         ]
     },
     {
@@ -45,6 +36,26 @@ export const routes = [
     {
         path: '/login',
         component: () => import('../view/login.vue'),
+    },
+    {
+        path: '/tip/japanese',
+        redirect: '/tip/japanese/a',
+    },
+    {
+        path: '/tip/japanese/a',
+        component: () => import('../view/tip/japanese.vue'),
+    },
+    {
+        path: '/tip/japanese/q',
+        component: () => import('../view/tip/japanese.vue'),
+    },
+    {
+        path: '/tip/japanese/t',
+        component: () => import('../view/tip/japanese.vue'),
+    },
+    {
+        path: '/tip/japanese/n',
+        component: () => import('../view/tip/japanese.vue'),
     },
 
 

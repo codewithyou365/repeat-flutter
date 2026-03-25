@@ -26,7 +26,7 @@ class JsRuntime {
 
   JavascriptRuntime? _jsRuntime;
   bool _isInitialized = false;
-  final SubList<int> subNewGame = [];
+  final SubList<int> subNewVerse = [];
 
   JsRuntime({
     required this.tapNext,
@@ -38,8 +38,8 @@ class JsRuntime {
 
   Future<void> init(String coreJsCode, Server server) async {
     if (_isInitialized) return;
-    subNewGame.on([EventTopic.newGame], (verseId) async {
-      await invoke("Game.clear", {});
+    subNewVerse.on([EventTopic.newVerse], (verseId) async {
+      await invoke("Game.onNewVerse", {});
     });
     await loadDefaultCode();
     if (defaultCode.isNotEmpty) {
@@ -322,7 +322,7 @@ class JsRuntime {
   /// 3. 析构代码 (非常重要：释放底层内存)
   void dispose() {
     if (_jsRuntime != null) {
-      subNewGame.off();
+      subNewVerse.off();
       // 释放 C/C++ 层的内存资源，防止长时间运行导致 OOM
       _jsRuntime!.dispose();
       _jsRuntime = null;

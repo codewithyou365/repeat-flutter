@@ -15,7 +15,7 @@ class Tip {
 
   final int classroomId;
   final int bookId;
-  final String k;
+  String k;
   String hash;
   String service;
 

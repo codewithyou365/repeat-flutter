@@ -38,7 +38,7 @@ class Path {
   static const wordSlicerStatusUpdate = '/api/wordSlicerStatusUpdate';
 
   static const loginOrRegister = '/api/loginOrRegister';
-  static const gameKey = '/api/gameKey';
+  static const contentKey = '/api/contentKey';
   static const heart = '/api/heart';
   static const gameAdmin = '/api/gameAdmin';
   static const game = '/api/game';

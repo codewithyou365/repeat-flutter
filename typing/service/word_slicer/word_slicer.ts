@@ -267,6 +267,9 @@ const Game = {
         await this.clear();
         return JSON.stringify({status: 200, data: "Game started"});
     },
+    onNewVerse: async function () {
+        await this.clear();
+    },
     clear: async function (): Promise<void> {
         if (Util.adminEnable()) {
             await Util.broadcast(this.gameRefreshPath, '{}');

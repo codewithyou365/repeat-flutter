@@ -103,6 +103,9 @@ const Util = {
 
 const Game = {
     gameRefreshPath: 'gameRefresh',
+    onNewVerse: async function () {
+        await this.clear();
+    },
     clear: async function (): Promise<void> {
         if (!Util.adminEnable()) {
             await Util.broadcast(this.gameRefreshPath, {});

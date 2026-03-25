@@ -66,7 +66,7 @@ class WebServer {
     await jsRuntime.init(content, server);
     server.logger = Snackbar.show;
     server.controllers[Path.loginOrRegister] = loginOrRegister;
-    server.controllers[Path.gameKey] = (request) => withGameUser(request, gameKey);
+    server.controllers[Path.contentKey] = (request) => withGameUser(request, gameKey);
     server.controllers[Path.heart] = (request) => withGameUser(request, heart);
     server.controllers[Path.gameAdmin] = (request) => withGameUser(request, gameAdmin);
     server.controllers[Path.game] = (request) => withGameUserAndServer(request, game);

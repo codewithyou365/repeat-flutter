@@ -37,7 +37,7 @@ mkdir -p dist/service
 deal type
 deal blank_it_right
 deal word_slicer
-deal japan
+deal japanese
 (cd dist && zip -r ../dist.zip .)
 
 echo "Build and packaging complete: dist.zip"

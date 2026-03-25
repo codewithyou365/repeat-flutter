@@ -31,7 +31,7 @@ import 'package:repeat_flutter/page/repeat/logic/tts_helper.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'repeat_args.dart';
 import 'repeat_state.dart';
-import 'logic/game_helper.dart';
+import 'logic/session_coordinator.dart';
 import 'logic/repeat_flow_for_browse.dart';
 import 'logic/repeat_flow_for_examine.dart';
 import 'logic/repeat_flow.dart';
@@ -58,7 +58,7 @@ class RepeatLogic extends GetxController {
   late TextTemplate copyLogic = TextTemplate<RepeatLogic>(CrK.copyTemplate, this);
   late GameLogic<RepeatLogic> gameLogic;
   late TipLogic<RepeatLogic> tipLogic;
-  late GameHelper gameHelper;
+  late SessionCoordinator gameHelper;
   late BookEditorLogic bookEditor = BookEditorLogic<RepeatLogic>(this);
 
   late RepeatFlow? repeatFlow;
@@ -83,7 +83,7 @@ class RepeatLogic extends GetxController {
       tapMiddle: onTapMiddle,
       longTapMiddle: onLongTapMiddle,
     );
-    gameHelper = GameHelper(gameLogic.web);
+    gameHelper = SessionCoordinator(gameLogic.web, tipLogic.web);
     ttsHelper.init();
     copyLogic.init();
     expandSheet.init(copyLogic);
@@ -97,7 +97,7 @@ class RepeatLogic extends GetxController {
     await ClassroomHelp.registerRes();
     await initTips(args.progresses);
     state.gameLogicInitSuccess = await gameLogic.init(() {
-      gameHelper.tryRefreshGame(repeatFlow!.currVerse!);
+      gameHelper.tryRefresh(repeatFlow!.currVerse!);
     });
     state.helper.showMode.value = args.showMode;
     var ok = await repeatFlow!.init(
@@ -160,6 +160,11 @@ class RepeatLogic extends GetxController {
   }
 
   Future<void> openTip(Tip tip) async {
+    var curr = getCurr();
+    if (curr == null) {
+      return;
+    }
+    await Db().db.kvDao.insertOrReplace(Kv(K.lastVerseId, '${curr.verseId}'));
     final ctx = Get.context;
     if (ctx == null) {
       return;

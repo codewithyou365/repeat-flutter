@@ -5,12 +5,14 @@ import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/tip_server/controller/tip_key.dart';
 import 'package:repeat_flutter/logic/tip_server/js/js_runtime.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:path/path.dart' as path;
-import 'package:repeat_flutter/logic/tip_server/controller/tip.dart' as controller;
 import 'package:synchronized/synchronized.dart';
 import 'constant.dart';
+import 'controller/heart.dart';
+import 'controller/tip.dart';
 
 class TipUser extends UserId {
   final int id;
@@ -63,7 +65,9 @@ class TipWebServer {
     }, _serveFile);
     await jsRuntime.init(content, server);
 
-    server.controllers[Path.tip] = (request) => withJsRuntime(request, controller.tip);
+    server.controllers[Path.heart] = (request) => withLock(request, heart);
+    server.controllers[Path.contentKey] = (request) => withLock(request, tipKey);
+    server.controllers[Path.tip] = (request) => withJsRuntime(request, tip);
 
     open = true;
   }
@@ -136,6 +140,12 @@ class TipWebServer {
   }
 
   final Lock lock = Lock();
+
+  Future<message.Response?> withLock(message.Request req, Future<message.Response?> Function(message.Request req) handle) async {
+    return await lock.synchronized(() async {
+      return await handle(req);
+    });
+  }
 
   Future<message.Response?> withJsRuntime(
     message.Request req,

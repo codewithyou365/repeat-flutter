@@ -16,7 +16,7 @@ class Game {
 
   final int classroomId;
   final int bookId;
-  final String k;
+  String k;
   String name;
   String hash;
   String data;

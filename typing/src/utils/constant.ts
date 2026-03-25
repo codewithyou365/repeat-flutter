@@ -5,10 +5,11 @@ export const Path = {
     refreshGame: '/api/refreshGame',
 
     loginOrRegister: '/api/loginOrRegister',
-    gameKey: '/api/gameKey',
+    contentKey: '/api/contentKey',
     heart: '/api/heart',
     gameAdmin: '/api/gameAdmin',
     game: '/api/game',
+    tip: '/api/tip',
     gameUserScoreHistory: '/api/gameUserScoreHistory',
     gameUserScore: '/api/gameUserScore',
     gameUserScoreMinus: '/api/gameUserScoreMinus',
@@ -28,34 +29,43 @@ export const Path = {
 
 }
 
-export class GameType {
+export class ContentType {
     constructor(
         public code: number,
         public path: string
     ) {
     }
 
-    static NONE = new GameType(0, '');
-    static TYPE = new GameType(1, '/game/type-game');
-    static BLANK_IT_RIGHT = new GameType(2, '/game/blank-it-right-game');
-    static WORD_SLICER = new GameType(3, '/game/word-slicer-game');
-    static INPUT = new GameType(4, '/game/input-game');
-    static JAPAN = new GameType(5, '/game/japan-game');
+    static NONE = new ContentType(0, '');
+    static TYPE = new ContentType(1, '/game/type-game');
+    static BLANK_IT_RIGHT = new ContentType(2, '/game/blank-it-right-game');
+    static WORD_SLICER = new ContentType(3, '/game/word-slicer-game');
+    static INPUT = new ContentType(4, '/game/input-game');
+    static JAPANESE_A = new ContentType(5, '/tip/japanese/a');
+    static JAPANESE_Q = new ContentType(6, '/tip/japanese/q');
+    static JAPANESE_T = new ContentType(7, '/tip/japanese/t');
+    static JAPANESE_N = new ContentType(8, '/tip/japanese/n');
 
-    static toGameType(code: String): GameType {
+    static toContentType(code: String): ContentType {
         switch (code) {
             case 'Type':
-                return GameType.TYPE;
+                return ContentType.TYPE;
             case 'BlankItRight':
-                return GameType.BLANK_IT_RIGHT;
+                return ContentType.BLANK_IT_RIGHT;
             case 'WordSlicer':
-                return GameType.WORD_SLICER;
+                return ContentType.WORD_SLICER;
             case 'Input':
-                return GameType.INPUT;
-            case 'Japan':
-                return GameType.JAPAN;
+                return ContentType.INPUT;
+            case 'JapaneseA':
+                return ContentType.JAPANESE_A;
+            case 'JapaneseQ':
+                return ContentType.JAPANESE_Q;
+            case 'JapaneseT':
+                return ContentType.JAPANESE_T;
+            case 'JapaneseN':
+                return ContentType.JAPANESE_N;
             default:
-                return GameType.NONE;
+                return ContentType.NONE;
         }
     }
 }

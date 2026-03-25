@@ -1,5 +1,5 @@
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
-import 'game_helper.dart';
+import 'session_coordinator.dart';
 
 import 'constant.dart';
 import 'helper.dart';
@@ -7,7 +7,7 @@ import 'helper.dart';
 abstract class RepeatFlow {
   late Function() update;
 
-  late GameHelper gameHelper;
+  late SessionCoordinator gameHelper;
   late Helper helper;
 
   RepeatStep step = RepeatStep.recall;
@@ -26,7 +26,7 @@ abstract class RepeatFlow {
     required List<VerseTodayPrg> progresses,
     required int startIndex,
     required Function() update,
-    required GameHelper gameHelper,
+    required SessionCoordinator gameHelper,
     required Helper helper,
   });
 

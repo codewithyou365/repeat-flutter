@@ -9,7 +9,6 @@ class ConfigEn extends Config {
     put(I18nKey.settings, "Settings");
     put(I18nKey.material, "Material");
     put(I18nKey.bookShare, "Book Share");
-    put(I18nKey.editBook, "Edit Book");
     put(I18nKey.edit, "Edit");
     put(I18nKey.editWhat, "Edit %s");
     put(I18nKey.showMode, "Show Mode: %s");
@@ -310,6 +309,7 @@ class ConfigEn extends Config {
     put(I18nKey.ttsPitch, "Pitch");
     put(I18nKey.ttsSpeechRate, "Speech Rate");
     put(I18nKey.advancedEdit, "Advanced Edit");
+    put(I18nKey.advancedEditWeb, "Advanced Edit Web");
     put(I18nKey.web, "Web");
     put(I18nKey.btnFocus, "Focus");
     put(I18nKey.btnAdd, "Add");

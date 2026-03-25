@@ -458,7 +458,9 @@ const Game = {
             return JSON.stringify({status: 500, error: e.toString()});
         }
     },
-
+    onNewVerse: async function () {
+        await this.clear();
+    },
     clear: async function () {
         if (Util.adminEnable()) {
             await Util.broadcast(this.gameRefreshPath, '{}');

@@ -1,5 +1,9 @@
 <template>
-  <div>loading...</div>
+  <div class="loading-page">
+    <div class="loading-text">
+      loading<span class="dot dot-1">.</span><span class="dot dot-2">.</span><span class="dot dot-3">.</span>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -10,7 +14,7 @@ import {useRouter} from "vue-router";
 
 const router = useRouter();
 import {useStore} from 'vuex';
-import {GameType, Path} from "../utils/constant.ts";
+import {ContentType, Path} from "../utils/constant.ts";
 
 const store = useStore();
 
@@ -39,7 +43,7 @@ onMounted(() => {
   });
   bus().on(EventName.WsStatus, async (status: number) => {
     if (status === ClientStatus.CONNECT_FINISH) {
-      const req = new Request({path: Path.gameKey, data: 0});
+      const req = new Request({path: Path.contentKey, data: 0});
       const res = await client.node!.send(req);
       if (res.error) {
         if (res.error === 'token-invalid') {
@@ -48,8 +52,8 @@ onMounted(() => {
           console.error('Error starting game:', res.error);
         }
       } else {
-        const gameType = GameType.toGameType(res.data);
-        await router.push({path: gameType.path});
+        const contentType = ContentType.toContentType(res.data);
+        await router.push({path: contentType.path});
       }
     }
   });
@@ -57,3 +61,55 @@ onMounted(() => {
 });
 
 </script>
+
+<style scoped>
+.loading-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f7f2e8;
+}
+
+.loading-text {
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  color: #2c2218;
+}
+
+.dot {
+  display: inline-block;
+  width: 6px;
+  text-align: center;
+  animation: loading-bounce 1.2s infinite ease-in-out;
+}
+
+.dot-2 {
+  animation-delay: 0.15s;
+}
+
+.dot-3 {
+  animation-delay: 0.3s;
+}
+
+@keyframes loading-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  40% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+}
+
+.nut-theme-dark .loading-page {
+  background: #1f1b16;
+}
+
+.nut-theme-dark .loading-text {
+  color: #f2e6d6;
+}
+</style>

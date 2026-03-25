@@ -3,7 +3,7 @@ import 'dart:async';
 enum EventTopic {
   stopMedia,
   wsEvent,
-  newGame,
+  newVerse,
   allowRegisterNumber,
   createBook,
   importBook,

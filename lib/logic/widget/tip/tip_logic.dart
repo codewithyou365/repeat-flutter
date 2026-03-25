@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
@@ -8,6 +9,7 @@ import 'package:repeat_flutter/db/entity/tip.dart';
 import 'package:repeat_flutter/logic/tip_server/web_server.dart';
 import 'package:repeat_flutter/logic/widget/webview/webview_args.dart';
 import 'package:repeat_flutter/logic/widget/webview/webview_logic.dart';
+import 'package:repeat_flutter/main.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
 
 import 'tip_state.dart';
@@ -45,10 +47,13 @@ class TipLogic<T extends GetxController> {
     state.openPending = true;
     try {
       await _startTipWeb(tip);
+      final appLogic = Get.find<MyAppLogic>();
+      final theme = appLogic.themeMode.value == ThemeMode.dark ? 'dark' : 'light';
       final args = WebviewArgs(
-        initialUrl: "http://127.0.0.1:${port.value}",
+        initialUrl: "http://127.0.0.1:${port.value}?theme=$theme",
         pageTitle: tip.k,
         showTopBar: false,
+        showNavigationBar: false,
       );
       await Sheet.showBottomSheet<void>(
         context,

@@ -130,7 +130,7 @@ class _ExpandableTextState extends State<ExpandableText> {
               child: Icon(
                 iconData,
                 color: Color(0xFF007BFF),
-                size: 16, // Adjusted icon size
+                size: 17,
               ),
             ),
           ),

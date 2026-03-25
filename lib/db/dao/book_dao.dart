@@ -268,6 +268,7 @@ abstract class BookDao {
     //await db.classroomDao.deleteById(classroomId);
     //await db.crKvDao.deleteByClassroomId(classroomId);
     await db.gameDao.deleteByBookId(bookId);
+    await db.tipDao.deleteByBookId(bookId);
     await db.gameUserInputDao.deleteByBookId(bookId);
     //await db.timeStatsDao.deleteByClassroomId(classroomId);
     await db.verseDao.deleteByBookId(bookId);

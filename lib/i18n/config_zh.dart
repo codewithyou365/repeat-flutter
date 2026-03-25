@@ -9,7 +9,6 @@ class ConfigZh extends Config {
     put(I18nKey.settings, "设置");
     put(I18nKey.material, "材料");
     put(I18nKey.bookShare, "学卷分享");
-    put(I18nKey.editBook, "编辑学卷");
     put(I18nKey.showMode, "显示模式: %s");
     put(I18nKey.closedBook, "闭卷");
     put(I18nKey.openBook, "开卷");
@@ -308,6 +307,7 @@ class ConfigZh extends Config {
     put(I18nKey.ttsPitch, "语调");
     put(I18nKey.ttsSpeechRate, "语速");
     put(I18nKey.advancedEdit, "高级编辑");
+    put(I18nKey.advancedEditWeb, "高级编辑网络");
     put(I18nKey.web, "网络");
     put(I18nKey.btnFocus, "专注");
     put(I18nKey.btnAdd, "新增");

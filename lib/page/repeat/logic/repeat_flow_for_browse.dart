@@ -8,7 +8,7 @@ import 'package:repeat_flutter/logic/verse_help.dart' show VerseHelp;
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'constant.dart';
-import 'game_helper.dart';
+import 'session_coordinator.dart';
 import 'helper.dart';
 import 'repeat_flow.dart';
 import 'time_stats_logic.dart';
@@ -77,7 +77,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
     required List<VerseTodayPrg> progresses,
     required int startIndex,
     required Function() update,
-    required GameHelper gameHelper,
+    required SessionCoordinator gameHelper,
     required Helper helper,
   }) async {
     if (progresses.isEmpty) {
@@ -91,7 +91,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
     scheduled = progresses;
     step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
     helper.practiceController.clear();
-    await gameHelper.tryRefreshGame(currVerse!);
+    await gameHelper.tryRefresh(currVerse!);
     await timeStatsLogic.tryInsertTimeStats();
     return true;
   }
@@ -185,7 +185,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
       index++;
     }
     refresh();
-    await gameHelper.tryRefreshGame(currVerse!);
+    await gameHelper.tryRefresh(currVerse!);
     await timeStatsLogic.updateTimeStats();
   }
 
@@ -194,7 +194,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
       index--;
     }
     refresh();
-    await gameHelper.tryRefreshGame(currVerse!);
+    await gameHelper.tryRefresh(currVerse!);
     await timeStatsLogic.updateTimeStats();
   }
 }

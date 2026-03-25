@@ -6,5 +6,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["japan.ts"]
+  "include": ["japanese.ts"]
 }

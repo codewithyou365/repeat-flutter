@@ -381,6 +381,20 @@ class RepeatPage extends StatelessWidget {
 
       bool canEdit = isTip ? isEditMode : true;
       final qaType = isTip ? QaType.tip : QaType.note;
+      bool canShowTipIcon(QaType type) {
+        int? bookId = helper.logic.currVerse?.bookId;
+        Tip? tip = logic.state.bookIdToTip[bookId]?[type.acronym];
+        return tip != null;
+      }
+
+      Future<void> onTipIconTap(QaType type) async {
+        int? bookId = helper.logic.currVerse?.bookId;
+        Tip? tip = logic.state.bookIdToTip[bookId]?[type.acronym];
+        if (tip != null) {
+          await logic.openTip(tip);
+        }
+      }
+
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -399,6 +413,15 @@ class RepeatPage extends StatelessWidget {
                   ),
                 ),
               ),
+              if (canShowTipIcon(QaType.tip))
+                IconButton(
+                  icon: const Icon(
+                    Icons.tips_and_updates,
+                    color: Color(0xFF007BFF),
+                    size: 17,
+                  ),
+                  onPressed: () => onTipIconTap(QaType.tip),
+                ),
               const SizedBox(width: 24),
               GestureDetector(
                 behavior: HitTestBehavior.opaque,
@@ -412,6 +435,15 @@ class RepeatPage extends StatelessWidget {
                   ),
                 ),
               ),
+              if (canShowTipIcon(QaType.note))
+                IconButton(
+                  icon: const Icon(
+                    Icons.tips_and_updates,
+                    color: Color(0xFF007BFF),
+                    size: 17,
+                  ),
+                  onPressed: () => onTipIconTap(QaType.note),
+                ),
             ],
           ),
           const Divider(height: 16),
@@ -478,7 +510,7 @@ class RepeatPage extends StatelessWidget {
       fontFamily: fontAlias(logic, type),
     );
     String text = map[type.acronym] ?? '';
-
+    BoxDecoration? iconDecoration;
     Future<void> Function()? onIconCallback;
     IconData? onIconData;
     if (edit) {
@@ -493,6 +525,7 @@ class RepeatPage extends StatelessWidget {
           await logic.openTip(tip);
         };
         onIconData = Icons.tips_and_updates;
+        iconDecoration = const BoxDecoration();
       } else {
         onIconCallback = null;
       }
@@ -502,7 +535,7 @@ class RepeatPage extends StatelessWidget {
       text: text,
       style: style,
       onIcon: onIconCallback,
-      iconDecoration: const BoxDecoration(),
+      iconDecoration: iconDecoration,
       icon: onIconData,
       onText: () async {
         if (text.isEmpty) {

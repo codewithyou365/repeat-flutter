@@ -127,7 +127,6 @@ class GamePage<T extends GetxController> {
           );
         },
       ),
-      rate: 1,
     );
   }
 }
