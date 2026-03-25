@@ -10,7 +10,7 @@ import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
-import 'package:repeat_flutter/logic/game_server/web_server.dart';
+import 'package:repeat_flutter/logic/game_server/game_web_server.dart';
 
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -24,12 +24,12 @@ class UserManager<T extends GetxController> {
   int allowRegisterNumber = 1;
   final T parentLogic;
   String text = "";
-  late WebServer web;
+  late GameWebServer web;
   final SubList<WsEvent> sub = [];
 
   UserManager(this.parentLogic);
 
-  Future<void> init(WebServer web) async {
+  Future<void> init(GameWebServer web) async {
     users = await Db().db.gameUserDao.getAllUser();
     allowRegisterNumber = await getAllowRegisterNumber();
     this.web = web;

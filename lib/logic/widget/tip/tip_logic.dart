@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/db/entity/tip.dart';
-import 'package:repeat_flutter/logic/tip_server/web_server.dart';
+import 'package:repeat_flutter/logic/tip_server/tip_web_server.dart';
 import 'package:repeat_flutter/logic/widget/webview/webview_args.dart';
 import 'package:repeat_flutter/logic/widget/webview/webview_logic.dart';
 import 'package:repeat_flutter/main.dart';

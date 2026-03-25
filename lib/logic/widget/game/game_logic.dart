@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/await_util.dart';
 import 'package:repeat_flutter/common/ip.dart';
@@ -14,10 +15,11 @@ import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
-import 'package:repeat_flutter/logic/game_server/web_server.dart';
+import 'package:repeat_flutter/logic/game_server/game_web_server.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/widget/user_manager.dart';
 import 'package:repeat_flutter/logic/widget/webview/webview_args.dart';
+import 'package:repeat_flutter/main.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -30,7 +32,7 @@ class GameLogic<T extends GetxController> {
   static const String bodyId = "GameLogic.bodyId";
   final T parentLogic;
   late UserManager userManager = UserManager<T>(parentLogic);
-  late WebServer web;
+  late GameWebServer web;
 
   final GameState state = GameState();
   final SubList<WsEvent> sub = [];
@@ -48,7 +50,7 @@ class GameLogic<T extends GetxController> {
     required VoidCallback tapMiddle,
     required VoidCallback longTapMiddle,
   }) {
-    web = WebServer(
+    web = GameWebServer(
       tapNext: tapNext,
       tapLeft: tapLeft,
       tapRight: tapRight,
@@ -211,9 +213,11 @@ class GameLogic<T extends GetxController> {
   }
 
   void openWebview() async {
+    final appLogic = Get.find<MyAppLogic>();
+    final theme = appLogic.themeMode.value == ThemeMode.dark ? 'dark' : 'light';
     Get.back(
       result: WebviewArgs(
-        initialUrl: "https://127.0.0.1:${port.value}",
+        initialUrl: "https://127.0.0.1:${port.value}?theme=$theme",
         pageTitle: GameState.game?.name ?? '',
       ),
     );

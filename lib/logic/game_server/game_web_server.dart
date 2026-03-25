@@ -25,14 +25,14 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:path/path.dart' as path;
 import 'package:synchronized/synchronized.dart';
 
-class WebServer {
+class GameWebServer {
   bool open = false;
   late final Server<GameUser> server;
   final List<String> ips = [];
   String destinationDir = '';
   late JsRuntime jsRuntime;
 
-  WebServer({
+  GameWebServer({
     required VoidCallback tapNext,
     required VoidCallback tapLeft,
     required VoidCallback tapRight,

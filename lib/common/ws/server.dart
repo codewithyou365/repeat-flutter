@@ -126,56 +126,55 @@ class Server<User extends UserId> {
   Future<void> _init(HttpServer httpServer, Future<User?> Function(HttpRequest request) auth, Future<void> Function(HttpRequest request) handleHttpRequest) async {
     status = ServerStatus.working;
     server = httpServer;
-
-    server!.listen((HttpRequest request) async {
-      if (status == ServerStatus.stopped) return;
-
-      if (WebSocketTransformer.isUpgradeRequest(request)) {
-        User? user = await auth(request);
-        if (user == null) {
-          WebSocket socket = await WebSocketTransformer.upgrade(request);
-          await socket.close(4001, "token error");
+    try {
+      server!.listen((HttpRequest request) async {
+        if (status == ServerStatus.stopped) return;
+        if (status == ServerStatus.stopped) {
           return;
         }
-        WebSocket socket = await WebSocketTransformer.upgrade(request);
-        await handleWebSocket(socket, user);
-      } else {
-        if (cors) {
-          request.response.headers
-            ..add("Access-Control-Allow-Origin", "*")
-            ..add("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-            ..add("Access-Control-Allow-Headers", "Content-Type, Authorization");
-        }
-
-        if (request.method == "OPTIONS") {
-          await request.response.close();
-        } else if (controllers.containsKey(request.uri.path)) {
-          // 处理已注册的 Controller
-          var controller = controllers[request.uri.path]!;
-          Request req = Request();
-          req.path = request.uri.path;
-
-          request.headers.forEach((name, values) {
-            req.headers[name] = values.first;
-          });
-
-          String body = await utf8.decoder.bind(request).join();
-          if (body.isNotEmpty) {
-            req.data = jsonDecode(body);
+        if (WebSocketTransformer.isUpgradeRequest(request)) {
+          User? user = await auth(request);
+          WebSocket socket = await WebSocketTransformer.upgrade(request);
+          if (user == null) {
+            await socket.close(4001, "token error");
+            return;
           }
-
-          Response? res = await controller(req);
-          res ??= Response();
-
-          request.response.write(jsonEncode(res.toJson()));
-          await request.response.close();
+          await handleWebSocket(socket, user);
         } else {
-          await handleHttpRequest(request);
+          if (cors) {
+            request.response.headers
+              ..add("Access-Control-Allow-Origin", "*")
+              ..add("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+              ..add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+          }
+          if (request.method == "OPTIONS") {
+            await request.response.close();
+          } else if (controllers.containsKey(request.uri.path)) {
+            var controller = controllers[request.uri.path];
+            Request req = Request();
+            req.path = request.uri.path;
+            Map<String, String> headers = {};
+            request.headers.forEach((name, values) {
+              headers[name] = values.first;
+            });
+            req.headers = headers;
+            String body = await utf8.decoder.bind(request).join();
+            req.data = jsonDecode(body);
+            Response? res = await controller!(req);
+            res ??= Response();
+            String resStr = jsonEncode(res.toJson());
+            request.response.write(resStr);
+            await request.response.close();
+            return;
+          } else {
+            await handleHttpRequest(request);
+          }
         }
-      }
-    }, onError: (e) => logger?.call('Server error: $e'));
-
-    logger?.call('Server started on ${server!.address.address}:${server!.port}');
+      });
+      logger?.call('server started');
+    } catch (e) {
+      logger?.call('Error starting HTTP server: $e');
+    }
   }
 
   Future<void> stop() async {

@@ -2,11 +2,11 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
-import 'package:repeat_flutter/logic/game_server/web_server.dart';
-import 'package:repeat_flutter/logic/tip_server/web_server.dart';
+import 'package:repeat_flutter/logic/game_server/game_web_server.dart';
+import 'package:repeat_flutter/logic/tip_server/tip_web_server.dart';
 
 class SessionCoordinator {
-  final WebServer gameServer;
+  final GameWebServer gameServer;
   final TipWebServer tipServer;
 
   SessionCoordinator(this.gameServer, this.tipServer);
