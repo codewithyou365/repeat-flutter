@@ -85,7 +85,7 @@ class RepeatLogic extends GetxController {
       longTapMiddle: onLongTapMiddle,
     );
     gameHelper = SessionCoordinator(gameLogic.web, tipLogic.web);
-    ttsHelper.init();
+    ttsHelper.tryInit(TtsKeys.tip);
     copyLogic.init();
     expandSheet.init(copyLogic);
     var args = Get.arguments as RepeatArgs;

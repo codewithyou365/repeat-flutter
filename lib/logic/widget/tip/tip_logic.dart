@@ -65,6 +65,7 @@ class TipLogic<T extends GetxController> {
           await _closeTipWeb(closeSheet: true);
         }, context),
         padding: EdgeInsets.zero,
+        enableDrag: false,
       );
     } finally {
       await _closeTipWeb(closeSheet: true);

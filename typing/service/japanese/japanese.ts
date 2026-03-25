@@ -9,6 +9,13 @@ type Verse = {
 };
 
 const Util = {
+    tts: async function (payload: any): Promise<any> {
+        try {
+            return await sendMessage('tts', JSON.stringify(payload ?? {}));
+        } catch (e) {
+            return '';
+        }
+    },
     getVerse: async function (): Promise<Verse> {
         try {
             let data = await sendMessage('getVerse', '{}');
@@ -59,8 +66,10 @@ const Tip = {
     },
     tts: async function (payload: any): Promise<string> {
         try {
-            const text = typeof payload?.data === 'string' ? payload.data : '';
-            await sendMessage('tts', JSON.stringify({text}));
+            const data = payload?.data || {};
+            const text = typeof data.text === 'string' ? data.text : '';
+            const type = typeof data.type === 'string' ? data.type : '';
+            await Util.tts({text, type});
             return JSON.stringify({data: 'ok'});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});

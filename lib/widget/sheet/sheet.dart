@@ -25,6 +25,7 @@ class Sheet {
     double? height,
     GestureTapCallback? onTapBlack,
     EdgeInsets? padding,
+    bool enableDrag = true,
   }) {
     final Size screenSize = MediaQuery.of(context).size;
     rate ??= 2 / 3;
@@ -71,6 +72,7 @@ class Sheet {
       context: context,
       isScrollControlled: true,
       isDismissible: false,
+      enableDrag: enableDrag,
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return Column(

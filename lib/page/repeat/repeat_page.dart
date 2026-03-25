@@ -580,10 +580,8 @@ class RepeatPage extends StatelessWidget {
       I18nKey.font.tr,
       I18nKey.content.tr,
       I18nKey.expand.tr,
+      I18nKey.tts.tr,
     ];
-    if (type == QaType.tip) {
-      keys.add(I18nKey.tts.tr);
-    }
     int? index = await Select.showSheet(title: I18nKey.editWhat.trArgs([type.i18n.tr]), keys: keys);
     if (index == null) {
       return;
@@ -624,7 +622,7 @@ class RepeatPage extends StatelessWidget {
       await logic.expandSheet.open(text, verse, map);
       logic.update([RepeatLogic.id]);
     } else if (keys[index] == I18nKey.tts.tr) {
-      logic.ttsHelper.open();
+      logic.ttsHelper.open(type.ttsKeys);
     }
     helper.stopMedia(true);
   }

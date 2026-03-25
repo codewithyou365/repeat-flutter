@@ -1384,6 +1384,27 @@ class _$CrKvDao extends CrKvDao {
   }
 
   @override
+  Future<List<CrKv>> findByClassroomAndKeys(
+    int classroomId,
+    List<CrK> keys,
+  ) async {
+    const offset = 2;
+    final _sqliteVariablesForKeys =
+        Iterable<String>.generate(keys.length, (i) => '?${i + offset}')
+            .join(',');
+    return _queryAdapter.queryList(
+        'SELECT * FROM CrKv WHERE classroomId=?1 AND `k` IN (' +
+            _sqliteVariablesForKeys +
+            ')',
+        mapper: (Map<String, Object?> row) => CrKv(row['classroomId'] as int,
+            _crKConverter.decode(row['k'] as String), row['value'] as String),
+        arguments: [
+          classroomId,
+          ...keys.map((element) => _crKConverter.encode(element))
+        ]);
+  }
+
+  @override
   Future<void> deleteByClassroomId(int classroomId) async {
     await _queryAdapter.queryNoReturn('DELETE FROM CrKv WHERE classroomId=?1',
         arguments: [classroomId]);

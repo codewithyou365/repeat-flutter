@@ -11,6 +11,7 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/tip/tip_state.dart' show TipState;
+import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/page/repeat/logic/repeat_flow_for_browse.dart';
 import 'package:repeat_flutter/page/repeat/repeat_logic.dart';
 import 'package:repeat_flutter/page/repeat/logic/tts_helper.dart';
@@ -167,30 +168,27 @@ class JsRuntime {
       });
 
       _jsRuntime!.onMessage('tts', (dynamic args) async {
-        try {
-          String text = '';
-          if (args is String && args.isNotEmpty) {
-            final decoded = jsonDecode(args);
-            if (decoded is Map && decoded['text'] is String) {
-              text = decoded['text'] as String;
-            } else if (decoded is Map && decoded['data'] is String) {
-              text = decoded['data'] as String;
-            }
-          } else if (args is Map) {
-            if (args['text'] is String) {
-              text = args['text'] as String;
-            } else if (args['data'] is String) {
-              text = args['data'] as String;
-            }
-          }
-          if (text.isEmpty) {
-            return 'empty';
-          }
-          await ttsHelper.speakText(text);
-          return 'ok';
-        } catch (e) {
-          return e.toString();
+        if (args is! Map) {
+          return 'invalid_args';
         }
+        final payload = args.cast<String, dynamic>();
+        final type = payload['type'];
+        final text = payload['text'];
+        if (type is! String || type.isEmpty) {
+          return 'invalid_type';
+        }
+        if (text is! String) {
+          return 'invalid_text';
+        }
+        if (text.isEmpty) {
+          return 'empty';
+        }
+        final qaType = QaType.fromAcronym(type);
+        if (qaType == null) {
+          return 'invalid_text';
+        }
+        await ttsHelper.speakText(qaType.ttsKeys, text);
+        return 'ok';
       });
 
       final result = _jsRuntime!.evaluate(coreJsCode);

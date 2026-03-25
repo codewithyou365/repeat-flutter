@@ -371,6 +371,14 @@ const tipMethodByPath: Record<string, string> = {
 };
 
 const tipMethod = computed(() => tipMethodByPath[route.path] || 'Tip.answer');
+const tipTypeByPath: Record<string, string> = {
+  '/tip/japanese/a': 'a',
+  '/tip/japanese/q': 'q',
+  '/tip/japanese/t': 't',
+  '/tip/japanese/n': 'n',
+};
+
+const tipType = computed(() => tipTypeByPath[route.path] || 'a');
 const answerLabelByPath: Record<string, string> = {
   '/tip/japanese/a': 'Answer',
   '/tip/japanese/q': 'Question',
@@ -388,7 +396,7 @@ const speak = async (text: string) => {
     const req = new Request({
       path: Path.tip,
       headers: {'jsMethod': 'Tip.tts'},
-      data: text,
+      data: {text, type: tipType.value},
     });
     await client.node.send(req);
   } catch (error) {
