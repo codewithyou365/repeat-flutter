@@ -1,5 +1,7 @@
-export const url = `wss://${window.location.hostname}:${window.location.port}`;
-
+const { protocol, hostname, port } = window.location;
+const wsProtocol = protocol === 'https:' ? 'wss:' : 'ws:';
+const portPart = port ? `:${port}` : '';
+export const url = `${wsProtocol}//${hostname}${portPart}`;
 export const MessageType = {
     REQUEST: 0,
     RESPONSE: 1,
