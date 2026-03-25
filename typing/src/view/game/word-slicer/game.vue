@@ -31,7 +31,7 @@
       <nut-cell> {{ t('wordSlicerEndDesc') }}</nut-cell>
     </div>
     <div v-if="status.gameStep === GameStepEnum.finished">
-      <div class="actions">
+      <div class="actions" v-if="status.userIds.includes(currentUserId)">>
         <nut-button
             style="width: 50%"
             shape="square"

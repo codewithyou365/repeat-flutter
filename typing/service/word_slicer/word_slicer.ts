@@ -354,7 +354,15 @@ const Game = {
             selectedIndexed.forEach((index: number) => currentSelections.add(index));
             this.colorIndexToSelectedContentIndex[userColorIndex] = Array.from(currentSelections).sort((a: number, b: number) => a - b);
         }
-
+        if (selectedIndexed.length !== 0) {
+            const contentChars = this.content.split('');
+            for (const idx of selectedIndexed) {
+                if (idx >= 0 && idx < this.originContent.length) {
+                    contentChars[idx] = this.originContent[idx];
+                }
+            }
+            this.content = contentChars.join('');
+        }
         this.currUserIndex = (this.currUserIndex + 1) % this.userIds.length;
         await this.checkFinishCondition();
         await Util.broadcast(this.gameRefreshPath, this.getBroadcastData());
