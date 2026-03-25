@@ -381,34 +381,23 @@ const answerLabelByPath: Record<string, string> = {
 const answerLabel = computed(() => answerLabelByPath[route.path] || 'Answer');
 const themeClass = computed(() => (store.getters.currentTheme === 'dark' ? 'theme-dark' : 'theme-light'));
 
-const pickJapaneseVoice = (voices: SpeechSynthesisVoice[]) => {
-  const japanese = voices.filter(voice => voice.lang?.toLowerCase().startsWith('ja'));
-  if (!japanese.length) return null;
-  const preferred = japanese.find(voice => /female|woman|girl|kyoko|otome/i.test(voice.name));
-  return preferred || japanese[0];
-};
-
-const speak = (text: string) => {
-  if (typeof window === 'undefined') return;
-  const synth = window.speechSynthesis;
-  if (!synth) return;
+const speak = async (text: string) => {
   if (isMuted.value) return;
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'ja-JP';
-  const voices = synth.getVoices();
-  const picked = voices.length ? pickJapaneseVoice(voices) : null;
-  if (picked) {
-    utterance.voice = picked;
+  if (!client.node) return;
+  try {
+    const req = new Request({
+      path: Path.tip,
+      headers: {'jsMethod': 'Tip.tts'},
+      data: text,
+    });
+    await client.node.send(req);
+  } catch (error) {
+    console.error('Error sending tts:', error);
   }
-  synth.cancel();
-  synth.speak(utterance);
 };
 
 const toggleMute = () => {
   isMuted.value = !isMuted.value;
-  if (isMuted.value && typeof window !== 'undefined') {
-    window.speechSynthesis?.cancel();
-  }
 };
 
 const triggerFlash = async (id: string) => {
@@ -431,11 +420,11 @@ const onAnswerCharClick = (ch: string) => {
   if (!target) return;
   target.scrollIntoView({behavior: 'smooth', block: 'center'});
   void triggerFlash(anchor);
-  speak(ch);
+  void speak(ch);
 };
 
 const onKanaCellClick = (cell: KanaCell) => {
-  speak(cell.hira);
+  void speak(cell.hira);
 };
 
 const refresh = async () => {
@@ -559,6 +548,11 @@ watch(() => route.path, async () => {
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
 }
 
+.japan-game.theme-dark .kana-cell.flash {
+  border-color: rgba(180, 140, 90, 0.6);
+  animation: kana-flash-dark 0.42s ease;
+}
+
 .japan-game.theme-dark .kana-cell.empty {
   background: transparent;
   border: 1px dashed rgba(233, 218, 198, 0.2);
@@ -575,6 +569,24 @@ watch(() => route.path, async () => {
 
 .japan-game.theme-dark .kana-romaji {
   color: #bda88f;
+}
+
+@keyframes kana-flash-dark {
+  0% {
+    transform: scale(1);
+    background: #2a241d;
+    box-shadow: 0 0 0 rgba(180, 140, 90, 0);
+  }
+  40% {
+    transform: scale(1.05);
+    background: #3a2f24;
+    box-shadow: 0 10px 18px rgba(180, 140, 90, 0.25);
+  }
+  100% {
+    transform: scale(1);
+    background: #2a241d;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+  }
 }
 
 .mute-icon svg {

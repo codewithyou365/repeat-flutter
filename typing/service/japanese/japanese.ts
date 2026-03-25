@@ -57,4 +57,13 @@ const Tip = {
             return JSON.stringify({status: 500, error: error.toString()});
         }
     },
+    tts: async function (payload: any): Promise<string> {
+        try {
+            const text = typeof payload?.data === 'string' ? payload.data : '';
+            await sendMessage('tts', JSON.stringify({text}));
+            return JSON.stringify({data: 'ok'});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
+        }
+    },
 };

@@ -15,6 +15,7 @@ class WebviewLogic {
     allowsInlineMediaPlayback: true,
     iframeAllowFullscreen: true,
     mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW,
+    transparentBackground: true,
   );
 
   Widget build(WebviewArgs args, VoidCallback onClose, BuildContext context) {

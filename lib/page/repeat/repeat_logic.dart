@@ -76,6 +76,7 @@ class RepeatLogic extends GetxController {
       longTapMiddle: onLongTapMiddle,
     );
     tipLogic = TipLogic<RepeatLogic>(
+      ttsHelper: ttsHelper,
       parentLogic: this,
       tapNext: onNext,
       tapLeft: onTapLeft,

@@ -10,6 +10,7 @@ import 'package:repeat_flutter/logic/tip_server/web_server.dart';
 import 'package:repeat_flutter/logic/widget/webview/webview_args.dart';
 import 'package:repeat_flutter/logic/widget/webview/webview_logic.dart';
 import 'package:repeat_flutter/main.dart';
+import 'package:repeat_flutter/page/repeat/logic/tts_helper.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
 
 import 'tip_state.dart';
@@ -18,12 +19,14 @@ class TipLogic<T extends GetxController> {
   static const int defaultPort = 4325;
   RxInt port = defaultPort.obs;
   final T parentLogic;
+  final TtsHelper ttsHelper;
   late TipWebServer web;
   final WebviewLogic webviewLogic = WebviewLogic();
 
   final TipState state = TipState();
 
   TipLogic({
+    required this.ttsHelper,
     required this.parentLogic,
     required VoidCallback tapNext,
     required VoidCallback tapLeft,
@@ -32,6 +35,7 @@ class TipLogic<T extends GetxController> {
     required VoidCallback longTapMiddle,
   }) {
     web = TipWebServer(
+      ttsHelper: ttsHelper,
       tapNext: tapNext,
       tapLeft: tapLeft,
       tapRight: tapRight,

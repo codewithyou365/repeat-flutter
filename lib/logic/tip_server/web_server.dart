@@ -8,6 +8,7 @@ import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/tip_server/controller/tip_key.dart';
 import 'package:repeat_flutter/logic/tip_server/js/js_runtime.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
+import 'package:repeat_flutter/page/repeat/logic/tts_helper.dart';
 import 'package:path/path.dart' as path;
 import 'package:synchronized/synchronized.dart';
 import 'constant.dart';
@@ -28,8 +29,10 @@ class TipWebServer {
   late final Server<TipUser> server;
   String destinationDir = '';
   late JsRuntime jsRuntime;
+  final TtsHelper ttsHelper;
 
   TipWebServer({
+    required this.ttsHelper,
     required VoidCallback tapNext,
     required VoidCallback tapLeft,
     required VoidCallback tapRight,
@@ -37,6 +40,7 @@ class TipWebServer {
     required VoidCallback longTapMiddle,
   }) {
     jsRuntime = JsRuntime(
+      ttsHelper: ttsHelper,
       tapNext: tapNext,
       tapLeft: tapLeft,
       tapRight: tapRight,

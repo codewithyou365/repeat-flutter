@@ -65,6 +65,15 @@ class TtsHelper {
     }
   }
 
+  Future<void> speakText(String text) async {
+    if (text.isEmpty) return;
+    try {
+      await tts.speak(text, focus: true);
+    } catch (e) {
+      debugPrint("TTS Playback Error: $e");
+    }
+  }
+
   void stop() => tts.stop();
 }
 
