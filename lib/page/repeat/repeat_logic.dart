@@ -76,8 +76,11 @@ class RepeatLogic extends GetxController {
       longTapMiddle: onLongTapMiddle,
     );
     tipLogic = TipLogic<RepeatLogic>(
-      ttsHelper: ttsHelper,
       parentLogic: this,
+      ttsHelper: ttsHelper,
+      isMute: () {
+        return state.helper.doNotPlayMedia;
+      },
       tapNext: onNext,
       tapLeft: onTapLeft,
       tapRight: onLongTapRight,

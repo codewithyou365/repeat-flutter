@@ -26,8 +26,9 @@ class TipLogic<T extends GetxController> {
   final TipState state = TipState();
 
   TipLogic({
-    required this.ttsHelper,
     required this.parentLogic,
+    required this.ttsHelper,
+    required bool Function() isMute,
     required VoidCallback tapNext,
     required VoidCallback tapLeft,
     required VoidCallback tapRight,
@@ -36,6 +37,7 @@ class TipLogic<T extends GetxController> {
   }) {
     web = TipWebServer(
       ttsHelper: ttsHelper,
+      isMute: isMute,
       tapNext: tapNext,
       tapLeft: tapLeft,
       tapRight: tapRight,

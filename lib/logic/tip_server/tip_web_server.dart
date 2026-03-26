@@ -33,6 +33,7 @@ class TipWebServer {
 
   TipWebServer({
     required this.ttsHelper,
+    required bool Function() isMute,
     required VoidCallback tapNext,
     required VoidCallback tapLeft,
     required VoidCallback tapRight,
@@ -40,6 +41,7 @@ class TipWebServer {
     required VoidCallback longTapMiddle,
   }) {
     jsRuntime = JsRuntime(
+      isMute: isMute,
       ttsHelper: ttsHelper,
       tapNext: tapNext,
       tapLeft: tapLeft,

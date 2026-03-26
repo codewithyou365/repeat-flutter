@@ -501,7 +501,19 @@ const onAnswerCharClick = (ch: string) => {
 const onKanaCellClick = (cell: KanaCell) => {
   void speak(cell.hira);
 };
+const setMute = async () => {
+  try {
+    const muteRes = await client.node!.send(new Request({
+      path: Path.tip,
+      headers: {'jsMethod': 'Tip.isMute'},
+    }));
 
+    isMuted.value = muteRes.data;
+  } catch (e) {
+    console.error("Failed to fetch mute state", e);
+    isMuted.value = true;
+  }
+}
 const refresh = async () => {
   const req = new Request({
     path: Path.tip,
@@ -513,6 +525,7 @@ const refresh = async () => {
 
 onMounted(async () => {
   await refresh();
+  await setMute();
   client.controllers.set('gameRefresh', async () => {
     await refresh();
     return new Response();

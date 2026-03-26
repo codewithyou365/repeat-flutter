@@ -16,6 +16,14 @@ const Util = {
             return '';
         }
     },
+    isMute: function (): boolean {
+        try {
+            const result = sendMessage('isMute', '{}');
+            return result === 'true';
+        } catch (e) {
+            return true;
+        }
+    },
     getVerse: async function (): Promise<Verse> {
         try {
             let data = await sendMessage('getVerse', '{}');
@@ -71,6 +79,15 @@ const Tip = {
             const type = typeof data.type === 'string' ? data.type : '';
             await Util.tts({text, type});
             return JSON.stringify({data: 'ok'});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
+        }
+    },
+
+    isMute: function (): string {
+        try {
+            const result = Util.isMute();
+            return JSON.stringify({data: result});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});
         }

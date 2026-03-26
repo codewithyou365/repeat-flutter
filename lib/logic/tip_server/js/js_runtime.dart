@@ -25,12 +25,14 @@ class JsRuntime {
   final VoidCallback tapMiddle;
   final VoidCallback longTapMiddle;
   final TtsHelper ttsHelper;
+  final bool Function() isMute;
 
   JavascriptRuntime? _jsRuntime;
   bool _isInitialized = false;
   final SubList<int> subNewVerse = [];
 
   JsRuntime({
+    required this.isMute,
     required this.ttsHelper,
     required this.tapNext,
     required this.tapLeft,
@@ -189,6 +191,10 @@ class JsRuntime {
         }
         await ttsHelper.speakText(qaType.ttsKeys, text);
         return 'ok';
+      });
+
+      _jsRuntime!.onMessage('isMute', (dynamic args) {
+        return isMute().toString();
       });
 
       final result = _jsRuntime!.evaluate(coreJsCode);
