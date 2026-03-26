@@ -170,7 +170,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `k` TEXT NOT NULL, `name` TEXT NOT NULL, `hash` TEXT NOT NULL, `data` TEXT NOT NULL, `service` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Tip` (`id` INTEGER, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `k` TEXT NOT NULL, `hash` TEXT NOT NULL, `service` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Tip` (`id` INTEGER, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `t` TEXT NOT NULL, `k` TEXT NOT NULL, `hash` TEXT NOT NULL, `service` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `GameUser` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `password` TEXT NOT NULL, `nonce` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `token` TEXT NOT NULL, `tokenExpiredDate` INTEGER NOT NULL, `needToResetPassword` INTEGER NOT NULL)');
         await database.execute(
@@ -237,18 +237,12 @@ class _$AppDatabase extends AppDatabase {
             'CREATE INDEX `index_VerseStats_classroomId_createTime` ON `VerseStats` (`classroomId`, `createTime`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_Game_classroomId_name` ON `Game` (`classroomId`, `name`)');
-        await database.execute(
-            'CREATE UNIQUE INDEX `index_Game_classroomId_k` ON `Game` (`classroomId`, `k`)');
         await database
             .execute('CREATE INDEX `index_Game_bookId` ON `Game` (`bookId`)');
         await database.execute(
-            'CREATE INDEX `index_Game_classroomId_hash` ON `Game` (`classroomId`, `hash`)');
+            'CREATE UNIQUE INDEX `index_Tip_bookId_t` ON `Tip` (`bookId`, `t`)');
         await database.execute(
-            'CREATE UNIQUE INDEX `index_Tip_classroomId_k` ON `Tip` (`classroomId`, `k`)');
-        await database
-            .execute('CREATE INDEX `index_Tip_bookId` ON `Tip` (`bookId`)');
-        await database.execute(
-            'CREATE INDEX `index_Tip_classroomId_hash` ON `Tip` (`classroomId`, `hash`)');
+            'CREATE INDEX `index_Tip_classroomId` ON `Tip` (`classroomId`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_GameUser_name` ON `GameUser` (`name`)');
         await database.execute(
@@ -1881,6 +1875,7 @@ class _$TipDao extends TipDao {
                   'id': item.id,
                   'classroomId': item.classroomId,
                   'bookId': item.bookId,
+                  't': item.t,
                   'k': item.k,
                   'hash': item.hash,
                   'service': item.service,
@@ -1894,6 +1889,7 @@ class _$TipDao extends TipDao {
                   'id': item.id,
                   'classroomId': item.classroomId,
                   'bookId': item.bookId,
+                  't': item.t,
                   'k': item.k,
                   'hash': item.hash,
                   'service': item.service,
@@ -1916,6 +1912,7 @@ class _$TipDao extends TipDao {
         mapper: (Map<String, Object?> row) => Tip(
             classroomId: row['classroomId'] as int,
             bookId: row['bookId'] as int,
+            t: row['t'] as String,
             k: row['k'] as String,
             hash: row['hash'] as String,
             service: row['service'] as String,
@@ -1925,14 +1922,13 @@ class _$TipDao extends TipDao {
   }
 
   @override
-  Future<int?> getIdByKey(
-    int classroomId,
-    String key,
+  Future<int?> getIdByType(
+    int bookId,
+    String type,
   ) async {
-    return _queryAdapter.query(
-        'SELECT id FROM Tip WHERE classroomId=?1 AND k=?2',
+    return _queryAdapter.query('SELECT id FROM Tip WHERE bookId=?1 AND t=?2',
         mapper: (Map<String, Object?> row) => row.values.first as int,
-        arguments: [classroomId, key]);
+        arguments: [bookId, type]);
   }
 
   @override
@@ -1942,6 +1938,7 @@ class _$TipDao extends TipDao {
         mapper: (Map<String, Object?> row) => Tip(
             classroomId: row['classroomId'] as int,
             bookId: row['bookId'] as int,
+            t: row['t'] as String,
             k: row['k'] as String,
             hash: row['hash'] as String,
             service: row['service'] as String,
@@ -1951,13 +1948,13 @@ class _$TipDao extends TipDao {
   }
 
   @override
-  Future<void> deleteByKey(
-    int classroomId,
-    String key,
+  Future<void> deleteByType(
+    int bookId,
+    String type,
   ) async {
     await _queryAdapter.queryNoReturn(
-        'DELETE FROM Tip WHERE classroomId=?1 AND k=?2',
-        arguments: [classroomId, key]);
+        'DELETE FROM Tip WHERE bookId=?1 AND t=?2',
+        arguments: [bookId, type]);
   }
 
   @override

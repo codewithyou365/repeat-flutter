@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/db/entity/tip.dart';
@@ -134,10 +135,20 @@ class RepeatLogic extends GetxController {
   }
 
   Future<void> initTips(List<VerseTodayPrg> progresses) async {
+    final defaultTips = await Db().db.tipDao.getByClassroomId(Classroom.curr);
+    final keys = ['a', 'q', 't', 'n'];
+
+    Map<String, Tip> defaultTypeToTip = {};
+    for (var key in keys) {
+      final list = defaultTips.where((tip) => tip.t == key).toList();
+      if (list.isNotEmpty) {
+        defaultTypeToTip[key] = list[0];
+      }
+    }
+
     final bookIds = progresses.map((p) => p.bookId).toSet();
 
     state.bookIdToTip = <int, Map<String, Tip?>>{};
-    final keys = ['a', 'q', 't', 'n'];
 
     for (var bookId in bookIds) {
       final Map<String, Tip?> bookTips = {for (var k in keys) k: null};
@@ -158,7 +169,7 @@ class RepeatLogic extends GetxController {
         if (tipId == null) continue;
 
         final tip = await Db().db.tipDao.getById(tipId);
-        bookTips[k] = tip;
+        bookTips[k] = tip ?? defaultTypeToTip[k];
       }
     }
   }

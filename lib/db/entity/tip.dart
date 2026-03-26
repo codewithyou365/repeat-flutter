@@ -1,12 +1,11 @@
-// entity/game.dart
+// entity/tip.dart
 
 import 'package:floor/floor.dart';
 
 @Entity(
   indices: [
-    Index(value: ['classroomId', 'k'], unique: true),
-    Index(value: ['bookId']),
-    Index(value: ['classroomId', 'hash']),
+    Index(value: ['bookId', 't'], unique: true),
+    Index(value: ['classroomId']),
   ],
 )
 class Tip {
@@ -15,6 +14,7 @@ class Tip {
 
   final int classroomId;
   final int bookId;
+  String t;
   String k;
   String hash;
   String service;
@@ -24,6 +24,7 @@ class Tip {
   Tip({
     required this.classroomId,
     required this.bookId,
+    required this.t,
     required this.k,
     required this.hash,
     required this.service,

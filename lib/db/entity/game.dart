@@ -5,9 +5,7 @@ import 'package:floor/floor.dart';
 @Entity(
   indices: [
     Index(value: ['classroomId', 'name'], unique: true),
-    Index(value: ['classroomId', 'k'], unique: true),
     Index(value: ['bookId']),
-    Index(value: ['classroomId', 'hash']),
   ],
 )
 class Game {

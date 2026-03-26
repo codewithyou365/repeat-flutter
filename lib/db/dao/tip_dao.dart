@@ -11,14 +11,14 @@ abstract class TipDao {
   @Query('SELECT * FROM Tip WHERE id=:id')
   Future<Tip?> getById(int id);
 
-  @Query('SELECT id FROM Tip WHERE classroomId=:classroomId AND k=:key')
-  Future<int?> getIdByKey(int classroomId, String key);
+  @Query('SELECT id FROM Tip WHERE bookId=:bookId AND t=:type')
+  Future<int?> getIdByType(int bookId, String type);
 
   @Query('SELECT * FROM Tip WHERE classroomId=:classroomId ORDER BY id DESC')
   Future<List<Tip>> getByClassroomId(int classroomId);
 
-  @Query('DELETE FROM Tip WHERE classroomId=:classroomId AND k=:key')
-  Future<void> deleteByKey(int classroomId, String key);
+  @Query('DELETE FROM Tip WHERE bookId=:bookId AND t=:type')
+  Future<void> deleteByType(int bookId, String type);
 
   @Query('DELETE FROM Tip WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);

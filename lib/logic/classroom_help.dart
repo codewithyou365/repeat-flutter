@@ -147,6 +147,7 @@ class ClassroomHelp {
                 Tip(
                   classroomId: Classroom.curr,
                   bookId: book.id!,
+                  t: tip.mapKey!,
                   k: tip.key,
                   hash: tip.hash,
                   service: tip.service,
@@ -156,16 +157,17 @@ class ClassroomHelp {
               if (tip.mapKey != null) {
                 final entryMap = tipMap[tip.mapKey];
                 if (entryMap is Map<String, dynamic>) {
-                  entryMap['i'] = await Db().db.tipDao.getIdByKey(Classroom.curr, tip.key);
+                  entryMap['i'] = await Db().db.tipDao.getIdByType(book.id!, tip.mapKey!);
                 }
               }
             } else {
+              tipEntity.t = tip.mapKey!;
               tipEntity.k = tip.key;
               tipEntity.hash = tip.hash;
               tipEntity.service = tip.service;
               await Db().db.tipDao.updateOrReplace(tipEntity);
             }
-            currentTipKeys.add(tip.key);
+            currentTipKeys.add('${book.id}-${tip.mapKey}');
           }
         }
         Db().db.bookDao.updateBookContent(book.id!, jsonEncode(bookMap));
@@ -178,8 +180,9 @@ class ClassroomHelp {
       }
       final dbTips = await Db().db.tipDao.getByClassroomId(Classroom.curr);
       for (var dbTip in dbTips) {
-        if (!currentTipKeys.contains(dbTip.k)) {
-          await Db().db.tipDao.deleteByKey(Classroom.curr, dbTip.k);
+        final key = '${dbTip.bookId}-${dbTip.t}';
+        if (!currentTipKeys.contains(key)) {
+          await Db().db.tipDao.deleteByType(dbTip.bookId, dbTip.t);
         }
       }
       books = await Db().db.bookDao.getAll(Classroom.curr);
