@@ -168,7 +168,7 @@ class RepeatLogic extends GetxController {
         final tipId = entry['i'];
         if (tipId == null) continue;
 
-        final tip = await Db().db.tipDao.getById(tipId);
+        final tip = defaultTips.firstWhereOrNull((item) => item.id == tipId);
         bookTips[k] = tip ?? defaultTypeToTip[k];
       }
     }
