@@ -567,7 +567,7 @@ const Game = {
 
         for (let i = 0; i < chars.length; i++) {
             const char = chars[i];
-            if (char === ' ') continue;
+            if (char === ' ' || char === '\n') continue;
 
             if (ignorePunctuation && this.punctuationRegex.test(char)) {
                 this.punctuationRegex.lastIndex = 0;

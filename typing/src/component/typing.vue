@@ -11,7 +11,8 @@
     >
       <div class="typing-line">
         <template v-for="(group, gIndex) in groups" :key="gIndex">
-          <span v-if="group.type === 'word'" class="word">
+          <div v-if="group.type === 'newline'" class="newline-br"></div>
+          <span v-else-if="group.type === 'word'" class="word">
             <span
                 v-for="(ch, cIndex) in group.chars"
                 :key="cIndex"
@@ -94,30 +95,41 @@ const disabled = computed(() => {
 
 const groups = computed(() => {
   const gs: any[] = [];
+  const contentChars = props.content.split('');
+
   if (isCJK.value) {
-    props.content.split('').forEach((char, index) => {
-      gs.push({type: char === ' ' ? 'space' : 'char', char, index});
+    contentChars.forEach((char, index) => {
+      if (char === '\n') {
+        gs.push({ type: 'newline', char, index });
+      } else {
+        gs.push({ type: char === ' ' ? 'space' : 'char', char, index });
+      }
     });
   } else {
     let currentWord: any[] = [];
-    props.content.split('').forEach((char, index) => {
-      if (char === ' ') {
+    contentChars.forEach((char, index) => {
+      if (char === '\n') {
         if (currentWord.length) {
-          gs.push({type: 'word', chars: currentWord});
+          gs.push({ type: 'word', chars: currentWord });
           currentWord = [];
         }
-        gs.push({type: 'space', char, index});
+        gs.push({ type: 'newline', char, index });
+      } else if (char === ' ') {
+        if (currentWord.length) {
+          gs.push({ type: 'word', chars: currentWord });
+          currentWord = [];
+        }
+        gs.push({ type: 'space', char, index });
       } else {
-        currentWord.push({char, index});
+        currentWord.push({ char, index });
       }
     });
     if (currentWord.length) {
-      gs.push({type: 'word', chars: currentWord});
+      gs.push({ type: 'word', chars: currentWord });
     }
   }
   return gs;
 });
-
 const isComposing = ref(false);
 
 const setCharRef = (el: Element | null, index: number) => {
@@ -342,6 +354,7 @@ const handleKeydown = (e: KeyboardEvent) => {
 
 const getDisplayChar = (index: number) => {
   const originalChar = chars.value[index];
+  if (originalChar === '\n') return '';
   if (index >= userInput.value.length) {
     if (originalChar === ' ') return '⎵';
     if (isIgnore(originalChar, index)) return originalChar;
@@ -469,7 +482,12 @@ defineExpose({
   font-size: 22px;
   line-height: 1.6;
 }
-
+.newline-br {
+  flex-basis: 100%;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
 .word {
   display: inline-flex;
   flex-wrap: wrap;
