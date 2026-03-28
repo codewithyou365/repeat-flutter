@@ -15,7 +15,7 @@
 
     <Typing
         ref="typingRef"
-        :content="status.content"
+        :content="displayContent"
         :disabled="true"
         :touch-color="getCurrUserColor"
         :ignore-case="false"
@@ -119,6 +119,13 @@ const scoreDescription = computed(() =>
 );
 const currentUserId = computed(() => toNumber(store.getters.currentUserId));
 const nexted = computed(() => status.value.userIdToNexted[store.getters.currentUserId] === true);
+
+const displayContent = computed(() => {
+  if (status.value.gameStep == GameStepEnum.finished && isShowingAnswer.value && status.value.answer) {
+    return status.value.answer.replace(/ /g, '');
+  }
+  return status.value.content;
+});
 
 const isMyTurn = computed(() => {
   if (status.value.gameStep == GameStepEnum.finished) {
@@ -299,7 +306,7 @@ const refresh = async () => {
   ignoreContentIndexes.value = ignoreIndexes.sort((a, b) => a - b);
   await nextTick(() => {
     typingRef.value?.initContentIndexToColor(contentIndexToColor);
-    typingRef.value?.initUserInput(status.value.content);
+    typingRef.value?.initUserInput(displayContent.value);
   });
 };
 

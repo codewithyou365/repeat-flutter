@@ -177,8 +177,9 @@ const Game = {
     punctuationRegex: /[\p{P}\p{S}]/gu,
     currUserIndex: 0,
     _config: null as JsonRecord | null,
-    originContentWithSpace: '',
-    originContent: '',
+    contentWithoutP: '',
+    contentWithoutPs: '',
+    contentWithoutPsInLower: '',
     answer: '',
     verseId: undefined as string | number | undefined,
 
@@ -286,12 +287,13 @@ const Game = {
         let baseContent = (manualContent && manualContent !== '') ? manualContent : this.answer;
         baseContent = baseContent.replace(this.punctuationRegex, " ");
         baseContent = baseContent.replace(/\s+/g, " ");
-        this.originContentWithSpace = baseContent.toLowerCase().trim();
-        this.originContent = baseContent.replace(/\s+/g, "");
+        this.contentWithoutP = baseContent.trim();
+        this.contentWithoutPs = this.contentWithoutP.replace(/\s+/g, "");
+        this.contentWithoutPsInLower = this.contentWithoutPs.toLowerCase();
 
         const hcp = config.hiddenContentPercent || 0;
-        if (hcp > 0 && hcp <= 1 && this.originContent.length > 0) {
-            const chars = this.originContent.split('');
+        if (hcp > 0 && hcp <= 1 && this.contentWithoutPsInLower.length > 0) {
+            const chars = this.contentWithoutPsInLower.split('');
             const hideCount = Math.round(chars.length * hcp);
             const indexes = Array.from({length: chars.length}, (_, i) => i);
             for (let i = indexes.length - 1; i > 0; i--) {
@@ -303,7 +305,7 @@ const Game = {
             }
             this.content = chars.join('');
         } else {
-            this.content = this.originContent;
+            this.content = this.contentWithoutPsInLower;
         }
         this.colorIndexToSelectedContentIndex = [[], [], []];
         this.abandonUserIds = [];
@@ -357,8 +359,8 @@ const Game = {
         if (selectedIndexed.length !== 0) {
             const contentChars = this.content.split('');
             for (const idx of selectedIndexed) {
-                if (idx >= 0 && idx < this.originContent.length) {
-                    contentChars[idx] = this.originContent[idx];
+                if (idx >= 0 && idx < this.contentWithoutPs.length) {
+                    contentChars[idx] = this.contentWithoutPs[idx];
                 }
             }
             this.content = contentChars.join('');
@@ -375,7 +377,7 @@ const Game = {
             arr.forEach(idx => allSelected.add(idx));
         });
 
-        const effectiveContentLength = this.originContent.replace(/[\s\p{P}\p{S}]/gu, '').length;
+        const effectiveContentLength = this.contentWithoutPsInLower.replace(/[\s\p{P}\p{S}]/gu, '').length;
 
         const isAllSelected = allSelected.size >= effectiveContentLength;
         const isAllAbandoned = this.abandonUserIds.length > 0 && this.abandonUserIds.length >= this.userIds.length;
@@ -398,12 +400,12 @@ const Game = {
         result.sort((a, b) => a.start - b.start);
 
         result.forEach(ele => {
-            ele.word = this.originContent.substring(ele.start, ele.end + 1);
+            ele.word = this.contentWithoutPs.substring(ele.start, ele.end + 1);
         });
 
         return result;
     },
-// 内部工具：提取连续索引块 (由原 Dart 代码转化)
+
     _extractConsecutiveWord: function (indexes: number[], colorIndex: number): SelectedWord[] {
         if (!indexes || indexes.length === 0) return [];
 
@@ -427,9 +429,9 @@ const Game = {
     },
     _getAnswerWords: function (): AnswerWord[] {
         const result: AnswerWord[] = [];
-        if (!this.originContentWithSpace) return result;
+        if (!this.contentWithoutP) return result;
 
-        const words = this.originContentWithSpace.split(' ');
+        const words = this.contentWithoutP.split(' ');
         let cursor = 0;
 
         for (const w of words) {
@@ -457,7 +459,7 @@ const Game = {
         // 初始化统计数据
         this.colorIndexToStat = Array.from({length: 3}, () => ({rightCount: 0, errorCount: 0, score: 0}));
 
-        const totalValidChars = this.originContent.replace(/\s/g, '').length;
+        const totalValidChars = this.contentWithoutPsInLower.replace(/\s/g, '').length;
         if (totalValidChars === 0) {
             return;
         }
@@ -662,7 +664,7 @@ const Game = {
         const isFinished = this.gameStatus === GameStepEnum.finished;
         return {
             verseId: this.verseId,
-            answer: isFinished ? this.originContentWithSpace : '',
+            answer: isFinished ? this.contentWithoutP : '',
             content: this.content,
             gameStep: this.gameStatus,
 
