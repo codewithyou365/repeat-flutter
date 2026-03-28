@@ -673,11 +673,56 @@ class RepeatPage extends StatelessWidget {
         key: closeEyeKey,
         height: helper.screenHeight,
         width: helper.screenWidth,
-        showFinger: true,
+        showFinger: false,
         direct: DirectEnum.values[logic.state.closeEyesDirect],
         changeDirect: (DirectEnum direct) {
           logic.state.closeEyesDirect = direct.index;
           Db().db.kvDao.insertOrReplace(Kv(K.closeEyesDirect, "${direct.index}"));
+        },
+        getName: (int index, int total) {
+          final repeatLogic = logic.repeatFlow;
+          if (total == 1) {
+            return repeatLogic?.leftLabel ?? '$index';
+          } else if (total == 2) {
+            if (index == 0) {
+              return repeatLogic?.leftLabel ?? '$index';
+            } else {
+              return repeatLogic?.rightLabel ?? '$index';
+            }
+          } else if (total == 3) {
+            if (index == 0) {
+              return repeatLogic?.leftLabel ?? '$index';
+            } else if (index == 1) {
+              return I18nKey.tips.tr;
+            } else {
+              return repeatLogic?.rightLabel ?? '$index';
+            }
+          }
+          if (index == 0) {
+            return repeatLogic?.leftLabel ?? '$index';
+          } else if (index == 1) {
+            return I18nKey.tips.tr;
+          } else if (index == 2) {
+            return '${I18nKey.tips.tr}\nTTS';
+          } else {
+            return repeatLogic?.rightLabel ?? '$index';
+          }
+        },
+        getColor: (int index, int total) {
+          if (total == 1 && index == 0) {
+            return Colors.red.withValues(alpha: 0.5);
+          } else if (total == 2) {
+            if (index == 0 || index == 3) {
+              return Colors.red.withValues(alpha: 0.5);
+            }
+          } else if (total == 3) {
+            if (index == 0 || index == 1 || index == 3) {
+              return Colors.red.withValues(alpha: 0.5);
+            }
+          } else if (total >= 4) {
+            return Colors.red.withValues(alpha: 0.5);
+          }
+          return Colors.white70;
         },
         doubleUpCallback: (int index, int total) {
           if (index == 0) {

@@ -15,38 +15,21 @@ class CloseEyesPanel {
     required double width,
     required bool showFinger,
     required DirectEnum direct,
-
     required void Function(DirectEnum direct) changeDirect,
     required VoidCallback close,
     required VoidCallback help,
+    required String Function(int index, int total) getName,
+    required Color Function(int index, int total) getColor,
     required void Function(int index, int total) doubleUpCallback,
   }) {
-    final Map<int, int> lastUpTime = {};
-    final Map<int, Timer> pendingUpTimers = {};
-    const delayTime = 300;
-
     return _MultiTouchArea(
       height: height,
       width: width,
       showFinger: showFinger,
       direct: direct,
       changeDirect: changeDirect,
-      upCallback: (int index, int total) {
-        final now = DateTime.now().millisecondsSinceEpoch;
-        final last = lastUpTime[index];
-        if (last != null && now - last < delayTime) {
-          pendingUpTimers[index]?.cancel();
-          pendingUpTimers.remove(index);
-
-          doubleUpCallback(index, total);
-        } else {
-          pendingUpTimers[index]?.cancel();
-          pendingUpTimers[index] = Timer(const Duration(milliseconds: delayTime), () {
-            pendingUpTimers.remove(index);
-          });
-        }
-        lastUpTime[index] = now;
-      },
+      getName: getName,
+      getColor: getColor,
       doubleUpCallback: doubleUpCallback,
       close: close,
       help: help,
@@ -55,13 +38,21 @@ class CloseEyesPanel {
   }
 }
 
+enum DirectEnum {
+  leftToRight,
+  rightToLeft,
+  topToBottom,
+  bottomToTop,
+}
+
 class _MultiTouchArea extends StatefulWidget {
   final double height;
   final double width;
   final bool showFinger;
   final DirectEnum direct;
   final void Function(DirectEnum direct) changeDirect;
-  final void Function(int index, int total) upCallback;
+  final String Function(int index, int total) getName;
+  final Color Function(int index, int total) getColor;
   final void Function(int index, int total) doubleUpCallback;
   final VoidCallback close;
   final VoidCallback help;
@@ -72,7 +63,8 @@ class _MultiTouchArea extends StatefulWidget {
     required this.showFinger,
     required this.direct,
     required this.changeDirect,
-    required this.upCallback,
+    required this.getName,
+    required this.getColor,
     required this.doubleUpCallback,
     required this.close,
     required this.help,
@@ -83,27 +75,23 @@ class _MultiTouchArea extends StatefulWidget {
   State<_MultiTouchArea> createState() => _MultiTouchAreaState();
 }
 
-enum DirectEnum {
-  leftToRight,
-  rightToLeft,
-  topToBottom,
-  bottomToTop,
-}
-
 class _MultiTouchAreaState extends State<_MultiTouchArea> {
   final Map<int, Offset> _activeFingers = {};
   final Map<int, int> _fingerLabels = {};
-  RxBool show = false.obs;
-  RxBool showButton = false.obs;
 
-  Rx<CloseEyesModeEnum> closeEyesMode = CloseEyesModeEnum.opacity.obs;
+  final Map<int, int> _lastUpTime = {};
+  final Map<int, Timer> _pendingUpTimers = {};
+  static const int _delayTime = 300;
 
+  final RxBool showFinger = false.obs;
+  final RxBool showButton = false.obs;
+  final Rx<CloseEyesModeEnum> closeEyesMode = CloseEyesModeEnum.opacity.obs;
   late Rx<DirectEnum> direct;
 
   @override
   void initState() {
     super.initState();
-    show.value = widget.showFinger;
+    showFinger.value = widget.showFinger;
     direct = Rx(widget.direct);
     _guard.enableSecureFlag(enable: true);
   }
@@ -111,43 +99,80 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
   @override
   void dispose() {
     _guard.enableSecureFlag(enable: false);
+    for (var timer in _pendingUpTimers.values) {
+      timer.cancel();
+    }
     super.dispose();
+  }
+
+  void _handleUpEvent(int label, int total) {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final last = _lastUpTime[label];
+
+    if (last != null && now - last < _delayTime) {
+      _pendingUpTimers[label]?.cancel();
+      _pendingUpTimers.remove(label);
+      widget.doubleUpCallback(label, total);
+    } else {
+      _pendingUpTimers[label]?.cancel();
+      _pendingUpTimers[label] = Timer(const Duration(milliseconds: _delayTime), () {
+        _pendingUpTimers.remove(label);
+      });
+    }
+    _lastUpTime[label] = now;
   }
 
   void _onPointerDown(PointerDownEvent event) {
     _activeFingers[event.pointer] = event.position;
-
-    final sorted = _sort(_activeFingers.entries.toList(), direct.value);
-
-    _fingerLabels
-      ..clear()
-      ..addEntries(
-        sorted.asMap().entries.map(
-          (e) => MapEntry(e.value.key, e.key),
-        ),
-      );
-
+    _updateLabels();
     setState(() {});
   }
 
   void _onPointerUp(PointerUpEvent event) {
-    _activeFingers.remove(event.pointer);
     final label = _fingerLabels[event.pointer];
+    final total = _activeFingers.length;
+
     if (label != null) {
-      widget.upCallback(label, _fingerLabels.length);
+      _handleUpEvent(label, total);
     }
+
+    _activeFingers.remove(event.pointer);
+    _updateLabels();
     setState(() {});
   }
 
-  DirectEnum _nextDirection(DirectEnum d) {
-    final values = DirectEnum.values;
-    final nextIndex = (d.index + 1) % values.length;
-    return values[nextIndex];
+  void _updateLabels() {
+    final sorted = _sort(_activeFingers.entries.toList(), direct.value);
+    _fingerLabels.clear();
+    for (int i = 0; i < sorted.length; i++) {
+      _fingerLabels[sorted[i].key] = i;
+    }
+  }
+
+  List<MapEntry<int, Offset>> _sort(List<MapEntry<int, Offset>> list, DirectEnum d) {
+    switch (d) {
+      case DirectEnum.leftToRight:
+        list.sort((a, b) => a.value.dx.compareTo(b.value.dx));
+        break;
+      case DirectEnum.rightToLeft:
+        list.sort((a, b) => b.value.dx.compareTo(a.value.dx));
+        break;
+      case DirectEnum.topToBottom:
+        list.sort((a, b) => a.value.dy.compareTo(b.value.dy));
+        break;
+      case DirectEnum.bottomToTop:
+        list.sort((a, b) => b.value.dy.compareTo(a.value.dy));
+        break;
+    }
+    return list;
   }
 
   void rotate() {
-    direct.value = _nextDirection(direct.value);
+    final values = DirectEnum.values;
+    final nextIndex = (direct.value.index + 1) % values.length;
+    direct.value = values[nextIndex];
     widget.changeDirect(direct.value);
+    _updateLabels();
     setState(() {});
   }
 
@@ -195,76 +220,72 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
             onPointerDown: _onPointerDown,
             onPointerUp: _onPointerUp,
             behavior: HitTestBehavior.opaque,
-            child: Container(
-              height: widget.height,
-              width: widget.width,
-              color: closeEyesMode.value.backgroundColor,
+            child: Obx(
+              () => Container(
+                height: widget.height,
+                width: widget.width,
+                color: closeEyesMode.value.backgroundColor,
+              ),
             ),
           ),
-          if (show.value)
-            ..._activeFingers.entries.map((entry) {
-              final pointer = entry.key;
-              final position = entry.value;
-              final label = _fingerLabels[pointer];
-              if (label == null) return const SizedBox.shrink();
-              return Positioned(
-                left: position.dx - 25,
-                top: position.dy - 25,
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.red.withValues(alpha: 0.5),
-                  ),
-                  child: Text(
-                    '${label + 1}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              );
-            }),
+
+          // 手指位置显示
+          Obx(
+            () => showFinger.value
+                ? Stack(
+                    children: _activeFingers.entries.map((entry) {
+                      final label = _fingerLabels[entry.key];
+                      if (label == null) return const SizedBox.shrink();
+
+                      final color = widget.getColor(label, 4);
+
+                      return Positioned(
+                        left: entry.value.dx - 35,
+                        top: entry.value.dy - 35,
+                        child: Container(
+                          width: 70,
+                          height: 70,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: color.withValues(alpha: 0.5),
+                            border: Border.all(color: Colors.white70, width: 2),
+                          ),
+                          child: Text(
+                            widget.getName(label, _activeFingers.length),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  )
+                : const SizedBox.shrink(),
+          ),
+
+          // 底部控制栏
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Obx(() {
-              if (direct.value == DirectEnum.bottomToTop || direct.value == DirectEnum.topToBottom) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (showButton.value)
-                      ...List.generate(
-                        4,
-                        (index) {
-                          final isNormalOrder = direct.value == DirectEnum.topToBottom;
-                          final i = isNormalOrder ? index : (3 - index);
-                          return buildButton(i);
-                        },
-                      ),
-                    buildMenu(),
-                  ],
-                );
-              } else {
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (showButton.value)
-                      ...List.generate(
-                        4,
-                        (index) {
-                          final isNormalOrder = direct.value == DirectEnum.leftToRight;
-                          final i = isNormalOrder ? index : (3 - index);
-                          return buildButton(i);
-                        },
-                      ),
-                    buildMenu(),
-                  ],
-                );
+              bool isVertical = direct.value == DirectEnum.bottomToTop || direct.value == DirectEnum.topToBottom;
+
+              List<Widget> children = [];
+              if (showButton.value) {
+                const totalButtons = 4; // 假设固定 4 个按钮
+                var buttons = List.generate(totalButtons, (index) {
+                  final isReverse = direct.value == DirectEnum.rightToLeft || direct.value == DirectEnum.bottomToTop;
+                  final i = isReverse ? (totalButtons - 1 - index) : index;
+                  return buildButton(i);
+                });
+                children.addAll(buttons);
               }
+              children.add(buildMenu());
+
+              return isVertical ? Column(mainAxisSize: MainAxisSize.min, children: children) : Row(mainAxisSize: MainAxisSize.min, children: children);
             }),
           ),
         ],
@@ -272,31 +293,17 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
     );
   }
 
-  List<MapEntry<int, Offset>> _sort(List<MapEntry<int, Offset>> list, DirectEnum d) {
-    switch (d) {
-      case DirectEnum.leftToRight:
-        list.sort((a, b) => a.value.dx.compareTo(b.value.dx));
-        break;
-      case DirectEnum.rightToLeft:
-        list.sort((a, b) => b.value.dx.compareTo(a.value.dx));
-        break;
-      case DirectEnum.topToBottom:
-        list.sort((a, b) => a.value.dy.compareTo(b.value.dy));
-        break;
-      case DirectEnum.bottomToTop:
-        list.sort((a, b) => b.value.dy.compareTo(a.value.dy));
-        break;
-    }
-    return list;
-  }
-
   Widget buildButton(int index) {
+    final color = widget.getColor(index, _activeFingers.length);
     return Expanded(
       child: TextButton(
         onPressed: () => widget.doubleUpCallback.call(index, 4),
         child: Text(
-          '${index + 1}',
-          style: TextStyle(color: closeEyesMode.value.foregroundColor),
+          '$index ${widget.getName(index, 4)}',
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
@@ -312,66 +319,25 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
           child: Text(I18nKey.help.tr),
         ),
         PopupMenuItem<String>(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: loopCloseEyesMode,
-            child: Obx(() {
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text("${I18nKey.closeEyesMode.tr}${i18nCloseEyesMode()}"),
-                  Spacer(),
-                ],
-              );
-            }),
-          ),
+          onTap: loopCloseEyesMode,
+          child: Obx(() => Text("${I18nKey.closeEyesMode.tr}: ${i18nCloseEyesMode()}")),
         ),
         PopupMenuItem<String>(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => show.value = !show.value,
-            child: Obx(() {
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text("${I18nKey.showFingers.tr}($show)"),
-                  Spacer(),
-                ],
-              );
-            }),
-          ),
-        ),
-
-        PopupMenuItem<String>(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => showButton.value = !showButton.value,
-            child: Obx(() {
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text("${I18nKey.showButtons.tr}($showButton)"),
-                  Spacer(),
-                ],
-              );
-            }),
-          ),
+          onTap: () => showFinger.value = !showFinger.value,
+          child: Obx(() => Text("${I18nKey.showFingers.tr}: ${showFinger.value}")),
         ),
         PopupMenuItem<String>(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: rotate,
-            child: Obx(() {
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text("${I18nKey.rotate.tr} :"),
-                  SizedBox(width: 2),
-                  _directionIcon(direct.value),
-                  Spacer(),
-                ],
-              );
-            }),
+          onTap: () => showButton.value = !showButton.value,
+          child: Obx(() => Text("${I18nKey.showButtons.tr}: ${showButton.value}")),
+        ),
+        PopupMenuItem<String>(
+          onTap: rotate,
+          child: Row(
+            children: [
+              Text("${I18nKey.rotate.tr}: "),
+              const SizedBox(width: 8),
+              Obx(() => _directionIcon(direct.value)),
+            ],
           ),
         ),
         PopupMenuItem<String>(
@@ -385,21 +351,13 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
   Widget _directionIcon(DirectEnum d) {
     switch (d) {
       case DirectEnum.leftToRight:
-        return const Icon(
-          Icons.keyboard_double_arrow_right_outlined,
-        );
+        return const Icon(Icons.keyboard_double_arrow_right_outlined);
       case DirectEnum.rightToLeft:
-        return const Icon(
-          Icons.keyboard_double_arrow_left_outlined,
-        );
+        return const Icon(Icons.keyboard_double_arrow_left_outlined);
       case DirectEnum.topToBottom:
-        return const Icon(
-          Icons.keyboard_double_arrow_down_outlined,
-        );
+        return const Icon(Icons.keyboard_double_arrow_down_outlined);
       case DirectEnum.bottomToTop:
-        return const Icon(
-          Icons.keyboard_double_arrow_up_outlined,
-        );
+        return const Icon(Icons.keyboard_double_arrow_up_outlined);
     }
   }
 }
