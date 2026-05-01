@@ -335,8 +335,10 @@ class ConfigZh extends Config {
     put(I18nKey.btnNext, "下一个");
     put(I18nKey.btnPrevious, "上一个");
     put(I18nKey.btnFinish, "完成");
-    put(I18nKey.btnExport, "导出");
-    put(I18nKey.btnImport, "导入");
+    put(I18nKey.btnDatabaseExport, "数据库导出");
+    put(I18nKey.btnDatabaseImport, "数据库导入");
+    put(I18nKey.btnAllExport, "全量导出");
+    put(I18nKey.btnAllImport, "全量导入");
     put(I18nKey.save, "保存");
     put(I18nKey.cropAndSave, "裁剪后保存");
     put(I18nKey.close, "关闭");
