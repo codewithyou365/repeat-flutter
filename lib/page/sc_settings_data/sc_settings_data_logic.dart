@@ -10,9 +10,6 @@ import 'package:repeat_flutter/common/file_util.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/zip.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/book.dart';
-import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
@@ -20,7 +17,6 @@ import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
-import 'package:repeat_flutter/logic/reimport_help.dart';
 import 'package:repeat_flutter/logic/upload.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
@@ -29,30 +25,6 @@ import 'package:sqflite/sqflite.dart' as sqflite;
 import 'sc_settings_data_state.dart';
 
 typedef DialogCallback = void Function(BuildContext context, String url, String? mojo);
-
-// Tables exported in dependency order (parent tables before child tables).
-const List<String> _exportTables = [
-  'Classroom',
-  'Kv',
-  'CrKv',
-  'Book',
-  'BookContentVersion',
-  'Chapter',
-  'ChapterContentVersion',
-  'Verse',
-  'VerseContentVersion',
-  'VerseReview',
-  'VerseStats',
-  'VerseTodayPrg',
-  'TimeStats',
-  'Game',
-  'Tip',
-  'GameUser',
-  'GameUserScore',
-  'GameUserScoreHistory',
-  'EditBookHistory',
-  'GameUserInput',
-];
 
 class ScSettingsDataLogic extends GetxController {
   final ScSettingsDataState state = ScSettingsDataState();
@@ -90,22 +62,20 @@ class ScSettingsDataLogic extends GetxController {
 
       final rawDb = Db().db.database;
       var rootPath = await DocPath.getContentPath();
+      var dbDir = await sqflite.getDatabasesPath();
+      var dbPath = dbDir.joinPath(Db.fileName);
       List<ZipArchive> allZips = [];
 
-      Map<String, dynamic> dataJson = {
-        'version': 2,
-        'exportDate': DateTime.now().toIso8601String(),
-      };
-      for (final tableName in _exportTables) {
-        try {
-          dataJson[tableName] = await rawDb.rawQuery('SELECT * FROM $tableName');
-        } catch (e) {
-          dataJson[tableName] = [];
-        }
-      }
-      allZips.add(ZipArchive(path: 'data.json', bytes: utf8.encode(jsonEncode(dataJson))));
+      allZips.add(ZipArchive(path: Db.fileName, file: File(dbPath)));
 
-      for (var bookRow in (dataJson['Book'] as List).cast<Map<String, dynamic>>()) {
+      List<Map<String, dynamic>> bookRows;
+      try {
+        bookRows = await rawDb.rawQuery('SELECT * FROM Book');
+      } catch (e) {
+        bookRows = [];
+      }
+
+      for (var bookRow in bookRows) {
         final bookId = bookRow['id'] as int;
         final classroomId = bookRow['classroomId'] as int;
         final contentUrl = (bookRow['url'] as String?) ?? '';
@@ -192,28 +162,26 @@ class ScSettingsDataLogic extends GetxController {
       if (await Directory(tmpDir).exists()) await Directory(tmpDir).delete(recursive: true);
       await Zip.uncompress(File(zipFilePath), tmpDir);
 
-      File dataFile = File(tmpDir.joinPath('data.json'));
-      if (!await dataFile.exists()) {
+      File dbFile = File(tmpDir.joinPath(Db.fileName));
+      if (!await dbFile.exists()) {
         Get.back();
-        Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["data.json"]));
+        Snackbar.show(I18nKey.labelDataAnomaly.trArgs([Db.fileName]));
         return;
       }
-      Map<String, dynamic> data = jsonDecode(await dataFile.readAsString());
 
       await Db().db.close();
       await File(dbPath).delete();
+      await dbFile.copy(dbPath);
       await Db().init();
 
       final rawDb = Db().db.database;
-      for (final tableName in _exportTables) {
-        for (final row in (data[tableName] as List?)?.cast<Map<String, dynamic>>() ?? []) {
-          try {
-            await rawDb.insert(tableName, Map<String, dynamic>.from(row), conflictAlgorithm: sqflite.ConflictAlgorithm.replace);
-          } catch (_) {}
-        }
+      List<Map<String, dynamic>> bookRows;
+      try {
+        bookRows = await rawDb.rawQuery('SELECT * FROM Book');
+      } catch (e) {
+        bookRows = [];
       }
 
-      final bookRows = (data['Book'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       final zipNameToBook = {for (var row in bookRows) '${row['classroomId']}_${row['id']}.zip': row};
       final bookZips = (await Directory(tmpDir).list().toList()).whereType<File>().where((f) => f.path.endsWith('.zip')).toList();
 
