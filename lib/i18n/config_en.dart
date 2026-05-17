@@ -341,6 +341,15 @@ class ConfigEn extends Config {
     put(I18nKey.btnDatabaseImport, "Import Database");
     put(I18nKey.btnAllExport, "Export All");
     put(I18nKey.btnAllImport, "Import All");
+    put(I18nKey.btnBackupList, "Database Backup List");
+    put(I18nKey.btnSaveAs, "Save As");
+    put(I18nKey.btnRestore, "Restore");
+    put(I18nKey.labelBackupListTitle, "Database Backups");
+    put(I18nKey.labelNoBackup, "No backup files");
+    put(I18nKey.labelDeleteBackup, "Please confirm to delete this backup: %s");
+    put(I18nKey.labelRestoreBackup, "Please confirm to restore from this backup. Current data will be replaced: %s");
+    put(I18nKey.labelRestoring, "Restoring...");
+    put(I18nKey.labelRestoreSuccess, "Restore success");
     put(I18nKey.save, "Save");
     put(I18nKey.cropAndSave, "Crop & Save");
     put(I18nKey.close, "Close");

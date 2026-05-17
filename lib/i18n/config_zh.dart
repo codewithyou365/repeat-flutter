@@ -339,6 +339,15 @@ class ConfigZh extends Config {
     put(I18nKey.btnDatabaseImport, "数据库导入");
     put(I18nKey.btnAllExport, "全量导出");
     put(I18nKey.btnAllImport, "全量导入");
+    put(I18nKey.btnBackupList, "数据库备份列表");
+    put(I18nKey.btnSaveAs, "另存为");
+    put(I18nKey.btnRestore, "恢复");
+    put(I18nKey.labelBackupListTitle, "数据库备份");
+    put(I18nKey.labelNoBackup, "暂无备份文件");
+    put(I18nKey.labelDeleteBackup, "请确定删除该备份： %s");
+    put(I18nKey.labelRestoreBackup, "请确定从该备份恢复，当前数据将被替换： %s");
+    put(I18nKey.labelRestoring, "恢复中...");
+    put(I18nKey.labelRestoreSuccess, "恢复成功");
     put(I18nKey.save, "保存");
     put(I18nKey.cropAndSave, "裁剪后保存");
     put(I18nKey.close, "关闭");

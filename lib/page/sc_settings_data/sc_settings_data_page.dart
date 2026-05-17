@@ -42,6 +42,10 @@ class ScSettingsDataPage extends StatelessWidget {
             title: Text(I18nKey.btnAllImport.tr),
             onTap: () => logic.allImport(),
           ),
+          ListTile(
+            title: Text(I18nKey.btnBackupList.tr),
+            onTap: () => logic.showBackupList(),
+          ),
         ],
       ),
     );

@@ -18,6 +18,7 @@ import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/logic/upload.dart';
+import 'package:repeat_flutter/logic/widget/db_backup_list_sheet.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -242,6 +243,12 @@ class ScSettingsDataLogic extends GetxController {
     } catch (e) {
       sendPort.send({'error': e.toString()});
     }
+  }
+
+  void showBackupList() async {
+    var dbDir = await sqflite.getDatabasesPath();
+    var dbPath = dbDir.joinPath(Db.fileName);
+    await DbBackupListSheet.show(dbPath: dbPath);
   }
 
   void databaseImport(BuildContext context, String url, String? mojo) async {
