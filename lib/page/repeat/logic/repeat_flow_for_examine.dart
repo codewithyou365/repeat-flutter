@@ -181,7 +181,8 @@ class RepeatFlowForExamine extends RepeatFlow {
     }
     switch (step) {
       case RepeatStep.recall:
-        await error();
+        helper.tip = TipLevel.none;
+        step = RepeatStep.evaluate;
         break;
       case RepeatStep.evaluate:
         await error();
