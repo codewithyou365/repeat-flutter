@@ -15,16 +15,32 @@ class ScSettingsDataPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(I18nKey.data.tr),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (value) {
+              if (value == 'dbExport') {
+                openDialog(context, I18nKey.btnDatabaseExport.tr, state.exportUrl, null, logic.databaseExport);
+              } else if (value == 'dbImport') {
+                openDialog(context, I18nKey.btnDatabaseImport.tr, state.importUrl, I18nKey.labelImportMojoTips.tr, logic.databaseImport);
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(value: 'dbExport', child: Text(I18nKey.btnDatabaseExport.tr)),
+              PopupMenuItem(value: 'dbImport', child: Text(I18nKey.btnDatabaseImport.tr)),
+            ],
+          ),
+        ],
       ),
       body: ListView(
         children: <Widget>[
           ListTile(
-            title: Text(I18nKey.btnExport.tr),
-            onTap: () => {openDialog(context, I18nKey.btnExport.tr, state.exportUrl, null, logic.export)},
+            title: Text(I18nKey.btnAllExport.tr),
+            onTap: () => logic.allExport(context),
           ),
           ListTile(
-            title: Text(I18nKey.btnImport.tr),
-            onTap: () => {openDialog(context, I18nKey.btnImport.tr, state.importUrl, I18nKey.labelImportMojoTips.tr, logic.import)},
+            title: Text(I18nKey.btnAllImport.tr),
+            onTap: () => logic.allImport(),
           ),
         ],
       ),
@@ -40,7 +56,7 @@ class ScSettingsDataPage extends StatelessWidget {
     Get.defaultDialog(
       title: title,
       content: Column(
-        mainAxisSize: MainAxisSize.min, // Ensure dialog fits content
+        mainAxisSize: MainAxisSize.min,
         children: [
           TextFormField(
             controller: textEditingController,

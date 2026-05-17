@@ -337,8 +337,10 @@ class ConfigEn extends Config {
     put(I18nKey.btnNext, "NEXT");
     put(I18nKey.btnPrevious, "PREV");
     put(I18nKey.btnFinish, "FINISH");
-    put(I18nKey.btnExport, "Export");
-    put(I18nKey.btnImport, "Import");
+    put(I18nKey.btnDatabaseExport, "Export Database");
+    put(I18nKey.btnDatabaseImport, "Import Database");
+    put(I18nKey.btnAllExport, "Export All");
+    put(I18nKey.btnAllImport, "Import All");
     put(I18nKey.save, "Save");
     put(I18nKey.cropAndSave, "Crop & Save");
     put(I18nKey.close, "Close");

@@ -28,8 +28,8 @@ class MediaRange {
     required this.start,
     required this.end,
     required this.enable,
-    this.jsonStartName = "",
-    this.jsonEndName = "",
+    this.jsonStartName = "qStart",
+    this.jsonEndName = "qEnd",
   });
 }
 

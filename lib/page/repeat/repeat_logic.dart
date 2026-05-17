@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
@@ -131,6 +132,7 @@ class RepeatLogic extends GetxController {
       update([RepeatLogic.id]);
     });
     state.closeEyesDirect = await Db().db.kvDao.getIntWithDefault(K.closeEyesDirect, 0);
+    WakelockPlus.enable();
     update([RepeatLogic.id]);
   }
 
@@ -200,6 +202,7 @@ class RepeatLogic extends GetxController {
     await state.helper.mediaShareLogic.switchWeb(false);
     await bookEditor.switchWeb(false);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+    WakelockPlus.disable();
     state.helper.practiceController.dispose();
     if (state.fullScreenMode.value == RepeatFullScreenMode.closeEyes) {
       HapticFeedback.heavyImpact();
