@@ -117,6 +117,13 @@ func main() {
 			if offset%3 == 2 {
 				if mode == ListenMode || mode == ListenFullMode {
 					curr.A = line
+					for scanner.Scan() {
+						extra := strings.TrimSpace(scanner.Text())
+						if len(extra) == 0 {
+							break
+						}
+						curr.A = curr.A + " " + extra
+					}
 					segments = append(segments, curr)
 					curr = &segment{}
 				} else if mode == QaMode {
