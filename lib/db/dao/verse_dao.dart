@@ -203,7 +203,6 @@ abstract class VerseDao {
     //await deleteById(classroomId);
     //await db.crKvDao.deleteByClassroomId(classroomId);
     //await db.gameDao.deleteByVerseId(verseId);
-    await db.gameUserInputDao.deleteByVerseId(verseId);
     //await db.timeStatsDao.deleteByClassroomId(classroomId);
     await deleteByVerse(book, verse);
     await db.verseContentVersionDao.deleteByVerseId(verseId);

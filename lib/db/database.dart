@@ -14,7 +14,6 @@ import 'package:repeat_flutter/db/dao/edit_book_history_dao.dart';
 import 'package:repeat_flutter/db/dao/game_dao.dart';
 import 'package:repeat_flutter/db/dao/game_user_dao.dart';
 import 'package:repeat_flutter/db/dao/chapter_dao.dart';
-import 'package:repeat_flutter/db/dao/game_user_input_dao.dart';
 import 'package:repeat_flutter/db/dao/game_user_score_dao.dart';
 import 'package:repeat_flutter/db/dao/game_user_score_history_dao.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
@@ -123,8 +122,6 @@ abstract class AppDatabase extends FloorDatabase {
   GameDao get gameDao;
 
   TipDao get tipDao;
-
-  GameUserInputDao get gameUserInputDao;
 
   GameUserScoreDao get gameUserScoreDao;
 

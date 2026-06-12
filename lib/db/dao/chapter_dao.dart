@@ -243,7 +243,6 @@ abstract class ChapterDao {
     //await deleteById(classroomId);
     //await db.crKvDao.deleteByClassroomId(classroomId);
     //await db.gameDao.deleteByChapterId(chapterId);
-    await db.gameUserInputDao.deleteByChapterId(chapterId);
     //await db.timeStatsDao.deleteByClassroomId(classroomId);
     await db.verseDao.deleteByChapter(book, chapter);
     await db.verseContentVersionDao.deleteByChapterId(chapterId);

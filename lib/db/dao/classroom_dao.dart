@@ -54,7 +54,6 @@ abstract class ClassroomDao {
     await db.crKvDao.deleteByClassroomId(classroomId);
     await db.gameDao.deleteByClassroomId(classroomId);
     await db.tipDao.deleteByClassroomId(classroomId);
-    await db.gameUserInputDao.deleteByClassroomId(classroomId);
     await db.timeStatsDao.deleteByClassroomId(classroomId);
     await db.verseDao.deleteByClassroomId(classroomId);
     await db.verseContentVersionDao.deleteByClassroomId(classroomId);

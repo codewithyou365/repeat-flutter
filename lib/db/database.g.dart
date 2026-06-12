@@ -94,8 +94,6 @@ class _$AppDatabase extends AppDatabase {
 
   TipDao? _tipDaoInstance;
 
-  GameUserInputDao? _gameUserInputDaoInstance;
-
   GameUserScoreDao? _gameUserScoreDaoInstance;
 
   GameUserScoreHistoryDao? _gameUserScoreHistoryDaoInstance;
@@ -316,12 +314,6 @@ class _$AppDatabase extends AppDatabase {
   @override
   TipDao get tipDao {
     return _tipDaoInstance ??= _$TipDao(database, changeListener);
-  }
-
-  @override
-  GameUserInputDao get gameUserInputDao {
-    return _gameUserInputDaoInstance ??=
-        _$GameUserInputDao(database, changeListener);
   }
 
   @override
@@ -1977,73 +1969,6 @@ class _$TipDao extends TipDao {
   @override
   Future<void> updateOrReplace(Tip kv) async {
     await _tipUpdateAdapter.update(kv, OnConflictStrategy.replace);
-  }
-}
-
-class _$GameUserInputDao extends GameUserInputDao {
-  _$GameUserInputDao(
-    this.database,
-    this.changeListener,
-  ) : _queryAdapter = QueryAdapter(database);
-
-  final sqflite.DatabaseExecutor database;
-
-  final StreamController<String> changeListener;
-
-  final QueryAdapter _queryAdapter;
-
-  @override
-  Future<void> deleteByClassroomId(int classroomId) async {
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM GameUserInput WHERE classroomId=?1',
-        arguments: [classroomId]);
-  }
-
-  @override
-  Future<void> deleteByBookId(int bookId) async {
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM GameUserInput WHERE bookId=?1',
-        arguments: [bookId]);
-  }
-
-  @override
-  Future<void> deleteByChapterId(int chapterId) async {
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM GameUserInput WHERE chapterId=?1',
-        arguments: [chapterId]);
-  }
-
-  @override
-  Future<void> deleteByChapterIds(List<int> chapterIds) async {
-    const offset = 1;
-    final _sqliteVariablesForChapterIds =
-        Iterable<String>.generate(chapterIds.length, (i) => '?${i + offset}')
-            .join(',');
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM GameUserInput WHERE chapterId in (' +
-            _sqliteVariablesForChapterIds +
-            ')',
-        arguments: [...chapterIds]);
-  }
-
-  @override
-  Future<void> deleteByVerseId(int verseId) async {
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM GameUserInput WHERE verseId=?1',
-        arguments: [verseId]);
-  }
-
-  @override
-  Future<void> deleteByVerseIds(List<int> verseIds) async {
-    const offset = 1;
-    final _sqliteVariablesForVerseIds =
-        Iterable<String>.generate(verseIds.length, (i) => '?${i + offset}')
-            .join(',');
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM GameUserInput WHERE verseId in (' +
-            _sqliteVariablesForVerseIds +
-            ')',
-        arguments: [...verseIds]);
   }
 }
 
