@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter/widgets.dart';
+import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
+import 'package:repeat_flutter/widget/audio/audio_output_latency.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -17,6 +20,7 @@ class RepeatViewForAudio extends RepeatView {
   static const String playerId = "RepeatViewForAudio";
   final GlobalKey<MediaBarState> mediaKey = GlobalKey<MediaBarState>();
   late AudioPlayer audioPlayer;
+  final AudioOutputLatency outputLatency = AudioOutputLatency();
   var lastCurrentPath = "";
   int duration = 0;
   late MediaRangeHelper mediaRangeHelper;
@@ -31,6 +35,7 @@ class RepeatViewForAudio extends RepeatView {
   @override
   void init(Helper helper) {
     audioPlayer = AudioPlayer();
+    _initOutputLatency();
     this.helper = helper;
     mediaRangeHelper = MediaRangeHelper(helper: helper);
     sub.on([EventTopic.stopMedia], (b) {
@@ -39,8 +44,14 @@ class RepeatViewForAudio extends RepeatView {
     mediaRangeHelper.onInit();
   }
 
+  Future<void> _initOutputLatency() async {
+    outputLatency.userStopLeadMs = await Db().db.kvDao.getInt(K.bluetoothStopLeadMs);
+    await outputLatency.init();
+  }
+
   @override
   void dispose() {
+    outputLatency.dispose();
     audioPlayer.dispose();
     sub.off();
     mediaRangeHelper.onClose();
@@ -150,7 +161,7 @@ class RepeatViewForAudio extends RepeatView {
       }
 
       if (audioPlayer.playing) {
-        await audioPlayer.stop();
+        await audioPlayer.pause();
       }
 
       await audioPlayer.setFilePath(path.value);
@@ -186,7 +197,10 @@ class RepeatViewForAudio extends RepeatView {
         if (click) {
           helper!.doNotPlayMedia = true;
         }
-        await audioPlayer.stop();
+        // Use pause() instead of stop(): stop() releases the decoders and
+        // deactivates the audio session, which lets the Bluetooth link go
+        // idle and adds noticeable startup delay on the next play.
+        await audioPlayer.pause();
       },
       onEdit: mediaRangeHelper.mediaRangeEdit(range),
       onShare: helper!.openMediaShare(),
@@ -195,6 +209,13 @@ class RepeatViewForAudio extends RepeatView {
         await audioPlayer.setSpeed(speed);
       },
       getSpeed: () => audioPlayer.speed,
+      getOutputLatencyMs: () => outputLatency.latencyMs,
+      getPositionMs: () => audioPlayer.position.inMilliseconds,
+      getStopLeadMs: () => outputLatency.stopLeadMs,
+      onAdjustStopLead: (int ms) async {
+        outputLatency.userStopLeadMs = ms;
+        await Db().db.kvDao.insertOrReplace(Kv(K.bluetoothStopLeadMs, "$ms"));
+      },
       hideTime: helper!.focusMode.value,
     );
   }

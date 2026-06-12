@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
+import 'package:repeat_flutter/widget/audio/audio_output_latency.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -20,6 +23,7 @@ class RepeatViewForVideo extends RepeatView {
   static const String playerId = "RepeatViewForVideo";
   final GlobalKey<MediaBarState> mediaKey = GlobalKey<MediaBarState>();
   VideoPlayerController? _videoPlayerController;
+  final AudioOutputLatency outputLatency = AudioOutputLatency();
   int duration = 0;
   late MediaRangeHelper mediaRangeHelper;
   late VideoBoardHelper videoBoardHelper;
@@ -47,6 +51,7 @@ class RepeatViewForVideo extends RepeatView {
   @override
   void init(Helper helper) {
     this.helper = helper;
+    _initOutputLatency();
     mediaRangeHelper = MediaRangeHelper(helper: helper);
     videoBoardHelper = VideoBoardHelper(helper: helper);
     sub.on([EventTopic.stopMedia], (b) {
@@ -56,8 +61,44 @@ class RepeatViewForVideo extends RepeatView {
     videoBoardHelper.onInit();
   }
 
+  Future<void> _initOutputLatency() async {
+    outputLatency.userStopLeadMs = await Db().db.kvDao.getInt(K.bluetoothStopLeadMs);
+    await outputLatency.init();
+  }
+
+  // video_player only refreshes value.position about every 500ms, so the
+  // playback clock extrapolates between refreshes from these two anchors.
+  int _reportedPosMs = 0;
+  int _reportedAtWallMs = 0;
+
+  void _onVideoValueChanged() {
+    final v = _videoPlayerController?.value;
+    if (v == null) return;
+    final posMs = v.position.inMilliseconds;
+    if (posMs != _reportedPosMs) {
+      _reportedPosMs = posMs;
+      _reportedAtWallMs = DateTime.now().millisecondsSinceEpoch;
+    }
+  }
+
+  int _positionMs() {
+    final v = _videoPlayerController?.value;
+    if (v == null) return 0;
+    if (!v.isPlaying) {
+      return v.position.inMilliseconds;
+    }
+    final speed = v.playbackSpeed;
+    final extrapolatedMs = _reportedPosMs + ((DateTime.now().millisecondsSinceEpoch - _reportedAtWallMs) * speed).round();
+    // Cap the extrapolation at roughly one missed refresh: when the player
+    // stalls (e.g. a Bluetooth link waking up), the clock waits there instead
+    // of running ahead of the sound, like the audio view does.
+    final capMs = _reportedPosMs + (800 * speed).round();
+    return extrapolatedMs < capMs ? extrapolatedMs : capMs;
+  }
+
   @override
   void dispose() {
+    outputLatency.dispose();
     _videoPlayerController?.dispose();
     sub.off();
     mediaRangeHelper.onClose();
@@ -444,6 +485,13 @@ class RepeatViewForVideo extends RepeatView {
       getSpeed: () {
         return _videoPlayerController?.value.playbackSpeed ?? 1;
       },
+      getOutputLatencyMs: () => outputLatency.latencyMs,
+      getPositionMs: _positionMs,
+      getStopLeadMs: () => outputLatency.stopLeadMs,
+      onAdjustStopLead: (int ms) async {
+        outputLatency.userStopLeadMs = ms;
+        await Db().db.kvDao.insertOrReplace(Kv(K.bluetoothStopLeadMs, "$ms"));
+      },
       hideTime: helper!.focusMode.value,
     );
   }
@@ -502,6 +550,7 @@ class RepeatViewForVideo extends RepeatView {
           _videoPlayerController = VideoPlayerController.file(File(path.value));
           await _videoPlayerController!.initialize();
         }
+        _videoPlayerController!.addListener(_onVideoValueChanged);
 
         if (_videoPlayerController!.value.isInitialized) {
           duration = _videoPlayerController!.value.duration.inMilliseconds;

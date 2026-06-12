@@ -218,6 +218,7 @@ class ConfigEn extends Config {
     put(I18nKey.mediaShare, "Media Share");
     put(I18nKey.enableSsl, "Enable SSL");
     put(I18nKey.speed, "Speed");
+    put(I18nKey.bluetoothOffset, "BT Offset");
     put(I18nKey.labelCalendar, "Calendar");
     put(I18nKey.textTemplate, "Template");
     put(I18nKey.labelVerseNeedToContainAnswer, "Verse Need To Contain Answer");

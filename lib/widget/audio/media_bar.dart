@@ -12,6 +12,10 @@ typedef MediaShareCallback = void Function();
 typedef MediaCropAndSaveCallback = Future<void> Function();
 typedef MediaAdjustSpeedCallback = Future<void> Function(double speed);
 typedef MediaGetSpeedCallback = double Function();
+typedef MediaOutputLatencyMsCallback = int Function();
+typedef MediaPositionMsCallback = int Function();
+typedef MediaStopLeadMsCallback = int Function();
+typedef MediaAdjustStopLeadCallback = Future<void> Function(int ms);
 
 class MediaBar extends StatefulWidget {
   static const double pixelPerMs = 0.06;
@@ -28,6 +32,23 @@ class MediaBar extends StatefulWidget {
   final MediaCropAndSaveCallback? onCropAndSave;
   final MediaAdjustSpeedCallback? onAdjustSpeed;
   final MediaGetSpeedCallback? getSpeed;
+
+  /// Wall-time lead for the auto stop on slow outputs (e.g. Bluetooth).
+  /// Pausing takes this long to be heard — command propagation plus the sink
+  /// draining what it buffered past the reported position — so the auto stop
+  /// fires this much before the verse end and the draining tail plays the
+  /// rest of the verse.
+  final MediaOutputLatencyMsCallback? getOutputLatencyMs;
+
+  /// Current position reported by the player. When provided, it drives the
+  /// playback clock instead of wall time, so the bar waits out startup stalls
+  /// (e.g. a Bluetooth link waking up) instead of running ahead of the sound.
+  final MediaPositionMsCallback? getPositionMs;
+
+  /// Current user-tunable stop lead and its change handler; when both are
+  /// provided, the more-options menu shows a slider to tune it by ear.
+  final MediaStopLeadMsCallback? getStopLeadMs;
+  final MediaAdjustStopLeadCallback? onAdjustStopLead;
   final bool hideTime;
 
   const MediaBar({
@@ -43,6 +64,10 @@ class MediaBar extends StatefulWidget {
     required this.onCropAndSave,
     required this.onAdjustSpeed,
     required this.getSpeed,
+    this.getOutputLatencyMs,
+    this.getPositionMs,
+    this.getStopLeadMs,
+    this.onAdjustStopLead,
     required this.hideTime,
     super.key,
   });
@@ -82,22 +107,45 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
   void _updateOffset() {
     if (!mounted || !_isPlaying || _isLoading) return;
 
-    final nowMs = DateTime.now().millisecondsSinceEpoch;
-    final double elapsedMs = _startMediaPositionMs + (nowMs - _startMillisecondsSinceEpoch) * _currentSpeed;
+    // Player clock: prefer the position reported by the player, which holds
+    // still while the output stalls (e.g. a Bluetooth link waking up); fall
+    // back to wall time when the player can't report one.
+    double playerElapsedMs;
+    if (widget.getPositionMs != null) {
+      playerElapsedMs = widget.getPositionMs!().toDouble();
+    } else {
+      final nowMs = DateTime.now().millisecondsSinceEpoch;
+      playerElapsedMs = _startMediaPositionMs + (nowMs - _startMillisecondsSinceEpoch) * _currentSpeed;
+    }
+    // Pause reaches the output with a delay and the sink (e.g. Bluetooth)
+    // drains what it already buffered, so the auto stop fires latencyMs of
+    // wall time early; the draining tail plays the verse end itself. Reaching
+    // the end of the file needs no lead: the player completes by itself and
+    // the pipeline drains in full.
+    final latencyMs = widget.getOutputLatencyMs?.call() ?? 0;
     if (_startMediaPositionMs + 50 >= widget.verseEndMs) {
-      if (elapsedMs >= widget.duration()) {
+      if (playerElapsedMs >= widget.duration()) {
         _stopPlayback(false);
         return;
       }
-    } else if (elapsedMs >= widget.verseEndMs) {
+    } else if (playerElapsedMs >= widget.verseEndMs - latencyMs * _currentSpeed) {
+      // Snap the bar to the verse end: the draining tail still plays it.
+      setState(() {
+        _blockOffset = -(widget.verseEndMs - widget.verseStartMs) * MediaBar.pixelPerMs;
+      });
       _stopPlayback(false);
       return;
     }
-    if (elapsedMs >= widget.duration()) {
+    if (playerElapsedMs >= widget.duration()) {
       _stopPlayback(false);
       return;
     }
-    final newOffset = -(elapsedMs - widget.verseStartMs) * MediaBar.pixelPerMs;
+    double heardMs = playerElapsedMs;
+    if (heardMs < _startMediaPositionMs) {
+      // The output has not produced sound for this run yet.
+      heardMs = _startMediaPositionMs.toDouble();
+    }
+    final newOffset = -(heardMs - widget.verseStartMs) * MediaBar.pixelPerMs;
     if (_blockOffset != newOffset) {
       setState(() {
         _blockOffset = newOffset;
@@ -184,12 +232,12 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
     _startMillisecondsSinceEpoch = DateTime.now().millisecondsSinceEpoch;
     _startMediaPositionMs = currPositionMs;
 
-    _animController.duration = Duration(milliseconds: (durationMs / _currentSpeed).toInt());
+    // The controller is only a frame ticker; _updateOffset decides when to
+    // stop, based on the playback position. A duration-bound animation would
+    // end early whenever the output stalls at startup (e.g. Bluetooth
+    // wake-up) and cut the verse short.
     _animController.reset();
-
-    _animController.forward().then((_) {
-      _stopPlayback(false);
-    });
+    _animController.repeat();
 
     setState(() {
       _isPlaying = true;
@@ -208,7 +256,7 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
 
   @override
   Widget build(BuildContext context) {
-    bool hasMoreOptions = widget.onShare != null || widget.onAdjustSpeed != null;
+    bool hasMoreOptions = widget.onShare != null || widget.onAdjustSpeed != null || widget.onAdjustStopLead != null;
     if (!initMenuWidth) {
       final Size screenSize = MediaQuery.of(context).size;
       double screenWidth = screenSize.width;
@@ -301,6 +349,20 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
                             if (_isPlaying) {
                               await _playAtPosition();
                             }
+                          },
+                        ),
+                      );
+                    }
+                    if (widget.onAdjustStopLead != null && widget.getStopLeadMs != null) {
+                      if (items.isNotEmpty) {
+                        items.add(const PopupMenuDivider());
+                      }
+                      items.add(
+                        _StopLeadSliderEntry(
+                          currentMs: widget.getStopLeadMs!(),
+                          onChanged: (int ms) async {
+                            if (_isLoading) return;
+                            await widget.onAdjustStopLead!(ms);
                           },
                         ),
                       );
@@ -441,6 +503,74 @@ class _SpeedSliderEntryState extends State<_SpeedSliderEntry> {
           right: 8.0,
           child: Text(
             '${_formatSpeed(_tempSpeed)}x',
+            style: const TextStyle(fontSize: 14),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StopLeadSliderEntry extends PopupMenuEntry<String> {
+  final int currentMs;
+  final Function(int) onChanged;
+
+  const _StopLeadSliderEntry({
+    required this.currentMs,
+    required this.onChanged,
+  });
+
+  @override
+  double get height => 60.0;
+
+  @override
+  bool represents(String? value) => false;
+
+  @override
+  _StopLeadSliderEntryState createState() => _StopLeadSliderEntryState();
+}
+
+class _StopLeadSliderEntryState extends State<_StopLeadSliderEntry> {
+  late double _tempMs;
+
+  @override
+  void initState() {
+    super.initState();
+    _tempMs = widget.currentMs.toDouble();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        FullSlider(
+          width: MediaBarState.menuWidth,
+          height: widget.height,
+          min: 0,
+          max: 300,
+          divisions: 30,
+          value: _tempMs.clamp(0, 300),
+          onChanged: (value) {
+            setState(() {
+              _tempMs = value;
+            });
+          },
+          onChangeEnd: (value) {
+            widget.onChanged(_tempMs.round());
+          },
+        ),
+        Positioned(
+          left: 8.0,
+          child: Text(
+            I18nKey.bluetoothOffset.tr,
+            style: TextStyle(fontSize: 14),
+          ),
+        ),
+        Positioned(
+          right: 8.0,
+          child: Text(
+            '${_tempMs.round()}ms',
             style: const TextStyle(fontSize: 14),
           ),
         ),

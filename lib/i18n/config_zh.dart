@@ -216,6 +216,7 @@ class ConfigZh extends Config {
     put(I18nKey.mediaShare, "媒体分享");
     put(I18nKey.enableSsl, "启用SSL");
     put(I18nKey.speed, "速度");
+    put(I18nKey.bluetoothOffset, "蓝牙补偿");
     put(I18nKey.labelCalendar, "日历");
     put(I18nKey.textTemplate, "模版");
     put(I18nKey.labelVerseNeedToContainAnswer, "小节需要包含答案字段");

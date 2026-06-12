@@ -214,6 +214,7 @@ enum I18nKey {
   mediaShare,
   enableSsl,
   speed,
+  bluetoothOffset,
   labelCalendar,
   textTemplate,
   labelVerseNeedToContainAnswer,

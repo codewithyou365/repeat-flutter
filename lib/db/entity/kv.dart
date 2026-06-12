@@ -27,6 +27,7 @@ enum K {
   adminEnable,
   webviewHandlePos,
   tipServerPort,
+  bluetoothStopLeadMs,
 }
 
 @Entity(primaryKeys: ['k'])
