@@ -83,6 +83,14 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
   final Map<int, Timer> _pendingUpTimers = {};
   static const int _delayTime = 300;
 
+  // 用于按钮着色的手指数：按下立即生效，抬起后延迟 _delayTime 才消退
+  int _colorTotal = 0;
+  Timer? _decayTimer;
+
+  int _flashButton = -1;
+  Timer? _flashTimer;
+  static const int _flashTime = 200;
+
   final RxBool showFinger = false.obs;
   final RxBool showButton = false.obs;
   final Rx<CloseEyesModeEnum> closeEyesMode = CloseEyesModeEnum.opacity.obs;
@@ -102,7 +110,31 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
     for (var timer in _pendingUpTimers.values) {
       timer.cancel();
     }
+    _decayTimer?.cancel();
+    _flashTimer?.cancel();
     super.dispose();
+  }
+
+  // 把手指的 label 映射到固定的 4 个按钮位，规则与 doubleUpCallback 的分支一一对应
+  int _buttonOf(int index, int total) {
+    if (index == 0) {
+      return 0;
+    } else if (index == total - 1) {
+      return 3;
+    } else if (total >= 4 && index == 2) {
+      return 2;
+    }
+    return 1;
+  }
+
+  void _fire(int index, int total) {
+    _flashTimer?.cancel();
+    setState(() => _flashButton = _buttonOf(index, total));
+    _flashTimer = Timer(const Duration(milliseconds: _flashTime), () {
+      if (!mounted) return;
+      setState(() => _flashButton = -1);
+    });
+    widget.doubleUpCallback(index, total);
   }
 
   void _handleUpEvent(int label, int total) {
@@ -112,7 +144,7 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
     if (last != null && now - last < _delayTime) {
       _pendingUpTimers[label]?.cancel();
       _pendingUpTimers.remove(label);
-      widget.doubleUpCallback(label, total);
+      _fire(label, total);
     } else {
       _pendingUpTimers[label]?.cancel();
       _pendingUpTimers[label] = Timer(const Duration(milliseconds: _delayTime), () {
@@ -125,6 +157,9 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
   void _onPointerDown(PointerDownEvent event) {
     _activeFingers[event.pointer] = event.position;
     _updateLabels();
+    // 按下立即生效
+    _decayTimer?.cancel();
+    _colorTotal = _activeFingers.length;
     setState(() {});
   }
 
@@ -138,6 +173,12 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
 
     _activeFingers.remove(event.pointer);
     _updateLabels();
+    // 抬起后按钮颜色不立即消退，等过了双击判定窗口再按实际手指数重新着色
+    _decayTimer?.cancel();
+    _decayTimer = Timer(const Duration(milliseconds: _delayTime), () {
+      if (!mounted) return;
+      setState(() => _colorTotal = _activeFingers.length);
+    });
     setState(() {});
   }
 
@@ -179,6 +220,10 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
   void reset() {
     _activeFingers.clear();
     _fingerLabels.clear();
+    _decayTimer?.cancel();
+    _colorTotal = 0;
+    _flashTimer?.cancel();
+    _flashButton = -1;
     setState(() {});
   }
 
@@ -238,6 +283,8 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
                       if (label == null) return const SizedBox.shrink();
 
                       final color = widget.getColor(label, 4);
+                      // 显示这根手指实际会触发的按钮编号，与底部按钮一一对应
+                      final button = _buttonOf(label, _activeFingers.length);
 
                       return Positioned(
                         left: entry.value.dx - 35,
@@ -252,13 +299,12 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
                             border: Border.all(color: Colors.white70, width: 2),
                           ),
                           child: Text(
-                            widget.getName(label, _activeFingers.length),
+                            '${button+1}',
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 12,
+                              fontSize: 24,
                               fontWeight: FontWeight.bold,
                             ),
-                            textAlign: TextAlign.center,
                           ),
                         ),
                       );
@@ -294,14 +340,19 @@ class _MultiTouchAreaState extends State<_MultiTouchArea> {
   }
 
   Widget buildButton(int index) {
-    final color = widget.getColor(index, _activeFingers.length);
+    final color = widget.getColor(index, _colorTotal);
+    final flashing = _flashButton == index;
     return Expanded(
       child: TextButton(
-        onPressed: () => widget.doubleUpCallback.call(index, 4),
+        style: TextButton.styleFrom(
+          backgroundColor: flashing ? Colors.white24 : Colors.transparent,
+        ),
+        onPressed: () => _fire(index, 4),
         child: Text(
-          '$index ${widget.getName(index, 4)}',
+          widget.getName(index, 4),
           style: TextStyle(
-            color: color,
+            // 高亮底色会冲淡半透明的文字，闪烁时改用不透明色保证可读
+            color: flashing ? color.withValues(alpha: 1.0) : color,
             fontWeight: FontWeight.bold,
           ),
         ),
