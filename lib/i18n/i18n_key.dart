@@ -385,6 +385,10 @@ enum I18nKey {
   startExecution,
   closeLog,
   practiceHint,
+  labelZipPassword,
+  labelZipPasswordOptional,
+  labelZipPasswordRequired,
+  labelZipPasswordWrong,
   none;
 
   String trArgs([List<String> args = const []]) {

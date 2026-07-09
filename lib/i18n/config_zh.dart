@@ -64,6 +64,10 @@ class ConfigZh extends Config {
     put(I18nKey.labelImportSuccess, "导入成功");
     put(I18nKey.labelImportMojo, "导入新数据将清除所有现有数据");
     put(I18nKey.labelImportMojoTips, "输入红色文字以继续");
+    put(I18nKey.labelZipPassword, "ZIP 密码");
+    put(I18nKey.labelZipPasswordOptional, "留空表示不加密");
+    put(I18nKey.labelZipPasswordRequired, "该 zip 已加密，请输入密码");
+    put(I18nKey.labelZipPasswordWrong, "密码错误");
     put(I18nKey.labelImportCanceled, "导入取消");
     put(I18nKey.loading, "加载中...");
     put(I18nKey.labelImporting, "导入中...");

@@ -90,10 +90,23 @@ class ScCrMaterialLogic extends GetxController {
       Snackbar.show(I18nKey.labelLocalImportCancel.tr);
       return;
     }
+    String? password;
+    if (await Zip.isEncrypted(File(path))) {
+      password = await MsgBox.password(I18nKey.labelZipPasswordRequired.tr, I18nKey.labelZipPassword.tr);
+      if (password == null) {
+        Snackbar.show(I18nKey.labelLocalImportCancel.tr);
+        return;
+      }
+    }
     showOverlay(() async {
       var rootPath = await DocPath.getContentPath();
       var zipTargetPath = rootPath.joinPath(DocPath.getRelativePath(bookId));
-      await Zip.uncompress(File(path), zipTargetPath);
+      try {
+        await Zip.uncompress(File(path), zipTargetPath, password: password);
+      } on ZipPasswordException {
+        Snackbar.show(I18nKey.labelZipPasswordWrong.tr);
+        return;
+      }
       ZipRootDoc? zipRoot = await ZipRootDoc.fromPath(zipTargetPath.joinPath(DocPath.zipRootFile));
       if (zipRoot == null) {
         Snackbar.show(I18nKey.labelDataAnomalyWithArg.trArgs(['81']));

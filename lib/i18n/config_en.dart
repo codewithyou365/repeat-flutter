@@ -64,6 +64,10 @@ class ConfigEn extends Config {
     put(I18nKey.labelImportSuccess, "Import success");
     put(I18nKey.labelImportMojo, "Importing new data will clear all existing data");
     put(I18nKey.labelImportMojoTips, "Input red words to continue");
+    put(I18nKey.labelZipPassword, "ZIP password");
+    put(I18nKey.labelZipPasswordOptional, "Leave blank for no encryption");
+    put(I18nKey.labelZipPasswordRequired, "This zip is encrypted. Enter the password.");
+    put(I18nKey.labelZipPasswordWrong, "Wrong password");
     put(I18nKey.labelImportCanceled, "Import canceled");
     put(I18nKey.loading, "Loading...");
     put(I18nKey.labelImporting, "Importing...");

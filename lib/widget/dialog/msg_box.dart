@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -175,6 +177,27 @@ class MsgBox {
         noBtnTitle: noBtnTitle,
       ),
     );
+  }
+
+  /// Asks for a zip password. Returns null if the user cancels, an empty
+  /// string if the user confirms without typing anything.
+  static Future<String?> password(String title, String? decoration) {
+    final completer = Completer<String?>();
+    final model = RxString("");
+    strInputWithYesOrNo(
+      model,
+      title,
+      decoration,
+      yes: () {
+        Get.back();
+        completer.complete(model.value);
+      },
+      no: () {
+        Get.back();
+        completer.complete(null);
+      },
+    );
+    return completer.future;
   }
 
   static Widget yesOrNoAction({

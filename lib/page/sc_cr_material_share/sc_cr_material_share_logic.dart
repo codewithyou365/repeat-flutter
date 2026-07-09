@@ -209,6 +209,11 @@ class ScCrMaterialShareLogic extends GetxController {
       select: shareNote,
       selectDesc: I18nKey.labelDoYourShareTheNotes.tr,
       yes: () async {
+        String? password = await MsgBox.password(I18nKey.labelZipPassword.tr, I18nKey.labelZipPasswordOptional.tr);
+        if (password == null) {
+          Get.back();
+          return;
+        }
         await showOverlay(
           () async {
             var permissionStatus = await Permission.manageExternalStorage.request();
@@ -235,9 +240,12 @@ class ScCrMaterialShareLogic extends GetxController {
 
             var docText = json.encode(docMap);
             String indexHash = Hash.toSha1ForString(docText);
-            String zipFilePath = "$indexHash.zip";
+            bool encrypted = password.isNotEmpty;
+            String zipFilePath = encrypted ? "$indexHash.enc.zip" : "$indexHash.zip";
             File zipFile = File(rootPath.joinPath(relativePath).joinPath(zipFilePath));
-            bool zipFileExist = await zipFile.exists();
+            // The name only hashes the content, not the password, so an
+            // encrypted zip is always rebuilt in case the password changed.
+            bool zipFileExist = !encrypted && await zipFile.exists();
 
             if (!zipFileExist) {
               var downloads = DocHelp.getDownloads(BookContent.fromJson(docMap));
@@ -253,6 +261,7 @@ class ScCrMaterialShareLogic extends GetxController {
                   'relativePath': relativePath,
                   'rootPath': rootPath,
                   'contentUrl': state.book.url,
+                  'password': password,
                 },
               );
 
@@ -299,6 +308,7 @@ class ScCrMaterialShareLogic extends GetxController {
       String relativePath = message['relativePath'];
       String rootPath = message['rootPath'];
       String contentUrl = message['contentUrl'];
+      String password = message['password'];
 
       var rootFilePath = rootPath.joinPath(relativePath).joinPath(DocPath.zipRootFile);
       var rootFileContent = ZipRootDoc(contentUrl);
@@ -330,7 +340,7 @@ class ScCrMaterialShareLogic extends GetxController {
       }
 
       // Compress zip file
-      await Zip.compress(zipFiles, zipFile);
+      await Zip.compress(zipFiles, zipFile, password: password);
 
       // Send success message back to main isolate
       sendPort.send({'success': true});

@@ -53,6 +53,9 @@ class ScSettingsDataLogic extends GetxController {
   void allExport(BuildContext context) async {
     String? selectedDirectory;
 
+    String? password = await MsgBox.password(I18nKey.labelZipPassword.tr, I18nKey.labelZipPasswordOptional.tr);
+    if (password == null) return;
+
     await showOverlay(() async {
       var permissionStatus = await Permission.manageExternalStorage.request();
       if (permissionStatus != PermissionStatus.granted) {
@@ -110,7 +113,7 @@ class ScSettingsDataLogic extends GetxController {
       String timestamp = DateTime.now().toIso8601String().replaceAll(RegExp(r'[:.-]'), '').substring(0, 15);
       String finalZipName = 'all_export_$timestamp.zip';
       File finalZipFile = File(rootPath.joinPath(finalZipName));
-      await Zip.compress(allZips, finalZipFile);
+      await Zip.compress(allZips, finalZipFile, password: password);
 
       selectedDirectory = await FilePicker.platform.getDirectoryPath(
         dialogTitle: I18nKey.labelSelectDirectoryToSave.trArgs([finalZipName]),
@@ -143,12 +146,19 @@ class ScSettingsDataLogic extends GetxController {
       yes: () async {
         FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['zip']);
         if (result == null || result.files.single.path == null) return;
-        _doAllImport(result.files.single.path!);
+        String zipFilePath = result.files.single.path!;
+
+        String? password;
+        if (await Zip.isEncrypted(File(zipFilePath))) {
+          password = await MsgBox.password(I18nKey.labelZipPasswordRequired.tr, I18nKey.labelZipPassword.tr);
+          if (password == null) return;
+        }
+        _doAllImport(zipFilePath, password);
       },
     );
   }
 
-  void _doAllImport(String zipFilePath) async {
+  void _doAllImport(String zipFilePath, String? password) async {
     await showOverlay(() async {
       var rootPath = await DocPath.getContentPath();
       var dbDir = await sqflite.getDatabasesPath();
@@ -161,7 +171,13 @@ class ScSettingsDataLogic extends GetxController {
 
       String tmpDir = rootPath.joinPath('_import_tmp');
       if (await Directory(tmpDir).exists()) await Directory(tmpDir).delete(recursive: true);
-      await Zip.uncompress(File(zipFilePath), tmpDir);
+      try {
+        await Zip.uncompress(File(zipFilePath), tmpDir, password: password);
+      } on ZipPasswordException {
+        Get.back();
+        Snackbar.show(I18nKey.labelZipPasswordWrong.tr);
+        return;
+      }
 
       File dbFile = File(tmpDir.joinPath(Db.fileName));
       if (!await dbFile.exists()) {
