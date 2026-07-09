@@ -4,6 +4,7 @@ const state = {
     token: localStorage.getItem('token') ?? '',
     userId: localStorage.getItem('userId') ?? 0,
     enableVim: localStorage.getItem('enableVim') === 'true',
+    keyboardType: localStorage.getItem('keyboardType') ?? 'text',
     wsConnected: false,
 };
 const mutations = {
@@ -51,6 +52,10 @@ const mutations = {
         state.enableVim = enableVim;
         localStorage.setItem('enableVim', String(enableVim));
     },
+    setKeyboardType(state: any, keyboardType: string) {
+        state.keyboardType = keyboardType;
+        localStorage.setItem('keyboardType', keyboardType);
+    },
 };
 
 const actions = {
@@ -70,6 +75,9 @@ const actions = {
     updateEnableVim({commit}: any, enableVim: boolean) {
         commit('setEnableVim', enableVim);
     },
+    updateKeyboardType({commit}: any, keyboardType: string) {
+        commit('setKeyboardType', keyboardType);
+    },
 };
 
 const getters = {
@@ -79,6 +87,7 @@ const getters = {
     currentUserId: (state: any) => state.userId,
     currentWsConnected: (state: any) => state.wsConnected,
     currentEnableVim: (state: any) => state.enableVim,
+    currentKeyboardType: (state: any) => state.keyboardType,
 };
 
 export default {

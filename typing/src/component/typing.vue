@@ -40,6 +40,7 @@
 
       <input
           ref="inputRef"
+          :type="inputType"
           :disabled="disabled"
           v-model="composingInput"
           @compositionstart="handleCompositionStart"
@@ -47,6 +48,8 @@
           @keydown="handleKeydown"
           class="overlay-input"
           autocomplete="off"
+          autocapitalize="off"
+          autocorrect="off"
           spellcheck="false"
       />
     </div>
@@ -55,6 +58,7 @@
 
 <script setup lang="ts">
 import {onMounted, ref, nextTick, computed, onBeforeUnmount, watch} from 'vue';
+import {useStore} from 'vuex';
 
 const props = withDefaults(defineProps<{
   disabled: boolean;
@@ -69,6 +73,13 @@ const props = withDefaults(defineProps<{
   clickFillCharWhenDisabled: '',
   touchColor: '',
   ignoreContentIndexes: () => [],
+});
+
+const store = useStore();
+
+// password 类型会绕过输入法，直接给出纯 ASCII 键盘，适合练英文
+const inputType = computed(() => {
+  return store.getters.currentKeyboardType === 'password' ? 'password' : 'text';
 });
 
 const contentIndexToColor = ref<Record<number, string>>({});

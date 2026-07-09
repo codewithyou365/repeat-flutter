@@ -12,6 +12,14 @@
         <nut-switch v-model="theme" @change="changeTheme"/>
       </template>
     </nut-cell>
+    <nut-cell :title="t('keyboardType')">
+      <template #link>
+        <nut-radio-group v-model="keyboardType" direction="horizontal" @change="updateKeyboardType">
+          <nut-radio label="text">{{ t('keyboardTypeIme') }}</nut-radio>
+          <nut-radio label="password">{{ t('keyboardTypeAscii') }}</nut-radio>
+        </nut-radio-group>
+      </template>
+    </nut-cell>
   </div>
 </template>
 
@@ -26,6 +34,7 @@ const {t, locale} = useI18n();
 const theme = ref(store.getters.currentTheme === 'dark');
 const enableVim = ref(store.getters.currentEnableVim);
 const language = ref(store.getters.currentLanguage);
+const keyboardType = ref(store.getters.currentKeyboardType);
 
 const changeTheme = (value) => {
   theme.value = value;
@@ -36,6 +45,11 @@ const changeTheme = (value) => {
 const changeEnableVim = (value) => {
   enableVim.value = value;
   store.dispatch('updateEnableVim', value);
+};
+
+const updateKeyboardType = (value) => {
+  keyboardType.value = value;
+  store.dispatch('updateKeyboardType', value);
 };
 
 const updateLanguage = (value) => {
