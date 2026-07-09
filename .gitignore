@@ -50,3 +50,12 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 /example/supplier
+
+*.jar
+*.zip
+*.bin
+*.db
+*.mp3
+/example/**/*.go
+/example/**/*.json
+/example/**/*.sh

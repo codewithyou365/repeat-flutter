@@ -223,9 +223,11 @@ class RepeatFlowForExamine extends RepeatFlow {
     if (curr.progress >= ScheduleDao.scheduleConfig.maxRepeatTime) {
       scheduled.removeAt(0);
     }
-    if (scheduled.isNotEmpty) {
-      scheduled.sort(schedulesCurrentSort);
+    if (scheduled.isEmpty) {
+      await timeStatsLogic.updateTimeStats();
+      return;
     }
+    scheduled.sort(schedulesCurrentSort);
     refresh();
     await gameHelper.tryRefresh(currVerse!);
     await timeStatsLogic.updateTimeStats();
