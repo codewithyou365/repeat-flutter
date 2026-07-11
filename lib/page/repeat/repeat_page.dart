@@ -157,18 +157,22 @@ class RepeatPage extends StatelessWidget {
             icon: const Icon(Icons.more_vert),
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
               PopupMenuItem<String>(
+                padding: EdgeInsets.zero,
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: logic.switchShowMode,
-                  child: Obx(() {
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(I18nKey.showMode.trArgs([state.helper.showMode.value.i18n.tr])),
-                        Spacer(),
-                      ],
-                    );
-                  }),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Obx(() {
+                      return Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Text(I18nKey.showMode.trArgs([state.helper.showMode.value.i18n.tr])),
+                          Spacer(),
+                        ],
+                      );
+                    }),
+                  ),
                 ),
               ),
               PopupMenuItem<String>(
@@ -176,21 +180,25 @@ class RepeatPage extends StatelessWidget {
                 child: Text(I18nKey.closeEyes.tr),
               ),
               PopupMenuItem<String>(
+                padding: EdgeInsets.zero,
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () {
                     logic.togglePracticeMode();
                   },
-                  child: Obx(() {
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(I18nKey.practice.tr),
-                        const Spacer(),
-                        if (state.isPracticeMode.value) const Icon(Icons.check, size: 18, color: Colors.blue),
-                      ],
-                    );
-                  }),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Obx(() {
+                      return Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Text(I18nKey.practice.tr),
+                          const Spacer(),
+                          if (state.isPracticeMode.value) const Icon(Icons.check, size: 18, color: Colors.blue),
+                        ],
+                      );
+                    }),
+                  ),
                 ),
               ),
               if (state.gameLogicInitSuccess)
@@ -208,19 +216,23 @@ class RepeatPage extends StatelessWidget {
                   }),
                 ),
               PopupMenuItem<String>(
+                padding: EdgeInsets.zero,
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: logic.switchFocusMode,
-                  child: Obx(() {
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(I18nKey.btnFocus.tr),
-                        const Spacer(),
-                        if (state.helper.focusMode.value) const Icon(Icons.check, size: 18, color: Colors.blue),
-                      ],
-                    );
-                  }),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Obx(() {
+                      return Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Text(I18nKey.btnFocus.tr),
+                          const Spacer(),
+                          if (state.helper.focusMode.value) const Icon(Icons.check, size: 18, color: Colors.blue),
+                        ],
+                      );
+                    }),
+                  ),
                 ),
               ),
               PopupMenuItem<String>(
