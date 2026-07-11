@@ -73,15 +73,7 @@ class RepeatPage extends StatelessWidget {
     }
     if (state.needUpdateSystemUiMode) {
       state.needUpdateSystemUiMode = false;
-      if (landscape) {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
-      } else {
-        if (state.helper.focusMode.value) {
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
-        } else {
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
-        }
-      }
+      logic.applySystemUiMode();
     }
     String? viewName;
     if (state.helper.initialized) {
@@ -96,7 +88,11 @@ class RepeatPage extends StatelessWidget {
     if (viewName == null) {
       return dataMissing(state);
     } else {
-      return logic.showTypeToRepeatView[viewName]!.body();
+      return Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: (_) => logic.restoreSystemUiIfNeeded(),
+        child: logic.showTypeToRepeatView[viewName]!.body(),
+      );
     }
   }
 

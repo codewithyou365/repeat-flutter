@@ -133,7 +133,26 @@ class RepeatLogic extends GetxController {
     });
     state.closeEyesDirect = await Db().db.kvDao.getIntWithDefault(K.closeEyesDirect, 0);
     WakelockPlus.enable();
+    SystemChrome.setSystemUIChangeCallback((bool systemOverlaysAreVisible) async {
+      state.systemUiVisible = systemOverlaysAreVisible;
+    });
     update([RepeatLogic.id]);
+  }
+
+  void applySystemUiMode() {
+    state.systemUiVisible = false;
+    if (state.helper.landscape || state.helper.focusMode.value) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    } else {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+    }
+  }
+
+  void restoreSystemUiIfNeeded() {
+    if (!state.systemUiVisible) {
+      return;
+    }
+    applySystemUiMode();
   }
 
   Future<void> initTips(List<VerseTodayPrg> progresses) async {
@@ -201,6 +220,7 @@ class RepeatLogic extends GetxController {
     state.helper.onClose();
     await state.helper.mediaShareLogic.switchWeb(false);
     await bookEditor.switchWeb(false);
+    SystemChrome.setSystemUIChangeCallback(null);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     WakelockPlus.disable();
     state.helper.practiceController.dispose();
@@ -212,6 +232,7 @@ class RepeatLogic extends GetxController {
   void switchFocusMode() {
     state.helper.focusMode.value = !state.helper.focusMode.value;
     state.helper.tryToPlayMedia = false;
+    applySystemUiMode();
     update([RepeatLogic.id]);
   }
 

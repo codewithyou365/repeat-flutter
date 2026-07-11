@@ -9,6 +9,7 @@ import 'logic/helper.dart';
 class RepeatState {
   bool? lastLandscape;
   bool needUpdateSystemUiMode = true;
+  bool systemUiVisible = false;
 
   var enableShowRecallButtons = false;
   WebviewArgs? webviewArgs;
