@@ -18,12 +18,11 @@ class ExpandSheet {
     logic.loadSettings();
   }
 
-  Future<void> open(String text, VerseTodayPrg verse, Map<String, dynamic> verseMap) async {
-    final templateString = copyLogic.getShowText(text)[0];
+  Future<void> open(VerseTodayPrg verse, Map<String, dynamic> verseMap) async {
     logic.bookId = verse.bookId;
     logic.verseId = verse.verseId;
     logic.verseMap = verseMap;
-    logic.textController.text = templateString;
+    logic.textController.text = copyLogic.getShowText(logic.getSourceText())[0];
     return Sheet.showBottomSheet(
       Get.context!,
       head: SheetHead(
@@ -40,6 +39,17 @@ class ExpandSheet {
             I18nKey.serviceUrl.tr,
             logic.serviceUrl,
             onTextModify: () => logic.saveServiceUrl(),
+          ),
+          RowWidget.buildDividerWithoutColor(),
+          RowWidget.buildCupertinoPicker(
+            title: I18nKey.textTemplate.tr,
+            options: logic.sourceOptions,
+            value: logic.sourceIndex.value,
+            changed: (index) {
+              logic.sourceIndex.value = index;
+              logic.textController.text = copyLogic.getShowText(logic.getSourceText())[0];
+            },
+            disabled: logic.disabled,
           ),
           RowWidget.buildDividerWithoutColor(),
           RowWidget.buildText(I18nKey.editInstructionTips.tr),
@@ -68,7 +78,7 @@ class ExpandSheet {
                       icon: const Icon(Icons.auto_fix_high, size: 20),
                       onPressed: logic.isInit.value
                           ? () async {
-                              var result = await copyLogic.show(TextTemplateMode.editAndGet, Get.context!, text);
+                              var result = await copyLogic.show(TextTemplateMode.editAndGet, Get.context!, logic.getSourceText());
                               if (result.isNotEmpty) {
                                 logic.textController.text = result;
                               }
@@ -82,7 +92,7 @@ class ExpandSheet {
           ),
           RowWidget.buildDividerWithoutColor(),
           RowWidget.buildCupertinoPicker(
-            title: I18nKey.appendPosition.tr,
+            title: I18nKey.overwritePosition.tr,
             options: logic.targetOptions,
             value: logic.targetIndex.value,
             changed: (index) {
@@ -102,6 +112,12 @@ class ExpandSheet {
             title: I18nKey.syncGenerateAudio.tr,
             value: logic.enableAudio,
             disabled: logic.disabledAudioWidget,
+          ),
+          RowWidget.buildDividerWithoutColor(),
+          RowWidget.buildSwitch(
+            title: I18nKey.addToNextVerse.tr,
+            value: logic.addToNextVerse,
+            disabled: logic.disabled,
           ),
           RowWidget.buildDividerWithoutColor(),
           Obx(() {

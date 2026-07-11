@@ -41,6 +41,7 @@ class BookEditorLogic<T extends GetxController> {
   final BookEditorState state = BookEditorState();
   final BookEditorPage page = BookEditorPage<T>();
   Directory? editorDir;
+  Future<void> Function()? onExpand;
   final T parentLogic;
   late final WebServer server;
   final SubList<int> bookVersionSub = [];

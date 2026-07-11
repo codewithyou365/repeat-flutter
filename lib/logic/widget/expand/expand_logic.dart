@@ -11,6 +11,7 @@ import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
+import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/page/repeat/logic/constant.dart';
@@ -38,6 +39,13 @@ class ExpandLogic {
     QaType.question.i18n.tr,
     QaType.note.i18n.tr,
   ];
+  var sourceOptions = [
+    QaType.question.i18n.tr,
+    QaType.answer.i18n.tr,
+    QaType.tip.i18n.tr,
+    QaType.note.i18n.tr,
+  ];
+  var sourceIndex = 1.obs;
 
   QaType toQaType(int targetIndex) {
     if (targetIndex == 0) {
@@ -51,8 +59,25 @@ class ExpandLogic {
     }
   }
 
+  QaType toSourceQaType(int index) {
+    if (index == 0) {
+      return QaType.question;
+    } else if (index == 1) {
+      return QaType.answer;
+    } else if (index == 2) {
+      return QaType.tip;
+    } else {
+      return QaType.note;
+    }
+  }
+
+  String getSourceText() {
+    return verseMap[toSourceQaType(sourceIndex.value).acronym] ?? '';
+  }
+
   var targetIndex = 0.obs;
   var enableAudio = true.obs;
+  var addToNextVerse = false.obs;
   int bookId = 0;
   int verseId = 0;
   Map<String, dynamic> verseMap = {};
@@ -184,16 +209,21 @@ class ExpandLogic {
     } else {
       hasContent = true;
     }
+    final Map<String, dynamic> targetMap = addToNextVerse.value ? <String, dynamic>{} : verseMap;
+
     String key = toQaType(targetIndex.value).acronym;
     if (key.isNotEmpty && text.isNotEmpty) {
-      String current = verseMap[key] ?? "";
-      verseMap[key] = current.isEmpty ? text : "$current\n$text";
-      logs.add("Content appended to: ${targetOptions[targetIndex.value]}");
+      targetMap[key] = text;
+      if (addToNextVerse.value) {
+        logs.add("Content added to next verse: ${targetOptions[targetIndex.value]}");
+      } else {
+        logs.add("Content overwritten to: ${targetOptions[targetIndex.value]}");
+      }
     }
 
     if (enableAudio.value && dc != null) {
-      verseMap['s'] = RepeatViewEnum.audio.name;
-      verseMap['d'] = [dc];
+      targetMap['s'] = RepeatViewEnum.audio.name;
+      targetMap['d'] = [dc];
 
       try {
         var rootPath = await DocPath.getContentPath();
@@ -205,18 +235,27 @@ class ExpandLogic {
 
         int ms = duration?.inMilliseconds ?? 0;
 
-        verseMap['${key}Start'] = "00:00:00,000";
-        verseMap['${key}End'] = Time.convertMsToString(ms);
+        targetMap['${key}Start'] = "00:00:00,000";
+        targetMap['${key}End'] = Time.convertMsToString(ms);
         logs.add("Audio saved. Duration: ${Time.convertMsToString(ms)}");
       } catch (e) {
-        verseMap['${key}Start'] = "00:00:00,000";
-        verseMap['${key}End'] = "00:00:05,000";
+        targetMap['${key}Start'] = "00:00:00,000";
+        targetMap['${key}End'] = "00:00:05,000";
         logs.add("Failed to read duration, using default: $e");
       }
     } else {
-      verseMap['s'] = RepeatViewEnum.text.name;
+      targetMap['s'] = RepeatViewEnum.text.name;
     }
-    String jsonStr = jsonEncode(verseMap);
-    await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
+    String jsonStr = jsonEncode(targetMap);
+    if (addToNextVerse.value) {
+      final currentVerse = VerseHelp.getCache(verseId);
+      if (currentVerse != null) {
+        final newVerse = currentVerse.copy();
+        newVerse.verseContent = jsonStr;
+        await Db().db.verseDao.addVerse(newVerse, currentVerse.verseIndex + 1);
+      }
+    } else {
+      await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
+    }
   }
 }

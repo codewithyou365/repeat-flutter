@@ -59,3 +59,4 @@ app.*.map.json
 /example/**/*.go
 /example/**/*.json
 /example/**/*.sh
+.adb_last_connect

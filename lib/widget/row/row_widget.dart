@@ -137,14 +137,24 @@ class RowWidget {
     );
   }
 
-  static Widget buildMiddleText(String title, {TextStyle? ts}) {
+  static Widget buildMiddleText(String title, {TextStyle? ts, Widget? leading}) {
     ts ??= const TextStyle(fontSize: titleFontSize);
+    final text = Text(
+      title,
+      style: ts,
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal, vertical: paddingVertical),
-      child: Text(
-        title,
-        style: ts,
-      ),
+      child: leading == null
+          ? text
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                leading,
+                const SizedBox(width: 8),
+                text,
+              ],
+            ),
     );
   }
 
@@ -543,6 +553,7 @@ class RowWidget {
   static Widget buildSelect({
     required String title,
     required GestureTapCallback onTap,
+    Widget? leading,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -553,6 +564,10 @@ class RowWidget {
           height: rowHeight,
           child: Row(
             children: [
+              if (leading != null) ...[
+                leading,
+                const SizedBox(width: 8),
+              ],
               Expanded(
                 child: Text(
                   title,
@@ -563,6 +578,17 @@ class RowWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  static Widget buildGreenDot({double size = 8, Color color = Colors.green}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
       ),
     );
   }

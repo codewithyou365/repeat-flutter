@@ -16,6 +16,7 @@ import 'package:repeat_flutter/logic/widget/text_template.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
+import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
 import 'package:repeat_flutter/widget/text/expandable_text.dart';
 
@@ -241,9 +242,10 @@ class RepeatPage extends StatelessWidget {
                   return Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      logic.bookEditor.state.webStart.value ? RowWidget.buildGreenDot() : RowWidget.buildGreenDot(color: Colors.grey),
+                      const SizedBox(width: 8),
                       Text(I18nKey.advancedEdit.tr),
                       const Spacer(),
-                      if (logic.bookEditor.state.webStart.value) const Icon(Icons.check, size: 18, color: Colors.blue),
                     ],
                   );
                 }),
@@ -587,7 +589,6 @@ class RepeatPage extends StatelessWidget {
     var keys = [
       I18nKey.font.tr,
       I18nKey.content.tr,
-      I18nKey.expand.tr,
       I18nKey.tts.tr,
     ];
     int? index = await Select.showSheet(title: I18nKey.editWhat.trArgs([type.i18n.tr]), keys: keys);
@@ -622,13 +623,6 @@ class RepeatPage extends StatelessWidget {
           },
         ),
       );
-    } else if (keys[index] == I18nKey.expand.tr) {
-      final verse = helper.getCurrVerse();
-      if (verse == null) {
-        return;
-      }
-      await logic.expandSheet.open(text, verse, map);
-      logic.update([RepeatLogic.id]);
     } else if (keys[index] == I18nKey.tts.tr) {
       logic.ttsHelper.open(type.ttsKeys);
     }

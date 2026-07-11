@@ -11,26 +11,63 @@ import 'book_editor_logic.dart';
 class BookEditorPage<T extends GetxController> {
   Future<void> open(BookEditorLogic<T> logic) {
     var context = Get.context!;
-    final state = logic.state;
-    return Sheet.withHeaderAndBody(
+    final int itemCount = logic.onExpand != null ? 2 : 1;
+    final double rowUnit = RowWidget.rowHeight + RowWidget.dividerHeight;
+    return Sheet.showBottomSheet(
       context,
-      Padding(
-        key: GlobalKey(),
-        padding: EdgeInsets.symmetric(horizontal: 10.0.w, vertical: 0.0),
-        child: Column(
-          children: [
-            RowWidget.buildSwitch(
-              title: I18nKey.advancedEditWeb.tr,
-              value: state.webStart,
-              set: logic.switchWebForBtn,
+      ListView(
+        children: [
+          Obx(
+            () => RowWidget.buildSelect(
+              title: I18nKey.network.tr,
+              leading: logic.state.webStart.value ? RowWidget.buildGreenDot() : RowWidget.buildGreenDot(color: Colors.grey),
+              onTap: () => _openNetwork(logic),
             ),
-            RowWidget.buildDivider(),
+          ),
+          if (logic.onExpand != null) ...[
+            RowWidget.buildDividerWithoutColor(),
+            RowWidget.buildSelect(
+              title: I18nKey.assistant.tr,
+              onTap: () => logic.onExpand?.call(),
+            ),
           ],
-        ),
+        ],
       ),
+      head: SheetHead(
+        height: rowUnit,
+        widgets: [
+          Obx(
+            () => RowWidget.buildMiddleText(
+              I18nKey.advancedEdit.tr,
+              leading: logic.state.webStart.value ? RowWidget.buildGreenDot() : RowWidget.buildGreenDot(color: Colors.grey),
+            ),
+          ),
+          RowWidget.buildDivider(),
+        ],
+      ),
+      height: (itemCount + 1) * rowUnit,
+    );
+  }
+
+  Future<void> _openNetwork(BookEditorLogic<T> logic) {
+    var context = Get.context!;
+    final state = logic.state;
+    return Sheet.showBottomSheet(
+      context,
       GetBuilder<T>(
         id: BookEditorLogic.id,
         builder: (_) => _buildList(context, logic),
+      ),
+      head: SheetHead(
+        height: RowWidget.rowHeight + RowWidget.dividerHeight,
+        widgets: [
+          RowWidget.buildSwitch(
+            title: '${I18nKey.advancedEdit.tr}·${I18nKey.network.tr}',
+            value: state.webStart,
+            set: logic.switchWebForBtn,
+          ),
+          RowWidget.buildDivider(),
+        ],
       ),
     );
   }

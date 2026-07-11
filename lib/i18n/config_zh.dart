@@ -313,6 +313,8 @@ class ConfigZh extends Config {
     put(I18nKey.ttsSpeechRate, "语速");
     put(I18nKey.advancedEdit, "高级编辑");
     put(I18nKey.advancedEditWeb, "高级编辑网络");
+    put(I18nKey.network, "网络");
+    put(I18nKey.assistant, "助手");
     put(I18nKey.web, "网络");
     put(I18nKey.btnFocus, "专注");
     put(I18nKey.btnAdd, "新增");
@@ -384,8 +386,9 @@ class ConfigZh extends Config {
     put(I18nKey.showButtons, "显示按钮");
     put(I18nKey.expandAssistant, "扩展助手");
     put(I18nKey.editInstructionTips, "在此编辑发送给\n助手的指令");
-    put(I18nKey.appendPosition, "附加位置");
+    put(I18nKey.overwritePosition, "覆盖位置");
     put(I18nKey.syncGenerateAudio, "同步生成音频");
+    put(I18nKey.addToNextVerse, "新增一个小节");
     put(I18nKey.startExecution, "开始执行");
     put(I18nKey.closeLog, "关闭日志");
     put(I18nKey.practiceHint, "在此输入练习内容...");

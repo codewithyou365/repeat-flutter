@@ -93,6 +93,7 @@ class RepeatLogic extends GetxController {
     ttsHelper.tryInit(TtsKeys.tip);
     copyLogic.init();
     expandSheet.init(copyLogic);
+    bookEditor.onExpand = openExpand;
     var args = Get.arguments as RepeatArgs;
     state.enableShowRecallButtons = args.enableShowRecallButtons;
     if (args.repeatFlowType == RepeatType.browse) {
@@ -269,6 +270,19 @@ class RepeatLogic extends GetxController {
     }
     repeatFlow?.refresh();
     state.helper.tryToPlayMedia = false;
+    update([RepeatLogic.id]);
+  }
+
+  Future<void> openExpand() async {
+    final verse = state.helper.getCurrVerse();
+    if (verse == null) {
+      return;
+    }
+    final map = state.helper.getCurrVerseMap();
+    if (map == null) {
+      return;
+    }
+    await expandSheet.open(verse, map);
     update([RepeatLogic.id]);
   }
 
