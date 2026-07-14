@@ -15,6 +15,7 @@ import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/classroom_help.dart';
+import 'package:repeat_flutter/logic/model/lazy_verse_today_prg_list.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/book_editor/book_editor_args.dart';
 import 'package:repeat_flutter/logic/widget/text_template.dart';
@@ -168,7 +169,9 @@ class RepeatLogic extends GetxController {
       }
     }
 
-    final bookIds = progresses.map((p) => p.bookId).toSet();
+    final bookIds = progresses is LazyVerseTodayPrgList //
+        ? progresses.bookIds
+        : progresses.map((p) => p.bookId).toSet();
 
     state.bookIdToTip = <int, Map<String, Tip?>>{};
 

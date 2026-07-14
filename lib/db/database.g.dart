@@ -158,13 +158,21 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `VerseContentVersion` (`classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `verseId` INTEGER NOT NULL, `version` INTEGER NOT NULL, `reason` INTEGER NOT NULL, `content` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`verseId`, `version`))');
         await database.execute(
+            'CREATE TABLE IF NOT EXISTS `` (`id` INTEGER NOT NULL, `k` TEXT NOT NULL, PRIMARY KEY (`id`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `` (`verseId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `bookName` TEXT NOT NULL, `bookSort` INTEGER NOT NULL, `verseContent` TEXT NOT NULL, `verseContentVersion` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, `verseIndex` INTEGER NOT NULL, `learnDate` INTEGER NOT NULL, `progress` INTEGER NOT NULL, PRIMARY KEY (`verseId`))');
+        await database.execute(
             'CREATE TABLE IF NOT EXISTS `VerseReview` (`createDate` INTEGER NOT NULL, `verseId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY (`createDate`, `verseId`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `` (`contentName` TEXT NOT NULL, `chapterIndex` INTEGER NOT NULL, `verseIndex` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `verseId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `count` INTEGER NOT NULL, PRIMARY KEY (`contentName`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `VerseTodayPrg` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `verseId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `type` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `progress` INTEGER NOT NULL, `viewTime` INTEGER NOT NULL, `reviewCount` INTEGER NOT NULL, `reviewCreateDate` INTEGER NOT NULL, `finish` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `VerseStats` (`verseId` INTEGER NOT NULL, `type` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, PRIMARY KEY (`verseId`, `type`, `createDate`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `` (`bookId` INTEGER NOT NULL, `classroomId` INTEGER NOT NULL, `name` TEXT NOT NULL, `sort` INTEGER NOT NULL, `bookContent` TEXT NOT NULL, `bookContentVersion` INTEGER NOT NULL, PRIMARY KEY (`bookId`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `k` TEXT NOT NULL, `name` TEXT NOT NULL, `hash` TEXT NOT NULL, `data` TEXT NOT NULL, `service` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
@@ -177,6 +185,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE TABLE IF NOT EXISTS `GameUserScoreHistory` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userId` INTEGER NOT NULL, `gameId` INTEGER NOT NULL, `inc` INTEGER NOT NULL, `before` INTEGER NOT NULL, `after` INTEGER NOT NULL, `remark` TEXT NOT NULL, `createDate` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Lock` (`id` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `` (`chapterId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `bookName` TEXT NOT NULL, `bookSort` INTEGER NOT NULL, `chapterContent` TEXT NOT NULL, `chapterContentVersion` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, PRIMARY KEY (`chapterId`))');
         await database.execute(
             'CREATE UNIQUE INDEX `index_Book_classroomId_name` ON `Book` (`classroomId`, `name`)');
         await database.execute(
@@ -706,7 +716,6 @@ class _$BookDao extends BookDao {
           .transaction<Book>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.bookDao
             .innerUpdateBookContent(bookId, content);
       });
@@ -722,7 +731,6 @@ class _$BookDao extends BookDao {
           .transaction<Book>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.bookDao.add(name);
       });
     }
@@ -740,7 +748,6 @@ class _$BookDao extends BookDao {
           .transaction<Book>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.bookDao.innerCreate(bookId, content);
       });
     }
@@ -759,7 +766,6 @@ class _$BookDao extends BookDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         await transactionDatabase.bookDao.innerImport(book, chapters, verses);
       });
     }
@@ -783,7 +789,6 @@ class _$BookDao extends BookDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         await transactionDatabase.bookDao.innerReimport(
             book,
             insertChapters,
@@ -805,7 +810,6 @@ class _$BookDao extends BookDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         await transactionDatabase.bookDao.innerDeleteBook(bookId);
       });
     }
@@ -1107,7 +1111,6 @@ class _$ChapterDao extends ChapterDao {
           .transaction<bool>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.chapterDao.innerDeleteChapter(chapterId);
       });
     }
@@ -1125,7 +1128,6 @@ class _$ChapterDao extends ChapterDao {
           .transaction<bool>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.chapterDao
             .innerAddChapter(chapterShow, chapterIndex);
       });
@@ -1141,7 +1143,6 @@ class _$ChapterDao extends ChapterDao {
           .transaction<bool>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.chapterDao.innerAddFirstChapter(bookId);
       });
     }
@@ -1159,7 +1160,6 @@ class _$ChapterDao extends ChapterDao {
           .transaction<Chapter>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.chapterDao
             .innerUpdateChapterContent(chapterId, content);
       });
@@ -1279,7 +1279,6 @@ class _$ClassroomDao extends ClassroomDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         await transactionDatabase.classroomDao.deleteAll(classroomId);
       });
     }
@@ -1294,7 +1293,6 @@ class _$ClassroomDao extends ClassroomDao {
           .transaction<Classroom>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.classroomDao.add(name);
       });
     }
@@ -1674,7 +1672,6 @@ class _$GameUserDao extends GameUserDao {
           .transaction<String>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.gameUserDao.resetPassword(id);
       });
     }
@@ -1694,7 +1691,6 @@ class _$GameUserDao extends GameUserDao {
           .transaction<GameUser>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.gameUserDao
             .loginOrRegister(name, password, newPassword, error);
       });
@@ -1710,7 +1706,6 @@ class _$GameUserDao extends GameUserDao {
           .transaction<GameUser>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.gameUserDao.authByToken(token);
       });
     }
@@ -2077,7 +2072,6 @@ class _$GameUserScoreDao extends GameUserScoreDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         await transactionDatabase.gameUserScoreDao
             .inc(userId, gameId, score, remark);
       });
@@ -2344,7 +2338,6 @@ class _$TimeStatsDao extends TimeStatsDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         await transactionDatabase.timeStatsDao.tryInsert(newTimeStats);
       });
     }
@@ -2536,6 +2529,14 @@ class _$ScheduleDao extends ScheduleDao {
                 _dateConverter.decode(row['reviewCreateDate'] as int),
             finish: (row['finish'] as int) != 0,
             id: row['id'] as int?),
+        arguments: [classroomId]);
+  }
+
+  @override
+  Future<int?> countVerseTodayPrg(int classroomId) async {
+    return _queryAdapter.query(
+        'SELECT count(1) FROM VerseTodayPrg WHERE classroomId=?1',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId]);
   }
 
@@ -2792,7 +2793,6 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<List<VerseTodayPrg>>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.scheduleDao.initToday();
       });
     }
@@ -2807,7 +2807,6 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<List<VerseTodayPrg>>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.scheduleDao.forceInitToday(type);
       });
     }
@@ -2827,7 +2826,6 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         await transactionDatabase.scheduleDao
             .addFullCustom(bookId, chapterIndex, verseIndex, limit);
       });
@@ -2843,7 +2841,6 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<Verse>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.scheduleDao.innerError(stp);
       });
     }
@@ -2862,7 +2859,6 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<Verse>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.scheduleDao
             .innerJumpDirectly(verseId, progress, nextDayValue);
       });
@@ -2882,7 +2878,6 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<Verse>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.scheduleDao
             .innerJump(stp, progress, nextDayValue);
       });
@@ -2898,7 +2893,6 @@ class _$ScheduleDao extends ScheduleDao {
           .transaction<Verse>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.scheduleDao.innerRight(stp);
       });
     }
@@ -3250,7 +3244,6 @@ class _$VerseDao extends VerseDao {
           .transaction<Verse>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.verseDao.innerDelete(verseId);
       });
     }
@@ -3269,7 +3262,6 @@ class _$VerseDao extends VerseDao {
           .transaction<int>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.verseDao
             .innerAddFirstVerse(bookId, chapterId, chapterIndex);
       });
@@ -3288,7 +3280,6 @@ class _$VerseDao extends VerseDao {
           .transaction<int>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.verseDao.innerAddVerse(raw, verseIndex);
       });
     }
@@ -3306,7 +3297,6 @@ class _$VerseDao extends VerseDao {
           .transaction<void>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         await transactionDatabase.verseDao.updateVerseContent(id, content);
       });
     }
@@ -3324,7 +3314,6 @@ class _$VerseDao extends VerseDao {
           .transaction<Verse>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.verseDao
             .innerUpdateVerseContent(id, content);
       });
@@ -3452,7 +3441,6 @@ class _$StatsDao extends StatsDao {
           .transaction<List<int>>((transaction) async {
         final transactionDatabase = _$AppDatabase(changeListener)
           ..database = transaction;
-        prepareDb(transactionDatabase);
         return transactionDatabase.statsDao.collectAll();
       });
     }

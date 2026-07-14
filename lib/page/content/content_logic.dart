@@ -1,16 +1,13 @@
 import 'dart:async';
 
 import 'package:get/get.dart';
-import 'package:repeat_flutter/common/date.dart';
-import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/classroom.dart';
-import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/book_help.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
+import 'package:repeat_flutter/logic/model/lazy_verse_today_prg_list.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
@@ -58,43 +55,18 @@ class ContentLogic extends GetxController {
         if (!args.enableEnteringRepeatView) {
           return;
         }
-        await Db().db.verseTodayPrgDao.deleteByType(TodayPrgType.justView.index);
-        List<VerseTodayPrg> verseTodayPrg = [];
-        for (int i = 0; i < verseShows.length; i++) {
-          var verseShow = verseShows[i];
-          verseTodayPrg.add(
-            VerseTodayPrg(
-              classroomId: Classroom.curr,
-              bookId: verseShow.bookId,
-              chapterId: verseShow.chapterId,
-              verseId: verseShow.verseId,
-              time: 0,
-              type: TodayPrgType.justView.index,
-              sort: i,
-              progress: 0,
-              viewTime: DateTime.now(),
-              reviewCount: 0,
-              reviewCreateDate: Date(0),
-              finish: false,
-            ),
-          );
-        }
-        await Db().db.verseTodayPrgDao.insertsOrFail(verseTodayPrg);
-
-        var p = await Db().db.verseTodayPrgDao.findByType(TodayPrgType.justView.index);
-        if (p.isEmpty) {
-          Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant insert the verses"]));
+        if (verseShows.isEmpty) {
+          Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the verses"]));
           return;
         }
         var repeat = RepeatArgs(
-          progresses: p,
+          progresses: LazyVerseTodayPrgList(verseShows),
           startIndex: index,
           repeatFlowType: RepeatType.browse,
           enableShowRecallButtons: false,
           showMode: ShowMode.edit,
         );
         await Nav.repeat.push(arguments: repeat);
-        await Db().db.verseTodayPrgDao.deleteByType(TodayPrgType.justView.index);
       },
       parentLogic: this,
       originalBookShow: originalBookShow,

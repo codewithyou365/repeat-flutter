@@ -19,6 +19,7 @@ import 'package:repeat_flutter/logic/model/verse_review_with_key.dart';
 import 'package:repeat_flutter/db/entity/verse_stats.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 enum SortEnum {
   asc(I18nKey.asc),
@@ -298,6 +299,9 @@ abstract class ScheduleDao {
   )
   Future<List<VerseTodayPrg>> findVerseTodayPrg(int classroomId);
 
+  @Query('SELECT count(1) FROM VerseTodayPrg WHERE classroomId=:classroomId')
+  Future<int?> countVerseTodayPrg(int classroomId);
+
   @Query('UPDATE VerseTodayPrg SET progress=:progress,viewTime=:viewTime,finish=:finish WHERE verseId=:verseId and type=:type')
   Future<void> setVerseTodayPrg(int verseId, int type, int progress, DateTime viewTime, bool finish);
 
@@ -546,6 +550,9 @@ abstract class ScheduleDao {
       await initTodayEl(now, learnConfigs, todayPrg);
       var reviewLearnConfigs = scheduleConfig.reviewLearnConfigs;
       await initTodayRel(now, reviewLearnConfigs, todayPrg);
+      if (todayPrg.length > VerseTodayPrg.maxCountPerClassroom) {
+        todayPrg = todayPrg.sublist(0, VerseTodayPrg.maxCountPerClassroom);
+      }
       await insertVerseTodayPrg(todayPrg);
       var configInUseStr = convert.json.encode(scheduleConfig);
       await insertKv(CrKv(Classroom.curr, CrK.todayScheduleConfigInUse, configInUseStr));
@@ -577,7 +584,14 @@ abstract class ScheduleDao {
       await deleteVerseTodayFullCustomPrgByClassroomId(Classroom.curr);
     }
     if (todayPrg.isNotEmpty) {
-      await insertVerseTodayPrg(todayPrg);
+      var existCount = await countVerseTodayPrg(Classroom.curr) ?? 0;
+      var capacity = VerseTodayPrg.maxCountPerClassroom - existCount;
+      if (todayPrg.length > capacity) {
+        todayPrg = capacity > 0 ? todayPrg.sublist(0, capacity) : [];
+      }
+      if (todayPrg.isNotEmpty) {
+        await insertVerseTodayPrg(todayPrg);
+      }
     }
     var configInUseStr = convert.json.encode(scheduleConfigInUse);
     await insertKv(CrKv(Classroom.curr, CrK.todayScheduleConfigInUse, configInUseStr));
@@ -705,6 +719,15 @@ abstract class ScheduleDao {
   Future<void> addFullCustom(int bookId, int chapterIndex, int verseIndex, int limit) async {
     List<VerseTodayPrg> ret;
     ret = await scheduleFullCustom(Classroom.curr, bookId, chapterIndex, verseIndex, limit);
+    var existCount = await countVerseTodayPrg(Classroom.curr) ?? 0;
+    var capacity = VerseTodayPrg.maxCountPerClassroom - existCount;
+    if (capacity <= 0) {
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["today's schedule reached the limit of ${VerseTodayPrg.maxCountPerClassroom}"]));
+      return;
+    }
+    if (ret.length > capacity) {
+      ret = ret.sublist(0, capacity);
+    }
     String? fullCustomJsonStr = await stringKv(Classroom.curr, CrK.todayFullCustomScheduleConfigCount);
     List<List<String>> fullCustomConfigs = ListUtil.toListList(fullCustomJsonStr);
     var contentName = await getBookNameById(bookId);

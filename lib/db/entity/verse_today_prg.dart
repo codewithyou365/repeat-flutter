@@ -20,6 +20,8 @@ enum TodayPrgType {
   ],
 )
 class VerseTodayPrg {
+  static const int maxCountPerClassroom = 10000;
+
   @PrimaryKey(autoGenerate: true)
   final int? id;
   final int classroomId;
