@@ -11,46 +11,6 @@ import 'book_editor_logic.dart';
 class BookEditorPage<T extends GetxController> {
   Future<void> open(BookEditorLogic<T> logic) {
     var context = Get.context!;
-    final int itemCount = logic.onExpand != null ? 2 : 1;
-    final double rowUnit = RowWidget.rowHeight + RowWidget.dividerHeight;
-    return Sheet.showBottomSheet(
-      context,
-      ListView(
-        children: [
-          Obx(
-            () => RowWidget.buildSelect(
-              title: I18nKey.network.tr,
-              leading: logic.state.webStart.value ? RowWidget.buildGreenDot() : RowWidget.buildGreenDot(color: Colors.grey),
-              onTap: () => _openNetwork(logic),
-            ),
-          ),
-          if (logic.onExpand != null) ...[
-            RowWidget.buildDividerWithoutColor(),
-            RowWidget.buildSelect(
-              title: I18nKey.assistant.tr,
-              onTap: () => logic.onExpand?.call(),
-            ),
-          ],
-        ],
-      ),
-      head: SheetHead(
-        height: rowUnit,
-        widgets: [
-          Obx(
-            () => RowWidget.buildMiddleText(
-              I18nKey.advancedEdit.tr,
-              leading: logic.state.webStart.value ? RowWidget.buildGreenDot() : RowWidget.buildGreenDot(color: Colors.grey),
-            ),
-          ),
-          RowWidget.buildDivider(),
-        ],
-      ),
-      height: (itemCount + 1) * rowUnit,
-    );
-  }
-
-  Future<void> _openNetwork(BookEditorLogic<T> logic) {
-    var context = Get.context!;
     final state = logic.state;
     return Sheet.showBottomSheet(
       context,
@@ -62,7 +22,7 @@ class BookEditorPage<T extends GetxController> {
         height: RowWidget.rowHeight + RowWidget.dividerHeight,
         widgets: [
           RowWidget.buildSwitch(
-            title: '${I18nKey.advancedEdit.tr}·${I18nKey.network.tr}',
+            title: I18nKey.advancedEdit.tr,
             value: state.webStart,
             set: logic.switchWebForBtn,
           ),

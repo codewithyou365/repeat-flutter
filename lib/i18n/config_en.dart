@@ -313,10 +313,10 @@ class ConfigEn extends Config {
     put(I18nKey.ttsVoice, "Voice");
     put(I18nKey.ttsPitch, "Pitch");
     put(I18nKey.ttsSpeechRate, "Speech Rate");
-    put(I18nKey.advancedEdit, "Advanced Edit");
+    put(I18nKey.advancedEdit, "Network Edit");
     put(I18nKey.advancedEditWeb, "Advanced Edit Web");
     put(I18nKey.network, "Network");
-    put(I18nKey.assistant, "Assistant");
+    put(I18nKey.assistant, "Accessibility");
     put(I18nKey.web, "Web");
     put(I18nKey.btnFocus, "Focus");
     put(I18nKey.btnAdd, "Add");

@@ -311,10 +311,10 @@ class ConfigZh extends Config {
     put(I18nKey.ttsVoice, "声音");
     put(I18nKey.ttsPitch, "语调");
     put(I18nKey.ttsSpeechRate, "语速");
-    put(I18nKey.advancedEdit, "高级编辑");
+    put(I18nKey.advancedEdit, "网络编辑");
     put(I18nKey.advancedEditWeb, "高级编辑网络");
     put(I18nKey.network, "网络");
-    put(I18nKey.assistant, "助手");
+    put(I18nKey.assistant, "辅助功能");
     put(I18nKey.web, "网络");
     put(I18nKey.btnFocus, "专注");
     put(I18nKey.btnAdd, "新增");

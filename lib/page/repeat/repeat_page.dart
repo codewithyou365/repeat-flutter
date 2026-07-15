@@ -250,6 +250,16 @@ class RepeatPage extends StatelessWidget {
                   );
                 }),
               ),
+              PopupMenuItem<String>(
+                onTap: logic.openExpand,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(I18nKey.assistant.tr),
+                    const Spacer(),
+                  ],
+                ),
+              ),
             ],
           ),
           const SizedBox(width: 10),
