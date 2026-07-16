@@ -447,6 +447,22 @@ class RepeatViewForVideo extends RepeatView {
     );
   }
 
+  /// 供辅助触控 Play-* 复用：跟 mediaBar 里 onPlay 回调一样是 seek + play，
+  /// 只是目标位置换成外部传入的片段起始时间，而不是 MediaBar 拖动条上的位置。
+  Future<void> playRange(MediaRange range) async {
+    if (_videoPlayerController == null) {
+      return;
+    }
+    helper?.doNotPlayMedia = false;
+    try {
+      await _videoPlayerController!.seekTo(Duration(milliseconds: range.start));
+      await _videoPlayerController!.play();
+      isPlaying.value = true;
+    } catch (e) {
+      Snackbar.show("视频寻址或播放失败: $e");
+    }
+  }
+
   Widget mediaBar(RxString path, double width, double height, MediaRange range) {
     return MediaBar(
       width: width,

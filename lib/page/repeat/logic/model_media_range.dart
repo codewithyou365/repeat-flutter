@@ -36,6 +36,7 @@ class MediaRange {
 class MediaRangeHelper {
   Map<int, MediaRange> answerRangeCache = {};
   Map<int, MediaRange> questionRangeCache = {};
+  Map<int, MediaRange> tipRangeCache = {};
   final Helper helper;
   static const String defaultStart = "00:00:00,000";
   static const String defaultEnd = "00:00:05,000";
@@ -56,11 +57,13 @@ class MediaRangeHelper {
     reimportBookSub.on([EventTopic.reimportBook], (int? id) {
       answerRangeCache.clear();
       questionRangeCache.clear();
+      tipRangeCache.clear();
     });
     updateVerseContentSub.on([EventTopic.updateVerseContent], (VerseShow? v) {
       if (v == null) return;
       answerRangeCache.remove(v.verseId);
       questionRangeCache.remove(v.verseId);
+      tipRangeCache.remove(v.verseId);
     });
   }
 
@@ -95,6 +98,10 @@ class MediaRangeHelper {
 
   MediaRange? getCurrQuestionRange() {
     return _getCurrRange(questionRangeCache, "qStart", "qEnd");
+  }
+
+  MediaRange? getCurrTipRange() {
+    return _getCurrRange(tipRangeCache, "tStart", "tEnd");
   }
 
   MediaRange? _getCurrRange(Map<int, MediaRange> cache, String jsonStartName, String jsonEndName) {

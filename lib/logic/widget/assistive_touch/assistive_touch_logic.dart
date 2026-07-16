@@ -7,14 +7,19 @@ import 'package:repeat_flutter/db/entity/assistive_touch_action.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/widget/expand/expand_logic.dart';
+import 'package:repeat_flutter/page/repeat/logic/constant.dart';
+import 'package:repeat_flutter/page/repeat/logic/model_media_range.dart';
 import 'package:repeat_flutter/page/repeat/logic/repeat_flow_for_browse.dart';
 import 'package:repeat_flutter/page/repeat/logic/repeat_flow_for_examine.dart';
+import 'package:repeat_flutter/page/repeat/logic/repeat_view_for_audio.dart';
+import 'package:repeat_flutter/page/repeat/logic/repeat_view_for_video.dart';
 import 'package:repeat_flutter/page/repeat/repeat_logic.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 /// 内置动作（不是用户自己配的 AssistiveTouchAction 预设）。跟自定义动作一样，可以在自定义菜单里
-/// 长按移除、点"新增"时重新加回来。TTS-*/Play-* 几个目前只是占位，点了不会有任何反应。
+/// 长按移除、点"新增"时重新加回来。
 enum BuiltInAction {
   playQ,
   playA,
@@ -192,14 +197,94 @@ class AssistiveTouchLogic {
         await deleteCurrentVerse();
         break;
       case BuiltInAction.ttsNote:
-      case BuiltInAction.ttsQ:
-      case BuiltInAction.ttsA:
-      case BuiltInAction.ttsTips:
-      case BuiltInAction.playQ:
-      case BuiltInAction.playA:
-      case BuiltInAction.playTips:
-        // 先占位，还没实现，点了没有任何反应。
+        await _speak(QaType.note);
         break;
+      case BuiltInAction.ttsQ:
+        await _speak(QaType.question);
+        break;
+      case BuiltInAction.ttsA:
+        await _speak(QaType.answer);
+        break;
+      case BuiltInAction.ttsTips:
+        await _speak(QaType.tip);
+        break;
+      case BuiltInAction.playQ:
+        await _play((h) => h.getCurrQuestionRange());
+        break;
+      case BuiltInAction.playA:
+        await _play((h) => h.getCurrAnswerRange());
+        break;
+      case BuiltInAction.playTips:
+        await _play((h) => h.getCurrTipRange());
+        break;
+    }
+  }
+
+  Future<void> _speak(QaType type) async {
+    final map = repeatLogic.state.helper.getCurrVerseMap();
+    if (map == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.tr);
+      return;
+    }
+    final text = map[type.acronym];
+    if (text is! String || text.isEmpty) {
+      Snackbar.show(I18nKey.labelNoContent.tr);
+      return;
+    }
+    await repeatLogic.ttsHelper.speakText(type.ttsKeys, text);
+  }
+
+  /// Play-* 只对当前是音频/视频类型的小节生效，直接复用 RepeatViewForAudio/RepeatViewForVideo
+  /// 已经持有、初始化好的那个播放器实例（而不是新建一个），避免和用户正在操作的 MediaBar
+  /// 用两个播放源同时出声；具体做法就是各自 mediaBar 里 onPlay 回调的那一套（seek + play），
+  /// 只是把目标位置换成对应字段配置的起始时间。
+  ///
+  /// MediaBar 自己的进度条动画只在它自己的 play 按钮被点击（走 MediaBarState._playAtPosition）
+  /// 时才会启动，直接调用底层播放器不会触发。当目标片段恰好就是当前屏幕上那条 MediaBar 正在
+  /// 绑定显示的片段（比如问答步骤处于"recall"时 Play-Q 正好对应当前显示的 Q 区间）时，改为调用
+  /// `mediaKey.currentState?.playFromStart()`，这样进度条能正常跟着滑动；如果目标片段跟当前
+  /// 绑定的不是同一个（比如在 recall 步骤点 Play-A，或者点 Play-Tips——Tips 目前根本没有对应的
+  /// MediaBar），退回直接操作播放器，声音/画面仍然正常，只是进度条不会跟着动。
+  bool _matchesBoundRange(MediaRangeHelper mediaRangeHelper, MediaRange range) {
+    final bound = mediaRangeHelper.getCurrRange();
+    return bound.start == range.start && bound.end == range.end;
+  }
+
+  Future<void> _play(MediaRange? Function(MediaRangeHelper) getRange) async {
+    final helper = repeatLogic.state.helper;
+    final viewName = helper.getCurrViewName();
+    if (viewName == RepeatViewEnum.audio.name) {
+      final view = repeatLogic.showTypeToRepeatView[RepeatViewEnum.audio.name] as RepeatViewForAudio;
+      final range = getRange(view.mediaRangeHelper);
+      if (range == null || !range.enable) {
+        Snackbar.show(I18nKey.labelNoContent.tr);
+        return;
+      }
+      if (_matchesBoundRange(view.mediaRangeHelper, range) && view.mediaKey.currentState != null) {
+        view.mediaKey.currentState!.playFromStart();
+        return;
+      }
+      try {
+        helper.doNotPlayMedia = false;
+        await view.audioPlayer.seek(Duration(milliseconds: range.start));
+        await view.audioPlayer.play();
+      } catch (e) {
+        Snackbar.show("Error playing audio: $e");
+      }
+    } else if (viewName == RepeatViewEnum.video.name) {
+      final view = repeatLogic.showTypeToRepeatView[RepeatViewEnum.video.name] as RepeatViewForVideo;
+      final range = getRange(view.mediaRangeHelper);
+      if (range == null || !range.enable) {
+        Snackbar.show(I18nKey.labelNoContent.tr);
+        return;
+      }
+      if (_matchesBoundRange(view.mediaRangeHelper, range) && view.mediaKey.currentState != null) {
+        view.mediaKey.currentState!.playFromStart();
+        return;
+      }
+      await view.playRange(range);
+    } else {
+      Snackbar.show(I18nKey.labelNoContent.tr);
     }
   }
 
