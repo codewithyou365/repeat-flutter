@@ -182,32 +182,11 @@ class RepeatPage extends StatelessWidget {
                   ),
                 ),
               ),
-              PopupMenuItem<String>(
-                onTap: logic.openCloseEyesMode,
-                child: Text(I18nKey.closeEyes.tr),
-              ),
-              PopupMenuItem<String>(
-                padding: EdgeInsets.zero,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () {
-                    logic.togglePracticeMode();
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Obx(() {
-                      return Row(
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          state.isPracticeMode.value ? RowWidget.buildGreenDot() : RowWidget.buildGreenDot(color: Colors.grey),
-                          const SizedBox(width: 8),
-                          Text(I18nKey.practice.tr),
-                          const Spacer(),
-                        ],
-                      );
-                    }),
-                  ),
-                ),
+              buildMenuItem(label: I18nKey.closeEyes.tr, onTap: logic.openCloseEyesMode),
+              buildMenuItem(
+                label: I18nKey.practice.tr,
+                onTap: logic.togglePracticeMode,
+                active: state.isPracticeMode,
               ),
               if (state.gameLogicInitSuccess)
                 PopupMenuItem<String>(
@@ -223,60 +202,56 @@ class RepeatPage extends StatelessWidget {
                     );
                   }),
                 ),
-              PopupMenuItem<String>(
-                padding: EdgeInsets.zero,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: logic.switchFocusMode,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Obx(() {
-                      return Row(
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          state.helper.focusMode.value ? RowWidget.buildGreenDot() : RowWidget.buildGreenDot(color: Colors.grey),
-                          const SizedBox(width: 8),
-                          Text(I18nKey.btnFocus.tr),
-                          const Spacer(),
-                        ],
-                      );
-                    }),
-                  ),
-                ),
+              buildMenuItem(
+                label: I18nKey.btnFocus.tr,
+                onTap: logic.switchFocusMode,
+                active: state.helper.focusMode,
               ),
-              PopupMenuItem<String>(
+              buildMenuItem(
+                label: I18nKey.advancedEdit.tr,
                 onTap: logic.openAdvancedEditor,
-                child: Obx(() {
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      logic.bookEditor.state.webStart.value ? RowWidget.buildGreenDot() : RowWidget.buildGreenDot(color: Colors.grey),
-                      const SizedBox(width: 8),
-                      Text(I18nKey.advancedEdit.tr),
-                      const Spacer(),
-                    ],
-                  );
-                }),
+                active: logic.bookEditor.state.webStart,
               ),
-              PopupMenuItem<String>(
+              buildMenuItem(
+                label: I18nKey.assistiveTouch.tr,
                 onTap: logic.openAssistiveTouch,
-                child: Obx(() {
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      logic.assistiveTouchLogic.enabled.value ? RowWidget.buildGreenDot() : RowWidget.buildGreenDot(color: Colors.grey),
-                      const SizedBox(width: 8),
-                      Text(I18nKey.assistiveTouch.tr),
-                      const Spacer(),
-                    ],
-                  );
-                }),
+                active: logic.assistiveTouchLogic.enabled,
               ),
             ],
           ),
           const SizedBox(width: 10),
         ],
       ),
+    );
+  }
+
+  /// 顶部菜单里带一致内边距(且可选左侧绿/灰点)的开关式菜单项。直接用 PopupMenuItem 自带的
+  /// padding/onTap，而不是套一层 GestureDetector——PopupMenuItem 默认 padding 在 Material3
+  /// 下是 12(不是 16),跟其他手写 16 的菜单项对不齐,所以这里显式传 16；onTap 用 PopupMenuItem
+  /// 自带的即可，点击后会自动关闭菜单，不用手动 Get.back()。
+  PopupMenuItem<String> buildMenuItem({
+    required String label,
+    required VoidCallback onTap,
+    RxBool? active,
+  }) {
+    Widget row(bool showDot) {
+      return Row(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          if (showDot) ...[
+            active!.value ? RowWidget.buildGreenDot() : RowWidget.buildGreenDot(color: Colors.grey),
+            const SizedBox(width: 8),
+          ],
+          Text(label),
+          const Spacer(),
+        ],
+      );
+    }
+
+    return PopupMenuItem<String>(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      onTap: onTap,
+      child: active == null ? row(false) : Obx(() => row(true)),
     );
   }
 
