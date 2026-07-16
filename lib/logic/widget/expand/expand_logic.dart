@@ -7,6 +7,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/assistive_touch_action.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
@@ -46,6 +47,9 @@ class ExpandLogic {
     QaType.note.i18n.tr,
   ];
   var sourceIndex = 1.obs;
+  // 指令框里显示的文本来自哪个文本模版(copyLogic.copyTemplates 的下标)，
+  // 保存为辅助触控预设时记录这个下标而不是渲染好的固定文本，这样以后对不同小节执行时能重新取当时的模版文本。
+  var templateIndex = 0.obs;
 
   QaType toQaType(int targetIndex) {
     if (targetIndex == 0) {
@@ -81,6 +85,8 @@ class ExpandLogic {
   int bookId = 0;
   int verseId = 0;
   Map<String, dynamic> verseMap = {};
+  int? editingActionId;
+  int actionSort = 0;
   Timer? _timer;
 
   Completer<void>? _taskCompleter;
@@ -93,7 +99,25 @@ class ExpandLogic {
     await Db().db.kvDao.insertOrReplace(Kv(K.expandServiceUrl, serviceUrl.value));
   }
 
-  Future<void> startTask(String msg) async {
+  Future<void> saveAsAction(String name) async {
+    final action = AssistiveTouchAction(
+      id: editingActionId,
+      name: name,
+      sourceIndex: sourceIndex.value,
+      templateIndex: templateIndex.value,
+      targetIndex: targetIndex.value,
+      enableAudio: enableAudio.value,
+      addToNextVerse: addToNextVerse.value,
+      sort: actionSort,
+    );
+    if (editingActionId == null) {
+      await Db().db.assistiveTouchActionDao.insert(action);
+    } else {
+      await Db().db.assistiveTouchActionDao.update(action);
+    }
+  }
+
+  Future<void> startTask(String msg, {bool closeOnSuccess = true}) async {
     await showOverlay(() async {
       try {
         status.value = ExpandStatus.pending;
@@ -116,7 +140,7 @@ class ExpandLogic {
         if (response.statusCode == 200) {
           _startPolling();
           await _taskCompleter?.future;
-          if (hasContent) {
+          if (hasContent && closeOnSuccess) {
             Get.back();
           }
         } else {

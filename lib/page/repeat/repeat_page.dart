@@ -11,6 +11,7 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/classroom_help.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
+import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_button.dart';
 import 'package:repeat_flutter/logic/widget/close_eyes/close_eyes_panel.dart';
 import 'package:repeat_flutter/logic/widget/text_template.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -35,8 +36,13 @@ class RepeatPage extends StatelessWidget {
       resizeToAvoidBottomInset: false,
       body: GetBuilder<RepeatLogic>(
         id: RepeatLogic.id,
-        builder: (_) {
-          return buildCore(context);
+        builder: (logic) {
+          return Stack(
+            children: [
+              buildCore(context),
+              AssistiveTouchButton(logic: logic.assistiveTouchLogic),
+            ],
+          );
         },
       ),
     );
@@ -251,14 +257,18 @@ class RepeatPage extends StatelessWidget {
                 }),
               ),
               PopupMenuItem<String>(
-                onTap: logic.openExpand,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(I18nKey.assistant.tr),
-                    const Spacer(),
-                  ],
-                ),
+                onTap: logic.openAssistiveTouch,
+                child: Obx(() {
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      logic.assistiveTouchLogic.enabled.value ? RowWidget.buildGreenDot() : RowWidget.buildGreenDot(color: Colors.grey),
+                      const SizedBox(width: 8),
+                      Text(I18nKey.assistiveTouch.tr),
+                      const Spacer(),
+                    ],
+                  );
+                }),
               ),
             ],
           ),

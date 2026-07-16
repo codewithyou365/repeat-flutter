@@ -136,7 +136,7 @@ a{{index1}}: {{answer}}
     return ret;
   }
 
-  Future<String> show(TextTemplateMode mode, BuildContext context, Object data) async {
+  Future<String> show(TextTemplateMode mode, BuildContext context, Object data, {void Function(int index)? onSelectIndex}) async {
     if (copyTemplates.isEmpty) {
       if (data is String) {
         copyTemplates.add(defaultStringTemplate);
@@ -171,7 +171,7 @@ a{{index1}}: {{answer}}
               final previewText = StringUtil.limit(fullText, 255);
 
               return RowWidget.buildCard(
-                _buildActionWidget(mode, index, fullText, previewText, getV),
+                _buildActionWidget(mode, index, fullText, previewText, getV, onSelectIndex),
               );
             },
           );
@@ -181,7 +181,7 @@ a{{index1}}: {{answer}}
     return getV.value;
   }
 
-  Widget _buildActionWidget(TextTemplateMode mode, int index, String fullText, String previewText, RxString getV) {
+  Widget _buildActionWidget(TextTemplateMode mode, int index, String fullText, String previewText, RxString getV, void Function(int index)? onSelectIndex) {
     Widget content = Padding(
       padding: EdgeInsets.all(12.w),
       child: Text(previewText),
@@ -197,6 +197,7 @@ a{{index1}}: {{answer}}
         if (value == 0) {
           getV.value = fullText;
           if (TextTemplateMode.editAndGet == mode) {
+            onSelectIndex?.call(index);
             Get.back();
             return;
           }

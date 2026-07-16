@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/db/entity/assistive_touch_action.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/widget/text_template.dart';
 import 'package:repeat_flutter/page/repeat/logic/constant.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 
@@ -18,11 +20,34 @@ class ExpandSheet {
     logic.loadSettings();
   }
 
-  Future<void> open(VerseTodayPrg verse, Map<String, dynamic> verseMap) async {
+  String _renderTemplate(int index) {
+    final list = copyLogic.getShowText(logic.getSourceText());
+    if (list.isEmpty) {
+      return '';
+    }
+    return list[index.clamp(0, list.length - 1)];
+  }
+
+  Future<void> open(VerseTodayPrg verse, Map<String, dynamic> verseMap, {AssistiveTouchAction? preset}) async {
     logic.bookId = verse.bookId;
     logic.verseId = verse.verseId;
     logic.verseMap = verseMap;
-    logic.textController.text = copyLogic.getShowText(logic.getSourceText())[0];
+    if (preset != null) {
+      logic.editingActionId = preset.id;
+      logic.actionSort = preset.sort;
+      logic.sourceIndex.value = preset.sourceIndex;
+      logic.targetIndex.value = preset.targetIndex;
+      logic.enableAudio.value = preset.enableAudio;
+      logic.addToNextVerse.value = preset.addToNextVerse;
+      logic.templateIndex.value = preset.templateIndex;
+      logic.textController.text = _renderTemplate(preset.templateIndex);
+    } else {
+      logic.editingActionId = null;
+      logic.actionSort = DateTime.now().millisecondsSinceEpoch;
+      logic.templateIndex.value = 0;
+      logic.textController.text = _renderTemplate(0);
+    }
+    logic.reset();
     return Sheet.showBottomSheet(
       Get.context!,
       head: SheetHead(
@@ -47,7 +72,8 @@ class ExpandSheet {
             value: logic.sourceIndex.value,
             changed: (index) {
               logic.sourceIndex.value = index;
-              logic.textController.text = copyLogic.getShowText(logic.getSourceText())[0];
+              logic.templateIndex.value = 0;
+              logic.textController.text = _renderTemplate(0);
             },
             disabled: logic.disabled,
           ),
@@ -78,7 +104,12 @@ class ExpandSheet {
                       icon: const Icon(Icons.auto_fix_high, size: 20),
                       onPressed: logic.isInit.value
                           ? () async {
-                              var result = await copyLogic.show(TextTemplateMode.editAndGet, Get.context!, logic.getSourceText());
+                              var result = await copyLogic.show(
+                                TextTemplateMode.editAndGet,
+                                Get.context!,
+                                logic.getSourceText(),
+                                onSelectIndex: (i) => logic.templateIndex.value = i,
+                              );
                               if (result.isNotEmpty) {
                                 logic.textController.text = result;
                               }
@@ -123,8 +154,16 @@ class ExpandSheet {
           Obx(() {
             if (logic.status.value == ExpandStatus.init) {
               return RowWidget.buildButtons([
-                Button(I18nKey.startExecution.tr, () {
+                Button(I18nKey.testExecution.tr, () {
                   logic.startTask(logic.textController.text);
+                }),
+                Button(I18nKey.btnOk.tr, () async {
+                  final name = await MsgBox.password(I18nKey.assistiveTouchActionName.tr, I18nKey.assistiveTouchActionName.tr);
+                  if (name == null || name.trim().isEmpty) {
+                    return;
+                  }
+                  await logic.saveAsAction(name.trim());
+                  Get.back();
                 }),
               ]);
             }

@@ -72,6 +72,8 @@ class _$AppDatabase extends AppDatabase {
     changeListener = listener ?? StreamController<String>.broadcast();
   }
 
+  AssistiveTouchActionDao? _assistiveTouchActionDaoInstance;
+
   BookContentVersionDao? _bookContentVersionDaoInstance;
 
   BookDao? _bookDaoInstance;
@@ -122,7 +124,7 @@ class _$AppDatabase extends AppDatabase {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 5,
+      version: 7,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -147,6 +149,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE TABLE IF NOT EXISTS `ChapterContentVersion` (`classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `version` INTEGER NOT NULL, `reason` INTEGER NOT NULL, `content` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`chapterId`, `version`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Kv` (`k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`k`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `AssistiveTouchAction` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `sourceIndex` INTEGER NOT NULL, `templateIndex` INTEGER NOT NULL, `targetIndex` INTEGER NOT NULL, `enableAudio` INTEGER NOT NULL, `addToNextVerse` INTEGER NOT NULL, `sort` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Classroom` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
@@ -256,6 +260,12 @@ class _$AppDatabase extends AppDatabase {
       },
     );
     return sqfliteDatabaseFactory.openDatabase(path, options: databaseOptions);
+  }
+
+  @override
+  AssistiveTouchActionDao get assistiveTouchActionDao {
+    return _assistiveTouchActionDaoInstance ??=
+        _$AssistiveTouchActionDao(database, changeListener);
   }
 
   @override
@@ -374,6 +384,100 @@ class _$AppDatabase extends AppDatabase {
   VerseTodayPrgDao get verseTodayPrgDao {
     return _verseTodayPrgDaoInstance ??=
         _$VerseTodayPrgDao(database, changeListener);
+  }
+}
+
+class _$AssistiveTouchActionDao extends AssistiveTouchActionDao {
+  _$AssistiveTouchActionDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _assistiveTouchActionInsertionAdapter = InsertionAdapter(
+            database,
+            'AssistiveTouchAction',
+            (AssistiveTouchAction item) => <String, Object?>{
+                  'id': item.id,
+                  'name': item.name,
+                  'sourceIndex': item.sourceIndex,
+                  'templateIndex': item.templateIndex,
+                  'targetIndex': item.targetIndex,
+                  'enableAudio': item.enableAudio ? 1 : 0,
+                  'addToNextVerse': item.addToNextVerse ? 1 : 0,
+                  'sort': item.sort
+                }),
+        _assistiveTouchActionUpdateAdapter = UpdateAdapter(
+            database,
+            'AssistiveTouchAction',
+            ['id'],
+            (AssistiveTouchAction item) => <String, Object?>{
+                  'id': item.id,
+                  'name': item.name,
+                  'sourceIndex': item.sourceIndex,
+                  'templateIndex': item.templateIndex,
+                  'targetIndex': item.targetIndex,
+                  'enableAudio': item.enableAudio ? 1 : 0,
+                  'addToNextVerse': item.addToNextVerse ? 1 : 0,
+                  'sort': item.sort
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<AssistiveTouchAction>
+      _assistiveTouchActionInsertionAdapter;
+
+  final UpdateAdapter<AssistiveTouchAction> _assistiveTouchActionUpdateAdapter;
+
+  @override
+  Future<List<AssistiveTouchAction>> findAll() async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM AssistiveTouchAction ORDER BY sort ASC, id ASC',
+        mapper: (Map<String, Object?> row) => AssistiveTouchAction(
+            id: row['id'] as int?,
+            name: row['name'] as String,
+            sourceIndex: row['sourceIndex'] as int,
+            templateIndex: row['templateIndex'] as int,
+            targetIndex: row['targetIndex'] as int,
+            enableAudio: (row['enableAudio'] as int) != 0,
+            addToNextVerse: (row['addToNextVerse'] as int) != 0,
+            sort: row['sort'] as int));
+  }
+
+  @override
+  Future<AssistiveTouchAction?> getById(int id) async {
+    return _queryAdapter.query('SELECT * FROM AssistiveTouchAction WHERE id=?1',
+        mapper: (Map<String, Object?> row) => AssistiveTouchAction(
+            id: row['id'] as int?,
+            name: row['name'] as String,
+            sourceIndex: row['sourceIndex'] as int,
+            templateIndex: row['templateIndex'] as int,
+            targetIndex: row['targetIndex'] as int,
+            enableAudio: (row['enableAudio'] as int) != 0,
+            addToNextVerse: (row['addToNextVerse'] as int) != 0,
+            sort: row['sort'] as int),
+        arguments: [id]);
+  }
+
+  @override
+  Future<void> deleteById(int id) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM AssistiveTouchAction WHERE id=?1',
+        arguments: [id]);
+  }
+
+  @override
+  Future<void> insert(AssistiveTouchAction action) async {
+    await _assistiveTouchActionInsertionAdapter.insert(
+        action, OnConflictStrategy.fail);
+  }
+
+  @override
+  Future<void> update(AssistiveTouchAction action) async {
+    await _assistiveTouchActionUpdateAdapter.update(
+        action, OnConflictStrategy.fail);
   }
 }
 

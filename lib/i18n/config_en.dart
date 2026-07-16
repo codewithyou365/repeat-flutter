@@ -316,7 +316,7 @@ class ConfigEn extends Config {
     put(I18nKey.advancedEdit, "Network Edit");
     put(I18nKey.advancedEditWeb, "Advanced Edit Web");
     put(I18nKey.network, "Network");
-    put(I18nKey.assistant, "Accessibility");
+    put(I18nKey.assistiveTouch, "AssistiveTouch");
     put(I18nKey.web, "Web");
     put(I18nKey.btnFocus, "Focus");
     put(I18nKey.btnAdd, "Add");
@@ -391,8 +391,12 @@ class ConfigEn extends Config {
     put(I18nKey.overwritePosition, "Overwrite Position");
     put(I18nKey.syncGenerateAudio, "Sync Generate Audio");
     put(I18nKey.addToNextVerse, "Add A New Verse");
-    put(I18nKey.startExecution, "Start Execution");
+    put(I18nKey.testExecution, "Test");
     put(I18nKey.closeLog, "Close Log");
+    put(I18nKey.customizeMenu, "Customize Menu");
+    put(I18nKey.deleteCurrentVerse, "Delete Current Verse");
+    put(I18nKey.assistiveTouchActionName, "Action Name");
+    put(I18nKey.labelDeleteAssistiveTouchAction, "Please confirm to delete the action");
     put(I18nKey.practiceHint, "Type here to practice...");
   }
 }

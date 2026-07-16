@@ -32,7 +32,7 @@ class ContentLogic extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    changeSub.on([EventTopic.reimportBook, EventTopic.deleteBook], (_) {
+    changeSub.on([EventTopic.reimportBook, EventTopic.deleteBook, EventTopic.deleteVerse], (_) {
       change();
     });
 

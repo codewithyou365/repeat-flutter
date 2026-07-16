@@ -314,7 +314,7 @@ class ConfigZh extends Config {
     put(I18nKey.advancedEdit, "网络编辑");
     put(I18nKey.advancedEditWeb, "高级编辑网络");
     put(I18nKey.network, "网络");
-    put(I18nKey.assistant, "辅助功能");
+    put(I18nKey.assistiveTouch, "辅助触控");
     put(I18nKey.web, "网络");
     put(I18nKey.btnFocus, "专注");
     put(I18nKey.btnAdd, "新增");
@@ -389,8 +389,12 @@ class ConfigZh extends Config {
     put(I18nKey.overwritePosition, "覆盖位置");
     put(I18nKey.syncGenerateAudio, "同步生成音频");
     put(I18nKey.addToNextVerse, "新增一个小节");
-    put(I18nKey.startExecution, "开始执行");
+    put(I18nKey.testExecution, "测试");
     put(I18nKey.closeLog, "关闭日志");
+    put(I18nKey.customizeMenu, "自定义菜单");
+    put(I18nKey.deleteCurrentVerse, "删除当前段");
+    put(I18nKey.assistiveTouchActionName, "动作名称");
+    put(I18nKey.labelDeleteAssistiveTouchAction, "请确定删除该动作");
     put(I18nKey.practiceHint, "在此输入练习内容...");
   }
 }
