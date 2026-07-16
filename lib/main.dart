@@ -79,7 +79,7 @@ class _MyAppState extends State<MyApp> {
             themeMode: logic.themeMode.value,
             theme: logic.themeMode.value == ThemeMode.light ? ThemeData.light() : ThemeData.dark(),
             debugShowCheckedModeBanner: false,
-            title: 'First Method',
+            title: 'Repeat',
             home: child,
           );
         });
