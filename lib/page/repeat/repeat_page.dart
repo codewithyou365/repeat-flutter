@@ -199,9 +199,10 @@ class RepeatPage extends StatelessWidget {
                       return Row(
                         mainAxisSize: MainAxisSize.max,
                         children: [
+                          state.isPracticeMode.value ? RowWidget.buildGreenDot() : RowWidget.buildGreenDot(color: Colors.grey),
+                          const SizedBox(width: 8),
                           Text(I18nKey.practice.tr),
                           const Spacer(),
-                          if (state.isPracticeMode.value) const Icon(Icons.check, size: 18, color: Colors.blue),
                         ],
                       );
                     }),
@@ -233,9 +234,10 @@ class RepeatPage extends StatelessWidget {
                       return Row(
                         mainAxisSize: MainAxisSize.max,
                         children: [
+                          state.helper.focusMode.value ? RowWidget.buildGreenDot() : RowWidget.buildGreenDot(color: Colors.grey),
+                          const SizedBox(width: 8),
                           Text(I18nKey.btnFocus.tr),
                           const Spacer(),
-                          if (state.helper.focusMode.value) const Icon(Icons.check, size: 18, color: Colors.blue),
                         ],
                       );
                     }),
