@@ -44,8 +44,22 @@ class MyAppLogic extends GetxController {
   final i18nLocal = I18nLocal.en.obs;
 }
 
-class MyApp extends StatelessWidget {
-  MyApp({Key? key}) : super(key: key);
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void reassemble() {
+    super.reassemble();
+    // GetMaterialApp 只在它内部那个常驻的 GetMaterialController 第一次 initState 时调用一次
+    // Get.addTranslations，热重载不会重新触发；这里用 Flutter 专门为热重载准备的 reassemble()
+    // 钩子，手动把 I18nTranslations().keys 重新塞回去，改文案后热重载才能立刻生效。
+    Get.addTranslations(I18nTranslations().keys);
+  }
 
   @override
   Widget build(BuildContext context) {

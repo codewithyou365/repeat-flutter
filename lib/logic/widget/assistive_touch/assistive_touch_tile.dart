@@ -7,6 +7,7 @@ class AssistiveTouchTile {
     VoidCallback? onTap,
     VoidCallback? onLongPress,
     bool enabled = true,
+    double width = 72,
   }) {
     return Opacity(
       opacity: enabled ? 1 : 0.4,
@@ -15,7 +16,7 @@ class AssistiveTouchTile {
         onLongPress: enabled ? onLongPress : null,
         behavior: HitTestBehavior.opaque,
         child: SizedBox(
-          width: 72,
+          width: width,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

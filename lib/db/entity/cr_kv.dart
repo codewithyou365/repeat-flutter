@@ -49,6 +49,10 @@ enum CrK {
   ttsPitchIndexForNote,
   lastGameIndex,
   classroomResourceVersion,
+  assistiveTouchEnabled,
+  assistiveTouchPosX,
+  assistiveTouchPosY,
+  assistiveTouchVisibleBuiltins,
 }
 
 @Entity(primaryKeys: ['classroomId', 'k'])

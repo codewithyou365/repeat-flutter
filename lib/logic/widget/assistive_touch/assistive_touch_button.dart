@@ -11,6 +11,9 @@ class AssistiveTouchButton extends StatelessWidget {
   static const double size = 56;
   static const double collapsedWidth = 14;
   static const double collapsedHeight = 48;
+  // 窄杠可视宽度只有 14，太窄不好点，所以命中区域比它宽得多，视觉上的窄杠贴边、
+  // 命中区域往屏幕内多留一截；同时用 onTapDown 而不是 onTap，手指一碰到就展开，不用等抬起。
+  static const double collapsedHitWidth = 18;
   final AssistiveTouchLogic logic;
 
   const AssistiveTouchButton({super.key, required this.logic});
@@ -34,24 +37,31 @@ class AssistiveTouchButton extends StatelessWidget {
 
       if (logic.collapsed.value) {
         final onRight = x > (screenSize.width - size) / 2;
-        final barX = onRight ? screenSize.width - collapsedWidth : 0.0;
+        final hitX = onRight ? screenSize.width - collapsedHitWidth : 0.0;
         final barY = (y + size / 2 - collapsedHeight / 2).clamp(0.0, screenSize.height - collapsedHeight);
         return AnimatedPositioned(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOut,
-          left: barX,
+          left: hitX,
           top: barY,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: () => logic.noteInteraction(),
-            child: Container(
-              width: collapsedWidth,
+            onTapDown: (_) => logic.noteInteraction(),
+            child: SizedBox(
+              width: collapsedHitWidth,
               height: collapsedHeight,
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.35),
-                borderRadius: BorderRadius.horizontal(
-                  left: onRight ? const Radius.circular(8) : Radius.zero,
-                  right: onRight ? Radius.zero : const Radius.circular(8),
+              child: Align(
+                alignment: onRight ? Alignment.centerRight : Alignment.centerLeft,
+                child: Container(
+                  width: collapsedWidth,
+                  height: collapsedHeight,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.horizontal(
+                      left: onRight ? const Radius.circular(8) : Radius.zero,
+                      right: onRight ? Radius.zero : const Radius.circular(8),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -109,12 +119,13 @@ class AssistiveTouchButton extends StatelessWidget {
             spacing: 16,
             runSpacing: 16,
             children: [
-              if (logic.canDeleteCurrentVerse)
-                AssistiveTouchTile.build(
-                  icon: Icons.delete_outline,
-                  label: I18nKey.deleteCurrentVerse.tr,
-                  onTap: () => _confirmDeleteCurrentVerse(logic),
-                ),
+              ...logic.shownBuiltins.map((builtIn) {
+                return AssistiveTouchTile.build(
+                  icon: builtIn.icon,
+                  label: builtIn.labelKey.tr,
+                  onTap: () => builtIn == BuiltInAction.deleteVerse ? _confirmDeleteCurrentVerse(logic) : _executeBuiltIn(logic, builtIn),
+                );
+              }),
               ...logic.actions.map((action) {
                 return AssistiveTouchTile.build(
                   icon: Icons.bolt,
@@ -138,6 +149,11 @@ class AssistiveTouchButton extends StatelessWidget {
       ),
       rate: 0.4,
     );
+  }
+
+  void _executeBuiltIn(AssistiveTouchLogic logic, BuiltInAction builtIn) {
+    Get.back();
+    logic.executeBuiltIn(builtIn);
   }
 
   void _confirmDeleteCurrentVerse(AssistiveTouchLogic logic) {

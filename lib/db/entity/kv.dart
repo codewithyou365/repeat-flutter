@@ -28,9 +28,6 @@ enum K {
   webviewHandlePos,
   tipServerPort,
   bluetoothStopLeadMs,
-  assistiveTouchEnabled,
-  assistiveTouchPosX,
-  assistiveTouchPosY,
 }
 
 @Entity(primaryKeys: ['k'])

@@ -316,7 +316,7 @@ class ConfigEn extends Config {
     put(I18nKey.advancedEdit, "Network Edit");
     put(I18nKey.advancedEditWeb, "Advanced Edit Web");
     put(I18nKey.network, "Network");
-    put(I18nKey.assistiveTouch, "AssistiveTouch");
+    put(I18nKey.assistiveTouch, "Assistive Touch");
     put(I18nKey.web, "Web");
     put(I18nKey.btnFocus, "Focus");
     put(I18nKey.btnAdd, "Add");
@@ -394,9 +394,19 @@ class ConfigEn extends Config {
     put(I18nKey.testExecution, "Test");
     put(I18nKey.closeLog, "Close Log");
     put(I18nKey.customizeMenu, "Customize Menu");
-    put(I18nKey.deleteCurrentVerse, "Delete Current Verse");
+    put(I18nKey.deleteCurrentVerse, "Del Verse");
     put(I18nKey.assistiveTouchActionName, "Action Name");
     put(I18nKey.labelDeleteAssistiveTouchAction, "Please confirm to delete the action");
+    put(I18nKey.labelRemoveDeleteVerseAction, "Please confirm to remove this action from the menu");
+    put(I18nKey.selectAction, "Select Action");
+    put(I18nKey.customAction, "Custom Action");
+    put(I18nKey.ttsNoteAction, "TTS-Note");
+    put(I18nKey.ttsQAction, "TTS-Q");
+    put(I18nKey.ttsAAction, "TTS-A");
+    put(I18nKey.ttsTipsAction, "TTS-Tips");
+    put(I18nKey.playQAction, "Play-Q");
+    put(I18nKey.playAAction, "Play-A");
+    put(I18nKey.playTipsAction, "Play-Tips");
     put(I18nKey.practiceHint, "Type here to practice...");
   }
 }

@@ -31,11 +31,13 @@ class AssistiveTouchSheet {
                 spacing: 16,
                 runSpacing: 16,
                 children: [
-                  if (logic.canDeleteCurrentVerse)
-                    AssistiveTouchTile.build(
-                      icon: Icons.delete_outline,
-                      label: I18nKey.deleteCurrentVerse.tr,
-                    ),
+                  ...logic.shownBuiltins.map((builtIn) {
+                    return AssistiveTouchTile.build(
+                      icon: builtIn.icon,
+                      label: builtIn.labelKey.tr,
+                      onLongPress: () => _confirmRemoveBuiltIn(logic, builtIn),
+                    );
+                  }),
                   ...logic.actions.map((action) {
                     return AssistiveTouchTile.build(
                       icon: Icons.bolt,
@@ -49,7 +51,7 @@ class AssistiveTouchSheet {
                     icon: Icons.add,
                     label: I18nKey.btnAdd.tr,
                     enabled: canEdit,
-                    onTap: () => _addAction(logic),
+                    onTap: () => _showAddSelector(logic),
                   ),
                 ],
               ),
@@ -64,7 +66,7 @@ class AssistiveTouchSheet {
           RowWidget.buildDivider(),
         ],
       ),
-      rate: 0.6,
+      rate: 0.75,
     );
   }
 
@@ -98,6 +100,69 @@ class AssistiveTouchSheet {
         Get.back();
         await logic.deleteAction(action);
       },
+    );
+  }
+
+  static void _confirmRemoveBuiltIn(AssistiveTouchLogic logic, BuiltInAction builtIn) {
+    MsgBox.yesOrNo(
+      title: I18nKey.labelWarning.tr,
+      desc: I18nKey.labelRemoveDeleteVerseAction.tr,
+      yes: () async {
+        Get.back();
+        await logic.setBuiltInVisible(builtIn, false);
+      },
+    );
+  }
+
+  /// 点"新增"时先给一个选择：系统自带的内置动作用格子(一行 4 个)，自定义动作单独占一整行——
+  /// 内置动作文案短，格子够放；"自定义动作"是打开表单的独立入口，用整行更醒目也不会被截断。
+  static Future<void> _showAddSelector(AssistiveTouchLogic logic) async {
+    await Sheet.showBottomSheet(
+      Get.context!,
+      Obx(() {
+        final addable = logic.addableBuiltins;
+        return ListView(
+          shrinkWrap: true,
+          children: [
+            if (addable.isNotEmpty) ...[
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 4,
+                childAspectRatio: 0.85,
+                children: addable.map((builtIn) {
+                  return AssistiveTouchTile.build(
+                    icon: builtIn.icon,
+                    label: builtIn.labelKey.tr,
+                    width: double.infinity,
+                    onTap: () {
+                      Get.back();
+                      logic.setBuiltInVisible(builtIn, true);
+                    },
+                  );
+                }).toList(),
+              ),
+              RowWidget.buildDividerWithoutColor(),
+            ],
+            RowWidget.buildSelect(
+              title: I18nKey.customAction.tr,
+              leading: const Icon(Icons.auto_fix_high),
+              onTap: () {
+                Get.back();
+                _addAction(logic);
+              },
+            ),
+          ],
+        );
+      }),
+      head: SheetHead(
+        height: RowWidget.rowHeight + RowWidget.dividerHeight,
+        widgets: [
+          RowWidget.buildMiddleText(I18nKey.selectAction.tr),
+          RowWidget.buildDivider(),
+        ],
+      ),
+      rate: 0.4,
     );
   }
 }

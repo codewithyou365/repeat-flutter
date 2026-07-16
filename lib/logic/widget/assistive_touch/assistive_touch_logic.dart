@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/assistive_touch_action.dart';
-import 'package:repeat_flutter/db/entity/kv.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/widget/expand/expand_logic.dart';
 import 'package:repeat_flutter/page/repeat/logic/repeat_flow_for_browse.dart';
@@ -12,7 +13,59 @@ import 'package:repeat_flutter/page/repeat/logic/repeat_flow_for_examine.dart';
 import 'package:repeat_flutter/page/repeat/repeat_logic.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
-/// 辅助控制依附于复习页：它的所有动作都要用到当前正在复习的小节，
+/// 内置动作（不是用户自己配的 AssistiveTouchAction 预设）。跟自定义动作一样，可以在自定义菜单里
+/// 长按移除、点"新增"时重新加回来。TTS-*/Play-* 几个目前只是占位，点了不会有任何反应。
+enum BuiltInAction {
+  playQ,
+  playA,
+  playTips,
+  deleteVerse,
+  ttsQ,
+  ttsA,
+  ttsTips,
+  ttsNote,
+}
+
+extension BuiltInActionX on BuiltInAction {
+  IconData get icon {
+    switch (this) {
+      case BuiltInAction.deleteVerse:
+        return Icons.delete_outline;
+      case BuiltInAction.ttsNote:
+      case BuiltInAction.ttsQ:
+      case BuiltInAction.ttsA:
+      case BuiltInAction.ttsTips:
+        return Icons.record_voice_over;
+      case BuiltInAction.playQ:
+      case BuiltInAction.playA:
+      case BuiltInAction.playTips:
+        return Icons.play_circle_outline;
+    }
+  }
+
+  I18nKey get labelKey {
+    switch (this) {
+      case BuiltInAction.deleteVerse:
+        return I18nKey.deleteCurrentVerse;
+      case BuiltInAction.ttsNote:
+        return I18nKey.ttsNoteAction;
+      case BuiltInAction.ttsQ:
+        return I18nKey.ttsQAction;
+      case BuiltInAction.ttsA:
+        return I18nKey.ttsAAction;
+      case BuiltInAction.ttsTips:
+        return I18nKey.ttsTipsAction;
+      case BuiltInAction.playQ:
+        return I18nKey.playQAction;
+      case BuiltInAction.playA:
+        return I18nKey.playAAction;
+      case BuiltInAction.playTips:
+        return I18nKey.playTipsAction;
+    }
+  }
+}
+
+/// 辅助触控依附于复习页：它的所有动作都要用到当前正在复习的小节，
 /// 所以跟 expandSheet/bookEditor 一样，由 RepeatLogic 直接持有一份实例，
 /// 不做成全局单例，也不用自己判断"复习会话是否还在"。
 class AssistiveTouchLogic {
@@ -26,6 +79,9 @@ class AssistiveTouchLogic {
   final dragging = false.obs;
   final collapsed = false.obs;
   final actions = <AssistiveTouchAction>[].obs;
+
+  // 默认只显示"删除当前节"，TTS-*/Play-* 几个要用户自己从"新增"里加进来。
+  final visibleBuiltins = <BuiltInAction>{BuiltInAction.deleteVerse}.obs;
   Size? _lastScreenSize;
   Timer? _idleTimer;
   static const idleCollapseDelay = Duration(seconds: 5);
@@ -62,12 +118,29 @@ class AssistiveTouchLogic {
     _lastScreenSize = screenSize;
   }
 
+  // 辅助触控是跟着"这堂课"走的设置(不同课堂可能想要不同的开关/位置/常用动作)，
+  // 所以存到按 classroomId 分开的 CrKv，而不是全局唯一的 Kv。
   Future<void> loadSettings() async {
-    enabled.value = await Db().db.kvDao.getIntWithDefault(K.assistiveTouchEnabled, 0) == 1;
-    posX.value = double.tryParse(await Db().db.kvDao.getStr(K.assistiveTouchPosX) ?? '') ?? -1;
-    posY.value = double.tryParse(await Db().db.kvDao.getStr(K.assistiveTouchPosY) ?? '') ?? -1;
+    enabled.value = (await Db().db.crKvDao.getInt(Classroom.curr, CrK.assistiveTouchEnabled)) == 1;
+    posX.value = double.tryParse(await Db().db.crKvDao.getStr(Classroom.curr, CrK.assistiveTouchPosX) ?? '') ?? -1;
+    posY.value = double.tryParse(await Db().db.crKvDao.getStr(Classroom.curr, CrK.assistiveTouchPosY) ?? '') ?? -1;
+    final storedBuiltins = await Db().db.crKvDao.getStr(Classroom.curr, CrK.assistiveTouchVisibleBuiltins);
+    if (storedBuiltins == null) {
+      visibleBuiltins.assignAll({BuiltInAction.deleteVerse});
+    } else {
+      visibleBuiltins.assignAll(storedBuiltins.split(',').where((s) => s.isNotEmpty).map((s) => BuiltInAction.values.byName(s)));
+    }
     await loadActions();
     noteInteraction();
+  }
+
+  Future<void> setBuiltInVisible(BuiltInAction action, bool visible) async {
+    if (visible) {
+      visibleBuiltins.add(action);
+    } else {
+      visibleBuiltins.remove(action);
+    }
+    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.assistiveTouchVisibleBuiltins, visibleBuiltins.map((e) => e.name).join(',')));
   }
 
   Future<void> loadActions() async {
@@ -76,14 +149,14 @@ class AssistiveTouchLogic {
 
   Future<void> setEnabled(bool value) async {
     enabled.value = value;
-    await Db().db.kvDao.insertOrReplace(Kv(K.assistiveTouchEnabled, value ? '1' : '0'));
+    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.assistiveTouchEnabled, value ? '1' : '0'));
   }
 
   Future<void> savePosition(double x, double y) async {
     posX.value = x;
     posY.value = y;
-    await Db().db.kvDao.insertOrReplace(Kv(K.assistiveTouchPosX, x.toString()));
-    await Db().db.kvDao.insertOrReplace(Kv(K.assistiveTouchPosY, y.toString()));
+    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.assistiveTouchPosX, x.toString()));
+    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.assistiveTouchPosY, y.toString()));
   }
 
   Future<void> deleteAction(AssistiveTouchAction action) async {
@@ -95,10 +168,39 @@ class AssistiveTouchLogic {
   }
 
   /// 考查（RepeatFlowForExamine）是按计划推进的队列，没有可前后浏览的"上一个/下一个"，
-  /// 所以"删除当前段"只在浏览（RepeatFlowForBrowse）等有稳定顺序的模式下开放。
-  bool get canDeleteCurrentVerse {
-    final flow = repeatLogic.repeatFlow;
-    return flow != null && flow is! RepeatFlowForExamine;
+  /// 所以"删除当前节"只在浏览（RepeatFlowForBrowse）等有稳定顺序的模式下开放；
+  /// 其它内置动作（TTS-*/Play-*）不挑复习模式，随时都能显示。
+  bool _builtInAvailableForFlow(BuiltInAction action) {
+    if (action == BuiltInAction.deleteVerse) {
+      final flow = repeatLogic.repeatFlow;
+      return flow != null && flow is! RepeatFlowForExamine;
+    }
+    return true;
+  }
+
+  /// 当前模式支持、且用户没有把它从自定义菜单里移除的内置动作，按定义顺序排列。
+  List<BuiltInAction> get shownBuiltins => BuiltInAction.values.where((a) => _builtInAvailableForFlow(a) && visibleBuiltins.contains(a)).toList();
+
+  /// 当前模式支持、但被用户移除了的内置动作——"新增"选择框里可以把它们重新加回来。
+  List<BuiltInAction> get addableBuiltins => BuiltInAction.values.where((a) => _builtInAvailableForFlow(a) && !visibleBuiltins.contains(a)).toList();
+
+  bool get canDeleteCurrentVerse => shownBuiltins.contains(BuiltInAction.deleteVerse);
+
+  Future<void> executeBuiltIn(BuiltInAction action) async {
+    switch (action) {
+      case BuiltInAction.deleteVerse:
+        await deleteCurrentVerse();
+        break;
+      case BuiltInAction.ttsNote:
+      case BuiltInAction.ttsQ:
+      case BuiltInAction.ttsA:
+      case BuiltInAction.ttsTips:
+      case BuiltInAction.playQ:
+      case BuiltInAction.playA:
+      case BuiltInAction.playTips:
+        // 先占位，还没实现，点了没有任何反应。
+        break;
+    }
   }
 
   Future<void> deleteCurrentVerse() async {
