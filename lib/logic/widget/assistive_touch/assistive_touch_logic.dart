@@ -12,7 +12,7 @@ import 'package:repeat_flutter/page/repeat/logic/repeat_flow_for_examine.dart';
 import 'package:repeat_flutter/page/repeat/repeat_logic.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
-/// 辅助触控依附于复习页：它的所有动作都要用到当前正在复习的小节，
+/// 辅助控制依附于复习页：它的所有动作都要用到当前正在复习的小节，
 /// 所以跟 expandSheet/bookEditor 一样，由 RepeatLogic 直接持有一份实例，
 /// 不做成全局单例，也不用自己判断"复习会话是否还在"。
 class AssistiveTouchLogic {

@@ -48,7 +48,7 @@ class ExpandLogic {
   ];
   var sourceIndex = 1.obs;
   // 指令框里显示的文本来自哪个文本模版(copyLogic.copyTemplates 的下标)，
-  // 保存为辅助触控预设时记录这个下标而不是渲染好的固定文本，这样以后对不同小节执行时能重新取当时的模版文本。
+  // 保存为辅助控制预设时记录这个下标而不是渲染好的固定文本，这样以后对不同小节执行时能重新取当时的模版文本。
   var templateIndex = 0.obs;
 
   QaType toQaType(int targetIndex) {
