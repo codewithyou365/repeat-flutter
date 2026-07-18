@@ -341,6 +341,7 @@ const onCharFilled = (_index: number, char: string, auto: boolean, correct: bool
 
 const onCompleted = () => {
   flushWord();
+  void tap('tapLeft');
 };
 
 const speakCurrentWord = () => {
