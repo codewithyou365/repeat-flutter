@@ -17,6 +17,7 @@ import 'package:repeat_flutter/logic/game_server/controller/game_user_score.dart
 import 'package:repeat_flutter/logic/game_server/controller/game_user_score_history.dart';
 import 'package:repeat_flutter/logic/game_server/controller/game_user_score_minus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
+import 'package:repeat_flutter/page/repeat/logic/tts_helper.dart';
 import 'controller/game_key.dart';
 import 'controller/heart.dart';
 import 'controller/js/js_runtime.dart';
@@ -33,6 +34,7 @@ class GameWebServer {
   late JsRuntime jsRuntime;
 
   GameWebServer({
+    required TtsHelper ttsHelper,
     required VoidCallback tapNext,
     required VoidCallback tapLeft,
     required VoidCallback tapRight,
@@ -40,6 +42,7 @@ class GameWebServer {
     required VoidCallback longTapMiddle,
   }) {
     jsRuntime = JsRuntime(
+      ttsHelper: ttsHelper,
       tapNext: tapNext,
       tapLeft: tapLeft,
       tapRight: tapRight,

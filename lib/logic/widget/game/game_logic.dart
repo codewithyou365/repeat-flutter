@@ -20,6 +20,7 @@ import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/widget/user_manager.dart';
 import 'package:repeat_flutter/logic/widget/webview/webview_args.dart';
 import 'package:repeat_flutter/main.dart';
+import 'package:repeat_flutter/page/repeat/logic/tts_helper.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -44,6 +45,7 @@ class GameLogic<T extends GetxController> {
 
   GameLogic({
     required this.parentLogic,
+    required TtsHelper ttsHelper,
     required VoidCallback tapNext,
     required VoidCallback tapLeft,
     required VoidCallback tapRight,
@@ -51,6 +53,7 @@ class GameLogic<T extends GetxController> {
     required VoidCallback longTapMiddle,
   }) {
     web = GameWebServer(
+      ttsHelper: ttsHelper,
       tapNext: tapNext,
       tapLeft: tapLeft,
       tapRight: tapRight,

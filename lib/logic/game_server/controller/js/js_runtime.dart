@@ -12,7 +12,9 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/game/game_state.dart';
+import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/page/repeat/logic/repeat_flow_for_browse.dart';
+import 'package:repeat_flutter/page/repeat/logic/tts_helper.dart';
 import 'package:repeat_flutter/page/repeat/repeat_logic.dart';
 
 part 'js_code.dart';
@@ -23,12 +25,14 @@ class JsRuntime {
   final VoidCallback tapRight;
   final VoidCallback tapMiddle;
   final VoidCallback longTapMiddle;
+  final TtsHelper ttsHelper;
 
   JavascriptRuntime? _jsRuntime;
   bool _isInitialized = false;
   final SubList<int> subNewVerse = [];
 
   JsRuntime({
+    required this.ttsHelper,
     required this.tapNext,
     required this.tapLeft,
     required this.tapRight,
@@ -242,6 +246,31 @@ class JsRuntime {
           return '';
         }
         return verse.verseContent;
+      });
+      _jsRuntime!.onMessage('tts', (dynamic args) async {
+        if (args is! Map) {
+          return 'invalid_args';
+        }
+        final payload = args.cast<String, dynamic>();
+        final type = payload['type'];
+        final text = payload['text'];
+        final rateRaw = payload['rate'];
+        final double? rate = rateRaw is num ? rateRaw.toDouble() : null;
+        if (type is! String || type.isEmpty) {
+          return 'invalid_type';
+        }
+        if (text is! String) {
+          return 'invalid_text';
+        }
+        if (text.isEmpty) {
+          return 'empty';
+        }
+        final qaType = QaType.fromAcronym(type);
+        if (qaType == null) {
+          return 'invalid_text';
+        }
+        await ttsHelper.speakText(qaType.ttsKeys, text, rate: rate);
+        return 'ok';
       });
       _jsRuntime!.onMessage('setData', (dynamic args) async {
         final game = GameState.game;

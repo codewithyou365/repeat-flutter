@@ -130,11 +130,19 @@ class TtsHelper {
     }
   }
 
-  Future<void> speakText(TtsKeys keys, String text) async {
+  Future<void> speakText(TtsKeys keys, String text, {double? rate}) async {
     if (text.isEmpty) return;
     try {
       if (await tryInit(keys)) {
+        if (rate != null) {
+          // 临时覆盖语速，只影响这一次朗读；用完立刻让缓存失效，
+          // 这样其它功能下次朗读时会从持久化配置重新加载自己的语速，不会被这次覆盖污染
+          await tts.setSpeechRate(rate);
+        }
         await tts.speak(text);
+        if (rate != null) {
+          cacheConfig = '';
+        }
       }
     } catch (e) {
       _isSpeaking = false;

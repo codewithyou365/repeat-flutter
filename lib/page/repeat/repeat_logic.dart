@@ -76,6 +76,7 @@ class RepeatLogic extends GetxController {
     await assistiveTouchLogic.loadSettings();
     gameLogic = GameLogic<RepeatLogic>(
       parentLogic: this,
+      ttsHelper: ttsHelper,
       tapNext: onNext,
       tapLeft: onTapLeft,
       tapRight: onLongTapRight,

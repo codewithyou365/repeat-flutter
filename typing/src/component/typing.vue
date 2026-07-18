@@ -68,12 +68,24 @@ const props = withDefaults(defineProps<{
   ignoreCase: boolean;
   changeToRightCaseWhenIgnoreCase: boolean;
   ignorePunctuation: boolean;
+  ignoreSpace?: boolean;
+  blockOnWrong?: boolean;
+  manualPlayTrigger?: string;
   touchColor?: string;
 }>(), {
   clickFillCharWhenDisabled: '',
   touchColor: '',
   ignoreContentIndexes: () => [],
+  ignoreSpace: false,
+  blockOnWrong: false,
+  manualPlayTrigger: '',
 });
+
+const emit = defineEmits<{
+  (e: 'charFilled', index: number, char: string, auto: boolean, correct: boolean): void;
+  (e: 'completed'): void;
+  (e: 'manualPlay', word: string): void;
+}>();
 
 const store = useStore();
 
@@ -185,33 +197,88 @@ watch(composingInput, (newValue) => {
 });
 
 const isIgnore = (c: string, index: number) => {
+  if (props.ignoreSpace && c === ' ') {
+    return true;
+  }
   if (props.ignorePunctuation && /\p{P}/u.test(c)) {
     return true;
   }
   return props.ignoreContentIndexes && props.ignoreContentIndexes.includes(index);
 };
 
+type FilledEvent = { index: number; auto: boolean };
+
+// 把 index 处新落下的字符标记为一个待通知事件；auto=true 表示是被自动跳过/填充的
+// （忽略的空格、标点或 ignoreContentIndexes），不是用户敲的
+const isCorrectAt = (index: number, ch: string) => {
+  const origCh = chars.value[index];
+  return props.ignoreCase
+    ? ch.toLowerCase() === (origCh ?? '').toLowerCase()
+    : ch === origCh;
+};
+
+const isWordChar = (c: string) => /[\p{L}\p{N}]/u.test(c);
+
+// 找到 index 位置所在（或紧邻左侧）的连续字母/数字片段，用于"手动播放当前光标所在单词"
+const getWordAt = (index: number): string => {
+  const content = props.content;
+  let i = index;
+  if (i >= content.length || !isWordChar(content[i])) {
+    i = index - 1;
+  }
+  if (i < 0 || !isWordChar(content[i])) {
+    return '';
+  }
+  let start = i;
+  while (start > 0 && isWordChar(content[start - 1])) start--;
+  let end = i;
+  while (end < content.length - 1 && isWordChar(content[end + 1])) end++;
+  return content.slice(start, end + 1);
+};
+
 const applyInput = (val: string) => {
   let pos = cursorPos.value;
   let temp = userInput.value;
+  const filled: FilledEvent[] = [];
+  let blocked = false;
 
-  for (const char of val) {
+  const autoFill = () => {
     while (pos < props.content.length && isIgnore(props.content[pos], pos)) {
-      if (pos >= temp.length) temp += props.content[pos];
+      if (pos >= temp.length) {
+        temp += props.content[pos];
+        filled.push({index: pos, auto: true});
+      }
       pos++;
     }
+  };
+
+  for (const char of val) {
+    if (props.manualPlayTrigger && char === props.manualPlayTrigger) {
+      emit('manualPlay', getWordAt(pos));
+      continue; // 触发字符本身不写入内容，也不推进 pos
+    }
+
+    autoFill();
+    if (pos >= props.content.length) break;
+
     if (pos < temp.length) {
       temp = temp.slice(0, pos) + char + temp.slice(pos + 1);
     } else {
       temp += char;
     }
+    filled.push({index: pos, auto: false});
+
+    if (props.blockOnWrong && !isCorrectAt(pos, char)) {
+      blocked = true;
+      break; // 打错了，原地停住，不允许继续往下推进
+    }
     pos++;
   }
 
-  while (pos < props.content.length && isIgnore(props.content[pos], pos)) {
-    if (pos >= temp.length) temp += props.content[pos];
-    pos++;
+  if (!blocked) {
+    autoFill();
   }
+
   userInput.value = temp;
   cursorPos.value = pos;
 
@@ -220,6 +287,20 @@ const applyInput = (val: string) => {
   }
   if (cursorPos.value > props.content.length) {
     cursorPos.value = props.content.length;
+  }
+
+  emitFilledEvents(filled, !blocked);
+};
+
+const emitFilledEvents = (filled: FilledEvent[], allowCompletion = true) => {
+  for (const item of filled) {
+    const origCh = chars.value[item.index];
+    const userCh = userInput.value[item.index];
+    const correct = item.auto ? true : isCorrectAt(item.index, userCh ?? '');
+    emit('charFilled', item.index, origCh, item.auto, correct);
+  }
+  if (allowCompletion && filled.length > 0 && props.content.length > 0 && userInput.value.length >= props.content.length) {
+    emit('completed');
   }
 };
 
@@ -443,13 +524,26 @@ watch(() => props.content, async () => {
   cursorPos.value = 0;
   charRefs.value = new Array(props.content.length);
   await nextTick();
-  minCursorPos.value = 0;
-  while (isIgnore(props.content[minCursorPos.value], minCursorPos.value)) {
-    minCursorPos.value++;
+
+  // 内容一开始就可能有一串被忽略（自动填充）的字符（比如间隔显示模式下第一个字母就是自动显示的），
+  // 这段要提前把它们写进 userInput，minCursorPos/cursorPos 才会落在第一个真正需要输入的位置上，
+  // 同时把这批字符也当作“已落下的字符”通知出去（用于父组件同步朗读等）
+  let pos = 0;
+  let temp = '';
+  const filled: FilledEvent[] = [];
+  while (pos < props.content.length && isIgnore(props.content[pos], pos)) {
+    temp += props.content[pos];
+    filled.push({index: pos, auto: true});
+    pos++;
   }
+  userInput.value = temp;
+  cursorPos.value = pos;
+  minCursorPos.value = pos;
+
   fixCursorPos();
   positionInput();
   inputRef.value?.focus();
+  emitFilledEvents(filled);
 }, {immediate: true});
 
 watch([userInput, groups], async () => {
@@ -474,6 +568,9 @@ defineExpose({
   },
   getContentIndexToColor() {
     return contentIndexToColor.value;
+  },
+  getCurrentWord() {
+    return getWordAt(cursorPos.value);
   },
 });
 </script>
