@@ -189,18 +189,10 @@ class RepeatPage extends StatelessWidget {
                 active: state.isPracticeMode,
               ),
               if (state.gameLogicInitSuccess)
-                PopupMenuItem<String>(
+                buildMenuItem(
+                  label: I18nKey.game.tr,
                   onTap: logic.openGame,
-                  child: Obx(() {
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(I18nKey.game.tr),
-                        const Spacer(),
-                        if (logic.gameLogic.state.open.value) const Icon(Icons.check, size: 18, color: Colors.blue),
-                      ],
-                    );
-                  }),
+                  active: logic.gameLogic.state.open,
                 ),
               buildMenuItem(
                 label: I18nKey.btnFocus.tr,
