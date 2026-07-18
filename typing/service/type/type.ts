@@ -30,7 +30,7 @@ const Util = {
         try {
             const data = await sendMessage('getData', '{}');
             if (data == null || data === '') {
-                return {"ignorePunctuation": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": true, "manualTtsRate": 1, "manualPlayTrigger": "."};
+                return {"ignorePunctuation": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": "."};
             }
             return JSON.parse(data);
         } catch (e) {

@@ -110,8 +110,8 @@ const ignoreCase = ref(false);
 const ignorePunctuation = ref(false);
 const intervalMode = ref<'none' | 'oddHidden' | 'evenHidden'>('none');
 const ttsRate = ref(1);
-const speakLetters = ref(true);
-const manualTtsRate = ref(1);
+const speakLetters = ref(false);
+const manualTtsRate = ref(0.5);
 const manualPlayTrigger = ref('.');
 const ignoreContentIndexes = ref<number[]>([]);
 const adminEnable = ref(false);
@@ -202,8 +202,8 @@ const getConfig = async () => {
   ignoreCase.value = res['ignoreCase'];
   intervalMode.value = res['intervalMode'] || 'none';
   ttsRate.value = typeof res['ttsRate'] === 'number' ? res['ttsRate'] : 1;
-  speakLetters.value = typeof res['speakLetters'] === 'boolean' ? res['speakLetters'] : true;
-  manualTtsRate.value = typeof res['manualTtsRate'] === 'number' ? res['manualTtsRate'] : 1;
+  speakLetters.value = typeof res['speakLetters'] === 'boolean' ? res['speakLetters'] : false;
+  manualTtsRate.value = typeof res['manualTtsRate'] === 'number' ? res['manualTtsRate'] : 0.5;
   manualPlayTrigger.value = typeof res['manualPlayTrigger'] === 'string' ? res['manualPlayTrigger'] : '.';
 };
 const getAdmin = async () => {
