@@ -1,5 +1,21 @@
 <template>
   <div v-if="isAdmin" style="margin: 8px">
+    <nut-cell :title="t('profile')">
+      <template #link>
+        <nut-radio-group v-model="activeProfile" direction="horizontal" @change="setActiveProfile">
+          <nut-radio v-for="(name, i) in profileNames" :key="i" :label="i">{{ name }}</nut-radio>
+        </nut-radio-group>
+      </template>
+    </nut-cell>
+    <nut-cell :title="t('profileName')">
+      <template #link>
+        <nut-input
+            v-model="profileNames[activeProfile]"
+            style="text-align: right"
+            @blur="setProfileName(activeProfile, profileNames[activeProfile])"
+        />
+      </template>
+    </nut-cell>
     <nut-cell :title="t('ignoreCase')">
       <template #link>
         <nut-switch v-model="ignoreCase" @change="setIgnoreCase"/>
@@ -145,6 +161,12 @@ import {showToast} from "@nutui/nutui";
 const {t} = useI18n();
 const store = useStore();
 
+type ProfileConfig = Record<string, any>;
+
+const activeProfile = ref(0);
+const profileNames = ref<string[]>(['1', '2', '3']);
+const profiles = ref<ProfileConfig[]>([]); // 本地缓存全部槽位，切换 profile 时不用重新请求
+
 const ignoreCase = ref(false);
 const ignorePunctuation = ref(false);
 const intervalMode = ref<'none' | 'oddHidden' | 'evenHidden'>('none');
@@ -197,6 +219,7 @@ const showTips = () => {
   };
 
   const rows = [
+    {label: t('profile'), value: profileNames.value[activeProfile.value]},
     {label: t('ignoreCase'), value: formatStatus(ignoreCase.value)},
     {label: t('ignorePunctuation'), value: formatStatus(ignorePunctuation.value)},
     {label: t('intervalDisplay'), value: formatIntervalMode(intervalMode.value)},
@@ -240,13 +263,9 @@ const getLabel = async () => {
   labels.right = res.data.right;
 };
 
-const getConfig = async () => {
-  const req = new Request({
-    path: Path.game,
-    headers: {'jsMethod': 'Game.getConfig'},
-  });
-  const res0 = await client.node!.send(req);
-  const res = res0.data;
+// 把 profiles.value[index] 的各字段套用到现有的独立 ref 上（切换 profile / 初次加载都走这里）
+const applyProfile = (index: number) => {
+  const res = profiles.value[index] || {};
   ignorePunctuation.value = res['ignorePunctuation'];
   ignoreCase.value = res['ignoreCase'];
   intervalMode.value = res['intervalMode'] || 'none';
@@ -260,6 +279,19 @@ const getConfig = async () => {
   spellPlayTriggerSaved = spellPlayTrigger.value;
   hintTriggerSaved = hintTrigger.value;
   keyMapping.value = typeof res['keyMapping'] === 'string' ? res['keyMapping'] : '';
+};
+
+const getConfig = async () => {
+  const req = new Request({
+    path: Path.game,
+    headers: {'jsMethod': 'Game.getConfig'},
+  });
+  const res0 = await client.node!.send(req);
+  const res = res0.data;
+  activeProfile.value = typeof res['activeProfile'] === 'number' ? res['activeProfile'] : 0;
+  profileNames.value = Array.isArray(res['profileNames']) ? res['profileNames'] : ['1', '2', '3'];
+  profiles.value = Array.isArray(res['profiles']) ? res['profiles'] : [];
+  applyProfile(activeProfile.value);
 };
 const getAdmin = async () => {
   const req = new Request({
@@ -283,22 +315,30 @@ const tap = async (event: String) => {
   }
 };
 
+// 每个 setXxx 除了持久化到服务端，还要同步更新本地缓存的 profiles.value[activeProfile]，
+// 这样切换到别的 profile 再切回来，不用重新请求就能看到刚才改过的值
 const setIgnoreCase = (value: boolean) => {
+  profiles.value[activeProfile.value].ignoreCase = value;
   setConfig("ignoreCase", value);
 };
 const setIgnorePunctuation = (value: boolean) => {
+  profiles.value[activeProfile.value].ignorePunctuation = value;
   setConfig("ignorePunctuation", value);
 };
 const setIntervalMode = (value: 'none' | 'oddHidden' | 'evenHidden') => {
+  profiles.value[activeProfile.value].intervalMode = value;
   setConfig("intervalMode", value);
 };
 const setTtsRate = (value: number) => {
+  profiles.value[activeProfile.value].ttsRate = value;
   setConfig("ttsRate", value);
 };
 const setSpeakLetters = (value: boolean) => {
+  profiles.value[activeProfile.value].speakLetters = value;
   setConfig("speakLetters", value);
 };
 const setManualTtsRate = (value: number) => {
+  profiles.value[activeProfile.value].manualTtsRate = value;
   setConfig("manualTtsRate", value);
 };
 // 三个触发键不能互相重复（比如手动播放和逐字母朗读不能都设成 '.'），
@@ -310,6 +350,7 @@ const setManualPlayTrigger = (value: string) => {
     return;
   }
   manualPlayTriggerSaved = value;
+  profiles.value[activeProfile.value].manualPlayTrigger = value;
   setConfig("manualPlayTrigger", value);
 };
 const setSpellPlayTrigger = (value: string) => {
@@ -319,6 +360,7 @@ const setSpellPlayTrigger = (value: string) => {
     return;
   }
   spellPlayTriggerSaved = value;
+  profiles.value[activeProfile.value].spellPlayTrigger = value;
   setConfig("spellPlayTrigger", value);
 };
 const setHintTrigger = (value: string) => {
@@ -328,10 +370,43 @@ const setHintTrigger = (value: string) => {
     return;
   }
   hintTriggerSaved = value;
+  profiles.value[activeProfile.value].hintTrigger = value;
   setConfig("hintTrigger", value);
 };
 const setKeyMapping = (value: string) => {
+  profiles.value[activeProfile.value].keyMapping = value;
   setConfig("keyMapping", value);
+};
+
+const setActiveProfile = async (index: number) => {
+  overlayVisible.value = true;
+  try {
+    const req = new Request({
+      path: Path.game,
+      headers: {'jsMethod': 'Game.setActiveProfile'},
+      data: index,
+    });
+    await client.node!.send(req);
+    activeProfile.value = index;
+    applyProfile(index);
+  } finally {
+    overlayVisible.value = false;
+  }
+};
+
+const setProfileName = async (index: number, name: string) => {
+  overlayVisible.value = true;
+  try {
+    const req = new Request({
+      path: Path.game,
+      headers: {'jsMethod': 'Game.setProfileName'},
+      data: {index, name},
+    });
+    await client.node!.send(req);
+    profileNames.value[index] = name;
+  } finally {
+    overlayVisible.value = false;
+  }
 };
 const updateIgnoreIndexes = (mask: string) => {
   const indexes: number[] = [];

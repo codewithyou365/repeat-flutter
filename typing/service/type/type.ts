@@ -4,7 +4,7 @@ type JsonRecord = Record<string, any>;
 
 type IntervalMode = 'none' | 'oddHidden' | 'evenHidden';
 
-type Config = {
+type ProfileConfig = {
     ignorePunctuation: boolean;
     ignoreCase: boolean;
     intervalMode: IntervalMode;
@@ -18,6 +18,12 @@ type Config = {
     [key: string]: any;
 };
 
+type StoredConfig = {
+    activeProfile: number;
+    profileNames: string[];
+    profiles: ProfileConfig[];
+};
+
 type Verse = {
     a?: string;
     [key: string]: any;
@@ -28,22 +34,67 @@ type GameArgs = {
     data: any;
 };
 
+const PROFILE_COUNT = 3;
+
+function defaultProfileConfig(): ProfileConfig {
+    return {"ignorePunctuation": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "keyMapping": ""};
+}
+
+function defaultStoredConfig(): StoredConfig {
+    const names: string[] = [];
+    const profiles: ProfileConfig[] = [];
+    for (let i = 0; i < PROFILE_COUNT; i++) {
+        names.push(`${i + 1}`);
+        profiles.push(defaultProfileConfig());
+    }
+    return {activeProfile: 0, profileNames: names, profiles: profiles};
+}
+
+// 补齐/裁剪 profiles/profileNames 到固定的 PROFILE_COUNT 个槽位，activeProfile 越界时夹回范围内
+function normalizeStoredConfig(raw: any): StoredConfig {
+    const fallback = defaultStoredConfig();
+    const profiles: ProfileConfig[] = [];
+    const names: string[] = [];
+    for (let i = 0; i < PROFILE_COUNT; i++) {
+        const p = raw.profiles && raw.profiles[i];
+        profiles.push(p ? {...defaultProfileConfig(), ...p} : defaultProfileConfig());
+        const n = raw.profileNames && raw.profileNames[i];
+        names.push(typeof n === 'string' && n ? n : fallback.profileNames[i]);
+    }
+    let activeProfile = typeof raw.activeProfile === 'number' ? raw.activeProfile : 0;
+    if (!(activeProfile >= 0 && activeProfile < PROFILE_COUNT)) {
+        activeProfile = 0;
+    }
+    return {activeProfile, profileNames: names, profiles: profiles};
+}
+
+// 老版本是扁平的单份配置（没有 profiles 数组），迁移成 profile 0，其余槽位用默认值填充，
+// 并立即写回，避免每次读都要重新迁移
+async function migrateFlatConfig(old: any): Promise<StoredConfig> {
+    const migrated = defaultStoredConfig();
+    migrated.profiles[0] = {...defaultProfileConfig(), ...old};
+    await Util.setConfig(migrated);
+    return migrated;
+}
+
 const Util = {
-    getConfig: async function (): Promise<Config> {
+    getConfig: async function (): Promise<StoredConfig> {
         try {
             const data = await sendMessage('getData', '{}');
             if (data == null || data === '') {
-                return {"ignorePunctuation": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "keyMapping": ""};
+                return defaultStoredConfig();
             }
-            return JSON.parse(data);
+            const parsed = JSON.parse(data);
+            if (parsed && Array.isArray(parsed.profiles)) {
+                return normalizeStoredConfig(parsed);
+            }
+            return await migrateFlatConfig(parsed);
         } catch (e) {
-            return {"ignorePunctuation": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "keyMapping": ""};
+            return defaultStoredConfig();
         }
     },
 
-    setConfig: async function (key: string, value: any): Promise<void> {
-        const data = await this.getConfig();
-        data[key] = value;
+    setConfig: async function (data: StoredConfig): Promise<void> {
         await sendMessage('setData', JSON.stringify(data));
     },
 
@@ -135,11 +186,50 @@ const Game = {
             const adminEnable = Util.adminEnable();
             if (userId === adminId && adminEnable) {
                 const data = args.data;
-                await Util.setConfig(data.key, data.value);
+                const stored = await Util.getConfig();
+                const profile = stored.profiles[stored.activeProfile];
+                profile[data.key] = data.value;
+                await Util.setConfig(stored);
                 return JSON.stringify({});
             } else {
                 return JSON.stringify({status: 500, error: "not admin"});
             }
+        } catch (e: any) {
+            return JSON.stringify({status: 500, error: e.toString()});
+        }
+    },
+
+    setActiveProfile: async function (args: GameArgs): Promise<string> {
+        try {
+            const userId = args.userId;
+            if (userId !== Util.adminId() || !Util.adminEnable()) {
+                return JSON.stringify({status: 500, error: "not admin"});
+            }
+            const index = typeof args.data === 'number' ? args.data : parseInt(args.data, 10);
+            const stored = await Util.getConfig();
+            if (Number.isFinite(index) && index >= 0 && index < stored.profiles.length) {
+                stored.activeProfile = index;
+                await Util.setConfig(stored);
+            }
+            return JSON.stringify({});
+        } catch (e: any) {
+            return JSON.stringify({status: 500, error: e.toString()});
+        }
+    },
+
+    setProfileName: async function (args: GameArgs): Promise<string> {
+        try {
+            const userId = args.userId;
+            if (userId !== Util.adminId() || !Util.adminEnable()) {
+                return JSON.stringify({status: 500, error: "not admin"});
+            }
+            const {index, name} = args.data || {};
+            const stored = await Util.getConfig();
+            if (typeof index === 'number' && index >= 0 && index < stored.profileNames.length && typeof name === 'string' && name.trim()) {
+                stored.profileNames[index] = name.trim();
+                await Util.setConfig(stored);
+            }
+            return JSON.stringify({});
         } catch (e: any) {
             return JSON.stringify({status: 500, error: e.toString()});
         }
@@ -195,7 +285,8 @@ const Game = {
             if (verse && verse.a) {
                 answer = verse.a;
             }
-            const config = await Util.getConfig();
+            const stored = await Util.getConfig();
+            const config = stored.profiles[stored.activeProfile];
             const intervalMode: IntervalMode = config.intervalMode || 'none';
             const ignorePunctuation = config.ignorePunctuation ?? true;
             const mask = this.getIntervalMask(answer, intervalMode, ignorePunctuation);
@@ -251,7 +342,8 @@ const Game = {
             // 不指定时按自动播放语速（config.ttsRate）
             let rate = typeof data.rate === 'number' ? data.rate : undefined;
             if (rate === undefined) {
-                const config = await Util.getConfig();
+                const stored = await Util.getConfig();
+                const config = stored.profiles[stored.activeProfile];
                 rate = typeof config.ttsRate === 'number' ? config.ttsRate : 1;
             }
             await Util.tts({text, type, rate});
