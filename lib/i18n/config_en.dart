@@ -407,6 +407,16 @@ class ConfigEn extends Config {
     put(I18nKey.playQAction, "Play-Q");
     put(I18nKey.playAAction, "Play-A");
     put(I18nKey.playTipsAction, "Play-Tips");
+    put(I18nKey.gamepadBinding, "Gamepad Bindings");
+    put(I18nKey.gamepadPressButton, "Press a gamepad button...");
+    put(I18nKey.gamepadUnbound, "Unbound");
+    put(I18nKey.gamepadClearBinding, "Clear");
+    put(I18nKey.gamepadNavGroup, "Bottom Keys");
+    put(I18nKey.gamepadActionGroup, "Assistive Touch Actions");
+    put(I18nKey.gamepadNavLeft, "Left");
+    put(I18nKey.gamepadNavMiddle, "Middle (Tips)");
+    put(I18nKey.gamepadNavMiddleTts, "Middle (Tips TTS)");
+    put(I18nKey.gamepadNavRight, "Right");
     put(I18nKey.practiceHint, "Type here to practice...");
   }
 }

@@ -209,6 +209,11 @@ class RepeatPage extends StatelessWidget {
                 onTap: logic.openAssistiveTouch,
                 active: logic.assistiveTouchLogic.enabled,
               ),
+              buildMenuItem(
+                label: I18nKey.gamepadBinding.tr,
+                onTap: logic.openGamepadBinding,
+                active: logic.gamepadLogic.enabled,
+              ),
             ],
           ),
           const SizedBox(width: 10),

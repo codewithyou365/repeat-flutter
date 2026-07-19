@@ -18,12 +18,6 @@ class AssistiveTouchSheet {
         return ListView(
           shrinkWrap: true,
           children: [
-            RowWidget.buildSwitch(
-              title: I18nKey.assistiveTouch.tr,
-              value: logic.enabled,
-              set: (v) => logic.setEnabled(v),
-            ),
-            RowWidget.buildDividerWithoutColor(),
             RowWidget.buildText(I18nKey.customizeMenu.tr),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -62,7 +56,11 @@ class AssistiveTouchSheet {
       head: SheetHead(
         height: RowWidget.rowHeight + RowWidget.dividerHeight,
         widgets: [
-          RowWidget.buildMiddleText(I18nKey.assistiveTouch.tr),
+          RowWidget.buildSwitch(
+            title: I18nKey.assistiveTouch.tr,
+            value: logic.enabled,
+            set: (v) => logic.setEnabled(v),
+          ),
           RowWidget.buildDivider(),
         ],
       ),

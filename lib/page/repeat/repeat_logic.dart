@@ -21,6 +21,8 @@ import 'package:repeat_flutter/logic/widget/book_editor/book_editor_args.dart';
 import 'package:repeat_flutter/logic/widget/text_template.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_logic.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_sheet.dart';
+import 'package:repeat_flutter/logic/widget/gamepad/gamepad_binding_sheet.dart';
+import 'package:repeat_flutter/logic/widget/gamepad/gamepad_logic.dart';
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/expand/expand_sheet.dart';
 import 'package:repeat_flutter/logic/widget/game/game_logic.dart';
@@ -66,6 +68,7 @@ class RepeatLogic extends GetxController {
   late SessionCoordinator gameHelper;
   late BookEditorLogic bookEditor = BookEditorLogic<RepeatLogic>(this);
   late final AssistiveTouchLogic assistiveTouchLogic = AssistiveTouchLogic(this);
+  late final GamepadLogic gamepadLogic = GamepadLogic(this);
 
   late RepeatFlow? repeatFlow;
   final SubList bookSub = [];
@@ -74,6 +77,8 @@ class RepeatLogic extends GetxController {
   Future<void> onInit() async {
     super.onInit();
     await assistiveTouchLogic.loadSettings();
+    await gamepadLogic.loadSettings();
+    gamepadLogic.attach();
     gameLogic = GameLogic<RepeatLogic>(
       parentLogic: this,
       ttsHelper: ttsHelper,
@@ -221,6 +226,7 @@ class RepeatLogic extends GetxController {
   void onClose() async {
     super.onClose();
     assistiveTouchLogic.dispose();
+    gamepadLogic.detach();
     bookSub.off();
     await gameLogic.switchWeb(false);
     repeatFlow?.onClose();
@@ -297,6 +303,11 @@ class RepeatLogic extends GetxController {
 
   Future<void> openAssistiveTouch() async {
     await AssistiveTouchSheet.open(assistiveTouchLogic);
+    update([RepeatLogic.id]);
+  }
+
+  Future<void> openGamepadBinding() async {
+    await GamepadBindingSheet.open(gamepadLogic);
     update([RepeatLogic.id]);
   }
 

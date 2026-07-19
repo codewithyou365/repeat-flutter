@@ -405,6 +405,16 @@ class ConfigZh extends Config {
     put(I18nKey.playQAction, "Play-Q");
     put(I18nKey.playAAction, "Play-A");
     put(I18nKey.playTipsAction, "Play-Tips");
+    put(I18nKey.gamepadBinding, "手柄绑定");
+    put(I18nKey.gamepadPressButton, "请按下手柄按键...");
+    put(I18nKey.gamepadUnbound, "未绑定");
+    put(I18nKey.gamepadClearBinding, "清除");
+    put(I18nKey.gamepadNavGroup, "底部按键");
+    put(I18nKey.gamepadActionGroup, "辅助触控动作");
+    put(I18nKey.gamepadNavLeft, "左键");
+    put(I18nKey.gamepadNavMiddle, "中键(提示)");
+    put(I18nKey.gamepadNavMiddleTts, "中键(提示TTS)");
+    put(I18nKey.gamepadNavRight, "右键");
     put(I18nKey.practiceHint, "在此输入练习内容...");
   }
 }
