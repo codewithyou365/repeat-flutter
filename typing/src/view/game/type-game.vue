@@ -77,6 +77,16 @@
         />
       </template>
     </nut-cell>
+    <nut-cell :title="t('keyMapping')" :desc="t('keyMappingDesc')">
+      <template #link>
+        <nut-input
+            v-model="keyMapping"
+            placeholder="a:abc,q:def"
+            style="text-align: right"
+            @blur="setKeyMapping(keyMapping)"
+        />
+      </template>
+    </nut-cell>
   </div>
   <nut-cell v-else-if="cantPlayForMaintain">
     {{ t('cantPlayForMaintain') }}
@@ -100,6 +110,7 @@
           :manual-play-trigger="manualPlayTrigger"
           :spell-play-trigger="spellPlayTrigger"
           :hint-trigger="hintTrigger"
+          :key-mapping="keyMapping"
           @char-filled="onCharFilled"
           @completed="onCompleted"
           @manual-play="onManualPlay"
@@ -129,6 +140,7 @@ import Typing from '../../component/typing.vue';
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {Ask, Voice} from '@nutui/icons-vue';
+import {showToast} from "@nutui/nutui";
 
 const {t} = useI18n();
 const store = useStore();
@@ -142,6 +154,11 @@ const manualTtsRate = ref(0.5);
 const manualPlayTrigger = ref('.');
 const spellPlayTrigger = ref(',');
 const hintTrigger = ref(' ');
+// 三个触发键各自最后一次成功保存的值，用于校验失败时把输入框还原回去
+let manualPlayTriggerSaved = '.';
+let spellPlayTriggerSaved = ',';
+let hintTriggerSaved = ' ';
+const keyMapping = ref('');
 const ignoreContentIndexes = ref<number[]>([]);
 const adminEnable = ref(false);
 const adminId = ref(0);
@@ -188,7 +205,8 @@ const showTips = () => {
     {label: t('manualTtsRate'), value: `${manualTtsRate.value}x`},
     {label: t('manualPlayTrigger'), value: formatTriggerKey(manualPlayTrigger.value)},
     {label: t('spellPlayTrigger'), value: formatTriggerKey(spellPlayTrigger.value)},
-    {label: t('hintTrigger'), value: formatTriggerKey(hintTrigger.value)}
+    {label: t('hintTrigger'), value: formatTriggerKey(hintTrigger.value)},
+    {label: t('keyMapping'), value: keyMapping.value || t('disabled')}
   ];
 
   let html = `<div style="display: flex; flex-direction: column; gap: 10px; text-align: left;">`;
@@ -238,6 +256,10 @@ const getConfig = async () => {
   manualPlayTrigger.value = typeof res['manualPlayTrigger'] === 'string' ? res['manualPlayTrigger'] : '.';
   spellPlayTrigger.value = typeof res['spellPlayTrigger'] === 'string' ? res['spellPlayTrigger'] : ',';
   hintTrigger.value = typeof res['hintTrigger'] === 'string' ? res['hintTrigger'] : ' ';
+  manualPlayTriggerSaved = manualPlayTrigger.value;
+  spellPlayTriggerSaved = spellPlayTrigger.value;
+  hintTriggerSaved = hintTrigger.value;
+  keyMapping.value = typeof res['keyMapping'] === 'string' ? res['keyMapping'] : '';
 };
 const getAdmin = async () => {
   const req = new Request({
@@ -279,14 +301,37 @@ const setSpeakLetters = (value: boolean) => {
 const setManualTtsRate = (value: number) => {
   setConfig("manualTtsRate", value);
 };
+// 三个触发键不能互相重复（比如手动播放和逐字母朗读不能都设成 '.'），
+// 冲突时提示并把输入框还原成上一次成功保存的值
 const setManualPlayTrigger = (value: string) => {
+  if (value && (value === spellPlayTrigger.value || value === hintTrigger.value)) {
+    showToast.warn(t('triggerKeyConflict'));
+    manualPlayTrigger.value = manualPlayTriggerSaved;
+    return;
+  }
+  manualPlayTriggerSaved = value;
   setConfig("manualPlayTrigger", value);
 };
 const setSpellPlayTrigger = (value: string) => {
+  if (value && (value === manualPlayTrigger.value || value === hintTrigger.value)) {
+    showToast.warn(t('triggerKeyConflict'));
+    spellPlayTrigger.value = spellPlayTriggerSaved;
+    return;
+  }
+  spellPlayTriggerSaved = value;
   setConfig("spellPlayTrigger", value);
 };
 const setHintTrigger = (value: string) => {
+  if (value && (value === manualPlayTrigger.value || value === spellPlayTrigger.value)) {
+    showToast.warn(t('triggerKeyConflict'));
+    hintTrigger.value = hintTriggerSaved;
+    return;
+  }
+  hintTriggerSaved = value;
   setConfig("hintTrigger", value);
+};
+const setKeyMapping = (value: string) => {
+  setConfig("keyMapping", value);
 };
 const updateIgnoreIndexes = (mask: string) => {
   const indexes: number[] = [];

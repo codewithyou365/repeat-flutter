@@ -73,6 +73,7 @@ const props = withDefaults(defineProps<{
   manualPlayTrigger?: string;
   spellPlayTrigger?: string;
   hintTrigger?: string;
+  keyMapping?: string;
   touchColor?: string;
 }>(), {
   clickFillCharWhenDisabled: '',
@@ -83,6 +84,25 @@ const props = withDefaults(defineProps<{
   manualPlayTrigger: '',
   spellPlayTrigger: '',
   hintTrigger: '',
+  keyMapping: '',
+});
+
+// T9 风格按键映射："a:abc,q:def" -> 按下 a 时，目标字母是 a/b/c 都算对；按下 q 时，
+// 目标字母是 d/e/f 都算对。分组里混入的数字（比如老式九宫格键盘的助记写法 "a:2abc"）会被
+// 过滤掉，不参与匹配，纯粹是可选的书写习惯。
+const keyMap = computed<Record<string, string>>(() => {
+  const map: Record<string, string> = {};
+  if (!props.keyMapping) return map;
+  for (const pair of props.keyMapping.split(',')) {
+    const [rawKey, rawGroup] = pair.split(':');
+    if (!rawKey || !rawGroup) continue;
+    const key = rawKey.trim().toLowerCase();
+    const letters = rawGroup.replace(/[^a-zA-Z]/g, '').toLowerCase();
+    if (key.length === 1 && letters) {
+      map[key] = letters;
+    }
+  }
+  return map;
 });
 
 const emit = defineEmits<{
@@ -217,10 +237,16 @@ type FilledEvent = { index: number; auto: boolean };
 // 把 index 处新落下的字符标记为一个待通知事件；auto=true 表示是被自动跳过/填充的
 // （忽略的空格、标点或 ignoreContentIndexes），不是用户敲的
 const isCorrectAt = (index: number, ch: string) => {
-  const origCh = chars.value[index];
-  return props.ignoreCase
-    ? ch.toLowerCase() === (origCh ?? '').toLowerCase()
-    : ch === origCh;
+  const origCh = chars.value[index] ?? '';
+  const group = keyMap.value[ch.toLowerCase()];
+  if (group) {
+    // 这个键已经被映射成组合键，不再代表它本来的字母，只按分组里的字母判断对错
+    // （比如只配了 q:def，输入 q 时目标字母就算是 q 本身也算错，因为 q 已经被映射走了）
+    return group.includes(origCh.toLowerCase());
+  }
+  const chNorm = props.ignoreCase ? ch.toLowerCase() : ch;
+  const origNorm = props.ignoreCase ? origCh.toLowerCase() : origCh;
+  return chNorm === origNorm;
 };
 
 const isWordChar = (c: string) => /[\p{L}\p{N}]/u.test(c);
@@ -496,11 +522,8 @@ const getCharClass = (index: number) => {
   } else {
     const userCh = userInput.value[index];
     const origCh = chars.value[index];
-    let isCorrect = userCh === origCh;
-    if (props.ignoreCase) {
-      isCorrect = userCh.toLowerCase() === origCh.toLowerCase();
-    }
-    if (props.ignoreCase && isCorrect && userCh !== origCh && props.changeToRightCaseWhenIgnoreCase) {
+    const isCorrect = isCorrectAt(index, userCh);
+    if (isCorrect && userCh !== origCh && props.changeToRightCaseWhenIgnoreCase) {
       userInput.value =
           userInput.value.slice(0, index) +
           origCh +

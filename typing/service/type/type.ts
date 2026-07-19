@@ -14,6 +14,7 @@ type Config = {
     manualPlayTrigger: string;
     spellPlayTrigger: string;
     hintTrigger: string;
+    keyMapping: string;
     [key: string]: any;
 };
 
@@ -32,11 +33,11 @@ const Util = {
         try {
             const data = await sendMessage('getData', '{}');
             if (data == null || data === '') {
-                return {"ignorePunctuation": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " "};
+                return {"ignorePunctuation": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "keyMapping": ""};
             }
             return JSON.parse(data);
         } catch (e) {
-            return {"ignorePunctuation": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " "};
+            return {"ignorePunctuation": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "keyMapping": ""};
         }
     },
 
