@@ -12,6 +12,8 @@ type Config = {
     speakLetters: boolean;
     manualTtsRate: number;
     manualPlayTrigger: string;
+    spellPlayTrigger: string;
+    hintTrigger: string;
     [key: string]: any;
 };
 
@@ -30,11 +32,11 @@ const Util = {
         try {
             const data = await sendMessage('getData', '{}');
             if (data == null || data === '') {
-                return {"ignorePunctuation": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": "."};
+                return {"ignorePunctuation": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " "};
             }
             return JSON.parse(data);
         } catch (e) {
-            return {"ignorePunctuation": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": true, "manualTtsRate": 1, "manualPlayTrigger": "."};
+            return {"ignorePunctuation": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " "};
         }
     },
 

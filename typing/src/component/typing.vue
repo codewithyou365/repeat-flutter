@@ -71,6 +71,8 @@ const props = withDefaults(defineProps<{
   ignoreSpace?: boolean;
   blockOnWrong?: boolean;
   manualPlayTrigger?: string;
+  spellPlayTrigger?: string;
+  hintTrigger?: string;
   touchColor?: string;
 }>(), {
   clickFillCharWhenDisabled: '',
@@ -79,12 +81,16 @@ const props = withDefaults(defineProps<{
   ignoreSpace: false,
   blockOnWrong: false,
   manualPlayTrigger: '',
+  spellPlayTrigger: '',
+  hintTrigger: '',
 });
 
 const emit = defineEmits<{
   (e: 'charFilled', index: number, char: string, auto: boolean, correct: boolean): void;
   (e: 'completed'): void;
   (e: 'manualPlay', word: string): void;
+  (e: 'spellPlay', word: string): void;
+  (e: 'hintTrigger'): void;
 }>();
 
 const store = useStore();
@@ -255,6 +261,14 @@ const applyInput = (val: string) => {
   for (const char of val) {
     if (props.manualPlayTrigger && char === props.manualPlayTrigger) {
       emit('manualPlay', getWordAt(pos));
+      continue; // 触发字符本身不写入内容，也不推进 pos
+    }
+    if (props.spellPlayTrigger && char === props.spellPlayTrigger) {
+      emit('spellPlay', getWordAt(pos));
+      continue; // 触发字符本身不写入内容，也不推进 pos
+    }
+    if (props.hintTrigger && char === props.hintTrigger) {
+      emit('hintTrigger');
       continue; // 触发字符本身不写入内容，也不推进 pos
     }
 

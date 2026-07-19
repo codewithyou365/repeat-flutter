@@ -41,6 +41,7 @@
     </nut-cell>
     <nut-cell :title="t('manualPlayTrigger')">
       <template #link>
+        <span v-if="manualPlayTrigger === ' '" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
         <nut-input
             v-model="manualPlayTrigger"
             maxlength="1"
@@ -49,9 +50,31 @@
         />
       </template>
     </nut-cell>
+    <nut-cell :title="t('spellPlayTrigger')">
+      <template #link>
+        <span v-if="spellPlayTrigger === ' '" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
+        <nut-input
+            v-model="spellPlayTrigger"
+            maxlength="1"
+            style="text-align: right"
+            @blur="setSpellPlayTrigger(spellPlayTrigger)"
+        />
+      </template>
+    </nut-cell>
     <nut-cell :title="t('speakLetters')">
       <template #link>
         <nut-switch v-model="speakLetters" @change="setSpeakLetters"/>
+      </template>
+    </nut-cell>
+    <nut-cell :title="t('hintTrigger')">
+      <template #link>
+        <span v-if="hintTrigger === ' '" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
+        <nut-input
+            v-model="hintTrigger"
+            maxlength="1"
+            style="text-align: right"
+            @blur="setHintTrigger(hintTrigger)"
+        />
       </template>
     </nut-cell>
   </div>
@@ -75,9 +98,13 @@
           :ignore-space="true"
           :block-on-wrong="true"
           :manual-play-trigger="manualPlayTrigger"
+          :spell-play-trigger="spellPlayTrigger"
+          :hint-trigger="hintTrigger"
           @char-filled="onCharFilled"
           @completed="onCompleted"
           @manual-play="onManualPlay"
+          @spell-play="onSpellPlay"
+          @hint-trigger="onHintTrigger"
       />
     </div>
 
@@ -113,6 +140,8 @@ const ttsRate = ref(1);
 const speakLetters = ref(false);
 const manualTtsRate = ref(0.5);
 const manualPlayTrigger = ref('.');
+const spellPlayTrigger = ref(',');
+const hintTrigger = ref(' ');
 const ignoreContentIndexes = ref<number[]>([]);
 const adminEnable = ref(false);
 const adminId = ref(0);
@@ -157,7 +186,9 @@ const showTips = () => {
     {label: t('ttsRate'), value: `${ttsRate.value}x`},
     {label: t('speakLetters'), value: formatStatus(speakLetters.value)},
     {label: t('manualTtsRate'), value: `${manualTtsRate.value}x`},
-    {label: t('manualPlayTrigger'), value: manualPlayTrigger.value}
+    {label: t('manualPlayTrigger'), value: formatTriggerKey(manualPlayTrigger.value)},
+    {label: t('spellPlayTrigger'), value: formatTriggerKey(spellPlayTrigger.value)},
+    {label: t('hintTrigger'), value: formatTriggerKey(hintTrigger.value)}
   ];
 
   let html = `<div style="display: flex; flex-direction: column; gap: 10px; text-align: left;">`;
@@ -205,6 +236,8 @@ const getConfig = async () => {
   speakLetters.value = typeof res['speakLetters'] === 'boolean' ? res['speakLetters'] : false;
   manualTtsRate.value = typeof res['manualTtsRate'] === 'number' ? res['manualTtsRate'] : 0.5;
   manualPlayTrigger.value = typeof res['manualPlayTrigger'] === 'string' ? res['manualPlayTrigger'] : '.';
+  spellPlayTrigger.value = typeof res['spellPlayTrigger'] === 'string' ? res['spellPlayTrigger'] : ',';
+  hintTrigger.value = typeof res['hintTrigger'] === 'string' ? res['hintTrigger'] : ' ';
 };
 const getAdmin = async () => {
   const req = new Request({
@@ -248,6 +281,12 @@ const setManualTtsRate = (value: number) => {
 };
 const setManualPlayTrigger = (value: string) => {
   setConfig("manualPlayTrigger", value);
+};
+const setSpellPlayTrigger = (value: string) => {
+  setConfig("spellPlayTrigger", value);
+};
+const setHintTrigger = (value: string) => {
+  setConfig("hintTrigger", value);
 };
 const updateIgnoreIndexes = (mask: string) => {
   const indexes: number[] = [];
@@ -310,6 +349,9 @@ const speak = (text: string, rate?: number) => {
 };
 const isSpeakable = (ch: string) => /[\p{L}\p{N}]/u.test(ch);
 
+// 触发键是空格时肉眼看不出来，需要额外提示；其它可见字符原样显示即可
+const formatTriggerKey = (key: string) => key === ' ' ? t('spaceKey') : key;
+
 // 整词朗读：非字母/数字（空格、撇号、标点等）都当作词与词之间的分界
 let currentWord = '';
 const flushWord = () => {
@@ -351,6 +393,16 @@ const speakCurrentWord = () => {
 
 const onManualPlay = (word: string) => {
   if (word) speak(word, manualTtsRate.value);
+};
+
+const onSpellPlay = (word: string) => {
+  for (const ch of word) {
+    if (isSpeakable(ch)) speak(ch, manualTtsRate.value);
+  }
+};
+
+const onHintTrigger = () => {
+  void tap('tapMiddle');
 };
 
 const refresh = async () => {
