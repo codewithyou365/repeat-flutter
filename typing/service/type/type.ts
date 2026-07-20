@@ -15,6 +15,7 @@ type ProfileConfig = {
     spellPlayTrigger: string;
     hintTrigger: string;
     keyMapping: string;
+    spellClearWord: boolean;
     [key: string]: any;
 };
 
@@ -37,7 +38,7 @@ type GameArgs = {
 const PROFILE_COUNT = 3;
 
 function defaultProfileConfig(): ProfileConfig {
-    return {"ignorePunctuation": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "keyMapping": ""};
+    return {"ignorePunctuation": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "keyMapping": "", "spellClearWord": true};
 }
 
 function defaultStoredConfig(): StoredConfig {

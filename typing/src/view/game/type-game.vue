@@ -77,6 +77,11 @@
         />
       </template>
     </nut-cell>
+    <nut-cell :title="t('spellClearWord')">
+      <template #link>
+        <nut-switch v-model="spellClearWord" @change="setSpellClearWord"/>
+      </template>
+    </nut-cell>
     <nut-cell :title="t('speakLetters')">
       <template #link>
         <nut-switch v-model="speakLetters" @change="setSpeakLetters"/>
@@ -175,6 +180,7 @@ const speakLetters = ref(false);
 const manualTtsRate = ref(0.5);
 const manualPlayTrigger = ref('.');
 const spellPlayTrigger = ref(',');
+const spellClearWord = ref(true);
 const hintTrigger = ref(' ');
 // 三个触发键各自最后一次成功保存的值，用于校验失败时把输入框还原回去
 let manualPlayTriggerSaved = '.';
@@ -228,6 +234,7 @@ const showTips = () => {
     {label: t('manualTtsRate'), value: `${manualTtsRate.value}x`},
     {label: t('manualPlayTrigger'), value: formatTriggerKey(manualPlayTrigger.value)},
     {label: t('spellPlayTrigger'), value: formatTriggerKey(spellPlayTrigger.value)},
+    {label: t('spellClearWord'), value: formatStatus(spellClearWord.value)},
     {label: t('hintTrigger'), value: formatTriggerKey(hintTrigger.value)},
     {label: t('keyMapping'), value: keyMapping.value || t('disabled')}
   ];
@@ -274,6 +281,7 @@ const applyProfile = (index: number) => {
   manualTtsRate.value = typeof res['manualTtsRate'] === 'number' ? res['manualTtsRate'] : 0.5;
   manualPlayTrigger.value = typeof res['manualPlayTrigger'] === 'string' ? res['manualPlayTrigger'] : '.';
   spellPlayTrigger.value = typeof res['spellPlayTrigger'] === 'string' ? res['spellPlayTrigger'] : ',';
+  spellClearWord.value = typeof res['spellClearWord'] === 'boolean' ? res['spellClearWord'] : true;
   hintTrigger.value = typeof res['hintTrigger'] === 'string' ? res['hintTrigger'] : ' ';
   manualPlayTriggerSaved = manualPlayTrigger.value;
   spellPlayTriggerSaved = spellPlayTrigger.value;
@@ -362,6 +370,10 @@ const setSpellPlayTrigger = (value: string) => {
   spellPlayTriggerSaved = value;
   profiles.value[activeProfile.value].spellPlayTrigger = value;
   setConfig("spellPlayTrigger", value);
+};
+const setSpellClearWord = (value: boolean) => {
+  profiles.value[activeProfile.value].spellClearWord = value;
+  setConfig("spellClearWord", value);
 };
 const setHintTrigger = (value: string) => {
   if (value && (value === manualPlayTrigger.value || value === spellPlayTrigger.value)) {
@@ -518,6 +530,9 @@ const onManualPlay = (word: string) => {
 const onSpellPlay = (word: string) => {
   for (const ch of word) {
     if (isSpeakable(ch)) speak(ch, manualTtsRate.value);
+  }
+  if (spellClearWord.value) {
+    typingRef.value?.clearCurrentWord();
   }
 };
 

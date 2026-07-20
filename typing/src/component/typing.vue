@@ -252,20 +252,41 @@ const isCorrectAt = (index: number, ch: string) => {
 const isWordChar = (c: string) => /[\p{L}\p{N}]/u.test(c);
 
 // 找到 index 位置所在（或紧邻左侧）的连续字母/数字片段，用于"手动播放当前光标所在单词"
-const getWordAt = (index: number): string => {
+// 找到 index 位置所在（或紧邻左侧）单词的起止下标；不在任何单词内时返回 null
+const getWordBounds = (index: number): { start: number; end: number } | null => {
   const content = props.content;
   let i = index;
   if (i >= content.length || !isWordChar(content[i])) {
     i = index - 1;
   }
   if (i < 0 || !isWordChar(content[i])) {
-    return '';
+    return null;
   }
   let start = i;
   while (start > 0 && isWordChar(content[start - 1])) start--;
   let end = i;
   while (end < content.length - 1 && isWordChar(content[end + 1])) end++;
-  return content.slice(start, end + 1);
+  return {start, end};
+};
+
+const getWordAt = (index: number): string => {
+  const bounds = getWordBounds(index);
+  return bounds ? props.content.slice(bounds.start, bounds.end + 1) : '';
+};
+
+// 把光标所在单词的已输入内容清空，重新回到这个单词开头（会重新自动带出单词开头那段自动填充的字符）
+const clearCurrentWord = () => {
+  const bounds = getWordBounds(cursorPos.value);
+  if (!bounds) return;
+  let temp = userInput.value.slice(0, bounds.start);
+  let pos = bounds.start;
+  while (pos < props.content.length && isIgnore(props.content[pos], pos)) {
+    if (pos >= temp.length) temp += props.content[pos];
+    pos++;
+  }
+  userInput.value = temp;
+  cursorPos.value = pos;
+  nextTick(positionInput);
 };
 
 const applyInput = (val: string) => {
@@ -273,6 +294,12 @@ const applyInput = (val: string) => {
   let temp = userInput.value;
   const filled: FilledEvent[] = [];
   let blocked = false;
+  // 触发键（手动播放/逐字母朗读/提示）的 emit 不能在循环内立刻发出：这几个事件的处理方（父组件）
+  // 可能会同步地反过来改 userInput/cursorPos（比如逐字母朗读后清空当前单词），如果在这里立刻
+  // emit，父组件改完之后，本函数末尾 `userInput.value = temp; cursorPos.value = pos;` 还会
+  // 执行，用循环开始时快照的 temp/pos 把父组件刚做的修改覆盖掉。所以这里只记录，等本函数
+  // 自己该写的状态都写完之后，再统一在最后触发。
+  const pendingTriggerEmits: (() => void)[] = [];
 
   const autoFill = () => {
     while (pos < props.content.length && isIgnore(props.content[pos], pos)) {
@@ -286,15 +313,17 @@ const applyInput = (val: string) => {
 
   for (const char of val) {
     if (props.manualPlayTrigger && char === props.manualPlayTrigger) {
-      emit('manualPlay', getWordAt(pos));
+      const word = getWordAt(pos);
+      pendingTriggerEmits.push(() => emit('manualPlay', word));
       continue; // 触发字符本身不写入内容，也不推进 pos
     }
     if (props.spellPlayTrigger && char === props.spellPlayTrigger) {
-      emit('spellPlay', getWordAt(pos));
+      const word = getWordAt(pos);
+      pendingTriggerEmits.push(() => emit('spellPlay', word));
       continue; // 触发字符本身不写入内容，也不推进 pos
     }
     if (props.hintTrigger && char === props.hintTrigger) {
-      emit('hintTrigger');
+      pendingTriggerEmits.push(() => emit('hintTrigger'));
       continue; // 触发字符本身不写入内容，也不推进 pos
     }
 
@@ -330,6 +359,7 @@ const applyInput = (val: string) => {
   }
 
   emitFilledEvents(filled, !blocked);
+  for (const fn of pendingTriggerEmits) fn();
 };
 
 const emitFilledEvents = (filled: FilledEvent[], allowCompletion = true) => {
@@ -608,6 +638,9 @@ defineExpose({
   },
   getCurrentWord() {
     return getWordAt(cursorPos.value);
+  },
+  clearCurrentWord() {
+    clearCurrentWord();
   },
 });
 </script>
