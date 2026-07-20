@@ -330,14 +330,23 @@ const applyInput = (val: string) => {
     autoFill();
     if (pos >= props.content.length) break;
 
-    if (pos < temp.length) {
-      temp = temp.slice(0, pos) + char + temp.slice(pos + 1);
-    } else {
-      temp += char;
+    const correct = isCorrectAt(pos, char);
+    const isMapped = keyMap.value[char.toLowerCase()] !== undefined;
+
+    // T9 映射键（比如 x:4ghi）的物理键字符本身不是要输入的字母，只是一个"数字键"。
+    // 打错且要拦截时不把这个物理键字符写进内容，否则会在格子里显示出无意义的键字符
+    // （比如按 x 想打 g/h/i，却在别处显示出 "x"）。仍然记录 filled，让父组件照常给出
+    // 打错反馈并原地拦住。普通（未映射）按键打错时保持原样，还是显示用户敲下的那个字符。
+    if (!(props.blockOnWrong && !correct && isMapped)) {
+      if (pos < temp.length) {
+        temp = temp.slice(0, pos) + char + temp.slice(pos + 1);
+      } else {
+        temp += char;
+      }
     }
     filled.push({index: pos, auto: false});
 
-    if (props.blockOnWrong && !isCorrectAt(pos, char)) {
+    if (props.blockOnWrong && !correct) {
       blocked = true;
       break; // 打错了，原地停住，不允许继续往下推进
     }
@@ -552,7 +561,14 @@ const getCharClass = (index: number) => {
   } else {
     const userCh = userInput.value[index];
     const origCh = chars.value[index];
-    const isCorrect = isCorrectAt(index, userCh);
+    // 判断格子里已有的字符对不对：如果它本身就等于目标字符，那它一定是对的，绝不能再把它
+    // 当成一次 T9 击键喂回 isCorrectAt。否则当目标字符恰好又是个被映射走的键时（比如目标
+    // 'e'，而 e:9wxyz），changeToRightCase 把格子归一成 'e' 后，再按击键语义判就成了
+    // "wxyz 里不含 e"→误判为错、标红。只有跟目标不一致的字符才走击键映射判断。
+    const matchesOrig = props.ignoreCase
+        ? userCh.toLowerCase() === origCh.toLowerCase()
+        : userCh === origCh;
+    const isCorrect = matchesOrig || isCorrectAt(index, userCh);
     if (isCorrect && userCh !== origCh && props.changeToRightCaseWhenIgnoreCase) {
       userInput.value =
           userInput.value.slice(0, index) +
@@ -610,7 +626,12 @@ watch(() => props.content, async () => {
   fixCursorPos();
   positionInput();
   inputRef.value?.focus();
-  emitFilledEvents(filled);
+  // 刚加载新内容时的这批自动填充绝不能触发 'completed'：如果整段内容恰好全是被忽略/自动填充的
+  // 字符（比如很短又被整词遮罩、或间隔模式下把每个字母都藏了），userInput 一上来就 >= 内容长度，
+  // 一旦允许完成就会 emit('completed') -> 父组件 tap('tapLeft') -> refresh() 换下一段 -> 又全自动
+  // 填充 -> 再次 completed……形成 refresh 无限递归，每轮还会堆一次网络请求和 TTS 队列，最终内存
+  // 撑爆导致网页闪退。所以这里显式禁止完成事件。
+  emitFilledEvents(filled, false);
 }, {immediate: true});
 
 watch([userInput, groups], async () => {
