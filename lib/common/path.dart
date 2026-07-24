@@ -31,7 +31,8 @@ class DocLocation {
   DocLocation(this.folderPath, this.fileName);
 
   static DocLocation create(String path) {
-    var folderPath = path.substring(0, path.lastIndexOf("/"));
+    var lastIndexOf = path.lastIndexOf("/");
+    var folderPath = lastIndexOf == -1 ? "" : path.substring(0, lastIndexOf);
     var fileName = path.split("/").last;
     return DocLocation(folderPath, fileName);
   }

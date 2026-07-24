@@ -173,6 +173,11 @@ class ConfigEn extends Config {
     put(I18nKey.labelLocalZipImport, "Local ZIP import");
     put(I18nKey.create, "Create");
     put(I18nKey.labelLocalImportCancel, "Local Import is Canceled");
+    put(I18nKey.labelAddChapter, "Add Chapter");
+    put(I18nKey.selectAddChapterSource, "Select How to Add the Chapter");
+    put(I18nKey.labelLocalImport, "Local File Import");
+    put(I18nKey.labelChapterMediaUrl, "Audio/Video URL");
+    put(I18nKey.labelChapterSrtUrl, "Subtitle (srt) URL");
     put(I18nKey.labelVerseRemoved, "The corresponding learning verse has been removed. It is recommended to back up your data first, then click \"Confirm\" to delete the related data.");
     put(I18nKey.labelDocNotBeDownloaded, "The content (%s) is not downloaded");
     put(I18nKey.labelDocCantBeFound, "The content (%s) cannot be found");

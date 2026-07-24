@@ -38,7 +38,7 @@ class EditorLogic extends GetxController {
       showQrCode(Get.context!, textController.text);
     });
     state.scanBtn = Button(I18nKey.scan.tr, () async {
-      var v = await Get.toNamed(Nav.scan.path);
+      var v = await Get.toNamed(Nav.scan.path, preventDuplicates: false);
       if (v != null && v is String && v != "") {
         Get.back();
         textController.text = v;

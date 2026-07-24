@@ -113,7 +113,9 @@ class MsgBox {
       suffixIcon = IconButton(
         icon: const Icon(Icons.qr_code_scanner),
         onPressed: () async {
-          var value = await Get.toNamed(qrPagePath);
+          debugPrint('QRBTN ${DateTime.now().toIso8601String()} tap qrPagePath currentRoute=${Get.currentRoute}');
+          var value = await Get.toNamed(qrPagePath, preventDuplicates: false);
+          debugPrint('QRBTN ${DateTime.now().toIso8601String()} returned value=$value');
           if (value != null && value is String && value != "") {
             tec.text = value;
           }
@@ -166,6 +168,93 @@ class MsgBox {
             print("Unsupported Rx type");
           }
 
+          if (yes != null) {
+            yes();
+          } else {
+            Get.back();
+          }
+        },
+        no: no,
+        yesBtnTitle: yesBtnTitle,
+        noBtnTitle: noBtnTitle,
+      ),
+    );
+  }
+
+  static void twoStrInputWithYesOrNo(
+    RxString model1,
+    String? decoration1,
+    RxString model2,
+    String? decoration2,
+    String title, {
+    VoidCallback? yes,
+    String? yesBtnTitle,
+    VoidCallback? no,
+    String? noBtnTitle,
+    String? qrPagePath1,
+    String? qrPagePath2,
+    barrierDismissible = false,
+    List<Widget>? nextChildren,
+  }) {
+    final tec1 = TextEditingController(text: model1.value);
+    final tec2 = TextEditingController(text: model2.value);
+    Widget? suffixIcon1;
+    if (qrPagePath1 != null) {
+      suffixIcon1 = IconButton(
+        icon: const Icon(Icons.qr_code_scanner),
+        onPressed: () async {
+          debugPrint('QRBTN ${DateTime.now().toIso8601String()} tap qrPagePath1 currentRoute=${Get.currentRoute}');
+          var value = await Get.toNamed(qrPagePath1, preventDuplicates: false);
+          debugPrint('QRBTN ${DateTime.now().toIso8601String()} returned1 value=$value');
+          if (value != null && value is String && value != "") {
+            tec1.text = value;
+          }
+        },
+      );
+    }
+    Widget? suffixIcon2;
+    if (qrPagePath2 != null) {
+      suffixIcon2 = IconButton(
+        icon: const Icon(Icons.qr_code_scanner),
+        onPressed: () async {
+          debugPrint('QRBTN ${DateTime.now().toIso8601String()} tap qrPagePath2 currentRoute=${Get.currentRoute}');
+          var value = await Get.toNamed(qrPagePath2, preventDuplicates: false);
+          debugPrint('QRBTN ${DateTime.now().toIso8601String()} returned2 value=$value');
+          if (value != null && value is String && value != "") {
+            tec2.text = value;
+          }
+        },
+      );
+    }
+    var children = <Widget>[
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        child: TextFormField(
+          controller: tec1,
+          decoration: InputDecoration(labelText: decoration1, suffixIcon: suffixIcon1),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        child: TextFormField(
+          controller: tec2,
+          decoration: InputDecoration(labelText: decoration2, suffixIcon: suffixIcon2),
+        ),
+      ),
+    ];
+    if (nextChildren != null) {
+      children.addAll(nextChildren);
+    }
+    myDialog(
+      title: title,
+      barrierDismissible: barrierDismissible,
+      content: Column(
+        children: children,
+      ),
+      action: yesOrNoAction(
+        yes: () {
+          model1.value = tec1.text.trim();
+          model2.value = tec2.text.trim();
           if (yes != null) {
             yes();
           } else {

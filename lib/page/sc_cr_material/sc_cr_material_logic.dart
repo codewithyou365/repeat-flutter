@@ -20,6 +20,7 @@ import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/lazy_verse_today_prg_list.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
+import 'package:repeat_flutter/logic/chapter_import_help.dart';
 import 'package:repeat_flutter/logic/import_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
@@ -324,6 +325,95 @@ class ScCrMaterialLogic extends GetxController {
       yesBtnTitle: I18nKey.btnDownload.tr,
       noBtnTitle: I18nKey.close.tr,
       qrPagePath: Nav.scan.path,
+    );
+  }
+
+  void addChapter(Book book) async {
+    int? index = await Select.showSheet(
+      title: I18nKey.selectAddChapterSource.tr,
+      keys: [
+        I18nKey.labelLocalImport.tr,
+        I18nKey.labelRemoteImport.tr,
+      ],
+    );
+    if (index == null) {
+      return;
+    }
+    if (index == 0) {
+      await addChapterFromLocalFiles(book);
+    } else {
+      addChapterFromRemoteUrls(book);
+    }
+  }
+
+  Future<void> addChapterFromLocalFiles(Book book) async {
+    FilePickerResult? mediaResult = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['mp3', 'mp4'],
+    );
+    String? mediaPath = mediaResult?.files.single.path;
+    if (mediaPath == null) {
+      Snackbar.show(I18nKey.labelLocalImportCancel.tr);
+      return;
+    }
+    FilePickerResult? srtResult = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['srt'],
+    );
+    String? srtPath = srtResult?.files.single.path;
+    if (srtPath == null) {
+      Snackbar.show(I18nKey.labelLocalImportCancel.tr);
+      return;
+    }
+    bool success = await showOverlay<bool>(() async {
+      return await ChapterImportHelp.importLocal(
+        bookId: book.id!,
+        mediaFilePath: mediaPath,
+        srtFilePath: srtPath,
+      );
+    }, I18nKey.labelImporting.tr);
+    if (success) {
+      Snackbar.show(I18nKey.labelAddSuccess.tr);
+    }
+  }
+
+  void addChapterFromRemoteUrls(Book book) {
+    RxString mediaUrl = RxString("");
+    RxString srtUrl = RxString("");
+    MsgBox.twoStrInputWithYesOrNo(
+      mediaUrl,
+      I18nKey.labelChapterMediaUrl.tr,
+      srtUrl,
+      I18nKey.labelChapterSrtUrl.tr,
+      I18nKey.labelAddChapter.tr,
+      nextChildren: [
+        Obx(() {
+          return LinearProgressIndicator(
+            value: state.indexCount.value / state.indexTotal.value,
+            semanticsLabel: "${(state.indexCount.value / state.indexTotal.value * 100).toStringAsFixed(1)}%",
+          );
+        }),
+      ],
+      yes: () async {
+        state.indexCount.value = 0;
+        state.indexTotal.value = 1;
+        bool success = await showOverlay<bool>(() async {
+          return await ChapterImportHelp.importRemote(
+            bookId: book.id!,
+            mediaUrl: mediaUrl.value,
+            srtUrl: srtUrl.value,
+            progressCallback: downloadProgress,
+          );
+        }, I18nKey.labelImporting.tr);
+        if (success) {
+          Nav.back();
+          Snackbar.show(I18nKey.labelAddSuccess.tr);
+        }
+      },
+      yesBtnTitle: I18nKey.btnDownload.tr,
+      noBtnTitle: I18nKey.close.tr,
+      qrPagePath1: Nav.scan.path,
+      qrPagePath2: Nav.scan.path,
     );
   }
 

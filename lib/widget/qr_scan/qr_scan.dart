@@ -1,11 +1,11 @@
-import 'dart:developer';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
-import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 typedef OnResultCallback = void Function(String content);
+
+void _qrLog(String msg) {
+  debugPrint('QRSCAN ${DateTime.now().toIso8601String()} $msg');
+}
 
 class QrScan extends StatefulWidget {
   final OnResultCallback onResult;
@@ -16,64 +16,117 @@ class QrScan extends StatefulWidget {
   State<StatefulWidget> createState() => QrScanState();
 }
 
-class QrScanState extends State<QrScan> {
-  QRViewController? controller;
-  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+class QrScanState extends State<QrScan> with WidgetsBindingObserver {
+  final MobileScannerController controller = MobileScannerController(
+    formats: const [BarcodeFormat.qrCode],
+    detectionSpeed: DetectionSpeed.normal,
+  );
 
-  // In order to get hot reload to work we need to pause the camera if the platform
-  // is android, or resume the camera if the platform is iOS.
+  // Guard so a burst of detections doesn't stack multiple result dialogs.
+  // Reset by resumeCamera() when the user chooses to keep scanning.
+  bool _handled = false;
+
   @override
-  void reassemble() {
-    super.reassemble();
-    if (Platform.isAndroid) {
-      controller!.pauseCamera();
+  void initState() {
+    super.initState();
+    _qrLog('initState hashCode=$hashCode');
+    WidgetsBinding.instance.addObserver(this);
+    // Do NOT start() here: the MobileScanner widget auto-starts the controller.
+    // Starting manually as well throws MobileScannerException(controllerInitializing).
+  }
+
+  void _startCamera() async {
+    _qrLog('start call');
+    try {
+      await controller.start();
+      _qrLog('start done');
+    } catch (e) {
+      _qrLog('start error $e');
     }
-    controller!.resumeCamera();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _qrLog('appLifecycle $state');
+    switch (state) {
+      case AppLifecycleState.resumed:
+        _startCamera();
+        break;
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.paused:
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+        controller.stop();
+        break;
+    }
   }
 
   void pauseCamera() async {
-    await controller?.pauseCamera();
+    _qrLog('pauseCamera call');
+    await controller.stop();
+    _qrLog('pauseCamera done');
   }
 
   void resumeCamera() async {
-    await controller?.resumeCamera();
+    _qrLog('resumeCamera call');
+    _handled = false;
+    await controller.start();
+    _qrLog('resumeCamera done');
+  }
+
+  void _onDetect(BarcodeCapture capture) {
+    if (_handled) return;
+    for (final barcode in capture.barcodes) {
+      final code = barcode.rawValue;
+      if (code != null && code.isNotEmpty) {
+        _qrLog('scanned code=$code');
+        _handled = true;
+        widget.onResult(code);
+        break;
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // For this example we check how width or tall the device is and change the scanArea and overlay accordingly.
+    _qrLog('build');
     var scanArea = (MediaQuery.of(context).size.width < 400 || MediaQuery.of(context).size.height < 400) ? 150.0 : 300.0;
-    // To ensure the Scanner view is properly sizes after rotation
-    // we need to listen for Flutter SizeChanged notification and update controller
-    return QRView(
-      key: qrKey,
-      onQRViewCreated: _onQRViewCreated,
-      overlay: QrScannerOverlayShape(borderColor: Colors.red, borderRadius: 10, borderLength: 30, borderWidth: 10, cutOutSize: scanArea),
-      onPermissionSet: (ctrl, p) => _onPermissionSet(context, ctrl, p),
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        MobileScanner(
+          controller: controller,
+          onDetect: _onDetect,
+          errorBuilder: (context, error) {
+            _qrLog('errorBuilder ${error.errorCode} ${error.errorDetails?.message}');
+            return Center(
+              child: Text(
+                error.errorCode.toString(),
+                style: const TextStyle(color: Colors.white),
+              ),
+            );
+          },
+        ),
+        // Simple visual guide replacing the old QrScannerOverlayShape.
+        IgnorePointer(
+          child: Container(
+            width: scanArea,
+            height: scanArea,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.red, width: 3),
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+      ],
     );
-  }
-
-  void _onQRViewCreated(QRViewController controller) {
-    setState(() {
-      this.controller = controller;
-    });
-    controller.scannedDataStream.listen((scanData) {
-      if (scanData.format == BarcodeFormat.qrcode && scanData.code != null) {
-        widget.onResult(scanData.code!);
-      }
-    });
-  }
-
-  void _onPermissionSet(BuildContext context, QRViewController ctrl, bool p) {
-    log('${DateTime.now().toIso8601String()}_onPermissionSet $p');
-    if (!p) {
-      Snackbar.show("no permission");
-    }
   }
 
   @override
   void dispose() {
-    controller?.dispose();
+    _qrLog('dispose hashCode=$hashCode');
+    WidgetsBinding.instance.removeObserver(this);
+    controller.dispose();
     super.dispose();
   }
 }

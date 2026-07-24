@@ -1252,6 +1252,28 @@ class _$ChapterDao extends ChapterDao {
   }
 
   @override
+  Future<bool> innerAddChapterWithVerses(
+    int bookId,
+    int chapterIndex,
+    String chapterContent,
+    List<String> verseContents,
+  ) async {
+    if (database is sqflite.Transaction) {
+      return super.innerAddChapterWithVerses(
+          bookId, chapterIndex, chapterContent, verseContents);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<bool>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        return transactionDatabase.chapterDao.innerAddChapterWithVerses(
+            bookId, chapterIndex, chapterContent, verseContents);
+      });
+    }
+  }
+
+  @override
   Future<Chapter> innerUpdateChapterContent(
     int chapterId,
     String content,

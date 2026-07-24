@@ -171,6 +171,11 @@ class ConfigZh extends Config {
     put(I18nKey.labelLocalZipImport, "本地ZIP导入");
     put(I18nKey.create, "创建");
     put(I18nKey.labelLocalImportCancel, "本地导入取消");
+    put(I18nKey.labelAddChapter, "添加篇章");
+    put(I18nKey.selectAddChapterSource, "选择添加篇章的方式");
+    put(I18nKey.labelLocalImport, "本地文件导入");
+    put(I18nKey.labelChapterMediaUrl, "音频/视频URL");
+    put(I18nKey.labelChapterSrtUrl, "字幕(srt)URL");
     put(I18nKey.labelVerseRemoved, "对应的学习小节已移除，建议先备份你的数据，再点击确定进行删除相关数据。");
     put(I18nKey.labelDocNotBeDownloaded, "还未下载文件:%s");
     put(I18nKey.labelDocCantBeFound, "无法找到文件:%s");

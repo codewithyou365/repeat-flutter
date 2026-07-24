@@ -3,17 +3,21 @@
 import 'dart:convert' as convert;
 
 import 'package:floor/floor.dart';
+import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/chapter.dart';
 import 'package:repeat_flutter/db/entity/chapter_content_version.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/content_version.dart';
+import 'package:repeat_flutter/db/entity/verse.dart';
+import 'package:repeat_flutter/db/entity/verse_content_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/cache_help.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
+import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 @dao
@@ -298,6 +302,93 @@ abstract class ChapterDao {
       bookId: bookId,
       chapterIndex: 0,
     );
+  }
+
+  Future<bool> addChapterWithVerses({
+    required int bookId,
+    required int chapterIndex,
+    required String chapterContent,
+    required List<String> verseContents,
+  }) async {
+    bool ok = await innerAddChapterWithVerses(
+      bookId,
+      chapterIndex,
+      chapterContent,
+      verseContents,
+    );
+    if (!ok) {
+      return false;
+    }
+    await CacheHelp.refreshChapterAndVerse();
+    var newChapter = ChapterHelp.getCacheByIndex(bookId, chapterIndex);
+    EventBus().publish<ChapterShow>(EventTopic.addChapter, newChapter);
+    return true;
+  }
+
+  @transaction
+  Future<bool> innerAddChapterWithVerses(
+    int bookId,
+    int chapterIndex,
+    String chapterContent,
+    List<String> verseContents,
+  ) async {
+    bool ok = await interAddChapter(
+      chapterContent: chapterContent,
+      bookId: bookId,
+      chapterIndex: chapterIndex,
+    );
+    if (!ok) {
+      return false;
+    }
+    if (verseContents.isEmpty) {
+      return true;
+    }
+    Chapter? newChapter = await one(bookId, chapterIndex);
+    if (newChapter == null) {
+      Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["cant find the newChapter data($bookId-$chapterIndex)"]));
+      return false;
+    }
+    Book? book = await db.bookDao.getById(bookId);
+    if (book == null) {
+      Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["cant find the content data($bookId)"]));
+      return false;
+    }
+    var now = DateTime.now();
+    int classroomId = Classroom.curr;
+    List<Verse> verses = [
+      for (var i = 0; i < verseContents.length; i++)
+        Verse(
+          classroomId: classroomId,
+          bookId: bookId,
+          chapterId: newChapter.id!,
+          chapterIndex: chapterIndex,
+          verseIndex: i,
+          sort: VerseHelp.toVerseSort(book.sort, chapterIndex, i),
+          content: verseContents[i],
+          contentVersion: 1,
+          learnDate: Date.from(now),
+          progress: 0,
+        ),
+    ];
+    await db.verseDao.addVerses(bookId, book.sort, chapterIndex, verses);
+
+    List<Verse> inserted = await db.verseDao.findByMinChapterIndex(bookId, chapterIndex);
+    inserted = inserted.where((v) => v.chapterIndex == chapterIndex).toList();
+    for (var v in inserted) {
+      await db.verseContentVersionDao.insertOrFail(
+        VerseContentVersion(
+          classroomId: v.classroomId,
+          bookId: v.bookId,
+          chapterId: v.chapterId,
+          verseId: v.id!,
+          version: 1,
+          reason: VersionReason.editor,
+          content: v.content,
+          createTime: now,
+        ),
+      );
+    }
+    return true;
   }
 
   Future<void> updateChapterContent(int chapterId, String content) async {
