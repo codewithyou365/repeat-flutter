@@ -34,6 +34,9 @@ class DownloadContent {
   String url;
   String hash;
 
+  // Custom display name given by the user. When null, [name] (hash-based) is used.
+  String? n;
+
   String get extension => url.split('.').last;
 
   String get folder => hash.substring(0, 2);
@@ -47,6 +50,7 @@ class DownloadContent {
   DownloadContent({
     required this.url,
     required this.hash,
+    this.n,
   });
 
   static List<DownloadContent>? toList(dynamic json) {
@@ -60,14 +64,19 @@ class DownloadContent {
     return DownloadContent(
       url: json['u'] as String,
       hash: json['h'] as String,
+      n: json['n'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
+    final ret = <String, dynamic>{
       'u': url,
       'h': hash,
     };
+    if (n != null) {
+      ret['n'] = n;
+    }
+    return ret;
   }
 }
 

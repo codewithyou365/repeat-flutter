@@ -72,6 +72,7 @@ class RepeatLogic extends GetxController {
 
   late RepeatFlow? repeatFlow;
   final SubList bookSub = [];
+  bool saveGlobalBrowsePosition = false;
 
   @override
   Future<void> onInit() async {
@@ -106,6 +107,7 @@ class RepeatLogic extends GetxController {
     expandSheet.init(copyLogic);
     bookEditor.onExpand = openExpand;
     var args = Get.arguments as RepeatArgs;
+    saveGlobalBrowsePosition = args.saveGlobalBrowsePosition;
     state.enableShowRecallButtons = args.enableShowRecallButtons;
     if (args.repeatFlowType == RepeatType.browse) {
       repeatFlow = RepeatFlowForBrowse();
@@ -225,6 +227,12 @@ class RepeatLogic extends GetxController {
   @override
   void onClose() async {
     super.onClose();
+    if (saveGlobalBrowsePosition) {
+      var curr = getCurr();
+      if (curr != null) {
+        await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.lastBrowseVerseId, '${curr.verseId}'));
+      }
+    }
     assistiveTouchLogic.dispose();
     gamepadLogic.detach();
     bookSub.off();

@@ -416,6 +416,11 @@ enum I18nKey {
   labelZipPasswordOptional,
   labelZipPasswordRequired,
   labelZipPasswordWrong,
+  mediaList,
+  globalBrowse,
+  mediaRename,
+  mediaFileNotExist,
+  mediaEmpty,
   none;
 
   String trArgs([List<String> args = const []]) {

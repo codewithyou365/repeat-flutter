@@ -416,5 +416,10 @@ class ConfigZh extends Config {
     put(I18nKey.gamepadNavMiddleTts, "中键(提示TTS)");
     put(I18nKey.gamepadNavRight, "右键");
     put(I18nKey.practiceHint, "在此输入练习内容...");
+    put(I18nKey.mediaList, "媒体列表");
+    put(I18nKey.globalBrowse, "全局浏览");
+    put(I18nKey.mediaRename, "重命名");
+    put(I18nKey.mediaFileNotExist, "文件不存在");
+    put(I18nKey.mediaEmpty, "没有可播放的媒体");
   }
 }

@@ -11,16 +11,20 @@ import 'package:repeat_flutter/common/zip.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
+import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
+import 'package:repeat_flutter/logic/model/lazy_verse_today_prg_list.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/logic/import_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
+import 'package:repeat_flutter/page/repeat/logic/constant.dart';
+import 'package:repeat_flutter/page/repeat/repeat_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
@@ -74,6 +78,37 @@ class ScCrMaterialLogic extends GetxController {
       arguments: ContentArgs(
         bookName: content.name,
         enableEnteringRepeatView: true,
+      ),
+    );
+  }
+
+  void showMediaList() {
+    Nav.mediaList.push();
+  }
+
+  Future<void> globalBrowse() async {
+    var verses = await Db().db.scheduleDao.getAllVerse(Classroom.curr);
+    if (verses.isEmpty) {
+      Snackbar.show(I18nKey.mediaEmpty.tr);
+      return;
+    }
+    verses.sort((a, b) => a.toSort().compareTo(b.toSort()));
+    var startIndex = 0;
+    var lastVerseId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.lastBrowseVerseId);
+    if (lastVerseId != null) {
+      var idx = verses.indexWhere((v) => v.verseId == lastVerseId);
+      if (idx >= 0) {
+        startIndex = idx;
+      }
+    }
+    await Nav.repeat.push(
+      arguments: RepeatArgs(
+        progresses: LazyVerseTodayPrgList(verses),
+        startIndex: startIndex,
+        repeatFlowType: RepeatType.browse,
+        enableShowRecallButtons: false,
+        showMode: ShowMode.edit,
+        saveGlobalBrowsePosition: true,
       ),
     );
   }

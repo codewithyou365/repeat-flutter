@@ -55,6 +55,7 @@ enum CrK {
   assistiveTouchVisibleBuiltins,
   gamepadEnabled,
   gamepadBindings,
+  lastBrowseVerseId,
 }
 
 @Entity(primaryKeys: ['classroomId', 'k'])

@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:repeat_flutter/page/content/content_nav.dart';
 import 'package:repeat_flutter/page/editor/editor_nav.dart';
+import 'package:repeat_flutter/page/media_list/media_list_nav.dart';
 import 'package:repeat_flutter/page/repeat/repeat_nav.dart';
 import 'package:repeat_flutter/page/sc/sc_nav.dart';
 import 'package:repeat_flutter/page/sc_cr/sc_cr_nav.dart';
@@ -20,6 +21,7 @@ import 'package:repeat_flutter/page/webview/webview_nav.dart';
 enum Nav {
   content("/content"),
   editor("/editor"),
+  mediaList("/media/list"),
   repeat("/repeat"),
   sc("/sc"),
   scCr("/sc/cr"),
@@ -63,6 +65,7 @@ enum Nav {
   static final List<GetPage> getPages = [
     contentNav(content.path),
     editorNav(editor.path),
+    mediaListNav(mediaList.path),
     repeatNav(repeat.path),
     scNav(sc.path),
     scCrNav(scCr.path),

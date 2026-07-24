@@ -9,11 +9,16 @@ class RepeatArgs {
   final ShowMode showMode;
   final bool enableShowRecallButtons;
 
+  /// When true, the repeat page persists the last browsed verse to
+  /// [CrK.lastBrowseVerseId] on close, so "全局浏览" can resume next time.
+  final bool saveGlobalBrowsePosition;
+
   RepeatArgs({
     required this.progresses,
     required this.startIndex,
     required this.repeatFlowType,
     required this.enableShowRecallButtons,
     required this.showMode,
+    this.saveGlobalBrowsePosition = false,
   });
 }

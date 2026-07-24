@@ -418,5 +418,10 @@ class ConfigEn extends Config {
     put(I18nKey.gamepadNavMiddleTts, "Middle (Tips TTS)");
     put(I18nKey.gamepadNavRight, "Right");
     put(I18nKey.practiceHint, "Type here to practice...");
+    put(I18nKey.mediaList, "Media");
+    put(I18nKey.globalBrowse, "Browse All");
+    put(I18nKey.mediaRename, "Rename");
+    put(I18nKey.mediaFileNotExist, "File does not exist");
+    put(I18nKey.mediaEmpty, "No playable media");
   }
 }
