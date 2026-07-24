@@ -160,6 +160,27 @@ class JsRuntime {
         }
       });
 
+      // 逐字母朗读（拼读）时，如果用户开启了"拼读即置零"，把当前 verse 的学习等级重置为 0。
+      // 复用 error() 逻辑：它会把 verse.progress 和今日进度都置 0，并刷新缓存/发事件，
+      // 但不改动 examine 流程的 step 和 scheduled 顺序，用户可以继续打字。
+      _jsRuntime!.onMessage('resetCurrVerseLevel', (dynamic args) async {
+        final game = GameState.game;
+        if (game == null) return 'no_game';
+        try {
+          final logic = Get.find<RepeatLogic>();
+          // 浏览流(justView)不落今日计划库,置零无意义且会误改 Verse.progress,直接跳过
+          if (logic.repeatFlow is RepeatFlowForBrowse) {
+            return 'browse';
+          }
+          final curr = logic.getCurr();
+          if (curr == null) return 'no_verse';
+          await Db().db.scheduleDao.error(curr);
+          return 'ok';
+        } catch (e) {
+          return e.toString();
+        }
+      });
+
 
       _jsRuntime!.onMessage('repeatFlow', (dynamic args) {
         final game = GameState.game;

@@ -16,6 +16,7 @@ type ProfileConfig = {
     hintTrigger: string;
     keyMapping: string;
     spellClearWord: boolean;
+    spellResetLevel: boolean;
     [key: string]: any;
 };
 
@@ -38,7 +39,7 @@ type GameArgs = {
 const PROFILE_COUNT = 3;
 
 function defaultProfileConfig(): ProfileConfig {
-    return {"ignorePunctuation": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "keyMapping": "", "spellClearWord": true};
+    return {"ignorePunctuation": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "keyMapping": "", "spellClearWord": true, "spellResetLevel": false};
 }
 
 function defaultStoredConfig(): StoredConfig {
@@ -331,6 +332,16 @@ const Game = {
                 status: 500,
                 error: error.toString()
             });
+        }
+    },
+
+    // 拼读（逐字母朗读）时把当前 verse 的学习等级置零，由客户端在开启开关时调用
+    resetLevel: async function (): Promise<string> {
+        try {
+            const res = await sendMessage('resetCurrVerseLevel', '{}');
+            return JSON.stringify({data: res});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
         }
     },
 

@@ -82,6 +82,11 @@
         <nut-switch v-model="spellClearWord" @change="setSpellClearWord"/>
       </template>
     </nut-cell>
+    <nut-cell :title="t('spellResetLevel')">
+      <template #link>
+        <nut-switch v-model="spellResetLevel" @change="setSpellResetLevel"/>
+      </template>
+    </nut-cell>
     <nut-cell :title="t('speakLetters')">
       <template #link>
         <nut-switch v-model="speakLetters" @change="setSpeakLetters"/>
@@ -181,6 +186,7 @@ const manualTtsRate = ref(0.5);
 const manualPlayTrigger = ref('.');
 const spellPlayTrigger = ref(',');
 const spellClearWord = ref(true);
+const spellResetLevel = ref(false);
 const hintTrigger = ref(' ');
 // 三个触发键各自最后一次成功保存的值，用于校验失败时把输入框还原回去
 let manualPlayTriggerSaved = '.';
@@ -235,6 +241,7 @@ const showTips = () => {
     {label: t('manualPlayTrigger'), value: formatTriggerKey(manualPlayTrigger.value)},
     {label: t('spellPlayTrigger'), value: formatTriggerKey(spellPlayTrigger.value)},
     {label: t('spellClearWord'), value: formatStatus(spellClearWord.value)},
+    {label: t('spellResetLevel'), value: formatStatus(spellResetLevel.value)},
     {label: t('hintTrigger'), value: formatTriggerKey(hintTrigger.value)},
     {label: t('keyMapping'), value: keyMapping.value || t('disabled')}
   ];
@@ -282,6 +289,7 @@ const applyProfile = (index: number) => {
   manualPlayTrigger.value = typeof res['manualPlayTrigger'] === 'string' ? res['manualPlayTrigger'] : '.';
   spellPlayTrigger.value = typeof res['spellPlayTrigger'] === 'string' ? res['spellPlayTrigger'] : ',';
   spellClearWord.value = typeof res['spellClearWord'] === 'boolean' ? res['spellClearWord'] : true;
+  spellResetLevel.value = typeof res['spellResetLevel'] === 'boolean' ? res['spellResetLevel'] : false;
   hintTrigger.value = typeof res['hintTrigger'] === 'string' ? res['hintTrigger'] : ' ';
   manualPlayTriggerSaved = manualPlayTrigger.value;
   spellPlayTriggerSaved = spellPlayTrigger.value;
@@ -374,6 +382,10 @@ const setSpellPlayTrigger = (value: string) => {
 const setSpellClearWord = (value: boolean) => {
   profiles.value[activeProfile.value].spellClearWord = value;
   setConfig("spellClearWord", value);
+};
+const setSpellResetLevel = (value: boolean) => {
+  profiles.value[activeProfile.value].spellResetLevel = value;
+  setConfig("spellResetLevel", value);
 };
 const setHintTrigger = (value: string) => {
   if (value && (value === manualPlayTrigger.value || value === spellPlayTrigger.value)) {
@@ -527,9 +539,24 @@ const onManualPlay = (word: string) => {
   if (word) speak(word, manualTtsRate.value);
 };
 
+const resetLevel = async () => {
+  try {
+    const req = new Request({
+      path: Path.game,
+      headers: {'jsMethod': 'Game.resetLevel'},
+    });
+    await client.node!.send(req);
+  } catch (error) {
+    console.error('Failed to reset level:', error);
+  }
+};
+
 const onSpellPlay = (word: string) => {
   for (const ch of word) {
     if (isSpeakable(ch)) speak(ch, manualTtsRate.value);
+  }
+  if (spellResetLevel.value) {
+    void resetLevel();
   }
   if (spellClearWord.value) {
     typingRef.value?.clearCurrentWord();
