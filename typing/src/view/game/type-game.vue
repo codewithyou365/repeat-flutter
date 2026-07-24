@@ -120,8 +120,10 @@
   <div v-else-if="ready" class="type-game-container">
     <div class="info-bar">
       <Voice class="info-icon" width="18px" height="18px" @click="speakCurrentWord"/>
+      <Eye class="info-icon" width="18px" height="18px" @click="eyesClosedMaskVisible = true"/>
       <Ask class="info-icon" width="18px" height="18px" @click="showTips"/>
     </div>
+    <div v-if="eyesClosedMaskVisible" class="eyes-closed-mask" @click="eyesClosedMaskVisible = false"></div>
     <div class="typing-content">
       <Typing
           ref="typingRef"
@@ -165,7 +167,7 @@ import {Path} from '../../utils/constant.ts';
 import Typing from '../../component/typing.vue';
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
-import {Ask, Voice} from '@nutui/icons-vue';
+import {Ask, Voice, Eye} from '@nutui/icons-vue';
 import {showToast} from "@nutui/nutui";
 
 const {t} = useI18n();
@@ -198,6 +200,7 @@ const adminEnable = ref(false);
 const adminId = ref(0);
 const content = ref('');
 const typingRef = ref<InstanceType<typeof Typing>>();
+const eyesClosedMaskVisible = ref(false);
 const labels = reactive({
   left: '',
   middle: '',
@@ -634,5 +637,15 @@ onMounted(async () => {
   align-items: center;
   gap: 12px;
   padding: 0 15px;
+}
+
+.eyes-closed-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #000;
+  z-index: 3000;
 }
 </style>
