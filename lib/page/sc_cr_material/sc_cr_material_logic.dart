@@ -35,7 +35,7 @@ import 'sc_cr_material_state.dart';
 class ScCrMaterialLogic extends GetxController {
   static const String id = "GsCrContentLogic";
   final ScCrMaterialState state = ScCrMaterialState();
-  static RegExp reg = RegExp(r'^[0-9A-Z]+$');
+  static RegExp reg = RegExp(r'^[0-9a-zA-Z]+$');
   final SubList<int> sub = [];
 
   @override
@@ -163,7 +163,7 @@ class ScCrMaterialLogic extends GetxController {
       Snackbar.show(I18nKey.labelBookNameEmpty.tr);
       return;
     }
-    if (name.length > 3 || !reg.hasMatch(name)) {
+    if (!reg.hasMatch(name)) {
       Get.back();
       Snackbar.show(I18nKey.labelBookNameError.tr);
       return;

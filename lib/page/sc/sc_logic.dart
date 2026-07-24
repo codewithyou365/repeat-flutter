@@ -11,7 +11,7 @@ import 'sc_state.dart';
 class ScLogic extends GetxController {
   static const String id = "ScLogicId";
   final ScState state = ScState();
-  static RegExp reg = RegExp(r'^[0-9A-Z]+$');
+  static RegExp reg = RegExp(r'^[0-9a-zA-Z]+$');
 
   @override
   void onInit() async {
@@ -32,7 +32,7 @@ class ScLogic extends GetxController {
       Snackbar.show(I18nKey.labelClassroomNameEmpty.tr);
       return;
     }
-    if (name.length > 3 || !reg.hasMatch(name)) {
+    if (!reg.hasMatch(name)) {
       Snackbar.show(I18nKey.labelClassroomNameError.tr);
       return;
     }

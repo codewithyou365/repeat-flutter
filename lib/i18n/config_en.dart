@@ -33,11 +33,11 @@ class ConfigEn extends Config {
     put(I18nKey.labelDeleteClassroomAll, "delete the study records");
     put(I18nKey.labelClassroomName, "Classroom Name");
     put(I18nKey.labelClassroomNameEmpty, "The classroom name cannot be empty");
-    put(I18nKey.labelClassroomNameError, "The classroom name should be 3 letters or less and consist of alphanumeric characters in uppercase.");
+    put(I18nKey.labelClassroomNameError, "The classroom name should consist of alphanumeric characters.");
     put(I18nKey.labelClassroomNameDuplicated, "The classroom name is duplicated.");
     put(I18nKey.labelBookName, "Book Name");
     put(I18nKey.labelBookNameEmpty, "The book name cannot be empty");
-    put(I18nKey.labelBookNameError, "The book name should be 3 letters or less and consist of alphanumeric characters in uppercase.");
+    put(I18nKey.labelBookNameError, "The book name should consist of alphanumeric characters.");
     put(I18nKey.labelBookNameDuplicated, "The book name is duplicated.");
     put(I18nKey.labelDelete, "Delete");
     put(I18nKey.serviceUrl, "Service URL");
