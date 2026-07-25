@@ -16,6 +16,7 @@ import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/cache_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
+import 'package:repeat_flutter/logic/model/lazy_verse_today_prg_list.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/text_template.dart';
@@ -362,6 +363,33 @@ class ScCrLogic extends GetxController {
     fullCustom.show(context, () {
       init();
     });
+  }
+
+  Future<void> globalBrowse() async {
+    var verses = await Db().db.scheduleDao.getAllVerse(Classroom.curr);
+    if (verses.isEmpty) {
+      Snackbar.show(I18nKey.mediaEmpty.tr);
+      return;
+    }
+    verses.sort((a, b) => a.toSort().compareTo(b.toSort()));
+    var startIndex = 0;
+    var lastVerseId = await Db().db.crKvDao.getInt(Classroom.curr, CrK.lastBrowseVerseId);
+    if (lastVerseId != null) {
+      var idx = verses.indexWhere((v) => v.verseId == lastVerseId);
+      if (idx >= 0) {
+        startIndex = idx;
+      }
+    }
+    await Nav.repeat.push(
+      arguments: RepeatArgs(
+        progresses: LazyVerseTodayPrgList(verses),
+        startIndex: startIndex,
+        repeatFlowType: RepeatType.browse,
+        enableShowRecallButtons: false,
+        showMode: ShowMode.edit,
+        saveGlobalBrowsePosition: true,
+      ),
+    );
   }
 
   // for copy

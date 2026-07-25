@@ -23,10 +23,6 @@ class ScCrMaterialPage extends StatelessWidget {
             onTap: logic.showMediaList,
             child: Text(I18nKey.mediaList.tr),
           ),
-          PopupMenuItem<String>(
-            onTap: logic.globalBrowse,
-            child: Text(I18nKey.globalBrowse.tr),
-          ),
         ]),
       ),
       body: GetBuilder<ScCrMaterialLogic>(

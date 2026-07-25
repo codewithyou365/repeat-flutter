@@ -38,6 +38,10 @@ class ScCrPage extends StatelessWidget {
                   onTap: learningSettings,
                   child: Text(I18nKey.learningSettings.tr),
                 ),
+                PopupMenuItem<String>(
+                  onTap: logic.globalBrowse,
+                  child: Text(I18nKey.globalBrowse.tr),
+                ),
               ],
             ),
           ),
