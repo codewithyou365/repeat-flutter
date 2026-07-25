@@ -142,7 +142,7 @@ class GameLogic<T extends GetxController> {
 
   void changeGame(int index) async {
     state.lastGameIndex.value = index;
-    await Db().db.kvDao.insertOrReplace(Kv(K.lastGameIndex, "${state.lastGameIndex}"));
+    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.lastGameIndex, "$index"));
     await setScore();
     parentLogic.update([bodyId]);
   }

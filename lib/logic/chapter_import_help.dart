@@ -24,35 +24,36 @@ class ChapterImportHelp {
     }
   }
 
-  static Future<bool> importLocal({
-    required int bookId,
-    required String mediaFilePath,
-    required String srtFilePath,
-  }) async {
-    var ext = mediaFilePath.split('.').last;
-    var showType = _showTypeForExtension(ext);
-    if (showType == null) {
-      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["ext($ext)"]));
-      return false;
-    }
-    var hash = await Hash.toSha1(mediaFilePath);
-    var download = DownloadContent(url: 'local.$ext', hash: hash);
-    var rootPath = await DocPath.getContentPath();
-    var targetPath = rootPath.joinPath(DocPath.getRelativePath(bookId)).joinPath(download.path);
-    await Folder.ensureExists(File(targetPath).parent.path);
-    await File(mediaFilePath).copy(targetPath);
-
-    var srtText = await File(srtFilePath).readAsString();
-    return _finish(bookId: bookId, showType: showType, download: download, srtText: srtText);
+  /// A source is either a remote url or a path to a local file.
+  static bool isUrl(String source) {
+    return source.startsWith('http://') || source.startsWith('https://');
   }
 
-  static Future<bool> importRemote({
+  /// Extracts the file extension of a source. For a url the query string and
+  /// the fragment have to be dropped first, otherwise they end up in the
+  /// extension.
+  static String _extensionOf(String source) {
+    var path = source;
+    if (isUrl(path)) {
+      for (var separator in ['#', '?']) {
+        var i = path.indexOf(separator);
+        if (i != -1) {
+          path = path.substring(0, i);
+        }
+      }
+    }
+    return path.split('.').last;
+  }
+
+  /// Imports a chapter. [mediaSource] and [srtSource] are resolved
+  /// independently, so one may be a url while the other is a local file.
+  static Future<bool> import({
     required int bookId,
-    required String mediaUrl,
-    required String srtUrl,
+    required String mediaSource,
+    required String srtSource,
     DownloadProgressCallback? progressCallback,
   }) async {
-    var mediaExt = mediaUrl.split('.').last;
+    var mediaExt = _extensionOf(mediaSource);
     var showType = _showTypeForExtension(mediaExt);
     if (showType == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["ext($mediaExt)"]));
@@ -61,26 +62,50 @@ class ChapterImportHelp {
 
     var rootPath = await DocPath.getContentPath();
 
-    var tempSrtRelPath = 'temp_srt_${DateTime.now().millisecondsSinceEpoch}.srt';
-    var srtResult = await DownloadDoc.start(srtUrl, tempSrtRelPath, progressCallback: progressCallback, skipSsl: true);
-    if (srtResult != DownloadDocResult.success) {
-      return false;
+    String srtText;
+    if (isUrl(srtSource)) {
+      var tempSrtRelPath = 'temp_srt_${DateTime.now().millisecondsSinceEpoch}.srt';
+      var srtResult = await DownloadDoc.start(srtSource, tempSrtRelPath, progressCallback: progressCallback, skipSsl: true);
+      if (srtResult != DownloadDocResult.success) {
+        return false;
+      }
+      var tempSrtFile = File(rootPath.joinPath(tempSrtRelPath));
+      srtText = await tempSrtFile.readAsString();
+      await tempSrtFile.delete();
+    } else {
+      var srtFile = File(srtSource);
+      if (!await srtFile.exists()) {
+        Snackbar.show(I18nKey.labelDocCantBeFound.trArgs([srtSource]));
+        return false;
+      }
+      srtText = await srtFile.readAsString();
     }
-    var tempSrtFile = File(rootPath.joinPath(tempSrtRelPath));
-    var srtText = await tempSrtFile.readAsString();
-    await tempSrtFile.delete();
 
-    var tempMediaRelPath = 'temp_media_${DateTime.now().millisecondsSinceEpoch}.$mediaExt';
-    var mediaResult = await DownloadDoc.start(mediaUrl, tempMediaRelPath, progressCallback: progressCallback, skipSsl: true);
-    if (mediaResult != DownloadDocResult.success) {
-      return false;
+    DownloadContent download;
+    String mediaPath;
+    if (isUrl(mediaSource)) {
+      var tempMediaRelPath = 'temp_media_${DateTime.now().millisecondsSinceEpoch}.$mediaExt';
+      var mediaResult = await DownloadDoc.start(mediaSource, tempMediaRelPath, progressCallback: progressCallback, skipSsl: true);
+      if (mediaResult != DownloadDocResult.success) {
+        return false;
+      }
+      mediaPath = rootPath.joinPath(tempMediaRelPath);
+      download = DownloadContent(url: mediaSource, hash: await Hash.toSha1(mediaPath));
+    } else {
+      mediaPath = mediaSource;
+      if (!await File(mediaPath).exists()) {
+        Snackbar.show(I18nKey.labelDocCantBeFound.trArgs([mediaSource]));
+        return false;
+      }
+      download = DownloadContent(url: 'local.$mediaExt', hash: await Hash.toSha1(mediaPath));
     }
-    var tempMediaPath = rootPath.joinPath(tempMediaRelPath);
-    var hash = await Hash.toSha1(tempMediaPath);
-    var download = DownloadContent(url: mediaUrl, hash: hash);
     var finalPath = rootPath.joinPath(DocPath.getRelativePath(bookId)).joinPath(download.path);
     await Folder.ensureExists(File(finalPath).parent.path);
-    await File(tempMediaPath).rename(finalPath);
+    if (isUrl(mediaSource)) {
+      await File(mediaPath).rename(finalPath);
+    } else {
+      await File(mediaPath).copy(finalPath);
+    }
 
     return _finish(bookId: bookId, showType: showType, download: download, srtText: srtText);
   }

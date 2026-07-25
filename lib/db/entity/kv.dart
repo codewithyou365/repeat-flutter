@@ -14,7 +14,6 @@ enum K {
   generateSslTime,
   credential,
   credentialExpireTime,
-  lastGameIndex,
   gamePassword,
   gamePasswordCreateTime,
   lastVerseId,
