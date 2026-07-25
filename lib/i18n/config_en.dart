@@ -430,5 +430,16 @@ class ConfigEn extends Config {
     put(I18nKey.mediaRename, "Rename");
     put(I18nKey.mediaFileNotExist, "File does not exist");
     put(I18nKey.mediaEmpty, "No playable media");
+    put(I18nKey.quickEntry, "Quick Entry");
+    put(I18nKey.quickEntryNone, "Off");
+    put(I18nKey.quickEntryGlobalBrowse, "Enter Browse All");
+    put(I18nKey.quickEntryExamine, "Enter Examine");
+    put(I18nKey.quickEntryBrowse, "Enter Browse");
+    put(I18nKey.quickEntryGlobalBrowseGame, "Enter Browse All Game");
+    put(I18nKey.quickEntryExamineGame, "Enter Examine Game");
+    put(I18nKey.quickEntryBrowseGame, "Enter Browse Game");
+    put(I18nKey.quickEntrySet, "Quick entry saved");
+    put(I18nKey.quickEntryNoGame, "No game available");
+    put(I18nKey.guiding, "Guiding...");
   }
 }

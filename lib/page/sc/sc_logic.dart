@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/widget/quick_entry/quick_entry.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -21,9 +22,14 @@ class ScLogic extends GetxController {
     update([ScLogic.id]);
   }
 
-  void select(int classroomId, String classroomName) {
+  void select(int classroomId, String classroomName) async {
     Classroom.curr = classroomId;
     Classroom.currName = classroomName;
+    var quickEntry = await QuickEntry.get(classroomId);
+    QuickEntry.pending = quickEntry;
+    if (quickEntry != QuickEntryType.none) {
+      QuickEntry.showGuiding();
+    }
     Nav.scCr.push();
   }
 

@@ -9,6 +9,7 @@ class Select {
     required String title,
     required List<String> keys,
     autoHeight = true,
+    List<Widget?>? leadings,
     required void Function(int index) callback,
   }) {
     showSheet(
@@ -16,6 +17,7 @@ class Select {
       keys: keys,
       autoHeight: autoHeight,
       autoHide: false,
+      leadings: leadings,
       callback: callback,
     );
   }
@@ -25,6 +27,7 @@ class Select {
     required List<String> keys,
     autoHeight = true,
     autoHide = true,
+    List<Widget?>? leadings,
     void Function(int index)? callback,
   }) async {
     double? height;
@@ -47,6 +50,7 @@ class Select {
           final widgets = <Widget>[
             RowWidget.buildSelect(
               title: keys[index],
+              leading: leadings != null && index < leadings.length ? leadings[index] : null,
               onTap: () {
                 ret = index;
                 if (callback != null) {

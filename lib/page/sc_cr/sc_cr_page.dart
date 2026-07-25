@@ -7,6 +7,7 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/widget/quick_entry/quick_entry.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
@@ -41,6 +42,10 @@ class ScCrPage extends StatelessWidget {
                 PopupMenuItem<String>(
                   onTap: logic.globalBrowse,
                   child: Text(I18nKey.globalBrowse.tr),
+                ),
+                PopupMenuItem<String>(
+                  onTap: QuickEntry.openSelect,
+                  child: Text(I18nKey.quickEntry.tr),
                 ),
               ],
             ),

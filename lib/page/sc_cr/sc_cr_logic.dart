@@ -21,6 +21,7 @@ import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/text_template.dart';
 import 'package:repeat_flutter/logic/widget/full_custom.dart';
+import 'package:repeat_flutter/logic/widget/quick_entry/quick_entry.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/page/repeat/repeat_args.dart';
@@ -67,13 +68,14 @@ class ScCrLogic extends GetxController {
     });
     ScCrStatsLogic.onEvent();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      showTransparentOverlay(() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await showTransparentOverlay(() async {
         await copyLogic.init();
         await CacheHelp.refreshAll();
         await init();
         startTimer();
       });
+      await runQuickEntry();
     });
   }
 
@@ -230,8 +232,35 @@ class ScCrLogic extends GetxController {
     update([ScCrLogic.id]);
   }
 
-  void tryStartAll({RepeatType mode = RepeatType.examine}) {
-    tryStart(state.all, mode: mode);
+  /// Walk the path the user would tap by hand, according to the quick entry
+  /// configured in this classroom.
+  Future<void> runQuickEntry() async {
+    var type = QuickEntry.pending;
+    QuickEntry.pending = null;
+    if (type == null || type == QuickEntryType.none) {
+      QuickEntry.hideGuiding();
+      return;
+    }
+    QuickEntry.autoOpenGame = type.withGame;
+    switch (type.content) {
+      case QuickEntryType.globalBrowse:
+        await globalBrowse();
+        break;
+      case QuickEntryType.examine:
+        await tryStartAll();
+        break;
+      case QuickEntryType.browse:
+        await tryStartAll(mode: RepeatType.browse);
+        break;
+      default:
+        break;
+    }
+    QuickEntry.autoOpenGame = false;
+    QuickEntry.hideGuiding();
+  }
+
+  Future<void> tryStartAll({RepeatType mode = RepeatType.examine}) {
+    return tryStart(state.all, mode: mode);
   }
 
   void tryStartGroup(TodayPrgType type, {RepeatType mode = RepeatType.examine}) {
@@ -254,8 +283,9 @@ class ScCrLogic extends GetxController {
     }
   }
 
-  void tryStart(List<VerseTodayPrg> list, {bool grouping = false, RepeatType mode = RepeatType.examine}) async {
+  Future<void> tryStart(List<VerseTodayPrg> list, {bool grouping = false, RepeatType mode = RepeatType.examine}) async {
     if (list.isEmpty) {
+      QuickEntry.hideGuiding();
       Snackbar.show(I18nKey.labelNoLearningContent.tr);
       return;
     }
@@ -266,6 +296,7 @@ class ScCrLogic extends GetxController {
       var learnedTotalCount = VerseTodayPrg.getFinishedCount(list);
       var learnTotalCount = list.length;
       if (learnTotalCount - learnedTotalCount == 0) {
+        QuickEntry.hideGuiding();
         Snackbar.show(I18nKey.labelNoLearningContent.tr);
         return;
       }
@@ -368,6 +399,7 @@ class ScCrLogic extends GetxController {
   Future<void> globalBrowse() async {
     var verses = await Db().db.scheduleDao.getAllVerse(Classroom.curr);
     if (verses.isEmpty) {
+      QuickEntry.hideGuiding();
       Snackbar.show(I18nKey.mediaEmpty.tr);
       return;
     }

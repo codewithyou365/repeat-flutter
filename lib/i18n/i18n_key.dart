@@ -428,6 +428,17 @@ enum I18nKey {
   mediaRename,
   mediaFileNotExist,
   mediaEmpty,
+  quickEntry,
+  quickEntryNone,
+  quickEntryGlobalBrowse,
+  quickEntryExamine,
+  quickEntryBrowse,
+  quickEntryGlobalBrowseGame,
+  quickEntryExamineGame,
+  quickEntryBrowseGame,
+  quickEntrySet,
+  quickEntryNoGame,
+  guiding,
   none;
 
   String trArgs([List<String> args = const []]) {

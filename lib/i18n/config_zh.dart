@@ -428,5 +428,16 @@ class ConfigZh extends Config {
     put(I18nKey.mediaRename, "重命名");
     put(I18nKey.mediaFileNotExist, "文件不存在");
     put(I18nKey.mediaEmpty, "没有可播放的媒体");
+    put(I18nKey.quickEntry, "快速进入");
+    put(I18nKey.quickEntryNone, "不快速进入");
+    put(I18nKey.quickEntryGlobalBrowse, "进入全局浏览");
+    put(I18nKey.quickEntryExamine, "进入考查学习");
+    put(I18nKey.quickEntryBrowse, "进入浏览学习");
+    put(I18nKey.quickEntryGlobalBrowseGame, "进入全局浏览的游戏");
+    put(I18nKey.quickEntryExamineGame, "进入考查学习的游戏");
+    put(I18nKey.quickEntryBrowseGame, "进入浏览学习的游戏");
+    put(I18nKey.quickEntrySet, "已设置快速进入");
+    put(I18nKey.quickEntryNoGame, "没有可用的游戏");
+    put(I18nKey.guiding, "引导中...");
   }
 }

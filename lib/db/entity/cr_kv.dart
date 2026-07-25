@@ -56,6 +56,7 @@ enum CrK {
   gamepadEnabled,
   gamepadBindings,
   lastBrowseVerseId,
+  quickEntry,
 }
 
 @Entity(primaryKeys: ['classroomId', 'k'])

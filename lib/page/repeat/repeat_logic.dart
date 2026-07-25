@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:repeat_flutter/db/database.dart';
@@ -26,6 +27,7 @@ import 'package:repeat_flutter/logic/widget/gamepad/gamepad_logic.dart';
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/expand/expand_sheet.dart';
 import 'package:repeat_flutter/logic/widget/game/game_logic.dart';
+import 'package:repeat_flutter/logic/widget/quick_entry/quick_entry.dart';
 import 'package:repeat_flutter/logic/widget/adjust_font.dart';
 import 'package:repeat_flutter/logic/widget/webview/webview_args.dart';
 import 'package:repeat_flutter/logic/widget/webview/webview_logic.dart';
@@ -130,6 +132,7 @@ class RepeatLogic extends GetxController {
       helper: state.helper,
     );
     if (!ok) {
+      QuickEntry.hideGuiding();
       Get.back();
       return;
     }
@@ -151,6 +154,19 @@ class RepeatLogic extends GetxController {
       state.systemUiVisible = systemOverlaysAreVisible;
     });
     update([RepeatLogic.id]);
+    // the target screen is ready, so the quick entry guiding is over
+    QuickEntry.hideGuiding();
+    if (QuickEntry.autoOpenGame) {
+      QuickEntry.autoOpenGame = false;
+      if (state.gameLogicInitSuccess) {
+        // wait for the page to be mounted, the game panel is a modal sheet
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          openGame();
+        });
+      } else {
+        Snackbar.show(I18nKey.quickEntryNoGame.tr);
+      }
+    }
   }
 
   void applySystemUiMode() {
