@@ -9,6 +9,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/classroom_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/constant.dart';
 import 'package:repeat_flutter/logic/game_server/controller/game.dart';
@@ -57,6 +58,7 @@ class GameWebServer {
     final localFolder = rootPath.joinPath(DocPath.getRelativePath(bookId));
     DownloadContent download = DownloadContent(url: '', hash: hash);
     destinationDir = localFolder.joinPath(download.folder).joinPath(download.pureName);
+    await ClassroomHelp.ensureContentReadyByHash(bookId, hash);
     if (jsFile.isEmpty) {
       jsFile = 'service.js';
     }

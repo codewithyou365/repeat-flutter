@@ -220,6 +220,22 @@ class ClassroomHelp {
     return entries;
   }
 
+  // Re-unzip the content of a game/tip if its folder has been removed after the
+  // last registerRes(), e.g. by the "remove useless files" action of the editor.
+  static Future<bool> ensureContentReadyByHash(int bookId, String hash) async {
+    if (hash.isEmpty) {
+      return false;
+    }
+    final book = await Db().db.bookDao.getById(bookId);
+    if (book == null || book.content.isEmpty) {
+      return false;
+    }
+    final Map<String, dynamic> bookMap = jsonDecode(book.content);
+    final downloads = DownloadContent.toList(bookMap['d']) ?? [];
+    final entry = ContentEntry(hash: hash, name: '', key: '', service: '');
+    return await _ensureContentReady(entry, downloads, bookId);
+  }
+
   static Future<bool> _ensureContentReady(
     ContentEntry entry,
     List<DownloadContent> downloads,

@@ -5,6 +5,7 @@ import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/classroom_help.dart';
 import 'package:repeat_flutter/logic/tip_server/controller/tip_key.dart';
 import 'package:repeat_flutter/logic/tip_server/js/js_runtime.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
@@ -57,6 +58,7 @@ class TipWebServer {
     final localFolder = rootPath.joinPath(DocPath.getRelativePath(bookId));
     final download = DownloadContent(url: '', hash: hash);
     destinationDir = localFolder.joinPath(download.folder).joinPath(download.pureName);
+    await ClassroomHelp.ensureContentReadyByHash(bookId, hash);
     if (jsFile.isEmpty) {
       jsFile = 'service.js';
     }

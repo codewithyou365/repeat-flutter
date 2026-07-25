@@ -73,10 +73,17 @@ Future<void> handleRemoveUselessFiles(HttpRequest request, int bookId, Directory
   BookContent kv = BookContent.fromJson(docMap);
   final dcs = DocHelp.getDownloads(kv);
   final Set<String> usefulFiles = dcs.map((d) => d.path).toSet();
+  // The zip of a game/tip is unzipped into a folder next to it, named by its hash.
+  // Those unzipped files are not in the download list, so keep them by prefix.
+  final List<String> usefulDirs = dcs.map((d) => '${d.folder}/${d.pureName}/').toList();
   try {
     final existingFiles = await find(dir);
 
     for (final relativePath in existingFiles) {
+      final normalizedPath = relativePath.replaceAll(Platform.pathSeparator, '/');
+      if (usefulDirs.any((prefix) => normalizedPath.startsWith(prefix))) {
+        continue;
+      }
       if (!usefulFiles.contains(relativePath)) {
         final fileToDelete = File('${dir.path}${Platform.pathSeparator}$relativePath');
         if (await fileToDelete.exists()) {
