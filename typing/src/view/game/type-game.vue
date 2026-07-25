@@ -521,7 +521,7 @@ const playDrip = () => {
 // TTS 朗读：串行播放，避免间隔模式下一次自动补全多个字母时同时开口
 let speakQueue: Promise<void> = Promise.resolve();
 const speak = (text: string, rate?: number, manual?: boolean) => {
-  if (!text) return;
+  if (!text) return speakQueue;
   speakQueue = speakQueue.then(async () => {
     try {
       const req = new Request({
@@ -534,6 +534,7 @@ const speak = (text: string, rate?: number, manual?: boolean) => {
       console.error('Failed to send tts:', error);
     }
   });
+  return speakQueue;
 };
 const isSpeakable = (ch: string) => /[\p{L}\p{N}]/u.test(ch);
 
@@ -543,10 +544,12 @@ const formatTriggerKey = (key: string) => key === ' ' ? t('spaceKey') : key;
 // 整词朗读：非字母/数字（空格、撇号、标点等）都当作词与词之间的分界
 let currentWord = '';
 const flushWord = () => {
+  let p: Promise<void> = Promise.resolve();
   if (currentWord.length > 0) {
-    speak(currentWord);
+    p = speak(currentWord);
   }
   currentWord = '';
+  return p;
 };
 
 const onCharFilled = (_index: number, char: string, auto: boolean, correct: boolean) => {
@@ -569,9 +572,10 @@ const onCharFilled = (_index: number, char: string, auto: boolean, correct: bool
   }
 };
 
-const onCompleted = () => {
-  flushWord();
-  void tap('tapLeft');
+const onCompleted = async () => {
+  await flushWord();
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  await tap('tapLeft');
 };
 
 const speakCurrentWord = () => {
