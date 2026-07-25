@@ -103,7 +103,7 @@ class SrtParse {
         }
         if (offset % 3 == 2) {
           if (mode == listenMode || mode == listenFullMode) {
-            curr.q = line;
+            curr.a = line;
             while (true) {
               final rawExtra = nextRawLine();
               if (rawExtra == null) break;

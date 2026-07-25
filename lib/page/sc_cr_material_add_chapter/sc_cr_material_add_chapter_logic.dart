@@ -48,8 +48,10 @@ class ScCrMaterialAddChapterLogic extends GetxController {
   Future<void> scanSrt() => _scan(state.srtController, state.srtSource);
 
   Future<void> _scan(TextEditingController controller, RxString source) async {
-    var value = await Nav.scan.push<String>();
-    if (value == null || value.isEmpty) {
+    // No type argument here: the scan GetPage is untyped, so Get would fail to
+    // cast GetPageRoute<dynamic> to Route<String?>.
+    var value = await Nav.scan.push();
+    if (value is! String || value.isEmpty) {
       return;
     }
     _set(controller, source, value);
