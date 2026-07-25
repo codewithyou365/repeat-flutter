@@ -393,7 +393,7 @@ class ConfigZh extends Config {
     put(I18nKey.deductedInTheGame, "游戏中扣除");
     put(I18nKey.showButtons, "显示按钮");
     put(I18nKey.expandAssistant, "扩展助手");
-    put(I18nKey.editInstructionTips, "在此编辑发送给\n助手的指令");
+    put(I18nKey.editInstructionTips, "指令");
     put(I18nKey.overwritePosition, "覆盖位置");
     put(I18nKey.syncGenerateAudio, "同步生成音频");
     put(I18nKey.addToNextVerse, "新增一个小节");

@@ -89,6 +89,7 @@ class ExpandSheet {
                       controller: logic.textController,
                       maxLines: 5,
                       enabled: logic.isInit.value,
+                      readOnly: true,
                       minLines: 1,
                       decoration: InputDecoration(
                         border: InputBorder.none,
