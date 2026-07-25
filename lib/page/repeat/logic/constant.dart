@@ -1,3 +1,4 @@
+import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 
@@ -20,6 +21,37 @@ enum ShowMode {
   const ShowMode({required this.i18n});
 
   final I18nKey i18n;
+}
+
+/// The 3 entries that can launch the repeat page with a display mode
+/// ([ShowMode]) the user is allowed to remember per classroom: 学习浏览,
+/// 学习考查, 全局浏览.
+enum DisplayModeSource {
+  browse(k: CrK.displayModeBrowse, fallback: ShowMode.openBook),
+  examine(k: CrK.displayModeExamine, fallback: ShowMode.closedBook),
+  globalBrowse(k: CrK.displayModeGlobalBrowse, fallback: ShowMode.edit);
+
+  const DisplayModeSource({required this.k, required this.fallback});
+
+  final CrK k;
+  final ShowMode fallback;
+}
+
+class DisplayModeKv {
+  static Future<ShowMode> get(int classroomId, DisplayModeSource source) async {
+    var value = await Db().db.crKvDao.getStr(classroomId, source.k);
+    if (value == null || value.isEmpty) {
+      return source.fallback;
+    }
+    return ShowMode.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => source.fallback,
+    );
+  }
+
+  static Future<void> set(int classroomId, DisplayModeSource source, ShowMode mode) async {
+    await Db().db.crKvDao.insertOrReplace(CrKv(classroomId, source.k, mode.name));
+  }
 }
 
 enum RepeatStep { recall, evaluate, finish }

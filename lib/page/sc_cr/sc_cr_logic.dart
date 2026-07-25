@@ -301,12 +301,14 @@ class ScCrLogic extends GetxController {
         return;
       }
     }
+    var displayModeSource = mode == RepeatType.examine ? DisplayModeSource.examine : DisplayModeSource.browse;
     var repeat = RepeatArgs(
       progresses: list,
       startIndex: 0,
       repeatFlowType: mode,
       enableShowRecallButtons: true,
-      showMode: mode == RepeatType.examine ? ShowMode.closedBook : ShowMode.openBook,
+      showMode: await DisplayModeKv.get(Classroom.curr, displayModeSource),
+      displayModeSource: displayModeSource,
     );
     await Nav.repeat.push(arguments: repeat);
     await init();
@@ -418,8 +420,9 @@ class ScCrLogic extends GetxController {
         startIndex: startIndex,
         repeatFlowType: RepeatType.browse,
         enableShowRecallButtons: false,
-        showMode: ShowMode.edit,
+        showMode: await DisplayModeKv.get(Classroom.curr, DisplayModeSource.globalBrowse),
         saveGlobalBrowsePosition: true,
+        displayModeSource: DisplayModeSource.globalBrowse,
       ),
     );
   }

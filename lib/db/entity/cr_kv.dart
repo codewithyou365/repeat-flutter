@@ -57,6 +57,9 @@ enum CrK {
   gamepadBindings,
   lastBrowseVerseId,
   quickEntry,
+  displayModeBrowse,
+  displayModeExamine,
+  displayModeGlobalBrowse,
 }
 
 @Entity(primaryKeys: ['classroomId', 'k'])

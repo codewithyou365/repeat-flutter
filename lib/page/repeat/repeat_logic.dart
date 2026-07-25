@@ -75,6 +75,7 @@ class RepeatLogic extends GetxController {
   late RepeatFlow? repeatFlow;
   final SubList bookSub = [];
   bool saveGlobalBrowsePosition = false;
+  DisplayModeSource? displayModeSource;
 
   @override
   Future<void> onInit() async {
@@ -110,6 +111,7 @@ class RepeatLogic extends GetxController {
     bookEditor.onExpand = openExpand;
     var args = Get.arguments as RepeatArgs;
     saveGlobalBrowsePosition = args.saveGlobalBrowsePosition;
+    displayModeSource = args.displayModeSource;
     state.enableShowRecallButtons = args.enableShowRecallButtons;
     if (args.repeatFlowType == RepeatType.browse) {
       repeatFlow = RepeatFlowForBrowse();
@@ -322,6 +324,10 @@ class RepeatLogic extends GetxController {
     repeatFlow?.refresh();
     state.helper.tryToPlayMedia = false;
     update([RepeatLogic.id]);
+    var source = displayModeSource;
+    if (source != null) {
+      DisplayModeKv.set(Classroom.curr, source, state.helper.showMode.value);
+    }
   }
 
   Future<void> openExpand() async {
