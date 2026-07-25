@@ -26,6 +26,11 @@
         <nut-switch v-model="ignorePunctuation" @change="setIgnorePunctuation"/>
       </template>
     </nut-cell>
+    <nut-cell :title="t('ignoreNumber')">
+      <template #link>
+        <nut-switch v-model="ignoreNumber" @change="setIgnoreNumber"/>
+      </template>
+    </nut-cell>
     <nut-cell :title="t('intervalDisplay')">
       <template #link>
         <nut-radio-group v-model="intervalMode" direction="horizontal" @change="setIntervalMode">
@@ -103,6 +108,17 @@
         />
       </template>
     </nut-cell>
+    <nut-cell :title="t('maskTrigger')">
+      <template #link>
+        <span v-if="maskTrigger === ' '" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
+        <nut-input
+            v-model="maskTrigger"
+            maxlength="1"
+            style="text-align: right"
+            @blur="setMaskTrigger(maskTrigger)"
+        />
+      </template>
+    </nut-cell>
     <nut-cell :title="t('keyMapping')" :desc="t('keyMappingDesc')">
       <template #link>
         <nut-input
@@ -132,18 +148,21 @@
           :ignore-case="ignoreCase"
           :change-to-right-case-when-ignore-case="true"
           :ignore-punctuation="ignorePunctuation"
+          :ignore-number="ignoreNumber"
           :ignore-content-indexes="ignoreContentIndexes"
           :ignore-space="true"
           :block-on-wrong="true"
           :manual-play-trigger="manualPlayTrigger"
           :spell-play-trigger="spellPlayTrigger"
           :hint-trigger="hintTrigger"
+          :mask-trigger="maskTrigger"
           :key-mapping="keyMapping"
           @char-filled="onCharFilled"
           @completed="onCompleted"
           @manual-play="onManualPlay"
           @spell-play="onSpellPlay"
           @hint-trigger="onHintTrigger"
+          @mask-trigger="onMaskTrigger"
       />
     </div>
 
@@ -181,6 +200,7 @@ const profiles = ref<ProfileConfig[]>([]); // 本地缓存全部槽位，切换 
 
 const ignoreCase = ref(false);
 const ignorePunctuation = ref(false);
+const ignoreNumber = ref(true);
 const intervalMode = ref<'none' | 'oddHidden' | 'evenHidden'>('none');
 const ttsRate = ref(1);
 const speakLetters = ref(false);
@@ -190,10 +210,12 @@ const spellPlayTrigger = ref(',');
 const spellClearWord = ref(true);
 const spellResetLevel = ref(false);
 const hintTrigger = ref(' ');
-// 三个触发键各自最后一次成功保存的值，用于校验失败时把输入框还原回去
+const maskTrigger = ref('');
+// 各触发键最后一次成功保存的值，用于校验失败时把输入框还原回去
 let manualPlayTriggerSaved = '.';
 let spellPlayTriggerSaved = ',';
 let hintTriggerSaved = ' ';
+let maskTriggerSaved = '';
 const keyMapping = ref('');
 const ignoreContentIndexes = ref<number[]>([]);
 const adminEnable = ref(false);
@@ -237,6 +259,7 @@ const showTips = () => {
     {label: t('profile'), value: profileNames.value[activeProfile.value]},
     {label: t('ignoreCase'), value: formatStatus(ignoreCase.value)},
     {label: t('ignorePunctuation'), value: formatStatus(ignorePunctuation.value)},
+    {label: t('ignoreNumber'), value: formatStatus(ignoreNumber.value)},
     {label: t('intervalDisplay'), value: formatIntervalMode(intervalMode.value)},
     {label: t('ttsRate'), value: `${ttsRate.value}x`},
     {label: t('speakLetters'), value: formatStatus(speakLetters.value)},
@@ -246,6 +269,7 @@ const showTips = () => {
     {label: t('spellClearWord'), value: formatStatus(spellClearWord.value)},
     {label: t('spellResetLevel'), value: formatStatus(spellResetLevel.value)},
     {label: t('hintTrigger'), value: formatTriggerKey(hintTrigger.value)},
+    {label: t('maskTrigger'), value: maskTrigger.value ? formatTriggerKey(maskTrigger.value) : t('disabled')},
     {label: t('keyMapping'), value: keyMapping.value || t('disabled')}
   ];
 
@@ -284,6 +308,7 @@ const getLabel = async () => {
 const applyProfile = (index: number) => {
   const res = profiles.value[index] || {};
   ignorePunctuation.value = res['ignorePunctuation'];
+  ignoreNumber.value = typeof res['ignoreNumber'] === 'boolean' ? res['ignoreNumber'] : true;
   ignoreCase.value = res['ignoreCase'];
   intervalMode.value = res['intervalMode'] || 'none';
   ttsRate.value = typeof res['ttsRate'] === 'number' ? res['ttsRate'] : 1;
@@ -294,9 +319,11 @@ const applyProfile = (index: number) => {
   spellClearWord.value = typeof res['spellClearWord'] === 'boolean' ? res['spellClearWord'] : true;
   spellResetLevel.value = typeof res['spellResetLevel'] === 'boolean' ? res['spellResetLevel'] : false;
   hintTrigger.value = typeof res['hintTrigger'] === 'string' ? res['hintTrigger'] : ' ';
+  maskTrigger.value = typeof res['maskTrigger'] === 'string' ? res['maskTrigger'] : '';
   manualPlayTriggerSaved = manualPlayTrigger.value;
   spellPlayTriggerSaved = spellPlayTrigger.value;
   hintTriggerSaved = hintTrigger.value;
+  maskTriggerSaved = maskTrigger.value;
   keyMapping.value = typeof res['keyMapping'] === 'string' ? res['keyMapping'] : '';
 };
 
@@ -344,6 +371,10 @@ const setIgnorePunctuation = (value: boolean) => {
   profiles.value[activeProfile.value].ignorePunctuation = value;
   setConfig("ignorePunctuation", value);
 };
+const setIgnoreNumber = (value: boolean) => {
+  profiles.value[activeProfile.value].ignoreNumber = value;
+  setConfig("ignoreNumber", value);
+};
 const setIntervalMode = (value: 'none' | 'oddHidden' | 'evenHidden') => {
   profiles.value[activeProfile.value].intervalMode = value;
   setConfig("intervalMode", value);
@@ -363,7 +394,7 @@ const setManualTtsRate = (value: number) => {
 // 三个触发键不能互相重复（比如手动播放和逐字母朗读不能都设成 '.'），
 // 冲突时提示并把输入框还原成上一次成功保存的值
 const setManualPlayTrigger = (value: string) => {
-  if (value && (value === spellPlayTrigger.value || value === hintTrigger.value)) {
+  if (value && (value === spellPlayTrigger.value || value === hintTrigger.value || value === maskTrigger.value)) {
     showToast.warn(t('triggerKeyConflict'));
     manualPlayTrigger.value = manualPlayTriggerSaved;
     return;
@@ -373,7 +404,7 @@ const setManualPlayTrigger = (value: string) => {
   setConfig("manualPlayTrigger", value);
 };
 const setSpellPlayTrigger = (value: string) => {
-  if (value && (value === manualPlayTrigger.value || value === hintTrigger.value)) {
+  if (value && (value === manualPlayTrigger.value || value === hintTrigger.value || value === maskTrigger.value)) {
     showToast.warn(t('triggerKeyConflict'));
     spellPlayTrigger.value = spellPlayTriggerSaved;
     return;
@@ -391,7 +422,7 @@ const setSpellResetLevel = (value: boolean) => {
   setConfig("spellResetLevel", value);
 };
 const setHintTrigger = (value: string) => {
-  if (value && (value === manualPlayTrigger.value || value === spellPlayTrigger.value)) {
+  if (value && (value === manualPlayTrigger.value || value === spellPlayTrigger.value || value === maskTrigger.value)) {
     showToast.warn(t('triggerKeyConflict'));
     hintTrigger.value = hintTriggerSaved;
     return;
@@ -399,6 +430,16 @@ const setHintTrigger = (value: string) => {
   hintTriggerSaved = value;
   profiles.value[activeProfile.value].hintTrigger = value;
   setConfig("hintTrigger", value);
+};
+const setMaskTrigger = (value: string) => {
+  if (value && (value === manualPlayTrigger.value || value === spellPlayTrigger.value || value === hintTrigger.value)) {
+    showToast.warn(t('triggerKeyConflict'));
+    maskTrigger.value = maskTriggerSaved;
+    return;
+  }
+  maskTriggerSaved = value;
+  profiles.value[activeProfile.value].maskTrigger = value;
+  setConfig("maskTrigger", value);
 };
 const setKeyMapping = (value: string) => {
   profiles.value[activeProfile.value].keyMapping = value;
@@ -479,14 +520,14 @@ const playDrip = () => {
 
 // TTS 朗读：串行播放，避免间隔模式下一次自动补全多个字母时同时开口
 let speakQueue: Promise<void> = Promise.resolve();
-const speak = (text: string, rate?: number) => {
+const speak = (text: string, rate?: number, manual?: boolean) => {
   if (!text) return;
   speakQueue = speakQueue.then(async () => {
     try {
       const req = new Request({
         path: Path.game,
         headers: {'jsMethod': 'Game.tts'},
-        data: {text, type: 'a', rate},
+        data: {text, type: 'a', rate, manual},
       });
       await client.node!.send(req);
     } catch (error) {
@@ -535,11 +576,11 @@ const onCompleted = () => {
 
 const speakCurrentWord = () => {
   const word = typingRef.value?.getCurrentWord();
-  if (word) speak(word, manualTtsRate.value);
+  if (word) speak(word, manualTtsRate.value, true);
 };
 
 const onManualPlay = (word: string) => {
-  if (word) speak(word, manualTtsRate.value);
+  if (word) speak(word, manualTtsRate.value, true);
 };
 
 const resetLevel = async () => {
@@ -568,6 +609,10 @@ const onSpellPlay = (word: string) => {
 
 const onHintTrigger = () => {
   void tap('tapMiddle');
+};
+
+const onMaskTrigger = () => {
+  eyesClosedMaskVisible.value = !eyesClosedMaskVisible.value;
 };
 
 const refresh = async () => {

@@ -6,6 +6,7 @@ type IntervalMode = 'none' | 'oddHidden' | 'evenHidden';
 
 type ProfileConfig = {
     ignorePunctuation: boolean;
+    ignoreNumber: boolean;
     ignoreCase: boolean;
     intervalMode: IntervalMode;
     ttsRate: number;
@@ -14,6 +15,7 @@ type ProfileConfig = {
     manualPlayTrigger: string;
     spellPlayTrigger: string;
     hintTrigger: string;
+    maskTrigger: string;
     keyMapping: string;
     spellClearWord: boolean;
     spellResetLevel: boolean;
@@ -39,7 +41,7 @@ type GameArgs = {
 const PROFILE_COUNT = 3;
 
 function defaultProfileConfig(): ProfileConfig {
-    return {"ignorePunctuation": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "keyMapping": "", "spellClearWord": true, "spellResetLevel": false};
+    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "keyMapping": "", "spellClearWord": true, "spellResetLevel": false};
 }
 
 function defaultStoredConfig(): StoredConfig {
@@ -250,12 +252,13 @@ const Game = {
         }
     },
 
-    getIntervalMask: function (content: string, mode: IntervalMode, ignorePunctuation: boolean): string {
+    getIntervalMask: function (content: string, mode: IntervalMode, ignorePunctuation: boolean, ignoreNumber: boolean): string {
         if (content.length === 0) {
             return content;
         }
         const chars = content.split('');
         const punctuationRegex = /\p{P}/u;
+        const numberRegex = /\p{N}/u;
         let wordPos = 0; // 单词内的字母序号（0-based），遇到空格/换行清零
 
         for (let i = 0; i < chars.length; i++) {
@@ -266,6 +269,9 @@ const Game = {
             }
             if (ignorePunctuation && punctuationRegex.test(char)) {
                 continue; // 标点不算字母，也不占用/重置单词内计数
+            }
+            if (ignoreNumber && numberRegex.test(char)) {
+                continue; // 数字不算字母，也不占用/重置单词内计数
             }
             // 1-based 字母序号 n = wordPos + 1
             // none       -> 不间隔，每个字母都必须输入
@@ -291,7 +297,8 @@ const Game = {
             const config = stored.profiles[stored.activeProfile];
             const intervalMode: IntervalMode = config.intervalMode || 'none';
             const ignorePunctuation = config.ignorePunctuation ?? true;
-            const mask = this.getIntervalMask(answer, intervalMode, ignorePunctuation);
+            const ignoreNumber = config.ignoreNumber ?? true;
+            const mask = this.getIntervalMask(answer, intervalMode, ignorePunctuation, ignoreNumber);
             return JSON.stringify({
                 data: {answer: answer, mask: mask},
             });
@@ -350,6 +357,7 @@ const Game = {
             const data = args.data || {};
             const text = typeof data.text === 'string' ? data.text : '';
             const type = typeof data.type === 'string' ? data.type : '';
+            const manual = data.manual === true;
             // 调用方（客户端）可以直接指定语速（比如手动播放走 manualTtsRate）；
             // 不指定时按自动播放语速（config.ttsRate）
             let rate = typeof data.rate === 'number' ? data.rate : undefined;
@@ -358,7 +366,7 @@ const Game = {
                 const config = stored.profiles[stored.activeProfile];
                 rate = typeof config.ttsRate === 'number' ? config.ttsRate : 1;
             }
-            await Util.tts({text, type, rate});
+            await Util.tts({text, type, rate, manual});
             return JSON.stringify({data: 'ok'});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});

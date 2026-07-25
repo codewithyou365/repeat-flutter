@@ -68,22 +68,26 @@ const props = withDefaults(defineProps<{
   ignoreCase: boolean;
   changeToRightCaseWhenIgnoreCase: boolean;
   ignorePunctuation: boolean;
+  ignoreNumber?: boolean;
   ignoreSpace?: boolean;
   blockOnWrong?: boolean;
   manualPlayTrigger?: string;
   spellPlayTrigger?: string;
   hintTrigger?: string;
+  maskTrigger?: string;
   keyMapping?: string;
   touchColor?: string;
 }>(), {
   clickFillCharWhenDisabled: '',
   touchColor: '',
   ignoreContentIndexes: () => [],
+  ignoreNumber: false,
   ignoreSpace: false,
   blockOnWrong: false,
   manualPlayTrigger: '',
   spellPlayTrigger: '',
   hintTrigger: '',
+  maskTrigger: '',
   keyMapping: '',
 });
 
@@ -111,12 +115,16 @@ const emit = defineEmits<{
   (e: 'manualPlay', word: string): void;
   (e: 'spellPlay', word: string): void;
   (e: 'hintTrigger'): void;
+  (e: 'maskTrigger'): void;
 }>();
 
 const store = useStore();
 
-// password 类型会绕过输入法，直接给出纯 ASCII 键盘，适合练英文
+// password 类型会绕过输入法，直接给出纯 ASCII 键盘，适合练英文。
+// 一旦设置了按键映射（T9），映射依赖的是物理按键，输入法候选词/联想会打乱映射逻辑，
+// 所以只要 keyMapping 非空就强制用 password 类型，不受全局键盘设置影响。
 const inputType = computed(() => {
+  if (props.keyMapping) return 'password';
   return store.getters.currentKeyboardType === 'password' ? 'password' : 'text';
 });
 
@@ -229,6 +237,9 @@ const isIgnore = (c: string, index: number) => {
   if (props.ignorePunctuation && /\p{P}/u.test(c)) {
     return true;
   }
+  if (props.ignoreNumber && /\p{N}/u.test(c)) {
+    return true;
+  }
   return props.ignoreContentIndexes && props.ignoreContentIndexes.includes(index);
 };
 
@@ -324,6 +335,10 @@ const applyInput = (val: string) => {
     }
     if (props.hintTrigger && char === props.hintTrigger) {
       pendingTriggerEmits.push(() => emit('hintTrigger'));
+      continue; // 触发字符本身不写入内容，也不推进 pos
+    }
+    if (props.maskTrigger && char === props.maskTrigger) {
+      pendingTriggerEmits.push(() => emit('maskTrigger'));
       continue; // 触发字符本身不写入内容，也不推进 pos
     }
 

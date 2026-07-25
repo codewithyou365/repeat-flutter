@@ -290,6 +290,11 @@ class JsRuntime {
         if (qaType == null) {
           return 'invalid_text';
         }
+        // 用户在界面上主动点击播放(而非自动朗读)时,同步取消"不自动播放媒体"标记,
+        // 与音频/视频卡片点击播放按钮的行为保持一致
+        if (payload['manual'] == true) {
+          Get.find<RepeatLogic>().state.helper.doNotPlayMedia = false;
+        }
         await ttsHelper.speakText(qaType.ttsKeys, text, rate: rate);
         return 'ok';
       });
