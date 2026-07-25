@@ -38,6 +38,7 @@ class RepeatViewForVideo extends RepeatView {
 
   var isPlaying = false.obs;
   var currentPath = ''.obs;
+  var lastCurrentPath = "";
 
   RepeatViewForVideo();
 
@@ -97,6 +98,20 @@ class RepeatViewForVideo extends RepeatView {
   }
 
   @override
+  Future<void> playFieldMedia(String path, MediaRange range) async {
+    currentPath.value = path;
+    await load(currentPath);
+    await playRange(range);
+  }
+
+  @override
+  void stopPlayback() {
+    if (_videoPlayerController?.value.isPlaying == true) {
+      _videoPlayerController?.pause();
+    }
+  }
+
+  @override
   void dispose() {
     outputLatency.dispose();
     _videoPlayerController?.dispose();
@@ -112,12 +127,21 @@ class RepeatViewForVideo extends RepeatView {
       return emptyBody();
     }
 
-    List<String> paths = helper.getPaths();
-    if (paths.isNotEmpty) {
-      currentPath.value = paths.first;
-    }
-
     final range = mediaRangeHelper.getCurrRange();
+
+    // 跟音频视图一样：当前区间所属字段有自己的媒体就放它的文件，换了文件要强制重载。
+    final fieldPath = helper.getFieldPath(range.fieldAcronym);
+    if (fieldPath != null) {
+      currentPath.value = fieldPath;
+    } else {
+      List<String> paths = helper.getPaths();
+      if (paths.isNotEmpty) {
+        currentPath.value = paths.first;
+      }
+    }
+    if (currentPath.value != lastCurrentPath) {
+      helper.enableReloadMedia = true;
+    }
 
     if (helper.enableReloadMedia) {
       helper.enableReloadMedia = false;
@@ -573,6 +597,7 @@ class RepeatViewForVideo extends RepeatView {
         }
         initialized.value = true;
       }
+      lastCurrentPath = path.value;
     } catch (e) {
       Snackbar.show("Error loading video: $e");
     } finally {

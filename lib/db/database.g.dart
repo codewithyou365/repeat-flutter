@@ -124,7 +124,7 @@ class _$AppDatabase extends AppDatabase {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 7,
+      version: 8,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -150,7 +150,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Kv` (`k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`k`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `AssistiveTouchAction` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `sourceIndex` INTEGER NOT NULL, `templateIndex` INTEGER NOT NULL, `targetIndex` INTEGER NOT NULL, `enableAudio` INTEGER NOT NULL, `addToNextVerse` INTEGER NOT NULL, `sort` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `AssistiveTouchAction` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `sourceIndex` INTEGER NOT NULL, `templateIndex` INTEGER NOT NULL, `targetIndex` INTEGER NOT NULL, `enableAudio` INTEGER NOT NULL, `behavior` INTEGER NOT NULL, `sort` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Classroom` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
@@ -402,7 +402,7 @@ class _$AssistiveTouchActionDao extends AssistiveTouchActionDao {
                   'templateIndex': item.templateIndex,
                   'targetIndex': item.targetIndex,
                   'enableAudio': item.enableAudio ? 1 : 0,
-                  'addToNextVerse': item.addToNextVerse ? 1 : 0,
+                  'behavior': item.behavior,
                   'sort': item.sort
                 }),
         _assistiveTouchActionUpdateAdapter = UpdateAdapter(
@@ -416,7 +416,7 @@ class _$AssistiveTouchActionDao extends AssistiveTouchActionDao {
                   'templateIndex': item.templateIndex,
                   'targetIndex': item.targetIndex,
                   'enableAudio': item.enableAudio ? 1 : 0,
-                  'addToNextVerse': item.addToNextVerse ? 1 : 0,
+                  'behavior': item.behavior,
                   'sort': item.sort
                 });
 
@@ -442,7 +442,7 @@ class _$AssistiveTouchActionDao extends AssistiveTouchActionDao {
             templateIndex: row['templateIndex'] as int,
             targetIndex: row['targetIndex'] as int,
             enableAudio: (row['enableAudio'] as int) != 0,
-            addToNextVerse: (row['addToNextVerse'] as int) != 0,
+            behavior: row['behavior'] as int,
             sort: row['sort'] as int));
   }
 
@@ -456,7 +456,7 @@ class _$AssistiveTouchActionDao extends AssistiveTouchActionDao {
             templateIndex: row['templateIndex'] as int,
             targetIndex: row['targetIndex'] as int,
             enableAudio: (row['enableAudio'] as int) != 0,
-            addToNextVerse: (row['addToNextVerse'] as int) != 0,
+            behavior: row['behavior'] as int,
             sort: row['sort'] as int),
         arguments: [id]);
   }

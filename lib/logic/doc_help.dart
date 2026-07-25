@@ -79,6 +79,10 @@ class DocHelp {
             tryAppendDownload(d, verse.rootUrl ?? chapter.rootUrl ?? kv.rootUrl);
           }
         }
+        // 字段专属媒体（qDownload/aDownload/tDownload）也要一起下载，否则换设备后放不出来。
+        for (var d in verse.fieldDownloads) {
+          tryAppendDownload(d, verse.rootUrl ?? chapter.rootUrl ?? kv.rootUrl);
+        }
       }
     }
     return ret;
@@ -91,6 +95,13 @@ class DocHelp {
         v.url = v.path;
       }
       json['d'] = list;
+    }
+    for (var key in DownloadContent.fieldKeys) {
+      var d = DownloadContent.fromJsonOrNull(json[key]);
+      if (d != null) {
+        d.url = d.path;
+        json[key] = d.toJson();
+      }
     }
   }
 

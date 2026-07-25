@@ -616,9 +616,26 @@
                 for (let seg of segments) {
                     if (seg) current = current[seg];
                 }
+                // 除了整节/整章的 d 列表，字段专属媒体（qDownload/aDownload/tDownload）也算这一层的媒体。
+                const fieldDownloadKeys = ['qDownload', 'aDownload', 'tDownload'];
+
+                function downloadsOf(node) {
+                    const ret = [];
+                    if (node.d && Array.isArray(node.d)) {
+                        ret.push(...node.d);
+                    }
+                    for (const key of fieldDownloadKeys) {
+                        if (node[key] && node[key].h) {
+                            ret.push(node[key]);
+                        }
+                    }
+                    return ret;
+                }
+
                 while (true) {
-                    if (current.d && Array.isArray(current.d)) {
-                        return current.d.map(item =>
+                    const downloads = downloadsOf(current);
+                    if (downloads.length > 0) {
+                        return downloads.map(item =>
                             item.h.substring(0, 2) + "/" +
                             item.h.substring(2) + "." +
                             item.u.split('.').slice(-1)[0]).filter(u => u);

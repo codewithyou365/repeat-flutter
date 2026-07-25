@@ -12,7 +12,9 @@ class AssistiveTouchAction {
   int templateIndex;
   int targetIndex;
   bool enableAudio;
-  bool addToNextVerse;
+
+  /// ExpandBehavior 的下标：0 请求并覆盖到作用位置，1 作用位置有内容则播放否则覆盖。
+  int behavior;
   int sort;
 
   AssistiveTouchAction({
@@ -22,7 +24,7 @@ class AssistiveTouchAction {
     required this.templateIndex,
     required this.targetIndex,
     required this.enableAudio,
-    required this.addToNextVerse,
+    required this.behavior,
     required this.sort,
   });
 }

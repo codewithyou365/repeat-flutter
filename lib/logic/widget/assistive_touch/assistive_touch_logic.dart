@@ -14,7 +14,6 @@ import 'package:repeat_flutter/page/repeat/logic/model_media_range.dart';
 import 'package:repeat_flutter/page/repeat/logic/repeat_flow_for_browse.dart';
 import 'package:repeat_flutter/page/repeat/logic/repeat_flow_for_examine.dart';
 import 'package:repeat_flutter/page/repeat/logic/repeat_view_for_audio.dart';
-import 'package:repeat_flutter/page/repeat/logic/repeat_view_for_video.dart';
 import 'package:repeat_flutter/page/repeat/repeat_logic.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -220,6 +219,34 @@ class AssistiveTouchLogic {
     }
   }
 
+  /// 播放"作用位置"上已有的内容：该字段配了可用的时间区间就播那一段（字段有自己的媒体就播
+  /// 自己的文件），否则退回用 TTS 朗读该字段的文本。扩展助手 ExpandBehavior.playOrOverwrite 走这里。
+  Future<void> playTarget(QaType type) async {
+    final getRange = _rangeGetterOf(type);
+    final range = getRange == null ? null : getRange(_mediaRangeHelper);
+    if (range != null && range.enable) {
+      await _playRange(range);
+      return;
+    }
+    await _speak(type);
+  }
+
+  MediaRange? Function(MediaRangeHelper)? _rangeGetterOf(QaType type) {
+    switch (type) {
+      case QaType.question:
+        return (h) => h.getCurrQuestionRange();
+      case QaType.answer:
+        return (h) => h.getCurrAnswerRange();
+      case QaType.tip:
+        return (h) => h.getCurrTipRange();
+      case QaType.note:
+        return null;
+    }
+  }
+
+  /// 区间只跟小节内容有关，跟当前显示哪个视图无关，所以固定用音频视图那份（它一定已经 init 过）。
+  MediaRangeHelper get _mediaRangeHelper => (repeatLogic.showTypeToRepeatView[RepeatViewEnum.audio.name] as RepeatViewForAudio).mediaRangeHelper;
+
   Future<void> _speak(QaType type) async {
     final map = repeatLogic.state.helper.getCurrVerseMap();
     if (map == null) {
@@ -234,58 +261,35 @@ class AssistiveTouchLogic {
     await repeatLogic.ttsHelper.speakText(type.ttsKeys, text);
   }
 
-  /// Play-* 只对当前是音频/视频类型的小节生效，直接复用 RepeatViewForAudio/RepeatViewForVideo
-  /// 已经持有、初始化好的那个播放器实例（而不是新建一个），避免和用户正在操作的 MediaBar
-  /// 用两个播放源同时出声；具体做法就是各自 mediaBar 里 onPlay 回调的那一套（seek + play），
-  /// 只是把目标位置换成对应字段配置的起始时间。
-  ///
-  /// MediaBar 自己的进度条动画只在它自己的 play 按钮被点击（走 MediaBarState._playAtPosition）
-  /// 时才会启动，直接调用底层播放器不会触发。当目标片段恰好就是当前屏幕上那条 MediaBar 正在
-  /// 绑定显示的片段（比如问答步骤处于"recall"时 Play-Q 正好对应当前显示的 Q 区间）时，改为调用
-  /// `mediaKey.currentState?.playFromStart()`，这样进度条能正常跟着滑动；如果目标片段跟当前
-  /// 绑定的不是同一个（比如在 recall 步骤点 Play-A，或者点 Play-Tips——Tips 目前根本没有对应的
-  /// MediaBar），退回直接操作播放器，声音/画面仍然正常，只是进度条不会跟着动。
-  bool _matchesBoundRange(MediaRangeHelper mediaRangeHelper, MediaRange range) {
-    final bound = mediaRangeHelper.getCurrRange();
-    return bound.start == range.start && bound.end == range.end;
+  /// Play-* 不自己造播放器，也不直接操作某个播放器：它只是把"当前字段"临时切过去
+  /// （见 _playRange），剩下的加载和播放交给该字段对应的视图按正常流程走，
+  /// 这样视图、文件、MediaBar 的区间和进度条动画才是一致的。
+  Future<void> _play(MediaRange? Function(MediaRangeHelper) getRange) async {
+    final range = getRange(_mediaRangeHelper);
+    if (range == null || !range.enable) {
+      Snackbar.show(I18nKey.labelNoContent.tr);
+      return;
+    }
+    await _playRange(range);
   }
 
-  Future<void> _play(MediaRange? Function(MediaRangeHelper) getRange) async {
+  /// 放某个区间：把"当前字段"临时切成这个区间所属的字段（playFieldOverride），然后走正常的
+  /// 重建流程——视图类型、播放的文件、MediaBar 的起止点都会跟着切过去，进度条也能正常跟着动。
+  /// 比如 evaluate 阶段点 Play-Q：界面会从答案的音频切回问题的视频，并从 q 的起点开始播。
+  Future<void> _playRange(MediaRange range) async {
     final helper = repeatLogic.state.helper;
+    final lastOverride = helper.playFieldOverride;
+    helper.playFieldOverride = range.fieldAcronym;
     final viewName = helper.getCurrViewName();
-    if (viewName == RepeatViewEnum.audio.name) {
-      final view = repeatLogic.showTypeToRepeatView[RepeatViewEnum.audio.name] as RepeatViewForAudio;
-      final range = getRange(view.mediaRangeHelper);
-      if (range == null || !range.enable) {
-        Snackbar.show(I18nKey.labelNoContent.tr);
-        return;
-      }
-      if (_matchesBoundRange(view.mediaRangeHelper, range) && view.mediaKey.currentState != null) {
-        view.mediaKey.currentState!.playFromStart();
-        return;
-      }
-      try {
-        helper.doNotPlayMedia = false;
-        await view.audioPlayer.seek(Duration(milliseconds: range.start));
-        await view.audioPlayer.play();
-      } catch (e) {
-        Snackbar.show("Error playing audio: $e");
-      }
-    } else if (viewName == RepeatViewEnum.video.name) {
-      final view = repeatLogic.showTypeToRepeatView[RepeatViewEnum.video.name] as RepeatViewForVideo;
-      final range = getRange(view.mediaRangeHelper);
-      if (range == null || !range.enable) {
-        Snackbar.show(I18nKey.labelNoContent.tr);
-        return;
-      }
-      if (_matchesBoundRange(view.mediaRangeHelper, range) && view.mediaKey.currentState != null) {
-        view.mediaKey.currentState!.playFromStart();
-        return;
-      }
-      await view.playRange(range);
-    } else {
+    if (viewName != RepeatViewEnum.audio.name && viewName != RepeatViewEnum.video.name) {
+      helper.playFieldOverride = lastOverride;
       Snackbar.show(I18nKey.labelNoContent.tr);
+      return;
     }
+    helper.doNotPlayMedia = false;
+    helper.enableReloadMedia = true;
+    helper.tryToPlayMedia = true;
+    repeatLogic.update([RepeatLogic.id]);
   }
 
   Future<void> deleteCurrentVerse() async {
@@ -342,11 +346,12 @@ class AssistiveTouchLogic {
     logic.sourceIndex.value = action.sourceIndex;
     logic.targetIndex.value = action.targetIndex;
     logic.enableAudio.value = action.enableAudio;
-    logic.addToNextVerse.value = action.addToNextVerse;
+    logic.behavior.value = ExpandBehavior.values[action.behavior.clamp(0, ExpandBehavior.values.length - 1)];
+    logic.onPlayTarget = playTarget;
     // instructionText 不是固定字符串：用保存的 templateIndex 对当前小节的来源文本重新渲染模版，
     // 这样同一个预设对不同小节执行时取的是各自的文本，而不是创建预设那一刻冻结的内容。
     final renderedList = repeatLogic.copyLogic.getShowText(logic.getSourceText());
     final instructionText = renderedList.isEmpty ? '' : renderedList[action.templateIndex.clamp(0, renderedList.length - 1)];
-    await logic.startTask(instructionText, closeOnSuccess: false);
+    await logic.execute(instructionText, closeOnSuccess: false);
   }
 }

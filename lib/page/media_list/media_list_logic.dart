@@ -64,8 +64,9 @@ class MediaListLogic extends GetxController {
       } catch (_) {
         return;
       }
-      final ds = DownloadContent.toList(map['d']);
-      if (ds == null || ds.isEmpty) {
+      // 整层的 d[] 之外，字段专属媒体（aDownload 等）也是这行的媒体。
+      final ds = DownloadContent.allOf(map);
+      if (ds.isEmpty) {
         return;
       }
       final rowKey = '${kind.name}:$rowId';
@@ -154,17 +155,28 @@ class MediaListLogic extends GetxController {
       } catch (_) {
         continue;
       }
-      final ds = DownloadContent.toList(map['d']);
-      if (ds == null) continue;
       var changed = false;
-      for (final d in ds) {
-        if (d.hash == item.hash) {
+      final ds = DownloadContent.toList(map['d']);
+      if (ds != null) {
+        for (final d in ds) {
+          if (d.hash == item.hash) {
+            d.n = newName;
+            changed = true;
+          }
+        }
+        if (changed) {
+          map['d'] = ds.map((e) => e.toJson()).toList();
+        }
+      }
+      for (final key in DownloadContent.fieldKeys) {
+        final d = DownloadContent.fromJsonOrNull(map[key]);
+        if (d != null && d.hash == item.hash) {
           d.n = newName;
+          map[key] = d.toJson();
           changed = true;
         }
       }
       if (!changed) continue;
-      map['d'] = ds.map((e) => e.toJson()).toList();
       final newContent = jsonEncode(map);
       row.content = newContent;
       switch (row.kind) {

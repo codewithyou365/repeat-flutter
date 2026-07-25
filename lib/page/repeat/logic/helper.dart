@@ -19,6 +19,7 @@ import 'package:repeat_flutter/logic/book_help.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
+import 'package:repeat_flutter/logic/chapter_import_help.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
@@ -290,8 +291,82 @@ class Helper {
     );
   }
 
-  String? getCurrViewName() {
+  /// 某个字段（'q'/'a'/'t'）专属的媒体文件。只看 verse 这一层：字段专属媒体是小节级别的概念，
+  /// 没有配就返回 null，走整节的 'd'。
+  DownloadContent? getFieldDownload(String acronym) {
+    final map = getCurrVerseMap();
+    if (map == null) {
+      return null;
+    }
+    return DownloadContent.fromJsonOrNull(map[DownloadContent.fieldKey(acronym)]);
+  }
+
+  String? getFieldPath(String acronym) {
+    final d = getFieldDownload(acronym);
+    if (d == null) {
+      return null;
+    }
+    return getPath(d.path);
+  }
+
+  /// 悬浮球 Play-* 临时指定的字段：比如 evaluate 阶段点 Play-Q，界面要切到 q 的媒体和区间
+  /// （视图类型、播放的文件、MediaBar 的起止点都跟着走），下一次翻页/切步骤时由 preClick 清掉。
+  String? playFieldOverride;
+
+  /// 当前这一步对应的字段：闭卷回忆阶段放问题，其余阶段放答案；主字段没有配时间区间就退到另一个。
+  /// 这个优先级必须跟 MediaRangeHelper.getCurrRange() 一致，否则会出现"区间取的是 q、视图却按 a 选"。
+  String currFieldAcronym() {
+    final override = playFieldOverride;
+    if (override != null) {
+      return override;
+    }
+    final primary = step == RepeatStep.recall ? QaType.question.acronym : QaType.answer.acronym;
+    final secondary = step == RepeatStep.recall ? QaType.answer.acronym : QaType.question.acronym;
+    if (_hasRange(primary)) {
+      return primary;
+    }
+    if (_hasRange(secondary)) {
+      return secondary;
+    }
+    return primary;
+  }
+
+  bool _hasRange(String acronym) {
+    final map = getCurrVerseMap();
+    if (map == null) {
+      return false;
+    }
+    final start = map['${acronym}Start'];
+    final end = map['${acronym}End'];
+    return start is String && start.isNotEmpty && end is String && end.isNotEmpty;
+  }
+
+  /// 某个字段自己的视图类型：优先取显式写下的 'aShowType'（整节的 's' 是 q/a 共用的，
+  /// 一节里 q 是视频、a 是音频时只能各记各的），没有就按该字段媒体的扩展名推。都没有返回 null。
+  String? getFieldViewName(String acronym) {
+    final map = getCurrVerseMap();
+    if (map == null) {
+      return null;
+    }
+    final showType = map[VerseContent.fieldShowTypeKey(acronym)];
+    if (showType is String && showType.isNotEmpty) {
+      return showType;
+    }
+    final d = getFieldDownload(acronym);
+    if (d != null) {
+      return ChapterImportHelp.showTypeForExtension(d.extension);
+    }
+    return null;
+  }
+
+  /// 整节（verse/chapter/book 的 's'）的视图类型，也就是整节那份媒体 'd' 对应的类型。
+  String? getSectionViewName() {
     return getString('s');
+  }
+
+  /// 视图类型：先看当前这一步的字段有没有自己的视图类型，没有才回落到整节的 's'。
+  String? getCurrViewName() {
+    return getFieldViewName(currFieldAcronym()) ?? getSectionViewName();
   }
 
   Future<bool> tryImportMedia({
@@ -428,7 +503,13 @@ class Helper {
           if (verseMap == null) {
             return null;
           }
-          verseMap['d'] = [dc];
+          // 裁的是字段专属媒体时，裁完的文件仍然只属于这个字段，不能写成整节的 'd'，
+          // 否则字段还指着老文件、时间区间却按新文件算，两边对不上。
+          if (getFieldDownload(range.fieldAcronym) != null) {
+            verseMap[DownloadContent.fieldKey(range.fieldAcronym)] = dc.toJson();
+          } else {
+            verseMap['d'] = [dc];
+          }
           verseMap[range.jsonStartName] = "00:00:00,000";
           verseMap[range.jsonEndName] = Time.convertMsToString(durationMs + 100);
           String jsonStr = jsonEncode(verseMap);

@@ -53,9 +53,36 @@ class DownloadContent {
     this.n,
   });
 
+  /// 字段专属媒体在 verse 内容里的 key，跟 'aStart'/'aEnd' 一套命名：'a' -> 'aDownload'。
+  /// 值是单个 DownloadContent（不是列表）：这个字段的音视频就是这一个文件，
+  /// 它的 'aStart'/'aEnd' 也是相对这个文件的时间。没有这个 key 时沿用整节的 'd'。
+  static String fieldKey(String acronym) => "${acronym}Download";
+
+  static const List<String> fieldKeys = ['qDownload', 'aDownload', 'tDownload'];
+
   static List<DownloadContent>? toList(dynamic json) {
     if (json != null) {
       return (json as List).map((e) => DownloadContent.fromJson(e as Map<String, dynamic>)).toList();
+    }
+    return null;
+  }
+
+  /// 一层内容（book/chapter/verse 的 map）里的全部媒体：整层的 'd' 列表 + 字段专属媒体。
+  static List<DownloadContent> allOf(Map<String, dynamic> json) {
+    final ret = <DownloadContent>[];
+    ret.addAll(toList(json['d']) ?? []);
+    for (var key in fieldKeys) {
+      final d = fromJsonOrNull(json[key]);
+      if (d != null) {
+        ret.add(d);
+      }
+    }
+    return ret;
+  }
+
+  static DownloadContent? fromJsonOrNull(dynamic json) {
+    if (json is Map<String, dynamic>) {
+      return DownloadContent.fromJson(json);
     }
     return null;
   }
@@ -130,6 +157,25 @@ class VerseContent {
   int? learnDate;
   int? progress;
 
+  // 字段专属媒体（'qDownload'/'aDownload'/'tDownload'）：某个字段用自己的音视频文件，
+  // 而不是整节的 'd'。比如问题来自章节的视频、答案是扩展助手另外生成的音频。
+  DownloadContent? questionDownload;
+  DownloadContent? answerDownload;
+  DownloadContent? tipDownload;
+
+  // 字段专属视图类型（'qShowType'/'aShowType'/'tShowType'）：整节的 's' 是 q/a 共用的，
+  // 一节里 q 是视频、a 是音频时必须各记各的，不能靠改 's' 来表达。
+  String? questionShowType;
+  String? answerShowType;
+  String? tipShowType;
+
+  /// 字段专属视图类型的 key：'a' -> 'aShowType'。
+  static String fieldShowTypeKey(String acronym) => "${acronym}ShowType";
+
+  static const List<String> fieldShowTypeKeys = ['qShowType', 'aShowType', 'tShowType'];
+
+  List<DownloadContent> get fieldDownloads => [questionDownload, answerDownload, tipDownload].whereType<DownloadContent>().toList();
+
   VerseContent({
     required this.id,
     required this.showType,
@@ -143,6 +189,12 @@ class VerseContent {
     required this.answer,
     required this.learnDate,
     required this.progress,
+    this.questionDownload,
+    this.answerDownload,
+    this.tipDownload,
+    this.questionShowType,
+    this.answerShowType,
+    this.tipShowType,
   });
 
   factory VerseContent.fromJson(Map<String, dynamic> json) {
@@ -159,11 +211,17 @@ class VerseContent {
       answer: json['a'] as String?,
       learnDate: json['l'] as int?,
       progress: json['p'] as int?,
+      questionDownload: DownloadContent.fromJsonOrNull(json[DownloadContent.fieldKey('q')]),
+      answerDownload: DownloadContent.fromJsonOrNull(json[DownloadContent.fieldKey('a')]),
+      tipDownload: DownloadContent.fromJsonOrNull(json[DownloadContent.fieldKey('t')]),
+      questionShowType: json[VerseContent.fieldShowTypeKey('q')] as String?,
+      answerShowType: json[VerseContent.fieldShowTypeKey('a')] as String?,
+      tipShowType: json[VerseContent.fieldShowTypeKey('t')] as String?,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
+    final ret = <String, dynamic>{
       'i': id,
       's': showType,
       'r': rootUrl,
@@ -177,6 +235,26 @@ class VerseContent {
       'l': learnDate,
       'p': progress,
     };
+    // 字段专属媒体只在有的时候才写，避免给老内容凭空加上一堆 null。
+    if (questionDownload != null) {
+      ret[DownloadContent.fieldKey('q')] = questionDownload!.toJson();
+    }
+    if (answerDownload != null) {
+      ret[DownloadContent.fieldKey('a')] = answerDownload!.toJson();
+    }
+    if (tipDownload != null) {
+      ret[DownloadContent.fieldKey('t')] = tipDownload!.toJson();
+    }
+    if (questionShowType != null) {
+      ret[fieldShowTypeKey('q')] = questionShowType;
+    }
+    if (answerShowType != null) {
+      ret[fieldShowTypeKey('a')] = answerShowType;
+    }
+    if (tipShowType != null) {
+      ret[fieldShowTypeKey('t')] = tipShowType;
+    }
+    return ret;
   }
 }
 

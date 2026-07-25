@@ -50,6 +50,26 @@ class RepeatViewForAudio extends RepeatView {
   }
 
   @override
+  Future<void> playFieldMedia(String path, MediaRange range) async {
+    currentPath.value = path;
+    await load(currentPath);
+    try {
+      helper?.doNotPlayMedia = false;
+      await audioPlayer.seek(Duration(milliseconds: range.start));
+      await audioPlayer.play();
+    } catch (e) {
+      Snackbar.show("Error playing audio: $e");
+    }
+  }
+
+  @override
+  void stopPlayback() {
+    if (audioPlayer.playing) {
+      audioPlayer.pause();
+    }
+  }
+
+  @override
   void dispose() {
     outputLatency.dispose();
     audioPlayer.dispose();
@@ -65,12 +85,22 @@ class RepeatViewForAudio extends RepeatView {
       return SizedBox(height: height);
     }
 
-    List<String> paths = helper.getPaths();
-    if (paths.isNotEmpty) {
-      currentPath.value = paths.first;
-    }
-
     final range = mediaRangeHelper.getCurrRange();
+
+    // 当前区间所属字段如果配了自己的媒体（比如答案是扩展助手生成的音频），就放它自己的文件，
+    // 否则还是整节的第一个媒体。换文件时要强制重载，不然播的还是上一个文件。
+    final fieldPath = helper.getFieldPath(range.fieldAcronym);
+    if (fieldPath != null) {
+      currentPath.value = fieldPath;
+    } else {
+      List<String> paths = helper.getPaths();
+      if (paths.isNotEmpty) {
+        currentPath.value = paths.first;
+      }
+    }
+    if (currentPath.value != lastCurrentPath) {
+      helper.enableReloadMedia = true;
+    }
 
     if (helper.enableReloadMedia) {
       helper.enableReloadMedia = false;

@@ -24,6 +24,9 @@ class MediaRange {
   String jsonStartName;
   String jsonEndName;
 
+  /// 这个区间属于哪个字段（'q'/'a'/'t'），用来找该字段的专属媒体（'aDownload' 等）。
+  String get fieldAcronym => jsonStartName.substring(0, 1);
+
   MediaRange({
     required this.start,
     required this.end,
@@ -72,24 +75,30 @@ class MediaRangeHelper {
     updateVerseContentSub.off();
   }
 
+  /// 当前 MediaBar 绑定的区间。字段的选取交给 helper.currFieldAcronym()（它已经把步骤、
+  /// 悬浮球 Play-* 的临时指定都算进去了），这样视图、播放的文件、区间三者始终指的是同一个字段。
   MediaRange getCurrRange() {
-    MediaRange? range;
-    if (helper.step == RepeatStep.recall) {
-      range = getCurrQuestionRange();
-      if (range == null || !range.enable) {
-        range = getCurrAnswerRange();
-      }
-    } else {
-      range = getCurrAnswerRange();
-      if (range == null || !range.enable) {
-        range = getCurrQuestionRange();
-      }
+    final curr = helper.currFieldAcronym();
+    MediaRange? range = getCurrRangeOf(curr);
+    if (range == null || !range.enable) {
+      final fallback = curr == QaType.question.acronym ? QaType.answer.acronym : QaType.question.acronym;
+      range = getCurrRangeOf(fallback);
     }
 
     if (range == null || !range.enable) {
       range = defaultRange();
     }
     return range;
+  }
+
+  MediaRange? getCurrRangeOf(String acronym) {
+    if (acronym == QaType.question.acronym) {
+      return getCurrQuestionRange();
+    } else if (acronym == QaType.tip.acronym) {
+      return getCurrTipRange();
+    } else {
+      return getCurrAnswerRange();
+    }
   }
 
   MediaRange? getCurrAnswerRange() {

@@ -4,7 +4,6 @@ import 'package:repeat_flutter/db/entity/assistive_touch_action.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/widget/text_template.dart';
-import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -35,10 +34,10 @@ class ExpandSheet {
     if (preset != null) {
       logic.editingActionId = preset.id;
       logic.actionSort = preset.sort;
-      logic.sourceIndex.value = preset.sourceIndex;
-      logic.targetIndex.value = preset.targetIndex;
+      logic.sourceIndex.value = preset.sourceIndex.clamp(0, logic.sourceOptions.length - 1);
+      logic.targetIndex.value = preset.targetIndex.clamp(0, logic.targetOptions.length - 1);
       logic.enableAudio.value = preset.enableAudio;
-      logic.addToNextVerse.value = preset.addToNextVerse;
+      logic.behavior.value = ExpandBehavior.values[preset.behavior.clamp(0, ExpandBehavior.values.length - 1)];
       logic.templateIndex.value = preset.templateIndex;
       logic.textController.text = _renderTemplate(preset.templateIndex);
     } else {
@@ -60,14 +59,21 @@ class ExpandSheet {
       ListView(
         shrinkWrap: true,
         children: [
-          RowWidget.buildTextWithEdit(
-            I18nKey.serviceUrl.tr,
-            logic.serviceUrl,
-            onTextModify: () => logic.saveServiceUrl(),
-          ),
+          // buildTextWithEdit 里的输入框自己不会刷新显示，也不会关弹框（MsgBox.strInputWithYesOrNo
+          // 传了 yes 回调时就交给回调自己 Get.back()），所以外面要包 Obx、回调里要自己关。
+          Obx(() {
+            return RowWidget.buildTextWithEdit(
+              I18nKey.serviceUrl.tr,
+              logic.serviceUrl,
+              onTextModify: () async {
+                await logic.saveServiceUrl();
+                Get.back();
+              },
+            );
+          }),
           RowWidget.buildDividerWithoutColor(),
           RowWidget.buildCupertinoPicker(
-            title: I18nKey.textTemplate.tr,
+            title: I18nKey.instructionTemplate.tr,
             options: logic.sourceOptions,
             value: logic.sourceIndex.value,
             changed: (index) {
@@ -77,8 +83,6 @@ class ExpandSheet {
             },
             disabled: logic.disabled,
           ),
-          RowWidget.buildDividerWithoutColor(),
-          RowWidget.buildText(I18nKey.editInstructionTips.tr),
           RowWidget.buildCard(
             Obx(() {
               return Stack(
@@ -93,7 +97,7 @@ class ExpandSheet {
                       minLines: 1,
                       decoration: InputDecoration(
                         border: InputBorder.none,
-                        hintText: I18nKey.editInstructionTips.tr,
+                        hintText: I18nKey.instruction.tr,
                       ),
                       style: const TextStyle(fontSize: 14),
                     ),
@@ -124,31 +128,29 @@ class ExpandSheet {
           ),
           RowWidget.buildDividerWithoutColor(),
           RowWidget.buildCupertinoPicker(
-            title: I18nKey.overwritePosition.tr,
+            title: I18nKey.targetPosition.tr,
             options: logic.targetOptions,
             value: logic.targetIndex.value,
             changed: (index) {
               logic.targetIndex.value = index;
-              final qaType = logic.toQaType(index);
-              if (qaType == QaType.note || qaType == QaType.tip) {
-                logic.enableAudio.value = false;
-                logic.disabledAudioWidget.value = true;
-              } else {
-                logic.disabledAudioWidget.value = false;
-              }
             },
             disabled: logic.disabled,
           ),
           RowWidget.buildDividerWithoutColor(),
           RowWidget.buildSwitch(
-            title: I18nKey.syncGenerateAudio.tr,
+            title: I18nKey.generateAudio.tr,
             value: logic.enableAudio,
             disabled: logic.disabledAudioWidget,
           ),
           RowWidget.buildDividerWithoutColor(),
-          RowWidget.buildSwitch(
-            title: I18nKey.addToNextVerse.tr,
-            value: logic.addToNextVerse,
+          RowWidget.buildCupertinoPicker(
+            title: I18nKey.behavior.tr,
+            titleOnTop: true,
+            options: logic.behaviorOptions,
+            value: logic.behavior.value.index,
+            changed: (index) {
+              logic.behavior.value = ExpandBehavior.values[index];
+            },
             disabled: logic.disabled,
           ),
           RowWidget.buildDividerWithoutColor(),
@@ -156,7 +158,7 @@ class ExpandSheet {
             if (logic.status.value == ExpandStatus.init) {
               return RowWidget.buildButtons([
                 Button(I18nKey.testExecution.tr, () {
-                  logic.startTask(logic.textController.text);
+                  logic.execute(logic.textController.text);
                 }),
                 Button(I18nKey.btnOk.tr, () async {
                   final name = await MsgBox.password(I18nKey.assistiveTouchActionName.tr, I18nKey.assistiveTouchActionName.tr);

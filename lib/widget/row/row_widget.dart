@@ -260,10 +260,12 @@ class RowWidget {
     ValueChanged<int>? changed,
     double? pickWidth,
     RxBool? disabled,
+    // 选项文案很长（一行放不下标题+选项）时用：标题单独一行，picker 在下面撑满宽度。
+    bool titleOnTop = false,
   }) {
     Widget picker({required bool isDisabled}) {
       return SizedBox(
-        width: pickWidth ?? 80.w,
+        width: pickWidth ?? (titleOnTop ? double.infinity : 80.w),
         height: 64,
         child: AbsorbPointer(
           absorbing: isDisabled,
@@ -293,6 +295,37 @@ class RowWidget {
       );
     }
 
+    Widget pickerWithDisabled() {
+      if (disabled == null) {
+        return picker(isDisabled: false);
+      }
+      return Obx(() {
+        return picker(isDisabled: disabled.value);
+      });
+    }
+
+    if (titleOnTop) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(paddingHorizontal, 0, paddingHorizontal, 0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: rowHeight,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  title,
+                  style: const TextStyle(fontSize: titleFontSize),
+                ),
+              ),
+            ),
+            pickerWithDisabled(),
+          ],
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(paddingHorizontal, 0, 0, 0),
       child: SizedBox(
@@ -304,12 +337,7 @@ class RowWidget {
               style: const TextStyle(fontSize: titleFontSize),
             ),
             const Spacer(),
-            if (disabled == null)
-              picker(isDisabled: false)
-            else
-              Obx(() {
-                return picker(isDisabled: disabled.value);
-              }),
+            pickerWithDisabled(),
           ],
         ),
       ),

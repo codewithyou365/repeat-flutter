@@ -95,6 +95,7 @@ class RepeatPage extends StatelessWidget {
     if (viewName == null) {
       return dataMissing(state);
     } else {
+      logic.onViewNameChanged(viewName);
       return Listener(
         behavior: HitTestBehavior.translucent,
         onPointerDown: (_) => logic.restoreSystemUiIfNeeded(),

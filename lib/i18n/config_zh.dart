@@ -231,6 +231,7 @@ class ConfigZh extends Config {
     put(I18nKey.bluetoothOffset, "蓝牙补偿");
     put(I18nKey.labelCalendar, "日历");
     put(I18nKey.textTemplate, "模版");
+    put(I18nKey.instructionTemplate, "指令模版");
     put(I18nKey.labelVerseNeedToContainAnswer, "小节需要包含答案字段");
     put(I18nKey.labelVerseKeyDuplicated, "小节KEY重复： %s");
     put(I18nKey.labelVerseKeyCantBeEmpty, "小节KEY不能为空");
@@ -393,10 +394,12 @@ class ConfigZh extends Config {
     put(I18nKey.deductedInTheGame, "游戏中扣除");
     put(I18nKey.showButtons, "显示按钮");
     put(I18nKey.expandAssistant, "扩展助手");
-    put(I18nKey.editInstructionTips, "指令");
-    put(I18nKey.overwritePosition, "覆盖位置");
-    put(I18nKey.syncGenerateAudio, "同步生成音频");
-    put(I18nKey.addToNextVerse, "新增一个小节");
+    put(I18nKey.instruction, "指令");
+    put(I18nKey.targetPosition, "作用位置");
+    put(I18nKey.generateAudio, "生成音频");
+    put(I18nKey.behavior, "行为");
+    put(I18nKey.behaviorOverwrite, "请求并将结果覆盖到作用位置");
+    put(I18nKey.behaviorPlayOrOverwrite, "若作用位置存在内容尝试播放否则覆盖");
     put(I18nKey.testExecution, "测试");
     put(I18nKey.closeLog, "关闭日志");
     put(I18nKey.customizeMenu, "自定义菜单");

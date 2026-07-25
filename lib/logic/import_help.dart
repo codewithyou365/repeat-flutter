@@ -21,6 +21,13 @@ class ImportHelp {
       }
       json['d'] = list;
     }
+    for (var key in DownloadContent.fieldKeys) {
+      var d = DownloadContent.fromJsonOrNull(json[key]);
+      if (d != null) {
+        d.url = ".${d.extension}";
+        json[key] = d.toJson();
+      }
+    }
   }
 
   static Future<bool> import(int bookId, String url) async {

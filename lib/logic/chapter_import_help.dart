@@ -13,7 +13,7 @@ import 'package:repeat_flutter/logic/srt_parse.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class ChapterImportHelp {
-  static String? _showTypeForExtension(String ext) {
+  static String? showTypeForExtension(String ext) {
     switch (ext.toLowerCase()) {
       case 'mp3':
         return RepeatViewEnum.audio.name;
@@ -54,7 +54,7 @@ class ChapterImportHelp {
     DownloadProgressCallback? progressCallback,
   }) async {
     var mediaExt = _extensionOf(mediaSource);
-    var showType = _showTypeForExtension(mediaExt);
+    var showType = showTypeForExtension(mediaExt);
     if (showType == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["ext($mediaExt)"]));
       return false;

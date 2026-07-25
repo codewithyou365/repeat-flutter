@@ -63,6 +63,23 @@ class RepeatLogic extends GetxController {
     showTypeToRepeatView[RepeatViewEnum.video.name] = RepeatViewForVideo();
   }
 
+  String? _lastViewName;
+
+  /// 三个视图是页面级常驻实例，切视图只是换了 widget 子树，上一个视图的播放器不会自动停，
+  /// 所以视图类型一变就把上一个停掉（放在帧后执行，避免在 build 里改状态）。
+  void onViewNameChanged(String viewName) {
+    final last = _lastViewName;
+    _lastViewName = viewName;
+    if (last == null || last == viewName) {
+      return;
+    }
+    final prev = showTypeToRepeatView[last];
+    if (prev == null) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) => prev.stopPlayback());
+  }
+
   late AdjustFont adjustFont = AdjustFont<RepeatLogic>(this);
   late TextTemplate copyLogic = TextTemplate<RepeatLogic>(CrK.copyTemplate, this);
   late GameLogic<RepeatLogic> gameLogic;
@@ -108,6 +125,7 @@ class RepeatLogic extends GetxController {
     ttsHelper.tryInit(TtsKeys.tip);
     copyLogic.init();
     expandSheet.init(copyLogic);
+    expandSheet.logic.onPlayTarget = assistiveTouchLogic.playTarget;
     bookEditor.onExpand = openExpand;
     var args = Get.arguments as RepeatArgs;
     saveGlobalBrowsePosition = args.saveGlobalBrowsePosition;
@@ -424,6 +442,8 @@ class RepeatLogic extends GetxController {
     state.helper.enableReloadMedia = true;
     state.needUpdateSystemUiMode = true;
     state.helper.tryToPlayMedia = true;
+    // 悬浮球 Play-* 临时指定的字段只在原地生效，翻页/切步骤后回到按步骤走。
+    state.helper.playFieldOverride = null;
     ttsHelper.stop();
   }
 

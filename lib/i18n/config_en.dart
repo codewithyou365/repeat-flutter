@@ -233,6 +233,7 @@ class ConfigEn extends Config {
     put(I18nKey.bluetoothOffset, "BT Offset");
     put(I18nKey.labelCalendar, "Calendar");
     put(I18nKey.textTemplate, "Template");
+    put(I18nKey.instructionTemplate, "Instruction Template");
     put(I18nKey.labelVerseNeedToContainAnswer, "Verse Need To Contain Answer");
     put(I18nKey.labelVerseKeyDuplicated, "Verse Key duplicated: %s");
     put(I18nKey.labelVerseKeyCantBeEmpty, "Verse Key can't be empty");
@@ -395,10 +396,12 @@ class ConfigEn extends Config {
     put(I18nKey.deductedInTheGame, "Deducted In The Game");
     put(I18nKey.showButtons, "Show Buttons");
     put(I18nKey.expandAssistant, "Expansion Assistant");
-    put(I18nKey.editInstructionTips, "Edit instructions sent\nto the assistant here");
-    put(I18nKey.overwritePosition, "Overwrite Position");
-    put(I18nKey.syncGenerateAudio, "Sync Generate Audio");
-    put(I18nKey.addToNextVerse, "Add A New Verse");
+    put(I18nKey.instruction, "Instruction");
+    put(I18nKey.targetPosition, "Target Position");
+    put(I18nKey.generateAudio, "Generate Audio");
+    put(I18nKey.behavior, "Behavior");
+    put(I18nKey.behaviorOverwrite, "Request and overwrite the target position");
+    put(I18nKey.behaviorPlayOrOverwrite, "Play the target position if it has content, otherwise overwrite");
     put(I18nKey.testExecution, "Test");
     put(I18nKey.closeLog, "Close Log");
     put(I18nKey.customizeMenu, "Customize Menu");
