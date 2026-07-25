@@ -39,6 +39,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelBookNameEmpty, "学卷名字应不能为空");
     put(I18nKey.labelBookNameError, "学卷名字应由字母数字字符组成。");
     put(I18nKey.labelBookNameDuplicated, "学卷名字重复。");
+    put(I18nKey.labelNameTooLongWithArg, "名字长度不能超过 %s 个字符。");
     put(I18nKey.labelDelete, "删除");
     put(I18nKey.serviceUrl, "服务地址");
     put(I18nKey.labelRemoteUrl, "远程地址");

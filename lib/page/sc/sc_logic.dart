@@ -13,6 +13,7 @@ class ScLogic extends GetxController {
   static const String id = "ScLogicId";
   final ScState state = ScState();
   static RegExp reg = RegExp(r'^[0-9a-zA-Z]+$');
+  static const int nameMaxLength = 12;
 
   @override
   void onInit() async {
@@ -40,6 +41,10 @@ class ScLogic extends GetxController {
     }
     if (!reg.hasMatch(name)) {
       Snackbar.show(I18nKey.labelClassroomNameError.tr);
+      return;
+    }
+    if (name.length > nameMaxLength) {
+      Snackbar.show(I18nKey.labelNameTooLongWithArg.trArgs(['$nameMaxLength']));
       return;
     }
     if (state.list.any((e) => e.name == name)) {

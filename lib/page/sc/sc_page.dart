@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
+import 'package:repeat_flutter/widget/tile/name_tile.dart';
 
 import 'sc_logic.dart';
 
@@ -82,15 +82,13 @@ class ScPage extends StatelessWidget {
     var state = logic.state;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 28.w),
-      child: MasonryGridView.count(
-        shrinkWrap: true,
-        crossAxisCount: 3,
-        mainAxisSpacing: 28,
-        crossAxisSpacing: 28,
-        itemBuilder: (context, index) {
-          return buildButton(logic, state.list[index]);
-        },
-        itemCount: state.list.length,
+      child: SingleChildScrollView(
+        child: Wrap(
+          spacing: 28,
+          runSpacing: 28,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: state.list.map((model) => buildButton(logic, model)).toList(),
+        ),
       ),
     );
   }
@@ -103,17 +101,9 @@ class ScPage extends StatelessWidget {
       onLongPress: () {
         openDeleteDialog(logic, model);
       },
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          color: Colors.blue,
-          padding: const EdgeInsets.all(8),
-          alignment: Alignment.center,
-          child: Text(
-            model.name,
-            style: TextStyle(fontSize: 30),
-          ),
-        ),
+      child: NameTile(
+        name: model.name,
+        color: Colors.blue,
       ),
     );
   }

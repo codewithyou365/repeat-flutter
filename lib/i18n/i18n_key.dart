@@ -37,6 +37,7 @@ enum I18nKey {
   labelBookNameEmpty,
   labelBookNameError,
   labelBookNameDuplicated,
+  labelNameTooLongWithArg,
   labelDelete,
   serviceUrl,
   labelRemoteUrl,

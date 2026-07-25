@@ -32,6 +32,7 @@ class ScCrMaterialLogic extends GetxController {
   static const String id = "GsCrContentLogic";
   final ScCrMaterialState state = ScCrMaterialState();
   static RegExp reg = RegExp(r'^[0-9a-zA-Z]+$');
+  static const int nameMaxLength = 12;
   final SubList<int> sub = [];
 
   @override
@@ -135,6 +136,11 @@ class ScCrMaterialLogic extends GetxController {
     if (!reg.hasMatch(name)) {
       Get.back();
       Snackbar.show(I18nKey.labelBookNameError.tr);
+      return;
+    }
+    if (name.length > nameMaxLength) {
+      Get.back();
+      Snackbar.show(I18nKey.labelNameTooLongWithArg.trArgs(['$nameMaxLength']));
       return;
     }
     if (state.list.any((e) => e.name == name)) {

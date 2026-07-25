@@ -51,7 +51,11 @@ class ScCrPage extends StatelessWidget {
             ),
           ),
         ],
-        title: Text(Classroom.currName),
+        title: Text(
+          Classroom.currName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
       bottomNavigationBar: SizedBox(
         height: 60.h,

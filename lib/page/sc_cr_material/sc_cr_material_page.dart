@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
+import 'package:repeat_flutter/widget/tile/name_tile.dart';
 
 import 'sc_cr_material_logic.dart';
 
@@ -47,21 +47,13 @@ class ScCrMaterialPage extends StatelessWidget {
     var state = logic.state;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 28.w),
-      child: MasonryGridView.count(
-        shrinkWrap: true,
-        crossAxisCount: 3,
-        mainAxisSpacing: 28,
-        crossAxisSpacing: 28,
-        itemBuilder: (context, index) {
-          if (index != 1) {
-            return buildButton(logic, state.list[index]);
-          }
-          return Padding(
-            padding: EdgeInsets.only(top: 10),
-            child: buildButton(logic, state.list[index]),
-          );
-        },
-        itemCount: state.list.length,
+      child: SingleChildScrollView(
+        child: Wrap(
+          spacing: 28,
+          runSpacing: 28,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: state.list.map((book) => buildButton(logic, book)).toList(),
+        ),
       ),
     );
   }
@@ -103,22 +95,9 @@ class ScCrMaterialPage extends StatelessWidget {
       ));
     }
     return PopupMenuButton<String>(
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Stack(
-          alignment: Alignment.topRight,
-          children: [
-            Container(
-              color: book.enable ? Colors.green : Colors.red,
-              padding: const EdgeInsets.all(8),
-              alignment: Alignment.center,
-              child: Text(
-                book.name,
-                style: TextStyle(fontSize: 30),
-              ),
-            ),
-          ],
-        ),
+      child: NameTile(
+        name: book.name,
+        color: book.enable ? Colors.green : Colors.red,
       ),
       itemBuilder: (BuildContext context) => menus,
     );
