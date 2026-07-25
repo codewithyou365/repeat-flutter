@@ -154,19 +154,31 @@ class RepeatLogic extends GetxController {
       state.systemUiVisible = systemOverlaysAreVisible;
     });
     update([RepeatLogic.id]);
-    // the target screen is ready, so the quick entry guiding is over
-    QuickEntry.hideGuiding();
     if (QuickEntry.autoOpenGame) {
       QuickEntry.autoOpenGame = false;
-      if (state.gameLogicInitSuccess) {
-        // wait for the page to be mounted, the game panel is a modal sheet
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          openGame();
-        });
-      } else {
-        Snackbar.show(I18nKey.quickEntryNoGame.tr);
-      }
+      await quickEntryOpenGame();
     }
+    // the target screen is ready, so the quick entry guiding is over
+    QuickEntry.hideGuiding();
+  }
+
+  /// Quick entry: start the game network and jump into the game webview
+  /// directly, without showing the game panel.
+  Future<void> quickEntryOpenGame() async {
+    if (!state.gameLogicInitSuccess) {
+      Snackbar.show(I18nKey.quickEntryNoGame.tr);
+      return;
+    }
+    await gameLogic.switchWeb(true, popOnError: false);
+    if (gameLogic.state.urls.isEmpty) {
+      // the game server failed to start, the error is shown by switchWeb
+      return;
+    }
+    // wait for the page to be mounted before switching to the webview
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      state.helper.stopMedia(true);
+      openGameWebView(gameLogic.buildWebviewArgs());
+    });
   }
 
   void applySystemUiMode() {

@@ -157,7 +157,9 @@ class GameLogic<T extends GetxController> {
     });
   }
 
-  Future<void> switchWeb(bool value) async {
+  /// [popOnError] closes the current route when the server fails to start, it
+  /// should be false when there is no game panel to close.
+  Future<void> switchWeb(bool value, {bool popOnError = true}) async {
     if (state.openPending) {
       return;
     }
@@ -189,7 +191,9 @@ class GameLogic<T extends GetxController> {
           await Db().db.kvDao.insertOrReplace(Kv(K.gameServerPort, '${port.value + 10}'));
           await closeWeb();
           Snackbar.show('Error starting game server: $e \n System has changed the port, please try again');
-          Get.back();
+          if (popOnError) {
+            Get.back();
+          }
           return;
         }
       } else {
@@ -216,13 +220,15 @@ class GameLogic<T extends GetxController> {
   }
 
   void openWebview() async {
+    Get.back(result: buildWebviewArgs());
+  }
+
+  WebviewArgs buildWebviewArgs() {
     final appLogic = Get.find<MyAppLogic>();
     final theme = appLogic.themeMode.value == ThemeMode.dark ? 'dark' : 'light';
-    Get.back(
-      result: WebviewArgs(
-        initialUrl: "https://127.0.0.1:${port.value}?theme=$theme",
-        pageTitle: GameState.game?.name ?? '',
-      ),
+    return WebviewArgs(
+      initialUrl: "https://127.0.0.1:${port.value}?theme=$theme",
+      pageTitle: GameState.game?.name ?? '',
     );
   }
 
