@@ -11,6 +11,7 @@ import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
+import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_logic.dart';
 import 'package:repeat_flutter/logic/widget/game/game_state.dart';
 import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/page/repeat/logic/repeat_flow_for_browse.dart';
@@ -256,6 +257,72 @@ class JsRuntime {
         return 'success';
       });
 
+      // 打字游戏的"辅助触控触发键"要在设置面板里列出可绑定的按钮，所以把复习页辅助触控当前显示的
+      // 按钮（内置动作 + 用户自定义预设）导出成 [{id, name}]。id 形如 builtin:<枚举名> / custom:<行id>。
+      // 注意：没走 uiTap 而是单开一条消息，因为 uiTap 是同步 handler，type.ts 里 Game.tap 依赖它同步
+      // 返回 'success'，改成 async 会把 tapLeft/tapRight 全部变成"失败"。
+      _jsRuntime!.onMessage('assistiveTouchActions', (dynamic args) async {
+        final logic = _assistiveTouchLogic();
+        if (logic == null) {
+          return '[]';
+        }
+        // 用户刚在辅助触控里新建的预设也要能立刻选到，所以每次重新读一遍
+        await logic.loadActions();
+        final ret = <Map<String, String>>[];
+        for (final builtIn in logic.shownBuiltins) {
+          ret.add({'id': 'builtin:${builtIn.name}', 'name': builtIn.labelKey.tr});
+        }
+        for (final action in logic.actions) {
+          ret.add({'id': 'custom:${action.id}', 'name': action.name});
+        }
+        return jsonEncode(ret);
+      });
+
+      // 玩家在打字页按下绑定键时执行对应的辅助触控按钮。
+      // 动作已被删除返回 'not_found'；动作还在但当前复习模式下不可用（比如 examine 模式下的
+      // deleteVerse）返回 'unavailable'，由网页端提示用户，而不是静默无反应。
+      _jsRuntime!.onMessage('assistiveTouchTap', (dynamic args) async {
+        if (args is! Map) {
+          return 'invalid_args';
+        }
+        final id = args['id'];
+        if (id is! String || id.isEmpty) {
+          return 'invalid_args';
+        }
+        final logic = _assistiveTouchLogic();
+        if (logic == null) {
+          return 'not_found';
+        }
+        if (id.startsWith('builtin:')) {
+          final name = id.substring('builtin:'.length);
+          // 枚举名可能因为改代码对不上，用 where 查而不是 byName，避免抛异常
+          final matched = BuiltInAction.values.where((e) => e.name == name);
+          if (matched.isEmpty) {
+            return 'not_found';
+          }
+          final builtIn = matched.first;
+          if (!logic.shownBuiltins.contains(builtIn)) {
+            return 'unavailable';
+          }
+          await logic.executeBuiltIn(builtIn);
+          return 'ok';
+        }
+        if (id.startsWith('custom:')) {
+          final actionId = int.tryParse(id.substring('custom:'.length));
+          if (actionId == null) {
+            return 'not_found';
+          }
+          await logic.loadActions();
+          final matched = logic.actions.where((e) => e.id == actionId);
+          if (matched.isEmpty) {
+            return 'not_found';
+          }
+          await logic.executeAction(matched.first);
+          return 'ok';
+        }
+        return 'not_found';
+      });
+
       _jsRuntime!.onMessage('getVerse', (dynamic args) async {
         final game = GameState.game;
         if (game == null) {
@@ -331,6 +398,15 @@ class JsRuntime {
       dispose(); // 初始化失败时及时清理
       rethrow;
     }
+  }
+
+  /// 复习页的辅助触控。游戏没开、或复习页已经退出（RepeatLogic 没注册）时返回 null，
+  /// 让调用方按"没有可用按钮"处理，而不是抛异常把 JS 调用打断。
+  AssistiveTouchLogic? _assistiveTouchLogic() {
+    if (GameState.game == null || !Get.isRegistered<RepeatLogic>()) {
+      return null;
+    }
+    return Get.find<RepeatLogic>().assistiveTouchLogic;
   }
 
   Future<dynamic> invoke(String methodName, Map<String, dynamic> payload) async {

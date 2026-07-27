@@ -129,6 +129,39 @@
         />
       </template>
     </nut-cell>
+    <nut-cell
+        v-for="(binding, i) in assistiveTouchBindings"
+        :key="i"
+        :title="t('assistiveTouchTrigger')"
+    >
+      <template #link>
+        <div class="assist-binding">
+          <span v-if="binding.key === ' '" style="opacity: 0.6">{{ t('spaceKey') }}</span>
+          <nut-input
+              v-model="binding.key"
+              maxlength="1"
+              class="assist-binding-key"
+              @blur="setBindingKey(i, binding.key)"
+          />
+          <nut-menu class="assist-binding-action">
+            <nut-menu-item
+                :model-value="binding.action"
+                :options="bindingOptions(binding)"
+                @change="(value: string) => setBindingAction(i, value)"
+            />
+          </nut-menu>
+          <Del width="16px" height="16px" class="assist-binding-del" @click="removeBinding(i)"/>
+        </div>
+      </template>
+    </nut-cell>
+    <nut-cell>
+      <nut-button size="small" type="info" @click="addBinding">
+        {{ t('assistiveTouchAddBinding') }}
+      </nut-button>
+      <span v-if="assistiveTouchOptions.length === 0" style="margin-left: 8px; opacity: 0.6; font-size: 12px">
+        {{ t('assistiveTouchNoAction') }}
+      </span>
+    </nut-cell>
   </div>
   <nut-cell v-else-if="cantPlayForMaintain">
     {{ t('cantPlayForMaintain') }}
@@ -156,6 +189,7 @@
           :spell-play-trigger="spellPlayTrigger"
           :hint-trigger="hintTrigger"
           :mask-trigger="maskTrigger"
+          :assist-triggers="assistTriggerKeys"
           :key-mapping="keyMapping"
           @char-filled="onCharFilled"
           @completed="onCompleted"
@@ -163,6 +197,7 @@
           @spell-play="onSpellPlay"
           @hint-trigger="onHintTrigger"
           @mask-trigger="onMaskTrigger"
+          @assist-trigger="onAssistTrigger"
       />
     </div>
 
@@ -186,13 +221,21 @@ import {Path} from '../../utils/constant.ts';
 import Typing from '../../component/typing.vue';
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
-import {Ask, Voice, Eye} from '@nutui/icons-vue';
+import {Ask, Voice, Eye, Del} from '@nutui/icons-vue';
 import {showToast} from "@nutui/nutui";
 
 const {t} = useI18n();
 const store = useStore();
 
 type ProfileConfig = Record<string, any>;
+
+// 一条"辅助触控触发键"绑定：按下 key 就执行 App 辅助触控里 action 对应的按钮。
+// name 是选中那一刻的动作名快照，动作被删掉后拿不到真名时用它显示。
+type AssistiveTouchBinding = {
+  key: string;
+  action: string;
+  name: string;
+};
 
 const activeProfile = ref(0);
 const profileNames = ref<string[]>(['1', '2', '3']);
@@ -217,6 +260,11 @@ let spellPlayTriggerSaved = ',';
 let hintTriggerSaved = ' ';
 let maskTriggerSaved = '';
 const keyMapping = ref('');
+const assistiveTouchBindings = ref<AssistiveTouchBinding[]>([]);
+// 每条绑定最后一次成功保存的键，校验失败时用来还原对应的输入框
+let bindingKeysSaved: string[] = [];
+// App 辅助触控当前显示的按钮，只有管理员打开设置面板时才会去拉
+const assistiveTouchOptions = ref<{ id: string; name: string }[]>([]);
 const ignoreContentIndexes = ref<number[]>([]);
 const adminEnable = ref(false);
 const adminId = ref(0);
@@ -273,6 +321,16 @@ const showTips = () => {
     {label: t('keyMapping'), value: keyMapping.value || t('disabled')}
   ];
 
+  // 绑定是变长的，一条一行；一条都没配就显示"未启用"
+  if (assistiveTouchBindings.value.length === 0) {
+    rows.push({label: t('assistiveTouchTrigger'), value: t('disabled')});
+  } else {
+    for (const binding of assistiveTouchBindings.value) {
+      const key = binding.key ? formatTriggerKey(binding.key) : t('disabled');
+      rows.push({label: t('assistiveTouchTrigger'), value: `${key} → ${bindingActionName(binding)}`});
+    }
+  }
+
   let html = `<div style="display: flex; flex-direction: column; gap: 10px; text-align: left;">`;
 
   html += rows.map((row, index) => {
@@ -325,6 +383,62 @@ const applyProfile = (index: number) => {
   hintTriggerSaved = hintTrigger.value;
   maskTriggerSaved = maskTrigger.value;
   keyMapping.value = typeof res['keyMapping'] === 'string' ? res['keyMapping'] : '';
+  const rawBindings = Array.isArray(res['assistiveTouchBindings']) ? res['assistiveTouchBindings'] : [];
+  assistiveTouchBindings.value = rawBindings.map((b: any) => ({
+    key: typeof b?.key === 'string' ? b.key : '',
+    action: typeof b?.action === 'string' ? b.action : '',
+    name: typeof b?.name === 'string' ? b.name : '',
+  }));
+  bindingKeysSaved = assistiveTouchBindings.value.map((b) => b.key);
+};
+
+// 找出绑定当前对应的按钮。返回 undefined 说明这个按钮已经不在辅助触控里了
+// （自定义预设被删、内置动作被移出悬浮球、或当前复习模式下不可用）。
+const findOption = (action: string) => assistiveTouchOptions.value.find((o) => o.id === action);
+
+// 绑定行上显示的动作名：按钮还在就用 App 返回的真名，不在就用快照并标记已失效。
+// 玩家端不拉按钮列表（options 为空），此时不做失效判断，直接显示快照。
+const bindingActionName = (binding: AssistiveTouchBinding) => {
+  if (assistiveTouchOptions.value.length === 0) {
+    return binding.name;
+  }
+  const option = findOption(binding.action);
+  return option ? option.name : `${t('assistiveTouchActionMissing')} ${binding.name}`;
+};
+
+// 下拉的候选项。绑定的按钮已经不在列表里时，额外插一条"已失效"占位，
+// 否则下拉会显示成空白，用户看不出原来绑的是什么。
+const bindingOptions = (binding: AssistiveTouchBinding) => {
+  const options = assistiveTouchOptions.value.map((o) => ({text: o.name, value: o.id}));
+  if (binding.action && !findOption(binding.action)) {
+    options.unshift({text: bindingActionName(binding), value: binding.action});
+  }
+  return options;
+};
+
+const getAssistiveTouchActions = async () => {
+  try {
+    const req = new Request({
+      path: Path.game,
+      headers: {'jsMethod': 'Game.assistiveTouchActions'},
+    });
+    const res = await client.node!.send(req);
+    assistiveTouchOptions.value = Array.isArray(res.data) ? res.data : [];
+    // 自定义预设改名后 id 不变，绑定仍然有效，顺手把快照刷新成新名字
+    let changed = false;
+    for (const binding of assistiveTouchBindings.value) {
+      const option = findOption(binding.action);
+      if (option && option.name !== binding.name) {
+        binding.name = option.name;
+        changed = true;
+      }
+    }
+    if (changed) {
+      saveAssistiveTouchBindings();
+    }
+  } catch (error) {
+    console.error('Failed to get assistive touch actions:', error);
+  }
 };
 
 const getConfig = async () => {
@@ -391,10 +505,27 @@ const setManualTtsRate = (value: number) => {
   profiles.value[activeProfile.value].manualTtsRate = value;
   setConfig("manualTtsRate", value);
 };
-// 三个触发键不能互相重复（比如手动播放和逐字母朗读不能都设成 '.'），
+// 所有触发键（四个固定的 + 任意条辅助触控绑定）不能互相重复，比如手动播放和逐字母朗读不能都设成 '.'。
+// exclude 是"正在改的那一个"（固定键用名字，绑定用下标），要排除掉，否则改成原值也会判成冲突。
+type TriggerOwner = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | number;
+const isKeyTaken = (value: string, exclude: TriggerOwner) => {
+  if (!value) {
+    return false; // 空值表示不启用，不参与冲突判断
+  }
+  const keys: string[] = [];
+  if (exclude !== 'manualPlay') keys.push(manualPlayTrigger.value);
+  if (exclude !== 'spellPlay') keys.push(spellPlayTrigger.value);
+  if (exclude !== 'hint') keys.push(hintTrigger.value);
+  if (exclude !== 'mask') keys.push(maskTrigger.value);
+  assistiveTouchBindings.value.forEach((b, i) => {
+    if (exclude !== i) keys.push(b.key);
+  });
+  return keys.includes(value);
+};
+
 // 冲突时提示并把输入框还原成上一次成功保存的值
 const setManualPlayTrigger = (value: string) => {
-  if (value && (value === spellPlayTrigger.value || value === hintTrigger.value || value === maskTrigger.value)) {
+  if (isKeyTaken(value, 'manualPlay')) {
     showToast.warn(t('triggerKeyConflict'));
     manualPlayTrigger.value = manualPlayTriggerSaved;
     return;
@@ -404,7 +535,7 @@ const setManualPlayTrigger = (value: string) => {
   setConfig("manualPlayTrigger", value);
 };
 const setSpellPlayTrigger = (value: string) => {
-  if (value && (value === manualPlayTrigger.value || value === hintTrigger.value || value === maskTrigger.value)) {
+  if (isKeyTaken(value, 'spellPlay')) {
     showToast.warn(t('triggerKeyConflict'));
     spellPlayTrigger.value = spellPlayTriggerSaved;
     return;
@@ -422,7 +553,7 @@ const setSpellResetLevel = (value: boolean) => {
   setConfig("spellResetLevel", value);
 };
 const setHintTrigger = (value: string) => {
-  if (value && (value === manualPlayTrigger.value || value === spellPlayTrigger.value || value === maskTrigger.value)) {
+  if (isKeyTaken(value, 'hint')) {
     showToast.warn(t('triggerKeyConflict'));
     hintTrigger.value = hintTriggerSaved;
     return;
@@ -432,7 +563,7 @@ const setHintTrigger = (value: string) => {
   setConfig("hintTrigger", value);
 };
 const setMaskTrigger = (value: string) => {
-  if (value && (value === manualPlayTrigger.value || value === spellPlayTrigger.value || value === hintTrigger.value)) {
+  if (isKeyTaken(value, 'mask')) {
     showToast.warn(t('triggerKeyConflict'));
     maskTrigger.value = maskTriggerSaved;
     return;
@@ -444,6 +575,52 @@ const setMaskTrigger = (value: string) => {
 const setKeyMapping = (value: string) => {
   profiles.value[activeProfile.value].keyMapping = value;
   setConfig("keyMapping", value);
+};
+
+// 绑定是变长数组，没法像其它设置那样一个字段一个 setter，统一整份存
+const saveAssistiveTouchBindings = () => {
+  const value = assistiveTouchBindings.value.map((b) => ({key: b.key, action: b.action, name: b.name}));
+  bindingKeysSaved = value.map((b) => b.key);
+  profiles.value[activeProfile.value].assistiveTouchBindings = value;
+  setConfig("assistiveTouchBindings", value);
+};
+
+const setBindingKey = (index: number, value: string) => {
+  const binding = assistiveTouchBindings.value[index];
+  if (!binding) {
+    return;
+  }
+  if (isKeyTaken(value, index)) {
+    showToast.warn(t('triggerKeyConflict'));
+    binding.key = bindingKeysSaved[index] ?? '';
+    return;
+  }
+  binding.key = value;
+  saveAssistiveTouchBindings();
+};
+
+const setBindingAction = (index: number, action: string) => {
+  const binding = assistiveTouchBindings.value[index];
+  if (!binding) {
+    return;
+  }
+  binding.action = action;
+  const option = findOption(action);
+  if (option) {
+    binding.name = option.name;
+  }
+  saveAssistiveTouchBindings();
+};
+
+const addBinding = () => {
+  const first = assistiveTouchOptions.value[0];
+  assistiveTouchBindings.value.push({key: '', action: first ? first.id : '', name: first ? first.name : ''});
+  saveAssistiveTouchBindings();
+};
+
+const removeBinding = (index: number) => {
+  assistiveTouchBindings.value.splice(index, 1);
+  saveAssistiveTouchBindings();
 };
 
 const setActiveProfile = async (index: number) => {
@@ -483,7 +660,7 @@ const updateIgnoreIndexes = (mask: string) => {
   }
   ignoreContentIndexes.value = indexes;
 };
-const setConfig = async (key: String, value: boolean | string | number) => {
+const setConfig = async (key: String, value: any) => {
   overlayVisible.value = true;
   const req = new Request({
     path: Path.game,
@@ -619,6 +796,31 @@ const onMaskTrigger = () => {
   eyesClosedMaskVisible.value = !eyesClosedMaskVisible.value;
 };
 
+// 空键不算触发键，过滤掉，免得用户还没填键的那一行把普通输入吃掉
+const assistTriggerKeys = computed(() => assistiveTouchBindings.value.map((b) => b.key).filter((k) => k !== ''));
+
+// 按下绑定键：让 App 执行对应的辅助触控按钮。这里不开 overlay，避免打断打字节奏；
+// 但按钮已经被删掉/当前模式用不了时要给个提示，不然用户只会觉得"这个键没反应"。
+const onAssistTrigger = async (key: string) => {
+  const binding = assistiveTouchBindings.value.find((b) => b.key === key);
+  if (!binding || !binding.action) {
+    return;
+  }
+  try {
+    const req = new Request({
+      path: Path.game,
+      headers: {'jsMethod': 'Game.assistiveTouchTap'},
+      data: binding.action,
+    });
+    const res = await client.node!.send(req);
+    if (res.data !== 'ok') {
+      showToast.warn(`${t('assistiveTouchActionMissing')} ${binding.name}`);
+    }
+  } catch (error) {
+    console.error('Failed to tap assistive touch:', error);
+  }
+};
+
 const refresh = async () => {
   try {
     overlayVisible.value = true;
@@ -642,6 +844,10 @@ const refresh = async () => {
 onMounted(async () => {
   await getConfig();
   await getAdmin();
+  // 按钮列表只有设置面板的下拉要用，玩家端不拉，省一次请求
+  if (isAdmin.value) {
+    await getAssistiveTouchActions();
+  }
   await refresh();
   client.controllers.set('gameRefresh', async (_: Request) => {
     await refresh();
@@ -686,6 +892,30 @@ onMounted(async () => {
   align-items: center;
   gap: 12px;
   padding: 0 15px;
+}
+
+/* 一行绑定：键输入框固定窄宽，动作下拉占满剩余空间，删除图标贴右 */
+.assist-binding {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.assist-binding-key {
+  width: 40px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.assist-binding-action {
+  flex: 1;
+  min-width: 0;
+}
+
+.assist-binding-del {
+  flex-shrink: 0;
+  opacity: 0.6;
 }
 
 .eyes-closed-mask {

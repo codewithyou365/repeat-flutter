@@ -4,6 +4,15 @@ type JsonRecord = Record<string, any>;
 
 type IntervalMode = 'none' | 'oddHidden' | 'evenHidden';
 
+// 一条"辅助触控触发键"绑定：按下 key 就执行 App 辅助触控里 action 对应的按钮。
+// action 形如 builtin:<BuiltInAction 枚举名> 或 custom:<AssistiveTouchAction.id>；
+// name 是选中那一刻的动作名快照，只用于显示（动作被删掉后拿不到真名时还能看出绑的是什么）。
+type AssistiveTouchBinding = {
+    key: string;
+    action: string;
+    name: string;
+};
+
 type ProfileConfig = {
     ignorePunctuation: boolean;
     ignoreNumber: boolean;
@@ -17,6 +26,7 @@ type ProfileConfig = {
     hintTrigger: string;
     maskTrigger: string;
     keyMapping: string;
+    assistiveTouchBindings: AssistiveTouchBinding[];
     spellClearWord: boolean;
     spellResetLevel: boolean;
     [key: string]: any;
@@ -41,7 +51,7 @@ type GameArgs = {
 const PROFILE_COUNT = 3;
 
 function defaultProfileConfig(): ProfileConfig {
-    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "keyMapping": "", "spellClearWord": true, "spellResetLevel": false};
+    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "keyMapping": "", "assistiveTouchBindings": [], "spellClearWord": true, "spellResetLevel": false};
 }
 
 function defaultStoredConfig(): StoredConfig {
@@ -133,6 +143,28 @@ const Util = {
             return sendMessage('uiTap', JSON.stringify({'event': event}));
         } catch (e) {
             return '';
+        }
+    },
+    // App 辅助触控当前显示的按钮列表（内置动作 + 用户自定义预设），供设置面板做下拉选择
+    assistiveTouchActions: async function (): Promise<JsonRecord[]> {
+        try {
+            const data = await sendMessage('assistiveTouchActions', '{}');
+            if (data == null || data === '') {
+                return [];
+            }
+            const parsed = JSON.parse(data);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            return [];
+        }
+    },
+    // 执行一个辅助触控按钮。返回 'ok'；动作已被删除返回 'not_found'，
+    // 动作还在但当前复习模式下不可用返回 'unavailable'
+    assistiveTouchTap: async function (id: string): Promise<string> {
+        try {
+            return await sendMessage('assistiveTouchTap', JSON.stringify({'id': id}));
+        } catch (e) {
+            return 'error';
         }
     },
     adminId: function (): number {
@@ -339,6 +371,26 @@ const Game = {
                 status: 500,
                 error: error.toString()
             });
+        }
+    },
+
+    assistiveTouchActions: async function (): Promise<string> {
+        try {
+            const actions = await Util.assistiveTouchActions();
+            return JSON.stringify({data: actions});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
+        }
+    },
+
+    // 玩家按下绑定键时调用，不限管理员（按键的就是正在打字的玩家）
+    assistiveTouchTap: async function (args: GameArgs): Promise<string> {
+        try {
+            const id = typeof args.data === 'string' ? args.data : `${args.data}`;
+            const result = await Util.assistiveTouchTap(id);
+            return JSON.stringify({data: result});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
         }
     },
 

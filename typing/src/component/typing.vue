@@ -75,6 +75,7 @@ const props = withDefaults(defineProps<{
   spellPlayTrigger?: string;
   hintTrigger?: string;
   maskTrigger?: string;
+  assistTriggers?: string[];
   keyMapping?: string;
   touchColor?: string;
 }>(), {
@@ -88,6 +89,7 @@ const props = withDefaults(defineProps<{
   spellPlayTrigger: '',
   hintTrigger: '',
   maskTrigger: '',
+  assistTriggers: () => [],
   keyMapping: '',
 });
 
@@ -116,6 +118,7 @@ const emit = defineEmits<{
   (e: 'spellPlay', word: string): void;
   (e: 'hintTrigger'): void;
   (e: 'maskTrigger'): void;
+  (e: 'assistTrigger', key: string): void;
 }>();
 
 const store = useStore();
@@ -339,6 +342,11 @@ const applyInput = (val: string) => {
     }
     if (props.maskTrigger && char === props.maskTrigger) {
       pendingTriggerEmits.push(() => emit('maskTrigger'));
+      continue; // 触发字符本身不写入内容，也不推进 pos
+    }
+    // 绑定到 App 辅助触控按钮的键，数量由用户配置，可以有多个
+    if (props.assistTriggers.includes(char)) {
+      pendingTriggerEmits.push(() => emit('assistTrigger', char));
       continue; // 触发字符本身不写入内容，也不推进 pos
     }
 
