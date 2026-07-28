@@ -196,6 +196,9 @@ class ConfigZh extends Config {
     put(I18nKey.ignoreCase, "忽略大小写");
     put(I18nKey.adminModel, "管理模式");
     put(I18nKey.admin, "管理员");
+    put(I18nKey.noAdmin, "还没有管理员，请先设置一个");
+    put(I18nKey.setAdminName, "请输入管理员名字");
+    put(I18nKey.adminNameExists, "该名字已被使用，请换一个");
     put(I18nKey.labelMatchType, "匹配类型");
     put(I18nKey.labelSkipCharacter, "输入该字符便跳过");
     put(I18nKey.labelEnableEditVerse, "启用编辑小节");

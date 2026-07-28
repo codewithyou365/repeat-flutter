@@ -149,6 +149,8 @@ class GameWebServer {
         return 'image/gif';
       case '.bin':
         return 'application/octet-stream';
+      case '.wav':
+        return 'audio/wav';
       default:
         return '';
     }

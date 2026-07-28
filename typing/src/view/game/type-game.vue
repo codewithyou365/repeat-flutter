@@ -670,28 +670,18 @@ const setConfig = async (key: String, value: any) => {
   await client.node!.send(req);
   overlayVisible.value = false;
 };
-// 水滴音效：纯代码合成（仓库里没有现成音效素材），短促正弦波+快速衰减
-let audioCtx: AudioContext | null = null;
-const playDrip = () => {
+// 错误提示音：交给 Dart 原生播放（走系统音频路由，能跟随蓝牙耳机），而不是 WebView 自己的 Web Audio
+const playWrongSound = async () => {
   try {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    const ctx = audioCtx;
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(1200, now);
-    osc.frequency.exponentialRampToValueAtTime(400, now + 0.12);
-    gain.gain.setValueAtTime(0.25, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.15);
-  } catch (e) {
-    console.error('Failed to play drip sound:', e);
+    const req = new Request({
+      path: Path.game,
+      headers: {'jsMethod': 'Game.playWrong'},
+      data: {url: `${window.location.origin}/sounds/wrong.wav`},
+    });
+    const res = await client.node!.send(req);
+    console.log('playWrongSound response:', res);
+  } catch (error) {
+    console.error('Failed to play wrong sound:', error);
   }
 };
 
@@ -745,7 +735,7 @@ const onCharFilled = (_index: number, char: string, auto: boolean, correct: bool
   if (correct) {
     if (speakLetters.value && isSpeakable(char)) speak(char);
   } else {
-    playDrip();
+    playWrongSound();
   }
 };
 

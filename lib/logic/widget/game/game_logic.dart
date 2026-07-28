@@ -117,6 +117,50 @@ class GameLogic<T extends GetxController> {
     return ret;
   }
 
+  Future<bool> hasAdmin() async {
+    state.users = await Db().db.gameUserDao.getAllUser();
+    return state.users.isNotEmpty;
+  }
+
+  /// Prompts the user to type a name for the admin, creates that user with
+  /// a system-generated password (flagged for reset on first login, same as
+  /// [UserManager]'s password reset), then shows the generated credentials.
+  Future<void> promptCreateAdmin({required Future<void> Function() onDone}) async {
+    final model = RxString('');
+    MsgBox.strInputWithYesOrNo(
+      model,
+      I18nKey.noAdmin.tr,
+      I18nKey.setAdminName.tr,
+      yes: () async {
+        final name = model.value.trim();
+        if (name.isEmpty) {
+          return;
+        }
+        Get.back();
+        final ok = await registerAdmin(name);
+        if (ok) {
+          await onDone();
+        }
+      },
+    );
+  }
+
+  Future<bool> registerAdmin(String name) async {
+    final existing = await Db().db.gameUserDao.findUserByName(name);
+    if (existing != null) {
+      Snackbar.show(I18nKey.adminNameExists.tr);
+      return false;
+    }
+    final password = await Db().db.gameUserDao.registerAdminUser(name);
+    state.users = await Db().db.gameUserDao.getAllUser();
+    final index = state.users.indexWhere((u) => u.name == name);
+    if (index != -1) {
+      await setUser(index);
+    }
+    await MsgBox.yes(I18nKey.keyTitle.tr, I18nKey.keyContent.trParams([name, password]));
+    return true;
+  }
+
   Future<Game?> getGame() async {
     if (state.games.isEmpty) {
       return null;

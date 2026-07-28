@@ -189,6 +189,10 @@ class RepeatLogic extends GetxController {
       Snackbar.show(I18nKey.quickEntryNoGame.tr);
       return;
     }
+    if (!await gameLogic.hasAdmin()) {
+      await gameLogic.promptCreateAdmin(onDone: quickEntryOpenGame);
+      return;
+    }
     await gameLogic.switchWeb(true, popOnError: false);
     if (gameLogic.state.urls.isEmpty) {
       // the game server failed to start, the error is shown by switchWeb
@@ -310,6 +314,10 @@ class RepeatLogic extends GetxController {
 
   Future<void> openGame() async {
     state.helper.stopMedia(false);
+    if (!await gameLogic.hasAdmin()) {
+      await gameLogic.promptCreateAdmin(onDone: openGame);
+      return;
+    }
     WebviewArgs? next = await gameLogic.open();
     state.helper.stopMedia(true);
     if (next != null) {

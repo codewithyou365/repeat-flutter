@@ -86,6 +86,25 @@ abstract class GameUserDao {
   }
 
   @transaction
+  Future<String> registerAdminUser(String name) async {
+    final now = DateTime.now();
+    final nonce = StringUtil.generateRandomString(32);
+    final password = StringUtil.generateRandom09(6);
+    final passwordHash = Hash.toSha1ForString(password + nonce);
+    final newUser = GameUser(
+      name: name,
+      password: passwordHash,
+      nonce: nonce,
+      createDate: Date.from(now),
+      token: StringUtil.generateRandomString(32),
+      tokenExpiredDate: 0,
+      needToResetPassword: true,
+    );
+    await registerUser(newUser);
+    return password;
+  }
+
+  @transaction
   Future<GameUser> loginOrRegister(String name, String password, String newPassword, List<String> error) async {
     final now = DateTime.now();
     if (name.isEmpty || password.isEmpty) {

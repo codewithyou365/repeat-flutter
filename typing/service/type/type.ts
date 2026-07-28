@@ -203,6 +203,13 @@ const Util = {
             return '';
         }
     },
+    playWrong: async function (url: string): Promise<any> {
+        try {
+            return await sendMessage('playWrong', JSON.stringify({url}));
+        } catch (e) {
+            return '';
+        }
+    },
 };
 
 const Game = {
@@ -419,6 +426,17 @@ const Game = {
                 rate = typeof config.ttsRate === 'number' ? config.ttsRate : 1;
             }
             await Util.tts({text, type, rate, manual});
+            return JSON.stringify({data: 'ok'});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
+        }
+    },
+
+    playWrong: async function (args: GameArgs): Promise<string> {
+        try {
+            const data = args.data || {};
+            const url = typeof data.url === 'string' ? data.url : '';
+            await Util.playWrong(url);
             return JSON.stringify({data: 'ok'});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});

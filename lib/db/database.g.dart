@@ -1807,6 +1807,21 @@ class _$GameUserDao extends GameUserDao {
   }
 
   @override
+  Future<String> registerAdminUser(String name) async {
+    if (database is sqflite.Transaction) {
+      return super.registerAdminUser(name);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<String>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        return transactionDatabase.gameUserDao.registerAdminUser(name);
+      });
+    }
+  }
+
+  @override
   Future<GameUser> loginOrRegister(
     String name,
     String password,

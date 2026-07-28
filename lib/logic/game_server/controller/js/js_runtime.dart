@@ -1,9 +1,13 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_js/flutter_js.dart';
 import 'package:get/get.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
@@ -31,6 +35,8 @@ class JsRuntime {
   JavascriptRuntime? _jsRuntime;
   bool _isInitialized = false;
   final SubList<int> subNewVerse = [];
+  final AudioPlayer _sfxPlayer = AudioPlayer();
+  final Map<String, String> _sfxCache = {};
 
   JsRuntime({
     required this.ttsHelper,
@@ -365,6 +371,48 @@ class JsRuntime {
         await ttsHelper.speakText(qaType.ttsKeys, text, rate: rate);
         return 'ok';
       });
+      _jsRuntime!.onMessage('playWrong', (dynamic args) async {
+        if (args is! Map) {
+          return 'invalid_args';
+        }
+        final url = args['url'];
+        if (url is! String || url.isEmpty) {
+          return 'invalid_url';
+        }
+        try {
+          var localPath = _sfxCache[url];
+          if (localPath == null || !await File(localPath).exists()) {
+            // 游戏服务器是自签名 HTTPS(仅 WebView 的 onReceivedServerTrustAuthRequest
+            // 信任了该证书),just_audio 底层走系统播放器直连该证书会被拒绝(Source error),
+            // 所以这里手动下载字节后落地临时文件,再让 just_audio 播放本地文件。
+            final client = HttpClient()..badCertificateCallback = (cert, host, port) => true;
+            final httpRequest = await client.getUrl(Uri.parse(url));
+            final response = await httpRequest.close();
+            if (response.statusCode != 200) {
+              client.close();
+              print("❌ playWrong failed for url=$url: HTTP ${response.statusCode}");
+              return 'error';
+            }
+            final builder = BytesBuilder();
+            await for (final chunk in response) {
+              builder.add(chunk);
+            }
+            final bytes = builder.takeBytes();
+            client.close();
+            final tempDir = await getTemporaryDirectory();
+            localPath = '${tempDir.path}/sfx_${url.hashCode}.wav';
+            await File(localPath).writeAsBytes(bytes, flush: true);
+            _sfxCache[url] = localPath;
+          }
+          await _sfxPlayer.stop();
+          await _sfxPlayer.setFilePath(localPath);
+          await _sfxPlayer.play();
+        } catch (e) {
+          print("❌ playWrong failed for url=$url: $e");
+          return 'error';
+        }
+        return 'ok';
+      });
       _jsRuntime!.onMessage('setData', (dynamic args) async {
         final game = GameState.game;
         if (game == null) {
@@ -454,6 +502,7 @@ class JsRuntime {
   void dispose() {
     if (_jsRuntime != null) {
       subNewVerse.off();
+      _sfxPlayer.dispose();
       // 释放 C/C++ 层的内存资源，防止长时间运行导致 OOM
       _jsRuntime!.dispose();
       _jsRuntime = null;
