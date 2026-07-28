@@ -146,7 +146,7 @@
           <nut-menu class="assist-binding-action">
             <nut-menu-item
                 :model-value="binding.action"
-                :options="bindingOptions(binding)"
+                :options="bindingOptionList[i]"
                 @change="(value: string) => setBindingAction(i, value)"
             />
           </nut-menu>
@@ -406,15 +406,17 @@ const bindingActionName = (binding: AssistiveTouchBinding) => {
   return option ? option.name : `${t('assistiveTouchActionMissing')} ${binding.name}`;
 };
 
-// 下拉的候选项。绑定的按钮已经不在列表里时，额外插一条"已失效"占位，
+// 每条绑定的下拉候选项。绑定的按钮已经不在列表里时，额外插一条"已失效"占位，
 // 否则下拉会显示成空白，用户看不出原来绑的是什么。
-const bindingOptions = (binding: AssistiveTouchBinding) => {
+// 必须用 computed 缓存出稳定的数组引用，不能在模板里现算：nut-menu 的标题依赖 nut-menu-item
+// 的 props，每次渲染都传一个新数组会让两者互相触发更新，直接抛 Maximum recursive updates 把页面刷黑。
+const bindingOptionList = computed(() => assistiveTouchBindings.value.map((binding) => {
   const options = assistiveTouchOptions.value.map((o) => ({text: o.name, value: o.id}));
   if (binding.action && !findOption(binding.action)) {
     options.unshift({text: bindingActionName(binding), value: binding.action});
   }
   return options;
-};
+}));
 
 const getAssistiveTouchActions = async () => {
   try {
@@ -892,9 +894,13 @@ onMounted(async () => {
   width: 100%;
 }
 
+/* nut-input 自带 padding:10px 25px 且 box-sizing:border-box，宽度只给 40px 的话
+   左右内边距就把里面真正的 <input> 挤成 0 宽，点上去既不聚焦也弹不出键盘。
+   所以这里必须把左右内边距清掉，并留出够点的宽度。 */
 .assist-binding-key {
-  width: 40px;
+  width: 48px;
   flex-shrink: 0;
+  padding: 10px 0;
   text-align: center;
 }
 
