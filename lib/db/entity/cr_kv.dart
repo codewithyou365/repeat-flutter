@@ -60,6 +60,7 @@ enum CrK {
   displayModeBrowse,
   displayModeExamine,
   displayModeGlobalBrowse,
+  assistiveTouchSeekBackSeconds,
 }
 
 @Entity(primaryKeys: ['classroomId', 'k'])

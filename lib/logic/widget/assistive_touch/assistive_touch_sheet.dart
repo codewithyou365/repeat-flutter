@@ -9,6 +9,20 @@ import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
 
 class AssistiveTouchSheet {
+  /// "后退"能选的秒数。只给几档常用值，比让用户自己敲数字省事，也避免敲出 0/负数。
+  static const List<int> seekBackOptions = [3, 5, 10, 15, 20, 30];
+
+  /// 存的秒数不在候选里（改过候选档位、或旧版本存的值）时退回默认档，
+  /// 不能返回 -1——CupertinoPicker 的 initialItem 拿到负数会出问题。
+  static int _seekBackIndex(int seconds) {
+    final index = seekBackOptions.indexOf(seconds);
+    if (index != -1) {
+      return index;
+    }
+    final fallback = seekBackOptions.indexOf(AssistiveTouchLogic.defaultSeekBackSeconds);
+    return fallback == -1 ? 0 : fallback;
+  }
+
   static Future<void> open(AssistiveTouchLogic logic) async {
     await logic.loadActions();
     return Sheet.showBottomSheet(
@@ -50,6 +64,16 @@ class AssistiveTouchSheet {
                 ],
               ),
             ),
+            // 秒数只对"后退"这一个动作有意义，没把它加进菜单时不占位置。
+            if (logic.shownBuiltins.contains(BuiltInAction.seekBack)) ...[
+              RowWidget.buildDividerWithoutColor(),
+              RowWidget.buildCupertinoPicker(
+                title: I18nKey.seekBackSeconds.tr,
+                options: seekBackOptions.map((e) => '$e').toList(),
+                value: _seekBackIndex(logic.seekBackSeconds.value),
+                changed: (index) => logic.setSeekBackSeconds(seekBackOptions[index]),
+              ),
+            ],
           ],
         );
       }),

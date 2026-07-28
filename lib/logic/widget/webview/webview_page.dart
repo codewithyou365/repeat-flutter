@@ -36,6 +36,10 @@ class WebviewPage {
             child: InAppWebView(
               initialUrlRequest: URLRequest(url: WebUri(args.initialUrl)),
               initialSettings: logic.settings,
+              initialUserScripts: logic.debugUserScripts,
+              onConsoleMessage: (controller, msg) {
+                debugPrint("[web][${msg.messageLevel}] ${msg.message}");
+              },
               onWebViewCreated: (controller) => logic.webViewController = controller,
               onLoadStart: (controller, url) {
                 state.isLoading.value = true;

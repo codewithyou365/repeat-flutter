@@ -14,7 +14,9 @@ import 'package:repeat_flutter/page/repeat/logic/model_media_range.dart';
 import 'package:repeat_flutter/page/repeat/logic/repeat_flow_for_browse.dart';
 import 'package:repeat_flutter/page/repeat/logic/repeat_flow_for_examine.dart';
 import 'package:repeat_flutter/page/repeat/logic/repeat_view_for_audio.dart';
+import 'package:repeat_flutter/page/repeat/logic/repeat_view_for_video.dart';
 import 'package:repeat_flutter/page/repeat/repeat_logic.dart';
+import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 /// 内置动作（不是用户自己配的 AssistiveTouchAction 预设）。跟自定义动作一样，可以在自定义菜单里
@@ -28,6 +30,8 @@ enum BuiltInAction {
   ttsA,
   ttsTips,
   ttsNote,
+  playPause,
+  seekBack,
 }
 
 extension BuiltInActionX on BuiltInAction {
@@ -44,6 +48,10 @@ extension BuiltInActionX on BuiltInAction {
       case BuiltInAction.playA:
       case BuiltInAction.playTips:
         return Icons.play_circle_outline;
+      case BuiltInAction.playPause:
+        return Icons.play_arrow;
+      case BuiltInAction.seekBack:
+        return Icons.replay;
     }
   }
 
@@ -65,6 +73,10 @@ extension BuiltInActionX on BuiltInAction {
         return I18nKey.playAAction;
       case BuiltInAction.playTips:
         return I18nKey.playTipsAction;
+      case BuiltInAction.playPause:
+        return I18nKey.playPauseAction;
+      case BuiltInAction.seekBack:
+        return I18nKey.seekBackAction;
     }
   }
 }
@@ -86,6 +98,8 @@ class AssistiveTouchLogic {
 
   // 默认只显示"删除当前节"，TTS-*/Play-* 几个要用户自己从"新增"里加进来。
   final visibleBuiltins = <BuiltInAction>{BuiltInAction.deleteVerse}.obs;
+  static const defaultSeekBackSeconds = 10;
+  final seekBackSeconds = defaultSeekBackSeconds.obs;
   Size? _lastScreenSize;
   Timer? _idleTimer;
   static const idleCollapseDelay = Duration(seconds: 5);
@@ -132,10 +146,23 @@ class AssistiveTouchLogic {
     if (storedBuiltins == null) {
       visibleBuiltins.assignAll({BuiltInAction.deleteVerse});
     } else {
-      visibleBuiltins.assignAll(storedBuiltins.split(',').where((s) => s.isNotEmpty).map((s) => BuiltInAction.values.byName(s)));
+      // 存的是枚举名，代码改过(动作被删/改名、装了旧版本)时可能对不上。这里跳过不认识的名字，
+      // 不能用 byName——它会抛异常，而 loadSettings 是 RepeatLogic.onInit 的一环，一抛出来
+      // onInit 就中途夭折，后面的 gameLogic 等全都初始化不了，表现为复习页/游戏页整个空白。
+      final nameMap = BuiltInAction.values.asNameMap();
+      visibleBuiltins.assignAll(storedBuiltins.split(',').map((s) => nameMap[s]).whereType<BuiltInAction>());
     }
+    seekBackSeconds.value = await Db().db.crKvDao.getInt(Classroom.curr, CrK.assistiveTouchSeekBackSeconds) ?? defaultSeekBackSeconds;
     await loadActions();
     noteInteraction();
+  }
+
+  Future<void> setSeekBackSeconds(int seconds) async {
+    if (seconds <= 0) {
+      seconds = defaultSeekBackSeconds;
+    }
+    seekBackSeconds.value = seconds;
+    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.assistiveTouchSeekBackSeconds, seconds.toString()));
   }
 
   Future<void> setBuiltInVisible(BuiltInAction action, bool visible) async {
@@ -216,7 +243,28 @@ class AssistiveTouchLogic {
       case BuiltInAction.playTips:
         await _play((h) => h.getCurrTipRange());
         break;
+      case BuiltInAction.playPause:
+        _activeMediaBar()?.togglePlayPause();
+        break;
+      case BuiltInAction.seekBack:
+        _activeMediaBar()?.seekBack(seekBackSeconds.value);
+        break;
     }
+  }
+
+  /// Play/暂停、后退 N 秒复用的是"当前正在显示的音频/视频视图"里已经在播的那个 MediaBar，
+  /// 跟 Play-*（_playRange）不一样：它们不切字段、不重新加载，只操作现有播放器的播放状态。
+  MediaBarState? _activeMediaBar() {
+    final viewName = repeatLogic.state.helper.getCurrViewName();
+    final view = repeatLogic.showTypeToRepeatView[viewName];
+    if (view is RepeatViewForAudio) {
+      return view.mediaKey.currentState;
+    }
+    if (view is RepeatViewForVideo) {
+      return view.mediaKey.currentState;
+    }
+    Snackbar.show(I18nKey.labelNoContent.tr);
+    return null;
   }
 
   /// 播放"作用位置"上已有的内容：该字段配了可用的时间区间就播那一段（字段有自己的媒体就播

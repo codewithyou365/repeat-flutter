@@ -176,6 +176,21 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
     _playAtPosition(timeOffsetMs: widget.verseStartMs);
   }
 
+  /// 辅助触控"播放/暂停"：跟条上那个播放键完全一致，正在播就停，没播就从当前位置接着播。
+  Future<void> togglePlayPause() async {
+    if (_isLoading) return;
+    if (_isPlaying) {
+      await _stopPlayback(true);
+    } else {
+      await _playAtPosition();
+    }
+  }
+
+  /// 辅助触控"后退 N 秒"：跟条上 replay_5 一样，只是秒数由用户配置。
+  Future<void> seekBack(int seconds) async {
+    await _playAtPosition(incrementMs: -seconds * 1000);
+  }
+
   void setLoading(bool isLoading) {
     setState(() {
       _isLoading = isLoading;

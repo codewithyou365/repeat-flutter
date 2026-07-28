@@ -421,6 +421,9 @@ class ConfigEn extends Config {
     put(I18nKey.playQAction, "Play-Q");
     put(I18nKey.playAAction, "Play-A");
     put(I18nKey.playTipsAction, "Play-Tips");
+    put(I18nKey.playPauseAction, "Play/Pause");
+    put(I18nKey.seekBackAction, "Seek Back");
+    put(I18nKey.seekBackSeconds, "Seek Back Seconds");
     put(I18nKey.gamepadBinding, "Gamepad Bindings");
     put(I18nKey.gamepadPressButton, "Press a gamepad button...");
     put(I18nKey.gamepadUnbound, "Unbound");

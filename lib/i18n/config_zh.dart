@@ -419,6 +419,9 @@ class ConfigZh extends Config {
     put(I18nKey.playQAction, "Play-Q");
     put(I18nKey.playAAction, "Play-A");
     put(I18nKey.playTipsAction, "Play-Tips");
+    put(I18nKey.playPauseAction, "播放/暂停");
+    put(I18nKey.seekBackAction, "后退");
+    put(I18nKey.seekBackSeconds, "后退秒数");
     put(I18nKey.gamepadBinding, "手柄绑定");
     put(I18nKey.gamepadPressButton, "请按下手柄按键...");
     put(I18nKey.gamepadUnbound, "未绑定");
