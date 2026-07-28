@@ -489,6 +489,9 @@ class RepeatLogic extends GetxController {
       state.helper.tip = TipLevel.none;
     } else {
       state.helper.tip = TipLevel.tip;
+      // 打字游戏里点击"提示"按钮或按提示快捷键(hintTrigger)都会走到这里(tapMiddle),
+      // 这是用户主动要看提示的操作,应和音频/视频卡片点击播放一样解除"不自动播放媒体"标记
+      state.helper.doNotPlayMedia = false;
     }
     update([RepeatLogic.id]);
   }
