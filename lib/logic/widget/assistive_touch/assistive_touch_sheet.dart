@@ -64,16 +64,6 @@ class AssistiveTouchSheet {
                 ],
               ),
             ),
-            // 秒数只对"后退"这一个动作有意义，没把它加进菜单时不占位置。
-            if (logic.shownBuiltins.contains(BuiltInAction.seekBack)) ...[
-              RowWidget.buildDividerWithoutColor(),
-              RowWidget.buildCupertinoPicker(
-                title: I18nKey.seekBackSeconds.tr,
-                options: seekBackOptions.map((e) => '$e').toList(),
-                value: _seekBackIndex(logic.seekBackSeconds.value),
-                changed: (index) => logic.setSeekBackSeconds(seekBackOptions[index]),
-              ),
-            ],
           ],
         );
       }),
@@ -159,7 +149,11 @@ class AssistiveTouchSheet {
                     width: double.infinity,
                     onTap: () {
                       Get.back();
-                      logic.setBuiltInVisible(builtIn, true);
+                      if (builtIn == BuiltInAction.seekBack) {
+                        _askSeekBackSecondsThenAdd(logic);
+                      } else {
+                        logic.setBuiltInVisible(builtIn, true);
+                      }
                     },
                   );
                 }).toList(),
@@ -181,6 +175,42 @@ class AssistiveTouchSheet {
         height: RowWidget.rowHeight + RowWidget.dividerHeight,
         widgets: [
           RowWidget.buildMiddleText(I18nKey.selectAction.tr),
+          RowWidget.buildDivider(),
+        ],
+      ),
+      rate: 0.4,
+    );
+  }
+
+  /// "后退"的秒数只在勾选它时问一次，问完直接落库并把它加进菜单——比常驻在设置里占位置、
+  /// 又要多一次"改了要不要生效"的心智负担更省事。
+  static Future<void> _askSeekBackSecondsThenAdd(AssistiveTouchLogic logic) async {
+    final selected = _seekBackIndex(logic.seekBackSeconds.value).obs;
+    await Sheet.showBottomSheet(
+      Get.context!,
+      ListView(
+        shrinkWrap: true,
+        children: [
+          RowWidget.buildCupertinoPicker(
+            title: I18nKey.seekBackSeconds.tr,
+            options: seekBackOptions.map((e) => '$e').toList(),
+            value: selected.value,
+            changed: (index) => selected.value = index,
+          ),
+          RowWidget.buildDividerWithoutColor(),
+          RowWidget.buildButtons([
+            Button(I18nKey.btnOk.tr, () async {
+              await logic.setSeekBackSeconds(seekBackOptions[selected.value]);
+              await logic.setBuiltInVisible(BuiltInAction.seekBack, true);
+              Get.back();
+            }),
+          ]),
+        ],
+      ),
+      head: SheetHead(
+        height: RowWidget.rowHeight + RowWidget.dividerHeight,
+        widgets: [
+          RowWidget.buildMiddleText(BuiltInAction.seekBack.labelKey.tr),
           RowWidget.buildDivider(),
         ],
       ),
