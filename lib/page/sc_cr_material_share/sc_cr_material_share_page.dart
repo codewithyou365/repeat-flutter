@@ -37,6 +37,7 @@ class ScCrContentSharePage extends StatelessWidget {
     final state = logic.state;
     return ListView(
       children: [
+        RowWidget.buildDivider(),
         RowWidget.buildSwitch(
           title: I18nKey.labelDoYourShareTheNotes.tr,
           value: state.shareNote,
@@ -48,7 +49,6 @@ class ScCrContentSharePage extends StatelessWidget {
             title: state.original.title,
           ),
         if (state.original.address.isNotEmpty) RowWidget.buildDividerWithoutColor(),
-        if (state.original.address.isEmpty) RowWidget.buildDivider(),
         RowWidget.buildSwitch(
           title: I18nKey.web.tr,
           value: state.webStart,

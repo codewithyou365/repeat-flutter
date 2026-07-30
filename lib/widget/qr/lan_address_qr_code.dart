@@ -110,20 +110,29 @@ class _LanAddressQrCodeState extends State<LanAddressQrCode> {
                     ),
                   ),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      TextButton(
-                        onPressed: () {
-                          Clipboard.setData(ClipboardData(text: address));
-                          Snackbar.show(I18nKey.labelQrCodeContentCopiedToClipboard.tr);
-                        },
-                        child: Text(I18nKey.btnCopy.tr),
-                      ),
-                      if (widget.onKey != null)
-                        TextButton(
-                          onPressed: widget.onKey,
-                          child: Text(I18nKey.keyTitle.tr),
+                      Expanded(
+                        child: _softButton(
+                          context,
+                          icon: Icons.copy_rounded,
+                          text: I18nKey.btnCopy.tr,
+                          onTap: () {
+                            Clipboard.setData(ClipboardData(text: address));
+                            Snackbar.show(I18nKey.labelQrCodeContentCopiedToClipboard.tr);
+                          },
                         ),
+                      ),
+                      if (widget.onKey != null) ...[
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _softButton(
+                            context,
+                            icon: Icons.vpn_key_rounded,
+                            text: I18nKey.keyTitle.tr,
+                            onTap: widget.onKey!,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ],
@@ -131,6 +140,39 @@ class _LanAddressQrCodeState extends State<LanAddressQrCode> {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  /// 底部浅灰色圆角按钮，深浅色主题都跟随 secondaryHeaderColor。
+  Widget _softButton(
+    BuildContext context, {
+    required IconData icon,
+    required String text,
+    required VoidCallback onTap,
+  }) {
+    final radius = BorderRadius.circular(10);
+    return Material(
+      color: Theme.of(context).secondaryHeaderColor,
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: radius,
+        child: SizedBox(
+          height: 40,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                text,
+                style: const TextStyle(fontSize: 15),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
