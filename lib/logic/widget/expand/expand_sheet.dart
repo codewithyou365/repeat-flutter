@@ -156,19 +156,22 @@ class ExpandSheet {
           RowWidget.buildDividerWithoutColor(),
           Obx(() {
             if (logic.status.value == ExpandStatus.init) {
-              return RowWidget.buildButtons([
-                Button(I18nKey.testExecution.tr, () {
-                  logic.execute(logic.textController.text);
-                }),
-                Button(I18nKey.btnOk.tr, () async {
-                  final name = await MsgBox.password(I18nKey.assistiveTouchActionName.tr, I18nKey.assistiveTouchActionName.tr);
-                  if (name == null || name.trim().isEmpty) {
-                    return;
-                  }
-                  await logic.saveAsAction(name.trim());
-                  Get.back();
-                }),
-              ]);
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                child: _softButton(
+                  Get.context!,
+                  icon: Icons.check_rounded,
+                  text: I18nKey.btnOk.tr,
+                  onTap: () async {
+                    final name = await MsgBox.password(I18nKey.assistiveTouchActionName.tr, I18nKey.assistiveTouchActionName.tr);
+                    if (name == null || name.trim().isEmpty) {
+                      return;
+                    }
+                    await logic.saveAsAction(name.trim());
+                    Get.back();
+                  },
+                ),
+              );
             }
             return Container(
               padding: const EdgeInsets.all(12),
@@ -207,5 +210,38 @@ class ExpandSheet {
     ).then((_) {
       logic.reset();
     });
+  }
+
+  /// 浅灰色圆角按钮，跟二维码下方的「复制」按钮同一套样式，深浅色主题都跟随 secondaryHeaderColor。
+  Widget _softButton(
+    BuildContext context, {
+    required IconData icon,
+    required String text,
+    required VoidCallback onTap,
+  }) {
+    final radius = BorderRadius.circular(10);
+    return Material(
+      color: Theme.of(context).secondaryHeaderColor,
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: radius,
+        child: SizedBox(
+          height: 40,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                text,
+                style: const TextStyle(fontSize: 15),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
