@@ -6,6 +6,7 @@ class Helper {
     TextEditingController? controller,
     FocusNode? focusNode,
     ValueChanged<String>? onSubmitted,
+    ValueChanged<String>? onChanged,
   }) {
     return TextField(
       style: const TextStyle(fontSize: 20),
@@ -13,6 +14,7 @@ class Helper {
       focusNode: focusNode,
       textAlignVertical: TextAlignVertical.center,
       onSubmitted: onSubmitted,
+      onChanged: onChanged,
       decoration: InputDecoration(
         hintText: I18nKey.labelSearch.tr,
         isCollapsed: true,

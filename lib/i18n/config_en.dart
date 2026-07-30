@@ -460,5 +460,9 @@ class ConfigEn extends Config {
     put(I18nKey.guiding, "Guiding...");
     put(I18nKey.startPlaying, "Start Playing");
     put(I18nKey.shareAddress, "Share Address");
+    put(I18nKey.searchMaterial, "Search material");
+    put(I18nKey.labelBuildingIndex, "Building index...");
+    put(I18nKey.labelRebuildIndex, "Rebuild index");
+    put(I18nKey.labelNoSearchResult, "No matching content");
   }
 }

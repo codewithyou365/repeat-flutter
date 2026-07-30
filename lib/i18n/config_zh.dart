@@ -458,5 +458,9 @@ class ConfigZh extends Config {
     put(I18nKey.guiding, "引导中...");
     put(I18nKey.startPlaying, "开始游玩");
     put(I18nKey.shareAddress, "分享地址");
+    put(I18nKey.searchMaterial, "搜索材料");
+    put(I18nKey.labelBuildingIndex, "正在建立索引...");
+    put(I18nKey.labelRebuildIndex, "重建索引");
+    put(I18nKey.labelNoSearchResult, "没有匹配的内容");
   }
 }

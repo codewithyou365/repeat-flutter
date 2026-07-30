@@ -83,6 +83,10 @@ class ScCrMaterialLogic extends GetxController {
     Nav.mediaList.push();
   }
 
+  void showSearch() {
+    Nav.scCrMaterialSearch.push();
+  }
+
   Future<void> addByZip(int bookId) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,

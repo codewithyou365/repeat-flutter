@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/widget/app_bar/app_bar_widget.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/tile/name_tile.dart';
 
@@ -17,13 +18,16 @@ class ScCrMaterialPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(I18nKey.material.tr),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.perm_media),
-            tooltip: I18nKey.mediaList.tr,
-            onPressed: logic.showMediaList,
+        actions: AppBarWidget.buildAppBarAction([
+          PopupMenuItem<String>(
+            onTap: logic.showMediaList,
+            child: Text(I18nKey.mediaList.tr),
           ),
-        ],
+          PopupMenuItem<String>(
+            onTap: logic.showSearch,
+            child: Text(I18nKey.searchMaterial.tr),
+          ),
+        ]),
       ),
       body: GetBuilder<ScCrMaterialLogic>(
         id: ScCrMaterialLogic.id,

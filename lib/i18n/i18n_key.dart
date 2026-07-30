@@ -458,6 +458,10 @@ enum I18nKey {
   guiding,
   startPlaying,
   shareAddress,
+  searchMaterial,
+  labelBuildingIndex,
+  labelRebuildIndex,
+  labelNoSearchResult,
   none;
 
   String trArgs([List<String> args = const []]) {
