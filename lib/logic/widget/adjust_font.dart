@@ -26,7 +26,7 @@ class AdjustFont<T extends GetxController> {
     required Map<String, dynamic> bookMap,
   }) async {
     List<DownloadContent> list = DownloadContent.toList(bookMap['d']) ?? [];
-    String alias = bookMap['$fontPrefix${ClassroomHelp.fontAliasSuffix}'] ?? '';
+    String alias = VerseField.getStr(bookMap, fontPrefix, VerseField.fontAlias) ?? '';
     final fontSizeVal = RxDouble(textFontSize(fontPrefix, bookMap));
     RxString fontDisplay = RxString(alias);
     return Sheet.showBottomSheet<void>(
@@ -90,8 +90,8 @@ class AdjustFont<T extends GetxController> {
                 }
 
                 bookMap['d'] = list.map((e) => e.toJson()).toList();
-                bookMap['$fontPrefix${ClassroomHelp.fontAliasSuffix}'] = fileName;
-                bookMap['$fontPrefix${ClassroomHelp.fontHashSuffix}'] = download.hash;
+                VerseField.setStr(bookMap, fontPrefix, VerseField.fontAlias, fileName);
+                VerseField.setStr(bookMap, fontPrefix, VerseField.fontHash, download.hash);
                 await Db().db.bookDao.updateBookContent(bookId, jsonEncode(bookMap));
 
                 fontDisplay.value = fileName;
@@ -102,8 +102,8 @@ class AdjustFont<T extends GetxController> {
                   ? null
                   : IconButton(
                       onPressed: () async {
-                        bookMap['$fontPrefix${ClassroomHelp.fontAliasSuffix}'] = "";
-                        bookMap['$fontPrefix${ClassroomHelp.fontHashSuffix}'] = "";
+                        VerseField.setStr(bookMap, fontPrefix, VerseField.fontAlias, null);
+                        VerseField.setStr(bookMap, fontPrefix, VerseField.fontHash, null);
 
                         fontDisplay.value = "";
 
@@ -122,9 +122,9 @@ class AdjustFont<T extends GetxController> {
   }
 
   double textFontSize(String fontPrefix, Map<String, dynamic> map) {
-    final fontSizeKey = "$fontPrefix${ClassroomHelp.fontSizeSuffix}";
-    if (map[fontSizeKey] != null) {
-      return double.parse(map[fontSizeKey]);
+    final v = VerseField.getStr(map, fontPrefix, VerseField.fontSize);
+    if (v != null) {
+      return double.parse(v);
     }
     return 17;
   }
@@ -167,9 +167,8 @@ class AdjustFont<T extends GetxController> {
           MsgBox.button(
             text: I18nKey.save.tr,
             onPressed: () async {
-              final fontSizeKey = "$fontPrefix${ClassroomHelp.fontSizeSuffix}";
               var bookMap = map;
-              bookMap[fontSizeKey] = '${v.value}';
+              VerseField.setStr(bookMap, fontPrefix, VerseField.fontSize, '${v.value}');
               await Db().db.bookDao.updateBookContent(bookId, jsonEncode(bookMap));
               Get.back();
               ret = v.value;

@@ -9,6 +9,7 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/widget/expand/expand_logic.dart';
+import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/page/repeat/logic/model_media_range.dart';
 import 'package:repeat_flutter/page/repeat/logic/repeat_flow_for_browse.dart';
@@ -317,8 +318,8 @@ class AssistiveTouchLogic {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
-    final text = map[type.acronym];
-    if (text is! String || text.isEmpty) {
+    final text = VerseField.getText(map, type.acronym);
+    if (text == null) {
       Snackbar.show(I18nKey.labelNoContent.tr);
       return;
     }

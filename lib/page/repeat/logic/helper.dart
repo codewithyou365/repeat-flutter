@@ -291,14 +291,18 @@ class Helper {
     );
   }
 
-  /// 某个字段（'q'/'a'/'t'）专属的媒体文件。只看 verse 这一层：字段专属媒体是小节级别的概念，
+  /// verse -> chapter -> book，字段块按这个顺序继承（整章共用一个媒体时只在 chapter 上写一次）。
+  List<Map<String, dynamic>?> get fieldLevels => [getCurrVerseMap(), getCurrChapterMap(), getCurrBookMap()];
+
+  /// 某个字段（'q'/'a'/'t'）专属的媒体文件：字段块里只有 mediaHash，文件对象在某一层的 'd' 里。
   /// 没有配就返回 null，走整节的 'd'。
   DownloadContent? getFieldDownload(String acronym) {
-    final map = getCurrVerseMap();
-    if (map == null) {
+    final levels = fieldLevels;
+    final hash = VerseField.lookup(levels, acronym, VerseField.mediaHash);
+    if (hash == null) {
       return null;
     }
-    return DownloadContent.fromJsonOrNull(map[DownloadContent.fieldKey(acronym)]);
+    return VerseField.findDownloadByHash(levels, hash);
   }
 
   String? getFieldPath(String acronym) {
@@ -336,20 +340,20 @@ class Helper {
     if (map == null) {
       return false;
     }
-    final start = map['${acronym}Start'];
-    final end = map['${acronym}End'];
-    return start is String && start.isNotEmpty && end is String && end.isNotEmpty;
+    final start = VerseField.getStr(map, acronym, VerseField.start);
+    final end = VerseField.getStr(map, acronym, VerseField.end);
+    return start != null && end != null;
   }
 
-  /// 某个字段自己的视图类型：优先取显式写下的 'aShowType'（整节的 's' 是 q/a 共用的，
+  /// 某个字段自己的视图类型：优先取显式写下的 'a'.'showType'（整节的 's' 是 q/a 共用的，
   /// 一节里 q 是视频、a 是音频时只能各记各的），没有就按该字段媒体的扩展名推。都没有返回 null。
   String? getFieldViewName(String acronym) {
     final map = getCurrVerseMap();
     if (map == null) {
       return null;
     }
-    final showType = map[VerseContent.fieldShowTypeKey(acronym)];
-    if (showType is String && showType.isNotEmpty) {
+    final showType = VerseField.lookup(fieldLevels, acronym, VerseField.showType);
+    if (showType != null) {
       return showType;
     }
     final d = getFieldDownload(acronym);
@@ -506,12 +510,21 @@ class Helper {
           // 裁的是字段专属媒体时，裁完的文件仍然只属于这个字段，不能写成整节的 'd'，
           // 否则字段还指着老文件、时间区间却按新文件算，两边对不上。
           if (getFieldDownload(range.fieldAcronym) != null) {
-            verseMap[DownloadContent.fieldKey(range.fieldAcronym)] = dc.toJson();
+            final bookMap = getCurrBookMap();
+            final bookChanged = VerseField.setMedia(
+              verse: verseMap,
+              book: bookMap,
+              acronym: range.fieldAcronym,
+              d: dc,
+            );
+            if (bookChanged) {
+              await Db().db.bookDao.updateBookContent(verse.bookId, jsonEncode(bookMap));
+            }
           } else {
             verseMap['d'] = [dc];
           }
-          verseMap[range.jsonStartName] = "00:00:00,000";
-          verseMap[range.jsonEndName] = Time.convertMsToString(durationMs + 100);
+          VerseField.setStr(verseMap, range.fieldAcronym, VerseField.start, "00:00:00,000");
+          VerseField.setStr(verseMap, range.fieldAcronym, VerseField.end, Time.convertMsToString(durationMs + 100));
           String jsonStr = jsonEncode(verseMap);
           await Db().db.verseDao.updateVerseContent(verse.verseId, jsonStr);
           logic.update();

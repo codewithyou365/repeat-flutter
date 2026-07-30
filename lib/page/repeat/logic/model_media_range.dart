@@ -9,6 +9,7 @@ import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/book_help.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
+import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
@@ -21,18 +22,16 @@ class MediaRange {
   int start;
   int end;
   bool enable;
-  String jsonStartName;
-  String jsonEndName;
 
-  /// 这个区间属于哪个字段（'q'/'a'/'t'），用来找该字段的专属媒体（'aDownload' 等）。
-  String get fieldAcronym => jsonStartName.substring(0, 1);
+  /// 这个区间属于哪个字段（'q'/'a'/'t'）：区间存在该字段块的 'start'/'end' 里，
+  /// 该字段的专属媒体（'download'）也在同一块里。
+  String fieldAcronym;
 
   MediaRange({
     required this.start,
     required this.end,
     required this.enable,
-    this.jsonStartName = "qStart",
-    this.jsonEndName = "qEnd",
+    this.fieldAcronym = "q",
   });
 }
 
@@ -102,18 +101,18 @@ class MediaRangeHelper {
   }
 
   MediaRange? getCurrAnswerRange() {
-    return _getCurrRange(answerRangeCache, "aStart", "aEnd");
+    return _getCurrRange(answerRangeCache, QaType.answer.acronym);
   }
 
   MediaRange? getCurrQuestionRange() {
-    return _getCurrRange(questionRangeCache, "qStart", "qEnd");
+    return _getCurrRange(questionRangeCache, QaType.question.acronym);
   }
 
   MediaRange? getCurrTipRange() {
-    return _getCurrRange(tipRangeCache, "tStart", "tEnd");
+    return _getCurrRange(tipRangeCache, QaType.tip.acronym);
   }
 
-  MediaRange? _getCurrRange(Map<int, MediaRange> cache, String jsonStartName, String jsonEndName) {
+  MediaRange? _getCurrRange(Map<int, MediaRange> cache, String fieldAcronym) {
     if (helper.logic.currVerse == null) {
       return null;
     }
@@ -125,23 +124,21 @@ class MediaRangeHelper {
     if (s == null) {
       return null;
     }
-    String? startStr = s[jsonStartName] as String?;
-    String? endStr = s[jsonEndName] as String?;
+    String? startStr = VerseField.getStr(s, fieldAcronym, VerseField.start);
+    String? endStr = VerseField.getStr(s, fieldAcronym, VerseField.end);
     bool enable = true;
-    if (startStr == null || startStr.isEmpty) {
+    if (startStr == null) {
       startStr = defaultStart;
       enable = false;
     }
-    if (endStr == null || endStr.isEmpty) {
+    if (endStr == null) {
       endStr = defaultEnd;
       enable = false;
     }
     final start = Time.parseTimeToMilliseconds(startStr).toInt();
     final end = Time.parseTimeToMilliseconds(endStr).toInt();
-    ret = MediaRange(start: start, end: end, enable: enable);
+    ret = MediaRange(start: start, end: end, enable: enable, fieldAcronym: fieldAcronym);
     cache[helper.logic.currVerse!.verseId] = ret;
-    ret.jsonStartName = jsonStartName;
-    ret.jsonEndName = jsonEndName;
     return ret;
   }
 
@@ -158,14 +155,13 @@ class MediaRangeHelper {
             Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["map"]));
             return;
           }
-          if (map[range.jsonStartName] == null) {
-            map[range.jsonStartName] = defaultStart;
+          if (VerseField.getStr(map, range.fieldAcronym, VerseField.start) == null) {
+            VerseField.setStr(map, range.fieldAcronym, VerseField.start, defaultStart);
           }
-          if (map[range.jsonEndName] == null) {
-            map[range.jsonEndName] = defaultEnd;
+          if (VerseField.getStr(map, range.fieldAcronym, VerseField.end) == null) {
+            VerseField.setStr(map, range.fieldAcronym, VerseField.end, defaultEnd);
           }
-          String jsonName = start ? range.jsonStartName : range.jsonEndName;
-          map[jsonName] = str;
+          VerseField.setStr(map, range.fieldAcronym, start ? VerseField.start : VerseField.end, str);
           String jsonStr = jsonEncode(map);
           var verseId = helper.getCurrVerse()!.verseId;
           await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
@@ -243,21 +239,22 @@ class MediaRangeHelper {
     switch (view) {
       case RepeatViewEnum.audio:
       case RepeatViewEnum.video:
+        // 字段块是嵌套的 map，浅拷贝会跟原内容共用同一个块，必须每块单独复制一份再改。
         final Map<String, dynamic> m = Map<String, dynamic>.from(vm);
-        if (vm['aEnd'] != null) {
-          final int aEndMs = Time.parseTimeToMilliseconds(vm['aEnd']).toInt();
-          final int aStartMs = aEndMs - 500;
-
-          m['aStart'] = Time.convertMsToString(aStartMs);
-          m['aEnd'] = Time.convertMsToString(aStartMs + 6000);
-        }
-
-        if (vm['qEnd'] != null) {
-          final int qEndMs = Time.parseTimeToMilliseconds(vm['qEnd']).toInt();
-          final int qStartMs = qEndMs - 500;
-
-          m['qStart'] = Time.convertMsToString(qStartMs);
-          m['qEnd'] = Time.convertMsToString(qStartMs + 6000);
+        for (var acronym in [QaType.answer.acronym, QaType.question.acronym]) {
+          final field = VerseField.of(m, acronym);
+          if (field == null) {
+            continue;
+          }
+          m[acronym] = Map<String, dynamic>.from(field);
+          final endStr = VerseField.getStr(m, acronym, VerseField.end);
+          if (endStr == null) {
+            continue;
+          }
+          final int endMs = Time.parseTimeToMilliseconds(endStr).toInt();
+          final int startMs = endMs - 500;
+          VerseField.setStr(m, acronym, VerseField.start, Time.convertMsToString(startMs));
+          VerseField.setStr(m, acronym, VerseField.end, Time.convertMsToString(startMs + 6000));
         }
         var newVerseShow = v.copy();
         newVerseShow.verseContent = jsonEncode(m);

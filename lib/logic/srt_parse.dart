@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:repeat_flutter/logic/model/book_content.dart';
+
 /// Dart port of `example/srt.go`. Keep in sync with the Go source if that file changes;
 /// the mode marker line, the offset%3 cue-cycle, and the post-processing padding order
 /// are all faithfully mirrored, not just approximated.
@@ -12,15 +14,16 @@ class SrtSegment {
   String? tip;
   String? a;
 
+  /// 直接就是一节的 verse 内容：每个字段一块 `{'text','start','end'}`（见 [VerseField]）。
   Map<String, dynamic> toJson() {
     final m = <String, dynamic>{};
-    if (qStart != null && qStart!.isNotEmpty) m['qStart'] = qStart;
-    if (qEnd != null && qEnd!.isNotEmpty) m['qEnd'] = qEnd;
-    if (q != null && q!.isNotEmpty) m['q'] = q;
-    if (aStart != null && aStart!.isNotEmpty) m['aStart'] = aStart;
-    if (aEnd != null && aEnd!.isNotEmpty) m['aEnd'] = aEnd;
-    if (tip != null && tip!.isNotEmpty) m['tip'] = tip;
-    if (a != null && a!.isNotEmpty) m['a'] = a;
+    VerseField.setStr(m, 'q', VerseField.text, q);
+    VerseField.setStr(m, 'q', VerseField.start, qStart);
+    VerseField.setStr(m, 'q', VerseField.end, qEnd);
+    VerseField.setStr(m, 'a', VerseField.text, a);
+    VerseField.setStr(m, 'a', VerseField.start, aStart);
+    VerseField.setStr(m, 'a', VerseField.end, aEnd);
+    VerseField.setStr(m, 't', VerseField.text, tip);
     return m;
   }
 }

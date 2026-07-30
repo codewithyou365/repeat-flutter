@@ -12,6 +12,7 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/book_help.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
@@ -79,7 +80,7 @@ class ExpandLogic {
   }
 
   String getSourceText() {
-    return verseMap[toSourceQaType(sourceIndex.value).acronym] ?? '';
+    return VerseField.getText(verseMap, toSourceQaType(sourceIndex.value).acronym) ?? '';
   }
 
   var targetIndex = 0.obs;
@@ -132,8 +133,8 @@ class ExpandLogic {
   Future<void> execute(String msg, {bool closeOnSuccess = true}) async {
     final target = toQaType(targetIndex.value);
     if (behavior.value == ExpandBehavior.playOrOverwrite) {
-      final existing = verseMap[target.acronym];
-      if (existing is String && existing.isNotEmpty) {
+      final existing = VerseField.getText(verseMap, target.acronym);
+      if (existing != null) {
         await onPlayTarget?.call(target);
         return;
       }
@@ -243,6 +244,20 @@ class ExpandLogic {
     });
   }
 
+  /// 扩展助手只拿得到 verse 那一层，book 的内容从缓存里取（用来就近登记媒体）。
+  Map<String, dynamic>? _bookMap() {
+    final book = BookHelp.getCache(bookId);
+    if (book == null) {
+      return null;
+    }
+    try {
+      final ret = jsonDecode(book.bookContent);
+      return ret is Map<String, dynamic> ? ret : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> _onTaskComplete(Map<String, dynamic> result, {DownloadContent? dc}) async {
     String text = result['text'] ?? "";
     if (text.isEmpty) {
@@ -255,15 +270,20 @@ class ExpandLogic {
 
     String key = toQaType(targetIndex.value).acronym;
     if (key.isNotEmpty && text.isNotEmpty) {
-      targetMap[key] = text;
+      VerseField.setText(targetMap, key, text);
       logs.add("Content overwritten to: ${targetOptions[targetIndex.value]}");
     }
 
     if (enableAudio.value && dc != null) {
-      // 生成的音频只挂到这个字段上（'aDownload' + 'aShowType'），不动整节的 's'/'d'：
+      // 生成的音频只挂到这个字段块上（'a' 里的 'mediaHash' + 'showType'），不动整节的 's'：
       // 否则一节里问题是章节视频、答案是新音频时，会把视频整个遮蔽掉，'s' 也会把 q 一起改了。
-      targetMap[DownloadContent.fieldKey(key)] = dc.toJson();
-      targetMap[VerseContent.fieldShowTypeKey(key)] = RepeatViewEnum.audio.name;
+      // 文件对象登记到 'd' 里（就近，见 VerseField.setMedia），字段块只存 hash。
+      final bookMap = _bookMap();
+      final bookChanged = VerseField.setMedia(verse: targetMap, book: bookMap, acronym: key, d: dc);
+      if (bookChanged && bookMap != null) {
+        await Db().db.bookDao.updateBookContent(bookId, jsonEncode(bookMap));
+      }
+      VerseField.setStr(targetMap, key, VerseField.showType, RepeatViewEnum.audio.name);
 
       try {
         var rootPath = await DocPath.getContentPath();
@@ -275,22 +295,25 @@ class ExpandLogic {
 
         int ms = duration?.inMilliseconds ?? 0;
 
-        targetMap['${key}Start'] = "00:00:00,000";
-        targetMap['${key}End'] = Time.convertMsToString(ms);
+        VerseField.setStr(targetMap, key, VerseField.start, "00:00:00,000");
+        VerseField.setStr(targetMap, key, VerseField.end, Time.convertMsToString(ms));
         logs.add("Audio saved. Duration: ${Time.convertMsToString(ms)}");
       } catch (e) {
-        targetMap['${key}Start'] = "00:00:00,000";
-        targetMap['${key}End'] = "00:00:05,000";
+        VerseField.setStr(targetMap, key, VerseField.start, "00:00:00,000");
+        VerseField.setStr(targetMap, key, VerseField.end, "00:00:05,000");
         logs.add("Failed to read duration, using default: $e");
       }
     } else {
       // 这次只出文本：只有该字段之前挂过生成的音频时，才把音频和它的时间区间一起清掉，
       // 免得还播着跟新文本对不上的旧音频。区间本来就属于整节媒体（比如从字幕导入的）时不能动。
-      if (targetMap[DownloadContent.fieldKey(key)] != null) {
-        targetMap.remove(DownloadContent.fieldKey(key));
-        targetMap.remove(VerseContent.fieldShowTypeKey(key));
-        targetMap.remove('${key}Start');
-        targetMap.remove('${key}End');
+      // 只清这一节自己写下的 mediaHash：继承自 chapter/book 的媒体不该被一节的改动带走。
+      if (VerseField.getStr(targetMap, key, VerseField.mediaHash) != null) {
+        VerseField.remove(targetMap, key, [
+          VerseField.mediaHash,
+          VerseField.showType,
+          VerseField.start,
+          VerseField.end,
+        ]);
       }
     }
     String jsonStr = jsonEncode(targetMap);

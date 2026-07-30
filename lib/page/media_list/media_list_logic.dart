@@ -64,8 +64,8 @@ class MediaListLogic extends GetxController {
       } catch (_) {
         return;
       }
-      // 整层的 d[] 之外，字段专属媒体（aDownload 等）也是这行的媒体。
-      final ds = DownloadContent.allOf(map);
+      // 字段专属媒体只在字段块里存 hash，文件对象一律在某一层的 d[] 里，所以这里只看 d[]。
+      final ds = DownloadContent.toList(map['d']) ?? [];
       if (ds.isEmpty) {
         return;
       }
@@ -166,14 +166,6 @@ class MediaListLogic extends GetxController {
         }
         if (changed) {
           map['d'] = ds.map((e) => e.toJson()).toList();
-        }
-      }
-      for (final key in DownloadContent.fieldKeys) {
-        final d = DownloadContent.fromJsonOrNull(map[key]);
-        if (d != null && d.hash == item.hash) {
-          d.n = newName;
-          map[key] = d.toJson();
-          changed = true;
         }
       }
       if (!changed) continue;

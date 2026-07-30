@@ -46,9 +46,6 @@ class ContentEntry {
 }
 
 class ClassroomHelp {
-  static const fontAliasSuffix = "FontAlias";
-  static const fontHashSuffix = "FontHash";
-  static const fontSizeSuffix = "FontSize";
   static Map<int, String> savedVersionSigCacheMap = {};
 
   static Future<void> registerRes() async {
@@ -72,10 +69,10 @@ class ClassroomHelp {
 
         const prefixes = ['q', 't', 'a', 'n'];
         for (var prefix in prefixes) {
-          String alias = bookMap['$prefix$fontAliasSuffix'] ?? '';
-          String hash = bookMap['$prefix$fontHashSuffix'] ?? '';
+          String? alias = VerseField.getStr(bookMap, prefix, VerseField.fontAlias);
+          String? hash = VerseField.getStr(bookMap, prefix, VerseField.fontHash);
 
-          if (alias.isNotEmpty && hash.isNotEmpty) {
+          if (alias != null && hash != null) {
             final download = downloads.firstWhereOrNull((e) => e.hash == hash);
             if (download != null) {
               final localFolder = rootPath.joinPath(DocPath.getRelativePath(book.id!).joinPath(download.folder));

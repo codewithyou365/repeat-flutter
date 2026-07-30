@@ -3,13 +3,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/db/entity/tip.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/classroom_help.dart';
+import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_button.dart';
 import 'package:repeat_flutter/logic/widget/close_eyes/close_eyes_panel.dart';
@@ -379,8 +378,8 @@ class RepeatPage extends StatelessWidget {
       bool isTip = tabIndex == 0;
       bool isEditMode = helper.showMode.value == ShowMode.edit;
 
-      String tipText = map[QaType.tip.acronym] ?? I18nKey.labelNoContent.tr;
-      String noteText = map[QaType.note.acronym] ?? '';
+      String tipText = VerseField.getText(map, QaType.tip.acronym) ?? I18nKey.labelNoContent.tr;
+      String noteText = VerseField.getText(map, QaType.note.acronym) ?? '';
 
       String displayText = isTip ? tipText : noteText;
 
@@ -471,7 +470,7 @@ class RepeatPage extends StatelessWidget {
                     }
                   : null,
               onText: () async {
-                final String text = map[qaType.acronym] ?? '';
+                final String text = VerseField.getText(map, qaType.acronym) ?? '';
                 if (text.isEmpty) {
                   return;
                 }
@@ -479,7 +478,7 @@ class RepeatPage extends StatelessWidget {
                 await logic.copyLogic.show(
                   TextTemplateMode.editAndCopy,
                   Get.context!,
-                  map[qaType.acronym] ?? '',
+                  text,
                 );
                 helper.stopMedia(true);
               },
@@ -514,7 +513,7 @@ class RepeatPage extends StatelessWidget {
       fontSize: fontSizeVal,
       fontFamily: fontAlias(logic, type),
     );
-    String text = map[type.acronym] ?? '';
+    String text = VerseField.getText(map, type.acronym) ?? '';
     BoxDecoration? iconDecoration;
     Future<void> Function()? onIconCallback;
     IconData? onIconData;
@@ -564,9 +563,9 @@ class RepeatPage extends StatelessWidget {
     await Nav.editor.push(
       arguments: EditorArgs(
         title: type.i18n.tr,
-        value: map[type.acronym] ?? '',
+        value: VerseField.getText(map, type.acronym) ?? '',
         save: (str) async {
-          map[type.acronym] = str;
+          VerseField.setText(map, type.acronym, str);
           String jsonStr = jsonEncode(map);
           var verseId = helper.getCurrVerse()!.verseId;
           await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
@@ -580,7 +579,7 @@ class RepeatPage extends StatelessWidget {
   Future<void> fullModify(Map<String, dynamic> map, RepeatLogic logic, QaType type) async {
     var helper = logic.state.helper;
     helper.stopMedia(false);
-    String text = map[type.acronym] ?? '';
+    String text = VerseField.getText(map, type.acronym) ?? '';
     var keys = [
       I18nKey.font.tr,
       I18nKey.content.tr,
@@ -609,7 +608,7 @@ class RepeatPage extends StatelessWidget {
           title: type.i18n.tr,
           value: text,
           save: (str) async {
-            map[type.acronym] = str;
+            VerseField.setText(map, type.acronym, str);
             String jsonStr = jsonEncode(map);
             var verseId = helper.getCurrVerse()!.verseId;
             await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
@@ -622,11 +621,11 @@ class RepeatPage extends StatelessWidget {
   }
 
   double? fontSize(RepeatLogic logic, QaType type) {
-    final helper = logic.state.helper;
-    final fontSizeKey = "${type.acronym}${ClassroomHelp.fontSizeSuffix}";
-    final val = ListUtil.getValue([
-      helper.getCurrBookMap(),
-    ], fontSizeKey);
+    final bookMap = logic.state.helper.getCurrBookMap();
+    if (bookMap == null) {
+      return null;
+    }
+    final val = VerseField.getStr(bookMap, type.acronym, VerseField.fontSize);
     if (val != null) {
       return double.parse(val);
     }
@@ -634,15 +633,11 @@ class RepeatPage extends StatelessWidget {
   }
 
   String? fontAlias(RepeatLogic logic, QaType type) {
-    final helper = logic.state.helper;
-    final key = "${type.acronym}${ClassroomHelp.fontAliasSuffix}";
-    final val = ListUtil.getValue([
-      helper.getCurrBookMap(),
-    ], key);
-    if (val != null) {
-      return val as String;
+    final bookMap = logic.state.helper.getCurrBookMap();
+    if (bookMap == null) {
+      return null;
     }
-    return null;
+    return VerseField.getStr(bookMap, type.acronym, VerseField.fontAlias);
   }
 
   Widget fullScreenPanel(RepeatLogic logic) {

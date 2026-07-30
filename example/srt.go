@@ -16,13 +16,36 @@ const NormalMode = "n"
 const NormalWithPerfectPunctuationMode = "npp"
 
 type segment struct {
-	QStart string `json:"qStart,omitempty"`
-	QEnd   string `json:"qEnd,omitempty"`
-	Q      string `json:"q,omitempty"`
-	AStart string `json:"aStart,omitempty"`
-	AEnd   string `json:"aEnd,omitempty"`
-	Tip    string `json:"tip,omitempty"`
-	A      string `json:"a,omitempty"`
+	QStart string
+	QEnd   string
+	Q      string
+	AStart string
+	AEnd   string
+	Tip    string
+	A      string
+}
+
+// MarshalJSON 直接输出一节的 verse 内容：每个字段一块 {"text","start","end"}。
+// 跟 lib/logic/model/book_content.dart 的 VerseField、lib/logic/srt_parse.dart 保持一致。
+func (s *segment) MarshalJSON() ([]byte, error) {
+	m := map[string]map[string]string{}
+	set := func(acronym, key, value string) {
+		if value == "" {
+			return
+		}
+		if m[acronym] == nil {
+			m[acronym] = map[string]string{}
+		}
+		m[acronym][key] = value
+	}
+	set("q", "text", s.Q)
+	set("q", "start", s.QStart)
+	set("q", "end", s.QEnd)
+	set("a", "text", s.A)
+	set("a", "start", s.AStart)
+	set("a", "end", s.AEnd)
+	set("t", "text", s.Tip)
+	return json.Marshal(m)
 }
 
 func main() {

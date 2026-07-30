@@ -7,6 +7,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -120,8 +121,8 @@ class TtsHelper {
     final currVerseMap = helper.getCurrVerseMap();
     if (currVerseMap == null) return;
 
-    var tip = currVerseMap['t'];
-    if (tip is! String || tip.isEmpty) return;
+    var tip = VerseField.getText(currVerseMap, QaType.tip.acronym);
+    if (tip == null) return;
 
     try {
       if (await tryInit(TtsKeys.tip)) {

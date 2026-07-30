@@ -11,6 +11,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
@@ -106,9 +107,9 @@ a{{index1}}: {{answer}}
               'index0': e.key,
               'index1': e.key + 1,
               'indexA': Num.toBase26(e.key),
-              'question': m['q'] ?? '',
-              'answer': m['a'] ?? '',
-              'tip': m['t'] ?? '',
+              'question': VerseField.getText(m, 'q') ?? '',
+              'answer': VerseField.getText(m, 'a') ?? '',
+              'tip': VerseField.getText(m, 't') ?? '',
             };
           }).toList(),
         });
