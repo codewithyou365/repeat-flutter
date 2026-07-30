@@ -584,7 +584,6 @@ class RepeatPage extends StatelessWidget {
     var keys = [
       I18nKey.font.tr,
       I18nKey.content.tr,
-      I18nKey.tts.tr,
     ];
     int? index = await Select.showSheet(title: I18nKey.editWhat.trArgs([type.i18n.tr]), keys: keys);
     if (index == null) {
@@ -618,8 +617,6 @@ class RepeatPage extends StatelessWidget {
           },
         ),
       );
-    } else if (keys[index] == I18nKey.tts.tr) {
-      logic.ttsHelper.open(type.ttsKeys);
     }
     helper.stopMedia(true);
   }
