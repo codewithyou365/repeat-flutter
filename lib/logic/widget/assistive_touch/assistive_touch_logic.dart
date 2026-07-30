@@ -96,9 +96,9 @@ class AssistiveTouchLogic {
   final collapsed = false.obs;
   final actions = <AssistiveTouchAction>[].obs;
 
-  // 默认只显示"删除当前节"，TTS-*/Play-* 几个要用户自己从"新增"里加进来。
-  final visibleBuiltins = <BuiltInAction>{BuiltInAction.deleteVerse}.obs;
-  static const defaultSeekBackSeconds = 10;
+  // 默认只显示"播放/暂停""后退3s"，删除当前节/TTS-*/Play-* 几个要用户自己从"新增"里加进来。
+  final visibleBuiltins = <BuiltInAction>{BuiltInAction.playPause, BuiltInAction.seekBack}.obs;
+  static const defaultSeekBackSeconds = 3;
   final seekBackSeconds = defaultSeekBackSeconds.obs;
   Size? _lastScreenSize;
   Timer? _idleTimer;
@@ -144,7 +144,7 @@ class AssistiveTouchLogic {
     posY.value = double.tryParse(await Db().db.crKvDao.getStr(Classroom.curr, CrK.assistiveTouchPosY) ?? '') ?? -1;
     final storedBuiltins = await Db().db.crKvDao.getStr(Classroom.curr, CrK.assistiveTouchVisibleBuiltins);
     if (storedBuiltins == null) {
-      visibleBuiltins.assignAll({BuiltInAction.deleteVerse});
+      visibleBuiltins.assignAll({BuiltInAction.playPause, BuiltInAction.seekBack});
     } else {
       // 存的是枚举名，代码改过(动作被删/改名、装了旧版本)时可能对不上。这里跳过不认识的名字，
       // 不能用 byName——它会抛异常，而 loadSettings 是 RepeatLogic.onInit 的一环，一抛出来
