@@ -58,6 +58,9 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
   bool _controlsVisible = true;
   final Random _rng = Random();
 
+  static const List<double> _speedPresets = [1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0];
+  double _speed = 1.0;
+
   MediaItem? get _current => (_index >= 0 && _index < widget.items.length) ? widget.items[_index] : null;
 
   @override
@@ -191,6 +194,7 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
       _audioDurSub = audio.durationStream.listen((d) {
         if (mounted && d != null) setState(() => _dur = d);
       });
+      _applySpeed();
       // Not awaited on purpose: see the playerStateStream listener above.
       audio.play();
       if (mounted) setState(() => _isPlaying = true);
@@ -208,6 +212,7 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
       if (!identical(_video, video)) return; // superseded
       _dur = video.value.duration;
       video.addListener(_videoListener);
+      _applySpeed();
       await video.play();
       if (mounted) setState(() => _isPlaying = true);
     } catch (e) {
@@ -422,6 +427,21 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
     });
   }
 
+  void _applySpeed() {
+    _audio?.setSpeed(_speed);
+    _video?.setPlaybackSpeed(_speed);
+  }
+
+  void _cycleSpeed() {
+    final i = _speedPresets.indexOf(_speed);
+    setState(() => _speed = _speedPresets[(i + 1) % _speedPresets.length]);
+    _applySpeed();
+  }
+
+  static String _fmtSpeed(double s) {
+    return s == s.roundToDouble() ? '${s.toInt()}x' : '${s}x';
+  }
+
   IconData _modeIcon() {
     switch (_mode) {
       case PlayMode.shuffle:
@@ -524,6 +544,17 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
                 ),
                 _barIcon(Icons.fast_forward, onTap: () => _advance(1)),
                 const Spacer(),
+                if (hasTime)
+                  GestureDetector(
+                    onTap: _cycleSpeed,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: Text(
+                        _fmtSpeed(_speed),
+                        style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
                 if (hasTime)
                   Text(
                     '${_fmt(_pos)} / ${_fmt(_dur)}',
