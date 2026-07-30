@@ -456,6 +456,8 @@ enum I18nKey {
   quickEntrySet,
   quickEntryNoGame,
   guiding,
+  startPlaying,
+  shareAddress,
   none;
 
   String trArgs([List<String> args = const []]) {

@@ -458,5 +458,7 @@ class ConfigEn extends Config {
     put(I18nKey.quickEntrySet, "Quick entry saved");
     put(I18nKey.quickEntryNoGame, "No game available");
     put(I18nKey.guiding, "Guiding...");
+    put(I18nKey.startPlaying, "Start Playing");
+    put(I18nKey.shareAddress, "Share Address");
   }
 }

@@ -456,5 +456,7 @@ class ConfigZh extends Config {
     put(I18nKey.quickEntrySet, "已设置快速进入");
     put(I18nKey.quickEntryNoGame, "没有可用的游戏");
     put(I18nKey.guiding, "引导中...");
+    put(I18nKey.startPlaying, "开始游玩");
+    put(I18nKey.shareAddress, "分享地址");
   }
 }

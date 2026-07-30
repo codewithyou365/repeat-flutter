@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/widget/webview/webview_args.dart';
-import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
 
@@ -11,6 +10,28 @@ import 'game_logic.dart';
 
 class GamePage<T extends GetxController> {
   Key userIndexKey = GlobalKey();
+
+  Widget _buildActionCard({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return RowWidget.buildCard(
+      InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 16.w),
+          child: Column(
+            children: [
+              Icon(icon, size: 32.w),
+              SizedBox(height: 8.w),
+              Text(title, style: const TextStyle(fontSize: 16)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Future<WebviewArgs?> open(GameLogic<T> logic) async {
     var state = logic.state;
@@ -33,46 +54,23 @@ class GamePage<T extends GetxController> {
           return ListView(
             children: [
               Obx(() {
-                return Column(
+                if (!state.open.value) {
+                  return const SizedBox.shrink();
+                }
+                return Row(
                   children: [
-                    ...List.generate(
-                      state.open.value ? state.urls.length : 0,
-                      (index) => Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Card(
-                          color: Theme.of(Get.context!).secondaryHeaderColor,
-                          child: InkWell(
-                            onTap: () => {
-                              MsgBox.noWithQrCode(
-                                I18nKey.labelLanAddress.tr,
-                                state.urls[index],
-                                state.urls[index],
-                              ),
-                            },
-                            child: ListTile(
-                              title: Row(
-                                children: [
-                                  Text('${I18nKey.labelLanAddress.tr}-${index + 1}'),
-                                  const Spacer(),
-                                  IconButton(
-                                    icon: const Icon(Icons.key),
-                                    onPressed: logic.openCredentialDialog,
-                                    padding: EdgeInsets.zero,
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.play_arrow),
-                                    onPressed: logic.openWebview,
-                                    padding: EdgeInsets.zero,
-                                  ),
-                                ],
-                              ),
-                              subtitle: Padding(
-                                padding: EdgeInsets.all(16.w),
-                                child: Text(state.urls[index]),
-                              ),
-                            ),
-                          ),
-                        ),
+                    Expanded(
+                      child: _buildActionCard(
+                        icon: Icons.play_arrow,
+                        title: I18nKey.startPlaying.tr,
+                        onTap: logic.openWebview,
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildActionCard(
+                        icon: Icons.qr_code_2,
+                        title: I18nKey.shareAddress.tr,
+                        onTap: logic.openShareDialog,
                       ),
                     ),
                   ],

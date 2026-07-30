@@ -1,6 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/await_util.dart';
 import 'package:repeat_flutter/common/ip.dart';
@@ -22,6 +24,7 @@ import 'package:repeat_flutter/logic/widget/webview/webview_args.dart';
 import 'package:repeat_flutter/main.dart';
 import 'package:repeat_flutter/page/repeat/logic/tts_helper.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
+import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'game_page.dart';
@@ -273,6 +276,70 @@ class GameLogic<T extends GetxController> {
     return WebviewArgs(
       initialUrl: "https://127.0.0.1:${port.value}?theme=$theme",
       pageTitle: GameState.game?.name ?? '',
+    );
+  }
+
+  /// Shows the QR code of the LAN address so other devices can join the game.
+  /// When there are several LAN interfaces, the addresses can be switched
+  /// inside the same dialog.
+  void openShareDialog() {
+    if (state.urls.isEmpty) {
+      Snackbar.show('no lan address');
+      return;
+    }
+    RxInt index = 0.obs;
+    String url() => state.urls[index.value];
+    MsgBox.myDialog(
+      title: I18nKey.shareAddress.tr,
+      content: Obx(() {
+        return Column(
+          children: [
+            if (state.urls.length > 1)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  state.urls.length,
+                  (i) => TextButton(
+                    onPressed: () => index.value = i,
+                    child: Text(
+                      '${I18nKey.labelLanAddress.tr}-${i + 1}',
+                      style: TextStyle(
+                        fontWeight: i == index.value ? FontWeight.bold : FontWeight.normal,
+                        color: i == index.value ? Theme.of(Get.context!).colorScheme.primary : Theme.of(Get.context!).colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            RowWidget.buildQrCode(url(), 250.w),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+              child: Text(url()),
+            ),
+          ],
+        );
+      }),
+      action: MsgBox.buttonsWithDivider(
+        buttons: [
+          MsgBox.button(
+            text: I18nKey.close.tr,
+            onPressed: () {
+              Get.back();
+            },
+          ),
+          MsgBox.button(
+            text: I18nKey.btnCopy.tr,
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: url()));
+              Snackbar.show(I18nKey.labelQrCodeContentCopiedToClipboard.tr);
+            },
+          ),
+          MsgBox.button(
+            text: I18nKey.keyTitle.tr,
+            onPressed: openCredentialDialog,
+          ),
+        ],
+      ),
     );
   }
 
