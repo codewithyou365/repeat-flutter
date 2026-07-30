@@ -43,7 +43,7 @@ class AssistiveTouchSheet {
                     return AssistiveTouchTile.build(
                       icon: builtIn.icon,
                       label: builtIn.labelKey.tr,
-                      onLongPress: () => _confirmRemoveBuiltIn(logic, builtIn),
+                      onTap: () => _showBuiltInMenu(logic, builtIn),
                     );
                   }),
                   ...logic.actions.map((action) {
@@ -51,8 +51,7 @@ class AssistiveTouchSheet {
                       icon: Icons.bolt,
                       label: action.name,
                       enabled: canEdit,
-                      onTap: () => _editAction(logic, action),
-                      onLongPress: () => _confirmDelete(logic, action),
+                      onTap: () => _showActionMenu(logic, action),
                     );
                   }),
                   AssistiveTouchTile.build(
@@ -104,6 +103,82 @@ class AssistiveTouchSheet {
     await logic.loadActions();
   }
 
+  /// 点内置动作的格子弹目录：TTS-*/后退 有"编辑"（重新调参数），其它内置动作（播放/删除当前节等）
+  /// 没有可调的参数，目录里只有"删除"。
+  static Future<void> _showBuiltInMenu(AssistiveTouchLogic logic, BuiltInAction builtIn) async {
+    final editable = builtIn.qaType != null || builtIn == BuiltInAction.seekBack;
+    await _showMenu(
+      title: builtIn.labelKey.tr,
+      editable: editable,
+      onEdit: () => _editBuiltIn(logic, builtIn),
+      onDelete: () => _confirmRemoveBuiltIn(logic, builtIn),
+    );
+  }
+
+  /// 自定义动作本来就是表单配出来的，目录里"编辑"始终可选。
+  static Future<void> _showActionMenu(AssistiveTouchLogic logic, AssistiveTouchAction action) async {
+    await _showMenu(
+      title: action.name,
+      editable: true,
+      onEdit: () => _editAction(logic, action),
+      onDelete: () => _confirmDelete(logic, action),
+    );
+  }
+
+  static Future<void> _showMenu({
+    required String title,
+    required bool editable,
+    required VoidCallback onEdit,
+    required VoidCallback onDelete,
+  }) async {
+    await Sheet.showBottomSheet(
+      Get.context!,
+      ListView(
+        shrinkWrap: true,
+        children: [
+          if (editable)
+            RowWidget.buildSelect(
+              title: I18nKey.labelEdit.tr,
+              leading: const Icon(Icons.edit),
+              onTap: () {
+                Get.back();
+                onEdit();
+              },
+            ),
+          RowWidget.buildSelect(
+            title: I18nKey.labelDelete.tr,
+            leading: const Icon(Icons.delete),
+            onTap: () {
+              Get.back();
+              onDelete();
+            },
+          ),
+        ],
+      ),
+      head: SheetHead(
+        height: RowWidget.rowHeight + RowWidget.dividerHeight,
+        widgets: [
+          RowWidget.buildMiddleText(title),
+          RowWidget.buildDivider(),
+        ],
+      ),
+      rate: 0.3,
+    );
+  }
+
+  /// TTS-* 重新弹"TTS设置"调参数；"后退"重新弹秒数选择器——跟新增时用的是同一个 sheet，
+  /// 里面点确定会再 setBuiltInVisible(true)一次，反正已经是 true，不会有副作用。
+  static Future<void> _editBuiltIn(AssistiveTouchLogic logic, BuiltInAction builtIn) async {
+    if (builtIn == BuiltInAction.seekBack) {
+      await _askSeekBackSecondsThenAdd(logic);
+      return;
+    }
+    final qaType = builtIn.qaType;
+    if (qaType != null) {
+      await logic.repeatLogic.ttsHelper.open(qaType.ttsKeys);
+    }
+  }
+
   static void _confirmDelete(AssistiveTouchLogic logic, AssistiveTouchAction action) {
     MsgBox.yesOrNo(
       title: I18nKey.labelWarning.tr,
@@ -151,6 +226,8 @@ class AssistiveTouchSheet {
                       Get.back();
                       if (builtIn == BuiltInAction.seekBack) {
                         _askSeekBackSecondsThenAdd(logic);
+                      } else if (builtIn.qaType != null) {
+                        _askTtsThenAdd(logic, builtIn);
                       } else {
                         logic.setBuiltInVisible(builtIn, true);
                       }
@@ -216,5 +293,21 @@ class AssistiveTouchSheet {
       ),
       rate: 0.4,
     );
+  }
+
+  /// TTS-* 动作勾选时先弹现成的"TTS设置"sheet 让用户把语速/音色调好，
+  /// 关掉那个 sheet 后才落库把动作加进菜单——跟"后退"秒数一样，只在新增这一下问，
+  /// 免得常驻在设置里占地方。
+  static Future<void> _askTtsThenAdd(AssistiveTouchLogic logic, BuiltInAction builtIn) async {
+    final qaType = builtIn.qaType;
+    if (qaType == null) {
+      await logic.setBuiltInVisible(builtIn, true);
+      return;
+    }
+    final confirmed = await logic.repeatLogic.ttsHelper.open(qaType.ttsKeys);
+    if (!confirmed) {
+      return;
+    }
+    await logic.setBuiltInVisible(builtIn, true);
   }
 }

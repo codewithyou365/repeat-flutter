@@ -47,6 +47,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelBookNameDuplicated, "The book name is duplicated.");
     put(I18nKey.labelNameTooLongWithArg, "The name cannot be longer than %s characters.");
     put(I18nKey.labelDelete, "Delete");
+    put(I18nKey.labelEdit, "Edit");
     put(I18nKey.serviceUrl, "Service URL");
     put(I18nKey.labelRemoteUrl, "Remote URL");
     put(I18nKey.labelOriginalAddress, "Original address");

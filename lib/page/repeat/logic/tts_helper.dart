@@ -107,10 +107,13 @@ class TtsHelper {
     }
   }
 
-  void open(TtsKeys keys) async {
+  /// 返回是否点了"确定"关闭的（而不是划走/点外面取消）——调用方要"确定了才生效"
+  /// 的场景（比如辅助触控新增 TTS-* 动作）得靠这个区分，不能一概当作已确认。
+  Future<bool> open(TtsKeys keys) async {
     if (await AwaitUtil.tryDo(() async => await _tryInit(keys))) {
-      ttsPage.open(keys, tts, availableEngines, currEngine);
+      return await ttsPage.open(keys, tts, availableEngines, currEngine);
     }
+    return false;
   }
 
   Future<void> speak(Helper helper) async {
@@ -208,7 +211,9 @@ class TtsPage {
     await tts.setPitch(double.parse(pitchOptions[this.pitchIdx.value]));
   }
 
-  Future<void> open(
+  /// 返回值表示是不是点"确定"关的：划走/点外面取消时 Sheet.showBottomSheet 拿到的是 null，
+  /// 这里统一转成 false，调用方不用再操心区分 null 和 false。
+  Future<bool> open(
     TtsKeys keys,
     FlutterTts tts,
     List<String> availableEngines,
@@ -216,7 +221,7 @@ class TtsPage {
   ) async {
     int engineIndex = availableEngines.indexOf(currEngine);
     if (engineIndex == -1) engineIndex = 0;
-    return Sheet.showBottomSheet<void>(
+    final confirmed = await Sheet.showBottomSheet<bool>(
       Get.context!,
       head: _buildHeader(),
       ListView(
@@ -302,9 +307,14 @@ class TtsPage {
               },
             ),
           ),
+          RowWidget.buildDividerWithoutColor(),
+          RowWidget.buildButtons([
+            Button(I18nKey.btnOk.tr, () => Get.back(result: true)),
+          ]),
         ],
       ),
     );
+    return confirmed ?? false;
   }
 
   Future<void> _updateLanguagesAndVoices(

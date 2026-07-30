@@ -55,6 +55,22 @@ extension BuiltInActionX on BuiltInAction {
     }
   }
 
+  /// TTS-* 动作对应朗读哪个字段；非 TTS 动作没有这个概念。
+  QaType? get qaType {
+    switch (this) {
+      case BuiltInAction.ttsNote:
+        return QaType.note;
+      case BuiltInAction.ttsQ:
+        return QaType.question;
+      case BuiltInAction.ttsA:
+        return QaType.answer;
+      case BuiltInAction.ttsTips:
+        return QaType.tip;
+      default:
+        return null;
+    }
+  }
+
   I18nKey get labelKey {
     switch (this) {
       case BuiltInAction.deleteVerse:

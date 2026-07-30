@@ -47,6 +47,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelBookNameDuplicated, "学卷名字重复。");
     put(I18nKey.labelNameTooLongWithArg, "名字长度不能超过 %s 个字符。");
     put(I18nKey.labelDelete, "删除");
+    put(I18nKey.labelEdit, "编辑");
     put(I18nKey.serviceUrl, "服务地址");
     put(I18nKey.labelRemoteUrl, "远程地址");
     put(I18nKey.labelOriginalAddress, "原始地址");
