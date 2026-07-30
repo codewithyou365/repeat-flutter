@@ -143,7 +143,10 @@
               class="assist-binding-key"
               @blur="setBindingKey(i, binding.key)"
           />
-          <nut-menu class="assist-binding-action">
+          <!-- direction="up": 这些行常年贴在设置页最下方，若按默认向下弹出，
+               选项列表会被弹到屏幕可视区域之外（popup 是 position:fixed，页面滚动也救不回来），
+               导致排在最后的选项（如"后退"）点不到。向上弹出则是在页面已展示的内容区域内展开，不会跑出屏幕。 -->
+          <nut-menu class="assist-binding-action" direction="up">
             <nut-menu-item
                 :model-value="binding.action"
                 :options="bindingOptionList[i]"
