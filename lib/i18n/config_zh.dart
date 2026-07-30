@@ -32,6 +32,12 @@ class ConfigZh extends Config {
     put(I18nKey.labelDeleteClassroom, "请确定删除这个课堂 : %s");
     put(I18nKey.labelDeleteClassroomAll, "同时删除学习记录");
     put(I18nKey.labelClassroomName, "课堂名称");
+    put(I18nKey.labelRenameClassroom, "更名");
+    put(I18nKey.labelMove, "移动");
+    put(I18nKey.labelMoveToTop, "置顶");
+    put(I18nKey.labelMoveToBottom, "置底");
+    put(I18nKey.labelMoveUp, "上移");
+    put(I18nKey.labelMoveDown, "下移");
     put(I18nKey.labelClassroomNameEmpty, "课堂名字应不能为空");
     put(I18nKey.labelClassroomNameError, "课堂名字应由字母数字字符组成。");
     put(I18nKey.labelClassroomNameDuplicated, "课堂名字重复。");

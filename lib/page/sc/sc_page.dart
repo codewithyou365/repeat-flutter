@@ -5,6 +5,7 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
+import 'package:repeat_flutter/widget/sheet/sheet.dart';
 import 'package:repeat_flutter/widget/tile/name_tile.dart';
 
 import 'sc_logic.dart';
@@ -94,17 +95,113 @@ class ScPage extends StatelessWidget {
   }
 
   Widget buildButton(ScLogic logic, Classroom model) {
-    return GestureDetector(
-      onTap: () {
-        logic.select(model.id, model.name);
+    return Builder(
+      builder: (context) {
+        return GestureDetector(
+          onTap: () {
+            logic.select(model.id, model.name);
+          },
+          onLongPressStart: (details) {
+            openActionMenu(context, logic, model, details.globalPosition);
+          },
+          child: NameTile(
+            name: model.name,
+            color: Colors.blue,
+          ),
+        );
       },
-      onLongPress: () {
-        openDeleteDialog(logic, model);
-      },
-      child: NameTile(
-        name: model.name,
-        color: Colors.blue,
+    );
+  }
+
+  void openActionMenu(BuildContext context, ScLogic logic, Classroom model, Offset position) {
+    showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(position.dx, position.dy, position.dx, position.dy),
+      items: <PopupMenuEntry<String>>[
+        PopupMenuItem<String>(
+          onTap: () {
+            openRenameDialog(logic, model);
+          },
+          child: ListTile(
+            leading: const Icon(Icons.edit),
+            title: Text(I18nKey.labelRenameClassroom.tr),
+          ),
+        ),
+        PopupMenuItem<String>(
+          onTap: () {
+            openMoveSheet(context, logic, model);
+          },
+          child: ListTile(
+            leading: const Icon(Icons.swap_vert),
+            title: Text(I18nKey.labelMove.tr),
+          ),
+        ),
+        PopupMenuItem<String>(
+          onTap: () {
+            openDeleteDialog(logic, model);
+          },
+          child: ListTile(
+            leading: const Icon(Icons.delete),
+            title: Text(I18nKey.labelDelete.tr),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void openMoveSheet(BuildContext context, ScLogic logic, Classroom model) {
+    Sheet.showBottomSheet(
+      context,
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.vertical_align_top),
+            title: Text(I18nKey.labelMoveToTop.tr),
+            onTap: () {
+              Get.back();
+              logic.moveToTop(model.id);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.arrow_upward),
+            title: Text(I18nKey.labelMoveUp.tr),
+            onTap: () {
+              Get.back();
+              logic.moveUp(model.id);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.arrow_downward),
+            title: Text(I18nKey.labelMoveDown.tr),
+            onTap: () {
+              Get.back();
+              logic.moveDown(model.id);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.vertical_align_bottom),
+            title: Text(I18nKey.labelMoveToBottom.tr),
+            onTap: () {
+              Get.back();
+              logic.moveToBottom(model.id);
+            },
+          ),
+        ],
       ),
+      rate: 0.32,
+    );
+  }
+
+  void openRenameDialog(ScLogic logic, Classroom model) {
+    RxString classroomName = model.name.obs;
+    MsgBox.strInputWithYesOrNo(
+      classroomName,
+      I18nKey.labelRenameClassroom.tr,
+      I18nKey.labelClassroomName.tr,
+      yes: () {
+        logic.rename(model.id, classroomName.value);
+      },
     );
   }
 

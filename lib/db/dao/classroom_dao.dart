@@ -37,6 +37,25 @@ abstract class ClassroomDao {
       ' WHERE Classroom.id=:id')
   Future<void> hide(int id);
 
+  @Query('UPDATE Classroom set name=:name'
+      ' WHERE Classroom.id=:id')
+  Future<void> updateName(int id, String name);
+
+  @Query('UPDATE Classroom set sort=:sort'
+      ' WHERE Classroom.id=:id')
+  Future<void> updateSort(int id, int sort);
+
+  @transaction
+  Future<void> reorder(List<int> orderedIds) async {
+    await forUpdate();
+    for (var i = 0; i < orderedIds.length; i++) {
+      await updateSort(orderedIds[i], -(i + 1));
+    }
+    for (var i = 0; i < orderedIds.length; i++) {
+      await updateSort(orderedIds[i], i);
+    }
+  }
+
   @Query('UPDATE Classroom set hide=false'
       ' WHERE Classroom.id=:id')
   Future<void> showClassroom(int id);

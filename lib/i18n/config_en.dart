@@ -32,6 +32,12 @@ class ConfigEn extends Config {
     put(I18nKey.labelDeleteClassroom, "Confirm to delete the classroom : %s");
     put(I18nKey.labelDeleteClassroomAll, "delete the study records");
     put(I18nKey.labelClassroomName, "Classroom Name");
+    put(I18nKey.labelRenameClassroom, "Rename");
+    put(I18nKey.labelMove, "Move");
+    put(I18nKey.labelMoveToTop, "Move to Top");
+    put(I18nKey.labelMoveToBottom, "Move to Bottom");
+    put(I18nKey.labelMoveUp, "Move Up");
+    put(I18nKey.labelMoveDown, "Move Down");
     put(I18nKey.labelClassroomNameEmpty, "The classroom name cannot be empty");
     put(I18nKey.labelClassroomNameError, "The classroom name should consist of alphanumeric characters.");
     put(I18nKey.labelClassroomNameDuplicated, "The classroom name is duplicated.");

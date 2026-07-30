@@ -1377,6 +1377,26 @@ class _$ClassroomDao extends ClassroomDao {
   }
 
   @override
+  Future<void> updateName(
+    int id,
+    String name,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE Classroom set name=?2 WHERE Classroom.id=?1',
+        arguments: [id, name]);
+  }
+
+  @override
+  Future<void> updateSort(
+    int id,
+    int sort,
+  ) async {
+    await _queryAdapter.queryNoReturn(
+        'UPDATE Classroom set sort=?2 WHERE Classroom.id=?1',
+        arguments: [id, sort]);
+  }
+
+  @override
   Future<void> showClassroom(int id) async {
     await _queryAdapter.queryNoReturn(
         'UPDATE Classroom set hide=false WHERE Classroom.id=?1',
@@ -1392,6 +1412,21 @@ class _$ClassroomDao extends ClassroomDao {
   @override
   Future<void> insertClassroom(Classroom entity) async {
     await _classroomInsertionAdapter.insert(entity, OnConflictStrategy.fail);
+  }
+
+  @override
+  Future<void> reorder(List<int> orderedIds) async {
+    if (database is sqflite.Transaction) {
+      await super.reorder(orderedIds);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        await transactionDatabase.classroomDao.reorder(orderedIds);
+      });
+    }
   }
 
   @override
