@@ -2,10 +2,16 @@
 
 import 'package:floor/floor.dart';
 
-@Entity()
+@Entity(
+  indices: [
+    Index(value: ['classroomId']),
+  ],
+)
 class AssistiveTouchAction {
   @PrimaryKey(autoGenerate: true)
   final int? id;
+
+  final int classroomId;
 
   String name;
   int sourceIndex;
@@ -19,6 +25,7 @@ class AssistiveTouchAction {
 
   AssistiveTouchAction({
     this.id,
+    required this.classroomId,
     required this.name,
     required this.sourceIndex,
     required this.templateIndex,

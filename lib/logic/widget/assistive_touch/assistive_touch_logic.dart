@@ -175,7 +175,7 @@ class AssistiveTouchLogic {
   }
 
   Future<void> loadActions() async {
-    actions.assignAll(await Db().db.assistiveTouchActionDao.findAll());
+    actions.assignAll(await Db().db.assistiveTouchActionDao.findAll(Classroom.curr));
   }
 
   Future<void> setEnabled(bool value) async {

@@ -5,8 +5,8 @@ import 'package:repeat_flutter/db/entity/assistive_touch_action.dart';
 
 @dao
 abstract class AssistiveTouchActionDao {
-  @Query('SELECT * FROM AssistiveTouchAction ORDER BY sort ASC, id ASC')
-  Future<List<AssistiveTouchAction>> findAll();
+  @Query('SELECT * FROM AssistiveTouchAction WHERE classroomId=:classroomId ORDER BY sort ASC, id ASC')
+  Future<List<AssistiveTouchAction>> findAll(int classroomId);
 
   @Query('SELECT * FROM AssistiveTouchAction WHERE id=:id')
   Future<AssistiveTouchAction?> getById(int id);

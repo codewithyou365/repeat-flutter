@@ -8,6 +8,7 @@ import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/assistive_touch_action.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
@@ -111,6 +112,7 @@ class ExpandLogic {
   Future<void> saveAsAction(String name) async {
     final action = AssistiveTouchAction(
       id: editingActionId,
+      classroomId: Classroom.curr,
       name: name,
       sourceIndex: sourceIndex.value,
       templateIndex: templateIndex.value,

@@ -124,7 +124,7 @@ class _$AppDatabase extends AppDatabase {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 8,
+      version: 9,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -150,7 +150,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Kv` (`k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`k`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `AssistiveTouchAction` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `sourceIndex` INTEGER NOT NULL, `templateIndex` INTEGER NOT NULL, `targetIndex` INTEGER NOT NULL, `enableAudio` INTEGER NOT NULL, `behavior` INTEGER NOT NULL, `sort` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `AssistiveTouchAction` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `name` TEXT NOT NULL, `sourceIndex` INTEGER NOT NULL, `templateIndex` INTEGER NOT NULL, `targetIndex` INTEGER NOT NULL, `enableAudio` INTEGER NOT NULL, `behavior` INTEGER NOT NULL, `sort` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Classroom` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
@@ -199,6 +199,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE INDEX `index_ChapterContentVersion_classroomId` ON `ChapterContentVersion` (`classroomId`)');
         await database.execute(
             'CREATE INDEX `index_ChapterContentVersion_bookId` ON `ChapterContentVersion` (`bookId`)');
+        await database.execute(
+            'CREATE INDEX `index_AssistiveTouchAction_classroomId` ON `AssistiveTouchAction` (`classroomId`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_Classroom_name` ON `Classroom` (`name`)');
         await database.execute(
@@ -397,6 +399,7 @@ class _$AssistiveTouchActionDao extends AssistiveTouchActionDao {
             'AssistiveTouchAction',
             (AssistiveTouchAction item) => <String, Object?>{
                   'id': item.id,
+                  'classroomId': item.classroomId,
                   'name': item.name,
                   'sourceIndex': item.sourceIndex,
                   'templateIndex': item.templateIndex,
@@ -411,6 +414,7 @@ class _$AssistiveTouchActionDao extends AssistiveTouchActionDao {
             ['id'],
             (AssistiveTouchAction item) => <String, Object?>{
                   'id': item.id,
+                  'classroomId': item.classroomId,
                   'name': item.name,
                   'sourceIndex': item.sourceIndex,
                   'templateIndex': item.templateIndex,
@@ -432,18 +436,11 @@ class _$AssistiveTouchActionDao extends AssistiveTouchActionDao {
   final UpdateAdapter<AssistiveTouchAction> _assistiveTouchActionUpdateAdapter;
 
   @override
-  Future<List<AssistiveTouchAction>> findAll() async {
+  Future<List<AssistiveTouchAction>> findAll(int classroomId) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM AssistiveTouchAction ORDER BY sort ASC, id ASC',
-        mapper: (Map<String, Object?> row) => AssistiveTouchAction(
-            id: row['id'] as int?,
-            name: row['name'] as String,
-            sourceIndex: row['sourceIndex'] as int,
-            templateIndex: row['templateIndex'] as int,
-            targetIndex: row['targetIndex'] as int,
-            enableAudio: (row['enableAudio'] as int) != 0,
-            behavior: row['behavior'] as int,
-            sort: row['sort'] as int));
+        'SELECT * FROM AssistiveTouchAction WHERE classroomId=?1 ORDER BY sort ASC, id ASC',
+        mapper: (Map<String, Object?> row) => AssistiveTouchAction(id: row['id'] as int?, classroomId: row['classroomId'] as int, name: row['name'] as String, sourceIndex: row['sourceIndex'] as int, templateIndex: row['templateIndex'] as int, targetIndex: row['targetIndex'] as int, enableAudio: (row['enableAudio'] as int) != 0, behavior: row['behavior'] as int, sort: row['sort'] as int),
+        arguments: [classroomId]);
   }
 
   @override
@@ -451,6 +448,7 @@ class _$AssistiveTouchActionDao extends AssistiveTouchActionDao {
     return _queryAdapter.query('SELECT * FROM AssistiveTouchAction WHERE id=?1',
         mapper: (Map<String, Object?> row) => AssistiveTouchAction(
             id: row['id'] as int?,
+            classroomId: row['classroomId'] as int,
             name: row['name'] as String,
             sourceIndex: row['sourceIndex'] as int,
             templateIndex: row['templateIndex'] as int,
