@@ -291,34 +291,35 @@ class GameLogic<T extends GetxController> {
     String url() => state.urls[index.value];
     MsgBox.myDialog(
       title: I18nKey.shareAddress.tr,
-      content: Obx(() {
-        return Column(
+      content: SizedBox(
+        width: 250.w,
+        child: Column(
           children: [
             if (state.urls.length > 1)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  state.urls.length,
-                  (i) => TextButton(
-                    onPressed: () => index.value = i,
+              RowWidget.buildCupertinoPicker(
+                title: I18nKey.labelLanAddress.tr,
+                options: state.urls.map((u) => Uri.parse(u).host).toList(),
+                value: index.value,
+                changed: (i) => index.value = i,
+                pickWidth: 150.w,
+              ),
+            Obx(() {
+              return Column(
+                children: [
+                  RowWidget.buildQrCode(url(), 250.w),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
                     child: Text(
-                      '${I18nKey.labelLanAddress.tr}-${i + 1}',
-                      style: TextStyle(
-                        fontWeight: i == index.value ? FontWeight.bold : FontWeight.normal,
-                        color: i == index.value ? Theme.of(Get.context!).colorScheme.primary : Theme.of(Get.context!).colorScheme.onSurface,
-                      ),
+                      url(),
+                      textAlign: TextAlign.center,
                     ),
                   ),
-                ),
-              ),
-            RowWidget.buildQrCode(url(), 250.w),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-              child: Text(url()),
-            ),
+                ],
+              );
+            }),
           ],
-        );
-      }),
+        ),
+      ),
       action: MsgBox.buttonsWithDivider(
         buttons: [
           MsgBox.button(
