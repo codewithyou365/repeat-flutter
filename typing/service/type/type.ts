@@ -38,8 +38,17 @@ type StoredConfig = {
     profiles: ProfileConfig[];
 };
 
+type VerseField = {
+    text?: string;
+    start?: string;
+    end?: string;
+    mediaHash?: string;
+    showType?: string;
+    [key: string]: any;
+};
+
 type Verse = {
-    a?: string;
+    a?: VerseField;
     [key: string]: any;
 };
 
@@ -112,6 +121,13 @@ const Util = {
         await sendMessage('setData', JSON.stringify(data));
     },
 
+    // q/a/t 的正文在字段块里（{text,start,end,mediaHash,showType}），
+    // n 这类没有媒体的字段仍然是平铺的字符串。
+    fieldText: function (verse: Verse | null | undefined, acronym: string): string {
+        const v = verse ? verse[acronym] : null;
+        if (typeof v === 'string') return v;
+        return (v && v.text) ? v.text : '';
+    },
     getVerse: async function (): Promise<Verse> {
         try {
             const data = await sendMessage('getVerse', '{}');
@@ -328,10 +344,7 @@ const Game = {
     answer: async function (): Promise<string> {
         try {
             const verse = await Util.getVerse();
-            let answer = '';
-            if (verse && verse.a) {
-                answer = verse.a;
-            }
+            const answer = Util.fieldText(verse, 'a');
             const stored = await Util.getConfig();
             const config = stored.profiles[stored.activeProfile];
             const intervalMode: IntervalMode = config.intervalMode || 'none';

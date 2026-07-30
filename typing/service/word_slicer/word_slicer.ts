@@ -2,8 +2,17 @@ declare function sendMessage(method: string, payload: string): any;
 
 type JsonRecord = Record<string, any>;
 
+type VerseField = {
+    text?: string;
+    start?: string;
+    end?: string;
+    mediaHash?: string;
+    showType?: string;
+    [key: string]: any;
+};
+
 type Verse = {
-    a?: string;
+    a?: VerseField;
     [key: string]: any;
 };
 
@@ -84,6 +93,13 @@ const Util = {
         await sendMessage('setData', JSON.stringify(data));
     },
 
+    // q/a/t 的正文在字段块里（{text,start,end,mediaHash,showType}），
+    // n 这类没有媒体的字段仍然是平铺的字符串。
+    fieldText: function (verse: Verse | null | undefined, acronym: string): string {
+        const v = verse ? verse[acronym] : null;
+        if (typeof v === 'string') return v;
+        return (v && v.text) ? v.text : '';
+    },
     getVerse: async function (): Promise<Verse> {
         try {
             const data = await sendMessage('getVerse', '{}');
@@ -281,7 +297,7 @@ const Game = {
         }
         const config = await this.getConfigWithCache();
         const verse = await Util.getVerse();
-        this.answer = verse.a || '';
+        this.answer = Util.fieldText(verse, 'a');
 
         const manualContent = verse[this.key];
         let baseContent = (manualContent && manualContent !== '') ? manualContent : this.answer;
@@ -643,7 +659,7 @@ const Game = {
             const verse = await Util.getVerse();
             let savedContent = verse[Game.key];
             if (!savedContent || savedContent === '') {
-                savedContent = verse['a'] || '';
+                savedContent = Util.fieldText(verse, 'a');
             }
 
             return JSON.stringify({

@@ -15,8 +15,18 @@ interface GameConfig {
     shouldRememberIfPassingRate?: number;
 }
 
+interface VerseField {
+    text?: string;
+    start?: string;
+    end?: string;
+    mediaHash?: string;
+    showType?: string;
+
+    [key: string]: any;
+}
+
 interface Verse {
-    a: string; // 原文/答案
+    a?: VerseField; // 原文/答案所在的字段块
     [key: string]: any; // 允许动态键值，如 blankItRightText
 }
 
@@ -107,6 +117,13 @@ const Util = {
         await sendMessage('setData', JSON.stringify(data));
     },
 
+    // q/a/t 的正文在字段块里（{text,start,end,mediaHash,showType}），
+    // n 这类没有媒体的字段仍然是平铺的字符串。
+    fieldText: function (verse: Verse | null | undefined, acronym: string): string {
+        const v = verse ? verse[acronym] : null;
+        if (typeof v === 'string') return v;
+        return (v && v.text) ? v.text : '';
+    },
     getVerse: async function (): Promise<Verse> {
         try {
             let data = await sendMessage('getVerse', '{}');
@@ -261,7 +278,7 @@ const Game = {
         const config = await this.getConfigWithCache();
         const passingRate = config.shouldRememberIfPassingRate || 0.8;
 
-        let score = this.getScore(userTyped, verse.a, this.blankContent, config.maxScore, config.ignoreCase ?? true);
+        let score = this.getScore(userTyped, Util.fieldText(verse, 'a'), this.blankContent, config.maxScore, config.ignoreCase ?? true);
         if ((score / config.maxScore) < passingRate) {
             score = 0;
         }
@@ -339,7 +356,7 @@ const Game = {
                 return JSON.stringify({
                     status: 200,
                     data: {
-                        answer: verse.a || '',
+                        answer: Util.fieldText(verse, 'a'),
                         score: user.score,
                         submit: user.submit
                     },
@@ -442,7 +459,7 @@ const Game = {
             const adminEnable = Util.adminEnable();
             if (userId === adminId && adminEnable) {
                 const verse = await Util.getVerse();
-                const answer = verse['a'];
+                const answer = Util.fieldText(verse, 'a');
                 let savedContent = verse[this.key];
                 if (!savedContent || savedContent === '') {
                     savedContent = answer || '';
@@ -473,7 +490,7 @@ const Game = {
             this.userIdToUserStatus[id].nexted = false;
         }
         const verse = await Util.getVerse();
-        this.answer = verse.a || '';
+        this.answer = Util.fieldText(verse, 'a');
         this.blankContent = await this.getBlankMix();
         await Util.broadcast(this.gameRefreshPath, this.getBroadcastData());
     },
@@ -554,7 +571,7 @@ const Game = {
     },
 
     getBlankAuto: function (verse: Verse, config: GameConfig): string {
-        const content = verse.a || '';
+        const content = Util.fieldText(verse, 'a');
         const percent = config.blankContentPercent ?? 0.5;
         const ignorePunctuation = config.ignorePunctuation ?? true;
 
@@ -591,7 +608,7 @@ const Game = {
     },
 
     getBlankManual: function (verseMap: Verse, ignorePunctuation: boolean): string {
-        const a = verseMap.a || '';
+        const a = Util.fieldText(verseMap, 'a');
         const b = verseMap[this.key] || '';
         if (b === '') return '';
         if (!b && !ignorePunctuation) return '•'.repeat(a.length);

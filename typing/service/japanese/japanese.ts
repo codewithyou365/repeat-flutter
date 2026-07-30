@@ -1,9 +1,18 @@
 declare function sendMessage(method: string, payload: string): any;
 
+type VerseField = {
+    text?: string;
+    start?: string;
+    end?: string;
+    mediaHash?: string;
+    showType?: string;
+    [key: string]: any;
+};
+
 type Verse = {
-    a?: string;
-    q?: string;
-    t?: string;
+    a?: VerseField;
+    q?: VerseField;
+    t?: VerseField;
     n?: string;
     [key: string]: any;
 };
@@ -24,6 +33,13 @@ const Util = {
             return true;
         }
     },
+    // q/a/t 的正文在字段块里（{text,start,end,mediaHash,showType}），
+    // n 这类没有媒体的字段仍然是平铺的字符串。
+    fieldText: function (verse: Verse | null | undefined, acronym: string): string {
+        const v = verse ? verse[acronym] : null;
+        if (typeof v === 'string') return v;
+        return (v && v.text) ? v.text : '';
+    },
     getVerse: async function (): Promise<Verse> {
         try {
             let data = await sendMessage('getVerse', '{}');
@@ -39,7 +55,7 @@ const Tip = {
     answer: async function (): Promise<string> {
         try {
             const verse = await Util.getVerse();
-            const answer = verse.a;
+            const answer = Util.fieldText(verse, 'a');
             return JSON.stringify({data: answer});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});
@@ -48,7 +64,7 @@ const Tip = {
     question: async function (): Promise<string> {
         try {
             const verse = await Util.getVerse();
-            const question = verse.q;
+            const question = Util.fieldText(verse, 'q');
             return JSON.stringify({data: question});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});
@@ -57,7 +73,7 @@ const Tip = {
     tip: async function (): Promise<string> {
         try {
             const verse = await Util.getVerse();
-            const tip = verse.t;
+            const tip = Util.fieldText(verse, 't');
             return JSON.stringify({data: tip});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});
@@ -66,7 +82,7 @@ const Tip = {
     note: async function (): Promise<string> {
         try {
             const verse = await Util.getVerse();
-            const note = verse.n;
+            const note = Util.fieldText(verse, 'n');
             return JSON.stringify({data: note});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});
