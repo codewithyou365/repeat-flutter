@@ -234,6 +234,56 @@
                 transform: rotate(360deg);
             }
         }
+
+        #upload-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .upload-background {
+            background: rgba(240, 240, 240, 1);
+            padding: 20px;
+            border-radius: 5px;
+            width: 280px;
+            max-width: 80%;
+        }
+
+        #upload-file-name {
+            font-size: 13px;
+            margin-bottom: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        #upload-progress-bar {
+            width: 0;
+            height: 100%;
+            background: #000;
+            transition: width 0.1s linear;
+        }
+
+        #upload-progress-text {
+            font-size: 12px;
+            margin-top: 8px;
+            text-align: right;
+        }
     </style>
     <script src="/ace.js"></script>
     <script src="/keybinding-vim.min.js"></script>
@@ -306,6 +356,16 @@
 <div id="loading-panel">
     <div class="spinner-background">
         <div class="spinner"></div>
+    </div>
+</div>
+
+<div id="upload-panel">
+    <div class="upload-background">
+        <div id="upload-file-name"></div>
+        <div class="progress-track">
+            <div id="upload-progress-bar"></div>
+        </div>
+        <div id="upload-progress-text">0%</div>
     </div>
 </div>
 <script type="module">
@@ -1124,6 +1184,57 @@
         }
     }
 
+    function openUploadProgress(fileName) {
+        document.getElementById('upload-file-name').textContent = fileName;
+        setUploadProgress(0, false);
+        document.getElementById('upload-panel').style.display = 'flex';
+    }
+
+    function setUploadProgress(percent, indeterminate) {
+        const bar = document.getElementById('upload-progress-bar');
+        const text = document.getElementById('upload-progress-text');
+        if (indeterminate) {
+            bar.style.width = '100%';
+            text.textContent = 'Uploading...';
+        } else {
+            bar.style.width = percent + '%';
+            text.textContent = percent + '%';
+        }
+    }
+
+    function closeUploadProgress() {
+        document.getElementById('upload-panel').style.display = 'none';
+    }
+
+    function uploadWithProgress(url, formData) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url);
+            xhr.upload.onprogress = (event) => {
+                if (event.lengthComputable) {
+                    const percent = Math.floor(event.loaded * 100 / event.total);
+                    setUploadProgress(percent, false);
+                } else {
+                    setUploadProgress(0, true);
+                }
+            };
+            xhr.upload.onload = () => {
+                // The bytes are sent, waiting for the server to finish handling them.
+                setUploadProgress(100, false);
+            };
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve(xhr.responseText);
+                } else {
+                    reject(new Error(`HTTP ${xhr.status}: ${xhr.responseText}`));
+                }
+            };
+            xhr.onerror = () => reject(new Error('Network error'));
+            xhr.onabort = () => reject(new Error('Upload aborted'));
+            xhr.send(formData);
+        });
+    }
+
     function uploadFile() {
         const input = document.createElement('input');
         input.type = 'file';
@@ -1132,17 +1243,16 @@
             if (file) {
                 const formData = new FormData();
                 formData.append('file', file);
+                openUploadProgress(file.name);
                 try {
-                    const res = await fetch('/upload' + bookParam('?'), {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const text = await res.text();
+                    const text = await uploadWithProgress('/upload' + bookParam('?'), formData);
                     const copyResult = copyText(text) ? " And The path copied to clipboard!" : "!";
                     alert(`Upload successful${copyResult}\n${text}`);
                     await initFiles();
                 } catch (err) {
                     alert("Error uploading file: " + err);
+                } finally {
+                    closeUploadProgress();
                 }
             }
         };
