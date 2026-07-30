@@ -13,8 +13,11 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'media_item.dart';
 
 /// Playback mode, cycled by a single button in this order:
-/// shuffle -> repeatOne -> sequential -> shuffle ...
-enum PlayMode { shuffle, repeatOne, sequential }
+/// shuffle -> repeatOne -> repeatAll -> sequential -> shuffle ...
+///
+/// [repeatAll] loops the whole list: stepping past either end wraps around to
+/// the other end instead of stopping.
+enum PlayMode { shuffle, repeatOne, repeatAll, sequential }
 
 /// Continuous, Spotify-like player over a list of [MediaItem]s. Audio and video
 /// auto-advance on completion; images stay for [imageSeconds] seconds and then
@@ -172,6 +175,12 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
       await audio.setFilePath(item.localPath);
       if (!identical(_audio, audio)) return; // superseded by another load
       _audioStateSub = audio.playerStateStream.listen((s) {
+        // Drive the play/pause icon from the player itself: AudioPlayer.play()
+        // returns a future that only completes when playback finishes or is
+        // paused, so it can never be awaited to learn that playback started.
+        if (mounted && _isPlaying != s.playing) {
+          setState(() => _isPlaying = s.playing);
+        }
         if (s.processingState == ProcessingState.completed) {
           _onComplete();
         }
@@ -182,7 +191,8 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
       _audioDurSub = audio.durationStream.listen((d) {
         if (mounted && d != null) setState(() => _dur = d);
       });
-      await audio.play();
+      // Not awaited on purpose: see the playerStateStream listener above.
+      audio.play();
       if (mounted) setState(() => _isPlaying = true);
     } catch (e) {
       Snackbar.show("Error loading audio: $e");
@@ -263,7 +273,11 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
   void _advance(int dir) {
     if (_advancing) return;
     _advancing = true;
-    final next = _mode == PlayMode.shuffle ? _randomPlayable() : _nextPlayable(_index + dir, dir);
+    var next = _mode == PlayMode.shuffle ? _randomPlayable() : _nextPlayable(_index + dir, dir);
+    if (next == null && _mode == PlayMode.repeatAll) {
+      // Wrap around: restart the scan from the opposite end of the list.
+      next = dir > 0 ? _nextPlayable(0, 1) : _nextPlayable(widget.items.length - 1, -1);
+    }
     if (next == null) {
       // No playable item in this direction: stay on the current item and keep
       // it visible. Do NOT dispose the player here - disposing nulls _video,
@@ -292,10 +306,11 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
         if (_audio == null) return;
         if (_isPlaying) {
           await _audio!.pause();
-          setState(() => _isPlaying = false);
+          if (mounted) setState(() => _isPlaying = false);
         } else {
-          await _audio!.play();
-          setState(() => _isPlaying = true);
+          // Not awaited: play() only completes when playback ends/pauses.
+          _audio!.play();
+          if (mounted) setState(() => _isPlaying = true);
         }
         break;
       case MediaKind.video:
@@ -413,6 +428,8 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
         return Icons.shuffle;
       case PlayMode.repeatOne:
         return Icons.repeat_one;
+      case PlayMode.repeatAll:
+        return Icons.repeat;
       case PlayMode.sequential:
         return Icons.playlist_play;
     }
@@ -424,6 +441,8 @@ class _MediaPlayerScreenState extends State<MediaPlayerScreen> {
         return Colors.lightBlueAccent;
       case PlayMode.repeatOne:
         return Colors.redAccent;
+      case PlayMode.repeatAll:
+        return Colors.greenAccent;
       case PlayMode.sequential:
         return Colors.white;
     }
