@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/nav.dart';
 
 class SummaryLogic {
   int todayCount = 0;
@@ -33,10 +34,10 @@ class SummaryLogic {
                       ),
                 ),
                 const Spacer(),
-                // IconButton(
-                //   onPressed: () {},
-                //   icon: const Icon(Icons.arrow_forward_ios),
-                // ),
+                IconButton(
+                  onPressed: () => Nav.scCrStatsTrend.push(),
+                  icon: const Icon(Icons.arrow_forward_ios),
+                ),
               ],
             ),
           ),

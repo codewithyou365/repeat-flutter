@@ -51,7 +51,7 @@ class ConfigEn extends Config {
     put(I18nKey.serviceUrl, "Service URL");
     put(I18nKey.labelRemoteUrl, "Remote URL");
     put(I18nKey.labelOriginalAddress, "Original address");
-    put(I18nKey.labelLanAddress, "LAN address");
+    put(I18nKey.labelLanAddress, "Address");
     put(I18nKey.labelDownloadFirstBeforeSharing, "Please download first before sharing.");
     put(I18nKey.labelDownloadFirstBeforeSaving, "Please download first before saving.");
     put(I18nKey.labelDeleteBook, "Please confirm to delete content: %s");
@@ -464,5 +464,17 @@ class ConfigEn extends Config {
     put(I18nKey.labelBuildingIndex, "Building index...");
     put(I18nKey.labelRebuildIndex, "Rebuild index");
     put(I18nKey.labelNoSearchResult, "No matching content");
+    put(I18nKey.labelLearningVolume, "Learning Volume");
+    put(I18nKey.labelStudyDuration, "Study Duration");
+    put(I18nKey.labelLastWeek, "Last Week");
+    put(I18nKey.labelByMonth, "By Month");
+    put(I18nKey.labelDayLearning, "Learned");
+    put(I18nKey.labelDayReview, "Reviewed");
+    put(I18nKey.labelDayTime, "Duration");
+    put(I18nKey.labelToday, "Today");
+    put(I18nKey.labelThisMonth, "This Month");
+    put(I18nKey.labelLegendLearn, "Learn");
+    put(I18nKey.labelLegendReview, "Review");
+    put(I18nKey.statisticTrend, "Stats Overview");
   }
 }

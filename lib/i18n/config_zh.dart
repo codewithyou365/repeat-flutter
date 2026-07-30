@@ -462,5 +462,17 @@ class ConfigZh extends Config {
     put(I18nKey.labelBuildingIndex, "正在建立索引...");
     put(I18nKey.labelRebuildIndex, "重建索引");
     put(I18nKey.labelNoSearchResult, "没有匹配的内容");
+    put(I18nKey.labelLearningVolume, "学习量");
+    put(I18nKey.labelStudyDuration, "学习时长");
+    put(I18nKey.labelLastWeek, "最近一周");
+    put(I18nKey.labelByMonth, "按月查看");
+    put(I18nKey.labelDayLearning, "当日学习");
+    put(I18nKey.labelDayReview, "当日复习");
+    put(I18nKey.labelDayTime, "当日时长");
+    put(I18nKey.labelToday, "今日");
+    put(I18nKey.labelThisMonth, "本月");
+    put(I18nKey.labelLegendLearn, "学习");
+    put(I18nKey.labelLegendReview, "复习");
+    put(I18nKey.statisticTrend, "统计概览");
   }
 }

@@ -462,6 +462,18 @@ enum I18nKey {
   labelBuildingIndex,
   labelRebuildIndex,
   labelNoSearchResult,
+  labelLearningVolume,
+  labelStudyDuration,
+  labelLastWeek,
+  labelByMonth,
+  labelDayLearning,
+  labelDayReview,
+  labelDayTime,
+  labelToday,
+  labelThisMonth,
+  labelLegendLearn,
+  labelLegendReview,
+  statisticTrend,
   none;
 
   String trArgs([List<String> args = const []]) {
