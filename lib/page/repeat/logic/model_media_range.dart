@@ -23,8 +23,8 @@ class MediaRange {
   int end;
   bool enable;
 
-  /// 这个区间属于哪个字段（'q'/'a'/'t'）：区间存在该字段块的 'start'/'end' 里，
-  /// 该字段的专属媒体（'download'）也在同一块里。
+  /// 这个区间属于哪个字段（'q'/'a'/'t'/'t1'…）：区间存在该字段块的 'start'/'end' 里，
+  /// 该字段的专属媒体（'mediaHash'）也在同一块里。提示有好几条时带下标（见 VerseField.ref）。
   String fieldAcronym;
 
   MediaRange({
@@ -38,7 +38,9 @@ class MediaRange {
 class MediaRangeHelper {
   Map<int, MediaRange> answerRangeCache = {};
   Map<int, MediaRange> questionRangeCache = {};
-  Map<int, MediaRange> tipRangeCache = {};
+
+  /// 提示是多条的，每条各自一份缓存：字段引用串（'t'/'t1'/…）-> verseId -> 区间。
+  Map<String, Map<int, MediaRange>> tipRangeCache = {};
   final Helper helper;
   static const String defaultStart = "00:00:00,000";
   static const String defaultEnd = "00:00:05,000";
@@ -65,7 +67,9 @@ class MediaRangeHelper {
       if (v == null) return;
       answerRangeCache.remove(v.verseId);
       questionRangeCache.remove(v.verseId);
-      tipRangeCache.remove(v.verseId);
+      for (var cache in tipRangeCache.values) {
+        cache.remove(v.verseId);
+      }
     });
   }
 
@@ -90,11 +94,12 @@ class MediaRangeHelper {
     return range;
   }
 
-  MediaRange? getCurrRangeOf(String acronym) {
-    if (acronym == QaType.question.acronym) {
+  MediaRange? getCurrRangeOf(String fieldRef) {
+    final base = VerseField.baseOf(fieldRef);
+    if (base == QaType.question.acronym) {
       return getCurrQuestionRange();
-    } else if (acronym == QaType.tip.acronym) {
-      return getCurrTipRange();
+    } else if (base == QaType.tip.acronym) {
+      return getCurrTipRange(fieldRef);
     } else {
       return getCurrAnswerRange();
     }
@@ -108,8 +113,10 @@ class MediaRangeHelper {
     return _getCurrRange(questionRangeCache, QaType.question.acronym);
   }
 
-  MediaRange? getCurrTipRange() {
-    return _getCurrRange(tipRangeCache, QaType.tip.acronym);
+  /// 不传就是界面上当前选中的那一条提示。
+  MediaRange? getCurrTipRange([String? fieldRef]) {
+    final ref = fieldRef ?? helper.currTipRef();
+    return _getCurrRange(tipRangeCache[ref] ??= {}, ref);
   }
 
   MediaRange? _getCurrRange(Map<int, MediaRange> cache, String fieldAcronym) {

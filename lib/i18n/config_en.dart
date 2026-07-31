@@ -62,6 +62,9 @@ class ConfigEn extends Config {
     put(I18nKey.labelNoLearningContent, "There is no learning content available.");
     put(I18nKey.labelResetLearningContent, "The learning content will be reset in %s");
     put(I18nKey.labelTips, "Tips");
+    put(I18nKey.labelTipName, "Tip Name");
+    put(I18nKey.labelRenameTip, "Rename");
+    put(I18nKey.labelDeleteTip, "Delete this tip? Its content will be removed from every verse of this book.");
     put(I18nKey.labelReviewThisCount, "Review These Verses Count");
     put(I18nKey.labelLearnCount, "Learn Count");
     put(I18nKey.labelReviewCount, "Review Count");
@@ -425,9 +428,11 @@ class ConfigEn extends Config {
     put(I18nKey.ttsQAction, "TTS-Q");
     put(I18nKey.ttsAAction, "TTS-A");
     put(I18nKey.ttsTipsAction, "TTS-Tips");
+    put(I18nKey.ttsTipIndexAction, "TTS-%s");
     put(I18nKey.playQAction, "Play-Q");
     put(I18nKey.playAAction, "Play-A");
     put(I18nKey.playTipsAction, "Play-Tips");
+    put(I18nKey.playTipIndexAction, "Play-%s");
     put(I18nKey.playPauseAction, "Play/Pause");
     put(I18nKey.seekBackAction, "Seek Back");
     put(I18nKey.seekBackSeconds, "Seek Back Seconds");

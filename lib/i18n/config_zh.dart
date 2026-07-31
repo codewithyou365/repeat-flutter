@@ -62,6 +62,9 @@ class ConfigZh extends Config {
     put(I18nKey.labelNoLearningContent, "没有学习内容");
     put(I18nKey.labelResetLearningContent, "在 %s 后，将重置学习内容");
     put(I18nKey.labelTips, "提示");
+    put(I18nKey.labelTipName, "提示名称");
+    put(I18nKey.labelRenameTip, "更名");
+    put(I18nKey.labelDeleteTip, "确定删除该提示？这本学卷里所有小节的这条提示内容都会被删除。");
     put(I18nKey.labelReviewThisCount, "回顾该内容次数");
     put(I18nKey.labelLearnCount, "学习次数");
     put(I18nKey.labelReviewCount, "回顾次数");
@@ -423,9 +426,11 @@ class ConfigZh extends Config {
     put(I18nKey.ttsQAction, "TTS-Q");
     put(I18nKey.ttsAAction, "TTS-A");
     put(I18nKey.ttsTipsAction, "TTS-Tips");
+    put(I18nKey.ttsTipIndexAction, "TTS-%s");
     put(I18nKey.playQAction, "Play-Q");
     put(I18nKey.playAAction, "Play-A");
     put(I18nKey.playTipsAction, "Play-Tips");
+    put(I18nKey.playTipIndexAction, "Play-%s");
     put(I18nKey.playPauseAction, "播放/暂停");
     put(I18nKey.seekBackAction, "后退");
     put(I18nKey.seekBackSeconds, "后退秒数");

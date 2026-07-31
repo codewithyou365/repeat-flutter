@@ -67,8 +67,7 @@ class ClassroomHelp {
         Map<String, dynamic> bookMap = jsonDecode(book.content);
         List<DownloadContent> downloads = DownloadContent.toList(bookMap['d']) ?? [];
 
-        const prefixes = ['q', 't', 'a', 'n'];
-        for (var prefix in prefixes) {
+        for (var prefix in _fieldRefs(bookMap)) {
           String? alias = VerseField.getStr(bookMap, prefix, VerseField.fontAlias);
           String? hash = VerseField.getStr(bookMap, prefix, VerseField.fontHash);
 
@@ -125,47 +124,43 @@ class ClassroomHelp {
             currentGameNames.add(game.name);
           }
         }
-        if (bookMap['t'] != null) {
-          var tipMap = bookMap['t'] as Map<String, dynamic>;
-          final tips = _entriesFromMap(tipMap, {'a', 'q', 't', 'n'});
-          for (final tip in tips) {
-            final ok = await _ensureContentReady(tip, downloads, book.id!);
-            if (!ok) continue;
+        // 提示服务配置就放在各字段块自己身上（'q'/'a'/'n' 各一个，提示是 't'/'t1'/'t2'…），
+        // Tip.t 存的就是这个字段引用串。
+        for (final fieldRef in _fieldRefs(bookMap)) {
+          final entryMap = VerseField.of(bookMap, fieldRef);
+          if (entryMap == null) continue;
+          final tip = ContentEntry.fromJson(entryMap, mapKey: fieldRef);
+          final ok = await _ensureContentReady(tip, downloads, book.id!);
+          if (!ok) continue;
 
-            Tip? tipEntity;
-            if (tip.id != null) {
-              tipEntity = await Db().db.tipDao.getById(tip.id!);
-              if (tipEntity == null || tipEntity.bookId != book.id!) {
-                tipEntity = null;
-              }
+          Tip? tipEntity;
+          if (tip.id != null) {
+            tipEntity = await Db().db.tipDao.getById(tip.id!);
+            if (tipEntity == null || tipEntity.bookId != book.id!) {
+              tipEntity = null;
             }
-            if (tipEntity == null) {
-              await Db().db.tipDao.insertOrReplace(
-                Tip(
-                  classroomId: Classroom.curr,
-                  bookId: book.id!,
-                  t: tip.mapKey!,
-                  k: tip.key,
-                  hash: tip.hash,
-                  service: tip.service,
-                  createTime: DateTime.now().millisecondsSinceEpoch,
-                ),
-              );
-              if (tip.mapKey != null) {
-                final entryMap = tipMap[tip.mapKey];
-                if (entryMap is Map<String, dynamic>) {
-                  entryMap['i'] = await Db().db.tipDao.getIdByType(book.id!, tip.mapKey!);
-                }
-              }
-            } else {
-              tipEntity.t = tip.mapKey!;
-              tipEntity.k = tip.key;
-              tipEntity.hash = tip.hash;
-              tipEntity.service = tip.service;
-              await Db().db.tipDao.updateOrReplace(tipEntity);
-            }
-            currentTipKeys.add('${book.id}-${tip.mapKey}');
           }
+          if (tipEntity == null) {
+            await Db().db.tipDao.insertOrReplace(
+              Tip(
+                classroomId: Classroom.curr,
+                bookId: book.id!,
+                t: fieldRef,
+                k: tip.key,
+                hash: tip.hash,
+                service: tip.service,
+                createTime: DateTime.now().millisecondsSinceEpoch,
+              ),
+            );
+            entryMap['i'] = await Db().db.tipDao.getIdByType(book.id!, fieldRef);
+          } else {
+            tipEntity.t = fieldRef;
+            tipEntity.k = tip.key;
+            tipEntity.hash = tip.hash;
+            tipEntity.service = tip.service;
+            await Db().db.tipDao.updateOrReplace(tipEntity);
+          }
+          currentTipKeys.add('${book.id}-$fieldRef');
         }
         Db().db.bookDao.updateBookContent(book.id!, jsonEncode(bookMap));
       }
@@ -204,17 +199,15 @@ class ClassroomHelp {
     return data.map((e) => ContentEntry.fromJson(e)).toList();
   }
 
-  static List<ContentEntry> _entriesFromMap(dynamic data, Set<String> allowedKeys) {
-    if (data == null) return [];
-    if (data is! Map) return [];
-    final entries = <ContentEntry>[];
-    data.forEach((key, value) {
-      if (!allowedKeys.contains(key)) return;
-      if (value is Map<String, dynamic>) {
-        entries.add(ContentEntry.fromJson(value, mapKey: key));
-      }
-    });
-    return entries;
+  /// 这本书 book 层有哪些字段块：'q'/'a'/'n' 各一个，提示按数组长度展开成 't'/'t1'/'t2'…
+  /// 字体和提示服务配置都存在这些块里，两边都按这个列表遍历。
+  static List<String> _fieldRefs(Map<String, dynamic> bookMap) {
+    final ret = ['q', 'a', 'n'];
+    final tipLength = VerseField.tipLength(bookMap);
+    for (var i = 0; i < (tipLength == 0 ? 1 : tipLength); i++) {
+      ret.add(VerseField.ref('t', i));
+    }
+    return ret;
   }
 
   // Re-unzip the content of a game/tip if its folder has been removed after the

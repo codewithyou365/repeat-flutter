@@ -15,6 +15,7 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
+import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/classroom_help.dart';
 import 'package:repeat_flutter/logic/model/lazy_verse_today_prg_list.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
@@ -223,14 +224,10 @@ class RepeatLogic extends GetxController {
 
   Future<void> initTips(List<VerseTodayPrg> progresses) async {
     final defaultTips = await Db().db.tipDao.getByClassroomId(Classroom.curr);
-    final keys = ['a', 'q', 't', 'n'];
 
     Map<String, Tip> defaultTypeToTip = {};
-    for (var key in keys) {
-      final list = defaultTips.where((tip) => tip.t == key).toList();
-      if (list.isNotEmpty) {
-        defaultTypeToTip[key] = list[0];
-      }
+    for (var tip in defaultTips) {
+      defaultTypeToTip.putIfAbsent(tip.t, () => tip);
     }
 
     final bookIds = progresses is LazyVerseTodayPrgList //
@@ -240,25 +237,32 @@ class RepeatLogic extends GetxController {
     state.bookIdToTip = <int, Map<String, Tip?>>{};
 
     for (var bookId in bookIds) {
-      final Map<String, Tip?> bookTips = {for (var k in keys) k: null};
+      final Map<String, Tip?> bookTips = {};
       state.bookIdToTip[bookId] = bookTips;
 
       final bookContent = await Db().db.bookDao.getContentById(bookId);
       if (bookContent == null) continue;
 
       final dynamic bookMap = jsonDecode(bookContent);
-      final tipMap = bookMap['t'];
-      if (tipMap is! Map) continue;
+      if (bookMap is! Map<String, dynamic>) continue;
 
-      for (var k in keys) {
-        final entry = tipMap[k];
-        if (entry is! Map<String, dynamic>) continue;
+      // 提示服务配置放在各字段块自己身上，提示按数组下标展开成 't'/'t1'/…（见 ClassroomHelp）。
+      final refs = ['a', 'q', 'n'];
+      final tipLength = VerseField.tipLength(bookMap);
+      for (var i = 0; i < (tipLength == 0 ? 1 : tipLength); i++) {
+        refs.add(VerseField.ref('t', i));
+      }
+
+      for (var ref in refs) {
+        bookTips[ref] = null;
+        final entry = VerseField.of(bookMap, ref);
+        if (entry == null) continue;
 
         final tipId = entry['i'];
         if (tipId == null) continue;
 
         final tip = defaultTips.firstWhereOrNull((item) => item.id == tipId);
-        bookTips[k] = tip ?? defaultTypeToTip[k];
+        bookTips[ref] = tip ?? defaultTypeToTip[ref];
       }
     }
   }

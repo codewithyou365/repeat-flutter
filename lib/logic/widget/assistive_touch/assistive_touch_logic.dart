@@ -33,7 +33,49 @@ enum BuiltInAction {
   ttsNote,
   playPause,
   seekBack,
+  // 一节可以挂好几条提示：ttsTips/playTips 跟着界面上选中的那一条走，
+  // 下面这些是直接指定第几条的，想读第 3 条不用先切 tab。
+  // 存进 CrKv 的是枚举名，只能往后加，不能改名/调顺序。
+  ttsTip1,
+  ttsTip2,
+  ttsTip3,
+  ttsTip4,
+  ttsTip5,
+  ttsTip6,
+  ttsTip7,
+  ttsTip8,
+  playTip1,
+  playTip2,
+  playTip3,
+  playTip4,
+  playTip5,
+  playTip6,
+  playTip7,
+  playTip8,
 }
+
+/// 指定第几条提示的动作：枚举名 -> 提示下标（0 基）。
+const _ttsTipIndex = {
+  BuiltInAction.ttsTip1: 0,
+  BuiltInAction.ttsTip2: 1,
+  BuiltInAction.ttsTip3: 2,
+  BuiltInAction.ttsTip4: 3,
+  BuiltInAction.ttsTip5: 4,
+  BuiltInAction.ttsTip6: 5,
+  BuiltInAction.ttsTip7: 6,
+  BuiltInAction.ttsTip8: 7,
+};
+
+const _playTipIndex = {
+  BuiltInAction.playTip1: 0,
+  BuiltInAction.playTip2: 1,
+  BuiltInAction.playTip3: 2,
+  BuiltInAction.playTip4: 3,
+  BuiltInAction.playTip5: 4,
+  BuiltInAction.playTip6: 5,
+  BuiltInAction.playTip7: 6,
+  BuiltInAction.playTip8: 7,
+};
 
 extension BuiltInActionX on BuiltInAction {
   IconData get icon {
@@ -53,10 +95,18 @@ extension BuiltInActionX on BuiltInAction {
         return Icons.play_arrow;
       case BuiltInAction.seekBack:
         return Icons.replay;
+      default:
+        return tipIndex == null
+            ? Icons.bolt
+            : (_ttsTipIndex.containsKey(this) ? Icons.record_voice_over : Icons.play_circle_outline);
     }
   }
 
+  /// 指定第几条提示的动作对应哪一条（0 基）；其它动作返回 null。
+  int? get tipIndex => _ttsTipIndex[this] ?? _playTipIndex[this];
+
   /// TTS-* 动作对应朗读哪个字段；非 TTS 动作没有这个概念。
+  /// 每条提示共用"提示"那一套 TTS 配置，所以带号的也都是 QaType.tip。
   QaType? get qaType {
     switch (this) {
       case BuiltInAction.ttsNote:
@@ -68,9 +118,12 @@ extension BuiltInActionX on BuiltInAction {
       case BuiltInAction.ttsTips:
         return QaType.tip;
       default:
-        return null;
+        return _ttsTipIndex.containsKey(this) ? QaType.tip : null;
     }
   }
+
+  /// 带号的提示动作没有固定文案（要按 book 里定义的提示名字来），走 AssistiveTouchLogic.labelOf。
+  I18nKey? get fixedLabelKey => tipIndex == null ? labelKey : null;
 
   I18nKey get labelKey {
     switch (this) {
@@ -94,6 +147,9 @@ extension BuiltInActionX on BuiltInAction {
         return I18nKey.playPauseAction;
       case BuiltInAction.seekBack:
         return I18nKey.seekBackAction;
+      default:
+        // 带号的提示动作只在这里兜个底（真正显示的文案见 AssistiveTouchLogic.labelOf）。
+        return _ttsTipIndex.containsKey(this) ? I18nKey.ttsTipsAction : I18nKey.playTipsAction;
     }
   }
 }
@@ -226,11 +282,61 @@ class AssistiveTouchLogic {
     return true;
   }
 
+  /// 第 i 条提示显示的名字：book 里定义了就用定义的（跟提示 tab 栏一致），没定义用序号。
+  String tipLabel(int tipIndex) {
+    return VerseField.tipNameOf(repeatLogic.state.helper.getCurrBookMap(), tipIndex) //
+        ??
+        '${I18nKey.labelTips.tr}${tipIndex + 1}';
+  }
+
+  /// 内置动作显示的文案。带号的提示动作要按 book 里定义的提示名字来
+  /// （跟提示 tab 栏保持一致），没定义名字就用序号。
+  String labelOf(BuiltInAction action) {
+    final tipIndex = action.tipIndex;
+    if (tipIndex == null) {
+      return action.labelKey.tr;
+    }
+    final key = action.qaType == null ? I18nKey.playTipIndexAction : I18nKey.ttsTipIndexAction;
+    return key.trArgs([tipLabel(tipIndex)]);
+  }
+
+  /// "新增"里 TTS-Tips / Play-Tips 只是入口：点了再选第几条，真正加进菜单的是带号的那 16 个。
+  /// 它们自己不作为动作加进去（老用户菜单里已经有的仍然照旧跟着当前选中的那条走）。
+  static const List<BuiltInAction> tipGateways = [BuiltInAction.ttsTips, BuiltInAction.playTips];
+
+  /// 入口对应的 8 个带号动作，按提示顺序排列。
+  List<BuiltInAction> tipActionsOf(BuiltInAction gateway) {
+    final map = gateway == BuiltInAction.ttsTips ? _ttsTipIndex : _playTipIndex;
+    return map.keys.toList();
+  }
+
   /// 当前模式支持、且用户没有把它从自定义菜单里移除的内置动作，按定义顺序排列。
   List<BuiltInAction> get shownBuiltins => BuiltInAction.values.where((a) => _builtInAvailableForFlow(a) && visibleBuiltins.contains(a)).toList();
 
-  /// 当前模式支持、但被用户移除了的内置动作——"新增"选择框里可以把它们重新加回来。
-  List<BuiltInAction> get addableBuiltins => BuiltInAction.values.where((a) => _builtInAvailableForFlow(a) && !visibleBuiltins.contains(a)).toList();
+  /// "新增"选择框里的格子：还没加进菜单的普通内置动作，加上两个提示入口
+  /// （8 条里还有没加的就显示，点了再选第几条）。
+  List<BuiltInAction> get addableBuiltins {
+    final ret = <BuiltInAction>[];
+    for (final a in BuiltInAction.values) {
+      if (!_builtInAvailableForFlow(a)) {
+        continue;
+      }
+      if (a.tipIndex != null) {
+        // 带号的不直接摆出来，走下面的入口。
+        continue;
+      }
+      if (tipGateways.contains(a)) {
+        if (tipActionsOf(a).any((e) => !visibleBuiltins.contains(e))) {
+          ret.add(a);
+        }
+        continue;
+      }
+      if (!visibleBuiltins.contains(a)) {
+        ret.add(a);
+      }
+    }
+    return ret;
+  }
 
   bool get canDeleteCurrentVerse => shownBuiltins.contains(BuiltInAction.deleteVerse);
 
@@ -240,16 +346,38 @@ class AssistiveTouchLogic {
         await deleteCurrentVerse();
         break;
       case BuiltInAction.ttsNote:
-        await _speak(QaType.note);
+        await _speak(QaType.note.acronym);
         break;
       case BuiltInAction.ttsQ:
-        await _speak(QaType.question);
+        await _speak(QaType.question.acronym);
         break;
       case BuiltInAction.ttsA:
-        await _speak(QaType.answer);
+        await _speak(QaType.answer.acronym);
         break;
       case BuiltInAction.ttsTips:
-        await _speak(QaType.tip);
+        // 提示有好几条时读界面上当前选中的那一条。
+        await _speak(repeatLogic.state.helper.currTipRef());
+        break;
+      case BuiltInAction.ttsTip1:
+      case BuiltInAction.ttsTip2:
+      case BuiltInAction.ttsTip3:
+      case BuiltInAction.ttsTip4:
+      case BuiltInAction.ttsTip5:
+      case BuiltInAction.ttsTip6:
+      case BuiltInAction.ttsTip7:
+      case BuiltInAction.ttsTip8:
+        await _speak(VerseField.ref(QaType.tip.acronym, action.tipIndex!));
+        break;
+      case BuiltInAction.playTip1:
+      case BuiltInAction.playTip2:
+      case BuiltInAction.playTip3:
+      case BuiltInAction.playTip4:
+      case BuiltInAction.playTip5:
+      case BuiltInAction.playTip6:
+      case BuiltInAction.playTip7:
+      case BuiltInAction.playTip8:
+        final ref = VerseField.ref(QaType.tip.acronym, action.tipIndex!);
+        await _play((h) => h.getCurrTipRange(ref));
         break;
       case BuiltInAction.playQ:
         await _play((h) => h.getCurrQuestionRange());
@@ -286,25 +414,25 @@ class AssistiveTouchLogic {
 
   /// 播放"作用位置"上已有的内容：该字段配了可用的时间区间就播那一段（字段有自己的媒体就播
   /// 自己的文件），否则退回用 TTS 朗读该字段的文本。扩展助手 ExpandBehavior.playOrOverwrite 走这里。
-  Future<void> playTarget(QaType type) async {
-    final getRange = _rangeGetterOf(type);
+  Future<void> playTarget(String fieldRef) async {
+    final getRange = _rangeGetterOf(fieldRef);
     final range = getRange == null ? null : getRange(_mediaRangeHelper);
     if (range != null && range.enable) {
       await _playRange(range);
       return;
     }
-    await _speak(type);
+    await _speak(fieldRef);
   }
 
-  MediaRange? Function(MediaRangeHelper)? _rangeGetterOf(QaType type) {
-    switch (type) {
+  MediaRange? Function(MediaRangeHelper)? _rangeGetterOf(String fieldRef) {
+    switch (QaType.fromAcronym(VerseField.baseOf(fieldRef))) {
       case QaType.question:
         return (h) => h.getCurrQuestionRange();
       case QaType.answer:
         return (h) => h.getCurrAnswerRange();
       case QaType.tip:
-        return (h) => h.getCurrTipRange();
-      case QaType.note:
+        return (h) => h.getCurrTipRange(fieldRef);
+      default:
         return null;
     }
   }
@@ -312,18 +440,21 @@ class AssistiveTouchLogic {
   /// 区间只跟小节内容有关，跟当前显示哪个视图无关，所以固定用音频视图那份（它一定已经 init 过）。
   MediaRangeHelper get _mediaRangeHelper => (repeatLogic.showTypeToRepeatView[RepeatViewEnum.audio.name] as RepeatViewForAudio).mediaRangeHelper;
 
-  Future<void> _speak(QaType type) async {
+  /// 朗读某个字段的文本。提示带下标（'t1'…）时朗读那一条，TTS 的语速语言这些
+  /// 仍然共用"提示"那一套配置（不给每条提示单独存一份）。
+  Future<void> _speak(String fieldRef) async {
     final map = repeatLogic.state.helper.getCurrVerseMap();
     if (map == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
-    final text = VerseField.getText(map, type.acronym);
-    if (text == null) {
+    final keys = QaType.fromAcronym(VerseField.baseOf(fieldRef))?.ttsKeys;
+    final text = VerseField.getText(map, fieldRef);
+    if (keys == null || text == null) {
       Snackbar.show(I18nKey.labelNoContent.tr);
       return;
     }
-    await repeatLogic.ttsHelper.speakText(type.ttsKeys, text);
+    await repeatLogic.ttsHelper.speakText(keys, text);
   }
 
   /// Play-* 不自己造播放器，也不直接操作某个播放器：它只是把"当前字段"临时切过去

@@ -27,15 +27,19 @@ class ExpandSheet {
     return list[index.clamp(0, list.length - 1)];
   }
 
-  Future<void> open(VerseTodayPrg verse, Map<String, dynamic> verseMap, {AssistiveTouchAction? preset}) async {
+  Future<void> open(
+    VerseTodayPrg verse,
+    Map<String, dynamic> verseMap, {
+    AssistiveTouchAction? preset,
+  }) async {
     logic.bookId = verse.bookId;
     logic.verseId = verse.verseId;
     logic.verseMap = verseMap;
     if (preset != null) {
       logic.editingActionId = preset.id;
       logic.actionSort = preset.sort;
-      logic.sourceIndex.value = preset.sourceIndex.clamp(0, logic.sourceOptions.length - 1);
-      logic.targetIndex.value = preset.targetIndex.clamp(0, logic.targetOptions.length - 1);
+      logic.sourceIndex.value = ExpandLogic.normalizeSourceIndex(preset.sourceIndex).clamp(0, logic.sourceOptions.length - 1);
+      logic.targetIndex.value = ExpandLogic.normalizeTargetIndex(preset.targetIndex).clamp(0, logic.targetOptions.length - 1);
       logic.enableAudio.value = preset.enableAudio;
       logic.behavior.value = ExpandBehavior.values[preset.behavior.clamp(0, ExpandBehavior.values.length - 1)];
       logic.templateIndex.value = preset.templateIndex;
@@ -72,17 +76,26 @@ class ExpandSheet {
             );
           }),
           RowWidget.buildDividerWithoutColor(),
-          RowWidget.buildCupertinoPicker(
-            title: I18nKey.instructionTemplate.tr,
-            options: logic.sourceOptions,
-            value: logic.sourceIndex.value,
-            changed: (index) {
-              logic.sourceIndex.value = index;
-              logic.templateIndex.value = 0;
-              logic.textController.text = _renderTemplate(0);
-            },
-            disabled: logic.disabled,
-          ),
+          // 选项框里的位置跟存库的下标不是一回事（老的"提示"留了位不给选），中间要过一层映射。
+          Builder(builder: (_) {
+            final values = ExpandLogic.selectableSourceIndexes;
+            final labels = logic.sourceOptions;
+            var pos = values.indexOf(logic.sourceIndex.value);
+            if (pos < 0) {
+              pos = 0;
+            }
+            return RowWidget.buildCupertinoPicker(
+              title: I18nKey.instructionTemplate.tr,
+              options: values.map((e) => labels[e]).toList(),
+              value: pos,
+              changed: (index) {
+                logic.sourceIndex.value = values[index];
+                logic.templateIndex.value = 0;
+                logic.textController.text = _renderTemplate(0);
+              },
+              disabled: logic.disabled,
+            );
+          }),
           RowWidget.buildCard(
             Obx(() {
               return Stack(
@@ -127,15 +140,23 @@ class ExpandSheet {
             }),
           ),
           RowWidget.buildDividerWithoutColor(),
-          RowWidget.buildCupertinoPicker(
-            title: I18nKey.targetPosition.tr,
-            options: logic.targetOptions,
-            value: logic.targetIndex.value,
-            changed: (index) {
-              logic.targetIndex.value = index;
-            },
-            disabled: logic.disabled,
-          ),
+          Builder(builder: (_) {
+            final values = ExpandLogic.selectableTargetIndexes;
+            final labels = logic.targetOptions;
+            var pos = values.indexOf(logic.targetIndex.value);
+            if (pos < 0) {
+              pos = 0;
+            }
+            return RowWidget.buildCupertinoPicker(
+              title: I18nKey.targetPosition.tr,
+              options: values.map((e) => labels[e]).toList(),
+              value: pos,
+              changed: (index) {
+                logic.targetIndex.value = values[index];
+              },
+              disabled: logic.disabled,
+            );
+          }),
           RowWidget.buildDividerWithoutColor(),
           RowWidget.buildSwitch(
             title: I18nKey.generateAudio.tr,

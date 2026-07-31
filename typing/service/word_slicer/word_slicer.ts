@@ -98,6 +98,12 @@ const Util = {
     fieldText: function (verse: Verse | null | undefined, acronym: string): string {
         const v = verse ? verse[acronym] : null;
         if (typeof v === 'string') return v;
+        // 提示('t')是数组，一节可以挂好几条，这里取第 1 条。
+        if (Array.isArray(v)) {
+            const first = v[0];
+            if (typeof first === 'string') return first;
+            return (first && first.text) ? first.text : '';
+        }
         return (v && v.text) ? v.text : '';
     },
     getVerse: async function (): Promise<Verse> {

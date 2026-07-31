@@ -17,7 +17,9 @@ import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
+import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:repeat_flutter/widget/text/expandable_text.dart';
 
 import 'repeat_logic.dart';
@@ -373,82 +375,134 @@ class RepeatPage extends StatelessWidget {
 
     if (map == null) return null;
 
+    final bookMap = helper.getCurrBookMap();
+
     return Obx(() {
-      int tabIndex = logic.state.currentTipTabIndex.value;
-      bool isTip = tabIndex == 0;
+      final int tipCount = helper.currTipCount();
       bool isEditMode = helper.showMode.value == ShowMode.edit;
 
-      String tipText = VerseField.getText(map, QaType.tip.acronym) ?? I18nKey.labelNoContent.tr;
-      String noteText = VerseField.getText(map, QaType.note.acronym) ?? '';
-
-      String displayText = isTip ? tipText : noteText;
-
-      bool canEdit = isTip ? isEditMode : true;
-      final qaType = isTip ? QaType.tip : QaType.note;
-      bool canShowTipIcon(QaType type) {
-        int? bookId = helper.logic.currVerse?.bookId;
-        Tip? tip = logic.state.bookIdToTip[bookId]?[type.acronym];
-        return tip != null;
+      // 这一条提示在这一节里有没有东西可看/可播。只判断字段块在不在不行：加提示、写了又清空
+      // 都会留下一个空块（下标就是身份，空块不能从数组里删，见 VerseField.remove）。
+      bool hasTipContent(int index) {
+        final r = VerseField.ref(QaType.tip.acronym, index);
+        if (VerseField.getText(map, r) != null) {
+          return true;
+        }
+        if (VerseField.getStr(map, r, VerseField.mediaHash) != null) {
+          return true;
+        }
+        // 没有专属媒体但配了区间：放的是整节那份媒体的一段，也算有内容。
+        return VerseField.getStr(map, r, VerseField.start) != null && //
+            VerseField.getStr(map, r, VerseField.end) != null;
       }
 
-      Future<void> onTipIconTap(QaType type) async {
+      // 这一节里哪几条提示要摆出来：开卷/闭卷下空的那几条不显示（提示是整本书统一定义的，
+      // 但正文是逐节写的，不是每节都会把 8 条都填上）；编辑模式下全都摆出来，不然没法往里填。
+      final visibleTips = <int>[];
+      for (var i = 0; i < tipCount; i++) {
+        if (isEditMode || hasTipContent(i)) {
+          visibleTips.add(i);
+        }
+      }
+
+      // 换了本书提示条数会变，存着的下标可能落在不存在的提示上。这里只是读的时候收一下，
+      // 不回写：在 Obx 的 build 里改 Rx 会再触发一次重建。
+      int tabIndex = helper.clampedTipTabIndex();
+      if (tabIndex < tipCount && !visibleTips.contains(tabIndex)) {
+        // 选中的那条这一节是空的（翻页翻过来的），退到第一条有内容的，都没有就落到笔记。
+        tabIndex = visibleTips.isEmpty ? tipCount : visibleTips.first;
+      }
+      // 最后一个 tab 是笔记，前面是提示。
+      final bool isNote = tabIndex >= tipCount;
+
+      // 提示/笔记的定位串：提示按选中的那一条走（'t'/'t1'/…）。
+      final String fieldRef = isNote ? QaType.note.acronym : VerseField.ref(QaType.tip.acronym, tabIndex);
+      final String displayText = VerseField.getText(map, fieldRef) ?? (isNote ? '' : I18nKey.labelNoContent.tr);
+
+      bool canEdit = isNote ? true : isEditMode;
+      Tip? tipOf(String ref) {
         int? bookId = helper.logic.currVerse?.bookId;
-        Tip? tip = logic.state.bookIdToTip[bookId]?[type.acronym];
+        return logic.state.bookIdToTip[bookId]?[ref];
+      }
+
+      Future<void> onTipIconTap(String ref) async {
+        Tip? tip = tipOf(ref);
         if (tip != null) {
           await logic.openTip(tip);
         }
+      }
+
+      // tab 名字：book 那一层统一定义（整本书第 i 个 tab 名字一致，翻页不跳）。没写名字就用序号。
+      String tabLabel(int index) {
+        return VerseField.tipNameOf(bookMap, index) ?? '${I18nKey.labelTips.tr}${index + 1}';
+      }
+
+      Widget tab(int index, String label, String ref) {
+        final selected = index == tabIndex;
+        // 编辑模式下长按提示 tab、或者再点一次已经选中的那个，都弹"更名/删除"。
+        // 改的都是 book 那一层，整本书通用。
+        final canEditTip = isEditMode && index < tipCount;
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                if (selected && canEditTip) {
+                  tipMenu(logic, index);
+                  return;
+                }
+                helper.currentTipTabIndex.value = index;
+              },
+              onLongPress: canEditTip ? () => tipMenu(logic, index) : null,
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                  color: selected ? Colors.blue : Colors.grey,
+                ),
+              ),
+            ),
+            if (tipOf(ref) != null)
+              IconButton(
+                icon: const Icon(
+                  Icons.tips_and_updates,
+                  color: Color(0xFF007BFF),
+                  size: 17,
+                ),
+                onPressed: () => onTipIconTap(ref),
+              )
+            else
+              const SizedBox(width: 24),
+          ],
+        );
       }
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 12),
-          Row(
-            children: [
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => logic.state.currentTipTabIndex.value = 0,
-                child: Text(
-                  I18nKey.labelTips.tr,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: isTip ? FontWeight.bold : FontWeight.normal,
-                    color: isTip ? Colors.blue : Colors.grey,
+          // 提示最多 8 条，名字还可能很长，一行摆不下——整条 tab 栏横向可滚动。
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            controller: helper.tipTabScrollController,
+            child: Row(
+              children: [
+                for (final i in visibleTips) tab(i, tabLabel(i), VerseField.ref(QaType.tip.acronym, i)),
+                // 编辑模式下能一直加到 8 条（VerseField.maxTip），加满就不显示了。
+                if (isEditMode && tipCount < VerseField.maxTip)
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => addTip(logic),
+                    child: const Padding(
+                      padding: EdgeInsets.only(right: 24),
+                      child: Icon(Icons.add, size: 20, color: Colors.grey),
+                    ),
                   ),
-                ),
-              ),
-              if (canShowTipIcon(QaType.tip))
-                IconButton(
-                  icon: const Icon(
-                    Icons.tips_and_updates,
-                    color: Color(0xFF007BFF),
-                    size: 17,
-                  ),
-                  onPressed: () => onTipIconTap(QaType.tip),
-                ),
-              const SizedBox(width: 24),
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => logic.state.currentTipTabIndex.value = 1,
-                child: Text(
-                  I18nKey.labelNote.tr,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: !isTip ? FontWeight.bold : FontWeight.normal,
-                    color: !isTip ? Colors.blue : Colors.grey,
-                  ),
-                ),
-              ),
-              if (canShowTipIcon(QaType.note))
-                IconButton(
-                  icon: const Icon(
-                    Icons.tips_and_updates,
-                    color: Color(0xFF007BFF),
-                    size: 17,
-                  ),
-                  onPressed: () => onTipIconTap(QaType.note),
-                ),
-            ],
+                tab(tipCount, I18nKey.labelNote.tr, QaType.note.acronym),
+              ],
+            ),
           ),
           const Divider(height: 16),
 
@@ -457,20 +511,20 @@ class RepeatPage extends StatelessWidget {
               title: "",
               text: displayText,
               style: TextStyle(
-                fontSize: fontSize(logic, qaType) ?? 17,
-                fontFamily: fontAlias(logic, qaType),
+                fontSize: fontSizeOf(logic, fieldRef) ?? 17,
+                fontFamily: fontAliasOf(logic, fieldRef),
               ),
               onIcon: canEdit
                   ? () async {
-                      if (helper.showMode.value != ShowMode.edit && qaType == QaType.note) {
-                        await modify(map, logic, qaType);
+                      if (helper.showMode.value != ShowMode.edit && isNote) {
+                        await modify(map, logic, fieldRef);
                       } else {
-                        await fullModify(map, logic, qaType);
+                        await fullModify(map, logic, fieldRef);
                       }
                     }
                   : null,
               onText: () async {
-                final String text = VerseField.getText(map, qaType.acronym) ?? '';
+                final String text = VerseField.getText(map, fieldRef) ?? '';
                 if (text.isEmpty) {
                   return;
                 }
@@ -519,7 +573,7 @@ class RepeatPage extends StatelessWidget {
     IconData? onIconData;
     if (edit) {
       onIconCallback = () async {
-        await fullModify(map, logic, type);
+        await fullModify(map, logic, type.acronym);
       };
     } else {
       int? bookId = helper.logic.currVerse?.bookId;
@@ -556,16 +610,152 @@ class RepeatPage extends StatelessWidget {
     );
   }
 
-  Future<void> modify(Map<String, dynamic> map, RepeatLogic logic, QaType type) async {
+  /// 编辑模式下点已选中的提示 tab 弹出来的菜单。
+  Future<void> tipMenu(RepeatLogic logic, int index) async {
+    final keys = [
+      I18nKey.labelRenameTip.tr,
+      I18nKey.labelDelete.tr,
+    ];
+    final selected = await Select.showSheet(title: tipDisplayName(logic, index), keys: keys);
+    if (selected == null) {
+      return;
+    }
+    if (keys[selected] == I18nKey.labelRenameTip.tr) {
+      renameTip(logic, index);
+    } else {
+      deleteTip(logic, index);
+    }
+  }
+
+  /// 第 [index] 条提示显示的名字：没起名字就用序号，跟 tab 栏一致。
+  String tipDisplayName(RepeatLogic logic, int index) {
+    return VerseField.tipNameOf(logic.state.helper.getCurrBookMap(), index) //
+        ??
+        '${I18nKey.labelTips.tr}${index + 1}';
+  }
+
+  /// 删掉第 [index] 条提示。下标就是提示的身份，book 删一条，这本学卷每一节的 't' 都要在
+  /// 同一个位置删掉，否则后面几条的名字和正文会整体错位。
+  void deleteTip(RepeatLogic logic, int index) {
+    final helper = logic.state.helper;
+    final verse = helper.getCurrVerse();
+    final bookMap = helper.getCurrBookMap();
+    if (verse == null || bookMap == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["book"]));
+      return;
+    }
+    MsgBox.yesOrNo(
+      title: I18nKey.labelWarning.tr,
+      desc: I18nKey.labelDeleteTip.tr,
+      yes: () async {
+        Get.back();
+        await showOverlay(() async {
+          final bookId = verse.bookId;
+          if (VerseField.removeTipAt(bookMap, index)) {
+            await Db().db.bookDao.updateBookContent(bookId, jsonEncode(bookMap));
+          }
+          for (final v in await Db().db.verseDao.findByBookId(bookId)) {
+            if (v.id == null || v.content.isEmpty) {
+              continue;
+            }
+            final Map<String, dynamic> m;
+            try {
+              final decoded = jsonDecode(v.content);
+              if (decoded is! Map<String, dynamic>) {
+                continue;
+              }
+              m = decoded;
+            } catch (_) {
+              continue;
+            }
+            if (!VerseField.removeTipAt(m, index)) {
+              continue;
+            }
+            await Db().db.verseDao.updateVerseContent(v.id!, jsonEncode(m));
+          }
+          // 删的可能正是当前选中那条，收一下免得停在已经不存在的下标上。
+          final max = helper.currTipCount();
+          if (helper.currentTipTabIndex.value > max) {
+            helper.currentTipTabIndex.value = max;
+          }
+          logic.update([RepeatLogic.id]);
+          Snackbar.show(I18nKey.labelDeleted.tr);
+        }, I18nKey.labelDeleting.tr);
+      },
+    );
+  }
+
+  /// 给第 [index] 条提示改名。名字定义在 book 那一层，所以整本书第 index 个 tab 都跟着改。
+  /// 清空名字就退回显示序号——这时候要把占位块留住，不然这一条会连着被截掉。
+  void renameTip(RepeatLogic logic, int index) {
+    final helper = logic.state.helper;
+    final verse = helper.getCurrVerse();
+    final bookMap = helper.getCurrBookMap();
+    if (verse == null || bookMap == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["book"]));
+      return;
+    }
+    final name = RxString(VerseField.tipNameOf(bookMap, index) ?? '');
+    MsgBox.strInputWithYesOrNo(
+      name,
+      I18nKey.labelTipName.tr,
+      null,
+      yes: () async {
+        VerseField.setStr(bookMap, VerseField.ref(QaType.tip.acronym, index), VerseField.tipName, name.value);
+        VerseField.ensureTipCount(bookMap, index + 1);
+        await Db().db.bookDao.updateBookContent(verse.bookId, jsonEncode(bookMap));
+        Get.back();
+        logic.update([RepeatLogic.id]);
+      },
+    );
+  }
+
+  /// 加一条提示：往 book 的 't' 数组末尾补一个空块，整本书就多一个 tab。
+  Future<void> addTip(RepeatLogic logic) async {
+    final helper = logic.state.helper;
+    final verse = helper.getCurrVerse();
+    final bookMap = helper.getCurrBookMap();
+    if (verse == null || bookMap == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["book"]));
+      return;
+    }
+    final count = helper.currTipCount();
+    if (count >= VerseField.maxTip) {
+      return;
+    }
+    VerseField.ensureTipCount(bookMap, count + 1);
+    await Db().db.bookDao.updateBookContent(verse.bookId, jsonEncode(bookMap));
+    helper.currentTipTabIndex.value = count;
+    logic.update([RepeatLogic.id]);
+    // 新加的这条在最右边，等这一帧画完把 tab 栏滚过去，不然加完看不见自己加了什么。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 横竖屏切换那一瞬间可能同时挂着两个 tab 栏，这时候读 position 会断言失败，跳过就行。
+      final controller = helper.tipTabScrollController;
+      if (controller.positions.length == 1) {
+        controller.jumpTo(controller.position.maxScrollExtent);
+      }
+    });
+  }
+
+  /// 编辑框/选择框标题：提示有名字就用名字（多条提示时"提示"分不清是哪条）。
+  String fieldTitle(RepeatLogic logic, String fieldRef) {
+    final name = VerseField.tipNameOf(logic.state.helper.getCurrBookMap(), VerseField.indexOf(fieldRef));
+    if (name != null && VerseField.baseOf(fieldRef) == QaType.tip.acronym) {
+      return name;
+    }
+    return QaType.fromAcronym(VerseField.baseOf(fieldRef))?.i18n.tr ?? fieldRef;
+  }
+
+  Future<void> modify(Map<String, dynamic> map, RepeatLogic logic, String fieldRef) async {
     var helper = logic.state.helper;
     helper.stopMedia(false);
 
     await Nav.editor.push(
       arguments: EditorArgs(
-        title: type.i18n.tr,
-        value: VerseField.getText(map, type.acronym) ?? '',
+        title: fieldTitle(logic, fieldRef),
+        value: VerseField.getText(map, fieldRef) ?? '',
         save: (str) async {
-          VerseField.setText(map, type.acronym, str);
+          VerseField.setText(map, fieldRef, str);
           String jsonStr = jsonEncode(map);
           var verseId = helper.getCurrVerse()!.verseId;
           await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
@@ -576,15 +766,15 @@ class RepeatPage extends StatelessWidget {
     helper.stopMedia(true);
   }
 
-  Future<void> fullModify(Map<String, dynamic> map, RepeatLogic logic, QaType type) async {
+  Future<void> fullModify(Map<String, dynamic> map, RepeatLogic logic, String fieldRef) async {
     var helper = logic.state.helper;
     helper.stopMedia(false);
-    String text = VerseField.getText(map, type.acronym) ?? '';
+    String text = VerseField.getText(map, fieldRef) ?? '';
     var keys = [
       I18nKey.font.tr,
       I18nKey.content.tr,
     ];
-    int? index = await Select.showSheet(title: I18nKey.editWhat.trArgs([type.i18n.tr]), keys: keys);
+    int? index = await Select.showSheet(title: I18nKey.editWhat.trArgs([fieldTitle(logic, fieldRef)]), keys: keys);
     if (index == null) {
       return;
     }
@@ -599,16 +789,16 @@ class RepeatPage extends StatelessWidget {
       }
       logic.adjustFont.open(
         bookId: verse.bookId,
-        fontPrefix: type.acronym,
+        fontPrefix: fieldRef,
         bookMap: bookMap,
       );
     } else if (keys[index] == I18nKey.content.tr) {
       await Nav.editor.push(
         arguments: EditorArgs(
-          title: type.i18n.tr,
+          title: fieldTitle(logic, fieldRef),
           value: text,
           save: (str) async {
-            VerseField.setText(map, type.acronym, str);
+            VerseField.setText(map, fieldRef, str);
             String jsonStr = jsonEncode(map);
             var verseId = helper.getCurrVerse()!.verseId;
             await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
@@ -620,24 +810,29 @@ class RepeatPage extends StatelessWidget {
     helper.stopMedia(true);
   }
 
-  double? fontSize(RepeatLogic logic, QaType type) {
+  double? fontSize(RepeatLogic logic, QaType type) => fontSizeOf(logic, type.acronym);
+
+  String? fontAlias(RepeatLogic logic, QaType type) => fontAliasOf(logic, type.acronym);
+
+  /// 字体存在 book 那一层的字段块里，提示是每一条各存各的（'t'/'t1'/…）。
+  double? fontSizeOf(RepeatLogic logic, String fieldRef) {
     final bookMap = logic.state.helper.getCurrBookMap();
     if (bookMap == null) {
       return null;
     }
-    final val = VerseField.getStr(bookMap, type.acronym, VerseField.fontSize);
+    final val = VerseField.getStr(bookMap, fieldRef, VerseField.fontSize);
     if (val != null) {
       return double.parse(val);
     }
     return null;
   }
 
-  String? fontAlias(RepeatLogic logic, QaType type) {
+  String? fontAliasOf(RepeatLogic logic, String fieldRef) {
     final bookMap = logic.state.helper.getCurrBookMap();
     if (bookMap == null) {
       return null;
     }
-    return VerseField.getStr(bookMap, type.acronym, VerseField.fontAlias);
+    return VerseField.getStr(bookMap, fieldRef, VerseField.fontAlias);
   }
 
   Widget fullScreenPanel(RepeatLogic logic) {

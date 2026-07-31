@@ -141,8 +141,15 @@ class ChapterContent {
 /// 笔记（'n'）没有媒体和区间，正文仍然直接平铺成 `'n': '...'`，所以取正文一律走
 /// [getText]/[setText]，别自己去索引 map。
 ///
+/// 提示（'t'）是一个数组，一节可以挂好几条（词源、语法、背景……）：
+/// `'t': [{'text': ..}, {'text': ..}]`。定位某一条用「字段引用串」而不是裸 acronym：
+/// 't' 是第 1 条、't1' 是第 2 条、't2' 是第 3 条（见 [ref]/[baseOf]/[indexOf]），
+/// 这样所有只传 'q'/'a'/'t'/'n' 的老调用点都还落在原来那一条上。
+/// 提示的名字（tab 上显示的）统一定义在 book 的 't' 数组里（见 [tipNameOf]），
+/// verse 的 't' 只放正文/媒体/区间——整本书第 i 个 tab 名字一致，翻页时 tab 才不会跳。
+///
 /// book 那一层的字段块里还放着字体（'fontSize'/'fontAlias'/'fontHash'，四个字段都有，
-/// 包括 'n'）。注意 book 的 't' 块同时还是提示配置（按 'a'/'q'/'t'/'n' 分的子 map），
+/// 包括 'n'）和提示服务配置（'h'/'k'/'s'/'i'，写进 Tip 表，见 ClassroomHelp.registerRes），
 /// 几拨 key 互不重名，各读各的。
 class VerseField {
   static const String text = 'text';
@@ -154,31 +161,124 @@ class VerseField {
   static const String fontAlias = 'fontAlias';
   static const String fontHash = 'fontHash';
 
+  /// book 的 't' 数组里那一条的名字，显示在提示 tab 上。
+  static const String tipName = 'n';
+
+  /// 提示 tab 最多渲染几条：tab 行不滚动，再多就挤不下了。
+  /// 只是渲染上限，不动数据，超出的条目原样留在 JSON 里。
+  static const int maxTip = 8;
+
   /// verse 一层有嵌套字段块的字段（QaType 里只有 'n' 例外，它的正文是平铺的）。
   static const List<String> acronyms = ['q', 'a', 't'];
 
-  static bool nested(String acronym) => acronyms.contains(acronym);
+  /// 会存成数组的字段：一个字段有好几条时用下标区分。
+  static const List<String> listAcronyms = ['t'];
+
+  static bool nested(String acronym) => acronyms.contains(baseOf(acronym));
+
+  /// 第 [index] 条的字段引用串。第 1 条就是裸 acronym，这样老数据/老调用点不用动。
+  static String ref(String acronym, int index) => index == 0 ? acronym : '$acronym$index';
+
+  /// 't2' -> 't'；'q' -> 'q'。
+  static String baseOf(String ref) {
+    final i = _digitAt(ref);
+    return i < 0 ? ref : ref.substring(0, i);
+  }
+
+  /// 't2' -> 2；'q' -> 0。
+  static int indexOf(String ref) {
+    final i = _digitAt(ref);
+    return i < 0 ? 0 : (int.tryParse(ref.substring(i)) ?? 0);
+  }
+
+  /// 引用串里数字下标的起点，没有下标返回 -1。
+  static int _digitAt(String ref) {
+    for (var i = 0; i < ref.length; i++) {
+      final c = ref.codeUnitAt(i);
+      if (c >= 0x30 && c <= 0x39) {
+        return i == 0 ? -1 : i;
+      }
+    }
+    return -1;
+  }
+
+  /// 这一节该显示几个提示 tab：verse 和 book 里 't' 数组谁长按谁算（book 定义了名字，
+  /// verse 可能只写了前几条的正文），至少 1 个，最多 [maxTip] 个。
+  static int tipCount(Map<String, dynamic>? verse, Map<String, dynamic>? book) {
+    var count = 1;
+    for (var content in [verse, book]) {
+      if (content == null) {
+        continue;
+      }
+      final v = content['t'];
+      if (v is List && v.length > count) {
+        count = v.length;
+      }
+    }
+    return count > maxTip ? maxTip : count;
+  }
+
+  /// 第 [index] 条提示的名字，没写就返回 null（调用方自己决定显示什么）。
+  static String? tipNameOf(Map<String, dynamic>? book, int index) {
+    if (book == null) {
+      return null;
+    }
+    return getStr(book, ref('t', index), tipName);
+  }
 
   /// 字段块本身，没有就返回 null（不会顺手建出来）。
-  static Map<String, dynamic>? of(Map<String, dynamic> content, String acronym) {
-    final ret = content[acronym];
-    if (ret is Map<String, dynamic>) {
-      return ret;
+  ///
+  /// 数组字段（'t'）按引用串里的下标取；还没迁移成数组的老内容是个 map，
+  /// 那就只有第 1 条。
+  static Map<String, dynamic>? of(Map<String, dynamic> content, String fieldRef) {
+    final v = content[baseOf(fieldRef)];
+    final index = indexOf(fieldRef);
+    if (v is List) {
+      if (index >= v.length) {
+        return null;
+      }
+      final ret = v[index];
+      return ret is Map<String, dynamic> ? ret : null;
+    }
+    if (v is Map<String, dynamic>) {
+      return index == 0 ? v : null;
     }
     return null;
   }
 
-  static Map<String, dynamic> _ensure(Map<String, dynamic> content, String acronym) {
-    var ret = of(content, acronym);
-    if (ret == null) {
-      ret = <String, dynamic>{};
-      content[acronym] = ret;
+  static Map<String, dynamic> _ensure(Map<String, dynamic> content, String fieldRef) {
+    final base = baseOf(fieldRef);
+    final index = indexOf(fieldRef);
+    if (!listAcronyms.contains(base)) {
+      var ret = of(content, fieldRef);
+      if (ret == null) {
+        ret = <String, dynamic>{};
+        content[base] = ret;
+      }
+      return ret;
     }
+    final raw = content[base];
+    // 老内容是 map 的话就地包成数组，省得再等一次迁移。
+    final list = raw is List
+        ? raw
+        : <dynamic>[
+            if (raw is Map<String, dynamic>) raw,
+          ];
+    // 中间缺的条目补空块：下标就是身份，不能靠挪位置来省这几个 {}。
+    while (list.length <= index) {
+      list.add(<String, dynamic>{});
+    }
+    var ret = list[index];
+    if (ret is! Map<String, dynamic>) {
+      ret = <String, dynamic>{};
+      list[index] = ret;
+    }
+    content[base] = list;
     return ret;
   }
 
-  static String? getStr(Map<String, dynamic> content, String acronym, String key) {
-    final v = of(content, acronym)?[key];
+  static String? getStr(Map<String, dynamic> content, String fieldRef, String key) {
+    final v = of(content, fieldRef)?[key];
     if (v is String && v.isNotEmpty) {
       return v;
     }
@@ -186,56 +286,77 @@ class VerseField {
   }
 
   /// 传 null 或空串就把这个 key 删掉；删完字段块空了连块一起删，避免留下一堆 `'t': {}`。
-  static void setStr(Map<String, dynamic> content, String acronym, String key, String? value) {
+  static void setStr(Map<String, dynamic> content, String fieldRef, String key, String? value) {
     if (value == null || value.isEmpty) {
-      remove(content, acronym, [key]);
+      remove(content, fieldRef, [key]);
       return;
     }
-    _ensure(content, acronym)[key] = value;
+    _ensure(content, fieldRef)[key] = value;
   }
 
-  static void remove(Map<String, dynamic> content, String acronym, List<String> keys) {
-    final field = of(content, acronym);
+  static void remove(Map<String, dynamic> content, String fieldRef, List<String> keys) {
+    final field = of(content, fieldRef);
     if (field == null) {
       return;
     }
     for (var key in keys) {
       field.remove(key);
     }
-    if (field.isEmpty) {
-      content.remove(acronym);
+    if (field.isNotEmpty) {
+      return;
     }
+    final base = baseOf(fieldRef);
+    final raw = content[base];
+    if (raw is! List) {
+      content.remove(base);
+      return;
+    }
+    // 数组字段清空一条时只留个空块：从中间删掉会让后面每一条的下标（也就是它的名字、
+    // 字体、提示服务）整体前移。只有末尾连着空的才能截掉。
+    while (raw.isNotEmpty && _emptyField(raw.last)) {
+      raw.removeLast();
+    }
+    if (raw.isEmpty) {
+      content.remove(base);
+    }
+  }
+
+  static bool _emptyField(dynamic field) {
+    if (field == null) {
+      return true;
+    }
+    return field is Map && field.isEmpty;
   }
 
   /// 正文。'n'（笔记）没有字段块，直接平铺存。
-  static String? getText(Map<String, dynamic> content, String acronym) {
-    if (!nested(acronym)) {
-      final v = content[acronym];
+  static String? getText(Map<String, dynamic> content, String fieldRef) {
+    if (!nested(fieldRef)) {
+      final v = content[fieldRef];
       return v is String && v.isNotEmpty ? v : null;
     }
-    return getStr(content, acronym, text);
+    return getStr(content, fieldRef, text);
   }
 
-  static void setText(Map<String, dynamic> content, String acronym, String? value) {
-    if (!nested(acronym)) {
+  static void setText(Map<String, dynamic> content, String fieldRef, String? value) {
+    if (!nested(fieldRef)) {
       if (value == null || value.isEmpty) {
-        content.remove(acronym);
+        content.remove(fieldRef);
       } else {
-        content[acronym] = value;
+        content[fieldRef] = value;
       }
       return;
     }
-    setStr(content, acronym, text, value);
+    setStr(content, fieldRef, text, value);
   }
 
   /// 逐层找一个字段属性：verse -> chapter -> book，第一个有值的算数。
-  /// contents 按由近到远传（null 的层跳过）。
-  static String? lookup(List<Map<String, dynamic>?> contents, String acronym, String key) {
+  /// contents 按由近到远传（null 的层跳过）。数组字段按同一个下标逐层对齐。
+  static String? lookup(List<Map<String, dynamic>?> contents, String fieldRef, String key) {
     for (var content in contents) {
       if (content == null) {
         continue;
       }
-      final v = getStr(content, acronym, key);
+      final v = getStr(content, fieldRef, key);
       if (v != null) {
         return v;
       }
@@ -283,6 +404,41 @@ class VerseField {
     return bookChanged;
   }
 
+  /// 保证 't' 数组至少有 [count] 条，不足的补空块。返回是否真的改了。
+  /// 新增一条提示、或者清掉某条的名字后要把被 [remove] 截掉的占位补回来，都走这里。
+  static bool ensureTipCount(Map<String, dynamic> content, int count) {
+    if (count <= 0 || tipLength(content) >= count) {
+      return false;
+    }
+    _ensure(content, ref('t', count - 1));
+    return true;
+  }
+
+  /// 删掉第 [index] 条提示，后面的整体前移。返回是否真的改了。
+  ///
+  /// 下标就是提示的身份（名字、字体、提示服务在 book 上，正文在每一节上，全靠下标对齐），
+  /// 所以 book 删了一条，这本书每一节的 't' 也要在同一个位置删掉，否则后面几条会整体错位。
+  static bool removeTipAt(Map<String, dynamic> content, int index) {
+    final v = content['t'];
+    if (v is! List || index < 0 || index >= v.length) {
+      return false;
+    }
+    v.removeAt(index);
+    if (v.isEmpty) {
+      content.remove('t');
+    }
+    return true;
+  }
+
+  /// 这一节里实际写了内容的提示条数（跟 [tipCount] 不一样：那个是该显示几个 tab）。
+  static int tipLength(Map<String, dynamic> content) {
+    final v = content['t'];
+    if (v is List) {
+      return v.length;
+    }
+    return v == null ? 0 : 1;
+  }
+
   /// 把文件对象登记进这一层的 'd' 列表（按 hash 去重）。
   /// 一定是追加：'d' 的第一项是整节媒体，插到前面会把整节的音视频换掉。
   /// 返回是否真的改了。
@@ -297,6 +453,25 @@ class VerseField {
   }
 }
 
+/// 一条提示：'t' 数组里的一项。名字在 book 那一层定义，这里只有正文和媒体。
+class VerseTipContent {
+  String? text;
+  String? mediaHash;
+  String? showType;
+  String? start;
+  String? end;
+
+  VerseTipContent({
+    this.text,
+    this.mediaHash,
+    this.showType,
+    this.start,
+    this.end,
+  });
+
+  bool get isEmpty => text == null && mediaHash == null && showType == null && start == null && end == null;
+}
+
 class VerseContent {
   int? id;
   String? showType;
@@ -305,32 +480,33 @@ class VerseContent {
   String? key;
   String? write;
   String? note;
-  String? tip;
+
+  /// 一节可以挂多条提示，下标就是提示 tab 的顺序。空条目也要占着位置，不能压缩掉。
+  List<VerseTipContent> tips;
   String? question;
   String? answer;
   int? learnDate;
   int? progress;
+
+  /// 第 1 条提示的正文。多条提示的场景请直接用 [tips]。
+  String? get tip => tips.isEmpty ? null : tips.first.text;
 
   // 字段专属媒体（'q'/'a'/'t' 块里的 'mediaHash'）：某个字段用自己的音视频文件，
   // 而不是整节的 'd'。比如问题来自章节的视频、答案是扩展助手另外生成的音频。
   // 存的是 hash，文件对象在某一层的 'd' 里，用 VerseField.findDownloadByHash 取。
   String? questionMediaHash;
   String? answerMediaHash;
-  String? tipMediaHash;
 
   // 字段专属视图类型（'q'/'a'/'t' 块里的 'showType'）：整节的 's' 是 q/a 共用的，
   // 一节里 q 是视频、a 是音频时必须各记各的，不能靠改 's' 来表达。
   String? questionShowType;
   String? answerShowType;
-  String? tipShowType;
 
   // 各字段在媒体里的时间区间（'q'/'a'/'t' 块里的 'start'/'end'）。
   String? questionStart;
   String? questionEnd;
   String? answerStart;
   String? answerEnd;
-  String? tipStart;
-  String? tipEnd;
 
   VerseContent({
     required this.id,
@@ -340,26 +516,33 @@ class VerseContent {
     required this.key,
     required this.write,
     required this.note,
-    required this.tip,
+    required this.tips,
     required this.question,
     required this.answer,
     required this.learnDate,
     required this.progress,
     this.questionMediaHash,
     this.answerMediaHash,
-    this.tipMediaHash,
     this.questionShowType,
     this.answerShowType,
-    this.tipShowType,
     this.questionStart,
     this.questionEnd,
     this.answerStart,
     this.answerEnd,
-    this.tipStart,
-    this.tipEnd,
   });
 
   factory VerseContent.fromJson(Map<String, dynamic> json) {
+    final tips = <VerseTipContent>[];
+    for (var i = 0; i < VerseField.tipLength(json); i++) {
+      final r = VerseField.ref('t', i);
+      tips.add(VerseTipContent(
+        text: VerseField.getText(json, r),
+        mediaHash: VerseField.getStr(json, r, VerseField.mediaHash),
+        showType: VerseField.getStr(json, r, VerseField.showType),
+        start: VerseField.getStr(json, r, VerseField.start),
+        end: VerseField.getStr(json, r, VerseField.end),
+      ));
+    }
     return VerseContent(
       id: json['i'] as int?,
       showType: json['s'] as String?,
@@ -368,23 +551,19 @@ class VerseContent {
       key: json['k'] as String?,
       write: json['w'] as String?,
       note: VerseField.getText(json, 'n'),
-      tip: VerseField.getText(json, 't'),
+      tips: tips,
       question: VerseField.getText(json, 'q'),
       answer: VerseField.getText(json, 'a'),
       learnDate: json['l'] as int?,
       progress: json['p'] as int?,
       questionMediaHash: VerseField.getStr(json, 'q', VerseField.mediaHash),
       answerMediaHash: VerseField.getStr(json, 'a', VerseField.mediaHash),
-      tipMediaHash: VerseField.getStr(json, 't', VerseField.mediaHash),
       questionShowType: VerseField.getStr(json, 'q', VerseField.showType),
       answerShowType: VerseField.getStr(json, 'a', VerseField.showType),
-      tipShowType: VerseField.getStr(json, 't', VerseField.showType),
       questionStart: VerseField.getStr(json, 'q', VerseField.start),
       questionEnd: VerseField.getStr(json, 'q', VerseField.end),
       answerStart: VerseField.getStr(json, 'a', VerseField.start),
       answerEnd: VerseField.getStr(json, 'a', VerseField.end),
-      tipStart: VerseField.getStr(json, 't', VerseField.start),
-      tipEnd: VerseField.getStr(json, 't', VerseField.end),
     );
   }
 
@@ -403,7 +582,15 @@ class VerseContent {
     // 字段块里的每一项都只在有的时候才写，避免给老内容凭空加上一堆 null。
     _fieldToJson(ret, 'q', question, questionMediaHash, questionShowType, questionStart, questionEnd);
     _fieldToJson(ret, 'a', answer, answerMediaHash, answerShowType, answerStart, answerEnd);
-    _fieldToJson(ret, 't', tip, tipMediaHash, tipShowType, tipStart, tipEnd);
+    // 从最后一条往前写：先写下标大的，中间的空条目才会被 _ensure 补齐占位，
+    // 不然「第 1 条空、第 2 条有内容」会被压成一条。
+    for (var i = tips.length - 1; i >= 0; i--) {
+      final t = tips[i];
+      if (t.isEmpty) {
+        continue;
+      }
+      _fieldToJson(ret, VerseField.ref('t', i), t.text, t.mediaHash, t.showType, t.start, t.end);
+    }
     return ret;
   }
 

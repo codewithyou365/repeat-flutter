@@ -26,7 +26,7 @@ class GamepadBindingSheet {
             ...GamepadBinding.navTargets().map((t) => _row(logic, current, t)),
             RowWidget.buildDividerWithoutColor(),
             RowWidget.buildText(I18nKey.gamepadActionGroup.tr),
-            ...GamepadBinding.builtinTargets().map((t) => _row(logic, current, t)),
+            ...GamepadBinding.builtinTargets(logic.repeatLogic).map((t) => _row(logic, current, t)),
             if (custom.isNotEmpty) ...[
               RowWidget.buildDividerWithoutColor(),
               RowWidget.buildText(I18nKey.customAction.tr),

@@ -42,7 +42,7 @@ class AssistiveTouchSheet {
                   ...logic.shownBuiltins.map((builtIn) {
                     return AssistiveTouchTile.build(
                       icon: builtIn.icon,
-                      label: builtIn.labelKey.tr,
+                      label: logic.labelOf(builtIn),
                       onTap: () => _showBuiltInMenu(logic, builtIn),
                     );
                   }),
@@ -108,7 +108,7 @@ class AssistiveTouchSheet {
   static Future<void> _showBuiltInMenu(AssistiveTouchLogic logic, BuiltInAction builtIn) async {
     final editable = builtIn.qaType != null || builtIn == BuiltInAction.seekBack;
     await _showMenu(
-      title: builtIn.labelKey.tr,
+      title: logic.labelOf(builtIn),
       editable: editable,
       onEdit: () => _editBuiltIn(logic, builtIn),
       onDelete: () => _confirmRemoveBuiltIn(logic, builtIn),
@@ -220,12 +220,15 @@ class AssistiveTouchSheet {
                 children: addable.map((builtIn) {
                   return AssistiveTouchTile.build(
                     icon: builtIn.icon,
-                    label: builtIn.labelKey.tr,
+                    label: logic.labelOf(builtIn),
                     width: double.infinity,
                     onTap: () {
                       Get.back();
                       if (builtIn == BuiltInAction.seekBack) {
                         _askSeekBackSecondsThenAdd(logic);
+                      } else if (AssistiveTouchLogic.tipGateways.contains(builtIn)) {
+                        // TTS-Tips / Play-Tips 是入口，先选作用在第几条提示上。
+                        _askTipThenAdd(logic, builtIn);
                       } else if (builtIn.qaType != null) {
                         _askTtsThenAdd(logic, builtIn);
                       } else {
@@ -292,6 +295,43 @@ class AssistiveTouchSheet {
         ],
       ),
       rate: 0.4,
+    );
+  }
+
+  /// 一节可以挂好几条提示，所以 TTS-Tips / Play-Tips 不直接加进菜单，先问作用在第几条上。
+  /// 已经加过的那几条不再列出来，选完 TTS 的还要照常走一遍"TTS设置"。
+  static Future<void> _askTipThenAdd(AssistiveTouchLogic logic, BuiltInAction gateway) async {
+    final candidates = logic.tipActionsOf(gateway).where((e) => !logic.visibleBuiltins.contains(e)).toList();
+    if (candidates.isEmpty) {
+      return;
+    }
+    await Sheet.showBottomSheet(
+      Get.context!,
+      ListView(
+        shrinkWrap: true,
+        children: candidates.map((action) {
+          return RowWidget.buildSelect(
+            title: logic.tipLabel(action.tipIndex!),
+            leading: Icon(gateway.icon),
+            onTap: () {
+              Get.back();
+              if (action.qaType != null) {
+                _askTtsThenAdd(logic, action);
+              } else {
+                logic.setBuiltInVisible(action, true);
+              }
+            },
+          );
+        }).toList(),
+      ),
+      head: SheetHead(
+        height: RowWidget.rowHeight + RowWidget.dividerHeight,
+        widgets: [
+          RowWidget.buildMiddleText(gateway.labelKey.tr),
+          RowWidget.buildDivider(),
+        ],
+      ),
+      rate: 0.5,
     );
   }
 

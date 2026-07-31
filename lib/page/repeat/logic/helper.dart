@@ -55,6 +55,14 @@ class Helper {
   late Widget Function({required double width}) bottomBar;
   late Widget? Function() practiceArea;
   late Widget? Function() tipArea;
+
+  /// 提示区当前选中的 tab：0..n-1 是第 1..n 条提示，n 是笔记（n = [currTipCount]）。
+  /// 朗读、播放区间、扩展助手这些都按它选的那一条走，所以放在 Helper 上而不是只给界面用。
+  RxInt currentTipTabIndex = 0.obs;
+
+  /// 提示 tab 栏横着滚的控制器：8 条提示加上名字，一行放不下。
+  /// 放在 Helper 上是因为 tipArea 每次重建都会新建 widget，控制器不能跟着重建。
+  final ScrollController tipTabScrollController = ScrollController();
   late Widget? Function(QaType type) text;
   late Widget Function() fullScreenPanel;
 
@@ -293,6 +301,27 @@ class Helper {
 
   /// verse -> chapter -> book，字段块按这个顺序继承（整章共用一个媒体时只在 chapter 上写一次）。
   List<Map<String, dynamic>?> get fieldLevels => [getCurrVerseMap(), getCurrChapterMap(), getCurrBookMap()];
+
+  /// 这一节该显示几个提示 tab。
+  int currTipCount() => VerseField.tipCount(getCurrVerseMap(), getCurrBookMap());
+
+  /// 当前选中的那一条提示的字段引用串（'t'/'t1'/'t2'…）。
+  /// 选中的是笔记 tab（或者下标越界了）时退回第 1 条，这样朗读、播放这些永远有个确定的目标。
+  String currTipRef() {
+    final index = clampedTipTabIndex();
+    if (index >= currTipCount()) {
+      return QaType.tip.acronym;
+    }
+    return VerseField.ref(QaType.tip.acronym, index);
+  }
+
+  /// 换书后提示条数会变，存着的下标可能落在不存在的提示上，读的时候收回到最后一个合法位置
+  /// （最后一个是笔记 tab）。
+  int clampedTipTabIndex() {
+    final max = currTipCount();
+    final index = currentTipTabIndex.value;
+    return index < 0 ? 0 : (index > max ? max : index);
+  }
 
   /// 某个字段（'q'/'a'/'t'）专属的媒体文件：字段块里只有 mediaHash，文件对象在某一层的 'd' 里。
   /// 没有配就返回 null，走整节的 'd'。

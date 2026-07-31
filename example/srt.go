@@ -26,17 +26,20 @@ type segment struct {
 }
 
 // MarshalJSON 直接输出一节的 verse 内容：每个字段一块 {"text","start","end"}。
+// 提示（"t"）是个数组，一节可以挂好几条，字幕导入只出第 1 条。
 // 跟 lib/logic/model/book_content.dart 的 VerseField、lib/logic/srt_parse.dart 保持一致。
 func (s *segment) MarshalJSON() ([]byte, error) {
-	m := map[string]map[string]string{}
+	m := map[string]any{}
+	fields := map[string]map[string]string{}
 	set := func(acronym, key, value string) {
 		if value == "" {
 			return
 		}
-		if m[acronym] == nil {
-			m[acronym] = map[string]string{}
+		if fields[acronym] == nil {
+			fields[acronym] = map[string]string{}
+			m[acronym] = fields[acronym]
 		}
-		m[acronym][key] = value
+		fields[acronym][key] = value
 	}
 	set("q", "text", s.Q)
 	set("q", "start", s.QStart)
@@ -45,6 +48,9 @@ func (s *segment) MarshalJSON() ([]byte, error) {
 	set("a", "start", s.AStart)
 	set("a", "end", s.AEnd)
 	set("t", "text", s.Tip)
+	if tip, ok := fields["t"]; ok {
+		m["t"] = []map[string]string{tip}
+	}
 	return json.Marshal(m)
 }
 

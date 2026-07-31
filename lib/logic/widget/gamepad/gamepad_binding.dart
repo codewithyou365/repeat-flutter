@@ -54,8 +54,14 @@ class GamepadBinding {
     return NavAction.values.map((a) => GamepadTarget('nav:${a.name}', a.icon, a.labelKey.tr)).toList();
   }
 
-  static List<GamepadTarget> builtinTargets() {
-    return BuiltInAction.values.map((b) => GamepadTarget('builtin:${b.name}', b.icon, b.labelKey.tr)).toList();
+  /// 带号的提示动作文案跟着 book 里定义的提示名字走，条数不够的那几条也不列出来，
+  /// 所以要经 AssistiveTouchLogic 取，不能直接读枚举。
+  static List<GamepadTarget> builtinTargets(RepeatLogic logic) {
+    final assistive = logic.assistiveTouchLogic;
+    return BuiltInAction.values
+        .where((b) => b.tipIndex == null || b.tipIndex! < logic.state.helper.currTipCount())
+        .map((b) => GamepadTarget('builtin:${b.name}', b.icon, assistive.labelOf(b)))
+        .toList();
   }
 
   static List<GamepadTarget> customTargets(RepeatLogic logic) {

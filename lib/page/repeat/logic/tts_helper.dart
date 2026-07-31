@@ -121,7 +121,8 @@ class TtsHelper {
     final currVerseMap = helper.getCurrVerseMap();
     if (currVerseMap == null) return;
 
-    var tip = VerseField.getText(currVerseMap, QaType.tip.acronym);
+    // 一节可以挂好几条提示，朗读的是界面上当前选中的那一条。
+    var tip = VerseField.getText(currVerseMap, helper.currTipRef());
     if (tip == null) return;
 
     try {

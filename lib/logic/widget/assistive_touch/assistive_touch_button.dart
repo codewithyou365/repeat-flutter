@@ -122,7 +122,7 @@ class AssistiveTouchButton extends StatelessWidget {
               ...logic.shownBuiltins.map((builtIn) {
                 return AssistiveTouchTile.build(
                   icon: builtIn.icon,
-                  label: builtIn.labelKey.tr,
+                  label: logic.labelOf(builtIn),
                   onTap: () => builtIn == BuiltInAction.deleteVerse ? _confirmDeleteCurrentVerse(logic) : _executeBuiltIn(logic, builtIn),
                 );
               }),

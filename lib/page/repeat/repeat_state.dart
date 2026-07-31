@@ -24,8 +24,6 @@ class RepeatState {
 
   var lastRecallTime = 0;
 
-  RxInt currentTipTabIndex = 0.obs;
-
   RxBool isPracticeMode = false.obs;
 
   bool gameLogicInitSuccess = false;

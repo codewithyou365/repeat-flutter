@@ -14,6 +14,10 @@ class Tip {
 
   final int classroomId;
   final int bookId;
+
+  /// 这条提示服务挂在哪个字段上，存的是字段引用串（见 VerseField.ref）：
+  /// 'q'/'a'/'n' 各一个，提示是 't'（第 1 条）、't1'（第 2 条）、't2'……
+  /// 提示变成数组后这一列的取值就不再是固定 4 个了，索引 ['bookId','t'] 照样成立。
   String t;
   String k;
   String hash;

@@ -14,6 +14,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
+import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_logic.dart';
 import 'package:repeat_flutter/logic/widget/game/game_state.dart';
@@ -276,7 +277,7 @@ class JsRuntime {
         await logic.loadActions();
         final ret = <Map<String, String>>[];
         for (final builtIn in logic.shownBuiltins) {
-          ret.add({'id': 'builtin:${builtIn.name}', 'name': builtIn.labelKey.tr});
+          ret.add({'id': 'builtin:${builtIn.name}', 'name': logic.labelOf(builtIn)});
         }
         for (final action in logic.actions) {
           ret.add({'id': 'custom:${action.id}', 'name': action.name});
@@ -359,7 +360,8 @@ class JsRuntime {
         if (text.isEmpty) {
           return 'empty';
         }
-        final qaType = QaType.fromAcronym(type);
+        // 提示是多条的，JS 那边可以传 't1'/'t2' 指定第几条；TTS 配置按字段的大类走。
+        final qaType = QaType.fromAcronym(VerseField.baseOf(type));
         if (qaType == null) {
           return 'invalid_text';
         }

@@ -44,43 +44,82 @@ class ExpandLogic {
   var disabled = false.obs;
   var disabledAudioWidget = true.obs;
   var logs = <String>[].obs;
-  var targetOptions = [
-    QaType.answer.i18n.tr,
-    QaType.tip.i18n.tr,
-    QaType.question.i18n.tr,
-  ];
-  var sourceOptions = [
-    QaType.question.i18n.tr,
-    QaType.answer.i18n.tr,
-    QaType.tip.i18n.tr,
-  ];
+  /// 作用位置/指令模版里"第 1 条提示"从这个下标开始（3=提示1、4=提示2……）。
+  /// 下标会存进 AssistiveTouchAction 的 targetIndex/sourceIndex，只能往后加，不能调顺序。
+  static const int tipStart = 3;
+
+  /// 界面上两个选项框的顺序：问题、答案、提示1..提示8，一共 10 项。
+  /// 里面装的是存库的下标，不是选项框自己的位置——两者不是一回事，必须过这层映射。
+  static const List<int> selectableTargetIndexes = [2, 0, ..._tipIndexes];
+  static const List<int> selectableSourceIndexes = [0, 1, ..._tipIndexes];
+  static const List<int> _tipIndexes = [3, 4, 5, 6, 7, 8, 9, 10];
+
+  /// 作用位置的全部选项，下标就是存库的值。
+  /// 下标 1 是老的"提示"（跟着界面上选中的那条走），已经不给选了，但位置要留着——
+  /// 老预设里存的就是 1，挪走会让它们指到别的字段上。读到 1 一律当第 1 条提示。
+  List<String> get targetOptions => [
+        QaType.answer.i18n.tr,
+        tipLabel(0),
+        QaType.question.i18n.tr,
+        for (var i = 0; i < VerseField.maxTip; i++) tipLabel(i),
+      ];
+
+  /// 指令模版的全部选项，下标就是存库的值。下标 2 是老的"提示"，同上，留位不给选。
+  List<String> get sourceOptions => [
+        QaType.question.i18n.tr,
+        QaType.answer.i18n.tr,
+        tipLabel(0),
+        for (var i = 0; i < VerseField.maxTip; i++) tipLabel(i),
+      ];
+
+  /// 老预设存的"提示"（作用位置是 1、指令模版是 2）归到"提示1"，这样选项框里能选中它。
+  static int normalizeTargetIndex(int index) => index == 1 ? tipStart : index;
+
+  static int normalizeSourceIndex(int index) => index == 2 ? tipStart : index;
+
+  /// 第 i 条提示显示的名字：book 里定义了就用定义的（跟提示 tab 栏一致），没定义用序号。
+  String tipLabel(int index) {
+    return VerseField.tipNameOf(_bookMap(), index) ?? '${QaType.tip.i18n.tr}${index + 1}';
+  }
+
   var sourceIndex = 1.obs;
   // 指令框里显示的文本来自哪个文本模版(copyLogic.copyTemplates 的下标)，
   // 保存为辅助控制预设时记录这个下标而不是渲染好的固定文本，这样以后对不同小节执行时能重新取当时的模版文本。
   var templateIndex = 0.obs;
 
-  QaType toQaType(int targetIndex) {
+  String toFieldRef(int targetIndex) {
     if (targetIndex == 0) {
-      return QaType.answer;
+      return QaType.answer.acronym;
     } else if (targetIndex == 1) {
-      return QaType.tip;
-    } else {
-      return QaType.question;
+      // 老预设里的"提示"，现在一律当第 1 条。
+      return VerseField.ref(QaType.tip.acronym, 0);
+    } else if (targetIndex == 2) {
+      return QaType.question.acronym;
     }
+    // 直接指定第几条提示。预设是存下标的，换到提示更少的书上也照它写，
+    // 不往回退成第 1 条——不然内容会悄悄盖到别的提示上。
+    return _tipFieldRef(targetIndex);
   }
 
-  QaType toSourceQaType(int index) {
+  String toSourceFieldRef(int index) {
     if (index == 0) {
-      return QaType.question;
+      return QaType.question.acronym;
     } else if (index == 1) {
-      return QaType.answer;
-    } else {
-      return QaType.tip;
+      return QaType.answer.acronym;
+    } else if (index == 2) {
+      // 老预设里的"提示"，现在一律当第 1 条。
+      return VerseField.ref(QaType.tip.acronym, 0);
     }
+    return _tipFieldRef(index);
+  }
+
+  String _tipFieldRef(int index) {
+    final tipIndex = (index - tipStart).clamp(0, VerseField.maxTip - 1);
+    return VerseField.ref(QaType.tip.acronym, tipIndex);
   }
 
   String getSourceText() {
-    return VerseField.getText(verseMap, toSourceQaType(sourceIndex.value).acronym) ?? '';
+    return VerseField.getText(verseMap, toSourceFieldRef(sourceIndex.value)) ?? '';
   }
 
   var targetIndex = 0.obs;
@@ -92,7 +131,7 @@ class ExpandLogic {
   ];
 
   /// 播放作用位置已有内容的实现由持有 RepeatLogic 的一方注入（AssistiveTouchLogic.playTarget）。
-  Future<void> Function(QaType target)? onPlayTarget;
+  Future<void> Function(String fieldRef)? onPlayTarget;
   int bookId = 0;
   int verseId = 0;
   Map<String, dynamic> verseMap = {};
@@ -131,9 +170,9 @@ class ExpandLogic {
 
   /// 统一入口：先按 behavior 判断是播放已有内容还是请求助手服务。
   Future<void> execute(String msg, {bool closeOnSuccess = true}) async {
-    final target = toQaType(targetIndex.value);
+    final target = toFieldRef(targetIndex.value);
     if (behavior.value == ExpandBehavior.playOrOverwrite) {
-      final existing = VerseField.getText(verseMap, target.acronym);
+      final existing = VerseField.getText(verseMap, target);
       if (existing != null) {
         await onPlayTarget?.call(target);
         return;
@@ -268,7 +307,7 @@ class ExpandLogic {
     }
     final Map<String, dynamic> targetMap = verseMap;
 
-    String key = toQaType(targetIndex.value).acronym;
+    String key = toFieldRef(targetIndex.value);
     if (key.isNotEmpty && text.isNotEmpty) {
       VerseField.setText(targetMap, key, text);
       logs.add("Content overwritten to: ${targetOptions[targetIndex.value]}");
