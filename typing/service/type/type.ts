@@ -13,6 +13,15 @@ type AssistiveTouchBinding = {
     name: string;
 };
 
+// 单词提问触发键：按下 key 时，把光标所在的词在句子里标上下划线，
+// 连同之前已经标过的词一起当成 input1，去执行 action 对应的自定义动作（只有一个参数的那种）。
+// action/name 的含义跟 AssistiveTouchBinding 一样；key 为空就是不启用。
+type WordAskTrigger = {
+    key: string;
+    action: string;
+    name: string;
+};
+
 type ProfileConfig = {
     ignorePunctuation: boolean;
     ignoreNumber: boolean;
@@ -27,6 +36,7 @@ type ProfileConfig = {
     maskTrigger: string;
     keyMapping: string;
     assistiveTouchBindings: AssistiveTouchBinding[];
+    wordAskTrigger: WordAskTrigger;
     spellResetLevel: boolean;
     [key: string]: any;
 };
@@ -59,7 +69,7 @@ type GameArgs = {
 const PROFILE_COUNT = 3;
 
 function defaultProfileConfig(): ProfileConfig {
-    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "keyMapping": "", "assistiveTouchBindings": [], "spellResetLevel": false};
+    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "keyMapping": "", "assistiveTouchBindings": [], "wordAskTrigger": {"key": "", "action": "", "name": ""}, "spellResetLevel": false};
 }
 
 function defaultStoredConfig(): StoredConfig {
@@ -196,6 +206,16 @@ const Util = {
             return 'error';
         }
     },
+    // 这个自定义动作上次执行时用的 input1（App 拿作用位置里存着的上次指令反着套模版抠出来的）。
+    // 没执行过 / 模版对不上 / 模版里没写 {{input1}} 都返回 ''
+    assistiveTouchLastInput: async function (id: string): Promise<string> {
+        try {
+            const ret = await sendMessage('assistiveTouchLastInput', JSON.stringify({'id': id}));
+            return typeof ret === 'string' ? ret : '';
+        } catch (e) {
+            return '';
+        }
+    },
     adminId: function (): number {
         try {
             const userId = sendMessage('adminId', '{}');
@@ -240,6 +260,49 @@ const Util = {
         }
     },
 };
+
+// 单词提问：给句子里被选中的词套上的下划线写法（LaTeX），
+// 既是写出去的格式，也是下次从上一版 input1 里认回"哪些词已经标过"的依据。
+const UNDERLINE_PREFIX = '$\\underline{';
+const UNDERLINE_SUFFIX = '}$';
+
+// 把标好下划线的句子拆回「干净句子 + 已标词的区间（按干净句子的下标，含头含尾）」。
+// 认不出标记就整句当干净句子、区间为空。
+function stripUnderline(marked: string): { plain: string; spans: number[][] } {
+    let plain = '';
+    const spans: number[][] = [];
+    let i = 0;
+    while (i < marked.length) {
+        if (marked.startsWith(UNDERLINE_PREFIX, i)) {
+            const close = marked.indexOf(UNDERLINE_SUFFIX, i + UNDERLINE_PREFIX.length);
+            if (close >= 0) {
+                const word = marked.slice(i + UNDERLINE_PREFIX.length, close);
+                spans.push([plain.length, plain.length + word.length - 1]);
+                plain += word;
+                i = close + UNDERLINE_SUFFIX.length;
+                continue;
+            }
+        }
+        plain += marked[i];
+        i++;
+    }
+    return {plain, spans};
+}
+
+// 按区间把干净句子重新标上下划线。区间按起点排序后依次插入，互相不重叠。
+function applyUnderline(plain: string, spans: number[][]): string {
+    const sorted = spans.slice().sort((a, b) => a[0] - b[0]);
+    let ret = '';
+    let pos = 0;
+    for (const [start, end] of sorted) {
+        if (start < pos || start < 0 || end >= plain.length || end < start) {
+            continue; // 越界或跟前一个重叠，跳过
+        }
+        ret += plain.slice(pos, start) + UNDERLINE_PREFIX + plain.slice(start, end + 1) + UNDERLINE_SUFFIX;
+        pos = end + 1;
+    }
+    return ret + plain.slice(pos);
+}
 
 const Game = {
     gameRefreshPath: 'gameRefresh',
@@ -433,6 +496,42 @@ const Game = {
                 id = typeof raw === 'string' ? raw : `${raw}`;
             }
             const result = await Util.assistiveTouchTap(id, inputs);
+            return JSON.stringify({data: result});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
+        }
+    },
+
+    // 单词提问：玩家在某个词上按下触发键时调用，不限管理员（按键的就是正在打字的玩家）。
+    // data = {id, sentence, start, end}：id 是自定义动作，sentence 是正在打的整句，
+    // start/end 是光标所在词在句子里的下标（含头含尾，由打字组件给）。
+    //
+    // 上次的 input1 里已经标过的词照旧留着，这次的词再加进去，一起当成新的 input1——
+    // 于是第一次是「$\underline{How}$ are you?」，第二次变成「$\underline{How}$ are $\underline{you}$?」。
+    // 这个词已经标过就保持原样，请求照发（指令跟上次一模一样，配合 playOrOverwrite 就是直接重放）。
+    wordAsk: async function (args: GameArgs): Promise<string> {
+        try {
+            const data = args.data || {};
+            const id = typeof data.id === 'string' ? data.id : '';
+            const sentence = typeof data.sentence === 'string' ? data.sentence : '';
+            const start = typeof data.start === 'number' ? data.start : -1;
+            const end = typeof data.end === 'number' ? data.end : -1;
+            if (!id || !sentence || start < 0 || end < start || end >= sentence.length) {
+                return JSON.stringify({status: 500, error: 'invalid_args'});
+            }
+            const prev = await Util.assistiveTouchLastInput(id);
+            let spans: number[][] = [];
+            if (prev) {
+                const parsed = stripUnderline(prev);
+                // 上次那句跟现在这句对不上（换节了、或者上次的内容是手改的），之前的标记就不要了
+                if (parsed.plain === sentence) {
+                    spans = parsed.spans;
+                }
+            }
+            if (!spans.some(([s, e]) => s <= end && start <= e)) {
+                spans.push([start, end]);
+            }
+            const result = await Util.assistiveTouchTap(id, [applyUnderline(sentence, spans)]);
             return JSON.stringify({data: result});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});

@@ -286,6 +286,32 @@ class JsRuntime {
         return jsonEncode(ret);
       });
 
+      // 取自定义动作上次执行时用的 input1（从作用位置存着的上次指令里反解出来），
+      // 游戏的"单词累积提问"靠它在上次的基础上再加一个词。没有可反解的返回 ''。
+      _jsRuntime!.onMessage('assistiveTouchLastInput', (dynamic args) async {
+        if (args is! Map) {
+          return '';
+        }
+        final id = args['id'];
+        if (id is! String || !id.startsWith('custom:')) {
+          return '';
+        }
+        final actionId = int.tryParse(id.substring('custom:'.length));
+        if (actionId == null) {
+          return '';
+        }
+        final logic = _assistiveTouchLogic();
+        if (logic == null) {
+          return '';
+        }
+        await logic.loadActions();
+        final matched = logic.actions.where((e) => e.id == actionId);
+        if (matched.isEmpty) {
+          return '';
+        }
+        return logic.lastInput1Of(matched.first) ?? '';
+      });
+
       // 玩家在打字页按下绑定键时执行对应的辅助触控按钮。
       // 动作已被删除返回 'not_found'；动作还在但当前复习模式下不可用（比如 examine 模式下的
       // deleteVerse）返回 'unavailable'，由网页端提示用户，而不是静默无反应。

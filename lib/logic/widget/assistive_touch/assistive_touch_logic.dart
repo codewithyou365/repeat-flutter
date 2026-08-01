@@ -562,4 +562,47 @@ class AssistiveTouchLogic {
     final instructionText = renderedList.isEmpty ? '' : renderedList[action.templateIndex.clamp(0, renderedList.length - 1)];
     await logic.execute(instructionText, closeOnSuccess: false);
   }
+
+  /// 反解 input1 用的占位符。用控制字符夹着，正常的模版/正文里不会出现。
+  static const String _input1Sentinel = '\u0001input1\u0001';
+
+  /// 这个动作上次执行时用的 input1：作用位置（比如提示1）里存着上次的指令
+  /// （见 VerseField.embedInstruction），拿模版反着一比就能把 input1 抠出来。
+  ///
+  /// 做法是先用哨兵渲染一遍模版，得到「前缀 + 哨兵 + 后缀」，再拿前后缀去掐上次的指令——
+  /// 这样模版里的 {{text}} 等其它占位符怎么渲染都不用管，它们两边渲染出来是一样的。
+  ///
+  /// 只认 input1（这个入口是给游戏的「单词累积提问」用的，动作按约定只有一个参数）。
+  /// 没执行过、指令没存过、模版里没写 {{input1}}、模版改过对不上，都返回 null。
+  String? lastInput1Of(AssistiveTouchAction action) {
+    final map = repeatLogic.state.helper.getCurrVerseMap();
+    if (map == null) {
+      return null;
+    }
+    final logic = ExpandLogic();
+    logic.verseMap = map;
+    logic.sourceIndex.value = action.sourceIndex;
+    final instruction = VerseField.getInstruction(map, logic.toFieldRef(action.targetIndex));
+    if (instruction == null) {
+      return null;
+    }
+    final rendered = repeatLogic.copyLogic.getShowText(
+      logic.getSourceText(),
+      inputs: {ExpandLogic.inputKey(0): _input1Sentinel},
+    );
+    if (rendered.isEmpty) {
+      return null;
+    }
+    final pattern = rendered[action.templateIndex.clamp(0, rendered.length - 1)];
+    final at = pattern.indexOf(_input1Sentinel);
+    if (at < 0) {
+      return null;
+    }
+    final prefix = pattern.substring(0, at);
+    final suffix = pattern.substring(at + _input1Sentinel.length);
+    if (instruction.length < prefix.length + suffix.length || !instruction.startsWith(prefix) || !instruction.endsWith(suffix)) {
+      return null;
+    }
+    return instruction.substring(prefix.length, instruction.length - suffix.length);
+  }
 }

@@ -118,7 +118,9 @@ const emit = defineEmits<{
   (e: 'spellPlay', word: string): void;
   (e: 'hintTrigger'): void;
   (e: 'maskTrigger'): void;
-  (e: 'assistTrigger', key: string): void;
+  // bounds 是按下这个键时光标所在词在 content 里的起止下标（含头含尾），不在词上时为 null。
+  // "单词提问"要拿它去标下划线；普通的辅助触控绑定用不到，忽略即可。
+  (e: 'assistTrigger', key: string, bounds: { start: number; end: number } | null): void;
 }>();
 
 const store = useStore();
@@ -346,7 +348,10 @@ const applyInput = (val: string) => {
     }
     // 绑定到 App 辅助触控按钮的键，数量由用户配置，可以有多个
     if (props.assistTriggers.includes(char)) {
-      pendingTriggerEmits.push(() => emit('assistTrigger', char));
+      // 跟 manualPlay 一样在这里就把词的位置取好：触发字符不写进内容，
+      // 但后面还会继续处理这一批输入，等 emit 真正执行时光标未必还在这个词上。
+      const bounds = getWordBounds(pos);
+      pendingTriggerEmits.push(() => emit('assistTrigger', char, bounds));
       continue; // 触发字符本身不写入内容，也不推进 pos
     }
 
