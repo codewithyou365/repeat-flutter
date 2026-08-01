@@ -414,7 +414,7 @@ class ConfigEn extends Config {
     put(I18nKey.generateAudio, "Generate Audio");
     put(I18nKey.behavior, "Behavior");
     put(I18nKey.behaviorOverwrite, "Request and overwrite the target position");
-    put(I18nKey.behaviorPlayOrOverwrite, "Play the target position if it has content, otherwise overwrite");
+    put(I18nKey.behaviorPlayOrOverwrite, "Play if the stored instruction matches this one, otherwise overwrite");
     put(I18nKey.inputCount, "Parameter Count");
     put(I18nKey.testExecution, "Test");
     put(I18nKey.closeLog, "Close Log");

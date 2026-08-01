@@ -27,8 +27,10 @@ enum ExpandStatus {
 
 /// 执行方式：
 /// - overwrite: 每次都请求助手服务，把结果覆盖到作用位置。
-/// - playOrOverwrite: 作用位置已经有文本时不请求服务，直接播放已有内容（音视频优先，否则 TTS）；
-///   作用位置为空时退回 overwrite 的流程。
+/// - playOrOverwrite: 覆盖写入时会把当次的指令一起存到作用位置末尾（见
+///   [VerseField.embedInstruction]）；下次执行时，存的指令跟这次要发的指令一样才直接播放
+///   已有内容（音视频优先，否则 TTS），不一样（含没存过指令，比如老数据/手填内容）就退回
+///   overwrite 的流程重新生成。
 enum ExpandBehavior {
   overwrite,
   playOrOverwrite,
@@ -194,8 +196,8 @@ class ExpandLogic {
   Future<void> execute(String msg, {bool closeOnSuccess = true}) async {
     final target = toFieldRef(targetIndex.value);
     if (behavior.value == ExpandBehavior.playOrOverwrite) {
-      final existing = VerseField.getText(verseMap, target);
-      if (existing != null) {
+      final existingInstruction = VerseField.getInstruction(verseMap, target);
+      if (existingInstruction != null && existingInstruction == msg) {
         await onPlayTarget?.call(target);
         return;
       }
@@ -224,7 +226,7 @@ class ExpandLogic {
         );
 
         if (response.statusCode == 200) {
-          _startPolling();
+          _startPolling(msg);
           await _taskCompleter?.future;
           if (hasContent && closeOnSuccess) {
             Get.back();
@@ -249,7 +251,7 @@ class ExpandLogic {
     logs.clear();
   }
 
-  void _startPolling() {
+  void _startPolling(String msg) {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       try {
@@ -281,16 +283,16 @@ class ExpandLogic {
                   var rootPath = await DocPath.getContentPath();
                   String fullPath = rootPath.joinPath(savePath);
                   final dc = await DocHelp.moveToDocDir(fullPath, bookId);
-                  await _onTaskComplete(result, dc: dc);
+                  await _onTaskComplete(result, msg, dc: dc);
                 } else {
                   logs.add("Audio download failed: $downloadResult");
-                  await _onTaskComplete(result);
+                  await _onTaskComplete(result, msg);
                 }
                 status.value = ExpandStatus.finish;
                 _taskCompleter?.complete();
               });
             } else {
-              await _onTaskComplete(result);
+              await _onTaskComplete(result, msg);
               status.value = ExpandStatus.finish;
               _taskCompleter?.complete();
             }
@@ -319,7 +321,7 @@ class ExpandLogic {
     }
   }
 
-  Future<void> _onTaskComplete(Map<String, dynamic> result, {DownloadContent? dc}) async {
+  Future<void> _onTaskComplete(Map<String, dynamic> result, String instruction, {DownloadContent? dc}) async {
     String text = result['text'] ?? "";
     if (text.isEmpty) {
       hasContent = false;
@@ -331,7 +333,7 @@ class ExpandLogic {
 
     String key = toFieldRef(targetIndex.value);
     if (key.isNotEmpty && text.isNotEmpty) {
-      VerseField.setText(targetMap, key, text);
+      VerseField.setText(targetMap, key, VerseField.embedInstruction(text, instruction));
       logs.add("Content overwritten to: ${targetOptions[targetIndex.value]}");
     }
 

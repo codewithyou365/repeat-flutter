@@ -328,13 +328,86 @@ class VerseField {
     return field is Map && field.isEmpty;
   }
 
-  /// 正文。'n'（笔记）没有字段块，直接平铺存。
-  static String? getText(Map<String, dynamic> content, String fieldRef) {
+  static String? _rawText(Map<String, dynamic> content, String fieldRef) {
     if (!nested(fieldRef)) {
       final v = content[fieldRef];
       return v is String && v.isNotEmpty ? v : null;
     }
     return getStr(content, fieldRef, text);
+  }
+
+  /// 分隔符字符：扩展助手覆盖写入时会在正文末尾挂一段「指令」，见 [embedInstruction]。
+  static const String _mark = '•';
+
+  /// [s] 里最长连续 [_mark] 的游程长度。
+  static int _maxMarkRun(String s) {
+    var max = 0, run = 0;
+    for (final r in s.runes) {
+      if (r == _mark.runes.first) {
+        run++;
+        if (run > max) max = run;
+      } else {
+        run = 0;
+      }
+    }
+    return max;
+  }
+
+  /// 分隔符取正文/指令里最长连续 [_mark] 游程再加一个，保证分隔符这一整行
+  /// 不会跟正文/指令里天然出现的 [_mark] 混淆。
+  static String _delimiter(String content, String instruction) {
+    final n = (_maxMarkRun(content) > _maxMarkRun(instruction) ? _maxMarkRun(content) : _maxMarkRun(instruction)) + 1;
+    return _mark * n;
+  }
+
+  /// 把 [instruction] 挂到 [content] 末尾：`正文\n\n\n\n分隔符\n指令\n分隔符`。
+  /// 正文和分隔符之间空几行，纯粹是为了显示时不挤在一起，不影响拆分（[_splitInstruction]
+  /// 只认最后两条分隔符之间的部分是指令，中间空多少行都无所谓）。
+  /// 扩展助手 playOrOverwrite 靠这个存的指令跟下次要发的指令比对，见 [getInstruction]。
+  static String embedInstruction(String content, String instruction) {
+    final delim = _delimiter(content, instruction);
+    return '$content\n\n\n\n$delim\n$instruction\n$delim';
+  }
+
+  /// 从 [raw] 里拆出正文和指令：最后一行如果整行都是 [_mark]（长度记为 n），
+  /// 就往上找第一处同样是 n 个 [_mark] 的整行，两条分隔符之间是指令，之前是正文；
+  /// 找不到匹配（老数据/手填内容，没挂过指令块）就整段当正文，指令为 null。
+  static ({String content, String? instruction}) _splitInstruction(String raw) {
+    final lines = raw.split('\n');
+    if (lines.length < 3) {
+      return (content: raw, instruction: null);
+    }
+    final closeLine = lines.last;
+    if (closeLine.isEmpty || !closeLine.runes.every((r) => r == _mark.runes.first)) {
+      return (content: raw, instruction: null);
+    }
+    for (var i = lines.length - 2; i >= 1; i--) {
+      if (lines[i] == closeLine) {
+        return (
+          content: lines.sublist(0, i).join('\n'),
+          instruction: lines.sublist(i + 1, lines.length - 1).join('\n'),
+        );
+      }
+    }
+    return (content: raw, instruction: null);
+  }
+
+  /// 正文。'n'（笔记）没有字段块，直接平铺存。
+  /// 扩展助手写入时可能在正文末尾挂了一段指令（见 [embedInstruction]），原样返回——
+  /// 指令要能在正文里看得见（编辑页/导出都读这个），只有比对要不要重新生成时才需要拆开，
+  /// 见 [getInstruction]。
+  static String? getText(Map<String, dynamic> content, String fieldRef) {
+    return _rawText(content, fieldRef);
+  }
+
+  /// 取出正文末尾挂着的指令（扩展助手 playOrOverwrite 用来判断要不要重新生成），
+  /// 没有挂过指令块（老数据/手填内容）返回 null。
+  static String? getInstruction(Map<String, dynamic> content, String fieldRef) {
+    final raw = _rawText(content, fieldRef);
+    if (raw == null) {
+      return null;
+    }
+    return _splitInstruction(raw).instruction;
   }
 
   static void setText(Map<String, dynamic> content, String fieldRef, String? value) {

@@ -412,7 +412,7 @@ class ConfigZh extends Config {
     put(I18nKey.generateAudio, "生成音频");
     put(I18nKey.behavior, "行为");
     put(I18nKey.behaviorOverwrite, "请求并将结果覆盖到作用位置");
-    put(I18nKey.behaviorPlayOrOverwrite, "若作用位置存在内容尝试播放否则覆盖");
+    put(I18nKey.behaviorPlayOrOverwrite, "若与作用位置中的指令一样就尝试播放否则覆盖");
     put(I18nKey.inputCount, "参数数量");
     put(I18nKey.testExecution, "测试");
     put(I18nKey.closeLog, "关闭日志");
