@@ -275,12 +275,13 @@ class JsRuntime {
         }
         // 用户刚在辅助触控里新建的预设也要能立刻选到，所以每次重新读一遍
         await logic.loadActions();
-        final ret = <Map<String, String>>[];
+        final ret = <Map<String, dynamic>>[];
         for (final builtIn in logic.shownBuiltins) {
           ret.add({'id': 'builtin:${builtIn.name}', 'name': logic.labelOf(builtIn)});
         }
         for (final action in logic.actions) {
-          ret.add({'id': 'custom:${action.id}', 'name': action.name});
+          // inputCount 是这个动作要几个参数，脚本按它准备 assistiveTouchTap 的 'inputs'。
+          ret.add({'id': 'custom:${action.id}', 'name': action.name, 'inputCount': action.inputCount});
         }
         return jsonEncode(ret);
       });
@@ -324,7 +325,14 @@ class JsRuntime {
           if (matched.isEmpty) {
             return 'not_found';
           }
-          await logic.executeAction(matched.first);
+          // 带参数的动作从游戏调用时一律不弹框（弹 sheet 会打断打字），参数由脚本自己控制：
+          // 'inputs' 按位置对应 input1..inputN，不传就是全空，传的比参数数量少也按空字符串补。
+          final rawInputs = args['inputs'];
+          if (rawInputs != null && rawInputs is! List) {
+            return 'invalid_args';
+          }
+          final inputs = (rawInputs as List?)?.map((e) => e?.toString() ?? '').toList() ?? const <String>[];
+          await logic.executeAction(matched.first, inputs: inputs);
           return 'ok';
         }
         return 'not_found';

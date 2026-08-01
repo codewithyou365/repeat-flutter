@@ -181,9 +181,17 @@ const Util = {
     },
     // 执行一个辅助触控按钮。返回 'ok'；动作已被删除返回 'not_found'，
     // 动作还在但当前复习模式下不可用返回 'unavailable'
-    assistiveTouchTap: async function (id: string): Promise<string> {
+    //
+    // inputs 是自定义动作的参数（按位置对应指令模版里的 {{input1}}..{{input10}}，
+    // 个数见 assistiveTouchActions 返回的 inputCount）。游戏调用一律不弹框问用户：
+    // 不传或传得不够的，App 那边都按空字符串处理
+    assistiveTouchTap: async function (id: string, inputs?: string[]): Promise<string> {
         try {
-            return await sendMessage('assistiveTouchTap', JSON.stringify({'id': id}));
+            const payload: JsonRecord = {'id': id};
+            if (inputs != null) {
+                payload['inputs'] = inputs;
+            }
+            return await sendMessage('assistiveTouchTap', JSON.stringify(payload));
         } catch (e) {
             return 'error';
         }
@@ -408,11 +416,23 @@ const Game = {
         }
     },
 
-    // 玩家按下绑定键时调用，不限管理员（按键的就是正在打字的玩家）
+    // 玩家按下绑定键时调用，不限管理员（按键的就是正在打字的玩家）。
+    // data 既可以是老的动作 id 字符串，也可以是 {id, inputs} —— 后者由脚本自己
+    // 控制这个动作的参数（见 Util.assistiveTouchTap），不会弹框问用户
     assistiveTouchTap: async function (args: GameArgs): Promise<string> {
         try {
-            const id = typeof args.data === 'string' ? args.data : `${args.data}`;
-            const result = await Util.assistiveTouchTap(id);
+            const raw = args.data;
+            let id: string;
+            let inputs: string[] | undefined;
+            if (raw != null && typeof raw === 'object') {
+                id = typeof raw.id === 'string' ? raw.id : `${raw.id}`;
+                if (Array.isArray(raw.inputs)) {
+                    inputs = raw.inputs.map((e: any) => (e == null ? '' : `${e}`));
+                }
+            } else {
+                id = typeof raw === 'string' ? raw : `${raw}`;
+            }
+            const result = await Util.assistiveTouchTap(id, inputs);
             return JSON.stringify({data: result});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});

@@ -42,11 +42,13 @@ class ExpandSheet {
       logic.targetIndex.value = ExpandLogic.normalizeTargetIndex(preset.targetIndex).clamp(0, logic.targetOptions.length - 1);
       logic.enableAudio.value = preset.enableAudio;
       logic.behavior.value = ExpandBehavior.values[preset.behavior.clamp(0, ExpandBehavior.values.length - 1)];
+      logic.inputCount.value = preset.inputCount.clamp(0, ExpandLogic.maxInput);
       logic.templateIndex.value = preset.templateIndex;
       logic.textController.text = _renderTemplate(preset.templateIndex);
     } else {
       logic.editingActionId = null;
       logic.actionSort = DateTime.now().millisecondsSinceEpoch;
+      logic.inputCount.value = 0;
       logic.templateIndex.value = 0;
       logic.textController.text = _renderTemplate(0);
     }
@@ -138,6 +140,17 @@ class ExpandSheet {
                 ],
               );
             }),
+          ),
+          RowWidget.buildDividerWithoutColor(),
+          // 模版里写 {{input1}}..{{input10}} 就能取到这些参数，执行动作前会弹框让用户依次填。
+          RowWidget.buildCupertinoPicker(
+            title: I18nKey.inputCount.tr,
+            options: List.generate(ExpandLogic.maxInput + 1, (i) => '$i'),
+            value: logic.inputCount.value,
+            changed: (index) {
+              logic.inputCount.value = index;
+            },
+            disabled: logic.disabled,
           ),
           RowWidget.buildDividerWithoutColor(),
           Builder(builder: (_) {

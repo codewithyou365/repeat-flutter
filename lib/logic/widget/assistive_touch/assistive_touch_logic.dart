@@ -8,6 +8,7 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/widget/expand/expand_input_sheet.dart';
 import 'package:repeat_flutter/logic/widget/expand/expand_logic.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/page/repeat/logic/constant.dart';
@@ -527,13 +528,24 @@ class AssistiveTouchLogic {
     repeatLogic.update([RepeatLogic.id]);
   }
 
-  Future<void> executeAction(AssistiveTouchAction action) async {
+  /// [inputs] 传了（哪怕是空 list）就当程序级调用：不弹框，直接拿它当 input1..inputN，
+  /// 不够的补空串、多的丢掉（游戏走这条，见 js_runtime 的 assistiveTouchTap）。
+  /// 不传则是人点的：inputCount > 0 时弹框让用户依次填，取消就整个不执行。
+  Future<void> executeAction(AssistiveTouchAction action, {List<String>? inputs}) async {
     final verse = repeatLogic.state.helper.getCurrVerse();
     final map = repeatLogic.state.helper.getCurrVerseMap();
     if (verse == null || map == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
+    var values = inputs;
+    if (action.inputCount > 0 && values == null) {
+      values = await ExpandInputSheet.open(action.name, action.inputCount);
+      if (values == null) {
+        return;
+      }
+    }
+    final inputMap = ExpandLogic.inputsOf(ExpandLogic.normalizeInputs(values, action.inputCount));
     final logic = ExpandLogic();
     await logic.loadSettings();
     logic.bookId = verse.bookId;
@@ -546,7 +558,7 @@ class AssistiveTouchLogic {
     logic.onPlayTarget = playTarget;
     // instructionText 不是固定字符串：用保存的 templateIndex 对当前小节的来源文本重新渲染模版，
     // 这样同一个预设对不同小节执行时取的是各自的文本，而不是创建预设那一刻冻结的内容。
-    final renderedList = repeatLogic.copyLogic.getShowText(logic.getSourceText());
+    final renderedList = repeatLogic.copyLogic.getShowText(logic.getSourceText(), inputs: inputMap);
     final instructionText = renderedList.isEmpty ? '' : renderedList[action.templateIndex.clamp(0, renderedList.length - 1)];
     await logic.execute(instructionText, closeOnSuccess: false);
   }

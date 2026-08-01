@@ -413,6 +413,7 @@ class ConfigZh extends Config {
     put(I18nKey.behavior, "行为");
     put(I18nKey.behaviorOverwrite, "请求并将结果覆盖到作用位置");
     put(I18nKey.behaviorPlayOrOverwrite, "若作用位置存在内容尝试播放否则覆盖");
+    put(I18nKey.inputCount, "参数数量");
     put(I18nKey.testExecution, "测试");
     put(I18nKey.closeLog, "关闭日志");
     put(I18nKey.customizeMenu, "自定义菜单");

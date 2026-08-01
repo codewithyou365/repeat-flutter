@@ -120,7 +120,9 @@ a{{index1}}: {{answer}}
     return ret;
   }
 
-  List<String> getShowText(String text) {
+  /// [inputs] 是模版里 {{input1}}..{{input10}} 的取值（见 ExpandLogic.inputCount）。
+  /// 模版没写这些占位符时它不起作用；写了但这里没给值，mustache 会渲染成空串。
+  List<String> getShowText(String text, {Map<String, String>? inputs}) {
     List<String> ret = [];
     if (copyTemplates.isEmpty) {
       copyTemplates.add(defaultStringTemplate);
@@ -129,7 +131,7 @@ a{{index1}}: {{answer}}
       final template = Template(templateString, htmlEscapeValues: false);
       var result = text;
       try {
-        final rendered = template.renderString({'text': text});
+        final rendered = template.renderString({'text': text, ...?inputs});
         result = rendered.toString();
       } catch (e) {}
       ret.add(result);

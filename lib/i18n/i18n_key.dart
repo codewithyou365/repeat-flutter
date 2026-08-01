@@ -409,6 +409,7 @@ enum I18nKey {
   behavior,
   behaviorOverwrite,
   behaviorPlayOrOverwrite,
+  inputCount,
   testExecution,
   closeLog,
   customizeMenu,

@@ -122,6 +122,27 @@ class ExpandLogic {
     return VerseField.getText(verseMap, toSourceFieldRef(sourceIndex.value)) ?? '';
   }
 
+  /// 指令模版里可以写 {{input1}}..{{input10}}，最多 10 个参数。
+  static const int maxInput = 10;
+
+  /// 第 i 个参数在模版里的占位符名字（1 基，跟界面上显示的编号一致）。
+  static String inputKey(int index) => 'input${index + 1}';
+
+  /// 用户依次填好的参数值 -> 渲染模版用的 map。
+  static Map<String, String> inputsOf(List<String> values) => {
+        for (var i = 0; i < values.length; i++) inputKey(i): values[i],
+      };
+
+  /// 调用方给的参数按位置对齐到 [count] 个：少了补空串，多了丢掉。
+  /// 游戏脚本可以只传前几个，剩下的当空处理。
+  static List<String> normalizeInputs(List<String>? values, int count) => [
+        for (var i = 0; i < count; i++) (values != null && i < values.length) ? values[i] : '',
+      ];
+
+  /// 这个动作要几个参数。大于 0 时点辅助触控的这个动作会先弹框让用户依次填，
+  /// 填完才渲染模版发给助手服务。
+  var inputCount = 0.obs;
+
   var targetIndex = 0.obs;
   var enableAudio = true.obs;
   var behavior = ExpandBehavior.overwrite.obs;
@@ -159,6 +180,7 @@ class ExpandLogic {
       targetIndex: targetIndex.value,
       enableAudio: enableAudio.value,
       behavior: behavior.value.index,
+      inputCount: inputCount.value,
       sort: actionSort,
     );
     if (editingActionId == null) {
