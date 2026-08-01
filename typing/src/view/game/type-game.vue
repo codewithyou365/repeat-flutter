@@ -82,11 +82,6 @@
         />
       </template>
     </nut-cell>
-    <nut-cell :title="t('spellClearWord')">
-      <template #link>
-        <nut-switch v-model="spellClearWord" @change="setSpellClearWord"/>
-      </template>
-    </nut-cell>
     <nut-cell :title="t('spellResetLevel')">
       <template #link>
         <nut-switch v-model="spellResetLevel" @change="setSpellResetLevel"/>
@@ -253,7 +248,6 @@ const speakLetters = ref(false);
 const manualTtsRate = ref(0.5);
 const manualPlayTrigger = ref('.');
 const spellPlayTrigger = ref(',');
-const spellClearWord = ref(true);
 const spellResetLevel = ref(false);
 const hintTrigger = ref(' ');
 const maskTrigger = ref('');
@@ -317,7 +311,6 @@ const showTips = () => {
     {label: t('manualTtsRate'), value: `${manualTtsRate.value}x`},
     {label: t('manualPlayTrigger'), value: formatTriggerKey(manualPlayTrigger.value)},
     {label: t('spellPlayTrigger'), value: formatTriggerKey(spellPlayTrigger.value)},
-    {label: t('spellClearWord'), value: formatStatus(spellClearWord.value)},
     {label: t('spellResetLevel'), value: formatStatus(spellResetLevel.value)},
     {label: t('hintTrigger'), value: formatTriggerKey(hintTrigger.value)},
     {label: t('maskTrigger'), value: maskTrigger.value ? formatTriggerKey(maskTrigger.value) : t('disabled')},
@@ -377,7 +370,6 @@ const applyProfile = (index: number) => {
   manualTtsRate.value = typeof res['manualTtsRate'] === 'number' ? res['manualTtsRate'] : 0.5;
   manualPlayTrigger.value = typeof res['manualPlayTrigger'] === 'string' ? res['manualPlayTrigger'] : '.';
   spellPlayTrigger.value = typeof res['spellPlayTrigger'] === 'string' ? res['spellPlayTrigger'] : ',';
-  spellClearWord.value = typeof res['spellClearWord'] === 'boolean' ? res['spellClearWord'] : true;
   spellResetLevel.value = typeof res['spellResetLevel'] === 'boolean' ? res['spellResetLevel'] : false;
   hintTrigger.value = typeof res['hintTrigger'] === 'string' ? res['hintTrigger'] : ' ';
   maskTrigger.value = typeof res['maskTrigger'] === 'string' ? res['maskTrigger'] : '';
@@ -548,10 +540,6 @@ const setSpellPlayTrigger = (value: string) => {
   spellPlayTriggerSaved = value;
   profiles.value[activeProfile.value].spellPlayTrigger = value;
   setConfig("spellPlayTrigger", value);
-};
-const setSpellClearWord = (value: boolean) => {
-  profiles.value[activeProfile.value].spellClearWord = value;
-  setConfig("spellClearWord", value);
 };
 const setSpellResetLevel = (value: boolean) => {
   profiles.value[activeProfile.value].spellResetLevel = value;
@@ -757,6 +745,7 @@ const speakCurrentWord = () => {
 
 const onManualPlay = (word: string) => {
   if (word) speak(word, manualTtsRate.value, true);
+  typingRef.value?.clearCurrentWord();
 };
 
 const resetLevel = async () => {
@@ -778,9 +767,7 @@ const onSpellPlay = (word: string) => {
   if (spellResetLevel.value) {
     void resetLevel();
   }
-  if (spellClearWord.value) {
-    typingRef.value?.clearCurrentWord();
-  }
+  typingRef.value?.clearCurrentWord();
 };
 
 const onHintTrigger = () => {

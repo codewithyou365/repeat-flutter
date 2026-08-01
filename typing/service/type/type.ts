@@ -27,7 +27,6 @@ type ProfileConfig = {
     maskTrigger: string;
     keyMapping: string;
     assistiveTouchBindings: AssistiveTouchBinding[];
-    spellClearWord: boolean;
     spellResetLevel: boolean;
     [key: string]: any;
 };
@@ -60,7 +59,7 @@ type GameArgs = {
 const PROFILE_COUNT = 3;
 
 function defaultProfileConfig(): ProfileConfig {
-    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "keyMapping": "", "assistiveTouchBindings": [], "spellClearWord": true, "spellResetLevel": false};
+    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "keyMapping": "", "assistiveTouchBindings": [], "spellResetLevel": false};
 }
 
 function defaultStoredConfig(): StoredConfig {
