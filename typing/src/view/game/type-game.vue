@@ -778,21 +778,25 @@ const isSpeakable = (ch: string) => /[\p{L}\p{N}]/u.test(ch);
 // 触发键是空格时肉眼看不出来，需要额外提示；其它可见字符原样显示即可
 const formatTriggerKey = (key: string) => key === ' ' ? t('spaceKey') : key;
 
-// 整词朗读：非字母/数字（空格、撇号、标点等）都当作词与词之间的分界
-let currentWord = '';
+// 整词朗读：非字母/数字（空格、撇号、标点等）都当作词与词之间的分界。
+// 这里只记当前词里最后填入的字符下标，真正朗读时再按下标从原文切出整词——不能自己攒字符串：
+// 手动播放/逐字母朗读会 clearCurrentWord 把词退回词首，Backspace/方向键也会改已输入内容，
+// 这些都不发 charFilled，攒出来的串会重复（打成 "worword" 这种，发音自然不对）。
+let pendingWordEnd: number | null = null;
 const flushWord = () => {
   let p: Promise<void> = Promise.resolve();
-  if (currentWord.length > 0) {
-    p = speak(currentWord);
+  if (pendingWordEnd !== null) {
+    const word = typingRef.value?.getWordAt(pendingWordEnd);
+    if (word) p = speak(word);
   }
-  currentWord = '';
+  pendingWordEnd = null;
   return p;
 };
 
-const onCharFilled = (_index: number, char: string, auto: boolean, correct: boolean) => {
+const onCharFilled = (index: number, char: string, auto: boolean, correct: boolean) => {
   if (auto || correct) {
     if (isSpeakable(char)) {
-      currentWord += char;
+      pendingWordEnd = index;
     } else {
       flushWord();
     }
@@ -913,7 +917,7 @@ const onWordAsk = async (bounds: { start: number; end: number } | null) => {
 const refresh = async () => {
   try {
     overlayVisible.value = true;
-    currentWord = '';
+    pendingWordEnd = null;
     const req = new Request({
       path: Path.game,
       headers: {'jsMethod': 'Game.answer'},

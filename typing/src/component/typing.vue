@@ -688,6 +688,10 @@ defineExpose({
   getCurrentWord() {
     return getWordAt(cursorPos.value);
   },
+  // 按内容下标取整词：父组件做整词朗读时用，保证读的是原文而不是自己攒的串
+  getWordAt(index: number) {
+    return getWordAt(index);
+  },
   clearCurrentWord() {
     clearCurrentWord();
   },
