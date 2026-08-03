@@ -154,6 +154,13 @@ const Util = {
             return {};
         }
     },
+    getUserName: async function (userId: number): Promise<string> {
+        try {
+            return await sendMessage('getUserName', JSON.stringify({'userId': userId}));
+        } catch (e) {
+            return '';
+        }
+    },
     getLabel: function (): JsonRecord {
         try {
             const left = sendMessage('uiLabel', JSON.stringify({'name': 'left'}));
@@ -306,12 +313,106 @@ function applyUnderline(plain: string, spans: number[][]): string {
 
 const Game = {
     gameRefreshPath: 'gameRefresh',
+    // 协作打字的共享状态走单独的广播路径：gameRefreshPath 已经被"换了一条 verse，全体重新拉内容"
+    // 占用了，收到它的客户端会走整套 refresh（含加载遮罩），每敲一个字都来一遍没法用。
+    typeStatePath: 'typeState',
+
+    // ---- 共享打字进度（只在内存里，不落库；服务重启即清空）----
+    // roundId: 每 clear() 一次 +1，用来判断客户端上报的是不是上一条 verse 的残留
+    roundId: 0,
+    // seq: 本轮的写入版本号。客户端上报时带上自己看到的 baseSeq，对不上说明中间有别人写过，
+    //      本次上报直接作废并把最新快照回给它重新同步（整串 last-write-wins + 冲突检测）
+    seq: 0,
+    // userInput: 就是 Typing 组件里的 userInput，已输入串（含打错的字符）
+    userInput: '',
+    // indexToUserId: 哪个下标的字符是谁敲的，客户端拿它上色
+    indexToUserId: {} as Record<string, number>,
+    userIdToUserName: {} as Record<string, string>,
+    // completedRoundId: 已经因为"打完了"触发过 tapLeft 的轮次，防止多个客户端同时判完成而连跳 verse
+    completedRoundId: -1,
+
     onNewVerse: async function () {
         await this.clear();
     },
     clear: async function (): Promise<void> {
+        // 内存重置必须无条件执行：adminEnable 时虽然不广播，但内容本身已经换了，
+        // 旧的共享输入串留着，等退出维护态就会把上一条的进度盖到新内容上。
+        this.roundId += 1;
+        this.seq = 0;
+        this.userInput = '';
+        this.indexToUserId = {};
+        this.completedRoundId = -1;
         if (!Util.adminEnable()) {
             await Util.broadcast(this.gameRefreshPath, {});
+        }
+    },
+    getBroadcastData: function (): JsonRecord {
+        return {
+            roundId: this.roundId,
+            seq: this.seq,
+            userInput: this.userInput,
+            indexToUserId: this.indexToUserId,
+            userIdToUserName: this.userIdToUserName,
+        };
+    },
+    // 挂载 / 断线重连 / 换完 verse 之后拉一次，把共享进度接上
+    getState: function (): string {
+        try {
+            return JSON.stringify({data: this.getBroadcastData()});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
+        }
+    },
+    // args.data = {roundId, baseSeq, userInput, changedIndexes}
+    input: async function (args: GameArgs): Promise<string> {
+        try {
+            const userId = args.userId;
+            const data = args.data || {};
+            // 过期上报（换过 verse，或中间被别人写过）：不写入，把最新快照回给它自己去同步
+            if (data.roundId !== this.roundId || data.baseSeq !== this.seq) {
+                return JSON.stringify({data: Object.assign({stale: true}, this.getBroadcastData())});
+            }
+
+            const userInput: string = typeof data.userInput === 'string' ? data.userInput : '';
+            this.userInput = userInput;
+
+            const changedIndexes = Array.isArray(data.changedIndexes) ? data.changedIndexes : [];
+            for (const index of changedIndexes) {
+                this.indexToUserId[index] = userId;
+            }
+            // 退格/清词会让串变短，超出长度的归属信息要一起丢掉，否则重新打到这里颜色是旧的
+            for (const key of Object.keys(this.indexToUserId)) {
+                if (Number(key) >= userInput.length) {
+                    delete this.indexToUserId[key];
+                }
+            }
+
+            if (this.userIdToUserName[userId] === undefined) {
+                this.userIdToUserName[userId] = await Util.getUserName(userId);
+            }
+
+            this.seq += 1;
+            await Util.broadcast(this.typeStatePath, this.getBroadcastData());
+            return JSON.stringify({data: {seq: this.seq, roundId: this.roundId}});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
+        }
+    },
+    // 打完一整句时由客户端调用，代替原来的 tap('tapLeft')。按 roundId 幂等：
+    // 协作模式下可能有不止一个客户端判定完成，重复 uiTap 会一口气跳过好几条 verse。
+    complete: function (): string {
+        try {
+            if (this.completedRoundId === this.roundId) {
+                return JSON.stringify({data: 'already'});
+            }
+            this.completedRoundId = this.roundId;
+            const result = Util.uiTap('tapLeft');
+            if (result !== 'success') {
+                return JSON.stringify({status: 500, error: result + ''});
+            }
+            return JSON.stringify({data: 'ok'});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
         }
     },
     setConfig: async function (args: GameArgs): Promise<string> {

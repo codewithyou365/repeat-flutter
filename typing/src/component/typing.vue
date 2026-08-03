@@ -121,6 +121,10 @@ const emit = defineEmits<{
   // bounds 是按下这个键时光标所在词在 content 里的起止下标（含头含尾），不在词上时为 null。
   // "单词提问"要拿它去标下划线；普通的辅助触控绑定用不到，忽略即可。
   (e: 'assistTrigger', key: string, bounds: { start: number; end: number } | null): void;
+  // 已输入内容发生变化（打字/退格/清词）。父组件用它把进度同步给服务端做多人协作。
+  // changedIndexes 是本次新落下的字符下标，用来记"这几个字是谁敲的"；退格/清词传空数组。
+  // 注意：只在用户自己的操作里发，initUserInput（应用远端下发的内容）不发，否则会来回回声。
+  (e: 'userInputChange', userInput: string, changedIndexes: number[]): void;
 }>();
 
 const store = useStore();
@@ -290,6 +294,10 @@ const getWordAt = (index: number): string => {
   return bounds ? props.content.slice(bounds.start, bounds.end + 1) : '';
 };
 
+const emitUserInputChange = (changedIndexes: number[]) => {
+  emit('userInputChange', userInput.value, changedIndexes);
+};
+
 // 把光标所在单词的已输入内容清空，重新回到这个单词开头（会重新自动带出单词开头那段自动填充的字符）
 const clearCurrentWord = () => {
   const bounds = getWordBounds(cursorPos.value);
@@ -302,12 +310,14 @@ const clearCurrentWord = () => {
   }
   userInput.value = temp;
   cursorPos.value = pos;
+  emitUserInputChange([]);
   nextTick(positionInput);
 };
 
 const applyInput = (val: string) => {
   let pos = cursorPos.value;
   let temp = userInput.value;
+  const before = userInput.value;
   const filled: FilledEvent[] = [];
   let blocked = false;
   // 触发键（手动播放/逐字母朗读/提示）的 emit 不能在循环内立刻发出：这几个事件的处理方（父组件）
@@ -395,6 +405,12 @@ const applyInput = (val: string) => {
     cursorPos.value = props.content.length;
   }
 
+  // 同步要排在 emitFilledEvents 前面：后者可能 emit('completed')，父组件收到就去通知服务端
+  // "这句打完了"，得保证那之前服务端已经拿到完整的输入串。
+  // 打错且被拦住的映射键不会写进 temp（userInput 没变），这种就不必同步了。
+  if (userInput.value !== before) {
+    emitUserInputChange(filled.map((item) => item.index));
+  }
   emitFilledEvents(filled, !blocked);
   for (const fn of pendingTriggerEmits) fn();
 };
@@ -507,6 +523,7 @@ const handleKeydown = (e: KeyboardEvent) => {
 
   if (e.key === 'Backspace') {
     let p = cursorPos.value;
+    const before = userInput.value;
     if (cursorPos.value !== userInput.value.length && !isIgnore(props.content[p], p)) {
       p++;
       while (isIgnore(props.content[p], p) && p < userInput.value.length) p++;
@@ -532,6 +549,9 @@ const handleKeydown = (e: KeyboardEvent) => {
       }
       fixCursorPos();
       positionInput();
+    }
+    if (userInput.value !== before) {
+      emitUserInputChange([]);
     }
     e.preventDefault();
   } else if (e.key === 'ArrowLeft') {

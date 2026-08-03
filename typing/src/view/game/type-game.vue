@@ -218,6 +218,7 @@
           @hint-trigger="onHintTrigger"
           @mask-trigger="onMaskTrigger"
           @assist-trigger="onAssistTrigger"
+          @user-input-change="onUserInputChange"
       />
     </div>
 
@@ -240,6 +241,7 @@ import {client, Request, Response} from '../../api/ws.ts';
 import {Path} from '../../utils/constant.ts';
 import {raiseSoftKeyboard} from '../../utils/keyboard.ts';
 import Typing from '../../component/typing.vue';
+import {TypeState} from '../../vo/TypeState.ts';
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {Ask, Voice, Eye, Del} from '@nutui/icons-vue';
@@ -315,6 +317,97 @@ const cantPlayForMaintain = computed(() => {
 const isAdmin = computed(() => {
   return adminEnable.value && adminId.value == store.getters.currentUserId;
 });
+
+// ---- 多人协作打字：打字进度存在 ts 服务的内存里，谁敲的字都上报 + 广播 ----
+// 本地记着服务端快照的轮次和版本号：roundId 用来丢弃换 verse 前的残留广播，
+// localSeq 用来只应用比自己新的快照（也就顺带过滤掉自己刚发出去的那条回声）。
+let roundId = -1;
+let localSeq = -1;
+// 正在应用远端快照，这期间 Typing 里的变化不要再上报（虽然 initUserInput 本来就不发事件，
+// 双保险，避免以后有人改成 watch 触发）
+let applyingRemote = false;
+
+// 给协作者的字符上色。自己敲的字不上色（保持默认样式），一眼能分出哪些是别人打的。
+const collabColors = ['#e6a23c', '#67c23a', '#f56c6c', '#409eff', '#b37feb'];
+const getUserColor = (userId: number, allUserIds: number[]) => {
+  const idx = allUserIds.indexOf(userId);
+  return idx === -1 ? '#909399' : collabColors[idx % collabColors.length];
+};
+
+// 把服务端快照套到 Typing 上：共享的已输入串 + 每个字符的归属颜色
+const applyRemote = async (state: TypeState) => {
+  roundId = state.roundId;
+  localSeq = state.seq;
+
+  // 共享串还是空的（新一轮刚开始，谁都没敲）就别动 Typing：它在 watch(props.content) 里
+  // 已经把间隔模式/遮罩那批"自动填充"的字符写进 userInput 并把光标推到第一个要打的位置了，
+  // 这时候 initUserInput('') 会把这些全抹掉，光标落回 0，间隔模式直接玩不了。
+  if (state.userInput === '') {
+    return;
+  }
+
+  const myUserId = store.getters.currentUserId;
+  // userId 排序保证每个客户端算出来的配色一致
+  const allUserIds = Object.keys(state.userIdToUserName).map(Number).sort((a, b) => a - b);
+  const contentIndexToColor: Record<number, string> = {};
+  for (const key of Object.keys(state.indexToUserId)) {
+    const userId = state.indexToUserId[Number(key)];
+    if (userId == myUserId) continue;
+    contentIndexToColor[Number(key)] = getUserColor(userId, allUserIds);
+  }
+
+  applyingRemote = true;
+  try {
+    await nextTick();
+    typingRef.value?.initContentIndexToColor(contentIndexToColor);
+    // 串跟本地一模一样就别再 initUserInput：那是自己刚发出去的回声（广播有可能比自己那条
+    // 响应先到）。initUserInput 会把光标挪到串尾，而打错被 blockOnWrong 拦住时光标是停在
+    // 错字上的（串尾 = 错字之后），照套一遍就把光标推过了错字，拦截就白做了。
+    if (typingRef.value?.getUserInput() !== state.userInput) {
+      typingRef.value?.initUserInput(state.userInput);
+    }
+  } finally {
+    applyingRemote = false;
+  }
+};
+
+// 拉一次共享进度：挂载、换 verse、断线重连后接着别人打到的位置继续
+const getState = async () => {
+  const req = new Request({
+    path: Path.game,
+    headers: {'jsMethod': 'Game.getState'},
+  });
+  const res = await client.node!.send(req);
+  if (res.error) return;
+  await applyRemote(TypeState.fromJson(res.data));
+};
+
+// 自己敲了字/退格：上报给服务端存下来并广播。
+// 这里绝不能开 overlayVisible——每敲一个字闪一次加载遮罩没法用。
+const onUserInputChange = async (userInput: string, changedIndexes: number[]) => {
+  if (applyingRemote) return;
+  try {
+    const req = new Request({
+      path: Path.game,
+      headers: {'jsMethod': 'Game.input'},
+      data: {roundId: roundId, baseSeq: localSeq, userInput: userInput, changedIndexes: changedIndexes},
+    });
+    const res = await client.node!.send(req);
+    if (res.error) return;
+    const state = TypeState.fromJson(res.data);
+    if (state.stale) {
+      // 轮次或版本号对不上（换过 verse，或中间被别人写过），本次输入被服务端丢弃，
+      // 按最新快照重同步——这一下敲的字会丢，需要重敲。
+      await applyRemote(state);
+      return;
+    }
+    if (typeof res.data?.seq === 'number') {
+      localSeq = res.data.seq;
+    }
+  } catch (error) {
+    console.error('Failed to sync typing input:', error);
+  }
+};
 
 
 const showTips = () => {
@@ -817,7 +910,14 @@ const onCharFilled = (index: number, char: string, auto: boolean, correct: boole
 const onCompleted = async () => {
   await flushWord();
   await new Promise((resolve) => setTimeout(resolve, 500));
-  await tap('tapLeft');
+  // 走服务端的 Game.complete 而不是直接 tap('tapLeft')：协作时可能有不止一个客户端判定"打完了"，
+  // 服务端按 roundId 幂等，保证一句只推进一次，不会一口气跳过好几条。
+  const req = new Request({
+    path: Path.game,
+    headers: {'jsMethod': 'Game.complete'},
+  });
+  await client.node!.send(req);
+  await refresh();
 };
 
 const speakCurrentWord = () => {
@@ -928,6 +1028,9 @@ const refresh = async () => {
     updateIgnoreIndexes(res.data.mask);
 
     await getLabel();
+    // 内容到位之后再接共享进度：中途进来/重连的人直接看到别人已经打到哪儿了。
+    // 必须排在 content 赋值之后——Typing 的 watch(props.content) 会把 userInput 清零重来。
+    await getState();
   } catch (error) {
     console.error('Failed to refresh game:', error);
   } finally {
@@ -950,6 +1053,16 @@ onMounted(async () => {
   await raiseSoftKeyboard();
   client.controllers.set('gameRefresh', async (_: Request) => {
     await refresh();
+    return new Response();
+  });
+  // 别人敲字时服务端推过来的共享进度。单开一条路径，不跟 gameRefresh（换 verse，要走整套
+  // refresh + 加载遮罩）混用。
+  client.controllers.set('typeState', async (req: Request) => {
+    const state = TypeState.fromJson(req.data);
+    // 只应用当前这一轮、且比自己新的快照；自己刚发出去那条的回声会在这里被挡掉
+    if (state.roundId === roundId && state.seq > localSeq) {
+      await applyRemote(state);
+    }
     return new Response();
   });
 });
