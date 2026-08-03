@@ -42,6 +42,7 @@ class Path {
   static const heart = '/api/heart';
   static const gameAdmin = '/api/gameAdmin';
   static const game = '/api/game';
+  static const showKeyboard = '/api/showKeyboard';
   static const gameUserScoreHistory = '/api/gameUserScoreHistory';
   static const gameUserScore = '/api/gameUserScore';
   static const gameUserScoreMinus = '/api/gameUserScoreMinus';

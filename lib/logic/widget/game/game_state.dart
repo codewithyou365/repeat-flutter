@@ -13,7 +13,7 @@ class GameState {
   RxBool adminEnableRx = RxBool(false);
   RxBool open = RxBool(false);
   RxString online = RxString("");
-  List<String> urls = [];
+  RxList<String> urls = RxList<String>();
 
   RxInt userNumber = RxInt(0);
   List<GameUser> users = [];

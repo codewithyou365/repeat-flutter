@@ -9,6 +9,7 @@ export const Path = {
     heart: '/api/heart',
     gameAdmin: '/api/gameAdmin',
     game: '/api/game',
+    showKeyboard: '/api/showKeyboard',
     tip: '/api/tip',
     gameUserScoreHistory: '/api/gameUserScoreHistory',
     gameUserScore: '/api/gameUserScore',

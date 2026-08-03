@@ -226,7 +226,7 @@ class GameLogic<T extends GetxController> {
           GameState.adminEnable = enable != 0;
           GameState.adminId = await Db().db.kvDao.getInt(K.adminId) ?? 0;
           await web.start(game.bookId, game.hash, game.service, port.value);
-          state.urls = [];
+          state.urls.clear();
           var ips = await Ip.getLanIps();
           for (var i = 0; i < ips.length; i++) {
             String url = ips[i];
@@ -258,7 +258,7 @@ class GameLogic<T extends GetxController> {
   Future<void> closeWeb() async {
     try {
       await web.stop();
-      state.urls = [];
+      state.urls.clear();
       Snackbar.show('game service stopped');
     } catch (e) {
       Snackbar.show('Error Stop Web: $e');

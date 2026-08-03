@@ -15,17 +15,19 @@ class GamePage<T extends GetxController> {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
+    required bool enabled,
   }) {
+    final color = enabled ? null : Colors.grey;
     return RowWidget.buildCard(
       InkWell(
-        onTap: onTap,
+        onTap: enabled ? onTap : null,
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 16.w),
           child: Column(
             children: [
-              Icon(icon, size: 32.w),
+              Icon(icon, size: 32.w, color: color),
               SizedBox(height: 8.w),
-              Text(title, style: const TextStyle(fontSize: 16)),
+              Text(title, style: TextStyle(fontSize: 16, color: color)),
             ],
           ),
         ),
@@ -54,9 +56,7 @@ class GamePage<T extends GetxController> {
           return ListView(
             children: [
               Obx(() {
-                if (!state.open.value) {
-                  return const SizedBox.shrink();
-                }
+                final enabled = state.open.value && state.urls.isNotEmpty;
                 return Row(
                   children: [
                     Expanded(
@@ -64,6 +64,7 @@ class GamePage<T extends GetxController> {
                         icon: Icons.play_arrow,
                         title: I18nKey.startPlaying.tr,
                         onTap: logic.openWebview,
+                        enabled: enabled,
                       ),
                     ),
                     Expanded(
@@ -71,6 +72,7 @@ class GamePage<T extends GetxController> {
                         icon: Icons.qr_code_2,
                         title: I18nKey.shareAddress.tr,
                         onTap: logic.openShareDialog,
+                        enabled: enabled,
                       ),
                     ),
                   ],

@@ -235,9 +235,10 @@
   </div>
 </template>
 <script setup lang="ts">
-import {onMounted, ref, inject, Ref, reactive, computed} from 'vue';
+import {onMounted, ref, inject, Ref, reactive, computed, nextTick} from 'vue';
 import {client, Request, Response} from '../../api/ws.ts';
 import {Path} from '../../utils/constant.ts';
+import {raiseSoftKeyboard} from '../../utils/keyboard.ts';
 import Typing from '../../component/typing.vue';
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
@@ -942,6 +943,11 @@ onMounted(async () => {
     await getAssistiveTouchActions();
   }
   await refresh();
+  // 内容到位、加载遮罩关掉之后才聚焦：Typing 挂载那会儿 content 还是空串，
+  // 输入框既没定位也没尺寸，那时候聚焦是白聚焦。
+  await nextTick();
+  typingRef.value?.focus();
+  await raiseSoftKeyboard();
   client.controllers.set('gameRefresh', async (_: Request) => {
     await refresh();
     return new Response();

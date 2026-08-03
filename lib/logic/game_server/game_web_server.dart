@@ -23,6 +23,7 @@ import 'controller/game_key.dart';
 import 'controller/heart.dart';
 import 'controller/js/js_runtime.dart';
 import 'controller/login_or_register.dart';
+import 'controller/show_keyboard.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:path/path.dart' as path;
 import 'package:synchronized/synchronized.dart';
@@ -75,6 +76,7 @@ class GameWebServer {
     server.controllers[Path.heart] = (request) => withGameUser(request, heart);
     server.controllers[Path.gameAdmin] = (request) => withGameUser(request, gameAdmin);
     server.controllers[Path.game] = (request) => withGameUserAndServer(request, game);
+    server.controllers[Path.showKeyboard] = (request) => withGameUser(request, showKeyboard);
     server.controllers[Path.gameUserScoreHistory] = (request) => withGameUser(request, gameUserScoreHistory);
     server.controllers[Path.gameUserScore] = (request) => withGameUser(request, gameUserScore);
     server.controllers[Path.gameUserScoreMinus] = (request) => withGameUser(request, gameUserScoreMinus);
