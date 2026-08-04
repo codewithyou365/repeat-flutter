@@ -21,6 +21,9 @@ class ImportHelp {
       }
       json['d'] = list;
     }
+    // 外部 doc 只按老规矩排 'd'（第一项当整节媒体），进库前统一补上显式的 'm'，
+    // 这样全 App 只认 'm' 一条规则，跟迁移过的老库对齐。
+    VerseField.ensureSectionMediaHash(json);
   }
 
   static Future<bool> import(int bookId, String url) async {

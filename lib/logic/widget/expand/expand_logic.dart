@@ -307,7 +307,7 @@ class ExpandLogic {
     });
   }
 
-  /// 扩展助手只拿得到 verse 那一层，book 的内容从缓存里取（用来就近登记媒体）。
+  /// 扩展助手只拿得到 verse 那一层，book 的内容从缓存里取（提示的名字定义在 book 上）。
   Map<String, dynamic>? _bookMap() {
     final book = BookHelp.getCache(bookId);
     if (book == null) {
@@ -340,12 +340,8 @@ class ExpandLogic {
     if (enableAudio.value && dc != null) {
       // 生成的音频只挂到这个字段块上（'a' 里的 'mediaHash' + 'showType'），不动整节的 's'：
       // 否则一节里问题是章节视频、答案是新音频时，会把视频整个遮蔽掉，'s' 也会把 q 一起改了。
-      // 文件对象登记到 'd' 里（就近，见 VerseField.setMedia），字段块只存 hash。
-      final bookMap = _bookMap();
-      final bookChanged = VerseField.setMedia(verse: targetMap, book: bookMap, acronym: key, d: dc);
-      if (bookChanged && bookMap != null) {
-        await Db().db.bookDao.updateBookContent(bookId, jsonEncode(bookMap));
-      }
+      // 文件对象登记到这一节自己的 'd' 里（见 VerseField.setMedia），字段块只存 hash。
+      VerseField.setMedia(verse: targetMap, acronym: key, d: dc);
       VerseField.setStr(targetMap, key, VerseField.showType, RepeatViewEnum.audio.name);
 
       try {

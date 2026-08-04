@@ -122,9 +122,12 @@ class ChapterImportHelp {
       return false;
     }
     var verseContents = segments.map((s) => jsonEncode(s.toJson())).toList();
+    // 整章共用这一个音视频：'d' 登记文件对象，'m' 指明它就是整节媒体，每一节都继承得到。
+    // 'm' 是显式引用，所以某一节之后自己长出 'd'（比如扩展助手生成的字段音频）也遮蔽不掉它。
     var chapterContent = jsonEncode({
       's': showType,
       'd': [download.toJson()],
+      VerseField.sectionMediaHash: download.hash,
     });
     var chapterIndex = await Db().db.chapterDao.count(bookId) ?? 0;
     return await Db().db.chapterDao.addChapterWithVerses(

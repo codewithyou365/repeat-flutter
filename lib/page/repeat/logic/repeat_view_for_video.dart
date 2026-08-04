@@ -130,14 +130,9 @@ class RepeatViewForVideo extends RepeatView {
     final range = mediaRangeHelper.getCurrRange();
 
     // 跟音频视图一样：当前区间所属字段有自己的媒体就放它的文件，换了文件要强制重载。
-    final fieldPath = helper.getFieldPath(range.fieldAcronym);
-    if (fieldPath != null) {
-      currentPath.value = fieldPath;
-    } else {
-      List<String> paths = helper.getPaths();
-      if (paths.isNotEmpty) {
-        currentPath.value = paths.first;
-      }
+    final path = helper.getFieldPath(range.fieldAcronym) ?? helper.getSectionPath();
+    if (path != null) {
+      currentPath.value = path;
     }
     if (currentPath.value != lastCurrentPath) {
       helper.enableReloadMedia = true;

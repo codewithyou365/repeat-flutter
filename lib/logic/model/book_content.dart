@@ -2,6 +2,10 @@ class BookContent {
   String? showType;
   String? rootUrl;
   List<DownloadContent>? download;
+
+  /// 整节媒体的 hash（'m'），跟 [showType] 是一对：'s' 说整节媒体怎么显示，'m' 说是哪个文件。
+  /// 见 [VerseField.findSectionDownload]。
+  String? mediaHash;
   List<ChapterContent> chapter;
 
   BookContent({
@@ -9,6 +13,7 @@ class BookContent {
     required this.rootUrl,
     required this.download,
     required this.chapter,
+    this.mediaHash,
   });
 
   factory BookContent.fromJson(Map<String, dynamic> json) {
@@ -16,6 +21,7 @@ class BookContent {
       showType: json['s'] as String?,
       rootUrl: json['r'] as String?,
       download: DownloadContent.toList(json['d']),
+      mediaHash: json[VerseField.sectionMediaHash] as String?,
       chapter: (json['c'] as List?)?.map((e) => ChapterContent.fromJson(e as Map<String, dynamic>)).toList() ?? [],
     );
   }
@@ -25,6 +31,7 @@ class BookContent {
       's': showType,
       'r': rootUrl,
       'd': download?.map((e) => e.toJson()).toList(),
+      if (mediaHash != null) VerseField.sectionMediaHash: mediaHash,
       'c': chapter.map((e) => e.toJson()).toList(),
     };
   }
@@ -92,6 +99,10 @@ class ChapterContent {
   String? showType;
   String? rootUrl;
   List<DownloadContent>? download;
+
+  /// 整节媒体的 hash（'m'）。整章共用一个音视频时只在这里写一次，每一节都继承得到。
+  /// 见 [VerseField.findSectionDownload]。
+  String? mediaHash;
   List<VerseContent> verse;
 
   ChapterContent({
@@ -100,6 +111,7 @@ class ChapterContent {
     required this.rootUrl,
     required this.download,
     required this.verse,
+    this.mediaHash,
   });
 
   factory ChapterContent.fromJson(Map<String, dynamic> json) {
@@ -108,6 +120,7 @@ class ChapterContent {
       showType: json['s'] as String?,
       rootUrl: json['r'] as String?,
       download: DownloadContent.toList(json['d']),
+      mediaHash: json[VerseField.sectionMediaHash] as String?,
       verse: (json['v'] as List?)?.map((e) => VerseContent.fromJson(e as Map<String, dynamic>)).toList() ?? [],
     );
   }
@@ -118,6 +131,7 @@ class ChapterContent {
       's': showType,
       'r': rootUrl,
       'd': download?.map((e) => e.toJson()).toList(),
+      if (mediaHash != null) VerseField.sectionMediaHash: mediaHash,
       'v': verse.map((e) => e.toJson()).toList(),
     };
   }
@@ -129,7 +143,7 @@ class ChapterContent {
 /// - 'text'：这个字段的正文。只看本层，不继承。
 /// - 'mediaHash'：字段专属媒体的 hash。文件对象本身只存在 book/chapter/verse 的 'd' 列表里
 ///   （跟字体的 'fontHash' 一个套路），这里只是引用；'start'/'end' 是相对这个文件的时间。
-///   没有 mediaHash 时沿用整节的 'd'。
+///   没有 mediaHash 时沿用整节媒体（顶层的 'm'，见 [VerseField.findSectionDownload]）。
 /// - 'showType'：字段专属视图类型。整节的 's' 是 q/a 共用的，一节里 q 是视频、a 是音频时
 ///   必须各记各的，不能靠改 's' 来表达。
 /// - 'start'/'end'：区间，逐节各不相同，只看本层。
@@ -160,6 +174,11 @@ class VerseField {
   static const String fontSize = 'fontSize';
   static const String fontAlias = 'fontAlias';
   static const String fontHash = 'fontHash';
+
+  /// 整节媒体的 hash。这个键不在字段块里，而是跟 's'（整节视图类型）并排放在
+  /// book/chapter/verse 的顶层：'s' 说整节媒体怎么显示，'m' 说整节媒体是哪个文件。
+  /// 见 [findSectionDownload]。
+  static const String sectionMediaHash = 'm';
 
   /// book 的 't' 数组里那一条的名字，显示在提示 tab 上。
   static const String tipName = 'n';
@@ -456,25 +475,80 @@ class VerseField {
     return null;
   }
 
-  /// 给某个字段挂一份专属媒体：文件对象登记进 'd'，字段块里只写 mediaHash。
+  /// 整节媒体的文件对象：q/a/t 谁都没配字段专属媒体时，播的就是这一份。
   ///
-  /// 就近登记：verse 本来就有 'd' 就追加到 verse，否则登记到 book（跟字体一个地方）——
-  /// 在原本没有 'd' 的 verse 上凭空造一个 'd'，会把这一节的整节媒体顶成这个文件。
-  /// 返回 book 那一层是不是被改了，改了的话调用方要把 book 也写回数据库。
-  static bool setMedia({
+  /// 'm' 按 verse -> chapter -> book 就近取（跟 's' 一样，整章共用一个媒体只在 chapter 上写一次），
+  /// 拿到 hash 之后用 [findDownloadByHash] 跨所有层找文件对象——所以一节自己有了 'd'
+  /// （比如扩展助手给某个字段生成的音频）也遮蔽不掉章节的整节媒体。
+  ///
+  /// 没有 'm' 的老数据/外部 doc JSON 回落到旧规则：就近那一层 'd' 的第一项。
+  /// 迁移会给库里的数据补上 'm'，回落只为外部导入的内容兜底。
+  static DownloadContent? findSectionDownload(List<Map<String, dynamic>?> contents) {
+    for (var content in contents) {
+      final hash = content?[sectionMediaHash];
+      if (hash is String && hash.isNotEmpty) {
+        final d = findDownloadByHash(contents, hash);
+        if (d != null) {
+          return d;
+        }
+        // 'm' 指着一个已经不在任何 'd' 里的文件（比如媒体被删了），当作没配，往下回落。
+        break;
+      }
+    }
+    for (var content in contents) {
+      if (content == null) {
+        continue;
+      }
+      final list = DownloadContent.toList(content['d']);
+      if (list == null) {
+        continue;
+      }
+      return list.isEmpty ? null : list.first;
+    }
+    return null;
+  }
+
+  /// 给还没有 'm' 的一层补上 'm' = 'd' 的第一项（旧规则里整节媒体就是它），补了返回 true。
+  /// 内容从外面进来（导入外部 doc、迁移老库）时统一走这里，之后全 App 只认 'm'，
+  /// 不用再各处判断"这层有没有 'd'、要不要就近覆盖"。
+  static bool ensureSectionMediaHash(Map<String, dynamic> content) {
+    if (content[sectionMediaHash] is String) {
+      return false;
+    }
+    final list = DownloadContent.toList(content['d']);
+    if (list == null || list.isEmpty) {
+      return false;
+    }
+    content[sectionMediaHash] = list.first.hash;
+    return true;
+  }
+
+  /// 换掉这一层的整节媒体：文件对象放到 'd' 的第一项，同时把 'm' 指过去。
+  /// 两个必须一起改——只改 'd' 会让 'm' 还指着老文件，只改 'm' 会让文件对象没处登记。
+  ///
+  /// 'd' 里原有的其它文件对象要留着：那些是字段专属媒体（见 [setMedia]），
+  /// 整个换掉会让字段块里的 mediaHash 变成找不到文件的悬空引用。
+  static void setSectionMedia(Map<String, dynamic> content, DownloadContent d) {
+    final list = DownloadContent.toList(content['d']) ?? [];
+    list.removeWhere((e) => e.hash == d.hash);
+    list.insert(0, d);
+    content['d'] = list.map((e) => e.toJson()).toList();
+    content[sectionMediaHash] = d.hash;
+  }
+
+  /// 给某个字段挂一份专属媒体：文件对象登记进这一节自己的 'd'，字段块里只写 mediaHash。
+  ///
+  /// 一律登记到 verse：文件是这一节的，放在这一节最好管理（删掉这节就跟着走）。
+  /// 以前要退到 book 上，是因为整节媒体按"就近那一层 'd' 的第一项"算，
+  /// 给原本没有 'd' 的 verse 凭空造一个 'd' 会把整节媒体顶掉；现在整节媒体由 'm' 显式指定、
+  /// 文件对象用 [findDownloadByHash] 跨层解析（见 [findSectionDownload]），没有这个问题了。
+  static void setMedia({
     required Map<String, dynamic> verse,
-    required Map<String, dynamic>? book,
     required String acronym,
     required DownloadContent d,
   }) {
-    var bookChanged = false;
-    if (verse['d'] != null || book == null) {
-      addDownload(verse, d);
-    } else {
-      bookChanged = addDownload(book, d);
-    }
+    addDownload(verse, d);
     setStr(verse, acronym, mediaHash, d.hash);
-    return bookChanged;
   }
 
   /// 保证 't' 数组至少有 [count] 条，不足的补空块。返回是否真的改了。
@@ -513,7 +587,8 @@ class VerseField {
   }
 
   /// 把文件对象登记进这一层的 'd' 列表（按 hash 去重）。
-  /// 一定是追加：'d' 的第一项是整节媒体，插到前面会把整节的音视频换掉。
+  /// 一定是追加：没有 'm' 的老内容按 'd' 的第一项算整节媒体（见 [findSectionDownload] 的回落），
+  /// 插到前面会把整节的音视频换掉。换整节媒体请走 [setSectionMedia]。
   /// 返回是否真的改了。
   static bool addDownload(Map<String, dynamic> content, DownloadContent d) {
     final list = DownloadContent.toList(content['d']) ?? [];
@@ -553,6 +628,10 @@ class VerseContent {
   String? key;
   String? write;
   String? note;
+
+  /// 整节媒体的 hash（'m'）。只有这一节自己换过整节媒体时才写，平时继承 chapter/book 的。
+  /// 见 [VerseField.findSectionDownload]。
+  String? mediaHash;
 
   /// 一节可以挂多条提示，下标就是提示 tab 的顺序。空条目也要占着位置，不能压缩掉。
   List<VerseTipContent> tips;
@@ -594,6 +673,7 @@ class VerseContent {
     required this.answer,
     required this.learnDate,
     required this.progress,
+    this.mediaHash,
     this.questionMediaHash,
     this.answerMediaHash,
     this.questionShowType,
@@ -621,6 +701,7 @@ class VerseContent {
       showType: json['s'] as String?,
       rootUrl: json['r'] as String?,
       download: DownloadContent.toList(json['d']),
+      mediaHash: json[VerseField.sectionMediaHash] as String?,
       key: json['k'] as String?,
       write: json['w'] as String?,
       note: VerseField.getText(json, 'n'),
@@ -650,6 +731,7 @@ class VerseContent {
       'w': write,
       'l': learnDate,
       'p': progress,
+      if (mediaHash != null) VerseField.sectionMediaHash: mediaHash,
     };
     VerseField.setText(ret, 'n', note);
     // 字段块里的每一项都只在有的时候才写，避免给老内容凭空加上一堆 null。

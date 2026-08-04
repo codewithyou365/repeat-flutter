@@ -255,37 +255,20 @@ class Helper {
     return BookContent.fromJson(map);
   }
 
-  List<String> getRelativePaths() {
-    var raw = ListUtil.getValue<List<dynamic>>(
-      [
-        getCurrVerseMap(),
-        getCurrChapterMap(),
-        getCurrBookMap(),
-      ],
-      'd',
-    );
-    List<String> ret = [];
-    var downloads = DownloadContent.toList(raw);
-    if (downloads == null) {
-      return ret;
-    }
-    for (var download in downloads) {
-      ret.add(download.path);
-    }
-    return ret;
+  /// 整节媒体：q/a/t 都没配字段专属媒体时播的那一份。
+  DownloadContent? getSectionDownload() {
+    return VerseField.findSectionDownload(fieldLevels);
+  }
+
+  String? getSectionRelativePath() => getSectionDownload()?.path;
+
+  String? getSectionPath() {
+    final d = getSectionDownload();
+    return d == null ? null : getPath(d.path);
   }
 
   String getPath(String downloadPath) {
     return rootPath.joinPath(DocPath.getRelativePath(logic.currVerse!.bookId)).joinPath(downloadPath);
-  }
-
-  List<String> getPaths() {
-    List<String> ret = [];
-    var paths = getRelativePaths();
-    for (var path in paths) {
-      ret.add(getPath(path));
-    }
-    return ret;
   }
 
   String? getString(String key) {
@@ -467,7 +450,7 @@ class Helper {
       }
       var chapterId = s.chapterId;
       var m = getCurrChapterMap()!;
-      m['d'] = [download];
+      VerseField.setSectionMedia(m, download);
       Db().db.chapterDao.updateChapterContent(chapterId, jsonEncode(m));
       Get.back();
       Get.back();
@@ -484,11 +467,8 @@ class Helper {
       if (verse == null) {
         return;
       }
-      String path = "";
-      List<String> paths = getRelativePaths();
-      if (paths.isNotEmpty) {
-        path = paths.first;
-      } else {
+      final path = getSectionRelativePath();
+      if (path == null) {
         return;
       }
       mediaShareLogic.open(MediaShareArgs(bookId: verse.bookId, path: path));
@@ -536,21 +516,13 @@ class Helper {
           if (verseMap == null) {
             return null;
           }
-          // 裁的是字段专属媒体时，裁完的文件仍然只属于这个字段，不能写成整节的 'd'，
+          // 裁的是字段专属媒体时，裁完的文件仍然只属于这个字段，不能写成整节媒体，
           // 否则字段还指着老文件、时间区间却按新文件算，两边对不上。
           if (getFieldDownload(range.fieldAcronym) != null) {
-            final bookMap = getCurrBookMap();
-            final bookChanged = VerseField.setMedia(
-              verse: verseMap,
-              book: bookMap,
-              acronym: range.fieldAcronym,
-              d: dc,
-            );
-            if (bookChanged) {
-              await Db().db.bookDao.updateBookContent(verse.bookId, jsonEncode(bookMap));
-            }
+            VerseField.setMedia(verse: verseMap, acronym: range.fieldAcronym, d: dc);
           } else {
-            verseMap['d'] = [dc];
+            // 裁的是整节媒体：只把这一节的整节媒体换成裁出来的文件，chapter/book 不动。
+            VerseField.setSectionMedia(verseMap, dc);
           }
           VerseField.setStr(verseMap, range.fieldAcronym, VerseField.start, "00:00:00,000");
           VerseField.setStr(verseMap, range.fieldAcronym, VerseField.end, Time.convertMsToString(durationMs + 100));
