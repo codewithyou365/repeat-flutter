@@ -10,6 +10,8 @@ export class TypeState {
     // 下标 -> 敲下这个字符的 userId，用来给字符上色
     indexToUserId: Record<number, number> = {};
     userIdToUserName: Record<number, string> = {};
+    // 最后一次写入是谁干的：等于自己就说明这条广播是自己敲字的回声，本地早就是最新的了，不用管
+    lastWriterUserId: number = -1;
     // 服务端拒绝了本次上报（轮次或版本号对不上），随快照一起回来，客户端据此重新同步
     stale: boolean = false;
 
@@ -29,6 +31,7 @@ export class TypeState {
             json.userIdToUserName && typeof json.userIdToUserName === 'object'
                 ? json.userIdToUserName
                 : {};
+        state.lastWriterUserId = typeof json.lastWriterUserId === 'number' ? json.lastWriterUserId : -1;
         state.stale = json.stale === true;
         return state;
     }

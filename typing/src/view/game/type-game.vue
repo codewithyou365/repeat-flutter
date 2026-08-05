@@ -318,9 +318,11 @@ const isAdmin = computed(() => {
   return adminEnable.value && adminId.value == store.getters.currentUserId;
 });
 
-// ---- 多人协作打字：打字进度存在 ts 服务的内存里，谁敲的字都上报 + 广播 ----
+// ---- 多人协作打字：打字进度存在 ts 服务里（内存 + 落盘），谁敲的字都上报 + 广播 ----
+// 本地优先：自己敲的字由 Typing 组件同步上屏，上报只是"把进度同步给别人 + 落盘"的后台动作，
+// 绝不因为服务端的回话把本地已经打出来的内容退回去。单人时因此是从头到尾零等待。
 // 本地记着服务端快照的轮次和版本号：roundId 用来丢弃换 verse 前的残留广播，
-// localSeq 用来只应用比自己新的快照（也就顺带过滤掉自己刚发出去的那条回声）。
+// localSeq 用来只应用比自己新的快照。
 let roundId = -1;
 let localSeq = -1;
 // 正在应用远端快照，这期间 Typing 里的变化不要再上报（虽然 initUserInput 本来就不发事件，
@@ -334,8 +336,10 @@ const getUserColor = (userId: number, allUserIds: number[]) => {
   return idx === -1 ? '#909399' : collabColors[idx % collabColors.length];
 };
 
-// 把服务端快照套到 Typing 上：共享的已输入串 + 每个字符的归属颜色
-const applyRemote = async (state: TypeState) => {
+// 把服务端快照套到 Typing 上：共享的已输入串 + 每个字符的归属颜色。
+// force=true 只给"整条内容刚换过"的场合（refresh 后的首次 getState）用，那时候本地没有
+// 需要保护的输入，服务端的串无条件采纳。
+const applyRemote = async (state: TypeState, force = false) => {
   roundId = state.roundId;
   localSeq = state.seq;
 
@@ -360,10 +364,13 @@ const applyRemote = async (state: TypeState) => {
   try {
     await nextTick();
     typingRef.value?.initContentIndexToColor(contentIndexToColor);
-    // 串跟本地一模一样就别再 initUserInput：那是自己刚发出去的回声（广播有可能比自己那条
-    // 响应先到）。initUserInput 会把光标挪到串尾，而打错被 blockOnWrong 拦住时光标是停在
-    // 错字上的（串尾 = 错字之后），照套一遍就把光标推过了错字，拦截就白做了。
-    if (typingRef.value?.getUserInput() !== state.userInput) {
+    // 只有"别人接着我打到的地方往下打了"（本地串是远端串的严格前缀）才把远端的串套上来。
+    // 远端更短、或者跟本地岔开了，都保留本地——那要么是自己刚敲的字还没同步上去（回声/冲突
+    // 回滚就是这么把字吃掉的），要么是别人的串比我旧，本地的内容会随下一次上报盖回服务端。
+    // 另外 initUserInput 会把光标挪到串尾，而打错被 blockOnWrong 拦住时光标是停在错字上的
+    // （串尾 = 错字之后），无谓地套一遍就把光标推过了错字，拦截白做。
+    const local = typingRef.value?.getUserInput() ?? '';
+    if (force || (local !== state.userInput && state.userInput.startsWith(local))) {
       typingRef.value?.initUserInput(state.userInput);
     }
   } finally {
@@ -379,33 +386,113 @@ const getState = async () => {
   });
   const res = await client.node!.send(req);
   if (res.error) return;
-  await applyRemote(TypeState.fromJson(res.data));
+  await applyRemote(TypeState.fromJson(res.data), true);
 };
 
-// 自己敲了字/退格：上报给服务端存下来并广播。
+// 上报是后台动作：同一时刻最多一条在路上，敲字期间的中间态在 pendingInput 里被合并掉，
+// 敲字这条链路上不做任何 await（await 会把网络往返算进手感里）。
+let sending = false;
+let pendingInput: { userInput: string; changedIndexes: number[] } | null = null;
+// 连着被服务端判 stale 的次数：正常情况下对齐 seq 后重发一次就成功了，
+// 一直不成功（比如内容已经换了）就别再自动重发，等 gameRefresh 走整套刷新。
+let staleResends = 0;
+const MAX_STALE_RESENDS = 3;
+
+// 自己敲了字/退格：把最新的串排队上报，立刻返回。
 // 这里绝不能开 overlayVisible——每敲一个字闪一次加载遮罩没法用。
-const onUserInputChange = async (userInput: string, changedIndexes: number[]) => {
+const onUserInputChange = (userInput: string, changedIndexes: number[]) => {
   if (applyingRemote) return;
+  queueInput(userInput, changedIndexes);
+};
+
+const queueInput = (userInput: string, changedIndexes: number[]) => {
+  if (pendingInput) {
+    // 攒着还没发出去的那次：串以最新的为准，改动过的下标合并（都是自己敲的，归属一样）
+    pendingInput = {
+      userInput: userInput,
+      changedIndexes: pendingInput.changedIndexes.concat(changedIndexes),
+    };
+  } else {
+    pendingInput = {userInput: userInput, changedIndexes: changedIndexes};
+  }
+  if (!sending) {
+    void sendInput();
+  }
+};
+
+// 两个串里内容不一样的下标（按 next 的长度算，next 更短的部分服务端会自己丢掉归属）
+const diffIndexes = (prev: string, next: string): number[] => {
+  const ret: number[] = [];
+  for (let i = 0; i < next.length; i++) {
+    if (prev[i] !== next[i]) ret.push(i);
+  }
+  return ret;
+};
+
+// 等排队中/在路上的上报跑完（只在判完成这种收尾点用，最多等 1 秒，网络卡住也不能吊死在这里）
+const flushInput = async () => {
+  for (let i = 0; i < 50 && (sending || pendingInput); i++) {
+    if (!sending && pendingInput) void sendInput();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+};
+
+const sendInput = async () => {
+  if (sending || !pendingInput) return;
+  sending = true;
+  const payload = pendingInput;
+  const sentRoundId = roundId;
+  pendingInput = null;
   try {
     const req = new Request({
       path: Path.game,
       headers: {'jsMethod': 'Game.input'},
-      data: {roundId: roundId, baseSeq: localSeq, userInput: userInput, changedIndexes: changedIndexes},
+      data: {
+        roundId: roundId,
+        baseSeq: localSeq,
+        userInput: payload.userInput,
+        changedIndexes: payload.changedIndexes,
+      },
     });
     const res = await client.node!.send(req);
-    if (res.error) return;
-    const state = TypeState.fromJson(res.data);
-    if (state.stale) {
-      // 轮次或版本号对不上（换过 verse，或中间被别人写过），本次输入被服务端丢弃，
-      // 按最新快照重同步——这一下敲的字会丢，需要重敲。
-      await applyRemote(state);
-      return;
-    }
-    if (typeof res.data?.seq === 'number') {
-      localSeq = res.data.seq;
+    if (!res.error) {
+      const state = TypeState.fromJson(res.data);
+      if (state.stale) {
+        // 轮次或版本号对不上（换过 verse，或中间别人写过），服务端丢了这次上报。
+        // 本地不回退：先对齐轮次/版本号，别人写的内容由 applyRemote 自己判断要不要接，
+        // 然后把本地最新的串重发一次，让服务端跟上本地。
+        await applyRemote(state);
+        // 只有"同一轮里被别人插队"才重发。轮次都变了说明内容已经换到下一条 verse，
+        // 这时候把本地（上一条的）串重发上去会把新内容的共享进度污染掉，直接丢掉等 gameRefresh。
+        if (state.roundId !== sentRoundId) {
+          pendingInput = null;
+        } else if (staleResends < MAX_STALE_RESENDS) {
+          staleResends++;
+          const local = typingRef.value?.getUserInput();
+          if (local !== undefined && local !== state.userInput) {
+            // 跟服务端那份对不上的下标就是"我打的、服务端还不知道的字"，一并带上，
+            // 否则这些字在服务端没有归属，别人那边看着就像不是我打的
+            queueInput(local, diffIndexes(state.userInput, local));
+          }
+        }
+      } else {
+        staleResends = 0;
+        if (typeof res.data?.seq === 'number') {
+          localSeq = res.data.seq;
+        }
+        if (typeof res.data?.roundId === 'number') {
+          roundId = res.data.roundId;
+        }
+      }
     }
   } catch (error) {
     console.error('Failed to sync typing input:', error);
+  } finally {
+    sending = false;
+    // 这一趟在路上时又敲了字，接着把最新的发出去（不 await，调用方本来就不等）
+    if (pendingInput) {
+      void sendInput();
+    }
   }
 };
 
@@ -910,6 +997,9 @@ const onCharFilled = (index: number, char: string, auto: boolean, correct: boole
 const onCompleted = async () => {
   await flushWord();
   await new Promise((resolve) => setTimeout(resolve, 500));
+  // 判完成前把还没发出去的输入送完：上报是后台异步的，落在 Game.complete 之后的话，
+  // 服务端已经因为 tapLeft 换了 verse，那条迟到的上报只会被当成上一条的残留丢掉。
+  await flushInput();
   // 走服务端的 Game.complete 而不是直接 tap('tapLeft')：协作时可能有不止一个客户端判定"打完了"，
   // 服务端按 roundId 幂等，保证一句只推进一次，不会一口气跳过好几条。
   const req = new Request({
@@ -1019,6 +1109,9 @@ const refresh = async () => {
   try {
     overlayVisible.value = true;
     pendingWordEnd = null;
+    // 内容要换了，上一条排队没发出去的输入作废（发上去只会被服务端当残留丢掉）
+    pendingInput = null;
+    staleResends = 0;
     const req = new Request({
       path: Path.game,
       headers: {'jsMethod': 'Game.answer'},
@@ -1059,10 +1152,17 @@ onMounted(async () => {
   // refresh + 加载遮罩）混用。
   client.controllers.set('typeState', async (req: Request) => {
     const state = TypeState.fromJson(req.data);
-    // 只应用当前这一轮、且比自己新的快照；自己刚发出去那条的回声会在这里被挡掉
-    if (state.roundId === roundId && state.seq > localSeq) {
-      await applyRemote(state);
+    // 只认当前这一轮、且比自己新的快照
+    if (state.roundId !== roundId || state.seq <= localSeq) {
+      return new Response();
     }
+    if (state.lastWriterUserId == store.getters.currentUserId) {
+      // 自己敲字引起的回声（广播有可能比自己那条响应先到）：本地早就是最新的了，
+      // 只把版本号对齐，绝不能拿它去重写 Typing —— 那正是"敲完的字又被抹掉"的来源。
+      localSeq = state.seq;
+      return new Response();
+    }
+    await applyRemote(state);
     return new Response();
   });
 });
