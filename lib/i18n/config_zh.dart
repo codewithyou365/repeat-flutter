@@ -9,6 +9,11 @@ class ConfigZh extends Config {
     put(I18nKey.settings, "设置");
     put(I18nKey.material, "材料");
     put(I18nKey.bookShare, "学卷分享");
+    put(I18nKey.classroomShare, "课堂分享");
+    put(I18nKey.classroomImport, "导入课堂");
+    put(I18nKey.labelClassroomImporting, "正在导入课堂…");
+    put(I18nKey.labelClassroomImportSuccess, "课堂「@0」导入成功，共 @1 本学卷");
+    put(I18nKey.labelClassroomImportFail, "课堂导入失败：@0");
     put(I18nKey.showMode, "显示模式: %s");
     put(I18nKey.closedBook, "闭卷");
     put(I18nKey.openBook, "开卷");

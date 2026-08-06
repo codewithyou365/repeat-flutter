@@ -51,6 +51,15 @@ class ScPage extends StatelessWidget {
                     title: Text(I18nKey.data.tr),
                   ),
                 ),
+                PopupMenuItem<String>(
+                  onTap: () {
+                    logic.importClassroom();
+                  },
+                  child: ListTile(
+                    leading: const Icon(Icons.download),
+                    title: Text(I18nKey.classroomImport.tr),
+                  ),
+                ),
               ],
             ),
           ),
@@ -134,6 +143,15 @@ class ScPage extends StatelessWidget {
           child: ListTile(
             leading: const Icon(Icons.swap_vert),
             title: Text(I18nKey.labelMove.tr),
+          ),
+        ),
+        PopupMenuItem<String>(
+          onTap: () {
+            Nav.scShare.push(arguments: [model]);
+          },
+          child: ListTile(
+            leading: const Icon(Icons.share),
+            title: Text(I18nKey.classroomShare.tr),
           ),
         ),
         PopupMenuItem<String>(

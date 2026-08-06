@@ -27,6 +27,8 @@ enum K {
   webviewHandlePos,
   tipServerPort,
   bluetoothStopLeadMs,
+  // K 是按 name 存的（见 KConverter），只能往后加，不能改名或删
+  classroomSharePort,
 }
 
 @Entity(primaryKeys: ['k'])

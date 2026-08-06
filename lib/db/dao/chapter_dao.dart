@@ -27,7 +27,7 @@ abstract class ChapterDao {
   @Query(
     'SELECT Chapter.id chapterId'
     ',Book.id bookId'
-    ',Book.name bookName'
+    ",ifnull(json_extract(Book.content,'\$.n'),'') bookName"
     ',Book.sort bookSort'
     ',Chapter.content chapterContent'
     ',Chapter.contentVersion chapterContentVersion'
@@ -38,6 +38,23 @@ abstract class ChapterDao {
     ' ORDER BY Chapter.bookId,Chapter.chapterIndex',
   )
   Future<List<ChapterShow>> getAllChapter(int classroomId);
+
+  /// 按书本取章节：导出/编辑一本书时不要把整个课堂的章节都拉进内存。
+  /// 和 [getAllChapter] 的区别：不过滤 Book.enable，禁用的书本也要能导出。
+  @Query(
+    'SELECT Chapter.id chapterId'
+    ',Book.id bookId'
+    ",ifnull(json_extract(Book.content,'\$.n'),'') bookName"
+    ',Book.sort bookSort'
+    ',Chapter.content chapterContent'
+    ',Chapter.contentVersion chapterContentVersion'
+    ',Chapter.chapterIndex'
+    ' FROM Chapter'
+    ' JOIN Book ON Book.id=Chapter.bookId'
+    ' WHERE Chapter.bookId=:bookId'
+    ' ORDER BY Chapter.chapterIndex',
+  )
+  Future<List<ChapterShow>> getChapterByBookId(int bookId);
 
   @Query(
     'UPDATE Chapter'

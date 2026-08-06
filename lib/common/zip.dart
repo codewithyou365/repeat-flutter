@@ -65,6 +65,36 @@ class Zip {
     }
   }
 
+  /// 流式解包：一个文件一个文件地写到磁盘。
+  /// [uncompress] 会把整个 zip 读进内存，课堂级导入（几百 MB）必须用这个。
+  static Future<void> uncompressStream(File zipFile, String destinationDir, {String? password}) async {
+    final input = InputFileStream(zipFile.path);
+    try {
+      final archive = ZipDecoder().decodeStream(input, password: password);
+      for (final file in archive) {
+        final filePath = '$destinationDir/${file.name}';
+        if (!file.isFile) {
+          await Directory(filePath).create(recursive: true);
+          continue;
+        }
+        await File(filePath).parent.create(recursive: true);
+        final output = OutputFileStream(filePath);
+        try {
+          file.writeContent(output);
+        } catch (e) {
+          if (_isPasswordError(e)) {
+            throw ZipPasswordException();
+          }
+          rethrow;
+        } finally {
+          await output.close();
+        }
+      }
+    } finally {
+      await input.close();
+    }
+  }
+
   static Future<File> compress(List<ZipArchive> files, File zipFile, {String? password}) async {
     final archive = Archive();
 
@@ -79,6 +109,26 @@ class Zip {
 
     await zipFile.writeAsBytes(zipData);
 
+    return zipFile;
+  }
+
+  /// 流式打包：一个文件一个文件地写进 zip。
+  /// [compress] 会把所有内容和整个归档都堆在内存里，课堂级导出（几百 MB 媒体）必须用这个。
+  static Future<File> compressStream(List<ZipArchive> files, File zipFile, {String? password}) async {
+    final encoder = ZipFileEncoder(password: (password?.isEmpty ?? true) ? null : password);
+    encoder.create(zipFile.path);
+    try {
+      for (final f in files) {
+        if (f.file != null) {
+          await encoder.addFile(f.file!, f.path);
+        } else if (f.bytes != null) {
+          final bytes = f.bytes!;
+          encoder.addArchiveFile(ArchiveFile(f.path, bytes.length, bytes));
+        }
+      }
+    } finally {
+      await encoder.close();
+    }
     return zipFile;
   }
 

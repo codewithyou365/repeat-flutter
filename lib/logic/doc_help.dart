@@ -105,8 +105,10 @@ class DocHelp {
     if (content == null) {
       return false;
     }
-    var verseCache = await Db().db.scheduleDao.getAllVerse(content.classroomId);
-    var chapterCache = await Db().db.chapterDao.getAllChapter(content.classroomId);
+    // 按书本取，不要拉整个课堂：课堂级导出会逐本调这里，
+    // 用课堂级查询的话每本书都要把全课堂的句子读进内存一遍。
+    var verseCache = await Db().db.scheduleDao.getVerseByBookId(bookId);
+    var chapterCache = await Db().db.chapterDao.getChapterByBookId(bookId);
 
     Map<String, dynamic> contentJson = jsonDecode(content.content);
     contentJson.forEach((k, v) {

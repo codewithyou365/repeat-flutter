@@ -9,6 +9,7 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
+import 'package:repeat_flutter/logic/model/classroom_content.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -33,7 +34,8 @@ class ImportHelp {
       return false;
     }
     book.url = url;
-    Map<String, dynamic>? jsonData = await DocHelp.toJsonMap(DocPath.getRelativeIndexPath(book.id!));
+    // 课堂导入时这本书不在 Classroom.curr 里，路径必须按书本自己的课堂算
+    Map<String, dynamic>? jsonData = await DocHelp.toJsonMap(DocPath.getRelativeIndexPathOf(book.classroomId, book.id!));
     if (jsonData == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["jsonData"]));
       return false;
@@ -53,7 +55,8 @@ class ImportHelp {
 
     Map<String, dynamic> bookContent = {};
     jsonData.forEach((k, v) {
-      if (k != 'c') {
+      // 'i' 是课堂文档给每本书带的书本 id，不是书本内容，别写进 content
+      if (k != 'c' && k != ClassroomDocField.bookId) {
         bookContent[k] = v;
       }
     });

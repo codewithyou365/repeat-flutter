@@ -400,12 +400,12 @@ abstract class ScheduleDao {
   Future<int?> getVerseProgress(int verseId);
 
   /// --- VerseReview
-  @Query("SELECT Book.name FROM Book WHERE Book.id=:bookId")
+  @Query("SELECT json_extract(Book.content,'\$.n') FROM Book WHERE Book.id=:bookId")
   Future<String?> getBookNameById(int bookId);
 
   @Query(
     "SELECT VerseReview.*"
-    ",Book.name contentName"
+    ",ifnull(json_extract(Book.content,'\$.n'),'') contentName"
     ",Verse.chapterIndex"
     ",Verse.verseIndex"
     " FROM VerseReview"
@@ -449,7 +449,7 @@ abstract class ScheduleDao {
   @Query(
     'SELECT Verse.id verseId'
     ',Book.id bookId'
-    ',Book.name bookName'
+    ",ifnull(json_extract(Book.content,'\$.n'),'') bookName"
     ',Book.sort bookSort'
     ',Verse.content verseContent'
     ',Verse.contentVersion verseContentVersion'
@@ -464,10 +464,31 @@ abstract class ScheduleDao {
   )
   Future<List<VerseShow>> getAllVerse(int classroomId);
 
+  /// 按书本取句子：导出/编辑一本书时不要把整个课堂的句子都拉进内存。
+  /// 和 [getAllVerse] 的区别：不过滤 Book.enable，禁用的书本也要能导出。
   @Query(
     'SELECT Verse.id verseId'
     ',Book.id bookId'
-    ',Book.name bookName'
+    ",ifnull(json_extract(Book.content,'\$.n'),'') bookName"
+    ',Book.sort bookSort'
+    ',Verse.content verseContent'
+    ',Verse.contentVersion verseContentVersion'
+    ',Verse.chapterId'
+    ',Verse.chapterIndex'
+    ',Verse.verseIndex'
+    ',Verse.learnDate'
+    ',Verse.progress'
+    ' FROM Verse'
+    ' JOIN Book ON Book.id=Verse.bookId'
+    ' WHERE Verse.bookId=:bookId'
+    ' ORDER BY Verse.chapterIndex,Verse.verseIndex',
+  )
+  Future<List<VerseShow>> getVerseByBookId(int bookId);
+
+  @Query(
+    'SELECT Verse.id verseId'
+    ',Book.id bookId'
+    ",ifnull(json_extract(Book.content,'\$.n'),'') bookName"
     ',Book.sort bookSort'
     ',Verse.content verseContent'
     ',Verse.contentVersion verseContentVersion'

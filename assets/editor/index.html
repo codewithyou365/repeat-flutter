@@ -373,6 +373,10 @@
 
     let defaultCurrentBook = null;
     let currentBook = null;
+    // 编辑范围，由 Book 下拉决定：选具体某本书是 'book'（/book + /commit），
+    // 选 "All books" 是 'classroom'（/classroomDoc + /classroomCommit，一份文档带全课堂）
+    let editUnit = 'book';
+    let currentClassroom = null;
 
     var editor = ace.edit("editor");
     editor.session.setMode("ace/mode/json");
@@ -399,6 +403,7 @@
         }
     });
     var bookVersion = -2;
+    var classroomVersion = '';
     var initialValue = '';
     var Vim = ace.require("ace/keyboard/vim").Vim;
     Vim.map("<Space>", "<Leader>", "normal");
@@ -945,10 +950,13 @@
         }
     }
 
+    // 选 ALL_BOOKS 就是按"整个课堂"编辑：一份文档带上这个课堂所有书的全部内容
+    const ALL_BOOKS = 'all';
+
     function loadBooksForClassroom(classroomId) {
         const selectBook = document.getElementById('select-book');
         selectBook.disabled = true;
-        selectBook.innerHTML = '<option value="">— Select book —</option>';
+        selectBook.innerHTML = `<option value="${ALL_BOOKS}">— All books —</option>`;
 
         if (!classroomId) return;
 
@@ -960,7 +968,7 @@
             opt.textContent = book.name;
             selectBook.appendChild(opt);
         });
-        selectBook.disabled = books.length === 0;
+        selectBook.disabled = false;
     }
 
     async function loadSelectedBook() {
@@ -969,6 +977,25 @@
 
         if (!cls || !book) return;
 
+        if (book === ALL_BOOKS) {
+            if (hasUncommittedChanges() &&
+                !confirm("There are uncommitted changes. Switching will discard them. Continue?")) {
+                document.getElementById('select-book').value = String(currentBook);
+                return;
+            }
+            editUnit = 'classroom';
+            try {
+                openLoading();
+                await initClassroomDoc();
+            } catch (err) {
+                alert("Failed to load classroom: " + err.message);
+            } finally {
+                closeLoading();
+            }
+            return;
+        }
+
+        editUnit = 'book';
         currentBook = Number(book);
         const newUrl = new URL(window.location);
         newUrl.searchParams.set('b', book);
@@ -984,9 +1011,12 @@
         }
     }
 
-    document.getElementById('select-classroom').addEventListener('change', (e) => {
-        const val = e.target.value;
-        loadBooksForClassroom(Number(val));
+    document.getElementById('select-classroom').addEventListener('change', async (e) => {
+        const val = Number(e.target.value);
+        currentClassroom = val;
+        // 换课堂后书本下拉重置到 "All books"，也就是直接进整课堂编辑
+        loadBooksForClassroom(val);
+        await loadSelectedBook();
     });
 
     document.getElementById('select-book').addEventListener('change', loadSelectedBook);
@@ -1005,9 +1035,30 @@
         const clsSelect = document.getElementById('select-classroom');
         if ([...clsSelect.options].some(opt => Number(opt.value) === cls)) {
             clsSelect.value = String(cls);
+            currentClassroom = cls;
             loadBooksForClassroom(cls);
             const bookSelect = document.getElementById('select-book');
             bookSelect.value = String(currentBook);
+        }
+    }
+
+    function classroomParam(p) {
+        if (!p) {
+            p = '';
+        }
+        if (currentClassroom) {
+            return p + 'c=' + currentClassroom;
+        }
+        // 没选课堂就让后端按当前书本反查它所属的课堂
+        return p + bookParam('');
+    }
+
+    function hasUncommittedChanges() {
+        try {
+            return initialValue !== JSON.stringify(JSON.parse(editor.getValue()));
+        } catch (e) {
+            // 连 JSON 都解析不了，那肯定是改过的
+            return true;
         }
     }
 
@@ -1055,6 +1106,40 @@
             dirDiv.appendChild(ul);
         } catch (err) {
             console.error("Error fetching files:", err);
+        }
+    }
+
+    // 按当前单位加载文档：单位=课堂时整个课堂一次拿回来（所有 book+chapter+verse）
+    async function initDoc() {
+        if (editUnit === 'classroom') {
+            await initClassroomDoc();
+        } else {
+            await initBook();
+        }
+    }
+
+    async function initClassroomDoc() {
+        try {
+            const res = await fetch('/classroomDoc' + classroomParam('?'), {
+                method: 'POST',
+            });
+            if (res.status !== 200) {
+                return;
+            }
+            classroomVersion = res.headers.get('classroom-cache-version') || '';
+
+            initialValue = await res.text();
+            try {
+                var parsed = JSON.parse(initialValue);
+                initialValue = JSON.stringify(parsed);
+                editor.setValue(JSON.stringify(parsed, null, 2), -1);
+            } catch (e) {
+                alert("Failed to load classroom: " + e.message);
+                return;
+            }
+            generateMenu();
+        } catch (err) {
+            console.error("Error fetching classroom doc:", err);
         }
     }
 
@@ -1162,17 +1247,22 @@
         updateHistoryBadge();
         try {
             openLoading();
-            const res = await fetch('/commit' + bookParam('?'), {
+            const classroomMode = editUnit === 'classroom';
+            const url = classroomMode ? '/classroomCommit' + classroomParam('?') : '/commit' + bookParam('?');
+            const headers = {'Content-Type': 'application/json'};
+            if (classroomMode) {
+                headers['classroom-cache-version'] = classroomVersion;
+            } else {
+                headers['book-cache-version'] = bookVersion;
+            }
+            const res = await fetch(url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'book-cache-version': bookVersion,
-                },
+                headers: headers,
                 body: JSON.stringify(jsonData)
             });
             const text = await res.text();
             alert(text);
-            await initBook();
+            await initDoc();
         } catch (err) {
             if (err.toString() === 'TypeError: Failed to fetch') {
                 alert("The network has been closed");
@@ -1305,7 +1395,7 @@
         }
         finishDealReceivedWsMsg = false;
         try {
-            await initBook();
+            await initDoc();
         } finally {
             finishDealReceivedWsMsg = true;
         }

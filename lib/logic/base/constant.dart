@@ -18,7 +18,22 @@ class DocPath {
   }
 
   static String getRelativePath(int bookId) {
-    return '${Classroom.curr}'.joinPath('$bookId');
+    return getRelativePathOf(Classroom.curr, bookId);
+  }
+
+  /// 课堂显式给出的版本。课堂导入/课堂级编辑动的不是"当前课堂"，
+  /// 这些地方必须用它，不能走 [Classroom.curr]。
+  static String getRelativePathOf(int classroomId, int bookId) {
+    return '$classroomId'.joinPath('$bookId');
+  }
+
+  static String getRelativeIndexPathOf(int classroomId, int bookId) {
+    return getRelativePathOf(classroomId, bookId).joinPath(getIndexFileName());
+  }
+
+  /// 课堂自己的目录（课堂级 index.json、导入暂存都放这里）
+  static String getClassroomRelativePath(int classroomId) {
+    return '$classroomId';
   }
 
   static Future<String> getContentPath() async {

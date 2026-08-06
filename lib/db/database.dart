@@ -72,11 +72,13 @@ import 'migration/m11_12.dart';
 import 'migration/m12_13.dart';
 import 'migration/m13_14.dart';
 import 'migration/m14_15.dart';
+import 'migration/m15_16.dart';
+import 'migration/m16_17.dart';
 
 part 'database.g.dart'; // the generated code will be there
 
 @Database(
-  version: 15,
+  version: 17,
   entities: [
     Book,
     BookContentVersion,
@@ -190,6 +192,8 @@ class Db {
         m12_13,
         m13_14,
         m14_15,
+        m15_16,
+        m16_17,
       ]).build();
       log("Database path: \n${await sqflite.getDatabasesPath()}/$fileName");
     }

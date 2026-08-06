@@ -26,6 +26,7 @@ import 'book_editor_page.dart';
 import 'book_editor_state.dart';
 import 'logic/book.dart';
 import 'logic/browse.dart';
+import 'logic/classroom_doc.dart';
 import 'logic/commit.dart';
 import 'logic/delete.dart';
 import 'logic/play.dart';
@@ -276,6 +277,10 @@ class BookEditorLogic<T extends GetxController> {
       await handleCommit(request, state.bookId);
     } else if (path == '/book' && request.method == 'POST') {
       await handleBook(request, state.bookId);
+    } else if (path == '/classroomDoc' && request.method == 'POST') {
+      await handleClassroomDoc(request, state.bookId);
+    } else if (path == '/classroomCommit' && request.method == 'POST') {
+      await handleClassroomCommit(request, state.bookId);
     } else if (path == '/getVimMode' && request.method == 'POST') {
       await handleGetEditorStatus(request, K.bookAdvancedEditorVimMode);
     } else if (path == '/setVimMode' && request.method == 'POST') {
@@ -314,6 +319,9 @@ class BookEditorLogic<T extends GetxController> {
       if (path.endsWith(".html")) {
         response.headers.contentType = ContentType.html;
       }
+      // 这些文件是随 App 一起打包的，App 一升级内容就变了，但 URL 不变。
+      // 之前没发任何缓存头，浏览器会按启发式规则自己缓存，升级后页面还是旧的。
+      response.headers.set(HttpHeaders.cacheControlHeader, 'no-store, must-revalidate');
       ByteData content = await rootBundle.load('assets/editor'.joinPath(path));
       String str = utf8.decode(content.buffer.asUint8List());
       response.write(str);

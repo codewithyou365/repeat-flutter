@@ -31,7 +31,8 @@ abstract class BookDao {
   @Query(
     'SELECT id bookId'
     ',classroomId'
-    ',name'
+    // 名字可能还没写进 content（刚建的空书），BookShow.name 不可空，兜个空串
+    ",ifnull(json_extract(content,'\$.n'),'') name"
     ',sort'
     ',content bookContent'
     ',contentVersion bookContentVersion'
@@ -55,7 +56,8 @@ abstract class BookDao {
   @Query('SELECT * FROM Book WHERE id=:id')
   Future<Book?> getById(int id);
 
-  @Query('SELECT * FROM Book WHERE classroomId=:classroomId and name=:name')
+  // 书名不是列了，存在 content 的 'n' 里，只能靠 json_extract 查
+  @Query("SELECT * FROM Book WHERE classroomId=:classroomId and json_extract(content,'\$.n')=:name")
   Future<Book?> getBookByName(int classroomId, String name);
 
   @Query('UPDATE Book set content=:content,contentVersion=:contentVersion WHERE Book.id=:id')
@@ -158,11 +160,11 @@ abstract class BookDao {
       var now = DateTime.now().millisecondsSinceEpoch;
       ret = Book(
         classroomId: Classroom.curr,
-        name: name,
         desc: '',
         enable: false,
         url: '',
-        content: '',
+        // 书名不是列，建库就得写进 content
+        content: Book.withName('{}', name),
         contentVersion: 0,
         sort: sort,
         createTime: now,
@@ -171,6 +173,37 @@ abstract class BookDao {
       await insertBook(ret);
     }
     return ret;
+  }
+
+  /// 和 [add] 一样建一本空书，但课堂由参数给，不看 Classroom.curr —— 课堂导入/课堂级
+  /// 网络编辑动的都不是"当前课堂"。重名和 [add] 一样直接抛。
+  /// 返回的 Book 带 id（[add] 不带），调用方接着就要用它。
+  @transaction
+  Future<Book> addTo(int classroomId, String name) async {
+    if (await getBookByName(classroomId, name) != null) {
+      Snackbar.showAndThrow(I18nKey.labelBookNameDuplicated.tr);
+    }
+    var maxSort = await getMaxSort(classroomId);
+    var sort = await Num.getNextId(maxSort, id: classroomId, existById2: existBySort);
+    var now = DateTime.now().millisecondsSinceEpoch;
+    await insertBook(
+      Book(
+        classroomId: classroomId,
+        desc: '',
+        enable: false,
+        url: '',
+        content: Book.withName('{}', name),
+        contentVersion: 0,
+        sort: sort,
+        createTime: now,
+        updateTime: now,
+      ),
+    );
+    var ret = await getBookByName(classroomId, name);
+    if (ret == null) {
+      Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(["book"]));
+    }
+    return ret!;
   }
 
   Future<void> create(int bookId, String content) async {
@@ -183,6 +216,11 @@ abstract class BookDao {
 
   @transaction
   Future<Book> innerCreate(int bookId, String content) async {
+    // 书名也在 content 里，整段换掉会把建书时填的名字冲掉，这里补回去
+    var old = await getById(bookId);
+    if (old != null && old.name.isNotEmpty) {
+      content = Book.withName(content, old.name);
+    }
     return await _innerUpdateBookContent(bookId: bookId, content: content, enable: true);
   }
 

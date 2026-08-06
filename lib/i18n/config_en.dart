@@ -9,6 +9,11 @@ class ConfigEn extends Config {
     put(I18nKey.settings, "Settings");
     put(I18nKey.material, "Material");
     put(I18nKey.bookShare, "Book Share");
+    put(I18nKey.classroomShare, "Classroom Share");
+    put(I18nKey.classroomImport, "Import Classroom");
+    put(I18nKey.labelClassroomImporting, "Importing classroom...");
+    put(I18nKey.labelClassroomImportSuccess, "Classroom \"@0\" imported, @1 book(s)");
+    put(I18nKey.labelClassroomImportFail, "Classroom import failed: @0");
     put(I18nKey.edit, "Edit");
     put(I18nKey.editWhat, "Edit %s");
     put(I18nKey.showMode, "Show Mode: %s");
