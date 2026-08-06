@@ -488,5 +488,19 @@ class ConfigEn extends Config {
     put(I18nKey.labelLegendLearn, "Learn");
     put(I18nKey.labelLegendReview, "Review");
     put(I18nKey.statisticTrend, "Stats Overview");
+    put(I18nKey.manageGame, "Manage Game");
+    put(I18nKey.gameEmpty, "No game yet");
+    put(I18nKey.gameName, "Game name");
+    put(I18nKey.gameKey, "Game key");
+    put(I18nKey.gameService, "Entry file");
+    put(I18nKey.gameZip, "Game package");
+    put(I18nKey.gameReplaceZip, "Replace package");
+    put(I18nKey.gameReady, "Ready");
+    put(I18nKey.gameNotUnpacked, "Not unpacked");
+    put(I18nKey.gameZipMissing, "Package missing");
+    put(I18nKey.gameNameDuplicated, "Duplicated game name");
+    put(I18nKey.gameNameEmpty, "Game name is empty");
+    put(I18nKey.gameUnzipFailed, "Failed to unpack the game package");
+    put(I18nKey.gameDeleteConfirm, "Delete this game? Its package files will be removed too.");
   }
 }

@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:repeat_flutter/page/content/content_nav.dart';
 import 'package:repeat_flutter/page/editor/editor_nav.dart';
+import 'package:repeat_flutter/page/game_list/game_list_nav.dart';
 import 'package:repeat_flutter/page/media_list/media_list_nav.dart';
 import 'package:repeat_flutter/page/repeat/repeat_nav.dart';
 import 'package:repeat_flutter/page/sc/sc_nav.dart';
@@ -26,6 +27,7 @@ import 'package:repeat_flutter/page/webview/webview_nav.dart';
 enum Nav {
   content("/content"),
   editor("/editor"),
+  gameList("/game/list"),
   mediaList("/media/list"),
   repeat("/repeat"),
   sc("/sc"),
@@ -75,6 +77,7 @@ enum Nav {
   static final List<GetPage> getPages = [
     contentNav(content.path),
     editorNav(editor.path),
+    gameListNav(gameList.path),
     mediaListNav(mediaList.path),
     repeatNav(repeat.path),
     scNav(sc.path),

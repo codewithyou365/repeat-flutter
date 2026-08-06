@@ -486,6 +486,20 @@ enum I18nKey {
   labelLegendLearn,
   labelLegendReview,
   statisticTrend,
+  manageGame,
+  gameEmpty,
+  gameName,
+  gameKey,
+  gameService,
+  gameZip,
+  gameReplaceZip,
+  gameReady,
+  gameNotUnpacked,
+  gameZipMissing,
+  gameNameDuplicated,
+  gameNameEmpty,
+  gameUnzipFailed,
+  gameDeleteConfirm,
   none;
 
   String trArgs([List<String> args = const []]) {

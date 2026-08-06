@@ -486,5 +486,19 @@ class ConfigZh extends Config {
     put(I18nKey.labelLegendLearn, "学习");
     put(I18nKey.labelLegendReview, "复习");
     put(I18nKey.statisticTrend, "统计概览");
+    put(I18nKey.manageGame, "管理游戏");
+    put(I18nKey.gameEmpty, "还没有游戏");
+    put(I18nKey.gameName, "游戏名称");
+    put(I18nKey.gameKey, "游戏Key");
+    put(I18nKey.gameService, "入口文件");
+    put(I18nKey.gameZip, "游戏包");
+    put(I18nKey.gameReplaceZip, "更换游戏包");
+    put(I18nKey.gameReady, "已就绪");
+    put(I18nKey.gameNotUnpacked, "未解压");
+    put(I18nKey.gameZipMissing, "缺少游戏包");
+    put(I18nKey.gameNameDuplicated, "游戏名称重复");
+    put(I18nKey.gameNameEmpty, "游戏名称不能为空");
+    put(I18nKey.gameUnzipFailed, "游戏包解压失败");
+    put(I18nKey.gameDeleteConfirm, "删除该游戏？游戏包文件也会一并删除。");
   }
 }

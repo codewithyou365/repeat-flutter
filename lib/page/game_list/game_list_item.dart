@@ -1,0 +1,44 @@
+/// 课堂里的一个游戏，来自 [Classroom.content] 的 'g' 数组里的一条。
+///
+/// [index] 是它在 'g' 数组里的下标，所有写操作都按这个下标定位原始 map，
+/// 这样能就地改字段、保住 'i' 和别的未知 key。
+class GameItem {
+  final int index;
+
+  /// 'i'：App 回写的 Game.id。改名要保住它，否则 registerRes 会走"删旧建新"，
+  /// 游戏存档和分数就没了。
+  final int? id;
+
+  /// 'h'：指向课堂 'd' 里那个 zip 的 sha1。
+  final String hash;
+
+  /// 'n' 游戏名，课堂内唯一。
+  final String name;
+
+  /// 'k' 游戏 key。
+  final String key;
+
+  /// 's' 入口 js 文件。
+  final String service;
+
+  /// zip 在课堂 'd' 里的原始文件名，'d' 里找不到就是 null。
+  final String? zipName;
+
+  /// zip 文件本身在不在磁盘上。
+  final bool zipExists;
+
+  /// zip 解压出来的目录在不在。游戏能不能跑看这个。
+  final bool unpacked;
+
+  GameItem({
+    required this.index,
+    required this.id,
+    required this.hash,
+    required this.name,
+    required this.key,
+    required this.service,
+    required this.zipName,
+    required this.zipExists,
+    required this.unpacked,
+  });
+}
