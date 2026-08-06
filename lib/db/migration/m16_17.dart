@@ -5,7 +5,9 @@ import 'package:floor/floor.dart';
 /// 书名从 Book.name 这一列搬进 Book.content 的 'n'。
 ///
 /// 这样网络编辑的课堂文档里改书名就是改内容本身，不用再单独维护一套书本元数据。
-/// SQL 那边取书名一律改成 `json_extract(Book.content,'$.n')`。
+/// SQL 里不再有书名：BookShow 自己带着 content 直接解析，ChapterShow / VerseShow
+/// 按 bookId 从 BookHelp 缓存里查。不用 json_extract 是因为 JSON1 扩展
+/// Android 11 以下没有，而 minSdk 是 24。
 ///
 /// 搬名字这一步在 Dart 里做，不用 json_set()：老设备的 SQLite 不一定带 JSON1，
 /// 而且有些书的 content 是空串（BookDao.add 建出来的空书），json_set 遇到它会返回 NULL 把内容清掉。

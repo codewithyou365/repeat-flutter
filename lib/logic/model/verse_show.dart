@@ -1,12 +1,12 @@
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
+import 'package:repeat_flutter/logic/book_help.dart';
 
 @Entity(tableName: "")
 class VerseShow {
   @primaryKey
   final int verseId;
   final int bookId;
-  final String bookName;
   final int bookSort;
   String verseContent;
   int verseContentVersion;
@@ -19,7 +19,6 @@ class VerseShow {
   VerseShow({
     required this.verseId,
     required this.bookId,
-    required this.bookName,
     required this.bookSort,
     required this.verseContent,
     required this.verseContentVersion,
@@ -29,6 +28,10 @@ class VerseShow {
     required this.learnDate,
     required this.progress,
   });
+
+  /// 书名不是数据库列了，JOIN 不出来，按 bookId 从书本缓存里查。
+  /// [VerseHelp.tryGen] 会先把 [BookHelp] 生成好，这里一定拿得到。
+  String get bookName => BookHelp.getCache(bookId)?.name ?? '';
 
   String toChapterPos() {
     return '$bookName-${chapterIndex + 1}';
@@ -46,7 +49,6 @@ class VerseShow {
     return VerseShow(
       verseId: verseId,
       bookId: bookId,
-      bookName: bookName,
       bookSort: bookSort,
       verseContent: verseContent,
       verseContentVersion: verseContentVersion,

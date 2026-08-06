@@ -5,6 +5,7 @@ import 'dart:convert' as convert;
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
@@ -400,12 +401,21 @@ abstract class ScheduleDao {
   Future<int?> getVerseProgress(int verseId);
 
   /// --- VerseReview
-  @Query("SELECT json_extract(Book.content,'\$.n') FROM Book WHERE Book.id=:bookId")
-  Future<String?> getBookNameById(int bookId);
+  @Query("SELECT content FROM Book WHERE Book.id=:bookId")
+  Future<String?> getBookContentById(int bookId);
+
+  /// 书名在 content 的 'n' 里，取回来在 Dart 里解析 ——
+  /// SQL 的 json_extract 要 JSON1 扩展，Android 11 以下没有。
+  Future<String?> getBookNameById(int bookId) async {
+    var content = await getBookContentById(bookId);
+    if (content == null) {
+      return null;
+    }
+    return Book.nameOf(content);
+  }
 
   @Query(
     "SELECT VerseReview.*"
-    ",ifnull(json_extract(Book.content,'\$.n'),'') contentName"
     ",Verse.chapterIndex"
     ",Verse.verseIndex"
     " FROM VerseReview"
@@ -449,7 +459,6 @@ abstract class ScheduleDao {
   @Query(
     'SELECT Verse.id verseId'
     ',Book.id bookId'
-    ",ifnull(json_extract(Book.content,'\$.n'),'') bookName"
     ',Book.sort bookSort'
     ',Verse.content verseContent'
     ',Verse.contentVersion verseContentVersion'
@@ -469,7 +478,6 @@ abstract class ScheduleDao {
   @Query(
     'SELECT Verse.id verseId'
     ',Book.id bookId'
-    ",ifnull(json_extract(Book.content,'\$.n'),'') bookName"
     ',Book.sort bookSort'
     ',Verse.content verseContent'
     ',Verse.contentVersion verseContentVersion'
@@ -488,7 +496,6 @@ abstract class ScheduleDao {
   @Query(
     'SELECT Verse.id verseId'
     ',Book.id bookId'
-    ",ifnull(json_extract(Book.content,'\$.n'),'') bookName"
     ',Book.sort bookSort'
     ',Verse.content verseContent'
     ',Verse.contentVersion verseContentVersion'

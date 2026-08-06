@@ -1,5 +1,6 @@
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/logic/book_help.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 
 class ChapterHelp {
@@ -9,6 +10,8 @@ class ChapterHelp {
 
   static tryGen({force = false}) async {
     if (cache.isEmpty || force) {
+      // ChapterShow.bookName 是按 bookId 从书本缓存里查的，先把它备好
+      await BookHelp.tryGen(force: force);
       cache = await Db().db.chapterDao.getAllChapter(Classroom.curr);
       chapterIdToShow = {for (var chapter in cache) chapter.chapterId: chapter};
       bookIdAndChapterIndexToShow = {for (var chapter in cache) '${chapter.bookId}_${chapter.chapterIndex}': chapter};

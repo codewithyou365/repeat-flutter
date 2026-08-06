@@ -27,7 +27,6 @@ abstract class ChapterDao {
   @Query(
     'SELECT Chapter.id chapterId'
     ',Book.id bookId'
-    ",ifnull(json_extract(Book.content,'\$.n'),'') bookName"
     ',Book.sort bookSort'
     ',Chapter.content chapterContent'
     ',Chapter.contentVersion chapterContentVersion'
@@ -44,7 +43,6 @@ abstract class ChapterDao {
   @Query(
     'SELECT Chapter.id chapterId'
     ',Book.id bookId'
-    ",ifnull(json_extract(Book.content,'\$.n'),'') bookName"
     ',Book.sort bookSort'
     ',Chapter.content chapterContent'
     ',Chapter.contentVersion chapterContentVersion'

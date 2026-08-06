@@ -1,6 +1,7 @@
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 
+import 'book_help.dart';
 import 'model/verse_show.dart';
 
 class QueryChapter {
@@ -20,6 +21,8 @@ class VerseHelp {
 
   static tryGen({force = false, QueryChapter? query}) async {
     if (cache.isEmpty || force || query != null) {
+      // VerseShow.bookName 是按 bookId 从书本缓存里查的，先把它备好
+      await BookHelp.tryGen(force: force);
       if (query != null) {
         if (query.chapterIndex != null) {
           List<VerseShow> chapterVerse = await Db().db.scheduleDao.getVerseByChapterIndex(query.bookId, query.chapterIndex!);

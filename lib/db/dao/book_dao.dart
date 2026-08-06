@@ -31,8 +31,6 @@ abstract class BookDao {
   @Query(
     'SELECT id bookId'
     ',classroomId'
-    // 名字可能还没写进 content（刚建的空书），BookShow.name 不可空，兜个空串
-    ",ifnull(json_extract(content,'\$.n'),'') name"
     ',sort'
     ',content bookContent'
     ',contentVersion bookContentVersion'
@@ -56,9 +54,18 @@ abstract class BookDao {
   @Query('SELECT * FROM Book WHERE id=:id')
   Future<Book?> getById(int id);
 
-  // 书名不是列了，存在 content 的 'n' 里，只能靠 json_extract 查
-  @Query("SELECT * FROM Book WHERE classroomId=:classroomId and json_extract(content,'\$.n')=:name")
-  Future<Book?> getBookByName(int classroomId, String name);
+  /// 书名不是列了（存在 content 的 'n' 里），SQL 查不了 —— 用 json_extract 的话
+  /// 要 SQLite 的 JSON1 扩展，Android 11 以下没有。一个课堂的书本就那么几本，
+  /// 全捞出来在 Dart 里比。
+  Future<Book?> getBookByName(int classroomId, String name) async {
+    final books = await getAll(classroomId);
+    for (final book in books) {
+      if (book.name == name) {
+        return book;
+      }
+    }
+    return null;
+  }
 
   @Query('UPDATE Book set content=:content,contentVersion=:contentVersion WHERE Book.id=:id')
   Future<void> updateBookContentVersion(int id, String content, int contentVersion);

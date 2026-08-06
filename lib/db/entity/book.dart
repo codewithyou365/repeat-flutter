@@ -51,7 +51,9 @@ class Book {
 
   /// 书名。**不是数据库列**，就存在 [content] 的 'n' 里，
   /// 这样网络编辑的课堂文档里改书名就是改内容，不用另外一套元数据。
-  /// SQL 那边取书名用 `json_extract(Book.content,'$bookNameKey')`。
+  /// SQL 里查不到书名 —— 用 json_extract 的话要 SQLite 的 JSON1 扩展，
+  /// Android 11 以下没有，而 minSdk 是 24。所以 BookShow 自己带着 content 直接解析，
+  /// ChapterShow / VerseShow 按 bookId 从 BookHelp 缓存里查。
   String get name {
     if (!identical(nameCacheSource, content)) {
       nameCacheSource = content;
