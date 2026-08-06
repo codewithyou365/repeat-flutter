@@ -151,7 +151,7 @@ class ScPage extends StatelessWidget {
           },
           child: ListTile(
             leading: const Icon(Icons.share),
-            title: Text(I18nKey.classroomShare.tr),
+            title: Text(I18nKey.share.tr),
           ),
         ),
         PopupMenuItem<String>(
