@@ -27,6 +27,10 @@ class ScCrMaterialPage extends StatelessWidget {
             onTap: logic.showSearch,
             child: Text(I18nKey.searchMaterial.tr),
           ),
+          PopupMenuItem<String>(
+            onTap: logic.showAdvancedEdit,
+            child: Text(I18nKey.advancedEdit.tr),
+          ),
         ]),
       ),
       body: GetBuilder<ScCrMaterialLogic>(

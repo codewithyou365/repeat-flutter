@@ -22,7 +22,6 @@ import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'book_editor_args.dart';
-import 'book_editor_page.dart';
 import 'book_editor_state.dart';
 import 'logic/book.dart';
 import 'logic/browse.dart';
@@ -40,9 +39,7 @@ class BookEditorLogic<T extends GetxController> {
   RxInt port = defaultPort.obs;
   static const String id = "BookEditorLogic";
   final BookEditorState state = BookEditorState();
-  final BookEditorPage page = BookEditorPage<T>();
   Directory? editorDir;
-  Future<void> Function()? onExpand;
   final T parentLogic;
   late final WebServer server;
   final SubList<int> bookVersionSub = [];
@@ -77,13 +74,17 @@ class BookEditorLogic<T extends GetxController> {
     bookVersionWithVerseSub.off();
   }
 
-  Future<void> open(BookEditorArgs args) async {
+  /// 打开网络前设置这次编辑的落点（哪本书、第几章第几句），
+  /// 从材料页进来时没有具体句子，只给 bookId 就行。
+  void setArgs(BookEditorArgs args) {
     state.args = args;
+  }
+
+  Future<void> initPort() async {
     port.value = await Db().db.kvDao.getIntWithDefault(K.bookEditorPort, port.value);
     if (port.value > 50000) {
       port.value = defaultPort;
     }
-    await page.open(this);
   }
 
   String get title {
@@ -117,6 +118,7 @@ class BookEditorLogic<T extends GetxController> {
   Future<void> switchWeb(bool enable) async {
     state.addresses.clear();
     if (enable) {
+      await initPort();
       state.chapterIndex = state.args.chapterIndex;
       state.verseIndex = state.args.verseIndex;
       state.bookId = state.args.bookId;

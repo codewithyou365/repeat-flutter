@@ -7,6 +7,7 @@ import 'package:repeat_flutter/page/sc/sc_nav.dart';
 import 'package:repeat_flutter/page/sc_cr/sc_cr_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_material/sc_cr_material_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_material_add_chapter/sc_cr_material_add_chapter_nav.dart';
+import 'package:repeat_flutter/page/sc_cr_material_edit/sc_cr_material_edit_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_material_search/sc_cr_material_search_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_material_share/sc_cr_material_share_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_settings_el/sc_cr_settings_el_nav.dart';
@@ -31,6 +32,7 @@ enum Nav {
   scCr("/sc/cr"),
   scCrMaterial("/sc/cr/material"),
   scCrMaterialAddChapter("/sc/cr/material/add/chapter"),
+  scCrMaterialEdit("/sc/cr/material/edit"),
   scCrMaterialSearch("/sc/cr/material/search"),
   scCrMaterialShare("/sc/cr/material/share"),
   scCrSettingsEl("/sc/cr/settings/el"),
@@ -79,6 +81,7 @@ enum Nav {
     scCrNav(scCr.path),
     scCrMaterialNav(scCrMaterial.path),
     scCrMaterialAddChapterNav(scCrMaterialAddChapter.path),
+    scCrMaterialEditNav(scCrMaterialEdit.path),
     scCrMaterialSearchNav(scCrMaterialSearch.path),
     scCrMaterialShareNav(scCrMaterialShare.path),
     scCrSettingsElNav(scCrSettingsEl.path),

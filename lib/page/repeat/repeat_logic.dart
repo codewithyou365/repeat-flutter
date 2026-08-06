@@ -18,8 +18,6 @@ import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/classroom_help.dart';
 import 'package:repeat_flutter/logic/model/lazy_verse_today_prg_list.dart';
-import 'package:repeat_flutter/logic/verse_help.dart';
-import 'package:repeat_flutter/logic/widget/book_editor/book_editor_args.dart';
 import 'package:repeat_flutter/logic/widget/text_template.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_logic.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_sheet.dart';
@@ -34,7 +32,6 @@ import 'package:repeat_flutter/logic/widget/webview/webview_args.dart';
 import 'package:repeat_flutter/logic/widget/webview/webview_logic.dart';
 import 'package:repeat_flutter/logic/widget/tip/tip_logic.dart';
 import 'package:repeat_flutter/nav.dart';
-import 'package:repeat_flutter/logic/widget/book_editor/book_editor_logic.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
 import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/page/repeat/logic/tts_helper.dart';
@@ -86,7 +83,6 @@ class RepeatLogic extends GetxController {
   late GameLogic<RepeatLogic> gameLogic;
   late TipLogic<RepeatLogic> tipLogic;
   late SessionCoordinator gameHelper;
-  late BookEditorLogic bookEditor = BookEditorLogic<RepeatLogic>(this);
   late final AssistiveTouchLogic assistiveTouchLogic = AssistiveTouchLogic(this);
   late final GamepadLogic gamepadLogic = GamepadLogic(this);
 
@@ -127,7 +123,6 @@ class RepeatLogic extends GetxController {
     copyLogic.init();
     expandSheet.init();
     expandSheet.logic.onPlayTarget = assistiveTouchLogic.playTarget;
-    bookEditor.onExpand = openExpand;
     var args = Get.arguments as RepeatArgs;
     saveGlobalBrowsePosition = args.saveGlobalBrowsePosition;
     displayModeSource = args.displayModeSource;
@@ -299,7 +294,6 @@ class RepeatLogic extends GetxController {
     }
     state.helper.onClose();
     await state.helper.mediaShareLogic.switchWeb(false);
-    await bookEditor.switchWeb(false);
     SystemChrome.setSystemUIChangeCallback(null);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     WakelockPlus.disable();
@@ -381,26 +375,6 @@ class RepeatLogic extends GetxController {
   Future<void> openGamepadBinding() async {
     await GamepadBindingSheet.open(gamepadLogic);
     update([RepeatLogic.id]);
-  }
-
-  void openAdvancedEditor() async {
-    var curr = getCurr();
-    if (curr == null) {
-      return;
-    }
-    var verse = VerseHelp.getCache(curr.verseId);
-    if (verse == null) {
-      return;
-    }
-    state.helper.stopMedia(false);
-    await bookEditor.open(
-      BookEditorArgs(
-        bookId: verse.bookId,
-        chapterIndex: verse.chapterIndex,
-        verseIndex: verse.verseIndex,
-      ),
-    );
-    state.helper.stopMedia(true);
   }
 
   void adjustProgress() async {

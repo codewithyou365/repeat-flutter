@@ -11,7 +11,7 @@ class Address {
 
 class BookEditorState {
   final List<Address> addresses = <Address>[];
-  late BookEditorArgs args;
+  BookEditorArgs args = BookEditorArgs(bookId: 0, chapterIndex: 0, verseIndex: 0);
 
   int chapterIndex = 0;
   int verseIndex = 0;

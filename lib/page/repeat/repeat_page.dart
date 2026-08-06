@@ -202,11 +202,6 @@ class RepeatPage extends StatelessWidget {
                 active: state.helper.focusMode,
               ),
               buildMenuItem(
-                label: I18nKey.advancedEdit.tr,
-                onTap: logic.openAdvancedEditor,
-                active: logic.bookEditor.state.webStart,
-              ),
-              buildMenuItem(
                 label: I18nKey.assistiveTouch.tr,
                 onTap: logic.openAssistiveTouch,
                 active: logic.assistiveTouchLogic.enabled,
