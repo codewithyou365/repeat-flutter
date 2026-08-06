@@ -84,7 +84,16 @@ Future<void> handleClassroomCommit(HttpRequest request, int defaultBookId) async
     await rawSink.addStream(request);
     await rawSink.close();
 
-    // 2. 版本一致才动库，和单本 /commit 一个规矩
+    // 2. 课堂入口只收课堂文档。这里"少一本书"是有语义的（见第 5 步），
+    //    单本文档发到这里会被当成整个课堂只剩这一本，所以先把单位对上。
+    final editUnit = Util.getEditUnit(request);
+    if (editUnit != null && editUnit != EditUnit.classroom) {
+      response.statusCode = HttpStatus.badRequest;
+      response.write('Commit failed: this is the classroom endpoint but the document is "$editUnit".');
+      return;
+    }
+
+    // 3. 版本一致才动库，和单本 /commit 一个规矩
     final currentVersion = await classroomCacheVersion(classroomId);
     if (versionHeader.isEmpty || versionHeader.first != currentVersion) {
       response.statusCode = HttpStatus.ok;
@@ -92,7 +101,7 @@ Future<void> handleClassroomCommit(HttpRequest request, int defaultBookId) async
       return;
     }
 
-    // 3. 按书切开，每本书一个文件
+    // 4. 按书切开，每本书一个文件
     final splitter = JsonSplitter(
       outDir: stagingPath.joinPath('books'),
       arrayKey: ClassroomDocField.books,
@@ -102,8 +111,14 @@ Future<void> handleClassroomCommit(HttpRequest request, int defaultBookId) async
       response.write('Commit failed: the document must be an object with a "${ClassroomDocField.books}" array.');
       return;
     }
+    // 课堂文档的课堂内容就在顶层，不该再套一层 'cr'（那是单本文档的写法）
+    if (splitter.head.containsKey(ClassroomDocField.classroom)) {
+      response.statusCode = HttpStatus.badRequest;
+      response.write('Commit failed: "${ClassroomDocField.classroom}" belongs to a single book document, the classroom content is already at the top level here.');
+      return;
+    }
 
-    // 4. 先扫一遍每本书的 id：书本是不是本课堂的、有没有书被整本删掉。
+    // 5. 先扫一遍每本书的 id：书本是不是本课堂的、有没有书被整本删掉。
     //    这些必须在动库之前查清楚，不然改到一半才发现就回不去了。
     final existingBooks = await Db().db.bookDao.getAll(classroomId);
     final existingIds = existingBooks.map((e) => e.id!).toSet();
@@ -135,10 +150,10 @@ Future<void> handleClassroomCommit(HttpRequest request, int defaultBookId) async
       return;
     }
 
-    // 5. 课堂自己的内容
+    // 6. 课堂自己的内容
     await Db().db.classroomDao.updateContent(classroomId, jsonEncode(splitter.head));
 
-    // 6. 一本一本落库
+    // 7. 一本一本落库
     final List<Map<String, dynamic>> results = [];
     for (var i = 0; i < splitter.elementPaths.length; i++) {
       final doc = jsonDecode(await File(splitter.elementPaths[i]).readAsString()) as Map<String, dynamic>;

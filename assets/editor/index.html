@@ -1252,7 +1252,9 @@
             openLoading();
             const classroomMode = editUnit === 'classroom';
             const url = classroomMode ? '/classroomCommit' + classroomParam('?') : '/commit' + bookParam('?');
-            const headers = {'Content-Type': 'application/json'};
+            // 明确告诉后端这份文档是按哪个单位编辑的：课堂文档里少一本书 = 要删那本书，
+            // 单本文档没有这回事，后端不能靠猜，对不上就整份不收
+            const headers = {'Content-Type': 'application/json', 'edit-unit': editUnit};
             if (classroomMode) {
                 headers['classroom-cache-version'] = classroomVersion;
             } else {
