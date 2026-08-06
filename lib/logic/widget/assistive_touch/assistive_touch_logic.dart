@@ -530,7 +530,7 @@ class AssistiveTouchLogic {
 
   /// [inputs] 传了（哪怕是空 list）就当程序级调用：不弹框，直接拿它当 input1..inputN，
   /// 不够的补空串、多的丢掉（游戏走这条，见 js_runtime 的 assistiveTouchTap）。
-  /// 不传则是人点的：inputCount > 0 时弹框让用户依次填，取消就整个不执行。
+  /// 不传则是人点的：模版里写了参数时弹框让用户依次填，取消就整个不执行。
   Future<void> executeAction(AssistiveTouchAction action, {List<String>? inputs}) async {
     final verse = repeatLogic.state.helper.getCurrVerse();
     final map = repeatLogic.state.helper.getCurrVerseMap();
@@ -538,28 +538,28 @@ class AssistiveTouchLogic {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
+    // 要哪几个参数是从模版里的 {{inputN}} 扫出来的，不再存库。
+    final inputNumbers = ExpandLogic.inputNumbersOf(action.template);
     var values = inputs;
-    if (action.inputCount > 0 && values == null) {
-      values = await ExpandInputSheet.open(action.name, action.inputCount);
+    if (inputNumbers.isNotEmpty && values == null) {
+      values = await ExpandInputSheet.open(action.name, inputNumbers);
       if (values == null) {
         return;
       }
     }
-    final inputMap = ExpandLogic.inputsOf(ExpandLogic.normalizeInputs(values, action.inputCount));
+    final inputMap = ExpandLogic.inputsOf(inputNumbers, values);
     final logic = ExpandLogic();
     await logic.loadSettings();
     logic.bookId = verse.bookId;
     logic.verseId = verse.verseId;
     logic.verseMap = map;
-    logic.sourceIndex.value = action.sourceIndex;
     logic.targetIndex.value = action.targetIndex;
     logic.enableAudio.value = action.enableAudio;
     logic.behavior.value = ExpandBehavior.values[action.behavior.clamp(0, ExpandBehavior.values.length - 1)];
     logic.onPlayTarget = playTarget;
-    // instructionText 不是固定字符串：用保存的 templateIndex 对当前小节的来源文本重新渲染模版，
+    // instructionText 不是固定字符串：模版里的 {{question}}/{{answer}}/{{tip1}}.. 每次都按当前小节渲染，
     // 这样同一个预设对不同小节执行时取的是各自的文本，而不是创建预设那一刻冻结的内容。
-    final renderedList = repeatLogic.copyLogic.getShowText(logic.getSourceText(), inputs: inputMap);
-    final instructionText = renderedList.isEmpty ? '' : renderedList[action.templateIndex.clamp(0, renderedList.length - 1)];
+    final instructionText = logic.render(action.template, inputs: inputMap);
     await logic.execute(instructionText, closeOnSuccess: false);
   }
 
@@ -570,7 +570,7 @@ class AssistiveTouchLogic {
   /// （见 VerseField.embedInstruction），拿模版反着一比就能把 input1 抠出来。
   ///
   /// 做法是先用哨兵渲染一遍模版，得到「前缀 + 哨兵 + 后缀」，再拿前后缀去掐上次的指令——
-  /// 这样模版里的 {{text}} 等其它占位符怎么渲染都不用管，它们两边渲染出来是一样的。
+  /// 这样模版里的 {{answer}} 等其它占位符怎么渲染都不用管，它们两边渲染出来是一样的。
   ///
   /// 只认 input1（这个入口是给游戏的「单词累积提问」用的，动作按约定只有一个参数）。
   /// 没执行过、指令没存过、模版里没写 {{input1}}、模版改过对不上，都返回 null。
@@ -581,19 +581,14 @@ class AssistiveTouchLogic {
     }
     final logic = ExpandLogic();
     logic.verseMap = map;
-    logic.sourceIndex.value = action.sourceIndex;
     final instruction = VerseField.getInstruction(map, logic.toFieldRef(action.targetIndex));
     if (instruction == null) {
       return null;
     }
-    final rendered = repeatLogic.copyLogic.getShowText(
-      logic.getSourceText(),
-      inputs: {ExpandLogic.inputKey(0): _input1Sentinel},
+    final pattern = logic.render(
+      action.template,
+      inputs: {ExpandLogic.inputKeyOf(1): _input1Sentinel},
     );
-    if (rendered.isEmpty) {
-      return null;
-    }
-    final pattern = rendered[action.templateIndex.clamp(0, rendered.length - 1)];
     final at = pattern.indexOf(_input1Sentinel);
     if (at < 0) {
       return null;

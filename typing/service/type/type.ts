@@ -7,15 +7,17 @@ type IntervalMode = 'none' | 'oddHidden' | 'evenHidden';
 // 一条"辅助触控触发键"绑定：按下 key 就执行 App 辅助触控里 action 对应的按钮。
 // action 形如 builtin:<BuiltInAction 枚举名> 或 custom:<AssistiveTouchAction.id>；
 // name 是选中那一刻的动作名快照，只用于显示（动作被删掉后拿不到真名时还能看出绑的是什么）。
+// wordAsk=true 的绑定是"单词提问"：按下 key 时先把光标所在的词在句子里标上下划线，
+// 连同之前已经标过的词一起当成 input1，再去执行 action 对应的自定义动作（只有一个参数的那种）。
 type AssistiveTouchBinding = {
     key: string;
     action: string;
     name: string;
+    wordAsk: boolean;
 };
 
-// 单词提问触发键：按下 key 时，把光标所在的词在句子里标上下划线，
-// 连同之前已经标过的词一起当成 input1，去执行 action 对应的自定义动作（只有一个参数的那种）。
-// action/name 的含义跟 AssistiveTouchBinding 一样；key 为空就是不启用。
+// 老版本里单词提问是独立的一条配置，现在并进了 assistiveTouchBindings（wordAsk=true 的那条）。
+// 这个类型只为读老配置保留，前端读到后会迁移进绑定列表并把这里清空。
 type WordAskTrigger = {
     key: string;
     action: string;

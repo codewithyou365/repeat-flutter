@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
+import 'package:mustache_template/mustache_template.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/database.dart';
@@ -46,15 +47,13 @@ class ExpandLogic {
   var disabled = false.obs;
   var disabledAudioWidget = true.obs;
   var logs = <String>[].obs;
-  /// 作用位置/指令模版里"第 1 条提示"从这个下标开始（3=提示1、4=提示2……）。
-  /// 下标会存进 AssistiveTouchAction 的 targetIndex/sourceIndex，只能往后加，不能调顺序。
+  /// 作用位置里"第 1 条提示"从这个下标开始（3=提示1、4=提示2……）。
+  /// 下标会存进 AssistiveTouchAction 的 targetIndex，只能往后加，不能调顺序。
   static const int tipStart = 3;
 
-  /// 界面上两个选项框的顺序：问题、答案、提示1..提示8，一共 10 项。
+  /// 作用位置选项框的顺序：问题、答案、提示1..提示8，一共 10 项。
   /// 里面装的是存库的下标，不是选项框自己的位置——两者不是一回事，必须过这层映射。
-  static const List<int> selectableTargetIndexes = [2, 0, ..._tipIndexes];
-  static const List<int> selectableSourceIndexes = [0, 1, ..._tipIndexes];
-  static const List<int> _tipIndexes = [3, 4, 5, 6, 7, 8, 9, 10];
+  static const List<int> selectableTargetIndexes = [2, 0, 3, 4, 5, 6, 7, 8, 9, 10];
 
   /// 作用位置的全部选项，下标就是存库的值。
   /// 下标 1 是老的"提示"（跟着界面上选中的那条走），已经不给选了，但位置要留着——
@@ -66,28 +65,13 @@ class ExpandLogic {
         for (var i = 0; i < VerseField.maxTip; i++) tipLabel(i),
       ];
 
-  /// 指令模版的全部选项，下标就是存库的值。下标 2 是老的"提示"，同上，留位不给选。
-  List<String> get sourceOptions => [
-        QaType.question.i18n.tr,
-        QaType.answer.i18n.tr,
-        tipLabel(0),
-        for (var i = 0; i < VerseField.maxTip; i++) tipLabel(i),
-      ];
-
-  /// 老预设存的"提示"（作用位置是 1、指令模版是 2）归到"提示1"，这样选项框里能选中它。
+  /// 老预设存的"提示"（作用位置是 1）归到"提示1"，这样选项框里能选中它。
   static int normalizeTargetIndex(int index) => index == 1 ? tipStart : index;
-
-  static int normalizeSourceIndex(int index) => index == 2 ? tipStart : index;
 
   /// 第 i 条提示显示的名字：book 里定义了就用定义的（跟提示 tab 栏一致），没定义用序号。
   String tipLabel(int index) {
     return VerseField.tipNameOf(_bookMap(), index) ?? '${QaType.tip.i18n.tr}${index + 1}';
   }
-
-  var sourceIndex = 1.obs;
-  // 指令框里显示的文本来自哪个文本模版(copyLogic.copyTemplates 的下标)，
-  // 保存为辅助控制预设时记录这个下标而不是渲染好的固定文本，这样以后对不同小节执行时能重新取当时的模版文本。
-  var templateIndex = 0.obs;
 
   String toFieldRef(int targetIndex) {
     if (targetIndex == 0) {
@@ -103,47 +87,69 @@ class ExpandLogic {
     return _tipFieldRef(targetIndex);
   }
 
-  String toSourceFieldRef(int index) {
-    if (index == 0) {
-      return QaType.question.acronym;
-    } else if (index == 1) {
-      return QaType.answer.acronym;
-    } else if (index == 2) {
-      // 老预设里的"提示"，现在一律当第 1 条。
-      return VerseField.ref(QaType.tip.acronym, 0);
-    }
-    return _tipFieldRef(index);
-  }
-
   String _tipFieldRef(int index) {
     final tipIndex = (index - tipStart).clamp(0, VerseField.maxTip - 1);
     return VerseField.ref(QaType.tip.acronym, tipIndex);
   }
 
-  String getSourceText() {
-    return VerseField.getText(verseMap, toSourceFieldRef(sourceIndex.value)) ?? '';
-  }
-
   /// 指令模版里可以写 {{input1}}..{{input10}}，最多 10 个参数。
   static const int maxInput = 10;
 
-  /// 第 i 个参数在模版里的占位符名字（1 基，跟界面上显示的编号一致）。
-  static String inputKey(int index) => 'input${index + 1}';
+  /// 编号为 [number] 的参数在模版里的占位符名字（1 基，跟界面上显示的编号一致）。
+  static String inputKeyOf(int number) => 'input$number';
 
-  /// 用户依次填好的参数值 -> 渲染模版用的 map。
-  static Map<String, String> inputsOf(List<String> values) => {
-        for (var i = 0; i < values.length; i++) inputKey(i): values[i],
+  /// 本节字段在模版里的占位符名字。
+  static const String questionKey = 'question';
+  static const String answerKey = 'answer';
+
+  /// 第 i 条提示的占位符名字（1 基）。
+  static String tipKey(int index) => 'tip${index + 1}';
+
+  /// 模版里 {{question}}/{{answer}}/{{tip1}}.. 的取值，都从当前小节取，没有的给空串。
+  Map<String, String> verseValues() => {
+        questionKey: VerseField.getText(verseMap, QaType.question.acronym) ?? '',
+        answerKey: VerseField.getText(verseMap, QaType.answer.acronym) ?? '',
+        for (var i = 0; i < VerseField.maxTip; i++) tipKey(i): VerseField.getText(verseMap, VerseField.ref(QaType.tip.acronym, i)) ?? '',
       };
 
-  /// 调用方给的参数按位置对齐到 [count] 个：少了补空串，多了丢掉。
-  /// 游戏脚本可以只传前几个，剩下的当空处理。
-  static List<String> normalizeInputs(List<String>? values, int count) => [
-        for (var i = 0; i < count; i++) (values != null && i < values.length) ? values[i] : '',
-      ];
+  static final RegExp _inputPlaceholder = RegExp(r'\{\{\s*input(\d+)\s*\}\}');
 
-  /// 这个动作要几个参数。大于 0 时点辅助触控的这个动作会先弹框让用户依次填，
-  /// 填完才渲染模版发给助手服务。
-  var inputCount = 0.obs;
+  /// 这个模版实际用到的参数编号（1 基，去重升序）。不再单独存库，每次从模版里扫。
+  /// 只认写出来的那几个：模版里只有 {{input1}} 和 {{input6}} 就返回 [1, 6]，
+  /// 弹框也只有这两个，中间没用到的编号不凑数。
+  static List<int> inputNumbersOf(String template) {
+    final numbers = <int>{};
+    for (final m in _inputPlaceholder.allMatches(template)) {
+      final n = int.tryParse(m.group(1) ?? '') ?? 0;
+      if (n >= 1 && n <= maxInput) {
+        numbers.add(n);
+      }
+    }
+    return numbers.toList()..sort();
+  }
+
+  /// 渲染指令：模版原文 + 当前小节的字段值 + 这次填的参数。
+  /// 模版写坏了（mustache 解析不了）就原样返回，跟 TextTemplate 的容错一致。
+  String render(String template, {Map<String, String>? inputs}) {
+    try {
+      return Template(template, htmlEscapeValues: false).renderString({
+        ...verseValues(),
+        ...?inputs,
+      });
+    } catch (_) {
+      return template;
+    }
+  }
+
+  /// 用户依次填好的参数值 -> 渲染模版用的 map。
+  /// [numbers] 是 [inputNumbersOf] 给出的编号表，[values] 按它的顺序一一对应；
+  /// 少了的补空串、多了的丢掉（游戏脚本可以只传前几个）。
+  static Map<String, String> inputsOf(List<int> numbers, List<String>? values) => {
+        for (var i = 0; i < numbers.length; i++) inputKeyOf(numbers[i]): (values != null && i < values.length) ? values[i] : '',
+      };
+
+  /// 动作名称：直接在表单里改，不再另外弹框问。
+  var actionName = ''.obs;
 
   var targetIndex = 0.obs;
   var enableAudio = true.obs;
@@ -172,17 +178,15 @@ class ExpandLogic {
     await Db().db.kvDao.insertOrReplace(Kv(K.expandServiceUrl, serviceUrl.value));
   }
 
-  Future<void> saveAsAction(String name) async {
+  Future<void> saveAsAction() async {
     final action = AssistiveTouchAction(
       id: editingActionId,
       classroomId: Classroom.curr,
-      name: name,
-      sourceIndex: sourceIndex.value,
-      templateIndex: templateIndex.value,
+      name: actionName.value.trim(),
+      template: textController.text,
       targetIndex: targetIndex.value,
       enableAudio: enableAudio.value,
       behavior: behavior.value.index,
-      inputCount: inputCount.value,
       sort: actionSort,
     );
     if (editingActionId == null) {
@@ -203,6 +207,16 @@ class ExpandLogic {
       }
     }
     await startTask(msg, closeOnSuccess: closeOnSuccess);
+  }
+
+  /// 把这次要发的请求拼成一条 curl，方便拿去单独对助手服务测（跟 [startTask] 发的是同一个请求）。
+  /// 指令用单引号包起来，里面的单引号按 shell 的老办法拆成 '\'' 。
+  String toCurl(String msg) {
+    final runnerType = enableAudio.value ? "withSpeak" : "standard";
+    final body = msg.replaceAll("'", "'\\''");
+    return "curl -X POST '${serviceUrl.value}/start?runner=$runnerType' \\\n"
+        "  -H 'Content-Type: text/plain; charset=utf-8' \\\n"
+        "  --data-raw '$body'";
   }
 
   Future<void> startTask(String msg, {bool closeOnSuccess = true}) async {

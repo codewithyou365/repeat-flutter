@@ -125,7 +125,7 @@ class RepeatLogic extends GetxController {
     gameHelper = SessionCoordinator(gameLogic.web, tipLogic.web);
     ttsHelper.tryInit(TtsKeys.tip);
     copyLogic.init();
-    expandSheet.init(copyLogic);
+    expandSheet.init();
     expandSheet.logic.onPlayTarget = assistiveTouchLogic.playTarget;
     bookEditor.onExpand = openExpand;
     var args = Get.arguments as RepeatArgs;

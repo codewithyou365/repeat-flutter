@@ -124,10 +124,13 @@
         />
       </template>
     </nut-cell>
+    <!-- 一条绑定：普通的按下就执行动作；wordAsk 的额外把光标所在的词当 input1 传过去。
+         两种类型共用同一份数据结构和这一行 UI，只有标题/说明不同。 -->
     <nut-cell
         v-for="(binding, i) in assistiveTouchBindings"
         :key="i"
-        :title="t('assistiveTouchTrigger')"
+        :title="binding.wordAsk ? t('wordAskTrigger') : t('assistiveTouchTrigger')"
+        :desc="binding.wordAsk ? t('wordAskTriggerDesc') : ''"
     >
       <template #link>
         <div class="assist-binding">
@@ -152,28 +155,6 @@
         </div>
       </template>
     </nut-cell>
-    <!-- 单词提问：一个键 + 一个自定义动作（约定只带一个参数 input1）。
-         跟上面的辅助触控绑定用同一套样式，只是它是固定的一条，没有增删。 -->
-    <nut-cell :title="t('wordAskTrigger')" :desc="t('wordAskTriggerDesc')">
-      <template #link>
-        <div class="assist-binding">
-          <span v-if="wordAskTrigger.key === ' '" style="opacity: 0.6">{{ t('spaceKey') }}</span>
-          <nut-input
-              v-model="wordAskTrigger.key"
-              maxlength="1"
-              class="assist-binding-key"
-              @blur="setWordAskKey(wordAskTrigger.key)"
-          />
-          <nut-menu class="assist-binding-action" direction="up">
-            <nut-menu-item
-                :model-value="wordAskTrigger.action"
-                :options="wordAskOptionList"
-                @change="(value: string) => setWordAskAction(value)"
-            />
-          </nut-menu>
-        </div>
-      </template>
-    </nut-cell>
     <nut-cell>
       <nut-button size="small" type="info" @click="addBinding">
         {{ t('assistiveTouchAddBinding') }}
@@ -182,6 +163,13 @@
         {{ t('assistiveTouchNoAction') }}
       </span>
     </nut-cell>
+    <!-- 新增绑定时先问是哪一类：普通辅助触控键，还是单词提问键 -->
+    <nut-action-sheet
+        v-model:visible="bindingTypeVisible"
+        :title="t('bindingTypeTitle')"
+        :menu-items="bindingTypeItems"
+        @choose="onChooseBindingType"
+    />
   </div>
   <nut-cell v-else-if="cantPlayForMaintain">
     {{ t('cantPlayForMaintain') }}
@@ -254,10 +242,13 @@ type ProfileConfig = Record<string, any>;
 
 // 一条"辅助触控触发键"绑定：按下 key 就执行 App 辅助触控里 action 对应的按钮。
 // name 是选中那一刻的动作名快照，动作被删掉后拿不到真名时用它显示。
+// wordAsk=true 的那种是"单词提问"：执行前先把光标所在的词标上下划线当 input1 带过去，
+// 约定绑的是只有一个参数的自定义动作。除此之外跟普通绑定完全一样（同一个列表、同一行 UI）。
 type AssistiveTouchBinding = {
   key: string;
   action: string;
   name: string;
+  wordAsk: boolean;
 };
 
 const activeProfile = ref(0);
@@ -285,10 +276,11 @@ const keyMapping = ref('');
 const assistiveTouchBindings = ref<AssistiveTouchBinding[]>([]);
 // 每条绑定最后一次成功保存的键，校验失败时用来还原对应的输入框
 let bindingKeysSaved: string[] = [];
-// 单词提问触发键：按下时把光标所在的词标上下划线，连同之前标过的词一起当 input1
-// 去执行绑定的自定义动作（只有一个参数的那种）。key 为空即不启用。
-const wordAskTrigger = ref<AssistiveTouchBinding>({key: '', action: '', name: ''});
-let wordAskKeySaved = '';
+// 单词提问以前是独立的一条配置（profile.wordAskTrigger），现在并进了 assistiveTouchBindings。
+// 这里记住哪些 profile 是从老配置迁上来的，等它们下次真的保存绑定时顺手把老字段清掉。
+const legacyWordAskProfiles = new Set<number>();
+// 新增绑定时的类型选择弹层
+const bindingTypeVisible = ref(false);
 // App 辅助触控当前显示的按钮，只有管理员打开设置面板时才会去拉
 const assistiveTouchOptions = ref<{ id: string; name: string }[]>([]);
 const ignoreContentIndexes = ref<number[]>([]);
@@ -530,15 +522,10 @@ const showTips = () => {
   } else {
     for (const binding of assistiveTouchBindings.value) {
       const key = binding.key ? formatTriggerKey(binding.key) : t('disabled');
-      rows.push({label: t('assistiveTouchTrigger'), value: `${key} → ${bindingActionName(binding)}`});
+      const label = binding.wordAsk ? t('wordAskTrigger') : t('assistiveTouchTrigger');
+      rows.push({label: label, value: `${key} → ${bindingActionName(binding)}`});
     }
   }
-
-  const wordAskKey = wordAskTrigger.value.key ? formatTriggerKey(wordAskTrigger.value.key) : t('disabled');
-  rows.push({
-    label: t('wordAskTrigger'),
-    value: wordAskTrigger.value.key ? `${wordAskKey} \u2192 ${bindingActionName(wordAskTrigger.value)}` : wordAskKey,
-  });
 
   let html = `<div style="display: flex; flex-direction: column; gap: 10px; text-align: left;">`;
 
@@ -596,15 +583,22 @@ const applyProfile = (index: number) => {
     key: typeof b?.key === 'string' ? b.key : '',
     action: typeof b?.action === 'string' ? b.action : '',
     name: typeof b?.name === 'string' ? b.name : '',
+    wordAsk: b?.wordAsk === true,
   }));
-  bindingKeysSaved = assistiveTouchBindings.value.map((b) => b.key);
+  // 老配置里单词提问是独立的一条，配过键就迁成列表里的一条 wordAsk 绑定。
+  // 这里只改内存，不主动回写（玩家端也会走到这里，不该由它写配置）；
+  // 等管理员下次改绑定时 saveAssistiveTouchBindings 会把老字段一并清掉。
   const rawWordAsk = res['wordAskTrigger'];
-  wordAskTrigger.value = {
-    key: typeof rawWordAsk?.key === 'string' ? rawWordAsk.key : '',
-    action: typeof rawWordAsk?.action === 'string' ? rawWordAsk.action : '',
-    name: typeof rawWordAsk?.name === 'string' ? rawWordAsk.name : '',
-  };
-  wordAskKeySaved = wordAskTrigger.value.key;
+  if (typeof rawWordAsk?.key === 'string' && rawWordAsk.key !== '') {
+    assistiveTouchBindings.value.push({
+      key: rawWordAsk.key,
+      action: typeof rawWordAsk.action === 'string' ? rawWordAsk.action : '',
+      name: typeof rawWordAsk.name === 'string' ? rawWordAsk.name : '',
+      wordAsk: true,
+    });
+    legacyWordAskProfiles.add(index);
+  }
+  bindingKeysSaved = assistiveTouchBindings.value.map((b) => b.key);
 };
 
 // 找出绑定当前对应的按钮。返回 undefined 说明这个按钮已经不在辅助触控里了
@@ -632,16 +626,6 @@ const bindingOptionList = computed(() => assistiveTouchBindings.value.map((bindi
   }
   return options;
 }));
-
-// 单词提问那一行的下拉候选，跟 bindingOptionList 同理（同样必须 computed 缓存）
-const wordAskOptionList = computed(() => {
-  const options = assistiveTouchOptions.value.map((o) => ({text: o.name, value: o.id}));
-  const binding = wordAskTrigger.value;
-  if (binding.action && !findOption(binding.action)) {
-    options.unshift({text: bindingActionName(binding), value: binding.action});
-  }
-  return options;
-});
 
 const getAssistiveTouchActions = async () => {
   try {
@@ -734,7 +718,7 @@ const setManualTtsRate = (value: number) => {
 };
 // 所有触发键（四个固定的 + 任意条辅助触控绑定）不能互相重复，比如手动播放和逐字母朗读不能都设成 '.'。
 // exclude 是"正在改的那一个"（固定键用名字，绑定用下标），要排除掉，否则改成原值也会判成冲突。
-type TriggerOwner = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'wordAsk' | number;
+type TriggerOwner = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | number;
 const isKeyTaken = (value: string, exclude: TriggerOwner) => {
   if (!value) {
     return false; // 空值表示不启用，不参与冲突判断
@@ -744,7 +728,6 @@ const isKeyTaken = (value: string, exclude: TriggerOwner) => {
   if (exclude !== 'spellPlay') keys.push(spellPlayTrigger.value);
   if (exclude !== 'hint') keys.push(hintTrigger.value);
   if (exclude !== 'mask') keys.push(maskTrigger.value);
-  if (exclude !== 'wordAsk') keys.push(wordAskTrigger.value.key);
   assistiveTouchBindings.value.forEach((b, i) => {
     if (exclude !== i) keys.push(b.key);
   });
@@ -803,10 +786,18 @@ const setKeyMapping = (value: string) => {
 
 // 绑定是变长数组，没法像其它设置那样一个字段一个 setter，统一整份存
 const saveAssistiveTouchBindings = () => {
-  const value = assistiveTouchBindings.value.map((b) => ({key: b.key, action: b.action, name: b.name}));
+  const value = assistiveTouchBindings.value.map((b) => ({key: b.key, action: b.action, name: b.name, wordAsk: b.wordAsk}));
   bindingKeysSaved = value.map((b) => b.key);
   profiles.value[activeProfile.value].assistiveTouchBindings = value;
   setConfig("assistiveTouchBindings", value);
+  // 这个 profile 的单词提问是从老字段迁上来的：现在列表里已经存下了，把老字段清空，
+  // 否则下次 applyProfile 还会再迁一遍，多出一条重复的绑定。
+  if (legacyWordAskProfiles.has(activeProfile.value)) {
+    legacyWordAskProfiles.delete(activeProfile.value);
+    const empty = {key: '', action: '', name: ''};
+    profiles.value[activeProfile.value].wordAskTrigger = empty;
+    setConfig("wordAskTrigger", empty);
+  }
 };
 
 const setBindingKey = (index: number, value: string) => {
@@ -836,37 +827,26 @@ const setBindingAction = (index: number, action: string) => {
   saveAssistiveTouchBindings();
 };
 
+// 弹层选项的顺序就是 onChooseBindingType 里的下标顺序
+const bindingTypeItems = computed(() => [
+  {name: t('bindingTypeNormal')},
+  {name: t('bindingTypeWordAsk')},
+]);
+
 const addBinding = () => {
+  bindingTypeVisible.value = true;
+};
+
+const onChooseBindingType = (_item: any, index: number) => {
+  bindingTypeVisible.value = false;
   const first = assistiveTouchOptions.value[0];
-  assistiveTouchBindings.value.push({key: '', action: first ? first.id : '', name: first ? first.name : ''});
+  assistiveTouchBindings.value.push({
+    key: '',
+    action: first ? first.id : '',
+    name: first ? first.name : '',
+    wordAsk: index === 1,
+  });
   saveAssistiveTouchBindings();
-};
-
-// 单词提问是单独一条（不是变长数组），整份存，跟绑定一样只存 key/action/name
-const saveWordAskTrigger = () => {
-  const value = {key: wordAskTrigger.value.key, action: wordAskTrigger.value.action, name: wordAskTrigger.value.name};
-  wordAskKeySaved = value.key;
-  profiles.value[activeProfile.value].wordAskTrigger = value;
-  setConfig("wordAskTrigger", value);
-};
-
-const setWordAskKey = (value: string) => {
-  if (isKeyTaken(value, 'wordAsk')) {
-    showToast.warn(t('triggerKeyConflict'));
-    wordAskTrigger.value.key = wordAskKeySaved;
-    return;
-  }
-  wordAskTrigger.value.key = value;
-  saveWordAskTrigger();
-};
-
-const setWordAskAction = (action: string) => {
-  wordAskTrigger.value.action = action;
-  const option = findOption(action);
-  if (option) {
-    wordAskTrigger.value.name = option.name;
-  }
-  saveWordAskTrigger();
 };
 
 const removeBinding = (index: number) => {
@@ -1052,20 +1032,18 @@ const onMaskTrigger = () => {
 
 // 空键不算触发键，过滤掉，免得用户还没填键的那一行把普通输入吃掉
 const assistTriggerKeys = computed(() => {
-  const keys = assistiveTouchBindings.value.map((b) => b.key);
-  keys.push(wordAskTrigger.value.key);
-  return keys.filter((k) => k !== '');
+  return assistiveTouchBindings.value.map((b) => b.key).filter((k) => k !== '');
 });
 
 // 按下绑定键：让 App 执行对应的辅助触控按钮。这里不开 overlay，避免打断打字节奏；
 // 但按钮已经被删掉/当前模式用不了时要给个提示，不然用户只会觉得"这个键没反应"。
 const onAssistTrigger = async (key: string, bounds: { start: number; end: number } | null) => {
-  if (wordAskTrigger.value.key && key === wordAskTrigger.value.key) {
-    await onWordAsk(bounds);
-    return;
-  }
   const binding = assistiveTouchBindings.value.find((b) => b.key === key);
   if (!binding || !binding.action) {
+    return;
+  }
+  if (binding.wordAsk) {
+    await onWordAsk(binding, bounds);
     return;
   }
   try {
@@ -1085,10 +1063,9 @@ const onAssistTrigger = async (key: string, bounds: { start: number; end: number
 
 // 单词提问：把光标所在的词交给 App，让它在上次那版 input1 的基础上再给这个词标上下划线，
 // 然后执行绑定的自定义动作。跟普通绑定一样不开 overlay，避免打断打字节奏。
-const onWordAsk = async (bounds: { start: number; end: number } | null) => {
-  const binding = wordAskTrigger.value;
-  if (!binding.action || !bounds || !content.value) {
-    return; // 没绑动作，或者按键时光标不在任何词上
+const onWordAsk = async (binding: AssistiveTouchBinding, bounds: { start: number; end: number } | null) => {
+  if (!bounds || !content.value) {
+    return; // 按键时光标不在任何词上
   }
   try {
     const req = new Request({

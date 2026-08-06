@@ -244,7 +244,6 @@ class ConfigZh extends Config {
     put(I18nKey.bluetoothOffset, "蓝牙补偿");
     put(I18nKey.labelCalendar, "日历");
     put(I18nKey.textTemplate, "模版");
-    put(I18nKey.instructionTemplate, "指令模版");
     put(I18nKey.labelVerseNeedToContainAnswer, "小节需要包含答案字段");
     put(I18nKey.labelVerseKeyDuplicated, "小节KEY重复： %s");
     put(I18nKey.labelVerseKeyCantBeEmpty, "小节KEY不能为空");
@@ -413,12 +412,14 @@ class ConfigZh extends Config {
     put(I18nKey.behavior, "行为");
     put(I18nKey.behaviorOverwrite, "请求并将结果覆盖到作用位置");
     put(I18nKey.behaviorPlayOrOverwrite, "若与作用位置中的指令一样就尝试播放否则覆盖");
-    put(I18nKey.inputCount, "参数数量");
+    put(I18nKey.insertParameter, "插入");
+    put(I18nKey.copyCurl, "复制 CURL");
     put(I18nKey.testExecution, "测试");
     put(I18nKey.closeLog, "关闭日志");
     put(I18nKey.customizeMenu, "自定义菜单");
     put(I18nKey.deleteCurrentVerse, "删除当前节");
     put(I18nKey.assistiveTouchActionName, "动作名称");
+    put(I18nKey.labelActionNameEmpty, "动作名称不能为空");
     put(I18nKey.labelDeleteAssistiveTouchAction, "请确定删除该动作");
     put(I18nKey.labelRemoveDeleteVerseAction, "请确定从自定义菜单移除该动作");
     put(I18nKey.selectAction, "选择动作");

@@ -17,6 +17,7 @@ import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_logic.dart';
+import 'package:repeat_flutter/logic/widget/expand/expand_logic.dart';
 import 'package:repeat_flutter/logic/widget/game/game_state.dart';
 import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/page/repeat/logic/repeat_flow_for_browse.dart';
@@ -280,8 +281,15 @@ class JsRuntime {
           ret.add({'id': 'builtin:${builtIn.name}', 'name': logic.labelOf(builtIn)});
         }
         for (final action in logic.actions) {
-          // inputCount 是这个动作要几个参数，脚本按它准备 assistiveTouchTap 的 'inputs'。
-          ret.add({'id': 'custom:${action.id}', 'name': action.name, 'inputCount': action.inputCount});
+          // inputCount 是这个动作要几个参数（模版里实际写了几个 {{inputN}}），
+          // inputKeys 是它们的占位符名字，脚本按这个顺序准备 assistiveTouchTap 的 'inputs'。
+          final inputNumbers = ExpandLogic.inputNumbersOf(action.template);
+          ret.add({
+            'id': 'custom:${action.id}',
+            'name': action.name,
+            'inputCount': inputNumbers.length,
+            'inputKeys': inputNumbers.map(ExpandLogic.inputKeyOf).toList(),
+          });
         }
         return jsonEncode(ret);
       });

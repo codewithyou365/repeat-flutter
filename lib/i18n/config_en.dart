@@ -246,7 +246,6 @@ class ConfigEn extends Config {
     put(I18nKey.bluetoothOffset, "BT Offset");
     put(I18nKey.labelCalendar, "Calendar");
     put(I18nKey.textTemplate, "Template");
-    put(I18nKey.instructionTemplate, "Instruction Template");
     put(I18nKey.labelVerseNeedToContainAnswer, "Verse Need To Contain Answer");
     put(I18nKey.labelVerseKeyDuplicated, "Verse Key duplicated: %s");
     put(I18nKey.labelVerseKeyCantBeEmpty, "Verse Key can't be empty");
@@ -415,12 +414,14 @@ class ConfigEn extends Config {
     put(I18nKey.behavior, "Behavior");
     put(I18nKey.behaviorOverwrite, "Request and overwrite the target position");
     put(I18nKey.behaviorPlayOrOverwrite, "Play if the stored instruction matches this one, otherwise overwrite");
-    put(I18nKey.inputCount, "Parameter Count");
+    put(I18nKey.insertParameter, "Insert");
+    put(I18nKey.copyCurl, "Copy CURL");
     put(I18nKey.testExecution, "Test");
     put(I18nKey.closeLog, "Close Log");
     put(I18nKey.customizeMenu, "Customize Menu");
     put(I18nKey.deleteCurrentVerse, "Del Verse");
     put(I18nKey.assistiveTouchActionName, "Action Name");
+    put(I18nKey.labelActionNameEmpty, "Action name cannot be empty");
     put(I18nKey.labelDeleteAssistiveTouchAction, "Please confirm to delete the action");
     put(I18nKey.labelRemoveDeleteVerseAction, "Please confirm to remove this action from the menu");
     put(I18nKey.selectAction, "Select Action");
