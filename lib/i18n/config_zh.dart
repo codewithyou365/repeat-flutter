@@ -457,6 +457,8 @@ class ConfigZh extends Config {
     put(I18nKey.mediaRename, "重命名");
     put(I18nKey.mediaFileNotExist, "文件不存在");
     put(I18nKey.mediaEmpty, "没有可播放的媒体");
+    put(I18nKey.mediaOnlyNamed, "只显示已命名");
+    put(I18nKey.mediaShowAll, "显示全部");
     put(I18nKey.quickEntry, "快速进入");
     put(I18nKey.quickEntryNone, "不快速进入");
     put(I18nKey.quickEntryGlobalBrowse, "进入全局浏览");

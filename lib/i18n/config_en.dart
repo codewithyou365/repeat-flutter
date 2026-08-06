@@ -459,6 +459,8 @@ class ConfigEn extends Config {
     put(I18nKey.mediaRename, "Rename");
     put(I18nKey.mediaFileNotExist, "File does not exist");
     put(I18nKey.mediaEmpty, "No playable media");
+    put(I18nKey.mediaOnlyNamed, "Named only");
+    put(I18nKey.mediaShowAll, "Show all");
     put(I18nKey.quickEntry, "Quick Entry");
     put(I18nKey.quickEntryNone, "Off");
     put(I18nKey.quickEntryGlobalBrowse, "Enter Browse All");

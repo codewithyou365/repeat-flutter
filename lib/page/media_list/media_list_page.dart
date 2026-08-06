@@ -30,6 +30,16 @@ class MediaListPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(I18nKey.mediaList.tr),
+        actions: [
+          Obx(() {
+            final onlyNamed = state.onlyNamed.value;
+            return IconButton(
+              icon: Icon(onlyNamed ? Icons.filter_alt : Icons.filter_alt_off),
+              tooltip: onlyNamed ? I18nKey.mediaOnlyNamed.tr : I18nKey.mediaShowAll.tr,
+              onPressed: logic.toggleOnlyNamed,
+            );
+          }),
+        ],
       ),
       body: Obx(() {
         if (state.loading.value) {

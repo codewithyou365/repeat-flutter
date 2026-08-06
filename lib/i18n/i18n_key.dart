@@ -457,6 +457,8 @@ enum I18nKey {
   mediaRename,
   mediaFileNotExist,
   mediaEmpty,
+  mediaOnlyNamed,
+  mediaShowAll,
   quickEntry,
   quickEntryNone,
   quickEntryGlobalBrowse,

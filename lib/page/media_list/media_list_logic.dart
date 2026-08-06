@@ -31,6 +31,9 @@ class MediaListLogic extends GetxController {
   final Map<String, _RowRef> _rows = {};
   final Map<String, Set<String>> _hashToRowKeys = {};
 
+  // 全量媒体（已排序），state.items 是按当前过滤条件从这里筛出来的视图。
+  final List<MediaItem> _all = [];
+
   @override
   void onInit() {
     super.onInit();
@@ -52,6 +55,7 @@ class MediaListLogic extends GetxController {
     state.loading.value = true;
     _rows.clear();
     _hashToRowKeys.clear();
+    _all.clear();
 
     final rootPath = await DocPath.getContentPath();
     final Map<String, MediaItem> byKey = {};
@@ -126,18 +130,32 @@ class MediaListLogic extends GetxController {
       handleRow(_RowKind.verse, v.verseId, v.bookId, v.bookSort, v.chapterIndex, v.verseIndex, v.verseContent);
     }
 
-    // 只显示有名字（d[].n 非空）的媒体，没命名的属于内部资源，不列出来。
-    final items = byKey.entries.where((e) => e.value.named).toList();
+    final items = byKey.entries.toList();
     items.sort((a, b) => (sortByKey[a.key] ?? 0).compareTo(sortByKey[b.key] ?? 0));
 
-    final result = <MediaItem>[];
     for (final e in items) {
       e.value.exists = await File(e.value.localPath).exists();
-      result.add(e.value);
+      _all.add(e.value);
     }
 
-    state.items.assignAll(result);
+    _applyFilter();
     state.loading.value = false;
+    update([id]);
+  }
+
+  /// 默认只列出有名字（d[].n 非空）的媒体，没命名的多是内部资源；
+  /// 关掉开关后连未命名的一起显示。
+  void _applyFilter() {
+    if (state.onlyNamed.value) {
+      state.items.assignAll(_all.where((e) => e.named));
+    } else {
+      state.items.assignAll(_all);
+    }
+  }
+
+  void toggleOnlyNamed() {
+    state.onlyNamed.value = !state.onlyNamed.value;
+    _applyFilter();
     update([id]);
   }
 
@@ -187,9 +205,10 @@ class MediaListLogic extends GetxController {
           break;
       }
     }
-    for (final it in state.items) {
+    for (final it in _all) {
       if (it.hash == item.hash) {
         it.displayName = newName;
+        it.named = true;
       }
     }
     state.items.refresh();
