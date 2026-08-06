@@ -7,6 +7,11 @@ import 'package:repeat_flutter/logic/base/constant.dart';
 class Header {
   static const String bookCacheVersion = "book-cache-version";
   static const String classroomCacheVersion = "classroom-cache-version";
+
+  /// 单本编辑时课堂内容自己的乐观锁（[Classroom.contentVersion]）。
+  /// 单本文档里带了课堂内容（见 [ClassroomDocField.classroom]），
+  /// 所以除了书本版本还要再对一次课堂版本，免得覆盖掉别处刚改的课堂内容。
+  static const String classroomContentVersion = "classroom-content-version";
 }
 
 class Util {

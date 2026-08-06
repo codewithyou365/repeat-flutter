@@ -21,4 +21,16 @@ class ClassroomDocField {
   /// 有 id 就是改已有的书，没 id 就是新建一本。
   /// 对外分享的文档不带它，所以导入方一律新建。
   static const String bookId = 'i';
+
+  /// 单本网络编辑（/book + /commit）时挂在书本文档最前面的课堂内容，
+  /// 内容就是 [Classroom.content]（游戏 'g'、课堂媒体 'd' 等），
+  /// 让"只编辑一本书"也能看到并改到课堂级的东西：
+  ///
+  /// ```json
+  /// {"cr":{"g":[...],"d":[...]}, "n":"书名", "s":"...", "d":[...], "c":[...]}
+  /// ```
+  ///
+  /// 只用于网络编辑，不会存进 [Book.content]，提交时会被摘出来单独写回课堂。
+  /// 课堂级编辑（All books）不用它——那边课堂内容本来就在文档顶层。
+  static const String classroom = 'cr';
 }

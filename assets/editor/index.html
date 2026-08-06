@@ -404,6 +404,8 @@
     });
     var bookVersion = -2;
     var classroomVersion = '';
+    // 单本编辑时文档里带的课堂内容（'cr'）对应的课堂版本，提交时一起回传
+    var classroomContentVersion = '';
     var initialValue = '';
     var Vim = ace.require("ace/keyboard/vim").Vim;
     Vim.map("<Space>", "<Leader>", "normal");
@@ -1155,6 +1157,7 @@
             if (bookVersion) {
                 bookVersion = Number(bookVersion);
             }
+            classroomContentVersion = res.headers.get('classroom-content-version') || '';
 
             initialValue = await res.text();
 
@@ -1254,6 +1257,9 @@
                 headers['classroom-cache-version'] = classroomVersion;
             } else {
                 headers['book-cache-version'] = bookVersion;
+                if (classroomContentVersion) {
+                    headers['classroom-content-version'] = classroomContentVersion;
+                }
             }
             const res = await fetch(url, {
                 method: 'POST',
