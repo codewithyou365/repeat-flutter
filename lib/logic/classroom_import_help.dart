@@ -45,6 +45,8 @@ class ClassroomImportHelp {
           url: zipRoot?.url ?? '',
           // zip 里媒体按书本在 'b' 数组里的下标分目录，直接搬过去就行
           mediaDirOf: (index) => stagingPath.joinPath('$index'),
+          // 课堂自己的媒体（游戏 zip）在保留目录 DocPath.classroomRes 下
+          classroomMediaDir: stagingPath.joinPath(DocPath.classroomRes),
         );
       },
     );
@@ -110,6 +112,12 @@ class ClassroomImportHelp {
         throw Exception(I18nKey.labelDataAnomalyWithArg.trArgs(['classroom index.json']));
       }
       await Db().db.classroomDao.updateContent(classroom.id, jsonEncode(splitter.head));
+      await _importClassroomRes(
+        classroomId: classroom.id,
+        head: splitter.head,
+        rootPath: rootPath,
+        source: source,
+      );
 
       final total = splitter.elementPaths.length;
       for (var i = 0; i < total; i++) {
@@ -131,6 +139,48 @@ class ClassroomImportHelp {
       await Folder.delete(classroomPath);
       Snackbar.show(I18nKey.labelClassroomImportFail.trArgs([e.toString()]));
       return null;
+    }
+  }
+
+  /// 课堂自己的媒体（游戏 zip）：zip 导入就整个目录搬过来，远程导入按 'd' 逐个下载。
+  /// 游戏是课堂全局的，所以文件落在课堂资源目录，不进任何一本书。
+  static Future<void> _importClassroomRes({
+    required int classroomId,
+    required Map<String, dynamic> head,
+    required String rootPath,
+    required _Source source,
+  }) async {
+    final resRelativePath = DocPath.getClassroomResRelativePath(classroomId);
+    final resPath = rootPath.joinPath(resRelativePath);
+
+    final mediaDir = source.classroomMediaDir;
+    if (mediaDir != null) {
+      if (await Directory(mediaDir).exists()) {
+        await Folder.ensureExists(resPath);
+        await _moveInto(mediaDir, resPath);
+      }
+      return;
+    }
+
+    final downloads = DownloadContent.toList(head['d']) ?? [];
+    if (downloads.isEmpty) {
+      return;
+    }
+    // 'r' 是对方给的课堂媒体根地址；没有就按 index.json 所在目录推
+    final rootUrl = head['r'] as String? ?? source.url.substring(0, source.url.lastIndexOf("/"));
+    for (final d in downloads) {
+      final url = d.url.startsWith('http') ? d.url : rootUrl.joinPath(d.url);
+      final result = await DownloadDoc.start(
+        url,
+        resRelativePath.joinPath(d.path),
+        credentials: source.credentials,
+        hash: d.hash,
+        progressCallback: source.downloadProgress,
+        skipSsl: true,
+      );
+      if (result != DownloadDocResult.success) {
+        throw Exception(I18nKey.labelDataAnomalyWithArg.trArgs([url]));
+      }
     }
   }
 
@@ -230,11 +280,15 @@ class _Source {
   /// zip 导入时给出第 index 本书的媒体目录；远程导入为 null（改成逐个下载）
   final String Function(int index)? mediaDirOf;
 
+  /// zip 导入时课堂自己的媒体目录（游戏 zip）；远程导入为 null
+  final String? classroomMediaDir;
+
   _Source({
     required this.indexFile,
     required this.url,
     this.credentials = '',
     this.downloadProgress,
     this.mediaDirOf,
+    this.classroomMediaDir,
   });
 }

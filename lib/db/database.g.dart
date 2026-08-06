@@ -124,7 +124,7 @@ class _$AppDatabase extends AppDatabase {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 17,
+      version: 18,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -170,7 +170,7 @@ class _$AppDatabase extends AppDatabase {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `k` TEXT NOT NULL, `name` TEXT NOT NULL, `hash` TEXT NOT NULL, `data` TEXT NOT NULL, `service` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER, `classroomId` INTEGER NOT NULL, `k` TEXT NOT NULL, `name` TEXT NOT NULL, `hash` TEXT NOT NULL, `data` TEXT NOT NULL, `service` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Tip` (`id` INTEGER, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `t` TEXT NOT NULL, `k` TEXT NOT NULL, `hash` TEXT NOT NULL, `service` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
@@ -239,8 +239,6 @@ class _$AppDatabase extends AppDatabase {
             'CREATE INDEX `index_VerseStats_classroomId_createTime` ON `VerseStats` (`classroomId`, `createTime`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_Game_classroomId_name` ON `Game` (`classroomId`, `name`)');
-        await database
-            .execute('CREATE INDEX `index_Game_bookId` ON `Game` (`bookId`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_Tip_bookId_t` ON `Tip` (`bookId`, `t`)');
         await database.execute(
@@ -1960,7 +1958,6 @@ class _$GameDao extends GameDao {
             (Game item) => <String, Object?>{
                   'id': item.id,
                   'classroomId': item.classroomId,
-                  'bookId': item.bookId,
                   'k': item.k,
                   'name': item.name,
                   'hash': item.hash,
@@ -1975,7 +1972,6 @@ class _$GameDao extends GameDao {
             (Game item) => <String, Object?>{
                   'id': item.id,
                   'classroomId': item.classroomId,
-                  'bookId': item.bookId,
                   'k': item.k,
                   'name': item.name,
                   'hash': item.hash,
@@ -1999,7 +1995,6 @@ class _$GameDao extends GameDao {
     return _queryAdapter.query('SELECT * FROM Game WHERE id=?1',
         mapper: (Map<String, Object?> row) => Game(
             classroomId: row['classroomId'] as int,
-            bookId: row['bookId'] as int,
             k: row['k'] as String,
             name: row['name'] as String,
             hash: row['hash'] as String,
@@ -2027,7 +2022,6 @@ class _$GameDao extends GameDao {
         'SELECT * FROM Game WHERE classroomId=?1 ORDER BY id DESC',
         mapper: (Map<String, Object?> row) => Game(
             classroomId: row['classroomId'] as int,
-            bookId: row['bookId'] as int,
             k: row['k'] as String,
             name: row['name'] as String,
             hash: row['hash'] as String,
@@ -2052,12 +2046,6 @@ class _$GameDao extends GameDao {
   Future<void> deleteByClassroomId(int classroomId) async {
     await _queryAdapter.queryNoReturn('DELETE FROM Game WHERE classroomId=?1',
         arguments: [classroomId]);
-  }
-
-  @override
-  Future<void> deleteByBookId(int bookId) async {
-    await _queryAdapter
-        .queryNoReturn('DELETE FROM Game WHERE bookId=?1', arguments: [bookId]);
   }
 
   @override

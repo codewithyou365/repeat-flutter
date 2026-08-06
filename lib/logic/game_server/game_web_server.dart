@@ -54,12 +54,12 @@ class GameWebServer {
     server = Server(wsEvent: wsEvent, kickPath: Path.kick);
   }
 
-  Future<void> start(int bookId, String hash, String jsFile, int port) async {
+  Future<void> start(int classroomId, String hash, String jsFile, int port) async {
     final rootPath = await DocPath.getContentPath();
-    final localFolder = rootPath.joinPath(DocPath.getRelativePath(bookId));
+    final localFolder = rootPath.joinPath(DocPath.getClassroomResRelativePath(classroomId));
     DownloadContent download = DownloadContent(url: '', hash: hash);
     destinationDir = localFolder.joinPath(download.folder).joinPath(download.pureName);
-    await ClassroomHelp.ensureContentReadyByHash(bookId, hash);
+    await ClassroomHelp.ensureClassroomContentReadyByHash(classroomId, hash);
     if (jsFile.isEmpty) {
       jsFile = 'service.js';
     }

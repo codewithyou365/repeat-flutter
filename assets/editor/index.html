@@ -1335,7 +1335,9 @@
                 formData.append('file', file);
                 openUploadProgress(file.name);
                 try {
-                    const text = await uploadWithProgress('/upload' + bookParam('?'), formData);
+                    // 课堂级编辑时文件传到课堂自己的资源目录（游戏 zip 就放这儿），单本还是传到书本目录
+                    const param = editUnit === 'classroom' ? classroomParam('?') : bookParam('?');
+                    const text = await uploadWithProgress('/upload' + param, formData);
                     const copyResult = copyText(text) ? " And The path copied to clipboard!" : "!";
                     alert(`Upload successful${copyResult}\n${text}`);
                     await initFiles();

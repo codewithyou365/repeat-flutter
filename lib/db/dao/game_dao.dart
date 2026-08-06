@@ -23,9 +23,6 @@ abstract class GameDao {
   @Query('DELETE FROM Game WHERE classroomId=:classroomId')
   Future<void> deleteByClassroomId(int classroomId);
 
-  @Query('DELETE FROM Game WHERE bookId=:bookId')
-  Future<void> deleteByBookId(int bookId);
-
   @Insert(onConflict: OnConflictStrategy.replace)
   Future<void> insertOrReplace(Game kv);
 

@@ -9,6 +9,9 @@ class DocPath {
   static const String ssl = "s";
   static const String zipRootFile = "__root.json";
 
+  /// 课堂级资源目录名，同时也是分享 zip 里课堂级媒体的目录名
+  static const String classroomRes = "g";
+
   static String getRelativeIndexPath(int bookId) {
     return getRelativePath(bookId).joinPath(getIndexFileName());
   }
@@ -34,6 +37,13 @@ class DocPath {
   /// 课堂自己的目录（课堂级 index.json、导入暂存都放这里）
   static String getClassroomRelativePath(int classroomId) {
     return '$classroomId';
+  }
+
+  /// 课堂级资源（游戏 zip）的目录。
+  /// 课堂目录下的其它子目录都是书本 id（纯数字），所以用 [classroomRes] 这个非数字名字
+  /// 就不会撞上，游戏文件也不用再挂在某一本书下面。
+  static String getClassroomResRelativePath(int classroomId) {
+    return getClassroomRelativePath(classroomId).joinPath(classroomRes);
   }
 
   static Future<String> getContentPath() async {

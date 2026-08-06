@@ -36,13 +36,18 @@ class ClassroomDocHelp {
   /// [databaseData] 为真时带上库里的 id / learnDate / progress（网络编辑用），
   /// 为假时去掉（对外分享用）。
   ///
+  /// [classroomRootUrl] 是课堂自己的媒体（游戏 zip）挂在哪个地址下，跟 [rootUrl] 一个规矩：
+  /// 给了就把课堂 'd' 里的 u 改写成相对路径并写上 'r'，打 zip 时传 null。
+  ///
   /// 返回每本书要打包的媒体清单；出错返回 null（此时 [sink] 里是半截 JSON，调用方自己丢弃）。
+  /// 课堂自己要打包的媒体清单走 [classroomDownloads]。
   static Future<List<ClassroomBookDownload>?> writeDoc({
     required int classroomId,
     required IOSink sink,
     required bool note,
     required bool databaseData,
     String? Function(Book book, int index)? rootUrl,
+    String? classroomRootUrl,
     void Function(int done, int total)? onProgress,
   }) async {
     final classroom = await Db().db.classroomDao.getById(classroomId);
@@ -55,6 +60,19 @@ class ClassroomDocHelp {
       classroomContent = jsonDecode(classroom.content) as Map<String, dynamic>;
     } catch (e) {
       classroomContent = {};
+    }
+
+    // 游戏（'g'）的 'i' 是本机 Game 表的 id，对外分享时不能带出去
+    if (!databaseData && classroomContent['g'] is List) {
+      for (final game in classroomContent['g'] as List) {
+        if (game is Map) {
+          game.remove('i');
+        }
+      }
+    }
+    if (classroomRootUrl != null) {
+      DocHelp.fixDownloadInfo(classroomContent);
+      classroomContent['r'] = classroomRootUrl;
     }
 
     final books = await Db().db.bookDao.getAll(classroomId);
@@ -100,6 +118,21 @@ class ClassroomDocHelp {
     sink.write(']}');
     await sink.flush();
     return ret;
+  }
+
+  /// 课堂自己要带走的媒体（游戏 zip），来自 [Classroom.content] 的 'd'。
+  static Future<List<DownloadContent>> classroomDownloads(int classroomId) async {
+    final classroom = await Db().db.classroomDao.getById(classroomId);
+    if (classroom == null || classroom.content.isEmpty) {
+      return [];
+    }
+    try {
+      final decoded = jsonDecode(classroom.content);
+      if (decoded is! Map<String, dynamic>) return [];
+      return DownloadContent.toList(decoded['d']) ?? [];
+    } catch (e) {
+      return [];
+    }
   }
 
   /// 单本书的完整文档。内容部分完全复用 [DocHelp.getDocMapFromDb]，

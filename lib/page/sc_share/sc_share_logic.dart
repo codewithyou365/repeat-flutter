@@ -177,6 +177,7 @@ class ScShareLogic extends GetxController {
         note: state.shareNote.value,
         databaseData: false,
         rootUrl: (book, index) => base.joinPath('${book.id}'),
+        classroomRootUrl: base.joinPath(DocPath.classroomRes),
       );
       return;
     }
@@ -259,6 +260,15 @@ class ScShareLogic extends GetxController {
               final bookPath = classroomPath.joinPath('${book.bookId}');
               for (final download in book.downloads) {
                 entries.add(['${book.index}'.joinPath(download.path), bookPath.joinPath(download.path)]);
+              }
+            }
+            // 课堂自己的媒体（游戏 zip）放在 zip 的 DocPath.classroomRes 目录下，
+            // 书本目录都是下标数字，不会撞名
+            final classroomResPath = classroomPath.joinPath(DocPath.classroomRes);
+            for (final download in await ClassroomDocHelp.classroomDownloads(classroomId)) {
+              final file = File(classroomResPath.joinPath(download.path));
+              if (await file.exists()) {
+                entries.add([DocPath.classroomRes.joinPath(download.path), file.path]);
               }
             }
 

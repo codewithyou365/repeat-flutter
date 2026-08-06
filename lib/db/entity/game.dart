@@ -2,10 +2,11 @@
 
 import 'package:floor/floor.dart';
 
+/// 游戏是整个课堂全局的：宣告在 [Classroom.content] 的 'g' 里，
+/// zip 放在课堂自己的资源目录（[DocPath.getClassroomResRelativePath]），不挂在某一本书下面。
 @Entity(
   indices: [
     Index(value: ['classroomId', 'name'], unique: true),
-    Index(value: ['bookId']),
   ],
 )
 class Game {
@@ -13,7 +14,6 @@ class Game {
   final int? id;
 
   final int classroomId;
-  final int bookId;
   String k;
   String name;
   String hash;
@@ -24,7 +24,6 @@ class Game {
 
   Game({
     required this.classroomId,
-    required this.bookId,
     required this.k,
     required this.name,
     required this.hash,

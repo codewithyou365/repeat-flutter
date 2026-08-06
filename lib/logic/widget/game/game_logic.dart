@@ -225,7 +225,7 @@ class GameLogic<T extends GetxController> {
           final enable = await Db().db.kvDao.getInt(K.adminEnable) ?? 0;
           GameState.adminEnable = enable != 0;
           GameState.adminId = await Db().db.kvDao.getInt(K.adminId) ?? 0;
-          await web.start(game.bookId, game.hash, game.service, port.value);
+          await web.start(game.classroomId, game.hash, game.service, port.value);
           state.urls.clear();
           var ips = await Ip.getLanIps();
           for (var i = 0; i < ips.length; i++) {

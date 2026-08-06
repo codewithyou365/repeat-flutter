@@ -37,6 +37,22 @@ class Util {
     return book?.classroomId;
   }
 
+  /// 上传落在哪：显式给了 ?c= 就是课堂级资源目录（游戏 zip 放这里，见 Classroom.content 的 'g'），
+  /// 否则还是书本目录。课堂级编辑（All books）传的就是 ?c=。
+  static Future<Directory?> getUploadDir(HttpRequest request, Directory? defaultDir) async {
+    final requestClassroomId = request.uri.queryParameters['c'];
+    final classroomId = requestClassroomId == null ? null : int.tryParse(requestClassroomId);
+    if (classroomId == null) {
+      return getDir(request, defaultDir);
+    }
+    final rootDir = await DocPath.getContentPath();
+    final dir = Directory(rootDir.joinPath(DocPath.getClassroomResRelativePath(classroomId)));
+    if (!await dir.exists()) {
+      await dir.create(recursive: true);
+    }
+    return dir;
+  }
+
   static Future<Directory?> getDir(HttpRequest request, Directory? defaultDir) async {
     final int bookId = await getBookId(request, -1);
     if (bookId == -1) {

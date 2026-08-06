@@ -310,7 +310,7 @@ abstract class BookDao {
     await db.chapterContentVersionDao.deleteByBookId(bookId);
     //await db.classroomDao.deleteById(classroomId);
     //await db.crKvDao.deleteByClassroomId(classroomId);
-    await db.gameDao.deleteByBookId(bookId);
+    // 游戏是课堂全局的，不跟着书本删，见 Classroom.content 的 'g'
     await db.tipDao.deleteByBookId(bookId);
     //await db.timeStatsDao.deleteByClassroomId(classroomId);
     await db.verseDao.deleteByBookId(bookId);
