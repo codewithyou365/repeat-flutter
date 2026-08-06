@@ -10,6 +10,10 @@ class MediaItem {
   final String localPath;
   final MediaKind kind;
   String displayName;
+
+  /// Whether a custom name (`d[].n`) was explicitly set. Only named media are
+  /// listed; unnamed ones are internal resources not worth showing.
+  bool named;
   bool exists;
 
   MediaItem({
@@ -19,6 +23,7 @@ class MediaItem {
     required this.localPath,
     required this.kind,
     required this.displayName,
+    required this.named,
     required this.exists,
   });
 }

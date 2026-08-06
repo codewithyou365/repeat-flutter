@@ -85,10 +85,12 @@ class MediaListLogic extends GetxController {
         }
 
         final itemKey = '$bookId:${d.hash}';
+        final named = d.n != null && d.n!.isNotEmpty;
         if (byKey.containsKey(itemKey)) {
           // Prefer an explicit custom name if a later row provides one.
-          if (d.n != null && d.n!.isNotEmpty) {
+          if (named) {
             byKey[itemKey]!.displayName = d.n!;
+            byKey[itemKey]!.named = true;
           }
           continue;
         }
@@ -99,7 +101,8 @@ class MediaListLogic extends GetxController {
           bookId: bookId,
           localPath: localPath,
           kind: kind,
-          displayName: (d.n != null && d.n!.isNotEmpty) ? d.n! : d.name,
+          displayName: named ? d.n! : d.name,
+          named: named,
           exists: false,
         );
         sortByKey[itemKey] = bookSort * 10000000000 + chapterIndex * 100000 + verseIndex;
@@ -123,7 +126,8 @@ class MediaListLogic extends GetxController {
       handleRow(_RowKind.verse, v.verseId, v.bookId, v.bookSort, v.chapterIndex, v.verseIndex, v.verseContent);
     }
 
-    final items = byKey.entries.toList();
+    // 只显示有名字（d[].n 非空）的媒体，没命名的属于内部资源，不列出来。
+    final items = byKey.entries.where((e) => e.value.named).toList();
     items.sort((a, b) => (sortByKey[a.key] ?? 0).compareTo(sortByKey[b.key] ?? 0));
 
     final result = <MediaItem>[];
