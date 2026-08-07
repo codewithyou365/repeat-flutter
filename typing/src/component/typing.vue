@@ -75,6 +75,7 @@ const props = withDefaults(defineProps<{
   spellPlayTrigger?: string;
   hintTrigger?: string;
   maskTrigger?: string;
+  deleteTrigger?: string;
   assistTriggers?: string[];
   keyMapping?: string;
   touchColor?: string;
@@ -89,6 +90,7 @@ const props = withDefaults(defineProps<{
   spellPlayTrigger: '',
   hintTrigger: '',
   maskTrigger: '',
+  deleteTrigger: '',
   assistTriggers: () => [],
   keyMapping: '',
 });
@@ -356,6 +358,12 @@ const applyInput = (val: string) => {
       pendingTriggerEmits.push(() => emit('maskTrigger'));
       continue; // 触发字符本身不写入内容，也不推进 pos
     }
+    // 删除触发键：等同于按了一次退格。跟其它触发键一样只记录、不立刻执行——doBackspace 改的是
+    // userInput/cursorPos，而本函数末尾还会用循环里的快照 temp/pos 覆盖回去，立刻执行等于白删。
+    if (props.deleteTrigger && char === props.deleteTrigger) {
+      pendingTriggerEmits.push(() => doBackspace());
+      continue; // 触发字符本身不写入内容，也不推进 pos
+    }
     // 绑定到 App 辅助触控按钮的键，数量由用户配置，可以有多个
     if (props.assistTriggers.includes(char)) {
       // 跟 manualPlay 一样在这里就把词的位置取好：触发字符不写进内容，
@@ -518,41 +526,46 @@ const fixCursorPos = () => {
   }
 };
 
+// 退格：物理 Backspace 键和用户配置的"删除触发键"共用这一份逻辑
+const doBackspace = () => {
+  let p = cursorPos.value;
+  const before = userInput.value;
+  if (cursorPos.value !== userInput.value.length && !isIgnore(props.content[p], p)) {
+    p++;
+    while (isIgnore(props.content[p], p) && p < userInput.value.length) p++;
+    if (p === userInput.value.length) {
+      userInput.value = userInput.value.slice(0, cursorPos.value);
+      cursorPos.value = userInput.value.length;
+    }
+  } else {
+    p = cursorPos.value;
+    while (isIgnore(props.content[p], p) && p < userInput.value.length) p++;
+    if (p === userInput.value.length) {
+      userInput.value = userInput.value.slice(0, cursorPos.value);
+      cursorPos.value = userInput.value.length;
+    }
+    if (cursorPos.value === userInput.value.length && cursorPos.value > 0) {
+      userInput.value = userInput.value.slice(0, cursorPos.value - 1) + userInput.value.slice(cursorPos.value);
+      cursorPos.value--;
+      while (isIgnore(props.content[cursorPos.value], cursorPos.value)) {
+        userInput.value = userInput.value.slice(0, cursorPos.value - 1) + userInput.value.slice(cursorPos.value);
+        cursorPos.value--;
+        if (cursorPos.value == 0) break;
+      }
+    }
+    fixCursorPos();
+    positionInput();
+  }
+  if (userInput.value !== before) {
+    emitUserInputChange([]);
+  }
+};
+
 const handleKeydown = (e: KeyboardEvent) => {
   if (isComposing.value) return;
 
   if (e.key === 'Backspace') {
-    let p = cursorPos.value;
-    const before = userInput.value;
-    if (cursorPos.value !== userInput.value.length && !isIgnore(props.content[p], p)) {
-      p++;
-      while (isIgnore(props.content[p], p) && p < userInput.value.length) p++;
-      if (p === userInput.value.length) {
-        userInput.value = userInput.value.slice(0, cursorPos.value);
-        cursorPos.value = userInput.value.length;
-      }
-    } else {
-      p = cursorPos.value;
-      while (isIgnore(props.content[p], p) && p < userInput.value.length) p++;
-      if (p === userInput.value.length) {
-        userInput.value = userInput.value.slice(0, cursorPos.value);
-        cursorPos.value = userInput.value.length;
-      }
-      if (cursorPos.value === userInput.value.length && cursorPos.value > 0) {
-        userInput.value = userInput.value.slice(0, cursorPos.value - 1) + userInput.value.slice(cursorPos.value);
-        cursorPos.value--;
-        while (isIgnore(props.content[cursorPos.value], cursorPos.value)) {
-          userInput.value = userInput.value.slice(0, cursorPos.value - 1) + userInput.value.slice(cursorPos.value);
-          cursorPos.value--;
-          if (cursorPos.value == 0) break;
-        }
-      }
-      fixCursorPos();
-      positionInput();
-    }
-    if (userInput.value !== before) {
-      emitUserInputChange([]);
-    }
+    doBackspace();
     e.preventDefault();
   } else if (e.key === 'ArrowLeft') {
     if (cursorPos.value > 0) {

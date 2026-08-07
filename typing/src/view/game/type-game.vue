@@ -114,6 +114,17 @@
         />
       </template>
     </nut-cell>
+    <nut-cell :title="t('deleteTrigger')" :desc="t('deleteTriggerDesc')">
+      <template #link>
+        <span v-if="deleteTrigger === ' '" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
+        <nut-input
+            v-model="deleteTrigger"
+            maxlength="1"
+            style="text-align: right"
+            @blur="setDeleteTrigger(deleteTrigger)"
+        />
+      </template>
+    </nut-cell>
     <nut-cell :title="t('keyMapping')" :desc="t('keyMappingDesc')">
       <template #link>
         <nut-input
@@ -197,6 +208,7 @@
           :spell-play-trigger="spellPlayTrigger"
           :hint-trigger="hintTrigger"
           :mask-trigger="maskTrigger"
+          :delete-trigger="deleteTrigger"
           :assist-triggers="assistTriggerKeys"
           :key-mapping="keyMapping"
           @char-filled="onCharFilled"
@@ -267,11 +279,13 @@ const spellPlayTrigger = ref(',');
 const spellResetLevel = ref(false);
 const hintTrigger = ref(' ');
 const maskTrigger = ref('');
+const deleteTrigger = ref('');
 // 各触发键最后一次成功保存的值，用于校验失败时把输入框还原回去
 let manualPlayTriggerSaved = '.';
 let spellPlayTriggerSaved = ',';
 let hintTriggerSaved = ' ';
 let maskTriggerSaved = '';
+let deleteTriggerSaved = '';
 const keyMapping = ref('');
 const assistiveTouchBindings = ref<AssistiveTouchBinding[]>([]);
 // 每条绑定最后一次成功保存的键，校验失败时用来还原对应的输入框
@@ -513,6 +527,7 @@ const showTips = () => {
     {label: t('spellResetLevel'), value: formatStatus(spellResetLevel.value)},
     {label: t('hintTrigger'), value: formatTriggerKey(hintTrigger.value)},
     {label: t('maskTrigger'), value: maskTrigger.value ? formatTriggerKey(maskTrigger.value) : t('disabled')},
+    {label: t('deleteTrigger'), value: deleteTrigger.value ? formatTriggerKey(deleteTrigger.value) : t('disabled')},
     {label: t('keyMapping'), value: keyMapping.value || t('disabled')}
   ];
 
@@ -573,10 +588,12 @@ const applyProfile = (index: number) => {
   spellResetLevel.value = typeof res['spellResetLevel'] === 'boolean' ? res['spellResetLevel'] : false;
   hintTrigger.value = typeof res['hintTrigger'] === 'string' ? res['hintTrigger'] : ' ';
   maskTrigger.value = typeof res['maskTrigger'] === 'string' ? res['maskTrigger'] : '';
+  deleteTrigger.value = typeof res['deleteTrigger'] === 'string' ? res['deleteTrigger'] : '';
   manualPlayTriggerSaved = manualPlayTrigger.value;
   spellPlayTriggerSaved = spellPlayTrigger.value;
   hintTriggerSaved = hintTrigger.value;
   maskTriggerSaved = maskTrigger.value;
+  deleteTriggerSaved = deleteTrigger.value;
   keyMapping.value = typeof res['keyMapping'] === 'string' ? res['keyMapping'] : '';
   const rawBindings = Array.isArray(res['assistiveTouchBindings']) ? res['assistiveTouchBindings'] : [];
   assistiveTouchBindings.value = rawBindings.map((b: any) => ({
@@ -718,7 +735,7 @@ const setManualTtsRate = (value: number) => {
 };
 // 所有触发键（四个固定的 + 任意条辅助触控绑定）不能互相重复，比如手动播放和逐字母朗读不能都设成 '.'。
 // exclude 是"正在改的那一个"（固定键用名字，绑定用下标），要排除掉，否则改成原值也会判成冲突。
-type TriggerOwner = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | number;
+type TriggerOwner = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | number;
 const isKeyTaken = (value: string, exclude: TriggerOwner) => {
   if (!value) {
     return false; // 空值表示不启用，不参与冲突判断
@@ -728,6 +745,7 @@ const isKeyTaken = (value: string, exclude: TriggerOwner) => {
   if (exclude !== 'spellPlay') keys.push(spellPlayTrigger.value);
   if (exclude !== 'hint') keys.push(hintTrigger.value);
   if (exclude !== 'mask') keys.push(maskTrigger.value);
+  if (exclude !== 'delete') keys.push(deleteTrigger.value);
   assistiveTouchBindings.value.forEach((b, i) => {
     if (exclude !== i) keys.push(b.key);
   });
@@ -778,6 +796,16 @@ const setMaskTrigger = (value: string) => {
   maskTriggerSaved = value;
   profiles.value[activeProfile.value].maskTrigger = value;
   setConfig("maskTrigger", value);
+};
+const setDeleteTrigger = (value: string) => {
+  if (isKeyTaken(value, 'delete')) {
+    showToast.warn(t('triggerKeyConflict'));
+    deleteTrigger.value = deleteTriggerSaved;
+    return;
+  }
+  deleteTriggerSaved = value;
+  profiles.value[activeProfile.value].deleteTrigger = value;
+  setConfig("deleteTrigger", value);
 };
 const setKeyMapping = (value: string) => {
   profiles.value[activeProfile.value].keyMapping = value;
