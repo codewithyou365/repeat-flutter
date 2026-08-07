@@ -115,29 +115,34 @@ class AssistiveTouchButton extends StatelessWidget {
       Obx(() {
         return Padding(
           padding: const EdgeInsets.all(8),
-          child: Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            children: [
-              ...logic.shownBuiltins.map((builtIn) {
-                return AssistiveTouchTile.build(
-                  icon: builtIn.icon,
-                  label: logic.labelOf(builtIn),
-                  onTap: () => builtIn == BuiltInAction.deleteVerse ? _confirmDeleteCurrentVerse(logic) : _executeBuiltIn(logic, builtIn),
-                );
-              }),
-              ...logic.actions.map((action) {
-                return AssistiveTouchTile.build(
-                  icon: Icons.bolt,
-                  label: action.name,
-                  onTap: () {
-                    Get.back();
-                    logic.executeAction(action);
-                  },
-                );
-              }),
-            ],
-          ),
+          child: LayoutBuilder(builder: (context, constraints) {
+            final tileWidth = AssistiveTouchTile.widthFor(constraints.maxWidth);
+            return Wrap(
+              spacing: AssistiveTouchTile.spacing,
+              runSpacing: AssistiveTouchTile.spacing,
+              children: [
+                ...logic.shownBuiltins.map((builtIn) {
+                  return AssistiveTouchTile.build(
+                    icon: builtIn.icon,
+                    label: logic.labelOf(builtIn),
+                    width: tileWidth,
+                    onTap: () => builtIn == BuiltInAction.deleteVerse ? _confirmDeleteCurrentVerse(logic) : _executeBuiltIn(logic, builtIn),
+                  );
+                }),
+                ...logic.actions.map((action) {
+                  return AssistiveTouchTile.build(
+                    icon: Icons.bolt,
+                    label: action.name,
+                    width: tileWidth,
+                    onTap: () {
+                      Get.back();
+                      logic.executeAction(action);
+                    },
+                  );
+                }),
+              ],
+            );
+          }),
         );
       }),
       head: SheetHead(

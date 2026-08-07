@@ -53,6 +53,31 @@ enum BuiltInAction {
   playTip6,
   playTip7,
   playTip8,
+  // 上面的 playPause/seekBack 作用在"现在正放着的那个字段"上；下面这些是直接指定目标的，
+  // 比如刚 Play-Tip1 过，点"后退-Q"就切回 q 并从 q 上次停的点位往回退，而不是退 tip1。
+  // 跟 playTip1..8 一样，Tips 那两个只是入口，真正加进菜单的是带号的 16 个。
+  seekBackQ,
+  seekBackA,
+  seekBackTips,
+  seekBackTip1,
+  seekBackTip2,
+  seekBackTip3,
+  seekBackTip4,
+  seekBackTip5,
+  seekBackTip6,
+  seekBackTip7,
+  seekBackTip8,
+  playPauseQ,
+  playPauseA,
+  playPauseTips,
+  playPauseTip1,
+  playPauseTip2,
+  playPauseTip3,
+  playPauseTip4,
+  playPauseTip5,
+  playPauseTip6,
+  playPauseTip7,
+  playPauseTip8,
 }
 
 /// 指定第几条提示的动作：枚举名 -> 提示下标（0 基）。
@@ -78,6 +103,31 @@ const _playTipIndex = {
   BuiltInAction.playTip8: 7,
 };
 
+const _seekBackTipIndex = {
+  BuiltInAction.seekBackTip1: 0,
+  BuiltInAction.seekBackTip2: 1,
+  BuiltInAction.seekBackTip3: 2,
+  BuiltInAction.seekBackTip4: 3,
+  BuiltInAction.seekBackTip5: 4,
+  BuiltInAction.seekBackTip6: 5,
+  BuiltInAction.seekBackTip7: 6,
+  BuiltInAction.seekBackTip8: 7,
+};
+
+const _playPauseTipIndex = {
+  BuiltInAction.playPauseTip1: 0,
+  BuiltInAction.playPauseTip2: 1,
+  BuiltInAction.playPauseTip3: 2,
+  BuiltInAction.playPauseTip4: 3,
+  BuiltInAction.playPauseTip5: 4,
+  BuiltInAction.playPauseTip6: 5,
+  BuiltInAction.playPauseTip7: 6,
+  BuiltInAction.playPauseTip8: 7,
+};
+
+/// 指定目标的那两族动作：'后退-*' 和 '播放/暂停-*'。
+const _seekBackFamily = {BuiltInAction.seekBack, BuiltInAction.seekBackQ, BuiltInAction.seekBackA, BuiltInAction.seekBackTips};
+
 extension BuiltInActionX on BuiltInAction {
   IconData get icon {
     switch (this) {
@@ -93,18 +143,52 @@ extension BuiltInActionX on BuiltInAction {
       case BuiltInAction.playTips:
         return Icons.play_circle_outline;
       case BuiltInAction.playPause:
+      case BuiltInAction.playPauseQ:
+      case BuiltInAction.playPauseA:
+      case BuiltInAction.playPauseTips:
         return Icons.play_arrow;
       case BuiltInAction.seekBack:
+      case BuiltInAction.seekBackQ:
+      case BuiltInAction.seekBackA:
+      case BuiltInAction.seekBackTips:
         return Icons.replay;
       default:
-        return tipIndex == null
-            ? Icons.bolt
-            : (_ttsTipIndex.containsKey(this) ? Icons.record_voice_over : Icons.play_circle_outline);
+        if (_ttsTipIndex.containsKey(this)) {
+          return Icons.record_voice_over;
+        }
+        if (_playTipIndex.containsKey(this)) {
+          return Icons.play_circle_outline;
+        }
+        if (_seekBackTipIndex.containsKey(this)) {
+          return Icons.replay;
+        }
+        if (_playPauseTipIndex.containsKey(this)) {
+          return Icons.play_arrow;
+        }
+        return Icons.bolt;
     }
   }
 
   /// 指定第几条提示的动作对应哪一条（0 基）；其它动作返回 null。
-  int? get tipIndex => _ttsTipIndex[this] ?? _playTipIndex[this];
+  int? get tipIndex => _ttsTipIndex[this] ?? _playTipIndex[this] ?? _seekBackTipIndex[this] ?? _playPauseTipIndex[this];
+
+  /// 秒数可调的那族（'后退' 和所有 '后退-*'），共用同一份 [AssistiveTouchLogic.seekBackSeconds]。
+  bool get isSeekBack => _seekBackFamily.contains(this) || _seekBackTipIndex.containsKey(this);
+
+  /// 指定目标的动作作用在哪个字段（'q'/'a'/'t1'…）。"当前"语义的和非播放类动作返回 null。
+  String? get targetFieldRef {
+    switch (this) {
+      case BuiltInAction.seekBackQ:
+      case BuiltInAction.playPauseQ:
+        return QaType.question.acronym;
+      case BuiltInAction.seekBackA:
+      case BuiltInAction.playPauseA:
+        return QaType.answer.acronym;
+      default:
+        final index = _seekBackTipIndex[this] ?? _playPauseTipIndex[this];
+        return index == null ? null : VerseField.ref(QaType.tip.acronym, index);
+    }
+  }
 
   /// TTS-* 动作对应朗读哪个字段；非 TTS 动作没有这个概念。
   /// 每条提示共用"提示"那一套 TTS 配置，所以带号的也都是 QaType.tip。
@@ -148,10 +232,45 @@ extension BuiltInActionX on BuiltInAction {
         return I18nKey.playPauseAction;
       case BuiltInAction.seekBack:
         return I18nKey.seekBackAction;
+      case BuiltInAction.seekBackQ:
+        return I18nKey.seekBackQAction;
+      case BuiltInAction.seekBackA:
+        return I18nKey.seekBackAAction;
+      case BuiltInAction.seekBackTips:
+        return I18nKey.seekBackTipsAction;
+      case BuiltInAction.playPauseQ:
+        return I18nKey.playPauseQAction;
+      case BuiltInAction.playPauseA:
+        return I18nKey.playPauseAAction;
+      case BuiltInAction.playPauseTips:
+        return I18nKey.playPauseTipsAction;
       default:
         // 带号的提示动作只在这里兜个底（真正显示的文案见 AssistiveTouchLogic.labelOf）。
-        return _ttsTipIndex.containsKey(this) ? I18nKey.ttsTipsAction : I18nKey.playTipsAction;
+        if (_ttsTipIndex.containsKey(this)) {
+          return I18nKey.ttsTipsAction;
+        }
+        if (_playTipIndex.containsKey(this)) {
+          return I18nKey.playTipsAction;
+        }
+        if (_seekBackTipIndex.containsKey(this)) {
+          return I18nKey.seekBackTipsAction;
+        }
+        return I18nKey.playPauseTipsAction;
     }
+  }
+
+  /// 带号的提示动作显示的文案模版（'%s' 是提示名字），见 AssistiveTouchLogic.labelOf。
+  I18nKey get tipIndexLabelKey {
+    if (_ttsTipIndex.containsKey(this)) {
+      return I18nKey.ttsTipIndexAction;
+    }
+    if (_playTipIndex.containsKey(this)) {
+      return I18nKey.playTipIndexAction;
+    }
+    if (_seekBackTipIndex.containsKey(this)) {
+      return I18nKey.seekBackTipIndexAction;
+    }
+    return I18nKey.playPauseTipIndexAction;
   }
 }
 
@@ -297,18 +416,31 @@ class AssistiveTouchLogic {
     if (tipIndex == null) {
       return action.labelKey.tr;
     }
-    final key = action.qaType == null ? I18nKey.playTipIndexAction : I18nKey.ttsTipIndexAction;
-    return key.trArgs([tipLabel(tipIndex)]);
+    return action.tipIndexLabelKey.trArgs([tipLabel(tipIndex)]);
   }
 
-  /// "新增"里 TTS-Tips / Play-Tips 只是入口：点了再选第几条，真正加进菜单的是带号的那 16 个。
+  /// "新增"里 TTS-Tips / Play-Tips / 后退-Tips / 播放暂停-Tips 只是入口：点了再选第几条，
+  /// 真正加进菜单的是带号的那些。
   /// 它们自己不作为动作加进去（老用户菜单里已经有的仍然照旧跟着当前选中的那条走）。
-  static const List<BuiltInAction> tipGateways = [BuiltInAction.ttsTips, BuiltInAction.playTips];
+  static const List<BuiltInAction> tipGateways = [
+    BuiltInAction.ttsTips,
+    BuiltInAction.playTips,
+    BuiltInAction.seekBackTips,
+    BuiltInAction.playPauseTips,
+  ];
 
   /// 入口对应的 8 个带号动作，按提示顺序排列。
   List<BuiltInAction> tipActionsOf(BuiltInAction gateway) {
-    final map = gateway == BuiltInAction.ttsTips ? _ttsTipIndex : _playTipIndex;
-    return map.keys.toList();
+    switch (gateway) {
+      case BuiltInAction.ttsTips:
+        return _ttsTipIndex.keys.toList();
+      case BuiltInAction.playTips:
+        return _playTipIndex.keys.toList();
+      case BuiltInAction.seekBackTips:
+        return _seekBackTipIndex.keys.toList();
+      default:
+        return _playPauseTipIndex.keys.toList();
+    }
   }
 
   /// 当前模式支持、且用户没有把它从自定义菜单里移除的内置动作，按定义顺序排列。
@@ -390,17 +522,88 @@ class AssistiveTouchLogic {
         await _play((h) => h.getCurrTipRange());
         break;
       case BuiltInAction.playPause:
-        _activeMediaBar()?.togglePlayPause();
+        await _activeMediaBar()?.togglePlayPause();
         break;
       case BuiltInAction.seekBack:
-        _activeMediaBar()?.seekBack(seekBackSeconds.value);
+        await _activeMediaBar()?.seekBack(seekBackSeconds.value);
         break;
+      case BuiltInAction.playPauseQ:
+      case BuiltInAction.playPauseA:
+      case BuiltInAction.playPauseTip1:
+      case BuiltInAction.playPauseTip2:
+      case BuiltInAction.playPauseTip3:
+      case BuiltInAction.playPauseTip4:
+      case BuiltInAction.playPauseTip5:
+      case BuiltInAction.playPauseTip6:
+      case BuiltInAction.playPauseTip7:
+      case BuiltInAction.playPauseTip8:
+        await _resumeOn(action.targetFieldRef!);
+        break;
+      case BuiltInAction.seekBackQ:
+      case BuiltInAction.seekBackA:
+      case BuiltInAction.seekBackTip1:
+      case BuiltInAction.seekBackTip2:
+      case BuiltInAction.seekBackTip3:
+      case BuiltInAction.seekBackTip4:
+      case BuiltInAction.seekBackTip5:
+      case BuiltInAction.seekBackTip6:
+      case BuiltInAction.seekBackTip7:
+      case BuiltInAction.seekBackTip8:
+        await _resumeOn(action.targetFieldRef!, offsetMs: -seekBackSeconds.value * 1000);
+        break;
+      // "新增"里这两个只是入口(点了再选第几条)，不会被加进菜单；但手柄绑定是按枚举列的，
+      // 绑上了就得能用，所以跟 playTips 一样：作用在界面上当前选中的那一条提示上。
+      case BuiltInAction.playPauseTips:
+        await _resumeOn(repeatLogic.state.helper.currTipRef());
+        break;
+      case BuiltInAction.seekBackTips:
+        await _resumeOn(repeatLogic.state.helper.currTipRef(), offsetMs: -seekBackSeconds.value * 1000);
+        break;
+    }
+  }
+
+  /// 指定目标的"播放/暂停""后退 N 秒"：
+  /// 目标就是现在这条进度条绑着的字段时，跟不指定的那两个完全一样（直接操作现有播放器，
+  /// 该切换播放状态就切换）；不是的话，先把当前字段停在哪记下来（[_playRange] 负责），
+  /// 再切到目标字段，从它上次停的点位（这一节还没播过就从区间起点）加上 [offsetMs] 开始播。
+  Future<void> _resumeOn(String fieldRef, {int offsetMs = 0}) async {
+    if (_mediaRangeHelper.getCurrRange().fieldAcronym == fieldRef) {
+      final bar = _activeMediaBar();
+      if (offsetMs == 0) {
+        await bar?.togglePlayPause();
+      } else {
+        await bar?.seekBack(-offsetMs ~/ 1000);
+      }
+      return;
+    }
+    final range = _mediaRangeHelper.getCurrRangeOf(fieldRef);
+    if (range == null || !range.enable) {
+      Snackbar.show(I18nKey.labelNoContent.tr);
+      return;
+    }
+    final helper = repeatLogic.state.helper;
+    var at = (helper.lastPlayPosMs[fieldRef] ?? range.start) + offsetMs;
+    if (at < 0) {
+      at = 0;
+    }
+    helper.playAtMs = at;
+    if (!await _playRange(range)) {
+      helper.playAtMs = null;
     }
   }
 
   /// Play/暂停、后退 N 秒复用的是"当前正在显示的音频/视频视图"里已经在播的那个 MediaBar，
   /// 跟 Play-*（_playRange）不一样：它们不切字段、不重新加载，只操作现有播放器的播放状态。
   MediaBarState? _activeMediaBar() {
+    final bar = _currMediaBar();
+    if (bar == null) {
+      Snackbar.show(I18nKey.labelNoContent.tr);
+    }
+    return bar;
+  }
+
+  /// 同上，但没有就静静返回 null（记点位这种顺手做的事不该弹提示）。
+  MediaBarState? _currMediaBar() {
     final viewName = repeatLogic.state.helper.getCurrViewName();
     final view = repeatLogic.showTypeToRepeatView[viewName];
     if (view is RepeatViewForAudio) {
@@ -409,8 +612,17 @@ class AssistiveTouchLogic {
     if (view is RepeatViewForVideo) {
       return view.mediaKey.currentState;
     }
-    Snackbar.show(I18nKey.labelNoContent.tr);
     return null;
+  }
+
+  /// 记下现在这条进度条停在哪，挂到它绑着的那个字段上。切到别的字段前调用，
+  /// 这样待会"后退-<刚才那个字段>"才接得上，而不是从头再来。
+  void _noteCurrPlayPos() {
+    final bar = _currMediaBar();
+    if (bar == null) {
+      return;
+    }
+    repeatLogic.state.helper.lastPlayPosMs[_mediaRangeHelper.getCurrRange().fieldAcronym] = bar.currentPositionMs;
   }
 
   /// 播放"作用位置"上已有的内容：该字段配了可用的时间区间就播那一段（字段有自己的媒体就播
@@ -473,20 +685,24 @@ class AssistiveTouchLogic {
   /// 放某个区间：把"当前字段"临时切成这个区间所属的字段（playFieldOverride），然后走正常的
   /// 重建流程——视图类型、播放的文件、MediaBar 的起止点都会跟着切过去，进度条也能正常跟着动。
   /// 比如 evaluate 阶段点 Play-Q：界面会从答案的音频切回问题的视频，并从 q 的起点开始播。
-  Future<void> _playRange(MediaRange range) async {
+  /// 没能切过去（目标字段不是音视频）时返回 false，什么都不改。
+  Future<bool> _playRange(MediaRange range) async {
     final helper = repeatLogic.state.helper;
+    // 离开当前字段前把它的点位记下来，回来时（后退-<该字段>）才接得上。
+    _noteCurrPlayPos();
     final lastOverride = helper.playFieldOverride;
     helper.playFieldOverride = range.fieldAcronym;
     final viewName = helper.getCurrViewName();
     if (viewName != RepeatViewEnum.audio.name && viewName != RepeatViewEnum.video.name) {
       helper.playFieldOverride = lastOverride;
       Snackbar.show(I18nKey.labelNoContent.tr);
-      return;
+      return false;
     }
     helper.doNotPlayMedia = false;
     helper.enableReloadMedia = true;
     helper.tryToPlayMedia = true;
     repeatLogic.update([RepeatLogic.id]);
+    return true;
   }
 
   Future<void> deleteCurrentVerse() async {

@@ -72,6 +72,16 @@ class Helper {
   bool doNotPlayMedia = true;
   bool tryToPlayMedia = false;
 
+  /// 重建后这一次自动播放要从哪个位置开始（整个媒体文件的毫秒数）。为 null 就跟以前一样
+  /// 从区间起点放。辅助触控里"指定目标"的播放/暂停、后退用它接上该字段上次的点位。
+  /// 用完即清（见 RepeatViewForAudio/Video 的 body）。
+  int? playAtMs;
+
+  /// 各字段（'q'/'a'/'t1'…）上次离开时进度条停在哪（毫秒）。
+  /// 只对当前这一节有效，翻到别的小节就作废（见 [prefetch]）。
+  final Map<String, int> lastPlayPosMs = {};
+  int? _lastPlayPosVerseId;
+
   /// 当前这一节的三层内容，由 [prefetch] 在切句子时一次性取好。
   ///
   /// 以前这三个是去全局缓存（整个课堂的书/章/句常驻内存）里现查的，现在改成
@@ -154,6 +164,13 @@ class Helper {
       nextPos = '';
       _nextPosVerseId = null;
       return;
+    }
+    // 点位是按小节记的：换了小节，上一节各字段的点位全部作废。
+    // 用单独的 _lastPlayPosVerseId 判断，不跟着 currVerseShow 走——内容被改过时
+    // refetch() 会把 currVerseShow 清成 null，那种"原地重取"不该丢掉点位。
+    if (_lastPlayPosVerseId != curr.verseId) {
+      _lastPlayPosVerseId = curr.verseId;
+      lastPlayPosMs.clear();
     }
     if (currVerseShow?.verseId != curr.verseId) {
       currVerseShow = await Db().db.scheduleDao.getVerseShowById(curr.verseId);

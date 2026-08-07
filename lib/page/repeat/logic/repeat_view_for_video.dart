@@ -142,11 +142,19 @@ class RepeatViewForVideo extends RepeatView {
       helper.enableReloadMedia = false;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         load(currentPath).then((_) {
+          // 指定起播位置只对这一次重建有效，无论最后播没播都要清掉，
+          // 免得漏到下一次（翻页、切步骤）的自动播放上。
+          final at = helper.playAtMs;
+          helper.playAtMs = null;
           if (helper.doNotPlayMedia) {
             mediaKey.currentState?.drawStart();
           } else if (helper.tryToPlayMedia) {
             helper.tryToPlayMedia = false;
-            mediaKey.currentState?.playFromStart();
+            if (at != null) {
+              mediaKey.currentState?.playAt(at);
+            } else {
+              mediaKey.currentState?.playFromStart();
+            }
           }
         });
       });

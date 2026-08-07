@@ -35,33 +35,39 @@ class AssistiveTouchSheet {
             RowWidget.buildText(I18nKey.customizeMenu.tr),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Wrap(
-                spacing: 16,
-                runSpacing: 16,
-                children: [
-                  ...logic.shownBuiltins.map((builtIn) {
-                    return AssistiveTouchTile.build(
-                      icon: builtIn.icon,
-                      label: logic.labelOf(builtIn),
-                      onTap: () => _showBuiltInMenu(logic, builtIn),
-                    );
-                  }),
-                  ...logic.actions.map((action) {
-                    return AssistiveTouchTile.build(
-                      icon: Icons.bolt,
-                      label: action.name,
+              child: LayoutBuilder(builder: (context, constraints) {
+                final tileWidth = AssistiveTouchTile.widthFor(constraints.maxWidth);
+                return Wrap(
+                  spacing: AssistiveTouchTile.spacing,
+                  runSpacing: AssistiveTouchTile.spacing,
+                  children: [
+                    ...logic.shownBuiltins.map((builtIn) {
+                      return AssistiveTouchTile.build(
+                        icon: builtIn.icon,
+                        label: logic.labelOf(builtIn),
+                        width: tileWidth,
+                        onTap: () => _showBuiltInMenu(logic, builtIn),
+                      );
+                    }),
+                    ...logic.actions.map((action) {
+                      return AssistiveTouchTile.build(
+                        icon: Icons.bolt,
+                        label: action.name,
+                        width: tileWidth,
+                        enabled: canEdit,
+                        onTap: () => _showActionMenu(logic, action),
+                      );
+                    }),
+                    AssistiveTouchTile.build(
+                      icon: Icons.add,
+                      label: I18nKey.btnAdd.tr,
+                      width: tileWidth,
                       enabled: canEdit,
-                      onTap: () => _showActionMenu(logic, action),
-                    );
-                  }),
-                  AssistiveTouchTile.build(
-                    icon: Icons.add,
-                    label: I18nKey.btnAdd.tr,
-                    enabled: canEdit,
-                    onTap: () => _showAddSelector(logic),
-                  ),
-                ],
-              ),
+                      onTap: () => _showAddSelector(logic),
+                    ),
+                  ],
+                );
+              }),
             ),
           ],
         );
@@ -106,7 +112,7 @@ class AssistiveTouchSheet {
   /// 点内置动作的格子弹目录：TTS-*/后退 有"编辑"（重新调参数），其它内置动作（播放/删除当前节等）
   /// 没有可调的参数，目录里只有"删除"。
   static Future<void> _showBuiltInMenu(AssistiveTouchLogic logic, BuiltInAction builtIn) async {
-    final editable = builtIn.qaType != null || builtIn == BuiltInAction.seekBack;
+    final editable = builtIn.qaType != null || builtIn.isSeekBack;
     await _showMenu(
       title: logic.labelOf(builtIn),
       editable: editable,
@@ -169,8 +175,8 @@ class AssistiveTouchSheet {
   /// TTS-* 重新弹"TTS设置"调参数；"后退"重新弹秒数选择器——跟新增时用的是同一个 sheet，
   /// 里面点确定会再 setBuiltInVisible(true)一次，反正已经是 true，不会有副作用。
   static Future<void> _editBuiltIn(AssistiveTouchLogic logic, BuiltInAction builtIn) async {
-    if (builtIn == BuiltInAction.seekBack) {
-      await _askSeekBackSecondsThenAdd(logic);
+    if (builtIn.isSeekBack) {
+      await _askSeekBackSecondsThenAdd(logic, builtIn);
       return;
     }
     final qaType = builtIn.qaType;
@@ -215,8 +221,9 @@ class AssistiveTouchSheet {
               GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 4,
-                childAspectRatio: 0.85,
+                crossAxisCount: AssistiveTouchTile.columns,
+                // 一行少放一个，格子就变宽了，高度按老比例算会空一大截，同步调平。
+                childAspectRatio: 1.2,
                 children: addable.map((builtIn) {
                   return AssistiveTouchTile.build(
                     icon: builtIn.icon,
@@ -224,8 +231,8 @@ class AssistiveTouchSheet {
                     width: double.infinity,
                     onTap: () {
                       Get.back();
-                      if (builtIn == BuiltInAction.seekBack) {
-                        _askSeekBackSecondsThenAdd(logic);
+                      if (builtIn.isSeekBack && !AssistiveTouchLogic.tipGateways.contains(builtIn)) {
+                        _askSeekBackSecondsThenAdd(logic, builtIn);
                       } else if (AssistiveTouchLogic.tipGateways.contains(builtIn)) {
                         // TTS-Tips / Play-Tips 是入口，先选作用在第几条提示上。
                         _askTipThenAdd(logic, builtIn);
@@ -264,7 +271,8 @@ class AssistiveTouchSheet {
 
   /// "后退"的秒数只在勾选它时问一次，问完直接落库并把它加进菜单——比常驻在设置里占位置、
   /// 又要多一次"改了要不要生效"的心智负担更省事。
-  static Future<void> _askSeekBackSecondsThenAdd(AssistiveTouchLogic logic) async {
+  /// 秒数是整族"后退-*"共用的一份，在哪个上面改都一样。
+  static Future<void> _askSeekBackSecondsThenAdd(AssistiveTouchLogic logic, BuiltInAction builtIn) async {
     final selected = _seekBackIndex(logic.seekBackSeconds.value).obs;
     await Sheet.showBottomSheet(
       Get.context!,
@@ -281,7 +289,7 @@ class AssistiveTouchSheet {
           RowWidget.buildButtons([
             Button(I18nKey.btnOk.tr, () async {
               await logic.setSeekBackSeconds(seekBackOptions[selected.value]);
-              await logic.setBuiltInVisible(BuiltInAction.seekBack, true);
+              await logic.setBuiltInVisible(builtIn, true);
               Get.back();
             }),
           ]),
@@ -290,7 +298,7 @@ class AssistiveTouchSheet {
       head: SheetHead(
         height: RowWidget.rowHeight + RowWidget.dividerHeight,
         widgets: [
-          RowWidget.buildMiddleText(BuiltInAction.seekBack.labelKey.tr),
+          RowWidget.buildMiddleText(logic.labelOf(builtIn)),
           RowWidget.buildDivider(),
         ],
       ),
@@ -317,6 +325,8 @@ class AssistiveTouchSheet {
               Get.back();
               if (action.qaType != null) {
                 _askTtsThenAdd(logic, action);
+              } else if (action.isSeekBack) {
+                _askSeekBackSecondsThenAdd(logic, action);
               } else {
                 logic.setBuiltInVisible(action, true);
               }

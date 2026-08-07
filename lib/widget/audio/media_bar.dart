@@ -191,6 +191,15 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
     await _playAtPosition(incrementMs: -seconds * 1000);
   }
 
+  /// 从指定的绝对位置（整个媒体文件的毫秒数）开始播。辅助触控里"指定目标"的
+  /// 播放/暂停、后退用它接上该字段上次停在的点位（见 Helper.lastPlayPosMs）。
+  Future<void> playAt(int positionMs) async {
+    await _playAtPosition(timeOffsetMs: positionMs);
+  }
+
+  /// 进度条当前停在整个媒体文件的第几毫秒。切到别的字段前拿它记下这个字段的点位。
+  int get currentPositionMs => widget.verseStartMs + (-_blockOffset / MediaBar.pixelPerMs).floor();
+
   void setLoading(bool isLoading) {
     setState(() {
       _isLoading = isLoading;
