@@ -28,5 +28,9 @@ class RepeatState {
 
   bool gameLogicInitSuccess = false;
 
+  /// 'q'/'a'/'n' 的提示服务：每本书各配各的。
   Map<int, Map<String, Tip?>> bookIdToTip = {};
+
+  /// 提示（'t'/'t1'/…）的提示服务：整个课堂共用一套，见 ClassroomDocField.tips。
+  Map<String, Tip?> classroomTips = {};
 }

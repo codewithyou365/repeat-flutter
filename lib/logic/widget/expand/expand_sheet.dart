@@ -39,7 +39,7 @@ class ExpandSheet {
     );
   }
 
-  /// 「插入」菜单里的条目：本节字段（显示 book 里定义的提示名）+ 执行前填的参数。
+  /// 「插入」菜单里的条目：本节字段（显示课堂里定义的提示名）+ 执行前填的参数。
   List<PopupMenuEntry<String>> _placeholderItems() {
     return [
       PopupMenuItem(value: ExpandLogic.questionKey, child: Text('${QaType.question.i18n.tr}  {{${ExpandLogic.questionKey}}}')),
@@ -59,8 +59,8 @@ class ExpandSheet {
     logic.bookId = verse.bookId;
     logic.verseId = verse.verseId;
     logic.verseMap = verseMap;
-    // tipLabel 是同步的，book 内容得在开面板前先取好
-    await logic.loadBookMap();
+    // tipLabel 是同步的，课堂内容得在开面板前先取好
+    await logic.loadClassroomMap();
     if (preset != null) {
       logic.editingActionId = preset.id;
       logic.actionSort = preset.sort;

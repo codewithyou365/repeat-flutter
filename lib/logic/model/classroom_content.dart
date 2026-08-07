@@ -17,6 +17,25 @@ class ClassroomDocField {
   /// 课堂文档里书本数组的 key。这个 key 不会存进 Classroom.content。
   static const String books = 'b';
 
+  /// 提示的定义数组，跟游戏 'g'、课堂级下载 'd' 并排放在 [Classroom.content] 里：
+  ///
+  /// ```json
+  /// "t":[{"n":"词源","fontSize":"18.0","fontAlias":"X.ttf","fontHash":"..",
+  ///       "h":"..","k":"..","s":"..","i":3},
+  ///      {"n":"语法"}]
+  /// ```
+  ///
+  /// 每一条就是 VerseField 的「字段块」，结构跟 book/verse 那层的 't' 完全一样，
+  /// 所以读写直接用 VerseField.of/getStr/setStr/ref/tipNameOf/ensureTipCount。
+  /// 放的只有名字（'n'）、字体（'fontSize'/'fontAlias'/'fontHash'）和提示服务配置
+  /// （'h'/'k'/'s'/'i'）——正文/媒体/区间仍然逐节存在 Verse.content 的 't' 里。
+  ///
+  /// **下标就是提示的身份**：课堂的第 i 条名字配的就是每一节第 i 条正文，
+  /// 所以这个数组只能在末尾加、清空某一条只能就地留个空块，绝不能从中间 removeAt。
+  /// 字体文件和提示服务的 zip 都从课堂自己的 'd' 里找，落在
+  /// [DocPath.getClassroomResRelativePath] 下（跟游戏一样）。
+  static const String tips = 't';
+
   /// 书本 id。只在网络编辑（databaseData=true）时带上：
   /// 有 id 就是改已有的书，没 id 就是新建一本。
   /// 对外分享的文档不带它，所以导入方一律新建。

@@ -283,14 +283,14 @@ class AssistiveTouchLogic {
     return true;
   }
 
-  /// 第 i 条提示显示的名字：book 里定义了就用定义的（跟提示 tab 栏一致），没定义用序号。
+  /// 第 i 条提示显示的名字：课堂里定义了就用定义的（跟提示 tab 栏一致），没定义用序号。
   String tipLabel(int tipIndex) {
-    return VerseField.tipNameOf(repeatLogic.state.helper.getCurrBookMap(), tipIndex) //
+    return VerseField.tipNameOf(repeatLogic.state.helper.getClassroomMap(), tipIndex) //
         ??
         '${I18nKey.labelTips.tr}${tipIndex + 1}';
   }
 
-  /// 内置动作显示的文案。带号的提示动作要按 book 里定义的提示名字来
+  /// 内置动作显示的文案。带号的提示动作要按课堂里定义的提示名字来
   /// （跟提示 tab 栏保持一致），没定义名字就用序号。
   String labelOf(BuiltInAction action) {
     final tipIndex = action.tipIndex;

@@ -39,7 +39,7 @@ class DocPath {
     return '$classroomId';
   }
 
-  /// 课堂级资源（游戏 zip）的目录。
+  /// 课堂级资源（游戏 zip、提示的字体和提示服务 zip）的目录。
   /// 课堂目录下的其它子目录都是书本 id（纯数字），所以用 [classroomRes] 这个非数字名字
   /// 就不会撞上，游戏文件也不用再挂在某一本书下面。
   static String getClassroomResRelativePath(int classroomId) {

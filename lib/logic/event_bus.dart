@@ -5,6 +5,7 @@ enum EventTopic {
   wsEvent,
   newVerse,
   allowRegisterNumber,
+  updateClassroomContent,
   createBook,
   importBook,
   reimportBook,

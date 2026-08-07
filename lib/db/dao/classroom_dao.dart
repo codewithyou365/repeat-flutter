@@ -4,6 +4,7 @@ import 'package:floor/floor.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:repeat_flutter/common/num.dart';
 
@@ -148,8 +149,17 @@ abstract class ClassroomDao {
 
   /// 对标 BookDao.updateBookContent：先校验 JSON、没变就不动、变了才 +1 版本。
   /// 课堂内容没有历史表，网络编辑的原文由 EditBookHistory 留底。
-  @transaction
+  ///
+  /// 事务提交之后才发事件，跟 BookDao.updateBookContent 一样：在事务里发的话，
+  /// 监听方回头查库读到的还是旧内容。
   Future<Classroom> updateContent(int classroomId, String content) async {
+    final ret = await innerUpdateContent(classroomId, content);
+    EventBus().publish<int>(EventTopic.updateClassroomContent, classroomId);
+    return ret;
+  }
+
+  @transaction
+  Future<Classroom> innerUpdateContent(int classroomId, String content) async {
     Classroom? classroom = await getById(classroomId);
     if (classroom == null) {
       Snackbar.showAndThrow(I18nKey.labelDataAnomaly.trArgs(['classroom']));

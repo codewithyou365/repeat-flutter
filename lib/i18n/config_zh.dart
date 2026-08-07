@@ -69,7 +69,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelTips, "提示");
     put(I18nKey.labelTipName, "提示名称");
     put(I18nKey.labelRenameTip, "更名");
-    put(I18nKey.labelDeleteTip, "确定删除该提示？这本学卷里所有小节的这条提示内容都会被删除。");
+    put(I18nKey.labelDeleteTip, "确定删除该提示的名称？字体和各小节里已经写好的内容都会保留。");
     put(I18nKey.labelReviewThisCount, "回顾该内容次数");
     put(I18nKey.labelLearnCount, "学习次数");
     put(I18nKey.labelReviewCount, "回顾次数");

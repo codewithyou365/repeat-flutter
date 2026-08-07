@@ -67,9 +67,9 @@ class ExpandLogic {
   /// 老预设存的"提示"（作用位置是 1）归到"提示1"，这样选项框里能选中它。
   static int normalizeTargetIndex(int index) => index == 1 ? tipStart : index;
 
-  /// 第 i 条提示显示的名字：book 里定义了就用定义的（跟提示 tab 栏一致），没定义用序号。
+  /// 第 i 条提示显示的名字：课堂里定义了就用定义的（跟提示 tab 栏一致），没定义用序号。
   String tipLabel(int index) {
-    return VerseField.tipNameOf(_bookMap(), index) ?? '${QaType.tip.i18n.tr}${index + 1}';
+    return VerseField.tipNameOf(classroomMap, index) ?? '${QaType.tip.i18n.tr}${index + 1}';
   }
 
   String toFieldRef(int targetIndex) {
@@ -326,23 +326,22 @@ class ExpandLogic {
     });
   }
 
-  /// 扩展助手只拿得到 verse 那一层，book 的内容由 [ExpandSheet.open] 打开时查一次
-  /// 塞进来（提示的名字定义在 book 上）。[tipLabel] 是同步的，这里不能临时查库。
-  Map<String, dynamic>? bookMap;
+  /// 扩展助手只拿得到 verse 那一层，课堂的内容由 [ExpandSheet.open] 打开时查一次
+  /// 塞进来（提示的名字定义在课堂上）。[tipLabel] 是同步的，这里不能临时查库。
+  Map<String, dynamic>? classroomMap;
 
-  Map<String, dynamic>? _bookMap() => bookMap;
-
-  Future<void> loadBookMap() async {
-    bookMap = null;
-    var content = await Db().db.bookDao.getContentById(bookId);
-    if (content == null) {
+  Future<void> loadClassroomMap() async {
+    classroomMap = null;
+    final classroom = await Db().db.classroomDao.getById(Classroom.curr);
+    final content = classroom?.content;
+    if (content == null || content.isEmpty) {
       return;
     }
     try {
       final ret = jsonDecode(content);
-      bookMap = ret is Map<String, dynamic> ? ret : null;
+      classroomMap = ret is Map<String, dynamic> ? ret : null;
     } catch (_) {
-      bookMap = null;
+      classroomMap = null;
     }
   }
 

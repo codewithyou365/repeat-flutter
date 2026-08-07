@@ -69,7 +69,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelTips, "Tips");
     put(I18nKey.labelTipName, "Tip Name");
     put(I18nKey.labelRenameTip, "Rename");
-    put(I18nKey.labelDeleteTip, "Delete this tip? Its content will be removed from every verse of this book.");
+    put(I18nKey.labelDeleteTip, "Delete this tip's name? Its font and the content already written in every verse are kept.");
     put(I18nKey.labelReviewThisCount, "Review These Verses Count");
     put(I18nKey.labelLearnCount, "Learn Count");
     put(I18nKey.labelReviewCount, "Review Count");

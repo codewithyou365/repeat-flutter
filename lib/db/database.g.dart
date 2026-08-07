@@ -124,7 +124,7 @@ class _$AppDatabase extends AppDatabase {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 18,
+      version: 19,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -1524,12 +1524,12 @@ class _$ClassroomDao extends ClassroomDao {
   }
 
   @override
-  Future<Classroom> updateContent(
+  Future<Classroom> innerUpdateContent(
     int classroomId,
     String content,
   ) async {
     if (database is sqflite.Transaction) {
-      return super.updateContent(classroomId, content);
+      return super.innerUpdateContent(classroomId, content);
     } else {
       return (database as sqflite.Database)
           .transaction<Classroom>((transaction) async {
@@ -1537,7 +1537,7 @@ class _$ClassroomDao extends ClassroomDao {
           ..database = transaction;
         prepareDb(transactionDatabase);
         return transactionDatabase.classroomDao
-            .updateContent(classroomId, content);
+            .innerUpdateContent(classroomId, content);
       });
     }
   }

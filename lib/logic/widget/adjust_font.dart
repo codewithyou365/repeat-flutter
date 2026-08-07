@@ -1,10 +1,15 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/folder.dart';
+import 'package:repeat_flutter/common/hash.dart';
+import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
@@ -20,14 +25,17 @@ class AdjustFont<T extends GetxController> {
 
   AdjustFont(this.parentLogic);
 
+  /// [bookId] 为 null 就是课堂级（提示的字体）：[map] 是 Classroom.content，
+  /// 字体文件落在课堂自己的资源目录里，落库走 ClassroomDao。
+  /// 传了 bookId 就是书本级（'q'/'a'/'n' 的字体）：[map] 是 Book.content。
   Future<void> open({
-    required int bookId,
+    required int? bookId,
     required String fontPrefix,
-    required Map<String, dynamic> bookMap,
+    required Map<String, dynamic> map,
   }) async {
-    List<DownloadContent> list = DownloadContent.toList(bookMap['d']) ?? [];
-    String alias = VerseField.getStr(bookMap, fontPrefix, VerseField.fontAlias) ?? '';
-    final fontSizeVal = RxDouble(textFontSize(fontPrefix, bookMap));
+    List<DownloadContent> list = DownloadContent.toList(map['d']) ?? [];
+    String alias = VerseField.getStr(map, fontPrefix, VerseField.fontAlias) ?? '';
+    final fontSizeVal = RxDouble(textFontSize(fontPrefix, map));
     RxString fontDisplay = RxString(alias);
     return Sheet.showBottomSheet<void>(
       Get.context!,
@@ -44,7 +52,7 @@ class AdjustFont<T extends GetxController> {
             return RowWidget.buildSelect(
               title: "${I18nKey.fontSize.tr} (${fontSizeVal.value})",
               onTap: () async {
-                final size = await fontSize(bookId, fontPrefix, bookMap);
+                final size = await fontSize(bookId, fontPrefix, map);
                 if (size != 0) {
                   fontSizeVal.value = size;
                 }
@@ -62,7 +70,7 @@ class AdjustFont<T extends GetxController> {
                   type: FileType.custom,
                   allowedExtensions: allowedExtensions,
                 );
-                var download = await DocHelp.tryCopyToDocDir(
+                var download = await _copyToDocDir(
                   bookId: bookId,
                   result: result,
                   allowedExtensions: allowedExtensions,
@@ -80,7 +88,7 @@ class AdjustFont<T extends GetxController> {
                 String fileName = result.files.single.name;
 
                 var rootPath = await DocPath.getContentPath();
-                final localFolder = rootPath.joinPath(DocPath.getRelativePath(bookId).joinPath(download.folder));
+                final localFolder = rootPath.joinPath(_relativeFolder(bookId).joinPath(download.folder));
                 final filePath = localFolder.joinPath(download.name);
 
                 var ok = await ClassroomHelp.registerCustomFont(fileName, filePath);
@@ -89,10 +97,10 @@ class AdjustFont<T extends GetxController> {
                   return;
                 }
 
-                bookMap['d'] = list.map((e) => e.toJson()).toList();
-                VerseField.setStr(bookMap, fontPrefix, VerseField.fontAlias, fileName);
-                VerseField.setStr(bookMap, fontPrefix, VerseField.fontHash, download.hash);
-                await Db().db.bookDao.updateBookContent(bookId, jsonEncode(bookMap));
+                map['d'] = list.map((e) => e.toJson()).toList();
+                VerseField.setStr(map, fontPrefix, VerseField.fontAlias, fileName);
+                VerseField.setStr(map, fontPrefix, VerseField.fontHash, download.hash);
+                await _save(bookId, map);
 
                 fontDisplay.value = fileName;
 
@@ -102,12 +110,15 @@ class AdjustFont<T extends GetxController> {
                   ? null
                   : IconButton(
                       onPressed: () async {
-                        VerseField.setStr(bookMap, fontPrefix, VerseField.fontAlias, null);
-                        VerseField.setStr(bookMap, fontPrefix, VerseField.fontHash, null);
+                        VerseField.setStr(map, fontPrefix, VerseField.fontAlias, null);
+                        VerseField.setStr(map, fontPrefix, VerseField.fontHash, null);
+                        // 清空后这一块可能空了，被 setStr 从数组末尾截掉——补回占位块，
+                        // 不然这一条提示会连着 tab 一起消失。
+                        _keepTipSlot(fontPrefix, map);
 
                         fontDisplay.value = "";
 
-                        await Db().db.bookDao.updateBookContent(bookId, jsonEncode(bookMap));
+                        await _save(bookId, map);
 
                         parentLogic.update(["RepeatLogic"]);
                       },
@@ -129,7 +140,7 @@ class AdjustFont<T extends GetxController> {
     return 17;
   }
 
-  Future<double> fontSize(int bookId, String fontPrefix, Map<String, dynamic> map) async {
+  Future<double> fontSize(int? bookId, String fontPrefix, Map<String, dynamic> map) async {
     double ret = 0;
     RxDouble v = RxDouble(textFontSize(fontPrefix, map));
     await MsgBox.myDialog(
@@ -167,9 +178,8 @@ class AdjustFont<T extends GetxController> {
           MsgBox.button(
             text: I18nKey.save.tr,
             onPressed: () async {
-              var bookMap = map;
-              VerseField.setStr(bookMap, fontPrefix, VerseField.fontSize, '${v.value}');
-              await Db().db.bookDao.updateBookContent(bookId, jsonEncode(bookMap));
+              VerseField.setStr(map, fontPrefix, VerseField.fontSize, '${v.value}');
+              await _save(bookId, map);
               Get.back();
               ret = v.value;
               parentLogic.update(["RepeatLogic"]);
@@ -179,5 +189,69 @@ class AdjustFont<T extends GetxController> {
       ),
     );
     return ret;
+  }
+
+  /// 内容落哪一层：课堂级（[bookId] 为 null）走 ClassroomDao，书本级走 BookDao。
+  Future<void> _save(int? bookId, Map<String, dynamic> map) async {
+    if (bookId == null) {
+      await Db().db.classroomDao.updateContent(Classroom.curr, jsonEncode(map));
+      return;
+    }
+    await Db().db.bookDao.updateBookContent(bookId, jsonEncode(map));
+  }
+
+  /// 字体文件落哪个目录：课堂级跟游戏一样落在课堂自己的资源目录下。
+  String _relativeFolder(int? bookId) {
+    return bookId == null //
+        ? DocPath.getClassroomResRelativePath(Classroom.curr)
+        : DocPath.getRelativePath(bookId);
+  }
+
+  /// 提示那一条的字段块被清空后补个占位块回来：下标就是提示的身份，
+  /// 末尾的空块被截掉会让这一条提示整体消失。
+  void _keepTipSlot(String fontPrefix, Map<String, dynamic> map) {
+    if (VerseField.baseOf(fontPrefix) != 't') {
+      return;
+    }
+    VerseField.ensureTipCount(map, VerseField.indexOf(fontPrefix) + 1);
+  }
+
+  /// [DocHelp.tryCopyToDocDir] 的课堂级版本：校验扩展名之后把文件复制到
+  /// 课堂资源目录（书本级仍旧交给 DocHelp）。
+  Future<DownloadContent?> _copyToDocDir({
+    required int? bookId,
+    required FilePickerResult? result,
+    required List<String> allowedExtensions,
+  }) async {
+    if (bookId != null) {
+      return await DocHelp.tryCopyToDocDir(
+        bookId: bookId,
+        result: result,
+        allowedExtensions: allowedExtensions,
+      );
+    }
+    final pickedPath = result?.files.single.path;
+    if (result == null || pickedPath == null) {
+      Snackbar.show(I18nKey.labelLocalImportCancel.tr);
+      return null;
+    }
+    try {
+      final extension = result.files.single.name.split('.').last;
+      if (!allowedExtensions.containsIgnoreCase(extension)) {
+        Snackbar.show(I18nKey.labelFileExtensionNotMatch.trArgs([jsonEncode(allowedExtensions)]));
+        return null;
+      }
+      final hash = await Hash.toSha1(pickedPath);
+      final download = DownloadContent(url: ".$extension", hash: hash);
+
+      final rootPath = await DocPath.getContentPath();
+      final localFolder = rootPath.joinPath(_relativeFolder(null).joinPath(download.folder));
+      await Folder.ensureExists(localFolder);
+      await File(pickedPath).copy(localFolder.joinPath(download.name));
+      return download;
+    } catch (e) {
+      Snackbar.show(e.toString());
+      return null;
+    }
   }
 }

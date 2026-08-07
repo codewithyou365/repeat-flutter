@@ -142,8 +142,9 @@ class ClassroomImportHelp {
     }
   }
 
-  /// 课堂自己的媒体（游戏 zip）：zip 导入就整个目录搬过来，远程导入按 'd' 逐个下载。
-  /// 游戏是课堂全局的，所以文件落在课堂资源目录，不进任何一本书。
+  /// 课堂自己的媒体（游戏 zip、提示的字体和提示服务 zip）：
+  /// zip 导入就整个目录搬过来，远程导入按 'd' 逐个下载。
+  /// 它们都是课堂全局的，所以文件落在课堂资源目录，不进任何一本书。
   static Future<void> _importClassroomRes({
     required int classroomId,
     required Map<String, dynamic> head,

@@ -49,8 +49,14 @@ class ContentEntry {
 class ClassroomHelp {
   static Map<int, String> savedVersionSigCacheMap = {};
 
+  /// 课堂级提示（Classroom.content 的 't'）在 Tip 表里的 bookId。
+  /// 提示的名字/字体/服务配置是整个课堂共用的，不挂在某一本书下面；
+  /// 唯一索引 ('bookId','t') 照样成立——课堂级只有一套 't'/'t1'/…。
+  /// 'q'/'a'/'n' 的提示服务仍然是每本书各一份，用真实 bookId。
+  static const int classroomBookId = 0;
+
   /// 课堂资源的版本指纹：课堂自己的内容版本 + 每本书的内容版本。
-  /// 游戏挂在课堂上、字体和提示挂在书上，任何一边变了都要重新登记。
+  /// 游戏和提示挂在课堂上、'q'/'a'/'n' 的字体挂在书上，任何一边变了都要重新登记。
   static Future<String> _versionSig(int classroomId, List<Book> books) async {
     final classroom = await Db().db.classroomDao.getById(classroomId);
     books.sort((a, b) => a.id!.compareTo(b.id!));
@@ -77,27 +83,19 @@ class ClassroomHelp {
         Map<String, dynamic> bookMap = jsonDecode(book.content);
         List<DownloadContent> downloads = DownloadContent.toList(bookMap['d']) ?? [];
 
-        for (var prefix in _fieldRefs(bookMap)) {
-          String? alias = VerseField.getStr(bookMap, prefix, VerseField.fontAlias);
-          String? hash = VerseField.getStr(bookMap, prefix, VerseField.fontHash);
-
-          if (alias != null && hash != null) {
-            final download = downloads.firstWhereOrNull((e) => e.hash == hash);
-            if (download != null) {
-              final localFolder = rootPath.joinPath(DocPath.getRelativePath(book.id!).joinPath(download.folder));
-              final filePath = localFolder.joinPath(download.name);
-
-              await registerCustomFont(alias, filePath);
-            }
-          }
+        for (var prefix in bookFieldRefs) {
+          await _registerFont(bookMap, prefix, downloads, DocPath.getRelativePath(book.id!), rootPath);
         }
       }
+      // 提示的字体在课堂那一层，字体文件也在课堂自己的资源目录里
+      await _registerClassroomFonts(classroomId, rootPath);
 
       savedVersionSigCacheMap[classroomId] = currentVersionSig;
       final savedVersionSig = await Db().db.crKvDao.getStr(classroomId, CrK.classroomResourceVersion);
       if (currentVersionSig == savedVersionSig) return;
 
       await _registerGames(classroomId);
+      await _registerTips(classroomId, currentTipKeys);
 
       for (var book in books) {
         if (book.content.isEmpty) continue;
@@ -105,41 +103,23 @@ class ClassroomHelp {
         Map<String, dynamic> bookMap = jsonDecode(book.content);
         List<DownloadContent> downloads = DownloadContent.toList(bookMap['d']) ?? [];
 
-        // 提示服务配置就放在各字段块自己身上（'q'/'a'/'n' 各一个，提示是 't'/'t1'/'t2'…），
-        // Tip.t 存的就是这个字段引用串。
-        for (final fieldRef in _fieldRefs(bookMap)) {
+        // 'q'/'a'/'n' 的提示服务配置放在各字段块自己身上，Tip.t 存的就是这个字段引用串。
+        // 提示（'t'/'t1'/…）不在这里，见 [_registerTips]。
+        for (final fieldRef in bookFieldRefs) {
           final entryMap = VerseField.of(bookMap, fieldRef);
           if (entryMap == null) continue;
           final tip = ContentEntry.fromJson(entryMap, mapKey: fieldRef);
           final ok = await _ensureContentReady(tip, downloads, DocPath.getRelativePath(book.id!));
           if (!ok) continue;
 
-          Tip? tipEntity;
-          if (tip.id != null) {
-            tipEntity = await Db().db.tipDao.getById(tip.id!);
-            if (tipEntity == null || tipEntity.bookId != book.id!) {
-              tipEntity = null;
-            }
-          }
-          if (tipEntity == null) {
-            await Db().db.tipDao.insertOrReplace(
-              Tip(
-                classroomId: Classroom.curr,
-                bookId: book.id!,
-                t: fieldRef,
-                k: tip.key,
-                hash: tip.hash,
-                service: tip.service,
-                createTime: DateTime.now().millisecondsSinceEpoch,
-              ),
-            );
-            entryMap['i'] = await Db().db.tipDao.getIdByType(book.id!, fieldRef);
-          } else {
-            tipEntity.t = fieldRef;
-            tipEntity.k = tip.key;
-            tipEntity.hash = tip.hash;
-            tipEntity.service = tip.service;
-            await Db().db.tipDao.updateOrReplace(tipEntity);
+          final id = await _upsertTip(
+            entry: tip,
+            classroomId: classroomId,
+            bookId: book.id!,
+            fieldRef: fieldRef,
+          );
+          if (id != null) {
+            entryMap['i'] = id;
           }
           currentTipKeys.add('${book.id}-$fieldRef');
         }
@@ -244,15 +224,131 @@ class ClassroomHelp {
     return data.map((e) => ContentEntry.fromJson(e)).toList();
   }
 
-  /// 这本书 book 层有哪些字段块：'q'/'a'/'n' 各一个，提示按数组长度展开成 't'/'t1'/'t2'…
-  /// 字体和提示服务配置都存在这些块里，两边都按这个列表遍历。
-  static List<String> _fieldRefs(Map<String, dynamic> bookMap) {
-    final ret = ['q', 'a', 'n'];
-    final tipLength = VerseField.tipLength(bookMap);
-    for (var i = 0; i < (tipLength == 0 ? 1 : tipLength); i++) {
-      ret.add(VerseField.ref('t', i));
+  /// book 那一层有哪些字段块：只有 'q'/'a'/'n'。
+  /// 提示（'t'/'t1'/…）的字体和提示服务配置在课堂那一层，见 [_registerTips]。
+  static const List<String> bookFieldRefs = ['q', 'a', 'n'];
+
+  /// 课堂 't' 数组展开成的字段引用串：'t'、't1'、't2'…
+  static List<String> _classroomTipRefs(Map<String, dynamic> classroomMap) {
+    final tipLength = VerseField.tipLength(classroomMap);
+    return [
+      for (var i = 0; i < (tipLength == 0 ? 1 : tipLength); i++) VerseField.ref('t', i),
+    ];
+  }
+
+  static Map<String, dynamic>? _decodeMap(String? content) {
+    if (content == null || content.isEmpty) return null;
+    try {
+      final decoded = jsonDecode(content);
+      return decoded is Map<String, dynamic> ? decoded : null;
+    } catch (e) {
+      return null;
     }
-    return ret;
+  }
+
+  /// 把 [fieldRef] 这一块声明的字体注册进本进程。字体文件在 [relativeFolder] 下。
+  static Future<void> _registerFont(
+    Map<String, dynamic> content,
+    String fieldRef,
+    List<DownloadContent> downloads,
+    String relativeFolder,
+    String rootPath,
+  ) async {
+    final alias = VerseField.getStr(content, fieldRef, VerseField.fontAlias);
+    final hash = VerseField.getStr(content, fieldRef, VerseField.fontHash);
+    if (alias == null || hash == null) return;
+
+    final download = downloads.firstWhereOrNull((e) => e.hash == hash);
+    if (download == null) return;
+
+    final localFolder = rootPath.joinPath(relativeFolder.joinPath(download.folder));
+    await registerCustomFont(alias, localFolder.joinPath(download.name));
+  }
+
+  /// 提示的字体：声明在 [Classroom.content] 的 't' 里，文件在课堂自己的资源目录下。
+  static Future<void> _registerClassroomFonts(int classroomId, String rootPath) async {
+    final classroom = await Db().db.classroomDao.getById(classroomId);
+    final classroomMap = _decodeMap(classroom?.content);
+    if (classroomMap == null) return;
+
+    final downloads = DownloadContent.toList(classroomMap['d']) ?? [];
+    final resPath = DocPath.getClassroomResRelativePath(classroomId);
+    for (final fieldRef in _classroomTipRefs(classroomMap)) {
+      await _registerFont(classroomMap, fieldRef, downloads, resPath, rootPath);
+    }
+  }
+
+  /// 提示的服务配置（'h'/'k'/'s'/'i'）也在课堂那一层，zip 从课堂自己的 'd' 里找、
+  /// 落在 [DocPath.getClassroomResRelativePath] 下（跟游戏一样）。
+  /// Tip 行的 bookId 一律写 [classroomBookId]：整个课堂共用一套，不挂在某一本书下面。
+  static Future<void> _registerTips(int classroomId, Set<String> currentTipKeys) async {
+    final classroom = await Db().db.classroomDao.getById(classroomId);
+    final classroomMap = _decodeMap(classroom?.content);
+    if (classroomMap == null) return;
+
+    final downloads = DownloadContent.toList(classroomMap['d']) ?? [];
+    final resPath = DocPath.getClassroomResRelativePath(classroomId);
+    var contentChanged = false;
+
+    for (final fieldRef in _classroomTipRefs(classroomMap)) {
+      final entryMap = VerseField.of(classroomMap, fieldRef);
+      if (entryMap == null) continue;
+      final entry = ContentEntry.fromJson(entryMap, mapKey: fieldRef);
+      final ok = await _ensureContentReady(entry, downloads, resPath);
+      if (!ok) continue;
+
+      final id = await _upsertTip(
+        entry: entry,
+        classroomId: classroomId,
+        bookId: classroomBookId,
+        fieldRef: fieldRef,
+      );
+      if (id != null) {
+        entryMap['i'] = id;
+        contentChanged = true;
+      }
+      currentTipKeys.add('$classroomBookId-$fieldRef');
+    }
+
+    if (contentChanged) {
+      await Db().db.classroomDao.updateContent(classroomId, jsonEncode(classroomMap));
+    }
+  }
+
+  /// 建/更新一行 Tip。新建时返回新行的 id（调用方回写进 'i'），更新已有行时返回 null。
+  static Future<int?> _upsertTip({
+    required ContentEntry entry,
+    required int classroomId,
+    required int bookId,
+    required String fieldRef,
+  }) async {
+    Tip? tipEntity;
+    if (entry.id != null) {
+      tipEntity = await Db().db.tipDao.getById(entry.id!);
+      if (tipEntity == null || tipEntity.bookId != bookId) {
+        tipEntity = null;
+      }
+    }
+    if (tipEntity == null) {
+      await Db().db.tipDao.insertOrReplace(
+        Tip(
+          classroomId: classroomId,
+          bookId: bookId,
+          t: fieldRef,
+          k: entry.key,
+          hash: entry.hash,
+          service: entry.service,
+          createTime: DateTime.now().millisecondsSinceEpoch,
+        ),
+      );
+      return await Db().db.tipDao.getIdByType(bookId, fieldRef);
+    }
+    tipEntity.t = fieldRef;
+    tipEntity.k = entry.key;
+    tipEntity.hash = entry.hash;
+    tipEntity.service = entry.service;
+    await Db().db.tipDao.updateOrReplace(tipEntity);
+    return null;
   }
 
   // Re-unzip the content of a tip if its folder has been removed after the

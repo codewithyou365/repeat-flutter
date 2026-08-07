@@ -159,11 +159,13 @@ class ChapterContent {
 /// `'t': [{'text': ..}, {'text': ..}]`。定位某一条用「字段引用串」而不是裸 acronym：
 /// 't' 是第 1 条、't1' 是第 2 条、't2' 是第 3 条（见 [ref]/[baseOf]/[indexOf]），
 /// 这样所有只传 'q'/'a'/'t'/'n' 的老调用点都还落在原来那一条上。
-/// 提示的名字（tab 上显示的）统一定义在 book 的 't' 数组里（见 [tipNameOf]），
-/// verse 的 't' 只放正文/媒体/区间——整本书第 i 个 tab 名字一致，翻页时 tab 才不会跳。
+/// 提示的名字（tab 上显示的）、字体和提示服务配置统一定义在 **课堂**（Classroom.content）
+/// 的 't' 数组里（见 [tipNameOf] 和 ClassroomDocField），book 那一层不再有 't'，
+/// verse 的 't' 只放正文/媒体/区间——整个课堂第 i 个 tab 名字一致，翻书翻页时 tab 才不会跳。
 ///
-/// book 那一层的字段块里还放着字体（'fontSize'/'fontAlias'/'fontHash'，四个字段都有，
-/// 包括 'n'）和提示服务配置（'h'/'k'/'s'/'i'，写进 Tip 表，见 ClassroomHelp.registerRes），
+/// book 那一层的字段块里放着 'q'/'a'/'n' 的字体（'fontSize'/'fontAlias'/'fontHash'）和
+/// 提示服务配置（'h'/'k'/'s'/'i'，写进 Tip 表，见 ClassroomHelp.registerRes）；
+/// 提示那几条的同名 key 在课堂那一层，块结构完全一样，读写照样走 [of]/[getStr]/[setStr]。
 /// 几拨 key 互不重名，各读各的。
 class VerseField {
   static const String text = 'text';
@@ -180,7 +182,7 @@ class VerseField {
   /// 见 [findSectionDownload]。
   static const String sectionMediaHash = 'm';
 
-  /// book 的 't' 数组里那一条的名字，显示在提示 tab 上。
+  /// 课堂 't' 数组里那一条的名字，显示在提示 tab 上。
   static const String tipName = 'n';
 
   /// 提示 tab 最多渲染几条：tab 行不滚动，再多就挤不下了。
@@ -221,11 +223,11 @@ class VerseField {
     return -1;
   }
 
-  /// 这一节该显示几个提示 tab：verse 和 book 里 't' 数组谁长按谁算（book 定义了名字，
+  /// 这一节该显示几个提示 tab：verse 和课堂里 't' 数组谁长按谁算（课堂定义了名字，
   /// verse 可能只写了前几条的正文），至少 1 个，最多 [maxTip] 个。
-  static int tipCount(Map<String, dynamic>? verse, Map<String, dynamic>? book) {
+  static int tipCount(Map<String, dynamic>? verse, Map<String, dynamic>? classroom) {
     var count = 1;
-    for (var content in [verse, book]) {
+    for (var content in [verse, classroom]) {
       if (content == null) {
         continue;
       }
@@ -238,11 +240,12 @@ class VerseField {
   }
 
   /// 第 [index] 条提示的名字，没写就返回 null（调用方自己决定显示什么）。
-  static String? tipNameOf(Map<String, dynamic>? book, int index) {
-    if (book == null) {
+  /// [classroom] 是 Classroom.content 解出来的 map——名字定义在课堂那一层。
+  static String? tipNameOf(Map<String, dynamic>? classroom, int index) {
+    if (classroom == null) {
       return null;
     }
-    return getStr(book, ref('t', index), tipName);
+    return getStr(classroom, ref('t', index), tipName);
   }
 
   /// 字段块本身，没有就返回 null（不会顺手建出来）。
@@ -553,27 +556,13 @@ class VerseField {
 
   /// 保证 't' 数组至少有 [count] 条，不足的补空块。返回是否真的改了。
   /// 新增一条提示、或者清掉某条的名字后要把被 [remove] 截掉的占位补回来，都走这里。
+  /// 下标就是提示的身份（名字/字体/提示服务在课堂上，正文在每一节上，全靠下标对齐），
+  /// 所以永远只在末尾补，绝不从中间挪。
   static bool ensureTipCount(Map<String, dynamic> content, int count) {
     if (count <= 0 || tipLength(content) >= count) {
       return false;
     }
     _ensure(content, ref('t', count - 1));
-    return true;
-  }
-
-  /// 删掉第 [index] 条提示，后面的整体前移。返回是否真的改了。
-  ///
-  /// 下标就是提示的身份（名字、字体、提示服务在 book 上，正文在每一节上，全靠下标对齐），
-  /// 所以 book 删了一条，这本书每一节的 't' 也要在同一个位置删掉，否则后面几条会整体错位。
-  static bool removeTipAt(Map<String, dynamic> content, int index) {
-    final v = content['t'];
-    if (v is! List || index < 0 || index >= v.length) {
-      return false;
-    }
-    v.removeAt(index);
-    if (v.isEmpty) {
-      content.remove('t');
-    }
     return true;
   }
 

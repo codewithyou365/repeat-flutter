@@ -230,6 +230,7 @@ class RepeatLogic extends GetxController {
 
     state.bookIdToTip = <int, Map<String, Tip?>>{};
 
+    // 'q'/'a'/'n' 的提示服务配置放在各本书的字段块自己身上（见 ClassroomHelp.bookFieldRefs）。
     for (var bookId in bookIds) {
       final Map<String, Tip?> bookTips = {};
       state.bookIdToTip[bookId] = bookTips;
@@ -240,25 +241,41 @@ class RepeatLogic extends GetxController {
       final dynamic bookMap = jsonDecode(bookContent);
       if (bookMap is! Map<String, dynamic>) continue;
 
-      // 提示服务配置放在各字段块自己身上，提示按数组下标展开成 't'/'t1'/…（见 ClassroomHelp）。
-      final refs = ['a', 'q', 'n'];
-      final tipLength = VerseField.tipLength(bookMap);
-      for (var i = 0; i < (tipLength == 0 ? 1 : tipLength); i++) {
-        refs.add(VerseField.ref('t', i));
-      }
-
-      for (var ref in refs) {
-        bookTips[ref] = null;
-        final entry = VerseField.of(bookMap, ref);
-        if (entry == null) continue;
-
-        final tipId = entry['i'];
-        if (tipId == null) continue;
-
-        final tip = defaultTips.firstWhereOrNull((item) => item.id == tipId);
-        bookTips[ref] = tip ?? defaultTypeToTip[ref];
+      for (var ref in ClassroomHelp.bookFieldRefs) {
+        bookTips[ref] = _resolveTip(bookMap, ref, defaultTips, defaultTypeToTip);
       }
     }
+
+    // 提示（'t'/'t1'/…）的提示服务配置在课堂那一层，整个课堂共用一套。
+    state.classroomTips = {};
+    final classroom = await Db().db.classroomDao.getById(Classroom.curr);
+    final classroomContent = classroom?.content;
+    if (classroomContent == null || classroomContent.isEmpty) return;
+    final dynamic classroomMap = jsonDecode(classroomContent);
+    if (classroomMap is! Map<String, dynamic>) return;
+
+    final tipLength = VerseField.tipLength(classroomMap);
+    for (var i = 0; i < (tipLength == 0 ? 1 : tipLength); i++) {
+      final ref = VerseField.ref('t', i);
+      state.classroomTips[ref] = _resolveTip(classroomMap, ref, defaultTips, defaultTypeToTip);
+    }
+  }
+
+  /// 字段块里的 'i' 就是 Tip 行的 id（由 ClassroomHelp 登记时回写）。
+  /// 找不到那一行就退回同名字段串的第一行，兼容还没重新登记过的内容。
+  Tip? _resolveTip(
+    Map<String, dynamic> content,
+    String ref,
+    List<Tip> tips,
+    Map<String, Tip> typeToTip,
+  ) {
+    final entry = VerseField.of(content, ref);
+    if (entry == null) return null;
+
+    final tipId = entry['i'];
+    if (tipId == null) return null;
+
+    return tips.firstWhereOrNull((item) => item.id == tipId) ?? typeToTip[ref];
   }
 
   Future<void> openTip(Tip tip) async {

@@ -94,8 +94,13 @@ class Helper {
   Map<String, dynamic>? chapterMap;
   Map<String, dynamic>? verseMap;
 
+  /// 当前课堂的内容，提示的名字/字体/服务配置都在里面（见 ClassroomDocField.tips）。
+  /// 跟书/章/句一样是同步读的，所以在 [init] 里取好、内容变了再重取。
+  Map<String, dynamic>? classroomMap;
+
   final SubList<int> reimportBookSub = [];
   final SubList<int> updateBookContentSub = [];
+  final SubList<int> updateClassroomContentSub = [];
   final SubList<ChapterShow> updateChapterContentSub = [];
   final SubList<VerseShow> updateVerseContentSub = [];
 
@@ -103,6 +108,7 @@ class Helper {
     this.logic = logic;
     rootPath = await DocPath.getContentPath();
     bookNames = await BookBriefHelp.loadNameMap(Classroom.curr);
+    await loadClassroomMap();
     initialized = true;
     // 内容被改过就把当前这一节重新取一遍 —— 这三份数据是我们自己持有的副本，
     // 不像以前那样由 DAO 顺手 patch 全局缓存。
@@ -112,6 +118,11 @@ class Helper {
     });
     updateBookContentSub.on([EventTopic.updateBookContent], (int? id) {
       refetch();
+    });
+    updateClassroomContentSub.on([EventTopic.updateClassroomContent], (int? id) async {
+      if (id != null && id != Classroom.curr) return;
+      await loadClassroomMap();
+      update();
     });
     updateChapterContentSub.on([EventTopic.updateChapterContent], (ChapterShow? v) {
       if (v == null) return;
@@ -186,6 +197,7 @@ class Helper {
   void onClose() {
     reimportBookSub.off();
     updateBookContentSub.off();
+    updateClassroomContentSub.off();
     updateChapterContentSub.off();
     updateVerseContentSub.off();
   }
@@ -231,6 +243,28 @@ class Helper {
     }
     bookMap = ret;
     return ret;
+  }
+
+  /// 课堂内容重取一遍。写课堂内容的地方（改提示名字/字体…）会发
+  /// [EventTopic.updateClassroomContent]，走到这里。
+  Future<void> loadClassroomMap() async {
+    classroomMap = null;
+    final classroom = await Db().db.classroomDao.getById(Classroom.curr);
+    final content = classroom?.content;
+    if (content == null || content.isEmpty) {
+      return;
+    }
+    try {
+      final ret = jsonDecode(content);
+      classroomMap = ret is Map<String, dynamic> ? ret : null;
+    } catch (_) {
+      classroomMap = null;
+    }
+  }
+
+  /// 提示的名字/字体/服务配置都从这里读，见 ClassroomDocField.tips。
+  Map<String, dynamic>? getClassroomMap() {
+    return classroomMap;
   }
 
   Map<String, dynamic>? getCurrChapterMap() {
@@ -332,7 +366,7 @@ class Helper {
   List<Map<String, dynamic>?> get fieldLevels => [getCurrVerseMap(), getCurrChapterMap(), getCurrBookMap()];
 
   /// 这一节该显示几个提示 tab。
-  int currTipCount() => VerseField.tipCount(getCurrVerseMap(), getCurrBookMap());
+  int currTipCount() => VerseField.tipCount(getCurrVerseMap(), getClassroomMap());
 
   /// 当前选中的那一条提示的字段引用串（'t'/'t1'/'t2'…）。
   /// 选中的是笔记 tab（或者下标越界了）时退回第 1 条，这样朗读、播放这些永远有个确定的目标。

@@ -120,7 +120,8 @@ class ClassroomDocHelp {
     return ret;
   }
 
-  /// 课堂自己要带走的媒体（游戏 zip），来自 [Classroom.content] 的 'd'。
+  /// 课堂自己要带走的媒体（游戏 zip、提示的字体和提示服务 zip），
+  /// 来自 [Classroom.content] 的 'd'。
   static Future<List<DownloadContent>> classroomDownloads(int classroomId) async {
     final classroom = await Db().db.classroomDao.getById(classroomId);
     if (classroom == null || classroom.content.isEmpty) {

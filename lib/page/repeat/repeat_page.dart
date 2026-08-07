@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/db/entity/tip.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
@@ -16,7 +17,6 @@ import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
-import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:repeat_flutter/widget/text/expandable_text.dart';
@@ -366,7 +366,7 @@ class RepeatPage extends StatelessWidget {
 
     if (map == null) return null;
 
-    final bookMap = helper.getCurrBookMap();
+    final classroomMap = helper.getClassroomMap();
 
     return Obx(() {
       final int tipCount = helper.currTipCount();
@@ -387,7 +387,7 @@ class RepeatPage extends StatelessWidget {
             VerseField.getStr(map, r, VerseField.end) != null;
       }
 
-      // 这一节里哪几条提示要摆出来：开卷/闭卷下空的那几条不显示（提示是整本书统一定义的，
+      // 这一节里哪几条提示要摆出来：开卷/闭卷下空的那几条不显示（提示是整个课堂统一定义的，
       // 但正文是逐节写的，不是每节都会把 8 条都填上）；编辑模式下全都摆出来，不然没法往里填。
       final visibleTips = <int>[];
       for (var i = 0; i < tipCount; i++) {
@@ -411,7 +411,11 @@ class RepeatPage extends StatelessWidget {
       final String displayText = VerseField.getText(map, fieldRef) ?? (isNote ? '' : I18nKey.labelNoContent.tr);
 
       bool canEdit = isNote ? true : isEditMode;
+      // 提示（'t'/'t1'/…）的提示服务是课堂级的，笔记（'n'）还是每本书各配各的。
       Tip? tipOf(String ref) {
+        if (VerseField.baseOf(ref) == QaType.tip.acronym) {
+          return logic.state.classroomTips[ref];
+        }
         int? bookId = helper.logic.currVerse?.bookId;
         return logic.state.bookIdToTip[bookId]?[ref];
       }
@@ -423,15 +427,16 @@ class RepeatPage extends StatelessWidget {
         }
       }
 
-      // tab 名字：book 那一层统一定义（整本书第 i 个 tab 名字一致，翻页不跳）。没写名字就用序号。
+      // tab 名字：课堂那一层统一定义（整个课堂第 i 个 tab 名字一致，翻书翻页都不跳）。
+      // 没写名字就用序号。
       String tabLabel(int index) {
-        return VerseField.tipNameOf(bookMap, index) ?? '${I18nKey.labelTips.tr}${index + 1}';
+        return VerseField.tipNameOf(classroomMap, index) ?? '${I18nKey.labelTips.tr}${index + 1}';
       }
 
       Widget tab(int index, String label, String ref) {
         final selected = index == tabIndex;
         // 编辑模式下长按提示 tab、或者再点一次已经选中的那个，都弹"更名/删除"。
-        // 改的都是 book 那一层，整本书通用。
+        // 改的都是课堂那一层，整个课堂通用。
         final canEditTip = isEditMode && index < tipCount;
         return Row(
           mainAxisSize: MainAxisSize.min,
@@ -620,19 +625,19 @@ class RepeatPage extends StatelessWidget {
 
   /// 第 [index] 条提示显示的名字：没起名字就用序号，跟 tab 栏一致。
   String tipDisplayName(RepeatLogic logic, int index) {
-    return VerseField.tipNameOf(logic.state.helper.getCurrBookMap(), index) //
+    return VerseField.tipNameOf(logic.state.helper.getClassroomMap(), index) //
         ??
         '${I18nKey.labelTips.tr}${index + 1}';
   }
 
-  /// 删掉第 [index] 条提示。下标就是提示的身份，book 删一条，这本学卷每一节的 't' 都要在
-  /// 同一个位置删掉，否则后面几条的名字和正文会整体错位。
+  /// 删掉第 [index] 条提示：只把课堂那一层的名字清掉，tab 退回显示序号。
+  /// 字体、提示服务配置和每一节已经写好的正文都原样保留——下标就是提示的身份，
+  /// 从数组中间挪走会让后面几条的名字跟正文整体错位，所以这里只留个占位块。
   void deleteTip(RepeatLogic logic, int index) {
     final helper = logic.state.helper;
-    final verse = helper.getCurrVerse();
-    final bookMap = helper.getCurrBookMap();
-    if (verse == null || bookMap == null) {
-      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["book"]));
+    final classroomMap = helper.getClassroomMap();
+    if (classroomMap == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["classroom"]));
       return;
     }
     MsgBox.yesOrNo(
@@ -640,82 +645,54 @@ class RepeatPage extends StatelessWidget {
       desc: I18nKey.labelDeleteTip.tr,
       yes: () async {
         Get.back();
-        await showOverlay(() async {
-          final bookId = verse.bookId;
-          if (VerseField.removeTipAt(bookMap, index)) {
-            await Db().db.bookDao.updateBookContent(bookId, jsonEncode(bookMap));
-          }
-          for (final v in await Db().db.verseDao.findByBookId(bookId)) {
-            if (v.id == null || v.content.isEmpty) {
-              continue;
-            }
-            final Map<String, dynamic> m;
-            try {
-              final decoded = jsonDecode(v.content);
-              if (decoded is! Map<String, dynamic>) {
-                continue;
-              }
-              m = decoded;
-            } catch (_) {
-              continue;
-            }
-            if (!VerseField.removeTipAt(m, index)) {
-              continue;
-            }
-            await Db().db.verseDao.updateVerseContent(v.id!, jsonEncode(m));
-          }
-          // 删的可能正是当前选中那条，收一下免得停在已经不存在的下标上。
-          final max = helper.currTipCount();
-          if (helper.currentTipTabIndex.value > max) {
-            helper.currentTipTabIndex.value = max;
-          }
-          logic.update([RepeatLogic.id]);
-          Snackbar.show(I18nKey.labelDeleted.tr);
-        }, I18nKey.labelDeleting.tr);
+        VerseField.setStr(classroomMap, VerseField.ref(QaType.tip.acronym, index), VerseField.tipName, null);
+        // setStr 传 null 会把末尾连着的空块截掉，补回来才不会让这一条整体消失。
+        VerseField.ensureTipCount(classroomMap, index + 1);
+        await Db().db.classroomDao.updateContent(Classroom.curr, jsonEncode(classroomMap));
+        logic.update([RepeatLogic.id]);
+        Snackbar.show(I18nKey.labelDeleted.tr);
       },
     );
   }
 
-  /// 给第 [index] 条提示改名。名字定义在 book 那一层，所以整本书第 index 个 tab 都跟着改。
+  /// 给第 [index] 条提示改名。名字定义在课堂那一层，所以整个课堂第 index 个 tab 都跟着改。
   /// 清空名字就退回显示序号——这时候要把占位块留住，不然这一条会连着被截掉。
   void renameTip(RepeatLogic logic, int index) {
     final helper = logic.state.helper;
-    final verse = helper.getCurrVerse();
-    final bookMap = helper.getCurrBookMap();
-    if (verse == null || bookMap == null) {
-      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["book"]));
+    final classroomMap = helper.getClassroomMap();
+    if (classroomMap == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["classroom"]));
       return;
     }
-    final name = RxString(VerseField.tipNameOf(bookMap, index) ?? '');
+    final name = RxString(VerseField.tipNameOf(classroomMap, index) ?? '');
     MsgBox.strInputWithYesOrNo(
       name,
       I18nKey.labelTipName.tr,
       null,
       yes: () async {
-        VerseField.setStr(bookMap, VerseField.ref(QaType.tip.acronym, index), VerseField.tipName, name.value);
-        VerseField.ensureTipCount(bookMap, index + 1);
-        await Db().db.bookDao.updateBookContent(verse.bookId, jsonEncode(bookMap));
+        VerseField.setStr(classroomMap, VerseField.ref(QaType.tip.acronym, index), VerseField.tipName, name.value);
+        VerseField.ensureTipCount(classroomMap, index + 1);
+        await Db().db.classroomDao.updateContent(Classroom.curr, jsonEncode(classroomMap));
         Get.back();
         logic.update([RepeatLogic.id]);
       },
     );
   }
 
-  /// 加一条提示：往 book 的 't' 数组末尾补一个空块，整本书就多一个 tab。
+  /// 加一条提示：往课堂的 't' 数组末尾补一个空块，整个课堂就多一个 tab。
   Future<void> addTip(RepeatLogic logic) async {
     final helper = logic.state.helper;
-    final verse = helper.getCurrVerse();
-    final bookMap = helper.getCurrBookMap();
-    if (verse == null || bookMap == null) {
-      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["book"]));
+    final classroomMap = helper.getClassroomMap();
+    if (classroomMap == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["classroom"]));
       return;
     }
     final count = helper.currTipCount();
     if (count >= VerseField.maxTip) {
       return;
     }
-    VerseField.ensureTipCount(bookMap, count + 1);
-    await Db().db.bookDao.updateBookContent(verse.bookId, jsonEncode(bookMap));
+    VerseField.ensureTipCount(classroomMap, count + 1);
+    await Db().db.classroomDao.updateContent(Classroom.curr, jsonEncode(classroomMap));
     helper.currentTipTabIndex.value = count;
     logic.update([RepeatLogic.id]);
     // 新加的这条在最右边，等这一帧画完把 tab 栏滚过去，不然加完看不见自己加了什么。
@@ -730,7 +707,7 @@ class RepeatPage extends StatelessWidget {
 
   /// 编辑框/选择框标题：提示有名字就用名字（多条提示时"提示"分不清是哪条）。
   String fieldTitle(RepeatLogic logic, String fieldRef) {
-    final name = VerseField.tipNameOf(logic.state.helper.getCurrBookMap(), VerseField.indexOf(fieldRef));
+    final name = VerseField.tipNameOf(logic.state.helper.getClassroomMap(), VerseField.indexOf(fieldRef));
     if (name != null && VerseField.baseOf(fieldRef) == QaType.tip.acronym) {
       return name;
     }
@@ -770,18 +747,17 @@ class RepeatPage extends StatelessWidget {
       return;
     }
     if (keys[index] == I18nKey.font.tr) {
+      // 提示的字体是课堂级的（bookId 传 null），'q'/'a'/'n' 还是每本书各配各的。
+      final isTip = VerseField.baseOf(fieldRef) == QaType.tip.acronym;
+      final fontMap = fontMapOf(logic, fieldRef);
       final verse = helper.getCurrVerse();
-      if (verse == null) {
-        return;
-      }
-      final bookMap = helper.getCurrBookMap();
-      if (bookMap == null) {
+      if (fontMap == null || (!isTip && verse == null)) {
         return;
       }
       logic.adjustFont.open(
-        bookId: verse.bookId,
+        bookId: isTip ? null : verse!.bookId,
         fontPrefix: fieldRef,
-        bookMap: bookMap,
+        map: fontMap,
       );
     } else if (keys[index] == I18nKey.content.tr) {
       await Nav.editor.push(
@@ -805,13 +781,21 @@ class RepeatPage extends StatelessWidget {
 
   String? fontAlias(RepeatLogic logic, QaType type) => fontAliasOf(logic, type.acronym);
 
-  /// 字体存在 book 那一层的字段块里，提示是每一条各存各的（'t'/'t1'/…）。
+  /// 字体存在字段块里：'q'/'a'/'n' 在 book 那一层，提示（'t'/'t1'/…）在课堂那一层，
+  /// 每一条各存各的。
+  Map<String, dynamic>? fontMapOf(RepeatLogic logic, String fieldRef) {
+    final helper = logic.state.helper;
+    return VerseField.baseOf(fieldRef) == QaType.tip.acronym //
+        ? helper.getClassroomMap()
+        : helper.getCurrBookMap();
+  }
+
   double? fontSizeOf(RepeatLogic logic, String fieldRef) {
-    final bookMap = logic.state.helper.getCurrBookMap();
-    if (bookMap == null) {
+    final map = fontMapOf(logic, fieldRef);
+    if (map == null) {
       return null;
     }
-    final val = VerseField.getStr(bookMap, fieldRef, VerseField.fontSize);
+    final val = VerseField.getStr(map, fieldRef, VerseField.fontSize);
     if (val != null) {
       return double.parse(val);
     }
@@ -819,11 +803,11 @@ class RepeatPage extends StatelessWidget {
   }
 
   String? fontAliasOf(RepeatLogic logic, String fieldRef) {
-    final bookMap = logic.state.helper.getCurrBookMap();
-    if (bookMap == null) {
+    final map = fontMapOf(logic, fieldRef);
+    if (map == null) {
       return null;
     }
-    return VerseField.getStr(bookMap, fieldRef, VerseField.fontAlias);
+    return VerseField.getStr(map, fieldRef, VerseField.fontAlias);
   }
 
   Widget fullScreenPanel(RepeatLogic logic) {
