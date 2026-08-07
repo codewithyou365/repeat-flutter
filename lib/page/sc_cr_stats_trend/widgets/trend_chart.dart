@@ -325,7 +325,7 @@ class TrendRange {
 /// Loader for the learning volume chart: learn / review verse count per bucket.
 Future<List<BarPoint>> loadVolumePoints(bool monthly) async {
   var ranges = TrendRange.build(monthly);
-  var stats = await Db().db.statsDao.getStatsByDateRange(Classroom.curr, ranges.first.start, ranges.last.end);
+  var stats = await Db().db.statsDao.getStatsCountByDateRange(Classroom.curr, ranges.first.start, ranges.last.end);
   var learn = List<int>.filled(ranges.length, 0);
   var review = List<int>.filled(ranges.length, 0);
   for (var e in stats) {
@@ -334,9 +334,9 @@ Future<List<BarPoint>> loadVolumePoints(bool monthly) async {
       continue;
     }
     if (e.type == TodayPrgType.learn.index) {
-      learn[index]++;
+      learn[index] += e.cnt;
     } else if (e.type == TodayPrgType.review.index) {
-      review[index]++;
+      review[index] += e.cnt;
     }
   }
   return List.generate(ranges.length, (i) => BarPoint(ranges[i].label, learn[i], review[i]));

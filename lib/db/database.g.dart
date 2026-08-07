@@ -3710,6 +3710,22 @@ class _$StatsDao extends StatsDao {
   }
 
   @override
+  Future<List<VerseStatsCount>> getStatsCountByDateRange(
+    int classroomId,
+    Date start,
+    Date end,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT createDate, type, COUNT(1) cnt FROM VerseStats WHERE classroomId = ?1 AND createDate >= ?2 AND createDate <= ?3 GROUP BY createDate, type',
+        mapper: (Map<String, Object?> row) => VerseStatsCount(createDate: _dateConverter.decode(row['createDate'] as int), type: row['type'] as int, cnt: row['cnt'] as int),
+        arguments: [
+          classroomId,
+          _dateConverter.encode(start),
+          _dateConverter.encode(end)
+        ]);
+  }
+
+  @override
   Future<int?> getCountByDateRange(
     int classroomId,
     Date start,

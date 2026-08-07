@@ -4,6 +4,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/verse_stats.dart';
+import 'package:repeat_flutter/logic/model/verse_stats_count.dart';
 
 @dao
 abstract class StatsDao {
@@ -14,6 +15,13 @@ abstract class StatsDao {
 
   @Query('SELECT * FROM VerseStats WHERE classroomId = :classroomId AND createDate >= :start AND createDate <= :end')
   Future<List<VerseStats>> getStatsByDateRange(int classroomId, Date start, Date end);
+
+  /// 日历/趋势图用这个，别用 [getStatsByDateRange] —— 那个会把区间内每一条原始记录
+  /// 都反序列化成对象，一个重度用户几个月就是上万行，进页面直接卡帧。
+  @Query('SELECT createDate, type, COUNT(1) cnt FROM VerseStats'
+      ' WHERE classroomId = :classroomId AND createDate >= :start AND createDate <= :end'
+      ' GROUP BY createDate, type')
+  Future<List<VerseStatsCount>> getStatsCountByDateRange(int classroomId, Date start, Date end);
 
   @Query('SELECT COALESCE(COUNT(*), 0) FROM VerseStats WHERE classroomId = :classroomId AND createDate >= :start AND createDate <= :end')
   Future<int?> getCountByDateRange(int classroomId, Date start, Date end);
@@ -41,8 +49,10 @@ abstract class StatsDao {
       var lastTotalLearning = await intKv(Classroom.curr, CrK.statsTotalLearning) ?? 0;
       var currLearningStats = await getCountByDateRange(Classroom.curr, Date(lastRecordCreateDate4StatsTotalLearning), before2Date) ?? 0;
       totalLearning = lastTotalLearning + currLearningStats;
-      insertKv(CrKv(Classroom.curr, CrK.statsTotalLearning, totalLearning.toString()));
-      insertKv(CrKv(Classroom.curr, CrK.lastRecordCreateDate4StatsTotalLearning, before2Date.value.toString()));
+      // 必须 await：不 await 的话写入可能落在事务提交之后，缓存写不进去，
+      // 于是每次进统计页都要重新 COUNT 一遍全部历史。
+      await insertKv(CrKv(Classroom.curr, CrK.statsTotalLearning, totalLearning.toString()));
+      await insertKv(CrKv(Classroom.curr, CrK.lastRecordCreateDate4StatsTotalLearning, before2Date.value.toString()));
     } else {
       totalLearning = await intKv(Classroom.curr, CrK.statsTotalLearning) ?? 0;
     }
@@ -53,8 +63,8 @@ abstract class StatsDao {
       var lastTotalTime = await intKv(Classroom.curr, CrK.statsTotalTime) ?? 0;
       var currTimeStats = await db.timeStatsDao.getTimeByDateRange(Classroom.curr, Date(lastRecordCreateDate4StatsTotalTime), before2Date) ?? 0;
       totalTime = lastTotalTime + currTimeStats;
-      insertKv(CrKv(Classroom.curr, CrK.statsTotalTime, totalTime.toString()));
-      insertKv(CrKv(Classroom.curr, CrK.lastRecordCreateDate4StatsTotalTime, before2Date.value.toString()));
+      await insertKv(CrKv(Classroom.curr, CrK.statsTotalTime, totalTime.toString()));
+      await insertKv(CrKv(Classroom.curr, CrK.lastRecordCreateDate4StatsTotalTime, before2Date.value.toString()));
     } else {
       totalTime = await intKv(Classroom.curr, CrK.statsTotalTime) ?? 0;
     }
