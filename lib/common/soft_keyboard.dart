@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 
 /// 唤起系统软键盘。
 ///
@@ -16,6 +16,17 @@ class SoftKeyboard {
   static Future<bool> showForWebView() async {
     if (!Platform.isAndroid) {
       return false;
+    }
+    // 先把 Flutter 这边的输入焦点和输入法客户端彻底断开，再去给 WebView 抢焦点。
+    // Flutter 的 KeyboardManager 会把硬件（蓝牙）键盘的按键优先喂给 TextInputPlugin 最后一次
+    // 创建的 InputConnection：只要之前在 Flutter 页面聚焦过任意输入框（比如"改课堂名"），
+    // 这个 InputConnection 就一直在，按键会被 Flutter 吃掉，作为子 View 的 WebView 一个都收不到，
+    // 表现就是"游戏里蓝牙键盘敲不进字"。软键盘那条路不受影响，所以只有接硬件键盘时才暴露。
+    try {
+      FocusManager.instance.primaryFocus?.unfocus();
+      await SystemChannels.textInput.invokeMethod('TextInput.clearClient');
+    } catch (e) {
+      debugPrint('SoftKeyboard.clearTextInputClient failed: $e');
     }
     try {
       final shown = await _channel.invokeMethod<bool>('showSoftInputForWebView');
