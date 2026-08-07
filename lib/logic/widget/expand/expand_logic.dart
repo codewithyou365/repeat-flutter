@@ -208,13 +208,21 @@ class ExpandLogic {
     await startTask(msg, closeOnSuccess: closeOnSuccess);
   }
 
+  /// 助手服务 /start 的请求体：params 原样进脚本的 ctx.params，
+  /// packId/taskId 不传就跑默认包的 main。
+  Map<String, dynamic> _startBody(String msg) => {
+        "params": {
+          "input": msg,
+          "withSpeak": enableAudio.value,
+        },
+      };
+
   /// 把这次要发的请求拼成一条 curl，方便拿去单独对助手服务测（跟 [startTask] 发的是同一个请求）。
-  /// 指令用单引号包起来，里面的单引号按 shell 的老办法拆成 '\'' 。
+  /// body 用单引号包起来，里面的单引号按 shell 的老办法拆成 '\'' 。
   String toCurl(String msg) {
-    final runnerType = enableAudio.value ? "withSpeak" : "standard";
-    final body = msg.replaceAll("'", "'\\''");
-    return "curl -X POST '${serviceUrl.value}/start?runner=$runnerType' \\\n"
-        "  -H 'Content-Type: text/plain; charset=utf-8' \\\n"
+    final body = jsonEncode(_startBody(msg)).replaceAll("'", "'\\''");
+    return "curl -X POST '${serviceUrl.value}/start' \\\n"
+        "  -H 'Content-Type: application/json; charset=utf-8' \\\n"
         "  --data-raw '$body'";
   }
 
@@ -230,12 +238,10 @@ class ExpandLogic {
 
         _taskCompleter = Completer<void>();
 
-        String runnerType = enableAudio.value ? "withSpeak" : "standard";
-
         final response = await http.post(
-          Uri.parse("$serviceUrl/start?runner=$runnerType"),
-          headers: {"Content-Type": "text/plain; charset=utf-8"},
-          body: msg,
+          Uri.parse("$serviceUrl/start"),
+          headers: {"Content-Type": "application/json; charset=utf-8"},
+          body: utf8.encode(jsonEncode(_startBody(msg))),
         );
 
         if (response.statusCode == 200) {
