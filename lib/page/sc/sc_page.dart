@@ -51,15 +51,6 @@ class ScPage extends StatelessWidget {
                     title: Text(I18nKey.data.tr),
                   ),
                 ),
-                PopupMenuItem<String>(
-                  onTap: () {
-                    logic.importClassroom();
-                  },
-                  child: ListTile(
-                    leading: const Icon(Icons.download),
-                    title: Text(I18nKey.classroomImport.tr),
-                  ),
-                ),
               ],
             ),
           ),
@@ -72,15 +63,7 @@ class ScPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          RxString classroomName = "".obs;
-          MsgBox.strInputWithYesOrNo(
-            classroomName,
-            I18nKey.btnAdd.tr,
-            I18nKey.labelClassroomName.tr,
-            yes: () {
-              logic.add(classroomName.value);
-            },
-          );
+          logic.openAddOrImportMenu();
         },
         child: const Icon(Icons.add),
       ),

@@ -67,23 +67,48 @@ class ScLogic extends GetxController {
     Get.back();
   }
 
-  /// 导入一整个课堂：远程或本地 zip，都是新建一个课堂，不会动已有课堂。
-  void importClassroom() async {
+  /// 悬浮按钮统一入口：新增课堂 / 远程导入 / 本地ZIP导入。
+  /// 远程和本地导入都是新建一个课堂，不会动已有课堂。
+  void openAddOrImportMenu() async {
     int? index = await Select.showSheet(
-      title: I18nKey.selectImportType.tr,
+      title: I18nKey.labelAddOrImportClassroom.tr,
       keys: [
+        I18nKey.btnAdd.tr,
         I18nKey.labelRemoteImport.tr,
         I18nKey.labelLocalZipImport.tr,
+      ],
+      leadings: const [
+        Icon(Icons.add),
+        Icon(Icons.cloud_download),
+        Icon(Icons.folder_zip),
       ],
     );
     if (index == null) {
       return;
     }
-    if (index == 0) {
-      _importFromUrl();
-    } else {
-      _importFromZip();
+    switch (index) {
+      case 0:
+        _openAddDialog();
+        break;
+      case 1:
+        _importFromUrl();
+        break;
+      default:
+        _importFromZip();
+        break;
     }
+  }
+
+  void _openAddDialog() {
+    RxString classroomName = "".obs;
+    MsgBox.strInputWithYesOrNo(
+      classroomName,
+      I18nKey.btnAdd.tr,
+      I18nKey.labelClassroomName.tr,
+      yes: () {
+        add(classroomName.value);
+      },
+    );
   }
 
   void _importFromUrl() {

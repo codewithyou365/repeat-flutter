@@ -179,6 +179,7 @@ enum I18nKey {
   selectImportType,
   labelRemoteImport,
   labelLocalZipImport,
+  labelAddOrImportClassroom,
   create,
   labelLocalImportCancel,
   labelAddChapter,

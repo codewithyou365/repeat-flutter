@@ -185,6 +185,7 @@ class ConfigZh extends Config {
     put(I18nKey.selectImportType, "选择导入类型");
     put(I18nKey.labelRemoteImport, "远程导入");
     put(I18nKey.labelLocalZipImport, "本地ZIP导入");
+    put(I18nKey.labelAddOrImportClassroom, "新增 / 导入课堂");
     put(I18nKey.create, "创建");
     put(I18nKey.labelLocalImportCancel, "本地导入取消");
     put(I18nKey.labelAddChapter, "添加篇章");

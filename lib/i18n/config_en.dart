@@ -187,6 +187,7 @@ class ConfigEn extends Config {
     put(I18nKey.selectImportType, "Select Import Type");
     put(I18nKey.labelRemoteImport, "Remote import");
     put(I18nKey.labelLocalZipImport, "Local ZIP import");
+    put(I18nKey.labelAddOrImportClassroom, "Add / Import Classroom");
     put(I18nKey.create, "Create");
     put(I18nKey.labelLocalImportCancel, "Local Import is Canceled");
     put(I18nKey.labelAddChapter, "Add Chapter");
