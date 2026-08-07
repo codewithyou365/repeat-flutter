@@ -6,8 +6,6 @@ import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/book_help.dart';
-import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
@@ -223,9 +221,9 @@ class MediaRangeHelper {
     };
   }
 
-  static VerseShow? improveLastCopyContent(VerseShow v) {
-    final c = ChapterHelp.getCache(v.chapterId);
-    final b = BookHelp.getCache(v.bookId);
+  static Future<VerseShow?> improveLastCopyContent(VerseShow v) async {
+    final c = await Db().db.chapterDao.getChapterShowById(v.chapterId);
+    final b = await Db().db.bookDao.getBookShowById(v.bookId);
     if (c == null) {
       return null;
     }

@@ -1,15 +1,15 @@
 import 'dart:async';
 
 import 'package:get/get.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/query/chapter_query.dart';
+import 'package:repeat_flutter/db/query/verse_query.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/book_help.dart';
-import 'package:repeat_flutter/logic/chapter_help.dart';
+import 'package:repeat_flutter/logic/book_brief_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/lazy_verse_today_prg_list.dart';
-import 'package:repeat_flutter/logic/model/verse_show.dart';
-import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
@@ -37,30 +37,28 @@ class ContentLogic extends GetxController {
     });
 
     var args = Get.arguments as ContentArgs;
-    List<BookShow> originalBookShow = await BookHelp.getBooks();
-    List<ChapterShow> originalChapterShow = await ChapterHelp.getChapters();
-    List<VerseShow> originalVerseShow = await VerseHelp.getVerses();
+    // 三个 tab 只共用一份"书本 id/名字/排序"和"每本书有哪几章"，都不带正文。
+    // 正文由各自的窗口按滚动位置现取，页面关掉就跟着释放。
+    var books = await BookBriefHelp.loadEnabled(Classroom.curr);
+    var chapterIndexesByBook = await ChapterQuery.chapterIndexesByBook(Classroom.curr);
     late ViewLogicChapterList<ContentLogic> chapterList;
     var verseList = ViewLogicVerseList<ContentLogic>(
       onSearchUnfocus: () {
         state.startSearch.value = false;
       },
       onChapterModified: () async {
-        chapterList.originalBookShow = await BookHelp.getBooks();
-        chapterList.originalChapterShow = await ChapterHelp.getChapters();
-        chapterList.collectData();
-        chapterList.trySearch(force: true);
+        await chapterList.refresh();
       },
-      onNext: (List<VerseShow> verseShows, int index) async {
+      onNext: (List<int> verseIds, int index) async {
         if (!args.enableEnteringRepeatView) {
           return;
         }
-        if (verseShows.isEmpty) {
+        if (verseIds.isEmpty) {
           Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["cant find the verses"]));
           return;
         }
         var repeat = RepeatArgs(
-          progresses: LazyVerseTodayPrgList(verseShows),
+          progresses: LazyVerseTodayPrgList(await VerseQuery.briefByIds(verseIds)),
           startIndex: index,
           repeatFlowType: RepeatType.browse,
           enableShowRecallButtons: false,
@@ -69,10 +67,9 @@ class ContentLogic extends GetxController {
         await Nav.repeat.push(arguments: repeat);
       },
       parentLogic: this,
-      originalBookShow: originalBookShow,
-      originalChapterShow: originalChapterShow,
-      originalVerseShow: originalVerseShow,
-      initContentNameSelect: args.bookName,
+      books: books,
+      chapterIndexesByBook: chapterIndexesByBook,
+      initBookIdSelect: args.bookId,
       initChapterSelect: args.initChapterSelect,
       selectVerseKeyId: args.selectVerseKeyId,
     );
@@ -82,22 +79,18 @@ class ContentLogic extends GetxController {
       },
       onNext: (ChapterShow chapter) {
         state.tabIndex.value = 2;
-        verseList.setBookSelectByName(chapter.bookName);
+        verseList.setBookSelectById(chapter.bookId);
         verseList.chapterSelect.value = chapter.chapterIndex + 1;
         update([ContentLogic.id]);
       },
       onChapterModified: () async {
-        verseList.originalBookShow = await BookHelp.getBooks();
-        verseList.originalChapterShow = await ChapterHelp.getChapters();
-        verseList.originalVerseShow = await VerseHelp.getVerses();
-        verseList.collectData();
-        verseList.trySearch(force: true);
+        await verseList.refresh();
       },
       parentLogic: this,
-      initBookNameSelect: args.bookName,
+      initBookIdSelect: args.bookId,
       initChapterSelect: args.initChapterSelect,
-      originalBookShow: originalBookShow,
-      originalChapterShow: originalChapterShow,
+      books: books,
+      chapterIndexesByBook: chapterIndexesByBook,
     );
     var bookList = ViewLogicBookList<ContentLogic>(
       onSearchUnfocus: () {
@@ -105,16 +98,17 @@ class ContentLogic extends GetxController {
       },
       onNext: (BookShow bookShow) {
         state.tabIndex.value = 1;
-        chapterList.setBookSelectByName(bookShow.name);
+        chapterList.setBookSelectById(bookShow.bookId);
         update([ContentLogic.id]);
       },
       parentLogic: this,
-      initContentNameSelect: args.bookName,
-      originalBookShow: originalBookShow,
+      initBookIdSelect: args.bookId,
+      books: books,
     );
     viewList[0] = bookList;
     viewList[1] = chapterList;
     viewList[2] = verseList;
+    await verseList.loadValueOptions();
     state.tabIndex.value = args.defaultTap;
     update([ContentLogic.id]);
   }
@@ -123,21 +117,9 @@ class ContentLogic extends GetxController {
     final bookList = viewList[0] as ViewLogicBookList<ContentLogic>;
     final chapterList = viewList[1] as ViewLogicChapterList<ContentLogic>;
     final verseList = viewList[2] as ViewLogicVerseList<ContentLogic>;
-    bookList.originalBookShow = await BookHelp.getBooks();
-    bookList.bookShow = bookList.originalBookShow;
-    bookList.collectData();
-    bookList.trySearch(force: true);
-
-    verseList.originalBookShow = await BookHelp.getBooks();
-    verseList.originalChapterShow = await ChapterHelp.getChapters();
-    verseList.originalVerseShow = await VerseHelp.getVerses();
-    verseList.collectData();
-    verseList.trySearch(force: true);
-
-    chapterList.originalBookShow = await BookHelp.getBooks();
-    chapterList.originalChapterShow = await ChapterHelp.getChapters();
-    chapterList.collectData();
-    chapterList.trySearch(force: true);
+    await bookList.refresh();
+    await verseList.refresh();
+    await chapterList.refresh();
     state.tabIndex.value = 0;
     update([ContentLogic.id]);
   }

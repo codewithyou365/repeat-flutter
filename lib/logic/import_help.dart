@@ -10,7 +10,7 @@ import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/classroom_content.dart';
-import 'package:repeat_flutter/logic/verse_help.dart';
+import 'package:repeat_flutter/logic/model/verse_brief.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 class ImportHelp {
@@ -102,7 +102,7 @@ class ImportHelp {
             chapterId: 0,
             chapterIndex: chapterIndex,
             verseIndex: verseIndex,
-            sort: VerseHelp.toVerseSort(book.sort, chapterIndex, verseIndex),
+            sort: verseSortOf(book.sort, chapterIndex, verseIndex),
             content: convert.jsonEncode(verseContent),
             contentVersion: 1,
             learnDate: Date.from(now),

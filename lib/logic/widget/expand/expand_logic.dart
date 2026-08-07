@@ -13,7 +13,6 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/book_help.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
@@ -321,17 +320,23 @@ class ExpandLogic {
     });
   }
 
-  /// 扩展助手只拿得到 verse 那一层，book 的内容从缓存里取（提示的名字定义在 book 上）。
-  Map<String, dynamic>? _bookMap() {
-    final book = BookHelp.getCache(bookId);
-    if (book == null) {
-      return null;
+  /// 扩展助手只拿得到 verse 那一层，book 的内容由 [ExpandSheet.open] 打开时查一次
+  /// 塞进来（提示的名字定义在 book 上）。[tipLabel] 是同步的，这里不能临时查库。
+  Map<String, dynamic>? bookMap;
+
+  Map<String, dynamic>? _bookMap() => bookMap;
+
+  Future<void> loadBookMap() async {
+    bookMap = null;
+    var content = await Db().db.bookDao.getContentById(bookId);
+    if (content == null) {
+      return;
     }
     try {
-      final ret = jsonDecode(book.bookContent);
-      return ret is Map<String, dynamic> ? ret : null;
+      final ret = jsonDecode(content);
+      bookMap = ret is Map<String, dynamic> ? ret : null;
     } catch (_) {
-      return null;
+      bookMap = null;
     }
   }
 

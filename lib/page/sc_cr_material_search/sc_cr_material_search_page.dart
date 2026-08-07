@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
+import 'package:repeat_flutter/logic/model/verse_pos.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/page/content/logic/helper.dart';
 import 'package:repeat_flutter/widget/app_bar/app_bar_widget.dart';
@@ -38,24 +39,33 @@ class ScCrMaterialSearchPage extends StatelessWidget {
         if (state.indexing.value) {
           return buildIndexing(logic);
         }
-        if (state.result.isEmpty) {
+        if (state.resultIds.isEmpty) {
           return Center(
             child: Text(state.searched.value ? I18nKey.labelNoSearchResult.tr : ''),
           );
         }
-        return ListView.separated(
-          itemCount: state.result.length,
-          separatorBuilder: (_, __) => const Divider(height: 1),
-          itemBuilder: (context, index) {
-            final verse = state.result[index];
-            return ListTile(
-              title: Text('${verse.toChapterPos()}${verse.toVersePos()}'),
-              subtitle: Text(
-                preview(verse),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              onTap: () => logic.openVerse(index),
+        // 骨架是 id 列表，正文按滚动位置从窗口里现取；GetBuilder 负责补齐后重画
+        return GetBuilder<ScCrMaterialSearchLogic>(
+          id: ScCrMaterialSearchLogic.id,
+          builder: (_) {
+            return ListView.separated(
+              itemCount: state.resultIds.length,
+              separatorBuilder: (_, __) => const Divider(height: 1),
+              itemBuilder: (context, index) {
+                final verse = logic.verseAt(index);
+                if (verse == null) {
+                  return const ListTile(title: Text(''));
+                }
+                return ListTile(
+                  title: Text(versePos(logic.bookNames[verse.bookId] ?? '', verse.chapterIndex, verse.verseIndex)),
+                  subtitle: Text(
+                    preview(verse),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onTap: () => logic.openVerse(index),
+                );
+              },
             );
           },
         );

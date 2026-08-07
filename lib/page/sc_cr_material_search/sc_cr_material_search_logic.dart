@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/query/show_window.dart';
+import 'package:repeat_flutter/db/query/verse_query.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/book_brief_help.dart';
 import 'package:repeat_flutter/logic/model/lazy_verse_today_prg_list.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/search/verse_search_index.dart';
-import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/page/repeat/repeat_args.dart';
@@ -19,14 +21,22 @@ class ScCrMaterialSearchLogic extends GetxController {
 
   final ScCrMaterialSearchState state = ScCrMaterialSearchState();
 
-  List<VerseShow> _verses = [];
-  final Map<int, VerseShow> _verseIdToShow = {};
-  final Map<int, String> _lowerContentCache = {};
   Timer? _debounceTimer;
+
+  /// bookId -> 书名，只给列表标题显示用。页面关掉就跟着释放。
+  Map<int, String> bookNames = {};
+
+  /// 结果的正文窗口：只保当前可视区附近那几十条，滚出去就淘汰。
+  late final ShowWindow<VerseShow> window = ShowWindow<VerseShow>(
+    fetch: VerseQuery.byIds,
+    idOf: (row) => row.verseId,
+    onLoaded: () => update([ScCrMaterialSearchLogic.id]),
+  );
 
   @override
   void onInit() {
     super.onInit();
+    loadBookNames();
     ensureIndex();
   }
 
@@ -38,27 +48,25 @@ class ScCrMaterialSearchLogic extends GetxController {
     super.onClose();
   }
 
+  Future<void> loadBookNames() async {
+    bookNames = await BookBriefHelp.loadNameMap(Classroom.curr);
+    update([ScCrMaterialSearchLogic.id]);
+  }
+
   Future<void> ensureIndex({bool force = false}) async {
     await VerseSearchIndex.ensureTable();
-    // 要重建时必须绕过 VerseHelp 的内存缓存重新取，否则会拿旧内容建索引
     var rebuild = VerseSearchIndex.ftsAvailable && (force || await VerseSearchIndex.needRebuild(Classroom.curr));
-    _verses = await VerseHelp.getVerses(force: rebuild);
-    _verseIdToShow.clear();
-    _lowerContentCache.clear();
-    for (var verse in _verses) {
-      _verseIdToShow[verse.verseId] = verse;
-    }
     if (!rebuild) {
-      // 没有 FTS5 时走内存 contains 搜索，同样不需要建索引
+      // 没有 FTS5 时走 SQL LIKE 搜索，不需要建索引
       return;
     }
     state.indexDone.value = 0;
-    state.indexTotal.value = _verses.isEmpty ? 1 : _verses.length;
+    state.indexTotal.value = 1;
     state.indexing.value = true;
     try {
+      // rebuild 自己分批从库里取，不再需要外面先把全量句子拉进内存
       await VerseSearchIndex.rebuild(
         Classroom.curr,
-        _verses,
         onProgress: (done, total) {
           state.indexDone.value = done;
           state.indexTotal.value = total == 0 ? 1 : total;
@@ -86,34 +94,34 @@ class ScCrMaterialSearchLogic extends GetxController {
     var keyword = input.trim();
     if (keyword.isEmpty) {
       state.searched.value = false;
-      state.result.clear();
+      state.resultIds.clear();
+      window.reset([]);
       return;
     }
-    List<VerseShow> hits;
+    List<int> hitIds;
     if (VerseSearchIndex.ftsAvailable) {
-      var verseIds = await VerseSearchIndex.search(Classroom.curr, keyword);
-      hits = verseIds.map((e) => _verseIdToShow[e]).whereType<VerseShow>().toList();
+      hitIds = await VerseSearchIndex.search(Classroom.curr, keyword);
     } else {
-      // 降级路径也要忽略大小写，和 FTS 路径保持一致
-      var lower = keyword.toLowerCase();
-      hits = _verses.where((e) => _lowerContent(e).contains(lower)).toList();
+      // 降级走 SQL LIKE：SQLite 的 LIKE 对 ASCII 默认就不区分大小写，
+      // 和 FTS 路径的表现一致，也不用再把全课堂正文转一份小写副本留在内存里
+      hitIds = await VerseQuery.searchIdsByLike(Classroom.curr, keyword);
     }
     state.searched.value = true;
-    state.result.value = hits;
+    state.resultIds.value = hitIds;
+    window.reset(hitIds);
+    update([ScCrMaterialSearchLogic.id]);
   }
 
-  /// 降级搜索用：正文全部转小写后缓存，避免每敲一个字就把整个教室的 JSON 重转一遍。
-  String _lowerContent(VerseShow verse) {
-    return _lowerContentCache.putIfAbsent(verse.verseId, () => verse.verseContent.toLowerCase());
-  }
+  /// 列表第 [index] 行的正文。没在窗口里就先返回 null，补齐后界面会自己重画。
+  VerseShow? verseAt(int index) => window.at(index);
 
   Future<void> openVerse(int index) async {
-    if (index < 0 || index >= state.result.length) {
+    if (index < 0 || index >= state.resultIds.length) {
       return;
     }
     await Nav.repeat.push(
       arguments: RepeatArgs(
-        progresses: LazyVerseTodayPrgList(state.result.toList()),
+        progresses: LazyVerseTodayPrgList(await VerseQuery.briefByIds(state.resultIds.toList())),
         startIndex: index,
         repeatFlowType: RepeatType.browse,
         enableShowRecallButtons: false,

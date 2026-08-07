@@ -59,6 +59,8 @@ class ExpandSheet {
     logic.bookId = verse.bookId;
     logic.verseId = verse.verseId;
     logic.verseMap = verseMap;
+    // tipLabel 是同步的，book 内容得在开面板前先取好
+    await logic.loadBookMap();
     if (preset != null) {
       logic.editingActionId = preset.id;
       logic.actionSort = preset.sort;

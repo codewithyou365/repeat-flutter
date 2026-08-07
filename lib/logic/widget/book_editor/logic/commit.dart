@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/edit_book_history.dart';
-import 'package:repeat_flutter/logic/cache_help.dart';
+import 'package:repeat_flutter/logic/book_cache_version.dart';
 import 'package:repeat_flutter/logic/model/classroom_content.dart';
 import 'package:repeat_flutter/logic/reimport_help.dart';
 
@@ -33,7 +33,7 @@ Future<void> handleCommit(HttpRequest request, int bookId) async {
     if (bookCacheVersionHeader.isNotEmpty) {
       bookCacheVersion = int.parse(bookCacheVersionHeader.first);
     }
-    if (CacheHelp.getCacheVersion(bookId) != bookCacheVersion) {
+    if (BookCacheVersion.get(bookId) != bookCacheVersion) {
       response.statusCode = HttpStatus.ok;
       response.write("Commit failed because the version is not consistent");
       return;

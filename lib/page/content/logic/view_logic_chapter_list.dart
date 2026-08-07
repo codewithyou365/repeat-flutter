@@ -7,11 +7,13 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/chapter_content_version.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/book_help.dart';
+import 'package:repeat_flutter/db/query/chapter_query.dart';
+import 'package:repeat_flutter/db/query/show_window.dart';
+import 'package:repeat_flutter/logic/book_brief_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
-import 'package:repeat_flutter/logic/model/book_show.dart';
+import 'package:repeat_flutter/logic/model/book_brief.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
-import 'package:repeat_flutter/logic/chapter_help.dart';
+import 'package:repeat_flutter/logic/model/verse_pos.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
@@ -34,12 +36,26 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
 
   final RxString search = RxString("");
   final T parentLogic;
-  List<BookShow> originalBookShow;
-  List<ChapterShow> originalChapterShow;
-  List<ChapterShow> chapterShow = [];
+
+  /// 筛选下拉框的原料：书本只要 id/名字/排序，章节只要每本书有哪几章。都不带正文。
+  List<BookBrief> books;
+  Map<int, List<int>> chapterIndexesByBook;
+
+  /// 列表骨架 + 正文窗口。以前这里是一整份 `List<ChapterShow>`（全课堂章节正文常驻内存）。
+  late final ShowWindow<ChapterShow> window = ShowWindow<ChapterShow>(
+    fetch: ChapterQuery.byIds,
+    idOf: (row) => row.chapterId,
+    onLoaded: () => parentLogic.update([ViewLogicChapterList.bodyId]),
+  );
+
   VoidCallback onChapterModified;
 
+  /// bookId -> 书名。**只给界面显示用**，过滤/分组一律拿 bookId 比。
+  Map<int, String> bookNames = {};
+
   bool showSearchDetailPanel = false;
+
+  /// 注意：这是 [options] 的下标，不是 bookId。bookId 在 `options[bookSelect].value` 里。
   RxInt bookSelect = 0.obs;
   RxInt chapterSelect = 0.obs;
   String searchKey = '';
@@ -54,16 +70,20 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     I18nKey.labelSortPositionDesc,
   ];
 
+  /// 内容被改过就把窗口里那份正文作废重取。以前是 DAO 顺手 patch 全局缓存，
+  /// 现在正文是我们自己按需取的副本，得自己失效。
+  final SubList contentSub = [];
+
   double baseBodyViewHeight = 0;
 
   ViewLogicChapterList({
     required this.onChapterModified,
-    required this.originalBookShow,
-    required this.originalChapterShow,
+    required this.books,
+    required this.chapterIndexesByBook,
     required this.parentLogic,
     required this.onNext,
     required super.onSearchUnfocus,
-    String? initBookNameSelect,
+    int? initBookIdSelect,
     int? initChapterSelect,
   }) {
     searchFocusNode.addListener(() {
@@ -77,18 +97,22 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
       search.value = searchController.text;
       trySearch();
     });
+    contentSub.on([EventTopic.updateChapterContent, EventTopic.reimportBook], (_) {
+      window.invalidate();
+      parentLogic.update([ViewLogicChapterList.bodyId]);
+    });
 
-    searchKey = genSearchKey();
-    chapterShow = List.from(originalChapterShow);
+    // searchKey 故意留空：列表数据现在要查库才有，第一次 trySearch 必须真的跑一遍，
+    // 不能因为"筛选条件没变"就跳过（以前构造时已经把全量数据塞进列表了才可以跳）。
 
     // for sorting and content
     sortOptions = sortOptionKeys.map((key) => key.tr).toList();
-    sort(chapterShow, sortOptionKeys[selectedSortIndex]);
 
     collectData();
 
-    if (initBookNameSelect != null) {
-      bookSelect.value = options.indexWhere((opt) => opt.label == initBookNameSelect);
+    if (initBookIdSelect != null) {
+      // 找不到（比如那本书被停用了）就退回"全部"，别留 -1 当下标
+      bookSelect.value = options.indexWhere((opt) => opt.value == initBookIdSelect).clamp(0, options.length - 1);
       if (bookSelect.value < options.length) {
         final selectedBook = options[bookSelect.value];
         if (initChapterSelect != null) {
@@ -108,55 +132,54 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
   }
 
   String genSearchKey() {
-    return '$bookSelect,$chapterSelect,${search.value}';
+    return '$bookSelect,$chapterSelect,$selectedSortIndex,${search.value}';
+  }
+
+  ChapterFilter buildFilter() {
+    int? bookId;
+    int? chapterIndex;
+    if (bookSelect.value != 0) {
+      if (bookSelect.value < options.length) {
+        final selectedBook = options[bookSelect.value];
+        bookId = selectedBook.value;
+        if (chapterSelect.value != 0) {
+          if (chapterSelect.value < selectedBook.next.length) {
+            chapterIndex = selectedBook.next[chapterSelect.value].value;
+          } else {
+            // 选中的章节已经不存在了，退回"这本书全部"
+            chapterSelect.value = 0;
+          }
+        }
+      } else {
+        bookSelect.value = 0;
+      }
+    }
+    return ChapterFilter(
+      classroomId: Classroom.curr,
+      bookId: bookId,
+      chapterIndex: chapterIndex,
+      keyword: search.value.isEmpty ? null : search.value,
+      asc: sortOptionKeys[selectedSortIndex] != I18nKey.labelSortPositionDesc,
+    );
   }
 
   @override
-  void trySearch({bool force = false}) {
+  Future<void> trySearch({bool force = false}) async {
     String newSearchKey = genSearchKey();
     if (!force && newSearchKey == searchKey) {
       return;
     }
     searchKey = newSearchKey;
-    if (search.value.isNotEmpty || bookSelect.value != 0 || chapterSelect.value != 0) {
-      chapterShow = originalChapterShow.where((e) {
-        bool ret = true;
-        if (ret && search.value.isNotEmpty) {
-          ret = e.chapterContent.contains(search.value);
-        }
-        if (ret && bookSelect.value != 0) {
-          if (bookSelect.value < options.length) {
-            final selectedBook = options[bookSelect.value];
-            ret = e.bookName == selectedBook.label;
-            if (ret && chapterSelect.value != 0) {
-              if (chapterSelect.value < selectedBook.next.length) {
-                final selectedChapter = selectedBook.next[chapterSelect.value];
-                ret = e.chapterIndex == selectedChapter.value;
-              } else {
-                ret = false;
-              }
-            }
-          } else {
-            bookSelect.value = 0;
-            ret = false;
-          }
-        }
-        return ret;
-      }).toList();
-    } else {
-      chapterShow = List.from(originalChapterShow);
-    }
-    sort(chapterShow, sortOptionKeys[selectedSortIndex]);
-
+    window.reset(await ChapterQuery.queryIds(buildFilter()));
     parentLogic.update([ViewLogicChapterList.bodyId]);
   }
 
-  void refresh() {
-    originalChapterShow = ChapterHelp.cache;
-    originalBookShow = BookHelp.cache;
+  Future<void> refresh() async {
+    books = await BookBriefHelp.loadEnabled(Classroom.curr);
+    chapterIndexesByBook = await ChapterQuery.chapterIndexesByBook(Classroom.curr);
     onChapterModified();
     collectData();
-    trySearch(force: true);
+    await trySearch(force: true);
   }
 
   Future<void> delete({required ChapterShow chapter}) async {
@@ -179,8 +202,8 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     if (bookSelect.value > 0) {
       success = await showOverlay<bool>(() async {
         var classroomId = Classroom.curr;
-        var book = await Db().db.bookDao.getBookByName(classroomId, options[bookSelect.value].label);
-        if (book == null) {
+        var book = await Db().db.bookDao.getById(options[bookSelect.value].value);
+        if (book == null || book.classroomId != classroomId) {
           Snackbar.show(I18nKey.labelNoContent.tr);
           return false;
         }
@@ -216,8 +239,8 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     Get.back();
   }
 
-  void setBookSelectByName(String bookName) {
-    bookSelect.value = options.indexWhere((opt) => opt.label == bookName);
+  void setBookSelectById(int bookId) {
+    bookSelect.value = options.indexWhere((opt) => opt.value == bookId).clamp(0, options.length - 1);
   }
 
   @override
@@ -238,8 +261,6 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
     return GetBuilder<T>(
       id: ViewLogicChapterList.bodyId,
       builder: (_) {
-        var list = chapterShow;
-
         Widget searchDetailPanel = const SizedBox.shrink();
         if (showSearchDetailPanel) {
           searchDetailPanel = Container(
@@ -277,9 +298,8 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                   value: selectedSortIndex,
                   changed: (index) {
                     selectedSortIndex = index;
-                    I18nKey key = sortOptionKeys[index];
-                    sort(chapterShow, key);
-                    parentLogic.update([ViewLogicChapterList.bodyId]);
+                    // 排序也是 SQL 的 ORDER BY，走一遍 trySearch 重取骨架
+                    trySearch();
                   },
                   pickWidth: 210.w,
                 ),
@@ -289,13 +309,17 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
           );
         }
         Widget body = const SizedBox.shrink();
-        if (list.isNotEmpty) {
+        if (!window.isEmpty) {
           body = ScrollablePositionedList.builder(
             itemScrollController: itemScrollController,
             itemPositionsListener: itemPositionsListener,
-            itemCount: list.length,
+            itemCount: window.length,
             itemBuilder: (context, index) {
-              final chapter = list[index];
+              // 正文还没落到窗口里就先占个位，窗口补齐后 onLoaded 会触发重画
+              final chapter = window.at(index);
+              if (chapter == null) {
+                return const SizedBox(height: 96);
+              }
               return Card(
                 color: null,
                 elevation: 2,
@@ -322,7 +346,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                chapter.toPos(),
+                                chapterPos(bookNames[chapter.bookId] ?? '', chapter.chapterIndex),
                                 style: const TextStyle(fontSize: 12, color: Colors.blue),
                               ),
                             ),
@@ -458,8 +482,8 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
           await historyList.show(historyData, focus: true.obs);
         },
         contentChangeTopics: [EventTopic.reimportBook],
-        getContent: () {
-          var c = ChapterHelp.getCache(chapter.chapterId);
+        getContent: () async {
+          var c = await Db().db.chapterDao.getChapterShowById(chapter.chapterId);
           if (c == null) {
             return '';
           }
@@ -472,27 +496,10 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
 
   void updateOptions() {
     options = [];
-    final Map<String, List<dynamic>> chaptersByBook = {};
-    for (var chapter in originalChapterShow) {
-      chaptersByBook.putIfAbsent(chapter.bookName, () => []).add(chapter);
-    }
-
-    final Set<String> uniqueBookNames = {};
-    for (var book in originalBookShow) {
-      uniqueBookNames.add(book.name);
-    }
-
     final List<OptionBody> bookOptions = [];
 
-    for (var bookName in uniqueBookNames) {
-      final chapters = chaptersByBook[bookName] ?? [];
-
-      final Set<int> chapterIndices = {};
-      for (var chapter in chapters) {
-        chapterIndices.add(chapter.chapterIndex);
-      }
-
-      final sortedIndices = chapterIndices.toList()..sort();
+    for (var book in books) {
+      final sortedIndices = (chapterIndexesByBook[book.bookId] ?? []).toSet().toList()..sort();
       sortedIndices.insert(0, -1);
 
       final chapterOptions = sortedIndices.map((k) {
@@ -505,8 +512,9 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
 
       bookOptions.add(
         OptionBody(
-          label: bookName,
-          value: 0,
+          // label 只给界面看，value 才是程序认的 bookId
+          label: book.name,
+          value: book.bookId,
           next: chapterOptions,
         ),
       );
@@ -530,20 +538,8 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
   }
 
   void collectData() {
+    bookNames = {for (var book in books) book.bookId: book.name};
     updateOptions();
-  }
-
-  void sort(List<ChapterShow> chapterShow, I18nKey key) {
-    switch (key) {
-      case I18nKey.labelSortPositionAsc:
-        chapterShow.sort((a, b) => a.toSort().compareTo(b.toSort()));
-        break;
-      case I18nKey.labelSortPositionDesc:
-        chapterShow.sort((a, b) => b.toSort().compareTo(a.toSort()));
-        break;
-      default:
-        break;
-    }
   }
 
   double getBodyViewHeight() {
@@ -556,6 +552,7 @@ class ViewLogicChapterList<T extends GetxController> extends ViewLogic {
 
   @override
   dispose() {
+    contentSub.off();
     searchController.dispose();
     searchFocusNode.dispose();
   }

@@ -13,11 +13,9 @@ import 'package:repeat_flutter/db/entity/content_version.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/db/entity/verse_content_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/cache_help.dart';
-import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
-import 'package:repeat_flutter/logic/verse_help.dart';
+import 'package:repeat_flutter/logic/model/verse_brief.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 @dao
@@ -53,6 +51,33 @@ abstract class ChapterDao {
     ' ORDER BY Chapter.chapterIndex',
   )
   Future<List<ChapterShow>> getChapterByBookId(int bookId);
+
+  @Query(
+    'SELECT Chapter.id chapterId'
+    ',Book.id bookId'
+    ',Book.sort bookSort'
+    ',Chapter.content chapterContent'
+    ',Chapter.contentVersion chapterContentVersion'
+    ',Chapter.chapterIndex'
+    ' FROM Chapter'
+    ' JOIN Book ON Book.id=Chapter.bookId'
+    ' WHERE Chapter.id=:chapterId',
+  )
+  Future<ChapterShow?> getChapterShowById(int chapterId);
+
+  @Query(
+    'SELECT Chapter.id chapterId'
+    ',Book.id bookId'
+    ',Book.sort bookSort'
+    ',Chapter.content chapterContent'
+    ',Chapter.contentVersion chapterContentVersion'
+    ',Chapter.chapterIndex'
+    ' FROM Chapter'
+    ' JOIN Book ON Book.id=Chapter.bookId'
+    ' WHERE Chapter.bookId=:bookId'
+    '  AND Chapter.chapterIndex=:chapterIndex',
+  )
+  Future<ChapterShow?> getChapterShowByIndex(int bookId, int chapterIndex);
 
   @Query(
     'UPDATE Chapter'
@@ -227,12 +252,12 @@ abstract class ChapterDao {
   }
 
   Future<bool> deleteChapter(int chapterId) async {
-    var chapterShow = ChapterHelp.getCache(chapterId);
+    // 删之前先把这一行取出来，事件的订阅方要用它的 bookId
+    var chapterShow = await getChapterShowById(chapterId);
     bool ok = await innerDeleteChapter(chapterId);
     if (!ok) {
       return false;
     }
-    await CacheHelp.refreshChapterAndVerse();
     EventBus().publish<ChapterShow>(EventTopic.deleteChapter, chapterShow);
     return true;
   }
@@ -276,8 +301,7 @@ abstract class ChapterDao {
     if (!ok) {
       return false;
     }
-    await CacheHelp.refreshChapterAndVerse();
-    var newChapter = ChapterHelp.getCacheByIndex(chapterShow.bookId, chapterIndex);
+    var newChapter = await getChapterShowByIndex(chapterShow.bookId, chapterIndex);
     EventBus().publish<ChapterShow>(EventTopic.addChapter, newChapter);
     return true;
   }
@@ -302,8 +326,7 @@ abstract class ChapterDao {
     if (!ok) {
       return false;
     }
-    await CacheHelp.refreshChapterAndVerse();
-    var newChapter = ChapterHelp.getCacheByIndex(bookId, 0);
+    var newChapter = await getChapterShowByIndex(bookId, 0);
     EventBus().publish<ChapterShow>(EventTopic.addChapter, newChapter);
     return true;
   }
@@ -334,8 +357,7 @@ abstract class ChapterDao {
     if (!ok) {
       return false;
     }
-    await CacheHelp.refreshChapterAndVerse();
-    var newChapter = ChapterHelp.getCacheByIndex(bookId, chapterIndex);
+    var newChapter = await getChapterShowByIndex(bookId, chapterIndex);
     EventBus().publish<ChapterShow>(EventTopic.addChapter, newChapter);
     return true;
   }
@@ -378,7 +400,7 @@ abstract class ChapterDao {
           chapterId: newChapter.id!,
           chapterIndex: chapterIndex,
           verseIndex: i,
-          sort: VerseHelp.toVerseSort(book.sort, chapterIndex, i),
+          sort: verseSortOf(book.sort, chapterIndex, i),
           content: verseContents[i],
           contentVersion: 1,
           learnDate: Date.from(now),
@@ -409,8 +431,7 @@ abstract class ChapterDao {
   Future<void> updateChapterContent(int chapterId, String content) async {
     var chapter = await innerUpdateChapterContent(chapterId, content);
     if (chapter.id != null) {
-      CacheHelp.updateChapterContent(chapter);
-      EventBus().publish<ChapterShow>(EventTopic.updateChapterContent, ChapterHelp.getCache(chapter.id!));
+      EventBus().publish<ChapterShow>(EventTopic.updateChapterContent, await getChapterShowById(chapter.id!));
     }
   }
 

@@ -9,7 +9,6 @@ import 'package:repeat_flutter/db/entity/tip.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
-import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_button.dart';
 import 'package:repeat_flutter/logic/widget/close_eyes/close_eyes_panel.dart';
 import 'package:repeat_flutter/logic/widget/text_template.dart';
@@ -86,11 +85,8 @@ class RepeatPage extends StatelessWidget {
     String? viewName;
     if (state.helper.initialized) {
       var verse = state.helper.getCurrVerse();
-      if (verse != null) {
-        var verseShow = VerseHelp.getCache(verse.verseId);
-        if (verseShow != null) {
-          viewName = state.helper.getCurrViewName();
-        }
+      if (verse != null && state.helper.currVerseShow != null) {
+        viewName = state.helper.getCurrViewName();
       }
     }
     if (viewName == null) {

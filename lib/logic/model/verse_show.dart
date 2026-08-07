@@ -1,6 +1,6 @@
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
-import 'package:repeat_flutter/logic/book_help.dart';
+import 'package:repeat_flutter/logic/model/verse_brief.dart';
 
 @Entity(tableName: "")
 class VerseShow {
@@ -29,20 +29,8 @@ class VerseShow {
     required this.progress,
   });
 
-  /// 书名不是数据库列了，JOIN 不出来，按 bookId 从书本缓存里查。
-  /// [VerseHelp.tryGen] 会先把 [BookHelp] 生成好，这里一定拿得到。
-  String get bookName => BookHelp.getCache(bookId)?.name ?? '';
-
-  String toChapterPos() {
-    return '$bookName-${chapterIndex + 1}';
-  }
-
-  String toVersePos() {
-    return '-${verseIndex + 1}';
-  }
-
   int toSort() {
-    return bookSort * 10000000000 + chapterIndex * 100000 + verseIndex;
+    return verseSortOf(bookSort, chapterIndex, verseIndex);
   }
 
   VerseShow copy() {

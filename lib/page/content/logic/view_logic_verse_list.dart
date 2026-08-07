@@ -7,12 +7,16 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/verse_content_version.dart';
+import 'package:repeat_flutter/db/query/chapter_query.dart';
+import 'package:repeat_flutter/db/query/show_window.dart';
+import 'package:repeat_flutter/db/query/verse_query.dart';
+import 'package:repeat_flutter/logic/book_brief_help.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
-import 'package:repeat_flutter/logic/model/book_show.dart';
-import 'package:repeat_flutter/logic/model/chapter_show.dart';
+import 'package:repeat_flutter/logic/model/book_brief.dart';
+import 'package:repeat_flutter/logic/model/verse_pos.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
-import 'package:repeat_flutter/logic/verse_help.dart';
+import 'package:repeat_flutter/logic/search/verse_search_index.dart';
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -30,7 +34,9 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
   static const String bodyId = "VerseList.bodyId";
   final ItemScrollController itemScrollController = ItemScrollController();
   final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
-  final void Function(List<VerseShow> verseShow, int index) onNext;
+  /// 点某一行进播放页：传的是**当前过滤+排序下的全部 verseId**和起始下标，
+  /// 不是一整份带正文的列表 —— 正文由播放页按当前这一节现取。
+  final void Function(List<int> verseIds, int index) onNext;
   List<I18nKey> sortOptionKeys = [
     I18nKey.labelSortPositionAsc,
     I18nKey.labelSortPositionDesc,
@@ -44,6 +50,9 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
 
   List<OptionBody> options = [];
 
+  /// bookId -> 书名。**只给界面显示用**，过滤/分组一律拿 bookId 比。
+  Map<int, String> bookNames = {};
+
   RxInt chapterSelect = 0.obs;
   int progressSelect = 0;
   int nextMonthSelect = 0;
@@ -52,35 +61,46 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
 
   String searchKey = '';
 
+  /// 注意：这是 [options] 的下标，不是 bookId。bookId 在 `options[bookSelect].value` 里。
   RxInt bookSelect = 0.obs;
 
   List<String> sortOptions = [];
   List<String> progressOptions = [];
   List<String> nextMonthOptions = [];
-  int missingVerseOffset = -1;
   List<int> progress = [];
   List<int> nextMonth = [];
-  List<VerseShow> verseShow = [];
+
+  /// 列表骨架 + 正文窗口。以前这里是一整份 `List<VerseShow>`（全课堂的正文常驻内存）。
+  late final ShowWindow<VerseShow> window = ShowWindow<VerseShow>(
+    fetch: VerseQuery.byIds,
+    idOf: (row) => row.verseId,
+    onLoaded: () => parentLogic.update([ViewLogicVerseList.bodyId]),
+  );
+
   late HistoryList historyList = HistoryList<T>(parentLogic);
   final T parentLogic;
   VoidCallback onChapterModified;
-  List<BookShow> originalBookShow;
-  List<ChapterShow> originalChapterShow;
-  List<VerseShow> originalVerseShow;
+
+  /// 筛选下拉框的原料：书本只要 id/名字/排序，章节只要每本书有哪几章。都不带正文。
+  List<BookBrief> books;
+  Map<int, List<int>> chapterIndexesByBook;
+
+  /// 内容被改过就把窗口里那份正文作废重取。以前是 DAO 顺手 patch 全局缓存，
+  /// 现在正文是我们自己按需取的副本，得自己失效。
+  final SubList contentSub = [];
 
   double baseBodyViewHeight = 0;
   int? selectVerseKeyId;
 
   ViewLogicVerseList({
     required this.parentLogic,
-    required this.originalBookShow,
-    required this.originalChapterShow,
-    required this.originalVerseShow,
+    required this.books,
+    required this.chapterIndexesByBook,
     required this.onChapterModified,
     required this.selectVerseKeyId,
     required this.onNext,
     required super.onSearchUnfocus,
-    String? initContentNameSelect,
+    int? initBookIdSelect,
     int? initChapterSelect,
   }) {
     searchFocusNode.addListener(() {
@@ -94,15 +114,17 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
       search.value = searchController.text;
       trySearch();
     });
-    verseShow = List.from(originalVerseShow);
+    contentSub.on([EventTopic.updateVerseContent, EventTopic.updateVerseProgress, EventTopic.reimportBook], (_) {
+      window.invalidate();
+      parentLogic.update([ViewLogicVerseList.bodyId]);
+    });
 
     sortOptions = sortOptionKeys.map((key) => key.tr).toList();
-    sort(verseShow, sortOptionKeys[selectedSortIndex]);
-
     collectData();
 
-    if (initContentNameSelect != null) {
-      bookSelect.value = options.indexWhere((opt) => opt.label == initContentNameSelect);
+    if (initBookIdSelect != null) {
+      // 找不到（比如那本书被停用了）就退回"全部"，别留 -1 当下标
+      bookSelect.value = options.indexWhere((opt) => opt.value == initBookIdSelect).clamp(0, options.length - 1);
       if (bookSelect.value < options.length) {
         final selectedBook = options[bookSelect.value];
         if (initChapterSelect != null) {
@@ -115,70 +137,76 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
   }
 
   String genSearchKey() {
-    return '${bookSelect.value},${chapterSelect.value},$progressSelect,$nextMonthSelect,${search.value}';
+    return '${bookSelect.value},${chapterSelect.value},$progressSelect,$nextMonthSelect,$selectedSortIndex,${search.value}';
   }
 
   void scrollTo(int selectVerseKeyId) {
-    int? selectedIndex;
-    VerseShow? ss = VerseHelp.getCache(selectVerseKeyId);
-    if (ss != null) {
-      selectedIndex = verseShow.indexOf(ss);
-    }
-    if (selectedIndex != null) {
+    var index = window.indexOfId(selectVerseKeyId);
+    if (index >= 0) {
       itemScrollController.scrollTo(
-        index: selectedIndex,
+        index: index,
         duration: const Duration(milliseconds: 10),
         curve: Curves.easeInOut,
       );
     }
   }
 
+  Future<void> refresh() async {
+    books = await BookBriefHelp.loadEnabled(Classroom.curr);
+    chapterIndexesByBook = await ChapterQuery.chapterIndexesByBook(Classroom.curr);
+    collectData();
+    await loadValueOptions();
+    await trySearch(force: true);
+  }
+
+  /// 把界面上的筛选项翻成 SQL 条件。
+  Future<VerseFilter> buildFilter() async {
+    int? bookId;
+    int? chapterIndex;
+    if (bookSelect.value != 0) {
+      if (bookSelect.value < options.length) {
+        final selectedBook = options[bookSelect.value];
+        bookId = selectedBook.value;
+        if (chapterSelect.value != 0) {
+          if (chapterSelect.value < selectedBook.next.length) {
+            chapterIndex = selectedBook.next[chapterSelect.value].value;
+          } else {
+            // 选中的章节已经不存在了，退回"这本书全部"
+            chapterSelect.value = 0;
+          }
+        }
+      } else {
+        bookSelect.value = 0;
+      }
+    }
+    List<int>? verseIds;
+    if (search.value.isNotEmpty) {
+      // 有 FTS5 走全文索引，没有就退回 SQL LIKE（和以前内存里 contains 原始 JSON 串等价）
+      if (VerseSearchIndex.ftsAvailable) {
+        verseIds = await VerseSearchIndex.search(Classroom.curr, search.value);
+      } else {
+        verseIds = await VerseQuery.searchIdsByLike(Classroom.curr, search.value);
+      }
+    }
+    return VerseFilter(
+      classroomId: Classroom.curr,
+      bookId: bookId,
+      chapterIndex: chapterIndex,
+      progress: progressSelect != 0 && progressSelect < progress.length ? progress[progressSelect] : null,
+      learnMonth: nextMonthSelect != 0 && nextMonthSelect < nextMonth.length ? nextMonth[nextMonthSelect] : null,
+      verseIds: verseIds,
+      sortBy: sortByOf(sortOptionKeys[selectedSortIndex]),
+    );
+  }
+
   @override
-  void trySearch({force = false}) {
-    originalVerseShow = VerseHelp.cache;
+  Future<void> trySearch({force = false}) async {
     String newSearchKey = genSearchKey();
     if (!force && newSearchKey == searchKey) {
       return;
     }
     searchKey = newSearchKey;
-    if (search.value.isNotEmpty || bookSelect.value != 0 || chapterSelect.value != 0 || progressSelect != 0 || nextMonthSelect != 0) {
-      verseShow = originalVerseShow.where((e) {
-        bool ret = true;
-        if (ret && search.value.isNotEmpty) {
-          ret = e.verseContent.contains(search.value);
-        }
-        if (ret && bookSelect.value != 0) {
-          if (bookSelect.value < options.length) {
-            final selectedBook = options[bookSelect.value];
-            ret = e.bookName == selectedBook.label;
-            if (ret && chapterSelect.value != 0) {
-              if (chapterSelect.value < selectedBook.next.length) {
-                final selectedChapter = selectedBook.next[chapterSelect.value];
-                ret = e.chapterIndex == selectedChapter.value;
-              } else {
-                ret = false;
-              }
-            }
-          } else {
-            bookSelect.value = 0;
-            ret = false;
-          }
-        }
-        if (ret && progressSelect != 0) {
-          ret = e.progress == progress[progressSelect];
-        }
-        if (ret && nextMonthSelect != 0) {
-          int min = nextMonth[nextMonthSelect] * 100;
-          int max = min + 99;
-          ret = min < e.learnDate.value && e.learnDate.value < max;
-        }
-        return ret;
-      }).toList();
-    } else {
-      verseShow = List.from(originalVerseShow);
-    }
-    sort(verseShow, sortOptionKeys[selectedSortIndex]);
-
+    window.reset(await VerseQuery.queryIds(await buildFilter()));
     parentLogic.update([ViewLogicVerseList.bodyId]);
   }
 
@@ -198,8 +226,8 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     if (bookSelect.value > 0 && chapterSelect.value > 0) {
       await showOverlay(() async {
         var classroomId = Classroom.curr;
-        var book = await Db().db.bookDao.getBookByName(classroomId, options[bookSelect.value].label);
-        if (book == null) {
+        var book = await Db().db.bookDao.getById(options[bookSelect.value].value);
+        if (book == null || book.classroomId != classroomId) {
           Snackbar.show(I18nKey.labelNoContent.tr);
           return;
         }
@@ -225,7 +253,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
         verseIndex++;
       }
       if (last != null && last && below) {
-        var newVerse = MediaRangeHelper.improveLastCopyContent(verse);
+        var newVerse = await MediaRangeHelper.improveLastCopyContent(verse);
         if (newVerse != null) {
           verse = newVerse;
         }
@@ -256,11 +284,12 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     // for height
     baseBodyViewHeight = height;
     collectData();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (focus) {
         searchFocusNode.requestFocus();
       }
-      trySearch();
+      // 必须等骨架 id 取回来再定位 —— trySearch 现在是查库，不是同步过滤
+      await trySearch();
       if (selectVerseKeyId != null) {
         scrollTo(selectVerseKeyId!);
       }
@@ -325,9 +354,8 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                   value: selectedSortIndex,
                   changed: (index) {
                     selectedSortIndex = index;
-                    I18nKey key = sortOptionKeys[index];
-                    sort(verseShow, key);
-                    parentLogic.update([ViewLogicVerseList.bodyId]);
+                    // 排序也是 SQL 的 ORDER BY，走一遍 trySearch 重取骨架
+                    trySearch();
                   },
                   pickWidth: 210.w,
                 ),
@@ -337,18 +365,18 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
           );
         }
         Widget body = const SizedBox.shrink();
-        var list = verseShow;
 
-        if (list.isNotEmpty) {
+        if (!window.isEmpty) {
           body = ScrollablePositionedList.builder(
             itemScrollController: itemScrollController,
             itemPositionsListener: itemPositionsListener,
-            itemCount: list.length,
+            itemCount: window.length,
             itemBuilder: (context, index) {
-              if (index >= list.length) {
-                return const SizedBox.shrink();
+              // 正文还没落到窗口里就先占个位，窗口补齐后 onLoaded 会触发重画
+              final verse = window.at(index);
+              if (verse == null) {
+                return const SizedBox(height: 96);
               }
-              final verse = list[index];
               return Card(
                 elevation: 2,
                 margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
@@ -365,7 +393,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                         children: [
                           GestureDetector(
                             onTap: () {
-                              onNext(list, index);
+                              onNext(window.ids, index);
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -374,7 +402,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                '${verse.toChapterPos()}${verse.toVersePos()}',
+                                versePos(bookNames[verse.bookId] ?? '', verse.chapterIndex, verse.verseIndex),
                                 style: const TextStyle(fontSize: 12, color: Colors.blue),
                               ),
                             ),
@@ -465,7 +493,7 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
                                       ),
                                       MsgBox.button(
                                         text: I18nKey.btnBelow.tr,
-                                        onPressed: () => copy(verse: verse, below: true, last: index + 1 == list.length),
+                                        onPressed: () => copy(verse: verse, below: true, last: index + 1 == window.length),
                                       ),
                                     ],
                                   ),
@@ -548,8 +576,8 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
           await historyList.show(historyData, focus: true.obs);
         },
         contentChangeTopics: [EventTopic.reimportBook],
-        getContent: () {
-          var c = VerseHelp.getCache(verse.verseId);
+        getContent: () async {
+          var c = await Db().db.scheduleDao.getVerseShowById(verse.verseId);
           if (c == null) {
             return '';
           }
@@ -562,27 +590,10 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
 
   void updateOptions() {
     options = [];
-    final Map<String, List<dynamic>> chaptersByBook = {};
-    for (var chapter in originalChapterShow) {
-      chaptersByBook.putIfAbsent(chapter.bookName, () => []).add(chapter);
-    }
-
-    final Set<String> uniqueBookNames = {};
-    for (var book in originalBookShow) {
-      uniqueBookNames.add(book.name);
-    }
-
     final List<OptionBody> bookOptions = [];
 
-    for (var bookName in uniqueBookNames) {
-      final chapters = chaptersByBook[bookName] ?? [];
-
-      final Set<int> chapterIndices = {};
-      for (var chapter in chapters) {
-        chapterIndices.add(chapter.chapterIndex);
-      }
-
-      final sortedIndices = chapterIndices.toList()..sort();
+    for (var book in books) {
+      final sortedIndices = (chapterIndexesByBook[book.bookId] ?? []).toSet().toList()..sort();
       sortedIndices.insert(0, -1);
 
       final chapterOptions = sortedIndices.map((k) {
@@ -595,8 +606,9 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
 
       bookOptions.add(
         OptionBody(
-          label: bookName,
-          value: 0,
+          // label 只给界面看，value 才是程序认的 bookId
+          label: book.name,
+          value: book.bookId,
           next: chapterOptions,
         ),
       );
@@ -620,20 +632,25 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
   }
 
   void collectData() {
+    bookNames = {for (var book in books) book.bookId: book.name};
     updateOptions();
+    rebuildValueOptions();
+  }
 
-    progress = [];
-    nextMonth = [];
-    for (int i = 0; i < verseShow.length; i++) {
-      var v = verseShow[i];
-      if (!progress.contains(v.progress)) {
-        progress.add(v.progress);
-      }
-      int month = v.learnDate.value ~/ 100;
-      if (!nextMonth.contains(month)) {
-        nextMonth.add(month);
-      }
-    }
+  /// 进度、下次学习月这两个下拉框的取值范围。
+  ///
+  /// 以前是从"当前这一屏已加载的句子"里现算的 —— 一旦按进度筛过，下拉框就只剩
+  /// 选中的那一档了。现在让 SQL 对整个课堂 DISTINCT，取值范围稳定且不依赖已加载内容。
+  Future<void> loadValueOptions() async {
+    progress = await VerseQuery.distinctProgress(Classroom.curr);
+    nextMonth = await VerseQuery.distinctLearnMonth(Classroom.curr);
+    rebuildValueOptions();
+    parentLogic.update([ViewLogicVerseList.bodyId]);
+  }
+
+  void rebuildValueOptions() {
+    progress = progress.where((e) => e != -1).toList();
+    nextMonth = nextMonth.where((e) => e != -1).toList();
     progress.sort();
     progress.insert(0, -1);
     progressOptions = progress.map((k) {
@@ -653,40 +670,21 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
     }).toList();
   }
 
-  static void sort(List<VerseShow> verseShow, I18nKey key) {
+  /// 排序不再在内存里做，交给 SQL 的 ORDER BY。
+  static VerseSortBy sortByOf(I18nKey key) {
     switch (key) {
       case I18nKey.labelSortProgressAsc:
-        verseShow.sort((a, b) {
-          int progressComparison = a.progress.compareTo(b.progress);
-          return progressComparison != 0 ? progressComparison : a.toSort().compareTo(b.toSort());
-        });
-        break;
+        return VerseSortBy.progressAsc;
       case I18nKey.labelSortProgressDesc:
-        verseShow.sort((a, b) {
-          int progressComparison = b.progress.compareTo(a.progress);
-          return progressComparison != 0 ? progressComparison : a.toSort().compareTo(b.toSort());
-        });
-        break;
-      case I18nKey.labelSortPositionAsc:
-        verseShow.sort((a, b) => a.toSort().compareTo(b.toSort()));
-        break;
+        return VerseSortBy.progressDesc;
       case I18nKey.labelSortPositionDesc:
-        verseShow.sort((a, b) => b.toSort().compareTo(a.toSort()));
-        break;
+        return VerseSortBy.positionDesc;
       case I18nKey.labelSortNextLearnDateAsc:
-        verseShow.sort((a, b) {
-          int nextComparison = a.learnDate.value.compareTo(b.learnDate.value);
-          return nextComparison != 0 ? nextComparison : a.toSort().compareTo(b.toSort());
-        });
-        break;
+        return VerseSortBy.learnDateAsc;
       case I18nKey.labelSortNextLearnDateDesc:
-        verseShow.sort((a, b) {
-          int nextComparison = b.learnDate.value.compareTo(a.learnDate.value);
-          return nextComparison != 0 ? nextComparison : a.toSort().compareTo(b.toSort());
-        });
-        break;
+        return VerseSortBy.learnDateDesc;
       default:
-        break;
+        return VerseSortBy.positionAsc;
     }
   }
 
@@ -733,11 +731,12 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
 
   @override
   dispose() {
+    contentSub.off();
     searchController.dispose();
     searchFocusNode.dispose();
   }
 
-  void setBookSelectByName(String bookName) {
-    bookSelect.value = options.indexWhere((opt) => opt.label == bookName);
+  void setBookSelectById(int bookId) {
+    bookSelect.value = options.indexWhere((opt) => opt.value == bookId).clamp(0, options.length - 1);
   }
 }

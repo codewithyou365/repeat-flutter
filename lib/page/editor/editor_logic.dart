@@ -30,8 +30,8 @@ class EditorLogic extends GetxController {
     var contentChangeTopics = args.contentChangeTopics;
     var getContent = args.getContent;
     if (contentChangeTopics != null && getContent != null) {
-      sub.on(contentChangeTopics, (_) {
-        textController.text = getContent();
+      sub.on(contentChangeTopics, (_) async {
+        textController.text = await getContent();
       });
     }
     state.shareBtn = Button(I18nKey.btnShare.tr, () {

@@ -10,10 +10,9 @@ import 'package:repeat_flutter/db/entity/content_version.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/db/entity/verse_content_version.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/cache_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
+import 'package:repeat_flutter/logic/model/verse_brief.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
-import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 @dao
@@ -169,15 +168,10 @@ abstract class VerseDao {
   }
 
   Future<bool> delete(int verseId) async {
+    // 必须在删之前取，删完这一行就查不到了 —— 事件的订阅方要用它的 bookId
+    var verseShow = await db.scheduleDao.getVerseShowById(verseId);
     var verse = await innerDelete(verseId);
     if (verse.id != null) {
-      var verseShow = VerseHelp.getCache(verseId);
-      await CacheHelp.refreshVerse(
-        query: QueryChapter(
-          bookId: verse.bookId,
-          chapterIndex: verse.chapterIndex,
-        ),
-      );
       EventBus().publish<VerseShow>(EventTopic.deleteVerse, verseShow);
       return true;
     }
@@ -233,7 +227,7 @@ abstract class VerseDao {
       }
 
       entity.chapterIndex += shift;
-      entity.sort = VerseHelp.toVerseSort(bookSort, entity.chapterIndex, entity.verseIndex);
+      entity.sort = verseSortOf(bookSort, entity.chapterIndex, entity.verseIndex);
       needToInserts.add(entity);
     }
 
@@ -262,7 +256,7 @@ abstract class VerseDao {
       }
 
       entity.verseIndex += shift;
-      entity.sort = VerseHelp.toVerseSort(bookSort, entity.chapterIndex, entity.verseIndex);
+      entity.sort = verseSortOf(bookSort, entity.chapterIndex, entity.verseIndex);
       needToInserts.add(entity);
     }
 
@@ -291,7 +285,7 @@ abstract class VerseDao {
       chapterId: chapterId,
       chapterIndex: chapterIndex,
       verseIndex: verseIndex,
-      sort: VerseHelp.toVerseSort(book.sort, chapterIndex, verseIndex),
+      sort: verseSortOf(book.sort, chapterIndex, verseIndex),
       content: content,
       contentVersion: 1,
       learnDate: Date.from(now),
@@ -328,13 +322,7 @@ abstract class VerseDao {
   ) async {
     var verseId = await innerAddFirstVerse(bookId, chapterId, chapterIndex);
     if (verseId != 0) {
-      await CacheHelp.refreshVerse(
-        query: QueryChapter(
-          bookId: bookId,
-          chapterIndex: chapterIndex,
-        ),
-      );
-      var verseShow = VerseHelp.getCacheByIndex(bookId, chapterIndex, 0);
+      var verseShow = await db.scheduleDao.getVerseShowByIndex(bookId, chapterIndex, 0);
       EventBus().publish<VerseShow>(EventTopic.addVerse, verseShow);
     }
     return verseId;
@@ -358,13 +346,7 @@ abstract class VerseDao {
   Future<int> addVerse(VerseShow raw, int verseIndex) async {
     var verseId = await innerAddVerse(raw, verseIndex);
     if (verseId != 0) {
-      await CacheHelp.refreshVerse(
-        query: QueryChapter(
-          bookId: raw.bookId,
-          chapterIndex: raw.chapterIndex,
-        ),
-      );
-      var verseShow = VerseHelp.getCacheByIndex(raw.bookId, raw.chapterIndex, verseIndex);
+      var verseShow = await db.scheduleDao.getVerseShowByIndex(raw.bookId, raw.chapterIndex, verseIndex);
       EventBus().publish<VerseShow>(EventTopic.addVerse, verseShow);
     }
     return verseId;
@@ -385,8 +367,7 @@ abstract class VerseDao {
   Future<void> updateVerseContent(int id, String content) async {
     var verse = await innerUpdateVerseContent(id, content);
     if (verse.id != null) {
-      CacheHelp.updateVerseContent(verse);
-      var verseShow = VerseHelp.getCache(id);
+      var verseShow = await db.scheduleDao.getVerseShowById(id);
       EventBus().publish<VerseShow>(EventTopic.updateVerseContent, verseShow);
     }
   }

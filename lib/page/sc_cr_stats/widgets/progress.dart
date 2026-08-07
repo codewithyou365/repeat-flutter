@@ -4,8 +4,6 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
-import 'package:repeat_flutter/logic/model/verse_show.dart';
-import 'package:repeat_flutter/logic/verse_help.dart';
 
 class ProgressLogic {
   double progress = 0;
@@ -36,9 +34,9 @@ class ProgressLogic {
       learnedCount = int.parse(values[0]);
       totalCount = int.parse(values[1]);
     } else {
-      List<VerseShow> progressRawData = await VerseHelp.getVerses();
-      learnedCount = progressRawData.where((e) => e.progress != 0).length;
-      totalCount = progressRawData.length;
+      // 只要两个数，让 SQL 去数，别把整个课堂的句子拉进内存
+      learnedCount = await Db().db.scheduleDao.countLearnedVerse(Classroom.curr) ?? 0;
+      totalCount = await Db().db.scheduleDao.countVerse(Classroom.curr) ?? 0;
       await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.lastCache4ProgressStats, '$learnedCount,$totalCount'));
     }
     progress = learnedCount / (totalCount == 0 ? 1 : totalCount);

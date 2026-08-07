@@ -13,7 +13,6 @@ import 'package:repeat_flutter/db/entity/tip.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/chapter_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/classroom_help.dart';
@@ -406,7 +405,7 @@ class RepeatLogic extends GetxController {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
-    var chapter = ChapterHelp.getCache(curr.chapterId);
+    var chapter = await Db().db.chapterDao.getChapterShowById(curr.chapterId);
     if (chapter == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
@@ -414,7 +413,7 @@ class RepeatLogic extends GetxController {
     state.helper.stopMedia(false);
     await Nav.content.push(
       arguments: ContentArgs(
-        bookName: content.name,
+        bookId: curr.bookId,
         initChapterSelect: chapter.chapterIndex,
         selectVerseKeyId: curr.verseId,
         defaultTap: 2,

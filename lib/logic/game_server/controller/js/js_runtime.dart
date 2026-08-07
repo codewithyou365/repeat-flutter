@@ -15,7 +15,6 @@ import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
-import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_logic.dart';
 import 'package:repeat_flutter/logic/widget/expand/expand_logic.dart';
 import 'package:repeat_flutter/logic/widget/game/game_state.dart';
@@ -378,7 +377,7 @@ class JsRuntime {
           return '';
         }
         final verseId = await Db().db.kvDao.getInt(K.lastVerseId) ?? 0;
-        final verse = VerseHelp.getCache(verseId);
+        final verse = await Db().db.scheduleDao.getVerseShowById(verseId);
         if (verse == null) {
           return '';
         }

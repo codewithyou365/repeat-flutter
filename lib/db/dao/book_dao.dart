@@ -13,7 +13,6 @@ import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/content_version.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/cache_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -37,6 +36,16 @@ abstract class BookDao {
     ' FROM Book where classroomId=:classroomId and enable=true ORDER BY sort',
   )
   Future<List<BookShow>> getAllBook(int classroomId);
+
+  @Query(
+    'SELECT id bookId'
+    ',classroomId'
+    ',sort'
+    ',content bookContent'
+    ',contentVersion bookContentVersion'
+    ' FROM Book where id=:bookId',
+  )
+  Future<BookShow?> getBookShowById(int bookId);
 
   @Query('SELECT * FROM Book where classroomId=:classroomId ORDER BY sort')
   Future<List<Book>> getAll(int classroomId);
@@ -100,7 +109,6 @@ abstract class BookDao {
   Future<void> updateBookContent(int bookId, String content) async {
     var book = await innerUpdateBookContent(bookId, content);
     if (book.id != null) {
-      CacheHelp.updateBookContent(book);
       EventBus().publish<int>(EventTopic.updateBookContent, bookId);
     }
   }
@@ -216,7 +224,6 @@ abstract class BookDao {
   Future<void> create(int bookId, String content) async {
     var book = await innerCreate(bookId, content);
     if (book.id != null) {
-      await CacheHelp.refreshBook();
       EventBus().publish<int>(EventTopic.createBook, bookId);
     }
   }
@@ -233,7 +240,6 @@ abstract class BookDao {
 
   Future<void> import(Book book, List<Chapter> chapters, List<Verse> verses) async {
     await innerImport(book, chapters, verses);
-    await CacheHelp.refreshAll();
     EventBus().publish<int>(EventTopic.importBook, book.id!);
   }
 
@@ -257,7 +263,6 @@ abstract class BookDao {
     RxInt deleteVerseCount,
   ) async {
     await innerReimport(book, insertChapters, updateChapters, insertVerses, updateVerses, updateVerseCount, deleteVerseCount);
-    await CacheHelp.refreshAll();
     EventBus().publish<int>(EventTopic.reimportBook, book.id!);
   }
 
@@ -298,7 +303,6 @@ abstract class BookDao {
 
   Future<void> deleteBook(int bookId) async {
     await innerDeleteBook(bookId);
-    await CacheHelp.refreshAll();
     EventBus().publish<int>(EventTopic.deleteBook, bookId);
   }
 

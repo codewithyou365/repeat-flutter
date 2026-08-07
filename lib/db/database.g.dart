@@ -617,6 +617,14 @@ class _$BookDao extends BookDao {
   }
 
   @override
+  Future<BookShow?> getBookShowById(int bookId) async {
+    return _queryAdapter.query(
+        'SELECT id bookId,classroomId,sort,content bookContent,contentVersion bookContentVersion FROM Book where id=?1',
+        mapper: (Map<String, Object?> row) => BookShow(bookId: row['bookId'] as int, classroomId: row['classroomId'] as int, sort: row['sort'] as int, bookContent: row['bookContent'] as String, bookContentVersion: row['bookContentVersion'] as int),
+        arguments: [bookId]);
+  }
+
+  @override
   Future<List<Book>> getAll(int classroomId) async {
     return _queryAdapter.queryList(
         'SELECT * FROM Book where classroomId=?1 ORDER BY sort',
@@ -1054,6 +1062,25 @@ class _$ChapterDao extends ChapterDao {
         'SELECT Chapter.id chapterId,Book.id bookId,Book.sort bookSort,Chapter.content chapterContent,Chapter.contentVersion chapterContentVersion,Chapter.chapterIndex FROM Chapter JOIN Book ON Book.id=Chapter.bookId WHERE Chapter.bookId=?1 ORDER BY Chapter.chapterIndex',
         mapper: (Map<String, Object?> row) => ChapterShow(chapterId: row['chapterId'] as int, bookId: row['bookId'] as int, bookSort: row['bookSort'] as int, chapterContent: row['chapterContent'] as String, chapterContentVersion: row['chapterContentVersion'] as int, chapterIndex: row['chapterIndex'] as int),
         arguments: [bookId]);
+  }
+
+  @override
+  Future<ChapterShow?> getChapterShowById(int chapterId) async {
+    return _queryAdapter.query(
+        'SELECT Chapter.id chapterId,Book.id bookId,Book.sort bookSort,Chapter.content chapterContent,Chapter.contentVersion chapterContentVersion,Chapter.chapterIndex FROM Chapter JOIN Book ON Book.id=Chapter.bookId WHERE Chapter.id=?1',
+        mapper: (Map<String, Object?> row) => ChapterShow(chapterId: row['chapterId'] as int, bookId: row['bookId'] as int, bookSort: row['bookSort'] as int, chapterContent: row['chapterContent'] as String, chapterContentVersion: row['chapterContentVersion'] as int, chapterIndex: row['chapterIndex'] as int),
+        arguments: [chapterId]);
+  }
+
+  @override
+  Future<ChapterShow?> getChapterShowByIndex(
+    int bookId,
+    int chapterIndex,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT Chapter.id chapterId,Book.id bookId,Book.sort bookSort,Chapter.content chapterContent,Chapter.contentVersion chapterContentVersion,Chapter.chapterIndex FROM Chapter JOIN Book ON Book.id=Chapter.bookId WHERE Chapter.bookId=?1  AND Chapter.chapterIndex=?2',
+        mapper: (Map<String, Object?> row) => ChapterShow(chapterId: row['chapterId'] as int, bookId: row['bookId'] as int, bookSort: row['bookSort'] as int, chapterContent: row['chapterContent'] as String, chapterContentVersion: row['chapterContentVersion'] as int, chapterIndex: row['chapterIndex'] as int),
+        arguments: [bookId, chapterIndex]);
   }
 
   @override
@@ -2931,6 +2958,64 @@ class _$ScheduleDao extends ScheduleDao {
     return _queryAdapter.queryList(
         'SELECT Verse.id verseId,Book.id bookId,Book.sort bookSort,Verse.content verseContent,Verse.contentVersion verseContentVersion,Verse.chapterId,Verse.chapterIndex,Verse.verseIndex,Verse.learnDate,Verse.progress FROM Verse JOIN Book ON Book.id=Verse.bookId AND Book.enable=true WHERE Verse.classroomId=?1',
         mapper: (Map<String, Object?> row) => VerseShow(verseId: row['verseId'] as int, bookId: row['bookId'] as int, bookSort: row['bookSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, learnDate: _dateConverter.decode(row['learnDate'] as int), progress: row['progress'] as int),
+        arguments: [classroomId]);
+  }
+
+  @override
+  Future<List<VerseBrief>> getAllVerseBrief(int classroomId) async {
+    return _queryAdapter.queryList(
+        'SELECT Verse.id verseId,Book.id bookId,Book.sort bookSort,Verse.chapterId,Verse.chapterIndex,Verse.verseIndex FROM Verse JOIN Book ON Book.id=Verse.bookId AND Book.enable=true WHERE Verse.classroomId=?1 ORDER BY Verse.sort',
+        mapper: (Map<String, Object?> row) => VerseBrief(verseId: row['verseId'] as int, bookId: row['bookId'] as int, bookSort: row['bookSort'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int),
+        arguments: [classroomId]);
+  }
+
+  @override
+  Future<VerseShow?> getVerseShowById(int verseId) async {
+    return _queryAdapter.query(
+        'SELECT Verse.id verseId,Book.id bookId,Book.sort bookSort,Verse.content verseContent,Verse.contentVersion verseContentVersion,Verse.chapterId,Verse.chapterIndex,Verse.verseIndex,Verse.learnDate,Verse.progress FROM Verse JOIN Book ON Book.id=Verse.bookId AND Book.enable=true WHERE Verse.id=?1',
+        mapper: (Map<String, Object?> row) => VerseShow(verseId: row['verseId'] as int, bookId: row['bookId'] as int, bookSort: row['bookSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, learnDate: _dateConverter.decode(row['learnDate'] as int), progress: row['progress'] as int),
+        arguments: [verseId]);
+  }
+
+  @override
+  Future<List<VerseShow>> getVerseShowByIds(List<int> verseIds) async {
+    const offset = 1;
+    final _sqliteVariablesForVerseIds =
+        Iterable<String>.generate(verseIds.length, (i) => '?${i + offset}')
+            .join(',');
+    return _queryAdapter.queryList(
+        'SELECT Verse.id verseId,Book.id bookId,Book.sort bookSort,Verse.content verseContent,Verse.contentVersion verseContentVersion,Verse.chapterId,Verse.chapterIndex,Verse.verseIndex,Verse.learnDate,Verse.progress FROM Verse JOIN Book ON Book.id=Verse.bookId AND Book.enable=true WHERE Verse.id IN (' +
+            _sqliteVariablesForVerseIds +
+            ') ORDER BY Verse.sort',
+        mapper: (Map<String, Object?> row) => VerseShow(verseId: row['verseId'] as int, bookId: row['bookId'] as int, bookSort: row['bookSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, learnDate: _dateConverter.decode(row['learnDate'] as int), progress: row['progress'] as int),
+        arguments: [...verseIds]);
+  }
+
+  @override
+  Future<VerseShow?> getVerseShowByIndex(
+    int bookId,
+    int chapterIndex,
+    int verseIndex,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT Verse.id verseId,Book.id bookId,Book.sort bookSort,Verse.content verseContent,Verse.contentVersion verseContentVersion,Verse.chapterId,Verse.chapterIndex,Verse.verseIndex,Verse.learnDate,Verse.progress FROM Verse JOIN Book ON Book.id=Verse.bookId AND Book.enable=true WHERE Verse.bookId=?1  AND Verse.chapterIndex=?2  AND Verse.verseIndex=?3',
+        mapper: (Map<String, Object?> row) => VerseShow(verseId: row['verseId'] as int, bookId: row['bookId'] as int, bookSort: row['bookSort'] as int, verseContent: row['verseContent'] as String, verseContentVersion: row['verseContentVersion'] as int, chapterId: row['chapterId'] as int, chapterIndex: row['chapterIndex'] as int, verseIndex: row['verseIndex'] as int, learnDate: _dateConverter.decode(row['learnDate'] as int), progress: row['progress'] as int),
+        arguments: [bookId, chapterIndex, verseIndex]);
+  }
+
+  @override
+  Future<int?> countVerse(int classroomId) async {
+    return _queryAdapter.query(
+        'SELECT COUNT(1) FROM Verse WHERE classroomId=?1',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [classroomId]);
+  }
+
+  @override
+  Future<int?> countLearnedVerse(int classroomId) async {
+    return _queryAdapter.query(
+        'SELECT COUNT(1) FROM Verse WHERE classroomId=?1 AND progress!=0',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [classroomId]);
   }
 

@@ -14,17 +14,17 @@ import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/book_help.dart';
-import 'package:repeat_flutter/logic/chapter_help.dart';
+import 'package:repeat_flutter/logic/book_brief_help.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/chapter_import_help.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
+import 'package:repeat_flutter/logic/model/verse_pos.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
-import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/media_share/media_share_args.dart';
 import 'package:repeat_flutter/logic/widget/media_share/media_share_logic.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
@@ -71,11 +71,28 @@ class Helper {
   bool enableReloadMedia = true;
   bool doNotPlayMedia = true;
   bool tryToPlayMedia = false;
-  Map<int, Map<String, dynamic>> bookMapCache = {};
 
-  Map<int, Map<String, dynamic>> chapterMapCache = {};
+  /// 当前这一节的三层内容，由 [prefetch] 在切句子时一次性取好。
+  ///
+  /// 以前这三个是去全局缓存（整个课堂的书/章/句常驻内存）里现查的，现在改成
+  /// 只留当前一节 —— 播放页任何时候只需要这一节，多留一条都是白占内存。
+  VerseShow? currVerseShow;
+  ChapterShow? currChapterShow;
+  BookShow? currBookShow;
 
-  Map<int, Map<String, dynamic>> verseMapCache = {};
+  /// 标题栏和"下一条"按钮上的位置串，同样在 [prefetch] 里备好 ——
+  /// 这两个 label 是 build 里同步读的，不能临时去查库。
+  String currPos = '';
+  String nextPos = '';
+  int? _nextPosVerseId;
+
+  /// bookId -> 书名，只给位置串用。一个课堂几本书，几 KB。
+  Map<int, String> bookNames = {};
+
+  /// 解析后的 JSON，跟着 [currVerseShow] 那三个走，只保当前一份。
+  Map<String, dynamic>? bookMap;
+  Map<String, dynamic>? chapterMap;
+  Map<String, dynamic>? verseMap;
 
   final SubList<int> reimportBookSub = [];
   final SubList<int> updateBookContentSub = [];
@@ -85,23 +102,85 @@ class Helper {
   Future<void> init(RepeatFlow logic) async {
     this.logic = logic;
     rootPath = await DocPath.getContentPath();
+    bookNames = await BookBriefHelp.loadNameMap(Classroom.curr);
     initialized = true;
+    // 内容被改过就把当前这一节重新取一遍 —— 这三份数据是我们自己持有的副本，
+    // 不像以前那样由 DAO 顺手 patch 全局缓存。
     reimportBookSub.on([EventTopic.reimportBook], (int? id) {
-      bookMapCache.remove(id!);
-      chapterMapCache.clear();
-      verseMapCache.clear();
+      bookNames.remove(id);
+      refetch();
     });
     updateBookContentSub.on([EventTopic.updateBookContent], (int? id) {
-      bookMapCache.remove(id!);
+      refetch();
     });
     updateChapterContentSub.on([EventTopic.updateChapterContent], (ChapterShow? v) {
       if (v == null) return;
-      chapterMapCache.remove(v.chapterId);
+      if (v.chapterId == currChapterShow?.chapterId) {
+        refetch();
+      }
     });
     updateVerseContentSub.on([EventTopic.updateVerseContent], (VerseShow? v) {
       if (v == null) return;
-      verseMapCache.remove(v.verseId);
+      if (v.verseId == currVerseShow?.verseId) {
+        refetch();
+      }
     });
+  }
+
+  /// 切句子时把这一节要用的东西一次性取好。
+  ///
+  /// 播放页大量取值口子（[getCurrVerseContent]、[getCurrBookMap]、位置串…）都是
+  /// build 里同步调的，改不成 async，所以在这里预取，同步 getter 只读字段。
+  Future<void> prefetch(VerseTodayPrg? curr, VerseTodayPrg? next) async {
+    if (curr == null) {
+      currVerseShow = null;
+      currChapterShow = null;
+      currBookShow = null;
+      bookMap = null;
+      chapterMap = null;
+      verseMap = null;
+      currPos = '';
+      nextPos = '';
+      _nextPosVerseId = null;
+      return;
+    }
+    if (currVerseShow?.verseId != curr.verseId) {
+      currVerseShow = await Db().db.scheduleDao.getVerseShowById(curr.verseId);
+      verseMap = null;
+    }
+    if (currChapterShow?.chapterId != curr.chapterId) {
+      currChapterShow = await Db().db.chapterDao.getChapterShowById(curr.chapterId);
+      chapterMap = null;
+    }
+    if (currBookShow?.bookId != curr.bookId) {
+      currBookShow = await Db().db.bookDao.getBookShowById(curr.bookId);
+      bookMap = null;
+    }
+    var v = currVerseShow;
+    currPos = v == null ? '' : versePos(bookNames[v.bookId] ?? '', v.chapterIndex, v.verseIndex);
+
+    if (next == null) {
+      nextPos = '';
+      _nextPosVerseId = null;
+    } else if (_nextPosVerseId != next.verseId) {
+      // 只要位置串，取到手就把 VerseShow 丢掉，不留正文
+      var n = await Db().db.scheduleDao.getVerseShowById(next.verseId);
+      nextPos = n == null ? '' : versePos(bookNames[n.bookId] ?? '', n.chapterIndex, n.verseIndex);
+      _nextPosVerseId = next.verseId;
+    }
+  }
+
+  /// 内容被改过，当前这一节重取一遍。
+  Future<void> refetch() async {
+    currVerseShow = null;
+    currChapterShow = null;
+    currBookShow = null;
+    bookMap = null;
+    chapterMap = null;
+    verseMap = null;
+    _nextPosVerseId = null;
+    await prefetch(logic.currVerse, logic.nextVerse);
+    update();
   }
 
   void onClose() {
@@ -127,75 +206,46 @@ class Helper {
   TipLevel tip = TipLevel.none;
 
   String? getCurrVerseContent() {
-    if (logic.currVerse == null) {
-      return null;
-    }
-    var verse = VerseHelp.getCache(logic.currVerse!.verseId);
-    if (verse == null) {
-      return null;
-    }
-    return verse.verseContent;
+    return currVerseShow?.verseContent;
   }
 
   String? getCurrChapterContent() {
-    if (logic.currVerse == null) {
-      return null;
-    }
-    var chapter = ChapterHelp.getCache(logic.currVerse!.chapterId);
-    if (chapter == null) {
-      return null;
-    }
-    return chapter.chapterContent;
+    return currChapterShow?.chapterContent;
   }
 
   String? getCurrBookContent() {
-    if (logic.currVerse == null) {
-      return null;
-    }
-    BookShow? ret = BookHelp.getCache(logic.currVerse!.bookId);
-    if (ret == null) {
-      return null;
-    }
-    return ret.bookContent;
+    return currBookShow?.bookContent;
   }
 
   Map<String, dynamic>? getCurrBookMap() {
-    if (logic.currVerse == null) {
-      return null;
-    }
-    Map<String, dynamic>? ret = bookMapCache[logic.currVerse!.bookId];
-    if (ret != null) {
-      return ret;
+    if (bookMap != null) {
+      return bookMap;
     }
     String? rootContent = getCurrBookContent();
     if (rootContent == null) {
       return null;
     }
-    ret = jsonDecode(rootContent);
+    var ret = jsonDecode(rootContent);
     if (ret is! Map<String, dynamic>) {
       return null;
     }
-    bookMapCache[logic.currVerse!.bookId] = ret;
+    bookMap = ret;
     return ret;
   }
 
   Map<String, dynamic>? getCurrChapterMap() {
-    if (logic.currVerse == null) {
-      return null;
-    }
-    Map<String, dynamic>? ret = chapterMapCache[logic.currVerse!.chapterId];
-    if (ret != null) {
-      return ret;
+    if (chapterMap != null) {
+      return chapterMap;
     }
     String? chapterContent = getCurrChapterContent();
     if (chapterContent == null) {
       return null;
     }
-    ret = jsonDecode(chapterContent);
+    var ret = jsonDecode(chapterContent);
     if (ret is! Map<String, dynamic>) {
       return null;
     }
-    chapterMapCache[logic.currVerse!.chapterId] = ret;
+    chapterMap = ret;
     return ret;
   }
 
@@ -204,22 +254,18 @@ class Helper {
   }
 
   Map<String, dynamic>? getCurrVerseMap() {
-    if (logic.currVerse == null) {
-      return null;
-    }
-    Map<String, dynamic>? ret = verseMapCache[logic.currVerse!.verseId];
-    if (ret != null) {
-      return ret;
+    if (verseMap != null) {
+      return verseMap;
     }
     String? verseContent = getCurrVerseContent();
     if (verseContent == null) {
       return null;
     }
-    ret = jsonDecode(verseContent);
+    var ret = jsonDecode(verseContent);
     if (ret is! Map<String, dynamic>) {
       return null;
     }
-    verseMapCache[logic.currVerse!.verseId] = ret;
+    verseMap = ret;
     return ret;
   }
 

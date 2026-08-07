@@ -73,7 +73,7 @@ class ScCrMaterialLogic extends GetxController {
     }
     await Nav.content.push(
       arguments: ContentArgs(
-        bookName: content.name,
+        bookId: bookId,
         enableEnteringRepeatView: true,
       ),
     );

@@ -5,7 +5,6 @@ import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/verse_help.dart' show VerseHelp;
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'constant.dart';
@@ -40,11 +39,7 @@ class RepeatFlowForExamine extends RepeatFlow {
 
   @override
   String get titleLabel {
-    String pos = "";
-    if (currVerse != null) {
-      pos = VerseHelp.getVersePos(currVerse!.verseId);
-    }
-    return '${total - scheduled.length}/$total $pos';
+    return '${total - scheduled.length}/$total ${helper.currPos}';
   }
 
   @override
@@ -53,7 +48,7 @@ class RepeatFlowForExamine extends RepeatFlow {
     String nextDiffKey = "";
     if (curr != null && curr.sort + 1 != nextVerse?.sort) {
       if (nextVerse != null) {
-        nextDiffKey = VerseHelp.getVersePos(nextVerse!.verseId);
+        nextDiffKey = helper.nextPos;
       }
     }
     switch (step) {
@@ -108,6 +103,7 @@ class RepeatFlowForExamine extends RepeatFlow {
     scheduled.sort(schedulesCurrentSort);
     step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
     helper.practiceController.clear();
+    await helper.prefetch(currVerse, nextVerse);
     await gameHelper.tryRefresh(currVerse!);
     await timeStatsLogic.tryInsertTimeStats();
     return true;
@@ -224,11 +220,13 @@ class RepeatFlowForExamine extends RepeatFlow {
       scheduled.removeAt(0);
     }
     if (scheduled.isEmpty) {
+      await helper.prefetch(null, null);
       await timeStatsLogic.updateTimeStats();
       return;
     }
     scheduled.sort(schedulesCurrentSort);
     refresh();
+    await helper.prefetch(currVerse, nextVerse);
     await gameHelper.tryRefresh(currVerse!);
     await timeStatsLogic.updateTimeStats();
   }
@@ -237,6 +235,7 @@ class RepeatFlowForExamine extends RepeatFlow {
     await Db().db.scheduleDao.error(currVerse!);
     scheduled.sort(schedulesCurrentSort);
     refresh();
+    await helper.prefetch(currVerse, nextVerse);
     await gameHelper.tryRefresh(currVerse!);
   }
 

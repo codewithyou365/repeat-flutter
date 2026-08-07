@@ -14,12 +14,11 @@ import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/common/date.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/cache_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/verse_review_with_key.dart';
 import 'package:repeat_flutter/db/entity/verse_stats.dart';
+import 'package:repeat_flutter/logic/model/verse_brief.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
-import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 enum SortEnum {
@@ -473,6 +472,82 @@ abstract class ScheduleDao {
   )
   Future<List<VerseShow>> getAllVerse(int classroomId);
 
+  /// 整个课堂的句子，但**不带正文**。
+  /// 全局浏览、今日计划这类只需要定位和排序的场景用它，别用 [getAllVerse]。
+  @Query(
+    'SELECT Verse.id verseId'
+    ',Book.id bookId'
+    ',Book.sort bookSort'
+    ',Verse.chapterId'
+    ',Verse.chapterIndex'
+    ',Verse.verseIndex'
+    ' FROM Verse'
+    ' JOIN Book ON Book.id=Verse.bookId AND Book.enable=true'
+    ' WHERE Verse.classroomId=:classroomId'
+    ' ORDER BY Verse.sort',
+  )
+  Future<List<VerseBrief>> getAllVerseBrief(int classroomId);
+
+  @Query(
+    'SELECT Verse.id verseId'
+    ',Book.id bookId'
+    ',Book.sort bookSort'
+    ',Verse.content verseContent'
+    ',Verse.contentVersion verseContentVersion'
+    ',Verse.chapterId'
+    ',Verse.chapterIndex'
+    ',Verse.verseIndex'
+    ',Verse.learnDate'
+    ',Verse.progress'
+    ' FROM Verse'
+    ' JOIN Book ON Book.id=Verse.bookId AND Book.enable=true'
+    ' WHERE Verse.id=:verseId',
+  )
+  Future<VerseShow?> getVerseShowById(int verseId);
+
+  @Query(
+    'SELECT Verse.id verseId'
+    ',Book.id bookId'
+    ',Book.sort bookSort'
+    ',Verse.content verseContent'
+    ',Verse.contentVersion verseContentVersion'
+    ',Verse.chapterId'
+    ',Verse.chapterIndex'
+    ',Verse.verseIndex'
+    ',Verse.learnDate'
+    ',Verse.progress'
+    ' FROM Verse'
+    ' JOIN Book ON Book.id=Verse.bookId AND Book.enable=true'
+    ' WHERE Verse.id IN (:verseIds)'
+    ' ORDER BY Verse.sort',
+  )
+  Future<List<VerseShow>> getVerseShowByIds(List<int> verseIds);
+
+  @Query(
+    'SELECT Verse.id verseId'
+    ',Book.id bookId'
+    ',Book.sort bookSort'
+    ',Verse.content verseContent'
+    ',Verse.contentVersion verseContentVersion'
+    ',Verse.chapterId'
+    ',Verse.chapterIndex'
+    ',Verse.verseIndex'
+    ',Verse.learnDate'
+    ',Verse.progress'
+    ' FROM Verse'
+    ' JOIN Book ON Book.id=Verse.bookId AND Book.enable=true'
+    ' WHERE Verse.bookId=:bookId'
+    '  AND Verse.chapterIndex=:chapterIndex'
+    '  AND Verse.verseIndex=:verseIndex',
+  )
+  Future<VerseShow?> getVerseShowByIndex(int bookId, int chapterIndex, int verseIndex);
+
+  @Query('SELECT COUNT(1) FROM Verse WHERE classroomId=:classroomId')
+  Future<int?> countVerse(int classroomId);
+
+  @Query('SELECT COUNT(1) FROM Verse WHERE classroomId=:classroomId AND progress!=0')
+  Future<int?> countLearnedVerse(int classroomId);
+
   /// 按书本取句子：导出/编辑一本书时不要把整个课堂的句子都拉进内存。
   /// 和 [getAllVerse] 的区别：不过滤 Book.enable，禁用的书本也要能导出。
   @Query(
@@ -813,8 +888,7 @@ abstract class ScheduleDao {
   Future<void> error(VerseTodayPrg stp) async {
     var verse = await innerError(stp);
     if (verse.id != null) {
-      CacheHelp.updateVerseProgress(verse);
-      EventBus().publish<VerseShow>(EventTopic.updateVerseProgress, VerseHelp.getCache(verse.id!));
+      EventBus().publish<VerseShow>(EventTopic.updateVerseProgress, await getVerseShowById(verse.id!));
     }
   }
 
@@ -829,8 +903,7 @@ abstract class ScheduleDao {
   Future<void> jumpDirectly(int verseId, int progress, int nextDayValue) async {
     var verse = await innerJumpDirectly(verseId, progress, nextDayValue);
     if (verse.id != null) {
-      CacheHelp.updateVerseProgress(verse);
-      EventBus().publish<VerseShow>(EventTopic.updateVerseProgress, VerseHelp.getCache(verseId));
+      EventBus().publish<VerseShow>(EventTopic.updateVerseProgress, await getVerseShowById(verseId));
     }
   }
 
@@ -843,8 +916,7 @@ abstract class ScheduleDao {
   Future<void> jump(VerseTodayPrg stp, int progress, int nextDayValue) async {
     var verse = await innerJump(stp, progress, nextDayValue);
     if (verse.id != null) {
-      CacheHelp.updateVerseProgress(verse);
-      EventBus().publish<VerseShow>(EventTopic.updateVerseProgress, VerseHelp.getCache(verse.id!));
+      EventBus().publish<VerseShow>(EventTopic.updateVerseProgress, await getVerseShowById(verse.id!));
     }
   }
 
@@ -892,8 +964,7 @@ abstract class ScheduleDao {
   Future<void> right(VerseTodayPrg stp) async {
     var verse = await innerRight(stp);
     if (verse.id != null) {
-      CacheHelp.updateVerseProgress(verse);
-      EventBus().publish<VerseShow>(EventTopic.updateVerseProgress, VerseHelp.getCache(verse.id!));
+      EventBus().publish<VerseShow>(EventTopic.updateVerseProgress, await getVerseShowById(verse.id!));
     }
   }
 

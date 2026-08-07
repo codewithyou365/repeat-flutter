@@ -4,7 +4,6 @@ import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/verse_help.dart' show VerseHelp;
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'constant.dart';
@@ -38,11 +37,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
 
   @override
   String get titleLabel {
-    String pos = "";
-    if (currVerse != null) {
-      pos = VerseHelp.getVersePos(currVerse!.verseId);
-    }
-    return '${index + 1}/${scheduled.length} $pos';
+    return '${index + 1}/${scheduled.length} ${helper.currPos}';
   }
 
   @override
@@ -50,7 +45,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
     String nextDiffKey = "";
     if (currVerse!.sort + 1 != nextVerse?.sort) {
       if (nextVerse != null) {
-        nextDiffKey = VerseHelp.getVersePos(nextVerse!.verseId);
+        nextDiffKey = helper.nextPos;
       }
     }
     switch (step) {
@@ -91,6 +86,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
     scheduled = progresses;
     step = helper.showMode.value == ShowMode.closedBook ? RepeatStep.recall : RepeatStep.evaluate;
     helper.practiceController.clear();
+    await helper.prefetch(currVerse, nextVerse);
     await gameHelper.tryRefresh(currVerse!);
     await timeStatsLogic.tryInsertTimeStats();
     return true;
@@ -185,6 +181,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
       index++;
     }
     refresh();
+    await helper.prefetch(currVerse, nextVerse);
     await gameHelper.tryRefresh(currVerse!);
     await timeStatsLogic.updateTimeStats();
   }
@@ -194,6 +191,7 @@ class RepeatFlowForBrowse extends RepeatFlow {
       index--;
     }
     refresh();
+    await helper.prefetch(currVerse, nextVerse);
     await gameHelper.tryRefresh(currVerse!);
     await timeStatsLogic.updateTimeStats();
   }

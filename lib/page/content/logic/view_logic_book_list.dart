@@ -5,9 +5,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/book_content_version.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/book_help.dart';
+import 'package:repeat_flutter/db/query/book_query.dart';
+import 'package:repeat_flutter/db/query/show_window.dart';
+import 'package:repeat_flutter/logic/book_brief_help.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
+import 'package:repeat_flutter/logic/model/book_brief.dart';
 import 'package:repeat_flutter/logic/model/book_show.dart';
 import 'package:repeat_flutter/logic/widget/history_list.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -30,8 +34,15 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   double searchDetailPanelHeight = 2 * (RowWidget.rowHeight + RowWidget.dividerHeight);
   final RxString search = RxString("");
   final T parentLogic;
-  List<BookShow> originalBookShow;
-  List<BookShow> bookShow = [];
+  /// 筛选下拉框的原料：只要 id/名字/排序，不带正文。
+  List<BookBrief> books;
+
+  /// 列表骨架 + 正文窗口。书本不多，但每本 content 可能挺大（'d' 下载列表），一样按需取。
+  late final ShowWindow<BookShow> window = ShowWindow<BookShow>(
+    fetch: BookQuery.byIds,
+    idOf: (row) => row.bookId,
+    onLoaded: () => parentLogic.update([ViewLogicBookList.bodyId]),
+  );
 
   bool showSearchDetailPanel = false;
   int bookSelect = 0;
@@ -39,7 +50,11 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
 
   // for collect search data, and missing book
   int missingBookOffset = -1;
+  /// 下拉框的显示文字。**只给界面看**，筛选认的是同下标的 [bookOptionIds]。
   List<String> bookOptions = [];
+
+  /// 和 [bookOptions] 一一对应的 bookId，下标 0（"全部"）是 -1。
+  List<int> bookOptionIds = [];
   List<String> sortOptions = [];
   int selectedSortIndex = 0;
   List<I18nKey> sortOptionKeys = [
@@ -47,14 +62,18 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
     I18nKey.labelSortPositionDesc,
   ];
 
+  /// 内容被改过就把窗口里那份正文作废重取。以前是 DAO 顺手 patch 全局缓存，
+  /// 现在正文是我们自己按需取的副本，得自己失效。
+  final SubList contentSub = [];
+
   double baseBodyViewHeight = 0;
 
   ViewLogicBookList({
-    required this.originalBookShow,
+    required this.books,
     required this.parentLogic,
     required this.onNext,
     required super.onSearchUnfocus,
-    String? initContentNameSelect,
+    int? initBookIdSelect,
   }) {
     searchFocusNode.addListener(() {
       if (searchFocusNode.hasFocus) {
@@ -67,18 +86,22 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
       search.value = searchController.text;
       trySearch();
     });
+    contentSub.on([EventTopic.updateBookContent, EventTopic.reimportBook], (_) {
+      window.invalidate();
+      parentLogic.update([ViewLogicBookList.bodyId]);
+    });
 
-    searchKey = genSearchKey();
-    bookShow = List.from(originalBookShow);
+    // searchKey 故意留空：列表数据现在要查库才有，第一次 trySearch 必须真的跑一遍，
+    // 不能因为"筛选条件没变"就跳过（以前构造时已经把全量数据塞进列表了才可以跳）。
 
     // for sorting and content
     sortOptions = sortOptionKeys.map((key) => key.tr).toList();
-    sort(bookShow, sortOptionKeys[selectedSortIndex]);
 
     collectData();
 
-    if (initContentNameSelect != null) {
-      bookSelect = bookOptions.indexOf(initContentNameSelect);
+    if (initBookIdSelect != null) {
+      // 找不到（比如那本书被停用了）就退回"全部"，别留 -1 当下标
+      bookSelect = bookOptionIds.indexOf(initBookIdSelect).clamp(0, bookOptionIds.length - 1);
     }
   }
 
@@ -90,37 +113,41 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   }
 
   String genSearchKey() {
-    return '$bookSelect,${search.value}';
+    return '$bookSelect,$selectedSortIndex,${search.value}';
+  }
+
+  BookFilter buildFilter() {
+    int? bookId;
+    if (bookSelect != 0) {
+      if (bookSelect < bookOptionIds.length) {
+        bookId = bookOptionIds[bookSelect];
+      } else {
+        bookSelect = 0;
+      }
+    }
+    return BookFilter(
+      classroomId: Classroom.curr,
+      bookId: bookId,
+      keyword: search.value.isEmpty ? null : search.value,
+      asc: sortOptionKeys[selectedSortIndex] != I18nKey.labelSortPositionDesc,
+    );
   }
 
   @override
-  void trySearch({bool force = false}) {
+  Future<void> trySearch({bool force = false}) async {
     String newSearchKey = genSearchKey();
     if (!force && newSearchKey == searchKey) {
       return;
     }
     searchKey = newSearchKey;
-    if (search.value.isNotEmpty || bookSelect != 0) {
-      bookShow = originalBookShow.where((e) {
-        bool ret = true;
-        if (ret && search.value.isNotEmpty) {
-          ret = e.bookContent.contains(search.value);
-        }
-        if (ret && bookSelect != 0) {
-          if (bookSelect < bookOptions.length) {
-            ret = e.name == bookOptions[bookSelect];
-          } else {
-            bookSelect = 0;
-          }
-        }
-        return ret;
-      }).toList();
-    } else {
-      bookShow = List.from(originalBookShow);
-    }
-    sort(bookShow, sortOptionKeys[selectedSortIndex]);
-
+    window.reset(await BookQuery.queryIds(buildFilter()));
     parentLogic.update([ViewLogicBookList.bodyId]);
+  }
+
+  Future<void> refresh() async {
+    books = await BookBriefHelp.loadEnabled(Classroom.curr);
+    collectData();
+    await trySearch(force: true);
   }
 
   Future<void> delete({required BookShow book}) async {
@@ -152,8 +179,6 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
     return GetBuilder<T>(
       id: ViewLogicBookList.bodyId,
       builder: (_) {
-        var list = bookShow;
-
         Widget searchDetailPanel = const SizedBox.shrink();
         if (showSearchDetailPanel) {
           searchDetailPanel = Container(
@@ -191,9 +216,8 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                   value: selectedSortIndex,
                   changed: (index) {
                     selectedSortIndex = index;
-                    I18nKey key = sortOptionKeys[index];
-                    sort(bookShow, key);
-                    parentLogic.update([ViewLogicBookList.bodyId]);
+                    // 排序也是 SQL 的 ORDER BY，走一遍 trySearch 重取骨架
+                    trySearch();
                   },
                   pickWidth: 210.w,
                 ),
@@ -211,9 +235,13 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
               child: ScrollablePositionedList.builder(
                 itemScrollController: itemScrollController,
                 itemPositionsListener: itemPositionsListener,
-                itemCount: list.length,
+                itemCount: window.length,
                 itemBuilder: (context, index) {
-                  final book = list[index];
+                  // 正文还没落到窗口里就先占个位，窗口补齐后 onLoaded 会触发重画
+                  final book = window.at(index);
+                  if (book == null) {
+                    return const SizedBox(height: 96);
+                  }
                   return Card(
                     elevation: 2,
                     margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
@@ -239,7 +267,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(
-                                    book.toPos(),
+                                    book.name,
                                     style: const TextStyle(fontSize: 12, color: Colors.blue),
                                   ),
                                 ),
@@ -316,8 +344,8 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
           await historyList.show(historyData, focus: true.obs);
         },
         contentChangeTopics: [EventTopic.reimportBook],
-        getContent: () {
-          var c = BookHelp.getCache(book.bookId);
+        getContent: () async {
+          var c = await Db().db.bookDao.getBookShowById(book.bookId);
           if (c == null) {
             return '';
           }
@@ -329,26 +357,11 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
   }
 
   void collectData() {
-    bookOptions = [];
-    for (int i = 0; i < bookShow.length; i++) {
-      var v = bookShow[i];
-      if (!bookOptions.contains(v.name)) {
-        bookOptions.add(v.name);
-      }
-    }
-    bookOptions.insert(0, I18nKey.labelAll.tr);
-  }
-
-  void sort(List<BookShow> bookShow, I18nKey key) {
-    switch (key) {
-      case I18nKey.labelSortPositionAsc:
-        bookShow.sort((a, b) => a.toSort().compareTo(b.toSort()));
-        break;
-      case I18nKey.labelSortPositionDesc:
-        bookShow.sort((a, b) => b.toSort().compareTo(a.toSort()));
-        break;
-      default:
-        break;
+    bookOptions = [I18nKey.labelAll.tr];
+    bookOptionIds = [-1];
+    for (var book in books) {
+      bookOptionIds.add(book.bookId);
+      bookOptions.add(book.name);
     }
   }
 
@@ -362,6 +375,7 @@ class ViewLogicBookList<T extends GetxController> extends ViewLogic {
 
   @override
   void dispose() {
+    contentSub.off();
     searchController.dispose();
     searchFocusNode.dispose();
   }

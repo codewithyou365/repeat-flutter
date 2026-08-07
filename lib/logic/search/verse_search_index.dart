@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
-import 'package:repeat_flutter/logic/model/verse_show.dart';
 import 'package:repeat_flutter/logic/search/verse_tokenizer.dart';
 
 /// 材料全文检索的索引层。
@@ -70,9 +69,11 @@ class VerseSearchIndex {
   }
 
   /// 重建当前教室的索引。只清当前教室，切教室时不用互相重建。
+  ///
+  /// **分批从库里取**，一批建完就丢 —— 建索引本身就不能是一次全量加载，
+  /// 不然为了省内存删掉的全局缓存又从这里回来了。
   static Future<void> rebuild(
-    int classroomId,
-    List<VerseShow> verses, {
+    int classroomId, {
     void Function(int done, int total)? onProgress,
   }) async {
     if (!await ensureTable()) {
@@ -80,27 +81,36 @@ class VerseSearchIndex {
     }
     var db = Db().db.database;
     await db.delete(table, where: 'classroomId = ?', whereArgs: [classroomId]);
-    onProgress?.call(0, verses.length);
-    for (var start = 0; start < verses.length; start += batchSize) {
-      var end = start + batchSize;
-      if (end > verses.length) {
-        end = verses.length;
+
+    var countRows = await db.rawQuery('SELECT COUNT(1) c FROM Verse WHERE classroomId=?', [classroomId]);
+    var total = (countRows.first['c'] as int?) ?? 0;
+    onProgress?.call(0, total);
+
+    var done = 0;
+    for (var offset = 0;; offset += batchSize) {
+      var rows = await db.rawQuery(
+        'SELECT id,content FROM Verse WHERE classroomId=? ORDER BY id LIMIT ? OFFSET ?',
+        [classroomId, batchSize, offset],
+      );
+      if (rows.isEmpty) {
+        break;
       }
       var batch = db.batch();
-      for (var i = start; i < end; i++) {
-        var verse = verses[i];
-        var tokens = _toIndexText(verse);
+      for (var row in rows) {
+        var verseId = row['id'] as int;
+        var tokens = _toIndexText(verseId, row['content'] as String);
         if (tokens.isEmpty) {
           continue;
         }
         batch.insert(table, {
           'tokens': tokens,
-          'verseId': verse.verseId,
+          'verseId': verseId,
           'classroomId': classroomId,
         });
       }
       await batch.commit(noResult: true);
-      onProgress?.call(end, verses.length);
+      done += rows.length;
+      onProgress?.call(done, total);
       // 让出事件循环，进度条才能真的动
       await Future.delayed(Duration.zero);
     }
@@ -112,9 +122,9 @@ class VerseSearchIndex {
   }
 
   /// 单条脏数据不能中断整轮建索引。
-  static String _toIndexText(VerseShow verse) {
+  static String _toIndexText(int verseId, String verseContent) {
     try {
-      var content = VerseContent.fromJson(jsonDecode(verse.verseContent));
+      var content = VerseContent.fromJson(jsonDecode(verseContent));
       return VerseTokenizer.buildIndexText([
         content.key,
         content.write,
@@ -125,13 +135,16 @@ class VerseSearchIndex {
         content.answer,
       ]);
     } catch (e) {
-      log('VerseSearchIndex: skip verse ${verse.verseId}, bad content. $e');
+      log('VerseSearchIndex: skip verse $verseId, bad content. $e');
       return '';
     }
   }
 
   /// 按相关度返回命中的 verseId。
-  static Future<List<int>> search(int classroomId, String input, {int limit = 200}) async {
+  ///
+  /// 内容页的句子列表要拿它当整个列表的骨架，所以 limit 给得很松 ——
+  /// 返回的只是 id，一条 8 字节，几万条也就几百 KB。
+  static Future<List<int>> search(int classroomId, String input, {int limit = 100000}) async {
     if (!await ensureTable()) {
       return [];
     }

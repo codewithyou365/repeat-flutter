@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/logic/model/verse_show.dart';
 
 class ScCrMaterialSearchState {
   final TextEditingController searchController = TextEditingController();
@@ -13,5 +12,7 @@ class ScCrMaterialSearchState {
 
   /// 已经搜过一次，用来区分"还没搜"和"搜了没结果"
   final RxBool searched = false.obs;
-  final RxList<VerseShow> result = <VerseShow>[].obs;
+
+  /// 命中的 verseId，按相关度排。正文不放这里 —— 由 logic 的窗口按滚动位置现取。
+  final RxList<int> resultIds = <int>[].obs;
 }

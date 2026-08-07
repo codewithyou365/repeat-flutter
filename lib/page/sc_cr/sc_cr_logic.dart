@@ -13,12 +13,11 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/cache_help.dart';
+import 'package:repeat_flutter/logic/book_cache_version.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/model/lazy_verse_today_prg_list.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
-import 'package:repeat_flutter/logic/verse_help.dart';
 import 'package:repeat_flutter/logic/widget/text_template.dart';
 import 'package:repeat_flutter/logic/widget/full_custom.dart';
 import 'package:repeat_flutter/logic/widget/quick_entry/quick_entry.dart';
@@ -53,25 +52,24 @@ class ScCrLogic extends GetxController {
 
     bookVersionSub.on([EventTopic.createBook, EventTopic.importBook, EventTopic.reimportBook, EventTopic.deleteBook, EventTopic.updateBookContent], (int? bookId) {
       if (bookId != null) {
-        CacheHelp.incCacheVersion(bookId);
+        BookCacheVersion.inc(bookId);
       }
     });
 
     bookVersionWithChapterSub.on([EventTopic.addChapter, EventTopic.deleteChapter, EventTopic.updateChapterContent], (ChapterShow? chapterShow) {
       if (chapterShow == null) return;
-      CacheHelp.incCacheVersion(chapterShow.bookId);
+      BookCacheVersion.inc(chapterShow.bookId);
     });
 
     bookVersionWithVerseSub.on([EventTopic.addVerse, EventTopic.deleteVerse, EventTopic.updateVerseContent, EventTopic.updateVerseProgress], (VerseShow? verseShow) {
       if (verseShow == null) return;
-      CacheHelp.incCacheVersion(verseShow.bookId);
+      BookCacheVersion.inc(verseShow.bookId);
     });
     ScCrStatsLogic.onEvent();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await showTransparentOverlay(() async {
         await copyLogic.init();
-        await CacheHelp.refreshAll();
         await init();
         startTimer();
       });
@@ -399,7 +397,8 @@ class ScCrLogic extends GetxController {
   }
 
   Future<void> globalBrowse() async {
-    var verses = await Db().db.scheduleDao.getAllVerse(Classroom.curr);
+    // 全课堂浏览，只要定位和排序 —— 正文由播放页按当前这一节现取，别在这里全量拉进来
+    var verses = await Db().db.scheduleDao.getAllVerseBrief(Classroom.curr);
     if (verses.isEmpty) {
       QuickEntry.hideGuiding();
       Snackbar.show(I18nKey.mediaEmpty.tr);
@@ -429,14 +428,7 @@ class ScCrLogic extends GetxController {
 
   // for copy
   void copy(BuildContext context, List<VerseTodayPrg> verses) async {
-    List<VerseShow> ret = [];
-    for (int i = 0; i < verses.length; i++) {
-      final verse = verses[i];
-      VerseShow? verseShow = VerseHelp.getCache(verse.verseId);
-      if (verseShow != null) {
-        ret.add(verseShow);
-      }
-    }
+    var ret = await Db().db.scheduleDao.getVerseShowByIds(verses.map((e) => e.verseId).toList());
     if (!copyLogic.showQaList(context, ret)) {
       Snackbar.show(I18nKey.labelNoContent.tr);
     }
