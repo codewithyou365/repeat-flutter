@@ -637,6 +637,22 @@ class AssistiveTouchLogic {
     await _speak(fieldRef);
   }
 
+  /// 点正文时用：该字段配了可用区间就播那一段（等同 Play-Q/Play-A/Play-Tips），
+  /// 没有就静静什么都不做——不退回 TTS，也不弹提示（跟 [playTarget] 的区别就在这）。
+  Future<void> playFieldRangeIfAny(String fieldRef) async {
+    final viewName = repeatLogic.state.helper.getCurrViewName();
+    if (viewName != RepeatViewEnum.audio.name && viewName != RepeatViewEnum.video.name) {
+      // 纯文本视图下没有播放器，别让 _playRange 弹"无内容"。
+      return;
+    }
+    final getRange = _rangeGetterOf(fieldRef);
+    final range = getRange == null ? null : getRange(_mediaRangeHelper);
+    if (range == null || !range.enable) {
+      return;
+    }
+    await _playRange(range);
+  }
+
   MediaRange? Function(MediaRangeHelper)? _rangeGetterOf(String fieldRef) {
     switch (QaType.fromAcronym(VerseField.baseOf(fieldRef))) {
       case QaType.question:

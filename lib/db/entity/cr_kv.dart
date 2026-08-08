@@ -19,6 +19,8 @@ enum CrK {
   inputGameForIgnoringPunctuation,
   inputGameForMatchType,
   inputGameForSkipCharacter,
+  // "模版"功能已删，这两个 key 不再写入。但老库里还留着历史行，而 CrKvConverter
+  // 是用 CrK.values.byName 反解的，删掉枚举值会让读到这些行的查询直接抛异常，所以保留。
   copyTemplate,
   copyListTemplate,
   lastRecordCreateDate4StatsTotalTime,

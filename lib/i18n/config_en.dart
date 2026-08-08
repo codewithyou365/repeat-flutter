@@ -168,8 +168,6 @@ class ConfigEn extends Config {
     put(I18nKey.labelDetail, "Detail");
     put(I18nKey.labelCopyConfig, "Copy Config");
     put(I18nKey.labelDeleteConfig, "Delete Config");
-    put(I18nKey.getText, "Get Text");
-    put(I18nKey.labelCopyText, "Copy Text");
     put(I18nKey.labelResetPassword, "Reset Password");
     put(I18nKey.labelResetConfigDesc, "After resetting the configuration, the system's default configuration will be used.");
     put(I18nKey.labelOnTapError, "Please press and hold the button to confirm");
@@ -251,7 +249,6 @@ class ConfigEn extends Config {
     put(I18nKey.speed, "Speed");
     put(I18nKey.bluetoothOffset, "BT Offset");
     put(I18nKey.labelCalendar, "Calendar");
-    put(I18nKey.textTemplate, "Template");
     put(I18nKey.labelVerseNeedToContainAnswer, "Verse Need To Contain Answer");
     put(I18nKey.labelVerseKeyDuplicated, "Verse Key duplicated: %s");
     put(I18nKey.labelVerseKeyCantBeEmpty, "Verse Key can't be empty");

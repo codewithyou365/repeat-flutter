@@ -17,7 +17,6 @@ import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/classroom_help.dart';
 import 'package:repeat_flutter/logic/model/lazy_verse_today_prg_list.dart';
-import 'package:repeat_flutter/logic/widget/text_template.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_logic.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_sheet.dart';
 import 'package:repeat_flutter/logic/widget/gamepad/gamepad_binding_sheet.dart';
@@ -78,7 +77,6 @@ class RepeatLogic extends GetxController {
   }
 
   late AdjustFont adjustFont = AdjustFont<RepeatLogic>(this);
-  late TextTemplate copyLogic = TextTemplate<RepeatLogic>(CrK.copyTemplate, this);
   late GameLogic<RepeatLogic> gameLogic;
   late TipLogic<RepeatLogic> tipLogic;
   late SessionCoordinator gameHelper;
@@ -119,7 +117,6 @@ class RepeatLogic extends GetxController {
     );
     gameHelper = SessionCoordinator(gameLogic.web, tipLogic.web);
     ttsHelper.tryInit(TtsKeys.tip);
-    copyLogic.init();
     expandSheet.init();
     expandSheet.logic.onPlayTarget = assistiveTouchLogic.playTarget;
     var args = Get.arguments as RepeatArgs;

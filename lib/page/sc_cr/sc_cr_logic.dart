@@ -18,7 +18,6 @@ import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/chapter_show.dart';
 import 'package:repeat_flutter/logic/model/lazy_verse_today_prg_list.dart';
 import 'package:repeat_flutter/logic/model/verse_show.dart';
-import 'package:repeat_flutter/logic/widget/text_template.dart';
 import 'package:repeat_flutter/logic/widget/full_custom.dart';
 import 'package:repeat_flutter/logic/widget/quick_entry/quick_entry.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -35,7 +34,6 @@ import 'sc_cr_state.dart';
 class ScCrLogic extends GetxController {
   static const String id = "ScCrLogic";
   final ScCrState state = ScCrState();
-  late TextTemplate copyLogic = TextTemplate<ScCrLogic>(CrK.copyListTemplate, this);
   late FullCustom fullCustom = FullCustom<ScCrLogic>(this);
   final SubList initSub = [];
   final SubList<int> bookVersionSub = [];
@@ -69,7 +67,6 @@ class ScCrLogic extends GetxController {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await showTransparentOverlay(() async {
-        await copyLogic.init();
         await init();
         startTimer();
       });
@@ -424,13 +421,5 @@ class ScCrLogic extends GetxController {
         displayModeSource: DisplayModeSource.globalBrowse,
       ),
     );
-  }
-
-  // for copy
-  void copy(BuildContext context, List<VerseTodayPrg> verses) async {
-    var ret = await Db().db.scheduleDao.getVerseShowByIds(verses.map((e) => e.verseId).toList());
-    if (!copyLogic.showQaList(context, ret)) {
-      Snackbar.show(I18nKey.labelNoContent.tr);
-    }
   }
 }

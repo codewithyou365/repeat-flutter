@@ -166,8 +166,6 @@ class ConfigZh extends Config {
     put(I18nKey.labelDetail, "详情");
     put(I18nKey.labelCopyConfig, "复制配置");
     put(I18nKey.labelDeleteConfig, "删除配置");
-    put(I18nKey.getText, "获取文本");
-    put(I18nKey.labelCopyText, "复制文本");
     put(I18nKey.labelResetPassword, "重置密码");
     put(I18nKey.labelResetConfigDesc, "执行重置配置后，将使用系统默认的配置？");
     put(I18nKey.labelOnTapError, "请长按按键进行确认");
@@ -249,7 +247,6 @@ class ConfigZh extends Config {
     put(I18nKey.speed, "速度");
     put(I18nKey.bluetoothOffset, "蓝牙补偿");
     put(I18nKey.labelCalendar, "日历");
-    put(I18nKey.textTemplate, "模版");
     put(I18nKey.labelVerseNeedToContainAnswer, "小节需要包含答案字段");
     put(I18nKey.labelVerseKeyDuplicated, "小节KEY重复： %s");
     put(I18nKey.labelVerseKeyCantBeEmpty, "小节KEY不能为空");

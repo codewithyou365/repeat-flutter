@@ -12,7 +12,6 @@ import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_button.dart';
 import 'package:repeat_flutter/logic/widget/close_eyes/close_eyes_panel.dart';
-import 'package:repeat_flutter/logic/widget/text_template.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
@@ -503,35 +502,27 @@ class RepeatPage extends StatelessWidget {
           const Divider(height: 16),
 
           if (displayText.isNotEmpty || canEdit)
-            ExpandableText(
-              title: "",
-              text: displayText,
-              style: TextStyle(
-                fontSize: fontSizeOf(logic, fieldRef) ?? 17,
-                fontFamily: fontAliasOf(logic, fieldRef),
-              ),
-              onIcon: canEdit
-                  ? () async {
-                      if (helper.showMode.value != ShowMode.edit && isNote) {
-                        await modify(map, logic, fieldRef);
-                      } else {
-                        await fullModify(map, logic, fieldRef);
+            // 包一层 SelectionArea：长按正文能起选区、弹系统的复制/全选工具条；
+            // 单击仍由里层 ExpandableText 的 GestureDetector 拿到（触发播放）。
+            SelectionArea(
+              child: ExpandableText(
+                title: "",
+                text: displayText,
+                style: TextStyle(
+                  fontSize: fontSizeOf(logic, fieldRef) ?? 17,
+                  fontFamily: fontAliasOf(logic, fieldRef),
+                ),
+                onIcon: canEdit
+                    ? () async {
+                        if (helper.showMode.value != ShowMode.edit && isNote) {
+                          await modify(map, logic, fieldRef);
+                        } else {
+                          await fullModify(map, logic, fieldRef);
+                        }
                       }
-                    }
-                  : null,
-              onText: () async {
-                final String text = VerseField.getText(map, fieldRef) ?? '';
-                if (text.isEmpty) {
-                  return;
-                }
-                helper.stopMedia(false);
-                await logic.copyLogic.show(
-                  TextTemplateMode.editAndCopy,
-                  Get.context!,
-                  text,
-                );
-                helper.stopMedia(true);
-              },
+                    : null,
+                onText: () => logic.assistiveTouchLogic.playFieldRangeIfAny(fieldRef),
+              ),
             ),
           const SizedBox(height: 12),
         ],
@@ -584,25 +575,17 @@ class RepeatPage extends StatelessWidget {
         onIconCallback = null;
       }
     }
-    return ExpandableText(
-      title: "",
-      text: text,
-      style: style,
-      onIcon: onIconCallback,
-      iconDecoration: iconDecoration,
-      icon: onIconData,
-      onText: () async {
-        if (text.isEmpty) {
-          return;
-        }
-        helper.stopMedia(false);
-        await logic.copyLogic.show(
-          TextTemplateMode.editAndCopy,
-          Get.context!,
-          text,
-        );
-        helper.stopMedia(true);
-      },
+    // 同上：长按选词靠外面这层 SelectionArea，单击仍走里层的 onText。
+    return SelectionArea(
+      child: ExpandableText(
+        title: "",
+        text: text,
+        style: style,
+        onIcon: onIconCallback,
+        iconDecoration: iconDecoration,
+        icon: onIconData,
+        onText: () => logic.assistiveTouchLogic.playFieldRangeIfAny(type.acronym),
+      ),
     );
   }
 

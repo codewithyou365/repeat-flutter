@@ -230,10 +230,6 @@ class ScCrPage extends StatelessWidget {
                   onTap: () => {logic.tryStart(element.verses, grouping: true)},
                   child: Text(I18nKey.btnExamine.tr),
                 ),
-                PopupMenuItem<String>(
-                  onTap: () => {logic.copy(context, element.verses)},
-                  child: Text(I18nKey.btnCopy.tr),
-                ),
               ],
             ),
           ),
