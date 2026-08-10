@@ -3171,6 +3171,21 @@ class _$ScheduleDao extends ScheduleDao {
   }
 
   @override
+  Future<Verse> innerErrorAndStay(VerseTodayPrg stp) async {
+    if (database is sqflite.Transaction) {
+      return super.innerErrorAndStay(stp);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<Verse>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        return transactionDatabase.scheduleDao.innerErrorAndStay(stp);
+      });
+    }
+  }
+
+  @override
   Future<Verse> innerJumpDirectly(
     int verseId,
     int progress,

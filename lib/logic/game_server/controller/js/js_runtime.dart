@@ -169,8 +169,9 @@ class JsRuntime {
       });
 
       // 逐字母朗读（拼读）时，如果用户开启了"拼读即置零"，把当前 verse 的学习等级重置为 0。
-      // 复用 error() 逻辑：它会把 verse.progress 和今日进度都置 0，并刷新缓存/发事件，
-      // 但不改动 examine 流程的 step 和 scheduled 顺序，用户可以继续打字。
+      // 复用 error() 那套逻辑（errorAndStay）：把 verse.progress 和今日进度都置 0，并刷新缓存/发事件，
+      // 但不改动 examine 流程的 step 和 scheduled 顺序，用户可以继续打字；
+      // viewTime 也不写 now，否则退出 app 再进按 viewTime 重排时这条会被甩到队尾、回不到原位。
       _jsRuntime!.onMessage('resetCurrVerseLevel', (dynamic args) async {
         final game = GameState.game;
         if (game == null) return 'no_game';
@@ -182,7 +183,7 @@ class JsRuntime {
           }
           final curr = logic.getCurr();
           if (curr == null) return 'no_verse';
-          await Db().db.scheduleDao.error(curr);
+          await Db().db.scheduleDao.errorAndStay(curr);
           return 'ok';
         } catch (e) {
           return e.toString();

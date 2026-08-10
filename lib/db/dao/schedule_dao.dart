@@ -900,6 +900,26 @@ abstract class ScheduleDao {
     return await setPrg(stp.verseId, 0, null);
   }
 
+  /// 跟 error 一样把学习等级和今日进度打回 0,区别是「原地不动」:
+  /// 队列是按 viewTime 升序排的(未看过的是 epoch-0),error 写 now 会把这条甩到队尾——
+  /// 当场不重排看不出来,退出 app 再进按 viewTime 重排时就回不到原来的位置了。
+  /// 这里写 epoch 前 1 毫秒,保证它仍然排在最前面;又因为不等于 epoch-0,
+  /// 不会被 innerRight 当成"一次通过直接升级(familiar)",置零才不会被下一次答对抵消。
+  Future<void> errorAndStay(VerseTodayPrg stp) async {
+    var verse = await innerErrorAndStay(stp);
+    if (verse.id != null) {
+      EventBus().publish<VerseShow>(EventTopic.updateVerseProgress, await getVerseShowById(verse.id!));
+    }
+  }
+
+  @transaction
+  Future<Verse> innerErrorAndStay(VerseTodayPrg stp) async {
+    await forUpdate();
+    var viewTime = DateTime.fromMillisecondsSinceEpoch(-1);
+    await setTodayPrgWithCache(stp, 0, viewTime);
+    return await setPrg(stp.verseId, 0, null);
+  }
+
   Future<void> jumpDirectly(int verseId, int progress, int nextDayValue) async {
     var verse = await innerJumpDirectly(verseId, progress, nextDayValue);
     if (verse.id != null) {
