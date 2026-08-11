@@ -112,7 +112,7 @@ class _LanAddressQrCodeState extends State<LanAddressQrCode> {
                   Row(
                     children: [
                       Expanded(
-                        child: _softButton(
+                        child: RowWidget.buildSoftButton(
                           context,
                           icon: Icons.copy_rounded,
                           text: I18nKey.btnCopy.tr,
@@ -125,7 +125,7 @@ class _LanAddressQrCodeState extends State<LanAddressQrCode> {
                       if (widget.onKey != null) ...[
                         const SizedBox(width: 12),
                         Expanded(
-                          child: _softButton(
+                          child: RowWidget.buildSoftButton(
                             context,
                             icon: Icons.vpn_key_rounded,
                             text: I18nKey.keyTitle.tr,
@@ -140,39 +140,6 @@ class _LanAddressQrCodeState extends State<LanAddressQrCode> {
             },
           ),
         ],
-      ),
-    );
-  }
-
-  /// 底部浅灰色圆角按钮，深浅色主题都跟随 secondaryHeaderColor。
-  Widget _softButton(
-    BuildContext context, {
-    required IconData icon,
-    required String text,
-    required VoidCallback onTap,
-  }) {
-    final radius = BorderRadius.circular(10);
-    return Material(
-      color: Theme.of(context).secondaryHeaderColor,
-      borderRadius: radius,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: radius,
-        child: SizedBox(
-          height: 40,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 18),
-              const SizedBox(width: 6),
-              Text(
-                text,
-                style: const TextStyle(fontSize: 15),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

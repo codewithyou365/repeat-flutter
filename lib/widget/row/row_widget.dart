@@ -71,36 +71,68 @@ class RowWidget {
     List<Button> buttons,
   ) {
     List<Widget> children = [];
-    if (buttons.length == 1) {
-      children.add(const Spacer());
-    }
     for (var i = 0; i < buttons.length; i++) {
       if (i != 0) {
-        children.add(const Spacer());
+        children.add(const SizedBox(width: 12));
       }
       children.add(
-        Obx(() {
-          final theme = Theme.of(Get.context!);
-          return TextButton(
-            onPressed: buttons[i].enable.value
-                ? (buttons[i].onPressed ??
-                      () {
-                        Get.back();
-                      })
-                : null,
-            child: Text(
-              buttons[i].title,
-              style: TextStyle(
-                fontSize: 18,
-                color: buttons[i].enable.value ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.38),
+        Expanded(
+          child: Obx(() {
+            final enable = buttons[i].enable.value;
+            return Opacity(
+              opacity: enable ? 1.0 : 0.38,
+              child: buildSoftButton(
+                Get.context!,
+                text: buttons[i].title,
+                onTap: enable
+                    ? (buttons[i].onPressed ??
+                          () {
+                            Get.back();
+                          })
+                    : null,
               ),
-            ),
-          );
-        }),
+            );
+          }),
+        ),
       );
     }
     return Row(
       children: children,
+    );
+  }
+
+  /// 浅灰色圆角软按钮，深浅色主题都跟随 secondaryHeaderColor；icon 为空时只显示文字。
+  static Widget buildSoftButton(
+    BuildContext context, {
+    IconData? icon,
+    required String text,
+    required VoidCallback? onTap,
+  }) {
+    final radius = BorderRadius.circular(10);
+    return Material(
+      color: Theme.of(context).secondaryHeaderColor,
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: radius,
+        child: SizedBox(
+          height: 40,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 18),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                text,
+                style: const TextStyle(fontSize: 15),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
