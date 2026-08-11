@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_logic.dart';
+import 'package:repeat_flutter/logic/widget/assistive_touch/at_action.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_tile.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -113,6 +114,9 @@ class AssistiveTouchButton extends StatelessWidget {
     await Sheet.showBottomSheet(
       context,
       Obx(() {
+        // 必须在这里读一次：下面是 LayoutBuilder，它的 builder 要到 layout 阶段才跑，
+        // 那时 Obx 收集依赖的窗口已经关了，在里面读 Rx 一个都注册不上（GetX 会直接报 ObxError）。
+        final actions = logic.shownActions;
         return Padding(
           padding: const EdgeInsets.all(8),
           child: LayoutBuilder(builder: (context, constraints) {
@@ -120,27 +124,17 @@ class AssistiveTouchButton extends StatelessWidget {
             return Wrap(
               spacing: AssistiveTouchTile.spacing,
               runSpacing: AssistiveTouchTile.spacing,
-              children: [
-                ...logic.shownBuiltins.map((builtIn) {
-                  return AssistiveTouchTile.build(
-                    icon: builtIn.icon,
-                    label: logic.labelOf(builtIn),
-                    width: tileWidth,
-                    onTap: () => builtIn == BuiltInAction.deleteVerse ? _confirmDeleteCurrentVerse(logic) : _executeBuiltIn(logic, builtIn),
-                  );
-                }),
-                ...logic.actions.map((action) {
-                  return AssistiveTouchTile.build(
-                    icon: Icons.bolt,
-                    label: action.name,
-                    width: tileWidth,
-                    onTap: () {
-                      Get.back();
-                      logic.executeAction(action);
-                    },
-                  );
-                }),
-              ],
+              children: actions.map((action) {
+                return AssistiveTouchTile.build(
+                  icon: action.type.icon,
+                  label: action.name,
+                  width: tileWidth,
+                  // 删除当前节不可撤销，先弹一次确认；其它动作点了直接执行。
+                  onTap: () => action.type == AtActionType.delete //
+                      ? _confirmDeleteCurrentVerse(logic)
+                      : _execute(logic, action),
+                );
+              }).toList(),
             );
           }),
         );
@@ -156,9 +150,9 @@ class AssistiveTouchButton extends StatelessWidget {
     );
   }
 
-  void _executeBuiltIn(AssistiveTouchLogic logic, BuiltInAction builtIn) {
+  void _execute(AssistiveTouchLogic logic, AtAction action) {
     Get.back();
-    logic.executeBuiltIn(builtIn);
+    logic.execute(action);
   }
 
   void _confirmDeleteCurrentVerse(AssistiveTouchLogic logic) {

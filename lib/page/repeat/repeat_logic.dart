@@ -22,7 +22,6 @@ import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_shee
 import 'package:repeat_flutter/logic/widget/gamepad/gamepad_binding_sheet.dart';
 import 'package:repeat_flutter/logic/widget/gamepad/gamepad_logic.dart';
 import 'package:repeat_flutter/logic/widget/edit_progress.dart';
-import 'package:repeat_flutter/logic/widget/expand/expand_sheet.dart';
 import 'package:repeat_flutter/logic/widget/game/game_logic.dart';
 import 'package:repeat_flutter/logic/widget/quick_entry/quick_entry.dart';
 import 'package:repeat_flutter/logic/widget/adjust_font.dart';
@@ -50,7 +49,6 @@ class RepeatLogic extends GetxController {
   final RepeatState state = RepeatState();
   final Map<String, RepeatView> showTypeToRepeatView = {};
   final TtsHelper ttsHelper = TtsHelper();
-  final ExpandSheet expandSheet = ExpandSheet();
   final WebviewLogic webviewLogic = WebviewLogic();
 
   RepeatLogic() {
@@ -117,8 +115,6 @@ class RepeatLogic extends GetxController {
     );
     gameHelper = SessionCoordinator(gameLogic.web, tipLogic.web);
     ttsHelper.tryInit(TtsKeys.tip);
-    expandSheet.init();
-    expandSheet.logic.onPlayTarget = assistiveTouchLogic.playTarget;
     var args = Get.arguments as RepeatArgs;
     saveGlobalBrowsePosition = args.saveGlobalBrowsePosition;
     displayModeSource = args.displayModeSource;
@@ -154,6 +150,8 @@ class RepeatLogic extends GetxController {
       state.needUpdateSystemUiMode = true;
     }
     await state.helper.init(repeatFlow!);
+    // 悬浮球的动作存在课堂内容里，Helper.init 取到课堂内容之后才读得到。
+    await assistiveTouchLogic.loadActions();
     for (var v in showTypeToRepeatView.values) {
       v.init(state.helper);
     }
@@ -365,19 +363,6 @@ class RepeatLogic extends GetxController {
     if (source != null) {
       DisplayModeKv.set(Classroom.curr, source, state.helper.showMode.value);
     }
-  }
-
-  Future<void> openExpand() async {
-    final verse = state.helper.getCurrVerse();
-    if (verse == null) {
-      return;
-    }
-    final map = state.helper.getCurrVerseMap();
-    if (map == null) {
-      return;
-    }
-    await expandSheet.open(verse, map);
-    update([RepeatLogic.id]);
   }
 
   Future<void> openAssistiveTouch() async {

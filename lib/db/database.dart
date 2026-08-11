@@ -5,7 +5,6 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:floor/floor.dart';
 import 'package:repeat_flutter/common/date.dart';
-import 'package:repeat_flutter/db/dao/assistive_touch_action_dao.dart';
 import 'package:repeat_flutter/db/dao/book_content_version_dao.dart';
 import 'package:repeat_flutter/db/dao/chapter_content_version_dao.dart';
 import 'package:repeat_flutter/db/dao/classroom_dao.dart';
@@ -28,7 +27,6 @@ import 'package:repeat_flutter/db/dao/lock_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_review_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_stats_dao.dart';
 import 'package:repeat_flutter/db/dao/verse_today_prg_dao.dart';
-import 'package:repeat_flutter/db/entity/assistive_touch_action.dart';
 import 'package:repeat_flutter/db/entity/book_content_version.dart';
 import 'package:repeat_flutter/db/entity/chapter_content_version.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
@@ -78,18 +76,18 @@ import 'migration/m15_16.dart';
 import 'migration/m16_17.dart';
 import 'migration/m17_18.dart';
 import 'migration/m18_19.dart';
+import 'migration/m19_20.dart';
 
 part 'database.g.dart'; // the generated code will be there
 
 @Database(
-  version: 19,
+  version: 20,
   entities: [
     Book,
     BookContentVersion,
     Chapter,
     ChapterContentVersion,
     Kv,
-    AssistiveTouchAction,
     Classroom,
     CrKv,
     EditBookHistory,
@@ -122,8 +120,6 @@ part 'database.g.dart'; // the generated code will be there
   VersionReasonConverter,
 ])
 abstract class AppDatabase extends FloorDatabase {
-  AssistiveTouchActionDao get assistiveTouchActionDao;
-
   BookContentVersionDao get bookContentVersionDao;
 
   BookDao get bookDao;
@@ -202,6 +198,7 @@ class Db {
         m16_17,
         m17_18,
         m18_19,
+        m19_20,
       ]).build();
       log("Database path: \n${await sqflite.getDatabasesPath()}/$fileName");
     }

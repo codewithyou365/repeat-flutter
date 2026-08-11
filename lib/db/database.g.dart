@@ -72,8 +72,6 @@ class _$AppDatabase extends AppDatabase {
     changeListener = listener ?? StreamController<String>.broadcast();
   }
 
-  AssistiveTouchActionDao? _assistiveTouchActionDaoInstance;
-
   BookContentVersionDao? _bookContentVersionDaoInstance;
 
   BookDao? _bookDaoInstance;
@@ -124,7 +122,7 @@ class _$AppDatabase extends AppDatabase {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 19,
+      version: 20,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -149,8 +147,6 @@ class _$AppDatabase extends AppDatabase {
             'CREATE TABLE IF NOT EXISTS `ChapterContentVersion` (`classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `chapterId` INTEGER NOT NULL, `version` INTEGER NOT NULL, `reason` INTEGER NOT NULL, `content` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`chapterId`, `version`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Kv` (`k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`k`))');
-        await database.execute(
-            'CREATE TABLE IF NOT EXISTS `AssistiveTouchAction` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `classroomId` INTEGER NOT NULL, `name` TEXT NOT NULL, `template` TEXT NOT NULL, `targetIndex` INTEGER NOT NULL, `enableAudio` INTEGER NOT NULL, `behavior` INTEGER NOT NULL, `sort` INTEGER NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Classroom` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `sort` INTEGER NOT NULL, `hide` INTEGER NOT NULL, `content` TEXT NOT NULL, `contentVersion` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
@@ -197,8 +193,6 @@ class _$AppDatabase extends AppDatabase {
             'CREATE INDEX `index_ChapterContentVersion_classroomId` ON `ChapterContentVersion` (`classroomId`)');
         await database.execute(
             'CREATE INDEX `index_ChapterContentVersion_bookId` ON `ChapterContentVersion` (`bookId`)');
-        await database.execute(
-            'CREATE INDEX `index_AssistiveTouchAction_classroomId` ON `AssistiveTouchAction` (`classroomId`)');
         await database.execute(
             'CREATE UNIQUE INDEX `index_Classroom_name` ON `Classroom` (`name`)');
         await database.execute(
@@ -258,12 +252,6 @@ class _$AppDatabase extends AppDatabase {
       },
     );
     return sqfliteDatabaseFactory.openDatabase(path, options: databaseOptions);
-  }
-
-  @override
-  AssistiveTouchActionDao get assistiveTouchActionDao {
-    return _assistiveTouchActionDaoInstance ??=
-        _$AssistiveTouchActionDao(database, changeListener);
   }
 
   @override
@@ -382,93 +370,6 @@ class _$AppDatabase extends AppDatabase {
   VerseTodayPrgDao get verseTodayPrgDao {
     return _verseTodayPrgDaoInstance ??=
         _$VerseTodayPrgDao(database, changeListener);
-  }
-}
-
-class _$AssistiveTouchActionDao extends AssistiveTouchActionDao {
-  _$AssistiveTouchActionDao(
-    this.database,
-    this.changeListener,
-  )   : _queryAdapter = QueryAdapter(database),
-        _assistiveTouchActionInsertionAdapter = InsertionAdapter(
-            database,
-            'AssistiveTouchAction',
-            (AssistiveTouchAction item) => <String, Object?>{
-                  'id': item.id,
-                  'classroomId': item.classroomId,
-                  'name': item.name,
-                  'template': item.template,
-                  'targetIndex': item.targetIndex,
-                  'enableAudio': item.enableAudio ? 1 : 0,
-                  'behavior': item.behavior,
-                  'sort': item.sort
-                }),
-        _assistiveTouchActionUpdateAdapter = UpdateAdapter(
-            database,
-            'AssistiveTouchAction',
-            ['id'],
-            (AssistiveTouchAction item) => <String, Object?>{
-                  'id': item.id,
-                  'classroomId': item.classroomId,
-                  'name': item.name,
-                  'template': item.template,
-                  'targetIndex': item.targetIndex,
-                  'enableAudio': item.enableAudio ? 1 : 0,
-                  'behavior': item.behavior,
-                  'sort': item.sort
-                });
-
-  final sqflite.DatabaseExecutor database;
-
-  final StreamController<String> changeListener;
-
-  final QueryAdapter _queryAdapter;
-
-  final InsertionAdapter<AssistiveTouchAction>
-      _assistiveTouchActionInsertionAdapter;
-
-  final UpdateAdapter<AssistiveTouchAction> _assistiveTouchActionUpdateAdapter;
-
-  @override
-  Future<List<AssistiveTouchAction>> findAll(int classroomId) async {
-    return _queryAdapter.queryList(
-        'SELECT * FROM AssistiveTouchAction WHERE classroomId=?1 ORDER BY sort ASC, id ASC',
-        mapper: (Map<String, Object?> row) => AssistiveTouchAction(id: row['id'] as int?, classroomId: row['classroomId'] as int, name: row['name'] as String, template: row['template'] as String, targetIndex: row['targetIndex'] as int, enableAudio: (row['enableAudio'] as int) != 0, behavior: row['behavior'] as int, sort: row['sort'] as int),
-        arguments: [classroomId]);
-  }
-
-  @override
-  Future<AssistiveTouchAction?> getById(int id) async {
-    return _queryAdapter.query('SELECT * FROM AssistiveTouchAction WHERE id=?1',
-        mapper: (Map<String, Object?> row) => AssistiveTouchAction(
-            id: row['id'] as int?,
-            classroomId: row['classroomId'] as int,
-            name: row['name'] as String,
-            template: row['template'] as String,
-            targetIndex: row['targetIndex'] as int,
-            enableAudio: (row['enableAudio'] as int) != 0,
-            behavior: row['behavior'] as int,
-            sort: row['sort'] as int),
-        arguments: [id]);
-  }
-
-  @override
-  Future<void> deleteById(int id) async {
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM AssistiveTouchAction WHERE id=?1',
-        arguments: [id]);
-  }
-
-  @override
-  Future<void> insert(AssistiveTouchAction action) async {
-    await _assistiveTouchActionInsertionAdapter.insert(
-        action, OnConflictStrategy.fail);
-  }
-
-  @override
-  Future<void> update(AssistiveTouchAction action) async {
-    await _assistiveTouchActionUpdateAdapter.update(
-        action, OnConflictStrategy.fail);
   }
 }
 

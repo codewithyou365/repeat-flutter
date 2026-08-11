@@ -266,7 +266,7 @@ class JsRuntime {
       });
 
       // 打字游戏的"辅助触控触发键"要在设置面板里列出可绑定的按钮，所以把复习页辅助触控当前显示的
-      // 按钮（内置动作 + 用户自定义预设）导出成 [{id, name}]。id 形如 builtin:<枚举名> / custom:<行id>。
+      // 按钮导出成 [{id, name}]。id 形如 custom:<动作id>。
       // 注意：没走 uiTap 而是单开一条消息，因为 uiTap 是同步 handler，type.ts 里 Game.tap 依赖它同步
       // 返回 'success'，改成 async 会把 tapLeft/tapRight 全部变成"失败"。
       _jsRuntime!.onMessage('assistiveTouchActions', (dynamic args) async {
@@ -274,16 +274,13 @@ class JsRuntime {
         if (logic == null) {
           return '[]';
         }
-        // 用户刚在辅助触控里新建的预设也要能立刻选到，所以每次重新读一遍
+        // 用户刚在辅助触控里新建的动作也要能立刻选到，所以每次重新读一遍
         await logic.loadActions();
         final ret = <Map<String, dynamic>>[];
-        for (final builtIn in logic.shownBuiltins) {
-          ret.add({'id': 'builtin:${builtIn.name}', 'name': logic.labelOf(builtIn)});
-        }
         for (final action in logic.actions) {
-          // inputCount 是这个动作要几个参数（模版里实际写了几个 {{inputN}}），
+          // inputCount 是这个动作要几个参数（net 类型的模版里实际写了几个 {{inputN}}），
           // inputKeys 是它们的占位符名字，脚本按这个顺序准备 assistiveTouchTap 的 'inputs'。
-          final inputNumbers = ExpandLogic.inputNumbersOf(action.template);
+          final inputNumbers = ExpandLogic.inputNumbersOf(action.net.template);
           ret.add({
             'id': 'custom:${action.id}',
             'name': action.name,
@@ -335,20 +332,6 @@ class JsRuntime {
         if (logic == null) {
           return 'not_found';
         }
-        if (id.startsWith('builtin:')) {
-          final name = id.substring('builtin:'.length);
-          // 枚举名可能因为改代码对不上，用 where 查而不是 byName，避免抛异常
-          final matched = BuiltInAction.values.where((e) => e.name == name);
-          if (matched.isEmpty) {
-            return 'not_found';
-          }
-          final builtIn = matched.first;
-          if (!logic.shownBuiltins.contains(builtIn)) {
-            return 'unavailable';
-          }
-          await logic.executeBuiltIn(builtIn);
-          return 'ok';
-        }
         if (id.startsWith('custom:')) {
           final actionId = int.tryParse(id.substring('custom:'.length));
           if (actionId == null) {
@@ -359,6 +342,9 @@ class JsRuntime {
           if (matched.isEmpty) {
             return 'not_found';
           }
+          if (!logic.availableForFlow(matched.first)) {
+            return 'unavailable';
+          }
           // 带参数的动作从游戏调用时一律不弹框（弹 sheet 会打断打字），参数由脚本自己控制：
           // 'inputs' 按位置对应 input1..inputN，不传就是全空，传的比参数数量少也按空字符串补。
           final rawInputs = args['inputs'];
@@ -366,7 +352,7 @@ class JsRuntime {
             return 'invalid_args';
           }
           final inputs = (rawInputs as List?)?.map((e) => e?.toString() ?? '').toList() ?? const <String>[];
-          await logic.executeAction(matched.first, inputs: inputs);
+          await logic.execute(matched.first, inputs: inputs);
           return 'ok';
         }
         return 'not_found';

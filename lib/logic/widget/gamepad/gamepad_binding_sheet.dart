@@ -10,7 +10,7 @@ import 'package:repeat_flutter/widget/sheet/sheet.dart';
 /// 手柄绑定配置弹窗：仿照 AssistiveTouchSheet，分三组列出可绑定功能，点某行进入"按键捕获"改键。
 class GamepadBindingSheet {
   static Future<void> open(GamepadLogic logic) async {
-    // 自定义动作用于渲染第三组，先加载一次。
+    // 悬浮球动作用于渲染第二组，先加载一次。
     await logic.repeatLogic.assistiveTouchLogic.loadActions();
     return Sheet.showBottomSheet(
       Get.context!,
@@ -24,12 +24,9 @@ class GamepadBindingSheet {
           children: [
             RowWidget.buildText(I18nKey.gamepadNavGroup.tr),
             ...GamepadBinding.navTargets().map((t) => _row(logic, current, t)),
-            RowWidget.buildDividerWithoutColor(),
-            RowWidget.buildText(I18nKey.gamepadActionGroup.tr),
-            ...GamepadBinding.builtinTargets(logic.repeatLogic).map((t) => _row(logic, current, t)),
             if (custom.isNotEmpty) ...[
               RowWidget.buildDividerWithoutColor(),
-              RowWidget.buildText(I18nKey.customAction.tr),
+              RowWidget.buildText(I18nKey.gamepadActionGroup.tr),
               ...custom.map((t) => _row(logic, current, t)),
             ],
           ],

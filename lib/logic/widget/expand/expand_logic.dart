@@ -8,7 +8,6 @@ import 'package:mustache_template/mustache_template.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/database.dart';
-import 'package:repeat_flutter/db/entity/assistive_touch_action.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
@@ -46,49 +45,10 @@ class ExpandLogic {
   var disabled = false.obs;
   var disabledAudioWidget = true.obs;
   var logs = <String>[].obs;
-  /// 作用位置里"第 1 条提示"从这个下标开始（3=提示1、4=提示2……）。
-  /// 下标会存进 AssistiveTouchAction 的 targetIndex，只能往后加，不能调顺序。
-  static const int tipStart = 3;
-
-  /// 作用位置选项框的顺序：问题、答案、提示1..提示8，一共 10 项。
-  /// 里面装的是存库的下标，不是选项框自己的位置——两者不是一回事，必须过这层映射。
-  static const List<int> selectableTargetIndexes = [2, 0, 3, 4, 5, 6, 7, 8, 9, 10];
-
-  /// 作用位置的全部选项，下标就是存库的值。
-  /// 下标 1 是老的"提示"（跟着界面上选中的那条走），已经不给选了，但位置要留着——
-  /// 老预设里存的就是 1，挪走会让它们指到别的字段上。读到 1 一律当第 1 条提示。
-  List<String> get targetOptions => [
-        QaType.answer.i18n.tr,
-        tipLabel(0),
-        QaType.question.i18n.tr,
-        for (var i = 0; i < VerseField.maxTip; i++) tipLabel(i),
-      ];
-
-  /// 老预设存的"提示"（作用位置是 1）归到"提示1"，这样选项框里能选中它。
-  static int normalizeTargetIndex(int index) => index == 1 ? tipStart : index;
 
   /// 第 i 条提示显示的名字：课堂里定义了就用定义的（跟提示 tab 栏一致），没定义用序号。
   String tipLabel(int index) {
     return VerseField.tipNameOf(classroomMap, index) ?? '${QaType.tip.i18n.tr}${index + 1}';
-  }
-
-  String toFieldRef(int targetIndex) {
-    if (targetIndex == 0) {
-      return QaType.answer.acronym;
-    } else if (targetIndex == 1) {
-      // 老预设里的"提示"，现在一律当第 1 条。
-      return VerseField.ref(QaType.tip.acronym, 0);
-    } else if (targetIndex == 2) {
-      return QaType.question.acronym;
-    }
-    // 直接指定第几条提示。预设是存下标的，换到提示更少的书上也照它写，
-    // 不往回退成第 1 条——不然内容会悄悄盖到别的提示上。
-    return _tipFieldRef(targetIndex);
-  }
-
-  String _tipFieldRef(int index) {
-    final tipIndex = (index - tipStart).clamp(0, VerseField.maxTip - 1);
-    return VerseField.ref(QaType.tip.acronym, tipIndex);
   }
 
   /// 指令模版里可以写 {{input1}}..{{input10}}，最多 10 个参数。
@@ -147,10 +107,8 @@ class ExpandLogic {
         for (var i = 0; i < numbers.length; i++) inputKeyOf(numbers[i]): (values != null && i < values.length) ? values[i] : '',
       };
 
-  /// 动作名称：直接在表单里改，不再另外弹框问。
-  var actionName = ''.obs;
-
-  var targetIndex = 0.obs;
+  /// 作用位置的字段引用串（'q'/'a'/'t'/'t1'..），由动作里存的那份直接给过来。
+  var targetRef = QaType.question.acronym.obs;
   var enableAudio = true.obs;
   var behavior = ExpandBehavior.overwrite.obs;
   var behaviorOptions = [
@@ -163,8 +121,6 @@ class ExpandLogic {
   int bookId = 0;
   int verseId = 0;
   Map<String, dynamic> verseMap = {};
-  int? editingActionId;
-  int actionSort = 0;
   Timer? _timer;
 
   Completer<void>? _taskCompleter;
@@ -177,27 +133,9 @@ class ExpandLogic {
     await Db().db.kvDao.insertOrReplace(Kv(K.expandServiceUrl, serviceUrl.value));
   }
 
-  Future<void> saveAsAction() async {
-    final action = AssistiveTouchAction(
-      id: editingActionId,
-      classroomId: Classroom.curr,
-      name: actionName.value.trim(),
-      template: textController.text,
-      targetIndex: targetIndex.value,
-      enableAudio: enableAudio.value,
-      behavior: behavior.value.index,
-      sort: actionSort,
-    );
-    if (editingActionId == null) {
-      await Db().db.assistiveTouchActionDao.insert(action);
-    } else {
-      await Db().db.assistiveTouchActionDao.update(action);
-    }
-  }
-
   /// 统一入口：先按 behavior 判断是播放已有内容还是请求助手服务。
   Future<void> execute(String msg, {bool closeOnSuccess = true}) async {
-    final target = toFieldRef(targetIndex.value);
+    final target = targetRef.value;
     if (behavior.value == ExpandBehavior.playOrOverwrite) {
       final existingInstruction = VerseField.getInstruction(verseMap, target);
       if (existingInstruction != null && existingInstruction == msg) {
@@ -355,10 +293,10 @@ class ExpandLogic {
     }
     final Map<String, dynamic> targetMap = verseMap;
 
-    String key = toFieldRef(targetIndex.value);
+    String key = targetRef.value;
     if (key.isNotEmpty && text.isNotEmpty) {
       VerseField.setText(targetMap, key, VerseField.embedInstruction(text, instruction));
-      logs.add("Content overwritten to: ${targetOptions[targetIndex.value]}");
+      logs.add("Content overwritten to: $key");
     }
 
     if (enableAudio.value && dc != null) {

@@ -8,6 +8,7 @@ import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
+import 'package:repeat_flutter/logic/widget/assistive_touch/at_action.dart';
 import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -39,11 +40,13 @@ class TtsHelper {
     });
   }
 
-  Future<Map<CrK, String>> _loadConfig(TtsKeys keys, {required bool isAndroid}) async {
+  /// 按字段类型存在 CrKv 里的那套配置（提示/问题/答案/笔记各一份，见 [TtsKeys]）。
+  /// 悬浮球的 tts 动作不走这里——它每个动作自己带一份（见 [AtTtsConfig]）。
+  Future<TtsSettings> _loadFromKeys(TtsKeys keys) async {
     final queryKeys = <CrK>[
-      if (isAndroid) keys.engine,
-      if (isAndroid) keys.languageIndex,
-      if (isAndroid) keys.voiceIndex,
+      if (Platform.isAndroid) keys.engine,
+      if (Platform.isAndroid) keys.languageIndex,
+      if (Platform.isAndroid) keys.voiceIndex,
       keys.rateIndex,
       keys.pitchIndex,
     ];
@@ -52,55 +55,74 @@ class TtsHelper {
     for (final record in records) {
       configByKey[record.k] = record.value;
     }
-    return configByKey;
+    return TtsSettings(
+      engine: configByKey[keys.engine],
+      languageIndex: int.tryParse(configByKey[keys.languageIndex] ?? ''),
+      voiceIndex: int.tryParse(configByKey[keys.voiceIndex] ?? ''),
+      rateIndex: int.tryParse(configByKey[keys.rateIndex] ?? ''),
+      pitchIndex: int.tryParse(configByKey[keys.pitchIndex] ?? ''),
+    );
+  }
+
+  Future<void> _saveToKeys(TtsKeys keys, TtsSettings s) async {
+    Future<void> put(CrK k, Object? v) async {
+      if (v == null) {
+        return;
+      }
+      await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, k, '$v'));
+    }
+
+    if (Platform.isAndroid) {
+      await put(keys.engine, s.engine);
+      await put(keys.languageIndex, s.languageIndex);
+      await put(keys.voiceIndex, s.voiceIndex);
+    }
+    await put(keys.rateIndex, s.rateIndex);
+    await put(keys.pitchIndex, s.pitchIndex);
   }
 
   Future<bool> tryInit(TtsKeys keys) async {
     if (_isSpeaking) {
       return false;
     }
-    await AwaitUtil.tryDo(() async => await _tryInit(keys));
+    await AwaitUtil.tryDo(() async => await _apply(await _loadFromKeys(keys)));
     return true;
   }
 
-  Future<void> _tryInit(TtsKeys keys) async {
+  /// 悬浮球 tts 动作用：配置直接给，不查 CrKv。
+  Future<bool> tryInitWith(TtsSettings settings) async {
+    if (_isSpeaking) {
+      return false;
+    }
+    await AwaitUtil.tryDo(() async => await _apply(settings));
+    return true;
+  }
+
+  /// 把一份配置灌进播放器。跟上次灌的完全一样就直接返回——切引擎/查音色都很慢，
+  /// 每次朗读都重来一遍会明显卡顿。
+  Future<void> _apply(TtsSettings settings) async {
     bool firstInit = cacheConfig.isEmpty;
 
+    final currConfig = settings.cacheKey;
+    if (cacheConfig == currConfig) return;
+    cacheConfig = currConfig;
+
     if (Platform.isAndroid) {
-      final configs = await _loadConfig(keys, isAndroid: true);
-      final savedEngine = configs[keys.engine];
-      final ttsLanguageIndex = int.tryParse(configs[keys.languageIndex] ?? '');
-      final ttsVoiceIndex = int.tryParse(configs[keys.voiceIndex] ?? '');
-      final ttsRateIndex = int.tryParse(configs[keys.rateIndex] ?? '');
-      final ttsPitchIndex = int.tryParse(configs[keys.pitchIndex] ?? '');
-
-      final currConfig = "$savedEngine-$ttsLanguageIndex-$ttsVoiceIndex-$ttsRateIndex-$ttsPitchIndex";
-      if (cacheConfig == currConfig) return;
-
-      cacheConfig = currConfig;
       var engines = await tts.getEngines;
       availableEngines = List<String>.from(engines);
-      currEngine = savedEngine ?? (availableEngines.isNotEmpty ? availableEngines[0] : 'com.google.android.tts');
+      currEngine = settings.engine ?? (availableEngines.isNotEmpty ? availableEngines[0] : 'com.google.android.tts');
 
       await tts.setEngine(currEngine);
       await ttsPage.initForAndroid(
         tts,
         currEngine,
-        ttsLanguageIndex,
-        ttsVoiceIndex,
-        ttsRateIndex,
-        ttsPitchIndex,
+        settings.languageIndex,
+        settings.voiceIndex,
+        settings.rateIndex,
+        settings.pitchIndex,
       );
     } else {
-      final configs = await _loadConfig(keys, isAndroid: false);
-      final ttsRateIndex = int.tryParse(configs[keys.rateIndex] ?? '');
-      final ttsPitchIndex = int.tryParse(configs[keys.pitchIndex] ?? '');
-
-      final currConfig = "$ttsRateIndex-$ttsPitchIndex";
-      if (cacheConfig == currConfig) return;
-
-      cacheConfig = currConfig;
-      await ttsPage.init(tts, ttsRateIndex, ttsPitchIndex);
+      await ttsPage.init(tts, settings.rateIndex, settings.pitchIndex);
     }
 
     if (firstInit) {
@@ -109,10 +131,17 @@ class TtsHelper {
   }
 
   /// 返回是否点了"确定"关闭的（而不是划走/点外面取消）——调用方要"确定了才生效"
-  /// 的场景（比如辅助触控新增 TTS-* 动作）得靠这个区分，不能一概当作已确认。
+  /// 的场景得靠这个区分，不能一概当作已确认。
   Future<bool> open(TtsKeys keys) async {
-    if (await AwaitUtil.tryDo(() async => await _tryInit(keys))) {
-      return await ttsPage.open(keys, tts, availableEngines, currEngine);
+    final settings = await _loadFromKeys(keys);
+    return await openWith(settings, (s) => _saveToKeys(keys, s));
+  }
+
+  /// 配置存在别处（悬浮球 tts 动作存在 classroom.content 里）时用：
+  /// 面板上每改一项就回调一次 [save]，由调用方决定怎么落库。
+  Future<bool> openWith(TtsSettings settings, Future<void> Function(TtsSettings) save) async {
+    if (await AwaitUtil.tryDo(() async => await _apply(settings))) {
+      return await ttsPage.open(tts, availableEngines, currEngine, save);
     }
     return false;
   }
@@ -137,8 +166,18 @@ class TtsHelper {
 
   Future<void> speakText(TtsKeys keys, String text, {double? rate}) async {
     if (text.isEmpty) return;
+    await _speak(text, () => tryInit(keys), rate);
+  }
+
+  /// 悬浮球 tts 动作用：语速/音色等直接来自这个动作自己的配置。
+  Future<void> speakTextWith(TtsSettings settings, String text) async {
+    if (text.isEmpty) return;
+    await _speak(text, () => tryInitWith(settings), null);
+  }
+
+  Future<void> _speak(String text, Future<bool> Function() init, double? rate) async {
     try {
-      if (await tryInit(keys)) {
+      if (await init()) {
         if (rate != null) {
           // 临时覆盖语速，只影响这一次朗读；用完立刻让缓存失效，
           // 这样其它功能下次朗读时会从持久化配置重新加载自己的语速，不会被这次覆盖污染
@@ -213,16 +252,26 @@ class TtsPage {
     await tts.setPitch(double.parse(pitchOptions[this.pitchIdx.value]));
   }
 
+  /// 面板上现在这一套设置。改了哪一项都用它整份回存，调用方不用逐项拼。
+  TtsSettings _current(String engine) => TtsSettings(
+        engine: Platform.isAndroid ? engine : null,
+        languageIndex: Platform.isAndroid ? langIdx.value : null,
+        voiceIndex: Platform.isAndroid ? voiceIdx.value : null,
+        rateIndex: rateIdx.value,
+        pitchIndex: pitchIdx.value,
+      );
+
   /// 返回值表示是不是点"确定"关的：划走/点外面取消时 Sheet.showBottomSheet 拿到的是 null，
   /// 这里统一转成 false，调用方不用再操心区分 null 和 false。
   Future<bool> open(
-    TtsKeys keys,
     FlutterTts tts,
     List<String> availableEngines,
     String currEngine,
+    Future<void> Function(TtsSettings) save,
   ) async {
     int engineIndex = availableEngines.indexOf(currEngine);
     if (engineIndex == -1) engineIndex = 0;
+    var engine = currEngine;
     final confirmed = await Sheet.showBottomSheet<bool>(
       Get.context!,
       head: _buildHeader(),
@@ -236,19 +285,18 @@ class TtsPage {
               value: engineIndex,
               pickWidth: 200,
               changed: (index) async {
-                String engineName = availableEngines[index];
-                await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, keys.engine, engineName));
+                engine = availableEngines[index];
 
                 await showOverlay<void>(() async {
-                  await tts.setEngine(engineName);
+                  await tts.setEngine(engine);
                   // Small delay helps some Android engines stabilize before querying voices
                   await Future.delayed(const Duration(milliseconds: 300));
-                  await _updateLanguagesAndVoices(tts, engineName, null, null);
+                  await _updateLanguagesAndVoices(tts, engine, null, null);
 
                   if (languages.isNotEmpty) {
                     await tts.setLanguage(languages[langIdx.value]);
-                    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, keys.languageIndex, '${langIdx.value}'));
                   }
+                  await save(_current(engine));
                 }, I18nKey.loading.tr);
               },
             ),
@@ -260,9 +308,9 @@ class TtsPage {
                 value: langIdx.value,
                 changed: (index) async {
                   langIdx.value = index;
-                  await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, keys.languageIndex, '$index'));
                   await tts.setLanguage(languages[index]);
                   await _filterVoicesByLanguage(languages[index], null);
+                  await save(_current(engine));
                 },
               ),
             ),
@@ -276,8 +324,8 @@ class TtsPage {
                 changed: (index) async {
                   voiceIdx.value = index;
                   if (_filteredVoices.isNotEmpty && index < _filteredVoices.length) {
-                    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, keys.voiceIndex, '$index'));
                     await tts.setVoice(_filteredVoices[index]);
+                    await save(_current(engine));
                   }
                 },
               ),
@@ -291,8 +339,8 @@ class TtsPage {
               value: rateIdx.value,
               changed: (index) async {
                 rateIdx.value = index;
-                await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, keys.rateIndex, '$index'));
                 await tts.setSpeechRate(double.parse(rateOptions[index]));
+                await save(_current(engine));
               },
             ),
           ),
@@ -304,8 +352,8 @@ class TtsPage {
               value: pitchIdx.value,
               changed: (index) async {
                 pitchIdx.value = index;
-                await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, keys.pitchIndex, '$index'));
                 await tts.setPitch(double.parse(pitchOptions[index]));
+                await save(_current(engine));
               },
             ),
           ),
