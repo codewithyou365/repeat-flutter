@@ -29,7 +29,6 @@ class AtActionSheet {
     final name = action.name.obs;
     final type = action.type.obs;
     final enableAudio = action.net.enableAudio.obs;
-    final template = TextEditingController(text: action.net.template);
 
     // 服务地址是全局的（所有 net 动作共用一份），单独存在 Kv 里，不进动作。
     final expand = ExpandLogic();
@@ -44,102 +43,106 @@ class AtActionSheet {
           RowWidget.buildDivider(),
         ],
       ),
-      Obx(() {
-        final currType = type.value;
-        final targets = AtAction.targetsOf(currType, VerseField.maxTip);
-        var targetPos = targets.indexOf(action.target);
-        if (targetPos < 0) {
-          targetPos = 0;
-        }
-        return ListView(
-          shrinkWrap: true,
-          children: [
-            // buildTextWithEdit 里的输入框自己不会刷新显示，也不会关弹框（MsgBox.strInputWithYesOrNo
-            // 传了 yes 回调时就交给回调自己 Get.back()），所以外面要包 Obx、回调里要自己关。
-            Obx(() {
-              return RowWidget.buildTextWithEdit(
-                I18nKey.assistiveTouchActionName.tr,
-                name,
-                onTextModify: () => Get.back(),
-              );
-            }),
-            RowWidget.buildDividerWithoutColor(),
-            RowWidget.buildCupertinoPicker(
-              // 换类型时下面整段参数都换掉，选择器的 initialItem 只在建滚动控制器那一下生效，
-              // 不给 key 的话滚轮会停在上一个类型的位置上。
-              key: const ValueKey('type'),
-              title: I18nKey.actionType.tr,
-              options: AtActionType.values.map((e) => e.labelKey.tr).toList(),
-              // 标题短、选项长（"删除当前节"/"Delete current verse"），默认的 80.w 放不下。
-              pickWidth: 200,
-              value: currType.index,
-              changed: (index) {
-                action.type = AtActionType.values[index];
-                // 换类型后老的作用位置/秒数可能不在新类型的候选里（比如朗读的"笔记"换到播放），
-                // 落回合法值，免得存下一个这个类型根本不认的值。
-                _normalize(action);
-                type.value = action.type;
-              },
-            ),
-            if (currType.hasTarget) ...[
+      // template 的 TextEditingController 交给这个 State 管理：它的 dispose() 只在弹框真正
+      // 从树上卸载时（关闭动画播完之后）才会触发，不会像手动 dispose 那样在 Get.back() 那一刻
+      // 就把还在关闭动画里的 TextField 手上的 controller 拆掉（会崩），也不会因为不 dispose 而泄漏。
+      _TemplateScope(
+        initialText: action.net.template,
+        builder: (template) => Obx(() {
+          final currType = type.value;
+          final targets = AtAction.targetsOf(currType, VerseField.maxTip);
+          var targetPos = targets.indexOf(action.target);
+          if (targetPos < 0) {
+            targetPos = 0;
+          }
+          return ListView(
+            shrinkWrap: true,
+            children: [
+              // buildTextWithEdit 里的输入框自己不会刷新显示，也不会关弹框（MsgBox.strInputWithYesOrNo
+              // 传了 yes 回调时就交给回调自己 Get.back()），所以外面要包 Obx、回调里要自己关。
+              Obx(() {
+                return RowWidget.buildTextWithEdit(
+                  I18nKey.assistiveTouchActionName.tr,
+                  name,
+                  onTextModify: () => Get.back(),
+                );
+              }),
               RowWidget.buildDividerWithoutColor(),
               RowWidget.buildCupertinoPicker(
-                key: ValueKey('target-${currType.code}'),
-                title: I18nKey.targetPosition.tr,
-                // 选项里有用户自己起的提示名字，长度不可控，固定宽度早晚会换行被裁掉，
-                // 所以标题单独一行、选择器撑满整宽。
-                titleOnTop: true,
-                options: targets.map((e) => logic.targetLabel(currType, e)).toList(),
-                value: targetPos,
-                changed: (index) => action.target = targets[index],
-              ),
-            ],
-            if (currType == AtActionType.tts) ...[
-              RowWidget.buildDividerWithoutColor(),
-              // TTS 参数改一项存一项，直接写回这份副本；引擎/语言/音色只落在当前平台那一套上，
-              // 另一个平台存着的原样留着（不同手机的引擎表根本对不上）。
-              RowWidget.buildSelect(
-                title: I18nKey.ttsSettings.tr,
-                leading: const Icon(Icons.record_voice_over),
-                onTap: () async {
-                  await logic.repeatLogic.ttsHelper.openWith(
-                    action.tts.settings,
-                    (s) async => action.tts.apply(s),
-                  );
+                // 换类型时下面整段参数都换掉，选择器的 initialItem 只在建滚动控制器那一下生效，
+                // 不给 key 的话滚轮会停在上一个类型的位置上。
+                key: const ValueKey('type'),
+                title: I18nKey.actionType.tr,
+                options: AtActionType.values.map((e) => e.labelKey.tr).toList(),
+                // 标题短、选项长（"删除当前节"/"Delete current verse"），默认的 80.w 放不下。
+                pickWidth: 200,
+                value: currType.index,
+                changed: (index) {
+                  action.type = AtActionType.values[index];
+                  // 换类型后老的作用位置/秒数可能不在新类型的候选里（比如朗读的"笔记"换到播放），
+                  // 落回合法值，免得存下一个这个类型根本不认的值。
+                  _normalize(action);
+                  type.value = action.type;
                 },
               ),
-            ],
-            if (currType == AtActionType.rewind || currType == AtActionType.playPause) ...[
+              if (currType.hasTarget) ...[
+                RowWidget.buildDividerWithoutColor(),
+                RowWidget.buildCupertinoPicker(
+                  key: ValueKey('target-${currType.code}'),
+                  title: I18nKey.targetPosition.tr,
+                  pickWidth: 200,
+                  options: targets.map((e) => logic.targetLabel(currType, e)).toList(),
+                  value: targetPos,
+                  changed: (index) => action.target = targets[index],
+                ),
+              ],
+              if (currType == AtActionType.tts) ...[
+                RowWidget.buildDividerWithoutColor(),
+                // TTS 参数改一项存一项，直接写回这份副本；引擎/语言/音色只落在当前平台那一套上，
+                // 另一个平台存着的原样留着（不同手机的引擎表根本对不上）。
+                RowWidget.buildSelect(
+                  title: I18nKey.ttsSettings.tr,
+                  leading: const Icon(Icons.record_voice_over),
+                  onTap: () async {
+                    await logic.repeatLogic.ttsHelper.openWith(
+                      action.tts.settings,
+                      (s) async => action.tts.apply(s),
+                    );
+                  },
+                ),
+              ],
+              if (currType == AtActionType.rewind || currType == AtActionType.playPause) ...[
+                RowWidget.buildDividerWithoutColor(),
+                _secondsPicker(action),
+              ],
+              if (currType == AtActionType.net)
+                ..._netWidgets(
+                  logic: logic,
+                  action: action,
+                  expand: expand,
+                  template: template,
+                  enableAudio: enableAudio,
+                ),
               RowWidget.buildDividerWithoutColor(),
-              _secondsPicker(action),
+              RowWidget.buildButtons([
+                Button(I18nKey.save.tr, () async {
+                  if (name.value.trim().isEmpty) {
+                    Snackbar.show(I18nKey.labelActionNameEmpty.tr);
+                    return;
+                  }
+                  action.name = name.value.trim();
+                  action.net.template = template.text;
+                  action.net.enableAudio = enableAudio.value;
+                  await logic.saveAction(action);
+                  Get.back(result: true);
+                }),
+              ]),
             ],
-            if (currType == AtActionType.net) ..._netWidgets(
-              logic: logic,
-              action: action,
-              expand: expand,
-              template: template,
-              enableAudio: enableAudio,
-            ),
-            RowWidget.buildDividerWithoutColor(),
-            RowWidget.buildButtons([
-              Button(I18nKey.save.tr, () async {
-                if (name.value.trim().isEmpty) {
-                  Snackbar.show(I18nKey.labelActionNameEmpty.tr);
-                  return;
-                }
-                action.name = name.value.trim();
-                action.net.template = template.text;
-                action.net.enableAudio = enableAudio.value;
-                await logic.saveAction(action);
-                Get.back(result: true);
-              }),
-            ]),
-          ],
-        );
-      }),
+          );
+        }),
+      ),
       rate: 1,
     );
-    template.dispose();
     return saved ?? false;
   }
 
@@ -296,10 +299,8 @@ class AtActionSheet {
     return [
       PopupMenuItem(value: ExpandLogic.questionKey, child: Text('${QaType.question.i18n.tr}  {{${ExpandLogic.questionKey}}}')),
       PopupMenuItem(value: ExpandLogic.answerKey, child: Text('${QaType.answer.i18n.tr}  {{${ExpandLogic.answerKey}}}')),
-      for (var i = 0; i < VerseField.maxTip; i++)
-        PopupMenuItem(value: ExpandLogic.tipKey(i), child: Text('${logic.tipLabel(i)}  {{${ExpandLogic.tipKey(i)}}}')),
-      for (var n = 1; n <= ExpandLogic.maxInput; n++)
-        PopupMenuItem(value: ExpandLogic.inputKeyOf(n), child: Text('{{${ExpandLogic.inputKeyOf(n)}}}')),
+      for (var i = 0; i < VerseField.maxTip; i++) PopupMenuItem(value: ExpandLogic.tipKey(i), child: Text('${logic.tipLabel(i)}  {{${ExpandLogic.tipKey(i)}}}')),
+      for (var n = 1; n <= ExpandLogic.maxInput; n++) PopupMenuItem(value: ExpandLogic.inputKeyOf(n), child: Text('{{${ExpandLogic.inputKeyOf(n)}}}')),
     ];
   }
 
@@ -315,4 +316,30 @@ class AtActionSheet {
       net: AtNetParams.fromJson(src.net.toJson()),
     );
   }
+}
+
+/// 把 template 的 TextEditingController 生命周期绑定到这个 State：
+/// initState 建、dispose 拆，State.dispose 只在 element 真正从树上卸载（弹框关闭动画播完之后，
+/// NavigatorState.finalizeRoute 那一步）才会触发，正好卡在既不早拆（动画中崩）也不漏拆（内存泄漏）的时机上。
+class _TemplateScope extends StatefulWidget {
+  final String initialText;
+  final Widget Function(TextEditingController template) builder;
+
+  const _TemplateScope({required this.initialText, required this.builder});
+
+  @override
+  State<_TemplateScope> createState() => _TemplateScopeState();
+}
+
+class _TemplateScopeState extends State<_TemplateScope> {
+  late final TextEditingController template = TextEditingController(text: widget.initialText);
+
+  @override
+  void dispose() {
+    template.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.builder(template);
 }
