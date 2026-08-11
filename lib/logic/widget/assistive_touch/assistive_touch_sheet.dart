@@ -86,6 +86,14 @@ class AssistiveTouchSheet {
             },
           ),
           RowWidget.buildSelect(
+            title: I18nKey.labelMove.tr,
+            leading: const Icon(Icons.swap_vert),
+            onTap: () {
+              Get.back();
+              _showMoveMenu(logic, action);
+            },
+          ),
+          RowWidget.buildSelect(
             title: I18nKey.labelDelete.tr,
             leading: const Icon(Icons.delete),
             onTap: () {
@@ -103,6 +111,57 @@ class AssistiveTouchSheet {
         ],
       ),
       rate: 0.3,
+    );
+  }
+
+  static Future<void> _showMoveMenu(AssistiveTouchLogic logic, AtAction action) async {
+    await Sheet.showBottomSheet(
+      Get.context!,
+      ListView(
+        shrinkWrap: true,
+        children: [
+          RowWidget.buildSelect(
+            title: I18nKey.labelMoveToTop.tr,
+            leading: const Icon(Icons.vertical_align_top),
+            onTap: () {
+              Get.back();
+              logic.moveToTop(action.id);
+            },
+          ),
+          RowWidget.buildSelect(
+            title: I18nKey.labelMoveUp.tr,
+            leading: const Icon(Icons.arrow_upward),
+            onTap: () {
+              Get.back();
+              logic.moveUp(action.id);
+            },
+          ),
+          RowWidget.buildSelect(
+            title: I18nKey.labelMoveDown.tr,
+            leading: const Icon(Icons.arrow_downward),
+            onTap: () {
+              Get.back();
+              logic.moveDown(action.id);
+            },
+          ),
+          RowWidget.buildSelect(
+            title: I18nKey.labelMoveToBottom.tr,
+            leading: const Icon(Icons.vertical_align_bottom),
+            onTap: () {
+              Get.back();
+              logic.moveToBottom(action.id);
+            },
+          ),
+        ],
+      ),
+      head: SheetHead(
+        height: RowWidget.rowHeight + RowWidget.dividerHeight,
+        widgets: [
+          RowWidget.buildMiddleText(action.name),
+          RowWidget.buildDivider(),
+        ],
+      ),
+      rate: 0.4,
     );
   }
 

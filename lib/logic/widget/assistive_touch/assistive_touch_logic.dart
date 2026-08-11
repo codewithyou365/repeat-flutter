@@ -136,6 +136,38 @@ class AssistiveTouchLogic {
     await _saveActions();
   }
 
+  Future<void> moveToTop(int actionId) async {
+    final index = actions.indexWhere((e) => e.id == actionId);
+    if (index <= 0) return;
+    final item = actions.removeAt(index);
+    actions.insert(0, item);
+    await _saveActions();
+  }
+
+  Future<void> moveToBottom(int actionId) async {
+    final index = actions.indexWhere((e) => e.id == actionId);
+    if (index == -1 || index == actions.length - 1) return;
+    final item = actions.removeAt(index);
+    actions.add(item);
+    await _saveActions();
+  }
+
+  Future<void> moveUp(int actionId) async {
+    final index = actions.indexWhere((e) => e.id == actionId);
+    if (index <= 0) return;
+    final item = actions.removeAt(index);
+    actions.insert(index - 1, item);
+    await _saveActions();
+  }
+
+  Future<void> moveDown(int actionId) async {
+    final index = actions.indexWhere((e) => e.id == actionId);
+    if (index == -1 || index == actions.length - 1) return;
+    final item = actions.removeAt(index);
+    actions.insert(index + 1, item);
+    await _saveActions();
+  }
+
   Future<void> setEnabled(bool value) async {
     enabled.value = value;
     await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.assistiveTouchEnabled, value ? '1' : '0'));
