@@ -64,6 +64,8 @@ enum CrK {
   displayModeGlobalBrowse,
   assistiveTouchSeekBackSeconds,
   searchIndexFingerprint,
+  practiceDraft,
+  practiceMode,
 }
 
 @Entity(primaryKeys: ['classroomId', 'k'])

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -12,6 +13,7 @@ import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
@@ -41,6 +43,11 @@ class Helper {
   late RepeatFlow logic;
   MediaShareLogic mediaShareLogic = MediaShareLogic();
   TextEditingController practiceController = TextEditingController();
+
+  /// 练习输入框的草稿写库防抖。强杀进程时 onClose 不会执行，所以不能只在退出时写，
+  /// 打字停下来就落库（见 [loadPracticeDraft]）。
+  Timer? _practiceSaveTimer;
+  bool _practiceDraftLoaded = false;
   late String rootPath;
 
   late double screenWidth;
@@ -209,6 +216,35 @@ class Helper {
     _nextPosVerseId = null;
     await prefetch(logic.currVerse, logic.nextVerse);
     update();
+  }
+
+  /// 取回上次的练习草稿并挂上自动保存。先赋值再挂监听，免得恢复动作自己触发一次写库。
+  Future<void> loadPracticeDraft() async {
+    practiceController.text = await Db().db.crKvDao.getStr(Classroom.curr, CrK.practiceDraft) ?? '';
+    practiceController.addListener(_onPracticeChanged);
+    _practiceDraftLoaded = true;
+  }
+
+  void _onPracticeChanged() {
+    _practiceSaveTimer?.cancel();
+    _practiceSaveTimer = Timer(const Duration(milliseconds: 500), _savePracticeDraft);
+  }
+
+  Future<void> _savePracticeDraft() async {
+    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.practiceDraft, practiceController.text));
+  }
+
+  /// 退出播放页时把还没到防抖时间的最后一次输入写掉，并在 controller 被 dispose 前摘掉监听。
+  Future<void> flushPracticeDraft() async {
+    // 没加载过就别写：init 失败直接退页时，输入框还是空的，写下去会把上次的草稿冲掉。
+    if (!_practiceDraftLoaded) {
+      return;
+    }
+    _practiceDraftLoaded = false;
+    _practiceSaveTimer?.cancel();
+    _practiceSaveTimer = null;
+    practiceController.removeListener(_onPracticeChanged);
+    await _savePracticeDraft();
   }
 
   void onClose() {

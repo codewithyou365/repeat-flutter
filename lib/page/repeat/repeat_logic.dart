@@ -150,6 +150,10 @@ class RepeatLogic extends GetxController {
       state.needUpdateSystemUiMode = true;
     }
     await state.helper.init(repeatFlow!);
+    // 练习模式和输入框内容都是固化的：放在 repeatFlow.init 之后，
+    // 免得那里的 practiceController.clear() 把刚恢复的草稿冲掉。
+    state.isPracticeMode.value = (await Db().db.crKvDao.getInt(Classroom.curr, CrK.practiceMode) ?? 0) == 1;
+    await state.helper.loadPracticeDraft();
     // 悬浮球的动作存在课堂内容里，Helper.init 取到课堂内容之后才读得到。
     await assistiveTouchLogic.loadActions();
     for (var v in showTypeToRepeatView.values) {
@@ -308,6 +312,7 @@ class RepeatLogic extends GetxController {
     SystemChrome.setSystemUIChangeCallback(null);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     WakelockPlus.disable();
+    await state.helper.flushPracticeDraft();
     state.helper.practiceController.dispose();
     if (state.fullScreenMode.value == RepeatFullScreenMode.closeEyes) {
       HapticFeedback.heavyImpact();
@@ -487,10 +492,11 @@ class RepeatLogic extends GetxController {
     return repeatFlow!.currVerse;
   }
 
-  void togglePracticeMode() {
+  Future<void> togglePracticeMode() async {
     state.isPracticeMode.value = !state.isPracticeMode.value;
     if (!state.isPracticeMode.value) {
       state.helper.practiceController.clear();
     }
+    await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.practiceMode, state.isPracticeMode.value ? '1' : '0'));
   }
 }
