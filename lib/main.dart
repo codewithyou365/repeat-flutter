@@ -11,8 +11,13 @@ import 'i18n/i18n_translations.dart';
 import 'logic/base/constant.dart';
 
 void main() async {
-  var logic = Get.put<MyAppLogic>(MyAppLogic());
   WidgetsFlutterBinding.ensureInitialized();
+  var logic = Get.put<MyAppLogic>(MyAppLogic());
+  await _bootstrap(logic);
+  runApp(RestartWidget(child: MyApp()));
+}
+
+Future<void> _bootstrap(MyAppLogic logic) async {
   var db = await Db().init();
   var settings = await db.kvDao.find([K.settingsI18n, K.settingsTheme]);
   if (settings.isEmpty) {
@@ -36,7 +41,43 @@ void main() async {
   Map<K, String> settingsMap = {for (var kv in settings) kv.k: kv.value};
   logic.themeMode.value = ThemeModeFromString.c(settingsMap[K.settingsTheme]!);
   logic.i18nLocal.value = I18nLocalFromString.c(settingsMap[K.settingsI18n]!);
-  runApp(MyApp());
+}
+
+/// 用于 Import All / Import Database 成功后触发一次应用内的全量重载，
+/// 相当于重启：清空 GetX 注册表、重新走一遍启动初始化，再整体重建 widget 树。
+Future<void> performFullRestart(BuildContext context) async {
+  Get.reset();
+  var logic = Get.put<MyAppLogic>(MyAppLogic());
+  await _bootstrap(logic);
+  RestartWidget.restartApp(context);
+}
+
+class RestartWidget extends StatefulWidget {
+  const RestartWidget({super.key, required this.child});
+
+  final Widget child;
+
+  static void restartApp(BuildContext context) {
+    context.findAncestorStateOfType<_RestartWidgetState>()?.restartApp();
+  }
+
+  @override
+  State<RestartWidget> createState() => _RestartWidgetState();
+}
+
+class _RestartWidgetState extends State<RestartWidget> {
+  Key _key = UniqueKey();
+
+  void restartApp() {
+    setState(() {
+      _key = UniqueKey();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return KeyedSubtree(key: _key, child: widget.child);
+  }
 }
 
 class MyAppLogic extends GetxController {

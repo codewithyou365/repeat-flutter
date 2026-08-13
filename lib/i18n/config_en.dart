@@ -73,7 +73,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelNoContent, "No content yet");
     put(I18nKey.labelJsonErrorSaveFailed, "JSON format error, failed to save.");
     put(I18nKey.labelImportFailed, "Import failed");
-    put(I18nKey.labelImportSuccess, "Import success");
+    put(I18nKey.labelImportSuccess, "Import success, restarting app...");
     put(I18nKey.labelImportMojo, "Importing new data will clear all existing data");
     put(I18nKey.labelImportMojoTips, "Input red words to continue");
     put(I18nKey.labelZipPassword, "ZIP password");

@@ -19,6 +19,7 @@ import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/logic/upload.dart';
 import 'package:repeat_flutter/logic/widget/db_backup_list_sheet.dart';
+import 'package:repeat_flutter/main.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -233,6 +234,8 @@ class ScSettingsDataLogic extends GetxController {
       await Directory(tmpDir).delete(recursive: true);
       Get.back();
       Snackbar.show(I18nKey.labelImportSuccess.tr);
+      await Future.delayed(const Duration(milliseconds: 800));
+      await performFullRestart(Get.context!);
     }, I18nKey.labelImporting.tr);
   }
 
@@ -295,7 +298,13 @@ class ScSettingsDataLogic extends GetxController {
       await Db().init();
       await Db().db.kvDao.insertOrReplace(Kv(K.importUrl, url));
       Get.back();
-      Snackbar.show(downloadDocResult == DownloadDocResult.success ? I18nKey.labelImportSuccess.tr : I18nKey.labelImportFailed.tr);
+      if (downloadDocResult == DownloadDocResult.success) {
+        Snackbar.show(I18nKey.labelImportSuccess.tr);
+        await Future.delayed(const Duration(milliseconds: 800));
+        await performFullRestart(context);
+      } else {
+        Snackbar.show(I18nKey.labelImportFailed.tr);
+      }
     }, I18nKey.labelImporting.tr);
   }
 }

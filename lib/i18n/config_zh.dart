@@ -73,7 +73,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelNoContent, "暂无内容");
     put(I18nKey.labelJsonErrorSaveFailed, "JSON格式错误，保存失败");
     put(I18nKey.labelImportFailed, "导入失败");
-    put(I18nKey.labelImportSuccess, "导入成功");
+    put(I18nKey.labelImportSuccess, "导入成功，即将重启应用");
     put(I18nKey.labelImportMojo, "导入新数据将清除所有现有数据");
     put(I18nKey.labelImportMojoTips, "输入红色文字以继续");
     put(I18nKey.labelZipPassword, "ZIP 密码");
