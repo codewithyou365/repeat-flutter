@@ -15,8 +15,8 @@ Future<void> handleCommit(HttpRequest request, int bookId) async {
 
   try {
     final content = await utf8.decoder.bind(request).join();
-    // 单本入口只收单本文档。课堂文档发到这里的话，'b' 里那些书会被当成书本内容整个写进这一本，
-    // 所以宁可整份退回去，不做任何猜测。
+    // 单本入口只收单本文档（'b' 数组里只能有一本书，见下面的检查）。
+    // 课堂文档的 'b' 可能有任意本数，靠 edit-unit 头先把这类请求挡在外面，不做猜测。
     final editUnit = Util.getEditUnit(request);
     if (editUnit != null && editUnit != EditUnit.book) {
       response.statusCode = HttpStatus.badRequest;
@@ -39,21 +39,20 @@ Future<void> handleCommit(HttpRequest request, int bookId) async {
       return;
     }
     final Map<String, dynamic> jsonData = jsonDecode(content);
-    // 头可以不带（老页面/脚本），文档长相不会骗人：'b' 只出现在课堂文档里
-    if (jsonData.containsKey(ClassroomDocField.books)) {
+
+    // 结构和 handleBook 的响应对称：书本内容在 'b' 数组里，且这里永远只收一本
+    final booksField = jsonData.remove(ClassroomDocField.books);
+    if (booksField is! List || booksField.length != 1 || booksField.first is! Map<String, dynamic>) {
       response.statusCode = HttpStatus.badRequest;
-      response.write('Commit failed: the document has a "${ClassroomDocField.books}" array, it looks like a classroom document.');
+      response.write('Commit failed: expected exactly one book in "${ClassroomDocField.books}".');
       return;
     }
+    final Map<String, dynamic> bookData = booksField.first as Map<String, dynamic>;
 
-    // 课堂内容是单独一块（见 handleBook），先摘出来写回课堂，剩下的才是书本内容
-    final classroomContent = jsonData.remove(ClassroomDocField.classroom);
-    if (classroomContent != null) {
-      if (classroomContent is! Map<String, dynamic>) {
-        response.statusCode = HttpStatus.badRequest;
-        response.write('Commit failed: "${ClassroomDocField.classroom}" must be an object.');
-        return;
-      }
+    // 顶层剩下的字段是课堂内容（见 handleBook），先写回课堂，再落书本内容。
+    // 是否带课堂内容以 classroom-content-version 头是否存在为准，和 handleBook 是否加了这个头对应。
+    final classroomVersionHeader = request.headers[Header.classroomContentVersion] ?? [];
+    if (classroomVersionHeader.isNotEmpty) {
       final book = await Db().db.bookDao.getById(bookId);
       final classroom = book == null ? null : await Db().db.classroomDao.getById(book.classroomId);
       if (classroom == null) {
@@ -62,17 +61,15 @@ Future<void> handleCommit(HttpRequest request, int bookId) async {
         return;
       }
       // 课堂内容可能在 App 里或课堂级编辑器里被改过，版本对不上就整份不提交
-      final classroomVersionHeader = request.headers[Header.classroomContentVersion] ?? [];
-      if (classroomVersionHeader.isEmpty || classroomVersionHeader.first != '${classroom.contentVersion}') {
+      if (classroomVersionHeader.first != '${classroom.contentVersion}') {
         response.statusCode = HttpStatus.ok;
         response.write("Commit failed because the classroom version is not consistent");
         return;
       }
-      classroomContent.remove(ClassroomDocField.books);
-      await Db().db.classroomDao.updateContent(classroom.id, jsonEncode(classroomContent));
+      await Db().db.classroomDao.updateContent(classroom.id, jsonEncode(jsonData));
     }
 
-    var result = await ReimportHelp.reimport(bookId, jsonData);
+    var result = await ReimportHelp.reimport(bookId, bookData);
     if (result == null) {
       response.statusCode = HttpStatus.expectationFailed;
       response.write("Commit failed.");

@@ -500,11 +500,14 @@
             const bookData = JSON.parse(editor.getValue());
             const map = jsonSourceMap.parse(editor.getValue());
             const pointers = map.pointers;
+            // 单本编辑时书本内容嵌在 'b' 数组的第一个元素里，课堂（All books）没有单一书本，菜单不适用
+            const pathPrefix = editUnit === 'book' ? '/b/0' : '';
+            const content = editUnit === 'book' ? (bookData && bookData.b && bookData.b[0]) : bookData;
 
-            if (bookData && bookData.c && Array.isArray(bookData.c)) {
+            if (content && content.c && Array.isArray(content.c)) {
                 const menuList = document.createElement('ul');
-                bookData.c.forEach((chapter, chapterIndex) => {
-                    const chapterPath = `/c/${chapterIndex}`;
+                content.c.forEach((chapter, chapterIndex) => {
+                    const chapterPath = `${pathPrefix}/c/${chapterIndex}`;
                     const chapterPointer = pointers[chapterPath];
                     if (chapterPointer) {
                         const chapterLine = chapterPointer.value.line; // 0-based
@@ -536,7 +539,7 @@
                         if (chapter.v && Array.isArray(chapter.v)) {
                             const verseList = document.createElement('ul');
                             chapter.v.forEach((verse, verseIndex) => {
-                                const versePath = `/c/${chapterIndex}/v/${verseIndex}`;
+                                const versePath = `${pathPrefix}/c/${chapterIndex}/v/${verseIndex}`;
                                 const versePointer = pointers[versePath];
                                 if (versePointer) {
                                     const verseLine = versePointer.value.line;
@@ -589,6 +592,9 @@
             const map = jsonSourceMap.parse(editor.getValue());
             const pointers = map.pointers;
             const currentRow = editor.selection.getCursor().row;
+            // 单本编辑时书本内容嵌在 'b' 数组的第一个元素里，课堂（All books）没有单一书本，菜单不适用
+            const pathPrefix = editUnit === 'book' ? '/b/0' : '';
+            const content = editUnit === 'book' ? (bookData && bookData.b && bookData.b[0]) : bookData;
 
             // Remove existing active classes
             document.querySelectorAll('#menu li.active').forEach(el => el.classList.remove('active'));
@@ -596,16 +602,16 @@
             // Find current chapter and verse
             let selectedChapter = -1;
             let selectedVerse = -1;
-            for (let chapterIndex = 0; chapterIndex < bookData.c.length; chapterIndex++) {
-                const chapterPath = `/c/${chapterIndex}`;
+            for (let chapterIndex = 0; chapterIndex < content.c.length; chapterIndex++) {
+                const chapterPath = `${pathPrefix}/c/${chapterIndex}`;
                 const pointer = pointers[chapterPath];
                 if (pointer && currentRow >= pointer.value.line && currentRow <= pointer.valueEnd.line) {
                     selectedChapter = chapterIndex;
 
-                    const chapter = bookData.c[chapterIndex];
+                    const chapter = content.c[chapterIndex];
                     if (chapter.v && Array.isArray(chapter.v)) {
                         for (let verseIndex = 0; verseIndex < chapter.v.length; verseIndex++) {
-                            const versePath = `/c/${chapterIndex}/v/${verseIndex}`;
+                            const versePath = `${pathPrefix}/c/${chapterIndex}/v/${verseIndex}`;
                             const vPointer = pointers[versePath];
                             if (vPointer && currentRow >= vPointer.value.line && currentRow <= vPointer.valueEnd.line) {
                                 selectedVerse = verseIndex;
@@ -1177,7 +1183,7 @@
                 if (!isNaN(chapterIndex)) {
                     const map = jsonSourceMap.parse(editor.getValue());
                     const pointers = map.pointers;
-                    const chapterPath = `/c/${chapterIndex}`;
+                    const chapterPath = `/b/0/c/${chapterIndex}`;
                     const chapterPointer = pointers[chapterPath];
                     if (chapterPointer) {
                         editor.scrollToLine(chapterPointer.value.line, true, true, () => {
@@ -1188,7 +1194,7 @@
                     if (v) {
                         const verseIndex = parseInt(v, 10) - 1;
                         if (!isNaN(verseIndex)) {
-                            const versePath = `/c/${chapterIndex}/v/${verseIndex}`;
+                            const versePath = `/b/0/c/${chapterIndex}/v/${verseIndex}`;
                             const versePointer = pointers[versePath];
                             if (versePointer) {
                                 editor.scrollToLine(versePointer.value.line, true, true, () => {
