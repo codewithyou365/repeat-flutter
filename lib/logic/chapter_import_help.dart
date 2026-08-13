@@ -99,7 +99,7 @@ class ChapterImportHelp {
       }
       download = DownloadContent(url: 'local.$mediaExt', hash: await Hash.toSha1(mediaPath));
     }
-    var finalPath = rootPath.joinPath(DocPath.getRelativePath(bookId)).joinPath(download.path);
+    var finalPath = rootPath.joinPath(DocPath.getFilesRelativePath()).joinPath(download.path);
     await Folder.ensureExists(File(finalPath).parent.path);
     if (isUrl(mediaSource)) {
       await File(mediaPath).rename(finalPath);

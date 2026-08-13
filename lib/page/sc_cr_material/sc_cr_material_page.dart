@@ -76,23 +76,11 @@ class ScCrMaterialPage extends StatelessWidget {
     if (book.enable == false) {
       menus.add(PopupMenuItem<String>(
         onTap: () {
-          logic.importBook(book);
-        },
-        child: Text(I18nKey.import.tr),
-      ));
-      menus.add(PopupMenuItem<String>(
-        onTap: () {
           logic.createBook(book.id!);
         },
         child: Text(I18nKey.create.tr),
       ));
     } else {
-      menus.add(PopupMenuItem<String>(
-        onTap: () {
-          logic.share(book);
-        },
-        child: Text(I18nKey.btnShare.tr),
-      ));
       menus.add(PopupMenuItem<String>(
         onTap: () {
           logic.showContent(bookId: book.id!);

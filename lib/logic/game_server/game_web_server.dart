@@ -56,7 +56,7 @@ class GameWebServer {
 
   Future<void> start(int classroomId, String hash, String jsFile, int port) async {
     final rootPath = await DocPath.getContentPath();
-    final localFolder = rootPath.joinPath(DocPath.getClassroomResRelativePath(classroomId));
+    final localFolder = rootPath.joinPath(DocPath.getFilesRelativePathOf(classroomId));
     DownloadContent download = DownloadContent(url: '', hash: hash);
     destinationDir = localFolder.joinPath(download.folder).joinPath(download.pureName);
     await ClassroomHelp.ensureClassroomContentReadyByHash(classroomId, hash);

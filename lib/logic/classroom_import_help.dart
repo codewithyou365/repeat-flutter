@@ -43,10 +43,8 @@ class ClassroomImportHelp {
         return _Source(
           indexFile: File(stagingPath.joinPath(DocPath.getIndexFileName())),
           url: zipRoot?.url ?? '',
-          // zip 里媒体按书本在 'b' 数组里的下标分目录，直接搬过去就行
-          mediaDirOf: (index) => stagingPath.joinPath('$index'),
-          // 课堂自己的媒体（游戏 zip）在保留目录 DocPath.classroomRes 下
-          classroomMediaDir: stagingPath.joinPath(DocPath.classroomRes),
+          // zip 里所有文件（书本的和课堂的）都平铺在 DocPath.classroomFiles 下，整个目录搬过去就行
+          mediaDir: stagingPath.joinPath(DocPath.classroomFiles),
         );
       },
     );
@@ -112,7 +110,8 @@ class ClassroomImportHelp {
         throw Exception(I18nKey.labelDataAnomalyWithArg.trArgs(['classroom index.json']));
       }
       await Db().db.classroomDao.updateContent(classroom.id, jsonEncode(splitter.head));
-      await _importClassroomRes(
+      // zip 导入的话这一步就把全课堂的文件都搬完了，后面每本书不用再管文件
+      await _importFiles(
         classroomId: classroom.id,
         head: splitter.head,
         rootPath: rootPath,
@@ -142,23 +141,22 @@ class ClassroomImportHelp {
     }
   }
 
-  /// 课堂自己的媒体（游戏 zip、提示的字体和提示服务 zip）：
-  /// zip 导入就整个目录搬过来，远程导入按 'd' 逐个下载。
-  /// 它们都是课堂全局的，所以文件落在课堂资源目录，不进任何一本书。
-  static Future<void> _importClassroomRes({
+  /// 全课堂的文件（书本媒体、游戏 zip、提示的字体和提示服务 zip）都落在同一个 f 目录：
+  /// zip 导入就整个目录搬过来，远程导入按课堂自己的 'd' 逐个下载（书本的 'd' 见 [_downloadMedia]）。
+  static Future<void> _importFiles({
     required int classroomId,
     required Map<String, dynamic> head,
     required String rootPath,
     required _Source source,
   }) async {
-    final resRelativePath = DocPath.getClassroomResRelativePath(classroomId);
-    final resPath = rootPath.joinPath(resRelativePath);
+    final filesRelativePath = DocPath.getFilesRelativePathOf(classroomId);
+    final filesPath = rootPath.joinPath(filesRelativePath);
 
-    final mediaDir = source.classroomMediaDir;
+    final mediaDir = source.mediaDir;
     if (mediaDir != null) {
       if (await Directory(mediaDir).exists()) {
-        await Folder.ensureExists(resPath);
-        await _moveInto(mediaDir, resPath);
+        await Folder.ensureExists(filesPath);
+        await _moveInto(mediaDir, filesPath);
       }
       return;
     }
@@ -173,7 +171,7 @@ class ClassroomImportHelp {
       final url = d.url.startsWith('http') ? d.url : rootUrl.joinPath(d.url);
       final result = await DownloadDoc.start(
         url,
-        resRelativePath.joinPath(d.path),
+        filesRelativePath.joinPath(d.path),
         credentials: source.credentials,
         hash: d.hash,
         progressCallback: source.downloadProgress,
@@ -202,29 +200,29 @@ class ClassroomImportHelp {
     }
 
     final book = await Db().db.bookDao.addTo(classroomId, name);
-    final bookPath = rootPath.joinPath(DocPath.getRelativePathOf(classroomId, book.id!));
-    await Folder.ensureExists(bookPath);
 
-    // 书本文档挪到它自己的目录，ImportHelp 只认这个位置
-    await File(bookDocPath).rename(bookPath.joinPath(DocPath.getIndexFileName()));
-
-    final mediaDir = source.mediaDirOf?.call(index);
-    if (mediaDir != null) {
-      await _moveInto(mediaDir, bookPath);
-    } else {
-      await _downloadMedia(bookDoc: bookDoc, bookPath: DocPath.getRelativePathOf(classroomId, book.id!), source: source);
+    // zip 导入的文件已经在 _importFiles 里整个搬完了，只有远程导入才逐本下载
+    if (source.mediaDir == null) {
+      await _downloadMedia(
+        bookDoc: bookDoc,
+        filesPath: DocPath.getFilesRelativePathOf(classroomId),
+        source: source,
+      );
     }
+
+    // 书本没有自己的目录，这份文档就是 JsonSplitter 切出来的暂存文件，导入完随暂存目录一起删
+    final docRelativePath = bookDocPath.substring(rootPath.length + 1);
 
     // desc / sort / enable / url 不在文档里，走 addTo 给的默认值，
     // ImportHelp 会把 url 设成来源地址、书本置为启用。
-    if (!await ImportHelp.import(book.id!, source.url)) {
+    if (!await ImportHelp.import(book.id!, source.url, docRelativePath)) {
       throw Exception(I18nKey.labelDataAnomalyWithArg.trArgs(['book $name']));
     }
   }
 
   static Future<void> _downloadMedia({
     required Map<String, dynamic> bookDoc,
-    required String bookPath,
+    required String filesPath,
     required _Source source,
   }) async {
     final content = BookContent.fromJson(bookDoc);
@@ -233,7 +231,7 @@ class ClassroomImportHelp {
     for (final d in downloads) {
       final result = await DownloadDoc.start(
         d.url,
-        bookPath.joinPath(d.path),
+        filesPath.joinPath(d.path),
         credentials: source.credentials,
         hash: d.hash,
         progressCallback: source.downloadProgress,
@@ -278,18 +276,14 @@ class _Source {
   final String credentials;
   final DownloadProgressCallback? downloadProgress;
 
-  /// zip 导入时给出第 index 本书的媒体目录；远程导入为 null（改成逐个下载）
-  final String Function(int index)? mediaDirOf;
-
-  /// zip 导入时课堂自己的媒体目录（游戏 zip）；远程导入为 null
-  final String? classroomMediaDir;
+  /// zip 导入时 zip 里存文件的那个目录（全课堂平铺一份）；远程导入为 null（改成逐个下载）
+  final String? mediaDir;
 
   _Source({
     required this.indexFile,
     required this.url,
     this.credentials = '',
     this.downloadProgress,
-    this.mediaDirOf,
-    this.classroomMediaDir,
+    this.mediaDir,
   });
 }

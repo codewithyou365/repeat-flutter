@@ -33,7 +33,7 @@ class ClassroomDocField {
   /// **下标就是提示的身份**：课堂的第 i 条名字配的就是每一节第 i 条正文，
   /// 所以这个数组只能在末尾加、清空某一条只能就地留个空块，绝不能从中间 removeAt。
   /// 字体文件和提示服务的 zip 都从课堂自己的 'd' 里找，落在
-  /// [DocPath.getClassroomResRelativePath] 下（跟游戏一样）。
+  /// [DocPath.getFilesRelativePathOf] 下（跟游戏一样）。
   static const String tips = 't';
 
   /// 书本 id。只在网络编辑（databaseData=true）时带上：

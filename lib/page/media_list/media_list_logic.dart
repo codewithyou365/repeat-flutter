@@ -98,7 +98,7 @@ class MediaListLogic extends GetxController {
           }
           continue;
         }
-        final localPath = rootPath.joinPath(DocPath.getRelativePath(bookId)).joinPath(d.path);
+        final localPath = rootPath.joinPath(DocPath.getFilesRelativePath()).joinPath(d.path);
         byKey[itemKey] = MediaItem(
           hash: d.hash,
           url: d.url,

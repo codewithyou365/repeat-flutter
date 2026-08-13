@@ -55,7 +55,7 @@ class TipWebServer {
 
   Future<void> start(int bookId, String hash, String jsFile, int port) async {
     final rootPath = await DocPath.getContentPath();
-    final localFolder = rootPath.joinPath(DocPath.getRelativePath(bookId));
+    final localFolder = rootPath.joinPath(DocPath.getFilesRelativePath());
     final download = DownloadContent(url: '', hash: hash);
     destinationDir = localFolder.joinPath(download.folder).joinPath(download.pureName);
     await ClassroomHelp.ensureContentReadyByHash(bookId, hash);

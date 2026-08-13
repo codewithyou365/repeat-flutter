@@ -20,6 +20,9 @@ enum K {
   mediaSharePort,
   gameServerPort,
   bookEditorPort,
+
+  /// 书本分享已经删掉，这个值只剩老库里可能残留的行。KConverter 是按 name 反解的，
+  /// 删掉枚举值会让读到这些行的查询直接抛异常，所以留着（clearAtAppStart 会清掉它）。
   materialSharePort,
   expandServiceUrl,
   adminId,

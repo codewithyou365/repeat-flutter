@@ -8,7 +8,6 @@ class ConfigEn extends Config {
     put(I18nKey.appName, "Repeat");
     put(I18nKey.settings, "Settings");
     put(I18nKey.material, "Material");
-    put(I18nKey.bookShare, "Book Share");
     put(I18nKey.classroomShare, "Classroom Share");
     put(I18nKey.classroomImport, "Import Classroom");
     put(I18nKey.labelClassroomImporting, "Importing classroom...");
@@ -55,14 +54,11 @@ class ConfigEn extends Config {
     put(I18nKey.labelEdit, "Edit");
     put(I18nKey.serviceUrl, "Service URL");
     put(I18nKey.labelRemoteUrl, "Remote URL");
-    put(I18nKey.labelOriginalAddress, "Original address");
     put(I18nKey.labelLanAddress, "Address");
-    put(I18nKey.labelDownloadFirstBeforeSharing, "Please download first before sharing.");
     put(I18nKey.labelDownloadFirstBeforeSaving, "Please download first before saving.");
     put(I18nKey.labelDeleteBook, "Please confirm to delete content: %s");
     put(I18nKey.labelDeleteVerse, "Please confirm to delete the verse");
     put(I18nKey.labelDeleteChapter, "Please confirm to delete the chapter");
-    put(I18nKey.labelDownloadBook, "Download book");
     put(I18nKey.labelScheduleContent, "Add learning task with %s verses.");
     put(I18nKey.labelNoLearningContent, "There is no learning content available.");
     put(I18nKey.labelResetLearningContent, "The learning content will be reset in %s");
@@ -181,7 +177,6 @@ class ConfigEn extends Config {
     put(I18nKey.labelDataAnomalyWithArg, "Data anomaly! %s");
     put(I18nKey.pleaseDontModifyId, "Please do not modify the ID (i field)");
     put(I18nKey.labelDataMissing, "Data missing!");
-    put(I18nKey.import, "Import");
     put(I18nKey.selectImportType, "Select Import Type");
     put(I18nKey.labelRemoteImport, "Remote import");
     put(I18nKey.labelLocalZipImport, "Local ZIP import");

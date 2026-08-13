@@ -19,6 +19,7 @@ import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/classroom_doc_help.dart';
+import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/zip_index_doc.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
@@ -176,8 +177,8 @@ class ScShareLogic extends GetxController {
         sink: response,
         note: state.shareNote.value,
         databaseData: false,
-        rootUrl: (book, index) => base.joinPath('${book.id}'),
-        classroomRootUrl: base.joinPath(DocPath.classroomRes),
+        // 全课堂的文件都在同一个 f 目录，每本书和课堂自己共用这一个根地址
+        rootUrl: base.joinPath(DocPath.classroomFiles),
       );
       return;
     }
@@ -225,7 +226,7 @@ class ScShareLogic extends GetxController {
             // 1. 整个课堂流式写成 index.json
             final indexFile = File(indexFilePath);
             final sink = indexFile.openWrite();
-            List<ClassroomBookDownload>? books;
+            List<List<DownloadContent>>? books;
             try {
               books = await ClassroomDocHelp.writeDoc(
                 classroomId: classroomId,
@@ -248,7 +249,7 @@ class ScShareLogic extends GetxController {
             String zipFileName = encrypted ? "$indexHash.enc.zip" : "$indexHash.zip";
             File zipFile = File(classroomPath.joinPath(zipFileName));
 
-            // 3. 组装 zip 里的条目：媒体按书本在 'b' 数组里的下标分目录
+            // 3. 组装 zip 里的条目：所有文件平铺在 DocPath.classroomFiles 下，和磁盘布局一致
             var rootFilePath = classroomPath.joinPath(DocPath.zipRootFile);
             await File(rootFilePath).writeAsString(json.encode(ZipRootDoc('')));
 
@@ -256,20 +257,27 @@ class ScShareLogic extends GetxController {
               [DocPath.getIndexFileName(), indexFilePath],
               [DocPath.zipRootFile, rootFilePath],
             ];
-            for (final book in books) {
-              final bookPath = classroomPath.joinPath('${book.bookId}');
-              for (final download in book.downloads) {
-                entries.add(['${book.index}'.joinPath(download.path), bookPath.joinPath(download.path)]);
+            final filesPath = classroomPath.joinPath(DocPath.classroomFiles);
+            // 平铺之后同一个 hash 会被多本书引用到，重复的条目不能再往 zip 里塞第二遍
+            final seen = <String>{};
+            Future<void> addFile(DownloadContent download) async {
+              if (!seen.add(download.path)) {
+                return;
+              }
+              final file = File(filesPath.joinPath(download.path));
+              if (await file.exists()) {
+                entries.add([DocPath.classroomFiles.joinPath(download.path), file.path]);
               }
             }
-            // 课堂自己的媒体（游戏 zip）放在 zip 的 DocPath.classroomRes 目录下，
-            // 书本目录都是下标数字，不会撞名
-            final classroomResPath = classroomPath.joinPath(DocPath.classroomRes);
-            for (final download in await ClassroomDocHelp.classroomDownloads(classroomId)) {
-              final file = File(classroomResPath.joinPath(download.path));
-              if (await file.exists()) {
-                entries.add([DocPath.classroomRes.joinPath(download.path), file.path]);
+
+            for (final downloads in books) {
+              for (final download in downloads) {
+                await addFile(download);
               }
+            }
+            // 课堂自己的文件（游戏 zip、提示的字体和提示服务 zip）
+            for (final download in await ClassroomDocHelp.classroomDownloads(classroomId)) {
+              await addFile(download);
             }
 
             final receivePort = ReceivePort();

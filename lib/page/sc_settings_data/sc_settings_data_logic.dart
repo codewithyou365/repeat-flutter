@@ -91,16 +91,20 @@ class ScSettingsDataLogic extends GetxController {
         var downloads = DocHelp.getDownloads(BookContent.fromJson(docMap));
         if (downloads.isEmpty) continue;
 
-        String relativePath = '$classroomId/$bookId';
+        // 文件在课堂的 f 目录里（全课堂共用），zip 和 __root.json 这两个产物写到课堂目录下，
+        // 别丢进 f 里污染文件目录（编辑器的 Clean 会把 f 里没人引用的东西删掉）
+        String outRelativePath = DocPath.getClassroomRelativePath(classroomId);
+        String filesRelativePath = DocPath.getFilesRelativePathOf(classroomId);
         String zipFileName = '${classroomId}_$bookId.zip';
-        File zipFile = File(rootPath.joinPath(relativePath).joinPath(zipFileName));
+        File zipFile = File(rootPath.joinPath(outRelativePath).joinPath(zipFileName));
 
         final receivePort = ReceivePort();
         await Isolate.spawn(_createZipFileInIsolate, {
           'sendPort': receivePort.sendPort,
           'downloads': downloads,
           'zipFilePath': zipFileName,
-          'relativePath': relativePath,
+          'outRelativePath': outRelativePath,
+          'filesRelativePath': filesRelativePath,
           'rootPath': rootPath,
           'contentUrl': contentUrl,
         });
@@ -211,14 +215,15 @@ class ScSettingsDataLogic extends GetxController {
         String bookTmpDir = tmpDir.joinPath('_book_${classroomId}_$bookId');
         await Zip.uncompress(bookZipFile, bookTmpDir);
 
-        String bookDir = rootPath.joinPath('$classroomId/$bookId');
-        await Directory(bookDir).create(recursive: true);
+        // 文件按课堂放，不再按书本分目录
+        String filesDir = rootPath.joinPath(DocPath.getFilesRelativePathOf(classroomId));
+        await Directory(filesDir).create(recursive: true);
 
         await for (var entity in Directory(bookTmpDir).list(recursive: true)) {
           if (entity is File) {
             String relPath = entity.path.substring(bookTmpDir.length + 1);
             if (relPath == DocPath.zipRootFile) continue;
-            String destPath = bookDir.joinPath(relPath);
+            String destPath = filesDir.joinPath(relPath);
             await Directory(destPath.substring(0, destPath.lastIndexOf('/'))).create(recursive: true);
             await entity.copy(destPath);
           }
@@ -236,25 +241,27 @@ class ScSettingsDataLogic extends GetxController {
     try {
       List<DownloadContent> downloads = message['downloads'];
       String zipFilePath = message['zipFilePath'];
-      String relativePath = message['relativePath'];
+      String outRelativePath = message['outRelativePath'];
+      String filesRelativePath = message['filesRelativePath'];
       String rootPath = message['rootPath'];
       String contentUrl = message['contentUrl'];
 
-      var dirPath = rootPath.joinPath(relativePath);
-      await Directory(dirPath).create(recursive: true);
+      var outDirPath = rootPath.joinPath(outRelativePath);
+      var filesDirPath = rootPath.joinPath(filesRelativePath);
+      await Directory(outDirPath).create(recursive: true);
 
-      var rootFilePath = dirPath.joinPath(DocPath.zipRootFile);
+      var rootFilePath = outDirPath.joinPath(DocPath.zipRootFile);
       await File(rootFilePath).writeAsString(jsonEncode(ZipRootDoc(contentUrl)));
 
       List<ZipArchive> zipFiles = [ZipArchive(path: FileUtil.toFileName(rootFilePath), file: File(rootFilePath))];
       for (var download in downloads) {
-        final mediaFile = File(dirPath.joinPath(download.path));
+        final mediaFile = File(filesDirPath.joinPath(download.path));
         if (await mediaFile.exists()) {
           zipFiles.add(ZipArchive(path: download.path, file: mediaFile));
         }
       }
 
-      await Zip.compress(zipFiles, File(dirPath.joinPath(zipFilePath)));
+      await Zip.compress(zipFiles, File(outDirPath.joinPath(zipFilePath)));
       sendPort.send({'success': true});
     } catch (e) {
       sendPort.send({'error': e.toString()});

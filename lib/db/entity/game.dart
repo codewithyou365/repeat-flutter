@@ -3,7 +3,7 @@
 import 'package:floor/floor.dart';
 
 /// 游戏是整个课堂全局的：宣告在 [Classroom.content] 的 'g' 里，
-/// zip 放在课堂自己的资源目录（[DocPath.getClassroomResRelativePath]），不挂在某一本书下面。
+/// zip 放在课堂的文件目录（[DocPath.getFilesRelativePathOf]），不挂在某一本书下面。
 @Entity(
   indices: [
     Index(value: ['classroomId', 'name'], unique: true),

@@ -8,7 +8,6 @@ class ConfigZh extends Config {
     put(I18nKey.appName, "重复");
     put(I18nKey.settings, "设置");
     put(I18nKey.material, "材料");
-    put(I18nKey.bookShare, "学卷分享");
     put(I18nKey.classroomShare, "课堂分享");
     put(I18nKey.classroomImport, "导入课堂");
     put(I18nKey.labelClassroomImporting, "正在导入课堂…");
@@ -55,14 +54,11 @@ class ConfigZh extends Config {
     put(I18nKey.labelEdit, "编辑");
     put(I18nKey.serviceUrl, "服务地址");
     put(I18nKey.labelRemoteUrl, "远程地址");
-    put(I18nKey.labelOriginalAddress, "原始地址");
     put(I18nKey.labelLanAddress, "局域网地址");
-    put(I18nKey.labelDownloadFirstBeforeSharing, "请先下载再进行分享");
     put(I18nKey.labelDownloadFirstBeforeSaving, "请先下载再进行保存");
     put(I18nKey.labelDeleteBook, "请确定删除学卷： %s");
     put(I18nKey.labelDeleteVerse, "请确定删除该小节");
     put(I18nKey.labelDeleteChapter, "请确定删除该篇章");
-    put(I18nKey.labelDownloadBook, "下载学卷");
     put(I18nKey.labelScheduleContent, "添加学习任务 %s 个单位");
     put(I18nKey.labelNoLearningContent, "没有学习内容");
     put(I18nKey.labelResetLearningContent, "在 %s 后，将重置学习内容");
@@ -179,7 +175,6 @@ class ConfigZh extends Config {
     put(I18nKey.labelDataAnomalyWithArg, "数据异常! %s");
     put(I18nKey.pleaseDontModifyId, "请勿修改ID (i 字段)");
     put(I18nKey.labelDataMissing, "数据丢失!");
-    put(I18nKey.import, "导入");
     put(I18nKey.selectImportType, "选择导入类型");
     put(I18nKey.labelRemoteImport, "远程导入");
     put(I18nKey.labelLocalZipImport, "本地ZIP导入");

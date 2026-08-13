@@ -195,7 +195,6 @@ class DocHelp {
   }
 
   static Future<DownloadContent?> tryCopyToDocDir({
-    required int bookId,
     required FilePickerResult? result,
     required List<String> allowedExtensions,
   }) async {
@@ -215,20 +214,21 @@ class DocHelp {
         Snackbar.show(I18nKey.labelFileExtensionNotMatch.trArgs([jsonEncode(allowedExtensions)]));
         return null;
       }
-      return await moveToDocDir(pickedPath, bookId, true);
+      return await moveToDocDir(pickedPath, true);
     } catch (e) {
       Snackbar.show(e.toString());
       return null;
     }
   }
 
-  static Future<DownloadContent> moveToDocDir(String fromAbsolutePath, int toBookId, [bool copy = false]) async {
+  /// 文件落在当前课堂的 f 目录。文件名是 sha1 分桶的，不区分书本，所以不用传 bookId。
+  static Future<DownloadContent> moveToDocDir(String fromAbsolutePath, [bool copy = false]) async {
     String hash = await Hash.toSha1(fromAbsolutePath);
     String extension = fromAbsolutePath.split('.').last;
     DownloadContent download = DownloadContent(url: ".$extension", hash: hash);
 
     var rootPath = await DocPath.getContentPath();
-    String relativeFolder = DocPath.getRelativePath(toBookId).joinPath(download.folder);
+    String relativeFolder = DocPath.getFilesRelativePath().joinPath(download.folder);
     String localFolder = rootPath.joinPath(relativeFolder);
     String targetPath = localFolder.joinPath(download.name);
 

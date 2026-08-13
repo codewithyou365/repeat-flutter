@@ -31,7 +31,7 @@ Future<void> handleCheckDownloadStatus(HttpRequest request) async {
 
 Future<void> handlePlay(HttpRequest request, Directory? dir) async {
   final response = request.response;
-  dir = await Util.getDir(request, dir);
+  dir = await Util.getFilesDir(request, dir);
   if (dir == null) {
     response.statusCode = HttpStatus.internalServerError;
     await response.close();

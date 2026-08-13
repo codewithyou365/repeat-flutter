@@ -84,10 +84,10 @@ class ClassroomHelp {
         List<DownloadContent> downloads = DownloadContent.toList(bookMap['d']) ?? [];
 
         for (var prefix in bookFieldRefs) {
-          await _registerFont(bookMap, prefix, downloads, DocPath.getRelativePath(book.id!), rootPath);
+          await _registerFont(bookMap, prefix, downloads, DocPath.getFilesRelativePath(), rootPath);
         }
       }
-      // 提示的字体在课堂那一层，字体文件也在课堂自己的资源目录里
+      // 提示的字体在课堂那一层；字体文件跟书本的字体一样，都在课堂的文件目录里
       await _registerClassroomFonts(classroomId, rootPath);
 
       savedVersionSigCacheMap[classroomId] = currentVersionSig;
@@ -109,7 +109,7 @@ class ClassroomHelp {
           final entryMap = VerseField.of(bookMap, fieldRef);
           if (entryMap == null) continue;
           final tip = ContentEntry.fromJson(entryMap, mapKey: fieldRef);
-          final ok = await _ensureContentReady(tip, downloads, DocPath.getRelativePath(book.id!));
+          final ok = await _ensureContentReady(tip, downloads, DocPath.getFilesRelativePath());
           if (!ok) continue;
 
           final id = await _upsertTip(
@@ -149,7 +149,7 @@ class ClassroomHelp {
   }
 
   /// 游戏是整个课堂全局的：宣告在 [Classroom.content] 的 'g' 里，zip 也从课堂自己的
-  /// 'd' 里找，落在 [DocPath.getClassroomResRelativePath] 下，不再挂到某一本书上。
+  /// 'd' 里找，落在 [DocPath.getFilesRelativePathOf] 下，不再挂到某一本书上。
   static Future<void> _registerGames(int classroomId) async {
     final classroom = await Db().db.classroomDao.getById(classroomId);
     if (classroom == null || classroom.content.isEmpty) return;
@@ -165,7 +165,7 @@ class ClassroomHelp {
 
     final downloads = DownloadContent.toList(classroomMap['d']) ?? [];
     final gameData = classroomMap['g'] is List ? classroomMap['g'] as List<dynamic> : <dynamic>[];
-    final resPath = DocPath.getClassroomResRelativePath(classroomId);
+    final resPath = DocPath.getFilesRelativePathOf(classroomId);
     final Set<String> currentGameNames = {};
     var contentChanged = false;
 
@@ -265,21 +265,21 @@ class ClassroomHelp {
     await registerCustomFont(alias, localFolder.joinPath(download.name));
   }
 
-  /// 提示的字体：声明在 [Classroom.content] 的 't' 里，文件在课堂自己的资源目录下。
+  /// 提示的字体：声明在 [Classroom.content] 的 't' 里，文件在课堂的文件目录下。
   static Future<void> _registerClassroomFonts(int classroomId, String rootPath) async {
     final classroom = await Db().db.classroomDao.getById(classroomId);
     final classroomMap = _decodeMap(classroom?.content);
     if (classroomMap == null) return;
 
     final downloads = DownloadContent.toList(classroomMap['d']) ?? [];
-    final resPath = DocPath.getClassroomResRelativePath(classroomId);
+    final resPath = DocPath.getFilesRelativePathOf(classroomId);
     for (final fieldRef in _classroomTipRefs(classroomMap)) {
       await _registerFont(classroomMap, fieldRef, downloads, resPath, rootPath);
     }
   }
 
   /// 提示的服务配置（'h'/'k'/'s'/'i'）也在课堂那一层，zip 从课堂自己的 'd' 里找、
-  /// 落在 [DocPath.getClassroomResRelativePath] 下（跟游戏一样）。
+  /// 落在 [DocPath.getFilesRelativePathOf] 下（跟游戏一样）。
   /// Tip 行的 bookId 一律写 [classroomBookId]：整个课堂共用一套，不挂在某一本书下面。
   static Future<void> _registerTips(int classroomId, Set<String> currentTipKeys) async {
     final classroom = await Db().db.classroomDao.getById(classroomId);
@@ -287,7 +287,7 @@ class ClassroomHelp {
     if (classroomMap == null) return;
 
     final downloads = DownloadContent.toList(classroomMap['d']) ?? [];
-    final resPath = DocPath.getClassroomResRelativePath(classroomId);
+    final resPath = DocPath.getFilesRelativePathOf(classroomId);
     var contentChanged = false;
 
     for (final fieldRef in _classroomTipRefs(classroomMap)) {
@@ -364,7 +364,7 @@ class ClassroomHelp {
     final Map<String, dynamic> bookMap = jsonDecode(book.content);
     final downloads = DownloadContent.toList(bookMap['d']) ?? [];
     final entry = ContentEntry(hash: hash, name: '', key: '', service: '');
-    return await _ensureContentReady(entry, downloads, DocPath.getRelativePath(bookId));
+    return await _ensureContentReady(entry, downloads, DocPath.getFilesRelativePath());
   }
 
   /// 同上，但找的是课堂自己的 'd'（游戏 zip 在这里）。
@@ -386,11 +386,11 @@ class ClassroomHelp {
     }
     final downloads = DownloadContent.toList(classroomMap['d']) ?? [];
     final entry = ContentEntry(hash: hash, name: '', key: '', service: '');
-    return await _ensureContentReady(entry, downloads, DocPath.getClassroomResRelativePath(classroomId));
+    return await _ensureContentReady(entry, downloads, DocPath.getFilesRelativePathOf(classroomId));
   }
 
-  /// [relativeFolder] 是这份资源所在的相对目录：书本资源给书本目录，
-  /// 课堂级资源（游戏）给课堂资源目录。
+  /// [relativeFolder] 是这份资源所在的相对目录。书本级和课堂级现在都是课堂的文件目录，
+  /// 参数留着是因为课堂可能不是 [Classroom.curr]（见 [DocPath.getFilesRelativePathOf]）。
   static Future<bool> _ensureContentReady(
     ContentEntry entry,
     List<DownloadContent> downloads,

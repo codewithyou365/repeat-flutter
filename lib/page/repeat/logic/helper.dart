@@ -365,7 +365,7 @@ class Helper {
   }
 
   String getPath(String downloadPath) {
-    return rootPath.joinPath(DocPath.getRelativePath(logic.currVerse!.bookId)).joinPath(downloadPath);
+    return rootPath.joinPath(DocPath.getFilesRelativePath()).joinPath(downloadPath);
   }
 
   String? getString(String key) {
@@ -538,7 +538,6 @@ class Helper {
     try {
       var s = getCurrVerse()!;
       var download = await DocHelp.tryCopyToDocDir(
-        bookId: s.bookId,
         result: result,
         allowedExtensions: mediaType.allowedExtensions,
       );
@@ -608,7 +607,7 @@ class Helper {
         final returnCode = await session.getReturnCode();
 
         if (ReturnCode.isSuccess(returnCode)) {
-          final dc = await DocHelp.moveToDocDir(outputPath, verse.bookId);
+          final dc = await DocHelp.moveToDocDir(outputPath);
           var verseMap = getCurrVerseMap();
           if (verseMap == null) {
             return null;

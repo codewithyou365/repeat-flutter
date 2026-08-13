@@ -96,7 +96,7 @@ class MediaShareLogic {
       url = "https";
     }
     url += '://$ip:$port${state.lanAddressSuffix}';
-    String path = Uri.encodeComponent('${DocPath.getRelativePath(state.args.bookId)}/${state.args.path}');
+    String path = Uri.encodeComponent('${DocPath.getFilesRelativePath()}/${state.args.path}');
     url += "?path=$path";
     return url;
   }

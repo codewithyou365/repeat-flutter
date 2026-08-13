@@ -22,7 +22,7 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'game_list_item.dart';
 import 'game_list_state.dart';
 
-/// 一个刚落地的游戏包：zip 已经拷进课堂资源目录并解压好了。
+/// 一个刚落地的游戏包：zip 已经拷进课堂的文件目录并解压好了。
 class _StagedZip {
   final DownloadContent dc;
 
@@ -40,7 +40,7 @@ class _StagedZip {
 /// 课堂游戏的增删改。
 ///
 /// 数据都在 [Classroom.content] 里：宣告是 'g' 数组，zip 文件对象在课堂自己的 'd' 里，
-/// 文件落在 [DocPath.getClassroomResRelativePath]。本页只改这份 JSON，
+/// 文件落在 [DocPath.getFilesRelativePathOf]。本页只改这份 JSON，
 /// Game 表的登记、zip 解压、'i' 回写一律交给 [ClassroomHelp.registerRes]。
 class GameListLogic extends GetxController {
   static const String id = "GameListLogic";
@@ -73,7 +73,7 @@ class GameListLogic extends GetxController {
     _classroomMap = _decode(classroom?.content);
 
     final rootPath = await DocPath.getContentPath();
-    final resPath = rootPath.joinPath(DocPath.getClassroomResRelativePath(classroomId));
+    final resPath = rootPath.joinPath(DocPath.getFilesRelativePathOf(classroomId));
     final downloads = _downloads;
 
     final games = _games;
@@ -133,7 +133,7 @@ class GameListLogic extends GetxController {
     _openAddDialog(staged);
   }
 
-  /// 选一个 zip，算 sha1，拷进课堂资源目录并解压。失败会把拷进去的文件清掉。
+  /// 选一个 zip，算 sha1，拷进课堂的文件目录并解压。失败会把拷进去的文件清掉。
   Future<_StagedZip?> _pickAndUnzip() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -154,7 +154,7 @@ class GameListLogic extends GetxController {
       final dc = DownloadContent(url: p.basename(pickedPath), hash: hash);
 
       final rootPath = await DocPath.getContentPath();
-      final resPath = rootPath.joinPath(DocPath.getClassroomResRelativePath(classroomId));
+      final resPath = rootPath.joinPath(DocPath.getFilesRelativePathOf(classroomId));
       final zipPath = resPath.joinPath(dc.path);
       final destPath = resPath.joinPath(dc.folder).joinPath(dc.pureName);
 
@@ -299,7 +299,7 @@ class GameListLogic extends GetxController {
     final dc = _downloads.firstWhereOrNull((e) => e.hash == item.hash);
     if (dc == null) return [];
     final rootPath = await DocPath.getContentPath();
-    final resPath = rootPath.joinPath(DocPath.getClassroomResRelativePath(classroomId));
+    final resPath = rootPath.joinPath(DocPath.getFilesRelativePathOf(classroomId));
     return await _listJsFiles(resPath.joinPath(dc.folder).joinPath(dc.pureName));
   }
 
@@ -384,7 +384,7 @@ class GameListLogic extends GetxController {
 
   Future<void> _deleteZipFiles(DownloadContent dc) async {
     final rootPath = await DocPath.getContentPath();
-    final resPath = rootPath.joinPath(DocPath.getClassroomResRelativePath(classroomId));
+    final resPath = rootPath.joinPath(DocPath.getFilesRelativePathOf(classroomId));
     await _deleteFileQuietly(resPath.joinPath(dc.path));
     await Folder.delete(resPath.joinPath(dc.folder).joinPath(dc.pureName));
   }

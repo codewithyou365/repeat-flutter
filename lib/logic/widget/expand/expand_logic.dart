@@ -239,7 +239,7 @@ class ExpandLogic {
                 if (downloadResult == DownloadDocResult.success) {
                   var rootPath = await DocPath.getContentPath();
                   String fullPath = rootPath.joinPath(savePath);
-                  final dc = await DocHelp.moveToDocDir(fullPath, bookId);
+                  final dc = await DocHelp.moveToDocDir(fullPath);
                   await _onTaskComplete(result, msg, dc: dc);
                 } else {
                   logs.add("Audio download failed: $downloadResult");
@@ -308,7 +308,7 @@ class ExpandLogic {
 
       try {
         var rootPath = await DocPath.getContentPath();
-        String fullPath = rootPath.joinPath(DocPath.getRelativePath(bookId).joinPath(dc.folder).joinPath(dc.name));
+        String fullPath = rootPath.joinPath(DocPath.getFilesRelativePath().joinPath(dc.folder).joinPath(dc.name));
 
         final player = AudioPlayer();
         final duration = await player.setFilePath(fullPath);

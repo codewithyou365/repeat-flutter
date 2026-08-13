@@ -885,7 +885,7 @@
 
     let mediaExtensions = [".mp3", ".wav", ".mp4", ".mov"];
     document.getElementById('file-menu-play').addEventListener('click', () => {
-        const playUrl = `/play?path=${encodeURIComponent(fileSelectedPath)}` + bookParam('&');
+        const playUrl = `/play?path=${encodeURIComponent(fileSelectedPath)}` + classroomParam('&');
         const isMedia = mediaExtensions.some(ext => fileSelectedPath.toLowerCase().endsWith(ext));
         if (isMedia) {
             window.open(playUrl, 'mediaPlayer', 'width=400,height=200');
@@ -916,7 +916,7 @@
         const confirmDelete = confirm(`Are you sure you want to delete\n${fileSelectedPath}?`);
         if (confirmDelete) {
             try {
-                const res = await fetch(`/delete?path=${encodeURIComponent(fileSelectedPath)}` + bookParam('&'), {
+                const res = await fetch(`/delete?path=${encodeURIComponent(fileSelectedPath)}` + classroomParam('&'), {
                     method: 'POST',
                 });
                 const text = await res.text();
@@ -1080,7 +1080,7 @@
 
     async function initFiles() {
         try {
-            const res = await fetch('/browse' + bookParam('?'), {
+            const res = await fetch('/browse' + classroomParam('?'), {
                 method: 'POST',
             });
             const paths = await res.json();
@@ -1343,9 +1343,8 @@
                 formData.append('file', file);
                 openUploadProgress(file.name);
                 try {
-                    // 课堂级编辑时文件传到课堂自己的资源目录（游戏 zip 就放这儿），单本还是传到书本目录
-                    const param = editUnit === 'classroom' ? classroomParam('?') : bookParam('?');
-                    const text = await uploadWithProgress('/upload' + param, formData);
+                    // 文件是整个课堂共用一个目录的，单本编辑和课堂级编辑传到同一个地方
+                    const text = await uploadWithProgress('/upload' + classroomParam('?'), formData);
                     const copyResult = copyText(text) ? " And The path copied to clipboard!" : "!";
                     alert(`Upload successful${copyResult}\n${text}`);
                     await initFiles();
@@ -1450,7 +1449,7 @@
 
         try {
             openLoading();
-            const res = await fetch('/removeUselessFiles' + bookParam('?'), {
+            const res = await fetch('/removeUselessFiles' + classroomParam('?'), {
                 method: 'POST'
             });
 

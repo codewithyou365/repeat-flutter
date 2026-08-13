@@ -6,7 +6,6 @@ import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/chapter.dart';
 import 'package:repeat_flutter/db/entity/verse.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/classroom_content.dart';
@@ -27,15 +26,16 @@ class ImportHelp {
     VerseField.ensureSectionMediaHash(json);
   }
 
-  static Future<bool> import(int bookId, String url) async {
+  /// [docRelativePath] 是书本文档（index.json）相对内容根目录的位置。
+  /// 书本已经没有自己的目录了，这份文档只是导入期的暂存文件，位置由调用方决定。
+  static Future<bool> import(int bookId, String url, String docRelativePath) async {
     Book? book = await Db().db.bookDao.getById(bookId);
     if (book == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["book"]));
       return false;
     }
     book.url = url;
-    // 课堂导入时这本书不在 Classroom.curr 里，路径必须按书本自己的课堂算
-    Map<String, dynamic>? jsonData = await DocHelp.toJsonMap(DocPath.getRelativeIndexPathOf(book.classroomId, book.id!));
+    Map<String, dynamic>? jsonData = await DocHelp.toJsonMap(docRelativePath);
     if (jsonData == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["jsonData"]));
       return false;

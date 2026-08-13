@@ -51,9 +51,6 @@ class Node<User> {
   }
 
   Future<void> stop() async {
-    print('$hashCode:stop');
-    final stackTrace = StackTrace.current;
-    print('Calling stack: $stackTrace');
     cancelTimer();
     await webSocket.close();
   }

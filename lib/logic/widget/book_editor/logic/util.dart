@@ -69,37 +69,18 @@ class Util {
     return book?.classroomId;
   }
 
-  /// 上传落在哪：显式给了 ?c= 就是课堂级资源目录（游戏 zip 放这里，见 Classroom.content 的 'g'），
-  /// 否则还是书本目录。课堂级编辑（All books）传的就是 ?c=。
-  static Future<Directory?> getUploadDir(HttpRequest request, Directory? defaultDir) async {
-    final requestClassroomId = request.uri.queryParameters['c'];
-    final classroomId = requestClassroomId == null ? null : int.tryParse(requestClassroomId);
+  /// 浏览/播放/删除/上传/清理都落在同一个地方：课堂的文件目录。
+  /// 课堂优先取 ?c=，没给就按 ?b= 的书本反查它所属的课堂（见 [getClassroomId]）。
+  /// 书本级和课堂级（All books）的文件已经不分家了，所以不再区分两种目录。
+  static Future<Directory?> getFilesDir(HttpRequest request, Directory? defaultDir) async {
+    final classroomId = await getClassroomId(request, -1);
     if (classroomId == null) {
-      return getDir(request, defaultDir);
-    }
-    final rootDir = await DocPath.getContentPath();
-    final dir = Directory(rootDir.joinPath(DocPath.getClassroomResRelativePath(classroomId)));
-    if (!await dir.exists()) {
-      await dir.create(recursive: true);
-    }
-    return dir;
-  }
-
-  static Future<Directory?> getDir(HttpRequest request, Directory? defaultDir) async {
-    final int bookId = await getBookId(request, -1);
-    if (bookId == -1) {
       return defaultDir;
     }
-    var book = await Db().db.bookDao.getById(bookId);
-
-    if (book == null) {
-      return null;
-    }
     final rootDir = await DocPath.getContentPath();
-    final appDir = rootDir.joinPath('${book.classroomId}').joinPath('$bookId');
-    final dir = Directory(appDir);
+    final dir = Directory(rootDir.joinPath(DocPath.getFilesRelativePathOf(classroomId)));
     if (!await dir.exists()) {
-      return null;
+      await dir.create(recursive: true);
     }
     return dir;
   }

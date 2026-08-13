@@ -1,12 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/common/folder.dart';
-import 'package:repeat_flutter/common/hash.dart';
-import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
@@ -25,9 +21,9 @@ class AdjustFont<T extends GetxController> {
 
   AdjustFont(this.parentLogic);
 
-  /// [bookId] 为 null 就是课堂级（提示的字体）：[map] 是 Classroom.content，
-  /// 字体文件落在课堂自己的资源目录里，落库走 ClassroomDao。
+  /// [bookId] 为 null 就是课堂级（提示的字体）：[map] 是 Classroom.content，落库走 ClassroomDao。
   /// 传了 bookId 就是书本级（'q'/'a'/'n' 的字体）：[map] 是 Book.content。
+  /// 两种字体文件都落在课堂的 f 目录里，只有落库的表不一样。
   Future<void> open({
     required int? bookId,
     required String fontPrefix,
@@ -70,8 +66,8 @@ class AdjustFont<T extends GetxController> {
                   type: FileType.custom,
                   allowedExtensions: allowedExtensions,
                 );
-                var download = await _copyToDocDir(
-                  bookId: bookId,
+                // 课堂级和书本级的字体现在都落在课堂的 f 目录，不用再分两条路
+                var download = await DocHelp.tryCopyToDocDir(
                   result: result,
                   allowedExtensions: allowedExtensions,
                 );
@@ -88,7 +84,7 @@ class AdjustFont<T extends GetxController> {
                 String fileName = result.files.single.name;
 
                 var rootPath = await DocPath.getContentPath();
-                final localFolder = rootPath.joinPath(_relativeFolder(bookId).joinPath(download.folder));
+                final localFolder = rootPath.joinPath(DocPath.getFilesRelativePath().joinPath(download.folder));
                 final filePath = localFolder.joinPath(download.name);
 
                 var ok = await ClassroomHelp.registerCustomFont(fileName, filePath);
@@ -200,13 +196,6 @@ class AdjustFont<T extends GetxController> {
     await Db().db.bookDao.updateBookContent(bookId, jsonEncode(map));
   }
 
-  /// 字体文件落哪个目录：课堂级跟游戏一样落在课堂自己的资源目录下。
-  String _relativeFolder(int? bookId) {
-    return bookId == null //
-        ? DocPath.getClassroomResRelativePath(Classroom.curr)
-        : DocPath.getRelativePath(bookId);
-  }
-
   /// 提示那一条的字段块被清空后补个占位块回来：下标就是提示的身份，
   /// 末尾的空块被截掉会让这一条提示整体消失。
   void _keepTipSlot(String fontPrefix, Map<String, dynamic> map) {
@@ -214,44 +203,5 @@ class AdjustFont<T extends GetxController> {
       return;
     }
     VerseField.ensureTipCount(map, VerseField.indexOf(fontPrefix) + 1);
-  }
-
-  /// [DocHelp.tryCopyToDocDir] 的课堂级版本：校验扩展名之后把文件复制到
-  /// 课堂资源目录（书本级仍旧交给 DocHelp）。
-  Future<DownloadContent?> _copyToDocDir({
-    required int? bookId,
-    required FilePickerResult? result,
-    required List<String> allowedExtensions,
-  }) async {
-    if (bookId != null) {
-      return await DocHelp.tryCopyToDocDir(
-        bookId: bookId,
-        result: result,
-        allowedExtensions: allowedExtensions,
-      );
-    }
-    final pickedPath = result?.files.single.path;
-    if (result == null || pickedPath == null) {
-      Snackbar.show(I18nKey.labelLocalImportCancel.tr);
-      return null;
-    }
-    try {
-      final extension = result.files.single.name.split('.').last;
-      if (!allowedExtensions.containsIgnoreCase(extension)) {
-        Snackbar.show(I18nKey.labelFileExtensionNotMatch.trArgs([jsonEncode(allowedExtensions)]));
-        return null;
-      }
-      final hash = await Hash.toSha1(pickedPath);
-      final download = DownloadContent(url: ".$extension", hash: hash);
-
-      final rootPath = await DocPath.getContentPath();
-      final localFolder = rootPath.joinPath(_relativeFolder(null).joinPath(download.folder));
-      await Folder.ensureExists(localFolder);
-      await File(pickedPath).copy(localFolder.joinPath(download.name));
-      return download;
-    } catch (e) {
-      Snackbar.show(e.toString());
-      return null;
-    }
   }
 }

@@ -9,7 +9,7 @@ import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'util.dart';
 
 Future<void> handleUpload(HttpRequest request, Directory? dir) async {
-  dir = await Util.getUploadDir(request, dir);
+  dir = await Util.getFilesDir(request, dir);
   if (dir == null) {
     request.response.statusCode = HttpStatus.internalServerError;
     await request.response.close();

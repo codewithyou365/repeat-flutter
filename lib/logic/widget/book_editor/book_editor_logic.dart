@@ -100,9 +100,10 @@ class BookEditorLogic<T extends GetxController> {
     );
   }
 
+  /// 默认目录：请求没带 ?c=/?b= 时兜底用当前课堂的文件目录（见 [Util.getFilesDir]）
   Future<void> _initEditorDir(int bookId) async {
     final rootDir = await DocPath.getContentPath();
-    final appDir = rootDir.joinPath(DocPath.getRelativePath(bookId));
+    final appDir = rootDir.joinPath(DocPath.getFilesRelativePath());
     editorDir = Directory(appDir);
     if (!await editorDir!.exists()) {
       await editorDir!.create(recursive: true);

@@ -7,21 +7,6 @@ import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/model/classroom_content.dart';
 
-/// 一本书在课堂文档里的位置和它要带走的媒体文件。
-/// 打包 zip 时按 [index] 分目录，导入时按同样的下标找回来。
-class ClassroomBookDownload {
-  /// 在课堂文档 'b' 数组里的下标，同时也是 zip 里的目录名
-  final int index;
-  final int bookId;
-  final List<DownloadContent> downloads;
-
-  ClassroomBookDownload({
-    required this.index,
-    required this.bookId,
-    required this.downloads,
-  });
-}
-
 class ClassroomDocHelp {
   /// 把整个课堂流式写进 [sink]（文件或 HTTP response 都行）：
   ///
@@ -30,24 +15,21 @@ class ClassroomDocHelp {
   /// 任何时候内存里只有一本书的文档，写完一本立刻 flush，
   /// 不会先在内存里拼出整份 JSON —— 课堂可能有几十上百 MB。
   ///
-  /// [rootUrl] 是"这本书的媒体挂在哪个地址下"，按书给（局域网分享要带上 bookId）。
-  /// 给了就把 d[].u 改写成 'hh/xxxx.ext' 这种相对路径（和单本分享一致，见
-  /// [DocHelp.fixDownloadInfo]）；打 zip 时传 null，媒体路径由 zip 目录结构决定。
+  /// [rootUrl] 是"文件挂在哪个地址下"。全课堂的文件都在同一个 f 目录里，
+  /// 所以每本书和课堂自己共用这一个地址。给了就把 d[].u 改写成 'hh/xxxx.ext'
+  /// 这种相对路径（见 [DocHelp.fixDownloadInfo]）并写上 'r'；
+  /// 打 zip 时传 null，文件路径由 zip 目录结构决定。
   /// [databaseData] 为真时带上库里的 id / learnDate / progress（网络编辑用），
   /// 为假时去掉（对外分享用）。
   ///
-  /// [classroomRootUrl] 是课堂自己的媒体（游戏 zip）挂在哪个地址下，跟 [rootUrl] 一个规矩：
-  /// 给了就把课堂 'd' 里的 u 改写成相对路径并写上 'r'，打 zip 时传 null。
-  ///
-  /// 返回每本书要打包的媒体清单；出错返回 null（此时 [sink] 里是半截 JSON，调用方自己丢弃）。
-  /// 课堂自己要打包的媒体清单走 [classroomDownloads]。
-  static Future<List<ClassroomBookDownload>?> writeDoc({
+  /// 返回每本书要打包的文件清单；出错返回 null（此时 [sink] 里是半截 JSON，调用方自己丢弃）。
+  /// 课堂自己要打包的文件清单走 [classroomDownloads]。
+  static Future<List<List<DownloadContent>>?> writeDoc({
     required int classroomId,
     required IOSink sink,
     required bool note,
     required bool databaseData,
-    String? Function(Book book, int index)? rootUrl,
-    String? classroomRootUrl,
+    String? rootUrl,
     void Function(int done, int total)? onProgress,
   }) async {
     final classroom = await Db().db.classroomDao.getById(classroomId);
@@ -70,9 +52,9 @@ class ClassroomDocHelp {
         }
       }
     }
-    if (classroomRootUrl != null) {
+    if (rootUrl != null) {
       DocHelp.fixDownloadInfo(classroomContent);
-      classroomContent['r'] = classroomRootUrl;
+      classroomContent['r'] = rootUrl;
     }
 
     final books = await Db().db.bookDao.getAll(classroomId);
@@ -87,12 +69,12 @@ class ClassroomDocHelp {
     }
     sink.write('${jsonEncode(ClassroomDocField.books)}:[');
 
-    final List<ClassroomBookDownload> ret = [];
+    final List<List<DownloadContent>> ret = [];
     for (var i = 0; i < books.length; i++) {
       final book = books[i];
       final bookDoc = await toBookDoc(
         book: book,
-        rootUrl: rootUrl?.call(book, i),
+        rootUrl: rootUrl,
         note: note,
         databaseData: databaseData,
       );
@@ -105,13 +87,7 @@ class ClassroomDocHelp {
       sink.write(jsonEncode(bookDoc));
       await sink.flush();
 
-      ret.add(
-        ClassroomBookDownload(
-          index: i,
-          bookId: book.id!,
-          downloads: DocHelp.getDownloads(BookContent.fromJson(bookDoc)),
-        ),
-      );
+      ret.add(DocHelp.getDownloads(BookContent.fromJson(bookDoc)));
       onProgress?.call(i + 1, books.length);
     }
 
@@ -120,7 +96,7 @@ class ClassroomDocHelp {
     return ret;
   }
 
-  /// 课堂自己要带走的媒体（游戏 zip、提示的字体和提示服务 zip），
+  /// 课堂自己要带走的文件（游戏 zip、提示的字体和提示服务 zip），
   /// 来自 [Classroom.content] 的 'd'。
   static Future<List<DownloadContent>> classroomDownloads(int classroomId) async {
     final classroom = await Db().db.classroomDao.getById(classroomId);

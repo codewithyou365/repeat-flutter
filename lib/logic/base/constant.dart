@@ -9,29 +9,16 @@ class DocPath {
   static const String ssl = "s";
   static const String zipRootFile = "__root.json";
 
-  /// 课堂级资源目录名，同时也是分享 zip 里课堂级媒体的目录名
-  static const String classroomRes = "g";
-
-  static String getRelativeIndexPath(int bookId) {
-    return getRelativePath(bookId).joinPath(getIndexFileName());
-  }
+  /// 课堂文件目录名（files 的缩写），同时也是分享 zip 里存文件的目录名。
+  ///
+  /// 全课堂所有 json 引用的文件都在这一个目录下：文件名本来就是 sha1 分桶的
+  /// （`<hash 前两位>/<hash 剩余>.<扩展名>`，见 [DownloadContent.path]），天生全局唯一，
+  /// 再按书本切一层目录没有任何意义——同一个媒体被两本书引用还得存两份。
+  /// 课堂级资源（游戏 zip、提示的字体和提示服务 zip）也放这里，不再单开目录。
+  static const String classroomFiles = "f";
 
   static String getIndexFileName() {
     return "index.json";
-  }
-
-  static String getRelativePath(int bookId) {
-    return getRelativePathOf(Classroom.curr, bookId);
-  }
-
-  /// 课堂显式给出的版本。课堂导入/课堂级编辑动的不是"当前课堂"，
-  /// 这些地方必须用它，不能走 [Classroom.curr]。
-  static String getRelativePathOf(int classroomId, int bookId) {
-    return '$classroomId'.joinPath('$bookId');
-  }
-
-  static String getRelativeIndexPathOf(int classroomId, int bookId) {
-    return getRelativePathOf(classroomId, bookId).joinPath(getIndexFileName());
   }
 
   /// 课堂自己的目录（课堂级 index.json、导入暂存都放这里）
@@ -39,11 +26,14 @@ class DocPath {
     return '$classroomId';
   }
 
-  /// 课堂级资源（游戏 zip、提示的字体和提示服务 zip）的目录。
-  /// 课堂目录下的其它子目录都是书本 id（纯数字），所以用 [classroomRes] 这个非数字名字
-  /// 就不会撞上，游戏文件也不用再挂在某一本书下面。
-  static String getClassroomResRelativePath(int classroomId) {
-    return getClassroomRelativePath(classroomId).joinPath(classroomRes);
+  /// 课堂显式给出的版本。课堂导入/课堂级编辑动的不是"当前课堂"，
+  /// 这些地方必须用它，不能走 [Classroom.curr]。
+  static String getFilesRelativePathOf(int classroomId) {
+    return getClassroomRelativePath(classroomId).joinPath(classroomFiles);
+  }
+
+  static String getFilesRelativePath() {
+    return getFilesRelativePathOf(Classroom.curr);
   }
 
   static Future<String> getContentPath() async {
