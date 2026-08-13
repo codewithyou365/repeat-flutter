@@ -490,5 +490,13 @@ class ConfigZh extends Config {
     put(I18nKey.gameNameEmpty, "游戏名称不能为空");
     put(I18nKey.gameUnzipFailed, "游戏包解压失败");
     put(I18nKey.gameDeleteConfirm, "删除该游戏？游戏包文件也会一并删除。");
+    put(I18nKey.ignoreSpace, "忽略空格");
+    put(I18nKey.ignoreNumber, "忽略数字");
+    put(I18nKey.practiceCheck, "检查");
+    put(I18nKey.practiceCheckTitle, "对比检查");
+    put(I18nKey.practiceCheckSame, "完全一致");
+    put(I18nKey.practiceCheckDiff, "有 @0 处不同");
+    put(I18nKey.practiceCheckExpected, "正确答案");
+    put(I18nKey.practiceCheckActual, "我的输入");
   }
 }

@@ -490,6 +490,14 @@ enum I18nKey {
   gameNameEmpty,
   gameUnzipFailed,
   gameDeleteConfirm,
+  ignoreSpace,
+  ignoreNumber,
+  practiceCheck,
+  practiceCheckTitle,
+  practiceCheckSame,
+  practiceCheckDiff,
+  practiceCheckExpected,
+  practiceCheckActual,
   none;
 
   String trArgs([List<String> args = const []]) {

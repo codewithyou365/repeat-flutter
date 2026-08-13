@@ -492,5 +492,13 @@ class ConfigEn extends Config {
     put(I18nKey.gameNameEmpty, "Game name is empty");
     put(I18nKey.gameUnzipFailed, "Failed to unpack the game package");
     put(I18nKey.gameDeleteConfirm, "Delete this game? Its package files will be removed too.");
+    put(I18nKey.ignoreSpace, "Ignore Whitespace");
+    put(I18nKey.ignoreNumber, "Ignore Numbers");
+    put(I18nKey.practiceCheck, "Check");
+    put(I18nKey.practiceCheckTitle, "Compare");
+    put(I18nKey.practiceCheckSame, "Perfect match");
+    put(I18nKey.practiceCheckDiff, "@0 difference(s)");
+    put(I18nKey.practiceCheckExpected, "Answer");
+    put(I18nKey.practiceCheckActual, "Your input");
   }
 }

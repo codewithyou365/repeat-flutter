@@ -66,6 +66,10 @@ enum CrK {
   searchIndexFingerprint,
   practiceDraft,
   practiceMode,
+  practiceIgnoreSpace,
+  practiceIgnorePunctuation,
+  practiceIgnoreCase,
+  practiceIgnoreNumber,
 }
 
 @Entity(primaryKeys: ['classroomId', 'k'])

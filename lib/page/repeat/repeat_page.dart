@@ -323,35 +323,56 @@ class RepeatPage extends StatelessWidget {
       if (!logic.state.isPracticeMode.value) {
         return const SizedBox.shrink();
       }
-      return Container(
-        margin: const EdgeInsets.symmetric(vertical: 8.0),
-        decoration: BoxDecoration(
-          color: Colors.grey.withAlpha(20),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.blueAccent.withAlpha(100), width: 1),
-        ),
-        child: TextField(
-          controller: logic.state.helper.practiceController,
-          maxLines: null,
-          minLines: 3,
-          textInputAction: TextInputAction.newline,
-          style: TextStyle(
-            fontSize: fontSize(logic, QaType.answer) ?? 17,
-            fontFamily: fontAlias(logic, QaType.answer),
-          ),
-          decoration: InputDecoration(
-            hintText: I18nKey.practiceHint.tr,
-            hintStyle: const TextStyle(color: Colors.grey),
-            contentPadding: const EdgeInsets.all(12.0),
-            border: InputBorder.none,
-            suffixIcon: IconButton(
-              icon: const Icon(Icons.clear, size: 20, color: Colors.grey),
-              onPressed: () {
-                logic.state.helper.practiceController.clear();
-              },
+      return Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 8.0),
+            decoration: BoxDecoration(
+              color: Colors.grey.withAlpha(20),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.blueAccent.withAlpha(100), width: 1),
+            ),
+            child: TextField(
+              controller: logic.state.helper.practiceController,
+              maxLines: null,
+              minLines: 3,
+              textInputAction: TextInputAction.newline,
+              style: TextStyle(
+                fontSize: fontSize(logic, QaType.answer) ?? 17,
+                fontFamily: fontAlias(logic, QaType.answer),
+              ),
+              decoration: InputDecoration(
+                hintText: I18nKey.practiceHint.tr,
+                hintStyle: const TextStyle(color: Colors.grey),
+                contentPadding: const EdgeInsets.all(12.0),
+                border: InputBorder.none,
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear, size: 20, color: Colors.grey),
+                  onPressed: () {
+                    logic.state.helper.practiceController.clear();
+                  },
+                ),
+              ),
             ),
           ),
-        ),
+          Row(
+            children: [
+              Expanded(
+                child: RowWidget.buildSoftButton(
+                  Get.context!,
+                  icon: Icons.fact_check_outlined,
+                  text: I18nKey.practiceCheck.tr,
+                  onTap: () => logic.openPracticeCheck(
+                    Get.context!,
+                    fontSize: fontSize(logic, QaType.answer),
+                    fontFamily: fontAlias(logic, QaType.answer),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+        ],
       );
     });
   }
@@ -768,7 +789,10 @@ class RepeatPage extends StatelessWidget {
   /// 每一条各存各的。
   Map<String, dynamic>? fontMapOf(RepeatLogic logic, String fieldRef) {
     final helper = logic.state.helper;
-    return VerseField.baseOf(fieldRef) == QaType.tip.acronym //
+    return VerseField.baseOf(fieldRef) ==
+            QaType
+                .tip
+                .acronym //
         ? helper.getClassroomMap()
         : helper.getCurrBookMap();
   }

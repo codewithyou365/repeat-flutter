@@ -35,6 +35,7 @@ import 'package:repeat_flutter/page/repeat/logic/tts_helper.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'repeat_args.dart';
 import 'repeat_state.dart';
+import 'logic/practice_check.dart';
 import 'logic/session_coordinator.dart';
 import 'logic/repeat_flow_for_browse.dart';
 import 'logic/repeat_flow_for_examine.dart';
@@ -83,6 +84,7 @@ class RepeatLogic extends GetxController {
 
   late RepeatFlow? repeatFlow;
   final SubList bookSub = [];
+  final PracticeCheck practiceCheck = PracticeCheck();
   bool saveGlobalBrowsePosition = false;
   DisplayModeSource? displayModeSource;
 
@@ -154,6 +156,7 @@ class RepeatLogic extends GetxController {
     // 免得那里的 practiceController.clear() 把刚恢复的草稿冲掉。
     state.isPracticeMode.value = (await Db().db.crKvDao.getInt(Classroom.curr, CrK.practiceMode) ?? 0) == 1;
     await state.helper.loadPracticeDraft();
+    await practiceCheck.load();
     // 悬浮球的动作存在课堂内容里，Helper.init 取到课堂内容之后才读得到。
     await assistiveTouchLogic.loadActions();
     for (var v in showTypeToRepeatView.values) {
@@ -223,7 +226,9 @@ class RepeatLogic extends GetxController {
       defaultTypeToTip.putIfAbsent(tip.t, () => tip);
     }
 
-    final bookIds = progresses is LazyVerseTodayPrgList //
+    final bookIds =
+        progresses
+            is LazyVerseTodayPrgList //
         ? progresses.bookIds
         : progresses.map((p) => p.bookId).toSet();
 
@@ -490,6 +495,23 @@ class RepeatLogic extends GetxController {
       return null;
     }
     return repeatFlow!.currVerse;
+  }
+
+  /// 拿答案字段跟练习输入框的内容做对比。回忆阶段也放行——用户自己点的检查，
+  /// 提前看到答案是他自己的选择。
+  Future<void> openPracticeCheck(BuildContext context, {double? fontSize, String? fontFamily}) async {
+    var map = state.helper.getCurrVerseMap();
+    if (map == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.trArgs(["verse"]));
+      return;
+    }
+    await practiceCheck.open(
+      context,
+      expected: VerseField.getText(map, QaType.answer.acronym) ?? '',
+      actual: state.helper.practiceController.text,
+      fontSize: fontSize,
+      fontFamily: fontFamily,
+    );
   }
 
   Future<void> togglePracticeMode() async {
