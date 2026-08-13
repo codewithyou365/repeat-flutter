@@ -123,7 +123,6 @@ class BookEditorLogic<T extends GetxController> {
       state.chapterIndex = state.args.chapterIndex;
       state.verseIndex = state.args.verseIndex;
       state.bookId = state.args.bookId;
-      tryRefreshCredential();
       clearActiveDownloads();
       await _initEditorDir(state.bookId);
       await _startHttpService();
@@ -217,12 +216,22 @@ class BookEditorLogic<T extends GetxController> {
   }
 
   Future<void> openCredentialDialog() async {
-    String credential = await tryRefreshCredential();
-    state.user.value = credential.substring(0, 3);
-    state.password.value = credential.substring(3);
+    String? credential = await Db().db.kvDao.getStr(K.credential);
+    int? credentialExpireTime = await Db().db.kvDao.getInt(K.credentialExpireTime);
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (credential == null || credentialExpireTime == null || credentialExpireTime < now) {
+      state.user.value = "";
+      state.password.value = "";
+    } else {
+      state.user.value = credential.substring(0, 3);
+      state.password.value = credential.substring(3);
+    }
     MsgBox.myDialog(
       title: title,
       content: Obx(() {
+        if (state.user.value.isEmpty && state.password.value.isEmpty) {
+          return MsgBox.content(I18nKey.credentialCleared.tr);
+        }
         return MsgBox.content(I18nKey.keyContent.trParams([state.user.value, state.password.value]));
       }),
       action: MsgBox.yesOrNoAction(
@@ -235,8 +244,12 @@ class BookEditorLogic<T extends GetxController> {
           final expireAt = now + const Duration(hours: 4).inMilliseconds;
           Db().db.kvDao.insertOrReplace(Kv(K.credentialExpireTime, expireAt.toString()));
         },
+        no: () {
+          Db().db.kvDao.delete([K.credential, K.credentialExpireTime]);
+          Get.back();
+        },
         yesBtnTitle: I18nKey.refresh.tr,
-        noBtnTitle: I18nKey.close.tr,
+        noBtnTitle: I18nKey.clear.tr,
       ),
     );
   }
@@ -246,16 +259,18 @@ class BookEditorLogic<T extends GetxController> {
     final username = state.user.value;
     final password = state.password.value;
 
-    final authHeader = request.headers.value(HttpHeaders.authorizationHeader);
-    final expectedAuth = 'Basic ${base64.encode(utf8.encode('$username:$password'))}';
+    if (username.isNotEmpty || password.isNotEmpty) {
+      final authHeader = request.headers.value(HttpHeaders.authorizationHeader);
+      final expectedAuth = 'Basic ${base64.encode(utf8.encode('$username:$password'))}';
 
-    if (authHeader != expectedAuth) {
-      response
-        ..statusCode = HttpStatus.unauthorized
-        ..headers.set('WWW-Authenticate', 'Basic realm="BookEditor"')
-        ..write('Unauthorized');
-      await response.close();
-      return;
+      if (authHeader != expectedAuth) {
+        response
+          ..statusCode = HttpStatus.unauthorized
+          ..headers.set('WWW-Authenticate', 'Basic realm="BookEditor"')
+          ..write('Unauthorized');
+        await response.close();
+        return;
+      }
     }
 
     final path = request.uri.path;

@@ -396,6 +396,7 @@ enum I18nKey {
   refresh,
   clear,
   noPassword,
+  credentialCleared,
   obtainedInTheGame,
   deductedInTheGame,
   showButtons,
