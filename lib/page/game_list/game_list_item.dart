@@ -30,6 +30,20 @@ class GameItem {
   /// zip 解压出来的目录在不在。游戏能不能跑看这个。
   final bool unpacked;
 
+  /// 'u'：来自哪个订阅（manifest URL）。空 = 本地导入的。
+  final String subUrl;
+
+  /// 'ek'：manifest 里那个入口的 key。跟 [subUrl] 一起做升级匹配。
+  final String entryKey;
+
+  /// 订阅的显示名，来自 'gs' 里那条的 'n'。本地导入的是空的。
+  final String subName;
+
+  /// 订阅当前已装的版本，来自 'gs' 里那条的 'v'。本地导入的是 0。
+  final int subVersion;
+
+  bool get fromSubscription => subUrl.isNotEmpty;
+
   GameItem({
     required this.index,
     required this.id,
@@ -40,5 +54,9 @@ class GameItem {
     required this.zipName,
     required this.zipExists,
     required this.unpacked,
+    this.subUrl = '',
+    this.entryKey = '',
+    this.subName = '',
+    this.subVersion = 0,
   });
 }

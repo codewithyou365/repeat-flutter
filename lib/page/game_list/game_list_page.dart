@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'game_list_item.dart';
 import 'game_list_logic.dart';
@@ -19,8 +20,18 @@ class GameListPage extends StatelessWidget {
         title: Text(I18nKey.manageGame.tr),
         actions: [
           IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: I18nKey.gameCheckUpdate.tr,
+            onPressed: logic.checkUpdates,
+          ),
+          IconButton(
             icon: const Icon(Icons.add),
             onPressed: logic.add,
+          ),
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            tooltip: I18nKey.gameManageSubscription.tr,
+            onPressed: () => _manageSubscriptions(logic),
           ),
         ],
       ),
@@ -49,7 +60,7 @@ class GameListPage extends StatelessWidget {
                 style: broken ? TextStyle(color: Theme.of(context).disabledColor) : null,
               ),
               subtitle: Text(
-                '${item.service} · ${_status(item)}',
+                _subtitle(item),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -66,6 +77,38 @@ class GameListPage extends StatelessWidget {
     if (!item.zipExists) return I18nKey.gameZipMissing.tr;
     if (!item.unpacked) return I18nKey.gameNotUnpacked.tr;
     return I18nKey.gameReady.tr;
+  }
+
+  /// 入口 js · 状态[· 来自 <订阅名> v<版本>]
+  static String _subtitle(GameItem item) {
+    final ret = StringBuffer('${item.service} · ${_status(item)}');
+    if (item.fromSubscription) {
+      final from = item.subName.isEmpty ? item.subUrl : item.subName;
+      ret.write(' · ${I18nKey.gameFromSubscription.trArgs(['$from v${item.subVersion}'])}');
+    }
+    return ret.toString();
+  }
+
+  /// 订阅列表：选中一条就问退不退订。（不新增页面，全在这一页里解决。）
+  void _manageSubscriptions(GameListLogic logic) async {
+    final subs = logic.state.subscriptions.toList();
+    if (subs.isEmpty) {
+      Snackbar.show(I18nKey.gameSubscriptionEmpty.tr);
+      return;
+    }
+    final index = await Select.showSheet(
+      title: I18nKey.gameManageSubscription.tr,
+      keys: subs.map((e) => '${e.name.isEmpty ? e.url : e.name} v${e.version}').toList(),
+    );
+    if (index == null) return;
+    MsgBox.yesOrNo(
+      title: I18nKey.gameUnsubscribe.tr,
+      desc: I18nKey.gameUnsubscribeConfirm.tr,
+      yes: () {
+        Get.back();
+        logic.unsubscribe(subs[index]);
+      },
+    );
   }
 
   void _openActions(GameListLogic logic, GameItem item) async {

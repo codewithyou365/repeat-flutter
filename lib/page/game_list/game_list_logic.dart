@@ -14,9 +14,13 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/classroom_help.dart';
+import 'package:repeat_flutter/logic/game_subscription_help.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
+import 'package:repeat_flutter/logic/model/game_manifest.dart';
+import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
+import 'package:repeat_flutter/widget/select/select.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'game_list_item.dart';
@@ -66,6 +70,15 @@ class GameListLogic extends GetxController {
     return DownloadContent.toList(_classroomMap['d']) ?? [];
   }
 
+  /// 课堂 'gs' 里的订阅。返回的是新对象，改完要用 [_saveSubscriptions] 写回去。
+  List<GameSubscription> get _subscriptions {
+    return GameSubscription.toList(_classroomMap['gs']);
+  }
+
+  void _saveSubscriptions(List<GameSubscription> list) {
+    _classroomMap['gs'] = list.map((e) => e.toJson()).toList();
+  }
+
   Future<void> load() async {
     state.loading.value = true;
 
@@ -75,6 +88,7 @@ class GameListLogic extends GetxController {
     final rootPath = await DocPath.getContentPath();
     final resPath = rootPath.joinPath(DocPath.getFilesRelativePathOf(classroomId));
     final downloads = _downloads;
+    final subs = _subscriptions;
 
     final games = _games;
     final items = <GameItem>[];
@@ -89,6 +103,7 @@ class GameListLogic extends GetxController {
         zipExists = await File(resPath.joinPath(dc.path)).exists();
         unpacked = await Folder.exists(resPath.joinPath(dc.folder).joinPath(dc.pureName));
       }
+      final sub = entry.subUrl.isEmpty ? null : subs.firstWhereOrNull((e) => e.url == entry.subUrl);
       items.add(GameItem(
         index: i,
         id: entry.id,
@@ -99,10 +114,15 @@ class GameListLogic extends GetxController {
         zipName: dc?.url,
         zipExists: zipExists,
         unpacked: unpacked,
+        subUrl: entry.subUrl,
+        entryKey: entry.entryKey,
+        subName: sub?.name ?? '',
+        subVersion: sub?.version ?? 0,
       ));
     }
 
     state.items.assignAll(items);
+    state.subscriptions.assignAll(subs);
     state.loading.value = false;
     update([id]);
   }
@@ -127,10 +147,42 @@ class GameListLogic extends GetxController {
 
   // ---------------------------------------------------------------- 新增
 
+  /// 本地 zip 和订阅地址二选一。
   Future<void> add() async {
+    final index = await Select.showSheet(
+      title: I18nKey.manageGame.tr,
+      keys: [
+        I18nKey.gameAddFromLocal.tr,
+        I18nKey.gameAddFromSubscription.tr,
+      ],
+    );
+    if (index == null) return;
+    if (index == 0) {
+      await addFromLocal();
+    } else {
+      await addFromSubscription();
+    }
+  }
+
+  Future<void> addFromLocal() async {
     final staged = await _pickAndUnzip();
     if (staged == null) return;
     _openAddDialog(staged);
+  }
+
+  /// 让用户填一个 manifest.json 的地址（支持扫码），然后订阅。
+  Future<void> addFromSubscription() async {
+    final RxString model = ''.obs;
+    MsgBox.strInputWithYesOrNo(
+      model,
+      I18nKey.gameSubscriptionUrl.tr,
+      null,
+      qrPagePath: Nav.scan.path,
+      yes: () {
+        Get.back();
+        subscribe(model.value);
+      },
+    );
   }
 
   /// 选一个 zip，算 sha1，拷进课堂的文件目录并解压。失败会把拷进去的文件清掉。
@@ -251,6 +303,9 @@ class GameListLogic extends GetxController {
       'k': key,
       // 入口没填就按 index.js 走，跟 defaultService 的兜底一致。
       's': service.isEmpty ? 'index.js' : service,
+      // 本地导入的显式标空，别让它被当成某个订阅的条目
+      'u': '',
+      'ek': '',
       // 不写 'i'，交给 registerRes 回写
     });
     _classroomMap['g'] = games;
@@ -263,6 +318,194 @@ class GameListLogic extends GetxController {
       return;
     }
     await _deleteZipFiles(staged.dc);
+  }
+
+  // ---------------------------------------------------------------- 订阅
+
+  /// 订阅一个 manifest 地址：抓 manifest → 下包 → 把包里的游戏全装上。
+  ///
+  /// 已经订阅过的地址不重复订阅，直接对它跑一次更新。
+  Future<void> subscribe(String url) async {
+    url = url.trim();
+    if (url.isEmpty) return;
+
+    if (_subscriptions.any((e) => e.url == url)) {
+      Snackbar.show(I18nKey.gameAlreadySubscribed.tr);
+      await checkUpdates();
+      return;
+    }
+
+    final installed = await showOverlay<int?>(() async {
+      final manifest = await GameSubscriptionHelp.fetchManifest(url);
+      if (manifest == null) return null;
+      final dc = await GameSubscriptionHelp.download(classroomId, url, manifest);
+      if (dc == null) return null;
+      await _applyManifest(url, manifest, dc);
+      return manifest.games.length;
+    }, I18nKey.labelImporting.tr);
+
+    if (installed == null) return;
+    await _save();
+    Snackbar.show(I18nKey.gameSubscribed.trArgs(['$installed']));
+  }
+
+  /// 逐个订阅去问服务器要 manifest，版本变大（或者本地条目跟 manifest 对不上）就更新。
+  ///
+  /// 单个订阅失败不打断整轮，最后汇总提示。
+  Future<void> checkUpdates() async {
+    final subs = _subscriptions;
+    if (subs.isEmpty) {
+      Snackbar.show(I18nKey.gameSubscriptionEmpty.tr);
+      return;
+    }
+
+    final result = await showOverlay<List<int>>(() async {
+      var updated = 0;
+      var failed = 0;
+      for (final sub in subs) {
+        final manifest = await GameSubscriptionHelp.fetchManifest(sub.url);
+        if (manifest == null) {
+          failed++;
+          continue;
+        }
+        if (!_needsApply(sub, manifest)) continue;
+        // 包没换（version 变了但 hash 没变，或者只是本地条目被删过）时，
+        // download 会命中已有文件直接返回，不会真的走网络。
+        final dc = await GameSubscriptionHelp.download(classroomId, sub.url, manifest);
+        if (dc == null) {
+          failed++;
+          continue;
+        }
+        await _applyManifest(sub.url, manifest, dc);
+        updated++;
+      }
+      return [updated, failed];
+    }, I18nKey.gameCheckUpdate.tr);
+
+    final updated = result[0];
+    final failed = result[1];
+    if (updated > 0) {
+      await _save();
+      Snackbar.show(I18nKey.gameUpdateDone.trArgs(['$updated']));
+    } else if (failed == 0) {
+      Snackbar.show(I18nKey.gameUpdateNone.tr);
+    }
+    if (failed > 0) {
+      Snackbar.show(I18nKey.gameUpdateFailed.trArgs(['$failed']));
+    }
+  }
+
+  /// 要不要动这个订阅：版本变大要动；版本没变但本地条目跟 manifest 对不上
+  /// （用户删过某个游戏）也要动——manifest 是唯一真相，删掉的下次更新会加回来。
+  bool _needsApply(GameSubscription sub, GameManifest manifest) {
+    if (manifest.version > sub.version) return true;
+    final local = <String>{};
+    for (final raw in _games) {
+      if (raw is Map<String, dynamic> && raw['u'] == sub.url) {
+        local.add((raw['ek'] ?? '').toString());
+      }
+    }
+    final remote = manifest.games.map((e) => e.key).toSet();
+    return local.length != remote.length || !local.containsAll(remote);
+  }
+
+  /// 把 manifest 落到课堂内容里：manifest 是唯一真相，本地按 (订阅, ek) 对齐。
+  ///
+  /// 已装的就地改 'h'/'s'，**'i' 和 'n' 一律不动**——'i' 一丢 registerRes 就会走
+  /// 「删旧建新」，游戏存档和分数就没了；'n' 是用户可能改过的名字，以用户的为准。
+  Future<void> _applyManifest(String subUrl, GameManifest manifest, DownloadContent dc) async {
+    _addDownload(dc);
+
+    final oldSubs = _subscriptions;
+    final oldHash = oldSubs.firstWhereOrNull((e) => e.url == subUrl)?.hash ?? '';
+
+    final games = _classroomMap['g'] is List ? _classroomMap['g'] as List<dynamic> : <dynamic>[];
+    final existing = <String, Map<String, dynamic>>{};
+    for (final raw in games) {
+      if (raw is Map<String, dynamic> && raw['u'] == subUrl) {
+        existing[(raw['ek'] ?? '').toString()] = raw;
+      }
+    }
+
+    for (final entry in manifest.games) {
+      final raw = existing[entry.key];
+      if (raw != null) {
+        raw['h'] = dc.hash;
+        raw['s'] = entry.service;
+      } else {
+        games.add(<String, dynamic>{
+          'h': dc.hash,
+          'n': _uniqueName(entry.name),
+          'k': '',
+          's': entry.service,
+          'u': subUrl,
+          'ek': entry.key,
+          // 不写 'i'，交给 registerRes 回写
+        });
+      }
+    }
+
+    // manifest 里没有的入口就从课堂移除。
+    final remote = manifest.games.map((e) => e.key).toSet();
+    final beforeRemove = games.length;
+    games.removeWhere((raw) =>
+        raw is Map<String, dynamic> && raw['u'] == subUrl && !remote.contains((raw['ek'] ?? '').toString()));
+    _classroomMap['g'] = games;
+    if (games.length != beforeRemove) {
+      await _resetLastGameIndex();
+    }
+
+    oldSubs.removeWhere((e) => e.url == subUrl);
+    oldSubs.add(GameSubscription(
+      url: subUrl,
+      version: manifest.version,
+      hash: dc.hash,
+      name: manifest.name.isEmpty ? subUrl : manifest.name,
+    ));
+    _saveSubscriptions(oldSubs);
+
+    if (oldHash.isNotEmpty && oldHash != dc.hash) {
+      await _dropUnreferencedZip(oldHash);
+    }
+  }
+
+  /// 退订：订阅本身、它装出来的游戏、以及没人再引用的包，一起清掉。
+  Future<void> unsubscribe(GameSubscription sub) async {
+    final games = _classroomMap['g'] is List ? _classroomMap['g'] as List<dynamic> : <dynamic>[];
+    final before = games.length;
+    games.removeWhere((raw) => raw is Map<String, dynamic> && raw['u'] == sub.url);
+    _classroomMap['g'] = games;
+
+    final subs = _subscriptions;
+    subs.removeWhere((e) => e.url == sub.url);
+    _saveSubscriptions(subs);
+
+    await _dropUnreferencedZip(sub.hash);
+    if (games.length != before) {
+      await _resetLastGameIndex();
+    }
+    await _save();
+  }
+
+  /// 名字在课堂内必须唯一（Game 表在 (classroomId, name) 上有唯一索引，
+  /// registerRes 又按 name 删多余行，重名会直接冲掉别人）。占了就往后加序号。
+  String _uniqueName(String base) {
+    if (base.isEmpty) base = 'game';
+    final used = <String>{};
+    for (final raw in _games) {
+      if (raw is Map<String, dynamic>) used.add((raw['n'] ?? '').toString());
+    }
+    if (!used.contains(base)) return base;
+    for (var i = 2;; i++) {
+      final candidate = '$base $i';
+      if (!used.contains(candidate)) return candidate;
+    }
+  }
+
+  /// lastGameIndex 存的是下标不是 id，条目一少后面的整体前移，
+  /// 不越界也不报错，只是静默指向了另一个游戏。所以删过条目就归零。
+  Future<void> _resetLastGameIndex() async {
+    await Db().db.crKvDao.insertOrReplace(CrKv(classroomId, CrK.lastGameIndex, '0'));
   }
 
   // ---------------------------------------------------------------- 修改
@@ -292,6 +535,9 @@ class GameListLogic extends GetxController {
     if (raw == null) return;
     raw['s'] = service;
     await _save();
+    if (item.fromSubscription) {
+      Snackbar.show(I18nKey.gameOverriddenBySubscription.tr);
+    }
   }
 
   /// 解压目录里的 js 文件，给「改入口」用；没解压出来就是空的。
@@ -319,6 +565,9 @@ class GameListLogic extends GetxController {
       await _dropUnreferencedZip(oldHash);
     }
     await _save();
+    if (item.fromSubscription) {
+      Snackbar.show(I18nKey.gameOverriddenBySubscription.tr);
+    }
   }
 
   // ---------------------------------------------------------------- 删除
@@ -328,12 +577,12 @@ class GameListLogic extends GetxController {
     if (games is! List || item.index >= games.length) return;
     games.removeAt(item.index);
     await _dropUnreferencedZip(item.hash);
-
-    // lastGameIndex 存的是下标不是 id：删掉一个游戏会让后面的整体前移，
-    // 原来选中的下标不越界也不报错，只是静默指向了另一个游戏。所以这里归零。
-    await Db().db.crKvDao.insertOrReplace(CrKv(classroomId, CrK.lastGameIndex, '0'));
-
+    await _resetLastGameIndex();
     await _save();
+    if (item.fromSubscription) {
+      // manifest 是唯一真相，下次检查更新会把它加回来。
+      Snackbar.show(I18nKey.gameOverriddenBySubscription.tr);
+    }
   }
 
   // ---------------------------------------------------------------- 公共

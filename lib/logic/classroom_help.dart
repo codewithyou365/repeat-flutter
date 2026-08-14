@@ -21,9 +21,19 @@ class ContentEntry {
   int? id;
   String hash;
   String name;
+
+  /// 'k'：用户填的运行期 key，原样喂给游戏（见 game_server/controller/game_key.dart）。
+  /// **跟 manifest 里的入口标识没有任何关系**，那个是 [entryKey]。
   String key;
   String service;
   String? mapKey;
+
+  /// 'u'：这条游戏来自哪个订阅（manifest 的 URL）。空 = 本地导入的，不参与更新。
+  /// 只有 'g' 的条目有，提示/字体那些用不到。
+  String subUrl;
+
+  /// 'ek'：manifest 里那个入口的 key。跟 [subUrl] 一起做升级时的匹配主键。
+  String entryKey;
 
   ContentEntry({
     this.id,
@@ -32,6 +42,8 @@ class ContentEntry {
     required this.key,
     required this.service,
     this.mapKey,
+    this.subUrl = '',
+    this.entryKey = '',
   });
 
   factory ContentEntry.fromJson(Map<String, dynamic> json, {String? mapKey}) {
@@ -42,6 +54,9 @@ class ContentEntry {
       key: json['k'] ?? '',
       service: json['s'] ?? '',
       mapKey: mapKey,
+      // 'u' 在别的地方（DownloadContent）是另一个含义，这里宽松点转，别为了个不用的字段崩掉。
+      subUrl: (json['u'] ?? '').toString(),
+      entryKey: (json['ek'] ?? '').toString(),
     );
   }
 }

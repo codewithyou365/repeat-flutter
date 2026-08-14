@@ -44,7 +44,9 @@ class ClassroomDocHelp {
       classroomContent = {};
     }
 
-    // 游戏（'g'）的 'i' 是本机 Game 表的 id，对外分享时不能带出去
+    // 游戏（'g'）的 'i' 是本机 Game 表的 id，对外分享时不能带出去。
+    // 'u'/'ek'（订阅来源）和课堂的 'gs'（订阅表）反过来要带上：
+    // 对方导入后照样能对这些游戏检查更新。
     if (!databaseData && classroomContent['g'] is List) {
       for (final game in classroomContent['g'] as List) {
         if (game is Map) {
