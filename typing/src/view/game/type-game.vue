@@ -60,26 +60,26 @@
         </nut-radio-group>
       </template>
     </nut-cell>
-    <nut-cell :title="t('manualPlayTrigger')">
+    <nut-cell :title="t('manualPlayTrigger')" :desc="t('multiKeyDesc')">
       <template #link>
-        <span v-if="manualPlayTrigger === ' '" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
+        <span v-if="hasSpaceKey(manualPlayTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
         <nut-input
             v-model="manualPlayTrigger"
-            maxlength="1"
             style="text-align: right"
             @blur="setManualPlayTrigger(manualPlayTrigger)"
         />
+        <nut-button size="mini" type="info" plain @click="openKeyPicker('manualPlay')">+</nut-button>
       </template>
     </nut-cell>
-    <nut-cell :title="t('spellPlayTrigger')">
+    <nut-cell :title="t('spellPlayTrigger')" :desc="t('multiKeyDesc')">
       <template #link>
-        <span v-if="spellPlayTrigger === ' '" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
+        <span v-if="hasSpaceKey(spellPlayTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
         <nut-input
             v-model="spellPlayTrigger"
-            maxlength="1"
             style="text-align: right"
             @blur="setSpellPlayTrigger(spellPlayTrigger)"
         />
+        <nut-button size="mini" type="info" plain @click="openKeyPicker('spellPlay')">+</nut-button>
       </template>
     </nut-cell>
     <nut-cell :title="t('spellResetLevel')">
@@ -92,26 +92,26 @@
         <nut-switch v-model="speakLetters" @change="setSpeakLetters"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('hintTrigger')">
+    <nut-cell :title="t('hintTrigger')" :desc="t('multiKeyDesc')">
       <template #link>
-        <span v-if="hintTrigger === ' '" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
+        <span v-if="hasSpaceKey(hintTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
         <nut-input
             v-model="hintTrigger"
-            maxlength="1"
             style="text-align: right"
             @blur="setHintTrigger(hintTrigger)"
         />
+        <nut-button size="mini" type="info" plain @click="openKeyPicker('hint')">+</nut-button>
       </template>
     </nut-cell>
-    <nut-cell :title="t('maskTrigger')">
+    <nut-cell :title="t('maskTrigger')" :desc="t('multiKeyDesc')">
       <template #link>
-        <span v-if="maskTrigger === ' '" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
+        <span v-if="hasSpaceKey(maskTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
         <nut-input
             v-model="maskTrigger"
-            maxlength="1"
             style="text-align: right"
             @blur="setMaskTrigger(maskTrigger)"
         />
+        <nut-button size="mini" type="info" plain @click="openKeyPicker('mask')">+</nut-button>
       </template>
     </nut-cell>
     <nut-cell :title="t('dimOnMask')" :desc="t('dimOnMaskDesc')">
@@ -119,15 +119,15 @@
         <nut-switch v-model="dimOnMask" @change="setDimOnMask"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('deleteTrigger')" :desc="t('deleteTriggerDesc')">
+    <nut-cell :title="t('deleteTrigger')" :desc="`${t('deleteTriggerDesc')}; ${t('multiKeyDesc')}`">
       <template #link>
-        <span v-if="deleteTrigger === ' '" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
+        <span v-if="hasSpaceKey(deleteTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
         <nut-input
             v-model="deleteTrigger"
-            maxlength="1"
             style="text-align: right"
             @blur="setDeleteTrigger(deleteTrigger)"
         />
+        <nut-button size="mini" type="info" plain @click="openKeyPicker('delete')">+</nut-button>
       </template>
     </nut-cell>
     <nut-cell :title="t('keyMapping')" :desc="t('keyMappingDesc')">
@@ -150,13 +150,13 @@
     >
       <template #link>
         <div class="assist-binding">
-          <span v-if="binding.key === ' '" style="opacity: 0.6">{{ t('spaceKey') }}</span>
+          <span v-if="hasSpaceKey(binding.key)" style="opacity: 0.6">{{ t('spaceKey') }}</span>
           <nut-input
               v-model="binding.key"
-              maxlength="1"
               class="assist-binding-key"
               @blur="setBindingKey(i, binding.key)"
           />
+          <nut-button size="mini" type="info" plain class="assist-binding-add" @click="openKeyPicker(i)">+</nut-button>
           <!-- direction="up": 这些行常年贴在设置页最下方，若按默认向下弹出，
                选项列表会被弹到屏幕可视区域之外（popup 是 position:fixed，页面滚动也救不回来），
                导致排在最后的选项（如"后退"）点不到。向上弹出则是在页面已展示的内容区域内展开，不会跑出屏幕。 -->
@@ -185,6 +185,14 @@
         :title="t('bindingTypeTitle')"
         :menu-items="bindingTypeItems"
         @choose="onChooseBindingType"
+    />
+    <!-- 各触发键输入框旁的"+"：给不方便直接打出来的特殊按键（Enter、NumLock 等）一个可选列表，
+         选中后追加成 \enter 这样的写法，多个按键用 • 分隔 -->
+    <nut-action-sheet
+        v-model:visible="keyPickerVisible"
+        :title="t('addSpecialKey')"
+        :menu-items="specialKeyItems"
+        @choose="onChooseSpecialKey"
     />
   </div>
   <nut-cell v-else-if="cantPlayForMaintain">
@@ -251,6 +259,7 @@ import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {Ask, Voice, Eye, Del} from '@nutui/icons-vue';
 import {showToast} from "@nutui/nutui";
+import {parseKeySpecs, specsHaveChar, specsOverlap, formatKeySpecsDisplay} from '../../utils/keyTrigger.ts';
 
 const {t} = useI18n();
 const store = useStore();
@@ -745,20 +754,24 @@ const setManualTtsRate = (value: number) => {
 // exclude 是"正在改的那一个"（固定键用名字，绑定用下标），要排除掉，否则改成原值也会判成冲突。
 type TriggerOwner = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | number;
 const isKeyTaken = (value: string, exclude: TriggerOwner) => {
-  if (!value) {
+  const specs = parseKeySpecs(value);
+  if (specs.length === 0) {
     return false; // 空值表示不启用，不参与冲突判断
   }
-  const keys: string[] = [];
-  if (exclude !== 'manualPlay') keys.push(manualPlayTrigger.value);
-  if (exclude !== 'spellPlay') keys.push(spellPlayTrigger.value);
-  if (exclude !== 'hint') keys.push(hintTrigger.value);
-  if (exclude !== 'mask') keys.push(maskTrigger.value);
-  if (exclude !== 'delete') keys.push(deleteTrigger.value);
+  const others: string[] = [];
+  if (exclude !== 'manualPlay') others.push(manualPlayTrigger.value);
+  if (exclude !== 'spellPlay') others.push(spellPlayTrigger.value);
+  if (exclude !== 'hint') others.push(hintTrigger.value);
+  if (exclude !== 'mask') others.push(maskTrigger.value);
+  if (exclude !== 'delete') others.push(deleteTrigger.value);
   assistiveTouchBindings.value.forEach((b, i) => {
-    if (exclude !== i) keys.push(b.key);
+    if (exclude !== i) others.push(b.key);
   });
-  return keys.includes(value);
+  return others.some((raw) => specsOverlap(specs, parseKeySpecs(raw)));
 };
+
+// 触发键输入框旁的"是否含空格键"提示：配置里任意一个按键是空格时都要提示，不然用户看不出来
+const hasSpaceKey = (raw: string) => specsHaveChar(parseKeySpecs(raw), ' ');
 
 // 冲突时提示并把输入框还原成上一次成功保存的值
 const setManualPlayTrigger = (value: string) => {
@@ -898,6 +911,51 @@ const removeBinding = (index: number) => {
   saveAssistiveTouchBindings();
 };
 
+// "+"弹出的特殊按键选择器：target 标记要往哪个触发键配置里追加，number 表示第几条辅助触控绑定
+type KeyPickerTarget = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | number;
+const keyPickerVisible = ref(false);
+const keyPickerTarget = ref<KeyPickerTarget | null>(null);
+// 键盘上打不出/不方便打出来的按键，选中后写成 \name 的形式
+const specialKeyNames = ['Enter', 'Tab', 'Escape', 'NumLock', 'CapsLock', 'Insert',
+  'Home', 'End', 'PageUp', 'PageDown',
+  'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'];
+const specialKeyItems = computed(() => specialKeyNames.map((name) => ({name})));
+
+const openKeyPicker = (target: KeyPickerTarget) => {
+  keyPickerTarget.value = target;
+  keyPickerVisible.value = true;
+};
+
+const appendKeyToken = (current: string, token: string) => current ? `${current}•${token}` : token;
+
+const onChooseSpecialKey = (item: { name: string }) => {
+  keyPickerVisible.value = false;
+  const target = keyPickerTarget.value;
+  if (target === null) return;
+  const token = `\\${item.name.toLowerCase()}`;
+  if (target === 'manualPlay') {
+    manualPlayTrigger.value = appendKeyToken(manualPlayTrigger.value, token);
+    setManualPlayTrigger(manualPlayTrigger.value);
+  } else if (target === 'spellPlay') {
+    spellPlayTrigger.value = appendKeyToken(spellPlayTrigger.value, token);
+    setSpellPlayTrigger(spellPlayTrigger.value);
+  } else if (target === 'hint') {
+    hintTrigger.value = appendKeyToken(hintTrigger.value, token);
+    setHintTrigger(hintTrigger.value);
+  } else if (target === 'mask') {
+    maskTrigger.value = appendKeyToken(maskTrigger.value, token);
+    setMaskTrigger(maskTrigger.value);
+  } else if (target === 'delete') {
+    deleteTrigger.value = appendKeyToken(deleteTrigger.value, token);
+    setDeleteTrigger(deleteTrigger.value);
+  } else {
+    const binding = assistiveTouchBindings.value[target];
+    if (binding) {
+      setBindingKey(target, appendKeyToken(binding.key, token));
+    }
+  }
+};
+
 const setActiveProfile = async (index: number) => {
   overlayVisible.value = true;
   try {
@@ -980,8 +1038,8 @@ const speak = (text: string, rate?: number, manual?: boolean) => {
 };
 const isSpeakable = (ch: string) => /[\p{L}\p{N}]/u.test(ch);
 
-// 触发键是空格时肉眼看不出来，需要额外提示；其它可见字符原样显示即可
-const formatTriggerKey = (key: string) => key === ' ' ? t('spaceKey') : key;
+// 触发键配置格式化成人类可读文案：多个按键用 " / " 分隔，空格键额外提示，特殊按键显示成对应名字
+const formatTriggerKey = (key: string) => formatKeySpecsDisplay(key, t('spaceKey'));
 
 // 整词朗读：非字母/数字（空格、撇号、标点等）都当作词与词之间的分界。
 // 这里只记当前词里最后填入的字符下标，真正朗读时再按下标从原文切出整词——不能自己攒字符串：
@@ -1293,6 +1351,10 @@ onUnmounted(() => {
 .assist-binding-del {
   flex-shrink: 0;
   opacity: 0.6;
+}
+
+.assist-binding-add {
+  flex-shrink: 0;
 }
 
 .eyes-closed-mask {

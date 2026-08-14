@@ -59,6 +59,7 @@
 <script setup lang="ts">
 import {onMounted, ref, nextTick, computed, onBeforeUnmount, watch} from 'vue';
 import {useStore} from 'vuex';
+import {parseKeySpecs, specsHaveChar, specsHaveSpecial} from '../utils/keyTrigger.ts';
 
 const props = withDefaults(defineProps<{
   disabled: boolean;
@@ -112,6 +113,16 @@ const keyMap = computed<Record<string, string>>(() => {
   }
   return map;
 });
+
+// 各触发键配置支持用 • 分隔的多个按键，其中反斜杠开头的是特殊按键名（如 \enter、\numlock）。
+// 可打印字符在 applyInput 里逐字符匹配输入框 value，特殊按键在 handleKeydown 里按 e.key 匹配。
+const manualPlaySpecs = computed(() => parseKeySpecs(props.manualPlayTrigger));
+const spellPlaySpecs = computed(() => parseKeySpecs(props.spellPlayTrigger));
+const hintSpecs = computed(() => parseKeySpecs(props.hintTrigger));
+const maskSpecs = computed(() => parseKeySpecs(props.maskTrigger));
+const deleteSpecs = computed(() => parseKeySpecs(props.deleteTrigger));
+// 每条辅助触控绑定各自的配置，raw 是绑定原本的 key 字符串（用于 emit 出去让父组件按原样匹配）
+const assistSpecsList = computed(() => props.assistTriggers.map((raw) => ({raw, specs: parseKeySpecs(raw)})));
 
 const emit = defineEmits<{
   (e: 'charFilled', index: number, char: string, auto: boolean, correct: boolean): void;
@@ -340,36 +351,38 @@ const applyInput = (val: string) => {
   };
 
   for (const char of val) {
-    if (props.manualPlayTrigger && char === props.manualPlayTrigger) {
+    if (specsHaveChar(manualPlaySpecs.value, char)) {
       const word = getWordAt(pos);
       pendingTriggerEmits.push(() => emit('manualPlay', word));
       continue; // 触发字符本身不写入内容，也不推进 pos
     }
-    if (props.spellPlayTrigger && char === props.spellPlayTrigger) {
+    if (specsHaveChar(spellPlaySpecs.value, char)) {
       const word = getWordAt(pos);
       pendingTriggerEmits.push(() => emit('spellPlay', word));
       continue; // 触发字符本身不写入内容，也不推进 pos
     }
-    if (props.hintTrigger && char === props.hintTrigger) {
+    if (specsHaveChar(hintSpecs.value, char)) {
       pendingTriggerEmits.push(() => emit('hintTrigger'));
       continue; // 触发字符本身不写入内容，也不推进 pos
     }
-    if (props.maskTrigger && char === props.maskTrigger) {
+    if (specsHaveChar(maskSpecs.value, char)) {
       pendingTriggerEmits.push(() => emit('maskTrigger'));
       continue; // 触发字符本身不写入内容，也不推进 pos
     }
     // 删除触发键：等同于按了一次退格。跟其它触发键一样只记录、不立刻执行——doBackspace 改的是
     // userInput/cursorPos，而本函数末尾还会用循环里的快照 temp/pos 覆盖回去，立刻执行等于白删。
-    if (props.deleteTrigger && char === props.deleteTrigger) {
+    if (specsHaveChar(deleteSpecs.value, char)) {
       pendingTriggerEmits.push(() => doBackspace());
       continue; // 触发字符本身不写入内容，也不推进 pos
     }
-    // 绑定到 App 辅助触控按钮的键，数量由用户配置，可以有多个
-    if (props.assistTriggers.includes(char)) {
+    // 绑定到 App 辅助触控按钮的键，数量由用户配置，可以有多个，每条绑定又可以配多个按键
+    const assistMatch = assistSpecsList.value.find(({specs}) => specsHaveChar(specs, char));
+    if (assistMatch) {
       // 跟 manualPlay 一样在这里就把词的位置取好：触发字符不写进内容，
       // 但后面还会继续处理这一批输入，等 emit 真正执行时光标未必还在这个词上。
       const bounds = getWordBounds(pos);
-      pendingTriggerEmits.push(() => emit('assistTrigger', char, bounds));
+      const raw = assistMatch.raw;
+      pendingTriggerEmits.push(() => emit('assistTrigger', raw, bounds));
       continue; // 触发字符本身不写入内容，也不推进 pos
     }
 
@@ -561,8 +574,45 @@ const doBackspace = () => {
   }
 };
 
+// 特殊按键（Enter、NumLock 等）不会作为字符出现在 input 的 value 里，只能在 keydown 阶段
+// 按 e.key 识别。命中就直接执行对应动作并返回 true，交给 handleKeydown 去 preventDefault。
+const handleSpecialKeyTrigger = (e: KeyboardEvent): boolean => {
+  const keyName = e.key.toLowerCase();
+  if (specsHaveSpecial(manualPlaySpecs.value, keyName)) {
+    emit('manualPlay', getWordAt(cursorPos.value));
+    return true;
+  }
+  if (specsHaveSpecial(spellPlaySpecs.value, keyName)) {
+    emit('spellPlay', getWordAt(cursorPos.value));
+    return true;
+  }
+  if (specsHaveSpecial(hintSpecs.value, keyName)) {
+    emit('hintTrigger');
+    return true;
+  }
+  if (specsHaveSpecial(maskSpecs.value, keyName)) {
+    emit('maskTrigger');
+    return true;
+  }
+  if (specsHaveSpecial(deleteSpecs.value, keyName)) {
+    doBackspace();
+    return true;
+  }
+  const assistMatch = assistSpecsList.value.find(({specs}) => specsHaveSpecial(specs, keyName));
+  if (assistMatch) {
+    emit('assistTrigger', assistMatch.raw, getWordBounds(cursorPos.value));
+    return true;
+  }
+  return false;
+};
+
 const handleKeydown = (e: KeyboardEvent) => {
   if (isComposing.value) return;
+
+  if (handleSpecialKeyTrigger(e)) {
+    e.preventDefault();
+    return;
+  }
 
   if (e.key === 'Backspace') {
     doBackspace();
