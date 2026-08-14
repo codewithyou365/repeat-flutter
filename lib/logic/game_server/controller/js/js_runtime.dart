@@ -8,6 +8,7 @@ import 'package:flutter_js/flutter_js.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:repeat_flutter/common/screen_brightness_helper.dart';
 import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
@@ -443,6 +444,18 @@ class JsRuntime {
         }
         return 'ok';
       });
+      // 打字游戏的"闭眼"遮挡：调暗的是跑 App 的这台设备。
+      // 客户端那边只有 App 内置 WebView（127.0.0.1）才会调这个，局域网浏览器客户端
+      // 按闭眼不会走到这里，免得别人把主机的屏幕搞暗。
+      _jsRuntime!.onMessage('setBrightness', (dynamic args) async {
+        final dim = args is Map && args['dim'] == true;
+        if (dim) {
+          await ScreenBrightnessHelper.dim();
+        } else {
+          await ScreenBrightnessHelper.restore();
+        }
+        return 'ok';
+      });
       _jsRuntime!.onMessage('setData', (dynamic args) async {
         final game = GameState.game;
         if (game == null) {
@@ -533,6 +546,8 @@ class JsRuntime {
     if (_jsRuntime != null) {
       subNewVerse.off();
       _sfxPlayer.dispose();
+      // 闭眼状态下游戏被关掉时，网页那边的"关闭闭眼"回调不会跑，这里兜底还原亮度
+      ScreenBrightnessHelper.restore();
       // 释放 C/C++ 层的内存资源，防止长时间运行导致 OOM
       _jsRuntime!.dispose();
       _jsRuntime = null;

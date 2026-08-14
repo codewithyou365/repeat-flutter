@@ -36,6 +36,7 @@ type ProfileConfig = {
     spellPlayTrigger: string;
     hintTrigger: string;
     maskTrigger: string;
+    dimOnMask: boolean;
     keyMapping: string;
     assistiveTouchBindings: AssistiveTouchBinding[];
     wordAskTrigger: WordAskTrigger;
@@ -74,7 +75,7 @@ const PROFILE_COUNT = 3;
 const PERSIST_INTERVAL_MS = 1000;
 
 function defaultProfileConfig(): ProfileConfig {
-    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "keyMapping": "", "assistiveTouchBindings": [], "wordAskTrigger": {"key": "", "action": "", "name": ""}, "spellResetLevel": false};
+    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "dimOnMask": false, "keyMapping": "", "assistiveTouchBindings": [], "wordAskTrigger": {"key": "", "action": "", "name": ""}, "spellResetLevel": false};
 }
 
 function defaultStoredConfig(): StoredConfig {
@@ -338,6 +339,14 @@ const Util = {
     playWrong: async function (url: string): Promise<any> {
         try {
             return await sendMessage('playWrong', JSON.stringify({url}));
+        } catch (e) {
+            return '';
+        }
+    },
+    // 调的是跑 App 的那台设备的屏幕亮度，所以只该由 App 内置 WebView 的客户端触发
+    setBrightness: async function (dim: boolean): Promise<any> {
+        try {
+            return await sendMessage('setBrightness', JSON.stringify({dim}));
         } catch (e) {
             return '';
         }
@@ -842,6 +851,18 @@ const Game = {
             const data = args.data || {};
             const url = typeof data.url === 'string' ? data.url : '';
             await Util.playWrong(url);
+            return JSON.stringify({data: 'ok'});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
+        }
+    },
+
+    // 闭眼遮挡时把屏幕调暗/还原。不加管理员门禁：闭眼是玩家动作，
+    // 由客户端保证只有 App 内置 WebView 才会调过来。
+    setBrightness: async function (args: GameArgs): Promise<string> {
+        try {
+            const data = args.data || {};
+            await Util.setBrightness(data.dim === true);
             return JSON.stringify({data: 'ok'});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});

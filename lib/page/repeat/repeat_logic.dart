@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:repeat_flutter/common/screen_brightness_helper.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
@@ -317,6 +318,8 @@ class RepeatLogic extends GetxController {
     SystemChrome.setSystemUIChangeCallback(null);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     WakelockPlus.disable();
+    // 打字游戏闭眼时会把屏幕调暗，直接退出复习页的话网页那边的还原回调跑不到，这里兜底
+    await ScreenBrightnessHelper.restore();
     await state.helper.flushPracticeDraft();
     state.helper.practiceController.dispose();
     if (state.fullScreenMode.value == RepeatFullScreenMode.closeEyes) {

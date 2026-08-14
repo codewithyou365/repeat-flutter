@@ -114,6 +114,11 @@
         />
       </template>
     </nut-cell>
+    <nut-cell :title="t('dimOnMask')" :desc="t('dimOnMaskDesc')">
+      <template #link>
+        <nut-switch v-model="dimOnMask" @change="setDimOnMask"/>
+      </template>
+    </nut-cell>
     <nut-cell :title="t('deleteTrigger')" :desc="t('deleteTriggerDesc')">
       <template #link>
         <span v-if="deleteTrigger === ' '" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
@@ -188,10 +193,10 @@
   <div v-else-if="ready" class="type-game-container">
     <div class="info-bar">
       <Voice class="info-icon" width="18px" height="18px" @click="speakCurrentWord"/>
-      <Eye class="info-icon" width="18px" height="18px" @click="eyesClosedMaskVisible = true"/>
+      <Eye class="info-icon" width="18px" height="18px" @click="setEyesClosed(true)"/>
       <Ask class="info-icon" width="18px" height="18px" @click="showTips"/>
     </div>
-    <div v-if="eyesClosedMaskVisible" class="eyes-closed-mask" @click="eyesClosedMaskVisible = false"></div>
+    <div v-if="eyesClosedMaskVisible" class="eyes-closed-mask" @click="setEyesClosed(false)"></div>
     <div class="typing-content">
       <Typing
           ref="typingRef"
@@ -236,7 +241,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import {onMounted, ref, inject, Ref, reactive, computed, nextTick} from 'vue';
+import {onMounted, onUnmounted, ref, inject, Ref, reactive, computed, nextTick} from 'vue';
 import {client, Request, Response} from '../../api/ws.ts';
 import {Path} from '../../utils/constant.ts';
 import {raiseSoftKeyboard} from '../../utils/keyboard.ts';
@@ -279,6 +284,7 @@ const spellPlayTrigger = ref(',');
 const spellResetLevel = ref(false);
 const hintTrigger = ref(' ');
 const maskTrigger = ref('');
+const dimOnMask = ref(false);
 const deleteTrigger = ref('');
 // 各触发键最后一次成功保存的值，用于校验失败时把输入框还原回去
 let manualPlayTriggerSaved = '.';
@@ -527,6 +533,7 @@ const showTips = () => {
     {label: t('spellResetLevel'), value: formatStatus(spellResetLevel.value)},
     {label: t('hintTrigger'), value: formatTriggerKey(hintTrigger.value)},
     {label: t('maskTrigger'), value: maskTrigger.value ? formatTriggerKey(maskTrigger.value) : t('disabled')},
+    {label: t('dimOnMask'), value: formatStatus(dimOnMask.value)},
     {label: t('deleteTrigger'), value: deleteTrigger.value ? formatTriggerKey(deleteTrigger.value) : t('disabled')},
     {label: t('keyMapping'), value: keyMapping.value || t('disabled')}
   ];
@@ -588,6 +595,7 @@ const applyProfile = (index: number) => {
   spellResetLevel.value = typeof res['spellResetLevel'] === 'boolean' ? res['spellResetLevel'] : false;
   hintTrigger.value = typeof res['hintTrigger'] === 'string' ? res['hintTrigger'] : ' ';
   maskTrigger.value = typeof res['maskTrigger'] === 'string' ? res['maskTrigger'] : '';
+  dimOnMask.value = typeof res['dimOnMask'] === 'boolean' ? res['dimOnMask'] : false;
   deleteTrigger.value = typeof res['deleteTrigger'] === 'string' ? res['deleteTrigger'] : '';
   manualPlayTriggerSaved = manualPlayTrigger.value;
   spellPlayTriggerSaved = spellPlayTrigger.value;
@@ -796,6 +804,14 @@ const setMaskTrigger = (value: string) => {
   maskTriggerSaved = value;
   profiles.value[activeProfile.value].maskTrigger = value;
   setConfig("maskTrigger", value);
+};
+const setDimOnMask = (value: boolean) => {
+  profiles.value[activeProfile.value].dimOnMask = value;
+  setConfig("dimOnMask", value);
+  // 正闭着眼时关掉开关：屏幕已经是暗的了，得立刻还原，不然只能靠再闭一次眼才恢复
+  if (!value && eyesClosedMaskVisible.value) {
+    applyBrightness(false);
+  }
 };
 const setDeleteTrigger = (value: string) => {
   if (isKeyTaken(value, 'delete')) {
@@ -1054,8 +1070,40 @@ const onHintTrigger = () => {
   void tap('tapMiddle');
 };
 
+// 亮度调的是"跑 App 的那台设备"的屏幕，而请求是经 websocket 发回 App 的，
+// 所以只有 App 内置 WebView（加载的是 https://127.0.0.1:<port>）才该调它——
+// 局域网上别人用浏览器进来按闭眼，不能把主机的屏幕搞暗。
+const isInAppWebView = ['127.0.0.1', 'localhost', '[::1]', '::1'].includes(window.location.hostname);
+
+// 不 await、不开 overlay：闭眼可以由快捷键触发，等一个网络往返会卡住打字节奏
+const applyBrightness = (dim: boolean) => {
+  if (!isInAppWebView) {
+    return;
+  }
+  const req = new Request({
+    path: Path.game,
+    headers: {'jsMethod': 'Game.setBrightness'},
+    data: {dim},
+  });
+  client.node!.send(req).catch((error) => {
+    console.error('Failed to set brightness:', error);
+  });
+};
+
+// 闭眼开关的唯一入口：三个触发点（Eye 图标、遮罩点击、maskTrigger 快捷键）都走这里，
+// 免得亮度还原漏在某一条路上
+const setEyesClosed = (value: boolean) => {
+  if (eyesClosedMaskVisible.value === value) {
+    return;
+  }
+  eyesClosedMaskVisible.value = value;
+  if (dimOnMask.value) {
+    applyBrightness(value);
+  }
+};
+
 const onMaskTrigger = () => {
-  eyesClosedMaskVisible.value = !eyesClosedMaskVisible.value;
+  setEyesClosed(!eyesClosedMaskVisible.value);
 };
 
 // 空键不算触发键，过滤掉，免得用户还没填键的那一行把普通输入吃掉
@@ -1170,6 +1218,14 @@ onMounted(async () => {
     await applyRemote(state);
     return new Response();
   });
+});
+
+// 闭眼状态下页面被切走：屏幕还暗着，还原一次。
+// （App 那边 RepeatLogic.onClose / JsRuntime.dispose 也有兜底，这里是最快的那条）
+onUnmounted(() => {
+  if (eyesClosedMaskVisible.value && dimOnMask.value) {
+    applyBrightness(false);
+  }
 });
 
 </script>
