@@ -915,11 +915,16 @@ const removeBinding = (index: number) => {
 type KeyPickerTarget = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | number;
 const keyPickerVisible = ref(false);
 const keyPickerTarget = ref<KeyPickerTarget | null>(null);
-// 键盘上打不出/不方便打出来的按键，选中后写成 \name 的形式
-const specialKeyNames = ['Enter', 'Tab', 'Escape', 'NumLock', 'CapsLock', 'Insert',
-  'Home', 'End', 'PageUp', 'PageDown',
-  'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'];
-const specialKeyItems = computed(() => specialKeyNames.map((name) => ({name})));
+// 键盘上打不出/不方便打出来的按键，选中后写成 \name 的形式。
+// key 是 keydown 事件里的 e.key（大小写不敏感），label 只用于列表展示：
+// Mac 上 Option 键的 e.key 也是 'Alt'，所以只有一条配置，展示时把两个名字都写出来。
+const specialKeyNames: { key: string; label?: string }[] = [
+  {key: 'Enter'}, {key: 'Tab'}, {key: 'Escape'}, {key: 'NumLock'}, {key: 'CapsLock'}, {key: 'Insert'},
+  {key: 'Alt', label: 'Alt / Option'}, {key: 'Control'}, {key: 'Shift'}, {key: 'Meta', label: 'Meta / Command'},
+  {key: 'Home'}, {key: 'End'}, {key: 'PageUp'}, {key: 'PageDown'},
+  {key: 'F1'}, {key: 'F2'}, {key: 'F3'}, {key: 'F4'}, {key: 'F5'}, {key: 'F6'},
+  {key: 'F7'}, {key: 'F8'}, {key: 'F9'}, {key: 'F10'}, {key: 'F11'}, {key: 'F12'}];
+const specialKeyItems = computed(() => specialKeyNames.map(({key, label}) => ({name: label ?? key, key})));
 
 const openKeyPicker = (target: KeyPickerTarget) => {
   keyPickerTarget.value = target;
@@ -928,11 +933,11 @@ const openKeyPicker = (target: KeyPickerTarget) => {
 
 const appendKeyToken = (current: string, token: string) => current ? `${current}•${token}` : token;
 
-const onChooseSpecialKey = (item: { name: string }) => {
+const onChooseSpecialKey = (item: { name: string; key: string }) => {
   keyPickerVisible.value = false;
   const target = keyPickerTarget.value;
   if (target === null) return;
-  const token = `\\${item.name.toLowerCase()}`;
+  const token = `\\${item.key.toLowerCase()}`;
   if (target === 'manualPlay') {
     manualPlayTrigger.value = appendKeyToken(manualPlayTrigger.value, token);
     setManualPlayTrigger(manualPlayTrigger.value);
