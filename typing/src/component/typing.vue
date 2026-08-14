@@ -95,13 +95,13 @@ const props = withDefaults(defineProps<{
   keyMapping: '',
 });
 
-// T9 风格按键映射："a:abc,q:def" -> 按下 a 时，目标字母是 a/b/c 都算对；按下 q 时，
+// T9 风格按键映射："a:abc•q:def" -> 按下 a 时，目标字母是 a/b/c 都算对；按下 q 时，
 // 目标字母是 d/e/f 都算对。分组里混入的数字（比如老式九宫格键盘的助记写法 "a:2abc"）会被
-// 过滤掉，不参与匹配，纯粹是可选的书写习惯。
+// 过滤掉，不参与匹配，纯粹是可选的书写习惯。分隔符用 • 而不是逗号，因为有的用户键盘打不出逗号。
 const keyMap = computed<Record<string, string>>(() => {
   const map: Record<string, string> = {};
   if (!props.keyMapping) return map;
-  for (const pair of props.keyMapping.split(',')) {
+  for (const pair of props.keyMapping.split('•')) {
     const [rawKey, rawGroup] = pair.split(':');
     if (!rawKey || !rawGroup) continue;
     const key = rawKey.trim().toLowerCase();

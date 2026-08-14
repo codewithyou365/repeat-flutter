@@ -134,7 +134,7 @@
       <template #link>
         <nut-input
             v-model="keyMapping"
-            placeholder="a:abc,q:def"
+            placeholder="a:abc•q:def"
             style="text-align: right"
             @blur="setKeyMapping(keyMapping)"
         />
