@@ -454,6 +454,11 @@ class JsRuntime {
         } else {
           await ScreenBrightnessHelper.restore();
         }
+        // 遮挡（"黑屏模式"）期间把状态栏/导航栏也藏掉，看起来才真像锁了屏；
+        // 跟调暗是两个独立开关，所以单独判。
+        if (args is Map && args.containsKey('immersive')) {
+          _setImmersive(args['immersive'] == true);
+        }
         return 'ok';
       });
       _jsRuntime!.onMessage('setData', (dynamic args) async {
@@ -542,12 +547,25 @@ class JsRuntime {
   }
 
   /// 3. 析构代码 (非常重要：释放底层内存)
+  /// 沉浸式（全屏隐藏系统栏）开关。还原时交回复习页自己的那套规则，
+  /// 免得把横屏/专注模式下本来就该隐藏的系统栏又放出来。
+  static void _setImmersive(bool immersive) {
+    if (immersive) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky, overlays: []);
+    } else if (Get.isRegistered<RepeatLogic>()) {
+      Get.find<RepeatLogic>().applySystemUiMode();
+    } else {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
+    }
+  }
+
   void dispose() {
     if (_jsRuntime != null) {
       subNewVerse.off();
       _sfxPlayer.dispose();
-      // 闭眼状态下游戏被关掉时，网页那边的"关闭闭眼"回调不会跑，这里兜底还原亮度
+      // 闭眼状态下游戏被关掉时，网页那边的"关闭闭眼"回调不会跑，这里兜底还原亮度和系统栏
       ScreenBrightnessHelper.restore();
+      _setImmersive(false);
       // 释放 C/C++ 层的内存资源，防止长时间运行导致 OOM
       _jsRuntime!.dispose();
       _jsRuntime = null;

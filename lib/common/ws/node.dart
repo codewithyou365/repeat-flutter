@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:repeat_flutter/common/app_lifecycle.dart';
+
 import 'message.dart';
 
 class Node<User> {
@@ -58,6 +60,14 @@ class Node<User> {
   void start() {
     cancelTimer();
     closeTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      // App 在后台（锁屏、切走）时不判掉线：内嵌 WebView 里的 JS 被 Chromium 冻结，
+      // 2s 心跳根本发不出来，这时候按 10s 静默把连接关掉纯属误杀，解锁回来就成了
+      // "游戏服务连不上"。顺手把期限往后推，免得刚回前台的第一轮扫描又立刻判死。
+      // 局域网上的学生端自己是前台跑着的，心跳照常，不受这条影响。
+      if (AppLifecycle.background) {
+        resetCloseTime();
+        return;
+      }
       if (closeTime.isBefore(DateTime.now())) {
         stop();
       }

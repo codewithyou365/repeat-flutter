@@ -5,7 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:repeat_flutter/common/app_lifecycle.dart';
 import 'package:repeat_flutter/common/screen_brightness_helper.dart';
+import 'package:repeat_flutter/common/soft_keyboard.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
@@ -168,6 +170,7 @@ class RepeatLogic extends GetxController {
     });
     state.closeEyesDirect = await Db().db.kvDao.getIntWithDefault(K.closeEyesDirect, 0);
     WakelockPlus.enable();
+    AppLifecycle.addOnResumed(_onResumed);
     SystemChrome.setSystemUIChangeCallback((bool systemOverlaysAreVisible) async {
       state.systemUiVisible = systemOverlaysAreVisible;
     });
@@ -318,6 +321,7 @@ class RepeatLogic extends GetxController {
     SystemChrome.setSystemUIChangeCallback(null);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     WakelockPlus.disable();
+    AppLifecycle.removeOnResumed(_onResumed);
     // 打字游戏闭眼时会把屏幕调暗，直接退出复习页的话网页那边的还原回调跑不到，这里兜底
     await ScreenBrightnessHelper.restore();
     await state.helper.flushPracticeDraft();
@@ -325,6 +329,18 @@ class RepeatLogic extends GetxController {
     if (state.fullScreenMode.value == RepeatFullScreenMode.closeEyes) {
       HapticFeedback.heavyImpact();
     }
+  }
+
+  /// 锁屏解锁 / 从别的 App 切回来之后，把输入焦点抢回内嵌 WebView。
+  ///
+  /// 不做的话游戏里蓝牙键盘一个键都收不到：Activity 重新 resume 时焦点回到 FlutterView，
+  /// 而 FlutterView 会把字符键喂给 TextInputPlugin 残留的 InputConnection（原委见
+  /// SoftKeyboard.showForWebView 的注释），作为子 View 的 WebView 拿不到按键。
+  void _onResumed() {
+    if (state.fullScreenMode.value != RepeatFullScreenMode.gameWebView) {
+      return;
+    }
+    SoftKeyboard.showForWebView();
   }
 
   void switchFocusMode() {

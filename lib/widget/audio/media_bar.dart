@@ -87,6 +87,9 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
   static bool initMenuWidth = false;
   static double menuWidth = 224;
   late final AnimationController _animController;
+  /// 不依赖 vsync 的判停心跳，App 在后台时靠它把音频停在 qEnd（见 _checkAutoStop）
+  Timer? _autoStopTimer;
+  bool _stopping = false;
 
   @override
   void initState() {
@@ -98,25 +101,31 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
     );
 
     _animController.addListener(_updateOffset);
+    _autoStopTimer = Timer.periodic(const Duration(milliseconds: 100), (_) => _checkAutoStop());
 
     if (widget.getSpeed != null) {
       _currentSpeed = widget.getSpeed!();
     }
   }
 
-  void _updateOffset() {
-    if (!mounted || !_isPlaying || _isLoading) return;
-
-    // Player clock: prefer the position reported by the player, which holds
-    // still while the output stalls (e.g. a Bluetooth link waking up); fall
-    // back to wall time when the player can't report one.
-    double playerElapsedMs;
+  /// 播放器当前时刻（ms）。优先用播放器自己报的位置，它在输出卡住（比如蓝牙链路
+  /// 唤醒）时会停住不走；播放器报不出来时退回墙上时间推算。
+  double _playerElapsedMs() {
     if (widget.getPositionMs != null) {
-      playerElapsedMs = widget.getPositionMs!().toDouble();
-    } else {
-      final nowMs = DateTime.now().millisecondsSinceEpoch;
-      playerElapsedMs = _startMediaPositionMs + (nowMs - _startMillisecondsSinceEpoch) * _currentSpeed;
+      return widget.getPositionMs!().toDouble();
     }
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    return _startMediaPositionMs + (nowMs - _startMillisecondsSinceEpoch) * _currentSpeed;
+  }
+
+  /// 到点了就停，停了返回 true。
+  ///
+  /// 单独抽出来是因为它必须脱离 vsync：原来整段判停挂在 AnimationController 的 tick 上，
+  /// App 一进后台（锁屏、切走）vsync 就不再发，这里永远跑不到，音频会一路播到文件尾而不是
+  /// 停在 qEnd。现在除了 tick，还有 _autoStopTimer 这条不依赖 vsync 的定时器也来调它。
+  bool _checkAutoStop() {
+    if (!_isPlaying || _isLoading || _stopping) return false;
+    final playerElapsedMs = _playerElapsedMs();
     // Pause reaches the output with a delay and the sink (e.g. Bluetooth)
     // drains what it already buffered, so the auto stop fires latencyMs of
     // wall time early; the draining tail plays the verse end itself. Reaching
@@ -125,22 +134,40 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
     final latencyMs = widget.getOutputLatencyMs?.call() ?? 0;
     if (_startMediaPositionMs + 50 >= widget.verseEndMs) {
       if (playerElapsedMs >= widget.duration()) {
-        _stopPlayback(false);
-        return;
+        _autoStop();
+        return true;
       }
     } else if (playerElapsedMs >= widget.verseEndMs - latencyMs * _currentSpeed) {
       // Snap the bar to the verse end: the draining tail still plays it.
-      setState(() {
-        _blockOffset = -(widget.verseEndMs - widget.verseStartMs) * MediaBar.pixelPerMs;
-      });
-      _stopPlayback(false);
-      return;
+      if (mounted) {
+        setState(() {
+          _blockOffset = -(widget.verseEndMs - widget.verseStartMs) * MediaBar.pixelPerMs;
+        });
+      }
+      _autoStop();
+      return true;
     }
     if (playerElapsedMs >= widget.duration()) {
-      _stopPlayback(false);
-      return;
+      _autoStop();
+      return true;
     }
-    double heardMs = playerElapsedMs;
+    return false;
+  }
+
+  /// 两条路径（vsync tick 和 _autoStopTimer）可能同时判定到点，_stopping 挡住重入，
+  /// 免得 onStop 被调两次。
+  void _autoStop() {
+    if (_stopping) return;
+    _stopping = true;
+    _stopPlayback(false).whenComplete(() {
+      _stopping = false;
+    });
+  }
+
+  void _updateOffset() {
+    if (!mounted || !_isPlaying || _isLoading) return;
+    if (_checkAutoStop()) return;
+    double heardMs = _playerElapsedMs();
     if (heardMs < _startMediaPositionMs) {
       // The output has not produced sound for this run yet.
       heardMs = _startMediaPositionMs.toDouble();
@@ -277,6 +304,8 @@ class MediaBarState extends State<MediaBar> with SingleTickerProviderStateMixin 
   @override
   void dispose() {
     widget.onStop(false);
+    _autoStopTimer?.cancel();
+    _autoStopTimer = null;
     _animController.removeListener(_updateOffset);
     _animController.dispose();
     super.dispose();

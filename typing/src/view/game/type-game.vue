@@ -124,6 +124,11 @@
         <nut-switch v-model="dimOnMask" @change="setDimOnMask"/>
       </template>
     </nut-cell>
+    <nut-cell :title="t('immersiveOnMask')" :desc="t('immersiveOnMaskDesc')">
+      <template #link>
+        <nut-switch v-model="immersiveOnMask" @change="setImmersiveOnMask"/>
+      </template>
+    </nut-cell>
     <nut-cell :title="t('deleteTrigger')" :desc="`${t('deleteTriggerDesc')}; ${t('multiKeyDesc')}`">
       <template #link>
         <span v-if="hasSpaceKey(deleteTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
@@ -209,7 +214,7 @@
       <Eye class="info-icon" width="18px" height="18px" @click="setEyesClosed(true)"/>
       <Ask class="info-icon" width="18px" height="18px" @click="showTips"/>
     </div>
-    <div v-if="eyesClosedMaskVisible" class="eyes-closed-mask" @click="setEyesClosed(false)"></div>
+    <div v-if="eyesClosedMaskVisible" class="eyes-closed-mask" @pointerdown.prevent="onMaskPointerDown"></div>
     <div class="typing-content">
       <Typing
           ref="typingRef"
@@ -300,6 +305,7 @@ const spellResetLevel = ref(false);
 const hintTrigger = ref(' ');
 const maskTrigger = ref('');
 const dimOnMask = ref(false);
+const immersiveOnMask = ref(true);
 const deleteTrigger = ref('');
 // 各触发键最后一次成功保存的值，用于校验失败时把输入框还原回去
 let manualPlayTriggerSaved = '.';
@@ -405,15 +411,17 @@ const applyRemote = async (state: TypeState, force = false) => {
   }
 };
 
-// 拉一次共享进度：挂载、换 verse、断线重连后接着别人打到的位置继续
-const getState = async () => {
+// 拉一次共享进度：挂载、换 verse、断线重连后接着别人打到的位置继续。
+// force 只给"整条内容刚换过"的场合用（见 applyRemote）；锁屏回来这种本地已经有输入的
+// 场合必须传 false，否则会把冻结前最后那几个还没上报成功的字给冲掉。
+const getState = async (force = true) => {
   const req = new Request({
     path: Path.game,
     headers: {'jsMethod': 'Game.getState'},
   });
   const res = await client.node!.send(req);
   if (res.error) return;
-  await applyRemote(TypeState.fromJson(res.data), true);
+  await applyRemote(TypeState.fromJson(res.data), force);
 };
 
 // 上报是后台动作：同一时刻最多一条在路上，敲字期间的中间态在 pendingInput 里被合并掉，
@@ -550,6 +558,7 @@ const showTips = () => {
     {label: t('hintTrigger'), value: formatTriggerKey(hintTrigger.value)},
     {label: t('maskTrigger'), value: maskTrigger.value ? formatTriggerKey(maskTrigger.value) : t('disabled')},
     {label: t('dimOnMask'), value: formatStatus(dimOnMask.value)},
+    {label: t('immersiveOnMask'), value: formatStatus(immersiveOnMask.value)},
     {label: t('deleteTrigger'), value: deleteTrigger.value ? formatTriggerKey(deleteTrigger.value) : t('disabled')},
     {label: t('keyMapping'), value: keyMapping.value || t('disabled')}
   ];
@@ -613,6 +622,7 @@ const applyProfile = (index: number) => {
   hintTrigger.value = typeof res['hintTrigger'] === 'string' ? res['hintTrigger'] : ' ';
   maskTrigger.value = typeof res['maskTrigger'] === 'string' ? res['maskTrigger'] : '';
   dimOnMask.value = typeof res['dimOnMask'] === 'boolean' ? res['dimOnMask'] : false;
+  immersiveOnMask.value = typeof res['immersiveOnMask'] === 'boolean' ? res['immersiveOnMask'] : true;
   deleteTrigger.value = typeof res['deleteTrigger'] === 'string' ? res['deleteTrigger'] : '';
   manualPlayTriggerSaved = manualPlayTrigger.value;
   spellPlayTriggerSaved = spellPlayTrigger.value;
@@ -833,9 +843,17 @@ const setMaskTrigger = (value: string) => {
 const setDimOnMask = (value: boolean) => {
   profiles.value[activeProfile.value].dimOnMask = value;
   setConfig("dimOnMask", value);
-  // 正闭着眼时关掉开关：屏幕已经是暗的了，得立刻还原，不然只能靠再闭一次眼才恢复
-  if (!value && eyesClosedMaskVisible.value) {
-    applyBrightness(false);
+  // 正闭着眼时改开关：屏幕已经是暗的/系统栏已经藏了，按新设置立刻重下一次，
+  // 不然只能靠再闭一次眼才恢复
+  if (eyesClosedMaskVisible.value) {
+    applyMaskUi(true);
+  }
+};
+const setImmersiveOnMask = (value: boolean) => {
+  profiles.value[activeProfile.value].immersiveOnMask = value;
+  setConfig("immersiveOnMask", value);
+  if (eyesClosedMaskVisible.value) {
+    applyMaskUi(true);
   }
 };
 const setDeleteTrigger = (value: string) => {
@@ -1152,31 +1170,45 @@ const onHintTrigger = () => {
 // 局域网上别人用浏览器进来按闭眼，不能把主机的屏幕搞暗。
 const isInAppWebView = ['127.0.0.1', 'localhost', '[::1]', '::1'].includes(window.location.hostname);
 
-// 不 await、不开 overlay：闭眼可以由快捷键触发，等一个网络往返会卡住打字节奏
-const applyBrightness = (dim: boolean) => {
+// 遮挡（"黑屏模式"）时把 App 那台设备的屏幕调暗、系统栏藏掉；取消遮挡时还原。
+// 两件事各有一个开关，一起下发给 App。
+// 不 await、不开 overlay：闭眼可以由快捷键触发，等一个网络往返会卡住打字节奏。
+const applyMaskUi = (masked: boolean) => {
   if (!isInAppWebView) {
     return;
   }
   const req = new Request({
     path: Path.game,
     headers: {'jsMethod': 'Game.setBrightness'},
-    data: {dim},
+    data: {dim: masked && dimOnMask.value, immersive: masked && immersiveOnMask.value},
   });
   client.node!.send(req).catch((error) => {
-    console.error('Failed to set brightness:', error);
+    console.error('Failed to apply mask ui:', error);
   });
 };
 
-// 闭眼开关的唯一入口：三个触发点（Eye 图标、遮罩点击、maskTrigger 快捷键）都走这里，
-// 免得亮度还原漏在某一条路上
+// 闭眼开关的唯一入口：三个触发点（Eye 图标、遮罩上连点两下、maskTrigger 快捷键）都走这里，
+// 免得亮度/系统栏的还原漏在某一条路上
 const setEyesClosed = (value: boolean) => {
   if (eyesClosedMaskVisible.value === value) {
     return;
   }
   eyesClosedMaskVisible.value = value;
-  if (dimOnMask.value) {
-    applyBrightness(value);
+  applyMaskUi(value);
+};
+
+// 黑屏模式下单击不退出：屏幕全黑之后揣兜里/放桌上，一碰就退出没法用。要连点两下才退。
+// pointerdown 上 preventDefault 是关键：不然手指碰到遮罩，typing 那个覆盖层 <input> 会失焦，
+// 蓝牙键盘立刻整个哑掉。maskTrigger 快捷键仍然随时可以切。
+let lastMaskTapAt = 0;
+const onMaskPointerDown = () => {
+  const now = Date.now();
+  if (now - lastMaskTapAt < 400) {
+    lastMaskTapAt = 0;
+    setEyesClosed(false);
+    return;
   }
+  lastMaskTapAt = now;
 };
 
 const onMaskTrigger = () => {
@@ -1235,6 +1267,19 @@ const onWordAsk = async (binding: AssistiveTouchBinding, bounds: { start: number
   }
 };
 
+// 手机锁屏 / 切到别的 App 之后回来：WebView 里的 JS 在这期间是被 Chromium 冻结的，
+// 输入框的焦点、软键盘、WebSocket 连接都可能已经没了。回到可见状态时统一自愈一次：
+// 抢回焦点 → 让 App 重新把焦点给 WebView（蓝牙键盘只认焦点）→ 补一次共享进度，
+// 把锁屏期间别人打的字接上。
+const onVisibilityChange = async () => {
+  if (document.visibilityState !== 'visible') {
+    return;
+  }
+  typingRef.value?.focus();
+  await raiseSoftKeyboard();
+  await getState(false);
+};
+
 const refresh = async () => {
   try {
     overlayVisible.value = true;
@@ -1274,6 +1319,7 @@ onMounted(async () => {
   await nextTick();
   typingRef.value?.focus();
   await raiseSoftKeyboard();
+  document.addEventListener('visibilitychange', onVisibilityChange);
   client.controllers.set('gameRefresh', async (_: Request) => {
     await refresh();
     return new Response();
@@ -1300,8 +1346,9 @@ onMounted(async () => {
 // 闭眼状态下页面被切走：屏幕还暗着，还原一次。
 // （App 那边 RepeatLogic.onClose / JsRuntime.dispose 也有兜底，这里是最快的那条）
 onUnmounted(() => {
-  if (eyesClosedMaskVisible.value && dimOnMask.value) {
-    applyBrightness(false);
+  document.removeEventListener('visibilitychange', onVisibilityChange);
+  if (eyesClosedMaskVisible.value) {
+    applyMaskUi(false);
   }
 });
 

@@ -515,6 +515,9 @@ enum I18nKey {
   practiceCheckDiff,
   practiceCheckExpected,
   practiceCheckActual,
+  batteryOptTitle,
+  batteryOptDesc,
+  batteryOptGoSet,
   none;
 
   String trArgs([List<String> args = const []]) {

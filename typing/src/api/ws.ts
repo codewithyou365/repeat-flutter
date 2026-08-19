@@ -313,6 +313,35 @@ class Client {
         this.logger = logger;
         this.node = null;
         this.controllers = new Map();
+        if (typeof document !== 'undefined') {
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    this.resumeNow();
+                }
+            });
+        }
+    }
+
+    /**
+     * 页面重新可见时立刻恢复连接。
+     *
+     * 手机锁屏 / 切走之后，WebView 里的定时器被 Chromium 冻结：心跳发不出去，服务端 10s 后
+     * 把连接关掉；重连用的那个 1s 定时器同样冻着，回来之后还要白等一轮才动。所以这里不等定时器，
+     * 该重连的马上重连，还连着的马上补一次心跳，好尽快发现 socket 其实已经死了。
+     */
+    resumeNow() {
+        if (this.status === ClientStatus.CONNECT_FINISH) {
+            this._loopHeart();
+            return;
+        }
+        if (this.status === ClientStatus.STOP_FOR_RECONNECT_FINISH
+            || this.status === ClientStatus.CONNECT_CLOSE) {
+            if (this.retry) {
+                clearTimeout(this.retry);
+                this.retry = null;
+            }
+            this.start(this.url, this.statusChange, this.heartSender);
+        }
     }
 
     async send(req: Request): Promise<Response | null> {

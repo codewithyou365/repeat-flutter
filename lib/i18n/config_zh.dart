@@ -515,5 +515,9 @@ class ConfigZh extends Config {
     put(I18nKey.practiceCheckDiff, "有 @0 处不同");
     put(I18nKey.practiceCheckExpected, "正确答案");
     put(I18nKey.practiceCheckActual, "我的输入");
+    put(I18nKey.batteryOptTitle, "保持游戏服务不被中断");
+    put(I18nKey.batteryOptDesc,
+        "游戏服务跑在本应用里。手机息屏后系统可能把它挂起：局域网上其他设备会连不上，音频也不会在该停的地方停下。\n\n接下来会弹出系统窗口，请求关闭本应用的电池优化。允许它，息屏时游戏才能一直连得上。");
+    put(I18nKey.batteryOptGoSet, "去设置");
   }
 }

@@ -517,5 +517,9 @@ class ConfigEn extends Config {
     put(I18nKey.practiceCheckDiff, "@0 difference(s)");
     put(I18nKey.practiceCheckExpected, "Answer");
     put(I18nKey.practiceCheckActual, "Your input");
+    put(I18nKey.batteryOptTitle, "Keep the game server alive");
+    put(I18nKey.batteryOptDesc,
+        "The game server runs inside this app. When the screen turns off, Android may suspend it: other devices on the LAN lose the connection, and audio no longer stops at the right point.\n\nNext you will see a system dialog asking to turn off battery optimization for this app. Allow it to keep the game reachable while the screen is off.");
+    put(I18nKey.batteryOptGoSet, "Go to settings");
   }
 }

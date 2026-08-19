@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/app_lifecycle.dart';
 import 'package:repeat_flutter/common/extension.dart';
 import 'package:repeat_flutter/common/ssl.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -12,6 +13,7 @@ import 'logic/base/constant.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  AppLifecycle.install();
   var logic = Get.put<MyAppLogic>(MyAppLogic());
   await _bootstrap(logic);
   runApp(RestartWidget(child: MyApp()));

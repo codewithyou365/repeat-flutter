@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 import 'package:repeat_flutter/common/ws/message.dart' as message;
+import 'package:repeat_flutter/common/foreground_service.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/ws/message.dart';
 import 'package:repeat_flutter/common/ws/node.dart';
@@ -82,6 +83,8 @@ class GameWebServer {
     server.controllers[Path.gameUserScoreMinus] = (request) => withGameUser(request, gameUserScoreMinus);
 
     open = true;
+    // 挂上前台服务：锁屏之后进程不会被冻结，局域网上的学生端连得上，音频判停定时器也照跑。
+    await ForegroundService.start();
 
     return;
   }
@@ -92,6 +95,7 @@ class GameWebServer {
 
   Future<void> stop() async {
     try {
+      await ForegroundService.stop();
       await server.stop();
       jsRuntime.dispose();
       open = false;

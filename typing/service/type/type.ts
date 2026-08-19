@@ -344,10 +344,11 @@ const Util = {
             return '';
         }
     },
-    // 调的是跑 App 的那台设备的屏幕亮度，所以只该由 App 内置 WebView 的客户端触发
-    setBrightness: async function (dim: boolean): Promise<any> {
+    // 调的是跑 App 的那台设备的屏幕亮度/系统栏，所以只该由 App 内置 WebView 的客户端触发。
+    // payload 原样透传：dim 控制调暗，immersive 控制隐藏状态栏/导航栏，两者独立。
+    setBrightness: async function (payload: { dim?: boolean; immersive?: boolean }): Promise<any> {
         try {
-            return await sendMessage('setBrightness', JSON.stringify({dim}));
+            return await sendMessage('setBrightness', JSON.stringify(payload));
         } catch (e) {
             return '';
         }
@@ -858,12 +859,17 @@ const Game = {
         }
     },
 
-    // 闭眼遮挡时把屏幕调暗/还原。不加管理员门禁：闭眼是玩家动作，
-    // 由客户端保证只有 App 内置 WebView 才会调过来。
+    // 闭眼遮挡（"黑屏模式"）时把屏幕调暗/还原、把系统栏藏掉/放回。不加管理员门禁：
+    // 闭眼是玩家动作，由客户端保证只有 App 内置 WebView 才会调过来。
+    // immersive 缺省时不传，Dart 侧就不动系统栏（老版本页面的行为保持不变）。
     setBrightness: async function (args: GameArgs): Promise<string> {
         try {
             const data = args.data || {};
-            await Util.setBrightness(data.dim === true);
+            const payload: { dim: boolean; immersive?: boolean } = {dim: data.dim === true};
+            if (data.immersive !== undefined) {
+                payload.immersive = data.immersive === true;
+            }
+            await Util.setBrightness(payload);
             return JSON.stringify({data: 'ok'});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});

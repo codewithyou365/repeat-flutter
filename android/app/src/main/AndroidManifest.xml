@@ -6,6 +6,15 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
+    <!-- 游戏服务器开着时挂一条常驻通知把进程钉在前台，否则锁屏后 Android 12+ 会冻结进程：
+         局域网上的学生端连不上，音频也不会停在 qEnd。见 GameForegroundService。 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- 光有前台服务在小米上不够：MIUI 的 SmartPower 不认 dataSync 前台服务，息屏 3 秒就把进程
+         打成 idle 并限流网络/定时器。把 App 加进系统的电池优化白名单能挡住这一层。
+         MIUI 设置里那条"省电策略 = 无限制"是另一个开关，只能用户手动改，代码管不到。 -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <application
             android:requestLegacyExternalStorage="true"
             android:label="Repeat"
@@ -35,6 +44,10 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <service
+                android:name=".GameForegroundService"
+                android:exported="false"
+                android:foregroundServiceType="dataSync"/>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
