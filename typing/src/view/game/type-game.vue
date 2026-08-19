@@ -1564,10 +1564,14 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   flex: 1; /* 继承父级的高度占满 */
+  min-height: 0; /* 不加这条，flex 子项的 min-height:auto 会被内容撑高，滚动条永远出不来 */
 }
 
 .typing-content {
   flex: 1; /* 自动撑开，把 actions 挤到最下面 */
+  min-height: 0;
+  overflow-y: auto; /* 内容多到一屏放不下时自己滚，底部按钮和顶部图标保持不动 */
+  -webkit-overflow-scrolling: touch;
   padding: 10px;
   padding-top: 0;
 }

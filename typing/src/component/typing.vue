@@ -1,6 +1,6 @@
 <template>
   <label>
-    <div class="typing" ref="containerRef" @click="focusInput"
+    <div class="typing" :class="{ 'no-scroll': paintMode }" ref="containerRef" @click="focusInput"
          @touchstart="handleTouch($event, 'start')"
          @touchmove="handleTouch($event, 'move')"
          @touchend="handleTouch($event, 'end')"
@@ -179,6 +179,11 @@ const isCJK = computed(() => {
 
 const disabled = computed(() => {
   return props.disabled;
+});
+
+// 划字模式：只有它成立时 handleTouch 才会吃掉手势，别的场景要把纵向滚动让给页面
+const paintMode = computed(() => {
+  return disabled.value && (props.clickFillCharWhenDisabled.length === 1 || !!props.touchColor);
 });
 
 const groups = computed(() => {
@@ -745,6 +750,8 @@ const positionInput = () => {
   const targetPos = pos < props.content.length ? pos : props.content.length - 1;
   const targetEl = charRefs.value[targetPos];
   if (targetEl) {
+    // 内容超过一屏时，光标走到看不见的行要把它带回可视区（block:'nearest' 在已可见时是空操作）
+    targetEl.scrollIntoView({block: 'nearest', inline: 'nearest'});
     const targetRect = targetEl.getBoundingClientRect();
     const containerRect = containerRef.value.getBoundingClientRect();
     inputRef.value.style.left = `${targetRect.left - containerRect.left}px`;
@@ -849,7 +856,13 @@ defineExpose({
   cursor: text;
   user-select: none;
   position: relative;
-  touch-action: none; /* 防止页面跟着手指滚动 */
+  /* 只锁横向手势，纵向留给外层滚动：内容多到一屏放不下时手指还能把页面划上去 */
+  touch-action: pan-y;
+}
+
+/* 划字模式（disabled + 点击/涂色填字）下手指是用来涂格子的，这时才彻底禁掉滚动 */
+.typing.no-scroll {
+  touch-action: none;
 }
 
 .typing-line {
