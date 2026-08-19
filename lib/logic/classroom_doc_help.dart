@@ -44,16 +44,7 @@ class ClassroomDocHelp {
       classroomContent = {};
     }
 
-    // 游戏（'g'）的 'i' 是本机 Game 表的 id，对外分享时不能带出去。
-    // 'u'/'ek'（订阅来源）和课堂的 'gs'（订阅表）反过来要带上：
-    // 对方导入后照样能对这些游戏检查更新。
-    if (!databaseData && classroomContent['g'] is List) {
-      for (final game in classroomContent['g'] as List) {
-        if (game is Map) {
-          game.remove('i');
-        }
-      }
-    }
+    await fillGameData(classroomContent, databaseData: databaseData);
     if (rootUrl != null) {
       DocHelp.fixDownloadInfo(classroomContent);
       classroomContent['r'] = rootUrl;
@@ -96,6 +87,90 @@ class ClassroomDocHelp {
     sink.write(']}');
     await sink.flush();
     return ret;
+  }
+
+  /// 处理课堂内容里游戏数组（'g'）跟库相关的两个 key：
+  ///
+  /// - 'i' 是本机 Game 表的 id，对外分享（databaseData=false）时不能带出去。
+  ///   'u'/'ek'（订阅来源）和课堂的 'gs'（订阅表）反过来要带上：对方导入后照样能检查更新。
+  /// - [ClassroomDocField.gameData] 是游戏自己的数据，真身在 Game 表的 data 列，
+  ///   不在 [Classroom.content] 里。不管网络编辑还是对外分享，都按 'i' 从库里取出来塞进文档：
+  ///   网络编辑是为了能改它，分享是为了让对方连数据一起拿走（导入时由
+  ///   [ClassroomHelp] 登记游戏时写回 Game 表）。
+  ///
+  /// 就地改传进来的 map。
+  static Future<void> fillGameData(
+    Map<String, dynamic> classroomContent, {
+    required bool databaseData,
+  }) async {
+    final games = classroomContent['g'];
+    if (games is! List) {
+      return;
+    }
+    for (final game in games) {
+      if (game is! Map) {
+        continue;
+      }
+      final id = game['i'];
+      if (!databaseData) {
+        game.remove('i');
+      }
+      if (id is! int) {
+        continue;
+      }
+      final data = await Db().db.gameDao.getData(id);
+      if (data == null || data.isEmpty) {
+        // 库里没有就不覆盖：content 里可能还留着刚导入、尚未登记进 Game 表的那份数据
+        continue;
+      }
+      game[ClassroomDocField.gameData] = decodeGameData(data);
+    }
+  }
+
+  /// [fillGameData] 的反向：把 'g[].d' 摘走写回 Game 表的 data 列，
+  /// 返回后 [classroomContent] 就是该存进 [Classroom.content] 的样子（不含 'd'）。
+  ///
+  /// 认 'i'，没有 'i' 就按游戏名找（单本编辑器里新加的游戏还没登记，两样都找不到就跳过——
+  /// 那条游戏会在 [ClassroomHelp] 登记时以空 data 建出来）。
+  static Future<void> takeGameData(int classroomId, Map<String, dynamic> classroomContent) async {
+    final games = classroomContent['g'];
+    if (games is! List) {
+      return;
+    }
+    for (final game in games) {
+      if (game is! Map || !game.containsKey(ClassroomDocField.gameData)) {
+        continue;
+      }
+      final raw = game.remove(ClassroomDocField.gameData);
+      final gameId = game['i'];
+      int? id = gameId is int ? gameId : null;
+      id ??= await Db().db.gameDao.getIdByName(classroomId, (game['n'] ?? '').toString());
+      if (id == null) {
+        continue;
+      }
+      await Db().db.gameDao.setData(id, encodeGameData(raw));
+    }
+  }
+
+  /// 库里存的是 JSON 字符串。能解析就以原样（对象/数组/数字…）放进文档，编辑器里好改；
+  /// 解析不了说明游戏自己存的就是一段裸字符串，那就原样带出去。
+  static dynamic decodeGameData(String data) {
+    try {
+      return jsonDecode(data);
+    } catch (e) {
+      return data;
+    }
+  }
+
+  /// [decodeGameData] 的反向。null 当成"清空"，写空串——跟游戏没写过数据时一致。
+  static String encodeGameData(dynamic raw) {
+    if (raw == null) {
+      return '';
+    }
+    if (raw is String) {
+      return raw;
+    }
+    return jsonEncode(raw);
   }
 
   /// 课堂自己要带走的文件（游戏 zip、提示的字体和提示服务 zip），

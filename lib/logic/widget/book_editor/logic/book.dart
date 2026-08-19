@@ -33,6 +33,8 @@ Future<void> handleBook(HttpRequest request, int bookId) async {
       }
       // 'b' 是课堂文档里书本数组的保留 key，本来就不该在 Classroom.content 里
       classroomContent.remove(ClassroomDocField.books);
+      // 游戏数据在 Game 表里，不在 content 里，取出来挂到 'g[].d' 上让它可编辑
+      await ClassroomDocHelp.fillGameData(classroomContent, databaseData: true);
       docMap.addAll(classroomContent);
       response.headers.add(Header.classroomContentVersion, '${classroom.contentVersion}');
     }

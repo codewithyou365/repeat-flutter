@@ -150,7 +150,8 @@ Future<void> handleClassroomCommit(HttpRequest request, int defaultBookId) async
       return;
     }
 
-    // 6. 课堂自己的内容
+    // 6. 课堂自己的内容。'g[].d' 是游戏数据，摘出来写回 Game 表，不进 content。
+    await ClassroomDocHelp.takeGameData(classroomId, splitter.head);
     await Db().db.classroomDao.updateContent(classroomId, jsonEncode(splitter.head));
 
     // 7. 一本一本落库

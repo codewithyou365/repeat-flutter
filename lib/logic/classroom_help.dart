@@ -14,6 +14,8 @@ import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
 import 'package:repeat_flutter/db/entity/tip.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
+import 'package:repeat_flutter/logic/classroom_doc_help.dart';
+import 'package:repeat_flutter/logic/model/classroom_content.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
@@ -190,6 +192,15 @@ class ClassroomHelp {
       final ok = await _ensureContentReady(game, downloads, resPath);
       if (!ok) continue;
 
+      // 分享文档会把游戏数据（'d'）一起带过来（见 [ClassroomDocHelp.fillGameData]）。
+      // 数据的真身是 Game.data，content 里只放宣告，所以写进库之后就把这个 key 摘掉。
+      final rawGame = gameData[i];
+      String? importedData;
+      if (rawGame is Map && rawGame.containsKey(ClassroomDocField.gameData)) {
+        importedData = ClassroomDocHelp.encodeGameData(rawGame.remove(ClassroomDocField.gameData));
+        contentChanged = true;
+      }
+
       Game? gameEntity;
       if (game.id != null) {
         gameEntity = await Db().db.gameDao.getById(game.id!);
@@ -204,7 +215,7 @@ class ClassroomHelp {
             k: game.key,
             name: game.name,
             hash: game.hash,
-            data: '',
+            data: importedData ?? '',
             service: game.service,
             createTime: DateTime.now().millisecondsSinceEpoch,
           ),
@@ -216,6 +227,9 @@ class ClassroomHelp {
         gameEntity.name = game.name;
         gameEntity.hash = game.hash;
         gameEntity.service = game.service;
+        if (importedData != null) {
+          gameEntity.data = importedData;
+        }
         await Db().db.gameDao.updateOrReplace(gameEntity);
       }
       currentGameNames.add(game.name);

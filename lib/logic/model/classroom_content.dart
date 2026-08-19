@@ -36,6 +36,19 @@ class ClassroomDocField {
   /// [DocPath.getFilesRelativePathOf] 下（跟游戏一样）。
   static const String tips = 't';
 
+  /// 游戏条目（'g' 里的每一项）在网络编辑时多出来的一个 key：游戏自己的数据。
+  ///
+  /// 它不存在 [Classroom.content] 里，真身是 Game 表的 data 列——游戏 JS 用
+  /// setData/getData 读写的那份。为了能在网络编辑里改它，出去时按 'i' 从库里取出来
+  /// 塞进这个 key（[ClassroomDocHelp.fillGameData]），提交时再摘走写回 Game 表
+  /// （[ClassroomDocHelp.takeGameData]），所以它始终不会落进 Classroom.content。
+  ///
+  /// 库里存的是一个 JSON 字符串，为了好编辑，能解析就以对象/数组的原样放进文档，
+  /// 解析不了才退回字符串；写回时反过来。对外分享的文档不带它（跟 'i' 一样）。
+  ///
+  /// 注意这个 'd' 在游戏条目里面，跟课堂顶层那个下载清单 'd' 是两回事，互不影响。
+  static const String gameData = 'd';
+
   /// 书本 id。只在网络编辑（databaseData=true）时带上：
   /// 有 id 就是改已有的书，没 id 就是新建一本。
   /// 对外分享的文档不带它，所以导入方一律新建。

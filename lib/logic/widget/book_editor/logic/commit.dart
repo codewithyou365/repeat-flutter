@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/edit_book_history.dart';
 import 'package:repeat_flutter/logic/book_cache_version.dart';
+import 'package:repeat_flutter/logic/classroom_doc_help.dart';
 import 'package:repeat_flutter/logic/model/classroom_content.dart';
 import 'package:repeat_flutter/logic/reimport_help.dart';
 
@@ -66,6 +67,8 @@ Future<void> handleCommit(HttpRequest request, int bookId) async {
         response.write("Commit failed because the classroom version is not consistent");
         return;
       }
+      // 'g[].d' 是游戏数据，写回 Game 表而不是 content（见 ClassroomDocHelp.takeGameData）
+      await ClassroomDocHelp.takeGameData(classroom.id, jsonData);
       await Db().db.classroomDao.updateContent(classroom.id, jsonEncode(jsonData));
     }
 
