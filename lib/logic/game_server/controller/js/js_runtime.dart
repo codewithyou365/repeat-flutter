@@ -40,6 +40,10 @@ class JsRuntime {
   final SubList<int> subNewVerse = [];
   final AudioPlayer _sfxPlayer = AudioPlayer();
   final Map<String, String> _sfxCache = {};
+  // 提示音的"准备"(下载 + setFilePath)必须串行:打字快的时候 playWrong 会并发进来好几条,
+  // 同时对同一个 player setFilePath 会互相打断,表现就是偶尔一声都不响。
+  Future<void> _sfxPrepare = Future.value();
+  String? _sfxLoadedPath;
 
   JsRuntime({
     required this.ttsHelper,
@@ -49,6 +53,45 @@ class JsRuntime {
     required this.tapMiddle,
     required this.longTapMiddle,
   });
+
+  // 把提示音准备好:下载到本地文件并 setFilePath。整段挂在 _sfxPrepare 链上串行执行,
+  // 已经装载过同一个文件就直接跳过,连着打错时只剩 seek+play,不再反复重载。
+  Future<void> _prepareSfx(String url) {
+    final next = _sfxPrepare.then((_) async {
+      var localPath = _sfxCache[url];
+      if (localPath == null || !await File(localPath).exists()) {
+        // 游戏服务器是自签名 HTTPS(仅 WebView 的 onReceivedServerTrustAuthRequest
+        // 信任了该证书),just_audio 底层走系统播放器直连该证书会被拒绝(Source error),
+        // 所以这里手动下载字节后落地临时文件,再让 just_audio 播放本地文件。
+        final client = HttpClient()..badCertificateCallback = (cert, host, port) => true;
+        try {
+          final httpRequest = await client.getUrl(Uri.parse(url));
+          final response = await httpRequest.close();
+          if (response.statusCode != 200) {
+            throw Exception('HTTP ${response.statusCode}');
+          }
+          final builder = BytesBuilder();
+          await for (final chunk in response) {
+            builder.add(chunk);
+          }
+          final bytes = builder.takeBytes();
+          final tempDir = await getTemporaryDirectory();
+          localPath = '${tempDir.path}/sfx_${url.hashCode}.wav';
+          await File(localPath).writeAsBytes(bytes, flush: true);
+          _sfxCache[url] = localPath;
+        } finally {
+          client.close();
+        }
+      }
+      if (_sfxLoadedPath != localPath) {
+        await _sfxPlayer.setFilePath(localPath);
+        _sfxLoadedPath = localPath;
+      }
+    });
+    // 链上某一条失败不能把后面的都带崩,所以吞掉异常继续排队;调用方 await 的是 next。
+    _sfxPrepare = next.catchError((_) {});
+    return next;
+  }
 
   Future<void> init(String coreJsCode, Server server) async {
     if (_isInitialized) return;
@@ -412,33 +455,16 @@ class JsRuntime {
           return 'invalid_url';
         }
         try {
-          var localPath = _sfxCache[url];
-          if (localPath == null || !await File(localPath).exists()) {
-            // 游戏服务器是自签名 HTTPS(仅 WebView 的 onReceivedServerTrustAuthRequest
-            // 信任了该证书),just_audio 底层走系统播放器直连该证书会被拒绝(Source error),
-            // 所以这里手动下载字节后落地临时文件,再让 just_audio 播放本地文件。
-            final client = HttpClient()..badCertificateCallback = (cert, host, port) => true;
-            final httpRequest = await client.getUrl(Uri.parse(url));
-            final response = await httpRequest.close();
-            if (response.statusCode != 200) {
-              client.close();
-              print("❌ playWrong failed for url=$url: HTTP ${response.statusCode}");
-              return 'error';
-            }
-            final builder = BytesBuilder();
-            await for (final chunk in response) {
-              builder.add(chunk);
-            }
-            final bytes = builder.takeBytes();
-            client.close();
-            final tempDir = await getTemporaryDirectory();
-            localPath = '${tempDir.path}/sfx_${url.hashCode}.wav';
-            await File(localPath).writeAsBytes(bytes, flush: true);
-            _sfxCache[url] = localPath;
-          }
-          await _sfxPlayer.stop();
-          await _sfxPlayer.setFilePath(localPath);
-          await _sfxPlayer.play();
+          await _prepareSfx(url);
+        } catch (e) {
+          print("❌ playWrong failed for url=$url: $e");
+          return 'error';
+        }
+        try {
+          // 从头再放一遍。这里不能 await play():just_audio 的 play() 要等这一遍放完才返回,
+          // 而 JS 那头是 await 着这条请求的,连着打错就会被一声一声地卡住。
+          await _sfxPlayer.seek(Duration.zero);
+          _sfxPlayer.play().catchError((e) => print("❌ playWrong failed for url=$url: $e"));
         } catch (e) {
           print("❌ playWrong failed for url=$url: $e");
           return 'error';
