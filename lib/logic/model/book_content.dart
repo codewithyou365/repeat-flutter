@@ -614,7 +614,6 @@ class VerseContent {
   String? showType;
   String? rootUrl;
   List<DownloadContent>? download;
-  String? key;
   String? write;
   String? note;
 
@@ -654,7 +653,6 @@ class VerseContent {
     required this.showType,
     required this.rootUrl,
     required this.download,
-    required this.key,
     required this.write,
     required this.note,
     required this.tips,
@@ -691,7 +689,6 @@ class VerseContent {
       rootUrl: json['r'] as String?,
       download: DownloadContent.toList(json['d']),
       mediaHash: json[VerseField.sectionMediaHash] as String?,
-      key: json['k'] as String?,
       write: json['w'] as String?,
       note: VerseField.getText(json, 'n'),
       tips: tips,
@@ -716,7 +713,6 @@ class VerseContent {
       's': showType,
       'r': rootUrl,
       'd': download?.map((e) => e.toJson()).toList(),
-      'k': key,
       'w': write,
       'l': learnDate,
       'p': progress,
