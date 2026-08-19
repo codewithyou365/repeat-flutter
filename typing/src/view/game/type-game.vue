@@ -40,7 +40,7 @@
         </nut-radio-group>
       </template>
     </nut-cell>
-    <nut-cell :title="t('familiarMs')" :desc="t('familiarMsDesc')">
+    <nut-cell :title="t('familiarMs')">
       <template #link>
         <nut-input
             v-model="familiarMsInput"
@@ -48,6 +48,7 @@
             style="text-align: right"
             @blur="setFamiliarMs(familiarMsInput)"
         />
+        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('familiarMsDesc'))"/>
       </template>
     </nut-cell>
     <nut-cell :title="t('ttsRate')">
@@ -70,7 +71,7 @@
         </nut-radio-group>
       </template>
     </nut-cell>
-    <nut-cell :title="t('manualPlayTrigger')" :desc="t('multiKeyDesc')">
+    <nut-cell :title="t('manualPlayTrigger')">
       <template #link>
         <span v-if="hasSpaceKey(manualPlayTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
         <nut-input
@@ -79,9 +80,10 @@
             @blur="setManualPlayTrigger(manualPlayTrigger)"
         />
         <nut-button size="mini" type="info" plain @click="openKeyPicker('manualPlay')">+</nut-button>
+        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('multiKeyDesc'))"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('spellPlayTrigger')" :desc="t('multiKeyDesc')">
+    <nut-cell :title="t('spellPlayTrigger')">
       <template #link>
         <span v-if="hasSpaceKey(spellPlayTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
         <nut-input
@@ -90,6 +92,7 @@
             @blur="setSpellPlayTrigger(spellPlayTrigger)"
         />
         <nut-button size="mini" type="info" plain @click="openKeyPicker('spellPlay')">+</nut-button>
+        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('multiKeyDesc'))"/>
       </template>
     </nut-cell>
     <nut-cell :title="t('spellResetLevel')">
@@ -102,12 +105,13 @@
         <nut-switch v-model="speakLetters" @change="setSpeakLetters"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('speakWord')" :desc="t('speakWordDesc')">
+    <nut-cell :title="t('speakWord')">
       <template #link>
         <nut-switch v-model="speakWord" @change="setSpeakWord"/>
+        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('speakWordDesc'))"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('hintTrigger')" :desc="t('multiKeyDesc')">
+    <nut-cell :title="t('hintTrigger')">
       <template #link>
         <span v-if="hasSpaceKey(hintTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
         <nut-input
@@ -116,9 +120,10 @@
             @blur="setHintTrigger(hintTrigger)"
         />
         <nut-button size="mini" type="info" plain @click="openKeyPicker('hint')">+</nut-button>
+        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('multiKeyDesc'))"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('maskTrigger')" :desc="t('multiKeyDesc')">
+    <nut-cell :title="t('maskTrigger')">
       <template #link>
         <span v-if="hasSpaceKey(maskTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
         <nut-input
@@ -127,19 +132,22 @@
             @blur="setMaskTrigger(maskTrigger)"
         />
         <nut-button size="mini" type="info" plain @click="openKeyPicker('mask')">+</nut-button>
+        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('multiKeyDesc'))"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('dimOnMask')" :desc="t('dimOnMaskDesc')">
+    <nut-cell :title="t('dimOnMask')">
       <template #link>
         <nut-switch v-model="dimOnMask" @change="setDimOnMask"/>
+        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('dimOnMaskDesc'))"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('immersiveOnMask')" :desc="t('immersiveOnMaskDesc')">
+    <nut-cell :title="t('immersiveOnMask')">
       <template #link>
         <nut-switch v-model="immersiveOnMask" @change="setImmersiveOnMask"/>
+        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('immersiveOnMaskDesc'))"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('deleteTrigger')" :desc="`${t('deleteTriggerDesc')}; ${t('multiKeyDesc')}`">
+    <nut-cell :title="t('deleteTrigger')">
       <template #link>
         <span v-if="hasSpaceKey(deleteTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
         <nut-input
@@ -148,9 +156,10 @@
             @blur="setDeleteTrigger(deleteTrigger)"
         />
         <nut-button size="mini" type="info" plain @click="openKeyPicker('delete')">+</nut-button>
+        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(`${t('deleteTriggerDesc')}; ${t('multiKeyDesc')}`)"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('keyMapping')" :desc="t('keyMappingDesc')">
+    <nut-cell :title="t('keyMapping')">
       <template #link>
         <nut-input
             v-model="keyMapping"
@@ -158,6 +167,7 @@
             style="text-align: right"
             @blur="setKeyMapping(keyMapping)"
         />
+        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('keyMappingDesc'))"/>
       </template>
     </nut-cell>
     <!-- 一条绑定：普通的按下就执行动作；wordAsk 的额外把光标所在的词当 input1 传过去。
@@ -166,7 +176,6 @@
         v-for="(binding, i) in assistiveTouchBindings"
         :key="i"
         :title="binding.wordAsk ? t('wordAskTrigger') : t('assistiveTouchTrigger')"
-        :desc="binding.wordAsk ? t('wordAskTriggerDesc') : ''"
     >
       <template #link>
         <div class="assist-binding">
@@ -188,6 +197,14 @@
             />
           </nut-menu>
           <Del width="16px" height="16px" class="assist-binding-del" @click="removeBinding(i)"/>
+          <Ask
+              v-if="binding.wordAsk"
+              color="#999"
+              width="16px"
+              height="16px"
+              class="cell-help"
+              @click="showHelp(t('wordAskTriggerDesc'))"
+          />
         </div>
       </template>
     </nut-cell>
@@ -551,6 +568,13 @@ const sendInput = async () => {
   }
 };
 
+
+// 设置项的说明塞在 cell 的 desc 里会把整行撑得很高，
+// 统一改成标题旁一个"?"，点了才弹说明
+const showHelp = (text: string) => {
+  tipDialogContent.value = text;
+  tipDialogVisible.value = true;
+};
 
 const showTips = () => {
 
@@ -1574,6 +1598,12 @@ onUnmounted(() => {
 }
 
 /* 一行绑定：键输入框固定窄宽，动作下拉占满剩余空间，删除图标贴右 */
+.cell-help {
+  margin-left: 8px;
+  cursor: pointer;
+  flex-shrink: 0; /* 贴在行尾，别被前面的输入框挤小 */
+}
+
 .assist-binding {
   display: flex;
   align-items: center;
