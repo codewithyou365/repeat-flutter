@@ -126,7 +126,6 @@ class VerseSearchIndex {
     try {
       var content = VerseContent.fromJson(jsonDecode(verseContent));
       return VerseTokenizer.buildIndexText([
-        content.write,
         content.note,
         // 一节可以挂好几条提示，每条都要能搜到。
         ...content.tips.map((e) => e.text),

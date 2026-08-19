@@ -614,7 +614,6 @@ class VerseContent {
   String? showType;
   String? rootUrl;
   List<DownloadContent>? download;
-  String? write;
   String? note;
 
   /// 整节媒体的 hash（'m'）。只有这一节自己换过整节媒体时才写，平时继承 chapter/book 的。
@@ -653,7 +652,6 @@ class VerseContent {
     required this.showType,
     required this.rootUrl,
     required this.download,
-    required this.write,
     required this.note,
     required this.tips,
     required this.question,
@@ -689,7 +687,6 @@ class VerseContent {
       rootUrl: json['r'] as String?,
       download: DownloadContent.toList(json['d']),
       mediaHash: json[VerseField.sectionMediaHash] as String?,
-      write: json['w'] as String?,
       note: VerseField.getText(json, 'n'),
       tips: tips,
       question: VerseField.getText(json, 'q'),
@@ -713,7 +710,6 @@ class VerseContent {
       's': showType,
       'r': rootUrl,
       'd': download?.map((e) => e.toJson()).toList(),
-      'w': write,
       'l': learnDate,
       'p': progress,
       if (mediaHash != null) VerseField.sectionMediaHash: mediaHash,
