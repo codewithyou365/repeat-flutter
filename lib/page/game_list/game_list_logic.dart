@@ -432,11 +432,16 @@ class GameListLogic extends GetxController {
       if (raw != null) {
         raw['h'] = dc.hash;
         raw['s'] = entry.service;
+        // 'k' 跟 's' 一样是包定义的（网页靠它决定进哪个游戏页面）。
+        // manifest 没写就别动本地的，用户可能自己填过。
+        if (entry.contentKey.isNotEmpty) {
+          raw['k'] = entry.contentKey;
+        }
       } else {
         games.add(<String, dynamic>{
           'h': dc.hash,
           'n': _uniqueName(entry.name),
-          'k': '',
+          'k': entry.contentKey,
           's': entry.service,
           'u': subUrl,
           'ek': entry.key,

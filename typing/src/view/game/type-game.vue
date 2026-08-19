@@ -92,6 +92,11 @@
         <nut-switch v-model="speakLetters" @change="setSpeakLetters"/>
       </template>
     </nut-cell>
+    <nut-cell :title="t('speakWord')" :desc="t('speakWordDesc')">
+      <template #link>
+        <nut-switch v-model="speakWord" @change="setSpeakWord"/>
+      </template>
+    </nut-cell>
     <nut-cell :title="t('hintTrigger')" :desc="t('multiKeyDesc')">
       <template #link>
         <span v-if="hasSpaceKey(hintTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
@@ -287,6 +292,7 @@ const ignoreNumber = ref(true);
 const intervalMode = ref<'none' | 'oddHidden' | 'evenHidden'>('none');
 const ttsRate = ref(1);
 const speakLetters = ref(false);
+const speakWord = ref(true);
 const manualTtsRate = ref(0.5);
 const manualPlayTrigger = ref('.');
 const spellPlayTrigger = ref(',');
@@ -536,6 +542,7 @@ const showTips = () => {
     {label: t('intervalDisplay'), value: formatIntervalMode(intervalMode.value)},
     {label: t('ttsRate'), value: `${ttsRate.value}x`},
     {label: t('speakLetters'), value: formatStatus(speakLetters.value)},
+    {label: t('speakWord'), value: formatStatus(speakWord.value)},
     {label: t('manualTtsRate'), value: `${manualTtsRate.value}x`},
     {label: t('manualPlayTrigger'), value: formatTriggerKey(manualPlayTrigger.value)},
     {label: t('spellPlayTrigger'), value: formatTriggerKey(spellPlayTrigger.value)},
@@ -598,6 +605,7 @@ const applyProfile = (index: number) => {
   intervalMode.value = res['intervalMode'] || 'none';
   ttsRate.value = typeof res['ttsRate'] === 'number' ? res['ttsRate'] : 1;
   speakLetters.value = typeof res['speakLetters'] === 'boolean' ? res['speakLetters'] : false;
+  speakWord.value = typeof res['speakWord'] === 'boolean' ? res['speakWord'] : true;
   manualTtsRate.value = typeof res['manualTtsRate'] === 'number' ? res['manualTtsRate'] : 0.5;
   manualPlayTrigger.value = typeof res['manualPlayTrigger'] === 'string' ? res['manualPlayTrigger'] : '.';
   spellPlayTrigger.value = typeof res['spellPlayTrigger'] === 'string' ? res['spellPlayTrigger'] : ',';
@@ -745,6 +753,10 @@ const setTtsRate = (value: number) => {
 const setSpeakLetters = (value: boolean) => {
   profiles.value[activeProfile.value].speakLetters = value;
   setConfig("speakLetters", value);
+};
+const setSpeakWord = (value: boolean) => {
+  profiles.value[activeProfile.value].speakWord = value;
+  setConfig("speakWord", value);
 };
 const setManualTtsRate = (value: number) => {
   profiles.value[activeProfile.value].manualTtsRate = value;
@@ -1053,7 +1065,9 @@ const formatTriggerKey = (key: string) => formatKeySpecsDisplay(key, t('spaceKey
 let pendingWordEnd: number | null = null;
 const flushWord = () => {
   let p: Promise<void> = Promise.resolve();
-  if (pendingWordEnd !== null) {
+  // 关掉整词朗读：打完一个词不出声，练习者的思路不被打断（提示音、逐字母朗读、
+  // 手动播放这些是另外的开关，各管各的）
+  if (pendingWordEnd !== null && speakWord.value) {
     const word = typingRef.value?.getWordAt(pendingWordEnd);
     if (word) p = speak(word);
   }

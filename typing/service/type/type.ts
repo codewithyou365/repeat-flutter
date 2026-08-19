@@ -31,6 +31,7 @@ type ProfileConfig = {
     intervalMode: IntervalMode;
     ttsRate: number;
     speakLetters: boolean;
+    speakWord: boolean;
     manualTtsRate: number;
     manualPlayTrigger: string;
     spellPlayTrigger: string;
@@ -75,7 +76,7 @@ const PROFILE_COUNT = 3;
 const PERSIST_INTERVAL_MS = 1000;
 
 function defaultProfileConfig(): ProfileConfig {
-    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "dimOnMask": false, "keyMapping": "", "assistiveTouchBindings": [], "wordAskTrigger": {"key": "", "action": "", "name": ""}, "spellResetLevel": false};
+    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "speakWord": true, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "dimOnMask": false, "keyMapping": "", "assistiveTouchBindings": [], "wordAskTrigger": {"key": "", "action": "", "name": ""}, "spellResetLevel": false};
 }
 
 function defaultStoredConfig(): StoredConfig {

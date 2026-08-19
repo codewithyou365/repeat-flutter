@@ -1,27 +1,31 @@
 {
   "name": "typing",
-  "version": 1,
+  "version": 2,
   "server": "http://127.0.0.1:8080/typing/manifest.json",
   "games": [
     {
       "key": "type",
       "name": "Type",
-      "service": "service/type.js"
+      "service": "service/type.js",
+      "contentKey": "Type"
     },
     {
       "key": "blank_it_right",
       "name": "Blank It Right",
-      "service": "service/blank_it_right.js"
+      "service": "service/blank_it_right.js",
+      "contentKey": "BlankItRight"
     },
     {
       "key": "word_slicer",
       "name": "Word Slicer",
-      "service": "service/word_slicer.js"
+      "service": "service/word_slicer.js",
+      "contentKey": "WordSlicer"
     },
     {
       "key": "japanese",
       "name": "Japanese",
-      "service": "service/japanese.js"
+      "service": "service/japanese.js",
+      "contentKey": ""
     }
   ]
 }

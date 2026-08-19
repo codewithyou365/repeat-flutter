@@ -16,7 +16,17 @@ class GameManifestEntry {
   /// 入口 js，相对解压目录，允许带子目录（如 'service/type.js'）。
   final String service;
 
-  GameManifestEntry({required this.key, required this.name, required this.service});
+  /// 运行期 key，装进课堂后写进条目的 'k'，原样喂给游戏
+  /// （见 game_server/controller/game_key.dart，网页拿它决定进哪个游戏页面，如 'BlankItRight'）。
+  /// manifest 里写 'contentKey'（也认简写 'k'）。为空表示包不指定，由用户自己填。
+  final String contentKey;
+
+  GameManifestEntry({
+    required this.key,
+    required this.name,
+    required this.service,
+    this.contentKey = '',
+  });
 
   static GameManifestEntry? fromJsonOrNull(dynamic json) {
     if (json is! Map) return null;
@@ -25,7 +35,9 @@ class GameManifestEntry {
     if (key.isEmpty || service.isEmpty) return null;
     var name = (json['name'] ?? '').toString().trim();
     if (name.isEmpty) name = key;
-    return GameManifestEntry(key: key, name: name, service: service);
+    var contentKey = (json['contentKey'] ?? '').toString().trim();
+    if (contentKey.isEmpty) contentKey = (json['k'] ?? '').toString().trim();
+    return GameManifestEntry(key: key, name: name, service: service, contentKey: contentKey);
   }
 }
 
