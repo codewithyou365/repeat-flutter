@@ -66,18 +66,6 @@ enum RepeatType {
   examine,
 }
 
-enum MatchType {
-  word,
-  single,
-  all,
-}
-
-enum ContentTypeEnum {
-  book,
-  chapter,
-  verse,
-}
-
 enum RepeatViewEnum {
   text,
   audio,

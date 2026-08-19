@@ -23,15 +23,6 @@ enum GameServerError {
   wordSlicerYourCommitMustBeConsecutive,
 }
 
-class GameConstant {
-  static const String assetsPath = "assets/game";
-}
-
-class PlaceholderToken {
-  static const String using = '•';
-  static const String replace = '·';
-}
-
 class Path {
   static const kick = '/api/kick';
   static const refreshGame = '/api/refreshGame';

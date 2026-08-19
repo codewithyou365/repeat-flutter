@@ -20,13 +20,6 @@ enum EventTopic {
   updateVerseProgress,
 }
 
-class Event<T> {
-  final EventTopic topic;
-  final T? data;
-
-  Event(this.topic, [this.data]);
-}
-
 class EventBus {
   EventBus._internal();
 

@@ -2,14 +2,6 @@
 
 import 'package:floor/floor.dart';
 
-enum GameType {
-  none,
-  type,
-  blankItRight,
-  wordSlicer,
-  input,
-}
-
 @Entity(
   indices: [
     Index(value: ['userId', 'gameId'], unique: true),

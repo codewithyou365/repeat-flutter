@@ -307,21 +307,3 @@ class ScLogic extends GetxController {
     update([ScLogic.id]);
   }
 }
-
-class ClassroomView {
-  String backgroundColor;
-  String textColor;
-  String title;
-  String description;
-
-  ClassroomView(this.backgroundColor, this.textColor, this.title, this.description);
-
-  factory ClassroomView.fromJson(Map<String, dynamic> json) {
-    return ClassroomView(
-      json['backgroundColor'],
-      json['textColor'],
-      json['title'],
-      json['description'],
-    );
-  }
-}
