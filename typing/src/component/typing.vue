@@ -80,6 +80,10 @@ const props = withDefaults(defineProps<{
   assistTriggers?: string[];
   keyMapping?: string;
   touchColor?: string;
+  // 熟词在 content 里的位置（含头含尾），由父组件按熟词库算好。
+  // 光标走到 start 时发 familiarPrompt（父组件放提示音），在 start 上打对首字母就整词自动补全，
+  // 打错则发 familiarMiss（父组件把这个词移出熟词库）。
+  familiarRanges?: { start: number; end: number }[];
 }>(), {
   clickFillCharWhenDisabled: '',
   touchColor: '',
@@ -94,6 +98,7 @@ const props = withDefaults(defineProps<{
   deleteTrigger: '',
   assistTriggers: () => [],
   keyMapping: '',
+  familiarRanges: () => [],
 });
 
 // T9 风格按键映射："a:abc•q:def" -> 按下 a 时，目标字母是 a/b/c 都算对；按下 q 时，
@@ -138,6 +143,10 @@ const emit = defineEmits<{
   // changedIndexes 是本次新落下的字符下标，用来记"这几个字是谁敲的"；退格/清词传空数组。
   // 注意：只在用户自己的操作里发，initUserInput（应用远端下发的内容）不发，否则会来回回声。
   (e: 'userInputChange', userInput: string, changedIndexes: number[]): void;
+  // 光标刚走到一个熟词的词首（换内容、退格回来、自动填充推进都算）
+  (e: 'familiarPrompt', start: number, word: string): void;
+  // 熟词的首字母打错了
+  (e: 'familiarMiss', start: number, word: string): void;
 }>();
 
 const store = useStore();
@@ -307,6 +316,15 @@ const getWordAt = (index: number): string => {
   return bounds ? props.content.slice(bounds.start, bounds.end + 1) : '';
 };
 
+// 以 index 为词首的熟词区间；index 不是任何熟词的词首就返回 null
+const familiarRangeStartingAt = (index: number) => {
+  return props.familiarRanges.find((r) => r.start === index) ?? null;
+};
+
+const inFamiliarRange = (index: number) => {
+  return props.familiarRanges.some((r) => index >= r.start && index <= r.end);
+};
+
 const emitUserInputChange = (changedIndexes: number[]) => {
   emit('userInputChange', userInput.value, changedIndexes);
 };
@@ -404,6 +422,28 @@ const applyInput = (val: string) => {
       }
     }
     filled.push({index: pos, auto: false});
+
+    // 熟词：首字母就是这个词唯一要敲的字母，敲对了余下的字母按原文一次性补上（算自动填充，
+    // 跟间隔模式补出来的字母同一个待遇：不当成用户敲的）。敲错说明其实没那么熟，
+    // 通知父组件把它移出熟词库；这一下照旧算打错（blockOnWrong 会在下面原地拦住）。
+    const familiarRange = familiarRangeStartingAt(pos);
+    if (familiarRange) {
+      const word = props.content.slice(familiarRange.start, familiarRange.end + 1);
+      if (correct) {
+        const end = Math.min(familiarRange.end, props.content.length - 1);
+        for (let i = pos + 1; i <= end; i++) {
+          if (i >= temp.length) {
+            temp += props.content[i];
+          } else {
+            temp = temp.slice(0, i) + props.content[i] + temp.slice(i + 1);
+          }
+          filled.push({index: i, auto: true});
+        }
+        pos = end; // 下面统一的 pos++ 会把光标推到词尾之后
+      } else {
+        pendingTriggerEmits.push(() => emit('familiarMiss', familiarRange.start, word));
+      }
+    }
 
     if (props.blockOnWrong && !correct) {
       blocked = true;
@@ -669,6 +709,9 @@ const getCharClass = (index: number) => {
   if (index >= userInput.value.length) {
     if (ignored) classes.push('pending-ignore');
     else classes.push('pending');
+    // 还没打到的熟词换个下划线颜色：一眼能看出"这个词只要敲首字母"，
+    // 免得没留意提示音、把整个词敲下去，后面的字母全落到下一个词上
+    if (inFamiliarRange(index)) classes.push('familiar');
   } else {
     const userCh = userInput.value[index];
     const origCh = chars.value[index];
@@ -750,6 +793,22 @@ watch([userInput, groups], async () => {
   positionInput();
 });
 
+// 光标走到熟词词首就通知父组件放提示音。盯 cursorPos 而不是在各条路径上分别埋点：
+// 换内容、自动填充推进、退格回到词首、点选格子都会改它，一处就全覆盖了。
+// 同一个词首只发一次，光标离开再回来才会再响。
+let lastPromptStart: number | null = null;
+watch([cursorPos, () => props.familiarRanges], () => {
+  const range = familiarRangeStartingAt(cursorPos.value);
+  const start = range ? range.start : null;
+  if (start === lastPromptStart) {
+    return;
+  }
+  lastPromptStart = start;
+  if (range) {
+    emit('familiarPrompt', range.start, props.content.slice(range.start, range.end + 1));
+  }
+}, {immediate: true});
+
 defineExpose({
   initUserInput(val: string) {
     userInput.value = val;
@@ -774,6 +833,10 @@ defineExpose({
   // 按内容下标取整词：父组件做整词朗读时用，保证读的是原文而不是自己攒的串
   getWordAt(index: number) {
     return getWordAt(index);
+  },
+  // 按内容下标取整词的起止位置：父组件给熟词计时用
+  getWordBoundsAt(index: number) {
+    return getWordBounds(index);
   },
   clearCurrentWord() {
     clearCurrentWord();
@@ -840,6 +903,11 @@ defineExpose({
 .wrong {
   color: #ef4444;
   border-bottom-color: #ef4444;
+}
+
+/* 熟词（还没打到的部分）：只要敲首字母就会整词补全 */
+.familiar {
+  border-bottom-color: #a855f7;
 }
 
 .ignore-correct {

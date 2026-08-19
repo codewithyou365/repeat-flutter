@@ -238,6 +238,11 @@ class ClassroomHelp {
     final dbGames = await Db().db.gameDao.getByClassroomId(classroomId);
     for (var dbGame in dbGames) {
       if (!currentGameNames.contains(dbGame.name)) {
+        // 游戏没了，它那张 kv 表（熟词库之类）也一起清掉：gameId 是自增主键，
+        // 留着的话下一个游戏拿到同一个 id 就会读到上一个游戏的数据
+        if (dbGame.id != null) {
+          await Db().db.gameKvDao.deleteByGameId(dbGame.id!);
+        }
         await Db().db.gameDao.deleteByName(classroomId, dbGame.name);
       }
     }

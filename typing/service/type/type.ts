@@ -42,6 +42,9 @@ type ProfileConfig = {
     assistiveTouchBindings: AssistiveTouchBinding[];
     wordAskTrigger: WordAskTrigger;
     spellResetLevel: boolean;
+    // 熟词阈值：每个字母允许的毫秒数，0 = 整个"熟词"功能不工作。
+    // 一个词从第一个字母敲下到最后一个字母敲下 <= familiarMs * (字母数 - 1) 就算熟词。
+    familiarMs: number;
     [key: string]: any;
 };
 
@@ -75,8 +78,32 @@ const PROFILE_COUNT = 3;
 // 打字进度落盘的最小间隔（毫秒）：敲字期间按这个节流，收尾的地方强制写
 const PERSIST_INTERVAL_MS = 1000;
 
+// 熟词库在 GameKv 里的 key 前缀（`fw:<小写词>`），value 存记住它的时间戳
+const FAMILIAR_PREFIX = 'fw:';
+
+// 能进熟词库的词：必须是"完整的、超过一个字母的纯字母词"。
+// 这里只看词本身；"完整"里"前面不能是撇号"那一半（you're 的 re 不算词）由客户端在切词时判断，
+// 因为只有它手上有整句原文。不合格返回 ''。
+function normalizeFamiliarWord(raw: any): string {
+    if (typeof raw !== 'string') {
+        return '';
+    }
+    const word = raw.trim().toLowerCase();
+    if (word.length < 2 || !/^\p{L}+$/u.test(word)) {
+        return '';
+    }
+    return word;
+}
+
+// 当前生效 profile 的熟词阈值，<=0 表示关闭
+async function familiarMs(): Promise<number> {
+    const stored = await Util.getConfig();
+    const value = stored.profiles[stored.activeProfile].familiarMs;
+    return typeof value === 'number' && value > 0 ? value : 0;
+}
+
 function defaultProfileConfig(): ProfileConfig {
-    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "speakWord": true, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "dimOnMask": false, "keyMapping": "", "assistiveTouchBindings": [], "wordAskTrigger": {"key": "", "action": "", "name": ""}, "spellResetLevel": false};
+    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "speakWord": true, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "dimOnMask": false, "keyMapping": "", "assistiveTouchBindings": [], "wordAskTrigger": {"key": "", "action": "", "name": ""}, "spellResetLevel": false, "familiarMs": 0};
 }
 
 function defaultStoredConfig(): StoredConfig {
@@ -335,6 +362,41 @@ const Util = {
             return await sendMessage('tts', JSON.stringify(payload ?? {}));
         } catch (e) {
             return '';
+        }
+    },
+    // ---- GameKv：游戏自己的键值表（Dart 侧见 lib/db/entity/game_kv.dart）----
+    // 熟词库这种"条目一直长、要按 key 单条读写"的数据走这里，不塞进 getData/setData 那个整块 JSON。
+    kvGet: async function (k: string): Promise<string> {
+        try {
+            const ret = await sendMessage('kvGet', JSON.stringify({k}));
+            return typeof ret === 'string' ? ret : '';
+        } catch (e) {
+            return '';
+        }
+    },
+    kvGetMany: async function (ks: string[]): Promise<JsonRecord> {
+        try {
+            const data = await sendMessage('kvGetMany', JSON.stringify({ks}));
+            if (data == null || data === '') {
+                return {};
+            }
+            const parsed = JSON.parse(data);
+            return (parsed && typeof parsed === 'object') ? parsed : {};
+        } catch (e) {
+            return {};
+        }
+    },
+    kvSet: async function (k: string, v: string): Promise<void> {
+        try {
+            await sendMessage('kvSet', JSON.stringify({k, v}));
+        } catch (e) {
+            // 写不进去就算了，熟词库丢一条不值得打断打字
+        }
+    },
+    kvDelete: async function (ks: string[]): Promise<void> {
+        try {
+            await sendMessage('kvDelete', JSON.stringify({ks}));
+        } catch (e) {
         }
     },
     playWrong: async function (url: string): Promise<any> {
@@ -853,6 +915,80 @@ const Game = {
             const data = args.data || {};
             const url = typeof data.url === 'string' ? data.url : '';
             await Util.playWrong(url);
+            return JSON.stringify({data: 'ok'});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
+        }
+    },
+
+    // 播放任意提示音。Dart 那边的消息名叫 playWrong（第一个调用方是打错提示音），
+    // 实现其实是通用的"下载 url 落地临时文件再播"，所以熟词提示音也走它。
+    playSound: async function (args: GameArgs): Promise<string> {
+        try {
+            const data = args.data || {};
+            const url = typeof data.url === 'string' ? data.url : '';
+            await Util.playWrong(url);
+            return JSON.stringify({data: 'ok'});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
+        }
+    },
+
+    // ---- 熟词 ----
+    // 打得够快的词进库（familiarMark），下次再遇到只用敲首字母（客户端拿 familiarQuery 的结果做补全），
+    // 首字母敲错就说明没那么熟，当场出库（familiarForget）。
+    // 库是按游戏存的（GameKv，主键 gameId + key），一台设备上所有玩家共用一份。
+
+    // args.data = {words: string[]}；返回其中已经在熟词库里的词（小写）。
+    // 阈值没配（familiarMs<=0）时一律返回空：服务端也当总开关，客户端配置没刷新也不会误触发。
+    familiarQuery: async function (args: GameArgs): Promise<string> {
+        try {
+            if (await familiarMs() <= 0) {
+                return JSON.stringify({data: {words: []}});
+            }
+            const raw = (args.data && Array.isArray(args.data.words)) ? args.data.words : [];
+            const words: string[] = [];
+            for (const item of raw) {
+                const word = normalizeFamiliarWord(item);
+                if (word && words.indexOf(word) === -1) {
+                    words.push(word);
+                }
+            }
+            if (words.length === 0) {
+                return JSON.stringify({data: {words: []}});
+            }
+            const found = await Util.kvGetMany(words.map((w) => FAMILIAR_PREFIX + w));
+            return JSON.stringify({data: {words: words.filter((w) => found[FAMILIAR_PREFIX + w] !== undefined)}});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
+        }
+    },
+
+    // args.data = {word}
+    familiarMark: async function (args: GameArgs): Promise<string> {
+        try {
+            if (await familiarMs() <= 0) {
+                return JSON.stringify({data: 'off'});
+            }
+            const word = normalizeFamiliarWord(args.data && args.data.word);
+            if (!word) {
+                return JSON.stringify({data: 'skip'});
+            }
+            await Util.kvSet(FAMILIAR_PREFIX + word, `${Date.now()}`);
+            return JSON.stringify({data: 'ok'});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
+        }
+    },
+
+    // args.data = {word}。出库不看阈值开关：关掉功能之前记下的词，该删还是要能删。
+    familiarForget: async function (args: GameArgs): Promise<string> {
+        try {
+            const word = normalizeFamiliarWord(args.data && args.data.word);
+            if (!word) {
+                return JSON.stringify({data: 'skip'});
+            }
+            await Util.kvDelete([FAMILIAR_PREFIX + word]);
             return JSON.stringify({data: 'ok'});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});

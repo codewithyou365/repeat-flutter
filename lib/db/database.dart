@@ -12,6 +12,7 @@ import 'package:repeat_flutter/db/dao/book_dao.dart';
 import 'package:repeat_flutter/db/dao/cr_kv_dao.dart';
 import 'package:repeat_flutter/db/dao/edit_book_history_dao.dart';
 import 'package:repeat_flutter/db/dao/game_dao.dart';
+import 'package:repeat_flutter/db/dao/game_kv_dao.dart';
 import 'package:repeat_flutter/db/dao/game_user_dao.dart';
 import 'package:repeat_flutter/db/dao/chapter_dao.dart';
 import 'package:repeat_flutter/db/dao/game_user_score_dao.dart';
@@ -42,6 +43,7 @@ import 'package:repeat_flutter/db/entity/verse_review.dart';
 import 'package:repeat_flutter/db/entity/verse_stats.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/db/entity/game.dart';
+import 'package:repeat_flutter/db/entity/game_kv.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 import 'package:repeat_flutter/db/entity/tip.dart';
 import 'package:repeat_flutter/db/entity/time_stats.dart';
@@ -78,11 +80,12 @@ import 'migration/m17_18.dart';
 import 'migration/m18_19.dart';
 import 'migration/m19_20.dart';
 import 'migration/m20_21.dart';
+import 'migration/m21_22.dart';
 
 part 'database.g.dart'; // the generated code will be there
 
 @Database(
-  version: 21,
+  version: 22,
   entities: [
     Book,
     BookContentVersion,
@@ -103,6 +106,7 @@ part 'database.g.dart'; // the generated code will be there
     TimeStats,
     BookShow,
     Game,
+    GameKv,
     Tip,
     GameUser,
     GameUserScore,
@@ -140,6 +144,8 @@ abstract class AppDatabase extends FloorDatabase {
   GameUserDao get gameUserDao;
 
   GameDao get gameDao;
+
+  GameKvDao get gameKvDao;
 
   TipDao get tipDao;
 
@@ -201,6 +207,7 @@ class Db {
         m18_19,
         m19_20,
         m20_21,
+        m21_22,
       ]).build();
       log("Database path: \n${await sqflite.getDatabasesPath()}/$fileName");
     }

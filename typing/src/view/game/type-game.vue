@@ -40,6 +40,16 @@
         </nut-radio-group>
       </template>
     </nut-cell>
+    <nut-cell :title="t('familiarMs')" :desc="t('familiarMsDesc')">
+      <template #link>
+        <nut-input
+            v-model="familiarMsInput"
+            type="number"
+            style="text-align: right"
+            @blur="setFamiliarMs(familiarMsInput)"
+        />
+      </template>
+    </nut-cell>
     <nut-cell :title="t('ttsRate')">
       <template #link>
         <nut-radio-group v-model="ttsRate" direction="horizontal" @change="setTtsRate">
@@ -234,6 +244,7 @@
           :delete-trigger="deleteTrigger"
           :assist-triggers="assistTriggerKeys"
           :key-mapping="keyMapping"
+          :familiar-ranges="familiarRanges"
           @char-filled="onCharFilled"
           @completed="onCompleted"
           @manual-play="onManualPlay"
@@ -242,6 +253,8 @@
           @mask-trigger="onMaskTrigger"
           @assist-trigger="onAssistTrigger"
           @user-input-change="onUserInputChange"
+          @familiar-prompt="onFamiliarPrompt"
+          @familiar-miss="onFamiliarMiss"
       />
     </div>
 
@@ -314,6 +327,9 @@ let hintTriggerSaved = ' ';
 let maskTriggerSaved = '';
 let deleteTriggerSaved = '';
 const keyMapping = ref('');
+// 熟词阈值：每个字母允许的毫秒数，0 = 关闭。familiarMsInput 是输入框里的字符串，familiarMs 是判定用的数值
+const familiarMs = ref(0);
+const familiarMsInput = ref('0');
 const assistiveTouchBindings = ref<AssistiveTouchBinding[]>([]);
 // 每条绑定最后一次成功保存的键，校验失败时用来还原对应的输入框
 let bindingKeysSaved: string[] = [];
@@ -437,6 +453,10 @@ const MAX_STALE_RESENDS = 3;
 // 这里绝不能开 overlayVisible——每敲一个字闪一次加载遮罩没法用。
 const onUserInputChange = (userInput: string, changedIndexes: number[]) => {
   if (applyingRemote) return;
+  // 退格 / 清词（changedIndexes 为空）：正在计时的这个词重来一遍不算数
+  if (changedIndexes.length === 0) {
+    familiarTrack = null;
+  }
   queueInput(userInput, changedIndexes);
 };
 
@@ -560,7 +580,8 @@ const showTips = () => {
     {label: t('dimOnMask'), value: formatStatus(dimOnMask.value)},
     {label: t('immersiveOnMask'), value: formatStatus(immersiveOnMask.value)},
     {label: t('deleteTrigger'), value: deleteTrigger.value ? formatTriggerKey(deleteTrigger.value) : t('disabled')},
-    {label: t('keyMapping'), value: keyMapping.value || t('disabled')}
+    {label: t('keyMapping'), value: keyMapping.value || t('disabled')},
+    {label: t('familiarMs'), value: familiarMs.value > 0 ? `${familiarMs.value}ms` : t('disabled')}
   ];
 
   // 绑定是变长的，一条一行；一条都没配就显示"未启用"
@@ -630,6 +651,8 @@ const applyProfile = (index: number) => {
   maskTriggerSaved = maskTrigger.value;
   deleteTriggerSaved = deleteTrigger.value;
   keyMapping.value = typeof res['keyMapping'] === 'string' ? res['keyMapping'] : '';
+  familiarMs.value = typeof res['familiarMs'] === 'number' && res['familiarMs'] > 0 ? res['familiarMs'] : 0;
+  familiarMsInput.value = `${familiarMs.value}`;
   const rawBindings = Array.isArray(res['assistiveTouchBindings']) ? res['assistiveTouchBindings'] : [];
   assistiveTouchBindings.value = rawBindings.map((b: any) => ({
     key: typeof b?.key === 'string' ? b.key : '',
@@ -866,6 +889,14 @@ const setDeleteTrigger = (value: string) => {
   profiles.value[activeProfile.value].deleteTrigger = value;
   setConfig("deleteTrigger", value);
 };
+const setFamiliarMs = (value: string) => {
+  const parsed = parseInt(value, 10);
+  const ms = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  familiarMs.value = ms;
+  familiarMsInput.value = `${ms}`;
+  profiles.value[activeProfile.value].familiarMs = ms;
+  setConfig("familiarMs", ms);
+};
 const setKeyMapping = (value: string) => {
   profiles.value[activeProfile.value].keyMapping = value;
   setConfig("keyMapping", value);
@@ -1076,6 +1107,153 @@ const isSpeakable = (ch: string) => /[\p{L}\p{N}]/u.test(ch);
 // 触发键配置格式化成人类可读文案：多个按键用 " / " 分隔，空格键额外提示，特殊按键显示成对应名字
 const formatTriggerKey = (key: string) => formatKeySpecsDisplay(key, t('spaceKey'));
 
+// ---- 熟词 ----
+// 打得够快的词记进熟词库（服务端 GameKv），下次再遇到：光标一到词首就响一声提示音、
+// 该词的下划线变紫，敲对首字母整词自动补全；首字母敲错就当场出库，退回正常输入。
+
+// 撇号：I'm 的 m、you're 的 re 都不是完整的词，判断"完整"就看词前面是不是撇号
+const APOSTROPHES = "'\u2019\u2018\u00b4";
+
+// 把整句切成"能进熟词库的词"。切词口径跟 Typing 组件的 getWordBounds 一致（一段字母/数字算一个词），
+// 在这之上再要求：全是字母、超过一个字母、前面不是撇号。
+const familiarCandidates = (text: string): { start: number; end: number; word: string }[] => {
+  const ret: { start: number; end: number; word: string }[] = [];
+  const re = /[\p{L}\p{N}]+/gu;
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(text)) !== null) {
+    const seg = match[0];
+    const start = match.index;
+    if (seg.length < 2) continue;                                   // I 这种单字母词不进库
+    if (!/^\p{L}+$/u.test(seg)) continue;                           // 带数字的不算单词
+    if (start > 0 && APOSTROPHES.includes(text[start - 1])) continue; // 撇号后半截不是完整的词
+    ret.push({start, end: start + seg.length - 1, word: seg.toLowerCase()});
+  }
+  return ret;
+};
+
+// 当前这句里已经在熟词库里的词（小写）。每换一句从服务端重新拉，服务端是唯一权威。
+const familiarWords = ref<Set<string>>(new Set());
+
+const familiarCandidateByStart = computed(() => {
+  const map = new Map<number, { start: number; end: number; word: string }>();
+  for (const item of familiarCandidates(content.value)) {
+    map.set(item.start, item);
+  }
+  return map;
+});
+
+// 交给 Typing 组件的熟词位置。阈值为 0 时直接空数组，功能整个不工作。
+const familiarRanges = computed(() => {
+  if (familiarMs.value <= 0) return [];
+  const ret: { start: number; end: number }[] = [];
+  for (const item of familiarCandidateByStart.value.values()) {
+    if (familiarWords.value.has(item.word)) ret.push({start: item.start, end: item.end});
+  }
+  return ret;
+});
+
+const loadFamiliar = async () => {
+  const words = [...familiarCandidateByStart.value.values()].map((c) => c.word);
+  if (familiarMs.value <= 0 || words.length === 0) {
+    familiarWords.value = new Set();
+    return;
+  }
+  try {
+    const req = new Request({
+      path: Path.game,
+      headers: {'jsMethod': 'Game.familiarQuery'},
+      data: {words},
+    });
+    const res = await client.node!.send(req);
+    familiarWords.value = new Set(Array.isArray(res.data?.words) ? res.data.words : []);
+  } catch (error) {
+    console.error('Failed to query familiar words:', error);
+    familiarWords.value = new Set();
+  }
+};
+
+const markFamiliar = (word: string) => {
+  familiarWords.value.add(word);
+  const req = new Request({
+    path: Path.game,
+    headers: {'jsMethod': 'Game.familiarMark'},
+    data: {word},
+  });
+  client.node!.send(req).catch((error) => console.error('Failed to mark familiar word:', error));
+};
+
+const forgetFamiliar = (word: string) => {
+  familiarWords.value.delete(word);
+  const req = new Request({
+    path: Path.game,
+    headers: {'jsMethod': 'Game.familiarForget'},
+    data: {word},
+  });
+  client.node!.send(req).catch((error) => console.error('Failed to forget familiar word:', error));
+};
+
+// 光标走到熟词词首：响一声，提醒"这个只要敲首字母"。不 await、不开 overlay，别卡打字节奏。
+const onFamiliarPrompt = () => {
+  const req = new Request({
+    path: Path.game,
+    headers: {'jsMethod': 'Game.playSound'},
+    data: {url: `${window.location.origin}/sounds/familiar.wav`},
+  });
+  client.node!.send(req).catch((error) => console.error('Failed to play familiar sound:', error));
+};
+
+// 熟词的首字母敲错了：出库，这个词当场退回正常输入（familiarRanges 是 computed，紫色标记同时消失）
+const onFamiliarMiss = (_start: number, word: string) => {
+  forgetFamiliar(word.toLowerCase());
+};
+
+// 一个词的计时：从第一个字母敲下算到最后一个字母敲下，<= familiarMs * (字母数 - 1) 就算熟。
+// apple 5 个字母、阈值 200ms，就是 4 段间隔共 800ms。
+// valid=false 表示这一遍不算数（打错过、有字母是自动填出来的、中途退格重来）。
+type FamiliarTrack = { start: number; end: number; word: string; letters: number; firstAt: number; valid: boolean };
+let familiarTrack: FamiliarTrack | null = null;
+
+const trackFamiliar = (index: number, auto: boolean, correct: boolean) => {
+  if (familiarMs.value <= 0) {
+    familiarTrack = null;
+    return;
+  }
+  const bounds = typingRef.value?.getWordBoundsAt(index);
+  // 落在词外（空格、标点）：当前这个词的计时到此为止
+  if (!bounds || index < bounds.start || index > bounds.end) {
+    familiarTrack = null;
+    return;
+  }
+  if (familiarTrack && familiarTrack.start !== bounds.start) {
+    familiarTrack = null;
+  }
+  if (!familiarTrack) {
+    // 只有"从词首第一个字母开始打"才计时。中途接手（协作、退格回来）这一遍不算。
+    if (index !== bounds.start) return;
+    const candidate = familiarCandidateByStart.value.get(bounds.start);
+    if (!candidate) return;                                 // 不合格的词（单字母、撇号后半截、含数字）
+    if (familiarWords.value.has(candidate.word)) return;    // 已经是熟词，不重新计时
+    familiarTrack = {
+      start: bounds.start,
+      end: bounds.end,
+      word: candidate.word,
+      letters: bounds.end - bounds.start + 1,
+      firstAt: Date.now(),
+      valid: true,
+    };
+  }
+  // 自动填出来的字母（间隔模式）不是用户敲的，打错更不用说，这一遍都不算数
+  if (auto || !correct) {
+    familiarTrack.valid = false;
+  }
+  if (index === familiarTrack.end) {
+    if (familiarTrack.valid && Date.now() - familiarTrack.firstAt <= familiarMs.value * (familiarTrack.letters - 1)) {
+      markFamiliar(familiarTrack.word);
+    }
+    familiarTrack = null;
+  }
+};
+
 // 整词朗读：非字母/数字（空格、撇号、标点等）都当作词与词之间的分界。
 // 这里只记当前词里最后填入的字符下标，真正朗读时再按下标从原文切出整词——不能自己攒字符串：
 // 手动播放/逐字母朗读会 clearCurrentWord 把词退回词首，Backspace/方向键也会改已输入内容，
@@ -1094,6 +1272,8 @@ const flushWord = () => {
 };
 
 const onCharFilled = (index: number, char: string, auto: boolean, correct: boolean) => {
+  trackFamiliar(index, auto, correct);
+
   if (auto || correct) {
     if (isSpeakable(char)) {
       pendingWordEnd = index;
@@ -1294,6 +1474,8 @@ const refresh = async () => {
     const res = await client.node!.send(req);
     content.value = res.data.answer;
     updateIgnoreIndexes(res.data.mask);
+    familiarTrack = null;
+    await loadFamiliar();
 
     await getLabel();
     // 内容到位之后再接共享进度：中途进来/重连的人直接看到别人已经打到哪儿了。

@@ -86,6 +86,7 @@ abstract class ClassroomDao {
     await db.chapterContentVersionDao.deleteByClassroomId(classroomId);
     await deleteById(classroomId);
     await db.crKvDao.deleteByClassroomId(classroomId);
+    await db.gameKvDao.deleteByClassroomId(classroomId);
     await db.gameDao.deleteByClassroomId(classroomId);
     await db.tipDao.deleteByClassroomId(classroomId);
     await db.timeStatsDao.deleteByClassroomId(classroomId);

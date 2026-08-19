@@ -12,6 +12,7 @@ import 'package:repeat_flutter/common/screen_brightness_helper.dart';
 import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/game_kv.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
@@ -482,6 +483,56 @@ class JsRuntime {
         } catch (e) {
           return '{}';
         }
+      });
+      // ---- GameKv：游戏脚本自己的键值表 ----
+      // 跟 getData/setData 那个整块 JSON 的分工见 GameKv 的类注释：条目会一直长下去、
+      // 要按 key 单条读写的数据走这里（打字游戏的熟词库）。key 的命名空间由脚本自己约定。
+      _jsRuntime!.onMessage('kvGet', (dynamic args) async {
+        final gameId = GameState.game?.id;
+        if (gameId == null || args is! Map) {
+          return '';
+        }
+        final k = args['k'];
+        if (k is! String || k.isEmpty) {
+          return '';
+        }
+        return await Db().db.gameKvDao.getValue(gameId, k) ?? '';
+      });
+      _jsRuntime!.onMessage('kvGetMany', (dynamic args) async {
+        final gameId = GameState.game?.id;
+        if (gameId == null || args is! Map) {
+          return '{}';
+        }
+        final keys = (args['ks'] as List?)?.whereType<String>().toList() ?? [];
+        if (keys.isEmpty) {
+          return '{}';
+        }
+        final rows = await Db().db.gameKvDao.findByKeys(gameId, keys);
+        return jsonEncode({for (final row in rows) row.k: row.value});
+      });
+      _jsRuntime!.onMessage('kvSet', (dynamic args) async {
+        final gameId = GameState.game?.id;
+        if (gameId == null || args is! Map) {
+          return '';
+        }
+        final k = args['k'];
+        if (k is! String || k.isEmpty) {
+          return '';
+        }
+        await Db().db.gameKvDao.insertsOrReplace([GameKv(gameId, k, '${args['v'] ?? ''}')]);
+        return 'ok';
+      });
+      _jsRuntime!.onMessage('kvDelete', (dynamic args) async {
+        final gameId = GameState.game?.id;
+        if (gameId == null || args is! Map) {
+          return '';
+        }
+        final keys = (args['ks'] as List?)?.whereType<String>().toList() ?? [];
+        if (keys.isEmpty) {
+          return 'ok';
+        }
+        await Db().db.gameKvDao.deleteByKeys(gameId, keys);
+        return 'ok';
       });
       // 执行初始化的 JS 代码（比如声明全局对象、加载分词算法等）
       // 这一步只在 Server 启动或 App 初始化时执行一次

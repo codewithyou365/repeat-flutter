@@ -92,6 +92,8 @@ class _$AppDatabase extends AppDatabase {
 
   GameDao? _gameDaoInstance;
 
+  GameKvDao? _gameKvDaoInstance;
+
   TipDao? _tipDaoInstance;
 
   GameUserScoreDao? _gameUserScoreDaoInstance;
@@ -122,7 +124,7 @@ class _$AppDatabase extends AppDatabase {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 21,
+      version: 22,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -167,6 +169,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE TABLE IF NOT EXISTS `TimeStats` (`classroomId` INTEGER NOT NULL, `createDate` INTEGER NOT NULL, `createTime` INTEGER NOT NULL, `duration` INTEGER NOT NULL, PRIMARY KEY (`classroomId`, `createDate`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Game` (`id` INTEGER, `classroomId` INTEGER NOT NULL, `k` TEXT NOT NULL, `name` TEXT NOT NULL, `hash` TEXT NOT NULL, `data` TEXT NOT NULL, `service` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `GameKv` (`gameId` INTEGER NOT NULL, `k` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY (`gameId`, `k`))');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `Tip` (`id` INTEGER, `classroomId` INTEGER NOT NULL, `bookId` INTEGER NOT NULL, `t` TEXT NOT NULL, `k` TEXT NOT NULL, `hash` TEXT NOT NULL, `service` TEXT NOT NULL, `createTime` INTEGER NOT NULL, PRIMARY KEY (`id`))');
         await database.execute(
@@ -305,6 +309,11 @@ class _$AppDatabase extends AppDatabase {
   @override
   GameDao get gameDao {
     return _gameDaoInstance ??= _$GameDao(database, changeListener);
+  }
+
+  @override
+  GameKvDao get gameKvDao {
+    return _gameKvDaoInstance ??= _$GameKvDao(database, changeListener);
   }
 
   @override
@@ -2000,6 +2009,115 @@ class _$GameDao extends GameDao {
   @override
   Future<void> updateOrReplace(Game kv) async {
     await _gameUpdateAdapter.update(kv, OnConflictStrategy.replace);
+  }
+}
+
+class _$GameKvDao extends GameKvDao {
+  _$GameKvDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _gameKvInsertionAdapter = InsertionAdapter(
+            database,
+            'GameKv',
+            (GameKv item) => <String, Object?>{
+                  'gameId': item.gameId,
+                  'k': item.k,
+                  'value': item.value
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<GameKv> _gameKvInsertionAdapter;
+
+  @override
+  Future<String?> getValue(
+    int gameId,
+    String k,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT value FROM GameKv WHERE gameId=?1 AND `k`=?2',
+        mapper: (Map<String, Object?> row) => row.values.first as String,
+        arguments: [gameId, k]);
+  }
+
+  @override
+  Future<List<GameKv>> findByKeys(
+    int gameId,
+    List<String> keys,
+  ) async {
+    const offset = 2;
+    final _sqliteVariablesForKeys =
+        Iterable<String>.generate(keys.length, (i) => '?${i + offset}')
+            .join(',');
+    return _queryAdapter.queryList(
+        'SELECT * FROM GameKv WHERE gameId=?1 AND `k` IN (' +
+            _sqliteVariablesForKeys +
+            ')',
+        mapper: (Map<String, Object?> row) => GameKv(
+            row['gameId'] as int, row['k'] as String, row['value'] as String),
+        arguments: [gameId, ...keys]);
+  }
+
+  @override
+  Future<List<String>> findKeysByPrefix(
+    int gameId,
+    String prefix,
+    int limit,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT `k` FROM GameKv WHERE gameId=?1 AND `k` LIKE ?2 || \'%\' ORDER BY `k` LIMIT ?3',
+        mapper: (Map<String, Object?> row) => row.values.first as String,
+        arguments: [gameId, prefix, limit]);
+  }
+
+  @override
+  Future<int?> countByPrefix(
+    int gameId,
+    String prefix,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT COUNT(1) FROM GameKv WHERE gameId=?1 AND `k` LIKE ?2 || \'%\'',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
+        arguments: [gameId, prefix]);
+  }
+
+  @override
+  Future<void> deleteByKeys(
+    int gameId,
+    List<String> keys,
+  ) async {
+    const offset = 2;
+    final _sqliteVariablesForKeys =
+        Iterable<String>.generate(keys.length, (i) => '?${i + offset}')
+            .join(',');
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM GameKv WHERE gameId=?1 AND `k` IN (' +
+            _sqliteVariablesForKeys +
+            ')',
+        arguments: [gameId, ...keys]);
+  }
+
+  @override
+  Future<void> deleteByGameId(int gameId) async {
+    await _queryAdapter.queryNoReturn('DELETE FROM GameKv WHERE gameId=?1',
+        arguments: [gameId]);
+  }
+
+  @override
+  Future<void> deleteByClassroomId(int classroomId) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM GameKv WHERE gameId IN (SELECT id FROM Game WHERE classroomId=?1)',
+        arguments: [classroomId]);
+  }
+
+  @override
+  Future<void> insertsOrReplace(List<GameKv> kv) async {
+    await _gameKvInsertionAdapter.insertList(kv, OnConflictStrategy.replace);
   }
 }
 
