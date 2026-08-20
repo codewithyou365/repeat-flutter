@@ -15,7 +15,9 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_kv.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/ai/shadow_remote.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
+import 'package:repeat_flutter/logic/game_server/shadow_recorder.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_logic.dart';
 import 'package:repeat_flutter/logic/widget/expand/expand_logic.dart';
@@ -44,6 +46,9 @@ class JsRuntime {
   // 同时对同一个 player setFilePath 会互相打断,表现就是偶尔一声都不响。
   Future<void> _sfxPrepare = Future.value();
   String? _sfxLoadedPath;
+  // 跟读游戏的录音器。懒建：绝大多数游戏用不到麦克风，没必要为它们各持一个
+  // AudioRecorder。dispose() 里释放，这是"麦克风忘了关"的三条保险之一。
+  ShadowRecorder? _shadowRecorder;
 
   JsRuntime({
     required this.ttsHelper,
@@ -560,6 +565,55 @@ class JsRuntime {
         await Db().db.gameKvDao.deleteByKeys(gameId, keys);
         return 'ok';
       });
+      // ---- 跟读打分 ----
+      // 全部立刻返回，没有一个阻塞在录音或打分上：invoke 给每个 Game.* 只有
+      // 5 秒（见本文件末尾 handlePromise 的 timeout），而一次跟读是 5~30 秒。
+      // 所以是 start / stop / 轮询三段式，进度靠 shadowStatus 拿。
+      //
+      // 为什么录音走 Dart 而不是网页 getUserMedia：页面是自签名 HTTPS，
+      // 局域网浏览器看到的是证书不受信的源，浏览器对麦克风一律按非安全上下文
+      // 处理；而 record 包这条路权限、前台服务、16k PCM16 全是现成的。
+      _jsRuntime!.onMessage('shadowStart', (dynamic args) async {
+        final rec = _shadowRecorder ??= ShadowRecorder();
+        final maxMs = args is Map ? (args['maxMs'] as num?)?.toInt() ?? 15000 : 15000;
+        if (args is Map && args['text'] is String) {
+          // 提前把参考文本交上来，这样 maxMs 到点自动停也能直接进打分，
+          // 不用等网页再来一次 stopRecord。
+          rec.setPendingText(args['text'] as String);
+        }
+        return await rec.start(maxMs: maxMs);
+      });
+      _jsRuntime!.onMessage('shadowStop', (dynamic args) {
+        final rec = _shadowRecorder;
+        if (rec == null || args is! Map) {
+          return 'not_recording';
+        }
+        return rec.stopAndScore('${args['text'] ?? ''}');
+      });
+      // 同步 handler：只读/改内存状态。同步的好处是完全跳过 handlePromise
+      // 那 20ms 一次的轮询往返——网页按 300ms 轮询 shadowStatus，这点省得值。
+      _jsRuntime!.onMessage('shadowStatus', (dynamic args) {
+        final rec = _shadowRecorder;
+        if (rec == null) {
+          return jsonEncode({'state': 'idle', 'token': 0});
+        }
+        return jsonEncode(rec.status());
+      });
+      _jsRuntime!.onMessage('shadowCancel', (dynamic args) {
+        _shadowRecorder?.cancel();
+        return 'ok';
+      });
+      _jsRuntime!.onMessage('shadowHealth', (dynamic args) async {
+        try {
+          if (!await ShadowRemote.enabled()) {
+            return jsonEncode({'enabled': false, 'ok': false, 'error': ''});
+          }
+          final h = await ShadowRemote.health(await ShadowRemote.url());
+          return jsonEncode({'enabled': true, 'ok': true, ...h.toJson()});
+        } catch (e) {
+          return jsonEncode({'enabled': true, 'ok': false, 'error': '$e'});
+        }
+      });
       // 执行初始化的 JS 代码（比如声明全局对象、加载分词算法等）
       // 这一步只在 Server 启动或 App 初始化时执行一次
       final result = _jsRuntime!.evaluate(coreJsCode);
@@ -640,6 +694,10 @@ class JsRuntime {
     if (_jsRuntime != null) {
       subNewVerse.off();
       _sfxPlayer.dispose();
+      // 游戏被关掉时网页的 onBeforeUnmount 不一定跑得到，这里兜底释放麦克风
+      // 和前台服务，否则通知栏会一直挂着一个"正在录音"。
+      _shadowRecorder?.dispose();
+      _shadowRecorder = null;
       // 闭眼状态下游戏被关掉时，网页那边的"关闭闭眼"回调不会跑，这里兜底还原亮度和系统栏
       ScreenBrightnessHelper.restore();
       _setImmersive(false);

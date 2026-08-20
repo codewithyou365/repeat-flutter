@@ -54,6 +54,7 @@ class ScSettingsAiPage extends StatelessWidget {
           children: [
             _buildHeader(context, logic),
             ..._buildRemote(context, logic),
+            ..._buildShadow(context, logic),
             ..._buildPresets(context, logic),
             for (final role in AiRole.values) ..._buildRoleSection(context, logic, role),
             SizedBox(height: 24.h),
@@ -196,6 +197,85 @@ class ScSettingsAiPage extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.only(top: 6.h),
                   child: Text(I18nKey.aiRemoteNoLocalFallback.tr, style: theme.textTheme.bodySmall),
+                ),
+            ],
+          ),
+        ),
+      ],
+      const Divider(height: 1),
+    ];
+  }
+
+  /// 跟读打分区块。紧跟在远程推理之后：两者都是"把算力挪到电脑上"，
+  /// 但是两个独立进程、两个端口，用户很容易以为填一个就够了，所以挨着放并各自说明。
+  List<Widget> _buildShadow(BuildContext context, ScSettingsAiLogic logic) {
+    final state = logic.state;
+    final theme = Theme.of(context);
+    final on = state.shadowEnabled.value;
+    return [
+      SwitchListTile(
+        title: Text(I18nKey.shadowRemote.tr),
+        subtitle: Text(I18nKey.shadowRemoteDesc.tr, style: theme.textTheme.bodySmall),
+        value: on,
+        onChanged: (v) => logic.toggleShadow(v),
+      ),
+      if (on) ...[
+        ListTile(
+          dense: true,
+          leading: const Icon(Icons.record_voice_over_outlined),
+          title: Text(I18nKey.shadowRemoteUrl.tr, style: theme.textTheme.bodyMedium),
+          subtitle: Text(
+            state.shadowUrl.value.isEmpty ? I18nKey.shadowRemoteUrlHint.tr : state.shadowUrl.value,
+            style: theme.textTheme.bodySmall,
+          ),
+          trailing: const Icon(Icons.edit, size: 18),
+          onTap: logic.editShadowUrl,
+        ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 8.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Wrap(
+                spacing: 8.w,
+                runSpacing: 8.h,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: state.shadowTesting.value ? null : logic.testShadow,
+                    icon: const Icon(Icons.network_check, size: 18),
+                    label: Text(I18nKey.shadowRemoteTest.tr),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: state.shadowDownload.value.isNotEmpty
+                        ? null
+                        : logic.downloadShadowModel,
+                    icon: const Icon(Icons.cloud_download_outlined, size: 18),
+                    label: Text(I18nKey.shadowRemoteDownload.tr),
+                  ),
+                ],
+              ),
+              if (state.shadowStatus.value.isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.only(top: 6.h),
+                  child: Text(
+                    state.shadowStatus.value,
+                    style: state.shadowError.value
+                        ? theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error)
+                        : theme.textTheme.bodySmall,
+                  ),
+                ),
+              if (state.shadowDownload.value.isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.only(top: 6.h),
+                  child: Text(state.shadowDownload.value, style: theme.textTheme.bodySmall),
+                ),
+              // 打分服务挂了会降级成"本地 ASR 粗比对"，那条路也需要机内识别模型。
+              // 两边都没有的话跟读就完全打不了分，得说清楚。
+              if (state.installed.values.every((e) => !e))
+                Padding(
+                  padding: EdgeInsets.only(top: 6.h),
+                  child: Text(I18nKey.shadowRemoteNoLocalFallback.tr,
+                      style: theme.textTheme.bodySmall),
                 ),
             ],
           ),

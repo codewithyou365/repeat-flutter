@@ -38,6 +38,7 @@ deal type
 deal blank_it_right
 deal word_slicer
 deal japanese
+deal shadow
 (cd dist && zip -r ../dist.zip .)
 
 echo "Build and packaging complete: dist.zip"

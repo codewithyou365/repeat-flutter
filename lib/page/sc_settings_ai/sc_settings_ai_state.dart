@@ -28,6 +28,18 @@ class ScSettingsAiState {
   final RxBool remoteError = false.obs;
   final RxBool remoteTesting = false.obs;
 
+  // ---- 跟读打分服务（server/shadow，8766）----
+  // 和上面那组分开：那是 8765 的翻译/识别，这是 8766 的发音评测，
+  // 两个独立进程，完全可能只开其中一个。
+  final RxBool shadowEnabled = false.obs;
+  final RxString shadowUrl = ''.obs;
+  final RxString shadowStatus = ''.obs;
+  final RxBool shadowError = false.obs;
+  final RxBool shadowTesting = false.obs;
+
+  /// 服务端模型的下载进度文案。空串表示没在下。
+  final RxString shadowDownload = ''.obs;
+
   /// 上传进度。[uploadingId] 非空时顶部进度条显示的是上传而不是下载。
   final RxString uploadingId = ''.obs;
 

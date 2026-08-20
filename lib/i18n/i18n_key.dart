@@ -625,6 +625,24 @@ enum I18nKey {
   aiRemoteNotSet,
   aiRemoteModelByServer,
   aiRemoteUnreachable,
+
+  // ---- 跟读打分（server/shadow）----
+  shadowRemote,
+  shadowRemoteDesc,
+  shadowRemoteUrl,
+  shadowRemoteUrlHint,
+  shadowRemoteTest,
+  shadowRemoteTesting,
+  shadowRemoteOk,
+  shadowRemoteLoaded,
+  shadowRemoteLoading,
+  shadowRemoteFail,
+  shadowRemoteNotSet,
+  shadowRemoteModelMissing,
+  shadowRemoteG2pFail,
+  shadowRemoteDownload,
+  shadowRemoteDownloading,
+  shadowRemoteNoLocalFallback,
   none;
 
   /// 老文案用 %s（GetX 的 trArgs 只认这个），AI 之后的新文案用 @N（GetX 那边归 trParams 管）。

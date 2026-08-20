@@ -626,5 +626,21 @@ class ConfigEn extends Config {
     put(I18nKey.aiRemoteNotSet, "Set the server address first");
     put(I18nKey.aiRemoteModelByServer, "The server decides this while remote inference is on. Change it at @0");
     put(I18nKey.aiRemoteUnreachable, "not connected");
+    put(I18nKey.shadowRemote, "Shadow reading & scoring");
+    put(I18nKey.shadowRemoteDesc, "Score pronunciation phone by phone on your computer. Separate service from remote inference (port 8766), see server/shadow.");
+    put(I18nKey.shadowRemoteUrl, "Scoring server address");
+    put(I18nKey.shadowRemoteUrlHint, "e.g. http://192.168.1.2:8766");
+    put(I18nKey.shadowRemoteTest, "Test connection");
+    put(I18nKey.shadowRemoteTesting, "Connecting…");
+    put(I18nKey.shadowRemoteOk, "Connected, @0 ms; device @1; model @2");
+    put(I18nKey.shadowRemoteLoaded, "loaded");
+    put(I18nKey.shadowRemoteLoading, "still loading");
+    put(I18nKey.shadowRemoteFail, "Cannot connect: @0");
+    put(I18nKey.shadowRemoteNotSet, "Set the scoring server address first");
+    put(I18nKey.shadowRemoteModelMissing, "Server is up but the scoring model is not installed. Tap the download button, or run install.py on the computer.");
+    put(I18nKey.shadowRemoteG2pFail, "Server is up but espeak is unavailable: @0. Run pip install -r requirements.txt on the computer.");
+    put(I18nKey.shadowRemoteDownload, "Download model on server");
+    put(I18nKey.shadowRemoteDownloading, "Downloading @0% @1");
+    put(I18nKey.shadowRemoteNoLocalFallback, "No on-device model installed either. If the scoring server drops, shadow reading cannot be scored at all.");
   }
 }

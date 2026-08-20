@@ -114,8 +114,10 @@ class AiRemote {
   }
 
   /// 用户多半只会填个 `192.168.1.2:8765`，甚至只填 IP。这里补齐成完整地址。
-  @visibleForTesting
-  static String normalize(String raw) {
+  ///
+  /// [port] 是没写端口时补哪个。跟读打分服务在 8766，复用这个方法而不是
+  /// 各写一份——下面那条 Uri.hasPort 的坑，复制一份就会重踩一次。
+  static String normalize(String raw, {int port = defaultPort}) {
     var v = raw.trim();
     if (v.isEmpty) {
       return '';
@@ -133,7 +135,7 @@ class AiRemote {
     final rest = v.substring(v.indexOf('://') + 3);
     final authority = rest.split('/').first;
     if (!authority.contains(':')) {
-      v = '$v:$defaultPort';
+      v = '$v:$port';
     }
     return v;
   }

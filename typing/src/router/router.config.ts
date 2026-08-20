@@ -14,6 +14,10 @@ export const routes = [
             {
                 path: 'word-slicer-game',
                 component: () => import('../view/game/word-slicer-game.vue'),
+            },
+            {
+                path: 'shadow-game',
+                component: () => import('../view/game/shadow-game.vue'),
             }
         ]
     },

@@ -60,6 +60,15 @@ enum K {
 
   /// 是否启用远程推理。关掉时地址保留，方便来回切。
   aiRemoteEnabled,
+
+  /// 跟读打分服务地址，形如 http://192.168.1.2:8766。服务端见 server/shadow。
+  ///
+  /// 和 aiRemoteUrl 分开存：那是 8765 的翻译/识别服务，这是 8766 的发音评测，
+  /// 两个独立进程，完全可能只开其中一个。
+  shadowRemoteUrl,
+
+  /// 是否启用跟读打分。关掉时地址保留。
+  shadowRemoteEnabled,
 }
 
 @Entity(primaryKeys: ['k'])

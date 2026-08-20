@@ -624,5 +624,21 @@ class ConfigZh extends Config {
     put(I18nKey.aiRemoteNotSet, "请先填服务地址");
     put(I18nKey.aiRemoteModelByServer, "远程推理时由服务器决定，请在电脑上打开 @0 修改");
     put(I18nKey.aiRemoteUnreachable, "未连接");
+    put(I18nKey.shadowRemote, "跟读打分");
+    put(I18nKey.shadowRemoteDesc, "把发音评测放到电脑上跑，逐音素打分。和远程推理是两个服务（端口 8766），见 server/shadow。");
+    put(I18nKey.shadowRemoteUrl, "打分服务地址");
+    put(I18nKey.shadowRemoteUrlHint, "例如 http://192.168.1.2:8766");
+    put(I18nKey.shadowRemoteTest, "测试连接");
+    put(I18nKey.shadowRemoteTesting, "连接中…");
+    put(I18nKey.shadowRemoteOk, "连接正常，延迟 @0 ms；device @1；模型@2");
+    put(I18nKey.shadowRemoteLoaded, "已加载");
+    put(I18nKey.shadowRemoteLoading, "加载中");
+    put(I18nKey.shadowRemoteFail, "连不上：@0");
+    put(I18nKey.shadowRemoteNotSet, "请先填打分服务地址");
+    put(I18nKey.shadowRemoteModelMissing, "服务在，但打分模型没装。点下面的下载按钮，或在电脑上跑 install.py。");
+    put(I18nKey.shadowRemoteG2pFail, "服务在，但 espeak 不可用：@0。在电脑上跑 pip install -r requirements.txt。");
+    put(I18nKey.shadowRemoteDownload, "让服务端下载模型");
+    put(I18nKey.shadowRemoteDownloading, "下载中 @0% @1");
+    put(I18nKey.shadowRemoteNoLocalFallback, "机内也没装模型。打分服务连不上时，跟读将完全无法打分。");
   }
 }

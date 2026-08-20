@@ -10,6 +10,7 @@ import 'package:repeat_flutter/logic/ai/ai_catalog.dart';
 import 'package:repeat_flutter/logic/ai/ai_download_source.dart';
 import 'package:repeat_flutter/logic/ai/ai_model_help.dart';
 import 'package:repeat_flutter/logic/ai/ai_remote.dart';
+import 'package:repeat_flutter/logic/ai/shadow_remote.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
@@ -44,6 +45,8 @@ class ScSettingsAiLogic extends GetxController {
       state.diskUsage.value = await AiModelHelp.totalSizeOnDisk();
       state.remoteEnabled.value = await AiRemote.switchOn();
       state.remoteUrl.value = await AiRemote.url();
+      state.shadowEnabled.value = await ShadowRemote.switchOn();
+      state.shadowUrl.value = await ShadowRemote.url();
     } finally {
       state.loading.value = false;
     }
@@ -352,6 +355,119 @@ class ScSettingsAiLogic extends GetxController {
   void _remoteFail(String msg) {
     state.remoteError.value = true;
     state.remoteStatus.value = msg;
+  }
+
+  // ---- 跟读打分服务（server/shadow，8766）----
+
+  Future<void> toggleShadow(bool v) async {
+    await ShadowRemote.setEnabled(v);
+    state.shadowEnabled.value = v;
+    if (v && state.shadowUrl.value.isEmpty) {
+      editShadowUrl();
+    }
+  }
+
+  void editShadowUrl() {
+    final model = (state.shadowUrl.value.isEmpty ? ShadowRemote.urlHint : state.shadowUrl.value).obs;
+    MsgBox.strInputWithYesOrNo(
+      model,
+      I18nKey.shadowRemoteUrl.tr,
+      I18nKey.shadowRemoteUrlHint.tr,
+      yes: () async {
+        Get.back();
+        await ShadowRemote.setUrl(model.value);
+        state.shadowUrl.value = await ShadowRemote.url();
+        state.shadowStatus.value = '';
+        await testShadow();
+      },
+      no: () => Get.back(),
+    );
+  }
+
+  /// 探活。modelInstalled 和 modelLoaded 要分开报：模型 1.26 GB，
+  /// "服务在但还在加载"和"服务在但模型压根没装"是两种完全不同的处境，
+  /// 只说"连上了"会让人白跑一趟。
+  Future<void> testShadow() async {
+    final url = state.shadowUrl.value;
+    if (url.isEmpty) {
+      _shadowFail(I18nKey.shadowRemoteNotSet.tr);
+      return;
+    }
+    state.shadowTesting.value = true;
+    state.shadowError.value = false;
+    state.shadowStatus.value = I18nKey.shadowRemoteTesting.tr;
+    try {
+      final h = await ShadowRemote.health(url);
+      if (!h.modelInstalled) {
+        _shadowFail(I18nKey.shadowRemoteModelMissing.tr);
+      } else if (!h.g2pOk) {
+        _shadowFail(I18nKey.shadowRemoteG2pFail.trArgs([h.error]));
+      } else {
+        state.shadowError.value = false;
+        state.shadowStatus.value = I18nKey.shadowRemoteOk.trArgs([
+          '${h.latencyMs}',
+          h.device,
+          h.modelLoaded ? I18nKey.shadowRemoteLoaded.tr : I18nKey.shadowRemoteLoading.tr,
+        ]);
+      }
+    } catch (e) {
+      _shadowFail(I18nKey.shadowRemoteFail.trArgs(['$e']));
+    } finally {
+      state.shadowTesting.value = false;
+    }
+  }
+
+  /// 让服务端自己去下模型。1.26 GB，**不是手机上传**——手机上不会有这个模型，
+  /// 所以这里只有"让那边去下"这一个方向。
+  Future<void> downloadShadowModel() async {
+    final url = state.shadowUrl.value;
+    if (url.isEmpty) {
+      _shadowFail(I18nKey.shadowRemoteNotSet.tr);
+      return;
+    }
+    try {
+      await ShadowRemote.startDownload(url);
+      state.shadowError.value = false;
+      _pollShadowDownload(url);
+    } catch (e) {
+      _shadowFail(I18nKey.shadowRemoteFail.trArgs(['$e']));
+    }
+  }
+
+  /// 轮询下载进度。3 秒一次：1.26 GB 在局域网直连下大概两三分钟，
+  /// 再密也只是白刷。页面关掉后 isClosed 会把它停掉。
+  Future<void> _pollShadowDownload(String url) async {
+    while (!isClosed) {
+      await Future<void>.delayed(const Duration(seconds: 3));
+      if (isClosed) {
+        return;
+      }
+      try {
+        final m = await ShadowRemote.modelState(url);
+        if (m.state == 'running') {
+          final pct = m.total > 0 ? (m.done * 100 ~/ m.total) : 0;
+          state.shadowDownload.value =
+              I18nKey.shadowRemoteDownloading.trArgs(['$pct', m.file]);
+          continue;
+        }
+        state.shadowDownload.value = '';
+        if (m.state == 'failed') {
+          _shadowFail(I18nKey.shadowRemoteFail.trArgs([m.error]));
+        } else if (m.installed) {
+          await testShadow();
+        }
+        return;
+      } catch (e) {
+        state.shadowDownload.value = '';
+        _shadowFail(I18nKey.shadowRemoteFail.trArgs(['$e']));
+        return;
+      }
+    }
+  }
+
+  void _shadowFail(String msg) {
+    state.shadowError.value = true;
+    state.shadowStatus.value = msg;
   }
 
   /// 把手机上装好的模型传给服务器。

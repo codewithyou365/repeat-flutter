@@ -20,6 +20,33 @@ abstract class InferEngine {
   Future<void> dispose();
 }
 
+/// 投一个 job 并等它的结果，不管底下是哪种引擎。
+///
+/// [InferEngine] 的面是"投进去 + 从流里出来"，因为录音页要的就是这个形状。
+/// 但回退路径和跟读打分是"投一个等一个"的串行用法，于是有了这个扩展。
+/// [LocalInferEngine.run] 是同一件事的本地专用版，早于这个扩展存在。
+///
+/// 靠 index+kind 认领结果是安全的，前提是调用方一次只跑一个——串行用法本来就是。
+extension InferEngineOnce on InferEngine {
+  Future<InferResult> runAndWait(InferJob job) {
+    final done = Completer<InferResult>();
+    late StreamSubscription<InferResult> sub;
+    sub = results.listen((r) {
+      if (r.index == job.index && r.kind == job.kind && !done.isCompleted) {
+        done.complete(r);
+        sub.cancel();
+      }
+    }, onError: (Object e) {
+      if (!done.isCompleted) {
+        done.completeError(e);
+        sub.cancel();
+      }
+    });
+    submit(job);
+    return done.future;
+  }
+}
+
 /// 机内推理。就是原来那条路，一个字没改，只是套了层壳。
 class LocalInferEngine implements InferEngine {
   final InferIsolate _isolate;
