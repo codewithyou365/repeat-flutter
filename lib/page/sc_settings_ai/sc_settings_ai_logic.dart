@@ -9,6 +9,7 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/ai/ai_catalog.dart';
 import 'package:repeat_flutter/logic/ai/ai_download_source.dart';
 import 'package:repeat_flutter/logic/ai/ai_model_help.dart';
+import 'package:repeat_flutter/logic/ai/ai_remote.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
@@ -41,12 +42,14 @@ class ScSettingsAiLogic extends GetxController {
         state.selected[role] = (await AiModelHelp.selectedFor(role, state.catalog))?.id ?? '';
       }
       state.diskUsage.value = await AiModelHelp.totalSizeOnDisk();
+      state.remoteEnabled.value = await AiRemote.switchOn();
+      state.remoteUrl.value = await AiRemote.url();
     } finally {
       state.loading.value = false;
     }
   }
 
-  bool get busy => state.installingId.value.isNotEmpty;
+  bool get busy => state.installingId.value.isNotEmpty || state.uploadingId.value.isNotEmpty;
 
   Future<bool> install(AiModelEntry entry) async {
     if (busy) {
@@ -288,6 +291,131 @@ class ScSettingsAiLogic extends GetxController {
       }
     } finally {
       state.installingId.value = '';
+    }
+  }
+
+  // ---------------------------------------------------------------- 远程推理
+
+  Future<void> toggleRemote(bool v) async {
+    await AiRemote.setEnabled(v);
+    state.remoteEnabled.value = v;
+    if (v && state.remoteUrl.value.isEmpty) {
+      // 开了开关却没填地址等于没开，直接把输入框弹出来省一次点击
+      editRemoteUrl();
+    }
+  }
+
+  void editRemoteUrl() {
+    final model = (state.remoteUrl.value.isEmpty ? AiRemote.urlHint : state.remoteUrl.value).obs;
+    MsgBox.strInputWithYesOrNo(
+      model,
+      I18nKey.aiRemoteUrl.tr,
+      I18nKey.aiRemoteUrlHint.tr,
+      yes: () async {
+        Get.back();
+        await AiRemote.setUrl(model.value);
+        state.remoteUrl.value = await AiRemote.url();
+        state.remoteStatus.value = '';
+        await testRemote();
+      },
+      no: () => Get.back(),
+    );
+  }
+
+  /// 探活。顺手把延迟和服务端已装的模型数报出来——"连上了"和"连上了但没模型"
+  /// 是两种完全不同的处境，只说"成功"会让人白跑一趟。
+  Future<void> testRemote() async {
+    final url = state.remoteUrl.value;
+    if (url.isEmpty) {
+      _remoteFail(I18nKey.aiRemoteNotSet.tr);
+      return;
+    }
+    state.remoteTesting.value = true;
+    state.remoteError.value = false;
+    state.remoteStatus.value = I18nKey.aiRemoteTesting.tr;
+    try {
+      final h = await AiRemote.health(url);
+      state.remoteError.value = false;
+      state.remoteStatus.value = I18nKey.aiRemoteOk.trArgs([
+        '${h.latencyMs}',
+        '${h.of(AiRole.asr).length}',
+        '${h.of(AiRole.mt).length}',
+        '${h.of(AiRole.tts).length}',
+      ]);
+    } catch (e) {
+      _remoteFail(I18nKey.aiRemoteFail.trArgs(['$e']));
+    } finally {
+      state.remoteTesting.value = false;
+    }
+  }
+
+  void _remoteFail(String msg) {
+    state.remoteError.value = true;
+    state.remoteStatus.value = msg;
+  }
+
+  /// 把手机上装好的模型传给服务器。
+  ///
+  /// [entry] 为空时传"当前各角色选中的那几个"——绝大多数情况用户要的就是这个，
+  /// 不必挨个点。VAD 不传：它只在手机上跑。
+  Future<void> uploadModels([AiModelEntry? entry]) async {
+    if (busy) {
+      return;
+    }
+    final url = state.remoteUrl.value;
+    if (url.isEmpty) {
+      _remoteFail(I18nKey.aiRemoteNotSet.tr);
+      return;
+    }
+
+    List<AiModelEntry> wanted;
+    if (entry != null) {
+      wanted = [entry];
+    } else {
+      final ids = <String>{};
+      for (final role in [AiRole.asr, AiRole.mt, AiRole.tts]) {
+        final id = state.selected[role] ?? '';
+        if (id.isNotEmpty) ids.add(id);
+      }
+      wanted = ids.map((id) => state.catalog.byId(id)).nonNulls.toList();
+    }
+    wanted = wanted.where((e) => state.installed[e.id] == true).toList();
+    if (wanted.isEmpty) {
+      _remoteFail(I18nKey.aiRemoteUploadNothing.tr);
+      return;
+    }
+
+    state.remoteError.value = false;
+    try {
+      // 先对账，只传服务端缺的。整个模型几百 MB，能不重传就不重传。
+      final server = await AiRemote.serverModels(url);
+      final todo = wanted.where((e) => (server[e.id] ?? ['?']).isNotEmpty).toList();
+      if (todo.isEmpty) {
+        state.remoteStatus.value = I18nKey.aiRemoteUploadNothing.tr;
+        return;
+      }
+      for (var i = 0; i < todo.length; i++) {
+        final e = todo[i];
+        state.uploadingId.value = e.id;
+        state.presetName.value = e.name;
+        state.presetIndex.value = i + 1;
+        state.presetTotal.value = todo.length;
+        await AiRemote.upload(url, e, onProgress: (fileIndex, fileTotal, count, total) {
+          state.fileIndex.value = fileIndex;
+          state.fileTotal.value = fileTotal;
+          state.fileProgress.value = total > 0 ? count / total : 0;
+        });
+      }
+      state.remoteStatus.value = I18nKey.aiRemoteUploadDone.tr;
+      Snackbar.show(I18nKey.aiRemoteUploadDone.tr);
+    } catch (e) {
+      _remoteFail(I18nKey.aiRemoteFail.trArgs(['$e']));
+    } finally {
+      state.uploadingId.value = '';
+      state.presetName.value = '';
+      state.presetIndex.value = 0;
+      state.presetTotal.value = 0;
+      state.fileProgress.value = 0;
     }
   }
 

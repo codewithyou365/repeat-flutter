@@ -64,6 +64,15 @@ class Wav {
     return b.buffer.asUint8List();
   }
 
+  /// 整个 wav 文件的字节。上传录音给远程推理服务时要的是内存里的字节，不落盘。
+  static Uint8List encode(Float32List samples, {int rate = sampleRate}) {
+    final pcm = float32ToPcm16(samples);
+    final out = BytesBuilder(copy: false);
+    out.add(header(pcm.lengthInBytes, rate: rate));
+    out.add(pcm);
+    return out.takeBytes();
+  }
+
   static Future<void> write(String path, Float32List samples, {int rate = sampleRate}) async {
     final pcm = float32ToPcm16(samples);
     final sink = File(path).openWrite();

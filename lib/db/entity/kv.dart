@@ -54,6 +54,12 @@ enum K {
   aiDownloadSource,
   aiCustomHfHost,
   aiCustomGhPrefix,
+
+  /// 远程推理服务地址，形如 http://192.168.1.2:8765。服务端见 server/ai。
+  aiRemoteUrl,
+
+  /// 是否启用远程推理。关掉时地址保留，方便来回切。
+  aiRemoteEnabled,
 }
 
 @Entity(primaryKeys: ['k'])

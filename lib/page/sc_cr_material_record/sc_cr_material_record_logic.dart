@@ -18,7 +18,9 @@ import 'package:repeat_flutter/logic/ai/ai_lang.dart';
 import 'package:repeat_flutter/logic/ai/ai_model_help.dart';
 import 'package:repeat_flutter/logic/ai/ai_model_paths.dart';
 import 'package:repeat_flutter/logic/ai/ai_model_switch.dart';
+import 'package:repeat_flutter/logic/ai/ai_remote.dart';
 import 'package:repeat_flutter/logic/ai/ai_pipeline.dart';
+import 'package:repeat_flutter/logic/ai/infer_engine.dart';
 import 'package:repeat_flutter/logic/ai/infer_isolate.dart';
 import 'package:repeat_flutter/logic/ai/record_session.dart';
 import 'package:repeat_flutter/logic/ai/vad_isolate.dart';
@@ -36,7 +38,7 @@ class ScCrMaterialRecordLogic extends GetxController {
 
   final AudioRecorder _recorder = AudioRecorder();
   VadIsolate? _vad;
-  InferIsolate? _infer;
+  InferEngine? _infer;
   StreamSubscription<Uint8List>? _audioSub;
   StreamSubscription<VadSegment>? _segSub;
   StreamSubscription<InferResult>? _inferSub;
@@ -81,10 +83,22 @@ class ScCrMaterialRecordLogic extends GetxController {
       for (final role in AiRole.values) {
         state.modelNames[role] = selected[role]?.name ?? '';
       }
+      state.remote.value = await AiRemote.enabled();
+      if (state.remote.value) {
+        // 开了远程就显示服务器在用什么。拉不到不算错——本地回退那条路还在，
+        // 界面上标成"未连接"就行。
+        final names = await AiModelSwitch.remoteNames();
+        state.remoteReachable.value = names != null;
+        state.remoteModelNames.assignAll(names ?? {});
+      } else {
+        state.remoteReachable.value = false;
+        state.remoteModelNames.clear();
+      }
       state.asrLanguage.value = await AiLang.current();
-      final (sid, voices) = await AiModelSwitch.voice(catalog);
+      final (sid, voices, voiceNames) = await AiModelSwitch.voice(catalog);
       state.ttsVoice.value = sid;
       state.ttsVoices.value = voices;
+      state.ttsVoiceNames.value = voiceNames;
     } catch (e) {
       debugPrint('loadModels failed: $e');
     }
@@ -94,8 +108,15 @@ class ScCrMaterialRecordLogic extends GetxController {
   ///
   /// 录着的时候不给换：模型早在 [start] 里就加载进 isolate 了，这时候改选中项
   /// 界面上像是换了、实际这一趟还是老模型。停下来再换，下一趟才作数。
+  ///
+  /// 开了远程时识别/翻译/合成不给在手机上换——那三个由服务端决定，
+  /// 在这儿改只会改到本地回退用的那份，跟界面上显示的对不上。VAD 不受影响。
   Future<void> pickModel(AiRole role) async {
     if (state.recording.value || state.starting.value) {
+      return;
+    }
+    if (state.remote.value && role != AiRole.vad) {
+      Snackbar.show(I18nKey.aiRemoteModelByServer.trArgs([await AiRemote.url()]));
       return;
     }
     if (await AiModelSwitch.pick(role)) {
@@ -291,13 +312,17 @@ class ScCrMaterialRecordLogic extends GetxController {
         state.error.value = I18nKey.aiModelMissing.trArgs([missing.label]);
         return false;
       }
-      final build = await AiPipeline.prepare(catalog);
-      if (build == null) {
+      // 开了远程推理就跑电脑上；连不上会自动切回机内模型，录音不中断。
+      final engine = await AiPipeline.createEngine(
+        catalog,
+        onFellBack: () => state.error.value = I18nKey.aiRemoteFellBack.tr,
+      );
+      if (engine == null) {
         state.error.value = I18nKey.aiModelMissing.trArgs([AiRole.asr.label]);
         return false;
       }
-      _infer = await InferIsolate.start(build);
-      _inferSub = _infer!.results.listen(_onInferResult, onError: (Object e) {
+      _infer = engine;
+      _inferSub = engine.results.listen(_onInferResult, onError: (Object e) {
         state.error.value = '$e';
       });
       return true;

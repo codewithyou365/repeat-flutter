@@ -6,6 +6,8 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/ai/ai_catalog.dart';
 import 'package:repeat_flutter/logic/ai/ai_lang.dart';
 import 'package:repeat_flutter/logic/ai/ai_model_help.dart';
+import 'package:repeat_flutter/logic/ai/ai_remote.dart';
+import 'package:repeat_flutter/logic/ai/ai_voice.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -16,6 +18,9 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 /// 同一份记录，换完下一次装配推理就按新的来。这里只负责"挑"，装/删仍然是模型管理页的事。
 class AiModelSwitch {
   /// 角色 -> 当前实际生效的模型。没有可用模型的角色值为 null。
+  ///
+  /// 一律按**本机装好的**算。开了远程时这几个模型只用于本地回退，界面上显示的
+  /// 是服务端的选择，走 [remoteNames]。
   static Future<Map<AiRole, AiModelEntry?>> current(
     AiCatalog catalog, {
     List<AiRole>? roles,
@@ -25,6 +30,23 @@ class AiModelSwitch {
       out[role] = await AiModelHelp.selectedFor(role, catalog);
     }
     return out;
+  }
+
+  /// 服务端当前生效的模型名，按角色。连不上返回 null。
+  ///
+  /// 开了远程推理时用哪个模型由服务端决定，手机只显示——手机的清单里没有
+  /// 服务端专属的大模型，让手机选的话那些模型永远用不上。
+  static Future<Map<AiRole, String>?> remoteNames() async {
+    if (!await AiRemote.enabled()) {
+      return null;
+    }
+    try {
+      final h = await AiRemote.health(await AiRemote.url());
+      return {for (final r in [AiRole.asr, AiRole.mt, AiRole.tts]) r: h.nameOf(r)};
+    } catch (e) {
+      debugPrint('remoteNames failed: $e');
+      return null;
+    }
   }
 
   /// 给一个角色换模型。返回 true 表示选中项可能变了，调用方要重新读一次。
@@ -107,24 +129,26 @@ class AiModelSwitch {
   ///
   /// 音色存在 CrKv 里（跟着课堂走）：同一台设备上，英语课堂和日语课堂想要的声音
   /// 多半不是同一个。
-  static Future<(int sid, int total)> voice([AiCatalog? catalog]) async {
+  /// [names] 是音色名表，可能为空（模型没给名字），显示一律走 [AiVoice.label]。
+  static Future<(int sid, int total, List<String> names)> voice([AiCatalog? catalog]) async {
     final tts = await AiModelHelp.selectedFor(AiRole.tts, catalog ?? await AiCatalog.load());
     final sid = await Db().db.crKvDao.getInt(Classroom.curr, CrK.aiTtsSpeakerId) ?? 0;
-    final total = tts?.speakers ?? 1;
+    final names = AiVoice.namesOf(tts);
+    final total = AiVoice.totalOf(tts);
     // 换过模型的话存的 sid 可能超界（kokoro 有 53 个，melo 只有 1 个），越界当 0
-    return (sid < total ? sid : 0, total);
+    return (sid < total ? sid : 0, total, names);
   }
 
   /// 换合成音色。只有多音色模型（kokoro 53 个）才有意义，单音色的调用方根本不该露出入口。
   static Future<bool> pickVoice() async {
-    final (current, total) = await voice();
+    final (current, total, names) = await voice();
     if (total <= 1) {
       return false;
     }
     final index = await Select.showSheet(
       title: I18nKey.aiTtsVoice.tr,
       autoHeight: false,
-      keys: [for (var i = 0; i < total; i++) '#$i'],
+      keys: [for (var i = 0; i < total; i++) AiVoice.label(names, i)],
       leadings: [
         for (var i = 0; i < total; i++) Icon(i == current ? Icons.check_circle : Icons.circle_outlined),
       ],
@@ -133,7 +157,7 @@ class AiModelSwitch {
       return false;
     }
     await Db().db.crKvDao.insertOrReplace(CrKv(Classroom.curr, CrK.aiTtsSpeakerId, '$index'));
-    Snackbar.show(I18nKey.aiModelSwitched.trArgs([I18nKey.aiTtsVoice.tr, '#$index']));
+    Snackbar.show(I18nKey.aiModelSwitched.trArgs([I18nKey.aiTtsVoice.tr, AiVoice.label(names, index)]));
     return true;
   }
 
@@ -145,7 +169,7 @@ class AiModelSwitch {
     final selected = await current(catalog, roles: roles);
     final lang = withParams ? await AiLang.current() : AiLang.auto;
     // 单音色模型不露音色那一行：点开只有一项，等于骗人点一下
-    final (sid, voices) = withParams ? await voice(catalog) : (0, 1);
+    final (sid, voices, voiceNames) = withParams ? await voice(catalog) : (0, 1, const <String>[]);
     final extras = <Future<bool> Function()>[
       if (withParams) pickLanguage,
       if (withParams && voices > 1) pickVoice,
@@ -155,7 +179,7 @@ class AiModelSwitch {
       keys: [
         for (final role in roles) '${role.label}: ${selected[role]?.name ?? I18nKey.aiNotInstalled.tr}',
         if (withParams) '${I18nKey.aiAsrLanguage.tr}: ${AiLang.label(lang)}',
-        if (withParams && voices > 1) '${I18nKey.aiTtsVoice.tr}: #$sid',
+        if (withParams && voices > 1) '${I18nKey.aiTtsVoice.tr}: ${AiVoice.label(voiceNames, sid)}',
       ],
     );
     if (index == null) {

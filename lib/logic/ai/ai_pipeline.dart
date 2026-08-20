@@ -9,6 +9,8 @@ import 'package:repeat_flutter/logic/ai/ai_catalog.dart';
 import 'package:repeat_flutter/logic/ai/ai_lang.dart';
 import 'package:repeat_flutter/logic/ai/ai_model_help.dart';
 import 'package:repeat_flutter/logic/ai/ai_model_paths.dart';
+import 'package:repeat_flutter/logic/ai/ai_remote.dart';
+import 'package:repeat_flutter/logic/ai/infer_engine.dart';
 import 'package:repeat_flutter/logic/ai/infer_isolate.dart';
 
 /// 按当前选中的模型装配推理 isolate 的初始化参数。
@@ -16,13 +18,87 @@ import 'package:repeat_flutter/logic/ai/infer_isolate.dart';
 /// 录音页和复核页都要起推理 isolate，装配逻辑只写这一份。
 class AiPipeline {
   /// 缺哪个角色就返回那个角色，调用方据此提示用户去下载；全齐了返回 null。
+  ///
+  /// 开了远程推理就一概不拦：模型装在电脑上，手机这边一个都没有也是正常用法。
   static Future<AiRole?> missingRole(AiCatalog catalog) async {
+    if (await AiRemote.enabled()) {
+      return null;
+    }
+    return await missingLocalRole(catalog);
+  }
+
+  /// 开录前的把关：还缺哪些角色的模型。
+  ///
+  /// VAD 单拎出来永远按本机算：它决定"切好一句"的震动反馈时机，必须实时，
+  /// 不可能挪到远程去。其余三个开了远程就不拦——模型在电脑上。
+  static Future<List<AiRole>> missingRoles(AiCatalog catalog) async {
+    final out = <AiRole>[];
+    if (await AiModelHelp.selectedFor(AiRole.vad, catalog) == null) {
+      out.add(AiRole.vad);
+    }
+    if (await AiRemote.enabled()) {
+      return out;
+    }
+    for (final role in [AiRole.asr, AiRole.mt, AiRole.tts]) {
+      if (await AiModelHelp.selectedFor(role, catalog) == null) {
+        out.add(role);
+      }
+    }
+    return out;
+  }
+
+  /// 机内缺哪个角色。和 [missingRole] 的区别是它不看远程开关——
+  /// 装配引擎时要靠它判断"还有没有本地这条后路"。
+  static Future<AiRole?> missingLocalRole(AiCatalog catalog) async {
     for (final role in [AiRole.asr, AiRole.mt, AiRole.tts]) {
       if (await AiModelHelp.selectedFor(role, catalog) == null) {
         return role;
       }
     }
     return null;
+  }
+
+  /// 按当前设置造一个推理引擎。录音页和复核页都走这里。
+  ///
+  /// 三种形态：
+  /// - 远程关：机内 isolate，跟以前一模一样
+  /// - 远程开 + 机内模型齐：远程优先，服务端挂了自动切回本地
+  /// - 远程开 + 机内没模型：只有远程，挂了这一段就是失败（复核页可重跑）
+  ///
+  /// 返回 null 表示两条路都走不通，调用方去提示用户下模型。
+  static Future<InferEngine?> createEngine(
+    AiCatalog catalog, {
+    void Function()? onFellBack,
+  }) async {
+    final build = await prepare(catalog);
+    if (!await AiRemote.enabled()) {
+      return build == null ? null : await LocalInferEngine.start(build);
+    }
+
+    final baseUrl = await AiRemote.url();
+    final params = await remoteParams(catalog);
+    if (build == null) {
+      return RemoteInferEngine(baseUrl: baseUrl, params: params);
+    }
+    return FallbackInferEngine(
+      baseUrl: baseUrl,
+      params: params,
+      buildLocal: build,
+      onFellBack: onFellBack,
+    );
+  }
+
+  /// 远程请求里手机说了算的那部分：只有语言。
+  ///
+  /// 用哪个模型由服务端决定（见 [AiRemoteParams] 的说明），所以这里不再挑模型。
+  ///
+  /// 语言要按**本机选中的识别模型**过一遍 [AiLang.effective]：存的值可能是换模型
+  /// 之前选的，本机模型不支持就退回自动。本机一个模型都没有时不过滤，原样送上去
+  /// ——服务端的模型支持什么由服务端说了算。
+  static Future<AiRemoteParams> remoteParams(AiCatalog catalog) async {
+    final lang = await AiLang.current();
+    final asr = await AiModelHelp.selectedFor(AiRole.asr, catalog);
+    return AiRemoteParams(language: asr == null ? lang : AiLang.effective(asr, lang));
   }
 
   /// 返回一个能拿 SendPort 造出 [InferInit] 的闭包；缺模型则返回 null。

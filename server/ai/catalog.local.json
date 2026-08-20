@@ -1,0 +1,428 @@
+{
+ "_comment": [
+  "服务端专属模型清单，只在 server/ai 生效，会覆盖/追加到 assets/ai/catalog.json 之上。",
+  "放这里的都是手机装不下、但 Mac 随便跑的大模型。手机端读的是 assets 那一份，看不到这些。",
+  "没有 sha1（上游没提供），校验退回按文件大小比对，见 catalog.py 的 missing_files。",
+  "role 里要不要写 mt，取决于这个 whisper 变体支不支持 translate 任务。large-v3-turbo 和 distil-* 都是只为转写蒸馏的，translate 被砍掉了，强行跑出来是退化的乱码（实测：'明天天天天天天天...'）。它们只标 asr。",
+  "kind=\"text\" 的模型是文本翻译（原文->译文），跑在 CTranslate2 上，不经过 sherpa。它和 whisper 的 translate 任务是两条路：whisper 重跑音频，它翻文本。",
+  "kind=\"hf-tts\" 是拿 transformers 跑的 TTS（SeamlessM4T），不经过 sherpa。只用它发声，翻译仍走 mt 那一档。",
+  "Piper 系列（vits-piper-*）是 sherpa 生态里最快的 TTS，比 kokoro 小一个数量级。解压后是 <voice>.onnx + tokens.txt + espeak-ng-data/，外层同名目录会被拍平。",
+  "kind=\"llm-mt\" 是用 LLM 翻译，跑在 MLX（Apple Silicon 的 GPU）上。专治 NMT 的复合词拆字和习语问题（魔方->devil、近视->close look）。",
+  "kind=\"mlx-asr\" 是识别跑 MLX（Apple GPU）。和 sherpa 的 CPU int8 是两条路。"
+ ],
+ "v": 3,
+ "models": [
+  {
+   "id": "whisper-medium-int8",
+   "role": [
+    "asr",
+    "mt"
+   ],
+   "name": "Whisper medium (int8)",
+   "langs": [
+    "*"
+   ],
+   "mtTargets": [
+    "en"
+   ],
+   "size": 946072270,
+   "license": "Apache-2.0",
+   "note": "完整的多语种 whisper，识别和翻译都能做，比 small 准不少。要翻译就用它或 small，别用 turbo/distil",
+   "files": [
+    {
+     "p": "medium-encoder.int8.onnx",
+     "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-medium/resolve/main/medium-encoder.int8.onnx",
+     "s": 374196283
+    },
+    {
+     "p": "medium-decoder.int8.onnx",
+     "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-medium/resolve/main/medium-decoder.int8.onnx",
+     "s": 571059257
+    },
+    {
+     "p": "medium-tokens.txt",
+     "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-medium/resolve/main/medium-tokens.txt",
+     "s": 816730
+    }
+   ],
+   "cfg": {
+    "model": {
+     "whisper": {
+      "encoder": "medium-encoder.int8.onnx",
+      "decoder": "medium-decoder.int8.onnx",
+      "language": "",
+      "task": "transcribe"
+     },
+     "tokens": "medium-tokens.txt",
+     "numThreads": 8,
+     "debug": false,
+     "provider": "cpu"
+    }
+   }
+  },
+  {
+   "id": "whisper-turbo-int8",
+   "role": [
+    "asr"
+   ],
+   "name": "Whisper large-v3-turbo (int8)",
+   "langs": [
+    "*"
+   ],
+   "mtTargets": [],
+   "size": 1036613791,
+   "license": "Apache-2.0",
+   "note": "转写最准的一档，比 small 明显好。**只能做识别**——turbo 是只为转写蒸馏的，translate 任务出来的是乱码（已实测）",
+   "files": [
+    {
+     "p": "turbo-encoder.int8.onnx",
+     "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-turbo/resolve/main/turbo-encoder.int8.onnx",
+     "s": 674716297
+    },
+    {
+     "p": "turbo-decoder.int8.onnx",
+     "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-turbo/resolve/main/turbo-decoder.int8.onnx",
+     "s": 361080764
+    },
+    {
+     "p": "turbo-tokens.txt",
+     "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-turbo/resolve/main/turbo-tokens.txt",
+     "s": 816730
+    }
+   ],
+   "cfg": {
+    "model": {
+     "whisper": {
+      "encoder": "turbo-encoder.int8.onnx",
+      "decoder": "turbo-decoder.int8.onnx",
+      "language": "",
+      "task": "transcribe"
+     },
+     "tokens": "turbo-tokens.txt",
+     "numThreads": 8,
+     "debug": false,
+     "provider": "cpu"
+    }
+   }
+  },
+  {
+   "id": "whisper-distil-large-v2-int8",
+   "role": [
+    "asr"
+   ],
+   "name": "Distil-Whisper large-v2 (int8)",
+   "langs": [
+    "en"
+   ],
+   "mtTargets": [],
+   "size": 983085645,
+   "license": "Apache-2.0",
+   "note": "蒸馏版 large，只认英文，速度接近 medium。**只能做识别**——同 turbo，蒸馏时丢掉了 translate",
+   "files": [
+    {
+     "p": "distil-large-v2-encoder.int8.onnx",
+     "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-distil-large-v2/resolve/main/distil-large-v2-encoder.int8.onnx",
+     "s": 667402786
+    },
+    {
+     "p": "distil-large-v2-decoder.int8.onnx",
+     "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-distil-large-v2/resolve/main/distil-large-v2-decoder.int8.onnx",
+     "s": 314866129
+    },
+    {
+     "p": "distil-large-v2-tokens.txt",
+     "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-distil-large-v2/resolve/main/distil-large-v2-tokens.txt",
+     "s": 816730
+    }
+   ],
+   "cfg": {
+    "model": {
+     "whisper": {
+      "encoder": "distil-large-v2-encoder.int8.onnx",
+      "decoder": "distil-large-v2-decoder.int8.onnx",
+      "language": "",
+      "task": "transcribe"
+     },
+     "tokens": "distil-large-v2-tokens.txt",
+     "numThreads": 8,
+     "debug": false,
+     "provider": "cpu"
+    }
+   }
+  },
+  {
+   "id": "opus-mt-zh-en",
+   "role": [
+    "mt"
+   ],
+   "kind": "text",
+   "name": "Opus-MT 中译英（CT2 int8）",
+   "langs": [
+    "zh"
+   ],
+   "mtTargets": [
+    "en"
+   ],
+   "size": 83886080,
+   "license": "CC-BY-4.0",
+   "note": "小而快（约 60ms），日常够用。复杂结构会翻拧——「这个键盘的保护膜破了」会译成 \"has broken its protective membrane\"",
+   "files": [],
+   "cfg": {
+    "ct2": "ct2",
+    "spmSource": "source.spm",
+    "spmTarget": "target.spm",
+    "maxDecodingLength": 256,
+    "tokenizer": "marian-spm",
+    "require": [
+     "ct2",
+     "source.spm",
+     "target.spm"
+    ]
+   }
+  },
+  {
+   "id": "nllb-200-distilled-600M",
+   "role": [
+    "mt"
+   ],
+   "kind": "text",
+   "name": "NLLB-200 distilled 600M（CT2 int8）",
+   "langs": [
+    "zh"
+   ],
+   "mtTargets": [
+    "en"
+   ],
+   "size": 650117120,
+   "license": "CC-BY-NC-4.0",
+   "note": "比 opus-mt 大 8 倍，复杂句式明显更准，代价是慢几百毫秒。装法见 README「文本翻译」",
+   "files": [],
+   "cfg": {
+    "ct2": "ct2",
+    "tokenizer": "hf",
+    "srcLang": "zho_Hans",
+    "tgtLang": "eng_Latn",
+    "require": [
+     "ct2",
+     "tokenizer.json",
+     "tokenizer_config.json",
+     "sentencepiece.bpe.model"
+    ],
+    "maxDecodingLength": 256
+   }
+  },
+  {
+   "id": "seamless-m4t-v2-large",
+   "role": [
+    "tts"
+   ],
+   "kind": "hf-tts",
+   "name": "SeamlessM4T v2（人声更自然）",
+   "langs": [
+    "en"
+   ],
+   "size": 8800000000,
+   "license": "CC-BY-NC-4.0",
+   "note": "声音比 kokoro 自然，但慢（长句 3.6s vs 2.6s）且常驻约 9 GB。只当 TTS 用，翻译不归它。装法：python bench_s2st.py --install",
+   "files": [],
+   "cfg": {
+    "tgtLang": "eng",
+    "require": [
+     "model-00001-of-00002.safetensors",
+     "model-00002-of-00002.safetensors",
+     "model.safetensors.index.json",
+     "config.json",
+     "generation_config.json",
+     "tokenizer_config.json",
+     "special_tokens_map.json",
+     "preprocessor_config.json",
+     "sentencepiece.bpe.model"
+    ]
+   }
+  },
+  {
+   "id": "vits-piper-en_US-libritts_r-medium",
+   "role": [
+    "tts"
+   ],
+   "name": "Piper LibriTTS-R（904 个音色）",
+   "langs": [
+    "en"
+   ],
+   "size": 82038311,
+   "speakers": 904,
+   "license": "MIT",
+   "note": "904 个音色，一次下载挑到饱。比 kokoro 快得多，音色靠 sid 选",
+   "zip": {
+    "u": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-en_US-libritts_r-medium.tar.bz2",
+    "s": 82038311
+   },
+   "cfg": {
+    "model": {
+     "vits": {
+      "model": "en_US-libritts_r-medium.onnx",
+      "tokens": "tokens.txt",
+      "dataDir": "espeak-ng-data"
+     },
+     "numThreads": 2,
+     "debug": false,
+     "provider": "cpu"
+    },
+    "maxNumSenetences": 1
+   }
+  },
+  {
+   "id": "vits-piper-en_US-amy-medium",
+   "role": [
+    "tts"
+   ],
+   "name": "Piper Amy（女声）",
+   "langs": [
+    "en"
+   ],
+   "size": 67223746,
+   "speakers": 1,
+   "license": "MIT",
+   "note": "单音色女声，小而快",
+   "zip": {
+    "u": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-en_US-amy-medium.tar.bz2",
+    "s": 67223746
+   },
+   "cfg": {
+    "model": {
+     "vits": {
+      "model": "en_US-amy-medium.onnx",
+      "tokens": "tokens.txt",
+      "dataDir": "espeak-ng-data"
+     },
+     "numThreads": 2,
+     "debug": false,
+     "provider": "cpu"
+    },
+    "maxNumSenetences": 1
+   }
+  },
+  {
+   "id": "vits-piper-en_US-lessac-medium",
+   "role": [
+    "tts"
+   ],
+   "name": "Piper Lessac（清晰）",
+   "langs": [
+    "en"
+   ],
+   "size": 67230653,
+   "speakers": 1,
+   "license": "MIT",
+   "note": "单音色，咬字清晰",
+   "zip": {
+    "u": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-en_US-lessac-medium.tar.bz2",
+    "s": 67230653
+   },
+   "cfg": {
+    "model": {
+     "vits": {
+      "model": "en_US-lessac-medium.onnx",
+      "tokens": "tokens.txt",
+      "dataDir": "espeak-ng-data"
+     },
+     "numThreads": 2,
+     "debug": false,
+     "provider": "cpu"
+    },
+    "maxNumSenetences": 1
+   }
+  },
+  {
+   "id": "qwen2.5-3b-instruct-mlx-4bit",
+   "role": [
+    "mt"
+   ],
+   "kind": "llm-mt",
+   "name": "Qwen2.5 3B Instruct（MLX 4bit）",
+   "langs": [
+    "zh"
+   ],
+   "mtTargets": [
+    "en"
+   ],
+   "size": 1750000000,
+   "license": "Apache-2.0",
+   "note": "中文母语 LLM，复合词和习语明显强于 NMT。跑苹果 GPU。装法：pip install -r requirements-llm.txt && python setup_mt.py --model qwen",
+   "files": [],
+   "cfg": {
+    "tgtLang": "en",
+    "maxTokens": 256,
+    "require": [
+     "config.json",
+     "tokenizer_config.json",
+     "model.safetensors"
+    ]
+   }
+  },
+  {
+   "id": "whisper-large-v3-turbo-mlx",
+   "role": [
+    "asr"
+   ],
+   "kind": "mlx-asr",
+   "name": "Whisper large-v3-turbo（MLX/GPU）",
+   "langs": [
+    "*"
+   ],
+   "size": 1610000000,
+   "license": "MIT",
+   "note": "中文明显比 small 准，跑苹果 GPU。识别档首选",
+   "files": [],
+   "cfg": {
+    "require": [
+     "config.json",
+     "weights.safetensors"
+    ]
+   }
+  },
+  {
+   "id": "whisper-large-v3-mlx",
+   "role": [
+    "asr"
+   ],
+   "kind": "mlx-asr",
+   "name": "Whisper large-v3（MLX/GPU）",
+   "langs": [
+    "*"
+   ],
+   "size": 3080000000,
+   "license": "MIT",
+   "note": "精度最高，也最慢",
+   "files": [],
+   "cfg": {
+    "require": [
+     "config.json",
+     "weights.npz"
+    ]
+   }
+  },
+  {
+   "id": "whisper-large-v3-turbo-q4-mlx",
+   "role": [
+    "asr"
+   ],
+   "kind": "mlx-asr",
+   "name": "Whisper large-v3-turbo 4bit（MLX/GPU）",
+   "langs": [
+    "*"
+   ],
+   "size": 462000000,
+   "license": "MIT",
+   "note": "小得多，但 4bit 对中文可能掉精度",
+   "files": [],
+   "cfg": {
+    "require": [
+     "config.json",
+     "weights.npz"
+    ]
+   }
+  }
+ ],
+ "presets": []
+}

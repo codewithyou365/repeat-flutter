@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/ai/ai_catalog.dart';
 import 'package:repeat_flutter/logic/ai/ai_lang.dart';
+import 'package:repeat_flutter/logic/ai/ai_voice.dart';
 import 'package:repeat_flutter/logic/ai/record_session.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
@@ -189,12 +190,13 @@ class ScCrMaterialRecordPage extends StatelessWidget {
           value: AiLang.label(logic.state.asrLanguage.value),
           onTap: logic.pickLanguage,
         ),
-        // 单音色的模型（MeloTTS）不显示这一行
-        if (logic.state.ttsVoices.value > 1)
+        // 单音色的模型（MeloTTS）不显示这一行。
+        // 远程时也不显示：音色跟着 TTS 模型走，模型在服务器上选，sid 自然也在那边。
+        if (logic.state.ttsVoices.value > 1 && !logic.state.remote.value)
           _buildRow(
             context,
             label: I18nKey.aiTtsVoice.tr,
-            value: '#${logic.state.ttsVoice.value}',
+            value: AiVoice.label(logic.state.ttsVoiceNames.value, logic.state.ttsVoice.value),
             onTap: logic.pickVoice,
           ),
       ],
@@ -202,14 +204,25 @@ class ScCrMaterialRecordPage extends StatelessWidget {
   }
 
   Widget _buildModelRow(BuildContext context, ScCrMaterialRecordLogic logic, AiRole role) {
-    final name = logic.state.modelNames[role] ?? '';
-    final missing = name.isEmpty;
+    final state = logic.state;
+    // VAD 永远跑在手机上，别给它挂"远程"角标，也照旧可以换
+    final remote = state.remote.value && role != AiRole.vad;
+
+    // 开了远程就显示**服务器**在用什么：模型装在电脑上，选择也在电脑上。
+    // 显示本机选的那份会骗人——那份只在服务器挂了回退时才跑。
+    final name = remote ? (state.remoteModelNames[role] ?? '') : (state.modelNames[role] ?? '');
+    final unreachable = remote && !state.remoteReachable.value;
+    final missing = !remote && name.isEmpty;
+
     return _buildRow(
       context,
       label: role.label,
       // 缺模型不是灰掉就完了：它是"开始录音"会失败的唯一原因，标红提醒去装
-      value: missing ? I18nKey.aiNotInstalled.tr : name,
-      warn: missing,
+      value: unreachable
+          ? I18nKey.aiRemoteUnreachable.tr
+          : (missing ? I18nKey.aiNotInstalled.tr : name),
+      warn: missing || unreachable,
+      badge: remote ? I18nKey.aiRemoteBadge.tr : null,
       onTap: () => logic.pickModel(role),
     );
   }
@@ -220,8 +233,10 @@ class ScCrMaterialRecordPage extends StatelessWidget {
     required String value,
     required VoidCallback onTap,
     bool warn = false,
+    String? badge,
   }) {
     final style = Theme.of(context).textTheme.bodySmall;
+    final scheme = Theme.of(context).colorScheme;
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -232,10 +247,20 @@ class ScCrMaterialRecordPage extends StatelessWidget {
             Expanded(
               child: Text(
                 value,
-                style: warn ? style?.copyWith(color: Theme.of(context).colorScheme.error) : style,
+                style: warn ? style?.copyWith(color: scheme.error) : style,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+            if (badge != null)
+              Container(
+                margin: EdgeInsets.only(left: 4.w),
+                padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.h),
+                decoration: BoxDecoration(
+                  color: scheme.secondaryContainer,
+                  borderRadius: BorderRadius.circular(4.w),
+                ),
+                child: Text(badge, style: style?.copyWith(color: scheme.onSecondaryContainer)),
+              ),
             const Icon(Icons.arrow_drop_down, size: 18),
           ],
         ),

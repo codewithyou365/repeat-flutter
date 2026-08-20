@@ -8,7 +8,9 @@ import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/ai/ai_catalog.dart';
 import 'package:repeat_flutter/logic/ai/ai_model_switch.dart';
+import 'package:repeat_flutter/logic/ai/ai_remote.dart';
 import 'package:repeat_flutter/logic/ai/ai_pipeline.dart';
+import 'package:repeat_flutter/logic/ai/infer_engine.dart';
 import 'package:repeat_flutter/logic/ai/infer_isolate.dart';
 import 'package:repeat_flutter/logic/ai/record_commit.dart';
 import 'package:repeat_flutter/logic/ai/record_session.dart';
@@ -28,7 +30,7 @@ class ScCrMaterialRecordReviewLogic extends GetxController {
 
   /// 只在真要重跑时才起。复核页多数时候只是看看和改改文字，
   /// 没必要一进来就把几百 MB 模型拉进内存。
-  InferIsolate? _infer;
+  InferEngine? _infer;
   StreamSubscription<InferResult>? _inferSub;
   Completer<InferResult>? _waiting;
 
@@ -73,14 +75,17 @@ class ScCrMaterialRecordReviewLogic extends GetxController {
     }
     try {
       final catalog = await AiCatalog.load();
-      final build = await AiPipeline.prepare(catalog);
-      if (build == null) {
-        final missing = await AiPipeline.missingRole(catalog);
+      final engine = await AiPipeline.createEngine(
+        catalog,
+        onFellBack: () => state.error.value = I18nKey.aiRemoteFellBack.tr,
+      );
+      if (engine == null) {
+        final missing = await AiPipeline.missingRole(catalog) ?? await AiPipeline.missingLocalRole(catalog);
         state.error.value = I18nKey.aiModelMissing.trArgs([missing?.label ?? '']);
         return false;
       }
-      _infer = await InferIsolate.start(build);
-      _inferSub = _infer!.results.listen((r) {
+      _infer = engine;
+      _inferSub = engine.results.listen((r) {
         // 复核页是一次一段地重跑，用 completer 把异步结果拉回同步的调用点
         if (_waiting != null && !_waiting!.isCompleted) {
           _waiting!.complete(r);
@@ -104,6 +109,11 @@ class ScCrMaterialRecordReviewLogic extends GetxController {
   /// 判停不列进来：复核阶段音频早就切好了，VAD 一次都不会跑。
   Future<void> switchModel() async {
     if (state.busy.value) {
+      return;
+    }
+    if (await AiRemote.enabled()) {
+      // 远程时这三个由服务端决定，在手机上改只会改到本地回退用的那份
+      Snackbar.show(I18nKey.aiRemoteModelByServer.trArgs([await AiRemote.url()]));
       return;
     }
     if (!await AiModelSwitch.pickRole([AiRole.asr, AiRole.mt, AiRole.tts], withParams: true)) {
@@ -166,8 +176,14 @@ class ScCrMaterialRecordReviewLogic extends GetxController {
         index: seg.index,
         kind: kind,
         samples: samples,
-        // 合成用的是当前（可能被用户改过的）译文，不是模型原来吐的那份
-        text: kind == InferJobKind.tts ? seg.dst : null,
+        // tts 用当前（可能被用户改过的）译文；mt 用当前（可能被用户改过的）**原文**。
+        // 原文这一路只有文本翻译模型用得上——whisper 的 translate 是拿音频重跑，
+        // 改了原文它也不看。带上不亏：服务端用不到会忽略。
+        text: switch (kind) {
+          InferJobKind.tts => seg.dst,
+          InferJobKind.mt => seg.src,
+          _ => null,
+        },
         outWavPath: (kind == InferJobKind.tts || kind == InferJobKind.full)
             ? session.pathOf(_ttsNameOf(seg))
             : null,

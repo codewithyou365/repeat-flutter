@@ -605,5 +605,24 @@ class ConfigZh extends Config {
     put(I18nKey.aiPresetInstalledCount, "已装 @0/@1");
     put(I18nKey.aiPresetAllInstalled, "已全部安装");
     put(I18nKey.aiRecordInterrupted, "录音被系统中断了，请停止后重新开始。");
+    put(I18nKey.aiRemote, "远程推理");
+    put(I18nKey.aiRemoteDesc, "把识别/翻译/合成交给局域网里的电脑跑，比手机快很多。服务端见仓库 server/ai。");
+    put(I18nKey.aiRemoteUrl, "服务地址");
+    put(I18nKey.aiRemoteUrlHint, "例如 http://192.168.1.2:8765");
+    put(I18nKey.aiRemoteTest, "测试连接");
+    put(I18nKey.aiRemoteTesting, "连接中…");
+    put(I18nKey.aiRemoteOk, "连接正常，延迟 @0 ms；服务端已装 识别@1 翻译@2 合成@3");
+    put(I18nKey.aiRemoteFail, "连不上：@0");
+    put(I18nKey.aiRemoteFellBack, "远程服务不可用，已切回本地推理");
+    put(I18nKey.aiRemoteNoLocalFallback, "机内没装模型，远程连不上时这一段会失败，可到复核页重跑");
+    put(I18nKey.aiRemoteBadge, "远程");
+    put(I18nKey.aiRemoteUpload, "上传模型到服务器");
+    put(I18nKey.aiRemoteUploadOne, "上传到服务器");
+    put(I18nKey.aiRemoteUploading, "上传中 @0/@1");
+    put(I18nKey.aiRemoteUploadDone, "上传完成");
+    put(I18nKey.aiRemoteUploadNothing, "没有需要上传的模型");
+    put(I18nKey.aiRemoteNotSet, "请先填服务地址");
+    put(I18nKey.aiRemoteModelByServer, "远程推理时由服务器决定，请在电脑上打开 @0 修改");
+    put(I18nKey.aiRemoteUnreachable, "未连接");
   }
 }

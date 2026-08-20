@@ -29,12 +29,26 @@ class ScCrMaterialRecordState {
   /// 只用于展示：真正生效的选中项在 Kv 里，开录时才读。
   final RxMap<AiRole, String> modelNames = <AiRole, String>{}.obs;
 
+  /// 是否走远程推理（识别/翻译/合成跑在局域网里的电脑上）。只用于展示角标；
+  /// VAD 不算在内——它永远跑在手机上。
+  final RxBool remote = false.obs;
+
+  /// 服务端当前生效的模型名。开了远程时那三行显示的是它，不是 [modelNames]
+  /// ——选哪个模型由服务端决定。空表示还没拉到。
+  final RxMap<AiRole, String> remoteModelNames = <AiRole, String>{}.obs;
+
+  /// 服务端探活是否成功。失败时那三行显示"未连接"。
+  final RxBool remoteReachable = false.obs;
+
   /// 当前钉死的识别语言，空串 = 自动判断。跟 modelNames 一样只用于展示。
   final RxString asrLanguage = ''.obs;
 
   /// 合成音色和这个模型的音色总数。总数 <= 1 时那一行根本不显示。
   final RxInt ttsVoice = 0.obs;
   final RxInt ttsVoices = 1.obs;
+
+  /// 音色名表，下标即 speaker id。空表示模型没给名字，界面退回编号显示。
+  final Rx<List<String>> ttsVoiceNames = Rx<List<String>>(const []);
 
   RecordSession? session;
 

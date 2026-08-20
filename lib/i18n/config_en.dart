@@ -607,5 +607,24 @@ class ConfigEn extends Config {
     put(I18nKey.aiPresetInstalledCount, "@0/@1 installed");
     put(I18nKey.aiPresetAllInstalled, "All installed");
     put(I18nKey.aiRecordInterrupted, "Recording was interrupted by the system. Stop and start again.");
+    put(I18nKey.aiRemote, "Remote inference");
+    put(I18nKey.aiRemoteDesc, "Run recognition/translation/speech on a computer in your LAN. Much faster than the phone. Server lives in server/ai.");
+    put(I18nKey.aiRemoteUrl, "Server address");
+    put(I18nKey.aiRemoteUrlHint, "e.g. http://192.168.1.2:8765");
+    put(I18nKey.aiRemoteTest, "Test connection");
+    put(I18nKey.aiRemoteTesting, "Connecting…");
+    put(I18nKey.aiRemoteOk, "Connected, @0 ms; server has @1 ASR, @2 MT, @3 TTS");
+    put(I18nKey.aiRemoteFail, "Cannot connect: @0");
+    put(I18nKey.aiRemoteFellBack, "Remote server unavailable, switched back to on-device");
+    put(I18nKey.aiRemoteNoLocalFallback, "No on-device model installed. If the server drops, the segment fails and you can re-run it in review.");
+    put(I18nKey.aiRemoteBadge, "remote");
+    put(I18nKey.aiRemoteUpload, "Upload models to server");
+    put(I18nKey.aiRemoteUploadOne, "Upload to server");
+    put(I18nKey.aiRemoteUploading, "Uploading @0/@1");
+    put(I18nKey.aiRemoteUploadDone, "Upload finished");
+    put(I18nKey.aiRemoteUploadNothing, "Nothing to upload");
+    put(I18nKey.aiRemoteNotSet, "Set the server address first");
+    put(I18nKey.aiRemoteModelByServer, "The server decides this while remote inference is on. Change it at @0");
+    put(I18nKey.aiRemoteUnreachable, "not connected");
   }
 }

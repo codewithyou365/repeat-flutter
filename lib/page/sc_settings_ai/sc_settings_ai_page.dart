@@ -6,6 +6,7 @@ import 'package:repeat_flutter/logic/ai/ai_catalog.dart';
 import 'package:repeat_flutter/logic/ai/ai_download_source.dart';
 
 import 'sc_settings_ai_logic.dart';
+import 'sc_settings_ai_state.dart';
 
 class ScSettingsAiPage extends StatelessWidget {
   const ScSettingsAiPage({Key? key}) : super(key: key);
@@ -52,6 +53,7 @@ class ScSettingsAiPage extends StatelessWidget {
         return ListView(
           children: [
             _buildHeader(context, logic),
+            ..._buildRemote(context, logic),
             ..._buildPresets(context, logic),
             for (final role in AiRole.values) ..._buildRoleSection(context, logic, role),
             SizedBox(height: 24.h),
@@ -92,21 +94,20 @@ class ScSettingsAiPage extends StatelessWidget {
           ),
           if (state.downloadSource.value == AiDownloadSource.cn)
             Text(I18nKey.aiSourceCnDesc.tr, style: Theme.of(context).textTheme.bodySmall),
-          if (state.installingId.value.isNotEmpty) ...[
+          if (state.installingId.value.isNotEmpty || state.uploadingId.value.isNotEmpty) ...[
             SizedBox(height: 10.h),
             Row(
               children: [
                 Expanded(
                   child: Text(
-                    state.presetName.value.isNotEmpty
-                        ? '${state.presetName.value} ${state.presetIndex.value}/${state.presetTotal.value} · '
-                            '${I18nKey.aiInstalling.trArgs(['${state.fileIndex.value}', '${state.fileTotal.value}'])}'
-                        : I18nKey.aiInstalling
-                            .trArgs(['${state.fileIndex.value}', '${state.fileTotal.value}']),
+                    _progressText(state),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
-                TextButton(onPressed: logic.cancel, child: Text(I18nKey.btnCancel.tr)),
+                // 上传没有取消：dio 的分片已经在路上了，半途停下留在服务端的是
+                // 一个不完整的模型目录，还不如让它传完（.ok 是校验通过才写的）。
+                if (state.installingId.value.isNotEmpty)
+                  TextButton(onPressed: logic.cancel, child: Text(I18nKey.btnCancel.tr)),
               ],
             ),
             LinearProgressIndicator(value: state.fileProgress.value),
@@ -114,6 +115,94 @@ class ScSettingsAiPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// 顶部那行进度文案。下载和上传共用一条进度条，只是动词不同。
+  static String _progressText(ScSettingsAiState state) {
+    final uploading = state.uploadingId.value.isNotEmpty;
+    final body = uploading
+        ? I18nKey.aiRemoteUploading.trArgs(['${state.fileIndex.value}', '${state.fileTotal.value}'])
+        : I18nKey.aiInstalling.trArgs(['${state.fileIndex.value}', '${state.fileTotal.value}']);
+    if (state.presetName.value.isEmpty) {
+      return body;
+    }
+    return '${state.presetName.value} ${state.presetIndex.value}/${state.presetTotal.value} · $body';
+  }
+
+  /// 远程推理区块。放在预设之前：它是"嫌慢"这个问题最有效的解，
+  /// 用户不该先翻过一屏模型列表才看到它。
+  List<Widget> _buildRemote(BuildContext context, ScSettingsAiLogic logic) {
+    final state = logic.state;
+    final theme = Theme.of(context);
+    final on = state.remoteEnabled.value;
+    return [
+      const Divider(height: 1),
+      SwitchListTile(
+        title: Text(I18nKey.aiRemote.tr),
+        subtitle: Text(I18nKey.aiRemoteDesc.tr, style: theme.textTheme.bodySmall),
+        value: on,
+        // 上传/下载期间也允许切：这个开关只决定"下一次推理走哪条路"，
+        // 跟正在传的模型没关系。灰掉反而让整块看着像是没启用。
+        onChanged: (v) => logic.toggleRemote(v),
+      ),
+      if (on) ...[
+        ListTile(
+          dense: true,
+          leading: const Icon(Icons.dns_outlined),
+          title: Text(I18nKey.aiRemoteUrl.tr, style: theme.textTheme.bodyMedium),
+          subtitle: Text(
+            state.remoteUrl.value.isEmpty ? I18nKey.aiRemoteUrlHint.tr : state.remoteUrl.value,
+            style: theme.textTheme.bodySmall,
+          ),
+          trailing: const Icon(Icons.edit, size: 18),
+          onTap: logic.editRemoteUrl,
+        ),
+        Padding(
+          padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 8.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 用 Wrap 不用 Row：英文文案（"Upload models to server"）比中文长得多，
+              // 两个按钮并排放不下会直接 overflow，窄屏上让它换行。
+              Wrap(
+                spacing: 8.w,
+                runSpacing: 8.h,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: state.remoteTesting.value ? null : logic.testRemote,
+                    icon: const Icon(Icons.network_check, size: 18),
+                    label: Text(I18nKey.aiRemoteTest.tr),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: logic.busy ? null : () => logic.uploadModels(),
+                    icon: const Icon(Icons.upload, size: 18),
+                    label: Text(I18nKey.aiRemoteUpload.tr),
+                  ),
+                ],
+              ),
+              if (state.remoteStatus.value.isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.only(top: 6.h),
+                  child: Text(
+                    state.remoteStatus.value,
+                    style: state.remoteError.value
+                        ? theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error)
+                        : theme.textTheme.bodySmall,
+                  ),
+                ),
+              // 机内一个模型都没有时说清后果：远程挂了这一段就是失败，
+              // 不会像"有本地模型"那样悄悄接上。
+              if (state.installed.values.every((e) => !e))
+                Padding(
+                  padding: EdgeInsets.only(top: 6.h),
+                  child: Text(I18nKey.aiRemoteNoLocalFallback.tr, style: theme.textTheme.bodySmall),
+                ),
+            ],
+          ),
+        ),
+      ],
+      const Divider(height: 1),
+    ];
   }
 
   /// 预设名和说明按 id 走 i18n：catalog.json 里的 name 是硬编码中文，英文界面不能照搬。
@@ -283,6 +372,12 @@ class ScSettingsAiPage extends StatelessWidget {
                 onTap: () => logic.importLocal(m),
                 child: Text(I18nKey.aiImportLocal.tr),
               ),
+              // 装好了才给传：半个模型传上去只会让服务端也坏掉
+              if (installed && logic.state.remoteEnabled.value)
+                PopupMenuItem<String>(
+                  onTap: () => logic.uploadModels(m),
+                  child: Text(I18nKey.aiRemoteUploadOne.tr),
+                ),
               if (installed)
                 PopupMenuItem<String>(
                   onTap: () => logic.remove(m),

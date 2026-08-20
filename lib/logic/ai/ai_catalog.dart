@@ -90,6 +90,10 @@ class AiModelEntry {
   /// 说话人（音色）数量。只有 tts 角色有意义，1 表示这个模型只有一个声音。
   final int speakers;
 
+  /// 音色名，下标就是传给 sherpa 的 speaker id。空表示这个模型没给名字，
+  /// 界面上只能退回 "#0 #1" 这种编号。**顺序不能动**：改了等于把用户存的音色偷换成另一个人。
+  final List<String> voices;
+
   final String license;
   final String note;
 
@@ -110,6 +114,7 @@ class AiModelEntry {
     required this.mtTargets,
     required this.size,
     required this.speakers,
+    required this.voices,
     required this.license,
     required this.note,
     required this.files,
@@ -186,6 +191,8 @@ class AiModelEntry {
       return null;
     }
 
+    final voices = (json['voices'] as List?)?.whereType<String>().toList() ?? const <String>[];
+
     return AiModelEntry(
       id: id,
       roles: roles,
@@ -193,7 +200,8 @@ class AiModelEntry {
       langs: (json['langs'] as List?)?.whereType<String>().toList() ?? const ['*'],
       mtTargets: (json['mtTargets'] as List?)?.whereType<String>().toList() ?? const [],
       size: (json['size'] as num?)?.toInt() ?? files.fold<int>(0, (a, b) => a + b.size) + (zip?.size ?? 0),
-      speakers: (json['speakers'] as num?)?.toInt() ?? 1,
+      speakers: (json['speakers'] as num?)?.toInt() ?? (voices.isEmpty ? 1 : voices.length),
+      voices: voices,
       license: json['license'] as String? ?? '',
       note: json['note'] as String? ?? '',
       files: files,

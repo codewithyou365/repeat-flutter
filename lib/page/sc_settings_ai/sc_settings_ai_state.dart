@@ -19,6 +19,18 @@ class ScSettingsAiState {
   final RxString catalogUrl = ''.obs;
   final Rx<AiDownloadSource> downloadSource = AiDownloadSource.official.obs;
 
+  // ------- 远程推理（服务端见仓库 server/ai）
+  final RxBool remoteEnabled = false.obs;
+  final RxString remoteUrl = ''.obs;
+
+  /// 测试连接/上传的结果文案。成功和失败都往这儿写，[remoteError] 决定标不标红。
+  final RxString remoteStatus = ''.obs;
+  final RxBool remoteError = false.obs;
+  final RxBool remoteTesting = false.obs;
+
+  /// 上传进度。[uploadingId] 非空时顶部进度条显示的是上传而不是下载。
+  final RxString uploadingId = ''.obs;
+
   // ------- 安装进度。同一时刻只可能有一个模型在装（下载器要求严格串行）
   final RxString installingId = ''.obs;
   final RxInt fileIndex = 0.obs;
