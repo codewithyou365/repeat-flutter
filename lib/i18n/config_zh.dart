@@ -560,5 +560,37 @@ class ConfigZh extends Config {
     put(I18nKey.aiRecordTapToExitBlack, "双击点亮屏幕");
     put(I18nKey.aiRecordPending, "待处理 @0");
     put(I18nKey.aiRecordDiscardConfirm, "要丢弃这次录音吗？");
+    put(I18nKey.aiReviewTitle, "复核");
+    put(I18nKey.aiReviewCommit, "生成章节");
+    put(I18nKey.aiReviewProcessAll, "全部处理");
+    put(I18nKey.aiReviewProcess, "处理");
+    put(I18nKey.aiReviewReAsr, "重新识别");
+    put(I18nKey.aiReviewReMt, "重新翻译");
+    put(I18nKey.aiReviewReTts, "重新合成");
+    put(I18nKey.aiReviewDelete, "删除");
+    put(I18nKey.aiReviewSrc, "原文");
+    put(I18nKey.aiReviewDst, "译文");
+    put(I18nKey.aiReviewCommitted, "已生成 @0 段");
+    put(I18nKey.aiReviewSkipped, "跳过 @0 段空白");
+    put(I18nKey.aiReviewEmpty, "没有可以生成章节的内容");
+    put(I18nKey.aiReviewResume, "发现一次没做完的录音，要接着弄吗？");
+    put(I18nKey.aiReviewDiscard, "丢弃");
+    put(I18nKey.aiReviewNoAudio, "没有音频");
+    put(I18nKey.aiDownloadSource, "下载源");
+    put(I18nKey.aiSourceOfficial, "官方源");
+    put(I18nKey.aiSourceCn, "国内镜像");
+    put(I18nKey.aiSourceCnDesc, "HuggingFace 走 hf-mirror.com，GitHub 走加速前缀");
+    put(I18nKey.aiSourceCustom, "自定义");
+    put(I18nKey.aiCustomHfHost, "HuggingFace 主机名");
+    put(I18nKey.aiCustomGhPrefix, "GitHub 加速前缀");
+    put(I18nKey.aiShowUrls, "下载地址");
+    put(I18nKey.aiCopyAll, "复制全部");
+    put(I18nKey.aiCopied, "已复制");
+    put(I18nKey.aiImportLocal, "从本地导入");
+    put(I18nKey.aiImportHint, "自己下好这些文件后在这里选中导入。也可以选一个整个模型目录的 zip。可以分几次导入。");
+    put(I18nKey.aiImportMissing, "还缺 @0 个文件");
+    put(I18nKey.aiImportSuccess, "@0 导入完成");
+    put(I18nKey.aiImportNothing, "挑的文件都不属于这个模型");
+    put(I18nKey.aiRecordInterrupted, "录音被系统中断了，请停止后重新开始。");
   }
 }

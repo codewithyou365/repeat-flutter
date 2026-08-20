@@ -8,6 +8,7 @@ import 'package:repeat_flutter/common/zip.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/logic/ai/ai_catalog.dart';
+import 'package:repeat_flutter/logic/ai/ai_download_source.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/download.dart';
 
@@ -139,6 +140,7 @@ class AiModelHelp {
     await Folder.ensureExists(dir);
 
     final units = entry.downloadUnits;
+    final rewrite = await AiDownloadSourceHelp.rewriter();
     final contentRoot = await DocPath.getContentPath();
     final relTmpDir = '.ai_tmp';
     await Folder.ensureExists(contentRoot.joinPath(relTmpDir));
@@ -162,14 +164,17 @@ class AiModelHelp {
         final absTmp = contentRoot.joinPath(relTmp);
         await _deleteQuietly(absTmp);
 
+        // 清单里存的是官方地址，这里按用户选的下载源改写（国内直连 HuggingFace/GitHub
+        // 基本下不动，换成镜像才走得通）。改写只影响这一次下载，不写回清单。
+        final url = rewrite(unit.url);
         var result = await DownloadDoc.start(
-          unit.url,
+          url,
           relTmp,
           progressCallback: (_, count, total, _) => onProgress?.call(i + 1, units.length, count, total),
         );
         if (result == DownloadDocResult.needSkipSsl) {
           result = await DownloadDoc.start(
-            unit.url,
+            url,
             relTmp,
             skipSsl: true,
             progressCallback: (_, count, total, _) => onProgress?.call(i + 1, units.length, count, total),
@@ -210,6 +215,97 @@ class AiModelHelp {
       return AiInstallResult.fail;
     } finally {
       await Folder.delete(contentRoot.joinPath(relTmpDir));
+    }
+  }
+
+  // ---------------------------------------------------------------- 手动导入
+
+  /// 这个模型还缺哪些文件（不存在或校验不过的）。
+  ///
+  /// 手动导入时用来告诉用户"还差几个"，也用来决定能不能写 .ok。
+  static Future<List<AiModelFile>> missingFiles(AiModelEntry entry) async {
+    final dir = await dirOf(entry.id);
+    final out = <AiModelFile>[];
+    for (final f in entry.files) {
+      if (!await _verify(dir.joinPath(f.path), f)) {
+        out.add(f);
+      }
+    }
+    return out;
+  }
+
+  /// 按当前下载源改写过的下载地址，给用户自己去下载用。
+  ///
+  /// 国内直连 HuggingFace/GitHub 经常下不动，除了在应用里换镜像，还得允许用户
+  /// 拿着地址在别的设备/别的网络下好，再从本地导进来。
+  static Future<List<String>> downloadUrls(AiModelEntry entry) async {
+    final rewrite = await AiDownloadSourceHelp.rewriter();
+    return entry.downloadUnits.map((e) => rewrite(e.url)).toList();
+  }
+
+  /// 从用户挑的本地文件安装。
+  ///
+  /// 两种形态都认：
+  /// - 挑一个 .zip：当成整个模型目录的压缩包解开（多余的顶层目录会被拍平）
+  /// - 挑若干个散文件：**按文件名**匹配到清单条目。清单里每个模型的文件名都是唯一的
+  ///   （连 melo-tts 那 16 个带子目录的也是），所以文件名足够定位，用户不用还原目录结构。
+  ///
+  /// 允许分几次导入：每次只把认得的文件放进去，等全部齐了才写 .ok。
+  static Future<AiInstallResult> importFromPaths(AiModelEntry entry, List<String> paths) async {
+    if (paths.isEmpty) {
+      return AiInstallResult.fail;
+    }
+    final dir = await dirOf(entry.id);
+    final okPath = dir.joinPath(okMarker);
+    await _deleteQuietly(okPath);
+    await Folder.ensureExists(dir);
+
+    try {
+      if (paths.length == 1 && paths.first.toLowerCase().endsWith('.zip')) {
+        await Zip.uncompressStream(File(paths.first), dir);
+        await _flattenSingleRoot(dir);
+      } else {
+        // 文件名 -> 清单条目。zip 形式的模型没有 files 列表，这时按 zip 那一项匹配。
+        final wanted = <String, AiModelFile>{};
+        for (final f in entry.downloadUnits) {
+          wanted[f.path.split('/').last.toLowerCase()] = f;
+        }
+        for (final p in paths) {
+          final name = p.split(Platform.pathSeparator).last.toLowerCase();
+          final target = wanted[name];
+          if (target == null) {
+            // 挑错文件不算失败，只是忽略——用户一次多选了别的模型的文件很正常
+            debugPrint('AiModelHelp.importFromPaths: 忽略不认识的文件 $name');
+            continue;
+          }
+          final targetPath = dir.joinPath(target.path);
+          await Folder.ensureExists(File(targetPath).parent.path);
+          await _deleteQuietly(targetPath);
+          await File(p).copy(targetPath);
+        }
+        // 导进来的如果是 zip 形式那一项，解开它
+        if (entry.zip != null) {
+          final zipPath = dir.joinPath(entry.zip!.path);
+          if (await File(zipPath).exists()) {
+            await Zip.uncompressStream(File(zipPath), dir);
+            await _deleteQuietly(zipPath);
+            await _flattenSingleRoot(dir);
+          }
+        }
+      }
+
+      final missing = await missingFiles(entry);
+      if (missing.isNotEmpty) {
+        // 不删目录：这次导进来的留着，用户可以接着补剩下的。
+        // 但绝不写 .ok——半个模型被当成装好了，只会在加载时才炸。
+        debugPrint('AiModelHelp.importFromPaths: 还缺 ${missing.length} 个文件');
+        return AiInstallResult.fail;
+      }
+      await File(okPath).writeAsString(entry.id);
+      return AiInstallResult.success;
+    } catch (e) {
+      debugPrint('AiModelHelp.importFromPaths failed: $e');
+      return AiInstallResult.fail;
     }
   }
 

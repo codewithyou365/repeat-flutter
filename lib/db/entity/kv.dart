@@ -45,6 +45,11 @@ enum K {
 
   /// 翻译引擎 id，见 TranslateEngine.id。默认 whisper。
   aiTranslateEngine,
+
+  /// 模型下载源，见 AiDownloadSource。清单里一律存官方地址，下载时才改写。
+  aiDownloadSource,
+  aiCustomHfHost,
+  aiCustomGhPrefix,
 }
 
 @Entity(primaryKeys: ['k'])

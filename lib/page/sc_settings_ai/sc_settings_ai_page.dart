@@ -3,11 +3,23 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/ai/ai_catalog.dart';
+import 'package:repeat_flutter/logic/ai/ai_download_source.dart';
 
 import 'sc_settings_ai_logic.dart';
 
 class ScSettingsAiPage extends StatelessWidget {
   const ScSettingsAiPage({Key? key}) : super(key: key);
+
+  static String sourceName(AiDownloadSource s) {
+    switch (s) {
+      case AiDownloadSource.official:
+        return I18nKey.aiSourceOfficial.tr;
+      case AiDownloadSource.cn:
+        return I18nKey.aiSourceCn.tr;
+      case AiDownloadSource.custom:
+        return I18nKey.aiSourceCustom.tr;
+    }
+  }
 
   /// 模型动辄几百 MB，统一按 MB 显示；不到 1MB 的（tokens.txt 那种）用 KB。
   static String humanSize(int bytes) {
@@ -60,6 +72,26 @@ class ScSettingsAiPage extends StatelessWidget {
           SizedBox(height: 6.h),
           Text(I18nKey.aiDiskUsage.trArgs([humanSize(state.diskUsage.value)]),
               style: Theme.of(context).textTheme.bodySmall),
+          SizedBox(height: 4.h),
+          // 下载源放在最显眼的地方：国内用户第一件要做的事就是把它切成镜像，
+          // 否则整套流程会卡在第一步下不动。
+          InkWell(
+            onTap: logic.pickDownloadSource,
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 6.h),
+              child: Row(
+                children: [
+                  const Icon(Icons.cloud_sync, size: 16),
+                  SizedBox(width: 6.w),
+                  Text('${I18nKey.aiDownloadSource.tr}: ${sourceName(state.downloadSource.value)}',
+                      style: Theme.of(context).textTheme.bodySmall),
+                  const Icon(Icons.arrow_drop_down, size: 18),
+                ],
+              ),
+            ),
+          ),
+          if (state.downloadSource.value == AiDownloadSource.cn)
+            Text(I18nKey.aiSourceCnDesc.tr, style: Theme.of(context).textTheme.bodySmall),
           if (state.installingId.value.isNotEmpty) ...[
             SizedBox(height: 10.h),
             Row(
@@ -168,25 +200,40 @@ class ScSettingsAiPage extends StatelessWidget {
         ],
       ),
       isThreeLine: true,
-      trailing: installed
-          ? PopupMenuButton<String>(
-              enabled: !logic.busy,
-              itemBuilder: (_) => [
-                if (!inUse)
-                  PopupMenuItem<String>(
-                    onTap: () => logic.use(role, m),
-                    child: Text(I18nKey.aiUse.trArgs([role.label])),
-                  ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!installed)
+            TextButton(
+              onPressed: logic.busy ? null : () => logic.install(m),
+              child: Text(I18nKey.aiInstall.tr),
+            ),
+          PopupMenuButton<String>(
+            enabled: !logic.busy,
+            itemBuilder: (_) => [
+              if (installed && !inUse)
+                PopupMenuItem<String>(
+                  onTap: () => logic.use(role, m),
+                  child: Text(I18nKey.aiUse.trArgs([role.label])),
+                ),
+              // 下不动的时候这两项就是唯一的出路，所以装没装都留着
+              PopupMenuItem<String>(
+                onTap: () => logic.showUrls(m),
+                child: Text(I18nKey.aiShowUrls.tr),
+              ),
+              PopupMenuItem<String>(
+                onTap: () => logic.importLocal(m),
+                child: Text(I18nKey.aiImportLocal.tr),
+              ),
+              if (installed)
                 PopupMenuItem<String>(
                   onTap: () => logic.remove(m),
                   child: Text(I18nKey.aiDeleteModel.tr),
                 ),
-              ],
-            )
-          : TextButton(
-              onPressed: logic.busy ? null : () => logic.install(m),
-              child: Text(I18nKey.aiInstall.tr),
-            ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

@@ -108,6 +108,19 @@ class ScCrMaterialRecordPage extends StatelessWidget {
             ),
             SizedBox(height: 12.h),
           ],
+          if (state.draining.value)
+            Padding(
+              padding: EdgeInsets.only(bottom: 8.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(I18nKey.aiRecordPending.trArgs(['${state.pendingCount}']),
+                      style: Theme.of(context).textTheme.bodySmall),
+                  SizedBox(height: 4.h),
+                  const LinearProgressIndicator(),
+                ],
+              ),
+            ),
           Row(
             children: [
               Expanded(
@@ -118,7 +131,7 @@ class ScCrMaterialRecordPage extends StatelessWidget {
                         label: Text('${I18nKey.aiRecordStop.tr}  ${_mmss(state.elapsedMs.value)}'),
                       )
                     : FilledButton.icon(
-                        onPressed: state.starting.value ? null : logic.start,
+                        onPressed: (state.starting.value || state.draining.value) ? null : logic.start,
                         icon: const Icon(Icons.mic),
                         label: Text(I18nKey.aiRecordStart.tr),
                       ),

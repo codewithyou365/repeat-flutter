@@ -70,6 +70,12 @@ enum CrK {
   practiceIgnorePunctuation,
   practiceIgnoreCase,
   practiceIgnoreNumber,
+
+  /// 息屏录音建章的课堂级设置。课堂本身就是语言上下文，所以放 CrK 而不是 K
+  /// （模型本体是全设备共享的，那些放 K）。CrK 同样是按 name 存的，只能往后加。
+  aiTtsSpeakerId,
+  aiRecordScreenMode,
+  aiRecordAutoPlay,
 }
 
 @Entity(primaryKeys: ['classroomId', 'k'])

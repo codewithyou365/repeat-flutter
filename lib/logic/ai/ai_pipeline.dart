@@ -1,0 +1,85 @@
+import 'dart:isolate';
+
+import 'package:flutter/foundation.dart';
+
+import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/classroom.dart';
+import 'package:repeat_flutter/db/entity/cr_kv.dart';
+import 'package:repeat_flutter/logic/ai/ai_catalog.dart';
+import 'package:repeat_flutter/logic/ai/ai_model_help.dart';
+import 'package:repeat_flutter/logic/ai/ai_model_paths.dart';
+import 'package:repeat_flutter/logic/ai/infer_isolate.dart';
+
+/// 按当前选中的模型装配推理 isolate 的初始化参数。
+///
+/// 录音页和复核页都要起推理 isolate，装配逻辑只写这一份。
+class AiPipeline {
+  /// 缺哪个角色就返回那个角色，调用方据此提示用户去下载；全齐了返回 null。
+  static Future<AiRole?> missingRole(AiCatalog catalog) async {
+    for (final role in [AiRole.asr, AiRole.mt, AiRole.tts]) {
+      if (await AiModelHelp.selectedFor(role, catalog) == null) {
+        return role;
+      }
+    }
+    return null;
+  }
+
+  /// 返回一个能拿 SendPort 造出 [InferInit] 的闭包；缺模型则返回 null。
+  ///
+  /// 之所以返回闭包而不是直接返回 InferInit：SendPort 要等 [InferIsolate.start]
+  /// 建好 ReceivePort 才拿得到。
+  static Future<InferInit Function(SendPort)?> prepare(AiCatalog catalog) async {
+    final asr = await AiModelHelp.selectedFor(AiRole.asr, catalog);
+    final mt = await AiModelHelp.selectedFor(AiRole.mt, catalog);
+    final tts = await AiModelHelp.selectedFor(AiRole.tts, catalog);
+    if (asr == null || mt == null || tts == null) {
+      return null;
+    }
+
+    final asrDir = await AiModelHelp.dirOf(asr.id);
+    final mtDir = await AiModelHelp.dirOf(mt.id);
+    final ttsDir = await AiModelHelp.dirOf(tts.id);
+
+    final asrCfg = AiModelPaths.resolve(asr.cfg, asrDir);
+    // 翻译那一份 config 必须把 task 改成 translate。清单里存的是 transcribe，
+    // 因为同一份 whisper 既当识别又当翻译，两种用法只差这一个字段。
+    final mtCfg = withWhisperTask(AiModelPaths.resolve(mt.cfg, mtDir), 'translate');
+    final ttsCfg = AiModelPaths.resolve(tts.cfg, ttsDir);
+
+    // 说话人 id。多说话人模型（vits-zh-aishell3 有 174 个）才有意义，
+    // 默认的 melo-tts 只有一个，取 0。
+    final sid = await Db().db.crKvDao.getInt(Classroom.curr, CrK.aiTtsSpeakerId) ?? 0;
+
+    return (SendPort port) => InferInit(
+          port: port,
+          asrCfg: asrCfg,
+          mtCfg: mtCfg,
+          ttsCfg: ttsCfg,
+          // 同一个模型 id 才共用 recognizer 实例，不然 whisper-small 会被加载两遍
+          shareRecognizer: asr.id == mt.id,
+          ttsSid: sid,
+        );
+  }
+
+  /// 深拷一份并把 model.whisper.task 换掉，不改原 map。
+  ///
+  /// 两个都要命：
+  /// 1. 就地改会污染缓存里的 catalog，下一次装配拿到的 asrCfg 就变成 translate 了，
+  ///    表现是"原文那一栏也是英文"——不报错，只是结果全错。
+  /// 2. 浅拷不够，得把 model 和 model.whisper 两层都拷开，否则改的还是同一个子 map。
+  @visibleForTesting
+  static Map<String, dynamic> withWhisperTask(Map<String, dynamic> cfg, String task) {
+    final out = Map<String, dynamic>.from(cfg);
+    final model = out['model'];
+    if (model is! Map<String, dynamic>) {
+      return out;
+    }
+    final newModel = Map<String, dynamic>.from(model);
+    final whisper = newModel['whisper'];
+    if (whisper is Map<String, dynamic>) {
+      newModel['whisper'] = Map<String, dynamic>.from(whisper)..['task'] = task;
+    }
+    out['model'] = newModel;
+    return out;
+  }
+}

@@ -30,6 +30,9 @@ class ScCrMaterialRecordState {
   final RxList<RecordSegment> segments = <RecordSegment>[].obs;
 
   final RxInt elapsedMs = 0.obs;
+
+  /// 停止后正在排空推理队列
+  final RxBool draining = false.obs;
   final RxString error = ''.obs;
 
   int get pendingCount => segments.where((e) => e.state == RecordSegmentState.pending).length;

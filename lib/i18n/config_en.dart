@@ -562,5 +562,37 @@ class ConfigEn extends Config {
     put(I18nKey.aiRecordTapToExitBlack, "Double tap to show the screen");
     put(I18nKey.aiRecordPending, "@0 waiting");
     put(I18nKey.aiRecordDiscardConfirm, "Discard this recording session?");
+    put(I18nKey.aiReviewTitle, "Review");
+    put(I18nKey.aiReviewCommit, "Create chapter");
+    put(I18nKey.aiReviewProcessAll, "Process all");
+    put(I18nKey.aiReviewProcess, "Process");
+    put(I18nKey.aiReviewReAsr, "Recognize again");
+    put(I18nKey.aiReviewReMt, "Translate again");
+    put(I18nKey.aiReviewReTts, "Synthesize again");
+    put(I18nKey.aiReviewDelete, "Delete");
+    put(I18nKey.aiReviewSrc, "Source");
+    put(I18nKey.aiReviewDst, "Translation");
+    put(I18nKey.aiReviewCommitted, "Created @0 verses");
+    put(I18nKey.aiReviewSkipped, "@0 blank segments skipped");
+    put(I18nKey.aiReviewEmpty, "Nothing to create a chapter from");
+    put(I18nKey.aiReviewResume, "An unfinished recording session was found. Resume it?");
+    put(I18nKey.aiReviewDiscard, "Discard");
+    put(I18nKey.aiReviewNoAudio, "No audio");
+    put(I18nKey.aiDownloadSource, "Download source");
+    put(I18nKey.aiSourceOfficial, "Official");
+    put(I18nKey.aiSourceCn, "China mirror");
+    put(I18nKey.aiSourceCnDesc, "HuggingFace via hf-mirror.com, GitHub via a proxy");
+    put(I18nKey.aiSourceCustom, "Custom");
+    put(I18nKey.aiCustomHfHost, "HuggingFace host");
+    put(I18nKey.aiCustomGhPrefix, "GitHub proxy prefix");
+    put(I18nKey.aiShowUrls, "Download links");
+    put(I18nKey.aiCopyAll, "Copy all");
+    put(I18nKey.aiCopied, "Copied");
+    put(I18nKey.aiImportLocal, "Import from files");
+    put(I18nKey.aiImportHint, "Download the files yourself, then pick them here. A zip of the model folder also works. You can import in several goes.");
+    put(I18nKey.aiImportMissing, "Still missing @0 files");
+    put(I18nKey.aiImportSuccess, "@0 imported");
+    put(I18nKey.aiImportNothing, "None of the picked files belong to this model");
+    put(I18nKey.aiRecordInterrupted, "Recording was interrupted by the system. Stop and start again.");
   }
 }

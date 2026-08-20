@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:repeat_flutter/logic/ai/ai_catalog.dart';
+import 'package:repeat_flutter/logic/ai/ai_download_source.dart';
 
 class ScSettingsAiState {
   final RxBool loading = true.obs;
@@ -16,6 +17,7 @@ class ScSettingsAiState {
   final RxInt diskUsage = 0.obs;
 
   final RxString catalogUrl = ''.obs;
+  final Rx<AiDownloadSource> downloadSource = AiDownloadSource.official.obs;
 
   // ------- 安装进度。同一时刻只可能有一个模型在装（下载器要求严格串行）
   final RxString installingId = ''.obs;
