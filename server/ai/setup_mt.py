@@ -42,6 +42,12 @@ MODELS = {
         "convert": False,
         "about": "约 1.7 GB，跑苹果 GPU，复合词/习语最准",
     },
+    "qwen7b": {
+        "id": "qwen2.5-7b-instruct-mlx-4bit",
+        "repo": "mlx-community/Qwen2.5-7B-Instruct-4bit",
+        "need": None, "keep": None, "convert": False,
+        "about": "约 4.3 GB，比 3B 更会遵循指令，跑苹果 GPU",
+    },
     "whisper-turbo": {
         "id": "whisper-large-v3-turbo-mlx",
         "repo": "mlx-community/whisper-large-v3-turbo",
@@ -88,10 +94,10 @@ def preflight(download_only: bool = False, which: str = "opus-mt") -> None:
 
     need = [("requests", "requirements.txt")]
     if not download_only:
-        if which in ("qwen", "whisper-turbo", "whisper-large", "whisper-turbo-q4"):
+        if which in ("qwen", "qwen7b", "whisper-turbo", "whisper-large", "whisper-turbo-q4"):
             # MLX 那条路和 CT2 完全无关，别让人白装 2GB 的 torch
             need += [("mlx", "requirements-llm.txt")]
-            if which == "qwen":
+            if which in ("qwen", "qwen7b"):
                 need.append(("mlx_lm", "requirements-llm.txt"))
             else:
                 need.append(("mlx_whisper", "requirements-llm.txt"))
@@ -120,7 +126,7 @@ def preflight(download_only: bool = False, which: str = "opus-mt") -> None:
     else:
         print(f"  cd {here}")
     req = ("requirements-llm.txt"
-           if which in ("qwen", "whisper-turbo", "whisper-large", "whisper-turbo-q4")
+           if which in ("qwen", "qwen7b", "whisper-turbo", "whisper-large", "whisper-turbo-q4")
            else "requirements-mt.txt")
     print(f"  pip install -r {req} -i https://mirrors.aliyun.com/pypi/simple")
     raise SystemExit(1)

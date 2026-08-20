@@ -422,6 +422,32 @@
      "weights.npz"
     ]
    }
+  },
+  {
+   "id": "qwen2.5-7b-instruct-mlx-4bit",
+   "role": [
+    "mt"
+   ],
+   "kind": "llm-mt",
+   "name": "Qwen2.5 7B Instruct（MLX 4bit）",
+   "langs": [
+    "zh"
+   ],
+   "mtTargets": [
+    "en"
+   ],
+   "size": 4300000000,
+   "license": "Apache-2.0",
+   "note": "比 3B 更会遵循指令（3B 在绕口令这类病态输入上会跳出翻译角色去评价）。词汇上两者都够用。慢一些，但翻译本来只占整段的几个百分点",
+   "files": [],
+   "cfg": {
+    "tgtLang": "en",
+    "maxTokens": 256,
+    "require": [
+     "config.json",
+     "tokenizer_config.json"
+    ]
+   }
   }
  ],
  "presets": []
