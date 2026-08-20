@@ -521,5 +521,46 @@ class ConfigEn extends Config {
     put(I18nKey.batteryOptDesc,
         "The game server runs inside this app. When the screen turns off, Android may suspend it: other devices on the LAN lose the connection, and audio no longer stops at the right point.\n\nNext you will see a system dialog asking to turn off battery optimization for this app. Allow it to keep the game reachable while the screen is off.");
     put(I18nKey.batteryOptGoSet, "Go to settings");
+    put(I18nKey.aiModel, "AI Models");
+    put(I18nKey.aiModelDesc, "On-device models for speech recognition, translation and synthesis");
+    put(I18nKey.aiChapterFromMedia, "Audio/Video + Subtitle");
+    put(I18nKey.aiChapterFromRecord, "Record & Translate");
+    put(I18nKey.aiChapterFromRecordDesc, "Speak freely, AI splits, translates and reads it out");
+    put(I18nKey.aiModelMissing, "Some models are not installed yet: @0");
+    put(I18nKey.aiGoDownload, "Download");
+    put(I18nKey.aiRoleVad, "Pause detection");
+    put(I18nKey.aiRoleAsr, "Speech recognition");
+    put(I18nKey.aiRoleMt, "Translation");
+    put(I18nKey.aiRoleTts, "Speech synthesis");
+    put(I18nKey.aiInstalled, "Installed");
+    put(I18nKey.aiNotInstalled, "Not installed");
+    put(I18nKey.aiInUse, "In use");
+    put(I18nKey.aiInstalling, "Downloading @0/@1");
+    put(I18nKey.aiUse, "Use for @0");
+    put(I18nKey.aiInstall, "Download");
+    put(I18nKey.aiDeleteModel, "Delete model");
+    put(I18nKey.aiDeleteModelConfirm, "Delete @0? You will have to download it again to use it.");
+    put(I18nKey.aiDiskUsage, "Models take up @0");
+    put(I18nKey.aiPreset, "Presets");
+    put(I18nKey.aiInstallPreset, "Download all of @0 (@1)");
+    put(I18nKey.aiInstallSuccess, "@0 installed");
+    put(I18nKey.aiInstallFail, "Failed to install @0");
+    put(I18nKey.aiCatalogUrl, "Model catalog url");
+    put(I18nKey.aiCatalogUrlDesc, "Leave empty to use the built-in catalog");
+    put(I18nKey.aiNotSupportedOnPlatform, "This feature is only available on Android and iOS");
+    put(I18nKey.aiRecordNoMicPermission, "Microphone permission is required");
+    put(I18nKey.aiRecordNothing, "Nothing was recorded");
+    put(I18nKey.aiRecordSegments, "@0 segments");
+    put(I18nKey.aiRecordStart, "Start");
+    put(I18nKey.aiRecordStop, "Stop");
+    put(I18nKey.aiRecordScreenMode, "Screen");
+    put(I18nKey.aiRecordScreenBlack, "Black screen (recommended)");
+    put(I18nKey.aiRecordScreenBlackDesc, "Stays in the app, works on every phone");
+    put(I18nKey.aiRecordScreenOff, "True screen-off");
+    put(I18nKey.aiRecordScreenOffDesc, "Keeps recording after you lock the screen");
+    put(I18nKey.aiRecordAutoPlay, "Read the translation back");
+    put(I18nKey.aiRecordTapToExitBlack, "Double tap to show the screen");
+    put(I18nKey.aiRecordPending, "@0 waiting");
+    put(I18nKey.aiRecordDiscardConfirm, "Discard this recording session?");
   }
 }

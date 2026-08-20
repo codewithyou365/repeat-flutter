@@ -9,6 +9,7 @@ import 'package:repeat_flutter/page/sc_cr/sc_cr_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_material/sc_cr_material_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_material_add_chapter/sc_cr_material_add_chapter_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_material_edit/sc_cr_material_edit_nav.dart';
+import 'package:repeat_flutter/page/sc_cr_material_record/sc_cr_material_record_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_material_search/sc_cr_material_search_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_settings_el/sc_cr_settings_el_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_settings_rel/sc_cr_settings_rel_nav.dart';
@@ -16,6 +17,7 @@ import 'package:repeat_flutter/page/sc_cr_stats/sc_cr_stats_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_stats_detail/sc_cr_stats_detail_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_stats_review/sc_cr_stats_review_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_stats_trend/sc_cr_stats_trend_nav.dart';
+import 'package:repeat_flutter/page/sc_settings_ai/sc_settings_ai_nav.dart';
 import 'package:repeat_flutter/page/sc_settings_data/sc_settings_data_nav.dart';
 import 'package:repeat_flutter/page/sc_settings_lang/sc_settings_lang_nav.dart';
 import 'package:repeat_flutter/page/sc_settings_theme/sc_settings_theme_nav.dart';
@@ -34,6 +36,7 @@ enum Nav {
   scCrMaterial("/sc/cr/material"),
   scCrMaterialAddChapter("/sc/cr/material/add/chapter"),
   scCrMaterialEdit("/sc/cr/material/edit"),
+  scCrMaterialRecord("/sc/cr/material/record"),
   scCrMaterialSearch("/sc/cr/material/search"),
   scCrSettingsEl("/sc/cr/settings/el"),
   scCrSettingsRel("/sc/cr/settings/rel"),
@@ -41,6 +44,7 @@ enum Nav {
   scCrStatsDetail("/sc/cr/stats/detail"),
   scCrStatsReview("/sc/cr/stats/review"),
   scCrStatsTrend("/sc/cr/stats/trend"),
+  scSettingsAi("/sc/settings/ai"),
   scSettingsData("/sc/settings/data"),
   scSettingsLang("/sc/settings/lang"),
   scSettingsTheme("/sc/settings/theme"),
@@ -83,6 +87,7 @@ enum Nav {
     scCrMaterialNav(scCrMaterial.path),
     scCrMaterialAddChapterNav(scCrMaterialAddChapter.path),
     scCrMaterialEditNav(scCrMaterialEdit.path),
+    scCrMaterialRecordNav(scCrMaterialRecord.path),
     scCrMaterialSearchNav(scCrMaterialSearch.path),
     scCrSettingsElNav(scCrSettingsEl.path),
     scCrSettingsRelNav(scCrSettingsRel.path),
@@ -90,6 +95,7 @@ enum Nav {
     scCrStatsDetailNav(scCrStatsDetail.path),
     scCrStatsReviewNav(scCrStatsReview.path),
     scCrStatsTrendNav(scCrStatsTrend.path),
+    scSettingsAiNav(scSettingsAi.path),
     scSettingsDataNav(scSettingsData.path),
     scSettingsLangNav(scSettingsLang.path),
     scSettingsThemeNav(scSettingsTheme.path),

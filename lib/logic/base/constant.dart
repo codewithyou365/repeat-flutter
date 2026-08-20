@@ -17,6 +17,16 @@ class DocPath {
   /// 课堂级资源（游戏 zip、提示的字体和提示服务 zip）也放这里，不再单开目录。
   static const String classroomFiles = "f";
 
+  /// AI 模型目录名，是 content("c") 的兄弟目录而不是它的子目录。
+  ///
+  /// 为什么不能放 c/ 下面：模型动辄几百 MB，而 c/ 有三重暴露——
+  /// 1. 课堂分享的局域网 HTTP 服务把 content 根下的任意路径当文件下发（见 ScShareLogic），
+  ///    模型会在开分享时全网可下；
+  /// 2. f/ 是课堂分享 zip 的载荷，会被打包发出去；
+  /// 3. f/ 是"没被任何 'd' 引用就可回收"的媒体池，模型会被当垃圾清掉。
+  /// 放 `<databasesPath>/m` 三条都不沾。
+  static const String model = "m";
+
   static String getIndexFileName() {
     return "index.json";
   }
@@ -42,6 +52,10 @@ class DocPath {
 
   static Future<String> getSslPath() async {
     return await _getPath(ssl);
+  }
+
+  static Future<String> getModelPath() async {
+    return await _getPath(model);
   }
 
   static Future<String> _getPath(String dir, {clearFirst = false}) async {

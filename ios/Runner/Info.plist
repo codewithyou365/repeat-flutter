@@ -24,6 +24,14 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Used to record what you say so it can be transcribed and translated into study material on this device.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<!-- 息屏录音：iOS 没有前台服务这个概念，锁屏后要继续拿到麦克风只能靠 audio 后台模式。
+		     配套还要把 AVAudioSession 设成 playAndRecord。 -->
+		<string>audio</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

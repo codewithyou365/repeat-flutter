@@ -3,4 +3,7 @@
     <string name="game_server_channel_name">Game server</string>
     <string name="game_server_notification_title">Game server is running</string>
     <string name="game_server_notification_text">Keeping the game reachable while the screen is off</string>
+    <string name="record_session_channel_name">Recording</string>
+    <string name="record_session_notification_title">Recording in progress</string>
+    <string name="record_session_notification_text">Keeping the microphone alive while the screen is off</string>
 </resources>

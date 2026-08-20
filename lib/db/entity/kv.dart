@@ -32,6 +32,19 @@ enum K {
   bluetoothStopLeadMs,
   // K 是按 name 存的（见 KConverter），只能往后加，不能改名或删
   classroomSharePort,
+
+  /// AI 模型清单的远程覆盖地址。空则只用内置的 assets/ai/catalog.json。
+  aiCatalogUrl,
+
+  /// 各角色当前选中的模型 id。模型是全设备共享的资源（一份几百 MB），
+  /// 所以放 K 而不是 CrK——删掉一个课堂不该把下载好的模型也孤立掉。
+  aiVadModelId,
+  aiAsrModelId,
+  aiMtModelId,
+  aiTtsModelId,
+
+  /// 翻译引擎 id，见 TranslateEngine.id。默认 whisper。
+  aiTranslateEngine,
 }
 
 @Entity(primaryKeys: ['k'])

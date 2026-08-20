@@ -27,8 +27,8 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, FOREGROUND_CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
-                    "start" -> result.success(startGameForegroundService())
-                    "stop" -> result.success(stopGameForegroundService())
+                    "start" -> result.success(startForegroundService(call.argument<String>("kind")))
+                    "stop" -> result.success(stopForegroundService(call.argument<String>("kind")))
                     else -> result.notImplemented()
                 }
             }
@@ -38,23 +38,33 @@ class MainActivity : FlutterActivity() {
      * 游戏服务器开着的时候把进程钉在前台，锁屏也不会被 Android 12+ 的 freezer 冻住。
      * 详见 GameForegroundService。
      */
-    private fun startGameForegroundService(): Boolean {
+    /**
+     * kind 为空按 game 处理，这样老的调用点（GameWebServer）一行都不用改。
+     * 认不出来的 kind 也退回 game，而不是抛异常——Dart 侧多一个新类型时不该让旧版原生崩。
+     */
+    private fun serviceClassOf(kind: String?): Class<*> = when (kind) {
+        "record" -> RecordForegroundService::class.java
+        else -> GameForegroundService::class.java
+    }
+
+    private fun startForegroundService(kind: String?): Boolean {
         return try {
-            ContextCompat.startForegroundService(this, Intent(this, GameForegroundService::class.java))
+            ContextCompat.startForegroundService(this, Intent(this, serviceClassOf(kind)))
             true
         } catch (e: Exception) {
-            // 比如系统正处在后台启动限制里。启不起来只是回到"锁屏可能被冻结"的老行为，不该让 Dart 侧崩。
-            Log.w(TAG, "startGameForegroundService failed", e)
+            // 比如系统正处在后台启动限制里，或者 Android 14+ 起 microphone 型服务时没有 RECORD_AUDIO。
+            // 启不起来只是回到"锁屏可能被冻结"的老行为，不该让 Dart 侧崩。
+            Log.w(TAG, "startForegroundService($kind) failed", e)
             false
         }
     }
 
-    private fun stopGameForegroundService(): Boolean {
+    private fun stopForegroundService(kind: String?): Boolean {
         return try {
-            stopService(Intent(this, GameForegroundService::class.java))
+            stopService(Intent(this, serviceClassOf(kind)))
             true
         } catch (e: Exception) {
-            Log.w(TAG, "stopGameForegroundService failed", e)
+            Log.w(TAG, "stopForegroundService($kind) failed", e)
             false
         }
     }

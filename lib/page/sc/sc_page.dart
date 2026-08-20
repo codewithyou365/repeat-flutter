@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/ai/ai_support.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
@@ -51,6 +52,17 @@ class ScPage extends StatelessWidget {
                     title: Text(I18nKey.data.tr),
                   ),
                 ),
+                // 端上模型只有 Android/iOS 跑得了，其它平台连入口都不给
+                if (AiSupport.available)
+                  PopupMenuItem<String>(
+                    onTap: () {
+                      Nav.scSettingsAi.push();
+                    },
+                    child: ListTile(
+                      leading: const Icon(Icons.psychology),
+                      title: Text(I18nKey.aiModel.tr),
+                    ),
+                  ),
               ],
             ),
           ),

@@ -1,0 +1,327 @@
+{
+  "v": 1,
+  "models": [
+    {
+      "id": "silero-vad-v5",
+      "role": "vad",
+      "name": "Silero VAD v5",
+      "langs": [
+        "*"
+      ],
+      "size": 643854,
+      "license": "MIT",
+      "note": "判停模型。决定一句话在哪儿切开，几乎不占内存，是必装项。",
+      "files": [
+        {
+          "p": "silero_vad.onnx",
+          "u": "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad.onnx",
+          "h": "",
+          "s": 643854
+        }
+      ],
+      "cfg": {
+        "sileroVad": {
+          "model": "silero_vad.onnx",
+          "threshold": 0.5,
+          "minSilenceDuration": 0.6,
+          "minSpeechDuration": 0.25,
+          "maxSpeechDuration": 20.0,
+          "windowSize": 512
+        },
+        "sampleRate": 16000,
+        "numThreads": 1,
+        "debug": false
+      }
+    },
+    {
+      "id": "whisper-base-int8",
+      "role": [
+        "asr",
+        "mt"
+      ],
+      "name": "Whisper base (int8)",
+      "langs": [
+        "*"
+      ],
+      "mtTargets": [
+        "en"
+      ],
+      "size": 160609290,
+      "license": "MIT",
+      "note": "轻量档。识别和翻译一个模型兼任（task=translate 直接吐英文），但每段要解码两遍。",
+      "files": [
+        {
+          "p": "base-encoder.int8.onnx",
+          "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-base/resolve/main/base-encoder.int8.onnx",
+          "h": "",
+          "s": 29120534
+        },
+        {
+          "p": "base-decoder.int8.onnx",
+          "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-base/resolve/main/base-decoder.int8.onnx",
+          "h": "",
+          "s": 130672026
+        },
+        {
+          "p": "base-tokens.txt",
+          "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-base/resolve/main/base-tokens.txt",
+          "h": "",
+          "s": 816730
+        }
+      ],
+      "cfg": {
+        "model": {
+          "whisper": {
+            "encoder": "base-encoder.int8.onnx",
+            "decoder": "base-decoder.int8.onnx",
+            "language": "",
+            "task": "transcribe"
+          },
+          "tokens": "base-tokens.txt",
+          "numThreads": 2,
+          "debug": false,
+          "provider": "cpu"
+        }
+      }
+    },
+    {
+      "id": "whisper-small-int8",
+      "role": [
+        "asr",
+        "mt"
+      ],
+      "name": "Whisper small (int8)",
+      "langs": [
+        "*"
+      ],
+      "mtTargets": [
+        "en"
+      ],
+      "size": 375485327,
+      "license": "MIT",
+      "note": "翻译质量明显好于 base，但 decoder 就有 250MB，内存吃紧的机器慎选。",
+      "files": [
+        {
+          "p": "small-encoder.int8.onnx",
+          "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-small/resolve/main/small-encoder.int8.onnx",
+          "h": "",
+          "s": 112442483
+        },
+        {
+          "p": "small-decoder.int8.onnx",
+          "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-small/resolve/main/small-decoder.int8.onnx",
+          "h": "",
+          "s": 262226114
+        },
+        {
+          "p": "small-tokens.txt",
+          "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-small/resolve/main/small-tokens.txt",
+          "h": "",
+          "s": 816730
+        }
+      ],
+      "cfg": {
+        "model": {
+          "whisper": {
+            "encoder": "small-encoder.int8.onnx",
+            "decoder": "small-decoder.int8.onnx",
+            "language": "",
+            "task": "transcribe"
+          },
+          "tokens": "small-tokens.txt",
+          "numThreads": 2,
+          "debug": false,
+          "provider": "cpu"
+        }
+      }
+    },
+    {
+      "id": "sensevoice-small-int8",
+      "role": "asr",
+      "name": "SenseVoice small (int8)",
+      "langs": [
+        "zh",
+        "en",
+        "ja",
+        "ko",
+        "yue"
+      ],
+      "size": 239549735,
+      "license": "Apache-2.0",
+      "note": "非自回归，比 Whisper 快好几倍。只做识别，翻译那一遍还得交给 Whisper。",
+      "files": [
+        {
+          "p": "model.int8.onnx",
+          "u": "https://huggingface.co/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/resolve/main/model.int8.onnx",
+          "h": "",
+          "s": 239233841
+        },
+        {
+          "p": "tokens.txt",
+          "u": "https://huggingface.co/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-2024-07-17/resolve/main/tokens.txt",
+          "h": "",
+          "s": 315894
+        }
+      ],
+      "cfg": {
+        "model": {
+          "senseVoice": {
+            "model": "model.int8.onnx",
+            "language": "",
+            "useInverseTextNormalization": true
+          },
+          "tokens": "tokens.txt",
+          "numThreads": 2,
+          "debug": false,
+          "provider": "cpu"
+        }
+      }
+    },
+    {
+      "id": "vits-melo-tts-zh_en",
+      "role": "tts",
+      "name": "MeloTTS 中英双语 (int8)",
+      "langs": [
+        "zh",
+        "en"
+      ],
+      "size": 74332010,
+      "license": "MIT",
+      "note": "神经网络语音合成，不是系统 TTS 引擎。中英一个模型，且不依赖 espeak-ng-data，所以只有 16 个文件（kokoro 要 378 个）。",
+      "files": [
+        {
+          "p": "date.fst",
+          "u": "https://huggingface.co/csukuangfj/vits-melo-tts-zh_en/resolve/main/date.fst",
+          "h": "",
+          "s": 59154
+        },
+        {
+          "p": "dict/hmm_model.utf8",
+          "u": "https://huggingface.co/csukuangfj/vits-melo-tts-zh_en/resolve/main/dict/hmm_model.utf8",
+          "h": "",
+          "s": 519739
+        },
+        {
+          "p": "dict/idf.utf8",
+          "u": "https://huggingface.co/csukuangfj/vits-melo-tts-zh_en/resolve/main/dict/idf.utf8",
+          "h": "",
+          "s": 5998717
+        },
+        {
+          "p": "dict/jieba.dict.utf8",
+          "u": "https://huggingface.co/csukuangfj/vits-melo-tts-zh_en/resolve/main/dict/jieba.dict.utf8",
+          "h": "",
+          "s": 5071204
+        },
+        {
+          "p": "dict/pos_dict/char_state_tab.utf8",
+          "u": "https://huggingface.co/csukuangfj/vits-melo-tts-zh_en/resolve/main/dict/pos_dict/char_state_tab.utf8",
+          "h": "",
+          "s": 327139
+        },
+        {
+          "p": "dict/pos_dict/prob_emit.utf8",
+          "u": "https://huggingface.co/csukuangfj/vits-melo-tts-zh_en/resolve/main/dict/pos_dict/prob_emit.utf8",
+          "h": "",
+          "s": 1687686
+        },
+        {
+          "p": "dict/pos_dict/prob_start.utf8",
+          "u": "https://huggingface.co/csukuangfj/vits-melo-tts-zh_en/resolve/main/dict/pos_dict/prob_start.utf8",
+          "h": "",
+          "s": 4347
+        },
+        {
+          "p": "dict/pos_dict/prob_trans.utf8",
+          "u": "https://huggingface.co/csukuangfj/vits-melo-tts-zh_en/resolve/main/dict/pos_dict/prob_trans.utf8",
+          "h": "",
+          "s": 124159
+        },
+        {
+          "p": "dict/stop_words.utf8",
+          "u": "https://huggingface.co/csukuangfj/vits-melo-tts-zh_en/resolve/main/dict/stop_words.utf8",
+          "h": "",
+          "s": 8974
+        },
+        {
+          "p": "dict/user.dict.utf8",
+          "u": "https://huggingface.co/csukuangfj/vits-melo-tts-zh_en/resolve/main/dict/user.dict.utf8",
+          "h": "",
+          "s": 49
+        },
+        {
+          "p": "lexicon.txt",
+          "u": "https://huggingface.co/csukuangfj/vits-melo-tts-zh_en/resolve/main/lexicon.txt",
+          "h": "",
+          "s": 6837671
+        },
+        {
+          "p": "model.int8.onnx",
+          "u": "https://huggingface.co/csukuangfj/vits-melo-tts-zh_en/resolve/main/model.int8.onnx",
+          "h": "",
+          "s": 53517430
+        },
+        {
+          "p": "new_heteronym.fst",
+          "u": "https://huggingface.co/csukuangfj/vits-melo-tts-zh_en/resolve/main/new_heteronym.fst",
+          "h": "",
+          "s": 21974
+        },
+        {
+          "p": "number.fst",
+          "u": "https://huggingface.co/csukuangfj/vits-melo-tts-zh_en/resolve/main/number.fst",
+          "h": "",
+          "s": 64482
+        },
+        {
+          "p": "phone.fst",
+          "u": "https://huggingface.co/csukuangfj/vits-melo-tts-zh_en/resolve/main/phone.fst",
+          "h": "",
+          "s": 88630
+        },
+        {
+          "p": "tokens.txt",
+          "u": "https://huggingface.co/csukuangfj/vits-melo-tts-zh_en/resolve/main/tokens.txt",
+          "h": "",
+          "s": 655
+        }
+      ],
+      "cfg": {
+        "model": {
+          "vits": {
+            "model": "model.int8.onnx",
+            "lexicon": "lexicon.txt",
+            "tokens": "tokens.txt",
+            "dictDir": "dict"
+          },
+          "numThreads": 2,
+          "debug": false,
+          "provider": "cpu"
+        },
+        "ruleFsts": "date.fst,number.fst,phone.fst,new_heteronym.fst",
+        "maxNumSenetences": 1
+      }
+    }
+  ],
+  "presets": [
+    {
+      "id": "lite",
+      "name": "轻量",
+      "models": [
+        "silero-vad-v5",
+        "whisper-base-int8",
+        "vits-melo-tts-zh_en"
+      ]
+    },
+    {
+      "id": "quality",
+      "name": "高质量",
+      "models": [
+        "silero-vad-v5",
+        "sensevoice-small-int8",
+        "whisper-small-int8",
+        "vits-melo-tts-zh_en"
+      ]
+    }
+  ]
+}

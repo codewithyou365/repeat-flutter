@@ -15,7 +15,15 @@
          打成 idle 并限流网络/定时器。把 App 加进系统的电池优化白名单能挡住这一层。
          MIUI 设置里那条"省电策略 = 无限制"是另一个开关，只能用户手动改，代码管不到。 -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <!-- 息屏录音建章用。MODIFY_AUDIO_SETTINGS 是给蓝牙耳机做输入路由用的，可选但强烈建议带上。
+         真息屏（按电源键关屏/切后台）时麦克风要继续能用，必须有 microphone 类型的前台服务；
+         注意启动顺序：先拿到 RECORD_AUDIO，再在 Activity 可见时起前台服务，最后才开录，
+         顺序错了 Android 11+ 会静默把麦克风静音（拿到一路全零，不报错）。见 RecordForegroundService。 -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
     <application
+            android:allowBackup="false"
             android:requestLegacyExternalStorage="true"
             android:label="Repeat"
             android:name="${applicationName}"
@@ -48,6 +56,10 @@
                 android:name=".GameForegroundService"
                 android:exported="false"
                 android:foregroundServiceType="dataSync"/>
+        <service
+                android:name=".RecordForegroundService"
+                android:exported="false"
+                android:foregroundServiceType="microphone"/>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

@@ -519,5 +519,46 @@ class ConfigZh extends Config {
     put(I18nKey.batteryOptDesc,
         "游戏服务跑在本应用里。手机息屏后系统可能把它挂起：局域网上其他设备会连不上，音频也不会在该停的地方停下。\n\n接下来会弹出系统窗口，请求关闭本应用的电池优化。允许它，息屏时游戏才能一直连得上。");
     put(I18nKey.batteryOptGoSet, "去设置");
+    put(I18nKey.aiModel, "AI 模型");
+    put(I18nKey.aiModelDesc, "端上跑的识别 / 翻译 / 语音合成模型");
+    put(I18nKey.aiChapterFromMedia, "音视频 + 字幕");
+    put(I18nKey.aiChapterFromRecord, "录音翻译生成");
+    put(I18nKey.aiChapterFromRecordDesc, "随口说，AI 自动切句、翻译并朗读");
+    put(I18nKey.aiModelMissing, "还缺这些模型：@0");
+    put(I18nKey.aiGoDownload, "去下载");
+    put(I18nKey.aiRoleVad, "判停");
+    put(I18nKey.aiRoleAsr, "识别");
+    put(I18nKey.aiRoleMt, "翻译");
+    put(I18nKey.aiRoleTts, "语音合成");
+    put(I18nKey.aiInstalled, "已安装");
+    put(I18nKey.aiNotInstalled, "未下载");
+    put(I18nKey.aiInUse, "使用中");
+    put(I18nKey.aiInstalling, "下载中 @0/@1");
+    put(I18nKey.aiUse, "用作@0");
+    put(I18nKey.aiInstall, "下载");
+    put(I18nKey.aiDeleteModel, "删除模型");
+    put(I18nKey.aiDeleteModelConfirm, "确定删除 @0？再用就得重新下载。");
+    put(I18nKey.aiDiskUsage, "模型占用 @0");
+    put(I18nKey.aiPreset, "预设");
+    put(I18nKey.aiInstallPreset, "下载整套 @0（@1）");
+    put(I18nKey.aiInstallSuccess, "@0 已安装");
+    put(I18nKey.aiInstallFail, "@0 安装失败");
+    put(I18nKey.aiCatalogUrl, "模型清单地址");
+    put(I18nKey.aiCatalogUrlDesc, "留空则用内置清单");
+    put(I18nKey.aiNotSupportedOnPlatform, "这个功能只在 Android 和 iOS 上可用");
+    put(I18nKey.aiRecordNoMicPermission, "需要麦克风权限才能录音");
+    put(I18nKey.aiRecordNothing, "这次什么都没录到");
+    put(I18nKey.aiRecordSegments, "共 @0 段");
+    put(I18nKey.aiRecordStart, "开始录音");
+    put(I18nKey.aiRecordStop, "停止");
+    put(I18nKey.aiRecordScreenMode, "屏幕");
+    put(I18nKey.aiRecordScreenBlack, "黑屏（推荐）");
+    put(I18nKey.aiRecordScreenBlackDesc, "App 保持前台，任何机型都稳");
+    put(I18nKey.aiRecordScreenOff, "真息屏");
+    put(I18nKey.aiRecordScreenOffDesc, "按电源键关屏后照样录");
+    put(I18nKey.aiRecordAutoPlay, "朗读译文");
+    put(I18nKey.aiRecordTapToExitBlack, "双击点亮屏幕");
+    put(I18nKey.aiRecordPending, "待处理 @0");
+    put(I18nKey.aiRecordDiscardConfirm, "要丢弃这次录音吗？");
   }
 }

@@ -1,16 +1,9 @@
 package org.codewithyou365.repeat_flutter
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
-import android.os.Build
 import android.os.IBinder
-import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 
 /**
@@ -37,41 +30,17 @@ class GameForegroundService : Service() {
         ServiceCompat.startForeground(
             this,
             NOTIFICATION_ID,
-            buildNotification(),
+            ForegroundNotification.build(
+                this,
+                CHANNEL_ID,
+                R.string.game_server_channel_name,
+                R.string.game_server_notification_title,
+                R.string.game_server_notification_text,
+            ),
             ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
         )
         // 被系统杀掉后不要自己重启：那时 Dart 侧的服务器早就没了，重启只会留一条骗人的通知。
         return START_NOT_STICKY
-    }
-
-    private fun buildNotification(): Notification {
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                getString(R.string.game_server_channel_name),
-                // LOW：不出声、不弹横幅，只是常驻在通知栏
-                NotificationManager.IMPORTANCE_LOW,
-            )
-            channel.setShowBadge(false)
-            manager.createNotificationChannel(channel)
-        }
-
-        val launch = Intent(this, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
-        val pendingFlags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        val contentIntent = PendingIntent.getActivity(this, 0, launch, pendingFlags)
-
-        return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.stat_notify_sync)
-            .setContentTitle(getString(R.string.game_server_notification_title))
-            .setContentText(getString(R.string.game_server_notification_text))
-            .setContentIntent(contentIntent)
-            .setOngoing(true)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
-            .build()
     }
 
     companion object {

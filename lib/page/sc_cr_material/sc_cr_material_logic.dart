@@ -1,14 +1,19 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/ai/ai_catalog.dart';
+import 'package:repeat_flutter/logic/ai/ai_model_help.dart';
+import 'package:repeat_flutter/logic/ai/ai_support.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/content/content_args.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -108,8 +113,46 @@ class ScCrMaterialLogic extends GetxController {
     Get.back();
   }
 
-  void addChapter(Book book) {
-    Nav.scCrMaterialAddChapter.push(arguments: [book]);
+  void addChapter(Book book) async {
+    // 平台不支持端上模型时不弹这个二选一：只有一条路可走，多一次点击没有意义。
+    if (!AiSupport.available) {
+      Nav.scCrMaterialAddChapter.push(arguments: [book]);
+      return;
+    }
+    int? index = await Select.showSheet(
+      title: I18nKey.labelAddChapter.tr,
+      keys: [I18nKey.aiChapterFromMedia.tr, I18nKey.aiChapterFromRecord.tr],
+      leadings: const [Icon(Icons.subtitles), Icon(Icons.mic)],
+    );
+    if (index == null) {
+      return;
+    }
+    if (index == 0) {
+      Nav.scCrMaterialAddChapter.push(arguments: [book]);
+      return;
+    }
+    await _addChapterByRecord(book);
+  }
+
+  /// 息屏录音建章。开录之前先确认四个角色的模型都齐了——不齐就引导去下载，
+  /// 而不是让用户录完一整段才发现合成不出声音。
+  Future<void> _addChapterByRecord(Book book) async {
+    final catalog = await AiCatalog.load();
+    final missing = await AiModelHelp.missingRoles(catalog);
+    if (missing.isNotEmpty) {
+      MsgBox.yesOrNo(
+        title: I18nKey.aiChapterFromRecord.tr,
+        desc: I18nKey.aiModelMissing.trArgs([missing.map((e) => e.label).join('、')]),
+        yesBtnTitle: I18nKey.aiGoDownload.tr,
+        yes: () {
+          Get.back();
+          Nav.scSettingsAi.push();
+        },
+        no: () => Get.back(),
+      );
+      return;
+    }
+    Nav.scCrMaterialRecord.push(arguments: [book]);
   }
 
   void createBook(int bookId) async {

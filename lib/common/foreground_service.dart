@@ -16,10 +16,29 @@ import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 ///
 /// 只有 Android 实现，其它平台静默 no-op（桌面端本来就不会被冻结）。
 /// 原生实现见 android/app/src/main/kotlin/.../GameForegroundService.kt。
+/// 前台服务的种类。原生侧按这个名字选 Service 组件，见 MainActivity.serviceClassOf。
+///
+/// 必须是两个独立的 Service：Service 是单例组件，合成一个的话，游戏和录音同时开着时
+/// 一次 stop 会把另一个也停掉；而且前台服务类型是按组件声明的，合并会让游戏那条路径
+/// 也一起受 Android 14 对麦克风前台服务的前置条件约束。
+enum ForegroundKind {
+  /// 游戏服务器，dataSync 类型
+  game,
+
+  /// 息屏录音会话，microphone 类型
+  record,
+}
+
 class ForegroundService {
   static const MethodChannel _channel = MethodChannel('repeat_flutter/foreground');
 
-  static Future<void> start() async {
+  /// [kind] 缺省是 game，所以原有调用点一行都不用改。
+  ///
+  /// **录音场景的调用顺序有硬要求**：先 `Permission.microphone` 拿到授权，再调这里
+  /// （而且必须在页面还可见的时候调），最后才 `record.startStream`。
+  /// Android 11+ 的 while-in-use 规则会把后台启动的麦克风前台服务静默静音——
+  /// 不抛异常，只是从此录到的全是零，这个 bug 极难查。
+  static Future<void> start({ForegroundKind kind = ForegroundKind.game}) async {
     if (!Platform.isAndroid) {
       return;
     }
@@ -34,7 +53,7 @@ class ForegroundService {
     }
     await _ensureIgnoreBatteryOptimizations();
     try {
-      await _channel.invokeMethod<bool>('start');
+      await _channel.invokeMethod<bool>('start', {'kind': kind.name});
     } catch (e) {
       debugPrint('ForegroundService.start failed: $e');
     }
@@ -81,12 +100,12 @@ class ForegroundService {
     }
   }
 
-  static Future<void> stop() async {
+  static Future<void> stop({ForegroundKind kind = ForegroundKind.game}) async {
     if (!Platform.isAndroid) {
       return;
     }
     try {
-      await _channel.invokeMethod<bool>('stop');
+      await _channel.invokeMethod<bool>('stop', {'kind': kind.name});
     } catch (e) {
       debugPrint('ForegroundService.stop failed: $e');
     }
