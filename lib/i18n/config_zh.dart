@@ -540,7 +540,6 @@ class ConfigZh extends Config {
     put(I18nKey.aiDeleteModelConfirm, "确定删除 @0？再用就得重新下载。");
     put(I18nKey.aiDiskUsage, "模型占用 @0");
     put(I18nKey.aiPreset, "预设");
-    put(I18nKey.aiInstallPreset, "下载整套 @0（@1）");
     put(I18nKey.aiInstallSuccess, "@0 已安装");
     put(I18nKey.aiInstallFail, "@0 安装失败");
     put(I18nKey.aiCatalogUrl, "模型清单地址");

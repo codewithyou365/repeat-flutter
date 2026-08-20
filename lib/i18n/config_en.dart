@@ -542,7 +542,6 @@ class ConfigEn extends Config {
     put(I18nKey.aiDeleteModelConfirm, "Delete @0? You will have to download it again to use it.");
     put(I18nKey.aiDiskUsage, "Models take up @0");
     put(I18nKey.aiPreset, "Presets");
-    put(I18nKey.aiInstallPreset, "Download all of @0 (@1)");
     put(I18nKey.aiInstallSuccess, "@0 installed");
     put(I18nKey.aiInstallFail, "Failed to install @0");
     put(I18nKey.aiCatalogUrl, "Model catalog url");

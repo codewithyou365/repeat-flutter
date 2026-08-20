@@ -116,6 +116,34 @@ class ScSettingsAiPage extends StatelessWidget {
     );
   }
 
+  /// 预设名和说明按 id 走 i18n：catalog.json 里的 name 是硬编码中文，英文界面不能照搬。
+  /// 远端 catalog 可以带自定义预设，认不出的 id 就回退到 JSON 里的 name，说明留空。
+  static String _presetName(AiPreset preset) {
+    switch (preset.id) {
+      case 'lite':
+        return I18nKey.aiPresetLite.tr;
+      case 'quality':
+        return I18nKey.aiPresetQuality.tr;
+      case 'zh':
+        return I18nKey.aiPresetZh.tr;
+      default:
+        return preset.name;
+    }
+  }
+
+  static String _presetDesc(AiPreset preset) {
+    switch (preset.id) {
+      case 'lite':
+        return I18nKey.aiPresetLiteDesc.tr;
+      case 'quality':
+        return I18nKey.aiPresetQualityDesc.tr;
+      case 'zh':
+        return I18nKey.aiPresetZhDesc.tr;
+      default:
+        return '';
+    }
+  }
+
   List<Widget> _buildPresets(BuildContext context, ScSettingsAiLogic logic) {
     final state = logic.state;
     if (state.catalog.presets.isEmpty) {
@@ -124,18 +152,48 @@ class ScSettingsAiPage extends StatelessWidget {
     return [
       _sectionTitle(context, I18nKey.aiPreset.tr),
       for (final preset in state.catalog.presets)
-        ListTile(
-          dense: true,
-          leading: const Icon(Icons.download_for_offline),
-          title: Text(I18nKey.aiInstallPreset.trArgs([
-            preset.name,
-            humanSize(preset.modelIds
-                .map((id) => state.catalog.byId(id)?.size ?? 0)
-                .fold<int>(0, (a, b) => a + b)),
-          ])),
-          onTap: logic.busy ? null : () => logic.installPreset(preset),
-        ),
+        _buildPresetTile(context, logic, preset),
     ];
+  }
+
+  Widget _buildPresetTile(BuildContext context, ScSettingsAiLogic logic, AiPreset preset) {
+    final state = logic.state;
+    // 认不出的 id 直接丢掉，跟 installPreset 里的 nonNulls 保持一致，
+    // 免得清单里列了个装不上的模型。
+    final entries = preset.modelIds.map((id) => state.catalog.byId(id)).nonNulls.toList();
+    final total = entries.fold<int>(0, (a, b) => a + b.size);
+    final done = entries.where((e) => state.installed[e.id] == true).length;
+    final allDone = entries.isNotEmpty && done == entries.length;
+    final desc = _presetDesc(preset);
+
+    return ListTile(
+      dense: true,
+      leading: Icon(
+        allDone ? Icons.check_circle : Icons.download_for_offline,
+        color: allDone ? Theme.of(context).colorScheme.primary : null,
+      ),
+      title: Text('${_presetName(preset)} · ${humanSize(total)}'),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (desc.isNotEmpty)
+            Text(desc, style: Theme.of(context).textTheme.bodySmall),
+          Text(entries.map((e) => e.name).join(' · '),
+              style: Theme.of(context).textTheme.bodySmall),
+          Text(
+            allDone
+                ? I18nKey.aiPresetAllInstalled.tr
+                : I18nKey.aiPresetInstalledCount.trArgs(['$done', '${entries.length}']),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: allDone ? Theme.of(context).colorScheme.primary : null,
+                ),
+          ),
+        ],
+      ),
+      isThreeLine: true,
+      // 全装好了就点不动，省得用户以为还得再点一遍整套
+      onTap: logic.busy || allDone ? null : () => logic.installPreset(preset),
+    );
   }
 
   List<Widget> _buildRoleSection(BuildContext context, ScSettingsAiLogic logic, AiRole role) {

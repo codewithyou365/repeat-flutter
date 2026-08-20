@@ -541,7 +541,6 @@ enum I18nKey {
   aiDeleteModelConfirm,
   aiDiskUsage,
   aiPreset,
-  aiInstallPreset,
   aiInstallSuccess,
   aiInstallFail,
   aiCatalogUrl,

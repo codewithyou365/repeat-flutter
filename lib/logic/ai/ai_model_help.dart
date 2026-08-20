@@ -189,7 +189,9 @@ class AiModelHelp {
 
         // DownloadDoc 的 hash 参数只是"下载前的预检"，下完必须自己再校验一次。
         if (!await _verify(absTmp, unit)) {
-          debugPrint('AiModelHelp.install verify failed for ${unit.path}');
+          // 只打一句"校验失败"没法查：镜像截断和镜像返回错误页的表现完全一样，
+          // 得把实际落盘大小和开头几个字节打出来才分得清。
+          debugPrint('AiModelHelp.install verify failed for ${unit.path}: ${await _describeBad(absTmp, unit)}');
           await _deleteQuietly(absTmp);
           await _cleanFailed(entry.id);
           return AiInstallResult.fail;
@@ -373,6 +375,29 @@ class AiModelHelp {
     }
     // 既没 hash 也没 size 的条目只能认它存在。清单写成这样是清单的问题。
     return true;
+  }
+
+  /// 校验失败时的诊断信息：期望 vs 实际大小，小文件再带上开头内容
+  /// （下成 404/限流的 HTML 页时，一眼就能看出来）。
+  static Future<String> _describeBad(String path, AiModelFile unit) async {
+    try {
+      final f = File(path);
+      if (!await f.exists()) {
+        return 'file missing';
+      }
+      final actual = await f.length();
+      final buf = StringBuffer('size $actual, expect ${unit.size}');
+      if (unit.hash.isNotEmpty) {
+        buf.write(', sha1 ${await Hash.toSha1(path)}, expect ${unit.hash}');
+      }
+      if (actual > 0 && actual < 4096) {
+        final head = await f.openRead(0, actual < 256 ? actual : 256).first;
+        buf.write(', head ${String.fromCharCodes(head).replaceAll('\n', ' ')}');
+      }
+      return buf.toString();
+    } catch (e) {
+      return 'describe failed: $e';
+    }
   }
 
   static Future<void> _deleteQuietly(String path) async {
