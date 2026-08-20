@@ -43,6 +43,10 @@ enum K {
   aiMtModelId,
   aiTtsModelId,
 
+  /// 识别语言，见 AiLang。空串 = 自动判断语种。
+  /// 跟模型选中项一样放 K：说话的是同一个人，换个课堂不会突然改说别的语言。
+  aiAsrLanguage,
+
   /// 翻译引擎 id，见 TranslateEngine.id。默认 whisper。
   aiTranslateEngine,
 

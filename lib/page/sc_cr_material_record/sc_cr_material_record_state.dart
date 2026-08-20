@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
+import 'package:repeat_flutter/logic/ai/ai_catalog.dart';
 import 'package:repeat_flutter/logic/ai/record_session.dart';
 
 /// 息屏方式。默认黑屏——它绕开所有 Android 后台麦克风限制，全版本全 ROM 都稳。
@@ -23,6 +24,17 @@ class ScCrMaterialRecordState {
 
   /// 自动播放合成的译文。息屏时这是唯一能确认"它听对没有"的手段。
   final RxBool autoPlay = true.obs;
+
+  /// 角色 -> 当前生效的模型名，空串表示这个角色还没有可用模型。
+  /// 只用于展示：真正生效的选中项在 Kv 里，开录时才读。
+  final RxMap<AiRole, String> modelNames = <AiRole, String>{}.obs;
+
+  /// 当前钉死的识别语言，空串 = 自动判断。跟 modelNames 一样只用于展示。
+  final RxString asrLanguage = ''.obs;
+
+  /// 合成音色和这个模型的音色总数。总数 <= 1 时那一行根本不显示。
+  final RxInt ttsVoice = 0.obs;
+  final RxInt ttsVoices = 1.obs;
 
   RecordSession? session;
 

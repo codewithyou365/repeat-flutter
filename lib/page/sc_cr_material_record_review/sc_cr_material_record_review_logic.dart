@@ -7,6 +7,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/ai/ai_catalog.dart';
+import 'package:repeat_flutter/logic/ai/ai_model_switch.dart';
 import 'package:repeat_flutter/logic/ai/ai_pipeline.dart';
 import 'package:repeat_flutter/logic/ai/infer_isolate.dart';
 import 'package:repeat_flutter/logic/ai/record_commit.dart';
@@ -95,6 +96,29 @@ class ScCrMaterialRecordReviewLogic extends GetxController {
       state.error.value = '$e';
       return false;
     }
+  }
+
+  /// 换模型。复核页的"重新识别/翻译/合成"跑的就是这几个模型，
+  /// 结果不对时最直接的补救就是换一个更大的再跑一遍。
+  ///
+  /// 判停不列进来：复核阶段音频早就切好了，VAD 一次都不会跑。
+  Future<void> switchModel() async {
+    if (state.busy.value) {
+      return;
+    }
+    if (!await AiModelSwitch.pickRole([AiRole.asr, AiRole.mt, AiRole.tts], withParams: true)) {
+      return;
+    }
+    // 已经加载好的 isolate 里还是老模型，必须拆掉；下一次重跑会按新选中的重新起。
+    await _disposeInfer();
+    state.error.value = '';
+  }
+
+  Future<void> _disposeInfer() async {
+    await _inferSub?.cancel();
+    _inferSub = null;
+    await _infer?.dispose();
+    _infer = null;
   }
 
   Future<InferResult?> _run(InferJob job) async {

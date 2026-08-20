@@ -6,6 +6,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/logic/ai/ai_catalog.dart';
+import 'package:repeat_flutter/logic/ai/ai_lang.dart';
 import 'package:repeat_flutter/logic/ai/ai_model_help.dart';
 import 'package:repeat_flutter/logic/ai/ai_model_paths.dart';
 import 'package:repeat_flutter/logic/ai/infer_isolate.dart';
@@ -40,10 +41,16 @@ class AiPipeline {
     final mtDir = await AiModelHelp.dirOf(mt.id);
     final ttsDir = await AiModelHelp.dirOf(tts.id);
 
-    final asrCfg = AiModelPaths.resolve(asr.cfg, asrDir);
+    // 用户钉死的识别语言。翻译那一份也要钉：whisper 的 translate 任务里
+    // language 说的是**源语言**，不给的话它照样要先猜一遍，猜错了译文就跟着错。
+    final lang = await AiLang.current();
+    final asrCfg = withAsrLanguage(AiModelPaths.resolve(asr.cfg, asrDir), AiLang.effective(asr, lang));
     // 翻译那一份 config 必须把 task 改成 translate。清单里存的是 transcribe，
     // 因为同一份 whisper 既当识别又当翻译，两种用法只差这一个字段。
-    final mtCfg = withWhisperTask(AiModelPaths.resolve(mt.cfg, mtDir), 'translate');
+    final mtCfg = withWhisperTask(
+      withAsrLanguage(AiModelPaths.resolve(mt.cfg, mtDir), AiLang.effective(mt, lang)),
+      'translate',
+    );
     final ttsCfg = AiModelPaths.resolve(tts.cfg, ttsDir);
 
     // 说话人 id。多说话人模型（vits-zh-aishell3 有 174 个）才有意义，
@@ -59,6 +66,32 @@ class AiPipeline {
           shareRecognizer: asr.id == mt.id,
           ttsSid: sid,
         );
+  }
+
+  /// 深拷一份并把识别语言写进去，不改原 map（理由同 [withWhisperTask]）。
+  ///
+  /// lang 为空（自动判断）时**原样返回**：清单里那几个只认一门语言的模型
+  /// （whisper-small.en 之类）自己就把 language 写死了，用空串盖掉等于把它废了。
+  @visibleForTesting
+  static Map<String, dynamic> withAsrLanguage(Map<String, dynamic> cfg, String lang) {
+    if (lang.isEmpty) {
+      return cfg;
+    }
+    final out = Map<String, dynamic>.from(cfg);
+    final model = out['model'];
+    if (model is! Map<String, dynamic>) {
+      return out;
+    }
+    final newModel = Map<String, dynamic>.from(model);
+    // 只有这两种模型认 language；paraformer 这种单语模型没这个字段，写进去 sherpa 也不看
+    for (final key in ['whisper', 'senseVoice']) {
+      final sub = newModel[key];
+      if (sub is Map<String, dynamic> && sub.isNotEmpty) {
+        newModel[key] = Map<String, dynamic>.from(sub)..['language'] = lang;
+      }
+    }
+    out['model'] = newModel;
+    return out;
   }
 
   /// 深拷一份并把 model.whisper.task 换掉，不改原 map。

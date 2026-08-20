@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:isolate';
 
+import 'package:archive/archive_io.dart';
 import 'package:flutter/foundation.dart';
 import 'package:repeat_flutter/common/folder.dart';
 import 'package:repeat_flutter/common/hash.dart';
@@ -200,7 +202,7 @@ class AiModelHelp {
 
       if (entry.zip != null) {
         final zipPath = dir.joinPath(entry.zip!.path);
-        await Zip.uncompressStream(File(zipPath), dir);
+        await _extract(zipPath, dir);
         await _deleteQuietly(zipPath);
         // 上游压缩包一般带一层同名顶层目录，展开后把它拍平，
         // 这样 cfg 里的路径就不用关心打包的人有没有带这层目录。
@@ -261,8 +263,8 @@ class AiModelHelp {
     await Folder.ensureExists(dir);
 
     try {
-      if (paths.length == 1 && paths.first.toLowerCase().endsWith('.zip')) {
-        await Zip.uncompressStream(File(paths.first), dir);
+      if (paths.length == 1 && _isArchive(paths.first)) {
+        await _extract(paths.first, dir);
         await _flattenSingleRoot(dir);
       } else {
         // 文件名 -> 清单条目。zip 形式的模型没有 files 列表，这时按 zip 那一项匹配。
@@ -287,7 +289,7 @@ class AiModelHelp {
         if (entry.zip != null) {
           final zipPath = dir.joinPath(entry.zip!.path);
           if (await File(zipPath).exists()) {
-            await Zip.uncompressStream(File(zipPath), dir);
+            await _extract(zipPath, dir);
             await _deleteQuietly(zipPath);
             await _flattenSingleRoot(dir);
           }
@@ -307,6 +309,34 @@ class AiModelHelp {
       debugPrint('AiModelHelp.importFromPaths failed: $e');
       return AiInstallResult.fail;
     }
+  }
+
+  static bool _isArchive(String path) {
+    final lower = path.toLowerCase();
+    return lower.endsWith('.zip') ||
+        lower.endsWith('.tar.bz2') ||
+        lower.endsWith('.tbz') ||
+        lower.endsWith('.tar.gz') ||
+        lower.endsWith('.tgz') ||
+        lower.endsWith('.tar.xz') ||
+        lower.endsWith('.txz') ||
+        lower.endsWith('.tar');
+  }
+
+  /// 解开模型压缩包。
+  ///
+  /// zip 走项目自己的 [Zip]（它还管加密包那套）；tar.bz2 交给 archive 的
+  /// extractFileToDisk——sherpa 官方发的 TTS 模型全是 tar.bz2，而且像 kokoro 那样
+  /// 带 espeak-ng-data 的有 400 多个文件，逐个列进清单不现实。
+  ///
+  /// **必须扔进 isolate**：bz2 解压是纯 Dart 的重 CPU 活，一百多 MB 在主线程上解
+  /// 会把界面卡到 ANR。
+  static Future<void> _extract(String archivePath, String dir) async {
+    if (archivePath.toLowerCase().endsWith('.zip')) {
+      await Zip.uncompressStream(File(archivePath), dir);
+      return;
+    }
+    await Isolate.run(() => extractFileToDisk(archivePath, dir));
   }
 
   static Future<void> remove(String modelId) async {

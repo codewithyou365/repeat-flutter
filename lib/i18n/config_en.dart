@@ -593,6 +593,20 @@ class ConfigEn extends Config {
     put(I18nKey.aiImportMissing, "Still missing @0 files");
     put(I18nKey.aiImportSuccess, "@0 imported");
     put(I18nKey.aiImportNothing, "None of the picked files belong to this model");
+    put(I18nKey.aiSelectModel, "Choose the model for @0");
+    put(I18nKey.aiAsrLanguage, "Spoken language");
+    put(I18nKey.aiTtsVoice, "Voice");
+    put(I18nKey.aiLangAuto, "Detect automatically");
+    put(I18nKey.aiModelManage, "Manage models…");
+    put(I18nKey.aiModelSwitched, "@0 switched to @1");
+    put(I18nKey.aiPresetLite, "Lite");
+    put(I18nKey.aiPresetLiteDesc, "Smallest download, average recognition accuracy");
+    put(I18nKey.aiPresetQuality, "High quality");
+    put(I18nKey.aiPresetQualityDesc, "Most accurate recognition, takes the most space");
+    put(I18nKey.aiPresetZh, "Chinese dictation");
+    put(I18nKey.aiPresetZhDesc, "Tuned for speaking Chinese, still handles English");
+    put(I18nKey.aiPresetInstalledCount, "@0/@1 installed");
+    put(I18nKey.aiPresetAllInstalled, "All installed");
     put(I18nKey.aiRecordInterrupted, "Recording was interrupted by the system. Stop and start again.");
   }
 }

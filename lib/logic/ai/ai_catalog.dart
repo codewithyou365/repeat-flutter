@@ -86,6 +86,10 @@ class AiModelEntry {
   final List<String> mtTargets;
 
   final int size;
+
+  /// 说话人（音色）数量。只有 tts 角色有意义，1 表示这个模型只有一个声音。
+  final int speakers;
+
   final String license;
   final String note;
 
@@ -105,6 +109,7 @@ class AiModelEntry {
     required this.langs,
     required this.mtTargets,
     required this.size,
+    required this.speakers,
     required this.license,
     required this.note,
     required this.files,
@@ -113,6 +118,17 @@ class AiModelEntry {
   });
 
   bool hasRole(AiRole role) => roles.contains(role);
+
+  /// 压缩包的扩展名。sherpa 官方发布的模型全是 tar.bz2，只有个别是 zip。
+  static String _archiveExt(String url) {
+    final lower = url.toLowerCase();
+    for (final ext in ['.tar.bz2', '.tbz', '.tar.gz', '.tgz', '.tar.xz', '.txz', '.tar', '.zip']) {
+      if (lower.endsWith(ext)) {
+        return ext;
+      }
+    }
+    return '.zip';
+  }
 
   /// 下载单位：zip 形式就是一个条目，files 形式就是每个文件一条。
   List<AiModelFile> get downloadUnits => zip != null ? [zip!] : files;
@@ -155,9 +171,10 @@ class AiModelEntry {
     AiModelFile? zip;
     final rawZip = json['zip'];
     if (rawZip is Map<String, dynamic>) {
-      // zip 落地时的文件名固定，用 id 命名，避免依赖 url 的最后一段
+      // 压缩包落地时的文件名用 id 命名，避免依赖 url 的最后一段；
+      // **但扩展名必须照抄**——解压那一步是按扩展名分派的（见 AiModelHelp._extract）。
       zip = AiModelFile(
-        path: '$id.zip',
+        path: '$id${_archiveExt(rawZip['u'] as String? ?? '')}',
         url: rawZip['u'] as String? ?? '',
         hash: rawZip['h'] as String? ?? '',
         size: (rawZip['s'] as num?)?.toInt() ?? 0,
@@ -176,6 +193,7 @@ class AiModelEntry {
       langs: (json['langs'] as List?)?.whereType<String>().toList() ?? const ['*'],
       mtTargets: (json['mtTargets'] as List?)?.whereType<String>().toList() ?? const [],
       size: (json['size'] as num?)?.toInt() ?? files.fold<int>(0, (a, b) => a + b.size) + (zip?.size ?? 0),
+      speakers: (json['speakers'] as num?)?.toInt() ?? 1,
       license: json['license'] as String? ?? '',
       note: json['note'] as String? ?? '',
       files: files,

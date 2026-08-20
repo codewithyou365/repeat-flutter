@@ -593,10 +593,30 @@ enum I18nKey {
   aiImportSuccess,
   aiImportNothing,
   aiRecordInterrupted,
+  aiSelectModel,
+  aiAsrLanguage,
+  aiTtsVoice,
+  aiLangAuto,
+  aiModelManage,
+  aiModelSwitched,
+  aiPresetLite,
+  aiPresetLiteDesc,
+  aiPresetQuality,
+  aiPresetQualityDesc,
+  aiPresetZh,
+  aiPresetZhDesc,
+  aiPresetInstalledCount,
+  aiPresetAllInstalled,
   none;
 
+  /// 老文案用 %s（GetX 的 trArgs 只认这个），AI 之后的新文案用 @N（GetX 那边归 trParams 管）。
+  /// 两套语法都在项目里，这里统一兜住，免得写错一个就把字面量 @0 漏到界面上。
   String trArgs([List<String> args = const []]) {
-    return name.trArgs(args);
+    var s = name.trArgs(args);
+    for (int i = 0; i < args.length; i++) {
+      s = s.replaceAll('@$i', args[i]);
+    }
+    return s;
   }
 
   String trParams([List<String> args = const []]) {

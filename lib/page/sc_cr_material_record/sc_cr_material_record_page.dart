@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/ai/ai_catalog.dart';
+import 'package:repeat_flutter/logic/ai/ai_lang.dart';
 import 'package:repeat_flutter/logic/ai/record_session.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 
@@ -106,6 +108,8 @@ class ScCrMaterialRecordPage extends StatelessWidget {
               onChanged: (v) => state.autoPlay.value = v,
               title: Text(I18nKey.aiRecordAutoPlay.tr),
             ),
+            SizedBox(height: 4.h),
+            _buildModels(context, logic),
             SizedBox(height: 12.h),
           ],
           if (state.draining.value)
@@ -156,6 +160,85 @@ class ScCrMaterialRecordPage extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  /// 开录前把四个角色当前用的模型摊开，每一行都能点开换。
+  ///
+  /// 只在没录的时候显示：模型是在 [ScCrMaterialRecordLogic.start] 里加载进 isolate 的，
+  /// 录着的时候换不了，摆在那儿只会让人以为能换。
+  Widget _buildModels(BuildContext context, ScCrMaterialRecordLogic logic) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(I18nKey.aiModel.tr, style: Theme.of(context).textTheme.titleSmall),
+            const Spacer(),
+            TextButton(
+              onPressed: logic.openModelSettings,
+              child: Text(I18nKey.aiModelManage.tr),
+            ),
+          ],
+        ),
+        for (final role in AiRole.values) _buildModelRow(context, logic, role),
+        _buildRow(
+          context,
+          label: I18nKey.aiAsrLanguage.tr,
+          value: AiLang.label(logic.state.asrLanguage.value),
+          onTap: logic.pickLanguage,
+        ),
+        // 单音色的模型（MeloTTS）不显示这一行
+        if (logic.state.ttsVoices.value > 1)
+          _buildRow(
+            context,
+            label: I18nKey.aiTtsVoice.tr,
+            value: '#${logic.state.ttsVoice.value}',
+            onTap: logic.pickVoice,
+          ),
+      ],
+    );
+  }
+
+  Widget _buildModelRow(BuildContext context, ScCrMaterialRecordLogic logic, AiRole role) {
+    final name = logic.state.modelNames[role] ?? '';
+    final missing = name.isEmpty;
+    return _buildRow(
+      context,
+      label: role.label,
+      // 缺模型不是灰掉就完了：它是"开始录音"会失败的唯一原因，标红提醒去装
+      value: missing ? I18nKey.aiNotInstalled.tr : name,
+      warn: missing,
+      onTap: () => logic.pickModel(role),
+    );
+  }
+
+  Widget _buildRow(
+    BuildContext context, {
+    required String label,
+    required String value,
+    required VoidCallback onTap,
+    bool warn = false,
+  }) {
+    final style = Theme.of(context).textTheme.bodySmall;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 5.h),
+        child: Row(
+          children: [
+            SizedBox(width: 96.w, child: Text(label, style: style)),
+            Expanded(
+              child: Text(
+                value,
+                style: warn ? style?.copyWith(color: Theme.of(context).colorScheme.error) : style,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const Icon(Icons.arrow_drop_down, size: 18),
+          ],
+        ),
       ),
     );
   }

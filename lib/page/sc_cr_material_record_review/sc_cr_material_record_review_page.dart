@@ -20,6 +20,11 @@ class ScCrMaterialRecordReviewPage extends StatelessWidget {
         title: Text(I18nKey.aiReviewTitle.tr),
         actions: [
           IconButton(
+            icon: const Icon(Icons.psychology),
+            tooltip: I18nKey.aiModel.tr,
+            onPressed: logic.switchModel,
+          ),
+          IconButton(
             icon: const Icon(Icons.delete_outline),
             tooltip: I18nKey.aiReviewDiscard.tr,
             onPressed: logic.discard,

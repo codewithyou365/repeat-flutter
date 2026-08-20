@@ -1,5 +1,5 @@
 {
-  "v": 1,
+  "v": 3,
   "models": [
     {
       "id": "silero-vad-v5",
@@ -178,6 +178,132 @@
       }
     },
     {
+      "id": "paraformer-zh",
+      "role": "asr",
+      "name": "Paraformer 中文 (int8)",
+      "langs": [
+        "zh"
+      ],
+      "size": 227405559,
+      "license": "Apache-2.0",
+      "note": "只认中文的识别模型。不做语种判断，中文比多语种模型准，也快；一句话里夹的英文会被写成中文谐音。翻译那一遍仍要交给 Whisper。",
+      "files": [
+        {
+          "p": "model.int8.onnx",
+          "u": "https://huggingface.co/csukuangfj/sherpa-onnx-paraformer-zh-2024-03-09/resolve/main/model.int8.onnx",
+          "h": "",
+          "s": 227330205
+        },
+        {
+          "p": "tokens.txt",
+          "u": "https://huggingface.co/csukuangfj/sherpa-onnx-paraformer-zh-2024-03-09/resolve/main/tokens.txt",
+          "h": "",
+          "s": 75354
+        }
+      ],
+      "cfg": {
+        "model": {
+          "paraformer": {
+            "model": "model.int8.onnx"
+          },
+          "tokens": "tokens.txt",
+          "numThreads": 2,
+          "debug": false,
+          "provider": "cpu"
+        }
+      }
+    },
+    {
+      "id": "whisper-base.en-int8",
+      "role": "asr",
+      "name": "Whisper base.en (int8)",
+      "langs": [
+        "en"
+      ],
+      "size": 160626066,
+      "license": "MIT",
+      "note": "只认英文的识别模型。跟多语种 base 同样大小，但省掉了语种判断，纯英文比它准。只做识别，不能翻译。",
+      "files": [
+        {
+          "p": "base.en-encoder.int8.onnx",
+          "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-base.en/resolve/main/base.en-encoder.int8.onnx",
+          "h": "",
+          "s": 29120534
+        },
+        {
+          "p": "base.en-decoder.int8.onnx",
+          "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-base.en/resolve/main/base.en-decoder.int8.onnx",
+          "h": "",
+          "s": 130669978
+        },
+        {
+          "p": "base.en-tokens.txt",
+          "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-base.en/resolve/main/base.en-tokens.txt",
+          "h": "",
+          "s": 835554
+        }
+      ],
+      "cfg": {
+        "model": {
+          "whisper": {
+            "encoder": "base.en-encoder.int8.onnx",
+            "decoder": "base.en-decoder.int8.onnx",
+            "language": "en",
+            "task": "transcribe"
+          },
+          "tokens": "base.en-tokens.txt",
+          "numThreads": 2,
+          "debug": false,
+          "provider": "cpu"
+        }
+      }
+    },
+    {
+      "id": "whisper-small.en-int8",
+      "role": "asr",
+      "name": "Whisper small.en (int8)",
+      "langs": [
+        "en"
+      ],
+      "size": 375501079,
+      "license": "MIT",
+      "note": "只认英文，英文识别里效果最好的一档。decoder 就有 250MB，内存吃紧的机器慎选。只做识别，不能翻译。",
+      "files": [
+        {
+          "p": "small.en-encoder.int8.onnx",
+          "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-small.en/resolve/main/small.en-encoder.int8.onnx",
+          "h": "",
+          "s": 112442483
+        },
+        {
+          "p": "small.en-decoder.int8.onnx",
+          "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-small.en/resolve/main/small.en-decoder.int8.onnx",
+          "h": "",
+          "s": 262223042
+        },
+        {
+          "p": "small.en-tokens.txt",
+          "u": "https://huggingface.co/csukuangfj/sherpa-onnx-whisper-small.en/resolve/main/small.en-tokens.txt",
+          "h": "",
+          "s": 835554
+        }
+      ],
+      "cfg": {
+        "model": {
+          "whisper": {
+            "encoder": "small.en-encoder.int8.onnx",
+            "decoder": "small.en-decoder.int8.onnx",
+            "language": "en",
+            "task": "transcribe"
+          },
+          "tokens": "small.en-tokens.txt",
+          "numThreads": 2,
+          "debug": false,
+          "provider": "cpu"
+        }
+      }
+    },
+    {
       "id": "vits-melo-tts-zh_en",
       "role": "tts",
       "name": "MeloTTS 中英双语 (int8)",
@@ -301,6 +427,38 @@
         "ruleFsts": "date.fst,number.fst,phone.fst,new_heteronym.fst",
         "maxNumSenetences": 1
       }
+    },
+    {
+      "id": "kokoro-int8-multi-lang-v1_0",
+      "role": "tts",
+      "name": "Kokoro v1.0 (int8, 53 音色)",
+      "langs": [
+        "en"
+      ],
+      "size": 131839838,
+      "speakers": 53,
+      "license": "Apache-2.0",
+      "note": "音质明显好于 MeloTTS，53 个音色可挑。译文是英文，这里只配了英文词典。包是 tar.bz2，装的时候要先解压，临时占用约 500MB 磁盘，手机上解压要一两分钟。",
+      "zip": {
+        "u": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-int8-multi-lang-v1_0.tar.bz2",
+        "h": "",
+        "s": 131839838
+      },
+      "cfg": {
+        "model": {
+          "kokoro": {
+            "model": "model.int8.onnx",
+            "voices": "voices.bin",
+            "tokens": "tokens.txt",
+            "dataDir": "espeak-ng-data",
+            "lexicon": "lexicon-us-en.txt"
+          },
+          "numThreads": 2,
+          "debug": false,
+          "provider": "cpu"
+        },
+        "maxNumSenetences": 1
+      }
     }
   ],
   "presets": [
@@ -319,6 +477,16 @@
       "models": [
         "silero-vad-v5",
         "sensevoice-small-int8",
+        "whisper-small-int8",
+        "vits-melo-tts-zh_en"
+      ]
+    },
+    {
+      "id": "zh",
+      "name": "中文口述",
+      "models": [
+        "silero-vad-v5",
+        "paraformer-zh",
         "whisper-small-int8",
         "vits-melo-tts-zh_en"
       ]

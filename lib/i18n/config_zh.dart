@@ -591,6 +591,20 @@ class ConfigZh extends Config {
     put(I18nKey.aiImportMissing, "还缺 @0 个文件");
     put(I18nKey.aiImportSuccess, "@0 导入完成");
     put(I18nKey.aiImportNothing, "挑的文件都不属于这个模型");
+    put(I18nKey.aiSelectModel, "选择@0模型");
+    put(I18nKey.aiAsrLanguage, "识别语言");
+    put(I18nKey.aiTtsVoice, "音色");
+    put(I18nKey.aiLangAuto, "自动判断");
+    put(I18nKey.aiModelManage, "管理模型…");
+    put(I18nKey.aiModelSwitched, "@0已换成 @1");
+    put(I18nKey.aiPresetLite, "轻量");
+    put(I18nKey.aiPresetLiteDesc, "最省空间，识别精度一般");
+    put(I18nKey.aiPresetQuality, "高质量");
+    put(I18nKey.aiPresetQualityDesc, "识别最准，占空间最大");
+    put(I18nKey.aiPresetZh, "中文口述");
+    put(I18nKey.aiPresetZhDesc, "针对中文口述调过，英文也能识别");
+    put(I18nKey.aiPresetInstalledCount, "已装 @0/@1");
+    put(I18nKey.aiPresetAllInstalled, "已全部安装");
     put(I18nKey.aiRecordInterrupted, "录音被系统中断了，请停止后重新开始。");
   }
 }

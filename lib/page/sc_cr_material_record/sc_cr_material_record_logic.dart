@@ -14,8 +14,10 @@ import 'package:repeat_flutter/common/screen_brightness_helper.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/ai/ai_catalog.dart';
+import 'package:repeat_flutter/logic/ai/ai_lang.dart';
 import 'package:repeat_flutter/logic/ai/ai_model_help.dart';
 import 'package:repeat_flutter/logic/ai/ai_model_paths.dart';
+import 'package:repeat_flutter/logic/ai/ai_model_switch.dart';
 import 'package:repeat_flutter/logic/ai/ai_pipeline.dart';
 import 'package:repeat_flutter/logic/ai/infer_isolate.dart';
 import 'package:repeat_flutter/logic/ai/record_session.dart';
@@ -57,6 +59,7 @@ class ScCrMaterialRecordLogic extends GetxController {
     if (args is List && args.isNotEmpty && args.first is Book) {
       state.book = args.first as Book;
     }
+    loadModels();
     // 必须等第一帧之后：onInit 阶段 Get.context 还是 null，MsgBox 会静默不弹。
     WidgetsBinding.instance.addPostFrameCallback((_) => checkUnfinished());
   }
@@ -68,6 +71,66 @@ class ScCrMaterialRecordLogic extends GetxController {
     _teardown();
     _ttsPlayer.dispose();
     super.onClose();
+  }
+
+  /// 读一遍四个角色当前生效的模型，给控制区显示用。
+  Future<void> loadModels() async {
+    try {
+      final catalog = await AiCatalog.load();
+      final selected = await AiModelSwitch.current(catalog);
+      for (final role in AiRole.values) {
+        state.modelNames[role] = selected[role]?.name ?? '';
+      }
+      state.asrLanguage.value = await AiLang.current();
+      final (sid, voices) = await AiModelSwitch.voice(catalog);
+      state.ttsVoice.value = sid;
+      state.ttsVoices.value = voices;
+    } catch (e) {
+      debugPrint('loadModels failed: $e');
+    }
+  }
+
+  /// 换某个角色的模型。
+  ///
+  /// 录着的时候不给换：模型早在 [start] 里就加载进 isolate 了，这时候改选中项
+  /// 界面上像是换了、实际这一趟还是老模型。停下来再换，下一趟才作数。
+  Future<void> pickModel(AiRole role) async {
+    if (state.recording.value || state.starting.value) {
+      return;
+    }
+    if (await AiModelSwitch.pick(role)) {
+      await loadModels();
+    }
+  }
+
+  /// 钉死识别语言。多语种模型判错语种时整句会被按另一门语言硬解，
+  /// 出来的原文完全不沾边——知道自己在说什么语言就该钉死。
+  Future<void> pickLanguage() async {
+    if (state.recording.value || state.starting.value) {
+      return;
+    }
+    if (await AiModelSwitch.pickLanguage()) {
+      await loadModels();
+    }
+  }
+
+  /// 换合成音色。kokoro 有 53 个声音，默认那个未必好听，这是最直接的补救。
+  Future<void> pickVoice() async {
+    if (state.recording.value || state.starting.value) {
+      return;
+    }
+    if (await AiModelSwitch.pickVoice()) {
+      await loadModels();
+    }
+  }
+
+  /// 去模型管理页下载/删除，回来重新读一遍——那边也能改选中项。
+  Future<void> openModelSettings() async {
+    if (state.recording.value || state.starting.value) {
+      return;
+    }
+    await Nav.scSettingsAi.push();
+    await loadModels();
   }
 
   Future<void> start() async {
