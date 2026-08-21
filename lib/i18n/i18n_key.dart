@@ -643,6 +643,13 @@ enum I18nKey {
   shadowRemoteDownload,
   shadowRemoteDownloading,
   shadowRemoteNoLocalFallback,
+  verseImage,
+  labelRestoreView,
+  verseImageAdd,
+  verseImageAddMore,
+  verseImageRemove,
+  verseImageForField,
+  verseImageForSection,
   none;
 
   /// 老文案用 %s（GetX 的 trArgs 只认这个），AI 之后的新文案用 @N（GetX 那边归 trParams 管）。

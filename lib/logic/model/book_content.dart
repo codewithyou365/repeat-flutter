@@ -177,10 +177,26 @@ class VerseField {
   static const String fontAlias = 'fontAlias';
   static const String fontHash = 'fontHash';
 
+  /// 字段配图的 hash 列表，跟 [mediaHash] 并排放在字段块里：
+  /// `'a': {'text': 答案正文, 'imageHash': ['h1','h2']}`。
+  ///
+  /// 一个字段可以配好几张图，所以值是数组；只配一张时也允许直接写成字符串（手写内容/
+  /// 外部导入方便些），读一律走 [fieldImageHashes]，写一律写成数组。
+  ///
+  /// 图片跟音视频、字体一样只在这里存 hash，文件对象统一登记在某一层的 'd' 里。
+  /// **图片绝不能写进 [mediaHash]**：那个键是给播放器用的，
+  /// ChapterImportHelp.showTypeForExtension 认不出图片扩展名会让整页取不到视图类型。
+  static const String imageHash = 'imageHash';
+
   /// 整节媒体的 hash。这个键不在字段块里，而是跟 's'（整节视图类型）并排放在
   /// book/chapter/verse 的顶层：'s' 说整节媒体怎么显示，'m' 说整节媒体是哪个文件。
   /// 见 [findSectionDownload]。
   static const String sectionMediaHash = 'm';
+
+  /// 整节配图的 hash 列表，跟 'm' 并排放在顶层：'m' 是这一节放什么声音/视频，
+  /// 'g' 是这一节配哪几张图。q/a 共用，是"场景图"而不是某一方的答案。
+  /// 跟 'm' 一样按 verse -> chapter -> book 就近取（整章共用一张图只在 chapter 上写一次）。
+  static const String sectionImageHash = 'g';
 
   /// 课堂 't' 数组里那一条的名字，显示在提示 tab 上。
   static const String tipName = 'n';
@@ -552,6 +568,103 @@ class VerseField {
   }) {
     addDownload(verse, d);
     setStr(verse, acronym, mediaHash, d.hash);
+  }
+
+  /// 把 'imageHash'/'g' 的值规整成 hash 列表：常态是数组，单张时允许写成字符串。
+  /// 一定返回可变列表——调用方会就地增删。
+  static List<String> _hashList(dynamic v) {
+    if (v is String) {
+      return v.isEmpty ? <String>[] : <String>[v];
+    }
+    if (v is List) {
+      return v.whereType<String>().where((e) => e.isNotEmpty).toList();
+    }
+    return <String>[];
+  }
+
+  /// 某个字段配的图，按 verse -> chapter -> book 就近取。
+  ///
+  /// **第一个写了 'imageHash' 的层整份算数，不跨层合并**：跟 [mediaHash] 一样是覆盖语义，
+  /// 合并的话这一节就没办法盖掉章节那份配图了，只能越配越多。
+  ///
+  /// 认的是"这一层写没写这个键"，不是"列表空不空"：写成空数组就是这一层明确说
+  /// **这里不配图**，用来盖掉上层继承下来的那组，不能再往上找。
+  static List<String> fieldImageHashes(List<Map<String, dynamic>?> contents, String fieldRef) {
+    for (var content in contents) {
+      if (content == null) {
+        continue;
+      }
+      final block = of(content, fieldRef);
+      if (block == null || !block.containsKey(imageHash)) {
+        continue;
+      }
+      return _hashList(block[imageHash]);
+    }
+    return <String>[];
+  }
+
+  /// 整节配图（'g'），同上：就近取、覆盖不合并、认键在不在。
+  static List<String> sectionImageHashes(List<Map<String, dynamic>?> contents) {
+    for (var content in contents) {
+      if (content == null || !content.containsKey(sectionImageHash)) {
+        continue;
+      }
+      return _hashList(content[sectionImageHash]);
+    }
+    return <String>[];
+  }
+
+  /// 这几层里有没有哪一层写了字段配图这个键（空数组也算写了）。
+  /// 编辑时用来判断：改完一张不剩，是该留个空数组盖住上层，还是把键整个删掉。
+  static bool fieldImageDeclared(List<Map<String, dynamic>?> contents, String fieldRef) {
+    for (var content in contents) {
+      if (content == null) {
+        continue;
+      }
+      final block = of(content, fieldRef);
+      if (block != null && block.containsKey(imageHash)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// 同上，整节配图版。
+  static bool sectionImageDeclared(List<Map<String, dynamic>?> contents) {
+    for (var content in contents) {
+      if (content != null && content.containsKey(sectionImageHash)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// hash 列表解析成文件对象。解析不出来的（图被删了、'd' 里没登记）直接跳过：
+  /// 配图缺一张不该让整个图片区消失，更不该让页面报错。
+  static List<DownloadContent> resolveImages(List<Map<String, dynamic>?> contents, List<String> hashes) {
+    final ret = <DownloadContent>[];
+    for (var hash in hashes) {
+      final d = findDownloadByHash(contents, hash);
+      if (d != null) {
+        ret.add(d);
+      }
+    }
+    return ret;
+  }
+
+  /// 写死这一层的字段配图列表。空列表也会写进去（= 这一层明确不配图，见 [fieldImageHashes]）；
+  /// 要彻底交还给上层去继承，用 [remove] 把 [imageHash] 这个键删掉。
+  static void setFieldImages(Map<String, dynamic> content, String fieldRef, List<String> hashes) {
+    _ensure(content, fieldRef)[imageHash] = hashes;
+  }
+
+  /// 写死这一层的整节配图列表。
+  ///
+  /// 图片文件对象要另外走 [addDownload] 登记，**不能用 [setSectionMedia]**：那个会把文件
+  /// 插到 'd' 的第 0 位，而没有 'm' 的老内容按 'd' 第一项算整节媒体（见 [findSectionDownload]
+  /// 的回落），等于让播放器去加载一张图片。
+  static void setSectionImages(Map<String, dynamic> content, List<String> hashes) {
+    content[sectionImageHash] = hashes;
   }
 
   /// 保证 't' 数组至少有 [count] 条，不足的补空块。返回是否真的改了。

@@ -63,6 +63,11 @@ class Helper {
   late Widget? Function() practiceArea;
   late Widget? Function() tipArea;
 
+  /// 配图区。跟 [practiceArea]/[tipArea] 一样是页面侧注入、各视图消费：
+  /// 图片跟视图类型是正交的（文本/音频/视频三种视图都可能配图），
+  /// 所以它不是第四种视图，而是三种视图共用的一块内容。
+  late Widget? Function() imageArea;
+
   /// 提示区当前选中的 tab：0..n-1 是第 1..n 条提示，n 是笔记（n = [currTipCount]）。
   /// 朗读、播放区间、扩展助手这些都按它选的那一条走，所以放在 Helper 上而不是只给界面用。
   RxInt currentTipTabIndex = 0.obs;
@@ -456,6 +461,113 @@ class Helper {
       return null;
     }
     return getPath(d.path);
+  }
+
+  /// 这个字段此刻在界面上露不露脸。
+  ///
+  /// 正文（repeat_page.text）和配图（[getCurrImages]）必须共用同一份判断：闭卷回忆阶段
+  /// 答案正文是藏着的，答案的配图要是照显，等于把答案直接给出去了。
+  bool fieldVisible(String acronym) {
+    if (showMode.value == ShowMode.edit) {
+      return true;
+    }
+    final base = VerseField.baseOf(acronym);
+    if (base == QaType.answer.acronym) {
+      return step != RepeatStep.recall;
+    }
+    if (base == QaType.tip.acronym) {
+      return tip == TipLevel.tip;
+    }
+    return true;
+  }
+
+  /// 配图跟着"这一步在讲哪个字段"走，而不是复用 [currFieldAcronym]：
+  /// 后者会因为某个字段没配时间区间就退到另一个字段——那是播放器要解决的事，
+  /// 配图不涉及区间，不该被区间牵着走。悬浮球的 Play-* 临时指定了字段时跟着它。
+  String currImageFieldAcronym() {
+    return playFieldOverride ?? (step == RepeatStep.recall ? QaType.question.acronym : QaType.answer.acronym);
+  }
+
+  /// 当前该显示哪几张图，以及这一组是从哪儿来的。
+  ///
+  /// 当前这一步的字段自己配了图、而且这个字段此刻可见，就显示它那一组（fromField = true）；
+  /// 否则退回整节配图 'g'——整节图是 q/a 共用的场景图，不是任何一方的答案，哪个阶段都能显示。
+  ///
+  /// 字段图**覆盖**整节图而不是叠加，跟字段媒体盖掉整节媒体是同一套就近覆盖语义。
+  ///
+  /// fromField 是给编辑态用的：加图/删图要落到当前这一组所在的那个位置，
+  /// 不然点"再加一张"会凭空冒出一组字段图把整节图挡掉。
+  ({List<DownloadContent> images, bool fromField}) getCurrImageGroup() {
+    final levels = fieldLevels;
+    if (levels.first == null) {
+      return (images: const <DownloadContent>[], fromField: false);
+    }
+    final acronym = currImageFieldAcronym();
+    if (fieldVisible(acronym)) {
+      final ret = VerseField.resolveImages(levels, VerseField.fieldImageHashes(levels, acronym));
+      if (ret.isNotEmpty) {
+        return (images: ret, fromField: true);
+      }
+    }
+    final section = VerseField.resolveImages(levels, VerseField.sectionImageHashes(levels));
+    return (images: section, fromField: false);
+  }
+
+  /// 配图的绝对路径，按 [getCurrImageGroup] 的顺序。
+  List<String> getCurrImagePaths() {
+    return getCurrImageGroup().images.map((e) => getPath(e.path)).toList();
+  }
+
+  /// 改这一节的配图并存库。[toField] 决定改的是字段图还是整节图，
+  /// [edit] 就地增删 hash 列表，[register] 是这次新加的图（要登记进 'd'）。
+  ///
+  /// 配图是就近覆盖的：当前生效的那一组可能写在 chapter/book 上。直接往 verse 上删一个 hash
+  /// 等于删了个不存在的键，界面上图纹丝不动。所以改之前先把整组读出来，改完整份写回 verse——
+  /// verse 写了就盖掉上层，这是覆盖语义本来就成立的事。
+  ///
+  /// 改完一张不剩时：上层还写着这个键的话必须留一个空数组（"这一节明确不要图"，
+  /// [VerseField.fieldImageHashes] 认的是键在不在，不是列表空不空），上层没写就把键整个删掉，
+  /// 免得到处留下 'imageHash': []。
+  Future<bool> editCurrImages({
+    required bool toField,
+    DownloadContent? register,
+    required void Function(List<String> hashes) edit,
+  }) async {
+    final verse = getCurrVerse();
+    final verseMap = getCurrVerseMap();
+    if (verse == null || verseMap == null) {
+      return false;
+    }
+    final levels = fieldLevels;
+    final upper = levels.skip(1).toList();
+    final acronym = currImageFieldAcronym();
+
+    final hashes = toField ? VerseField.fieldImageHashes(levels, acronym) : VerseField.sectionImageHashes(levels);
+    edit(hashes);
+    if (register != null) {
+      VerseField.addDownload(verseMap, register);
+    }
+    if (hashes.isNotEmpty) {
+      if (toField) {
+        VerseField.setFieldImages(verseMap, acronym, hashes);
+      } else {
+        VerseField.setSectionImages(verseMap, hashes);
+      }
+    } else if (toField) {
+      if (VerseField.fieldImageDeclared(upper, acronym)) {
+        VerseField.setFieldImages(verseMap, acronym, hashes);
+      } else {
+        VerseField.remove(verseMap, acronym, [VerseField.imageHash]);
+      }
+    } else {
+      if (VerseField.sectionImageDeclared(upper)) {
+        VerseField.setSectionImages(verseMap, hashes);
+      } else {
+        verseMap.remove(VerseField.sectionImageHash);
+      }
+    }
+    await Db().db.verseDao.updateVerseContent(verse.verseId, jsonEncode(verseMap));
+    return true;
   }
 
   /// 悬浮球 Play-* 临时指定的字段：比如 evaluate 阶段点 Play-Q，界面要切到 q 的媒体和区间

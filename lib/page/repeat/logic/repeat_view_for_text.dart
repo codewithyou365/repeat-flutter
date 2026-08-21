@@ -35,6 +35,7 @@ class RepeatViewForText extends RepeatView {
     height = helper.screenHeight - helper.topPadding - helper.topBarHeight - helper.bottomBarHeight;
     var q = helper.text(QaType.question);
     var a = helper.text(QaType.answer);
+    var imageAreaWidget = helper.imageArea.call();
     var practiceAreaWidget = helper.practiceArea.call();
     var tipAreaWidget = helper.tipArea.call();
     return Stack(
@@ -53,6 +54,7 @@ class RepeatViewForText extends RepeatView {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (imageAreaWidget != null) imageAreaWidget,
                         if (q != null) q,
                         if (q != null) SizedBox(height: RowWidget.dividerHeight),
                         if (a != null) a,

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
@@ -10,10 +11,12 @@ import 'package:repeat_flutter/db/entity/tip.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
+import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_button.dart';
 import 'package:repeat_flutter/logic/widget/close_eyes/close_eyes_panel.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
+import 'package:repeat_flutter/widget/image/verse_image.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
@@ -71,6 +74,7 @@ class RepeatPage extends StatelessWidget {
     state.helper.text = (QaType type) => text(logic, type);
     state.helper.practiceArea = () => practiceArea(logic);
     state.helper.tipArea = () => tipArea(logic);
+    state.helper.imageArea = () => imageArea(logic);
     state.helper.fullScreenPanel = () => fullScreenPanel(logic);
 
     if (state.lastLandscape == null || state.lastLandscape != landscape) {
@@ -551,19 +555,130 @@ class RepeatPage extends StatelessWidget {
     });
   }
 
+  /// 配图区：文本/音频/视频三个视图共用的一块内容，由 helper.imageArea 注入。
+  /// 图片跟视图类型是正交的（哪种视图都可能配图），所以它不是第四种视图。
+  Widget? imageArea(RepeatLogic logic) {
+    final helper = logic.state.helper;
+    final edit = helper.showMode.value == ShowMode.edit;
+    final group = helper.getCurrImageGroup();
+    if (group.images.isEmpty) {
+      return edit ? addImagePlaceholder(logic) : null;
+    }
+    final paths = group.images.map((e) => helper.getPath(e.path)).toList();
+    return VerseImage(
+      // 翻到下一节、或者从题干图切到答案图时整块重建：上一组 3 张、这一组 1 张的话，
+      // PageView 的页码留在旧位置会直接越界。
+      key: ValueKey(paths.join('|')),
+      paths: paths,
+      maxHeight: helper.screenHeight * 0.32,
+      onEdit: edit ? (index) => imageMenu(logic, group, index) : null,
+    );
+  }
+
+  /// 编辑模式下没配图时的占位条。
+  Widget addImagePlaceholder(RepeatLogic logic) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: InkWell(
+        onTap: () => addImage(logic, null),
+        child: Container(
+          height: 56,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.withAlpha(90)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.add_photo_alternate_outlined, size: 18, color: Colors.grey.withAlpha(160)),
+              const SizedBox(width: 6),
+              Text(I18nKey.verseImageAdd.tr, style: TextStyle(color: Colors.grey.withAlpha(200))),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> imageMenu(
+    RepeatLogic logic,
+    ({List<DownloadContent> images, bool fromField}) group,
+    int index,
+  ) async {
+    final keys = [I18nKey.verseImageAddMore.tr, I18nKey.verseImageRemove.tr];
+    final selected = await Select.showSheet(title: I18nKey.verseImage.tr, keys: keys);
+    if (selected == null) {
+      return;
+    }
+    if (selected == 0) {
+      // 加到当前这一组所在的位置：本来显示的是整节图就继续加整节图。
+      // 不这么做的话点一下"再加一张"会凭空冒出一组字段图，把整节图整个挡掉。
+      await addImage(logic, group.fromField);
+      return;
+    }
+    if (index < 0 || index >= group.images.length) {
+      return;
+    }
+    final hash = group.images[index].hash;
+    final ok = await logic.state.helper.editCurrImages(
+      toField: group.fromField,
+      edit: (hashes) => hashes.remove(hash),
+    );
+    if (ok) {
+      logic.update([RepeatLogic.id]);
+    }
+  }
+
+  /// [toField] 为 null 表示这一节还没有图，得先问配给谁。
+  Future<void> addImage(RepeatLogic logic, bool? toField) async {
+    final helper = logic.state.helper;
+    final acronym = helper.currImageFieldAcronym();
+    bool target;
+    if (toField == null) {
+      final keys = [
+        I18nKey.verseImageForField.trArgs([fieldTitle(logic, acronym)]),
+        I18nKey.verseImageForSection.tr,
+      ];
+      final selected = await Select.showSheet(title: I18nKey.verseImageAdd.tr, keys: keys);
+      if (selected == null) {
+        return;
+      }
+      target = selected == 0;
+    } else {
+      target = toField;
+    }
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: MediaType.image.allowedExtensions,
+    );
+    final d = await DocHelp.tryCopyToDocDir(
+      result: result,
+      allowedExtensions: MediaType.image.allowedExtensions,
+    );
+    if (d == null) {
+      return;
+    }
+    final ok = await helper.editCurrImages(
+      toField: target,
+      register: d,
+      edit: (hashes) {
+        if (!hashes.contains(d.hash)) {
+          hashes.add(d.hash);
+        }
+      },
+    );
+    if (ok) {
+      logic.update([RepeatLogic.id]);
+    }
+  }
+
   Widget? text(RepeatLogic logic, QaType type) {
     var helper = logic.state.helper;
-    if (type == QaType.tip) {
-      if (helper.showMode.value != ShowMode.edit && //
-          helper.tip != TipLevel.tip) {
-        return null;
-      }
-    }
-    if (type == QaType.answer) {
-      if (helper.showMode.value != ShowMode.edit && //
-          helper.step == RepeatStep.recall) {
-        return null;
-      }
+    // 可见性判断收在 Helper 里：配图区（[imageArea]）必须跟正文用同一份规则，
+    // 否则闭卷回忆阶段答案正文藏着、答案配图却露出来，等于把答案直接给出去了。
+    if (!helper.fieldVisible(type.acronym)) {
+      return null;
     }
     var edit = helper.showMode.value == ShowMode.edit;
     var map = helper.getCurrVerseMap();

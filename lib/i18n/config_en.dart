@@ -642,5 +642,12 @@ class ConfigEn extends Config {
     put(I18nKey.shadowRemoteDownload, "Download model on server");
     put(I18nKey.shadowRemoteDownloading, "Downloading @0% @1");
     put(I18nKey.shadowRemoteNoLocalFallback, "No on-device model installed either. If the scoring server drops, shadow reading cannot be scored at all.");
+    put(I18nKey.verseImage, "Image");
+    put(I18nKey.labelRestoreView, "Restore");
+    put(I18nKey.verseImageAdd, "Add an image");
+    put(I18nKey.verseImageAddMore, "Add another");
+    put(I18nKey.verseImageRemove, "Remove this one");
+    put(I18nKey.verseImageForField, "Attach to @0 only");
+    put(I18nKey.verseImageForSection, "Attach to this verse (shared by Q/A)");
   }
 }

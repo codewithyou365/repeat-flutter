@@ -6,6 +6,7 @@ import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
+import 'package:repeat_flutter/widget/gesture/pinch_viewer.dart';
 import 'package:repeat_flutter/widget/audio/audio_output_latency.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -29,6 +30,10 @@ class RepeatViewForVideo extends RepeatView {
   late VideoBoardHelper videoBoardHelper;
   var initialized = false.obs;
   final SubList<bool> sub = [];
+
+  /// 视频画面的双指缩放/旋转层。横屏竖屏共用一个 key：两种布局不会同时在树上，
+  /// 用同一个 key 还能让转屏时已经调好的缩放旋转跟过去。
+  final GlobalKey<PinchViewerState> pinchKey = GlobalKey<PinchViewerState>();
 
   // UI
   var showLandscapeOperateUi = true.obs;
@@ -180,6 +185,7 @@ class RepeatViewForVideo extends RepeatView {
     var helper = this.helper!;
     var q = helper.text(QaType.question);
     var a = helper.text(QaType.answer);
+    var imageAreaWidget = helper.imageArea.call();
     var practiceAreaWidget = helper.practiceArea.call();
     var tipAreaWidget = helper.tipArea.call();
     return Stack(
@@ -221,6 +227,7 @@ class RepeatViewForVideo extends RepeatView {
                         child: ListView(
                           padding: const EdgeInsets.all(0),
                           children: [
+                            if (imageAreaWidget != null) imageAreaWidget,
                             if (q != null) q,
                             if (q != null) SizedBox(height: RowWidget.dividerHeight),
                             if (a != null) a,
@@ -267,6 +274,7 @@ class RepeatViewForVideo extends RepeatView {
     double height = helper.screenHeight - helper.topPadding - helper.topBarHeight - mediaBarHeight - helper.bottomBarHeight;
     var q = helper.text(QaType.question);
     var a = helper.text(QaType.answer);
+    var imageAreaWidget = helper.imageArea.call();
     var practiceAreaWidget = helper.practiceArea.call();
     var tipAreaWidget = helper.tipArea.call();
     videoHeightInPortrait.value = videoWidgetHeight(height - helper.bottomBarHeight * 3);
@@ -288,6 +296,7 @@ class RepeatViewForVideo extends RepeatView {
                     child: ListView(
                       padding: const EdgeInsets.all(0),
                       children: [
+                        if (imageAreaWidget != null) imageAreaWidget,
                         if (q != null) q,
                         if (q != null) SizedBox(height: RowWidget.dividerHeight),
                         if (a != null) a,
@@ -377,13 +386,17 @@ class RepeatViewForVideo extends RepeatView {
       bottom: bottom,
       left: left,
       right: right,
-      child: videoBoardHelper.wrapVideo(
+      child: _pinch(
         width: targetWidth,
         height: targetHeight,
-        video: _buildVideoWithPlayOverlay(),
-        onPressed: () {
-          videoBoardHelper.openedVideoBoardSettings.value = true;
-        },
+        child: videoBoardHelper.wrapVideo(
+          width: targetWidth,
+          height: targetHeight,
+          video: _buildVideoWithPlayOverlay(),
+          onPressed: () {
+            videoBoardHelper.openedVideoBoardSettings.value = true;
+          },
+        ),
       ),
     );
   }
@@ -425,23 +438,48 @@ class RepeatViewForVideo extends RepeatView {
     if (width < screenWidth) {
       videoHeightInPortrait.value = maxHeight;
       return Center(
-        child: videoBoardHelper.wrapVideo(
+        child: _pinch(
           width: width,
           height: maxHeight,
-          video: _buildVideoWithPlayOverlay(),
-          onPressed: onPressed,
+          child: videoBoardHelper.wrapVideo(
+            width: width,
+            height: maxHeight,
+            video: _buildVideoWithPlayOverlay(),
+            onPressed: onPressed,
+          ),
         ),
       );
     } else {
       double height = screenWidth / aspectRatio;
       videoHeightInPortrait.value = height;
-      return videoBoardHelper.wrapVideo(
+      return _pinch(
         width: screenWidth,
         height: height,
-        video: _buildVideoWithPlayOverlay(),
-        onPressed: onPressed,
+        child: videoBoardHelper.wrapVideo(
+          width: screenWidth,
+          height: height,
+          video: _buildVideoWithPlayOverlay(),
+          onPressed: onPressed,
+        ),
       );
     }
+  }
+
+  /// 给视频画面套上双指缩放/旋转。
+  ///
+  /// 必须包在 wrapVideo **外面**：挡板是按相对坐标（config.x * width）铺在视频上的，
+  /// 一起变换才对得住——只缩放视频不缩放挡板的话，放大后字幕就从挡板边上露出来了。
+  Widget _pinch({required double width, required double height, required Widget child}) {
+    return SizedBox(
+      width: width,
+      height: height,
+      child: PinchViewer(
+        key: pinchKey,
+        // 左下角：横屏时 topBar 盖在整个 Stack 上面，还原按钮放左上会被它压住。
+        restoreAlignment: Alignment.bottomLeft,
+        child: child,
+      ),
+    );
   }
 
   Widget _buildVideoWithPlayOverlay() {
@@ -599,6 +637,9 @@ class RepeatViewForVideo extends RepeatView {
           duration = _videoPlayerController!.value.duration.inMilliseconds;
         }
         initialized.value = true;
+        // 换了视频文件才复位缩放旋转。整章共用一个文件时翻页并不换文件，
+        // 特意放大的那块区域就留着，省得每一节重调一遍（想复位双击画面即可）。
+        pinchKey.currentState?.reset();
       }
       lastCurrentPath = path.value;
     } catch (e) {
