@@ -63,10 +63,6 @@ class Helper {
   late Widget? Function() practiceArea;
   late Widget? Function() tipArea;
 
-  /// 配图区。跟 [practiceArea]/[tipArea] 一样是页面侧注入、各视图消费：
-  /// 图片跟视图类型是正交的（文本/音频/视频三种视图都可能配图），
-  /// 所以它不是第四种视图，而是三种视图共用的一块内容。
-  late Widget? Function() imageArea;
 
   /// 提示区当前选中的 tab：0..n-1 是第 1..n 条提示，n 是笔记（n = [currTipCount]）。
   /// 朗读、播放区间、扩展助手这些都按它选的那一条走，所以放在 Helper 上而不是只给界面用。
@@ -75,7 +71,10 @@ class Helper {
   /// 提示 tab 栏横着滚的控制器：8 条提示加上名字，一行放不下。
   /// 放在 Helper 上是因为 tipArea 每次重建都会新建 widget，控制器不能跟着重建。
   final ScrollController tipTabScrollController = ScrollController();
-  late Widget? Function(QaType type) text;
+  /// 一个字段（'q'/'a'/'t1'…）的整块内容：正文、配图、网页按 'content' 数组的顺序排下来。
+  /// 跟 [practiceArea]/[tipArea] 一样是页面侧注入、三个视图共用——内容形态跟视图类型是
+  /// 正交的（文本/音频/视频哪种视图都可能配图、配网页），所以它不是第四种视图。
+  late Widget? Function(String fieldRef) fieldArea;
   late Widget Function() fullScreenPanel;
 
   RxBool focusMode = true.obs;
@@ -465,7 +464,7 @@ class Helper {
 
   /// 这个字段此刻在界面上露不露脸。
   ///
-  /// 正文（repeat_page.text）和配图（[getCurrImages]）必须共用同一份判断：闭卷回忆阶段
+  /// 正文和配图必须共用同一份判断（都走 [getCurrItems]）：闭卷回忆阶段
   /// 答案正文是藏着的，答案的配图要是照显，等于把答案直接给出去了。
   bool fieldVisible(String acronym) {
     if (showMode.value == ShowMode.edit) {
@@ -481,91 +480,55 @@ class Helper {
     return true;
   }
 
-  /// 配图跟着"这一步在讲哪个字段"走，而不是复用 [currFieldAcronym]：
-  /// 后者会因为某个字段没配时间区间就退到另一个字段——那是播放器要解决的事，
-  /// 配图不涉及区间，不该被区间牵着走。悬浮球的 Play-* 临时指定了字段时跟着它。
-  String currImageFieldAcronym() {
-    return playFieldOverride ?? (step == RepeatStep.recall ? QaType.question.acronym : QaType.answer.acronym);
-  }
+  /// 正文区里各字段的显示顺序（'o'，见 [VerseField.orderOf]）。
+  /// 整节媒体不在这里排——它是横跨所有字段的播放控制层，待在正文列表外的固定层里。
+  List<String> currFieldOrder() => VerseField.orderOf(fieldLevels);
 
-  /// 当前该显示哪几张图，以及这一组是从哪儿来的。
+  /// 一个字段这一刻该显示的内容项（正文、图、网页，按 'content' 数组的顺序）。
   ///
-  /// 当前这一步的字段自己配了图、而且这个字段此刻可见，就显示它那一组（fromField = true）；
-  /// 否则退回整节配图 'g'——整节图是 q/a 共用的场景图，不是任何一方的答案，哪个阶段都能显示。
+  /// 字段此刻不可见（闭卷回忆阶段的答案）就返回空：正文和配图必须共用同一份规则，
+  /// 否则答案正文藏着、答案的配图却露出来，等于把答案直接给出去了。
   ///
-  /// 字段图**覆盖**整节图而不是叠加，跟字段媒体盖掉整节媒体是同一套就近覆盖语义。
-  ///
-  /// fromField 是给编辑态用的：加图/删图要落到当前这一组所在的那个位置，
-  /// 不然点"再加一张"会凭空冒出一组字段图把整节图挡掉。
-  ({List<DownloadContent> images, bool fromField}) getCurrImageGroup() {
-    final levels = fieldLevels;
-    if (levels.first == null) {
-      return (images: const <DownloadContent>[], fromField: false);
+  /// **内容项不逐层继承，只看这一节自己的。** 跟正文 'text' 一样——一节的内容就是
+  /// 这一节的。逐层继承的是媒体（'m'）、视图类型（'s'）、字体这些"配置"，不是内容。
+  List<VerseContentItem> getCurrItems(String fieldRef) {
+    final map = getCurrVerseMap();
+    if (map == null || !fieldVisible(fieldRef)) {
+      return const <VerseContentItem>[];
     }
-    final acronym = currImageFieldAcronym();
-    if (fieldVisible(acronym)) {
-      final ret = VerseField.resolveImages(levels, VerseField.fieldImageHashes(levels, acronym));
-      if (ret.isNotEmpty) {
-        return (images: ret, fromField: true);
-      }
+    return VerseField.getItems(map, fieldRef);
+  }
+
+  /// 内容项指的那个文件对象。文件登记在某一层的 'd' 里，所以还是跨层找
+  /// （章节共用的素材放在 chapter 上，每一节只在 content 里引一个 hash 就行）。
+  /// 解析不出来（文件被删了、'd' 里没登记）返回 null，由调用方跳过——
+  /// 少一张图不该让整块内容消失。
+  DownloadContent? resolveItem(VerseContentItem item) {
+    final hash = item.hash;
+    if (hash == null) {
+      return null;
     }
-    final section = VerseField.resolveImages(levels, VerseField.sectionImageHashes(levels));
-    return (images: section, fromField: false);
+    return VerseField.findDownloadByHash(fieldLevels, hash);
   }
 
-  /// 配图的绝对路径，按 [getCurrImageGroup] 的顺序。
-  List<String> getCurrImagePaths() {
-    return getCurrImageGroup().images.map((e) => getPath(e.path)).toList();
-  }
-
-  /// 改这一节的配图并存库。[toField] 决定改的是字段图还是整节图，
-  /// [edit] 就地增删 hash 列表，[register] 是这次新加的图（要登记进 'd'）。
-  ///
-  /// 配图是就近覆盖的：当前生效的那一组可能写在 chapter/book 上。直接往 verse 上删一个 hash
-  /// 等于删了个不存在的键，界面上图纹丝不动。所以改之前先把整组读出来，改完整份写回 verse——
-  /// verse 写了就盖掉上层，这是覆盖语义本来就成立的事。
-  ///
-  /// 改完一张不剩时：上层还写着这个键的话必须留一个空数组（"这一节明确不要图"，
-  /// [VerseField.fieldImageHashes] 认的是键在不在，不是列表空不空），上层没写就把键整个删掉，
-  /// 免得到处留下 'imageHash': []。
-  Future<bool> editCurrImages({
-    required bool toField,
+  /// 改某个字段的内容项并存库。[edit] 就地增删这一份列表，
+  /// [register] 是这次新加进来的文件（要登记进这一节的 'd'）。
+  Future<bool> editCurrItems(
+    String fieldRef,
+    void Function(List<VerseContentItem> items) edit, {
     DownloadContent? register,
-    required void Function(List<String> hashes) edit,
   }) async {
     final verse = getCurrVerse();
     final verseMap = getCurrVerseMap();
     if (verse == null || verseMap == null) {
       return false;
     }
-    final levels = fieldLevels;
-    final upper = levels.skip(1).toList();
-    final acronym = currImageFieldAcronym();
-
-    final hashes = toField ? VerseField.fieldImageHashes(levels, acronym) : VerseField.sectionImageHashes(levels);
-    edit(hashes);
+    final items = VerseField.getItems(verseMap, fieldRef);
+    edit(items);
     if (register != null) {
       VerseField.addDownload(verseMap, register);
     }
-    if (hashes.isNotEmpty) {
-      if (toField) {
-        VerseField.setFieldImages(verseMap, acronym, hashes);
-      } else {
-        VerseField.setSectionImages(verseMap, hashes);
-      }
-    } else if (toField) {
-      if (VerseField.fieldImageDeclared(upper, acronym)) {
-        VerseField.setFieldImages(verseMap, acronym, hashes);
-      } else {
-        VerseField.remove(verseMap, acronym, [VerseField.imageHash]);
-      }
-    } else {
-      if (VerseField.sectionImageDeclared(upper)) {
-        VerseField.setSectionImages(verseMap, hashes);
-      } else {
-        verseMap.remove(VerseField.sectionImageHash);
-      }
-    }
+    VerseField.setItems(verseMap, fieldRef, items);
     await Db().db.verseDao.updateVerseContent(verse.verseId, jsonEncode(verseMap));
     return true;
   }

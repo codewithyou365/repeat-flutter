@@ -640,10 +640,7 @@ class ConfigZh extends Config {
     put(I18nKey.shadowRemoteDownload, "让服务端下载模型");
     put(I18nKey.shadowRemoteDownloading, "下载中 @0% @1");
     put(I18nKey.shadowRemoteNoLocalFallback, "机内也没装模型。打分服务连不上时，跟读将完全无法打分。");
-    put(I18nKey.verseImage, "配图");
     put(I18nKey.labelRestoreView, "还原");
     put(I18nKey.verseImageAdd, "添加配图");
-    put(I18nKey.verseImageAddMore, "再加一张");
-    put(I18nKey.verseImageRemove, "删掉这张");
   }
 }

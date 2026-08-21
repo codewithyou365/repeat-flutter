@@ -9,7 +9,6 @@ import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/widget/gesture/pinch_viewer.dart';
 import 'package:repeat_flutter/widget/audio/audio_output_latency.dart';
 import 'package:repeat_flutter/widget/audio/media_bar.dart';
-import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:video_player/video_player.dart';
 
@@ -183,9 +182,9 @@ class RepeatViewForVideo extends RepeatView {
 
   Widget landscape(RxString path, MediaRange range) {
     var helper = this.helper!;
-    var q = helper.text(QaType.question);
-    var a = helper.text(QaType.answer);
-    var imageAreaWidget = helper.imageArea.call();
+    // 正文区里各字段的顺序由内容自己说了算（'o'，见 VerseField.orderOf）。
+    // 整节媒体不在这里排——它是横跨所有字段的播放控制层，待在这个列表外的固定层里。
+    var fieldAreas = helper.currFieldOrder().map(helper.fieldArea).nonNulls.toList();
     var practiceAreaWidget = helper.practiceArea.call();
     var tipAreaWidget = helper.tipArea.call();
     return Stack(
@@ -227,11 +226,7 @@ class RepeatViewForVideo extends RepeatView {
                         child: ListView(
                           padding: const EdgeInsets.all(0),
                           children: [
-                            if (imageAreaWidget != null) imageAreaWidget,
-                            if (q != null) q,
-                            if (q != null) SizedBox(height: RowWidget.dividerHeight),
-                            if (a != null) a,
-                            if (a != null) SizedBox(height: RowWidget.dividerHeight),
+                            ...fieldAreas,
                             if (practiceAreaWidget != null) practiceAreaWidget,
                             if (tipAreaWidget != null) tipAreaWidget,
                           ],
@@ -272,9 +267,9 @@ class RepeatViewForVideo extends RepeatView {
   Widget portrait(RxString path, MediaRange range) {
     var helper = this.helper!;
     double height = helper.screenHeight - helper.topPadding - helper.topBarHeight - mediaBarHeight - helper.bottomBarHeight;
-    var q = helper.text(QaType.question);
-    var a = helper.text(QaType.answer);
-    var imageAreaWidget = helper.imageArea.call();
+    // 正文区里各字段的顺序由内容自己说了算（'o'，见 VerseField.orderOf）。
+    // 整节媒体不在这里排——它是横跨所有字段的播放控制层，待在这个列表外的固定层里。
+    var fieldAreas = helper.currFieldOrder().map(helper.fieldArea).nonNulls.toList();
     var practiceAreaWidget = helper.practiceArea.call();
     var tipAreaWidget = helper.tipArea.call();
     videoHeightInPortrait.value = videoWidgetHeight(height - helper.bottomBarHeight * 3);
@@ -296,11 +291,7 @@ class RepeatViewForVideo extends RepeatView {
                     child: ListView(
                       padding: const EdgeInsets.all(0),
                       children: [
-                        if (imageAreaWidget != null) imageAreaWidget,
-                        if (q != null) q,
-                        if (q != null) SizedBox(height: RowWidget.dividerHeight),
-                        if (a != null) a,
-                        if (a != null) SizedBox(height: RowWidget.dividerHeight),
+                        ...fieldAreas,
                         if (practiceAreaWidget != null) practiceAreaWidget,
                         if (tipAreaWidget != null) tipAreaWidget,
                       ],

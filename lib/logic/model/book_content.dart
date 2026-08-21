@@ -169,34 +169,57 @@ class ChapterContent {
 /// 几拨 key 互不重名，各读各的。
 class VerseField {
   static const String text = 'text';
+
+  /// 字段块里的有序内容数组：`'a': {'content': ['正文', {'h': '<sha1>'}, '正文2']}`。
+  ///
+  /// 项只有两种形态，见 [VerseContentItem]：裸字符串是正文，map 是一个文件。
+  /// **文件怎么渲染由扩展名决定**（图片、音视频、html…），所以以后要支持新的内容形态
+  /// 只用在 ChapterImportHelp.showTypeForExtension 里加一个 case，这里的结构一个字不用改。
+  ///
+  /// 跟 [text] 是二选一、不是并存：读一律走 [getItems]/[getText]（先看 'content'，
+  /// 没有再回落 'text'），所以 srt 导入、AI 建章那些只写 'text' 的老路径不用改，
+  /// 只有在界面上给这个字段加了图/网页才会升级成 'content'。
+  static const String content = 'content';
+
+  /// content 项里文件的 sha1。文件对象跟别处一样登记在某一层的 'd' 里，这里只存 hash。
+  static const String itemHash = 'h';
+
+  /// content 项里文件的显示高度。不写就按内容自适应（图片按原始比例、网页等页面报高度）；
+  /// 写了就固定——3D/可交互网页没有"内容多高"这一说，必须给一个确定视口。
+  ///
+  /// 小于等于 1 当作**正文区高度的比例**（0.5 = 正文区的一半），大于 1 当作逻辑像素。
+  /// 比例基准是正文区而不是屏幕：视频节的正文区被顶部播放器占掉一块，
+  /// 按屏幕算会让同一个 0.5 在视频节和纯文本节里差出一大截。
+  static const String itemHeight = 'height';
+
+  /// 正文区里各字段的显示顺序，跟 'm'/'s' 一样放顶层、按 verse -> chapter -> book 就近取
+  /// （在 book 上写一次全书生效，某一节想反过来再在 verse 上盖掉）。
+  ///
+  /// 只管顺序、不管有无：漏写的字段自动补在后面，写了不认识的直接忽略，见 [orderOf]。
+  ///
+  /// **整节媒体（'m' 对应的视频画面 / 音频 MediaBar）不在这里排。** 它不是一块内容，
+  /// 是横跨所有字段的播放控制层（起止点跟着当前字段走，见 helper.currFieldAcronym），
+  /// 永远待在正文列表外的固定层里。
+  static const String fieldOrder = 'o';
+
+  /// [fieldOrder] 没写时的顺序，也是 'o' 认得的全部字段。
+  static const List<String> defaultOrder = ['q', 'a'];
   static const String mediaHash = 'mediaHash';
   static const String start = 'start';
   static const String end = 'end';
   static const String showType = 'showType';
+
+  /// 这份内容是拿哪条指令生成的（扩展助手 playOrOverwrite 拿它跟这次要发的指令比对）。
+  /// 以前是用 [_mark] 分隔符挂在正文末尾的，见 [getInstruction]。
+  static const String instruction = 'ins';
   static const String fontSize = 'fontSize';
   static const String fontAlias = 'fontAlias';
   static const String fontHash = 'fontHash';
-
-  /// 字段配图的 hash 列表，跟 [mediaHash] 并排放在字段块里：
-  /// `'a': {'text': 答案正文, 'imageHash': ['h1','h2']}`。
-  ///
-  /// 一个字段可以配好几张图，所以值是数组；只配一张时也允许直接写成字符串（手写内容/
-  /// 外部导入方便些），读一律走 [fieldImageHashes]，写一律写成数组。
-  ///
-  /// 图片跟音视频、字体一样只在这里存 hash，文件对象统一登记在某一层的 'd' 里。
-  /// **图片绝不能写进 [mediaHash]**：那个键是给播放器用的，
-  /// ChapterImportHelp.showTypeForExtension 认不出图片扩展名会让整页取不到视图类型。
-  static const String imageHash = 'imageHash';
 
   /// 整节媒体的 hash。这个键不在字段块里，而是跟 's'（整节视图类型）并排放在
   /// book/chapter/verse 的顶层：'s' 说整节媒体怎么显示，'m' 说整节媒体是哪个文件。
   /// 见 [findSectionDownload]。
   static const String sectionMediaHash = 'm';
-
-  /// 整节配图的 hash 列表，跟 'm' 并排放在顶层：'m' 是这一节放什么声音/视频，
-  /// 'g' 是这一节配哪几张图。q/a 共用，是"场景图"而不是某一方的答案。
-  /// 跟 'm' 一样按 verse -> chapter -> book 就近取（整章共用一张图只在 chapter 上写一次）。
-  static const String sectionImageHash = 'g';
 
   /// 课堂 't' 数组里那一条的名字，显示在提示 tab 上。
   static const String tipName = 'n';
@@ -210,6 +233,33 @@ class VerseField {
 
   /// 会存成数组的字段：一个字段有好几条时用下标区分。
   static const List<String> listAcronyms = ['t'];
+
+  /// 正文区该按什么顺序排这几个字段。就近取第一个写了 [fieldOrder] 的层。
+  ///
+  /// 'o' 只表达顺序，不表达显示不显示：里面没提到的字段照样渲染（补在后面），
+  /// 认不出来的项直接丢掉。这样手写内容把 'o' 写残了也只是顺序不对，不会整块消失。
+  static List<String> orderOf(List<Map<String, dynamic>?> contents) {
+    var raw = const <String>[];
+    for (var content in contents) {
+      final v = content?[fieldOrder];
+      if (v is List) {
+        raw = v.whereType<String>().toList();
+        break;
+      }
+    }
+    final ret = <String>[];
+    for (var e in raw) {
+      if (defaultOrder.contains(e) && !ret.contains(e)) {
+        ret.add(e);
+      }
+    }
+    for (var e in defaultOrder) {
+      if (!ret.contains(e)) {
+        ret.add(e);
+      }
+    }
+    return ret;
+  }
 
   static bool nested(String acronym) => acronyms.contains(baseOf(acronym));
 
@@ -340,6 +390,11 @@ class VerseField {
     for (var key in keys) {
       field.remove(key);
     }
+    // 一项不剩的 'content' 等于没有内容，留着会挡住下面的空块回收。
+    final items = field[VerseField.content];
+    if (items is List && items.isEmpty) {
+      field.remove(VerseField.content);
+    }
     if (field.isNotEmpty) {
       return;
     }
@@ -399,6 +454,9 @@ class VerseField {
   }
 
   /// 把 [instruction] 挂到 [content] 末尾：`正文\n\n\n\n分隔符\n指令\n分隔符`。
+  ///
+  /// **老形态，已经不再往外写**（现在写 [instruction] 这个 key，见 [setInstruction]）。
+  /// 留着是因为 [_splitInstruction] 还要读老数据，测试也要靠它造出老数据来。
   /// 正文和分隔符之间空几行，纯粹是为了显示时不挤在一起，不影响拆分（[_splitInstruction]
   /// 只认最后两条分隔符之间的部分是指令，中间空多少行都无所谓）。
   /// 扩展助手 playOrOverwrite 靠这个存的指令跟下次要发的指令比对，见 [getInstruction]。
@@ -430,25 +488,106 @@ class VerseField {
     return (content: raw, instruction: null);
   }
 
-  /// 正文。'n'（笔记）没有字段块，直接平铺存。
-  /// 扩展助手写入时可能在正文末尾挂了一段指令（见 [embedInstruction]），原样返回——
+  /// 这个字段的全部内容项，按显示顺序。
+  ///
+  /// 'content' 数组是新形态，没有就把老的 'text'（'n' 是平铺的裸串）当成唯一一项正文，
+  /// 所以 srt 导入、AI 建章那些只写 'text' 的路径不用改，读出来一样是一项正文。
+  ///
+  /// 解析不出来的项（'h' 为空、类型不对）直接跳过：内容是能手写、能从外部导入的，
+  /// 写坏一项不该让整个字段消失。
+  static List<VerseContentItem> getItems(Map<String, dynamic> content, String fieldRef) {
+    final raw = of(content, fieldRef)?[VerseField.content];
+    if (raw is List) {
+      final ret = <VerseContentItem>[];
+      for (var v in raw) {
+        final item = VerseContentItem.fromJsonOrNull(v);
+        if (item != null) {
+          ret.add(item);
+        }
+      }
+      return ret;
+    }
+    final t = _rawText(content, fieldRef);
+    return t == null ? <VerseContentItem>[] : <VerseContentItem>[VerseContentItem.text(t)];
+  }
+
+  /// 整份写回这个字段的内容项。一项不剩就把 'content' 连同空掉的字段块一起清掉。
+  static void setItems(Map<String, dynamic> content, String fieldRef, List<VerseContentItem> items) {
+    if (items.isEmpty) {
+      remove(content, fieldRef, [VerseField.content]);
+      return;
+    }
+    // 升级成 'content' 之后老的 'text' 就是死数据了（[getItems] 只会看 'content'），
+    // 留着会在导出的 JSON 里跟正文对不上，直接删掉。
+    final block = _ensure(content, fieldRef);
+    block.remove(text);
+    block[VerseField.content] = items.map((e) => e.toJson()).toList();
+  }
+
+  /// 纯正文：**只把裸字符串项拼起来**，文件项一律跳过。
+  ///
+  /// 搜索索引、扩展助手模版的 {{question}}/{{answer}}、练习模式比对答案、TTS 朗读
+  /// 要的都是这个，所以规则收在这里，那几处调用点不用各自处理内容数组。
+  ///
+  /// 扩展助手写入时可能在正文末尾挂了一段指令（老形态，见 [embedInstruction]），原样返回——
   /// 指令要能在正文里看得见（编辑页/导出都读这个），只有比对要不要重新生成时才需要拆开，
   /// 见 [getInstruction]。
   static String? getText(Map<String, dynamic> content, String fieldRef) {
-    return _rawText(content, fieldRef);
+    final raw = of(content, fieldRef)?[VerseField.content];
+    if (raw is! List) {
+      return _rawText(content, fieldRef);
+    }
+    final buf = <String>[];
+    for (var v in raw) {
+      if (v is String && v.isNotEmpty) {
+        buf.add(v);
+      }
+    }
+    return buf.isEmpty ? null : buf.join('\n');
   }
 
-  /// 取出正文末尾挂着的指令（扩展助手 playOrOverwrite 用来判断要不要重新生成），
-  /// 没有挂过指令块（老数据/手填内容）返回 null。
+  /// 这一次内容是拿哪条指令生成的（扩展助手 playOrOverwrite 用来判断要不要重新生成），
+  /// 没生成过（老数据/手填内容）返回 null。
+  ///
+  /// 新内容存在字段块的 'ins' 里，跟正文分开。回落到从正文末尾拆（[_splitInstruction]）
+  /// 是为了老数据：'ins' 之前指令是用 [_mark] 分隔符挂在正文尾巴上的。
   static String? getInstruction(Map<String, dynamic> content, String fieldRef) {
-    final raw = _rawText(content, fieldRef);
+    final saved = getStr(content, fieldRef, instruction);
+    if (saved != null) {
+      return saved;
+    }
+    final raw = getText(content, fieldRef);
     if (raw == null) {
       return null;
     }
     return _splitInstruction(raw).instruction;
   }
 
+  /// 记下这一次内容是拿哪条指令生成的。传 null 就是"这份内容不是生成出来的"。
+  static void setInstruction(Map<String, dynamic> content, String fieldRef, String? value) {
+    setStr(content, fieldRef, instruction, value);
+  }
+
+  /// 设置纯正文。字段已经升级成内容数组时，**把里面的裸字符串项整体换成这一段**，
+  /// 文件项留在原位——扩展助手覆盖答案不该顺手把配图和网页一起冲掉。
+  /// 新正文插在原来第一个字符串项的位置上，图在文字前面还是后面因此得以保住。
   static void setText(Map<String, dynamic> content, String fieldRef, String? value) {
+    final block = nested(fieldRef) ? of(content, fieldRef) : null;
+    final raw = block == null ? null : block[VerseField.content];
+    if (raw is List) {
+      var at = raw.indexWhere((e) => e is String);
+      raw.removeWhere((e) => e is String);
+      if (value != null && value.isNotEmpty) {
+        if (at < 0 || at > raw.length) {
+          at = raw.length;
+        }
+        raw.insert(at, value);
+      }
+      if (raw.isEmpty) {
+        remove(content, fieldRef, [VerseField.content]);
+      }
+      return;
+    }
     if (!nested(fieldRef)) {
       if (value == null || value.isEmpty) {
         content.remove(fieldRef);
@@ -570,103 +709,6 @@ class VerseField {
     setStr(verse, acronym, mediaHash, d.hash);
   }
 
-  /// 把 'imageHash'/'g' 的值规整成 hash 列表：常态是数组，单张时允许写成字符串。
-  /// 一定返回可变列表——调用方会就地增删。
-  static List<String> _hashList(dynamic v) {
-    if (v is String) {
-      return v.isEmpty ? <String>[] : <String>[v];
-    }
-    if (v is List) {
-      return v.whereType<String>().where((e) => e.isNotEmpty).toList();
-    }
-    return <String>[];
-  }
-
-  /// 某个字段配的图，按 verse -> chapter -> book 就近取。
-  ///
-  /// **第一个写了 'imageHash' 的层整份算数，不跨层合并**：跟 [mediaHash] 一样是覆盖语义，
-  /// 合并的话这一节就没办法盖掉章节那份配图了，只能越配越多。
-  ///
-  /// 认的是"这一层写没写这个键"，不是"列表空不空"：写成空数组就是这一层明确说
-  /// **这里不配图**，用来盖掉上层继承下来的那组，不能再往上找。
-  static List<String> fieldImageHashes(List<Map<String, dynamic>?> contents, String fieldRef) {
-    for (var content in contents) {
-      if (content == null) {
-        continue;
-      }
-      final block = of(content, fieldRef);
-      if (block == null || !block.containsKey(imageHash)) {
-        continue;
-      }
-      return _hashList(block[imageHash]);
-    }
-    return <String>[];
-  }
-
-  /// 整节配图（'g'），同上：就近取、覆盖不合并、认键在不在。
-  static List<String> sectionImageHashes(List<Map<String, dynamic>?> contents) {
-    for (var content in contents) {
-      if (content == null || !content.containsKey(sectionImageHash)) {
-        continue;
-      }
-      return _hashList(content[sectionImageHash]);
-    }
-    return <String>[];
-  }
-
-  /// 这几层里有没有哪一层写了字段配图这个键（空数组也算写了）。
-  /// 编辑时用来判断：改完一张不剩，是该留个空数组盖住上层，还是把键整个删掉。
-  static bool fieldImageDeclared(List<Map<String, dynamic>?> contents, String fieldRef) {
-    for (var content in contents) {
-      if (content == null) {
-        continue;
-      }
-      final block = of(content, fieldRef);
-      if (block != null && block.containsKey(imageHash)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /// 同上，整节配图版。
-  static bool sectionImageDeclared(List<Map<String, dynamic>?> contents) {
-    for (var content in contents) {
-      if (content != null && content.containsKey(sectionImageHash)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /// hash 列表解析成文件对象。解析不出来的（图被删了、'd' 里没登记）直接跳过：
-  /// 配图缺一张不该让整个图片区消失，更不该让页面报错。
-  static List<DownloadContent> resolveImages(List<Map<String, dynamic>?> contents, List<String> hashes) {
-    final ret = <DownloadContent>[];
-    for (var hash in hashes) {
-      final d = findDownloadByHash(contents, hash);
-      if (d != null) {
-        ret.add(d);
-      }
-    }
-    return ret;
-  }
-
-  /// 写死这一层的字段配图列表。空列表也会写进去（= 这一层明确不配图，见 [fieldImageHashes]）；
-  /// 要彻底交还给上层去继承，用 [remove] 把 [imageHash] 这个键删掉。
-  static void setFieldImages(Map<String, dynamic> content, String fieldRef, List<String> hashes) {
-    _ensure(content, fieldRef)[imageHash] = hashes;
-  }
-
-  /// 写死这一层的整节配图列表。
-  ///
-  /// 图片文件对象要另外走 [addDownload] 登记，**不能用 [setSectionMedia]**：那个会把文件
-  /// 插到 'd' 的第 0 位，而没有 'm' 的老内容按 'd' 第一项算整节媒体（见 [findSectionDownload]
-  /// 的回落），等于让播放器去加载一张图片。
-  static void setSectionImages(Map<String, dynamic> content, List<String> hashes) {
-    content[sectionImageHash] = hashes;
-  }
-
   /// 保证 't' 数组至少有 [count] 条，不足的补空块。返回是否真的改了。
   /// 新增一条提示、或者清掉某条的名字后要把被 [remove] 截掉的占位补回来，都走这里。
   /// 下标就是提示的身份（名字/字体/提示服务在课堂上，正文在每一节上，全靠下标对齐），
@@ -700,6 +742,133 @@ class VerseField {
     list.add(d);
     content['d'] = list.map((e) => e.toJson()).toList();
     return true;
+  }
+}
+
+/// 字段 'content' 数组里的一项。只有两种形态，见 [VerseField.content]：
+///
+/// - **裸字符串** -> 一段正文。`'答案第一段'`
+/// - **`{'h': <sha1>}`** -> 一个文件。`{'h': '717ef8c2...', 'height': 0.5}`
+///
+/// 项在数组里的位置就是它的显示位置，所以"图放在这段文字上面还是下面"不需要另外的字段，
+/// 把它排在前面还是后面就行。
+///
+/// 文件**怎么渲染由扩展名决定**（图片、音视频、html…），这一层不关心是什么类型——
+/// 以后要支持新形态只用加一个扩展名映射，JSON 结构不用动。
+class VerseContentItem {
+  /// 正文项的文字。文件项为 null。
+  final String? text;
+
+  /// 文件项的 sha1。正文项为 null。文件对象跟别处一样在某一层的 'd' 里，用
+  /// [VerseField.findDownloadByHash] 取。
+  final String? hash;
+
+  /// 文件项的显示高度，见 [VerseField.itemHeight]。不写就自适应。
+  final double? height;
+
+  const VerseContentItem._({this.hash, this.height}) : text = null;
+
+  const VerseContentItem.text(String this.text)
+      : hash = null,
+        height = null;
+
+  const VerseContentItem.file(String this.hash, {this.height}) : text = null;
+
+  bool get isText => text != null;
+
+  /// 认不出来的项返回 null，由调用方跳过：内容能手写、能从外部导入，写坏一项不该让
+  /// 整个字段消失。
+  static VerseContentItem? fromJsonOrNull(dynamic json) {
+    if (json is String) {
+      return json.isEmpty ? null : VerseContentItem.text(json);
+    }
+    if (json is! Map) {
+      return null;
+    }
+    final h = json[VerseField.itemHash];
+    if (h is! String || h.isEmpty) {
+      return null;
+    }
+    final v = json[VerseField.itemHeight];
+    return VerseContentItem._(hash: h, height: v is num ? v.toDouble() : null);
+  }
+
+  /// 正文项写回裸字符串，不包一层 map：手写内容/外部导入时正文是最常见的一项，
+  /// 让它保持一眼能读。
+  dynamic toJson() {
+    if (isText) {
+      return text;
+    }
+    return <String, dynamic>{
+      VerseField.itemHash: hash,
+      if (height != null) VerseField.itemHeight: height,
+    };
+  }
+}
+
+/// 内容数组跟纯文本之间的互转，给编辑器用。
+///
+/// 编辑一个字段的内容时给的还是一个纯文本编辑器，文件项用单独一行的标记表示：
+///
+/// ```
+/// 问题正文第一段
+/// [[f:717ef8c2f921b1eb1fe369e37b04c6c02b5bc959]]
+/// [[f:aabbcc...,h=0.5]]
+/// 第二段
+/// ```
+///
+/// 插图、插网页、调顺序、删块因此全都变成"编辑这段文字"，不用另做一套块编辑器。
+/// 以后要做可视化的块编辑器，数据结构是同一套，这里照样留着当"看源码"模式。
+class VerseContentMarkup {
+  /// 一整行就是一个标记才算数（`[[f:` 开头、`]]` 结尾）。行内出现的原样当正文，
+  /// 免得正文里提到这个写法就被吃掉。
+  static final RegExp _line = RegExp(r'^\[\[f:([^\],]+?)(?:,h=([0-9.]+))?\]\]$');
+
+  static String encode(List<VerseContentItem> items) {
+    final buf = <String>[];
+    for (var item in items) {
+      final text = item.text;
+      if (text != null) {
+        buf.add(text);
+        continue;
+      }
+      final h = item.height;
+      buf.add(h == null ? '[[f:${item.hash}]]' : '[[f:${item.hash},h=$h]]');
+    }
+    return buf.join('\n');
+  }
+
+  /// 连着的非标记行合成一项正文（正文本来就可以是多行）；标记行各自成项。
+  /// 首尾的空行丢掉，中间的留着——正文里的空行是排版。
+  static List<VerseContentItem> decode(String str) {
+    final ret = <VerseContentItem>[];
+    final pending = <String>[];
+
+    void flush() {
+      while (pending.isNotEmpty && pending.last.trim().isEmpty) {
+        pending.removeLast();
+      }
+      while (pending.isNotEmpty && pending.first.trim().isEmpty) {
+        pending.removeAt(0);
+      }
+      if (pending.isNotEmpty) {
+        ret.add(VerseContentItem.text(pending.join('\n')));
+      }
+      pending.clear();
+    }
+
+    for (var line in str.split('\n')) {
+      final m = _line.firstMatch(line.trim());
+      if (m == null) {
+        pending.add(line);
+        continue;
+      }
+      flush();
+      final h = m.group(2);
+      ret.add(VerseContentItem.file(m.group(1)!, height: h == null ? null : double.tryParse(h)));
+    }
+    flush();
+    return ret;
   }
 }
 

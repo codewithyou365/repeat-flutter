@@ -523,7 +523,7 @@ class AssistiveTouchLogic {
   static const String _input1Sentinel = 'input1';
 
   /// 这个动作上次执行时用的 input1：作用位置（比如提示1）里存着上次的指令
-  /// （见 VerseField.embedInstruction），拿模版反着一比就能把 input1 抠出来。
+  /// （见 VerseField.setInstruction），拿模版反着一比就能把 input1 抠出来。
   ///
   /// 做法是先用哨兵渲染一遍模版，得到「前缀 + 哨兵 + 后缀」，再拿前后缀去掐上次的指令——
   /// 这样模版里的 {{answer}} 等其它占位符怎么渲染都不用管，它们两边渲染出来是一样的。

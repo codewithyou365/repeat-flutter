@@ -71,10 +71,9 @@ class RepeatPage extends StatelessWidget {
     double topBarHeight = state.helper.topBarHeight;
     state.helper.topBar = () => topBar(logic: logic, height: topBarHeight);
     state.helper.bottomBar = ({required double width}) => bottomBar(logic: logic, width: width, height: state.helper.bottomBarHeight);
-    state.helper.text = (QaType type) => text(logic, type);
+    state.helper.fieldArea = (String fieldRef) => fieldArea(logic, fieldRef);
     state.helper.practiceArea = () => practiceArea(logic);
     state.helper.tipArea = () => tipArea(logic);
-    state.helper.imageArea = () => imageArea(logic);
     state.helper.fullScreenPanel = () => fullScreenPanel(logic);
 
     if (state.lastLandscape == null || state.lastLandscape != landscape) {
@@ -555,152 +554,112 @@ class RepeatPage extends StatelessWidget {
     });
   }
 
-  /// 配图区：文本/音频/视频三个视图共用的一块内容，由 helper.imageArea 注入。
-  /// 图片跟视图类型是正交的（哪种视图都可能配图），所以它不是第四种视图。
-  Widget? imageArea(RepeatLogic logic) {
-    final helper = logic.state.helper;
-    final edit = helper.showMode.value == ShowMode.edit;
-    final group = helper.getCurrImageGroup();
-    if (group.images.isEmpty) {
-      return edit ? addImagePlaceholder(logic) : null;
-    }
-    final paths = group.images.map((e) => helper.getPath(e.path)).toList();
-    return VerseImage(
-      // 翻到下一节、或者从题干图切到答案图时整块重建：上一组 3 张、这一组 1 张的话，
-      // PageView 的页码留在旧位置会直接越界。
-      key: ValueKey(paths.join('|')),
-      paths: paths,
-      maxHeight: helper.screenHeight * 0.32,
-      onEdit: edit ? (index) => imageMenu(logic, group, index) : null,
-    );
-  }
-
-  /// 编辑模式下没配图时的占位条。
-  Widget addImagePlaceholder(RepeatLogic logic) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: InkWell(
-        onTap: () => addImage(logic, null),
-        child: Container(
-          height: 56,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.withAlpha(90)),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.add_photo_alternate_outlined, size: 18, color: Colors.grey.withAlpha(160)),
-              const SizedBox(width: 6),
-              Text(I18nKey.verseImageAdd.tr, style: TextStyle(color: Colors.grey.withAlpha(200))),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> imageMenu(
-    RepeatLogic logic,
-    ({List<DownloadContent> images, bool fromField}) group,
-    int index,
-  ) async {
-    final keys = [I18nKey.verseImageAddMore.tr, I18nKey.verseImageRemove.tr];
-    final selected = await Select.showSheet(title: I18nKey.verseImage.tr, keys: keys);
-    if (selected == null) {
-      return;
-    }
-    if (selected == 0) {
-      // 加到当前这一组所在的位置：本来显示的是整节图就继续加整节图。
-      // 不这么做的话点一下"再加一张"会凭空冒出一组字段图，把整节图整个挡掉。
-      await addImage(logic, group.fromField);
-      return;
-    }
-    if (index < 0 || index >= group.images.length) {
-      return;
-    }
-    final hash = group.images[index].hash;
-    final ok = await logic.state.helper.editCurrImages(
-      toField: group.fromField,
-      edit: (hashes) => hashes.remove(hash),
-    );
-    if (ok) {
-      logic.update([RepeatLogic.id]);
-    }
-  }
-
-  /// [toField] 为 null 表示这一节还没有图，得先问配给谁。
-  /// [toField] 是"加到当前生效的那一组里"用的（见 [imageMenu]）。
+  /// 一个字段（'q'/'a'/'t1'…）的整块内容：正文、配图、网页按 'content' 数组的顺序排下来，
+  /// 由 helper.fieldArea 注入给三个视图共用。内容形态跟视图类型是正交的
+  /// （文本/音频/视频哪种视图都可能配图配网页），所以它不是第四种视图。
   ///
-  /// 从零开始加图一律配成整节图（q/a 共用）——加图的当下让人去分辨"这张归答案还是归整节"
-  /// 成本高收益低，绝大多数情况就是给这一节配张图。
-  /// 字段图（只在某个字段可见，闭卷时跟着答案一起藏）仍然认，只是不从这里产生，
-  /// 由导入的内容自己写 'imageHash'。
-  Future<void> addImage(RepeatLogic logic, bool? toField) async {
+  /// 可见性判断收在 Helper 的 getCurrItems 里：正文和配图必须用同一份规则，
+  /// 否则闭卷回忆阶段答案正文藏着、答案的配图却露出来，等于把答案直接给出去了。
+  Widget? fieldArea(RepeatLogic logic, String fieldRef) {
     final helper = logic.state.helper;
-    final target = toField ?? false;
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: MediaType.image.allowedExtensions,
-    );
-    final d = await DocHelp.tryCopyToDocDir(
-      result: result,
-      allowedExtensions: MediaType.image.allowedExtensions,
-    );
-    if (d == null) {
-      return;
-    }
-    final ok = await helper.editCurrImages(
-      toField: target,
-      register: d,
-      edit: (hashes) {
-        if (!hashes.contains(d.hash)) {
-          hashes.add(d.hash);
-        }
-      },
-    );
-    if (ok) {
-      logic.update([RepeatLogic.id]);
-    }
-  }
-
-  Widget? text(RepeatLogic logic, QaType type) {
-    var helper = logic.state.helper;
-    // 可见性判断收在 Helper 里：配图区（[imageArea]）必须跟正文用同一份规则，
-    // 否则闭卷回忆阶段答案正文藏着、答案配图却露出来，等于把答案直接给出去了。
-    if (!helper.fieldVisible(type.acronym)) {
-      return null;
-    }
-    var edit = helper.showMode.value == ShowMode.edit;
-    var map = helper.getCurrVerseMap();
+    final map = helper.getCurrVerseMap();
     if (map == null) {
       return null;
     }
-    double fontSizeVal = fontSize(logic, type) ?? 17;
-    TextStyle? style = TextStyle(
-      fontSize: fontSizeVal,
-      fontFamily: fontAlias(logic, type),
+    final edit = helper.showMode.value == ShowMode.edit;
+    if (!helper.fieldVisible(fieldRef)) {
+      return null;
+    }
+    final items = helper.getCurrItems(fieldRef);
+
+    final children = <Widget>[];
+    for (var i = 0; i < items.length; i++) {
+      // 编辑入口挂在第一项上，跟以前"一个字段一个图标"的样子一致。
+      final w = contentItem(logic, fieldRef, items[i], withIcon: children.isEmpty);
+      if (w == null) {
+        continue;
+      }
+      if (children.isNotEmpty) {
+        children.add(SizedBox(height: RowWidget.dividerHeight));
+      }
+      children.add(w);
+    }
+    if (children.isEmpty) {
+      // 编辑态下空字段也要留个能点的地方，不然没写过内容的字段永远编辑不了。
+      if (!edit) {
+        return null;
+      }
+      children.add(textItem(logic, fieldRef, '', withIcon: true));
+    }
+    children.add(SizedBox(height: RowWidget.dividerHeight));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
     );
-    String text = VerseField.getText(map, type.acronym) ?? '';
+  }
+
+  /// 内容数组里的一项。正文一种，文件一种——**文件怎么渲染由扩展名决定**，
+  /// 认不出来的扩展名（或者文件在 'd' 里查不到）直接跳过，少一项不该让整块内容消失。
+  Widget? contentItem(
+    RepeatLogic logic,
+    String fieldRef,
+    VerseContentItem item, {
+    required bool withIcon,
+  }) {
+    final text = item.text;
+    if (text != null) {
+      return textItem(logic, fieldRef, text, withIcon: withIcon);
+    }
+    final helper = logic.state.helper;
+    final d = helper.resolveItem(item);
+    if (d == null) {
+      return null;
+    }
+    final ext = d.extension.toLowerCase();
+    if (MediaType.image.allowedExtensions.contains(ext)) {
+      final path = helper.getPath(d.path);
+      return VerseImage(
+        // 翻页/翻面时整块重建：上一节 3 张、这一节 1 张的话，PageView 的页码
+        // 留在旧位置会直接越界。
+        key: ValueKey(path),
+        paths: [path],
+        maxHeight: helper.screenHeight * 0.32,
+      );
+    }
+    return null;
+  }
+
+  /// 一段正文。字体、TTS、长按选词、点击播放区间都按**字段**走（同一个字段的几段
+  /// 共用一套配置），所以这里传的是 fieldRef 而不是这一项自己的什么身份。
+  Widget textItem(
+    RepeatLogic logic,
+    String fieldRef,
+    String text, {
+    required bool withIcon,
+  }) {
+    final helper = logic.state.helper;
+    final style = TextStyle(
+      fontSize: fontSizeOf(logic, fieldRef) ?? 17,
+      fontFamily: fontAliasOf(logic, fieldRef),
+    );
     BoxDecoration? iconDecoration;
     Future<void> Function()? onIconCallback;
     IconData? onIconData;
-    if (edit) {
-      onIconCallback = () async {
-        await fullModify(map, logic, type.acronym);
-      };
-    } else {
-      int? bookId = helper.logic.currVerse?.bookId;
-      Tip? tip = logic.state.bookIdToTip[bookId]?[type.acronym];
-      if (tip != null) {
+    if (withIcon) {
+      if (helper.showMode.value == ShowMode.edit) {
         onIconCallback = () async {
-          await logic.openTip(tip);
+          await fullModify(helper.getCurrVerseMap()!, logic, fieldRef);
         };
-        onIconData = Icons.tips_and_updates;
-        iconDecoration = const BoxDecoration();
       } else {
-        onIconCallback = null;
+        final bookId = helper.logic.currVerse?.bookId;
+        final tip = logic.state.bookIdToTip[bookId]?[VerseField.baseOf(fieldRef)];
+        if (tip != null) {
+          onIconCallback = () async {
+            await logic.openTip(tip);
+          };
+          onIconData = Icons.tips_and_updates;
+          iconDecoration = const BoxDecoration();
+        }
       }
     }
     // 同上：长按选词靠外面这层 SelectionArea，单击仍走里层的 onText。
@@ -712,9 +671,34 @@ class RepeatPage extends StatelessWidget {
         onIcon: onIconCallback,
         iconDecoration: iconDecoration,
         icon: onIconData,
-        onText: () => logic.assistiveTouchLogic.playFieldRangeIfAny(type.acronym),
+        onText: () => logic.assistiveTouchLogic.playFieldRangeIfAny(fieldRef),
       ),
     );
+  }
+
+  /// 往当前字段的内容末尾插一张图。文件拷进课堂目录、登记进这一节的 'd'，
+  /// 内容数组里只加一项 hash。
+  Future<void> addImage(RepeatLogic logic, String fieldRef) async {
+    final helper = logic.state.helper;
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: MediaType.image.allowedExtensions,
+    );
+    final d = await DocHelp.tryCopyToDocDir(
+      result: result,
+      allowedExtensions: MediaType.image.allowedExtensions,
+    );
+    if (d == null) {
+      return;
+    }
+    final ok = await helper.editCurrItems(
+      fieldRef,
+      (items) => items.add(VerseContentItem.file(d.hash)),
+      register: d,
+    );
+    if (ok) {
+      logic.update([RepeatLogic.id]);
+    }
   }
 
   /// 编辑模式下点已选中的提示 tab 弹出来的菜单。
@@ -848,10 +832,10 @@ class RepeatPage extends StatelessWidget {
   Future<void> fullModify(Map<String, dynamic> map, RepeatLogic logic, String fieldRef) async {
     var helper = logic.state.helper;
     helper.stopMedia(false);
-    String text = VerseField.getText(map, fieldRef) ?? '';
     var keys = [
       I18nKey.font.tr,
       I18nKey.content.tr,
+      I18nKey.verseImageAdd.tr,
     ];
     int? index = await Select.showSheet(title: I18nKey.editWhat.trArgs([fieldTitle(logic, fieldRef)]), keys: keys);
     if (index == null) {
@@ -870,13 +854,17 @@ class RepeatPage extends StatelessWidget {
         fontPrefix: fieldRef,
         map: fontMap,
       );
+    } else if (keys[index] == I18nKey.verseImageAdd.tr) {
+      await addImage(logic, fieldRef);
     } else if (keys[index] == I18nKey.content.tr) {
+      // 编辑的是整个内容数组的文本形态：正文照写，图/网页是单独一行的标记
+      // （见 [VerseContentMarkup]）。插入、删除、调顺序因此全都是编辑这段文字。
       await Nav.editor.push(
         arguments: EditorArgs(
           title: fieldTitle(logic, fieldRef),
-          value: text,
+          value: VerseContentMarkup.encode(VerseField.getItems(map, fieldRef)),
           save: (str) async {
-            VerseField.setText(map, fieldRef, str);
+            VerseField.setItems(map, fieldRef, VerseContentMarkup.decode(str));
             String jsonStr = jsonEncode(map);
             var verseId = helper.getCurrVerse()!.verseId;
             await Db().db.verseDao.updateVerseContent(verseId, jsonStr);

@@ -1,7 +1,5 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:repeat_flutter/widget/row/row_widget.dart';
-import 'constant.dart';
 import 'helper.dart';
 import 'repeat_view.dart';
 
@@ -33,9 +31,9 @@ class RepeatViewForText extends RepeatView {
       padding = helper.leftPadding;
     }
     height = helper.screenHeight - helper.topPadding - helper.topBarHeight - helper.bottomBarHeight;
-    var q = helper.text(QaType.question);
-    var a = helper.text(QaType.answer);
-    var imageAreaWidget = helper.imageArea.call();
+    // 正文区里各字段的顺序由内容自己说了算（'o'，见 VerseField.orderOf）。
+    // 整节媒体不在这里排——它是横跨所有字段的播放控制层，待在这个列表外的固定层里。
+    var fieldAreas = helper.currFieldOrder().map(helper.fieldArea).nonNulls.toList();
     var practiceAreaWidget = helper.practiceArea.call();
     var tipAreaWidget = helper.tipArea.call();
     return Stack(
@@ -54,11 +52,7 @@ class RepeatViewForText extends RepeatView {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (imageAreaWidget != null) imageAreaWidget,
-                        if (q != null) q,
-                        if (q != null) SizedBox(height: RowWidget.dividerHeight),
-                        if (a != null) a,
-                        if (a != null) SizedBox(height: RowWidget.dividerHeight),
+                        ...fieldAreas,
                         if (practiceAreaWidget != null) practiceAreaWidget,
                         if (tipAreaWidget != null) tipAreaWidget,
                       ],

@@ -27,7 +27,7 @@ enum ExpandStatus {
 /// 执行方式：
 /// - overwrite: 每次都请求助手服务，把结果覆盖到作用位置。
 /// - playOrOverwrite: 覆盖写入时会把当次的指令一起存到作用位置末尾（见
-///   [VerseField.embedInstruction]）；下次执行时，存的指令跟这次要发的指令一样才直接播放
+///   [VerseField.setInstruction]）；下次执行时，存的指令跟这次要发的指令一样才直接播放
 ///   已有内容（音视频优先，否则 TTS），不一样（含没存过指令，比如老数据/手填内容）就退回
 ///   overwrite 的流程重新生成。
 enum ExpandBehavior {
@@ -295,7 +295,10 @@ class ExpandLogic {
 
     String key = targetRef.value;
     if (key.isNotEmpty && text.isNotEmpty) {
-      VerseField.setText(targetMap, key, VerseField.embedInstruction(text, instruction));
+      // 正文归正文、指令归指令：指令写在字段块的 'ins' 里，不再用分隔符挂在正文尾巴上。
+      // 正文可能是一个内容数组（配了图/网页），往里面塞分隔符块会把结构搅乱。
+      VerseField.setText(targetMap, key, text);
+      VerseField.setInstruction(targetMap, key, instruction);
       logs.add("Content overwritten to: $key");
     }
 
