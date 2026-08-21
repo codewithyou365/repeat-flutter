@@ -455,6 +455,11 @@ class ConfigZh extends Config {
     put(I18nKey.quickEntryGlobalBrowseGame, "进入全局浏览的游戏");
     put(I18nKey.quickEntryExamineGame, "进入考查学习的游戏");
     put(I18nKey.quickEntryBrowseGame, "进入浏览学习的游戏");
+    put(I18nKey.quickEntryRecordTranslate, "进入录音翻译生成");
+    put(I18nKey.quickEntryRecordBook, "录音翻译用哪本书");
+    put(I18nKey.quickEntryRecordBookFirst, "第一本书");
+    put(I18nKey.quickEntryRecordBookLast, "最后一本书");
+    put(I18nKey.quickEntryRecordBookAsk, "每次自己选");
     put(I18nKey.quickEntrySet, "已设置快速进入");
     put(I18nKey.quickEntryNoGame, "没有可用的游戏");
     put(I18nKey.guiding, "引导中...");

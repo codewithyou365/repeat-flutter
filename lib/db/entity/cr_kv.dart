@@ -76,6 +76,10 @@ enum CrK {
   aiTtsSpeakerId,
   aiRecordScreenMode,
   aiRecordAutoPlay,
+
+  /// 快速进入选了「录音翻译生成」时，进哪本书：第一本 / 最后一本 / 每次自己选。
+  /// 存的是 RecordBookPick 的 name，见 [QuickEntry.getBookPick]。
+  aiRecordBookPick,
 }
 
 @Entity(primaryKeys: ['classroomId', 'k'])

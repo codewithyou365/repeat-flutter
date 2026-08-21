@@ -457,6 +457,11 @@ class ConfigEn extends Config {
     put(I18nKey.quickEntryGlobalBrowseGame, "Enter Browse All Game");
     put(I18nKey.quickEntryExamineGame, "Enter Examine Game");
     put(I18nKey.quickEntryBrowseGame, "Enter Browse Game");
+    put(I18nKey.quickEntryRecordTranslate, "Enter Record & Translate");
+    put(I18nKey.quickEntryRecordBook, "Which book to record into");
+    put(I18nKey.quickEntryRecordBookFirst, "First book");
+    put(I18nKey.quickEntryRecordBookLast, "Last book");
+    put(I18nKey.quickEntryRecordBookAsk, "Ask every time");
     put(I18nKey.quickEntrySet, "Quick entry saved");
     put(I18nKey.quickEntryNoGame, "No game available");
     put(I18nKey.guiding, "Guiding...");

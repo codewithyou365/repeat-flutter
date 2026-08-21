@@ -8,10 +8,13 @@ import 'package:repeat_flutter/common/list_util.dart';
 import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
+import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
 import 'package:repeat_flutter/db/entity/verse_today_prg.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/logic/ai/ai_record_entry.dart';
+import 'package:repeat_flutter/logic/ai/ai_support.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/book_cache_version.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
@@ -26,6 +29,7 @@ import 'package:repeat_flutter/page/repeat/repeat_args.dart';
 import 'package:repeat_flutter/page/sc_cr_stats/sc_cr_stats_logic.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
+import 'package:repeat_flutter/widget/select/select.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'logic/learning_settings.dart';
@@ -247,11 +251,61 @@ class ScCrLogic extends GetxController {
       case QuickEntryType.browse:
         await tryStartAll(mode: RepeatType.browse);
         break;
+      case QuickEntryType.recordTranslate:
+        await recordTranslate();
+        break;
       default:
         break;
     }
     QuickEntry.autoOpenGame = false;
     QuickEntry.hideGuiding();
+  }
+
+  /// 快速进入息屏录音建章。录音页要一本书，而这里没有书本上下文，
+  /// 所以按课堂里配的 [RecordBookPick] 挑一本；只有一本时不问，直接进。
+  Future<void> recordTranslate() async {
+    if (!AiSupport.available) {
+      QuickEntry.hideGuiding();
+      return;
+    }
+    // 按 sort 排，和素材页里看到的顺序一致——"第一本/最后一本"指的就是那个顺序
+    var books = await Db().db.bookDao.getAll(Classroom.curr);
+    if (books.isEmpty) {
+      QuickEntry.hideGuiding();
+      Snackbar.show(I18nKey.labelNoContent.tr);
+      return;
+    }
+    Book book;
+    if (books.length == 1) {
+      book = books.first;
+    } else {
+      switch (await QuickEntry.getBookPick(Classroom.curr)) {
+        case RecordBookPick.first:
+          book = books.first;
+          break;
+        case RecordBookPick.last:
+          book = books.last;
+          break;
+        case RecordBookPick.ask:
+          // 要用户动手了，引导条先撤，不然它会压在选择表上
+          QuickEntry.hideGuiding();
+          var index = await Select.showSheet(
+            title: I18nKey.quickEntryRecordBook.tr,
+            // 书本数量没上限，autoHeight 会按行数算出超过屏幕的高度，只能定高滚动
+            autoHeight: false,
+            keys: books.map((e) => e.name).toList(),
+          );
+          if (index == null) {
+            return;
+          }
+          book = books[index];
+          break;
+      }
+    }
+    // 必须在 push 之前撤：录音页不是 repeat 页，没有 RepeatLogic 那样的消费方，
+    // 而 runQuickEntry 末尾那次 hideGuiding 要等录音页 pop 之后才跑得到。
+    QuickEntry.hideGuiding();
+    await AiRecordEntry.open(book);
   }
 
   Future<void> tryStartAll({RepeatType mode = RepeatType.examine}) {
