@@ -631,23 +631,15 @@ class RepeatPage extends StatelessWidget {
   }
 
   /// [toField] 为 null 表示这一节还没有图，得先问配给谁。
+  /// [toField] 是"加到当前生效的那一组里"用的（见 [imageMenu]）。
+  ///
+  /// 从零开始加图一律配成整节图（q/a 共用）——加图的当下让人去分辨"这张归答案还是归整节"
+  /// 成本高收益低，绝大多数情况就是给这一节配张图。
+  /// 字段图（只在某个字段可见，闭卷时跟着答案一起藏）仍然认，只是不从这里产生，
+  /// 由导入的内容自己写 'imageHash'。
   Future<void> addImage(RepeatLogic logic, bool? toField) async {
     final helper = logic.state.helper;
-    final acronym = helper.currImageFieldAcronym();
-    bool target;
-    if (toField == null) {
-      final keys = [
-        I18nKey.verseImageForField.trArgs([fieldTitle(logic, acronym)]),
-        I18nKey.verseImageForSection.tr,
-      ];
-      final selected = await Select.showSheet(title: I18nKey.verseImageAdd.tr, keys: keys);
-      if (selected == null) {
-        return;
-      }
-      target = selected == 0;
-    } else {
-      target = toField;
-    }
+    final target = toField ?? false;
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: MediaType.image.allowedExtensions,

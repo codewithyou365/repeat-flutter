@@ -645,7 +645,5 @@ class ConfigZh extends Config {
     put(I18nKey.verseImageAdd, "添加配图");
     put(I18nKey.verseImageAddMore, "再加一张");
     put(I18nKey.verseImageRemove, "删掉这张");
-    put(I18nKey.verseImageForField, "只配给@0");
-    put(I18nKey.verseImageForSection, "配给这一节（问答共用）");
   }
 }

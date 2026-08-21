@@ -142,7 +142,10 @@ class ViewLogicVerseList<T extends GetxController> extends ViewLogic {
 
   void scrollTo(int selectVerseKeyId) {
     var index = window.indexOfId(selectVerseKeyId);
-    if (index >= 0) {
+    // 调用方是 addPostFrameCallback 里 await 完查库才回来的（见 [show]），这中间已经跨了
+    // 若干帧，列表未必还挂在树上（还没建、或者已经重建/销毁）。没挂着就直接不定位——
+    // scrollTo 内部是个断言，撞上去会抛出未捕获异常。
+    if (index >= 0 && itemScrollController.isAttached) {
       itemScrollController.scrollTo(
         index: index,
         duration: const Duration(milliseconds: 10),

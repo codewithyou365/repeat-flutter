@@ -647,7 +647,5 @@ class ConfigEn extends Config {
     put(I18nKey.verseImageAdd, "Add an image");
     put(I18nKey.verseImageAddMore, "Add another");
     put(I18nKey.verseImageRemove, "Remove this one");
-    put(I18nKey.verseImageForField, "Attach to @0 only");
-    put(I18nKey.verseImageForSection, "Attach to this verse (shared by Q/A)");
   }
 }
