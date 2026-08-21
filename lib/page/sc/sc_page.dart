@@ -45,6 +45,15 @@ class ScPage extends StatelessWidget {
                 ),
                 PopupMenuItem<String>(
                   onTap: () {
+                    Nav.scSettingsContent.push();
+                  },
+                  child: ListTile(
+                    leading: const Icon(Icons.article_outlined),
+                    title: Text(I18nKey.content.tr),
+                  ),
+                ),
+                PopupMenuItem<String>(
+                  onTap: () {
                     Nav.scSettingsData.push();
                   },
                   child: ListTile(

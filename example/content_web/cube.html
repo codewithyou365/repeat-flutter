@@ -1,0 +1,73 @@
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>cube</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; -webkit-user-select: none; user-select: none; }
+  body {
+    display: flex; align-items: center; justify-content: center;
+    background: #10131a; color: #c9d1d9; touch-action: none;
+    font: 12px/1.5 ui-monospace, monospace;
+  }
+  #stage { perspective: 600px; }
+  #cube {
+    width: 120px; height: 120px; position: relative;
+    transform-style: preserve-3d; transition: none;
+  }
+  .f {
+    position: absolute; width: 120px; height: 120px;
+    border: 1px solid #58a6ff; background: rgba(88, 166, 255, .12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; color: #58a6ff;
+  }
+  #hud { position: fixed; left: 8px; top: 8px; opacity: .75; }
+</style>
+
+<div id="hud">drag to rotate &middot; <span id="deg">0, 0</span></div>
+<div id="stage">
+  <div id="cube">
+    <div class="f" style="transform: translateZ(60px)">1</div>
+    <div class="f" style="transform: rotateY(180deg) translateZ(60px)">2</div>
+    <div class="f" style="transform: rotateY(90deg)  translateZ(60px)">3</div>
+    <div class="f" style="transform: rotateY(-90deg) translateZ(60px)">4</div>
+    <div class="f" style="transform: rotateX(90deg)  translateZ(60px)">5</div>
+    <div class="f" style="transform: rotateX(-90deg) translateZ(60px)">6</div>
+  </div>
+</div>
+
+<script>
+  // 联调用的 fixture，不是正式内容。
+  //
+  // 故意不引任何 CDN：这样"网页内容允许联网"关掉时它照样能跑，能把
+  // 「App 这边的管道通不通」和「外部资源加载得动加载不动」这两件事分开验。
+  //
+  // 能看到三件事：
+  //   1. JS 在跑            —— 立方体自转，右上角角度在变
+  //   2. 手势交接对了       —— 没点进交互时上下拖动是滚列表，点了之后拖动才转立方体
+  //   3. 固定高度生效       —— 这一块占满内容项声明的那个高度，不塌成 0
+  var cube = document.getElementById('cube');
+  var deg = document.getElementById('deg');
+  var rx = -20, ry = -30, dragging = false, lx = 0, ly = 0, spin = true;
+
+  function render() {
+    cube.style.transform = 'rotateX(' + rx.toFixed(1) + 'deg) rotateY(' + ry.toFixed(1) + 'deg)';
+    deg.textContent = rx.toFixed(0) + ', ' + ry.toFixed(0);
+  }
+
+  addEventListener('pointerdown', function (e) {
+    dragging = true; spin = false; lx = e.clientX; ly = e.clientY;
+  });
+  addEventListener('pointermove', function (e) {
+    if (!dragging) return;
+    ry += (e.clientX - lx) * 0.5;
+    rx -= (e.clientY - ly) * 0.5;
+    lx = e.clientX; ly = e.clientY;
+    render();
+  });
+  addEventListener('pointerup', function () { dragging = false; });
+
+  // 自转到第一次拖动为止：不碰它也能一眼看出 JS 活着。
+  setInterval(function () {
+    if (spin) { ry += 0.6; render(); }
+  }, 32);
+
+  render();
+</script>

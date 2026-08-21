@@ -182,6 +182,8 @@ class RepeatViewForVideo extends RepeatView {
 
   Widget landscape(RxString path, MediaRange range) {
     var helper = this.helper!;
+    // 横屏时正文列表是右边滑出来的那半扇，高度按下面那个 SizedBox 算。
+    helper.bodyHeight = helper.screenHeight - helper.topBarHeight - helper.bottomBarHeight - mediaBarHeight;
     // 正文区里各字段的顺序由内容自己说了算（'o'，见 VerseField.orderOf）。
     // 整节媒体不在这里排——它是横跨所有字段的播放控制层，待在这个列表外的固定层里。
     var fieldAreas = helper.currFieldOrder().map(helper.fieldArea).nonNulls.toList();
@@ -267,6 +269,7 @@ class RepeatViewForVideo extends RepeatView {
   Widget portrait(RxString path, MediaRange range) {
     var helper = this.helper!;
     double height = helper.screenHeight - helper.topPadding - helper.topBarHeight - mediaBarHeight - helper.bottomBarHeight;
+    helper.bodyHeight = height;
     // 正文区里各字段的顺序由内容自己说了算（'o'，见 VerseField.orderOf）。
     // 整节媒体不在这里排——它是横跨所有字段的播放控制层，待在这个列表外的固定层里。
     var fieldAreas = helper.currFieldOrder().map(helper.fieldArea).nonNulls.toList();

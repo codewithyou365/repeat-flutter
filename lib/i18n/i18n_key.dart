@@ -645,6 +645,13 @@ enum I18nKey {
   shadowRemoteNoLocalFallback,
   labelRestoreView,
   verseImageAdd,
+  contentWebAdd,
+  contentWebInteract,
+  contentWebExit,
+  contentWebLoad,
+  contentWebFailed,
+  contentWebNetwork,
+  contentWebNetworkDesc,
   none;
 
   /// 老文案用 %s（GetX 的 trArgs 只认这个），AI 之后的新文案用 @N（GetX 那边归 trParams 管）。

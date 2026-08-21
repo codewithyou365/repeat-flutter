@@ -53,6 +53,12 @@ class Helper {
   late double screenWidth;
   late double screenHeight;
   bool landscape = false;
+
+  /// 正文列表这一刻可用的高度。各视图算完自己的布局后写进来（音频/视频要减掉顶部
+  /// 播放器和 MediaBar 那几块）。网页项的比例高度按它算而不是按屏幕算，
+  /// 见 VerseField.itemHeight。
+  double bodyHeight = 0;
+
   late double leftPadding;
   late double topPadding;
   double topBarHeight = 50;

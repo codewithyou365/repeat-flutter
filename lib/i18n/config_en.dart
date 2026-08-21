@@ -644,5 +644,12 @@ class ConfigEn extends Config {
     put(I18nKey.shadowRemoteNoLocalFallback, "No on-device model installed either. If the scoring server drops, shadow reading cannot be scored at all.");
     put(I18nKey.labelRestoreView, "Restore");
     put(I18nKey.verseImageAdd, "Add an image");
+    put(I18nKey.contentWebAdd, "Add a web page");
+    put(I18nKey.contentWebInteract, "Tap to interact");
+    put(I18nKey.contentWebExit, "Exit");
+    put(I18nKey.contentWebLoad, "Tap to load");
+    put(I18nKey.contentWebFailed, "Failed to load");
+    put(I18nKey.contentWebNetwork, "Allow web content to use the network");
+    put(I18nKey.contentWebNetworkDesc, "When off, web content in a verse can only use its own bundled files");
   }
 }

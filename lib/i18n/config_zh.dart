@@ -642,5 +642,12 @@ class ConfigZh extends Config {
     put(I18nKey.shadowRemoteNoLocalFallback, "机内也没装模型。打分服务连不上时，跟读将完全无法打分。");
     put(I18nKey.labelRestoreView, "还原");
     put(I18nKey.verseImageAdd, "添加配图");
+    put(I18nKey.contentWebAdd, "添加网页");
+    put(I18nKey.contentWebInteract, "点按进入交互");
+    put(I18nKey.contentWebExit, "退出交互");
+    put(I18nKey.contentWebLoad, "点按加载网页");
+    put(I18nKey.contentWebFailed, "网页加载失败");
+    put(I18nKey.contentWebNetwork, "网页内容允许联网");
+    put(I18nKey.contentWebNetworkDesc, "关掉之后小节里的网页只能用自带的文件，不能引用 CDN 或在线资源");
   }
 }

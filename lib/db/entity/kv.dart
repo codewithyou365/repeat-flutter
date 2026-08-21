@@ -69,6 +69,15 @@ enum K {
 
   /// 是否启用跟读打分。关掉时地址保留。
   shadowRemoteEnabled,
+
+  /// 小节里的网页内容能不能联网（引用 CDN 上的库、在线的模型和贴图）。
+  ///
+  /// **默认开**，所以只有显式存 '0' 才算关。关掉之后网页只能用自己包里带的文件，
+  /// 由 ContentWebServer 发一条 CSP 头钉死，见 [ContentWebServer]。
+  ///
+  /// 放 K 不放 CrK：这是使用者对"我这台设备上的内容允不允许出网"的取舍，
+  /// 跟在哪个课堂无关。
+  contentWebNetwork,
 }
 
 @Entity(primaryKeys: ['k'])

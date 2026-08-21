@@ -11,11 +11,13 @@ import 'package:repeat_flutter/db/entity/tip.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
+import 'package:repeat_flutter/logic/content_web_server.dart';
 import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_button.dart';
 import 'package:repeat_flutter/logic/widget/close_eyes/close_eyes_panel.dart';
 import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/page/editor/editor_args.dart';
+import 'package:repeat_flutter/widget/content/verse_web.dart';
 import 'package:repeat_flutter/widget/image/verse_image.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
@@ -575,7 +577,7 @@ class RepeatPage extends StatelessWidget {
     final children = <Widget>[];
     for (var i = 0; i < items.length; i++) {
       // 编辑入口挂在第一项上，跟以前"一个字段一个图标"的样子一致。
-      final w = contentItem(logic, fieldRef, items[i], withIcon: children.isEmpty);
+      final w = contentItem(logic, fieldRef, items[i], i, withIcon: children.isEmpty);
       if (w == null) {
         continue;
       }
@@ -603,7 +605,8 @@ class RepeatPage extends StatelessWidget {
   Widget? contentItem(
     RepeatLogic logic,
     String fieldRef,
-    VerseContentItem item, {
+    VerseContentItem item,
+    int index, {
     required bool withIcon,
   }) {
     final text = item.text;
@@ -620,10 +623,37 @@ class RepeatPage extends StatelessWidget {
       final path = helper.getPath(d.path);
       return VerseImage(
         // 翻页/翻面时整块重建：上一节 3 张、这一节 1 张的话，PageView 的页码
-        // 留在旧位置会直接越界。
-        key: ValueKey(path),
+        // 留在旧位置会直接越界。位置也要进 key：同一节里两次引用同一张图是合法的，
+        // 只用路径会让两项撞在同一个 key 上。
+        key: ValueKey('$fieldRef-$index-$path'),
         paths: [path],
         maxHeight: helper.screenHeight * 0.32,
+      );
+    }
+    if (MediaType.web.allowedExtensions.contains(ext)) {
+      // 地址要起服务、zip 还要解压，都是异步的，所以这里挂一个 FutureBuilder。
+      // 结果在 ContentWebServer 里按 hash 缓存过，重建不会重跑。
+      return FutureBuilder<String?>(
+        key: ValueKey('$fieldRef-$index-${d.hash}'),
+        future: ContentWebServer.instance.urlOf(d),
+        builder: (context, snapshot) {
+          final url = snapshot.data;
+          if (url == null) {
+            return SizedBox(
+              height: 120,
+              child: Center(
+                child: snapshot.connectionState == ConnectionState.done
+                    ? Text(I18nKey.contentWebFailed.tr, style: TextStyle(color: Colors.grey.withAlpha(200)))
+                    : const CircularProgressIndicator(strokeWidth: 2),
+              ),
+            );
+          }
+          return VerseWeb(
+            url: url,
+            height: item.height,
+            availableHeight: helper.bodyHeight,
+          );
+        },
       );
     }
     return null;
@@ -676,17 +706,20 @@ class RepeatPage extends StatelessWidget {
     );
   }
 
-  /// 往当前字段的内容末尾插一张图。文件拷进课堂目录、登记进这一节的 'd'，
-  /// 内容数组里只加一项 hash。
-  Future<void> addImage(RepeatLogic logic, String fieldRef) async {
+  /// 往当前字段的内容末尾插一个文件（图或网页）。文件拷进课堂目录、登记进这一节的 'd'，
+  /// 内容数组里只加一项 hash——**怎么渲染由扩展名决定**，所以图和网页走的是同一条路。
+  ///
+  /// 加完排在最后。要挪到别的位置（比如图排在正文前面）就去编辑内容的行内标记，
+  /// 见 [VerseContentMarkup]。
+  Future<void> addFile(RepeatLogic logic, String fieldRef, MediaType type) async {
     final helper = logic.state.helper;
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: MediaType.image.allowedExtensions,
+      allowedExtensions: type.allowedExtensions,
     );
     final d = await DocHelp.tryCopyToDocDir(
       result: result,
-      allowedExtensions: MediaType.image.allowedExtensions,
+      allowedExtensions: type.allowedExtensions,
     );
     if (d == null) {
       return;
@@ -836,6 +869,7 @@ class RepeatPage extends StatelessWidget {
       I18nKey.font.tr,
       I18nKey.content.tr,
       I18nKey.verseImageAdd.tr,
+      I18nKey.contentWebAdd.tr,
     ];
     int? index = await Select.showSheet(title: I18nKey.editWhat.trArgs([fieldTitle(logic, fieldRef)]), keys: keys);
     if (index == null) {
@@ -855,7 +889,9 @@ class RepeatPage extends StatelessWidget {
         map: fontMap,
       );
     } else if (keys[index] == I18nKey.verseImageAdd.tr) {
-      await addImage(logic, fieldRef);
+      await addFile(logic, fieldRef, MediaType.image);
+    } else if (keys[index] == I18nKey.contentWebAdd.tr) {
+      await addFile(logic, fieldRef, MediaType.web);
     } else if (keys[index] == I18nKey.content.tr) {
       // 编辑的是整个内容数组的文本形态：正文照写，图/网页是单独一行的标记
       // （见 [VerseContentMarkup]）。插入、删除、调顺序因此全都是编辑这段文字。

@@ -5,7 +5,15 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 enum MediaType {
   audio(allowedExtensions: ['mp3', 'wav', 'mp4', 'mov']),
   video(allowedExtensions: ['mp4', 'mov']),
-  image(allowedExtensions: ['jpg', 'jpeg', 'png', 'webp', 'gif']);
+  image(allowedExtensions: ['jpg', 'jpeg', 'png', 'webp', 'gif']),
+
+  /// content 数组里的网页项。单个 html 是自包含的富文本（公式、表格），
+  /// zip 是带库带模型带贴图的整包（3D 场景基本都得走这个），入口是里面的 index.html。
+  ///
+  /// **别把这几个扩展名加进 ChapterImportHelp.showTypeForExtension**：那个返回的是
+  /// RepeatViewEnum 的名字，多返回一个认不出的视图类型会让整页取不到视图直接白屏。
+  /// 网页是内容项的一种形态，跟"这一节用哪种视图"是两回事。
+  web(allowedExtensions: ['html', 'htm', 'zip']);
 
   const MediaType({
     required this.allowedExtensions,
