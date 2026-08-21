@@ -656,5 +656,8 @@ class ConfigEn extends Config {
     put(I18nKey.contentWebFailed, "Failed to load");
     put(I18nKey.contentWebNetwork, "Allow web content to use the network");
     put(I18nKey.contentWebNetworkDesc, "When off, web content in a verse can only use its own bundled files");
+    put(I18nKey.labelMaxRepeatTime, "Repeat times after an error");
+    put(I18nKey.labelMaxRepeatTimeDesc, "How many times in a row you must get it right after an error (at least 1)");
+    put(I18nKey.labelMaxRepeatTimeInvalid, "The count must be at least 1");
   }
 }

@@ -654,5 +654,8 @@ class ConfigZh extends Config {
     put(I18nKey.contentWebFailed, "网页加载失败");
     put(I18nKey.contentWebNetwork, "网页内容允许联网");
     put(I18nKey.contentWebNetworkDesc, "关掉之后小节里的网页只能用自带的文件，不能引用 CDN 或在线资源");
+    put(I18nKey.labelMaxRepeatTime, "错误后重复次数");
+    put(I18nKey.labelMaxRepeatTimeDesc, "答错后需要连续答对的次数（至少 1）");
+    put(I18nKey.labelMaxRepeatTimeInvalid, "次数至少为 1");
   }
 }
