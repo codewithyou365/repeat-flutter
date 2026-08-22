@@ -424,6 +424,30 @@
    }
   },
   {
+   "id": "qwen3-asr-1.7b-mlx-8bit",
+   "role": [
+    "asr"
+   ],
+   "kind": "mlx-audio-stt",
+   "name": "Qwen3-ASR 1.7B（MLX/GPU）",
+   "langs": [
+    "*"
+   ],
+   "size": 2470000000,
+   "license": "Apache-2.0",
+   "note": "识别档目前最好的一个。支持 30 种语言 + 22 种中国方言（四川话在列），自带语种判断，普通话和方言混着说不用切档。运行时是 mlx-audio，跟 mlx-whisper 那几个不是一个包。装法：python setup_mt.py --model qwen3asr",
+   "files": [],
+   "cfg": {
+    "maxTokens": 512,
+    "require": [
+     "config.json",
+     "model.safetensors",
+     "preprocessor_config.json",
+     "tokenizer_config.json"
+    ]
+   }
+  },
+  {
    "id": "qwen2.5-7b-instruct-mlx-4bit",
    "role": [
     "mt"
@@ -446,6 +470,34 @@
     "require": [
      "config.json",
      "tokenizer_config.json"
+    ]
+   }
+  },
+  {
+   "id": "hy-mt2-7b-mlx-8bit",
+   "role": [
+    "mt"
+   ],
+   "kind": "llm-mt",
+   "name": "混元 Hy-MT2 7B（MLX 8bit）",
+   "langs": [
+    "zh"
+   ],
+   "mtTargets": [
+    "en"
+   ],
+   "size": 8000000000,
+   "license": "Tencent Hunyuan Community",
+   "note": "翻译专用模型（腾讯混元二代），不是通用 LLM，prompt 形状也不一样（promptStyle=hunyuan-mt）。中英上 WMT 拿过第一，口语和习语比 Qwen 稳，也基本不会中英混着吐。选 8bit 不选 4bit：中英混吐很大程度是低比特量化削出来的。装法：python setup_mt.py --model hymt2",
+   "files": [],
+   "cfg": {
+    "tgtLang": "en",
+    "maxTokens": 256,
+    "promptStyle": "hunyuan-mt",
+    "require": [
+     "config.json",
+     "tokenizer_config.json",
+     "tokenizer.json"
     ]
    }
   }

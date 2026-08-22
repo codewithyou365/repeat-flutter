@@ -29,6 +29,7 @@ import engine
 import hf_tts
 import llm_mt
 import mlx_asr
+import mlx_audio_asr
 import selection as sel
 import text_mt
 import wav
@@ -52,6 +53,11 @@ async def _engine_error(_request, exc: engine.EngineError):
 
 @app.exception_handler(mlx_asr.MlxAsrError)
 async def _mlx_asr_error(_request, exc: mlx_asr.MlxAsrError):
+    return JSONResponse(status_code=400, content={"error": str(exc)})
+
+
+@app.exception_handler(mlx_audio_asr.MlxAudioAsrError)
+async def _mlx_audio_asr_error(_request, exc: mlx_audio_asr.MlxAudioAsrError):
     return JSONResponse(status_code=400, content={"error": str(exc)})
 
 
@@ -189,6 +195,7 @@ def set_selection(role: Optional[str] = Form(None), model: Optional[str] = Form(
     hf_tts.drop_cache()
     llm_mt.drop_cache()
     mlx_asr.drop_cache()
+    mlx_audio_asr.drop_cache()
     return {**_selection.to_json(), "resolved": _selection.resolved(_catalog, _model_root)}
 
 
@@ -353,10 +360,12 @@ def _selected(role: str) -> cat.ModelEntry:
 
 
 def _run_asr(samples, lang: str) -> str:
-    """识别。按选中模型的 kind 分派：sherpa（CPU int8）还是 MLX（Apple GPU）。"""
+    """识别。按选中模型的 kind 分派：sherpa（CPU int8）、mlx-whisper 还是 mlx-audio（都是 Apple GPU）。"""
     e = _selected("asr")
     if e.kind == "mlx-asr":
         return mlx_asr.get(e.id, cat.model_dir(_model_root, e.id), e.cfg).recognize(samples, lang)
+    if e.kind == "mlx-audio-stt":
+        return mlx_audio_asr.get(e.id, cat.model_dir(_model_root, e.id), e.cfg).recognize(samples, lang)
     r = engine.get_recognizer(_catalog, _model_root, e.id, lang, "transcribe")
     return engine.recognize(r, samples)
 
@@ -576,6 +585,7 @@ def delete_model(model_id: str) -> Dict[str, Any]:
     hf_tts.drop_cache(model_id)
     llm_mt.drop_cache(model_id)
     mlx_asr.drop_cache(model_id)
+    mlx_audio_asr.drop_cache(model_id)
     return {"ok": True}
 
 

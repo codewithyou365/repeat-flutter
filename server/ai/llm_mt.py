@@ -17,6 +17,7 @@
 """
 
 import os
+import re
 import threading
 from typing import Any, Dict, List, Optional
 
@@ -28,9 +29,54 @@ _lock = threading.Lock()
 SYSTEM = ("You are a professional translator. Translate the user's text into {lang}. "
           "Output ONLY the translation itself: no quotes, no explanations, no notes, "
           "no romanization. Keep the tone and register of the original. "
-          "If the text is already in {lang}, output it unchanged.")
+          "If the text is already in {lang}, output it unchanged.\n"
+          "The input is speech-recognition output of casual spoken language: it has no "
+          "punctuation, may be a sentence fragment, and may contain misheard words. "
+          "Translate what the speaker most likely meant; never comment on it, never ask "
+          "for clarification, never leave a word untranslated because it looks odd.\n"
+          "The output MUST be entirely in {lang}. Never mix languages, and never copy "
+          "characters from the source text into the output.")
 
 LANG_NAMES = {"en": "English", "zh": "Chinese", "ja": "Japanese", "ko": "Korean"}
+
+# 出口重试用的追加指令。第一遍夹了源语言字符时，把那一遍的产物摆出来再让它重来一次。
+REPAIR = ("Your previous output still contained source-language characters: {bad}\n"
+          "Rewrite it entirely in {lang}. Output only the rewritten translation.")
+
+# 少量示例，只在译到英文时挂上。
+#
+# 为什么要它：这几句都是**口语短句**，最容易被 LLM 当成聊天去回应，或者半译半抄。
+# 摆两三个例子比在 system 里多写两句管用得多——它锁的是"输出形状"，不是道理。
+FEWSHOT_EN = [
+    ("我要举高高", "Lift me up high!"),
+    ("这个插孔好像是有问题", "This outlet seems to be faulty."),
+    ("嗯那个啥先这样吧", "Um, whatever, let\'s leave it at that."),
+]
+
+# 翻译专用模型（腾讯混元 Hunyuan-MT / Hy-MT2）的 prompt。
+#
+# 它们**不吃 system role，也不吃 few-shot**：官方用法就是一条 user 消息，
+# 指令和原文写在一起。给它套通用 LLM 那一套（FEWSHOT_EN 那种多轮对话）
+# 只会让它跑偏——训练时就没见过那个形状。所以这里单开一条 style 分支，
+# 而不是想办法把两种 prompt 揉成一个。
+HUNYUAN_TMPL = "将以下文本翻译为{lang}，注意只需要输出翻译后的结果，不要额外解释：\n\n{text}"
+
+# 混元的 prompt 是中文的，语言名也得用中文，写 "English" 它认得但不如中文稳
+HUNYUAN_LANG = {"en": "英语", "zh": "中文", "ja": "日语", "ko": "韩语"}
+
+# 夹了源语言字符时重来一遍。追加在同一条 user 消息后面——这类模型多轮对话
+# 也没怎么训过，不如把要求一次说完。
+HUNYUAN_REPAIR = "\n\n（注意：上一次的结果里夹着原文的字「{bad}」。整句都必须是{lang}。）"
+
+# 中日韩统一表意文字 + 常用扩展 + 假名 + 谚文。译到英文时输出里出现这些就是没译干净。
+_CJK = re.compile(r"[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uac00-\ud7af]")
+
+
+def _leftover(s: str, target: str) -> str:
+    """输出里残留的源语言字符。译到 CJK 语言时这个检查没意义，返回空。"""
+    if target not in ("en",):
+        return ""
+    return "".join(dict.fromkeys(_CJK.findall(s)))
 
 
 class LlmMtError(Exception):
@@ -54,21 +100,50 @@ class MlxTranslator:
             raise LlmMtError(f"加载失败（{e}）。文件可能不完整，重新跑 setup_mt.py --model qwen") from e
         self._max_tokens = int(cfg.get("maxTokens", 256))
         self._target = cfg.get("tgtLang", "en")
+        # prompt 的形状。通用 chat 模型和翻译专用模型的用法完全不同，见 HUNYUAN_TMPL。
+        self._style = cfg.get("promptStyle", "chat")
         # MLX 的计算图和数组不是线程安全的，翻译又是最快的一档，串行没损失
         self._lock = threading.Lock()
 
-    def _prompt(self, text: str) -> str:
+    def _prompt(self, text: str, repair: Optional[str] = None) -> str:
+        """一轮对话的完整 prompt。repair 非空表示这是重来一遍，把上一遍的产物摆进去。"""
+        if self._style == "hunyuan-mt":
+            return self._prompt_hunyuan(text, repair)
         lang = LANG_NAMES.get(self._target, self._target)
-        msgs = [{"role": "system", "content": SYSTEM.format(lang=lang)},
-                {"role": "user", "content": text}]
+        msgs: List[Dict[str, str]] = [{"role": "system", "content": SYSTEM.format(lang=lang)}]
+        if self._target == "en":
+            for src, dst in FEWSHOT_EN:
+                msgs.append({"role": "user", "content": src})
+                msgs.append({"role": "assistant", "content": dst})
+        msgs.append({"role": "user", "content": text})
+        if repair is not None:
+            msgs.append({"role": "assistant", "content": repair})
+            msgs.append({"role": "user", "content": REPAIR.format(
+                bad=_leftover(repair, self._target), lang=lang)})
+        return self._tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
+
+    def _prompt_hunyuan(self, text: str, repair: Optional[str]) -> str:
+        lang = HUNYUAN_LANG.get(self._target, self._target)
+        body = HUNYUAN_TMPL.format(lang=lang, text=text)
+        if repair is not None:
+            body += HUNYUAN_REPAIR.format(bad=_leftover(repair, self._target), lang=lang)
+        msgs = [{"role": "user", "content": body}]
         return self._tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
 
     def translate(self, text: str) -> str:
         text = (text or "").strip()
         if not text:
             return ""
+        out = self._once(self._prompt(text))
+        # 出口校验：夹了源语言字符就摆给它看，让它整句重来一遍。
+        # 只重试一次——两遍都夹的话多半是输入本身就没法译（识别成了乱码），
+        # 再转圈只是白等，把第二遍的结果交出去让用户在复核页改。
+        if _leftover(out, self._target):
+            out = self._once(self._prompt(text, repair=out)) or out
+        return out
+
+    def _once(self, prompt: str) -> str:
         from mlx_lm import generate
-        prompt = self._prompt(text)
         with self._lock:
             # mlx-lm 的 generate 签名跨版本变过（sampler / temp 参数进出过好几轮）。
             # 挨个试比锁死一个版本强——装了新版也不该炸。

@@ -40,30 +40,52 @@ MODELS = {
         "need": None,          # None = 整个仓库都要
         "keep": None,
         "convert": False,
+        "mlx": "mlx_lm",
         "about": "约 1.7 GB，跑苹果 GPU，复合词/习语最准",
     },
     "qwen7b": {
         "id": "qwen2.5-7b-instruct-mlx-4bit",
         "repo": "mlx-community/Qwen2.5-7B-Instruct-4bit",
         "need": None, "keep": None, "convert": False,
+        "mlx": "mlx_lm",
         "about": "约 4.3 GB，比 3B 更会遵循指令，跑苹果 GPU",
+    },
+    "hymt2": {
+        "id": "hy-mt2-7b-mlx-8bit",
+        "repo": "mlx-community/Hy-MT2-7B-8bit",
+        "need": None, "keep": None, "convert": False,
+        "mlx": "mlx_lm",
+        # 8bit 而不是 4bit：同一个模型，低比特量化最先掉的就是"别中英混着吐"
+        # 这类指令遵循能力，而权重从 4.2 GB 涨到 8 GB 对 Mac 不算负担。
+        "about": "约 8.0 GB，翻译专用模型（混元二代），口语和习语最稳，跑苹果 GPU",
     },
     "whisper-turbo": {
         "id": "whisper-large-v3-turbo-mlx",
         "repo": "mlx-community/whisper-large-v3-turbo",
         "need": None, "keep": None, "convert": False,
+        "mlx": "mlx_whisper",
         "about": "约 1.5 GB，识别跑苹果 GPU，中文比 small 准",
     },
     "whisper-large": {
         "id": "whisper-large-v3-mlx",
         "repo": "mlx-community/whisper-large-v3-mlx",
         "need": None, "keep": None, "convert": False,
+        "mlx": "mlx_whisper",
         "about": "约 2.9 GB，精度最高也最慢",
+    },
+    "qwen3asr": {
+        "id": "qwen3-asr-1.7b-mlx-8bit",
+        "repo": "mlx-community/Qwen3-ASR-1.7B-8bit",
+        "need": None, "keep": None, "convert": False,
+        # 运行时是 mlx-audio，不是 mlx-whisper——那几个 whisper 条目用不着这个包
+        "mlx": "mlx_audio",
+        "about": "约 2.3 GB，识别跑苹果 GPU，支持四川话等 22 种中国方言",
     },
     "whisper-turbo-q4": {
         "id": "whisper-large-v3-turbo-q4-mlx",
         "repo": "mlx-community/whisper-large-v3-turbo-q4",
         "need": None, "keep": None, "convert": False,
+        "mlx": "mlx_whisper",
         "about": "约 0.4 GB，4bit，中文可能掉精度",
     },
     "nllb": {
@@ -92,15 +114,15 @@ def preflight(download_only: bool = False, which: str = "opus-mt") -> None:
     # Homebrew 那个真解释器。sys.prefix 才指向 venv 本身。
     in_venv = os.path.normpath(sys.prefix) == os.path.normpath(os.path.join(here, ".venv"))
 
+    # 走 MLX 的模型在 MODELS 里自己声明要哪个包（mlx_lm / mlx_whisper），
+    # 别在这儿维护一份模型名单——加一个模型就得改两处的写法迟早会漏。
+    mlx_pkg = MODELS.get(which, {}).get("mlx")
+
     need = [("requests", "requirements.txt")]
     if not download_only:
-        if which in ("qwen", "qwen7b", "whisper-turbo", "whisper-large", "whisper-turbo-q4"):
+        if mlx_pkg:
             # MLX 那条路和 CT2 完全无关，别让人白装 2GB 的 torch
-            need += [("mlx", "requirements-llm.txt")]
-            if which in ("qwen", "qwen7b"):
-                need.append(("mlx_lm", "requirements-llm.txt"))
-            else:
-                need.append(("mlx_whisper", "requirements-llm.txt"))
+            need += [("mlx", "requirements-llm.txt"), (mlx_pkg, "requirements-llm.txt")]
         else:
             need += [("ctranslate2", "requirements-mt.txt"),
                      ("transformers", "requirements-mt.txt"),
@@ -125,9 +147,7 @@ def preflight(download_only: bool = False, which: str = "opus-mt") -> None:
         print("  source .venv/bin/activate")
     else:
         print(f"  cd {here}")
-    req = ("requirements-llm.txt"
-           if which in ("qwen", "qwen7b", "whisper-turbo", "whisper-large", "whisper-turbo-q4")
-           else "requirements-mt.txt")
+    req = "requirements-llm.txt" if mlx_pkg else "requirements-mt.txt"
     print(f"  pip install -r {req} -i https://mirrors.aliyun.com/pypi/simple")
     raise SystemExit(1)
 

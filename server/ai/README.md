@@ -128,6 +128,50 @@ pip uninstall -y torch transformers     # 可选，转完就用不着了，省 ~
 要加别的语言方向：照 `catalog.local.json` 里 `opus-mt-zh-en` 那条加一份
 （`kind` 必须是 `"text"`），再改 `setup_mt.py` 的 `REPO`。
 
+### 翻译专用 LLM（目前最好的一档）
+
+`hy-mt2-7b-mlx-8bit` 是腾讯混元二代翻译模型，**只做翻译**，不是通用 LLM。
+跑苹果 GPU（MLX），约 8 GB。
+
+```bash
+cd server/ai && source .venv/bin/activate
+pip install -r requirements-llm.txt -i https://mirrors.aliyun.com/pypi/simple
+python setup_mt.py --model hymt2        # 约 8 GB，ModelScope 直连
+```
+
+比通用 LLM（`qwen2.5-7b-instruct-mlx-4bit`）强在两点：口语和习语更准；
+基本不会中英混着吐——通用模型碰到识别成乱码的病句时容易半译半抄，
+译文里夹几个中文字。
+
+**选 8bit 不选 4bit**：同一个模型，低比特量化最先掉的就是「别混语言」这类
+指令遵循能力，而 8 GB 权重对 Mac 不算负担。
+
+它的 prompt 形状跟通用 LLM **完全不同**：不吃 system role，也不吃 few-shot，
+官方用法就是一条 user 消息（指令和原文写在一起）。所以清单里必须写
+`"promptStyle": "hunyuan-mt"`，`llm_mt.py` 按这个字段分派。漏了它不会报错，
+只是模型跑在没见过的输入形状上，效果白白变差。
+
+## 方言识别（四川话等）
+
+`whisper` 和 `paraformer` 都只见过普通话，四川话这类方言只能当"带口音的普通话"
+硬认，出来的原文是病句——**而译文再好也救不回一句本来就识别错的话**。
+
+`qwen3-asr-1.7b-mlx-8bit` 支持 30 种语言 + 22 种中国方言（四川话、云南、贵州、
+湖北、陕西、东北……都在列），自带语种判断，普通话和方言混着说不用切档。
+跑苹果 GPU，约 2.3 GB。
+
+```bash
+cd server/ai && source .venv/bin/activate
+pip install -r requirements-llm.txt -i https://mirrors.aliyun.com/pypi/simple
+python setup_mt.py --model qwen3asr       # 约 2.3 GB，ModelScope 直连
+```
+
+装完在网页「概览 → 当前生效 → 识别」里选上。
+
+它的运行时是 **mlx-audio**，跟 `whisper-*-mlx` 那几个用的 mlx-whisper **不是一个包**，
+所以单独有个 `kind`（`mlx-audio-stt`）和单独一个模块 `mlx_audio_asr.py`。
+音频是直接喂 numpy 数组进去的，不落临时 wav——mlx-audio 只在输入是路径时才去解码文件。
+
 ## 试 S2ST（端到端语音翻译）
 
 `bench_s2st.py` 是个**一次性的测量脚本，不接进服务**。它回答三个问题：

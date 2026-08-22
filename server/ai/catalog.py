@@ -158,11 +158,14 @@ def is_installed(root: str, model_id: str) -> bool:
 def missing_files(root: str, entry: ModelEntry) -> List[str]:
     """还缺哪些文件（相对模型目录）。zip 类模型没有逐文件清单，只能看 .ok。"""
     d = model_dir(root, entry.id)
-    if entry.kind == "text":
-        # 文本翻译模型是转换出来的，没有逐文件清单。cfg.require 点名哪些东西必须在，
+    if not entry.files and (entry.cfg.get("require") or entry.kind == "text"):
+        # 没有逐文件清单的模型：text 是本地转换出来的，llm-mt / mlx-* 是整仓库拖下来的
+        # （文件名还随分片数变，7B 是两片、3B 是一片）。cfg.require 点名哪些东西必须在，
         # 不然一个空目录也会被 complete 判成"齐了"。
-        # 不同模型要的东西不一样（opus-mt 是两个 spm，NLLB 是一整套 HF 分词器），
-        # 所以由清单自己声明，别在代码里写死。
+        #
+        # **按 require 存不存在判，别按 kind 列名单**：kind 是会加的（text -> llm-mt ->
+        # mlx-audio-stt），每加一种就得回来改这里的话，迟早漏一种，而漏了不报错——
+        # 只是下载校验静默失效。
         want = entry.cfg.get("require") or ["ct2"]
         return [w for w in want if w and not os.path.exists(os.path.join(d, w))]
     if entry.zip:
