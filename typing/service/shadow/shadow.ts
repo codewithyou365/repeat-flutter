@@ -83,16 +83,28 @@ const Util = {
         data[key] = value;
         await sendMessage('setData', JSON.stringify(data));
     },
-    // q/a/t 的正文在字段块里（{text,start,end,...}），n 这类没有媒体的字段是平铺字符串。
+    // 字段块（{text|content,start,end,...}）的正文。
+    // 新形态是有序的 'content' 数组（正文串 + 文件项），老形态是平铺的 'text'，两者二选一。
+    // 跟 Dart 侧 VerseField.getText 保持一致：只把裸字符串项按顺序拼起来（\n 连接），文件项跳过。
+    blockText: function (block: VerseField | string | null | undefined): string {
+        if (typeof block === 'string') return block;
+        if (!block) return '';
+        const items = block.content;
+        if (Array.isArray(items)) {
+            const buf: string[] = [];
+            for (const item of items) {
+                if (typeof item === 'string' && item !== '') buf.push(item);
+            }
+            return buf.join('\n');
+        }
+        return block.text ? block.text : '';
+    },
     fieldText: function (verse: Verse | null | undefined, acronym: string): string {
         const v = verse ? verse[acronym] : null;
         if (typeof v === 'string') return v;
-        if (Array.isArray(v)) {
-            const first = v[0];
-            if (typeof first === 'string') return first;
-            return (first && first.text) ? first.text : '';
-        }
-        return (v && v.text) ? v.text : '';
+        // 提示('t')是数组，一节可以挂好几条，这里取第 1 条。
+        if (Array.isArray(v)) return Util.blockText(v[0]);
+        return Util.blockText(v);
     },
     getVerse: async function (): Promise<Verse> {
         try {
