@@ -574,6 +574,9 @@ class ConfigRu extends Config {
     put(I18nKey.labelRestoreView, "Восстановить");
     put(I18nKey.verseImageAdd, "Добавить изображение");
     put(I18nKey.contentWebAdd, "Добавить веб-страницу");
+    put(I18nKey.contentTextAdd, "Добавить абзац");
+    put(I18nKey.contentDeleteItem, "Подтвердите удаление этого элемента содержимого");
+    put(I18nKey.contentItemMissing, "Файл отсутствует");
     put(I18nKey.contentWebInteract, "Нажмите, чтобы взаимодействовать");
     put(I18nKey.contentWebExit, "Выйти");
     put(I18nKey.contentWebLoad, "Нажмите, чтобы загрузить");

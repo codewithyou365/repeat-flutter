@@ -574,6 +574,9 @@ class ConfigZh extends Config {
     put(I18nKey.labelRestoreView, "还原");
     put(I18nKey.verseImageAdd, "添加配图");
     put(I18nKey.contentWebAdd, "添加网页");
+    put(I18nKey.contentTextAdd, "添加一段正文");
+    put(I18nKey.contentDeleteItem, "请确认删除这一项内容");
+    put(I18nKey.contentItemMissing, "文件已丢失");
     put(I18nKey.contentWebInteract, "点按进入交互");
     put(I18nKey.contentWebExit, "退出交互");
     put(I18nKey.contentWebLoad, "点按加载网页");

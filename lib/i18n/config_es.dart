@@ -574,6 +574,9 @@ class ConfigEs extends Config {
     put(I18nKey.labelRestoreView, "Restaurar");
     put(I18nKey.verseImageAdd, "Añadir una imagen");
     put(I18nKey.contentWebAdd, "Añadir una página web");
+    put(I18nKey.contentTextAdd, "Añadir un párrafo");
+    put(I18nKey.contentDeleteItem, "Confirma la eliminación de este elemento de contenido");
+    put(I18nKey.contentItemMissing, "Falta el archivo");
     put(I18nKey.contentWebInteract, "Toca para interactuar");
     put(I18nKey.contentWebExit, "Salir");
     put(I18nKey.contentWebLoad, "Toca para cargar");

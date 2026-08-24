@@ -574,6 +574,9 @@ class ConfigFr extends Config {
     put(I18nKey.labelRestoreView, "Restaurer");
     put(I18nKey.verseImageAdd, "Ajouter une image");
     put(I18nKey.contentWebAdd, "Ajouter une page web");
+    put(I18nKey.contentTextAdd, "Ajouter un paragraphe");
+    put(I18nKey.contentDeleteItem, "Confirmez la suppression de cet élément de contenu");
+    put(I18nKey.contentItemMissing, "Fichier introuvable");
     put(I18nKey.contentWebInteract, "Touchez pour interagir");
     put(I18nKey.contentWebExit, "Quitter");
     put(I18nKey.contentWebLoad, "Touchez pour charger");

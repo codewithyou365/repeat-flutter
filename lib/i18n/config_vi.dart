@@ -574,6 +574,9 @@ class ConfigVi extends Config {
     put(I18nKey.labelRestoreView, "Khôi phục");
     put(I18nKey.verseImageAdd, "Thêm ảnh");
     put(I18nKey.contentWebAdd, "Thêm trang web");
+    put(I18nKey.contentTextAdd, "Thêm một đoạn văn");
+    put(I18nKey.contentDeleteItem, "Xác nhận xóa mục nội dung này");
+    put(I18nKey.contentItemMissing, "Thiếu tệp");
     put(I18nKey.contentWebInteract, "Chạm để tương tác");
     put(I18nKey.contentWebExit, "Thoát");
     put(I18nKey.contentWebLoad, "Chạm để tải");

@@ -574,6 +574,9 @@ class ConfigId extends Config {
     put(I18nKey.labelRestoreView, "Pulihkan");
     put(I18nKey.verseImageAdd, "Tambah gambar");
     put(I18nKey.contentWebAdd, "Tambah halaman web");
+    put(I18nKey.contentTextAdd, "Tambah paragraf");
+    put(I18nKey.contentDeleteItem, "Konfirmasi hapus item konten ini");
+    put(I18nKey.contentItemMissing, "Berkas tidak ditemukan");
     put(I18nKey.contentWebInteract, "Ketuk untuk berinteraksi");
     put(I18nKey.contentWebExit, "Keluar");
     put(I18nKey.contentWebLoad, "Ketuk untuk memuat");

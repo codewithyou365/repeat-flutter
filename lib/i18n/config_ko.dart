@@ -574,6 +574,9 @@ class ConfigKo extends Config {
     put(I18nKey.labelRestoreView, "되돌리기");
     put(I18nKey.verseImageAdd, "이미지 추가");
     put(I18nKey.contentWebAdd, "웹 페이지 추가");
+    put(I18nKey.contentTextAdd, "본문 추가");
+    put(I18nKey.contentDeleteItem, "이 콘텐츠 항목을 삭제하시겠습니까");
+    put(I18nKey.contentItemMissing, "파일이 없습니다");
     put(I18nKey.contentWebInteract, "눌러서 조작");
     put(I18nKey.contentWebExit, "종료");
     put(I18nKey.contentWebLoad, "눌러서 불러오기");

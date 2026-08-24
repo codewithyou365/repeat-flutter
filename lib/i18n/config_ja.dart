@@ -574,6 +574,9 @@ class ConfigJa extends Config {
     put(I18nKey.labelRestoreView, "元に戻す");
     put(I18nKey.verseImageAdd, "画像を追加");
     put(I18nKey.contentWebAdd, "Web ページを追加");
+    put(I18nKey.contentTextAdd, "本文を追加");
+    put(I18nKey.contentDeleteItem, "この内容項目を削除してよろしいですか");
+    put(I18nKey.contentItemMissing, "ファイルが見つかりません");
     put(I18nKey.contentWebInteract, "タップで操作");
     put(I18nKey.contentWebExit, "終了");
     put(I18nKey.contentWebLoad, "タップで読み込み");

@@ -574,6 +574,9 @@ class ConfigDe extends Config {
     put(I18nKey.labelRestoreView, "Wiederherstellen");
     put(I18nKey.verseImageAdd, "Bild hinzufügen");
     put(I18nKey.contentWebAdd, "Webseite hinzufügen");
+    put(I18nKey.contentTextAdd, "Absatz hinzufügen");
+    put(I18nKey.contentDeleteItem, "Diesen Inhaltseintrag wirklich löschen?");
+    put(I18nKey.contentItemMissing, "Datei fehlt");
     put(I18nKey.contentWebInteract, "Zum Bedienen tippen");
     put(I18nKey.contentWebExit, "Beenden");
     put(I18nKey.contentWebLoad, "Zum Laden tippen");

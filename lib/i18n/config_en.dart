@@ -574,6 +574,9 @@ class ConfigEn extends Config {
     put(I18nKey.labelRestoreView, "Restore");
     put(I18nKey.verseImageAdd, "Add an image");
     put(I18nKey.contentWebAdd, "Add a web page");
+    put(I18nKey.contentTextAdd, "Add a paragraph");
+    put(I18nKey.contentDeleteItem, "Please confirm to delete this content item");
+    put(I18nKey.contentItemMissing, "File is missing");
     put(I18nKey.contentWebInteract, "Tap to interact");
     put(I18nKey.contentWebExit, "Exit");
     put(I18nKey.contentWebLoad, "Tap to load");

@@ -574,6 +574,9 @@ class ConfigIt extends Config {
     put(I18nKey.labelRestoreView, "Ripristina");
     put(I18nKey.verseImageAdd, "Aggiungi un'immagine");
     put(I18nKey.contentWebAdd, "Aggiungi una pagina web");
+    put(I18nKey.contentTextAdd, "Aggiungi un paragrafo");
+    put(I18nKey.contentDeleteItem, "Confermi l'eliminazione di questo elemento di contenuto?");
+    put(I18nKey.contentItemMissing, "File mancante");
     put(I18nKey.contentWebInteract, "Tocca per interagire");
     put(I18nKey.contentWebExit, "Esci");
     put(I18nKey.contentWebLoad, "Tocca per caricare");

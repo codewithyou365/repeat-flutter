@@ -574,6 +574,9 @@ class ConfigPt extends Config {
     put(I18nKey.labelRestoreView, "Restaurar");
     put(I18nKey.verseImageAdd, "Adicionar uma imagem");
     put(I18nKey.contentWebAdd, "Adicionar uma página web");
+    put(I18nKey.contentTextAdd, "Adicionar um parágrafo");
+    put(I18nKey.contentDeleteItem, "Confirme a exclusão deste item de conteúdo");
+    put(I18nKey.contentItemMissing, "Arquivo ausente");
     put(I18nKey.contentWebInteract, "Toque para interagir");
     put(I18nKey.contentWebExit, "Sair");
     put(I18nKey.contentWebLoad, "Toque para carregar");

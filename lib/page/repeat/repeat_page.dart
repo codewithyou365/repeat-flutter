@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
@@ -12,7 +11,6 @@ import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/base/constant.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/content_web_server.dart';
-import 'package:repeat_flutter/logic/doc_help.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_button.dart';
 import 'package:repeat_flutter/logic/widget/close_eyes/close_eyes_panel.dart';
 import 'package:repeat_flutter/nav.dart';
@@ -25,6 +23,7 @@ import 'package:repeat_flutter/widget/select/select.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:repeat_flutter/widget/text/expandable_text.dart';
 
+import 'content_sheet.dart';
 import 'repeat_logic.dart';
 import 'repeat_state.dart' show RepeatState;
 import 'logic/constant.dart';
@@ -543,7 +542,7 @@ class RepeatPage extends StatelessWidget {
                         if (helper.showMode.value != ShowMode.edit && isNote) {
                           await modify(map, logic, fieldRef);
                         } else {
-                          await fullModify(map, logic, fieldRef);
+                          await fullModify(logic, fieldRef);
                         }
                       }
                     : null,
@@ -678,7 +677,7 @@ class RepeatPage extends StatelessWidget {
     if (withIcon) {
       if (helper.showMode.value == ShowMode.edit) {
         onIconCallback = () async {
-          await fullModify(helper.getCurrVerseMap()!, logic, fieldRef);
+          await fullModify(logic, fieldRef);
         };
       } else {
         final bookId = helper.logic.currVerse?.bookId;
@@ -704,34 +703,6 @@ class RepeatPage extends StatelessWidget {
         onText: () => logic.assistiveTouchLogic.playFieldRangeIfAny(fieldRef),
       ),
     );
-  }
-
-  /// 往当前字段的内容末尾插一个文件（图或网页）。文件拷进课堂目录、登记进这一节的 'd'，
-  /// 内容数组里只加一项 hash——**怎么渲染由扩展名决定**，所以图和网页走的是同一条路。
-  ///
-  /// 加完排在最后。要挪到别的位置（比如图排在正文前面）就去编辑内容的行内标记，
-  /// 见 [VerseContentMarkup]。
-  Future<void> addFile(RepeatLogic logic, String fieldRef, MediaType type) async {
-    final helper = logic.state.helper;
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: type.allowedExtensions,
-    );
-    final d = await DocHelp.tryCopyToDocDir(
-      result: result,
-      allowedExtensions: type.allowedExtensions,
-    );
-    if (d == null) {
-      return;
-    }
-    final ok = await helper.editCurrItems(
-      fieldRef,
-      (items) => items.add(VerseContentItem.file(d.hash)),
-      register: d,
-    );
-    if (ok) {
-      logic.update([RepeatLogic.id]);
-    }
   }
 
   /// 编辑模式下点已选中的提示 tab 弹出来的菜单。
@@ -862,14 +833,12 @@ class RepeatPage extends StatelessWidget {
     helper.stopMedia(true);
   }
 
-  Future<void> fullModify(Map<String, dynamic> map, RepeatLogic logic, String fieldRef) async {
+  Future<void> fullModify(RepeatLogic logic, String fieldRef) async {
     var helper = logic.state.helper;
     helper.stopMedia(false);
     var keys = [
       I18nKey.font.tr,
       I18nKey.content.tr,
-      I18nKey.verseImageAdd.tr,
-      I18nKey.contentWebAdd.tr,
     ];
     int? index = await Select.showSheet(title: I18nKey.editWhat.trArgs([fieldTitle(logic, fieldRef)]), keys: keys);
     if (index == null) {
@@ -888,26 +857,10 @@ class RepeatPage extends StatelessWidget {
         fontPrefix: fieldRef,
         map: fontMap,
       );
-    } else if (keys[index] == I18nKey.verseImageAdd.tr) {
-      await addFile(logic, fieldRef, MediaType.image);
-    } else if (keys[index] == I18nKey.contentWebAdd.tr) {
-      await addFile(logic, fieldRef, MediaType.web);
     } else if (keys[index] == I18nKey.content.tr) {
-      // 编辑的是整个内容数组的文本形态：正文照写，图/网页是单独一行的标记
-      // （见 [VerseContentMarkup]）。插入、删除、调顺序因此全都是编辑这段文字。
-      await Nav.editor.push(
-        arguments: EditorArgs(
-          title: fieldTitle(logic, fieldRef),
-          value: VerseContentMarkup.encode(VerseField.getItems(map, fieldRef)),
-          save: (str) async {
-            VerseField.setItems(map, fieldRef, VerseContentMarkup.decode(str));
-            String jsonStr = jsonEncode(map);
-            var verseId = helper.getCurrVerse()!.verseId;
-            await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
-            logic.update([RepeatLogic.id]);
-          },
-        ),
-      );
+      // 内容数组（正文、图、网页按显示顺序排在一起）交给块编辑器：调顺序、加一项、删一项
+      // 都在那里做，见 [ContentSheet]。老数据只写过 'text'，在那里存一次就升级成 'content'。
+      await ContentSheet.show(logic, fieldRef, fieldTitle(logic, fieldRef));
     }
     helper.stopMedia(true);
   }
