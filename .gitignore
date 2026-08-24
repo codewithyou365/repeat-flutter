@@ -61,6 +61,7 @@ app.*.map.json
 /example/**/*.sh
 # 游戏订阅的测试服务器是要进仓库的，别被上面那几条兜走
 !/example/game_server/*.go
+!/example/game_server/*.sh
 .adb_last_connect
 
 # server/ai (python)
