@@ -353,11 +353,18 @@ class ConfigJa extends Config {
     put(I18nKey.actionTypeRewind, "巻き戻し");
     put(I18nKey.actionTypePlayPause, "再生 / 一時停止");
     put(I18nKey.actionTypeNet, "ネット");
+    put(I18nKey.actionTypeAdjust, "時間調整");
     put(I18nKey.actionTypeDelete, "現在の文を削除");
     put(I18nKey.targetCurrentTip, "現在のヒント");
     put(I18nKey.targetCurrentPlaying, "再生中のもの");
     put(I18nKey.playPauseBackSeconds, "再生前に巻き戻す");
     put(I18nKey.seekBackSeconds, "巻き戻す秒数");
+    put(I18nKey.adjustEdge, "調整位置");
+    put(I18nKey.adjustEdgeStart, "開始");
+    put(I18nKey.adjustEdgeEnd, "終了");
+    put(I18nKey.adjustEdgeBoth, "区間全体");
+    put(I18nKey.adjustOffsetMs, "オフセット(ms)");
+    put(I18nKey.labelAdjustedTo, "%s に調整しました");
     put(I18nKey.gamepadBinding, "ゲームパッドの割り当て");
     put(I18nKey.gamepadPressButton, "ゲームパッドのボタンを押してください...");
     put(I18nKey.gamepadUnbound, "未割り当て");

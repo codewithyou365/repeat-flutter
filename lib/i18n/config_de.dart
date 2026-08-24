@@ -353,11 +353,18 @@ class ConfigDe extends Config {
     put(I18nKey.actionTypeRewind, "Zurückspulen");
     put(I18nKey.actionTypePlayPause, "Abspielen/Pause");
     put(I18nKey.actionTypeNet, "Netz");
+    put(I18nKey.actionTypeAdjust, "Zeit anpassen");
     put(I18nKey.actionTypeDelete, "Aktuellen Satz löschen");
     put(I18nKey.targetCurrentTip, "Aktueller Hinweis");
     put(I18nKey.targetCurrentPlaying, "Was gerade läuft");
     put(I18nKey.playPauseBackSeconds, "Vor dem Abspielen zurückspulen");
     put(I18nKey.seekBackSeconds, "Sekunden zurückspulen");
+    put(I18nKey.adjustEdge, "Endpunkt");
+    put(I18nKey.adjustEdgeStart, "Anfang");
+    put(I18nKey.adjustEdgeEnd, "Ende");
+    put(I18nKey.adjustEdgeBoth, "Ganzer Bereich");
+    put(I18nKey.adjustOffsetMs, "Versatz (ms)");
+    put(I18nKey.labelAdjustedTo, "Angepasst auf %s");
     put(I18nKey.gamepadBinding, "Gamepad-Belegung");
     put(I18nKey.gamepadPressButton, "Drücke eine Taste am Gamepad ...");
     put(I18nKey.gamepadUnbound, "Nicht belegt");

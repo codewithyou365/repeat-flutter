@@ -353,11 +353,18 @@ class ConfigEn extends Config {
     put(I18nKey.actionTypeRewind, "Rewind");
     put(I18nKey.actionTypePlayPause, "Play/Pause");
     put(I18nKey.actionTypeNet, "Net");
+    put(I18nKey.actionTypeAdjust, "Adjust Timing");
     put(I18nKey.actionTypeDelete, "Delete current verse");
     put(I18nKey.targetCurrentTip, "Current tip");
     put(I18nKey.targetCurrentPlaying, "Currently playing");
     put(I18nKey.playPauseBackSeconds, "Rewind Before Play");
     put(I18nKey.seekBackSeconds, "Rewind Seconds");
+    put(I18nKey.adjustEdge, "Edge");
+    put(I18nKey.adjustEdgeStart, "Start");
+    put(I18nKey.adjustEdgeEnd, "End");
+    put(I18nKey.adjustEdgeBoth, "Whole range");
+    put(I18nKey.adjustOffsetMs, "Offset (ms)");
+    put(I18nKey.labelAdjustedTo, "Adjusted to %s");
     put(I18nKey.gamepadBinding, "Gamepad Bindings");
     put(I18nKey.gamepadPressButton, "Press a gamepad button...");
     put(I18nKey.gamepadUnbound, "Unbound");

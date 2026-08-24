@@ -111,10 +111,11 @@ class AtActionSheet {
                   },
                 ),
               ],
-              if (currType == AtActionType.rewind || currType == AtActionType.playPause) ...[
+              if (currType.hasSeconds) ...[
                 RowWidget.buildDividerWithoutColor(),
                 _secondsPicker(action),
               ],
+              if (currType == AtActionType.adjust) ..._adjustWidgets(action),
               if (currType == AtActionType.net)
                 ..._netWidgets(
                   logic: logic,
@@ -160,6 +161,10 @@ class AtActionSheet {
     if (!_secondsOptionsOf(action.type).contains(action.seconds)) {
       action.seconds = action.type == AtActionType.rewind ? AtAction.defaultRewindSeconds : 0;
     }
+    if (!AtAction.offsetMsOptions.contains(action.offsetMs)) {
+      action.offsetMs = AtAction.defaultOffsetMs;
+    }
+    action.edge = AtAdjustEdge.fromIndex(action.edge).index;
   }
 
   /// rewind 退 0 秒没有意义，所以它的档位里不给 0；
@@ -180,6 +185,31 @@ class AtActionSheet {
       value: options.indexOf(action.seconds),
       changed: (index) => action.seconds = options[index],
     );
+  }
+
+  /// "调整时间"的两个参数：调哪一头、挪多少毫秒。
+  /// 毫秒数带正负号显示——档位里没有 0，符号是这项唯一要看的信息（负数往前借、正数往后让）。
+  static List<Widget> _adjustWidgets(AtAction action) {
+    const options = AtAction.offsetMsOptions;
+    return [
+      RowWidget.buildDividerWithoutColor(),
+      RowWidget.buildCupertinoPicker(
+        key: const ValueKey('edge'),
+        title: I18nKey.adjustEdge.tr,
+        pickWidth: 200,
+        options: AtAdjustEdge.values.map((e) => e.labelKey.tr).toList(),
+        value: AtAdjustEdge.fromIndex(action.edge).index,
+        changed: (index) => action.edge = index,
+      ),
+      RowWidget.buildDividerWithoutColor(),
+      RowWidget.buildCupertinoPicker(
+        key: const ValueKey('offsetMs'),
+        title: I18nKey.adjustOffsetMs.tr,
+        options: options.map((e) => e > 0 ? '+$e' : '$e').toList(),
+        value: options.indexOf(action.offsetMs),
+        changed: (index) => action.offsetMs = options[index],
+      ),
+    ];
   }
 
   static List<Widget> _netWidgets({
@@ -312,6 +342,8 @@ class AtActionSheet {
       type: src.type,
       target: src.target,
       seconds: src.seconds,
+      edge: src.edge,
+      offsetMs: src.offsetMs,
       tts: AtTtsConfig.fromJson(src.tts.toJson()),
       net: AtNetParams.fromJson(src.net.toJson()),
     );

@@ -353,11 +353,18 @@ class ConfigIt extends Config {
     put(I18nKey.actionTypeRewind, "Riavvolgi");
     put(I18nKey.actionTypePlayPause, "Riproduci/Pausa");
     put(I18nKey.actionTypeNet, "Rete");
+    put(I18nKey.actionTypeAdjust, "Regola tempo");
     put(I18nKey.actionTypeDelete, "Elimina la frase attuale");
     put(I18nKey.targetCurrentTip, "Suggerimento attuale");
     put(I18nKey.targetCurrentPlaying, "In riproduzione");
     put(I18nKey.playPauseBackSeconds, "Riavvolgi prima di riprodurre");
     put(I18nKey.seekBackSeconds, "Secondi di riavvolgimento");
+    put(I18nKey.adjustEdge, "Estremo");
+    put(I18nKey.adjustEdgeStart, "Inizio");
+    put(I18nKey.adjustEdgeEnd, "Fine");
+    put(I18nKey.adjustEdgeBoth, "Intero intervallo");
+    put(I18nKey.adjustOffsetMs, "Scostamento (ms)");
+    put(I18nKey.labelAdjustedTo, "Regolato a %s");
     put(I18nKey.gamepadBinding, "Assegnazioni del gamepad");
     put(I18nKey.gamepadPressButton, "Premi un pulsante del gamepad...");
     put(I18nKey.gamepadUnbound, "Non assegnato");

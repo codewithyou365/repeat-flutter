@@ -353,11 +353,18 @@ class ConfigKo extends Config {
     put(I18nKey.actionTypeRewind, "되감기");
     put(I18nKey.actionTypePlayPause, "재생/일시정지");
     put(I18nKey.actionTypeNet, "네트워크");
+    put(I18nKey.actionTypeAdjust, "시간 조정");
     put(I18nKey.actionTypeDelete, "현재 문장 삭제");
     put(I18nKey.targetCurrentTip, "현재 힌트");
     put(I18nKey.targetCurrentPlaying, "재생 중인 것");
     put(I18nKey.playPauseBackSeconds, "재생 전 되감기");
     put(I18nKey.seekBackSeconds, "되감기 초");
+    put(I18nKey.adjustEdge, "조정 지점");
+    put(I18nKey.adjustEdgeStart, "시작");
+    put(I18nKey.adjustEdgeEnd, "끝");
+    put(I18nKey.adjustEdgeBoth, "구간 전체");
+    put(I18nKey.adjustOffsetMs, "오프셋(ms)");
+    put(I18nKey.labelAdjustedTo, "%s(으)로 조정했습니다");
     put(I18nKey.gamepadBinding, "게임패드 매핑");
     put(I18nKey.gamepadPressButton, "게임패드 버튼을 누르세요...");
     put(I18nKey.gamepadUnbound, "매핑 없음");

@@ -353,11 +353,18 @@ class ConfigRu extends Config {
     put(I18nKey.actionTypeRewind, "Перемотка назад");
     put(I18nKey.actionTypePlayPause, "Воспроизведение/Пауза");
     put(I18nKey.actionTypeNet, "Сеть");
+    put(I18nKey.actionTypeAdjust, "Настроить время");
     put(I18nKey.actionTypeDelete, "Удалить текущую фразу");
     put(I18nKey.targetCurrentTip, "Текущая подсказка");
     put(I18nKey.targetCurrentPlaying, "Что играет сейчас");
     put(I18nKey.playPauseBackSeconds, "Отмотать перед воспроизведением");
     put(I18nKey.seekBackSeconds, "Секунд перемотки назад");
+    put(I18nKey.adjustEdge, "Точка");
+    put(I18nKey.adjustEdgeStart, "Начало");
+    put(I18nKey.adjustEdgeEnd, "Конец");
+    put(I18nKey.adjustEdgeBoth, "Весь отрезок");
+    put(I18nKey.adjustOffsetMs, "Смещение (мс)");
+    put(I18nKey.labelAdjustedTo, "Изменено на %s");
     put(I18nKey.gamepadBinding, "Назначения геймпада");
     put(I18nKey.gamepadPressButton, "Нажмите кнопку на геймпаде...");
     put(I18nKey.gamepadUnbound, "Не назначено");

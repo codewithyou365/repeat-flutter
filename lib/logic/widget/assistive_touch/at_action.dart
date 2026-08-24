@@ -16,6 +16,7 @@ enum AtActionType {
   rewind('r', Icons.replay, I18nKey.actionTypeRewind),
   playPause('pp', Icons.play_arrow, I18nKey.actionTypePlayPause),
   net('n', Icons.auto_fix_high, I18nKey.actionTypeNet),
+  adjust('aj', Icons.compress, I18nKey.actionTypeAdjust),
   delete('d', Icons.delete_outline, I18nKey.actionTypeDelete);
 
   final String code;
@@ -42,12 +43,31 @@ enum AtActionType {
   /// 只有朗读能作用在笔记上：笔记没有自己的媒体，播放/后退这些都无从谈起。
   bool get allowsNoteTarget => this == AtActionType.tts;
 
+  /// 有"后退秒数/播放时后退秒数"这个参数的类型。
+  bool get hasSeconds => this == AtActionType.rewind || this == AtActionType.playPause;
+
   /// "当前"这一档在界面上怎么显示。两种类型的"当前"不是一回事：
   /// 播放/朗读取界面上当前选中的那条提示，后退/播放暂停取进度条现在绑着的那个字段。
   I18nKey get currentTargetLabelKey {
     return (this == AtActionType.play || this == AtActionType.tts) //
         ? I18nKey.targetCurrentTip
         : I18nKey.targetCurrentPlaying;
+  }
+}
+
+/// "调整时间"动作调的是区间的哪一头。存的是下标（跟 net 的 behavior 一个套路），
+/// 读回来越界一律 clamp 回 [start]，不能抛——解析在复习页初始化的路上。
+enum AtAdjustEdge {
+  start(I18nKey.adjustEdgeStart),
+  end(I18nKey.adjustEdgeEnd),
+  both(I18nKey.adjustEdgeBoth);
+
+  final I18nKey labelKey;
+
+  const AtAdjustEdge(this.labelKey);
+
+  static AtAdjustEdge fromIndex(int index) {
+    return AtAdjustEdge.values[index.clamp(0, AtAdjustEdge.values.length - 1)];
   }
 }
 
@@ -195,6 +215,12 @@ class AtAction {
   /// rewind: 后退多少秒；playPause: 开始播放前先后退多少秒（0 就是原地接着播）。
   int seconds;
 
+  /// adjust: 调区间的哪一头，[AtAdjustEdge] 的下标。
+  int edge;
+
+  /// adjust: 端点挪多少毫秒，负数往前、正数往后。档位见 [offsetMsOptions]。
+  int offsetMs;
+
   final AtTtsConfig tts;
   final AtNetParams net;
 
@@ -204,6 +230,8 @@ class AtAction {
     required this.type,
     this.target = atCurrentTarget,
     this.seconds = 0,
+    this.edge = 0,
+    this.offsetMs = defaultOffsetMs,
     AtTtsConfig? tts,
     AtNetParams? net,
   })  : tts = tts ?? AtTtsConfig(),
@@ -218,6 +246,13 @@ class AtAction {
   /// 秒数只给几档常用值，比让用户自己敲数字省事，也避免敲出负数。
   /// playPause 的"播放时后退秒数"可以是 0（不后退），rewind 不行（退 0 秒没有意义）。
   static const List<int> secondsOptions = [0, 3, 5, 10, 15, 20, 30];
+
+  /// "调整时间"默认往前借 300 毫秒——句首的辅音被切掉时最常见的就是这个量级。
+  static const int defaultOffsetMs = -300;
+
+  /// 端点偏移的档位。负数把端点往前挪（起点往前 = 多播一点前面），正数往后。
+  /// 不给 0（挪 0 毫秒没有意义），也不让用户自己敲，免得敲出个把整段甩到几分钟外的数。
+  static const List<int> offsetMsOptions = [-2000, -1000, -500, -300, -200, -100, -50, 50, 100, 200, 300, 500, 1000, 2000];
 
   static AtAction? fromJson(Object? json) {
     if (json is! Map) {
@@ -234,6 +269,8 @@ class AtAction {
       type: type,
       target: json['g'] is String ? json['g'] as String : atCurrentTarget,
       seconds: json['s'] is int ? json['s'] as int : 0,
+      edge: json['ae'] is int ? json['ae'] as int : 0,
+      offsetMs: json['ms'] is int ? json['ms'] as int : defaultOffsetMs,
       tts: AtTtsConfig.fromJson(json['ts']),
       net: AtNetParams.fromJson(json['nt']),
     );
@@ -244,7 +281,9 @@ class AtAction {
         'n': name,
         't': type.code,
         if (type.hasTarget) 'g': target,
-        if (type == AtActionType.rewind || type == AtActionType.playPause) 's': seconds,
+        if (type.hasSeconds) 's': seconds,
+        if (type == AtActionType.adjust) 'ae': edge,
+        if (type == AtActionType.adjust) 'ms': offsetMs,
         if (type == AtActionType.tts) 'ts': tts.toJson(),
         if (type == AtActionType.net) 'nt': net.toJson(),
       };

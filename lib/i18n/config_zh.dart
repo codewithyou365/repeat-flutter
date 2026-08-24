@@ -353,11 +353,18 @@ class ConfigZh extends Config {
     put(I18nKey.actionTypeRewind, "后退");
     put(I18nKey.actionTypePlayPause, "播放/暂停");
     put(I18nKey.actionTypeNet, "联网");
+    put(I18nKey.actionTypeAdjust, "调整时间");
     put(I18nKey.actionTypeDelete, "删除当前节");
     put(I18nKey.targetCurrentTip, "当前提示");
     put(I18nKey.targetCurrentPlaying, "当前播放");
     put(I18nKey.playPauseBackSeconds, "播放时后退秒数");
     put(I18nKey.seekBackSeconds, "后退秒数");
+    put(I18nKey.adjustEdge, "调整端点");
+    put(I18nKey.adjustEdgeStart, "起点");
+    put(I18nKey.adjustEdgeEnd, "终点");
+    put(I18nKey.adjustEdgeBoth, "整段");
+    put(I18nKey.adjustOffsetMs, "偏移毫秒");
+    put(I18nKey.labelAdjustedTo, "已调整为 %s");
     put(I18nKey.gamepadBinding, "手柄绑定");
     put(I18nKey.gamepadPressButton, "请按下手柄按键...");
     put(I18nKey.gamepadUnbound, "未绑定");

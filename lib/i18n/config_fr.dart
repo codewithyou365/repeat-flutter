@@ -353,11 +353,18 @@ class ConfigFr extends Config {
     put(I18nKey.actionTypeRewind, "Retour arrière");
     put(I18nKey.actionTypePlayPause, "Lecture/Pause");
     put(I18nKey.actionTypeNet, "Réseau");
+    put(I18nKey.actionTypeAdjust, "Ajuster le temps");
     put(I18nKey.actionTypeDelete, "Supprimer la phrase actuelle");
     put(I18nKey.targetCurrentTip, "Astuce actuelle");
     put(I18nKey.targetCurrentPlaying, "En cours de lecture");
     put(I18nKey.playPauseBackSeconds, "Revenir en arrière avant la lecture");
     put(I18nKey.seekBackSeconds, "Secondes de retour arrière");
+    put(I18nKey.adjustEdge, "Extrémité");
+    put(I18nKey.adjustEdgeStart, "Début");
+    put(I18nKey.adjustEdgeEnd, "Fin");
+    put(I18nKey.adjustEdgeBoth, "Plage entière");
+    put(I18nKey.adjustOffsetMs, "Décalage (ms)");
+    put(I18nKey.labelAdjustedTo, "Ajusté à %s");
     put(I18nKey.gamepadBinding, "Affectations de la manette");
     put(I18nKey.gamepadPressButton, "Appuyez sur un bouton de la manette...");
     put(I18nKey.gamepadUnbound, "Non affecté");

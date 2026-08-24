@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/cr_kv.dart';
@@ -254,10 +255,68 @@ class AssistiveTouchLogic {
       case AtActionType.net:
         await _executeNet(action, inputs: inputs);
         break;
+      case AtActionType.adjust:
+        await _adjustRange(action);
+        break;
       case AtActionType.delete:
         await deleteCurrentVerse();
         break;
     }
+  }
+
+  /// "调整时间"：把作用位置的播放区间往前/往后挪一点，直接改到这一节的内容里。
+  ///
+  /// 比如问题的起点是 00:01:34,500、偏移 -300，执行完就是 00:01:34,200——听到句首被切掉时
+  /// 点一下就能往前借一点，不用切到编辑模式在进度条上找那个点再确认一次。
+  ///
+  /// 没配过区间的字段直接提示"无内容"，不给它造一个默认区间：那等于凭空把这一节的播放范围
+  /// 定死成 0~5 秒，比不动更糟。
+  Future<void> _adjustRange(AtAction action) async {
+    final helper = repeatLogic.state.helper;
+    final verse = helper.getCurrVerse();
+    final map = helper.getCurrVerseMap();
+    if (verse == null || map == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.tr);
+      return;
+    }
+    // "当前"跟后退/播放暂停是一个含义：进度条现在绑着的那个字段。
+    final fieldRef = action.target == atCurrentTarget //
+        ? _mediaRangeHelper.getCurrRange().fieldAcronym
+        : action.target;
+    final startStr = VerseField.getStr(map, fieldRef, VerseField.start);
+    final endStr = VerseField.getStr(map, fieldRef, VerseField.end);
+    if (startStr == null || endStr == null) {
+      Snackbar.show(I18nKey.labelNoContent.tr);
+      return;
+    }
+    var start = Time.parseTimeToMilliseconds(startStr).toInt();
+    var end = Time.parseTimeToMilliseconds(endStr).toInt();
+    final offset = action.offsetMs;
+    final edge = AtAdjustEdge.fromIndex(action.edge);
+    switch (edge) {
+      case AtAdjustEdge.start:
+        // 起点不能越过终点（区间长度归零后这一节就播不出声了），也不能到 0 之前。
+        start = (start + offset).clamp(0, end);
+        break;
+      case AtAdjustEdge.end:
+        // 终点这头不设上限：媒体本身多长由播放器兜底（见 MediaBar._checkAutoStop）。
+        end = end + offset < start ? start : end + offset;
+        break;
+      case AtAdjustEdge.both:
+        // 整段平移，长度不变；顶到 0 就少挪一点，不把区间挪成负的。
+        final delta = start + offset < 0 ? -start : offset;
+        start += delta;
+        end += delta;
+        break;
+    }
+    VerseField.setStr(map, fieldRef, VerseField.start, Time.convertMsToString(start));
+    VerseField.setStr(map, fieldRef, VerseField.end, Time.convertMsToString(end));
+    // updateVerseContent 会发 updateVerseContent 事件，MediaRangeHelper 的区间缓存跟着清掉，
+    // 所以这里只要触发一次重建，MediaBar 就会拿到新的起止点（跟编辑模式里存点位一个路子）。
+    await Db().db.verseDao.updateVerseContent(verse.verseId, jsonEncode(map));
+    repeatLogic.update();
+    final changed = edge == AtAdjustEdge.end ? end : start;
+    Snackbar.show(I18nKey.labelAdjustedTo.trArgs([Time.convertMsToString(changed)]));
   }
 
   /// 指定目标的"播放/暂停"：目标就是现在这条进度条绑着的字段时，跟不指定的完全一样

@@ -353,11 +353,18 @@ class ConfigVi extends Config {
     put(I18nKey.actionTypeRewind, "Tua lại");
     put(I18nKey.actionTypePlayPause, "Phát/Tạm dừng");
     put(I18nKey.actionTypeNet, "Mạng");
+    put(I18nKey.actionTypeAdjust, "Chỉnh thời gian");
     put(I18nKey.actionTypeDelete, "Xoá câu hiện tại");
     put(I18nKey.targetCurrentTip, "Gợi ý hiện tại");
     put(I18nKey.targetCurrentPlaying, "Đang phát");
     put(I18nKey.playPauseBackSeconds, "Tua lại trước khi phát");
     put(I18nKey.seekBackSeconds, "Số giây tua lại");
+    put(I18nKey.adjustEdge, "Điểm");
+    put(I18nKey.adjustEdgeStart, "Bắt đầu");
+    put(I18nKey.adjustEdgeEnd, "Kết thúc");
+    put(I18nKey.adjustEdgeBoth, "Toàn đoạn");
+    put(I18nKey.adjustOffsetMs, "Độ lệch (ms)");
+    put(I18nKey.labelAdjustedTo, "Đã chỉnh thành %s");
     put(I18nKey.gamepadBinding, "Gán phím tay cầm");
     put(I18nKey.gamepadPressButton, "Nhấn một nút trên tay cầm...");
     put(I18nKey.gamepadUnbound, "Chưa gán");

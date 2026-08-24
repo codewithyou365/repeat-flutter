@@ -353,11 +353,18 @@ class ConfigEs extends Config {
     put(I18nKey.actionTypeRewind, "Rebobinar");
     put(I18nKey.actionTypePlayPause, "Reproducir/Pausar");
     put(I18nKey.actionTypeNet, "Red");
+    put(I18nKey.actionTypeAdjust, "Ajustar tiempo");
     put(I18nKey.actionTypeDelete, "Eliminar la frase actual");
     put(I18nKey.targetCurrentTip, "Pista actual");
     put(I18nKey.targetCurrentPlaying, "Lo que suena ahora");
     put(I18nKey.playPauseBackSeconds, "Rebobinar antes de reproducir");
     put(I18nKey.seekBackSeconds, "Segundos a rebobinar");
+    put(I18nKey.adjustEdge, "Extremo");
+    put(I18nKey.adjustEdgeStart, "Inicio");
+    put(I18nKey.adjustEdgeEnd, "Fin");
+    put(I18nKey.adjustEdgeBoth, "Todo el rango");
+    put(I18nKey.adjustOffsetMs, "Desplazamiento (ms)");
+    put(I18nKey.labelAdjustedTo, "Ajustado a %s");
     put(I18nKey.gamepadBinding, "Asignaciones del mando");
     put(I18nKey.gamepadPressButton, "Pulsa un botón del mando...");
     put(I18nKey.gamepadUnbound, "Sin asignar");

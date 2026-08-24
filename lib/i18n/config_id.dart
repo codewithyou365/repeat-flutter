@@ -353,11 +353,18 @@ class ConfigId extends Config {
     put(I18nKey.actionTypeRewind, "Mundur");
     put(I18nKey.actionTypePlayPause, "Putar/Jeda");
     put(I18nKey.actionTypeNet, "Jaringan");
+    put(I18nKey.actionTypeAdjust, "Sesuaikan waktu");
     put(I18nKey.actionTypeDelete, "Hapus kalimat saat ini");
     put(I18nKey.targetCurrentTip, "Petunjuk saat ini");
     put(I18nKey.targetCurrentPlaying, "Yang sedang diputar");
     put(I18nKey.playPauseBackSeconds, "Mundur sebelum diputar");
     put(I18nKey.seekBackSeconds, "Detik mundur");
+    put(I18nKey.adjustEdge, "Titik");
+    put(I18nKey.adjustEdgeStart, "Awal");
+    put(I18nKey.adjustEdgeEnd, "Akhir");
+    put(I18nKey.adjustEdgeBoth, "Seluruh rentang");
+    put(I18nKey.adjustOffsetMs, "Pergeseran (md)");
+    put(I18nKey.labelAdjustedTo, "Disesuaikan ke %s");
     put(I18nKey.gamepadBinding, "Pemetaan gamepad");
     put(I18nKey.gamepadPressButton, "Tekan salah satu tombol gamepad...");
     put(I18nKey.gamepadUnbound, "Belum dipetakan");

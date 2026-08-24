@@ -353,11 +353,18 @@ class ConfigPt extends Config {
     put(I18nKey.actionTypeRewind, "Retroceder");
     put(I18nKey.actionTypePlayPause, "Reproduzir/Pausar");
     put(I18nKey.actionTypeNet, "Rede");
+    put(I18nKey.actionTypeAdjust, "Ajustar tempo");
     put(I18nKey.actionTypeDelete, "Excluir a frase atual");
     put(I18nKey.targetCurrentTip, "Dica atual");
     put(I18nKey.targetCurrentPlaying, "O que está tocando");
     put(I18nKey.playPauseBackSeconds, "Retroceder antes de reproduzir");
     put(I18nKey.seekBackSeconds, "Segundos de retrocesso");
+    put(I18nKey.adjustEdge, "Extremidade");
+    put(I18nKey.adjustEdgeStart, "Início");
+    put(I18nKey.adjustEdgeEnd, "Fim");
+    put(I18nKey.adjustEdgeBoth, "Intervalo inteiro");
+    put(I18nKey.adjustOffsetMs, "Deslocamento (ms)");
+    put(I18nKey.labelAdjustedTo, "Ajustado para %s");
     put(I18nKey.gamepadBinding, "Mapeamento do controle");
     put(I18nKey.gamepadPressButton, "Pressione um botão do controle...");
     put(I18nKey.gamepadUnbound, "Sem mapeamento");
