@@ -1440,6 +1440,13 @@ const assistTriggerKeys = computed(() => {
   return assistiveTouchBindings.value.map((b) => b.key).filter((k) => k !== '');
 });
 
+// 执行结果算不算"这个按钮没用了"。只有 App 明确回了一个不是 'ok' 的结果才算
+// （'not_found' / 'unavailable' / 'invalid_args'）。
+// 网络请求类的动作（比如 AI 解释）在 App 那边要跑十几秒，ws 的 10 秒超时会先返回一个
+// status=504、data 为空的壳子，可这时候动作照样在执行、结果也会正常出来，
+// 这种情况不能提示"已失效"，不然功能明明生效了却报错。
+const tapFailed = (res: Response) => res.status === 200 && !res.error && res.data !== 'ok';
+
 // 按下绑定键：让 App 执行对应的辅助触控按钮。这里不开 overlay，避免打断打字节奏；
 // 但按钮已经被删掉/当前模式用不了时要给个提示，不然用户只会觉得"这个键没反应"。
 const onAssistTrigger = async (key: string, bounds: { start: number; end: number } | null) => {
@@ -1458,7 +1465,7 @@ const onAssistTrigger = async (key: string, bounds: { start: number; end: number
       data: binding.action,
     });
     const res = await client.node!.send(req);
-    if (res.data !== 'ok') {
+    if (tapFailed(res)) {
       showToast.warn(`${t('assistiveTouchActionMissing')} ${binding.name}`);
     }
   } catch (error) {
@@ -1479,7 +1486,7 @@ const onWordAsk = async (binding: AssistiveTouchBinding, bounds: { start: number
       data: {id: binding.action, sentence: content.value, start: bounds.start, end: bounds.end},
     });
     const res = await client.node!.send(req);
-    if (res.data !== 'ok') {
+    if (tapFailed(res)) {
       showToast.warn(`${t('assistiveTouchActionMissing')} ${binding.name}`);
     }
   } catch (error) {
