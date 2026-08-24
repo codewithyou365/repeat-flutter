@@ -105,6 +105,7 @@ export default {
     spellResetLevel: "スペル読み上げでレベルを 0 に戻す",
     hintTrigger: "ヒントキー",
     maskTrigger: "目隠し切り替えキー",
+    maskTriggerDesc: "押すたびに切り替わります：真っ暗 → 入力済みの文字だけ表示（下のボタンは見えます）→ 目隠しなし",
     dimOnMask: "目隠し中は画面を暗くする",
     dimOnMaskDesc: "アプリ内でのみ有効。別の端末のブラウザーでは効きません",
     immersiveOnMask: "目隠し中はシステムバーを隠す",

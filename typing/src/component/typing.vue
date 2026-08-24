@@ -1,6 +1,6 @@
 <template>
   <label>
-    <div class="typing" :class="{ 'no-scroll': paintMode }" ref="containerRef" @click="focusInput"
+    <div class="typing" :class="{ 'no-scroll': paintMode, 'hide-pending': hidePending }" ref="containerRef" @click="focusInput"
          @touchstart="handleTouch($event, 'start')"
          @touchmove="handleTouch($event, 'move')"
          @touchend="handleTouch($event, 'end')"
@@ -80,6 +80,9 @@ const props = withDefaults(defineProps<{
   assistTriggers?: string[];
   keyMapping?: string;
   touchColor?: string;
+  // 只显示已经打出来的内容：还没打到的格子（含下划线、被忽略的标点数字）整片藏起来，
+  // 免得剩余长度和标点结构提前把答案透出去。占位仍在，排版不会跳。
+  hidePending?: boolean;
   // 熟词在 content 里的位置（含头含尾），由父组件按熟词库算好。
   // 光标走到 start 时发 familiarPrompt（父组件放提示音），在 start 上打对首字母就整词自动补全，
   // 打错则发 familiarMiss（父组件把这个词移出熟词库）。
@@ -98,6 +101,7 @@ const props = withDefaults(defineProps<{
   deleteTrigger: '',
   assistTriggers: () => [],
   keyMapping: '',
+  hidePending: false,
   familiarRanges: () => [],
 });
 
@@ -858,6 +862,12 @@ defineExpose({
   position: relative;
   /* 只锁横向手势，纵向留给外层滚动：内容多到一屏放不下时手指还能把页面划上去 */
   touch-action: pan-y;
+}
+
+/* 只显示已打内容：用 visibility 而不是 display，保留占位，切换时排版不跳 */
+.typing.hide-pending .pending,
+.typing.hide-pending .pending-ignore {
+  visibility: hidden;
 }
 
 /* 划字模式（disabled + 点击/涂色填字）下手指是用来涂格子的，这时才彻底禁掉滚动 */

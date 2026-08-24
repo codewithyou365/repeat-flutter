@@ -105,6 +105,7 @@ export default {
     spellResetLevel: "Remettre le niveau à 0 lors de l'épellation",
     hintTrigger: "Touche d'astuce",
     maskTrigger: "Touche de masquage",
+    maskTriggerDesc: "Chaque appui change de mode : tout noir → n'afficher que ce qui est déjà tapé (les boutons du bas restent visibles) → sans masque",
     dimOnMask: "Assombrir l'écran pendant le masquage",
     dimOnMaskDesc: "Fonctionne uniquement dans l'application, pas dans un navigateur sur un autre appareil",
     immersiveOnMask: "Masquer les barres système pendant le masquage",

@@ -178,7 +178,7 @@ func sha1File(path string) (string, error) {
 }
 
 func main() {
-	addr := flag.String("addr", ":8080", "监听地址")
+	addr := flag.String("addr", ":8082", "监听地址")
 	dir := flag.String("dir", "./games", "放 *.zip 的目录")
 	flag.Parse()
 

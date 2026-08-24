@@ -105,6 +105,7 @@ export default {
     spellResetLevel: "Stufe beim Buchstabieren auf 0 zurücksetzen",
     hintTrigger: "Hinweistaste",
     maskTrigger: "Taste zum Abdecken",
+    maskTriggerDesc: "Jeder Druck wechselt den Modus: ganz schwarz → nur das bereits Getippte anzeigen (die Tasten unten bleiben sichtbar) → keine Abdeckung",
     dimOnMask: "Bildschirm beim Abdecken dimmen",
     dimOnMaskDesc: "Funktioniert nur in der App, nicht im Browser auf einem anderen Gerät",
     immersiveOnMask: "Systemleisten beim Abdecken ausblenden",

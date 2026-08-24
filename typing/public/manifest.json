@@ -1,6 +1,6 @@
 {
   "name": "typing",
-  "version": 9,
+  "version": 11,
   "server": "http://127.0.0.1:8080/typing/manifest.json",
   "games": [
     {

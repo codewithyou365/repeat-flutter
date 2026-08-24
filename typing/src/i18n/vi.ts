@@ -105,6 +105,7 @@ export default {
     spellResetLevel: "Đưa cấp về 0 khi đánh vần",
     hintTrigger: "Phím gợi ý",
     maskTrigger: "Phím bật/tắt che",
+    maskTriggerDesc: "Mỗi lần nhấn sẽ đổi chế độ: đen hoàn toàn → chỉ hiện phần đã gõ (các nút bên dưới vẫn thấy được) → không che",
     dimOnMask: "Làm tối màn hình khi che",
     dimOnMaskDesc: "Chỉ chạy trong ứng dụng, không chạy trên trình duyệt ở thiết bị khác",
     immersiveOnMask: "Ẩn thanh hệ thống khi che",

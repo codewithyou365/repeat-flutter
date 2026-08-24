@@ -105,6 +105,7 @@ export default {
     spellResetLevel: "Kembalikan level ke 0 saat mengeja",
     hintTrigger: "Tombol petunjuk",
     maskTrigger: "Tombol buka/tutup penutup",
+    maskTriggerDesc: "Setiap tekan berganti mode: hitam total → hanya menampilkan yang sudah diketik (tombol di bawah tetap terlihat) → tanpa penutup",
     dimOnMask: "Redupkan layar saat ditutup",
     dimOnMaskDesc: "Hanya bekerja di dalam aplikasi, tidak di peramban pada perangkat lain",
     immersiveOnMask: "Sembunyikan bilah sistem saat ditutup",

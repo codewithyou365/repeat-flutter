@@ -105,6 +105,7 @@ export default {
     spellResetLevel: "Zerar o nível ao soletrar",
     hintTrigger: "Tecla de dica",
     maskTrigger: "Tecla de tapar/destapar",
+    maskTriggerDesc: "Cada toque muda de modo: tudo preto → mostrar apenas o que já foi digitado (os botões abaixo continuam visíveis) → sem cobrir",
     dimOnMask: "Escurecer a tela ao tapar",
     dimOnMaskDesc: "Só funciona dentro do app, não no navegador de outro aparelho",
     immersiveOnMask: "Ocultar as barras do sistema ao tapar",

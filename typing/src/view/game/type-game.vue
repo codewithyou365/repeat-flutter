@@ -132,7 +132,8 @@
             @blur="setMaskTrigger(maskTrigger)"
         />
         <nut-button size="mini" type="info" plain @click="openKeyPicker('mask')">+</nut-button>
-        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('multiKeyDesc'))"/>
+        <Ask color="#999" width="16px" height="16px" class="cell-help"
+             @click="showHelp(t('maskTriggerDesc') + '<br/><br/>' + t('multiKeyDesc'))"/>
       </template>
     </nut-cell>
     <nut-cell :title="t('dimOnMask')">
@@ -238,7 +239,7 @@
   <div v-else-if="ready" class="type-game-container">
     <div class="info-bar">
       <Voice class="info-icon" width="18px" height="18px" @click="speakCurrentWord"/>
-      <Eye class="info-icon" width="18px" height="18px" @click="setEyesClosed(true)"/>
+      <Eye class="info-icon" width="18px" height="18px" @click="cycleMaskMode()"/>
       <Ask class="info-icon" width="18px" height="18px" @click="showTips"/>
     </div>
     <div v-if="eyesClosedMaskVisible" class="eyes-closed-mask" @pointerdown.prevent="onMaskPointerDown"></div>
@@ -258,6 +259,7 @@
           :spell-play-trigger="spellPlayTrigger"
           :hint-trigger="hintTrigger"
           :mask-trigger="maskTrigger"
+          :hide-pending="maskMode === 'typed'"
           :delete-trigger="deleteTrigger"
           :assist-triggers="assistTriggerKeys"
           :key-mapping="keyMapping"
@@ -362,7 +364,13 @@ const adminEnable = ref(false);
 const adminId = ref(0);
 const content = ref('');
 const typingRef = ref<InstanceType<typeof Typing>>();
-const eyesClosedMaskVisible = ref(false);
+// 遮挡有三档，maskTrigger（或 Eye 图标）按一下往下轮转一档：
+// black = 整屏全黑；typed = 只显示已经打出来的内容（下面的按钮、信息栏照常可见）；off = 不遮。
+type MaskMode = 'black' | 'typed' | 'off';
+const maskModeOrder: MaskMode[] = ['black', 'typed', 'off'];
+const maskMode = ref<MaskMode>('off');
+// 全黑那一档才铺遮罩层，另外两档屏幕是能看见的
+const eyesClosedMaskVisible = computed(() => maskMode.value === 'black');
 const labels = reactive({
   left: '',
   middle: '',
@@ -892,15 +900,15 @@ const setDimOnMask = (value: boolean) => {
   setConfig("dimOnMask", value);
   // 正闭着眼时改开关：屏幕已经是暗的/系统栏已经藏了，按新设置立刻重下一次，
   // 不然只能靠再闭一次眼才恢复
-  if (eyesClosedMaskVisible.value) {
-    applyMaskUi(true);
+  if (maskMode.value !== 'off') {
+    applyMaskUi(maskMode.value);
   }
 };
 const setImmersiveOnMask = (value: boolean) => {
   profiles.value[activeProfile.value].immersiveOnMask = value;
   setConfig("immersiveOnMask", value);
-  if (eyesClosedMaskVisible.value) {
-    applyMaskUi(true);
+  if (maskMode.value !== 'off') {
+    applyMaskUi(maskMode.value);
   }
 };
 const setDeleteTrigger = (value: string) => {
@@ -1377,28 +1385,36 @@ const isInAppWebView = ['127.0.0.1', 'localhost', '[::1]', '::1'].includes(windo
 // 遮挡（"黑屏模式"）时把 App 那台设备的屏幕调暗、系统栏藏掉；取消遮挡时还原。
 // 两件事各有一个开关，一起下发给 App。
 // 不 await、不开 overlay：闭眼可以由快捷键触发，等一个网络往返会卡住打字节奏。
-const applyMaskUi = (masked: boolean) => {
+const applyMaskUi = (mode: MaskMode) => {
   if (!isInAppWebView) {
     return;
   }
+  // 调暗只跟全黑那一档走：typed 档屏幕上还有字要看，调暗等于把自己的内容也糊掉。
+  // 藏系统栏两档都做，遮挡时的沉浸感是一样的诉求。
   const req = new Request({
     path: Path.game,
     headers: {'jsMethod': 'Game.setBrightness'},
-    data: {dim: masked && dimOnMask.value, immersive: masked && immersiveOnMask.value},
+    data: {dim: mode === 'black' && dimOnMask.value, immersive: mode !== 'off' && immersiveOnMask.value},
   });
   client.node!.send(req).catch((error) => {
     console.error('Failed to apply mask ui:', error);
   });
 };
 
-// 闭眼开关的唯一入口：三个触发点（Eye 图标、遮罩上连点两下、maskTrigger 快捷键）都走这里，
+// 遮挡切换的唯一入口：三个触发点（Eye 图标、遮罩上连点两下、maskTrigger 快捷键）都走这里，
 // 免得亮度/系统栏的还原漏在某一条路上
-const setEyesClosed = (value: boolean) => {
-  if (eyesClosedMaskVisible.value === value) {
+const setMaskMode = (mode: MaskMode) => {
+  if (maskMode.value === mode) {
     return;
   }
-  eyesClosedMaskVisible.value = value;
-  applyMaskUi(value);
+  maskMode.value = mode;
+  applyMaskUi(mode);
+};
+
+// 轮转一档：off -> black -> typed -> off
+const cycleMaskMode = () => {
+  const next = maskModeOrder[(maskModeOrder.indexOf(maskMode.value) + 1) % maskModeOrder.length];
+  setMaskMode(next);
 };
 
 // 黑屏模式下单击不退出：屏幕全黑之后揣兜里/放桌上，一碰就退出没法用。要连点两下才退。
@@ -1409,14 +1425,14 @@ const onMaskPointerDown = () => {
   const now = Date.now();
   if (now - lastMaskTapAt < 400) {
     lastMaskTapAt = 0;
-    setEyesClosed(false);
+    setMaskMode('off');
     return;
   }
   lastMaskTapAt = now;
 };
 
 const onMaskTrigger = () => {
-  setEyesClosed(!eyesClosedMaskVisible.value);
+  cycleMaskMode();
 };
 
 // 空键不算触发键，过滤掉，免得用户还没填键的那一行把普通输入吃掉
@@ -1549,12 +1565,12 @@ onMounted(async () => {
   });
 });
 
-// 闭眼状态下页面被切走：屏幕还暗着，还原一次。
+// 遮挡状态下页面被切走：屏幕还暗着/系统栏还藏着，还原一次。
 // （App 那边 RepeatLogic.onClose / JsRuntime.dispose 也有兜底，这里是最快的那条）
 onUnmounted(() => {
   document.removeEventListener('visibilitychange', onVisibilityChange);
-  if (eyesClosedMaskVisible.value) {
-    applyMaskUi(false);
+  if (maskMode.value !== 'off') {
+    applyMaskUi('off');
   }
 });
 

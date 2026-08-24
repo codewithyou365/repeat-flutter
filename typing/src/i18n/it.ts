@@ -105,6 +105,7 @@ export default {
     spellResetLevel: "Riporta il livello a 0 quando fai lo spelling",
     hintTrigger: "Tasto suggerimento",
     maskTrigger: "Tasto per coprire/scoprire",
+    maskTriggerDesc: "Ogni pressione cambia modalità: tutto nero → mostra solo ciò che hai già digitato (i pulsanti in basso restano visibili) → nessuna copertura",
     dimOnMask: "Attenua lo schermo quando è coperto",
     dimOnMaskDesc: "Funziona solo dentro l'app, non nel browser di un altro dispositivo",
     immersiveOnMask: "Nascondi le barre di sistema quando è coperto",

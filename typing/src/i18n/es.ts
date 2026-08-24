@@ -105,6 +105,7 @@ export default {
     spellResetLevel: "Poner el nivel a 0 al deletrear",
     hintTrigger: "Tecla de pista",
     maskTrigger: "Tecla para tapar/destapar",
+    maskTriggerDesc: "Cada pulsación cambia de modo: todo negro → mostrar solo lo ya escrito (los botones de abajo siguen visibles) → sin tapar",
     dimOnMask: "Atenuar la pantalla al tapar",
     dimOnMaskDesc: "Solo funciona dentro de la app, no en el navegador de otro dispositivo",
     immersiveOnMask: "Ocultar las barras del sistema al tapar",

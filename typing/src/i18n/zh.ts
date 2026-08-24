@@ -105,6 +105,7 @@ export default {
     spellResetLevel: "逐字母朗读时将学习等级置零",
     hintTrigger: "提示快捷键",
     maskTrigger: "遮挡开关快捷键",
+    maskTriggerDesc: "按一下换一档：全黑 → 只显示已经打出来的内容（下面的按钮照常可见）→ 不遮挡",
     dimOnMask: "闭眼时调暗屏幕",
     dimOnMaskDesc: "只在 App 内生效，其它设备用浏览器打开时不起作用",
     immersiveOnMask: "闭眼时隐藏系统栏",

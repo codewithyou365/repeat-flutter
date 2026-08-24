@@ -105,6 +105,7 @@ export default {
     spellResetLevel: "Reset Level to 0 on Spell Out",
     hintTrigger: "Hint Key",
     maskTrigger: "Toggle Mask Key",
+    maskTriggerDesc: "Each press switches mode: all black → show only what you have typed (the buttons below stay visible) → no mask",
     dimOnMask: "Dim Screen on Mask",
     dimOnMaskDesc: "Only works inside the app, not in a browser on another device",
     immersiveOnMask: "Hide System Bars on Mask",

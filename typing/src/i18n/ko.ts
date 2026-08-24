@@ -105,6 +105,7 @@ export default {
     spellResetLevel: "철자를 읽으면 레벨을 0으로 되돌리기",
     hintTrigger: "힌트 키",
     maskTrigger: "가림 전환 키",
+    maskTriggerDesc: "누를 때마다 전환됩니다: 완전 검정 → 이미 입력한 내용만 표시(아래 버튼은 계속 보임) → 가리지 않음",
     dimOnMask: "가릴 때 화면 어둡게",
     dimOnMaskDesc: "앱 안에서만 동작하며, 다른 기기의 브라우저에서는 되지 않습니다",
     immersiveOnMask: "가릴 때 시스템 바 숨기기",
