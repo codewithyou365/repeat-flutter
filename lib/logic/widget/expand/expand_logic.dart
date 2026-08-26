@@ -60,6 +60,11 @@ class ExpandLogic {
   /// 本节字段在模版里的占位符名字。
   static const String questionKey = 'question';
   static const String answerKey = 'answer';
+  static const String noteKey = 'note';
+
+  /// "界面上当前选中的那条提示"的占位符名字。它跟小节内容无关（取决于现在开着哪个 tab），
+  /// 所以不在 [verseValues] 里，由调用方按当前界面算好塞进 render 的 inputs（见朗读动作）。
+  static const String currentKey = 'current';
 
   /// 第 i 条提示的占位符名字（1 基）。
   static String tipKey(int index) => 'tip${index + 1}';
@@ -68,6 +73,8 @@ class ExpandLogic {
   Map<String, String> verseValues() => {
         questionKey: VerseField.getText(verseMap, QaType.question.acronym) ?? '',
         answerKey: VerseField.getText(verseMap, QaType.answer.acronym) ?? '',
+        noteKey: VerseField.getText(verseMap, QaType.note.acronym) ?? '',
+        currentKey: '',
         for (var i = 0; i < VerseField.maxTip; i++) tipKey(i): VerseField.getText(verseMap, VerseField.ref(QaType.tip.acronym, i)) ?? '',
       };
 

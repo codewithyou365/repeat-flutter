@@ -593,5 +593,6 @@ class ConfigFr extends Config {
     put(I18nKey.labelMaxRepeatTime, "Répétitions après une erreur");
     put(I18nKey.labelMaxRepeatTimeDesc, "Combien de fois d'affilée il faut réussir après une erreur (au moins 1)");
     put(I18nKey.labelMaxRepeatTimeInvalid, "Le nombre doit être d'au moins 1");
+    put(I18nKey.ttsContent, "Texte à lire");
   }
 }

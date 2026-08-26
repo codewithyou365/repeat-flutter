@@ -593,5 +593,6 @@ class ConfigVi extends Config {
     put(I18nKey.labelMaxRepeatTime, "Số lần lặp sau khi sai");
     put(I18nKey.labelMaxRepeatTimeDesc, "Sau khi sai, bạn phải đúng liên tiếp bao nhiêu lần (ít nhất 1)");
     put(I18nKey.labelMaxRepeatTimeInvalid, "Số lần phải ít nhất là 1");
+    put(I18nKey.ttsContent, "Nội dung đọc");
   }
 }

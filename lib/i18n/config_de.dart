@@ -593,5 +593,6 @@ class ConfigDe extends Config {
     put(I18nKey.labelMaxRepeatTime, "Wiederholungen nach einem Fehler");
     put(I18nKey.labelMaxRepeatTimeDesc, "Wie oft du es nach einem Fehler hintereinander richtig machen musst (mindestens 1)");
     put(I18nKey.labelMaxRepeatTimeInvalid, "Die Anzahl muss mindestens 1 sein");
+    put(I18nKey.ttsContent, "Vorlesetext");
   }
 }

@@ -593,5 +593,6 @@ class ConfigJa extends Config {
     put(I18nKey.labelMaxRepeatTime, "まちがえた後の繰り返し回数");
     put(I18nKey.labelMaxRepeatTimeDesc, "まちがえた後、続けて何回正解すればよいか（1 以上）");
     put(I18nKey.labelMaxRepeatTimeInvalid, "回数は 1 以上にしてください");
+    put(I18nKey.ttsContent, "読み上げるテキスト");
   }
 }

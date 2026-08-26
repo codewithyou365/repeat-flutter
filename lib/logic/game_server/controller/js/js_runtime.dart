@@ -328,9 +328,9 @@ class JsRuntime {
         await logic.loadActions();
         final ret = <Map<String, dynamic>>[];
         for (final action in logic.actions) {
-          // inputCount 是这个动作要几个参数（net 类型的模版里实际写了几个 {{inputN}}），
+          // inputCount 是这个动作要几个参数（模版里实际写了几个 {{inputN}}，见 AtAction.inputTemplate），
           // inputKeys 是它们的占位符名字，脚本按这个顺序准备 assistiveTouchTap 的 'inputs'。
-          final inputNumbers = ExpandLogic.inputNumbersOf(action.net.template);
+          final inputNumbers = ExpandLogic.inputNumbersOf(action.inputTemplate);
           ret.add({
             'id': 'custom:${action.id}',
             'name': action.name,

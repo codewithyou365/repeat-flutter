@@ -593,5 +593,6 @@ class ConfigIt extends Config {
     put(I18nKey.labelMaxRepeatTime, "Ripetizioni dopo un errore");
     put(I18nKey.labelMaxRepeatTimeDesc, "Quante volte di fila devi indovinare dopo un errore (almeno 1)");
     put(I18nKey.labelMaxRepeatTimeInvalid, "Il numero deve essere almeno 1");
+    put(I18nKey.ttsContent, "Testo da leggere");
   }
 }

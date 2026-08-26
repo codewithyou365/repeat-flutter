@@ -593,5 +593,6 @@ class ConfigZh extends Config {
     put(I18nKey.labelMaxRepeatTime, "错误后重复次数");
     put(I18nKey.labelMaxRepeatTimeDesc, "答错后需要连续答对的次数（至少 1）");
     put(I18nKey.labelMaxRepeatTimeInvalid, "次数至少为 1");
+    put(I18nKey.ttsContent, "朗读内容");
   }
 }

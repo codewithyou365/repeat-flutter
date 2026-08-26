@@ -593,5 +593,6 @@ class ConfigRu extends Config {
     put(I18nKey.labelMaxRepeatTime, "Повторов после ошибки");
     put(I18nKey.labelMaxRepeatTimeDesc, "Сколько раз подряд нужно ответить верно после ошибки (не меньше 1)");
     put(I18nKey.labelMaxRepeatTimeInvalid, "Количество должно быть не меньше 1");
+    put(I18nKey.ttsContent, "Текст для озвучивания");
   }
 }

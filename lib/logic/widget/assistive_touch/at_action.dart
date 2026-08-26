@@ -34,22 +34,20 @@ enum AtActionType {
     return null;
   }
 
-  /// 有"作用位置"参数的类型。只有"删除当前节"没有。
-  bool get hasTarget => this != AtActionType.delete;
+  /// 有"作用位置"参数的类型。"删除当前节"没有；"朗读"也没有——
+  /// 它改成了自己写朗读文本（[AtTtsConfig.template]），不再挑某个字段。
+  bool get hasTarget => this != AtActionType.delete && this != AtActionType.tts;
 
   /// 作用位置里能不能选"当前"。net 是把请求结果覆盖到某个字段上，必须指到具体字段。
   bool get allowsCurrentTarget => this != AtActionType.net && this != AtActionType.delete;
-
-  /// 只有朗读能作用在笔记上：笔记没有自己的媒体，播放/后退这些都无从谈起。
-  bool get allowsNoteTarget => this == AtActionType.tts;
 
   /// 有"后退秒数/播放时后退秒数"这个参数的类型。
   bool get hasSeconds => this == AtActionType.rewind || this == AtActionType.playPause;
 
   /// "当前"这一档在界面上怎么显示。两种类型的"当前"不是一回事：
-  /// 播放/朗读取界面上当前选中的那条提示，后退/播放暂停取进度条现在绑着的那个字段。
+  /// 播放取界面上当前选中的那条提示，后退/播放暂停取进度条现在绑着的那个字段。
   I18nKey get currentTargetLabelKey {
-    return (this == AtActionType.play || this == AtActionType.tts) //
+    return (this == AtActionType.play) //
         ? I18nKey.targetCurrentTip
         : I18nKey.targetCurrentPlaying;
   }
@@ -111,10 +109,17 @@ class AtTtsConfig {
   int? rateIndex;
   int? pitchIndex;
 
+  /// 朗读文本的模版原文（不是渲染结果），写法跟 net 的指令模版一样：
+  /// {{question}}/{{answer}}/{{note}}/{{tip1}}..{{tip8}} 取当前小节的正文，
+  /// {{current}} 取界面上当前选中的那条提示，{{input1}}..{{input10}} 执行前弹框填。
+  /// 空串表示老数据（那时朗读是挑字段的），执行时按 AtAction.target 走老路子。
+  String template;
+
   AtTtsConfig({
     Map<String, Map<String, dynamic>>? byPlatform,
     this.rateIndex,
     this.pitchIndex,
+    this.template = '',
   }) : byPlatform = byPlatform ?? {};
 
   static String get _platformKey => Platform.isAndroid ? 'a' : 'i';
@@ -156,6 +161,7 @@ class AtTtsConfig {
       byPlatform: byPlatform,
       rateIndex: json['r'] is int ? json['r'] as int : null,
       pitchIndex: json['p'] is int ? json['p'] as int : null,
+      template: json['tp'] is String ? json['tp'] as String : '',
     );
   }
 
@@ -163,6 +169,7 @@ class AtTtsConfig {
         ...byPlatform,
         if (rateIndex != null) 'r': rateIndex,
         if (pitchIndex != null) 'p': pitchIndex,
+        if (template.isNotEmpty) 'tp': template,
       };
 }
 
@@ -237,6 +244,19 @@ class AtAction {
   })  : tts = tts ?? AtTtsConfig(),
         net = net ?? AtNetParams();
 
+  /// 这个动作里能写 {{inputN}} 的那份模版：朗读是朗读文本，联网是指令，其它类型没有。
+  /// 游戏那边靠它算出要准备几个参数（见 js_runtime 的 assistiveTouchActions）。
+  String get inputTemplate {
+    switch (type) {
+      case AtActionType.tts:
+        return tts.template;
+      case AtActionType.net:
+        return net.template;
+      default:
+        return '';
+    }
+  }
+
   /// classroom.content 里存动作列表的键。
   static const String contentKey = 'at';
 
@@ -280,7 +300,9 @@ class AtAction {
         'i': id,
         'n': name,
         't': type.code,
-        if (type.hasTarget) 'g': target,
+        // 朗读改成写模版之后不再有作用位置，但老动作存的 'g' 要留着：
+        // 模版为空时执行还按它走（见 AssistiveTouchLogic.execute）。
+        if (type.hasTarget || (type == AtActionType.tts && target != atCurrentTarget)) 'g': target,
         if (type.hasSeconds) 's': seconds,
         if (type == AtActionType.adjust) 'ae': edge,
         if (type == AtActionType.adjust) 'ms': offsetMs,
@@ -314,7 +336,6 @@ class AtAction {
       if (type.allowsCurrentTarget) atCurrentTarget,
       QaType.question.acronym,
       QaType.answer.acronym,
-      if (type.allowsNoteTarget) QaType.note.acronym,
       for (var i = 0; i < tipCount; i++) VerseField.ref(QaType.tip.acronym, i),
     ];
   }

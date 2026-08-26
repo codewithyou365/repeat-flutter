@@ -593,5 +593,6 @@ class ConfigEs extends Config {
     put(I18nKey.labelMaxRepeatTime, "Repeticiones tras un error");
     put(I18nKey.labelMaxRepeatTimeDesc, "Cuántas veces seguidas debes acertar después de un error (mínimo 1)");
     put(I18nKey.labelMaxRepeatTimeInvalid, "La cantidad debe ser al menos 1");
+    put(I18nKey.ttsContent, "Texto para leer");
   }
 }

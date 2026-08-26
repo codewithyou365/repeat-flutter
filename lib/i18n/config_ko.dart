@@ -593,5 +593,6 @@ class ConfigKo extends Config {
     put(I18nKey.labelMaxRepeatTime, "틀린 뒤 반복 횟수");
     put(I18nKey.labelMaxRepeatTimeDesc, "틀린 뒤 연속으로 몇 번 맞혀야 하는지 (1 이상)");
     put(I18nKey.labelMaxRepeatTimeInvalid, "횟수는 1 이상이어야 합니다");
+    put(I18nKey.ttsContent, "읽을 내용");
   }
 }

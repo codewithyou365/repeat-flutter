@@ -229,14 +229,14 @@ class AssistiveTouchLogic {
 
   bool get canDeleteCurrentVerse => actions.any((a) => a.type == AtActionType.delete && availableForFlow(a));
 
-  /// [inputs] 只对 net 类型有意义，见 [_executeNet]。
+  /// [inputs] 只对朗读和联网这两种有意义（模版里写了 {{inputN}} 的），见 [_executeTts]/[_executeNet]。
   Future<void> execute(AtAction action, {List<String>? inputs}) async {
     switch (action.type) {
       case AtActionType.play:
         await _play(_fieldRefOf(action));
         break;
       case AtActionType.tts:
-        await _speakWith(_fieldRefOf(action), action.tts.settings);
+        await _executeTts(action, inputs: inputs);
         break;
       case AtActionType.rewind:
         if (action.target == atCurrentTarget) {
@@ -450,6 +450,44 @@ class AssistiveTouchLogic {
       return;
     }
     await repeatLogic.ttsHelper.speakTextWith(settings, text);
+  }
+
+  /// 朗读动作：把用户自己写的那段模版按当前小节渲染出来再读。
+  /// 模版里的 {{question}}/{{note}}/{{tip1}}.. 取本节正文，{{current}} 取界面上选中的那条提示，
+  /// {{inputN}} 跟 net 一个规矩（[inputs] 传了就当程序级调用不弹框，见 [_executeNet]）。
+  ///
+  /// 模版为空是老动作（那时朗读是挑字段的）：还按它存的作用位置读，行为不变。
+  Future<void> _executeTts(AtAction action, {List<String>? inputs}) async {
+    final template = action.tts.template;
+    if (template.isEmpty) {
+      await _speakWith(_fieldRefOf(action), action.tts.settings);
+      return;
+    }
+    final map = repeatLogic.state.helper.getCurrVerseMap();
+    if (map == null) {
+      Snackbar.show(I18nKey.labelDataAnomaly.tr);
+      return;
+    }
+    final inputNumbers = ExpandLogic.inputNumbersOf(template);
+    var values = inputs;
+    if (inputNumbers.isNotEmpty && values == null) {
+      values = await ExpandInputSheet.open(action.name, inputNumbers);
+      if (values == null) {
+        return;
+      }
+    }
+    final expand = ExpandLogic();
+    expand.verseMap = map;
+    expand.classroomMap = _classroomMap;
+    final text = expand.render(template, inputs: {
+      ExpandLogic.currentKey: VerseField.getText(map, repeatLogic.state.helper.currTipRef()) ?? '',
+      ...ExpandLogic.inputsOf(inputNumbers, values),
+    });
+    if (text.trim().isEmpty) {
+      Snackbar.show(I18nKey.labelNoContent.tr);
+      return;
+    }
+    await repeatLogic.ttsHelper.speakTextWith(action.tts.settings, text);
   }
 
   /// 取字段正文，顺带把"没数据/没内容"的提示弹掉，两个朗读入口共用。

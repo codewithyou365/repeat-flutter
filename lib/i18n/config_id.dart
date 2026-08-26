@@ -593,5 +593,6 @@ class ConfigId extends Config {
     put(I18nKey.labelMaxRepeatTime, "Pengulangan setelah salah");
     put(I18nKey.labelMaxRepeatTimeDesc, "Berapa kali berturut-turut kamu harus benar setelah salah (minimal 1)");
     put(I18nKey.labelMaxRepeatTimeInvalid, "Jumlahnya minimal 1");
+    put(I18nKey.ttsContent, "Teks yang dibacakan");
   }
 }

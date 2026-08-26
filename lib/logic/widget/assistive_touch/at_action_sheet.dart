@@ -43,12 +43,13 @@ class AtActionSheet {
           RowWidget.buildDivider(),
         ],
       ),
-      // template 的 TextEditingController 交给这个 State 管理：它的 dispose() 只在弹框真正
+      // 两个模版的 TextEditingController 交给这个 State 管理：它的 dispose() 只在弹框真正
       // 从树上卸载时（关闭动画播完之后）才会触发，不会像手动 dispose 那样在 Get.back() 那一刻
       // 就把还在关闭动画里的 TextField 手上的 controller 拆掉（会崩），也不会因为不 dispose 而泄漏。
       _TemplateScope(
         initialText: action.net.template,
-        builder: (template) => Obx(() {
+        initialTtsText: _ttsTemplateOf(action),
+        builder: (template, ttsTemplate) => Obx(() {
           final currType = type.value;
           final targets = AtAction.targetsOf(currType, VerseField.maxTip);
           var targetPos = targets.indexOf(action.target);
@@ -98,6 +99,14 @@ class AtActionSheet {
               ],
               if (currType == AtActionType.tts) ...[
                 RowWidget.buildDividerWithoutColor(),
+                // 朗读什么由用户自己写，跟 net 的指令一个写法：可以把几个字段拼在一句话里，
+                // 也可以夹自己的话（"请跟读："），不再只能挑一个字段。
+                _templateCard(
+                  controller: ttsTemplate,
+                  hintKey: I18nKey.ttsContent,
+                  items: _placeholderItems(logic, forTts: true),
+                ),
+                RowWidget.buildDividerWithoutColor(),
                 // TTS 参数改一项存一项，直接写回这份副本；引擎/语言/音色只落在当前平台那一套上，
                 // 另一个平台存着的原样留着（不同手机的引擎表根本对不上）。
                 RowWidget.buildSelect(
@@ -133,6 +142,7 @@ class AtActionSheet {
                   }
                   action.name = name.value.trim();
                   action.net.template = template.text;
+                  action.tts.template = ttsTemplate.text;
                   action.net.enableAudio = enableAudio.value;
                   await logic.saveAction(action);
                   Get.back(result: true);
@@ -234,34 +244,10 @@ class AtActionSheet {
       RowWidget.buildDividerWithoutColor(),
       // 指令模版由用户自己写：{{question}}/{{answer}}/{{tip1}}.. 取当前小节的正文，
       // {{input1}}..{{input10}} 是执行前弹框填的参数（要几个由模版里写到第几个决定）。
-      RowWidget.buildCard(
-        Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 40, 8),
-              child: TextField(
-                controller: template,
-                maxLines: 8,
-                minLines: 3,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: I18nKey.instruction.tr,
-                ),
-                style: const TextStyle(fontSize: 14),
-              ),
-            ),
-            Positioned(
-              right: 0,
-              top: 0,
-              child: PopupMenuButton<String>(
-                tooltip: I18nKey.insertParameter.tr,
-                icon: const Icon(Icons.add, size: 20),
-                itemBuilder: (_) => _placeholderItems(logic),
-                onSelected: (key) => _insertPlaceholder(template, key),
-              ),
-            ),
-          ],
-        ),
+      _templateCard(
+        controller: template,
+        hintKey: I18nKey.instruction,
+        items: _placeholderItems(logic),
       ),
       RowWidget.buildDividerWithoutColor(),
       RowWidget.buildSwitch(
@@ -306,6 +292,67 @@ class AtActionSheet {
     ];
   }
 
+  /// 一个可以自由录入的模版框：右上角的「插入」菜单往光标处塞 {{xxx}}。
+  /// net 的指令和朗读的文本共用这一个（两边的差别只在提示文案和菜单里有哪几项）。
+  static Widget _templateCard({
+    required TextEditingController controller,
+    required I18nKey hintKey,
+    required List<PopupMenuEntry<String>> items,
+  }) {
+    return RowWidget.buildCard(
+      Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 40, 8),
+            child: TextField(
+              controller: controller,
+              maxLines: 8,
+              minLines: 3,
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: hintKey.tr,
+              ),
+              style: const TextStyle(fontSize: 14),
+            ),
+          ),
+          Positioned(
+            right: 0,
+            top: 0,
+            child: PopupMenuButton<String>(
+              tooltip: I18nKey.insertParameter.tr,
+              icon: const Icon(Icons.add, size: 20),
+              itemBuilder: (_) => items,
+              onSelected: (key) => _insertPlaceholder(controller, key),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 朗读文本框里一开始显示什么。写过模版就用模版；没写过（老动作，那会儿朗读是挑字段的）
+  /// 就按它原来的作用位置翻成等价的占位符，这样打开表单存一次，行为跟以前完全一样。
+  static String _ttsTemplateOf(AtAction action) {
+    if (action.tts.template.isNotEmpty) {
+      return action.tts.template;
+    }
+    if (action.target == atCurrentTarget) {
+      return '{{${ExpandLogic.currentKey}}}';
+    }
+    switch (QaType.fromAcronym(VerseField.baseOf(action.target))) {
+      case QaType.question:
+        return '{{${ExpandLogic.questionKey}}}';
+      case QaType.answer:
+        return '{{${ExpandLogic.answerKey}}}';
+      case QaType.note:
+        return '{{${ExpandLogic.noteKey}}}';
+      case QaType.tip:
+        return '{{${ExpandLogic.tipKey(VerseField.indexOf(action.target))}}}';
+      default:
+        return '{{${ExpandLogic.currentKey}}}';
+    }
+  }
+
   /// 把 {{xxx}} 插到指令框的光标处（选中了一段就替换掉），插完光标停在它后面。
   /// 指令框没获过焦时 selection 是无效的（offset 为 -1），这时追加到末尾。
   static void _insertPlaceholder(TextEditingController controller, String key) {
@@ -325,10 +372,14 @@ class AtActionSheet {
   }
 
   /// 「插入」菜单里的条目：本节字段（显示课堂里定义的提示名）+ 执行前填的参数。
-  static List<PopupMenuEntry<String>> _placeholderItems(AssistiveTouchLogic logic) {
+  /// [forTts] 是朗读那个框：多两项——「当前提示」（跟着界面上开着的 tab 走）和笔记，
+  /// 这两样 net 用不上（net 要把结果写回一个固定字段，笔记也不在它的作用位置里）。
+  static List<PopupMenuEntry<String>> _placeholderItems(AssistiveTouchLogic logic, {bool forTts = false}) {
     return [
+      if (forTts) PopupMenuItem(value: ExpandLogic.currentKey, child: Text('${I18nKey.targetCurrentTip.tr}  {{${ExpandLogic.currentKey}}}')),
       PopupMenuItem(value: ExpandLogic.questionKey, child: Text('${QaType.question.i18n.tr}  {{${ExpandLogic.questionKey}}}')),
       PopupMenuItem(value: ExpandLogic.answerKey, child: Text('${QaType.answer.i18n.tr}  {{${ExpandLogic.answerKey}}}')),
+      if (forTts) PopupMenuItem(value: ExpandLogic.noteKey, child: Text('${QaType.note.i18n.tr}  {{${ExpandLogic.noteKey}}}')),
       for (var i = 0; i < VerseField.maxTip; i++) PopupMenuItem(value: ExpandLogic.tipKey(i), child: Text('${logic.tipLabel(i)}  {{${ExpandLogic.tipKey(i)}}}')),
       for (var n = 1; n <= ExpandLogic.maxInput; n++) PopupMenuItem(value: ExpandLogic.inputKeyOf(n), child: Text('{{${ExpandLogic.inputKeyOf(n)}}}')),
     ];
@@ -355,9 +406,10 @@ class AtActionSheet {
 /// NavigatorState.finalizeRoute 那一步）才会触发，正好卡在既不早拆（动画中崩）也不漏拆（内存泄漏）的时机上。
 class _TemplateScope extends StatefulWidget {
   final String initialText;
-  final Widget Function(TextEditingController template) builder;
+  final String initialTtsText;
+  final Widget Function(TextEditingController template, TextEditingController ttsTemplate) builder;
 
-  const _TemplateScope({required this.initialText, required this.builder});
+  const _TemplateScope({required this.initialText, required this.initialTtsText, required this.builder});
 
   @override
   State<_TemplateScope> createState() => _TemplateScopeState();
@@ -365,13 +417,15 @@ class _TemplateScope extends StatefulWidget {
 
 class _TemplateScopeState extends State<_TemplateScope> {
   late final TextEditingController template = TextEditingController(text: widget.initialText);
+  late final TextEditingController ttsTemplate = TextEditingController(text: widget.initialTtsText);
 
   @override
   void dispose() {
     template.dispose();
+    ttsTemplate.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) => widget.builder(template);
+  Widget build(BuildContext context) => widget.builder(template, ttsTemplate);
 }

@@ -593,5 +593,6 @@ class ConfigEn extends Config {
     put(I18nKey.labelMaxRepeatTime, "Repeat times after an error");
     put(I18nKey.labelMaxRepeatTimeDesc, "How many times in a row you must get it right after an error (at least 1)");
     put(I18nKey.labelMaxRepeatTimeInvalid, "The count must be at least 1");
+    put(I18nKey.ttsContent, "Speech Text");
   }
 }
