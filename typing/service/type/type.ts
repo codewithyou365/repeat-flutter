@@ -914,15 +914,13 @@ const Game = {
             const text = typeof data.text === 'string' ? data.text : '';
             const type = typeof data.type === 'string' ? data.type : '';
             const manual = data.manual === true;
-            // 调用方（客户端）可以直接指定语速（比如手动播放走 manualTtsRate）；
-            // 不指定时按自动播放语速（config.ttsRate）
-            let rate = typeof data.rate === 'number' ? data.rate : undefined;
-            if (rate === undefined) {
-                const stored = await Util.getConfig();
-                const config = stored.profiles[stored.activeProfile];
-                rate = typeof config.ttsRate === 'number' ? config.ttsRate : 1;
-            }
-            await Util.tts({text, type, rate, manual});
+            // 朗读设置由调用方指定的动作带（'custom:<动作id>'，Dart 侧用那个动作存的
+            // 引擎/音色/语速/音高来读）。这里必须原样转发出去，漏了这个字段就退回公共配置了。
+            const action = typeof data.action === 'string' ? data.action : '';
+            // rate 只在调用方明确指定时才传。不指定就交给 Dart 那边按字段的公共配置来定，
+            // 这里不能自己兜一个默认值：塞了 rate 就会把动作/公共配置里的语速覆盖掉。
+            const rate = typeof data.rate === 'number' ? data.rate : undefined;
+            await Util.tts({text, type, rate, manual, action});
             return JSON.stringify({data: 'ok'});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});

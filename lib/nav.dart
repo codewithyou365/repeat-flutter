@@ -19,9 +19,9 @@ import 'package:repeat_flutter/page/sc_cr_stats_detail/sc_cr_stats_detail_nav.da
 import 'package:repeat_flutter/page/sc_cr_stats_review/sc_cr_stats_review_nav.dart';
 import 'package:repeat_flutter/page/sc_cr_stats_trend/sc_cr_stats_trend_nav.dart';
 import 'package:repeat_flutter/page/sc_settings_ai/sc_settings_ai_nav.dart';
+import 'package:repeat_flutter/page/sc_settings_content/sc_settings_content_nav.dart';
 import 'package:repeat_flutter/page/sc_settings_data/sc_settings_data_nav.dart';
 import 'package:repeat_flutter/page/sc_settings_lang/sc_settings_lang_nav.dart';
-import 'package:repeat_flutter/page/sc_settings_content/sc_settings_content_nav.dart';
 import 'package:repeat_flutter/page/sc_settings_theme/sc_settings_theme_nav.dart';
 import 'package:repeat_flutter/page/sc_share/sc_share_nav.dart';
 import 'package:repeat_flutter/page/scan/scan_nav.dart';
@@ -48,10 +48,10 @@ enum Nav {
   scCrStatsReview("/sc/cr/stats/review"),
   scCrStatsTrend("/sc/cr/stats/trend"),
   scSettingsAi("/sc/settings/ai"),
+  scSettingsContent("/sc/settings/content"),
   scSettingsData("/sc/settings/data"),
   scSettingsLang("/sc/settings/lang"),
   scSettingsTheme("/sc/settings/theme"),
-  scSettingsContent("/sc/settings/content"),
   scShare("/sc/share"),
   scan("/scan"),
   webview("/webview"),
@@ -101,10 +101,10 @@ enum Nav {
     scCrStatsReviewNav(scCrStatsReview.path),
     scCrStatsTrendNav(scCrStatsTrend.path),
     scSettingsAiNav(scSettingsAi.path),
+    scSettingsContentNav(scSettingsContent.path),
     scSettingsDataNav(scSettingsData.path),
     scSettingsLangNav(scSettingsLang.path),
     scSettingsThemeNav(scSettingsTheme.path),
-    scSettingsContentNav(scSettingsContent.path),
     scShareNav(scShare.path),
     scanNav(scan.path),
     webviewNav(webview.path),
