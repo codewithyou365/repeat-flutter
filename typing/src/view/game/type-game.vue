@@ -51,48 +51,92 @@
         <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('familiarMsDesc'))"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('ttsRate')">
+    <nut-cell :title="t('familiarExpireDays')">
       <template #link>
-        <nut-radio-group v-model="ttsRate" direction="horizontal" @change="setTtsRate">
-          <nut-radio :label="0.25">0.25x</nut-radio>
-          <nut-radio :label="0.5">0.5x</nut-radio>
-          <nut-radio :label="0.75">0.75x</nut-radio>
-          <nut-radio :label="1">1.0x</nut-radio>
+        <nut-radio-group v-model="familiarExpireDays" direction="horizontal" @change="setFamiliarExpireDays">
+          <nut-radio :label="0">{{ t('familiarExpireNever') }}</nut-radio>
+          <nut-radio :label="3">3</nut-radio>
+          <nut-radio :label="5">5</nut-radio>
+          <nut-radio :label="7">7</nut-radio>
         </nut-radio-group>
+        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('familiarExpireDaysDesc'))"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('manualTtsRate')">
-      <template #link>
-        <nut-radio-group v-model="manualTtsRate" direction="horizontal" @change="setManualTtsRate">
-          <nut-radio :label="0.25">0.25x</nut-radio>
-          <nut-radio :label="0.5">0.5x</nut-radio>
-          <nut-radio :label="0.75">0.75x</nut-radio>
-          <nut-radio :label="1">1.0x</nut-radio>
-        </nut-radio-group>
-      </template>
-    </nut-cell>
+    <!-- 手动播放/逐字母朗读：一行里既设触发键，又挑用哪个「朗读」动作的 TTS 配置来读
+         （排版跟下面的辅助触控绑定行一致）。读的还是打字里的当前单词，只是换一套引擎/音色/语速；
+         选「默认音色」就用 App 里按字段存的那套公共朗读设置。 -->
     <nut-cell :title="t('manualPlayTrigger')">
       <template #link>
-        <span v-if="hasSpaceKey(manualPlayTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
+        <div class="assist-binding">
+          <span v-if="hasSpaceKey(manualPlayTrigger)" style="opacity: 0.6">{{ t('spaceKey') }}</span>
+          <nut-input
+              v-model="manualPlayTrigger"
+              class="assist-binding-key"
+              @blur="setManualPlayTrigger(manualPlayTrigger)"
+          />
+          <nut-button size="mini" type="info" plain class="assist-binding-add" @click="openKeyPicker('manualPlay')">+</nut-button>
+          <nut-menu class="assist-binding-action" direction="up">
+            <nut-menu-item
+                :model-value="manualPlayAction"
+                :options="manualPlayOptions"
+                @change="(value: string) => setManualPlayAction(value)"
+            />
+          </nut-menu>
+          <Ask color="#999" width="16px" height="16px" class="cell-help"
+               @click="showHelp(t('ttsActionDesc') + '<br/><br/>' + t('multiKeyDesc'))"/>
+        </div>
+      </template>
+    </nut-cell>
+    <!-- 熟词只换音色、不另占按键：还是按"手动播放触发键"那个键，光标所在的词在熟词库里时
+         改用这一行选的朗读设置。 -->
+    <nut-cell :title="t('familiarPlayAction')">
+      <template #link>
+        <div class="assist-binding">
+          <nut-menu class="assist-binding-action" direction="up">
+            <nut-menu-item
+                :model-value="familiarPlayAction"
+                :options="familiarPlayOptions"
+                @change="(value: string) => setFamiliarPlayAction(value)"
+            />
+          </nut-menu>
+          <Ask color="#999" width="16px" height="16px" class="cell-help"
+               @click="showHelp(t('familiarPlayActionDesc') + '<br/><br/>' + t('ttsActionDesc'))"/>
+        </div>
+      </template>
+    </nut-cell>
+    <nut-cell :title="t('familiarSkipTrigger')">
+      <template #link>
+        <span v-if="hasSpaceKey(familiarSkipTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
         <nut-input
-            v-model="manualPlayTrigger"
+            v-model="familiarSkipTrigger"
             style="text-align: right"
-            @blur="setManualPlayTrigger(manualPlayTrigger)"
+            @blur="setFamiliarSkipTrigger(familiarSkipTrigger)"
         />
-        <nut-button size="mini" type="info" plain @click="openKeyPicker('manualPlay')">+</nut-button>
-        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('multiKeyDesc'))"/>
+        <nut-button size="mini" type="info" plain @click="openKeyPicker('familiarSkip')">+</nut-button>
+        <Ask color="#999" width="16px" height="16px" class="cell-help"
+             @click="showHelp(t('familiarSkipTriggerDesc') + '<br/><br/>' + t('multiKeyDesc'))"/>
       </template>
     </nut-cell>
     <nut-cell :title="t('spellPlayTrigger')">
       <template #link>
-        <span v-if="hasSpaceKey(spellPlayTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
-        <nut-input
-            v-model="spellPlayTrigger"
-            style="text-align: right"
-            @blur="setSpellPlayTrigger(spellPlayTrigger)"
-        />
-        <nut-button size="mini" type="info" plain @click="openKeyPicker('spellPlay')">+</nut-button>
-        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('multiKeyDesc'))"/>
+        <div class="assist-binding">
+          <span v-if="hasSpaceKey(spellPlayTrigger)" style="opacity: 0.6">{{ t('spaceKey') }}</span>
+          <nut-input
+              v-model="spellPlayTrigger"
+              class="assist-binding-key"
+              @blur="setSpellPlayTrigger(spellPlayTrigger)"
+          />
+          <nut-button size="mini" type="info" plain class="assist-binding-add" @click="openKeyPicker('spellPlay')">+</nut-button>
+          <nut-menu class="assist-binding-action" direction="up">
+            <nut-menu-item
+                :model-value="spellPlayAction"
+                :options="spellPlayOptions"
+                @change="(value: string) => setSpellPlayAction(value)"
+            />
+          </nut-menu>
+          <Ask color="#999" width="16px" height="16px" class="cell-help"
+               @click="showHelp(t('ttsActionDesc') + '<br/><br/>' + t('multiKeyDesc'))"/>
+        </div>
       </template>
     </nut-cell>
     <nut-cell :title="t('spellResetLevel')">
@@ -100,15 +144,37 @@
         <nut-switch v-model="spellResetLevel" @change="setSpellResetLevel"/>
       </template>
     </nut-cell>
+    <!-- 自动朗读的两处（逐字母、打完整词）也各挑一套朗读设置，跟上面两个触发键一个套路：
+         开关管开不开口，下拉管用谁的引擎/音色/语速。 -->
     <nut-cell :title="t('speakLetters')">
       <template #link>
-        <nut-switch v-model="speakLetters" @change="setSpeakLetters"/>
+        <div class="assist-binding">
+          <nut-switch v-model="speakLetters" @change="setSpeakLetters"/>
+          <nut-menu class="assist-binding-action" direction="up">
+            <nut-menu-item
+                :model-value="speakLettersAction"
+                :options="speakLettersOptions"
+                @change="(value: string) => setSpeakLettersAction(value)"
+            />
+          </nut-menu>
+          <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('ttsActionDesc'))"/>
+        </div>
       </template>
     </nut-cell>
     <nut-cell :title="t('speakWord')">
       <template #link>
-        <nut-switch v-model="speakWord" @change="setSpeakWord"/>
-        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('speakWordDesc'))"/>
+        <div class="assist-binding">
+          <nut-switch v-model="speakWord" @change="setSpeakWord"/>
+          <nut-menu class="assist-binding-action" direction="up">
+            <nut-menu-item
+                :model-value="speakWordAction"
+                :options="speakWordOptions"
+                @change="(value: string) => setSpeakWordAction(value)"
+            />
+          </nut-menu>
+          <Ask color="#999" width="16px" height="16px" class="cell-help"
+               @click="showHelp(t('speakWordDesc') + '<br/><br/>' + t('ttsActionDesc'))"/>
+        </div>
       </template>
     </nut-cell>
     <nut-cell :title="t('hintTrigger')">
@@ -264,6 +330,7 @@
           :assist-triggers="assistTriggerKeys"
           :key-mapping="keyMapping"
           :familiar-ranges="familiarRanges"
+          :familiar-skip-trigger="familiarSkipTrigger"
           @char-filled="onCharFilled"
           @completed="onCompleted"
           @manual-play="onManualPlay"
@@ -272,8 +339,7 @@
           @mask-trigger="onMaskTrigger"
           @assist-trigger="onAssistTrigger"
           @user-input-change="onUserInputChange"
-          @familiar-prompt="onFamiliarPrompt"
-          @familiar-miss="onFamiliarMiss"
+          @familiar-skip="onFamiliarSkip"
       />
     </div>
 
@@ -327,28 +393,54 @@ const ignoreCase = ref(false);
 const ignorePunctuation = ref(false);
 const ignoreNumber = ref(true);
 const intervalMode = ref<'none' | 'oddHidden' | 'evenHidden'>('none');
-const ttsRate = ref(1);
 const speakLetters = ref(false);
 const speakWord = ref(true);
-const manualTtsRate = ref(0.5);
 const manualPlayTrigger = ref('.');
 const spellPlayTrigger = ref(',');
+// 手动播放/逐字母朗读用哪个「朗读」动作的 TTS 配置（'custom:<动作id>'，空串 = 默认音色）。
+// name 是选中那一刻的动作名快照，动作被删掉后拿不到真名时用它显示，跟辅助触控绑定一个套路。
+const manualPlayAction = ref('');
+const manualPlayActionName = ref('');
+const spellPlayAction = ref('');
+const spellPlayActionName = ref('');
+// 自动朗读那两处（逐字母、打完整词）也各挑一套，存法跟上面两个一样
+const speakLettersAction = ref('');
+const speakLettersActionName = ref('');
+const speakWordAction = ref('');
+const speakWordActionName = ref('');
+// 熟词的手动播放用哪一套（跟其它几行一样，空串 = 默认音色）
+const familiarPlayAction = ref('');
+const familiarPlayActionName = ref('');
+// 四处朗读设置的统一描述：key 是存进 profile 的字段名，读配置/存配置/刷新名字快照都按它走
+type TtsActionSlot = { key: string; action: Ref<string>; name: Ref<string> };
+const ttsActionSlots: TtsActionSlot[] = [
+  {key: 'manualPlayAction', action: manualPlayAction, name: manualPlayActionName},
+  {key: 'spellPlayAction', action: spellPlayAction, name: spellPlayActionName},
+  {key: 'speakLettersAction', action: speakLettersAction, name: speakLettersActionName},
+  {key: 'speakWordAction', action: speakWordAction, name: speakWordActionName},
+  {key: 'familiarPlayAction', action: familiarPlayAction, name: familiarPlayActionName},
+];
 const spellResetLevel = ref(false);
 const hintTrigger = ref(' ');
 const maskTrigger = ref('');
 const dimOnMask = ref(false);
 const immersiveOnMask = ref(true);
 const deleteTrigger = ref('');
+// 熟词跳过键：空串 = 不启用
+const familiarSkipTrigger = ref('');
 // 各触发键最后一次成功保存的值，用于校验失败时把输入框还原回去
 let manualPlayTriggerSaved = '.';
 let spellPlayTriggerSaved = ',';
 let hintTriggerSaved = ' ';
 let maskTriggerSaved = '';
 let deleteTriggerSaved = '';
+let familiarSkipTriggerSaved = '';
 const keyMapping = ref('');
 // 熟词阈值：每个字母允许的毫秒数，0 = 关闭。familiarMsInput 是输入框里的字符串，familiarMs 是判定用的数值
 const familiarMs = ref(0);
 const familiarMsInput = ref('0');
+// 熟词有效期（天）：0 = 不过期。过期判定在服务端 familiarQuery 里做（进库时间就是 kv 的值）
+const familiarExpireDays = ref(0);
 const assistiveTouchBindings = ref<AssistiveTouchBinding[]>([]);
 // 每条绑定最后一次成功保存的键，校验失败时用来还原对应的输入框
 let bindingKeysSaved: string[] = [];
@@ -358,7 +450,7 @@ const legacyWordAskProfiles = new Set<number>();
 // 新增绑定时的类型选择弹层
 const bindingTypeVisible = ref(false);
 // App 辅助触控当前显示的按钮，只有管理员打开设置面板时才会去拉
-const assistiveTouchOptions = ref<{ id: string; name: string }[]>([]);
+const assistiveTouchOptions = ref<{ id: string; name: string; type?: string }[]>([]);
 const ignoreContentIndexes = ref<number[]>([]);
 const adminEnable = ref(false);
 const adminId = ref(0);
@@ -600,12 +692,11 @@ const showTips = () => {
     {label: t('ignorePunctuation'), value: formatStatus(ignorePunctuation.value)},
     {label: t('ignoreNumber'), value: formatStatus(ignoreNumber.value)},
     {label: t('intervalDisplay'), value: formatIntervalMode(intervalMode.value)},
-    {label: t('ttsRate'), value: `${ttsRate.value}x`},
-    {label: t('speakLetters'), value: formatStatus(speakLetters.value)},
-    {label: t('speakWord'), value: formatStatus(speakWord.value)},
-    {label: t('manualTtsRate'), value: `${manualTtsRate.value}x`},
-    {label: t('manualPlayTrigger'), value: formatTriggerKey(manualPlayTrigger.value)},
-    {label: t('spellPlayTrigger'), value: formatTriggerKey(spellPlayTrigger.value)},
+    {label: t('speakLetters'), value: `${formatStatus(speakLetters.value)} \u2192 ${ttsActionName(speakLettersAction.value, speakLettersActionName.value)}`},
+    {label: t('speakWord'), value: `${formatStatus(speakWord.value)} \u2192 ${ttsActionName(speakWordAction.value, speakWordActionName.value)}`},
+    {label: t('familiarPlayAction'), value: ttsActionName(familiarPlayAction.value, familiarPlayActionName.value)},
+    {label: t('manualPlayTrigger'), value: `${formatTriggerKey(manualPlayTrigger.value)} \u2192 ${ttsActionName(manualPlayAction.value, manualPlayActionName.value)}`},
+    {label: t('spellPlayTrigger'), value: `${formatTriggerKey(spellPlayTrigger.value)} \u2192 ${ttsActionName(spellPlayAction.value, spellPlayActionName.value)}`},
     {label: t('spellResetLevel'), value: formatStatus(spellResetLevel.value)},
     {label: t('hintTrigger'), value: formatTriggerKey(hintTrigger.value)},
     {label: t('maskTrigger'), value: maskTrigger.value ? formatTriggerKey(maskTrigger.value) : t('disabled')},
@@ -613,7 +704,9 @@ const showTips = () => {
     {label: t('immersiveOnMask'), value: formatStatus(immersiveOnMask.value)},
     {label: t('deleteTrigger'), value: deleteTrigger.value ? formatTriggerKey(deleteTrigger.value) : t('disabled')},
     {label: t('keyMapping'), value: keyMapping.value || t('disabled')},
-    {label: t('familiarMs'), value: familiarMs.value > 0 ? `${familiarMs.value}ms` : t('disabled')}
+    {label: t('familiarMs'), value: familiarMs.value > 0 ? `${familiarMs.value}ms` : t('disabled')},
+    {label: t('familiarExpireDays'), value: familiarExpireDays.value > 0 ? `${familiarExpireDays.value}` : t('familiarExpireNever')},
+    {label: t('familiarSkipTrigger'), value: familiarSkipTrigger.value ? formatTriggerKey(familiarSkipTrigger.value) : t('disabled')}
   ];
 
   // 绑定是变长的，一条一行；一条都没配就显示"未启用"
@@ -665,26 +758,32 @@ const applyProfile = (index: number) => {
   ignoreNumber.value = typeof res['ignoreNumber'] === 'boolean' ? res['ignoreNumber'] : true;
   ignoreCase.value = res['ignoreCase'];
   intervalMode.value = res['intervalMode'] || 'none';
-  ttsRate.value = typeof res['ttsRate'] === 'number' ? res['ttsRate'] : 1;
   speakLetters.value = typeof res['speakLetters'] === 'boolean' ? res['speakLetters'] : false;
   speakWord.value = typeof res['speakWord'] === 'boolean' ? res['speakWord'] : true;
-  manualTtsRate.value = typeof res['manualTtsRate'] === 'number' ? res['manualTtsRate'] : 0.5;
   manualPlayTrigger.value = typeof res['manualPlayTrigger'] === 'string' ? res['manualPlayTrigger'] : '.';
   spellPlayTrigger.value = typeof res['spellPlayTrigger'] === 'string' ? res['spellPlayTrigger'] : ',';
+  for (const slot of ttsActionSlots) {
+    const raw = res[slot.key];
+    slot.action.value = typeof raw?.action === 'string' ? raw.action : '';
+    slot.name.value = typeof raw?.name === 'string' ? raw.name : '';
+  }
   spellResetLevel.value = typeof res['spellResetLevel'] === 'boolean' ? res['spellResetLevel'] : false;
   hintTrigger.value = typeof res['hintTrigger'] === 'string' ? res['hintTrigger'] : ' ';
   maskTrigger.value = typeof res['maskTrigger'] === 'string' ? res['maskTrigger'] : '';
   dimOnMask.value = typeof res['dimOnMask'] === 'boolean' ? res['dimOnMask'] : false;
   immersiveOnMask.value = typeof res['immersiveOnMask'] === 'boolean' ? res['immersiveOnMask'] : true;
   deleteTrigger.value = typeof res['deleteTrigger'] === 'string' ? res['deleteTrigger'] : '';
+  familiarSkipTrigger.value = typeof res['familiarSkipTrigger'] === 'string' ? res['familiarSkipTrigger'] : '';
   manualPlayTriggerSaved = manualPlayTrigger.value;
   spellPlayTriggerSaved = spellPlayTrigger.value;
   hintTriggerSaved = hintTrigger.value;
   maskTriggerSaved = maskTrigger.value;
   deleteTriggerSaved = deleteTrigger.value;
+  familiarSkipTriggerSaved = familiarSkipTrigger.value;
   keyMapping.value = typeof res['keyMapping'] === 'string' ? res['keyMapping'] : '';
   familiarMs.value = typeof res['familiarMs'] === 'number' && res['familiarMs'] > 0 ? res['familiarMs'] : 0;
   familiarMsInput.value = `${familiarMs.value}`;
+  familiarExpireDays.value = typeof res['familiarExpireDays'] === 'number' ? res['familiarExpireDays'] : 0;
   const rawBindings = Array.isArray(res['assistiveTouchBindings']) ? res['assistiveTouchBindings'] : [];
   assistiveTouchBindings.value = rawBindings.map((b: any) => ({
     key: typeof b?.key === 'string' ? b.key : '',
@@ -734,6 +833,43 @@ const bindingOptionList = computed(() => assistiveTouchBindings.value.map((bindi
   return options;
 }));
 
+// 朗读设置下拉里能选的：「默认音色」+ 辅助触控里所有「朗读」类型的动作。
+// 玩家端不拉按钮列表（options 为空），这时只有"默认音色"一条。
+const ttsActionOptions = computed(() => assistiveTouchOptions.value
+    .filter((o) => o.type === 't')
+    .map((o) => ({text: o.name, value: o.id})));
+
+// 一行上显示的朗读动作名。没选是"默认音色"；选的动作已经不在了就用快照并标记已失效。
+const ttsActionName = (action: string, name: string) => {
+  if (!action) {
+    return t('ttsActionDefault');
+  }
+  // 玩家端不拉按钮列表（options 为空），此时不做失效判断，直接显示快照
+  if (assistiveTouchOptions.value.length === 0) {
+    return name || t('ttsActionDefault');
+  }
+  const option = findOption(action);
+  if (option) {
+    return option.name;
+  }
+  return name ? `${t('assistiveTouchActionMissing')} ${name}` : t('assistiveTouchActionMissing');
+};
+
+// 跟 bindingOptionList 同理必须用 computed 缓存稳定引用，现算会把 nut-menu 刷进递归更新。
+// 选中的动作不在候选里（被删/改成了别的类型）时补一条占位，否则下拉显示成空白。
+const ttsOptionListOf = (action: string, name: string) => {
+  const options = [{text: t('ttsActionDefault'), value: ''}, ...ttsActionOptions.value];
+  if (action && !options.some((o) => o.value === action)) {
+    options.push({text: ttsActionName(action, name), value: action});
+  }
+  return options;
+};
+const manualPlayOptions = computed(() => ttsOptionListOf(manualPlayAction.value, manualPlayActionName.value));
+const spellPlayOptions = computed(() => ttsOptionListOf(spellPlayAction.value, spellPlayActionName.value));
+const speakLettersOptions = computed(() => ttsOptionListOf(speakLettersAction.value, speakLettersActionName.value));
+const speakWordOptions = computed(() => ttsOptionListOf(speakWordAction.value, speakWordActionName.value));
+const familiarPlayOptions = computed(() => ttsOptionListOf(familiarPlayAction.value, familiarPlayActionName.value));
+
 const getAssistiveTouchActions = async () => {
   try {
     const req = new Request({
@@ -753,6 +889,13 @@ const getAssistiveTouchActions = async () => {
     }
     if (changed) {
       saveAssistiveTouchBindings();
+    }
+    // 朗读动作改名后 id 不变，同样把快照刷成新名字
+    for (const slot of ttsActionSlots) {
+      const option = findOption(slot.action.value);
+      if (option && option.name !== slot.name.value) {
+        setTtsAction(slot, slot.action.value);
+      }
     }
   } catch (error) {
     console.error('Failed to get assistive touch actions:', error);
@@ -811,10 +954,6 @@ const setIntervalMode = (value: 'none' | 'oddHidden' | 'evenHidden') => {
   profiles.value[activeProfile.value].intervalMode = value;
   setConfig("intervalMode", value);
 };
-const setTtsRate = (value: number) => {
-  profiles.value[activeProfile.value].ttsRate = value;
-  setConfig("ttsRate", value);
-};
 const setSpeakLetters = (value: boolean) => {
   profiles.value[activeProfile.value].speakLetters = value;
   setConfig("speakLetters", value);
@@ -823,13 +962,9 @@ const setSpeakWord = (value: boolean) => {
   profiles.value[activeProfile.value].speakWord = value;
   setConfig("speakWord", value);
 };
-const setManualTtsRate = (value: number) => {
-  profiles.value[activeProfile.value].manualTtsRate = value;
-  setConfig("manualTtsRate", value);
-};
 // 所有触发键（四个固定的 + 任意条辅助触控绑定）不能互相重复，比如手动播放和逐字母朗读不能都设成 '.'。
 // exclude 是"正在改的那一个"（固定键用名字，绑定用下标），要排除掉，否则改成原值也会判成冲突。
-type TriggerOwner = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | number;
+type TriggerOwner = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | 'familiarSkip' | number;
 const isKeyTaken = (value: string, exclude: TriggerOwner) => {
   const specs = parseKeySpecs(value);
   if (specs.length === 0) {
@@ -841,6 +976,7 @@ const isKeyTaken = (value: string, exclude: TriggerOwner) => {
   if (exclude !== 'hint') others.push(hintTrigger.value);
   if (exclude !== 'mask') others.push(maskTrigger.value);
   if (exclude !== 'delete') others.push(deleteTrigger.value);
+  if (exclude !== 'familiarSkip') others.push(familiarSkipTrigger.value);
   assistiveTouchBindings.value.forEach((b, i) => {
     if (exclude !== i) others.push(b.key);
   });
@@ -870,6 +1006,29 @@ const setSpellPlayTrigger = (value: string) => {
   spellPlayTriggerSaved = value;
   profiles.value[activeProfile.value].spellPlayTrigger = value;
   setConfig("spellPlayTrigger", value);
+};
+// 选中的朗读动作连同名字快照一起存：动作以后被删了，界面上还能看出原来绑的是哪个。
+const setTtsAction = (slot: TtsActionSlot, value: string) => {
+  slot.action.value = value;
+  slot.name.value = findOption(value)?.name ?? '';
+  const stored = {action: value, name: slot.name.value};
+  profiles.value[activeProfile.value][slot.key] = stored;
+  setConfig(slot.key, stored);
+};
+const setManualPlayAction = (value: string) => setTtsAction(ttsActionSlots[0], value);
+const setSpellPlayAction = (value: string) => setTtsAction(ttsActionSlots[1], value);
+const setSpeakLettersAction = (value: string) => setTtsAction(ttsActionSlots[2], value);
+const setSpeakWordAction = (value: string) => setTtsAction(ttsActionSlots[3], value);
+const setFamiliarPlayAction = (value: string) => setTtsAction(ttsActionSlots[4], value);
+const setFamiliarSkipTrigger = (value: string) => {
+  if (isKeyTaken(value, 'familiarSkip')) {
+    showToast.warn(t('triggerKeyConflict'));
+    familiarSkipTrigger.value = familiarSkipTriggerSaved;
+    return;
+  }
+  familiarSkipTriggerSaved = value;
+  profiles.value[activeProfile.value].familiarSkipTrigger = value;
+  setConfig("familiarSkipTrigger", value);
 };
 const setSpellResetLevel = (value: boolean) => {
   profiles.value[activeProfile.value].spellResetLevel = value;
@@ -920,6 +1079,11 @@ const setDeleteTrigger = (value: string) => {
   deleteTriggerSaved = value;
   profiles.value[activeProfile.value].deleteTrigger = value;
   setConfig("deleteTrigger", value);
+};
+const setFamiliarExpireDays = (value: number) => {
+  familiarExpireDays.value = value;
+  profiles.value[activeProfile.value].familiarExpireDays = value;
+  setConfig("familiarExpireDays", value);
 };
 const setFamiliarMs = (value: string) => {
   const parsed = parseInt(value, 10);
@@ -1005,7 +1169,7 @@ const removeBinding = (index: number) => {
 };
 
 // "+"弹出的特殊按键选择器：target 标记要往哪个触发键配置里追加，number 表示第几条辅助触控绑定
-type KeyPickerTarget = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | number;
+type KeyPickerTarget = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | 'familiarSkip' | number;
 const keyPickerVisible = ref(false);
 const keyPickerTarget = ref<KeyPickerTarget | null>(null);
 // 键盘上打不出/不方便打出来的按键，选中后写成 \name 的形式。
@@ -1046,6 +1210,9 @@ const onChooseSpecialKey = (item: { name: string; key: string }) => {
   } else if (target === 'delete') {
     deleteTrigger.value = appendKeyToken(deleteTrigger.value, token);
     setDeleteTrigger(deleteTrigger.value);
+  } else if (target === 'familiarSkip') {
+    familiarSkipTrigger.value = appendKeyToken(familiarSkipTrigger.value, token);
+    setFamiliarSkipTrigger(familiarSkipTrigger.value);
   } else {
     const binding = assistiveTouchBindings.value[target];
     if (binding) {
@@ -1118,14 +1285,15 @@ const playWrongSound = async () => {
 
 // TTS 朗读：串行播放，避免间隔模式下一次自动补全多个字母时同时开口
 let speakQueue: Promise<void> = Promise.resolve();
-const speak = (text: string, rate?: number, manual?: boolean) => {
+// action 传了就用那个「朗读」动作存的 TTS 配置来读（引擎/音色/语速），读的还是这里的 text
+const speak = (text: string, rate?: number, manual?: boolean, action?: string) => {
   if (!text) return speakQueue;
   speakQueue = speakQueue.then(async () => {
     try {
       const req = new Request({
         path: Path.game,
         headers: {'jsMethod': 'Game.tts'},
-        data: {text, type: 'a', rate, manual},
+        data: {text, type: 'a', rate, manual, action},
       });
       await client.node!.send(req);
     } catch (error) {
@@ -1214,29 +1382,20 @@ const markFamiliar = (word: string) => {
   client.node!.send(req).catch((error) => console.error('Failed to mark familiar word:', error));
 };
 
-const forgetFamiliar = (word: string) => {
-  familiarWords.value.delete(word);
-  const req = new Request({
-    path: Path.game,
-    headers: {'jsMethod': 'Game.familiarForget'},
-    data: {word},
-  });
-  client.node!.send(req).catch((error) => console.error('Failed to forget familiar word:', error));
-};
-
-// 光标走到熟词词首：响一声，提醒"这个只要敲首字母"。不 await、不开 overlay，别卡打字节奏。
-const onFamiliarPrompt = () => {
+// 按了熟词跳过键。跳成了就把整词念出来（音色走"熟词朗读"那一行，见 playActionOf）；
+// 没跳成（光标所在的词不是熟词、或者已经打完了）就响一声中性提示音，不 await、不开 overlay，
+// 别卡打字节奏。
+const onFamiliarSkip = (word: string, skipped: boolean) => {
+  if (skipped) {
+    if (word) speak(word, undefined, true, playActionOf(word));
+    return;
+  }
   const req = new Request({
     path: Path.game,
     headers: {'jsMethod': 'Game.playSound'},
-    data: {url: `${window.location.origin}/sounds/familiar.wav`},
+    data: {url: `${window.location.origin}/sounds/cue.wav`},
   });
-  client.node!.send(req).catch((error) => console.error('Failed to play familiar sound:', error));
-};
-
-// 熟词的首字母敲错了：出库，这个词当场退回正常输入（familiarRanges 是 computed，紫色标记同时消失）
-const onFamiliarMiss = (_start: number, word: string) => {
-  forgetFamiliar(word.toLowerCase());
+  client.node!.send(req).catch((error) => console.error('Failed to play cue sound:', error));
 };
 
 // 一个词的计时：从第一个字母敲下算到最后一个字母敲下，<= familiarMs * (字母数 - 1) 就算熟。
@@ -1297,13 +1456,19 @@ const flushWord = () => {
   // 手动播放这些是另外的开关，各管各的）
   if (pendingWordEnd !== null && speakWord.value) {
     const word = typingRef.value?.getWordAt(pendingWordEnd);
-    if (word) p = speak(word);
+    if (word) p = speak(word, undefined, false, speakWordAction.value);
   }
   pendingWordEnd = null;
   return p;
 };
 
-const onCharFilled = (index: number, char: string, auto: boolean, correct: boolean) => {
+const onCharFilled = (index: number, char: string, auto: boolean, correct: boolean, skip: boolean) => {
+  // 熟词跳过补出来的字符：跳过那一下已经把整词念过了，这里既不逐字母朗读、也不排队整词朗读，
+  // 更不进熟词计时（不是用户敲出来的，不该算"打得快"）。
+  if (skip) {
+    pendingWordEnd = null;
+    return;
+  }
   trackFamiliar(index, auto, correct);
 
   if (auto || correct) {
@@ -1315,11 +1480,11 @@ const onCharFilled = (index: number, char: string, auto: boolean, correct: boole
   }
 
   if (auto) {
-    if (speakLetters.value && isSpeakable(char)) speak(char);
+    if (speakLetters.value && isSpeakable(char)) speak(char, undefined, false, speakLettersAction.value);
     return;
   }
   if (correct) {
-    if (speakLetters.value && isSpeakable(char)) speak(char);
+    if (speakLetters.value && isSpeakable(char)) speak(char, undefined, false, speakLettersAction.value);
   } else {
     playWrongSound();
   }
@@ -1341,13 +1506,18 @@ const onCompleted = async () => {
   await refresh();
 };
 
+// 手动播放这个词该用哪套朗读设置：在熟词库里就用"熟词朗读"那一行的，否则用手动播放那一行的。
+const playActionOf = (word: string) => {
+  return familiarWords.value.has(word.toLowerCase()) ? familiarPlayAction.value : manualPlayAction.value;
+};
+
 const speakCurrentWord = () => {
   const word = typingRef.value?.getCurrentWord();
-  if (word) speak(word, manualTtsRate.value, true);
+  if (word) speak(word, undefined, true, playActionOf(word));
 };
 
 const onManualPlay = (word: string) => {
-  if (word) speak(word, manualTtsRate.value, true);
+  if (word) speak(word, undefined, true, playActionOf(word));
   typingRef.value?.clearCurrentWord();
 };
 
@@ -1365,7 +1535,7 @@ const resetLevel = async () => {
 
 const onSpellPlay = (word: string) => {
   for (const ch of word) {
-    if (isSpeakable(ch)) speak(ch, manualTtsRate.value);
+    if (isSpeakable(ch)) speak(ch, undefined, false, spellPlayAction.value);
   }
   if (spellResetLevel.value) {
     void resetLevel();

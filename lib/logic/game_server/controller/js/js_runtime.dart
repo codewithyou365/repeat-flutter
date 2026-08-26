@@ -20,6 +20,7 @@ import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/shadow_recorder.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_logic.dart';
+import 'package:repeat_flutter/logic/widget/assistive_touch/at_action.dart';
 import 'package:repeat_flutter/logic/widget/expand/expand_logic.dart';
 import 'package:repeat_flutter/logic/widget/game/game_state.dart';
 import 'package:repeat_flutter/page/repeat/logic/constant.dart';
@@ -334,6 +335,8 @@ class JsRuntime {
           ret.add({
             'id': 'custom:${action.id}',
             'name': action.name,
+            // 打字游戏那边要按类型筛（比如手动播放的朗读设置只能挑 't' 朗读动作）。
+            'type': action.type.code,
             'inputCount': inputNumbers.length,
             'inputKeys': inputNumbers.map(ExpandLogic.inputKeyOf).toList(),
           });
@@ -447,6 +450,14 @@ class JsRuntime {
         // 与音频/视频卡片点击播放按钮的行为保持一致
         if (payload['manual'] == true) {
           Get.find<RepeatLogic>().state.helper.doNotPlayMedia = false;
+        }
+        // 指定了朗读动作('custom:<id>')就用那个动作自己那套 TTS 配置（引擎/语言/音色/语速/音高）来读，
+        // 读的还是这里传进来的文本（打字游戏的当前单词），跟动作模版无关。
+        // 动作找不到了（被删/改了类型）就当没指定，按字段的公共配置读，不让游戏这边直接哑掉。
+        final settings = await _ttsSettingsOf(payload['action']);
+        if (settings != null) {
+          await ttsHelper.speakTextWith(settings, text);
+          return 'ok';
         }
         await ttsHelper.speakText(qaType.ttsKeys, text, rate: rate);
         return 'ok';
@@ -634,6 +645,28 @@ class JsRuntime {
       return null;
     }
     return Get.find<RepeatLogic>().assistiveTouchLogic;
+  }
+
+  /// 'custom:<动作id>' -> 那个朗读动作存的 TTS 配置。
+  /// 没传、不是朗读类型、动作已经不在了，一律返回 null（调用方按"没指定"处理）。
+  Future<TtsSettings?> _ttsSettingsOf(Object? id) async {
+    if (id is! String || !id.startsWith('custom:')) {
+      return null;
+    }
+    final actionId = int.tryParse(id.substring('custom:'.length));
+    if (actionId == null) {
+      return null;
+    }
+    final logic = _assistiveTouchLogic();
+    if (logic == null) {
+      return null;
+    }
+    await logic.loadActions();
+    final matched = logic.actions.where((e) => e.id == actionId && e.type == AtActionType.tts);
+    if (matched.isEmpty) {
+      return null;
+    }
+    return matched.first.tts.settings;
   }
 
   Future<dynamic> invoke(String methodName, Map<String, dynamic> payload) async {

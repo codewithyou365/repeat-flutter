@@ -84,9 +84,11 @@ const props = withDefaults(defineProps<{
   // 免得剩余长度和标点结构提前把答案透出去。占位仍在，排版不会跳。
   hidePending?: boolean;
   // 熟词在 content 里的位置（含头含尾），由父组件按熟词库算好。
-  // 光标走到 start 时发 familiarPrompt（父组件放提示音），在 start 上打对首字母就整词自动补全，
-  // 打错则发 familiarMiss（父组件把这个词移出熟词库）。
+  // 只用来标紫色和判断"熟词跳过键"按下时能不能跳——熟词不再有任何自动行为
+  // （以前光标一到词首就响提示音、敲对首字母就整词补全，都太打断打字节奏，已经去掉）。
   familiarRanges?: { start: number; end: number }[];
+  // 熟词跳过键：按下时光标所在的词是熟词就整词跳过，否则父组件响一声提示音
+  familiarSkipTrigger?: string;
 }>(), {
   clickFillCharWhenDisabled: '',
   touchColor: '',
@@ -103,6 +105,7 @@ const props = withDefaults(defineProps<{
   keyMapping: '',
   hidePending: false,
   familiarRanges: () => [],
+  familiarSkipTrigger: '',
 });
 
 // T9 风格按键映射："a:abc•q:def" -> 按下 a 时，目标字母是 a/b/c 都算对；按下 q 时，
@@ -130,11 +133,14 @@ const spellPlaySpecs = computed(() => parseKeySpecs(props.spellPlayTrigger));
 const hintSpecs = computed(() => parseKeySpecs(props.hintTrigger));
 const maskSpecs = computed(() => parseKeySpecs(props.maskTrigger));
 const deleteSpecs = computed(() => parseKeySpecs(props.deleteTrigger));
+const familiarSkipSpecs = computed(() => parseKeySpecs(props.familiarSkipTrigger));
 // 每条辅助触控绑定各自的配置，raw 是绑定原本的 key 字符串（用于 emit 出去让父组件按原样匹配）
 const assistSpecsList = computed(() => props.assistTriggers.map((raw) => ({raw, specs: parseKeySpecs(raw)})));
 
 const emit = defineEmits<{
-  (e: 'charFilled', index: number, char: string, auto: boolean, correct: boolean): void;
+  // skip=true 的字符是"熟词跳过"补出来的，不是用户敲的、也不是间隔模式补的：
+  // 父组件收到要跳过朗读和熟词计时（跳过时已经整词念过一遍了）。
+  (e: 'charFilled', index: number, char: string, auto: boolean, correct: boolean, skip: boolean): void;
   (e: 'completed'): void;
   (e: 'manualPlay', word: string): void;
   (e: 'spellPlay', word: string): void;
@@ -147,10 +153,9 @@ const emit = defineEmits<{
   // changedIndexes 是本次新落下的字符下标，用来记"这几个字是谁敲的"；退格/清词传空数组。
   // 注意：只在用户自己的操作里发，initUserInput（应用远端下发的内容）不发，否则会来回回声。
   (e: 'userInputChange', userInput: string, changedIndexes: number[]): void;
-  // 光标刚走到一个熟词的词首（换内容、退格回来、自动填充推进都算）
-  (e: 'familiarPrompt', start: number, word: string): void;
-  // 熟词的首字母打错了
-  (e: 'familiarMiss', start: number, word: string): void;
+  // 按了熟词跳过键。skipped=true 表示确实跳过了一个熟词（word 是那个词，父组件负责朗读），
+  // false 表示光标所在的词不是熟词/已经打完了，什么都没动，父组件响一声提示音就行。
+  (e: 'familiarSkip', word: string, skipped: boolean): void;
 }>();
 
 const store = useStore();
@@ -283,7 +288,8 @@ const isIgnore = (c: string, index: number) => {
   return props.ignoreContentIndexes && props.ignoreContentIndexes.includes(index);
 };
 
-type FilledEvent = { index: number; auto: boolean };
+// skip=true 的是"熟词跳过"补出来的字符：父组件收到 charFilled 时要跳过朗读和熟词计时
+type FilledEvent = { index: number; auto: boolean; skip?: boolean };
 
 // 把 index 处新落下的字符标记为一个待通知事件；auto=true 表示是被自动跳过/填充的
 // （忽略的空格、标点或 ignoreContentIndexes），不是用户敲的
@@ -328,6 +334,51 @@ const getWordAt = (index: number): string => {
 // 以 index 为词首的熟词区间；index 不是任何熟词的词首就返回 null
 const familiarRangeStartingAt = (index: number) => {
   return props.familiarRanges.find((r) => r.start === index) ?? null;
+};
+
+// 熟词跳过：光标所在的词是熟词、且还没打完时，把它剩下的字母一次性补上（连同紧跟其后的
+// 标点空格），并让父组件把整词念出来；否则什么都不动，只通知父组件响一声提示音。
+//
+// 直接改 live 的 userInput/cursorPos（跟 clearCurrentWord 一个写法），所以在 applyInput
+// 里必须走 pendingTriggerEmits 延后执行，不然会被那边末尾的 userInput.value = temp 覆盖掉。
+const doFamiliarSkip = () => {
+  const bounds = getWordBounds(cursorPos.value);
+  const range = bounds ? familiarRangeStartingAt(bounds.start) : null;
+  // 词已经打完（光标停在词尾之后）也算没跳成：这时想再听一遍该用手动播放键
+  if (!range || cursorPos.value > range.end) {
+    emit('familiarSkip', '', false);
+    return;
+  }
+  const word = props.content.slice(range.start, range.end + 1);
+  const filled: FilledEvent[] = [];
+  let temp = userInput.value;
+  let pos = cursorPos.value;
+  const fillAt = (i: number) => {
+    if (i < temp.length) {
+      temp = temp.slice(0, i) + props.content[i] + temp.slice(i + 1);
+    } else {
+      temp += props.content[i];
+    }
+    filled.push({index: i, auto: true, skip: true});
+  };
+  for (let i = pos; i <= range.end; i++) {
+    fillAt(i);
+  }
+  pos = range.end + 1;
+  // 词后面紧跟的标点/空格照常带出来，跟正常打字时的 autoFill 一致
+  while (pos < props.content.length && isIgnore(props.content[pos], pos)) {
+    if (pos >= temp.length) {
+      fillAt(pos);
+    }
+    pos++;
+  }
+  userInput.value = temp;
+  cursorPos.value = pos;
+  // 同步要排在 emitFilledEvents 前面，理由同 applyInput：后者可能 emit('completed')
+  emitUserInputChange(filled.map((item) => item.index));
+  emitFilledEvents(filled);
+  emit('familiarSkip', word, true);
+  nextTick(positionInput);
 };
 
 const inFamiliarRange = (index: number) => {
@@ -402,6 +453,11 @@ const applyInput = (val: string) => {
       pendingTriggerEmits.push(() => doBackspace());
       continue; // 触发字符本身不写入内容，也不推进 pos
     }
+    // 熟词跳过键：跟删除键同理，doFamiliarSkip 改的是 userInput/cursorPos，必须延后执行
+    if (specsHaveChar(familiarSkipSpecs.value, char)) {
+      pendingTriggerEmits.push(() => doFamiliarSkip());
+      continue; // 触发字符本身不写入内容，也不推进 pos
+    }
     // 绑定到 App 辅助触控按钮的键，数量由用户配置，可以有多个，每条绑定又可以配多个按键
     const assistMatch = assistSpecsList.value.find(({specs}) => specsHaveChar(specs, char));
     if (assistMatch) {
@@ -431,28 +487,6 @@ const applyInput = (val: string) => {
       }
     }
     filled.push({index: pos, auto: false});
-
-    // 熟词：首字母就是这个词唯一要敲的字母，敲对了余下的字母按原文一次性补上（算自动填充，
-    // 跟间隔模式补出来的字母同一个待遇：不当成用户敲的）。敲错说明其实没那么熟，
-    // 通知父组件把它移出熟词库；这一下照旧算打错（blockOnWrong 会在下面原地拦住）。
-    const familiarRange = familiarRangeStartingAt(pos);
-    if (familiarRange) {
-      const word = props.content.slice(familiarRange.start, familiarRange.end + 1);
-      if (correct) {
-        const end = Math.min(familiarRange.end, props.content.length - 1);
-        for (let i = pos + 1; i <= end; i++) {
-          if (i >= temp.length) {
-            temp += props.content[i];
-          } else {
-            temp = temp.slice(0, i) + props.content[i] + temp.slice(i + 1);
-          }
-          filled.push({index: i, auto: true});
-        }
-        pos = end; // 下面统一的 pos++ 会把光标推到词尾之后
-      } else {
-        pendingTriggerEmits.push(() => emit('familiarMiss', familiarRange.start, word));
-      }
-    }
 
     if (props.blockOnWrong && !correct) {
       blocked = true;
@@ -490,7 +524,7 @@ const emitFilledEvents = (filled: FilledEvent[], allowCompletion = true) => {
     const origCh = chars.value[item.index];
     const userCh = userInput.value[item.index];
     const correct = item.auto ? true : isCorrectAt(item.index, userCh ?? '');
-    emit('charFilled', item.index, origCh, item.auto, correct);
+    emit('charFilled', item.index, origCh, item.auto, correct, item.skip === true);
   }
   if (allowCompletion && filled.length > 0 && props.content.length > 0 && userInput.value.length >= props.content.length) {
     emit('completed');
@@ -645,6 +679,10 @@ const handleSpecialKeyTrigger = (e: KeyboardEvent): boolean => {
   }
   if (specsHaveSpecial(deleteSpecs.value, keyName)) {
     doBackspace();
+    return true;
+  }
+  if (specsHaveSpecial(familiarSkipSpecs.value, keyName)) {
+    doFamiliarSkip();
     return true;
   }
   const assistMatch = assistSpecsList.value.find(({specs}) => specsHaveSpecial(specs, keyName));
@@ -803,22 +841,6 @@ watch([userInput, groups], async () => {
   await nextTick();
   positionInput();
 });
-
-// 光标走到熟词词首就通知父组件放提示音。盯 cursorPos 而不是在各条路径上分别埋点：
-// 换内容、自动填充推进、退格回到词首、点选格子都会改它，一处就全覆盖了。
-// 同一个词首只发一次，光标离开再回来才会再响。
-let lastPromptStart: number | null = null;
-watch([cursorPos, () => props.familiarRanges], () => {
-  const range = familiarRangeStartingAt(cursorPos.value);
-  const start = range ? range.start : null;
-  if (start === lastPromptStart) {
-    return;
-  }
-  lastPromptStart = start;
-  if (range) {
-    emit('familiarPrompt', range.start, props.content.slice(range.start, range.end + 1));
-  }
-}, {immediate: true});
 
 defineExpose({
   initUserInput(val: string) {

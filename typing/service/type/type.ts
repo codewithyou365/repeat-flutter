@@ -29,10 +29,8 @@ type ProfileConfig = {
     ignoreNumber: boolean;
     ignoreCase: boolean;
     intervalMode: IntervalMode;
-    ttsRate: number;
     speakLetters: boolean;
     speakWord: boolean;
-    manualTtsRate: number;
     manualPlayTrigger: string;
     spellPlayTrigger: string;
     hintTrigger: string;
@@ -45,6 +43,10 @@ type ProfileConfig = {
     // 熟词阈值：每个字母允许的毫秒数，0 = 整个"熟词"功能不工作。
     // 一个词从第一个字母敲下到最后一个字母敲下 <= familiarMs * (字母数 - 1) 就算熟词。
     familiarMs: number;
+    // 熟词有效期（天），0 = 不过期。进库超过这个天数的词在 familiarQuery 时被删掉。
+    familiarExpireDays: number;
+    // 熟词跳过键：按下时把光标所在的熟词整词补完，空串 = 不启用。
+    familiarSkipTrigger: string;
     [key: string]: any;
 };
 
@@ -102,8 +104,15 @@ async function familiarMs(): Promise<number> {
     return typeof value === 'number' && value > 0 ? value : 0;
 }
 
+// 当前生效 profile 的熟词有效期（天），<=0 表示不过期
+async function familiarExpireDays(): Promise<number> {
+    const stored = await Util.getConfig();
+    const value = stored.profiles[stored.activeProfile].familiarExpireDays;
+    return typeof value === 'number' && value > 0 ? value : 0;
+}
+
 function defaultProfileConfig(): ProfileConfig {
-    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "intervalMode": "none", "ttsRate": 1, "speakLetters": false, "speakWord": true, "manualTtsRate": 0.5, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "dimOnMask": false, "keyMapping": "", "assistiveTouchBindings": [], "wordAskTrigger": {"key": "", "action": "", "name": ""}, "spellResetLevel": false, "familiarMs": 0};
+    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "intervalMode": "none", "speakLetters": false, "speakWord": true, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "dimOnMask": false, "keyMapping": "", "assistiveTouchBindings": [], "wordAskTrigger": {"key": "", "action": "", "name": ""}, "spellResetLevel": false, "familiarMs": 0, "familiarExpireDays": 0, "familiarSkipTrigger": ""};
 }
 
 function defaultStoredConfig(): StoredConfig {
@@ -945,8 +954,9 @@ const Game = {
     },
 
     // ---- 熟词 ----
-    // 打得够快的词进库（familiarMark），下次再遇到只用敲首字母（客户端拿 familiarQuery 的结果做补全），
-    // 首字母敲错就说明没那么熟，当场出库（familiarForget）。
+    // 打得够快的词进库（familiarMark），下次再遇到标成紫色，可以用"熟词跳过键"整词跳过。
+    // 出库只有一条路：进库时间超过"熟词有效期"，familiarQuery 查到时顺手删掉——
+    // 想留住一个词就得隔一阵子再打快一遍。
     // 库是按游戏存的（GameKv，主键 gameId + key），一台设备上所有玩家共用一份。
 
     // args.data = {words: string[]}；返回其中已经在熟词库里的词（小写）。
@@ -968,7 +978,29 @@ const Game = {
                 return JSON.stringify({data: {words: []}});
             }
             const found = await Util.kvGetMany(words.map((w) => FAMILIAR_PREFIX + w));
-            return JSON.stringify({data: {words: words.filter((w) => found[FAMILIAR_PREFIX + w] !== undefined)}});
+            // 进库时间就是 kv 的值（familiarMark 存的 Date.now()）。超过有效期的当场删掉再返回，
+            // 免得客户端还按紫色标记去跳一个早就该忘掉的词。
+            // 值解析不出数字的当作不过期（老数据兜底），有效期 <=0 时整段跳过。
+            const days = await familiarExpireDays();
+            const deadline = days > 0 ? Date.now() - days * 24 * 60 * 60 * 1000 : 0;
+            const alive: string[] = [];
+            const expired: string[] = [];
+            for (const w of words) {
+                const value = found[FAMILIAR_PREFIX + w];
+                if (value === undefined) {
+                    continue;
+                }
+                const markedAt = Number(value);
+                if (deadline > 0 && Number.isFinite(markedAt) && markedAt < deadline) {
+                    expired.push(FAMILIAR_PREFIX + w);
+                } else {
+                    alive.push(w);
+                }
+            }
+            if (expired.length > 0) {
+                await Util.kvDelete(expired);
+            }
+            return JSON.stringify({data: {words: alive}});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});
         }
@@ -992,6 +1024,7 @@ const Game = {
     },
 
     // args.data = {word}。出库不看阈值开关：关掉功能之前记下的词，该删还是要能删。
+    // 现在打字页自己不调它了（出库统一走 familiarQuery 里的过期清理），保留给脚本/别的页面用。
     familiarForget: async function (args: GameArgs): Promise<string> {
         try {
             const word = normalizeFamiliarWord(args.data && args.data.word);
