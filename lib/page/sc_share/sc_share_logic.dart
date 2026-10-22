@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:repeat_flutter/common/await_util.dart';
@@ -148,14 +149,19 @@ class ScShareLogic extends GetxController {
       return;
     }
 
-    if (request.uri.path == '/___hello_world') {
-      response.statusCode = HttpStatus.ok;
-      response.write('{"message": "Hello, World!"}');
-    } else {
-      await _serveFile(request.uri.pathSegments, request);
+    try {
+      if (request.uri.path == '/___hello_world') {
+        response.statusCode = HttpStatus.ok;
+        response.write('{"message": "Hello, World!"}');
+      } else {
+        await _serveFile(request.uri.pathSegments, request);
+      }
+    } catch (e, st) {
+      // 头可能已经发出去了，改不了状态码；关键是一定要 close，否则对方会一直挂着等
+      debugPrint('classroom share failed: $e\n$st');
+    } finally {
+      await response.close();
     }
-
-    await response.close();
   }
 
   Future<void> _serveFile(List<String> pathVerses, HttpRequest request) async {

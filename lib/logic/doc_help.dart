@@ -90,7 +90,8 @@ class DocHelp {
       for (DownloadContent v in list) {
         v.url = v.path;
       }
-      json['d'] = list;
+      // 写回 Map 而不是 DownloadContent 对象：调用方之后还会 BookContent.fromJson 读回来，对象会强转失败
+      json['d'] = list.map((e) => e.toJson()).toList();
     }
   }
 
