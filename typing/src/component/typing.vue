@@ -182,6 +182,21 @@ const chars = computed<string[]>(() => {
   return props.content ? props.content.split('') : [];
 });
 
+// 只显示已打内容时，词尾被 autoFill 顺手带出来的空格/标点先别露出来：一露出来就等于告诉用户
+// "这个词打完了"（apple 后面冒出空格，就知道不是 apples）。从这个下标起的已填字符按未打处理，
+// 等用户敲下一个词的首字母时再一起显示；整句打完则全部显示。
+const hiddenTailStart = computed(() => {
+  const len = userInput.value.length;
+  if (!props.hidePending || len >= props.content.length) return Infinity;
+  let i = len;
+  while (i > 0) {
+    const c = chars.value[i - 1];
+    if (!(c === ' ' || /\p{P}/u.test(c)) || !isIgnore(c, i - 1)) break;
+    i--;
+  }
+  return i;
+});
+
 const isCJK = computed(() => {
   return /[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff]/.test(props.content);
 });
@@ -753,7 +768,9 @@ const getCharStyle = (index: number) => {
 const getCharClass = (index: number) => {
   const classes: string[] = [];
   const ignored = isIgnore(chars.value[index], index);
-  if (index >= userInput.value.length) {
+  if (index >= hiddenTailStart.value) {
+    classes.push('pending-ignore');
+  } else if (index >= userInput.value.length) {
     if (ignored) classes.push('pending-ignore');
     else classes.push('pending');
     // 还没打到的熟词换个下划线颜色：一眼能看出"这个词只要敲首字母"，
