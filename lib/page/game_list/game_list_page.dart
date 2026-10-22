@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
+import 'package:repeat_flutter/nav.dart';
 import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
@@ -89,7 +90,9 @@ class GameListPage extends StatelessWidget {
     return ret.toString();
   }
 
-  /// 订阅列表：选中一条就问退不退订。（不新增页面，全在这一页里解决。）
+  /// 订阅列表：选中一条再挑改地址/改名/退订。（不新增页面，全在这一页里解决。）
+  ///
+  /// 版本和 hash 是装包时记下的，不给改；想重装直接点检查更新。
   void _manageSubscriptions(GameListLogic logic) async {
     final subs = logic.state.subscriptions.toList();
     if (subs.isEmpty) {
@@ -101,14 +104,45 @@ class GameListPage extends StatelessWidget {
       keys: subs.map((e) => '${e.name.isEmpty ? e.url : e.name} v${e.version}').toList(),
     );
     if (index == null) return;
-    MsgBox.yesOrNo(
-      title: I18nKey.gameUnsubscribe.tr,
-      desc: I18nKey.gameUnsubscribeConfirm.tr,
-      yes: () {
-        Get.back();
-        logic.unsubscribe(subs[index]);
-      },
+    final sub = subs[index];
+    final action = await Select.showSheet(
+      // 标题放地址，改之前能看到现在填的是什么。
+      title: sub.url,
+      keys: [
+        I18nKey.gameSubscriptionUrl.tr,
+        I18nKey.gameSubscriptionName.tr,
+        I18nKey.gameUnsubscribe.tr,
+      ],
     );
+    if (action == null) return;
+    switch (action) {
+      case 0:
+        final RxString model = sub.url.obs;
+        MsgBox.strInputWithYesOrNo(
+          model,
+          I18nKey.gameSubscriptionUrl.tr,
+          null,
+          qrPagePath: Nav.scan.path,
+          yes: () {
+            Get.back();
+            logic.changeSubscriptionUrl(sub, model.value);
+          },
+        );
+        break;
+      case 1:
+        _strInput(sub.name, I18nKey.gameSubscriptionName.tr, (v) => logic.renameSubscription(sub, v));
+        break;
+      case 2:
+        MsgBox.yesOrNo(
+          title: I18nKey.gameUnsubscribe.tr,
+          desc: I18nKey.gameUnsubscribeConfirm.tr,
+          yes: () {
+            Get.back();
+            logic.unsubscribe(sub);
+          },
+        );
+        break;
+    }
   }
 
   void _openActions(GameListLogic logic, GameItem item) async {

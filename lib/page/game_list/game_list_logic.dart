@@ -460,12 +460,15 @@ class GameListLogic extends GetxController {
       await _resetLastGameIndex();
     }
 
+    // 名字跟游戏的 'n' 一样以用户的为准：已有订阅且名字非空就留着，
+    // 只有新订阅（或用户清空过名字）才拿 manifest 的。
+    final oldName = oldSubs.firstWhereOrNull((e) => e.url == subUrl)?.name ?? '';
     oldSubs.removeWhere((e) => e.url == subUrl);
     oldSubs.add(GameSubscription(
       url: subUrl,
       version: manifest.version,
       hash: dc.hash,
-      name: manifest.name.isEmpty ? subUrl : manifest.name,
+      name: oldName.isNotEmpty ? oldName : (manifest.name.isEmpty ? subUrl : manifest.name),
     ));
     _saveSubscriptions(oldSubs);
 
@@ -489,6 +492,80 @@ class GameListLogic extends GetxController {
     if (games.length != before) {
       await _resetLastGameIndex();
     }
+    await _save();
+  }
+
+  /// 改订阅地址（服务器换了 IP/域名之类）。
+  ///
+  /// 订阅以 url 为主键，'g' 里的条目靠 'u' 回指，所以两边一起改；条目的 'i' 不动，存档保得住。
+  /// 改完先去新地址拿一次 manifest：拿到了就顺手按它对齐（换了包会更新，不同包的入口会增删）；
+  /// 拿不到就问用户还存不存——服务器暂时没开也该能先把地址改了。
+  Future<void> changeSubscriptionUrl(GameSubscription sub, String url) async {
+    url = url.trim();
+    if (url.isEmpty || url == sub.url) return;
+    if (_subscriptions.any((e) => e.url == url)) {
+      Snackbar.show(I18nKey.gameSubscriptionUrlDuplicated.tr);
+      return;
+    }
+
+    final manifest = await showOverlay<GameManifest?>(
+      () => GameSubscriptionHelp.fetchManifest(url),
+      I18nKey.gameCheckUpdate.tr,
+    );
+    if (manifest == null) {
+      MsgBox.yesOrNo(
+        title: I18nKey.gameSubscriptionUrl.tr,
+        desc: I18nKey.gameSubscriptionUrlUnreachable.tr,
+        yes: () async {
+          Get.back();
+          _moveSubscription(sub.url, url);
+          await _save();
+        },
+      );
+      return;
+    }
+
+    _moveSubscription(sub.url, url);
+    final moved = _subscriptions.firstWhere((e) => e.url == url);
+    if (_needsApply(moved, manifest)) {
+      final dc = await showOverlay<DownloadContent?>(
+        () => GameSubscriptionHelp.download(classroomId, url, manifest),
+        I18nKey.labelImporting.tr,
+      );
+      // 下包失败也照样存新地址，下次检查更新再补。
+      if (dc != null) {
+        await _applyManifest(url, manifest, dc);
+      }
+    }
+    await _save();
+    Snackbar.show(I18nKey.labelSaved.tr);
+  }
+
+  /// 只改内存里的 map：订阅的 url 和所有回指它的条目的 'u'。
+  void _moveSubscription(String oldUrl, String newUrl) {
+    final subs = _subscriptions;
+    for (final s in subs) {
+      if (s.url != oldUrl) continue;
+      s.url = newUrl;
+      // 名字是拿 url 兜底的，地址都换了就别留旧地址当名字，下次 apply 会拿 manifest 的。
+      if (s.name == oldUrl) s.name = '';
+    }
+    _saveSubscriptions(subs);
+    for (final raw in _games) {
+      if (raw is Map<String, dynamic> && raw['u'] == oldUrl) {
+        raw['u'] = newUrl;
+      }
+    }
+  }
+
+  /// 改订阅的显示名。清空就回落成显示地址，下次更新时拿 manifest 的名字。
+  Future<void> renameSubscription(GameSubscription sub, String name) async {
+    name = name.trim();
+    final subs = _subscriptions;
+    final target = subs.firstWhereOrNull((e) => e.url == sub.url);
+    if (target == null || target.name == name) return;
+    target.name = name;
+    _saveSubscriptions(subs);
     await _save();
   }
 

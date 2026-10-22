@@ -446,6 +446,9 @@ class ConfigKo extends Config {
     put(I18nKey.gameSubscriptionEmpty, "구독이 없습니다");
     put(I18nKey.gameUnsubscribe, "구독 해지");
     put(I18nKey.gameUnsubscribeConfirm, "구독을 해지할까요? 여기서 온 게임이 패키지 파일과 함께 모두 지워집니다.");
+    put(I18nKey.gameSubscriptionName, "구독 이름");
+    put(I18nKey.gameSubscriptionUrlDuplicated, "이 URL은 이미 다른 구독에서 사용 중입니다");
+    put(I18nKey.gameSubscriptionUrlUnreachable, "새 URL에 접속할 수 없습니다. 그래도 저장할까요? 이후 업데이트 확인은 이 URL을 사용합니다.");
     put(I18nKey.gameOverriddenBySubscription, "이 게임은 구독에서 왔습니다. 다음 업데이트에서 변경 내용이 덮어써질 수 있습니다.");
     put(I18nKey.ignoreSpace, "공백 무시");
     put(I18nKey.ignoreNumber, "숫자 무시");

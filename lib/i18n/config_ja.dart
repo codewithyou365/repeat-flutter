@@ -446,6 +446,9 @@ class ConfigJa extends Config {
     put(I18nKey.gameSubscriptionEmpty, "購読がありません");
     put(I18nKey.gameUnsubscribe, "購読を解除");
     put(I18nKey.gameUnsubscribeConfirm, "購読を解除しますか？そこから来たゲームはパッケージのファイルごと消えます。");
+    put(I18nKey.gameSubscriptionName, "購読名");
+    put(I18nKey.gameSubscriptionUrlDuplicated, "このURLは別の購読で使われています");
+    put(I18nKey.gameSubscriptionUrlUnreachable, "新しいURLにアクセスできません。それでも保存しますか？今後の更新確認はこのURLを使います。");
     put(I18nKey.gameOverriddenBySubscription, "このゲームは購読から来ています。次の更新で変更が上書きされることがあります。");
     put(I18nKey.ignoreSpace, "空白を無視");
     put(I18nKey.ignoreNumber, "数字を無視");

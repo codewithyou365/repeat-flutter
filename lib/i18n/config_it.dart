@@ -446,6 +446,9 @@ class ConfigIt extends Config {
     put(I18nKey.gameSubscriptionEmpty, "Ancora nessun abbonamento");
     put(I18nKey.gameUnsubscribe, "Disiscriviti");
     put(I18nKey.gameUnsubscribeConfirm, "Disiscriversi? Tutti i suoi giochi verranno rimossi insieme ai file dei pacchetti.");
+    put(I18nKey.gameSubscriptionName, "Nome abbonamento");
+    put(I18nKey.gameSubscriptionUrlDuplicated, "Questo URL è già usato da un altro abbonamento");
+    put(I18nKey.gameSubscriptionUrlUnreachable, "Il nuovo URL non è raggiungibile. Salvarlo comunque? I prossimi controlli lo useranno.");
     put(I18nKey.gameOverriddenBySubscription, "Questo gioco arriva da un abbonamento. La modifica potrebbe essere sovrascritta al prossimo aggiornamento.");
     put(I18nKey.ignoreSpace, "Ignora gli spazi");
     put(I18nKey.ignoreNumber, "Ignora i numeri");

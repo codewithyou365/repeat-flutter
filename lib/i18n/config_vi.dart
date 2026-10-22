@@ -446,6 +446,9 @@ class ConfigVi extends Config {
     put(I18nKey.gameSubscriptionEmpty, "Chưa có nguồn đăng ký nào");
     put(I18nKey.gameUnsubscribe, "Huỷ đăng ký");
     put(I18nKey.gameUnsubscribeConfirm, "Huỷ đăng ký? Mọi trò chơi từ nguồn này sẽ bị xoá cùng với các tệp trong gói.");
+    put(I18nKey.gameSubscriptionName, "Tên gói đăng ký");
+    put(I18nKey.gameSubscriptionUrlDuplicated, "URL này đã được gói đăng ký khác sử dụng");
+    put(I18nKey.gameSubscriptionUrlUnreachable, "Không truy cập được URL mới. Vẫn lưu? Các lần kiểm tra cập nhật sau sẽ dùng URL này.");
     put(I18nKey.gameOverriddenBySubscription, "Trò chơi này đến từ một nguồn đăng ký. Thay đổi có thể bị ghi đè ở lần cập nhật sau.");
     put(I18nKey.ignoreSpace, "Bỏ qua khoảng trắng");
     put(I18nKey.ignoreNumber, "Bỏ qua chữ số");

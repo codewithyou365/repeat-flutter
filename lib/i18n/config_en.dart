@@ -446,6 +446,9 @@ class ConfigEn extends Config {
     put(I18nKey.gameSubscriptionEmpty, "No subscription yet");
     put(I18nKey.gameUnsubscribe, "Unsubscribe");
     put(I18nKey.gameUnsubscribeConfirm, "Unsubscribe? Every game from it will be removed together with the package files.");
+    put(I18nKey.gameSubscriptionName, "Subscription name");
+    put(I18nKey.gameSubscriptionUrlDuplicated, "This URL is already used by another subscription");
+    put(I18nKey.gameSubscriptionUrlUnreachable, "The new URL can't be reached. Save it anyway? Future update checks will use it.");
     put(I18nKey.gameOverriddenBySubscription, "This game comes from a subscription. The change may be overwritten on the next update.");
     put(I18nKey.ignoreSpace, "Ignore Whitespace");
     put(I18nKey.ignoreNumber, "Ignore Numbers");

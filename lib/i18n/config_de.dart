@@ -446,6 +446,9 @@ class ConfigDe extends Config {
     put(I18nKey.gameSubscriptionEmpty, "Noch kein Abo");
     put(I18nKey.gameUnsubscribe, "Abo kündigen");
     put(I18nKey.gameUnsubscribeConfirm, "Abo kündigen? Alle Spiele daraus werden zusammen mit den Paketdateien entfernt.");
+    put(I18nKey.gameSubscriptionName, "Abo-Name");
+    put(I18nKey.gameSubscriptionUrlDuplicated, "Diese URL wird bereits von einem anderen Abo verwendet");
+    put(I18nKey.gameSubscriptionUrlUnreachable, "Die neue URL ist nicht erreichbar. Trotzdem speichern? Künftige Update-Prüfungen verwenden sie.");
     put(I18nKey.gameOverriddenBySubscription, "Dieses Spiel stammt aus einem Abo. Die Änderung kann beim nächsten Update überschrieben werden.");
     put(I18nKey.ignoreSpace, "Leerzeichen ignorieren");
     put(I18nKey.ignoreNumber, "Zahlen ignorieren");

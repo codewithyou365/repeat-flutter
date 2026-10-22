@@ -446,6 +446,9 @@ class ConfigZh extends Config {
     put(I18nKey.gameSubscriptionEmpty, "还没有订阅");
     put(I18nKey.gameUnsubscribe, "退订");
     put(I18nKey.gameUnsubscribeConfirm, "退订？该订阅下的游戏和游戏包文件都会一并删除。");
+    put(I18nKey.gameSubscriptionName, "订阅名称");
+    put(I18nKey.gameSubscriptionUrlDuplicated, "这个地址已经被别的订阅占用了");
+    put(I18nKey.gameSubscriptionUrlUnreachable, "新地址访问不了，仍然保存？之后检查更新会走新地址。");
     put(I18nKey.gameOverriddenBySubscription, "这个游戏来自订阅，改动可能在下次检查更新时被覆盖。");
     put(I18nKey.ignoreSpace, "忽略空格");
     put(I18nKey.ignoreNumber, "忽略数字");

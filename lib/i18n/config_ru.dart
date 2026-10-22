@@ -446,6 +446,9 @@ class ConfigRu extends Config {
     put(I18nKey.gameSubscriptionEmpty, "Подписок пока нет");
     put(I18nKey.gameUnsubscribe, "Отписаться");
     put(I18nKey.gameUnsubscribeConfirm, "Отписаться? Все игры из этой подписки будут удалены вместе с файлами пакетов.");
+    put(I18nKey.gameSubscriptionName, "Название подписки");
+    put(I18nKey.gameSubscriptionUrlDuplicated, "Этот URL уже используется другой подпиской");
+    put(I18nKey.gameSubscriptionUrlUnreachable, "Новый URL недоступен. Всё равно сохранить? Следующие проверки обновлений будут использовать его.");
     put(I18nKey.gameOverriddenBySubscription, "Эта игра получена из подписки. Изменение может быть перезаписано при следующем обновлении.");
     put(I18nKey.ignoreSpace, "Игнорировать пробелы");
     put(I18nKey.ignoreNumber, "Игнорировать цифры");

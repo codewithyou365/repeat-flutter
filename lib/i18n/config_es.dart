@@ -446,6 +446,9 @@ class ConfigEs extends Config {
     put(I18nKey.gameSubscriptionEmpty, "Aún no hay suscripciones");
     put(I18nKey.gameUnsubscribe, "Cancelar suscripción");
     put(I18nKey.gameUnsubscribeConfirm, "¿Cancelar la suscripción? Todos sus juegos se eliminarán junto con los archivos del paquete.");
+    put(I18nKey.gameSubscriptionName, "Nombre de la suscripción");
+    put(I18nKey.gameSubscriptionUrlDuplicated, "Esta URL ya la usa otra suscripción");
+    put(I18nKey.gameSubscriptionUrlUnreachable, "No se puede acceder a la nueva URL. ¿Guardarla de todos modos? Las próximas comprobaciones la usarán.");
     put(I18nKey.gameOverriddenBySubscription, "Este juego viene de una suscripción. El cambio puede sobrescribirse en la próxima actualización.");
     put(I18nKey.ignoreSpace, "Ignorar espacios");
     put(I18nKey.ignoreNumber, "Ignorar números");

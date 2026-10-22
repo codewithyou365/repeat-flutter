@@ -446,6 +446,9 @@ class ConfigFr extends Config {
     put(I18nKey.gameSubscriptionEmpty, "Pas encore d'abonnement");
     put(I18nKey.gameUnsubscribe, "Se désabonner");
     put(I18nKey.gameUnsubscribeConfirm, "Se désabonner ? Tous ses jeux seront supprimés avec les fichiers du paquet.");
+    put(I18nKey.gameSubscriptionName, "Nom de l'abonnement");
+    put(I18nKey.gameSubscriptionUrlDuplicated, "Cette URL est déjà utilisée par un autre abonnement");
+    put(I18nKey.gameSubscriptionUrlUnreachable, "La nouvelle URL est injoignable. L'enregistrer quand même ? Les prochaines vérifications l'utiliseront.");
     put(I18nKey.gameOverriddenBySubscription, "Ce jeu vient d'un abonnement. La modification peut être écrasée à la prochaine mise à jour.");
     put(I18nKey.ignoreSpace, "Ignorer les espaces");
     put(I18nKey.ignoreNumber, "Ignorer les chiffres");

@@ -446,6 +446,9 @@ class ConfigPt extends Config {
     put(I18nKey.gameSubscriptionEmpty, "Ainda não há assinaturas");
     put(I18nKey.gameUnsubscribe, "Cancelar assinatura");
     put(I18nKey.gameUnsubscribeConfirm, "Cancelar a assinatura? Todos os jogos dela serão removidos junto com os arquivos do pacote.");
+    put(I18nKey.gameSubscriptionName, "Nome da assinatura");
+    put(I18nKey.gameSubscriptionUrlDuplicated, "Esta URL já é usada por outra assinatura");
+    put(I18nKey.gameSubscriptionUrlUnreachable, "Não foi possível acessar a nova URL. Salvar mesmo assim? As próximas verificações vão usá-la.");
     put(I18nKey.gameOverriddenBySubscription, "Este jogo vem de uma assinatura. A alteração pode ser sobrescrita na próxima atualização.");
     put(I18nKey.ignoreSpace, "Ignorar espaços");
     put(I18nKey.ignoreNumber, "Ignorar números");

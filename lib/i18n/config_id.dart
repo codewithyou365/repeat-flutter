@@ -446,6 +446,9 @@ class ConfigId extends Config {
     put(I18nKey.gameSubscriptionEmpty, "Belum ada langganan");
     put(I18nKey.gameUnsubscribe, "Berhenti berlangganan");
     put(I18nKey.gameUnsubscribeConfirm, "Berhenti berlangganan? Semua permainan dari langganan itu akan dihapus beserta berkas paketnya.");
+    put(I18nKey.gameSubscriptionName, "Nama langganan");
+    put(I18nKey.gameSubscriptionUrlDuplicated, "URL ini sudah dipakai langganan lain");
+    put(I18nKey.gameSubscriptionUrlUnreachable, "URL baru tidak bisa diakses. Tetap simpan? Pemeriksaan pembaruan berikutnya akan memakainya.");
     put(I18nKey.gameOverriddenBySubscription, "Permainan ini berasal dari langganan. Perubahannya bisa tertimpa pada pembaruan berikutnya.");
     put(I18nKey.ignoreSpace, "Abaikan spasi");
     put(I18nKey.ignoreNumber, "Abaikan angka");
