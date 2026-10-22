@@ -2,6 +2,7 @@ import 'dart:convert' as convert;
 
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/date.dart';
+import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/chapter.dart';
@@ -55,7 +56,6 @@ class ReimportHelp {
         return null;
       }
     }
-    var now = DateTime.now();
 
     Map<String, dynamic> bookContent = {};
     jsonData.forEach((k, v) {
@@ -111,7 +111,8 @@ class ReimportHelp {
             verseContent[k] = v;
           }
         });
-        var learnDate = Date.from(now);
+        // 用排计划的"今天"而不是真实日期：凌晨 delayHour 点前还算前一天，写成真实日期的话新句子当天排不进学习计划
+        var learnDate = ScheduleDao.currentDate();
         if (verse.learnDate != null) {
           learnDate = Date(verse.learnDate!);
         }

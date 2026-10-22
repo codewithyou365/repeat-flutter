@@ -1,7 +1,7 @@
 import 'dart:convert' as convert;
 
 import 'package:floor/floor.dart';
-import 'package:repeat_flutter/common/date.dart';
+import 'package:repeat_flutter/db/dao/schedule_dao.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/book.dart';
 import 'package:repeat_flutter/db/entity/chapter.dart';
@@ -288,7 +288,8 @@ abstract class VerseDao {
       sort: verseSortOf(book.sort, chapterIndex, verseIndex),
       content: content,
       contentVersion: 1,
-      learnDate: Date.from(now),
+      // 用排计划的"今天"而不是真实日期：凌晨 delayHour 点前还算前一天，写成真实日期的话新句子当天排不进学习计划
+      learnDate: ScheduleDao.currentDate(),
       progress: 0,
     );
     await addVerses(bookId, book.sort, chapterIndex, [verse]);
