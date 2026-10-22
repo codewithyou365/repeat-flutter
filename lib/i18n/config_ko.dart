@@ -162,7 +162,7 @@ class ConfigKo extends Config {
     put(I18nKey.labelDataMissing, "데이터가 없습니다!");
     put(I18nKey.labelRemoteImport, "원격에서 가져오기");
     put(I18nKey.labelLocalZipImport, "로컬 ZIP에서 가져오기");
-    put(I18nKey.labelAddOrImportClassroom, "클래스 추가 / 가져오기");
+    put(I18nKey.labelEnterClassroomDirectly, "바로 들어가기 (책 직접 추가)");
     put(I18nKey.create, "만들기");
     put(I18nKey.labelLocalImportCancel, "로컬 가져오기를 취소했습니다");
     put(I18nKey.labelAddChapter, "챕터 추가");

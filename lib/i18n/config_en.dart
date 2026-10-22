@@ -162,7 +162,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelDataMissing, "Data missing!");
     put(I18nKey.labelRemoteImport, "Remote import");
     put(I18nKey.labelLocalZipImport, "Local ZIP import");
-    put(I18nKey.labelAddOrImportClassroom, "Add / Import Classroom");
+    put(I18nKey.labelEnterClassroomDirectly, "Enter directly (add books manually)");
     put(I18nKey.create, "Create");
     put(I18nKey.labelLocalImportCancel, "Local Import is Canceled");
     put(I18nKey.labelAddChapter, "Add Chapter");

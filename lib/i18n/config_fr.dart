@@ -162,7 +162,7 @@ class ConfigFr extends Config {
     put(I18nKey.labelDataMissing, "Données manquantes !");
     put(I18nKey.labelRemoteImport, "Import distant");
     put(I18nKey.labelLocalZipImport, "Import d'un ZIP local");
-    put(I18nKey.labelAddOrImportClassroom, "Ajouter / importer une classe");
+    put(I18nKey.labelEnterClassroomDirectly, "Entrer directement (ajouter des livres manuellement)");
     put(I18nKey.create, "Créer");
     put(I18nKey.labelLocalImportCancel, "Import local annulé");
     put(I18nKey.labelAddChapter, "Ajouter un chapitre");

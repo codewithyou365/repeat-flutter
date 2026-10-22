@@ -162,7 +162,7 @@ class ConfigJa extends Config {
     put(I18nKey.labelDataMissing, "データが欠けています！");
     put(I18nKey.labelRemoteImport, "リモートからインポート");
     put(I18nKey.labelLocalZipImport, "ローカル ZIP からインポート");
-    put(I18nKey.labelAddOrImportClassroom, "クラスを追加 / インポート");
+    put(I18nKey.labelEnterClassroomDirectly, "そのまま入る（本を手動で追加）");
     put(I18nKey.create, "作成");
     put(I18nKey.labelLocalImportCancel, "ローカルインポートを中止しました");
     put(I18nKey.labelAddChapter, "章を追加");

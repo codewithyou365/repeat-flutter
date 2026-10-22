@@ -162,7 +162,7 @@ class ConfigRu extends Config {
     put(I18nKey.labelDataMissing, "Данные отсутствуют!");
     put(I18nKey.labelRemoteImport, "Удалённый импорт");
     put(I18nKey.labelLocalZipImport, "Импорт локального ZIP");
-    put(I18nKey.labelAddOrImportClassroom, "Добавить / импортировать класс");
+    put(I18nKey.labelEnterClassroomDirectly, "Войти сразу (добавить книги вручную)");
     put(I18nKey.create, "Создать");
     put(I18nKey.labelLocalImportCancel, "Локальный импорт отменён");
     put(I18nKey.labelAddChapter, "Добавить главу");

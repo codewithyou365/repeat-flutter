@@ -162,7 +162,7 @@ class ConfigIt extends Config {
     put(I18nKey.labelDataMissing, "Dati mancanti!");
     put(I18nKey.labelRemoteImport, "Importazione remota");
     put(I18nKey.labelLocalZipImport, "Importa ZIP locale");
-    put(I18nKey.labelAddOrImportClassroom, "Aggiungi / importa classe");
+    put(I18nKey.labelEnterClassroomDirectly, "Entra direttamente (aggiungi libri manualmente)");
     put(I18nKey.create, "Crea");
     put(I18nKey.labelLocalImportCancel, "Importazione locale annullata");
     put(I18nKey.labelAddChapter, "Aggiungi capitolo");

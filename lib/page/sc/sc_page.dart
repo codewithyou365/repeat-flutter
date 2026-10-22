@@ -72,7 +72,7 @@ class ScPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          logic.openAddOrImportMenu();
+          logic.openAddDialog();
         },
         child: const Icon(Icons.add),
       ),
@@ -100,14 +100,14 @@ class ScPage extends StatelessWidget {
       builder: (context) {
         return GestureDetector(
           onTap: () {
-            logic.select(model.id, model.name);
+            logic.tap(model);
           },
           onLongPressStart: (details) {
             openActionMenu(context, logic, model, details.globalPosition);
           },
           child: NameTile(
             name: model.name,
-            color: Colors.blue,
+            color: logic.state.emptyIds.contains(model.id) ? Colors.red : Colors.blue,
           ),
         );
       },

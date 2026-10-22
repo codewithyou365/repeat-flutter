@@ -29,8 +29,53 @@ class ScLogic extends GetxController {
   void onInit() async {
     super.onInit();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
-    state.list = await Db().db.classroomDao.getAllClassroom();
+    await _reload();
+  }
+
+  /// 重新读课堂列表，顺便算出哪些课堂还是空的（一本书都没有，界面上标红）
+  Future<void> _reload() async {
+    final list = await Db().db.classroomDao.getAllClassroom();
+    final Set<int> emptyIds = {};
+    for (final c in list) {
+      if ((await Db().db.bookDao.getAll(c.id)).isEmpty) {
+        emptyIds.add(c.id);
+      }
+    }
+    state.list = list;
+    state.emptyIds = emptyIds;
     update([ScLogic.id]);
+  }
+
+  /// 点课堂：空课堂先问是导入还是直接进去手动建书，有书的直接进
+  void tap(Classroom classroom) async {
+    if (!state.emptyIds.contains(classroom.id)) {
+      select(classroom.id, classroom.name);
+      return;
+    }
+    int? index = await Select.showSheet(
+      title: I18nKey.classroomImport.tr,
+      keys: [
+        I18nKey.labelRemoteImport.tr,
+        I18nKey.labelLocalZipImport.tr,
+        I18nKey.labelEnterClassroomDirectly.tr,
+      ],
+      leadings: const [
+        Icon(Icons.cloud_download),
+        Icon(Icons.folder_zip),
+        Icon(Icons.login),
+      ],
+    );
+    switch (index) {
+      case 0:
+        _importFromUrl(classroom.id);
+        break;
+      case 1:
+        _importFromZip(classroom.id);
+        break;
+      case 2:
+        select(classroom.id, classroom.name);
+        break;
+    }
   }
 
   void select(int classroomId, String classroomName) async {
@@ -41,7 +86,9 @@ class ScLogic extends GetxController {
     if (quickEntry != QuickEntryType.none) {
       QuickEntry.showGuiding();
     }
-    Nav.scCr.push();
+    await Nav.scCr.push();
+    // 进去可能手动加了书，回来重新算一下哪些课堂还是空的
+    await _reload();
   }
 
   void add(String name) async {
@@ -61,45 +108,14 @@ class ScLogic extends GetxController {
       Snackbar.show(I18nKey.labelClassroomNameDuplicated.tr);
       return;
     }
-    var classroom = await Db().db.classroomDao.add(name);
-    state.list.add(classroom);
-    update([ScLogic.id]);
+    await Db().db.classroomDao.add(name);
+    // add 撞上同名的隐藏课堂会把它恢复出来，那个课堂未必是空的，所以整体重读
+    await _reload();
     Get.back();
   }
 
-  /// 悬浮按钮统一入口：新增课堂 / 远程导入 / 本地ZIP导入。
-  /// 远程和本地导入都是新建一个课堂，不会动已有课堂。
-  void openAddOrImportMenu() async {
-    int? index = await Select.showSheet(
-      title: I18nKey.labelAddOrImportClassroom.tr,
-      keys: [
-        I18nKey.btnAdd.tr,
-        I18nKey.labelRemoteImport.tr,
-        I18nKey.labelLocalZipImport.tr,
-      ],
-      leadings: const [
-        Icon(Icons.add),
-        Icon(Icons.cloud_download),
-        Icon(Icons.folder_zip),
-      ],
-    );
-    if (index == null) {
-      return;
-    }
-    switch (index) {
-      case 0:
-        _openAddDialog();
-        break;
-      case 1:
-        _importFromUrl();
-        break;
-      default:
-        _importFromZip();
-        break;
-    }
-  }
-
-  void _openAddDialog() {
+  /// 悬浮按钮：先建一个空课堂，导入内容是之后点这个（标红的）课堂再做的
+  void openAddDialog() {
     RxString classroomName = "".obs;
     MsgBox.strInputWithYesOrNo(
       classroomName,
@@ -111,17 +127,27 @@ class ScLogic extends GetxController {
     );
   }
 
-  void _importFromUrl() {
+  void _importFromUrl(int classroomId) {
     RxString downloadUrl = "".obs;
+    // 上次导入留下的进度别带进新对话框
+    state.importProgress.value = 0;
+    state.downloadProgress.value = 0;
     MsgBox.strInputWithYesOrNo(
       downloadUrl,
       I18nKey.classroomImport.tr,
       I18nKey.labelRemoteUrl.tr,
       nextChildren: [
         Obx(() {
-          return LinearProgressIndicator(
-            value: state.importProgress.value,
-            semanticsLabel: "${(state.importProgress.value * 100).toStringAsFixed(1)}%",
+          return Column(
+            children: [
+              LinearProgressIndicator(
+                value: state.importProgress.value,
+                semanticsLabel: "${(state.importProgress.value * 100).toStringAsFixed(1)}%",
+              ),
+              // 下载 index.json 和媒体文件时书本进度还没动，单独给一条当前文件的下载进度
+              const SizedBox(height: 4),
+              LinearProgressIndicator(value: state.downloadProgress.value),
+            ],
           );
         }),
         const SizedBox(height: 10),
@@ -139,16 +165,15 @@ class ScLogic extends GetxController {
           url = urlAndCredentials[0];
           credentials = 'Basic ${base64.encode(utf8.encode(urlAndCredentials[1]))}';
         }
-        // 远程文档里没有课堂名，先按 URL 起个名，导入后用户可以自己改名
+        // 全程盖全局遮罩：导入期间什么都点不了，避免重复点下载起两个导入互相干扰
         var ok = await _doImport(
           () => ClassroomImportHelp.fromUrl(
             url: url,
-            classroomName: _nameFromUrl(url),
+            classroomId: classroomId,
             credentials: credentials,
             onProgress: _onImportProgress,
+            downloadProgress: _onDownloadProgress,
           ),
-          // 进度条就在这个对话框里，别再盖一层遮罩
-          overlay: false,
         );
         if (ok) {
           Nav.back();
@@ -160,7 +185,7 @@ class ScLogic extends GetxController {
     );
   }
 
-  void _importFromZip() async {
+  void _importFromZip(int classroomId) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['zip'],
@@ -178,51 +203,38 @@ class ScLogic extends GetxController {
         return;
       }
     }
-    // 导出时 zip 就叫 <课堂名>.zip，这里原样当课堂名用（会被清洗和去重）
-    final name = result.files.single.name.replaceAll(RegExp(r'\.zip$'), '');
     await _doImport(
       () => ClassroomImportHelp.fromZip(
         zipPath: path,
-        classroomName: name,
+        classroomId: classroomId,
         password: password,
         onProgress: _onImportProgress,
       ),
     );
   }
 
-  /// https://1.2.3.4:4324/index.json -> 'classroom'（清洗和去重交给 addWithUniqueName）
-  static String _nameFromUrl(String url) {
-    final segments = Uri.tryParse(url)?.pathSegments ?? [];
-    for (final s in segments.reversed) {
-      final name = s.split('.').first;
-      if (name.isNotEmpty && name != 'index') {
-        return name;
-      }
-    }
-    return 'classroom';
-  }
-
   void _onImportProgress(int done, int total) {
     state.importProgress.value = total == 0 ? 0 : done / total;
   }
 
-  /// [overlay] 为假表示外面已经有对话框在显示进度了（远程导入），别再盖一层遮罩
-  Future<bool> _doImport(Future<ClassroomImportResult?> Function() run, {bool overlay = true}) async {
+  void _onDownloadProgress(int startTime, int count, int total, bool finish) {
+    // chunked 响应（比如课堂 index.json）拿不到总大小，total 是 -1
+    state.downloadProgress.value = total > 0 ? count / total : null;
+  }
+
+  Future<bool> _doImport(Future<ClassroomImportResult?> Function() run) async {
     state.importProgress.value = 0;
+    state.downloadProgress.value = 0;
     Future<bool> doIt() async {
       final result = await run();
       if (result == null) {
         return false;
       }
-      state.list = await Db().db.classroomDao.getAllClassroom();
-      update([ScLogic.id]);
+      await _reload();
       Snackbar.show(I18nKey.labelClassroomImportSuccess.trArgs([result.classroom.name, '${result.bookCount}']));
       return true;
     }
 
-    if (!overlay) {
-      return await doIt();
-    }
     var ok = false;
     await showOverlay(() async {
       ok = await doIt();

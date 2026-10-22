@@ -19,6 +19,8 @@ enum DownloadDocResult {
 }
 
 class DownloadDoc {
+  static int _tempSeq = 0;
+
   static Future<DownloadDocResult> start(
     String url,
     String path, {
@@ -40,6 +42,7 @@ class DownloadDoc {
     int fileCount = 1;
     int fileTotal = -1;
     var dio = Dio();
+    File? tempFile;
 
     try {
       var rootPath = await DocPath.getContentPath();
@@ -57,7 +60,9 @@ class DownloadDoc {
         }
         return DownloadDocResult.success;
       }
-      var fl = DocLocation(rootPath, "temp");
+      // 每次下载各用各的临时文件：同时有几个下载在跑时共用一个 temp 会互相覆盖，下出来的文件是乱的
+      var fl = DocLocation(rootPath, "temp_${DateTime.now().microsecondsSinceEpoch}_${_tempSeq++}");
+      tempFile = File(fl.path);
       if (skipSsl) {
         dio = Dio()
           ..httpClientAdapter = IOHttpClientAdapter(
@@ -99,6 +104,11 @@ class DownloadDoc {
       }
       return DownloadDocResult.success;
     } on Exception catch (e) {
+      try {
+        if (tempFile != null && await tempFile.exists()) {
+          await tempFile.delete();
+        }
+      } catch (_) {}
       var msg = e.toString();
       Snackbar.show(I18nKey.labelDataAnomaly.trArgs([msg]));
       if (msg.contains('CERTIFICATE_VERIFY_FAILED: self signed certificate')) {

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:repeat_flutter/common/folder.dart';
 import 'package:repeat_flutter/common/json_splitter.dart';
 import 'package:repeat_flutter/common/path.dart';
@@ -20,22 +21,23 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 /// 导入一整个课堂（zip 或远程）。
 ///
-/// **总是新建课堂**：重名自动加后缀，绝不合并进已有课堂，也就绝不会碰到已有的学习进度。
+/// **只往空课堂里导**：课堂由用户先建好（名字也是用户起的），里面一本书都没有才允许导入，
+/// 所以绝不会合并进已有内容、碰到已有的学习进度。失败时清空回滚，课堂本身留着。
 ///
 /// 整份 index.json 可能几十上百 MB，所以先用 [JsonSplitter] 按书切成一堆小文件，
 /// 再一本一本交给现有的 [ImportHelp.import]，内存里始终只有一本书。
 class ClassroomImportHelp {
-  /// 导入过程中的暂存目录，放在新课堂目录下，成功/失败都会删掉
+  /// 导入过程中的暂存目录，放在课堂目录下，成功/失败都会删掉
   static const String stagingDir = '__import';
 
   static Future<ClassroomImportResult?> fromZip({
     required String zipPath,
-    required String classroomName,
+    required int classroomId,
     String? password,
     void Function(int done, int total)? onProgress,
   }) async {
     return _run(
-      classroomName: classroomName,
+      classroomId: classroomId,
       onProgress: onProgress,
       prepare: (classroomId, stagingPath) async {
         await Zip.uncompressStream(File(zipPath), stagingPath, password: password);
@@ -52,13 +54,13 @@ class ClassroomImportHelp {
 
   static Future<ClassroomImportResult?> fromUrl({
     required String url,
-    required String classroomName,
+    required int classroomId,
     String credentials = '',
     void Function(int done, int total)? onProgress,
     DownloadProgressCallback? downloadProgress,
   }) async {
     return _run(
-      classroomName: classroomName,
+      classroomId: classroomId,
       onProgress: onProgress,
       prepare: (classroomId, stagingPath) async {
         final indexPath = DocPath.getClassroomRelativePath(classroomId).joinPath(stagingDir).joinPath(DocPath.getIndexFileName());
@@ -83,11 +85,20 @@ class ClassroomImportHelp {
   }
 
   static Future<ClassroomImportResult?> _run({
-    required String classroomName,
+    required int classroomId,
     required Future<_Source?> Function(int classroomId, String stagingPath) prepare,
     void Function(int done, int total)? onProgress,
   }) async {
-    final classroom = await Db().db.classroomDao.addWithUniqueName(classroomName);
+    final classroom = await Db().db.classroomDao.getById(classroomId);
+    if (classroom == null) {
+      Snackbar.show(I18nKey.labelClassroomImportFail.trArgs(['classroom $classroomId not found']));
+      return null;
+    }
+    // 回滚会清空整个课堂，里面已经有书的话绝不能动
+    if ((await Db().db.bookDao.getAll(classroomId)).isNotEmpty) {
+      Snackbar.show(I18nKey.labelClassroomImportFail.trArgs(['classroom ${classroom.name} is not empty']));
+      return null;
+    }
     final rootPath = await DocPath.getContentPath();
     final classroomPath = rootPath.joinPath(DocPath.getClassroomRelativePath(classroom.id));
     final stagingPath = classroomPath.joinPath(stagingDir);
@@ -132,9 +143,10 @@ class ClassroomImportHelp {
 
       await Folder.delete(stagingPath);
       return ClassroomImportResult(classroom: classroom, bookCount: total);
-    } catch (e) {
-      // 不留半个课堂：连课堂带目录一起回滚
-      await Db().db.classroomDao.deleteAll(classroom.id);
+    } catch (e, st) {
+      debugPrint('classroom import failed: $e\n$st');
+      // 不留半个课堂：数据和目录都清掉，课堂回到导入前的空课堂
+      await Db().db.classroomDao.clearAll(classroom.id);
       await Folder.delete(classroomPath);
       Snackbar.show(I18nKey.labelClassroomImportFail.trArgs([e.toString()]));
       return null;

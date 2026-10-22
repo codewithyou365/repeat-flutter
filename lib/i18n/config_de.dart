@@ -162,7 +162,7 @@ class ConfigDe extends Config {
     put(I18nKey.labelDataMissing, "Daten fehlen!");
     put(I18nKey.labelRemoteImport, "Remote-Import");
     put(I18nKey.labelLocalZipImport, "Lokales ZIP importieren");
-    put(I18nKey.labelAddOrImportClassroom, "Klasse hinzufügen / importieren");
+    put(I18nKey.labelEnterClassroomDirectly, "Direkt öffnen (Bücher manuell hinzufügen)");
     put(I18nKey.create, "Erstellen");
     put(I18nKey.labelLocalImportCancel, "Lokaler Import abgebrochen");
     put(I18nKey.labelAddChapter, "Kapitel hinzufügen");

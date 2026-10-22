@@ -162,7 +162,7 @@ class ConfigPt extends Config {
     put(I18nKey.labelDataMissing, "Faltam dados!");
     put(I18nKey.labelRemoteImport, "Importação remota");
     put(I18nKey.labelLocalZipImport, "Importar ZIP local");
-    put(I18nKey.labelAddOrImportClassroom, "Adicionar / importar turma");
+    put(I18nKey.labelEnterClassroomDirectly, "Entrar diretamente (adicionar livros manualmente)");
     put(I18nKey.create, "Criar");
     put(I18nKey.labelLocalImportCancel, "Importação local cancelada");
     put(I18nKey.labelAddChapter, "Adicionar capítulo");

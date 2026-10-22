@@ -162,7 +162,7 @@ class ConfigId extends Config {
     put(I18nKey.labelDataMissing, "Data hilang!");
     put(I18nKey.labelRemoteImport, "Impor jarak jauh");
     put(I18nKey.labelLocalZipImport, "Impor ZIP lokal");
-    put(I18nKey.labelAddOrImportClassroom, "Tambah / impor kelas");
+    put(I18nKey.labelEnterClassroomDirectly, "Masuk langsung (tambah buku manual)");
     put(I18nKey.create, "Buat");
     put(I18nKey.labelLocalImportCancel, "Impor lokal dibatalkan");
     put(I18nKey.labelAddChapter, "Tambah bab");

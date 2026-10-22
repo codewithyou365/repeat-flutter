@@ -1404,6 +1404,21 @@ class _$ClassroomDao extends ClassroomDao {
   }
 
   @override
+  Future<void> clearAll(int classroomId) async {
+    if (database is sqflite.Transaction) {
+      await super.clearAll(classroomId);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDatabase(changeListener)
+          ..database = transaction;
+        prepareDb(transactionDatabase);
+        await transactionDatabase.classroomDao.clearAll(classroomId);
+      });
+    }
+  }
+
+  @override
   Future<Classroom> add(String name) async {
     if (database is sqflite.Transaction) {
       return super.add(name);
@@ -1414,21 +1429,6 @@ class _$ClassroomDao extends ClassroomDao {
           ..database = transaction;
         prepareDb(transactionDatabase);
         return transactionDatabase.classroomDao.add(name);
-      });
-    }
-  }
-
-  @override
-  Future<Classroom> addWithUniqueName(String name) async {
-    if (database is sqflite.Transaction) {
-      return super.addWithUniqueName(name);
-    } else {
-      return (database as sqflite.Database)
-          .transaction<Classroom>((transaction) async {
-        final transactionDatabase = _$AppDatabase(changeListener)
-          ..database = transaction;
-        prepareDb(transactionDatabase);
-        return transactionDatabase.classroomDao.addWithUniqueName(name);
       });
     }
   }

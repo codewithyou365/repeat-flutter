@@ -162,7 +162,7 @@ class ConfigVi extends Config {
     put(I18nKey.labelDataMissing, "Thiếu dữ liệu!");
     put(I18nKey.labelRemoteImport, "Nhập từ xa");
     put(I18nKey.labelLocalZipImport, "Nhập ZIP cục bộ");
-    put(I18nKey.labelAddOrImportClassroom, "Thêm / nhập lớp");
+    put(I18nKey.labelEnterClassroomDirectly, "Vào trực tiếp (thêm sách thủ công)");
     put(I18nKey.create, "Tạo");
     put(I18nKey.labelLocalImportCancel, "Đã huỷ nhập cục bộ");
     put(I18nKey.labelAddChapter, "Thêm chương");

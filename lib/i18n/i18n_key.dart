@@ -156,7 +156,7 @@ enum I18nKey {
   labelDataMissing,
   labelRemoteImport,
   labelLocalZipImport,
-  labelAddOrImportClassroom,
+  labelEnterClassroomDirectly,
   create,
   labelLocalImportCancel,
   labelAddChapter,

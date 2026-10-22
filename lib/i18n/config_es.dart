@@ -162,7 +162,7 @@ class ConfigEs extends Config {
     put(I18nKey.labelDataMissing, "¡Faltan datos!");
     put(I18nKey.labelRemoteImport, "Importación remota");
     put(I18nKey.labelLocalZipImport, "Importar ZIP local");
-    put(I18nKey.labelAddOrImportClassroom, "Añadir / importar clase");
+    put(I18nKey.labelEnterClassroomDirectly, "Entrar directamente (añadir libros manualmente)");
     put(I18nKey.create, "Crear");
     put(I18nKey.labelLocalImportCancel, "Importación local cancelada");
     put(I18nKey.labelAddChapter, "Añadir capítulo");

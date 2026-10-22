@@ -12,9 +12,6 @@ import 'package:repeat_flutter/common/num.dart';
 abstract class ClassroomDao {
   static const String emptyContent = '{}';
 
-  /// 和 ScLogic.nameMaxLength 保持一致
-  static const int nameMaxLength = 12;
-
   late AppDatabase db;
 
   @Query('SELECT * FROM Lock where id=1 for update')
@@ -80,11 +77,26 @@ abstract class ClassroomDao {
 
   @transaction
   Future<void> deleteAll(int classroomId) async {
+    await _deleteData(classroomId);
+    await deleteById(classroomId);
+  }
+
+  /// 清空课堂里的所有数据（书本、学习进度、游戏、提示…），课堂本身留着，内容回到空。
+  /// 导入失败时用来回滚：课堂是用户自己建的，不能连课堂一起删。
+  @transaction
+  Future<void> clearAll(int classroomId) async {
+    await _deleteData(classroomId);
+    final classroom = await getById(classroomId);
+    if (classroom != null) {
+      await updateContentVersion(classroomId, emptyContent, classroom.contentVersion + 1);
+    }
+  }
+
+  Future<void> _deleteData(int classroomId) async {
     await db.bookDao.deleteByClassroomId(classroomId);
     await db.bookContentVersionDao.deleteByClassroomId(classroomId);
     await db.chapterDao.deleteByClassroomId(classroomId);
     await db.chapterContentVersionDao.deleteByClassroomId(classroomId);
-    await deleteById(classroomId);
     await db.crKvDao.deleteByClassroomId(classroomId);
     await db.gameKvDao.deleteByClassroomId(classroomId);
     await db.gameDao.deleteByClassroomId(classroomId);
@@ -115,36 +127,6 @@ abstract class ClassroomDao {
       ret = Classroom(id, name, sort, false, emptyContent, 0);
       await insertClassroom(ret);
     }
-    return ret;
-  }
-
-  /// 课堂名是 unique index，导入课堂时不允许失败，所以重名就往后加 2/3…
-  /// 跟 [add] 不同：[add] 撞到已有课堂会直接返回那个课堂，这里一定新建一个。
-  ///
-  /// 名字按 ScLogic 那边的规矩收拾干净：只留字母数字、最长 12 个字符 —— 外面传进来的
-  /// 名字来自 zip 文件名或用户输入，不收拾的话会建出一个 App 里改不了名的课堂。
-  @transaction
-  Future<Classroom> addWithUniqueName(String name) async {
-    await forUpdate();
-    var base = name.replaceAll(RegExp(r'[^0-9a-zA-Z]'), '');
-    if (base.isEmpty) {
-      base = 'classroom';
-    }
-    if (base.length > nameMaxLength) {
-      base = base.substring(0, nameMaxLength);
-    }
-    var finalName = base;
-    for (var i = 2; await getClassroom(finalName) != null; i++) {
-      final suffix = '$i';
-      final head = base.length + suffix.length > nameMaxLength ? base.substring(0, nameMaxLength - suffix.length) : base;
-      finalName = '$head$suffix';
-    }
-    var maxId = await getMaxId();
-    var id = await Num.getNextId(maxId, existById1: existById);
-    var maxSort = await getMaxSort();
-    var sort = await Num.getNextId(maxSort, existById1: existBySort);
-    var ret = Classroom(id, finalName, sort, false, emptyContent, 0);
-    await insertClassroom(ret);
     return ret;
   }
 
