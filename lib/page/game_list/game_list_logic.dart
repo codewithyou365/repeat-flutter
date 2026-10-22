@@ -41,9 +41,10 @@ class _StagedZip {
   }
 }
 
-/// 课堂游戏的增删改。
+/// 课堂游戏（和订阅装出来的提示服务）的增删改。
 ///
-/// 数据都在 [Classroom.content] 里：宣告是 'g' 数组，zip 文件对象在课堂自己的 'd' 里，
+/// 数据都在 [Classroom.content] 里：游戏宣告是 'g' 数组，订阅里的提示服务入口是 'ts' 数组，
+/// zip 文件对象在课堂自己的 'd' 里，
 /// 文件落在 [DocPath.getFilesRelativePathOf]。本页只改这份 JSON，
 /// Game 表的登记、zip 解压、'i' 回写一律交给 [ClassroomHelp.registerRes]。
 class GameListLogic extends GetxController {
@@ -65,6 +66,18 @@ class GameListLogic extends GetxController {
     final v = _classroomMap['g'];
     return v is List ? v : <dynamic>[];
   }
+
+  /// 订阅装出来的提示服务入口：{'h','n','s','u','ek'}。
+  ///
+  /// 只是个目录，不登记任何表；提示字段真正用的是字段块自己的 'h'/'s'/'k'
+  /// （见 [ClassroomHelp._registerTips]），这里记着是为了列表显示和给提示挑服务。
+  List<dynamic> get _tipServices {
+    final v = _classroomMap['ts'];
+    return v is List ? v : <dynamic>[];
+  }
+
+  /// 升级/换包时改过的书本内容，[_save] 时一起写回。
+  final Map<int, Map<String, dynamic>> _dirtyBooks = {};
 
   List<DownloadContent> get _downloads {
     return DownloadContent.toList(_classroomMap['d']) ?? [];
@@ -104,24 +117,51 @@ class GameListLogic extends GetxController {
         unpacked = await Folder.exists(resPath.joinPath(dc.folder).joinPath(dc.pureName));
       }
       final sub = entry.subUrl.isEmpty ? null : subs.firstWhereOrNull((e) => e.url == entry.subUrl);
-      items.add(GameItem(
-        index: i,
-        id: entry.id,
-        hash: entry.hash,
-        name: entry.name,
-        key: entry.key,
-        service: entry.service,
-        zipName: dc?.url,
-        zipExists: zipExists,
-        unpacked: unpacked,
-        subUrl: entry.subUrl,
-        entryKey: entry.entryKey,
-        subName: sub?.name ?? '',
-        subVersion: sub?.version ?? 0,
-      ));
+      items.add(
+        GameItem(
+          index: i,
+          id: entry.id,
+          hash: entry.hash,
+          name: entry.name,
+          key: entry.key,
+          service: entry.service,
+          zipName: dc?.url,
+          zipExists: zipExists,
+          unpacked: unpacked,
+          subUrl: entry.subUrl,
+          entryKey: entry.entryKey,
+          subName: sub?.name ?? '',
+          subVersion: sub?.version ?? 0,
+        ),
+      );
+    }
+
+    final tipServices = <TipServiceItem>[];
+    for (final raw in _tipServices) {
+      if (raw is! Map<String, dynamic>) continue;
+      final entry = ContentEntry.fromJson(raw);
+      final dc = downloads.firstWhereOrNull((e) => e.hash == entry.hash);
+      var unpacked = false;
+      if (dc != null) {
+        unpacked = await Folder.exists(resPath.joinPath(dc.folder).joinPath(dc.pureName));
+      }
+      final sub = subs.firstWhereOrNull((e) => e.url == entry.subUrl);
+      tipServices.add(
+        TipServiceItem(
+          hash: entry.hash,
+          name: entry.name,
+          service: entry.service,
+          unpacked: unpacked,
+          subUrl: entry.subUrl,
+          entryKey: entry.entryKey,
+          subName: sub?.name ?? '',
+          subVersion: sub?.version ?? 0,
+        ),
+      );
     }
 
     state.items.assignAll(items);
+    state.tipServices.assignAll(tipServices);
     state.subscriptions.assignAll(subs);
     state.loading.value = false;
     update([id]);
@@ -140,6 +180,10 @@ class GameListLogic extends GetxController {
   /// 写回课堂内容并重新登记：updateContent 会把 contentVersion +1，
   /// registerRes 的版本指纹因此变化，不会被缓存挡住。
   Future<void> _save() async {
+    for (final e in _dirtyBooks.entries) {
+      await Db().db.bookDao.updateBookContent(e.key, jsonEncode(e.value));
+    }
+    _dirtyBooks.clear();
     await Db().db.classroomDao.updateContent(classroomId, jsonEncode(_classroomMap));
     await ClassroomHelp.registerRes();
     await load();
@@ -150,7 +194,7 @@ class GameListLogic extends GetxController {
   /// 本地 zip 和订阅地址二选一。
   Future<void> add() async {
     final index = await Select.showSheet(
-      title: I18nKey.manageGame.tr,
+      title: I18nKey.manageSubscription.tr,
       keys: [
         I18nKey.gameAddFromLocal.tr,
         I18nKey.gameAddFromSubscription.tr,
@@ -248,7 +292,7 @@ class GameListLogic extends GetxController {
     final keyTec = TextEditingController();
     final serviceTec = TextEditingController(text: staged.defaultService);
     MsgBox.myDialog(
-      title: I18nKey.manageGame.tr,
+      title: I18nKey.gameAddFromLocal.tr,
       barrierDismissible: false,
       content: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -341,7 +385,8 @@ class GameListLogic extends GetxController {
       final dc = await GameSubscriptionHelp.download(classroomId, url, manifest);
       if (dc == null) return null;
       await _applyManifest(url, manifest, dc);
-      return manifest.games.length;
+      // 提示服务不算游戏，提示里只报装上了几个游戏。
+      return manifest.games.where((e) => !e.isTip).length;
     }, I18nKey.labelImporting.tr);
 
     if (installed == null) return;
@@ -397,16 +442,21 @@ class GameListLogic extends GetxController {
 
   /// 要不要动这个订阅：版本变大要动；版本没变但本地条目跟 manifest 对不上
   /// （用户删过某个游戏）也要动——manifest 是唯一真相，删掉的下次更新会加回来。
+  /// 游戏和提示服务分开比：同一个 key 从游戏变成提示服务（老包升级上来）也算对不上。
   bool _needsApply(GameSubscription sub, GameManifest manifest) {
     if (manifest.version > sub.version) return true;
-    final local = <String>{};
-    for (final raw in _games) {
-      if (raw is Map<String, dynamic> && raw['u'] == sub.url) {
-        local.add((raw['ek'] ?? '').toString());
+    bool same(List<dynamic> list, bool tip) {
+      final local = <String>{};
+      for (final raw in list) {
+        if (raw is Map<String, dynamic> && raw['u'] == sub.url) {
+          local.add((raw['ek'] ?? '').toString());
+        }
       }
+      final remote = manifest.games.where((e) => e.isTip == tip).map((e) => e.key).toSet();
+      return local.length == remote.length && local.containsAll(remote);
     }
-    final remote = manifest.games.map((e) => e.key).toSet();
-    return local.length != remote.length || !local.containsAll(remote);
+
+    return !same(_games, false) || !same(_tipServices, true);
   }
 
   /// 把 manifest 落到课堂内容里：manifest 是唯一真相，本地按 (订阅, ek) 对齐。
@@ -427,7 +477,7 @@ class GameListLogic extends GetxController {
       }
     }
 
-    for (final entry in manifest.games) {
+    for (final entry in manifest.games.where((e) => !e.isTip)) {
       final raw = existing[entry.key];
       if (raw != null) {
         raw['h'] = dc.hash;
@@ -450,31 +500,100 @@ class GameListLogic extends GetxController {
       }
     }
 
-    // manifest 里没有的入口就从课堂移除。
-    final remote = manifest.games.map((e) => e.key).toSet();
+    // manifest 里没有的游戏入口就从课堂移除（变成提示服务的也算，比如老包里的 japanese）。
+    final remote = manifest.games.where((e) => !e.isTip).map((e) => e.key).toSet();
     final beforeRemove = games.length;
-    games.removeWhere((raw) =>
-        raw is Map<String, dynamic> && raw['u'] == subUrl && !remote.contains((raw['ek'] ?? '').toString()));
+    games.removeWhere((raw) => raw is Map<String, dynamic> && raw['u'] == subUrl && !remote.contains((raw['ek'] ?? '').toString()));
     _classroomMap['g'] = games;
     if (games.length != beforeRemove) {
       await _resetLastGameIndex();
     }
 
+    // 提示服务没有存档和用户改名，直接按 manifest 整组重写。
+    // 换包前先记下旧入口的 's'，下面迁移提示字段时把入口也一起跟上。
+    final oldServices = <String, String>{};
+    for (final raw in _tipServices) {
+      if (raw is Map<String, dynamic> && raw['u'] == subUrl) {
+        oldServices[(raw['ek'] ?? '').toString()] = (raw['s'] ?? '').toString();
+      }
+    }
+    final tipServices = _tipServices.where((raw) => !(raw is Map<String, dynamic> && raw['u'] == subUrl)).toList();
+    final serviceMoves = <String, String>{};
+    for (final entry in manifest.games.where((e) => e.isTip)) {
+      tipServices.add(<String, dynamic>{
+        'h': dc.hash,
+        'n': entry.name,
+        's': entry.service,
+        'u': subUrl,
+        'ek': entry.key,
+      });
+      final old = oldServices[entry.key];
+      if (old != null && old.isNotEmpty && old != entry.service) {
+        serviceMoves[old] = entry.service;
+      }
+    }
+    _classroomMap['ts'] = tipServices;
+
     // 名字跟游戏的 'n' 一样以用户的为准：已有订阅且名字非空就留着，
     // 只有新订阅（或用户清空过名字）才拿 manifest 的。
     final oldName = oldSubs.firstWhereOrNull((e) => e.url == subUrl)?.name ?? '';
     oldSubs.removeWhere((e) => e.url == subUrl);
-    oldSubs.add(GameSubscription(
-      url: subUrl,
-      version: manifest.version,
-      hash: dc.hash,
-      name: oldName.isNotEmpty ? oldName : (manifest.name.isEmpty ? subUrl : manifest.name),
-    ));
+    oldSubs.add(
+      GameSubscription(
+        url: subUrl,
+        version: manifest.version,
+        hash: dc.hash,
+        name: oldName.isNotEmpty ? oldName : (manifest.name.isEmpty ? subUrl : manifest.name),
+      ),
+    );
     _saveSubscriptions(oldSubs);
 
     if (oldHash.isNotEmpty && oldHash != dc.hash) {
+      // 提示字段手里攥的是 zip 的 hash，不跟着换的话旧包一删提示就打不开了。
+      await _moveTipFields(oldHash, dc, serviceMoves);
       await _dropUnreferencedZip(oldHash);
     }
+  }
+
+  /// 把还指着旧包的提示字段挪到新包上：课堂级的 't'/'t1'/… 和每本书的 'q'/'a'/'n'。
+  ///
+  /// [serviceMoves] 是旧入口 → 新入口，包里的入口文件改了路径时用；字段的 'k' 不动。
+  /// 书本级的字段从书自己的 'd' 里找 zip，所以那边的 'd' 也要换成新包。
+  Future<void> _moveTipFields(String oldHash, DownloadContent dc, Map<String, String> serviceMoves) async {
+    void move(Map<String, dynamic>? block) {
+      if (block == null || block['h'] != oldHash) return;
+      block['h'] = dc.hash;
+      final to = serviceMoves[(block['s'] ?? '').toString()];
+      if (to != null) block['s'] = to;
+    }
+
+    for (final ref in ClassroomHelp.classroomTipRefs(_classroomMap)) {
+      move(VerseField.of(_classroomMap, ref));
+    }
+
+    for (final bookId in await _bookIdsReferencing(oldHash)) {
+      final bookMap = _dirtyBooks[bookId] ?? _decode(await Db().db.bookDao.getContentById(bookId));
+      for (final ref in ClassroomHelp.bookFieldRefs) {
+        move(VerseField.of(bookMap, ref));
+      }
+      final downloads = DownloadContent.toList(bookMap['d']) ?? [];
+      downloads.removeWhere((e) => e.hash == oldHash);
+      if (!downloads.any((e) => e.hash == dc.hash)) downloads.add(dc);
+      bookMap['d'] = downloads.map((e) => e.toJson()).toList();
+      _dirtyBooks[bookId] = bookMap;
+    }
+  }
+
+  /// 'q'/'a'/'n' 字段块的 'h' 指着 [hash] 的书。还没写回库的改动（[_dirtyBooks]）以内存为准。
+  Future<List<int>> _bookIdsReferencing(String hash) async {
+    final ret = <int>[];
+    for (final book in await Db().db.bookDao.getAll(classroomId)) {
+      final bookMap = _dirtyBooks[book.id!] ?? _decode(book.content);
+      if (ClassroomHelp.bookFieldRefs.any((ref) => VerseField.of(bookMap, ref)?['h'] == hash)) {
+        ret.add(book.id!);
+      }
+    }
+    return ret;
   }
 
   /// 退订：订阅本身、它装出来的游戏、以及没人再引用的包，一起清掉。
@@ -483,6 +602,7 @@ class GameListLogic extends GetxController {
     final before = games.length;
     games.removeWhere((raw) => raw is Map<String, dynamic> && raw['u'] == sub.url);
     _classroomMap['g'] = games;
+    _classroomMap['ts'] = _tipServices.where((raw) => !(raw is Map<String, dynamic> && raw['u'] == sub.url)).toList();
 
     final subs = _subscriptions;
     subs.removeWhere((e) => e.url == sub.url);
@@ -551,7 +671,7 @@ class GameListLogic extends GetxController {
       if (s.name == oldUrl) s.name = '';
     }
     _saveSubscriptions(subs);
-    for (final raw in _games) {
+    for (final raw in [..._games, ..._tipServices]) {
       if (raw is Map<String, dynamic> && raw['u'] == oldUrl) {
         raw['u'] = newUrl;
       }
@@ -578,7 +698,7 @@ class GameListLogic extends GetxController {
       if (raw is Map<String, dynamic>) used.add((raw['n'] ?? '').toString());
     }
     if (!used.contains(base)) return base;
-    for (var i = 2;; i++) {
+    for (var i = 2; ; i++) {
       final candidate = '$base $i';
       if (!used.contains(candidate)) return candidate;
     }
@@ -701,10 +821,15 @@ class GameListLogic extends GetxController {
     _classroomMap['d'] = list.map((e) => e.toJson()).toList();
   }
 
-  /// 没有任何游戏再引用这个 hash 了，就把它从 'd' 里摘掉，文件也删干净。
+  /// 没有任何游戏、提示服务、提示字段再引用这个 hash 了，就把它从 'd' 里摘掉，文件也删干净。
+  ///
+  /// 提示字段要算上：退订以后手工配好的提示还得能用，书本级的字段也从同一个目录拿文件。
   Future<void> _dropUnreferencedZip(String hash) async {
     if (hash.isEmpty) return;
-    if (_games.any((e) => e is Map<String, dynamic> && e['h'] == hash)) return;
+    bool refs(dynamic e) => e is Map<String, dynamic> && e['h'] == hash;
+    if (_games.any(refs) || _tipServices.any(refs)) return;
+    if (ClassroomHelp.classroomTipRefs(_classroomMap).any((ref) => refs(VerseField.of(_classroomMap, ref)))) return;
+    if ((await _bookIdsReferencing(hash)).isNotEmpty) return;
     final list = _downloads;
     final dc = list.firstWhereOrNull((e) => e.hash == hash);
     if (dc == null) return;

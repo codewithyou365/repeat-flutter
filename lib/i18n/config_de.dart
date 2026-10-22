@@ -417,7 +417,7 @@ class ConfigDe extends Config {
     put(I18nKey.labelLegendLearn, "Lernen");
     put(I18nKey.labelLegendReview, "Wiederholen");
     put(I18nKey.statisticTrend, "Statistik-Überblick");
-    put(I18nKey.manageGame, "Spiele verwalten");
+    put(I18nKey.manageSubscription, "Abonnements verwalten");
     put(I18nKey.gameEmpty, "Noch kein Spiel");
     put(I18nKey.gameName, "Spielname");
     put(I18nKey.gameKey, "Spielschlüssel");
@@ -442,7 +442,9 @@ class ConfigDe extends Config {
     put(I18nKey.gameManifestInvalid, "Kein gültiges Spiel-Abo");
     put(I18nKey.gameHashMismatch, "Prüfsumme des Pakets stimmt nicht, Download abgebrochen");
     put(I18nKey.gameFromSubscription, "von %s");
-    put(I18nKey.gameManageSubscription, "Abos verwalten");
+    put(I18nKey.gameManageSubscription, "Abo-Quellen");
+    put(I18nKey.gameSectionGame, "Spiele");
+    put(I18nKey.gameSectionTip, "Hinweisdienste");
     put(I18nKey.gameSubscriptionEmpty, "Noch kein Abo");
     put(I18nKey.gameUnsubscribe, "Abo kündigen");
     put(I18nKey.gameUnsubscribeConfirm, "Abo kündigen? Alle Spiele daraus werden zusammen mit den Paketdateien entfernt.");

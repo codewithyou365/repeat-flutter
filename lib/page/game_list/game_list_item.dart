@@ -60,3 +60,41 @@ class GameItem {
     this.subVersion = 0,
   });
 }
+
+/// 订阅装出来的一个提示服务，来自 [Classroom.content] 的 'ts' 数组里的一条。
+///
+/// 只是个目录：提示字段挑服务时从这里选，选中后把 'h'/'s' 抄到字段块上。
+class TipServiceItem {
+  /// 'h'：指向课堂 'd' 里那个 zip 的 sha1。
+  final String hash;
+
+  /// 'n'：manifest 里的名字。
+  final String name;
+
+  /// 's'：入口 js。
+  final String service;
+
+  /// zip 解压出来的目录在不在。
+  final bool unpacked;
+
+  /// 'u'：来自哪个订阅（manifest URL）。
+  final String subUrl;
+
+  /// 'ek'：manifest 里那个入口的 key。
+  final String entryKey;
+
+  final String subName;
+
+  final int subVersion;
+
+  TipServiceItem({
+    required this.hash,
+    required this.name,
+    required this.service,
+    required this.unpacked,
+    required this.subUrl,
+    required this.entryKey,
+    required this.subName,
+    required this.subVersion,
+  });
+}

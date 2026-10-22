@@ -417,7 +417,7 @@ class ConfigKo extends Config {
     put(I18nKey.labelLegendLearn, "학습");
     put(I18nKey.labelLegendReview, "복습");
     put(I18nKey.statisticTrend, "통계 개요");
-    put(I18nKey.manageGame, "게임 관리");
+    put(I18nKey.manageSubscription, "구독 관리");
     put(I18nKey.gameEmpty, "게임이 없습니다");
     put(I18nKey.gameName, "게임 이름");
     put(I18nKey.gameKey, "게임 키");
@@ -442,7 +442,9 @@ class ConfigKo extends Config {
     put(I18nKey.gameManifestInvalid, "올바른 게임 구독이 아닙니다");
     put(I18nKey.gameHashMismatch, "패키지 체크섬이 맞지 않아 다운로드를 중단했습니다");
     put(I18nKey.gameFromSubscription, "%s에서");
-    put(I18nKey.gameManageSubscription, "구독 관리");
+    put(I18nKey.gameManageSubscription, "구독 소스");
+    put(I18nKey.gameSectionGame, "게임");
+    put(I18nKey.gameSectionTip, "힌트 서비스");
     put(I18nKey.gameSubscriptionEmpty, "구독이 없습니다");
     put(I18nKey.gameUnsubscribe, "구독 해지");
     put(I18nKey.gameUnsubscribeConfirm, "구독을 해지할까요? 여기서 온 게임이 패키지 파일과 함께 모두 지워집니다.");

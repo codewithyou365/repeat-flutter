@@ -417,7 +417,7 @@ class ConfigZh extends Config {
     put(I18nKey.labelLegendLearn, "学习");
     put(I18nKey.labelLegendReview, "复习");
     put(I18nKey.statisticTrend, "统计概览");
-    put(I18nKey.manageGame, "管理游戏");
+    put(I18nKey.manageSubscription, "管理订阅");
     put(I18nKey.gameEmpty, "还没有游戏");
     put(I18nKey.gameName, "游戏名称");
     put(I18nKey.gameKey, "游戏Key");
@@ -442,7 +442,9 @@ class ConfigZh extends Config {
     put(I18nKey.gameManifestInvalid, "不是有效的游戏订阅地址");
     put(I18nKey.gameHashMismatch, "游戏包校验不通过，已放弃");
     put(I18nKey.gameFromSubscription, "来自 %s");
-    put(I18nKey.gameManageSubscription, "管理订阅");
+    put(I18nKey.gameManageSubscription, "订阅源");
+    put(I18nKey.gameSectionGame, "游戏");
+    put(I18nKey.gameSectionTip, "提示服务");
     put(I18nKey.gameSubscriptionEmpty, "还没有订阅");
     put(I18nKey.gameUnsubscribe, "退订");
     put(I18nKey.gameUnsubscribeConfirm, "退订？该订阅下的游戏和游戏包文件都会一并删除。");

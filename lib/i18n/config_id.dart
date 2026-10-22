@@ -417,7 +417,7 @@ class ConfigId extends Config {
     put(I18nKey.labelLegendLearn, "Belajar");
     put(I18nKey.labelLegendReview, "Ulang");
     put(I18nKey.statisticTrend, "Ikhtisar statistik");
-    put(I18nKey.manageGame, "Kelola permainan");
+    put(I18nKey.manageSubscription, "Kelola langganan");
     put(I18nKey.gameEmpty, "Belum ada permainan");
     put(I18nKey.gameName, "Nama permainan");
     put(I18nKey.gameKey, "Kunci permainan");
@@ -442,7 +442,9 @@ class ConfigId extends Config {
     put(I18nKey.gameManifestInvalid, "Bukan langganan permainan yang sah");
     put(I18nKey.gameHashMismatch, "Checksum paket tidak cocok, unduhan dihentikan");
     put(I18nKey.gameFromSubscription, "dari %s");
-    put(I18nKey.gameManageSubscription, "Kelola langganan");
+    put(I18nKey.gameManageSubscription, "Sumber langganan");
+    put(I18nKey.gameSectionGame, "Permainan");
+    put(I18nKey.gameSectionTip, "Layanan petunjuk");
     put(I18nKey.gameSubscriptionEmpty, "Belum ada langganan");
     put(I18nKey.gameUnsubscribe, "Berhenti berlangganan");
     put(I18nKey.gameUnsubscribeConfirm, "Berhenti berlangganan? Semua permainan dari langganan itu akan dihapus beserta berkas paketnya.");

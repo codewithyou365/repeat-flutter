@@ -417,7 +417,7 @@ class ConfigEn extends Config {
     put(I18nKey.labelLegendLearn, "Learn");
     put(I18nKey.labelLegendReview, "Review");
     put(I18nKey.statisticTrend, "Stats Overview");
-    put(I18nKey.manageGame, "Manage Game");
+    put(I18nKey.manageSubscription, "Manage Subscriptions");
     put(I18nKey.gameEmpty, "No game yet");
     put(I18nKey.gameName, "Game name");
     put(I18nKey.gameKey, "Game key");
@@ -442,7 +442,9 @@ class ConfigEn extends Config {
     put(I18nKey.gameManifestInvalid, "Not a valid game subscription");
     put(I18nKey.gameHashMismatch, "Package checksum mismatch, download aborted");
     put(I18nKey.gameFromSubscription, "from %s");
-    put(I18nKey.gameManageSubscription, "Manage subscriptions");
+    put(I18nKey.gameManageSubscription, "Subscription sources");
+    put(I18nKey.gameSectionGame, "Games");
+    put(I18nKey.gameSectionTip, "Tip services");
     put(I18nKey.gameSubscriptionEmpty, "No subscription yet");
     put(I18nKey.gameUnsubscribe, "Unsubscribe");
     put(I18nKey.gameUnsubscribeConfirm, "Unsubscribe? Every game from it will be removed together with the package files.");

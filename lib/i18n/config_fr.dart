@@ -417,7 +417,7 @@ class ConfigFr extends Config {
     put(I18nKey.labelLegendLearn, "Apprendre");
     put(I18nKey.labelLegendReview, "Réviser");
     put(I18nKey.statisticTrend, "Vue d'ensemble des stats");
-    put(I18nKey.manageGame, "Gérer les jeux");
+    put(I18nKey.manageSubscription, "Gérer les abonnements");
     put(I18nKey.gameEmpty, "Pas encore de jeu");
     put(I18nKey.gameName, "Nom du jeu");
     put(I18nKey.gameKey, "Clé du jeu");
@@ -442,7 +442,9 @@ class ConfigFr extends Config {
     put(I18nKey.gameManifestInvalid, "Ce n'est pas un abonnement de jeu valide");
     put(I18nKey.gameHashMismatch, "Somme de contrôle du paquet incorrecte, téléchargement interrompu");
     put(I18nKey.gameFromSubscription, "de %s");
-    put(I18nKey.gameManageSubscription, "Gérer les abonnements");
+    put(I18nKey.gameManageSubscription, "Sources d'abonnement");
+    put(I18nKey.gameSectionGame, "Jeux");
+    put(I18nKey.gameSectionTip, "Services d'indices");
     put(I18nKey.gameSubscriptionEmpty, "Pas encore d'abonnement");
     put(I18nKey.gameUnsubscribe, "Se désabonner");
     put(I18nKey.gameUnsubscribeConfirm, "Se désabonner ? Tous ses jeux seront supprimés avec les fichiers du paquet.");

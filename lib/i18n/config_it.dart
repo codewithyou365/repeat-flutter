@@ -417,7 +417,7 @@ class ConfigIt extends Config {
     put(I18nKey.labelLegendLearn, "Impara");
     put(I18nKey.labelLegendReview, "Ripassa");
     put(I18nKey.statisticTrend, "Panoramica delle statistiche");
-    put(I18nKey.manageGame, "Gestisci i giochi");
+    put(I18nKey.manageSubscription, "Gestisci abbonamenti");
     put(I18nKey.gameEmpty, "Ancora nessun gioco");
     put(I18nKey.gameName, "Nome del gioco");
     put(I18nKey.gameKey, "Chiave del gioco");
@@ -442,7 +442,9 @@ class ConfigIt extends Config {
     put(I18nKey.gameManifestInvalid, "Non è un abbonamento di gioco valido");
     put(I18nKey.gameHashMismatch, "Il checksum del pacchetto non corrisponde, download interrotto");
     put(I18nKey.gameFromSubscription, "da %s");
-    put(I18nKey.gameManageSubscription, "Gestisci gli abbonamenti");
+    put(I18nKey.gameManageSubscription, "Fonti di abbonamento");
+    put(I18nKey.gameSectionGame, "Giochi");
+    put(I18nKey.gameSectionTip, "Servizi suggerimenti");
     put(I18nKey.gameSubscriptionEmpty, "Ancora nessun abbonamento");
     put(I18nKey.gameUnsubscribe, "Disiscriviti");
     put(I18nKey.gameUnsubscribeConfirm, "Disiscriversi? Tutti i suoi giochi verranno rimossi insieme ai file dei pacchetti.");

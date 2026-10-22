@@ -263,7 +263,7 @@ class ClassroomHelp {
   static const List<String> bookFieldRefs = ['q', 'a', 'n'];
 
   /// 课堂 't' 数组展开成的字段引用串：'t'、't1'、't2'…
-  static List<String> _classroomTipRefs(Map<String, dynamic> classroomMap) {
+  static List<String> classroomTipRefs(Map<String, dynamic> classroomMap) {
     final tipLength = VerseField.tipLength(classroomMap);
     return [
       for (var i = 0; i < (tipLength == 0 ? 1 : tipLength); i++) VerseField.ref('t', i),
@@ -307,7 +307,7 @@ class ClassroomHelp {
 
     final downloads = DownloadContent.toList(classroomMap['d']) ?? [];
     final resPath = DocPath.getFilesRelativePathOf(classroomId);
-    for (final fieldRef in _classroomTipRefs(classroomMap)) {
+    for (final fieldRef in classroomTipRefs(classroomMap)) {
       await _registerFont(classroomMap, fieldRef, downloads, resPath, rootPath);
     }
   }
@@ -324,7 +324,7 @@ class ClassroomHelp {
     final resPath = DocPath.getFilesRelativePathOf(classroomId);
     var contentChanged = false;
 
-    for (final fieldRef in _classroomTipRefs(classroomMap)) {
+    for (final fieldRef in classroomTipRefs(classroomMap)) {
       final entryMap = VerseField.of(classroomMap, fieldRef);
       if (entryMap == null) continue;
       final entry = ContentEntry.fromJson(entryMap, mapKey: fieldRef);

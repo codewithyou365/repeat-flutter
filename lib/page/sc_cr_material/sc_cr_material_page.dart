@@ -33,7 +33,7 @@ class ScCrMaterialPage extends StatelessWidget {
           ),
           PopupMenuItem<String>(
             onTap: logic.showGameList,
-            child: Text(I18nKey.manageGame.tr),
+            child: Text(I18nKey.manageSubscription.tr),
           ),
         ]),
       ),

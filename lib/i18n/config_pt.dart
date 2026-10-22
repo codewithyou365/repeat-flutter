@@ -417,7 +417,7 @@ class ConfigPt extends Config {
     put(I18nKey.labelLegendLearn, "Aprender");
     put(I18nKey.labelLegendReview, "Revisar");
     put(I18nKey.statisticTrend, "Visão geral das estatísticas");
-    put(I18nKey.manageGame, "Gerenciar jogos");
+    put(I18nKey.manageSubscription, "Gerenciar assinaturas");
     put(I18nKey.gameEmpty, "Ainda não há jogos");
     put(I18nKey.gameName, "Nome do jogo");
     put(I18nKey.gameKey, "Chave do jogo");
@@ -442,7 +442,9 @@ class ConfigPt extends Config {
     put(I18nKey.gameManifestInvalid, "Não é uma assinatura de jogo válida");
     put(I18nKey.gameHashMismatch, "A soma de verificação do pacote não confere, download interrompido");
     put(I18nKey.gameFromSubscription, "de %s");
-    put(I18nKey.gameManageSubscription, "Gerenciar assinaturas");
+    put(I18nKey.gameManageSubscription, "Fontes de assinatura");
+    put(I18nKey.gameSectionGame, "Jogos");
+    put(I18nKey.gameSectionTip, "Serviços de dicas");
     put(I18nKey.gameSubscriptionEmpty, "Ainda não há assinaturas");
     put(I18nKey.gameUnsubscribe, "Cancelar assinatura");
     put(I18nKey.gameUnsubscribeConfirm, "Cancelar a assinatura? Todos os jogos dela serão removidos junto com os arquivos do pacote.");

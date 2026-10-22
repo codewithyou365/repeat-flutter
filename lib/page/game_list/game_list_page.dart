@@ -18,7 +18,7 @@ class GameListPage extends StatelessWidget {
     final state = logic.state;
     return Scaffold(
       appBar: AppBar(
-        title: Text(I18nKey.manageGame.tr),
+        title: Text(I18nKey.manageSubscription.tr),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -40,37 +40,82 @@ class GameListPage extends StatelessWidget {
         if (state.loading.value) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (state.items.isEmpty) {
+        if (state.items.isEmpty && state.tipServices.isEmpty) {
           return Center(child: Text(I18nKey.gameEmpty.tr));
         }
-        return ListView.separated(
-          itemCount: state.items.length,
-          separatorBuilder: (_, __) => const Divider(height: 1),
-          itemBuilder: (context, index) {
-            final item = state.items[index];
-            final broken = !item.unpacked;
-            return ListTile(
-              leading: Icon(
-                Icons.videogame_asset,
-                color: broken ? Theme.of(context).disabledColor : null,
-              ),
-              title: Text(
-                item.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: broken ? TextStyle(color: Theme.of(context).disabledColor) : null,
-              ),
-              subtitle: Text(
-                _subtitle(item),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => _openActions(logic, item),
-            );
-          },
+        // 游戏和提示服务分两组：提示服务不能当游戏开，只是给提示字段挑的目录。
+        return ListView(
+          children: [
+            if (state.items.isNotEmpty) _header(context, I18nKey.gameSectionGame.tr),
+            for (final item in state.items) ...[
+              _gameTile(context, logic, item),
+              const Divider(height: 1),
+            ],
+            if (state.tipServices.isNotEmpty) _header(context, I18nKey.gameSectionTip.tr),
+            for (final item in state.tipServices) ...[
+              _tipServiceTile(context, item),
+              const Divider(height: 1),
+            ],
+          ],
         );
       }),
+    );
+  }
+
+  static Widget _header(BuildContext context, String text) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(color: Theme.of(context).colorScheme.primary),
+      ),
+    );
+  }
+
+  Widget _gameTile(BuildContext context, GameListLogic logic, GameItem item) {
+    final broken = !item.unpacked;
+    return ListTile(
+      leading: Icon(
+        Icons.videogame_asset,
+        color: broken ? Theme.of(context).disabledColor : null,
+      ),
+      title: Text(
+        item.name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: broken ? TextStyle(color: Theme.of(context).disabledColor) : null,
+      ),
+      subtitle: Text(
+        _subtitle(item),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () => _openActions(logic, item),
+    );
+  }
+
+  /// 提示服务没有可改的东西（名字、入口都跟着订阅走），只展示。
+  Widget _tipServiceTile(BuildContext context, TipServiceItem item) {
+    final broken = !item.unpacked;
+    final from = item.subName.isEmpty ? item.subUrl : item.subName;
+    final status = broken ? I18nKey.gameNotUnpacked.tr : I18nKey.gameReady.tr;
+    return ListTile(
+      leading: Icon(
+        Icons.tips_and_updates,
+        color: broken ? Theme.of(context).disabledColor : null,
+      ),
+      title: Text(
+        item.name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: broken ? TextStyle(color: Theme.of(context).disabledColor) : null,
+      ),
+      subtitle: Text(
+        '${item.service} · $status · ${I18nKey.gameFromSubscription.trArgs(['$from v${item.subVersion}'])}',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
     );
   }
 

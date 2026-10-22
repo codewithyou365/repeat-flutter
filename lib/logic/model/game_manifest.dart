@@ -1,12 +1,16 @@
 /// 游戏包的 manifest.json，以及课堂里记下来的订阅。
 ///
 /// 一个游戏包（zip）里带一份 manifest.json，声明版本号、订阅服务器地址和**多个**游戏入口，
-/// 一次订阅能装出好几个游戏（typing 那个包里就有 type / blank_it_right / word_slicer / japanese）。
+/// 一次订阅能装出好几个游戏（typing 那个包里就有 type / blank_it_right / word_slicer / shadow），
+/// 也可以带提示服务（japanese，'type': 'tip'）。
 /// 包内的 manifest 没有 [zip] 和 [hash]——zip 没法自含自己的 sha1，这两个字段由服务器注入。
 library;
 
-/// manifest 里的一个游戏入口。
+/// manifest 里的一个入口：游戏，或者提示服务（见 [type]）。
 class GameManifestEntry {
+  static const String typeGame = 'game';
+  static const String typeTip = 'tip';
+
   /// 入口的稳定标识，升级时按它匹配老条目，**不能拿它当游戏名**。
   final String key;
 
@@ -21,11 +25,19 @@ class GameManifestEntry {
   /// manifest 里写 'contentKey'（也认简写 'k'）。为空表示包不指定，由用户自己填。
   final String contentKey;
 
+  /// [typeGame] 还是 [typeTip]。manifest 没写（老包）一律当游戏。
+  /// 提示服务不进游戏列表 'g'，装在课堂的 'ts' 里，给提示字段挑着用；
+  /// 它的 contentKey 由提示字段自己的 'k' 决定（如 'JapaneseT'），manifest 里留空。
+  final String type;
+
+  bool get isTip => type == typeTip;
+
   GameManifestEntry({
     required this.key,
     required this.name,
     required this.service,
     this.contentKey = '',
+    this.type = typeGame,
   });
 
   static GameManifestEntry? fromJsonOrNull(dynamic json) {
@@ -37,7 +49,9 @@ class GameManifestEntry {
     if (name.isEmpty) name = key;
     var contentKey = (json['contentKey'] ?? '').toString().trim();
     if (contentKey.isEmpty) contentKey = (json['k'] ?? '').toString().trim();
-    return GameManifestEntry(key: key, name: name, service: service, contentKey: contentKey);
+    // 不认识的类型也当游戏，跟老包的行为一致。
+    final type = (json['type'] ?? '').toString().trim() == typeTip ? typeTip : typeGame;
+    return GameManifestEntry(key: key, name: name, service: service, contentKey: contentKey, type: type);
   }
 }
 

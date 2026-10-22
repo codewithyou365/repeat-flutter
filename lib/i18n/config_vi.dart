@@ -417,7 +417,7 @@ class ConfigVi extends Config {
     put(I18nKey.labelLegendLearn, "Học");
     put(I18nKey.labelLegendReview, "Ôn tập");
     put(I18nKey.statisticTrend, "Tổng quan thống kê");
-    put(I18nKey.manageGame, "Quản lý trò chơi");
+    put(I18nKey.manageSubscription, "Quản lý đăng ký");
     put(I18nKey.gameEmpty, "Chưa có trò chơi nào");
     put(I18nKey.gameName, "Tên trò chơi");
     put(I18nKey.gameKey, "Khoá trò chơi");
@@ -442,7 +442,9 @@ class ConfigVi extends Config {
     put(I18nKey.gameManifestInvalid, "Không phải nguồn đăng ký trò chơi hợp lệ");
     put(I18nKey.gameHashMismatch, "Mã kiểm tra của gói không khớp, đã dừng tải xuống");
     put(I18nKey.gameFromSubscription, "từ %s");
-    put(I18nKey.gameManageSubscription, "Quản lý nguồn đăng ký");
+    put(I18nKey.gameManageSubscription, "Nguồn đăng ký");
+    put(I18nKey.gameSectionGame, "Trò chơi");
+    put(I18nKey.gameSectionTip, "Dịch vụ gợi ý");
     put(I18nKey.gameSubscriptionEmpty, "Chưa có nguồn đăng ký nào");
     put(I18nKey.gameUnsubscribe, "Huỷ đăng ký");
     put(I18nKey.gameUnsubscribeConfirm, "Huỷ đăng ký? Mọi trò chơi từ nguồn này sẽ bị xoá cùng với các tệp trong gói.");

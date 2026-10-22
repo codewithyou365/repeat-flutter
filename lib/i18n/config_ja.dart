@@ -417,7 +417,7 @@ class ConfigJa extends Config {
     put(I18nKey.labelLegendLearn, "学習");
     put(I18nKey.labelLegendReview, "復習");
     put(I18nKey.statisticTrend, "統計の概要");
-    put(I18nKey.manageGame, "ゲームを管理");
+    put(I18nKey.manageSubscription, "購読を管理");
     put(I18nKey.gameEmpty, "ゲームがありません");
     put(I18nKey.gameName, "ゲーム名");
     put(I18nKey.gameKey, "ゲームキー");
@@ -442,7 +442,9 @@ class ConfigJa extends Config {
     put(I18nKey.gameManifestInvalid, "正しいゲーム購読ではありません");
     put(I18nKey.gameHashMismatch, "パッケージのチェックサムが一致しません。ダウンロードを中止しました");
     put(I18nKey.gameFromSubscription, "%s から");
-    put(I18nKey.gameManageSubscription, "購読を管理");
+    put(I18nKey.gameManageSubscription, "購読元");
+    put(I18nKey.gameSectionGame, "ゲーム");
+    put(I18nKey.gameSectionTip, "ヒントサービス");
     put(I18nKey.gameSubscriptionEmpty, "購読がありません");
     put(I18nKey.gameUnsubscribe, "購読を解除");
     put(I18nKey.gameUnsubscribeConfirm, "購読を解除しますか？そこから来たゲームはパッケージのファイルごと消えます。");

@@ -1,6 +1,6 @@
 {
   "name": "typing",
-  "version": 18,
+  "version": 19,
   "server": "http://127.0.0.1:8080/typing/manifest.json",
   "games": [
     {
@@ -25,7 +25,8 @@
       "key": "japanese",
       "name": "Japanese",
       "service": "service/japanese.js",
-      "contentKey": ""
+      "contentKey": "",
+      "type": "tip"
     },
     {
       "key": "shadow",

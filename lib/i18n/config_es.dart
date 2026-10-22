@@ -417,7 +417,7 @@ class ConfigEs extends Config {
     put(I18nKey.labelLegendLearn, "Aprender");
     put(I18nKey.labelLegendReview, "Repasar");
     put(I18nKey.statisticTrend, "Resumen de estadísticas");
-    put(I18nKey.manageGame, "Gestionar juegos");
+    put(I18nKey.manageSubscription, "Gestionar suscripciones");
     put(I18nKey.gameEmpty, "Aún no hay juegos");
     put(I18nKey.gameName, "Nombre del juego");
     put(I18nKey.gameKey, "Clave del juego");
@@ -442,7 +442,9 @@ class ConfigEs extends Config {
     put(I18nKey.gameManifestInvalid, "No es una suscripción de juego válida");
     put(I18nKey.gameHashMismatch, "La suma de verificación del paquete no coincide, descarga cancelada");
     put(I18nKey.gameFromSubscription, "de %s");
-    put(I18nKey.gameManageSubscription, "Gestionar suscripciones");
+    put(I18nKey.gameManageSubscription, "Fuentes de suscripción");
+    put(I18nKey.gameSectionGame, "Juegos");
+    put(I18nKey.gameSectionTip, "Servicios de pistas");
     put(I18nKey.gameSubscriptionEmpty, "Aún no hay suscripciones");
     put(I18nKey.gameUnsubscribe, "Cancelar suscripción");
     put(I18nKey.gameUnsubscribeConfirm, "¿Cancelar la suscripción? Todos sus juegos se eliminarán junto con los archivos del paquete.");

@@ -417,7 +417,7 @@ class ConfigRu extends Config {
     put(I18nKey.labelLegendLearn, "Изучение");
     put(I18nKey.labelLegendReview, "Повторение");
     put(I18nKey.statisticTrend, "Обзор статистики");
-    put(I18nKey.manageGame, "Управление играми");
+    put(I18nKey.manageSubscription, "Управление подписками");
     put(I18nKey.gameEmpty, "Игр пока нет");
     put(I18nKey.gameName, "Название игры");
     put(I18nKey.gameKey, "Ключ игры");
@@ -442,7 +442,9 @@ class ConfigRu extends Config {
     put(I18nKey.gameManifestInvalid, "Это не действительная подписка на игры");
     put(I18nKey.gameHashMismatch, "Контрольная сумма пакета не совпадает, загрузка прервана");
     put(I18nKey.gameFromSubscription, "из %s");
-    put(I18nKey.gameManageSubscription, "Управление подписками");
+    put(I18nKey.gameManageSubscription, "Источники подписок");
+    put(I18nKey.gameSectionGame, "Игры");
+    put(I18nKey.gameSectionTip, "Сервисы подсказок");
     put(I18nKey.gameSubscriptionEmpty, "Подписок пока нет");
     put(I18nKey.gameUnsubscribe, "Отписаться");
     put(I18nKey.gameUnsubscribeConfirm, "Отписаться? Все игры из этой подписки будут удалены вместе с файлами пакетов.");
