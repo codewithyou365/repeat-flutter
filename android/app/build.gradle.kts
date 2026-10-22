@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -7,7 +9,7 @@ plugins {
 
 // 正式签名：android/key.properties 存在就用它（CI 发版时由 secrets 生成，见 .github/workflows/release.yml），
 // 不存在（本地开发）就退回 debug 签名，`flutter run --release` 照常能跑。
-val keystoreProperties = java.util.Properties().apply {
+val keystoreProperties = Properties().apply {
     val file = rootProject.file("key.properties")
     if (file.exists()) {
         file.inputStream().use { load(it) }
