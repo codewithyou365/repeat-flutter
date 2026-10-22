@@ -5,6 +5,7 @@ export default {
     join: 'Gabung',
     leave: 'Keluar',
     cantPlayForMaintain: 'Admin sedang melakukan perawatan; permainan belum bisa dimainkan sekarang.',
+    waitingOthers: 'Menunggu {names}',
     dartMode: 'Mode gelap',
     settings: 'Pengaturan',
     login: 'Masuk',

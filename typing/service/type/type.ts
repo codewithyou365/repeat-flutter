@@ -80,9 +80,6 @@ type GameArgs = {
 
 const PROFILE_COUNT = 3;
 
-// 打字进度落盘的最小间隔（毫秒）：敲字期间按这个节流，收尾的地方强制写
-const PERSIST_INTERVAL_MS = 1000;
-
 // 熟词库在 GameKv 里的 key 前缀（`fw:<小写词>`），value 存记住它的时间戳
 const FAMILIAR_PREFIX = 'fw:';
 
@@ -171,15 +168,6 @@ async function migrateFlatConfig(old: any): Promise<StoredConfig> {
     return migrated;
 }
 
-// 打字进度落盘的形状（getData/setData 那个 blob 里的 typeState 字段）。
-// 只存"当前正在打的这一条"，verseKey 是这条 verse 的答案原文，用来认领：对不上就当没存过。
-type StoredTypeState = {
-    verseKey: string;
-    userInput: string;
-    indexToUserId: Record<string, number>;
-    userIdToUserName: Record<string, string>;
-};
-
 const Util = {
     // getData/setData 只有一个 JSON blob，配置和打字进度都住在里面，读改写时必须留着对方的字段。
     // 本服务是这个 blob 的唯一写方，所以直接在内存里缓存一份，省掉每次落盘前的那次读。
@@ -225,43 +213,13 @@ const Util = {
         }
     },
 
-    // 只覆写配置那几个键，blob 里的打字进度（typeState）原样留着，别互相冲掉
     setConfig: async function (data: StoredConfig): Promise<void> {
-        const store = await Util.getStore();
-        const next: JsonRecord = {
+        await Util.setStore({
             activeProfile: data.activeProfile,
             profileNames: data.profileNames,
             profiles: data.profiles,
             userProfiles: data.userProfiles,
-        };
-        if (store.typeState !== undefined) {
-            next.typeState = store.typeState;
-        }
-        await Util.setStore(next);
-    },
-
-    getTypeState: async function (): Promise<StoredTypeState | null> {
-        const store = await Util.getStore();
-        const s = store.typeState;
-        if (!s || typeof s !== 'object' || typeof s.verseKey !== 'string' || typeof s.userInput !== 'string') {
-            return null;
-        }
-        return {
-            verseKey: s.verseKey,
-            userInput: s.userInput,
-            indexToUserId: (s.indexToUserId && typeof s.indexToUserId === 'object') ? s.indexToUserId : {},
-            userIdToUserName: (s.userIdToUserName && typeof s.userIdToUserName === 'object') ? s.userIdToUserName : {},
-        };
-    },
-
-    setTypeState: async function (state: StoredTypeState | null): Promise<void> {
-        const store = await Util.getStore();
-        if (state === null) {
-            delete store.typeState;
-        } else {
-            store.typeState = state;
-        }
-        await Util.setStore(store);
+        });
     },
 
     // 字段块（{text|content,start,end,mediaHash,showType}）的正文。
@@ -374,6 +332,15 @@ const Util = {
             return Number.isNaN(parsed) ? -1 : parsed;
         } catch (e) {
             return -1;
+        }
+    },
+    // 当前连着的 userId；拿不到（App 那边没这条消息）返回 null，调用方当"都在线"处理
+    onlineUserIds: function (): number[] | null {
+        try {
+            const parsed = JSON.parse(sendMessage('onlineUserIds', '{}'));
+            return Array.isArray(parsed) ? parsed.map(Number) : null;
+        } catch (e) {
+            return null;
         }
     },
     adminEnable: function (): boolean {
@@ -501,195 +468,68 @@ function applyUnderline(plain: string, spans: number[][]): string {
 
 const Game = {
     gameRefreshPath: 'gameRefresh',
-    // 协作打字的共享状态走单独的广播路径：gameRefreshPath 已经被"换了一条 verse，全体重新拉内容"
-    // 占用了，收到它的客户端会走整套 refresh（含加载遮罩），每敲一个字都来一遍没法用。
-    typeStatePath: 'typeState',
 
-    // ---- 共享打字进度 ----
-    // 内存里存一份当权威（定序、冲突检测），同时把当前这条 verse 的进度落到 getData/setData 的
-    // blob 里：退出 App / 服务重启后再进来，同一条 verse 能接着打（见 ensureLoaded / persist）。
-    // roundId: 每 clear() 一次 +1，用来判断客户端上报的是不是上一条 verse 的残留
+    // ---- 多人：各打各的，全都打完才换下一句 ----
+    // 每个人只在自己的设备上打，互相不同步进度。服务端只记"谁在玩、这一句谁打完了"：
+    // 在线玩家全部打完就 tapLeft 换下一句，换句后服务端广播 gameRefresh，大家一起拉新内容。
+    // roundId: 每换一句 +1。客户端打完时带上自己那一句的 roundId，
+    //          对不上说明内容已经换了（迟到的请求），不能把它记成新一句"已打完"
     roundId: 0,
-    // seq: 本轮的写入版本号。客户端上报时带上自己看到的 baseSeq，对不上说明中间有别人写过，
-    //      本次上报直接作废并把最新快照回给它重新同步（整串 last-write-wins + 冲突检测）
-    seq: 0,
-    // userInput: 就是 Typing 组件里的 userInput，已输入串（含打错的字符）
-    userInput: '',
-    // indexToUserId: 哪个下标的字符是谁敲的，客户端拿它上色
-    indexToUserId: {} as Record<string, number>,
-    userIdToUserName: {} as Record<string, string>,
-    // completedRoundId: 已经因为"打完了"触发过 tapLeft 的轮次，防止多个客户端同时判完成而连跳 verse
-    completedRoundId: -1,
-    // lastWriterUserId: 最后一次写入是谁干的。客户端拿它认出"这条广播是我自己敲字的回声"，
-    // 直接忽略，免得回声把本地刚敲出来的字盖回去
-    lastWriterUserId: -1,
-    // verseKey: 当前这条 verse 的答案原文，落盘时当认领用的 key
-    verseKey: '',
-    // loaded: 内存态有没有跟磁盘对过账。App 刚起来 / 服务重启时是 false，第一次用到就去读盘
-    loaded: false,
-    lastPersistAt: 0,
-    // dirty: 有改动还没落盘（被节流压着），下一个落盘时机补上
-    dirty: false,
+    // players: 进过打字界面的玩家（Game.answer 时登记）。换句不清空，同一批人接着打下一句；
+    //          掉线的人不用删，判断时按在线列表过滤掉，免得一个人断线大家永远等下去
+    players: {} as Record<string, boolean>,
+    // finished: 这一句已经打完的玩家
+    finished: {} as Record<string, boolean>,
+    // advanced: 这一句已经触发过 tapLeft，防止前后脚打完的两个人连跳两句
+    advanced: false,
 
     onNewVerse: async function () {
         await this.clear();
     },
-    currentVerseKey: async function (): Promise<string> {
-        const verse = await Util.getVerse();
-        return Util.fieldText(verse, 'a');
-    },
-    // 把磁盘上存的进度接回内存（verseKey 对得上才接）。
-    // seq 不恢复：客户端重进也是重新 getState 拉一份，从 0 重新定序就行。
-    restoreFromStore: async function (): Promise<boolean> {
-        const saved = await Util.getTypeState();
-        if (!saved || saved.verseKey !== this.verseKey) {
-            return false;
-        }
-        this.userInput = saved.userInput;
-        this.indexToUserId = saved.indexToUserId;
-        this.userIdToUserName = saved.userIdToUserName;
-        return true;
-    },
-    // 内存态还没跟磁盘对过账（服务重启后第一次被调用，期间没走过 clear）就补一次
-    ensureLoaded: async function (): Promise<void> {
-        if (this.loaded) {
-            return;
-        }
-        this.loaded = true;
-        this.verseKey = await this.currentVerseKey();
-        await this.restoreFromStore();
-    },
-    // 落盘。每敲一个字写一次库太重，平时按 1 秒节流，收尾的地方（换 verse、打完）用 force 立刻写。
-    // 调用点一律排在 Util.broadcast 之后：写库的耗时不该算进协作者看到字的延迟里。
-    persist: async function (force: boolean): Promise<void> {
-        this.dirty = true;
-        const now = Date.now();
-        if (!force && now - this.lastPersistAt < PERSIST_INTERVAL_MS) {
-            this.schedulePersist();
-            return;
-        }
-        this.lastPersistAt = now;
-        this.dirty = false;
-        await Util.setTypeState({
-            verseKey: this.verseKey,
-            userInput: this.userInput,
-            indexToUserId: this.indexToUserId,
-            userIdToUserName: this.userIdToUserName,
-        });
-    },
-    persistTimerOn: false,
-    // 节流压下去的那次改动，如果后面没人再敲字就没有下一个落盘时机了（停手那一下会丢）。
-    // 运行时有 setTimeout 就挂一次补写；没有（JS 引擎不一定提供）就只能等下一次 input/getState/clear。
-    schedulePersist: function (): void {
-        if (this.persistTimerOn || typeof setTimeout !== 'function') {
-            return;
-        }
-        this.persistTimerOn = true;
-        setTimeout(async () => {
-            this.persistTimerOn = false;
-            if (this.dirty) {
-                await this.persist(true);
-            }
-        }, PERSIST_INTERVAL_MS);
-    },
     clear: async function (): Promise<void> {
-        // 内存重置必须无条件执行：adminEnable 时虽然不广播，但内容本身已经换了，
-        // 旧的共享输入串留着，等退出维护态就会把上一条的进度盖到新内容上。
         this.roundId += 1;
-        this.seq = 0;
-        this.userInput = '';
-        this.indexToUserId = {};
-        this.completedRoundId = -1;
-        this.lastWriterUserId = -1;
-        this.dirty = false;
-        this.loaded = true;
-        this.verseKey = await this.currentVerseKey();
-        // 重进 App / 重启服务时 newVerse 事件照样会来一发，那时候内容其实没变，
-        // 不能借着这一发把盘上存的进度冲掉：verseKey 对得上就当"接着打"，把进度捞回来。
-        if (!await this.restoreFromStore()) {
-            // 真换了内容：盘上换成新 verse 的空进度，上一条的不再保留（只存当前这一条）
-            await this.persist(true);
-        }
+        this.finished = {};
+        this.advanced = false;
         if (!Util.adminEnable()) {
             await Util.broadcast(this.gameRefreshPath, {});
         }
     },
-    getBroadcastData: function (): JsonRecord {
-        return {
-            roundId: this.roundId,
-            seq: this.seq,
-            userInput: this.userInput,
-            indexToUserId: this.indexToUserId,
-            userIdToUserName: this.userIdToUserName,
-            lastWriterUserId: this.lastWriterUserId,
-        };
+    // 还没打完、并且在线的玩家
+    waitingUserIds: function (): number[] {
+        const online = Util.onlineUserIds();
+        return Object.keys(this.players)
+            .map(Number)
+            .filter((id) => !this.finished[id] && (online === null || online.includes(id)));
     },
-    // 挂载 / 断线重连 / 换完 verse 之后拉一次，把共享进度接上
-    getState: async function (): Promise<string> {
+    // 打完一整句时客户端调用；在等别人时客户端也会隔几秒再调一次（看有没有人掉线、等的名单变没变）。
+    // args.data = {roundId}
+    // 返回 {stale: true}：内容已经换了，客户端直接 refresh；
+    // 返回 {waiting: [名字...]}：空数组表示已经换句（或正在换），否则是还在等的人。
+    complete: async function (args: GameArgs): Promise<string> {
         try {
-            await this.ensureLoaded();
-            if (this.dirty) {
-                await this.persist(true);
-            }
-            return JSON.stringify({data: this.getBroadcastData()});
-        } catch (error: any) {
-            return JSON.stringify({status: 500, error: error.toString()});
-        }
-    },
-    // args.data = {roundId, baseSeq, userInput, changedIndexes}
-    input: async function (args: GameArgs): Promise<string> {
-        try {
-            await this.ensureLoaded();
-            const userId = args.userId;
             const data = args.data || {};
-            // 过期上报（换过 verse，或中间被别人写过）：不写入，把最新快照回给它自己去同步
-            if (data.roundId !== this.roundId || data.baseSeq !== this.seq) {
-                return JSON.stringify({data: Object.assign({stale: true}, this.getBroadcastData())});
+            if (data.roundId !== this.roundId) {
+                return JSON.stringify({data: {stale: true, waiting: []}});
             }
-
-            const userInput: string = typeof data.userInput === 'string' ? data.userInput : '';
-            this.userInput = userInput;
-
-            const changedIndexes = Array.isArray(data.changedIndexes) ? data.changedIndexes : [];
-            for (const index of changedIndexes) {
-                this.indexToUserId[index] = userId;
-            }
-            // 退格/清词会让串变短，超出长度的归属信息要一起丢掉，否则重新打到这里颜色是旧的
-            for (const key of Object.keys(this.indexToUserId)) {
-                if (Number(key) >= userInput.length) {
-                    delete this.indexToUserId[key];
+            this.players[args.userId] = true;
+            this.finished[args.userId] = true;
+            const waiting = this.waitingUserIds();
+            if (waiting.length === 0) {
+                if (!this.advanced) {
+                    this.advanced = true;
+                    const result = Util.uiTap('tapLeft');
+                    if (result !== 'success') {
+                        this.advanced = false;
+                        return JSON.stringify({status: 500, error: result + ''});
+                    }
                 }
+                return JSON.stringify({data: {waiting: []}});
             }
-
-            if (this.userIdToUserName[userId] === undefined) {
-                this.userIdToUserName[userId] = await Util.getUserName(userId);
+            const names: string[] = [];
+            for (const id of waiting) {
+                names.push((await Util.getUserName(id)) || `${id}`);
             }
-
-            this.seq += 1;
-            this.lastWriterUserId = userId;
-            await Util.broadcast(this.typeStatePath, this.getBroadcastData());
-            await this.persist(false);
-            return JSON.stringify({data: {seq: this.seq, roundId: this.roundId}});
-        } catch (error: any) {
-            return JSON.stringify({status: 500, error: error.toString()});
-        }
-    },
-    // 打完一整句时由客户端调用，代替原来的 tap('tapLeft')。按 roundId 幂等：
-    // 协作模式下可能有不止一个客户端判定完成，重复 uiTap 会一口气跳过好几条 verse。
-    complete: async function (): Promise<string> {
-        try {
-            if (this.completedRoundId === this.roundId) {
-                return JSON.stringify({data: 'already'});
-            }
-            this.completedRoundId = this.roundId;
-            // 这句已经打完了，盘上的进度不用留：不然万一没跳成下一条，重进 App 会把打完的内容又摆出来
-            this.dirty = false;
-            await Util.setTypeState(null);
-            const result = Util.uiTap('tapLeft');
-            if (result !== 'success') {
-                return JSON.stringify({status: 500, error: result + ''});
-            }
-            return JSON.stringify({data: 'ok'});
+            return JSON.stringify({data: {waiting: names}});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});
         }
@@ -824,8 +664,12 @@ const Game = {
             const ignorePunctuation = config.ignorePunctuation ?? true;
             const ignoreNumber = config.ignoreNumber ?? true;
             const mask = this.getIntervalMask(answer, intervalMode, ignorePunctuation, ignoreNumber);
+            // 进打字界面就算玩家，换句时要等他打完。维护中的管理员只是在改设置，不算
+            if (!(Util.adminEnable() && args.userId === Util.adminId())) {
+                this.players[args.userId] = true;
+            }
             return JSON.stringify({
-                data: {answer: answer, mask: mask},
+                data: {answer: answer, mask: mask, roundId: this.roundId},
             });
         } catch (error: any) {
             return JSON.stringify({

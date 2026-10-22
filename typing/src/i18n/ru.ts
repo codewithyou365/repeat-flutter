@@ -5,6 +5,7 @@ export default {
     join: 'Войти',
     leave: 'Выйти',
     cantPlayForMaintain: 'Администратор проводит обслуживание, сейчас играть нельзя.',
+    waitingOthers: 'Ждём: {names}',
     dartMode: 'Тёмная тема',
     settings: 'Настройки',
     login: 'Вход',

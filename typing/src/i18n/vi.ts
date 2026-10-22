@@ -5,6 +5,7 @@ export default {
     join: 'Tham gia',
     leave: 'Rời đi',
     cantPlayForMaintain: 'Quản trị viên đang bảo trì; hiện chưa chơi được.',
+    waitingOthers: 'Đang chờ {names}',
     dartMode: 'Chế độ tối',
     settings: 'Cài đặt',
     login: 'Đăng nhập',

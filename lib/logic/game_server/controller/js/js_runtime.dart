@@ -176,6 +176,11 @@ class JsRuntime {
           return 'error: ${e.toString()}';
         }
       });
+      // 当前连着 websocket 的 userId 列表。打字游戏"大家都打完才换下一句"要靠它把掉线的人排除掉，
+      // 不然一个人断线其他人就永远等下去。
+      _jsRuntime!.onMessage('onlineUserIds', (dynamic args) {
+        return jsonEncode(server.nodes.userId2Node.keys.toList());
+      });
       _jsRuntime!.onMessage('adminId', (dynamic args) {
         final game = GameState.game;
         if (game == null) {

@@ -5,6 +5,7 @@ export default {
     join: '참가',
     leave: '나가기',
     cantPlayForMaintain: '관리자가 점검 중이라 지금은 플레이할 수 없습니다.',
+    waitingOthers: '{names} 기다리는 중',
     dartMode: '다크 모드',
     settings: '설정',
     login: '로그인',

@@ -306,6 +306,7 @@
     <div class="info-bar">
       <!-- 每个玩家自己挑用哪套 profile，只影响自己这台设备的打字体验 -->
       <span class="info-profile" @click="playerProfilePickerVisible = true">{{ profileNames[playerProfile] }}</span>
+      <span v-if="waitingNames.length > 0" class="info-waiting">{{ t('waitingOthers', {names: waitingNames.join(', ')}) }}</span>
       <Voice class="info-icon" width="18px" height="18px" @click="speakCurrentWord"/>
       <Eye class="info-icon" width="18px" height="18px" @click="cycleMaskMode()"/>
       <Ask class="info-icon" width="18px" height="18px" @click="showTips"/>
@@ -370,7 +371,6 @@ import {client, Request, Response} from '../../api/ws.ts';
 import {Path} from '../../utils/constant.ts';
 import {raiseSoftKeyboard} from '../../utils/keyboard.ts';
 import Typing from '../../component/typing.vue';
-import {TypeState} from '../../vo/TypeState.ts';
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {Ask, Voice, Eye, Del} from '@nutui/icons-vue';
@@ -496,187 +496,58 @@ const isAdmin = computed(() => {
   return adminEnable.value && adminId.value == store.getters.currentUserId;
 });
 
-// ---- 多人协作打字：打字进度存在 ts 服务里（内存 + 落盘），谁敲的字都上报 + 广播 ----
-// 本地优先：自己敲的字由 Typing 组件同步上屏，上报只是"把进度同步给别人 + 落盘"的后台动作，
-// 绝不因为服务端的回话把本地已经打出来的内容退回去。单人时因此是从头到尾零等待。
-// 本地记着服务端快照的轮次和版本号：roundId 用来丢弃换 verse 前的残留广播，
-// localSeq 用来只应用比自己新的快照。
+// ---- 多人：各打各的，全都打完才换下一句 ----
+// 每个人只在自己设备上打，互相不同步进度。打完一句就告诉服务端，服务端等在线玩家都打完了
+// 才换下一句（换句后广播 gameRefresh，大家一起 refresh）。单人时打完立刻换，零等待。
+// roundId: 当前这一句的轮次（Game.answer 带回来），打完上报时带上，服务端据此丢掉迟到的请求
 let roundId = -1;
-let localSeq = -1;
-// 正在应用远端快照，这期间 Typing 里的变化不要再上报（虽然 initUserInput 本来就不发事件，
-// 双保险，避免以后有人改成 watch 触发）
-let applyingRemote = false;
+// 自己打完了、还在等的人的名字；空数组 = 没在等
+const waitingNames = ref<string[]>([]);
+let waitingTimer: ReturnType<typeof setTimeout> | null = null;
+// 等人时隔多久再问一次服务端：有人掉线了就不用再等他，名单也顺便刷新
+const WAITING_POLL_MS = 3000;
 
-// 给协作者的字符上色。自己敲的字不上色（保持默认样式），一眼能分出哪些是别人打的。
-const collabColors = ['#e6a23c', '#67c23a', '#f56c6c', '#409eff', '#b37feb'];
-const getUserColor = (userId: number, allUserIds: number[]) => {
-  const idx = allUserIds.indexOf(userId);
-  return idx === -1 ? '#909399' : collabColors[idx % collabColors.length];
+const stopWaiting = () => {
+  if (waitingTimer !== null) {
+    clearTimeout(waitingTimer);
+    waitingTimer = null;
+  }
+  waitingNames.value = [];
 };
 
-// 把服务端快照套到 Typing 上：共享的已输入串 + 每个字符的归属颜色。
-// force=true 只给"整条内容刚换过"的场合（refresh 后的首次 getState）用，那时候本地没有
-// 需要保护的输入，服务端的串无条件采纳。
-const applyRemote = async (state: TypeState, force = false) => {
-  roundId = state.roundId;
-  localSeq = state.seq;
-
-  // 共享串还是空的（新一轮刚开始，谁都没敲）就别动 Typing：它在 watch(props.content) 里
-  // 已经把间隔模式/遮罩那批"自动填充"的字符写进 userInput 并把光标推到第一个要打的位置了，
-  // 这时候 initUserInput('') 会把这些全抹掉，光标落回 0，间隔模式直接玩不了。
-  if (state.userInput === '') {
-    return;
-  }
-
-  const myUserId = store.getters.currentUserId;
-  // userId 排序保证每个客户端算出来的配色一致
-  const allUserIds = Object.keys(state.userIdToUserName).map(Number).sort((a, b) => a - b);
-  const contentIndexToColor: Record<number, string> = {};
-  for (const key of Object.keys(state.indexToUserId)) {
-    const userId = state.indexToUserId[Number(key)];
-    if (userId == myUserId) continue;
-    contentIndexToColor[Number(key)] = getUserColor(userId, allUserIds);
-  }
-
-  applyingRemote = true;
-  try {
-    await nextTick();
-    typingRef.value?.initContentIndexToColor(contentIndexToColor);
-    // 只有"别人接着我打到的地方往下打了"（本地串是远端串的严格前缀）才把远端的串套上来。
-    // 远端更短、或者跟本地岔开了，都保留本地——那要么是自己刚敲的字还没同步上去（回声/冲突
-    // 回滚就是这么把字吃掉的），要么是别人的串比我旧，本地的内容会随下一次上报盖回服务端。
-    // 另外 initUserInput 会把光标挪到串尾，而打错被 blockOnWrong 拦住时光标是停在错字上的
-    // （串尾 = 错字之后），无谓地套一遍就把光标推过了错字，拦截白做。
-    const local = typingRef.value?.getUserInput() ?? '';
-    if (force || (local !== state.userInput && state.userInput.startsWith(local))) {
-      typingRef.value?.initUserInput(state.userInput);
-    }
-  } finally {
-    applyingRemote = false;
-  }
-};
-
-// 拉一次共享进度：挂载、换 verse、断线重连后接着别人打到的位置继续。
-// force 只给"整条内容刚换过"的场合用（见 applyRemote）；锁屏回来这种本地已经有输入的
-// 场合必须传 false，否则会把冻结前最后那几个还没上报成功的字给冲掉。
-const getState = async (force = true) => {
+// sentRoundId 是"打完的是哪一句"，必须在打完那一刻取，不能等发请求时再读 roundId：
+// 中间要是已经换句，读到的就是新一句，等于把还没打的新句报成打完了。
+const reportComplete = async (sentRoundId: number) => {
+  waitingTimer = null;
   const req = new Request({
     path: Path.game,
-    headers: {'jsMethod': 'Game.getState'},
+    headers: {'jsMethod': 'Game.complete'},
+    data: {roundId: sentRoundId},
   });
   const res = await client.node!.send(req);
-  if (res.error) return;
-  await applyRemote(TypeState.fromJson(res.data), force);
+  // 等的这段时间里已经换句了（gameRefresh 先到），这条回包作废
+  if (sentRoundId !== roundId) return;
+  if (res.error) {
+    showToast.fail(res.error);
+    return;
+  }
+  if (res.data?.stale) {
+    // 服务端已经在下一句了，只是 gameRefresh 没收到（比如锁屏期间），自己拉一次
+    await refresh();
+    return;
+  }
+  const waiting: string[] = Array.isArray(res.data?.waiting) ? res.data.waiting : [];
+  waitingNames.value = waiting;
+  if (waiting.length > 0) {
+    waitingTimer = setTimeout(() => void reportComplete(sentRoundId), WAITING_POLL_MS);
+  }
+  // waiting 为空说明服务端已经换句，等 gameRefresh 推过来就行
 };
 
-// 上报是后台动作：同一时刻最多一条在路上，敲字期间的中间态在 pendingInput 里被合并掉，
-// 敲字这条链路上不做任何 await（await 会把网络往返算进手感里）。
-let sending = false;
-let pendingInput: { userInput: string; changedIndexes: number[] } | null = null;
-// 连着被服务端判 stale 的次数：正常情况下对齐 seq 后重发一次就成功了，
-// 一直不成功（比如内容已经换了）就别再自动重发，等 gameRefresh 走整套刷新。
-let staleResends = 0;
-const MAX_STALE_RESENDS = 3;
-
-// 自己敲了字/退格：把最新的串排队上报，立刻返回。
-// 这里绝不能开 overlayVisible——每敲一个字闪一次加载遮罩没法用。
-const onUserInputChange = (userInput: string, changedIndexes: number[]) => {
-  if (applyingRemote) return;
+const onUserInputChange = (_userInput: string, changedIndexes: number[]) => {
   // 退格 / 清词（changedIndexes 为空）：正在计时的这个词重来一遍不算数
   if (changedIndexes.length === 0) {
     familiarTrack = null;
-  }
-  queueInput(userInput, changedIndexes);
-};
-
-const queueInput = (userInput: string, changedIndexes: number[]) => {
-  if (pendingInput) {
-    // 攒着还没发出去的那次：串以最新的为准，改动过的下标合并（都是自己敲的，归属一样）
-    pendingInput = {
-      userInput: userInput,
-      changedIndexes: pendingInput.changedIndexes.concat(changedIndexes),
-    };
-  } else {
-    pendingInput = {userInput: userInput, changedIndexes: changedIndexes};
-  }
-  if (!sending) {
-    void sendInput();
-  }
-};
-
-// 两个串里内容不一样的下标（按 next 的长度算，next 更短的部分服务端会自己丢掉归属）
-const diffIndexes = (prev: string, next: string): number[] => {
-  const ret: number[] = [];
-  for (let i = 0; i < next.length; i++) {
-    if (prev[i] !== next[i]) ret.push(i);
-  }
-  return ret;
-};
-
-// 等排队中/在路上的上报跑完（只在判完成这种收尾点用，最多等 1 秒，网络卡住也不能吊死在这里）
-const flushInput = async () => {
-  for (let i = 0; i < 50 && (sending || pendingInput); i++) {
-    if (!sending && pendingInput) void sendInput();
-    await new Promise((resolve) => setTimeout(resolve, 20));
-  }
-};
-
-const sendInput = async () => {
-  if (sending || !pendingInput) return;
-  sending = true;
-  const payload = pendingInput;
-  const sentRoundId = roundId;
-  pendingInput = null;
-  try {
-    const req = new Request({
-      path: Path.game,
-      headers: {'jsMethod': 'Game.input'},
-      data: {
-        roundId: roundId,
-        baseSeq: localSeq,
-        userInput: payload.userInput,
-        changedIndexes: payload.changedIndexes,
-      },
-    });
-    const res = await client.node!.send(req);
-    if (!res.error) {
-      const state = TypeState.fromJson(res.data);
-      if (state.stale) {
-        // 轮次或版本号对不上（换过 verse，或中间别人写过），服务端丢了这次上报。
-        // 本地不回退：先对齐轮次/版本号，别人写的内容由 applyRemote 自己判断要不要接，
-        // 然后把本地最新的串重发一次，让服务端跟上本地。
-        await applyRemote(state);
-        // 只有"同一轮里被别人插队"才重发。轮次都变了说明内容已经换到下一条 verse，
-        // 这时候把本地（上一条的）串重发上去会把新内容的共享进度污染掉，直接丢掉等 gameRefresh。
-        if (state.roundId !== sentRoundId) {
-          pendingInput = null;
-        } else if (staleResends < MAX_STALE_RESENDS) {
-          staleResends++;
-          const local = typingRef.value?.getUserInput();
-          if (local !== undefined && local !== state.userInput) {
-            // 跟服务端那份对不上的下标就是"我打的、服务端还不知道的字"，一并带上，
-            // 否则这些字在服务端没有归属，别人那边看着就像不是我打的
-            queueInput(local, diffIndexes(state.userInput, local));
-          }
-        }
-      } else {
-        staleResends = 0;
-        if (typeof res.data?.seq === 'number') {
-          localSeq = res.data.seq;
-        }
-        if (typeof res.data?.roundId === 'number') {
-          roundId = res.data.roundId;
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Failed to sync typing input:', error);
-  } finally {
-    sending = false;
-    // 这一趟在路上时又敲了字，接着把最新的发出去（不 await，调用方本来就不等）
-    if (pendingInput) {
-      void sendInput();
-    }
   }
 };
 
@@ -1533,19 +1404,12 @@ const onCharFilled = (index: number, char: string, auto: boolean, correct: boole
 };
 
 const onCompleted = async () => {
+  const completedRoundId = roundId;
   await flushWord();
   await new Promise((resolve) => setTimeout(resolve, 500));
-  // 判完成前把还没发出去的输入送完：上报是后台异步的，落在 Game.complete 之后的话，
-  // 服务端已经因为 tapLeft 换了 verse，那条迟到的上报只会被当成上一条的残留丢掉。
-  await flushInput();
-  // 走服务端的 Game.complete 而不是直接 tap('tapLeft')：协作时可能有不止一个客户端判定"打完了"，
-  // 服务端按 roundId 幂等，保证一句只推进一次，不会一口气跳过好几条。
-  const req = new Request({
-    path: Path.game,
-    headers: {'jsMethod': 'Game.complete'},
-  });
-  await client.node!.send(req);
-  await refresh();
+  // 不直接 tap('tapLeft')：多人时要等大家都打完，由服务端决定什么时候换句
+  if (completedRoundId !== roundId) return;
+  await reportComplete(completedRoundId);
 };
 
 // 手动播放这个词该用哪套朗读设置：在熟词库里就用"熟词朗读"那一行的，否则用手动播放那一行的。
@@ -1708,38 +1572,38 @@ const onWordAsk = async (binding: AssistiveTouchBinding, bounds: { start: number
 
 // 手机锁屏 / 切到别的 App 之后回来：WebView 里的 JS 在这期间是被 Chromium 冻结的，
 // 输入框的焦点、软键盘、WebSocket 连接都可能已经没了。回到可见状态时统一自愈一次：
-// 抢回焦点 → 让 App 重新把焦点给 WebView（蓝牙键盘只认焦点）→ 补一次共享进度，
-// 把锁屏期间别人打的字接上。
+// 抢回焦点 → 让 App 重新把焦点给 WebView（蓝牙键盘只认焦点）。
+// 冻结期间可能漏了 gameRefresh（别人打完换句了），在等人的话立刻再问一次服务端，
+// 它会回 stale 让这边自己 refresh。
 const onVisibilityChange = async () => {
   if (document.visibilityState !== 'visible') {
     return;
   }
   typingRef.value?.focus();
   await raiseSoftKeyboard();
-  await getState(false);
+  if (waitingTimer !== null) {
+    clearTimeout(waitingTimer);
+    await reportComplete(roundId);
+  }
 };
 
 const refresh = async () => {
   try {
     overlayVisible.value = true;
     pendingWordEnd = null;
-    // 内容要换了，上一条排队没发出去的输入作废（发上去只会被服务端当残留丢掉）
-    pendingInput = null;
-    staleResends = 0;
+    stopWaiting();
     const req = new Request({
       path: Path.game,
       headers: {'jsMethod': 'Game.answer'},
     });
     const res = await client.node!.send(req);
     content.value = res.data.answer;
+    roundId = typeof res.data.roundId === 'number' ? res.data.roundId : -1;
     updateIgnoreIndexes(res.data.mask);
     familiarTrack = null;
     await loadFamiliar();
 
     await getLabel();
-    // 内容到位之后再接共享进度：中途进来/重连的人直接看到别人已经打到哪儿了。
-    // 必须排在 content 赋值之后——Typing 的 watch(props.content) 会把 userInput 清零重来。
-    await getState();
   } catch (error) {
     console.error('Failed to refresh game:', error);
   } finally {
@@ -1765,29 +1629,13 @@ onMounted(async () => {
     await refresh();
     return new Response();
   });
-  // 别人敲字时服务端推过来的共享进度。单开一条路径，不跟 gameRefresh（换 verse，要走整套
-  // refresh + 加载遮罩）混用。
-  client.controllers.set('typeState', async (req: Request) => {
-    const state = TypeState.fromJson(req.data);
-    // 只认当前这一轮、且比自己新的快照
-    if (state.roundId !== roundId || state.seq <= localSeq) {
-      return new Response();
-    }
-    if (state.lastWriterUserId == store.getters.currentUserId) {
-      // 自己敲字引起的回声（广播有可能比自己那条响应先到）：本地早就是最新的了，
-      // 只把版本号对齐，绝不能拿它去重写 Typing —— 那正是"敲完的字又被抹掉"的来源。
-      localSeq = state.seq;
-      return new Response();
-    }
-    await applyRemote(state);
-    return new Response();
-  });
 });
 
 // 遮挡状态下页面被切走：屏幕还暗着/系统栏还藏着，还原一次。
 // （App 那边 RepeatLogic.onClose / JsRuntime.dispose 也有兜底，这里是最快的那条）
 onUnmounted(() => {
   document.removeEventListener('visibilitychange', onVisibilityChange);
+  stopWaiting();
   if (maskMode.value !== 'off') {
     applyMaskUi('off');
   }
@@ -1833,6 +1681,11 @@ onUnmounted(() => {
   font-size: 13px;
   opacity: 0.7;
   cursor: pointer;
+}
+
+.info-waiting {
+  font-size: 13px;
+  color: #e6a23c;
 }
 
 .info-bar {

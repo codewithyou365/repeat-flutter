@@ -5,6 +5,7 @@ export default {
     join: 'Beitreten',
     leave: 'Verlassen',
     cantPlayForMaintain: 'Der Administrator führt Wartungsarbeiten durch; Spielen ist gerade nicht möglich.',
+    waitingOthers: 'Warte auf {names}',
     dartMode: 'Dunkler Modus',
     settings: 'Einstellungen',
     login: 'Anmelden',

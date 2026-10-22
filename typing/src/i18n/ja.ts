@@ -5,6 +5,7 @@ export default {
     join: '参加',
     leave: '退出',
     cantPlayForMaintain: '管理者がメンテナンス中のため、現在プレイできません。',
+    waitingOthers: '{names} の完了待ち',
     dartMode: 'ダークモード',
     settings: '設定',
     login: 'ログイン',

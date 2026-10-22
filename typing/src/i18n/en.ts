@@ -5,6 +5,7 @@ export default {
     join: 'Join',
     leave: 'Leave',
     cantPlayForMaintain: 'The administrator is performing maintenance; gameplay is currently unavailable.',
+    waitingOthers: 'Waiting for {names}',
     dartMode: 'Dart Mode',
     settings: 'Settings',
     login: 'Login',

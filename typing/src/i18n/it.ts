@@ -5,6 +5,7 @@ export default {
     join: 'Entra',
     leave: 'Esci',
     cantPlayForMaintain: "L'amministratore sta facendo manutenzione; al momento non si può giocare.",
+    waitingOthers: 'In attesa di {names}',
     dartMode: 'Modalità scura',
     settings: 'Impostazioni',
     login: 'Accedi',

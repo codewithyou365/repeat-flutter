@@ -5,6 +5,7 @@ export default {
     join: 'Entrar',
     leave: 'Sair',
     cantPlayForMaintain: 'O administrador está fazendo manutenção; não dá para jogar agora.',
+    waitingOthers: 'Aguardando {names}',
     dartMode: 'Modo escuro',
     settings: 'Configurações',
     login: 'Entrar',

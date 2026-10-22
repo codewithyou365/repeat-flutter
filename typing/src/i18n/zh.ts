@@ -5,6 +5,7 @@ export default {
     join: '加入',
     leave: '离开',
     cantPlayForMaintain: '管理员正在维护中，无法游玩',
+    waitingOthers: '等待 {names} 打完',
     dartMode: '深色模式',
     settings: '设置',
     login: '登录',
