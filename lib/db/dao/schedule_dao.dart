@@ -1063,7 +1063,7 @@ abstract class ScheduleDao {
     verseTodayPrg.finish = finish;
   }
 
-  static final int delayHour = 1;
+  static final int delayHour = 4;
 
   static Date currentDate() {
     DateTime now = DateTime.now();
