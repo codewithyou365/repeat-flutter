@@ -546,7 +546,7 @@ class ConfigZh extends Config {
     put(I18nKey.aiRemote, "远程推理");
     put(I18nKey.aiRemoteDesc, "把识别/翻译/合成交给局域网里的电脑跑，比手机快很多。服务端见仓库 server/ai。");
     put(I18nKey.aiRemoteUrl, "服务地址");
-    put(I18nKey.aiRemoteUrlHint, "例如 http://192.168.1.2:8765");
+    put(I18nKey.aiRemoteUrlHint, "例如 http://192.168.1.2:8767");
     put(I18nKey.aiRemoteTest, "测试连接");
     put(I18nKey.aiRemoteTesting, "连接中…");
     put(I18nKey.aiRemoteOk, "连接正常，延迟 @0 ms；服务端已装 识别@1 翻译@2 合成@3");

@@ -1,7 +1,7 @@
 # server/ai — 局域网推理服务
 
 把录音建章的 ASR / 翻译 / TTS 从手机挪到电脑上跑。手机端只需要在
-**设置 → AI 模型 → 远程推理** 里填一个 `http://<电脑IP>:8765`。
+**设置 → AI 模型 → 远程推理** 里填一个 `http://<电脑IP>:8767`。
 
 同一批 sherpa-onnx 模型、同一份 `assets/ai/catalog.json`，所以结果和手机端一致，
 只是 Mac M1 比手机快 5~10 倍。连不上时手机会自动回退到机内模型，录音不中断。
@@ -27,7 +27,7 @@ Apple Silicon 上 `sherpa-onnx` 有预编译 wheel，不用自己编。
 
 ## 网页管理
 
-起服务后浏览器打开 **http://<本机IP>:8765/**，三个标签页：
+起服务后浏览器打开 **http://<本机IP>:8767/**，三个标签页：
 
 **概览**（默认）
 - 服务状态、线程数、磁盘占用
@@ -238,7 +238,7 @@ python bench_s2st.py --install     # 下 8.6 GB 并标记为可用
 ## 跑
 
 ```bash
-./run.sh                          # 0.0.0.0:8765
+./run.sh                          # 0.0.0.0:8767
 ./run.sh --port 9000
 ./run.sh --models /path/to/models --catalog /path/to/catalog.json
 ```
@@ -249,7 +249,7 @@ macOS 首次会弹防火墙授权，要允许，否则手机连不上。
 自检：
 
 ```bash
-curl -s localhost:8765/v1/health | python3 -m json.tool
+curl -s localhost:8767/v1/health | python3 -m json.tool
 ```
 
 ## 调线程数 / 并行度

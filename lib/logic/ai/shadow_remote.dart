@@ -241,7 +241,7 @@ class ShadowModelState {
 /// 跟读打分服务的客户端。
 ///
 /// 服务端见仓库 server/shadow，协议见 server/shadow/PROTOCOL.md。
-/// 和 [AiRemote]（8765）是两个独立服务，完全可能只开其中一个。
+/// 和 [AiRemote]（8767）是两个独立服务，完全可能只开其中一个。
 ///
 /// 复用 AiRemote 的 [AiRemoteDown] / [AiRemoteRejected]：
 /// "服务挂了该回退"和"服务明确拒绝、回退也没用"的区分在这边一模一样。

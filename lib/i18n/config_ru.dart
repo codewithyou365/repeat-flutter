@@ -546,7 +546,7 @@ class ConfigRu extends Config {
     put(I18nKey.aiRemote, "Удалённые вычисления");
     put(I18nKey.aiRemoteDesc, "Выполняет распознавание/перевод/синтез на компьютере в вашей локальной сети. Гораздо быстрее телефона. Сервер лежит в server/ai.");
     put(I18nKey.aiRemoteUrl, "Адрес сервера");
-    put(I18nKey.aiRemoteUrlHint, "например, http://192.168.1.2:8765");
+    put(I18nKey.aiRemoteUrlHint, "например, http://192.168.1.2:8767");
     put(I18nKey.aiRemoteTest, "Проверить соединение");
     put(I18nKey.aiRemoteTesting, "Подключение…");
     put(I18nKey.aiRemoteOk, "Подключено, @0 мс; на сервере @1 ASR, @2 MT, @3 TTS");

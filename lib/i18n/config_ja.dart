@@ -546,7 +546,7 @@ class ConfigJa extends Config {
     put(I18nKey.aiRemote, "リモート推論");
     put(I18nKey.aiRemoteDesc, "認識・翻訳・音声合成を LAN 内のパソコンで実行します。端末で処理するよりずっと高速です。サーバーは server/ai にあります。");
     put(I18nKey.aiRemoteUrl, "サーバーのアドレス");
-    put(I18nKey.aiRemoteUrlHint, "例: http://192.168.1.2:8765");
+    put(I18nKey.aiRemoteUrlHint, "例: http://192.168.1.2:8767");
     put(I18nKey.aiRemoteTest, "接続をテスト");
     put(I18nKey.aiRemoteTesting, "接続中…");
     put(I18nKey.aiRemoteOk, "接続しました（@0 ms）。サーバーには ASR @1、MT @2、TTS @3 があります");

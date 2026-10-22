@@ -546,7 +546,7 @@ class ConfigFr extends Config {
     put(I18nKey.aiRemote, "Inférence distante");
     put(I18nKey.aiRemoteDesc, "Exécute la reconnaissance/traduction/synthèse sur un ordinateur de votre réseau local. Bien plus rapide que sur le téléphone. Le serveur se trouve dans server/ai.");
     put(I18nKey.aiRemoteUrl, "Adresse du serveur");
-    put(I18nKey.aiRemoteUrlHint, "p. ex. http://192.168.1.2:8765");
+    put(I18nKey.aiRemoteUrlHint, "p. ex. http://192.168.1.2:8767");
     put(I18nKey.aiRemoteTest, "Tester la connexion");
     put(I18nKey.aiRemoteTesting, "Connexion…");
     put(I18nKey.aiRemoteOk, "Connecté, @0 ms ; le serveur a @1 ASR, @2 MT, @3 TTS");

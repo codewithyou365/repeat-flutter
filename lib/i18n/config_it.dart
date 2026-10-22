@@ -546,7 +546,7 @@ class ConfigIt extends Config {
     put(I18nKey.aiRemote, "Inferenza remota");
     put(I18nKey.aiRemoteDesc, "Esegue riconoscimento/traduzione/sintesi su un computer della tua rete locale. Molto più veloce del telefono. Il server si trova in server/ai.");
     put(I18nKey.aiRemoteUrl, "Indirizzo del server");
-    put(I18nKey.aiRemoteUrlHint, "es. http://192.168.1.2:8765");
+    put(I18nKey.aiRemoteUrlHint, "es. http://192.168.1.2:8767");
     put(I18nKey.aiRemoteTest, "Prova la connessione");
     put(I18nKey.aiRemoteTesting, "Connessione…");
     put(I18nKey.aiRemoteOk, "Connesso, @0 ms; il server ha @1 ASR, @2 MT, @3 TTS");

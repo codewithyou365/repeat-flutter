@@ -546,7 +546,7 @@ class ConfigVi extends Config {
     put(I18nKey.aiRemote, "Suy luận từ xa");
     put(I18nKey.aiRemoteDesc, "Chạy nhận dạng/dịch/tổng hợp tiếng nói trên một máy tính trong mạng nội bộ. Nhanh hơn nhiều so với điện thoại. Máy chủ nằm ở server/ai.");
     put(I18nKey.aiRemoteUrl, "Địa chỉ máy chủ");
-    put(I18nKey.aiRemoteUrlHint, "ví dụ http://192.168.1.2:8765");
+    put(I18nKey.aiRemoteUrlHint, "ví dụ http://192.168.1.2:8767");
     put(I18nKey.aiRemoteTest, "Kiểm tra kết nối");
     put(I18nKey.aiRemoteTesting, "Đang kết nối…");
     put(I18nKey.aiRemoteOk, "Đã kết nối, @0 ms; máy chủ có @1 ASR, @2 MT, @3 TTS");

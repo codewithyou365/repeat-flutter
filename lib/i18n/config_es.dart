@@ -546,7 +546,7 @@ class ConfigEs extends Config {
     put(I18nKey.aiRemote, "Inferencia remota");
     put(I18nKey.aiRemoteDesc, "Ejecuta reconocimiento/traducción/voz en un ordenador de tu red local. Mucho más rápido que en el móvil. El servidor está en server/ai.");
     put(I18nKey.aiRemoteUrl, "Dirección del servidor");
-    put(I18nKey.aiRemoteUrlHint, "p. ej. http://192.168.1.2:8765");
+    put(I18nKey.aiRemoteUrlHint, "p. ej. http://192.168.1.2:8767");
     put(I18nKey.aiRemoteTest, "Probar conexión");
     put(I18nKey.aiRemoteTesting, "Conectando…");
     put(I18nKey.aiRemoteOk, "Conectado, @0 ms; el servidor tiene @1 ASR, @2 MT, @3 TTS");

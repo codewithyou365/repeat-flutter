@@ -51,9 +51,12 @@ type ProfileConfig = {
 };
 
 type StoredConfig = {
+    // 管理员设置面板里正在编辑的槽位，也是没自己挑过 profile 的玩家默认用的那套
     activeProfile: number;
     profileNames: string[];
     profiles: ProfileConfig[];
+    // 玩家在游戏界面自己挑的 profile：userId -> 槽位下标。没挑过的玩家走 activeProfile
+    userProfiles: Record<string, number>;
 };
 
 type VerseField = {
@@ -97,17 +100,23 @@ function normalizeFamiliarWord(raw: any): string {
     return word;
 }
 
-// 当前生效 profile 的熟词阈值，<=0 表示关闭
-async function familiarMs(): Promise<number> {
+// 某个玩家实际生效的 profile 下标：自己挑过且仍在范围内就用自己的，否则用 activeProfile
+function profileIndexOf(stored: StoredConfig, userId: number): number {
+    const index = stored.userProfiles[String(userId)];
+    return typeof index === 'number' && index >= 0 && index < stored.profiles.length ? index : stored.activeProfile;
+}
+
+// 该玩家生效 profile 的熟词阈值，<=0 表示关闭
+async function familiarMs(userId: number): Promise<number> {
     const stored = await Util.getConfig();
-    const value = stored.profiles[stored.activeProfile].familiarMs;
+    const value = stored.profiles[profileIndexOf(stored, userId)].familiarMs;
     return typeof value === 'number' && value > 0 ? value : 0;
 }
 
-// 当前生效 profile 的熟词有效期（天），<=0 表示不过期
-async function familiarExpireDays(): Promise<number> {
+// 该玩家生效 profile 的熟词有效期（天），<=0 表示不过期
+async function familiarExpireDays(userId: number): Promise<number> {
     const stored = await Util.getConfig();
-    const value = stored.profiles[stored.activeProfile].familiarExpireDays;
+    const value = stored.profiles[profileIndexOf(stored, userId)].familiarExpireDays;
     return typeof value === 'number' && value > 0 ? value : 0;
 }
 
@@ -122,7 +131,7 @@ function defaultStoredConfig(): StoredConfig {
         names.push(`${i + 1}`);
         profiles.push(defaultProfileConfig());
     }
-    return {activeProfile: 0, profileNames: names, profiles: profiles};
+    return {activeProfile: 0, profileNames: names, profiles: profiles, userProfiles: {}};
 }
 
 // 补齐/裁剪 profiles/profileNames 到固定的 PROFILE_COUNT 个槽位，activeProfile 越界时夹回范围内
@@ -140,7 +149,17 @@ function normalizeStoredConfig(raw: any): StoredConfig {
     if (!(activeProfile >= 0 && activeProfile < PROFILE_COUNT)) {
         activeProfile = 0;
     }
-    return {activeProfile, profileNames: names, profiles: profiles};
+    // 越界的选择直接丢掉（槽位数以后变少也不会指到不存在的 profile）
+    const userProfiles: Record<string, number> = {};
+    if (raw.userProfiles && typeof raw.userProfiles === 'object') {
+        for (const key of Object.keys(raw.userProfiles)) {
+            const index = raw.userProfiles[key];
+            if (typeof index === 'number' && index >= 0 && index < PROFILE_COUNT) {
+                userProfiles[key] = index;
+            }
+        }
+    }
+    return {activeProfile, profileNames: names, profiles: profiles, userProfiles};
 }
 
 // 老版本是扁平的单份配置（没有 profiles 数组），迁移成 profile 0，其余槽位用默认值填充，
@@ -213,6 +232,7 @@ const Util = {
             activeProfile: data.activeProfile,
             profileNames: data.profileNames,
             profiles: data.profiles,
+            userProfiles: data.userProfiles,
         };
         if (store.typeState !== undefined) {
             next.typeState = store.typeState;
@@ -729,11 +749,27 @@ const Game = {
             return JSON.stringify({status: 500, error: e.toString()});
         }
     },
-    getConfig: async function (): Promise<string> {
+    // 玩家在游戏界面自己挑 profile，不限管理员：只记在自己名下，不动别人和管理员的 activeProfile
+    selectProfile: async function (args: GameArgs): Promise<string> {
+        try {
+            const index = typeof args.data === 'number' ? args.data : parseInt(args.data, 10);
+            const stored = await Util.getConfig();
+            if (!(Number.isFinite(index) && index >= 0 && index < stored.profiles.length)) {
+                return JSON.stringify({status: 500, error: "invalid profile"});
+            }
+            stored.userProfiles[String(args.userId)] = index;
+            await Util.setConfig(stored);
+            return JSON.stringify({});
+        } catch (e: any) {
+            return JSON.stringify({status: 500, error: e.toString()});
+        }
+    },
+    // myProfile：请求者实际生效的那套（自己挑过的，否则 activeProfile）
+    getConfig: async function (args: GameArgs): Promise<string> {
         try {
             const configData = await Util.getConfig();
             return JSON.stringify({
-                data: configData,
+                data: {...configData, myProfile: profileIndexOf(configData, args.userId)},
             });
         } catch (error: any) {
             return JSON.stringify({
@@ -777,12 +813,13 @@ const Game = {
         return chars.join('');
     },
 
-    answer: async function (): Promise<string> {
+    // 间隔遮罩按请求者自己的 profile 算，所以不同玩家拿到的 mask 可以不一样
+    answer: async function (args: GameArgs): Promise<string> {
         try {
             const verse = await Util.getVerse();
             const answer = Util.fieldText(verse, 'a');
             const stored = await Util.getConfig();
-            const config = stored.profiles[stored.activeProfile];
+            const config = stored.profiles[profileIndexOf(stored, args.userId)];
             const intervalMode: IntervalMode = config.intervalMode || 'none';
             const ignorePunctuation = config.ignorePunctuation ?? true;
             const ignoreNumber = config.ignoreNumber ?? true;
@@ -961,7 +998,7 @@ const Game = {
     // 阈值没配（familiarMs<=0）时一律返回空：服务端也当总开关，客户端配置没刷新也不会误触发。
     familiarQuery: async function (args: GameArgs): Promise<string> {
         try {
-            if (await familiarMs() <= 0) {
+            if (await familiarMs(args.userId) <= 0) {
                 return JSON.stringify({data: {words: []}});
             }
             const raw = (args.data && Array.isArray(args.data.words)) ? args.data.words : [];
@@ -979,7 +1016,7 @@ const Game = {
             // 进库时间就是 kv 的值（familiarMark 存的 Date.now()）。超过有效期的当场删掉再返回，
             // 免得客户端还按紫色标记去跳一个早就该忘掉的词。
             // 值解析不出数字的当作不过期（老数据兜底），有效期 <=0 时整段跳过。
-            const days = await familiarExpireDays();
+            const days = await familiarExpireDays(args.userId);
             const deadline = days > 0 ? Date.now() - days * 24 * 60 * 60 * 1000 : 0;
             const alive: string[] = [];
             const expired: string[] = [];
@@ -1007,7 +1044,7 @@ const Game = {
     // args.data = {word}
     familiarMark: async function (args: GameArgs): Promise<string> {
         try {
-            if (await familiarMs() <= 0) {
+            if (await familiarMs(args.userId) <= 0) {
                 return JSON.stringify({data: 'off'});
             }
             const word = normalizeFamiliarWord(args.data && args.data.word);

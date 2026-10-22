@@ -546,7 +546,7 @@ class ConfigId extends Config {
     put(I18nKey.aiRemote, "Inferensi jarak jauh");
     put(I18nKey.aiRemoteDesc, "Menjalankan pengenalan/terjemahan/suara di komputer dalam jaringan lokalmu. Jauh lebih cepat daripada di ponsel. Servernya ada di server/ai.");
     put(I18nKey.aiRemoteUrl, "Alamat server");
-    put(I18nKey.aiRemoteUrlHint, "mis. http://192.168.1.2:8765");
+    put(I18nKey.aiRemoteUrlHint, "mis. http://192.168.1.2:8767");
     put(I18nKey.aiRemoteTest, "Uji koneksi");
     put(I18nKey.aiRemoteTesting, "Menyambungkan…");
     put(I18nKey.aiRemoteOk, "Tersambung, @0 ms; server punya @1 ASR, @2 MT, @3 TTS");

@@ -546,7 +546,7 @@ class ConfigKo extends Config {
     put(I18nKey.aiRemote, "원격 추론");
     put(I18nKey.aiRemoteDesc, "인식/번역/음성 합성을 같은 LAN의 컴퓨터에서 실행합니다. 휴대폰보다 훨씬 빠릅니다. 서버는 server/ai에 있습니다.");
     put(I18nKey.aiRemoteUrl, "서버 주소");
-    put(I18nKey.aiRemoteUrlHint, "예: http://192.168.1.2:8765");
+    put(I18nKey.aiRemoteUrlHint, "예: http://192.168.1.2:8767");
     put(I18nKey.aiRemoteTest, "연결 테스트");
     put(I18nKey.aiRemoteTesting, "연결 중…");
     put(I18nKey.aiRemoteOk, "연결됨, @0 ms. 서버에 ASR @1개, MT @2개, TTS @3개");

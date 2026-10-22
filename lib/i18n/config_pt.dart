@@ -546,7 +546,7 @@ class ConfigPt extends Config {
     put(I18nKey.aiRemote, "Inferência remota");
     put(I18nKey.aiRemoteDesc, "Executa reconhecimento/tradução/fala em um computador da sua rede local. Bem mais rápido que no celular. O servidor fica em server/ai.");
     put(I18nKey.aiRemoteUrl, "Endereço do servidor");
-    put(I18nKey.aiRemoteUrlHint, "ex.: http://192.168.1.2:8765");
+    put(I18nKey.aiRemoteUrlHint, "ex.: http://192.168.1.2:8767");
     put(I18nKey.aiRemoteTest, "Testar conexão");
     put(I18nKey.aiRemoteTesting, "Conectando…");
     put(I18nKey.aiRemoteOk, "Conectado, @0 ms; o servidor tem @1 ASR, @2 MT, @3 TTS");

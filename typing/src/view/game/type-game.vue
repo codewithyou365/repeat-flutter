@@ -304,10 +304,18 @@
   </nut-cell>
   <div v-else-if="ready" class="type-game-container">
     <div class="info-bar">
+      <!-- 每个玩家自己挑用哪套 profile，只影响自己这台设备的打字体验 -->
+      <span class="info-profile" @click="playerProfilePickerVisible = true">{{ profileNames[playerProfile] }}</span>
       <Voice class="info-icon" width="18px" height="18px" @click="speakCurrentWord"/>
       <Eye class="info-icon" width="18px" height="18px" @click="cycleMaskMode()"/>
       <Ask class="info-icon" width="18px" height="18px" @click="showTips"/>
     </div>
+    <nut-action-sheet
+        v-model:visible="playerProfilePickerVisible"
+        :title="t('profile')"
+        :menu-items="playerProfileItems"
+        @choose="onChoosePlayerProfile"
+    />
     <div v-if="eyesClosedMaskVisible" class="eyes-closed-mask" @pointerdown.prevent="onMaskPointerDown"></div>
     <div class="typing-content">
       <Typing
@@ -388,6 +396,10 @@ type AssistiveTouchBinding = {
 const activeProfile = ref(0);
 const profileNames = ref<string[]>(['1', '2', '3']);
 const profiles = ref<ProfileConfig[]>([]); // 本地缓存全部槽位，切换 profile 时不用重新请求
+// 玩家端实际在用的槽位（服务端按 userId 记的，没挑过就是 activeProfile）。
+// activeProfile 只是管理员面板正在编辑的那套，两者各管各的。
+const playerProfile = ref(0);
+const playerProfilePickerVisible = ref(false);
 
 const ignoreCase = ref(false);
 const ignorePunctuation = ref(false);
@@ -687,7 +699,7 @@ const showTips = () => {
   };
 
   const rows = [
-    {label: t('profile'), value: profileNames.value[activeProfile.value]},
+    {label: t('profile'), value: profileNames.value[isAdmin.value ? activeProfile.value : playerProfile.value]},
     {label: t('ignoreCase'), value: formatStatus(ignoreCase.value)},
     {label: t('ignorePunctuation'), value: formatStatus(ignorePunctuation.value)},
     {label: t('ignoreNumber'), value: formatStatus(ignoreNumber.value)},
@@ -912,7 +924,9 @@ const getConfig = async () => {
   activeProfile.value = typeof res['activeProfile'] === 'number' ? res['activeProfile'] : 0;
   profileNames.value = Array.isArray(res['profileNames']) ? res['profileNames'] : ['1', '2', '3'];
   profiles.value = Array.isArray(res['profiles']) ? res['profiles'] : [];
-  applyProfile(activeProfile.value);
+  playerProfile.value = typeof res['myProfile'] === 'number' ? res['myProfile'] : activeProfile.value;
+  // 依赖 isAdmin，所以 onMounted 里必须先 getAdmin 再 getConfig
+  applyProfile(isAdmin.value ? activeProfile.value : playerProfile.value);
 };
 const getAdmin = async () => {
   const req = new Request({
@@ -1235,6 +1249,34 @@ const setActiveProfile = async (index: number) => {
   } finally {
     overlayVisible.value = false;
   }
+};
+
+const playerProfileItems = computed(() => profileNames.value.map((name, i) => ({
+  name: i === playerProfile.value ? `✓ ${name}` : name,
+})));
+
+// 玩家切 profile：存到服务端自己名下后，间隔遮罩、熟词阈值这些服务端按 profile 算的东西
+// 都得重新拉一遍，所以走一次 refresh（共享打字进度会在 refresh 里接回来）
+const onChoosePlayerProfile = async (_item: any, index: number) => {
+  playerProfilePickerVisible.value = false;
+  if (index === playerProfile.value) {
+    return;
+  }
+  const req = new Request({
+    path: Path.game,
+    headers: {'jsMethod': 'Game.selectProfile'},
+    data: index,
+  });
+  const res = await client.node!.send(req);
+  if (res.error) {
+    showToast.fail(res.error);
+    return;
+  }
+  playerProfile.value = index;
+  applyProfile(index);
+  await refresh();
+  await nextTick();
+  typingRef.value?.focus();
 };
 
 const setProfileName = async (index: number, name: string) => {
@@ -1706,8 +1748,8 @@ const refresh = async () => {
 };
 
 onMounted(async () => {
-  await getConfig();
   await getAdmin();
+  await getConfig();
   // 按钮列表只有设置面板的下拉要用，玩家端不拉，省一次请求
   if (isAdmin.value) {
     await getAssistiveTouchActions();
@@ -1784,6 +1826,13 @@ onUnmounted(() => {
 
 .nut-theme-dark .info-icon {
   color: white;
+}
+
+.info-profile {
+  margin-right: auto; /* 名字靠左，图标仍然贴右 */
+  font-size: 13px;
+  opacity: 0.7;
+  cursor: pointer;
 }
 
 .info-bar {

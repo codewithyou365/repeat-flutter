@@ -1,6 +1,6 @@
 """按 catalog.json 把模型下到服务端（命令行版）。
 
-网页上也能下（http://<ip>:8765/ 每个模型都有「下载」按钮），两边共用
+网页上也能下（http://<ip>:8767/ 每个模型都有「下载」按钮），两边共用
 downloader.py 的同一套续传/校验逻辑。命令行适合批量和无人值守。
 
     python download_models.py --preset lite

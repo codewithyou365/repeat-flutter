@@ -546,7 +546,7 @@ class ConfigDe extends Config {
     put(I18nKey.aiRemote, "Remote-Inferenz");
     put(I18nKey.aiRemoteDesc, "Führt Erkennung/Übersetzung/Sprachausgabe auf einem Rechner im Netzwerk aus. Deutlich schneller als auf dem Handy. Der Server liegt in server/ai.");
     put(I18nKey.aiRemoteUrl, "Serveradresse");
-    put(I18nKey.aiRemoteUrlHint, "z. B. http://192.168.1.2:8765");
+    put(I18nKey.aiRemoteUrlHint, "z. B. http://192.168.1.2:8767");
     put(I18nKey.aiRemoteTest, "Verbindung testen");
     put(I18nKey.aiRemoteTesting, "Verbindung wird hergestellt …");
     put(I18nKey.aiRemoteOk, "Verbunden, @0 ms; der Server hat @1 ASR, @2 MT, @3 TTS");

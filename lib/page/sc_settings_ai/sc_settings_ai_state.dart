@@ -29,7 +29,7 @@ class ScSettingsAiState {
   final RxBool remoteTesting = false.obs;
 
   // ---- 跟读打分服务（server/shadow，8766）----
-  // 和上面那组分开：那是 8765 的翻译/识别，这是 8766 的发音评测，
+  // 和上面那组分开：那是 8767 的翻译/识别，这是 8766 的发音评测，
   // 两个独立进程，完全可能只开其中一个。
   final RxBool shadowEnabled = false.obs;
   final RxString shadowUrl = ''.obs;

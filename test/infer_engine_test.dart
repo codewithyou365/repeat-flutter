@@ -140,18 +140,18 @@ void main() {
 
   group('AiRemote.normalize', () {
     test('补协议和默认端口', () {
-      expect(AiRemote.normalize('192.168.1.2'), 'http://192.168.1.2:8765');
+      expect(AiRemote.normalize('192.168.1.2'), 'http://192.168.1.2:8767');
       expect(AiRemote.normalize(' 192.168.1.2:9000 '), 'http://192.168.1.2:9000');
-      expect(AiRemote.normalize('http://mac.local:8765/'), 'http://mac.local:8765');
+      expect(AiRemote.normalize('http://mac.local:8767/'), 'http://mac.local:8767');
       expect(AiRemote.normalize('https://mac.local:443'), 'https://mac.local:443');
       expect(AiRemote.normalize(''), '');
     });
   });
 
   group('ShadowRemote.normalize', () {
-    test('默认端口补的是 8766，不是 8765', () {
+    test('默认端口补的是 8766，不是 8767', () {
       // 两个服务是独立进程、独立端口。补错端口的表现是"填了地址却连不上"，
-      // 而且错得很隐蔽——8765 上确实有个服务在应答，只是它不会打分。
+      // 而且错得很隐蔽——8767 上确实有个服务在应答，只是它不会打分。
       expect(ShadowRemote.normalize('192.168.1.2'), 'http://192.168.1.2:8766');
       expect(ShadowRemote.normalize(' 192.168.1.2:9100 '), 'http://192.168.1.2:9100');
       expect(ShadowRemote.normalize('http://mac.local:8766/'), 'http://mac.local:8766');

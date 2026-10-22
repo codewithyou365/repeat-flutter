@@ -90,8 +90,8 @@ typedef AiUploadProgress = void Function(int fileIndex, int fileTotal, int bytes
 
 /// 局域网推理服务的客户端。服务端实现见仓库 server/ai，协议见 server/ai/PROTOCOL.md。
 class AiRemote {
-  static const int defaultPort = 8765;
-  static const String urlHint = 'http://192.168.1.2:8765';
+  static const int defaultPort = 8767;
+  static const String urlHint = 'http://192.168.1.2:8767';
 
   static Future<String> url() async => (await Db().db.kvDao.getStr(K.aiRemoteUrl)) ?? '';
 
@@ -113,7 +113,7 @@ class AiRemote {
     await Db().db.kvDao.insertOrReplace(Kv(K.aiRemoteEnabled, v ? '1' : '0'));
   }
 
-  /// 用户多半只会填个 `192.168.1.2:8765`，甚至只填 IP。这里补齐成完整地址。
+  /// 用户多半只会填个 `192.168.1.2:8767`，甚至只填 IP。这里补齐成完整地址。
   ///
   /// [port] 是没写端口时补哪个。跟读打分服务在 8766，复用这个方法而不是
   /// 各写一份——下面那条 Uri.hasPort 的坑，复制一份就会重踩一次。
@@ -130,7 +130,7 @@ class AiRemote {
       v = v.substring(0, v.length - 1);
     }
     // 不能用 Uri.hasPort 判断：Uri 会把协议的默认端口规范化掉，
-    // `https://mac.local:443` 解析出来 hasPort 是 false，于是又被补成 `:443:8765`。
+    // `https://mac.local:443` 解析出来 hasPort 是 false，于是又被补成 `:443:8767`。
     // 直接看 authority 里有没有冒号最老实。
     final rest = v.substring(v.indexOf('://') + 3);
     final authority = rest.split('/').first;

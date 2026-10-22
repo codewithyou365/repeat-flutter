@@ -546,7 +546,7 @@ class ConfigEn extends Config {
     put(I18nKey.aiRemote, "Remote inference");
     put(I18nKey.aiRemoteDesc, "Run recognition/translation/speech on a computer in your LAN. Much faster than the phone. Server lives in server/ai.");
     put(I18nKey.aiRemoteUrl, "Server address");
-    put(I18nKey.aiRemoteUrlHint, "e.g. http://192.168.1.2:8765");
+    put(I18nKey.aiRemoteUrlHint, "e.g. http://192.168.1.2:8767");
     put(I18nKey.aiRemoteTest, "Test connection");
     put(I18nKey.aiRemoteTesting, "Connecting…");
     put(I18nKey.aiRemoteOk, "Connected, @0 ms; server has @1 ASR, @2 MT, @3 TTS");

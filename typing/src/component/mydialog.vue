@@ -66,6 +66,9 @@ const onOkClick = () => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  /* 内容再长也不能超出屏幕，否则底部"确定"被顶出可视区域，弹窗就关不掉了；
+     超出的部分交给 .my-dialog-content 自己滚 */
+  max-height: 85vh;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
 }
 
@@ -90,6 +93,10 @@ const onOkClick = () => {
 /* 内容颜色与居中 */
 .my-dialog-content {
   padding: 12px 24px 24px;
+  flex: 1;
+  min-height: 0; /* 不加这条 flex 子项会被内容撑高，滚动条出不来 */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   text-align: center;
   white-space: normal !important; /* 彻底根治 pre-wrap 的高度问题 */
   font-size: 15px;
@@ -101,6 +108,11 @@ const onOkClick = () => {
 }
 
 /* 底部按钮与分割线 */
+.my-dialog-header,
+.my-dialog-footer {
+  flex-shrink: 0;
+}
+
 .my-dialog-footer {
   border-top: 1px solid #f0f0f0;
 }

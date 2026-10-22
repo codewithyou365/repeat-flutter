@@ -110,7 +110,7 @@ _selection = sel.Selection.load(_model_root)
 
 # 最近 N 次推理的分阶段耗时。概览页显示它——"到底哪一步慢"是这条链路上
 # 最常问的问题，实测 kokoro 占 64% 就是这么发现的。只在内存里，重启清零。
-_port = 8765
+_port = 8767
 _STATS_KEEP = 50
 _stats: List[Dict[str, int]] = []
 _stats_lock = threading.Lock()
@@ -611,7 +611,7 @@ def main() -> None:
     global _catalog, _model_root
     ap = argparse.ArgumentParser(description="repeat-flutter LAN inference server")
     ap.add_argument("--host", default="0.0.0.0")
-    ap.add_argument("--port", type=int, default=8765)
+    ap.add_argument("--port", type=int, default=8767)
     ap.add_argument("--catalog", default=cat.DEFAULT_CATALOG, help="assets/ai/catalog.json 的路径")
     ap.add_argument("--models", default=cat.DEFAULT_MODEL_ROOT, help="模型目录，布局和手机端 m/ 一致")
     args = ap.parse_args()
