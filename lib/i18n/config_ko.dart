@@ -445,6 +445,14 @@ class ConfigKo extends Config {
     put(I18nKey.gameManageSubscription, "구독 소스");
     put(I18nKey.gameSectionGame, "게임");
     put(I18nKey.gameSectionTip, "힌트 서비스");
+    put(I18nKey.tipService, "힌트 서비스");
+    put(I18nKey.tipServiceOff, "사용 안 함");
+    put(I18nKey.tipServiceEmpty, "힌트 서비스가 없습니다. 먼저 \"구독 관리\"에서 구독하세요.");
+    put(I18nKey.subscriptionHelp, "구독 도움말");
+    put(I18nKey.subscriptionHelpGame, "게임은 학습 화면 메뉴의 \"게임\"에서 엽니다. 항목을 누르면 이름·진입 파일·패키지를 바꾸거나 삭제할 수 있습니다.");
+    put(I18nKey.subscriptionHelpTip, "힌트 서비스는 게임으로 표시되지 않으며 여기서 눌러도 아무 동작이 없습니다. 필드에 연결해야 쓸 수 있습니다.");
+    put(I18nKey.subscriptionHelpTipSteps, "연결 방법: 학습 화면을 편집 모드로 바꾸고 질문/답/노트 옆 편집 아이콘을 누르거나 선택된 힌트 탭을 한 번 더 눌러 \"힌트 서비스\"를 고른 뒤 서비스를 선택합니다. 연결되면 필드 옆에 💡 아이콘이 생기고 누르면 열립니다. \"사용 안 함\"을 고르면 해제됩니다.");
+    put(I18nKey.subscriptionHelpToolbar, "오른쪽 위: ↻ 업데이트 확인, + 추가(로컬 패키지 또는 구독 URL), ⋮ 구독 소스(URL 변경, 이름 변경, 구독 취소).");
     put(I18nKey.gameSubscriptionEmpty, "구독이 없습니다");
     put(I18nKey.gameUnsubscribe, "구독 해지");
     put(I18nKey.gameUnsubscribeConfirm, "구독을 해지할까요? 여기서 온 게임이 패키지 파일과 함께 모두 지워집니다.");

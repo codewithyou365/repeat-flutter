@@ -445,6 +445,14 @@ class ConfigIt extends Config {
     put(I18nKey.gameManageSubscription, "Fonti di abbonamento");
     put(I18nKey.gameSectionGame, "Giochi");
     put(I18nKey.gameSectionTip, "Servizi suggerimenti");
+    put(I18nKey.tipService, "Servizio suggerimenti");
+    put(I18nKey.tipServiceOff, "Nessuno");
+    put(I18nKey.tipServiceEmpty, "Nessun servizio suggerimenti. Abbonati prima a uno in \"Gestisci abbonamenti\".");
+    put(I18nKey.subscriptionHelp, "Guida agli abbonamenti");
+    put(I18nKey.subscriptionHelpGame, "I giochi si aprono da \"Gioco\" nel menu della pagina di studio. Tocca una voce per rinominarla, cambiarne il file di ingresso, sostituire il pacchetto o eliminarla.");
+    put(I18nKey.subscriptionHelpTip, "I servizi suggerimenti non compaiono mai come giochi e toccarli qui non fa nulla. Funzionano solo se collegati a un campo.");
+    put(I18nKey.subscriptionHelpTipSteps, "Per collegarne uno: metti la pagina di studio in modalità modifica, tocca l'icona di modifica accanto a domanda/risposta/nota, oppure tocca di nuovo la scheda suggerimento selezionata, scegli \"Servizio suggerimenti\" e poi un servizio. Accanto al campo comparirà un'icona 💡 per aprirlo. Scegli \"Nessuno\" per scollegarlo.");
+    put(I18nKey.subscriptionHelpToolbar, "In alto a destra: ↻ controlla aggiornamenti; + aggiungi (pacchetto locale o URL di abbonamento); ⋮ fonti di abbonamento (cambia URL, rinomina, annulla).");
     put(I18nKey.gameSubscriptionEmpty, "Ancora nessun abbonamento");
     put(I18nKey.gameUnsubscribe, "Disiscriviti");
     put(I18nKey.gameUnsubscribeConfirm, "Disiscriversi? Tutti i suoi giochi verranno rimossi insieme ai file dei pacchetti.");

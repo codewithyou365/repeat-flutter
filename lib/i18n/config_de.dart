@@ -445,6 +445,14 @@ class ConfigDe extends Config {
     put(I18nKey.gameManageSubscription, "Abo-Quellen");
     put(I18nKey.gameSectionGame, "Spiele");
     put(I18nKey.gameSectionTip, "Hinweisdienste");
+    put(I18nKey.tipService, "Hinweisdienst");
+    put(I18nKey.tipServiceOff, "Keiner");
+    put(I18nKey.tipServiceEmpty, "Noch kein Hinweisdienst. Abonniere zuerst einen unter \"Abonnements verwalten\".");
+    put(I18nKey.subscriptionHelp, "Hilfe zu Abonnements");
+    put(I18nKey.subscriptionHelpGame, "Spiele öffnest du über \"Spiel\" im Menü der Lernseite. Tippe auf einen Eintrag, um ihn umzubenennen, die Einstiegsdatei zu ändern, das Paket zu ersetzen oder ihn zu löschen.");
+    put(I18nKey.subscriptionHelpTip, "Hinweisdienste erscheinen nie als Spiele, und ein Tippen hier bewirkt nichts. Sie wirken erst, wenn sie an ein Feld gehängt sind.");
+    put(I18nKey.subscriptionHelpTipSteps, "So hängst du einen an: Lernseite in den Bearbeitungsmodus schalten, auf das Bearbeiten-Symbol neben Frage/Antwort/Notiz tippen oder den ausgewählten Hinweis-Tab erneut antippen, \"Hinweisdienst\" wählen und einen Dienst auswählen. Danach erscheint neben dem Feld ein 💡-Symbol zum Öffnen. Mit \"Keiner\" entfernst du ihn wieder.");
+    put(I18nKey.subscriptionHelpToolbar, "Oben rechts: ↻ nach Updates suchen; + hinzufügen (lokales Paket oder Abo-URL); ⋮ Abo-Quellen (URL ändern, umbenennen, abbestellen).");
     put(I18nKey.gameSubscriptionEmpty, "Noch kein Abo");
     put(I18nKey.gameUnsubscribe, "Abo kündigen");
     put(I18nKey.gameUnsubscribeConfirm, "Abo kündigen? Alle Spiele daraus werden zusammen mit den Paketdateien entfernt.");

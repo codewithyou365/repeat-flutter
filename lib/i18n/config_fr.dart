@@ -445,6 +445,14 @@ class ConfigFr extends Config {
     put(I18nKey.gameManageSubscription, "Sources d'abonnement");
     put(I18nKey.gameSectionGame, "Jeux");
     put(I18nKey.gameSectionTip, "Services d'indices");
+    put(I18nKey.tipService, "Service d'indices");
+    put(I18nKey.tipServiceOff, "Aucun");
+    put(I18nKey.tipServiceEmpty, "Aucun service d'indices pour l'instant. Abonnez-vous d'abord dans \"Gérer les abonnements\".");
+    put(I18nKey.subscriptionHelp, "Aide sur les abonnements");
+    put(I18nKey.subscriptionHelpGame, "Les jeux s'ouvrent via \"Jeu\" dans le menu de la page d'étude. Touchez une entrée pour la renommer, changer son fichier d'entrée, remplacer le paquet ou la supprimer.");
+    put(I18nKey.subscriptionHelpTip, "Les services d'indices n'apparaissent jamais comme jeux et les toucher ici ne fait rien. Ils ne servent qu'une fois rattachés à un champ.");
+    put(I18nKey.subscriptionHelpTipSteps, "Pour en rattacher un : passez la page d'étude en mode édition, touchez l'icône d'édition à côté de la question/réponse/note, ou touchez à nouveau l'onglet d'indice sélectionné, choisissez \"Service d'indices\" puis un service. Une icône 💡 apparaît alors à côté du champ pour l'ouvrir. Choisissez \"Aucun\" pour le retirer.");
+    put(I18nKey.subscriptionHelpToolbar, "En haut à droite : ↻ rechercher des mises à jour ; + ajouter (paquet local ou URL d'abonnement) ; ⋮ sources d'abonnement (changer l'URL, renommer, se désabonner).");
     put(I18nKey.gameSubscriptionEmpty, "Pas encore d'abonnement");
     put(I18nKey.gameUnsubscribe, "Se désabonner");
     put(I18nKey.gameUnsubscribeConfirm, "Se désabonner ? Tous ses jeux seront supprimés avec les fichiers du paquet.");

@@ -445,6 +445,14 @@ class ConfigEn extends Config {
     put(I18nKey.gameManageSubscription, "Subscription sources");
     put(I18nKey.gameSectionGame, "Games");
     put(I18nKey.gameSectionTip, "Tip services");
+    put(I18nKey.tipService, "Tip service");
+    put(I18nKey.tipServiceOff, "None");
+    put(I18nKey.tipServiceEmpty, "No tip service yet. Subscribe to one in \"Manage Subscriptions\" first.");
+    put(I18nKey.subscriptionHelp, "Subscription help");
+    put(I18nKey.subscriptionHelpGame, "Open games from the \"Game\" item in the study page menu. Tap an entry to rename it, change its entry file, replace its package, or delete it.");
+    put(I18nKey.subscriptionHelpTip, "Tip services never show up as games, and tapping them does nothing here. They only work once attached to a field.");
+    put(I18nKey.subscriptionHelpTipSteps, "To attach one: switch the study page to edit mode, tap the edit icon next to the question/answer/note, or tap the selected tip tab again, choose \"Tip service\", then pick a service. Once attached, a 💡 icon appears next to the field; tap it to open. Choose \"None\" to detach.");
+    put(I18nKey.subscriptionHelpToolbar, "Top right: ↻ check for updates; + add (local package or subscription URL); ⋮ subscription sources (change URL, rename, unsubscribe).");
     put(I18nKey.gameSubscriptionEmpty, "No subscription yet");
     put(I18nKey.gameUnsubscribe, "Unsubscribe");
     put(I18nKey.gameUnsubscribeConfirm, "Unsubscribe? Every game from it will be removed together with the package files.");

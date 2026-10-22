@@ -445,6 +445,14 @@ class ConfigId extends Config {
     put(I18nKey.gameManageSubscription, "Sumber langganan");
     put(I18nKey.gameSectionGame, "Permainan");
     put(I18nKey.gameSectionTip, "Layanan petunjuk");
+    put(I18nKey.tipService, "Layanan petunjuk");
+    put(I18nKey.tipServiceOff, "Tidak ada");
+    put(I18nKey.tipServiceEmpty, "Belum ada layanan petunjuk. Berlangganan dulu di \"Kelola langganan\".");
+    put(I18nKey.subscriptionHelp, "Bantuan langganan");
+    put(I18nKey.subscriptionHelpGame, "Permainan dibuka lewat \"Permainan\" di menu halaman belajar. Ketuk entri untuk mengganti nama, berkas entri, paket, atau menghapusnya.");
+    put(I18nKey.subscriptionHelpTip, "Layanan petunjuk tidak pernah muncul sebagai permainan, dan mengetuknya di sini tidak melakukan apa pun. Layanan ini baru berfungsi setelah dipasang ke sebuah kolom.");
+    put(I18nKey.subscriptionHelpTipSteps, "Cara memasang: ubah halaman belajar ke mode edit, ketuk ikon edit di samping pertanyaan/jawaban/catatan, atau ketuk lagi tab petunjuk yang dipilih, pilih \"Layanan petunjuk\", lalu pilih layanannya. Setelah terpasang, ikon 💡 muncul di samping kolom; ketuk untuk membukanya. Pilih \"Tidak ada\" untuk melepasnya.");
+    put(I18nKey.subscriptionHelpToolbar, "Kanan atas: ↻ periksa pembaruan; + tambah (paket lokal atau URL langganan); ⋮ sumber langganan (ubah URL, ganti nama, berhenti langganan).");
     put(I18nKey.gameSubscriptionEmpty, "Belum ada langganan");
     put(I18nKey.gameUnsubscribe, "Berhenti berlangganan");
     put(I18nKey.gameUnsubscribeConfirm, "Berhenti berlangganan? Semua permainan dari langganan itu akan dihapus beserta berkas paketnya.");

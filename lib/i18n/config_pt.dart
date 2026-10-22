@@ -445,6 +445,14 @@ class ConfigPt extends Config {
     put(I18nKey.gameManageSubscription, "Fontes de assinatura");
     put(I18nKey.gameSectionGame, "Jogos");
     put(I18nKey.gameSectionTip, "Serviços de dicas");
+    put(I18nKey.tipService, "Serviço de dicas");
+    put(I18nKey.tipServiceOff, "Nenhum");
+    put(I18nKey.tipServiceEmpty, "Ainda não há serviço de dicas. Assine um primeiro em \"Gerenciar assinaturas\".");
+    put(I18nKey.subscriptionHelp, "Ajuda de assinaturas");
+    put(I18nKey.subscriptionHelpGame, "Os jogos são abertos pelo item \"Jogo\" no menu da página de estudo. Toque numa entrada para renomear, trocar o arquivo de entrada, substituir o pacote ou excluir.");
+    put(I18nKey.subscriptionHelpTip, "Serviços de dicas nunca aparecem como jogos e tocá-los aqui não faz nada. Eles só funcionam depois de ligados a um campo.");
+    put(I18nKey.subscriptionHelpTipSteps, "Para ligar: coloque a página de estudo no modo de edição, toque no ícone de edição ao lado da pergunta/resposta/nota, ou toque de novo na aba de dica selecionada, escolha \"Serviço de dicas\" e depois um serviço. Um ícone 💡 aparece ao lado do campo para abri-lo. Escolha \"Nenhum\" para desligar.");
+    put(I18nKey.subscriptionHelpToolbar, "Canto superior direito: ↻ verificar atualizações; + adicionar (pacote local ou URL de assinatura); ⋮ fontes de assinatura (alterar URL, renomear, cancelar).");
     put(I18nKey.gameSubscriptionEmpty, "Ainda não há assinaturas");
     put(I18nKey.gameUnsubscribe, "Cancelar assinatura");
     put(I18nKey.gameUnsubscribeConfirm, "Cancelar a assinatura? Todos os jogos dela serão removidos junto com os arquivos do pacote.");

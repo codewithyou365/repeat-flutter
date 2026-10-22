@@ -445,6 +445,14 @@ class ConfigVi extends Config {
     put(I18nKey.gameManageSubscription, "Nguồn đăng ký");
     put(I18nKey.gameSectionGame, "Trò chơi");
     put(I18nKey.gameSectionTip, "Dịch vụ gợi ý");
+    put(I18nKey.tipService, "Dịch vụ gợi ý");
+    put(I18nKey.tipServiceOff, "Không dùng");
+    put(I18nKey.tipServiceEmpty, "Chưa có dịch vụ gợi ý. Hãy đăng ký một dịch vụ trong \"Quản lý đăng ký\" trước.");
+    put(I18nKey.subscriptionHelp, "Trợ giúp đăng ký");
+    put(I18nKey.subscriptionHelpGame, "Mở trò chơi bằng mục \"Trò chơi\" trong menu trang học. Chạm vào một mục để đổi tên, đổi tệp khởi chạy, thay gói hoặc xóa.");
+    put(I18nKey.subscriptionHelpTip, "Dịch vụ gợi ý không bao giờ xuất hiện như trò chơi, chạm vào ở đây cũng không có tác dụng. Chúng chỉ hoạt động khi được gắn vào một trường.");
+    put(I18nKey.subscriptionHelpTipSteps, "Cách gắn: chuyển trang học sang chế độ chỉnh sửa, chạm biểu tượng chỉnh sửa cạnh câu hỏi/câu trả lời/ghi chú, hoặc chạm lại tab gợi ý đang chọn, chọn \"Dịch vụ gợi ý\" rồi chọn một dịch vụ. Sau khi gắn, biểu tượng 💡 sẽ xuất hiện cạnh trường; chạm để mở. Chọn \"Không dùng\" để gỡ.");
+    put(I18nKey.subscriptionHelpToolbar, "Góc trên bên phải: ↻ kiểm tra cập nhật; + thêm (gói cục bộ hoặc URL đăng ký); ⋮ nguồn đăng ký (đổi URL, đổi tên, hủy đăng ký).");
     put(I18nKey.gameSubscriptionEmpty, "Chưa có nguồn đăng ký nào");
     put(I18nKey.gameUnsubscribe, "Huỷ đăng ký");
     put(I18nKey.gameUnsubscribeConfirm, "Huỷ đăng ký? Mọi trò chơi từ nguồn này sẽ bị xoá cùng với các tệp trong gói.");

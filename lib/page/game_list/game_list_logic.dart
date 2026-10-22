@@ -67,7 +67,7 @@ class GameListLogic extends GetxController {
     return v is List ? v : <dynamic>[];
   }
 
-  /// 订阅装出来的提示服务入口：{'h','n','s','u','ek'}。
+  /// 订阅装出来的提示服务入口：{'h','n','s','k','u','ek'}。
   ///
   /// 只是个目录，不登记任何表；提示字段真正用的是字段块自己的 'h'/'s'/'k'
   /// （见 [ClassroomHelp._registerTips]），这里记着是为了列表显示和给提示挑服务。
@@ -524,6 +524,8 @@ class GameListLogic extends GetxController {
         'h': dc.hash,
         'n': entry.name,
         's': entry.service,
+        // 提示服务的 'k' 是前缀，挂到字段上时再按字段补字母（见 TipServiceSheet）。
+        'k': entry.contentKey,
         'u': subUrl,
         'ek': entry.key,
       });

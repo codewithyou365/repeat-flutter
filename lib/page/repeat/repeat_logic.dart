@@ -222,7 +222,18 @@ class RepeatLogic extends GetxController {
     applySystemUiMode();
   }
 
+  /// [initTips] 上次用的那批进度，改了提示服务配置后 [reloadTips] 照着它重算。
+  List<VerseTodayPrg> _tipProgresses = [];
+
+  /// 字段的提示服务改过（见 TipServiceSheet）：重新登记 Tip 表，再把各字段的 Tip 重算一遍。
+  Future<void> reloadTips() async {
+    await ClassroomHelp.registerRes();
+    await initTips(_tipProgresses);
+    update([id]);
+  }
+
   Future<void> initTips(List<VerseTodayPrg> progresses) async {
+    _tipProgresses = progresses;
     final defaultTips = await Db().db.tipDao.getByClassroomId(Classroom.curr);
 
     Map<String, Tip> defaultTypeToTip = {};

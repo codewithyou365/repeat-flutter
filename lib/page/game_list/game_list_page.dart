@@ -6,6 +6,7 @@ import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/select/select.dart';
 import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
+import 'game_list_help.dart';
 import 'game_list_item.dart';
 import 'game_list_logic.dart';
 
@@ -20,6 +21,11 @@ class GameListPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(I18nKey.manageSubscription.tr),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            tooltip: I18nKey.subscriptionHelp.tr,
+            onPressed: () => Get.to(() => const GameListHelpPage()),
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: I18nKey.gameCheckUpdate.tr,

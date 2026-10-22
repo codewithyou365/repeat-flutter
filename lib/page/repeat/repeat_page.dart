@@ -24,6 +24,7 @@ import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 import 'package:repeat_flutter/widget/text/expandable_text.dart';
 
 import 'content_sheet.dart';
+import 'tip_service_sheet.dart';
 import 'repeat_logic.dart';
 import 'repeat_state.dart' show RepeatState;
 import 'logic/constant.dart';
@@ -641,9 +642,7 @@ class RepeatPage extends StatelessWidget {
             return SizedBox(
               height: 120,
               child: Center(
-                child: snapshot.connectionState == ConnectionState.done
-                    ? Text(I18nKey.contentWebFailed.tr, style: TextStyle(color: Colors.grey.withAlpha(200)))
-                    : const CircularProgressIndicator(strokeWidth: 2),
+                child: snapshot.connectionState == ConnectionState.done ? Text(I18nKey.contentWebFailed.tr, style: TextStyle(color: Colors.grey.withAlpha(200))) : const CircularProgressIndicator(strokeWidth: 2),
               ),
             );
           }
@@ -709,6 +708,7 @@ class RepeatPage extends StatelessWidget {
   Future<void> tipMenu(RepeatLogic logic, int index) async {
     final keys = [
       I18nKey.labelRenameTip.tr,
+      I18nKey.tipService.tr,
       I18nKey.labelDelete.tr,
     ];
     final selected = await Select.showSheet(title: tipDisplayName(logic, index), keys: keys);
@@ -717,6 +717,8 @@ class RepeatPage extends StatelessWidget {
     }
     if (keys[selected] == I18nKey.labelRenameTip.tr) {
       renameTip(logic, index);
+    } else if (keys[selected] == I18nKey.tipService.tr) {
+      await TipServiceSheet.show(logic, VerseField.ref(QaType.tip.acronym, index), tipDisplayName(logic, index));
     } else {
       deleteTip(logic, index);
     }
@@ -839,6 +841,7 @@ class RepeatPage extends StatelessWidget {
     var keys = [
       I18nKey.font.tr,
       I18nKey.content.tr,
+      I18nKey.tipService.tr,
     ];
     int? index = await Select.showSheet(title: I18nKey.editWhat.trArgs([fieldTitle(logic, fieldRef)]), keys: keys);
     if (index == null) {
@@ -861,6 +864,8 @@ class RepeatPage extends StatelessWidget {
       // 内容数组（正文、图、网页按显示顺序排在一起）交给块编辑器：调顺序、加一项、删一项
       // 都在那里做，见 [ContentSheet]。老数据只写过 'text'，在那里存一次就升级成 'content'。
       await ContentSheet.show(logic, fieldRef, fieldTitle(logic, fieldRef));
+    } else if (keys[index] == I18nKey.tipService.tr) {
+      await TipServiceSheet.show(logic, fieldRef, fieldTitle(logic, fieldRef));
     }
     helper.stopMedia(true);
   }

@@ -445,6 +445,14 @@ class ConfigEs extends Config {
     put(I18nKey.gameManageSubscription, "Fuentes de suscripción");
     put(I18nKey.gameSectionGame, "Juegos");
     put(I18nKey.gameSectionTip, "Servicios de pistas");
+    put(I18nKey.tipService, "Servicio de pistas");
+    put(I18nKey.tipServiceOff, "Ninguno");
+    put(I18nKey.tipServiceEmpty, "Aún no hay servicios de pistas. Suscríbete a uno en \"Gestionar suscripciones\".");
+    put(I18nKey.subscriptionHelp, "Ayuda de suscripciones");
+    put(I18nKey.subscriptionHelpGame, "Los juegos se abren desde \"Juego\" en el menú de la página de estudio. Toca una entrada para renombrarla, cambiar su archivo de entrada, reemplazar el paquete o eliminarla.");
+    put(I18nKey.subscriptionHelpTip, "Los servicios de pistas nunca aparecen como juegos y tocarlos aquí no hace nada. Solo funcionan cuando se asignan a un campo.");
+    put(I18nKey.subscriptionHelpTipSteps, "Para asignarlo: pon la página de estudio en modo edición, toca el icono de edición junto a pregunta/respuesta/nota, o vuelve a tocar la pestaña de pista seleccionada, elige \"Servicio de pistas\" y luego un servicio. Después aparece un icono 💡 junto al campo para abrirlo. Elige \"Ninguno\" para quitarlo.");
+    put(I18nKey.subscriptionHelpToolbar, "Arriba a la derecha: ↻ buscar actualizaciones; + añadir (paquete local o URL de suscripción); ⋮ fuentes de suscripción (cambiar URL, renombrar, cancelar).");
     put(I18nKey.gameSubscriptionEmpty, "Aún no hay suscripciones");
     put(I18nKey.gameUnsubscribe, "Cancelar suscripción");
     put(I18nKey.gameUnsubscribeConfirm, "¿Cancelar la suscripción? Todos sus juegos se eliminarán junto con los archivos del paquete.");

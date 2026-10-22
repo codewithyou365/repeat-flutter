@@ -445,6 +445,14 @@ class ConfigZh extends Config {
     put(I18nKey.gameManageSubscription, "订阅源");
     put(I18nKey.gameSectionGame, "游戏");
     put(I18nKey.gameSectionTip, "提示服务");
+    put(I18nKey.tipService, "提示服务");
+    put(I18nKey.tipServiceOff, "不使用");
+    put(I18nKey.tipServiceEmpty, "还没有提示服务，先去「管理订阅」里订阅一个");
+    put(I18nKey.subscriptionHelp, "订阅说明");
+    put(I18nKey.subscriptionHelpGame, "在学习页菜单里点「游戏」打开。点条目可以改名、改入口、换包、删除。");
+    put(I18nKey.subscriptionHelpTip, "提示服务不会出现在游戏里，点条目也没有操作，要挂到字段上才用得到。");
+    put(I18nKey.subscriptionHelpTipSteps, "挂法：学习页切到编辑模式，点问题/答案/笔记右侧的编辑图标，或者再点一次已选中的提示标签，选「提示服务」，再选一个服务。挂好后字段旁会出现 💡 图标，点它打开；选「不使用」就摘掉。");
+    put(I18nKey.subscriptionHelpToolbar, "右上角：↻ 检查更新；＋ 添加（本地包或订阅地址）；⋮ 订阅源（改地址、改名、退订）。");
     put(I18nKey.gameSubscriptionEmpty, "还没有订阅");
     put(I18nKey.gameUnsubscribe, "退订");
     put(I18nKey.gameUnsubscribeConfirm, "退订？该订阅下的游戏和游戏包文件都会一并删除。");

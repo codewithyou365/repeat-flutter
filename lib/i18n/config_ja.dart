@@ -445,6 +445,14 @@ class ConfigJa extends Config {
     put(I18nKey.gameManageSubscription, "購読元");
     put(I18nKey.gameSectionGame, "ゲーム");
     put(I18nKey.gameSectionTip, "ヒントサービス");
+    put(I18nKey.tipService, "ヒントサービス");
+    put(I18nKey.tipServiceOff, "使わない");
+    put(I18nKey.tipServiceEmpty, "ヒントサービスがありません。先に「購読を管理」で購読してください。");
+    put(I18nKey.subscriptionHelp, "購読のヘルプ");
+    put(I18nKey.subscriptionHelpGame, "ゲームは学習画面メニューの「ゲーム」から開きます。項目をタップすると名前・入口ファイル・パッケージの変更や削除ができます。");
+    put(I18nKey.subscriptionHelpTip, "ヒントサービスはゲームとしては表示されず、ここでタップしても何も起きません。フィールドに割り当てて初めて使えます。");
+    put(I18nKey.subscriptionHelpTipSteps, "割り当て方：学習画面を編集モードにし、問題/答え/ノート横の編集アイコンをタップするか、選択中のヒントタブをもう一度タップして「ヒントサービス」を選び、サービスを選びます。割り当てるとフィールド横に 💡 アイコンが出て、タップで開けます。「使わない」で外せます。");
+    put(I18nKey.subscriptionHelpToolbar, "右上：↻ 更新を確認、＋ 追加（ローカルパッケージまたは購読URL）、⋮ 購読元（URL変更・名前変更・購読解除）。");
     put(I18nKey.gameSubscriptionEmpty, "購読がありません");
     put(I18nKey.gameUnsubscribe, "購読を解除");
     put(I18nKey.gameUnsubscribeConfirm, "購読を解除しますか？そこから来たゲームはパッケージのファイルごと消えます。");

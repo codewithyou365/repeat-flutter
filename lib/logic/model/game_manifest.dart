@@ -27,7 +27,8 @@ class GameManifestEntry {
 
   /// [typeGame] 还是 [typeTip]。manifest 没写（老包）一律当游戏。
   /// 提示服务不进游戏列表 'g'，装在课堂的 'ts' 里，给提示字段挑着用；
-  /// 它的 contentKey 由提示字段自己的 'k' 决定（如 'JapaneseT'），manifest 里留空。
+  /// 它的 contentKey 是前缀，挂到字段上时补上字段字母写进字段的 'k'
+  /// （'Japanese' 挂在提示上就是 'JapaneseT'，答案上是 'JapaneseA'），网页按它分页面。
   final String type;
 
   bool get isTip => type == typeTip;
