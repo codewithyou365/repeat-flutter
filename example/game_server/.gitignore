@@ -1,3 +1,4 @@
 # 包目录里的 zip 是 typing/gen.sh 的产物，别提交二进制进仓库。
 # 联调时自己拷：cp typing/dist.zip example/game_server/games/typing.zip
 games/*.zip
+games/.typing.stamp

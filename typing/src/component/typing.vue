@@ -822,7 +822,19 @@ const positionInput = () => {
   }
 };
 
+// 内容刚换、下面这个 watch 还没跑完（它中间 await 了一次 nextTick，之后会把 userInput 重置成自动填充的那段），
+// 这期间父组件 initUserInput 进来的值先存着，等 watch 跑完再套上，否则会被重置冲掉
+let contentLoading = false;
+let pendingInitInput: string | null = null;
+
+const applyInitUserInput = (val: string) => {
+  userInput.value = val;
+  cursorPos.value = val.length;
+  nextTick(positionInput);
+};
+
 watch(() => props.content, async () => {
+  contentLoading = true;
   userInput.value = '';
   cursorPos.value = 0;
   charRefs.value = new Array(props.content.length);
@@ -852,6 +864,11 @@ watch(() => props.content, async () => {
   // 填充 -> 再次 completed……形成 refresh 无限递归，每轮还会堆一次网络请求和 TTS 队列，最终内存
   // 撑爆导致网页闪退。所以这里显式禁止完成事件。
   emitFilledEvents(filled, false);
+  contentLoading = false;
+  if (pendingInitInput !== null) {
+    applyInitUserInput(pendingInitInput);
+    pendingInitInput = null;
+  }
 }, {immediate: true});
 
 watch([userInput, groups], async () => {
@@ -861,9 +878,11 @@ watch([userInput, groups], async () => {
 
 defineExpose({
   initUserInput(val: string) {
-    userInput.value = val;
-    cursorPos.value = val.length;
-    nextTick(positionInput);
+    if (contentLoading) {
+      pendingInitInput = val;
+      return;
+    }
+    applyInitUserInput(val);
   },
   initContentIndexToColor(val: Record<number, string>) {
     contentIndexToColor.value = val;

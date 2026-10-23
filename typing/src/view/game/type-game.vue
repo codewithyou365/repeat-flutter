@@ -1628,8 +1628,8 @@ const refresh = async () => {
     content.value = res.data.answer;
     roundId = typeof res.data.roundId === 'number' ? res.data.roundId : -1;
     updateIgnoreIndexes(res.data.mask);
-    // 上次没打完的进度接回来。必须排在 content 赋值之后、等一个 tick：Typing 的 watch(props.content)
-    // 会把 userInput 清零并填好间隔模式的自动字符，接回来的串要盖在它后面
+    // 上次没打完的进度接回来。必须排在 content 赋值之后：Typing 的 watch(props.content)
+    // 会把 userInput 清零并填好间隔模式的自动字符，initUserInput 会等那个 watch 跑完再盖上去
     const savedInput = typeof res.data.userInput === 'string' ? res.data.userInput : '';
     if (savedInput !== '') {
       await nextTick();

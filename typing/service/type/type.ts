@@ -80,9 +80,6 @@ type GameArgs = {
 
 const PROFILE_COUNT = 3;
 
-// 打字进度落盘的最小间隔（毫秒）：敲字期间按这个节流，停手后由 setTimeout 补写
-const PERSIST_INTERVAL_MS = 1000;
-
 // 熟词库在 GameKv 里的 key 前缀（`fw:<小写词>`），value 存记住它的时间戳
 const FAMILIAR_PREFIX = 'fw:';
 
@@ -527,9 +524,6 @@ const Game = {
     // inputs 是内存里的权威副本，第一次用到时从盘上接回来（loaded）
     inputs: {} as Record<string, StoredInput>,
     inputsLoaded: false,
-    lastPersistAt: 0,
-    dirty: false,
-    persistTimerOn: false,
 
     ensureInputsLoaded: async function (): Promise<void> {
         if (this.inputsLoaded) {
@@ -538,31 +532,10 @@ const Game = {
         this.inputsLoaded = true;
         this.inputs = await Util.getInputs();
     },
-    // 每敲一个字写一次库太重，平时按 1 秒节流，收尾的地方（打完、换 verse）用 force 立刻写
-    persistInputs: async function (force: boolean): Promise<void> {
-        this.dirty = true;
-        const now = Date.now();
-        if (!force && now - this.lastPersistAt < PERSIST_INTERVAL_MS) {
-            this.schedulePersist();
-            return;
-        }
-        this.lastPersistAt = now;
-        this.dirty = false;
+    // 每次都直接写盘、不节流：退出页面时 JS 运行时会被直接销毁，靠 setTimeout 补写的那次会丢。
+    // 敲字频率由客户端控制（同一时刻最多一条 saveInput 在路上，中间态合并掉）
+    persistInputs: async function (): Promise<void> {
         await Util.setInputs(this.inputs);
-    },
-    // 节流压下去的那次改动，如果后面没人再敲字就没有下一个落盘时机了（停手那一下会丢）。
-    // 运行时有 setTimeout 就挂一次补写；没有就只能等下一次 saveInput/complete/clear。
-    schedulePersist: function (): void {
-        if (this.persistTimerOn || typeof setTimeout !== 'function') {
-            return;
-        }
-        this.persistTimerOn = true;
-        setTimeout(async () => {
-            this.persistTimerOn = false;
-            if (this.dirty) {
-                await this.persistInputs(true);
-            }
-        }, PERSIST_INTERVAL_MS);
     },
 
     onNewVerse: async function () {
@@ -584,7 +557,7 @@ const Game = {
             }
         }
         if (changed) {
-            await this.persistInputs(true);
+            await this.persistInputs();
         }
         if (!Util.adminEnable()) {
             await Util.broadcast(this.gameRefreshPath, {});
@@ -613,7 +586,7 @@ const Game = {
             await this.ensureInputsLoaded();
             if (this.inputs[args.userId] !== undefined) {
                 delete this.inputs[args.userId];
-                await this.persistInputs(true);
+                await this.persistInputs();
             }
             const waiting = this.waitingUserIds();
             if (waiting.length === 0) {
@@ -657,7 +630,7 @@ const Game = {
                 }
                 this.inputs[args.userId] = {verseKey, userInput};
             }
-            await this.persistInputs(false);
+            await this.persistInputs();
             return JSON.stringify({data: {}});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});

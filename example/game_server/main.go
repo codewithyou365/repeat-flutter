@@ -19,21 +19,29 @@
 //	GET /{name}/manifest.json    包内 manifest，额外注入 "zip"（相对地址）和 "hash"（zip 的 sha1）
 //	GET /{name}/{name}.zip       zip 本体
 //
+// 自动打包：App 拉 typing 的 manifest（也就是点「检查更新」）时，服务器先看一眼 typing/ 源码
+// 有没有改过（文件路径+大小+mtime 的指纹，跳过 node_modules/dist），改过就先跑一次 sync.sh -b
+// （version +1、gen.sh 打包、拷到 games/typing.zip）再回 manifest，所以改完代码直接在 App 里
+// 检查更新就能拿到新包。打包期间请求会等着；打包失败就照旧回老包。-typing "" 关掉这个功能。
+//
 // app 里「订阅地址」要填电脑的局域网 IP，比如 http://192.168.1.5:8080/typing/manifest.json，
 // 手机上填 127.0.0.1 是连不到电脑的。
 package main
 
 import (
 	"archive/zip"
+	"bytes"
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -63,9 +71,10 @@ func (b *bundle) version() int64 {
 
 // 解析结果按 zip 的 mtime+size 缓存，改了包不用重启服务器。
 type store struct {
-	dir string
-	mu  sync.Mutex
-	m   map[string]*bundle
+	dir  string
+	mu   sync.Mutex
+	m    map[string]*bundle
+	auto *autoBuilder // nil 表示不自动打包
 }
 
 func newStore(dir string) *store {
@@ -177,9 +186,85 @@ func sha1File(path string) (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
+// autoBuilder 在 typing/ 源码有改动时重新打包。只管 typing 这一个包。
+type autoBuilder struct {
+	typingDir string // typing/ 源码目录
+	syncSh    string // 本目录的 sync.sh
+	stampPath string // 上次打包时的源码指纹落盘位置，服务器重启后不用白打一次
+	mu        sync.Mutex
+}
+
+// 指纹里不算的目录/文件：依赖、构建产物都是打包自己生成的，算进去会每次都判成"有改动"
+var skipNames = map[string]bool{"node_modules": true, "dist": true, "dist.zip": true, ".DS_Store": true}
+
+func (a *autoBuilder) fingerprint() (string, error) {
+	h := sha1.New()
+	err := filepath.WalkDir(a.typingDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if skipNames[d.Name()] {
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if d.IsDir() {
+			return nil
+		}
+		info, err := d.Info()
+		if err != nil {
+			return err
+		}
+		rel, _ := filepath.Rel(a.typingDir, path)
+		fmt.Fprintf(h, "%s\x00%d\x00%d\n", rel, info.Size(), info.ModTime().UnixNano())
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+// ensureFresh 源码指纹跟上次打包时对不上就打包一次。并发请求排队，后到的发现已经打好了就直接返回。
+func (a *autoBuilder) ensureFresh(zipPath string) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	fp, err := a.fingerprint()
+	if err != nil {
+		log.Printf("auto build: fingerprint %s: %v", a.typingDir, err)
+		return
+	}
+	last, _ := os.ReadFile(a.stampPath)
+	if _, err := os.Stat(zipPath); err == nil && strings.TrimSpace(string(last)) == fp {
+		return
+	}
+	log.Printf("auto build: typing/ changed, running sync.sh -b ...")
+	start := time.Now()
+	cmd := exec.Command(a.syncSh, "-b")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &out
+	if err := cmd.Run(); err != nil {
+		log.Printf("auto build failed (%v), serving old bundle:\n%s", err, out.String())
+		return
+	}
+	// sync.sh -b 改了 manifest.json 的 version，指纹要在打包之后重新算，否则下次又判成有改动
+	fp, err = a.fingerprint()
+	if err != nil {
+		log.Printf("auto build: fingerprint after build: %v", err)
+		return
+	}
+	if err := os.WriteFile(a.stampPath, []byte(fp), 0o644); err != nil {
+		log.Printf("auto build: write stamp: %v", err)
+	}
+	log.Printf("auto build done in %s", time.Since(start).Round(time.Millisecond))
+}
+
 func main() {
 	addr := flag.String("addr", ":8082", "监听地址")
 	dir := flag.String("dir", "./games", "放 *.zip 的目录")
+	typingDir := flag.String("typing", "../../typing", "typing 源码目录，拉 manifest 时有改动就自动打包；传空串关掉")
 	flag.Parse()
 
 	abs, err := filepath.Abs(*dir)
@@ -187,6 +272,18 @@ func main() {
 		log.Fatal(err)
 	}
 	s := newStore(abs)
+	if *typingDir != "" {
+		td, err := filepath.Abs(*typingDir)
+		if err != nil {
+			log.Fatal(err)
+		}
+		syncSh, err := filepath.Abs("sync.sh")
+		if err != nil {
+			log.Fatal(err)
+		}
+		s.auto = &autoBuilder{typingDir: td, syncSh: syncSh, stampPath: filepath.Join(abs, ".typing.stamp")}
+		log.Printf("auto build typing from %s", td)
+	}
 	log.Printf("serving bundles from %s", abs)
 	for _, b := range s.list() {
 		log.Printf("  %s v%d", b.name, b.version())
@@ -210,6 +307,11 @@ func (s *store) handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	name, file := parts[0], parts[1]
+	// 只在拉 manifest（App 检查更新）时检查，下 zip 时不查：那时 manifest 里的 hash 已经定了，
+	// 中途重新打包会让下回去的 zip 跟 hash 对不上
+	if s.auto != nil && name == "typing" && file == "manifest.json" {
+		s.auto.ensureFresh(filepath.Join(s.dir, name+".zip"))
+	}
 	b, err := s.get(name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
