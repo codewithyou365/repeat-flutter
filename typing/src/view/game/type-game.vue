@@ -304,9 +304,9 @@
   </nut-cell>
   <div v-else-if="ready" class="type-game-container">
     <div class="info-bar">
-      <!-- 每个玩家自己挑用哪套 profile，只影响自己这台设备的打字体验 -->
-      <span class="info-profile" @click="playerProfilePickerVisible = true">{{ profileNames[playerProfile] }}</span>
       <span v-if="waitingNames.length > 0" class="info-waiting">{{ t('waitingOthers', {names: waitingNames.join(', ')}) }}</span>
+      <!-- 每个玩家自己挑用哪套 profile，只影响自己这台设备的打字体验。按槽位序号显示成 ①②③，跟图标排在一起 -->
+      <span class="info-profile" @click="playerProfilePickerVisible = true">{{ circledNumber(playerProfile + 1) }}</span>
       <Voice class="info-icon" width="18px" height="18px" @click="speakCurrentWord"/>
       <Eye class="info-icon" width="18px" height="18px" @click="cycleMaskMode()"/>
       <Ask class="info-icon" width="18px" height="18px" @click="showTips"/>
@@ -1157,6 +1157,8 @@ const setActiveProfile = async (index: number) => {
   }
 };
 
+// 1 -> ①，……，20 -> ⑳；超出范围就原样显示数字
+const circledNumber = (n: number) => (n >= 1 && n <= 20 ? String.fromCharCode(0x2460 + n - 1) : `${n}`);
 const playerProfileItems = computed(() => profileNames.value.map((name, i) => ({
   name: i === playerProfile.value ? `✓ ${name}` : name,
 })));
@@ -1733,13 +1735,13 @@ onUnmounted(() => {
 }
 
 .info-profile {
-  margin-right: auto; /* 名字靠左，图标仍然贴右 */
-  font-size: 13px;
-  opacity: 0.7;
+  font-size: 18px;
+  line-height: 18px;
   cursor: pointer;
 }
 
 .info-waiting {
+  margin-right: auto; /* 等人的提示靠左，profile 和图标贴右 */
   font-size: 13px;
   color: #e6a23c;
 }
