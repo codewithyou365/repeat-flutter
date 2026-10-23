@@ -825,6 +825,14 @@ const getConfig = async () => {
   playerProfile.value = typeof res['myProfile'] === 'number' ? res['myProfile'] : activeProfile.value;
   // 依赖 isAdmin，所以 onMounted 里必须先 getAdmin 再 getConfig
   applyProfile(isAdmin.value ? activeProfile.value : playerProfile.value);
+  // 上次停在哪一档就接着用；要在 applyProfile 之后，亮度/系统栏得按这套 profile 的 dimOnMask 等开关来
+  const savedMaskMode = res['myMaskMode'];
+  if (maskModeOrder.includes(savedMaskMode)) {
+    maskMode.value = savedMaskMode;
+    if (savedMaskMode !== 'off') {
+      applyMaskUi(savedMaskMode);
+    }
+  }
 };
 const getAdmin = async () => {
   const req = new Request({
@@ -1512,6 +1520,19 @@ const setMaskMode = (mode: MaskMode) => {
   }
   maskMode.value = mode;
   applyMaskUi(mode);
+  saveMaskMode(mode);
+};
+
+// 档位记到服务端，下次进来恢复。同 applyMaskUi：不 await、不开 overlay，免得卡住打字
+const saveMaskMode = (mode: MaskMode) => {
+  const req = new Request({
+    path: Path.game,
+    headers: {'jsMethod': 'Game.setMaskMode'},
+    data: mode,
+  });
+  client.node!.send(req).catch((error) => {
+    console.error('Failed to save mask mode:', error);
+  });
 };
 
 // 轮转一档：off -> black -> typed -> off

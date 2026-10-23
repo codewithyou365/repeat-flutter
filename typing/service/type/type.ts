@@ -57,7 +57,11 @@ type StoredConfig = {
     profiles: ProfileConfig[];
     // 玩家在游戏界面自己挑的 profile：userId -> 槽位下标。没挑过的玩家走 activeProfile
     userProfiles: Record<string, number>;
+    // 玩家在游戏界面上停留的遮挡档位：userId -> 'black' | 'typed' | 'off'，下次进来接着用
+    userMaskModes: Record<string, string>;
 };
+
+const MASK_MODES = ['black', 'typed', 'off'];
 
 type VerseField = {
     text?: string;
@@ -128,7 +132,7 @@ function defaultStoredConfig(): StoredConfig {
         names.push(`${i + 1}`);
         profiles.push(defaultProfileConfig());
     }
-    return {activeProfile: 0, profileNames: names, profiles: profiles, userProfiles: {}};
+    return {activeProfile: 0, profileNames: names, profiles: profiles, userProfiles: {}, userMaskModes: {}};
 }
 
 // 补齐/裁剪 profiles/profileNames 到固定的 PROFILE_COUNT 个槽位，activeProfile 越界时夹回范围内
@@ -156,7 +160,17 @@ function normalizeStoredConfig(raw: any): StoredConfig {
             }
         }
     }
-    return {activeProfile, profileNames: names, profiles: profiles, userProfiles};
+    // 认不出的档位丢掉，读的人当没存过（走默认 off）
+    const userMaskModes: Record<string, string> = {};
+    if (raw.userMaskModes && typeof raw.userMaskModes === 'object') {
+        for (const key of Object.keys(raw.userMaskModes)) {
+            const mode = raw.userMaskModes[key];
+            if (MASK_MODES.includes(mode)) {
+                userMaskModes[key] = mode;
+            }
+        }
+    }
+    return {activeProfile, profileNames: names, profiles: profiles, userProfiles, userMaskModes};
 }
 
 // 老版本是扁平的单份配置（没有 profiles 数组），迁移成 profile 0，其余槽位用默认值填充，
@@ -228,6 +242,7 @@ const Util = {
             profileNames: data.profileNames,
             profiles: data.profiles,
             userProfiles: data.userProfiles,
+            userMaskModes: data.userMaskModes,
         };
         if (store.inputs !== undefined) {
             next.inputs = store.inputs;
@@ -706,12 +721,31 @@ const Game = {
             return JSON.stringify({status: 500, error: e.toString()});
         }
     },
+    // 遮挡档位切换时记下来，不限管理员：只记在自己名下
+    setMaskMode: async function (args: GameArgs): Promise<string> {
+        try {
+            if (!MASK_MODES.includes(args.data)) {
+                return JSON.stringify({status: 500, error: "invalid mask mode"});
+            }
+            const stored = await Util.getConfig();
+            stored.userMaskModes[String(args.userId)] = args.data;
+            await Util.setConfig(stored);
+            return JSON.stringify({});
+        } catch (e: any) {
+            return JSON.stringify({status: 500, error: e.toString()});
+        }
+    },
     // myProfile：请求者实际生效的那套（自己挑过的，否则 activeProfile）
+    // myMaskMode：请求者上次停留的遮挡档位，没存过就是 off
     getConfig: async function (args: GameArgs): Promise<string> {
         try {
             const configData = await Util.getConfig();
             return JSON.stringify({
-                data: {...configData, myProfile: profileIndexOf(configData, args.userId)},
+                data: {
+                    ...configData,
+                    myProfile: profileIndexOf(configData, args.userId),
+                    myMaskMode: configData.userMaskModes[String(args.userId)] || 'off',
+                },
             });
         } catch (error: any) {
             return JSON.stringify({
