@@ -41,7 +41,9 @@ class JsRuntime {
   JavascriptRuntime? _jsRuntime;
   bool _isInitialized = false;
   final SubList<int> subNewVerse = [];
-  final AudioPlayer _sfxPlayer = AudioPlayer();
+  // 不能 final:同一个 JsRuntime 会被 dispose 后再 init(换游戏时),dispose 掉的 player
+  // 再 seek/play 不报错也不出声,所以 dispose 时要换一个新的。
+  AudioPlayer _sfxPlayer = AudioPlayer();
   final Map<String, String> _sfxCache = {};
   // 提示音的"准备"(下载 + setFilePath)必须串行:打字快的时候 playWrong 会并发进来好几条,
   // 同时对同一个 player setFilePath 会互相打断,表现就是偶尔一声都不响。
@@ -732,6 +734,8 @@ class JsRuntime {
     if (_jsRuntime != null) {
       subNewVerse.off();
       _sfxPlayer.dispose();
+      _sfxPlayer = AudioPlayer();
+      _sfxLoadedPath = null;
       // 游戏被关掉时网页的 onBeforeUnmount 不一定跑得到，这里兜底释放麦克风
       // 和前台服务，否则通知栏会一直挂着一个"正在录音"。
       _shadowRecorder?.dispose();
