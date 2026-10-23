@@ -80,6 +80,9 @@ type GameArgs = {
 
 const PROFILE_COUNT = 3;
 
+// 打字进度落盘的最小间隔（毫秒）：敲字期间按这个节流，停手后由 setTimeout 补写
+const PERSIST_INTERVAL_MS = 1000;
+
 // 熟词库在 GameKv 里的 key 前缀（`fw:<小写词>`），value 存记住它的时间戳
 const FAMILIAR_PREFIX = 'fw:';
 
@@ -168,6 +171,13 @@ async function migrateFlatConfig(old: any): Promise<StoredConfig> {
     return migrated;
 }
 
+// 每个玩家自己这一句的打字进度（getData/setData 那个 blob 里的 inputs 字段，按 userId 存）。
+// verseKey 是这条 verse 的答案原文，用来认领：对不上就当没存过。
+type StoredInput = {
+    verseKey: string;
+    userInput: string;
+};
+
 const Util = {
     // getData/setData 只有一个 JSON blob，配置和打字进度都住在里面，读改写时必须留着对方的字段。
     // 本服务是这个 blob 的唯一写方，所以直接在内存里缓存一份，省掉每次落盘前的那次读。
@@ -213,13 +223,41 @@ const Util = {
         }
     },
 
+    // 只覆写配置那几个键，blob 里的打字进度（inputs）原样留着，别互相冲掉
     setConfig: async function (data: StoredConfig): Promise<void> {
-        await Util.setStore({
+        const store = await Util.getStore();
+        const next: JsonRecord = {
             activeProfile: data.activeProfile,
             profileNames: data.profileNames,
             profiles: data.profiles,
             userProfiles: data.userProfiles,
-        });
+        };
+        if (store.inputs !== undefined) {
+            next.inputs = store.inputs;
+        }
+        await Util.setStore(next);
+    },
+
+    getInputs: async function (): Promise<Record<string, StoredInput>> {
+        const store = await Util.getStore();
+        const raw = store.inputs;
+        const inputs: Record<string, StoredInput> = {};
+        if (!raw || typeof raw !== 'object') {
+            return inputs;
+        }
+        for (const key of Object.keys(raw)) {
+            const v = raw[key];
+            if (v && typeof v.verseKey === 'string' && typeof v.userInput === 'string') {
+                inputs[key] = {verseKey: v.verseKey, userInput: v.userInput};
+            }
+        }
+        return inputs;
+    },
+
+    setInputs: async function (inputs: Record<string, StoredInput>): Promise<void> {
+        const store = await Util.getStore();
+        store.inputs = inputs;
+        await Util.setStore(store);
     },
 
     // 字段块（{text|content,start,end,mediaHash,showType}）的正文。
@@ -483,6 +521,50 @@ const Game = {
     // advanced: 这一句已经触发过 tapLeft，防止前后脚打完的两个人连跳两句
     advanced: false,
 
+    // ---- 各自的打字进度落盘 ----
+    // 退出 App / 服务重启后再进来，同一条 verse 能接着打。每人只存"当前这一条"，
+    // 打完（complete）就删掉，换了内容的在 clear 里按 verseKey 清掉。
+    // inputs 是内存里的权威副本，第一次用到时从盘上接回来（loaded）
+    inputs: {} as Record<string, StoredInput>,
+    inputsLoaded: false,
+    lastPersistAt: 0,
+    dirty: false,
+    persistTimerOn: false,
+
+    ensureInputsLoaded: async function (): Promise<void> {
+        if (this.inputsLoaded) {
+            return;
+        }
+        this.inputsLoaded = true;
+        this.inputs = await Util.getInputs();
+    },
+    // 每敲一个字写一次库太重，平时按 1 秒节流，收尾的地方（打完、换 verse）用 force 立刻写
+    persistInputs: async function (force: boolean): Promise<void> {
+        this.dirty = true;
+        const now = Date.now();
+        if (!force && now - this.lastPersistAt < PERSIST_INTERVAL_MS) {
+            this.schedulePersist();
+            return;
+        }
+        this.lastPersistAt = now;
+        this.dirty = false;
+        await Util.setInputs(this.inputs);
+    },
+    // 节流压下去的那次改动，如果后面没人再敲字就没有下一个落盘时机了（停手那一下会丢）。
+    // 运行时有 setTimeout 就挂一次补写；没有就只能等下一次 saveInput/complete/clear。
+    schedulePersist: function (): void {
+        if (this.persistTimerOn || typeof setTimeout !== 'function') {
+            return;
+        }
+        this.persistTimerOn = true;
+        setTimeout(async () => {
+            this.persistTimerOn = false;
+            if (this.dirty) {
+                await this.persistInputs(true);
+            }
+        }, PERSIST_INTERVAL_MS);
+    },
+
     onNewVerse: async function () {
         await this.clear();
     },
@@ -490,6 +572,20 @@ const Game = {
         this.roundId += 1;
         this.finished = {};
         this.advanced = false;
+        // 重进 App / 重启服务时 newVerse 也会来一发，那时内容其实没变：verseKey 对得上的进度留着接着打，
+        // 对不上的（真换了内容）才清掉
+        await this.ensureInputsLoaded();
+        const verseKey = Util.fieldText(await Util.getVerse(), 'a');
+        let changed = false;
+        for (const key of Object.keys(this.inputs)) {
+            if (this.inputs[key].verseKey !== verseKey) {
+                delete this.inputs[key];
+                changed = true;
+            }
+        }
+        if (changed) {
+            await this.persistInputs(true);
+        }
         if (!Util.adminEnable()) {
             await Util.broadcast(this.gameRefreshPath, {});
         }
@@ -513,6 +609,12 @@ const Game = {
             }
             this.players[args.userId] = true;
             this.finished[args.userId] = true;
+            // 这句打完了，进度不用留：不然重进 App 会把打完的内容又摆出来
+            await this.ensureInputsLoaded();
+            if (this.inputs[args.userId] !== undefined) {
+                delete this.inputs[args.userId];
+                await this.persistInputs(true);
+            }
             const waiting = this.waitingUserIds();
             if (waiting.length === 0) {
                 if (!this.advanced) {
@@ -530,6 +632,33 @@ const Game = {
                 names.push((await Util.getUserName(id)) || `${id}`);
             }
             return JSON.stringify({data: {waiting: names}});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
+        }
+    },
+    // 敲字/退格时客户端上报自己的已输入串（后台动作，客户端不等它）。
+    // args.data = {roundId, userInput}
+    saveInput: async function (args: GameArgs): Promise<string> {
+        try {
+            const data = args.data || {};
+            // 迟到的（已经换句了）或这句已经打完了，都不该再写回去
+            if (data.roundId !== this.roundId || this.finished[args.userId]) {
+                return JSON.stringify({data: {stale: true}});
+            }
+            await this.ensureInputsLoaded();
+            const userInput: string = typeof data.userInput === 'string' ? data.userInput : '';
+            if (userInput === '') {
+                delete this.inputs[args.userId];
+            } else {
+                const verseKey = Util.fieldText(await Util.getVerse(), 'a');
+                // 上面 await 期间 complete 可能已经进来把这句记成打完了，别再写回去
+                if (data.roundId !== this.roundId || this.finished[args.userId]) {
+                    return JSON.stringify({data: {stale: true}});
+                }
+                this.inputs[args.userId] = {verseKey, userInput};
+            }
+            await this.persistInputs(false);
+            return JSON.stringify({data: {}});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});
         }
@@ -668,8 +797,12 @@ const Game = {
             if (!(Util.adminEnable() && args.userId === Util.adminId())) {
                 this.players[args.userId] = true;
             }
+            // 自己上次没打完的进度（同一条 verse 才算），客户端拿来接着打
+            await this.ensureInputsLoaded();
+            const saved = this.inputs[args.userId];
+            const userInput = saved && saved.verseKey === answer && !this.finished[args.userId] ? saved.userInput : '';
             return JSON.stringify({
-                data: {answer: answer, mask: mask, roundId: this.roundId},
+                data: {answer: answer, mask: mask, roundId: this.roundId, userInput: userInput},
             });
         } catch (error: any) {
             return JSON.stringify({

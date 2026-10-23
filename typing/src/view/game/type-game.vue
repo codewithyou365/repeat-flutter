@@ -544,11 +544,38 @@ const reportComplete = async (sentRoundId: number) => {
   // waiting 为空说明服务端已经换句，等 gameRefresh 推过来就行
 };
 
-const onUserInputChange = (_userInput: string, changedIndexes: number[]) => {
+// 打字进度上报给服务端落盘，退出 App 再进来能接着打。后台动作：同一时刻最多一条在路上，
+// 敲字期间的中间态被合并成最新那一份，敲字链路上不 await。
+let savingInput = false;
+let pendingSave: { roundId: number; userInput: string } | null = null;
+
+const saveInput = async () => {
+  if (savingInput || !pendingSave) return;
+  savingInput = true;
+  const payload = pendingSave;
+  pendingSave = null;
+  try {
+    const req = new Request({
+      path: Path.game,
+      headers: {'jsMethod': 'Game.saveInput'},
+      data: payload,
+    });
+    await client.node!.send(req);
+  } catch (error) {
+    console.error('Failed to save typing input:', error);
+  } finally {
+    savingInput = false;
+    if (pendingSave) void saveInput();
+  }
+};
+
+const onUserInputChange = (userInput: string, changedIndexes: number[]) => {
   // 退格 / 清词（changedIndexes 为空）：正在计时的这个词重来一遍不算数
   if (changedIndexes.length === 0) {
     familiarTrack = null;
   }
+  pendingSave = {roundId, userInput};
+  void saveInput();
 };
 
 
@@ -1591,6 +1618,7 @@ const refresh = async () => {
   try {
     overlayVisible.value = true;
     pendingWordEnd = null;
+    pendingSave = null;
     stopWaiting();
     const req = new Request({
       path: Path.game,
@@ -1600,6 +1628,13 @@ const refresh = async () => {
     content.value = res.data.answer;
     roundId = typeof res.data.roundId === 'number' ? res.data.roundId : -1;
     updateIgnoreIndexes(res.data.mask);
+    // 上次没打完的进度接回来。必须排在 content 赋值之后、等一个 tick：Typing 的 watch(props.content)
+    // 会把 userInput 清零并填好间隔模式的自动字符，接回来的串要盖在它后面
+    const savedInput = typeof res.data.userInput === 'string' ? res.data.userInput : '';
+    if (savedInput !== '') {
+      await nextTick();
+      typingRef.value?.initUserInput(savedInput);
+    }
     familiarTrack = null;
     await loadFamiliar();
 
