@@ -339,10 +339,10 @@ class ConfigZh extends Config {
     put(I18nKey.showButtons, "显示按钮");
     put(I18nKey.instruction, "指令");
     put(I18nKey.targetPosition, "作用位置");
-    put(I18nKey.generateAudio, "生成音频");
     put(I18nKey.behavior, "行为");
     put(I18nKey.behaviorOverwrite, "请求并将结果覆盖到作用位置");
     put(I18nKey.behaviorPlayOrOverwrite, "若与作用位置中的指令一样就尝试播放否则覆盖");
+    put(I18nKey.behaviorNoSave, "不保存，只在对话框里显示请求结果");
     put(I18nKey.insertParameter, "插入");
     put(I18nKey.copyCurl, "复制 CURL");
     put(I18nKey.customizeMenu, "自定义菜单");

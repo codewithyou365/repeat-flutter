@@ -607,7 +607,6 @@ class AssistiveTouchLogic {
     logic.verseMap = map;
     logic.classroomMap = _classroomMap;
     logic.targetRef.value = action.target;
-    logic.enableAudio.value = action.net.enableAudio;
     logic.behavior.value = ExpandBehavior.values[action.net.behavior.clamp(0, ExpandBehavior.values.length - 1)];
     logic.onPlayTarget = playTarget;
     // instructionText 不是固定字符串：模版里的 {{question}}/{{answer}}/{{tip1}}.. 每次都按当前小节渲染，

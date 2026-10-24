@@ -339,10 +339,10 @@ class ConfigVi extends Config {
     put(I18nKey.showButtons, "Hiện các nút");
     put(I18nKey.instruction, "Lệnh");
     put(I18nKey.targetPosition, "Vị trí đích");
-    put(I18nKey.generateAudio, "Tạo âm thanh");
     put(I18nKey.behavior, "Hành vi");
     put(I18nKey.behaviorOverwrite, "Gửi yêu cầu và ghi đè vị trí đích");
     put(I18nKey.behaviorPlayOrOverwrite, "Phát nếu lệnh đã lưu trùng với lệnh này, nếu không thì ghi đè");
+    put(I18nKey.behaviorNoSave, "Không lưu, chỉ hiển thị kết quả trong hộp thoại");
     put(I18nKey.insertParameter, "Chèn");
     put(I18nKey.copyCurl, "Sao chép CURL");
     put(I18nKey.customizeMenu, "Tuỳ chỉnh menu");

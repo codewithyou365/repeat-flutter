@@ -339,10 +339,10 @@ class ConfigEn extends Config {
     put(I18nKey.showButtons, "Show Buttons");
     put(I18nKey.instruction, "Instruction");
     put(I18nKey.targetPosition, "Target Position");
-    put(I18nKey.generateAudio, "Generate Audio");
     put(I18nKey.behavior, "Behavior");
     put(I18nKey.behaviorOverwrite, "Request and overwrite the target position");
     put(I18nKey.behaviorPlayOrOverwrite, "Play if the stored instruction matches this one, otherwise overwrite");
+    put(I18nKey.behaviorNoSave, "Don't save, just show the result in a dialog");
     put(I18nKey.insertParameter, "Insert");
     put(I18nKey.copyCurl, "Copy CURL");
     put(I18nKey.customizeMenu, "Customize Menu");

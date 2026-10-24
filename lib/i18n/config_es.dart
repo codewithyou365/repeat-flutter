@@ -339,10 +339,10 @@ class ConfigEs extends Config {
     put(I18nKey.showButtons, "Mostrar botones");
     put(I18nKey.instruction, "Instrucción");
     put(I18nKey.targetPosition, "Posición de destino");
-    put(I18nKey.generateAudio, "Generar audio");
     put(I18nKey.behavior, "Comportamiento");
     put(I18nKey.behaviorOverwrite, "Hacer la petición y sobrescribir la posición de destino");
     put(I18nKey.behaviorPlayOrOverwrite, "Reproducir si la instrucción guardada coincide con esta; si no, sobrescribir");
+    put(I18nKey.behaviorNoSave, "No guardar, solo mostrar el resultado en un diálogo");
     put(I18nKey.insertParameter, "Insertar");
     put(I18nKey.copyCurl, "Copiar CURL");
     put(I18nKey.customizeMenu, "Personalizar menú");

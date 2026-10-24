@@ -28,7 +28,6 @@ class AtActionSheet {
 
     final name = action.name.obs;
     final type = action.type.obs;
-    final enableAudio = action.net.enableAudio.obs;
 
     // 服务地址是全局的（所有 net 动作共用一份），单独存在 Kv 里，不进动作。
     final expand = ExpandLogic();
@@ -132,7 +131,6 @@ class AtActionSheet {
                   action: action,
                   expand: expand,
                   template: template,
-                  enableAudio: enableAudio,
                 ),
               RowWidget.buildDividerWithoutColor(),
               RowWidget.buildButtons([
@@ -144,7 +142,6 @@ class AtActionSheet {
                   action.name = name.value.trim();
                   action.net.template = template.text;
                   action.tts.template = ttsTemplate.text;
-                  action.net.enableAudio = enableAudio.value;
                   await logic.saveAction(action);
                   Get.back(result: true);
                 }),
@@ -228,7 +225,6 @@ class AtActionSheet {
     required AtAction action,
     required ExpandLogic expand,
     required TextEditingController template,
-    required RxBool enableAudio,
   }) {
     return [
       RowWidget.buildDividerWithoutColor(),
@@ -251,11 +247,6 @@ class AtActionSheet {
         items: _placeholderItems(logic),
       ),
       RowWidget.buildDividerWithoutColor(),
-      RowWidget.buildSwitch(
-        title: I18nKey.generateAudio.tr,
-        value: enableAudio,
-      ),
-      RowWidget.buildDividerWithoutColor(),
       RowWidget.buildCupertinoPicker(
         key: const ValueKey('behavior'),
         title: I18nKey.behavior.tr,
@@ -263,6 +254,7 @@ class AtActionSheet {
         options: [
           I18nKey.behaviorOverwrite.tr,
           I18nKey.behaviorPlayOrOverwrite.tr,
+          I18nKey.behaviorNoSave.tr,
         ],
         value: action.net.behavior.clamp(0, ExpandBehavior.values.length - 1),
         changed: (index) => action.net.behavior = index,
@@ -274,7 +266,6 @@ class AtActionSheet {
         leading: const Icon(Icons.terminal),
         onTap: () async {
           expand.verseMap = logic.repeatLogic.state.helper.getCurrVerseMap() ?? {};
-          expand.enableAudio.value = enableAudio.value;
           expand.targetRef.value = action.target;
           final numbers = ExpandLogic.inputNumbersOf(template.text);
           var values = const <String>[];

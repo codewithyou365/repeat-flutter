@@ -339,10 +339,10 @@ class ConfigId extends Config {
     put(I18nKey.showButtons, "Tampilkan tombol");
     put(I18nKey.instruction, "Instruksi");
     put(I18nKey.targetPosition, "Posisi tujuan");
-    put(I18nKey.generateAudio, "Buat audio");
     put(I18nKey.behavior, "Perilaku");
     put(I18nKey.behaviorOverwrite, "Kirim permintaan lalu timpa posisi tujuan");
     put(I18nKey.behaviorPlayOrOverwrite, "Putar jika instruksi tersimpan sama dengan ini, jika tidak timpa");
+    put(I18nKey.behaviorNoSave, "Jangan simpan, hanya tampilkan hasil di dialog");
     put(I18nKey.insertParameter, "Sisipkan");
     put(I18nKey.copyCurl, "Salin CURL");
     put(I18nKey.customizeMenu, "Sesuaikan menu");

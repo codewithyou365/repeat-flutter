@@ -339,10 +339,10 @@ class ConfigIt extends Config {
     put(I18nKey.showButtons, "Mostra i pulsanti");
     put(I18nKey.instruction, "Istruzione");
     put(I18nKey.targetPosition, "Posizione di destinazione");
-    put(I18nKey.generateAudio, "Genera audio");
     put(I18nKey.behavior, "Comportamento");
     put(I18nKey.behaviorOverwrite, "Esegui la richiesta e sovrascrivi la posizione di destinazione");
     put(I18nKey.behaviorPlayOrOverwrite, "Riproduci se l'istruzione salvata coincide con questa, altrimenti sovrascrivi");
+    put(I18nKey.behaviorNoSave, "Non salvare, mostra solo il risultato in una finestra di dialogo");
     put(I18nKey.insertParameter, "Inserisci");
     put(I18nKey.copyCurl, "Copia il CURL");
     put(I18nKey.customizeMenu, "Personalizza il menu");

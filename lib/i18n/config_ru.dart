@@ -339,10 +339,10 @@ class ConfigRu extends Config {
     put(I18nKey.showButtons, "Показывать кнопки");
     put(I18nKey.instruction, "Команда");
     put(I18nKey.targetPosition, "Целевая позиция");
-    put(I18nKey.generateAudio, "Создать аудио");
     put(I18nKey.behavior, "Поведение");
     put(I18nKey.behaviorOverwrite, "Выполнить запрос и перезаписать целевую позицию");
     put(I18nKey.behaviorPlayOrOverwrite, "Воспроизвести, если сохранённая команда совпадает, иначе перезаписать");
+    put(I18nKey.behaviorNoSave, "Не сохранять, только показать результат в диалоге");
     put(I18nKey.insertParameter, "Вставить");
     put(I18nKey.copyCurl, "Копировать CURL");
     put(I18nKey.customizeMenu, "Настроить меню");

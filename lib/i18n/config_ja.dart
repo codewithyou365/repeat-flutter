@@ -339,10 +339,10 @@ class ConfigJa extends Config {
     put(I18nKey.showButtons, "ボタンを表示");
     put(I18nKey.instruction, "命令");
     put(I18nKey.targetPosition, "対象の位置");
-    put(I18nKey.generateAudio, "音声を生成");
     put(I18nKey.behavior, "動作");
     put(I18nKey.behaviorOverwrite, "リクエストして対象の位置を上書きする");
     put(I18nKey.behaviorPlayOrOverwrite, "保存済みの命令が同じなら再生し、違えば上書きする");
+    put(I18nKey.behaviorNoSave, "保存せず、結果をダイアログに表示するだけ");
     put(I18nKey.insertParameter, "挿入");
     put(I18nKey.copyCurl, "CURL をコピー");
     put(I18nKey.customizeMenu, "メニューをカスタマイズ");

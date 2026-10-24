@@ -339,10 +339,10 @@ class ConfigDe extends Config {
     put(I18nKey.showButtons, "Tasten anzeigen");
     put(I18nKey.instruction, "Anweisung");
     put(I18nKey.targetPosition, "Zielposition");
-    put(I18nKey.generateAudio, "Audio erzeugen");
     put(I18nKey.behavior, "Verhalten");
     put(I18nKey.behaviorOverwrite, "Anfrage senden und die Zielposition überschreiben");
     put(I18nKey.behaviorPlayOrOverwrite, "Abspielen, wenn die gespeicherte Anweisung übereinstimmt, sonst überschreiben");
+    put(I18nKey.behaviorNoSave, "Nicht speichern, Ergebnis nur in einem Dialog anzeigen");
     put(I18nKey.insertParameter, "Einfügen");
     put(I18nKey.copyCurl, "CURL kopieren");
     put(I18nKey.customizeMenu, "Menü anpassen");

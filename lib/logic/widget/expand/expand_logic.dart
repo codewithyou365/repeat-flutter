@@ -3,19 +3,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:just_audio/just_audio.dart';
 import 'package:mustache_template/mustache_template.dart';
-import 'package:repeat_flutter/common/path.dart';
-import 'package:repeat_flutter/common/time.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
-import 'package:repeat_flutter/logic/base/constant.dart';
-import 'package:repeat_flutter/logic/doc_help.dart';
-import 'package:repeat_flutter/logic/download.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/page/repeat/logic/constant.dart';
+import 'package:repeat_flutter/widget/dialog/msg_box.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 
 enum ExpandStatus {
@@ -30,9 +25,14 @@ enum ExpandStatus {
 ///   [VerseField.setInstruction]）；下次执行时，存的指令跟这次要发的指令一样才直接播放
 ///   已有内容（音视频优先，否则 TTS），不一样（含没存过指令，比如老数据/手填内容）就退回
 ///   overwrite 的流程重新生成。
+/// - noSave: 照常请求，但结果是临时的：不写回作用位置，只用对话框把
+///   结果显示出来（见 [ExpandLogic.showTempResult]）。
+///
+/// 存库的是下标（AtNetParams.behavior），只能往后加，不能调顺序。
 enum ExpandBehavior {
   overwrite,
   playOrOverwrite,
+  noSave,
 }
 
 class ExpandLogic {
@@ -43,7 +43,6 @@ class ExpandLogic {
   var status = ExpandStatus.init.obs;
   var isInit = true.obs;
   var disabled = false.obs;
-  var disabledAudioWidget = true.obs;
   var logs = <String>[].obs;
 
   /// 第 i 条提示显示的名字：课堂里定义了就用定义的（跟提示 tab 栏一致），没定义用序号。
@@ -116,12 +115,17 @@ class ExpandLogic {
 
   /// 作用位置的字段引用串（'q'/'a'/'t'/'t1'..），由动作里存的那份直接给过来。
   var targetRef = QaType.question.acronym.obs;
-  var enableAudio = true.obs;
   var behavior = ExpandBehavior.overwrite.obs;
   var behaviorOptions = [
     I18nKey.behaviorOverwrite.tr,
     I18nKey.behaviorPlayOrOverwrite.tr,
+    I18nKey.behaviorNoSave.tr,
   ];
+
+  bool get _noSave => behavior.value == ExpandBehavior.noSave;
+
+  /// noSave 时这次请求拿到的结果，[execute] 跑完后弹框显示。null 表示没拿到（请求失败等）。
+  String? _tempResult;
 
   /// 播放作用位置已有内容的实现由持有 RepeatLogic 的一方注入（AssistiveTouchLogic.playTarget）。
   Future<void> Function(String fieldRef)? onPlayTarget;
@@ -150,7 +154,31 @@ class ExpandLogic {
         return;
       }
     }
+    _tempResult = null;
     await startTask(msg, closeOnSuccess: closeOnSuccess);
+    final temp = _tempResult;
+    if (_noSave && temp != null) {
+      await showTempResult(temp);
+    }
+  }
+
+  /// 把临时结果放进对话框：内容可能很长，限高滚动；可选中，方便复制。
+  static Future<void> showTempResult(String text) {
+    return MsgBox.myDialog(
+      title: I18nKey.labelTips.tr,
+      content: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: Get.height * 0.6),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: SelectableText(text),
+        ),
+      ),
+      action: MsgBox.buttonsWithDivider(
+        buttons: [
+          MsgBox.button(text: I18nKey.btnOk.tr, onPressed: () => Get.back()),
+        ],
+      ),
+    );
   }
 
   /// 助手服务 /start 的请求体：params 原样进脚本的 ctx.params，
@@ -158,7 +186,8 @@ class ExpandLogic {
   Map<String, dynamic> _startBody(String msg) => {
         "params": {
           "input": msg,
-          "withSpeak": enableAudio.value,
+          // 生成音频的功能已去掉，明确告诉服务不用合成。
+          "withSpeak": false,
         },
       };
 
@@ -177,7 +206,6 @@ class ExpandLogic {
         status.value = ExpandStatus.pending;
         isInit.value = false;
         disabled.value = true;
-        disabledAudioWidget.value = true;
         logs.clear();
         logs.add("Initiating request...");
 
@@ -211,7 +239,6 @@ class ExpandLogic {
     status.value = ExpandStatus.init;
     isInit.value = true;
     disabled.value = false;
-    disabledAudioWidget.value = false;
     logs.clear();
   }
 
@@ -229,37 +256,18 @@ class ExpandLogic {
           if (!data['running']) {
             timer.cancel();
             Map<String, dynamic> result = data['result'] ?? {};
-            String audioUrl = result['file'] ?? "";
 
-            if (enableAudio.value && audioUrl.isNotEmpty) {
-              logs.add("Downloading audio file...");
-              String downloadUrl = "$serviceUrl/download?path=$audioUrl";
-              String savePath = "audio/$audioUrl";
-
-              DownloadDoc.start(
-                downloadUrl,
-                savePath,
-                progressCallback: (startTime, count, total, finish) {
-                  if (finish) logs.add("Audio download complete");
-                },
-              ).then((downloadResult) async {
-                if (downloadResult == DownloadDocResult.success) {
-                  var rootPath = await DocPath.getContentPath();
-                  String fullPath = rootPath.joinPath(savePath);
-                  final dc = await DocHelp.moveToDocDir(fullPath);
-                  await _onTaskComplete(result, msg, dc: dc);
-                } else {
-                  logs.add("Audio download failed: $downloadResult");
-                  await _onTaskComplete(result, msg);
-                }
-                status.value = ExpandStatus.finish;
-                _taskCompleter?.complete();
-              });
+            if (_noSave) {
+              // 临时结果：只记下来给 execute 弹框，不写库。
+              // 没有 text 就把整个 result 原样给出来，至少能看到服务回了什么。
+              final text = result['text'];
+              _tempResult = (text is String && text.isNotEmpty) ? text : const JsonEncoder.withIndent('  ').convert(result);
+              hasContent = true;
             } else {
               await _onTaskComplete(result, msg);
-              status.value = ExpandStatus.finish;
-              _taskCompleter?.complete();
             }
+            status.value = ExpandStatus.finish;
+            _taskCompleter?.complete();
           }
         }
       } catch (e) {
@@ -290,7 +298,7 @@ class ExpandLogic {
     }
   }
 
-  Future<void> _onTaskComplete(Map<String, dynamic> result, String instruction, {DownloadContent? dc}) async {
+  Future<void> _onTaskComplete(Map<String, dynamic> result, String instruction) async {
     String text = result['text'] ?? "";
     if (text.isEmpty) {
       hasContent = false;
@@ -309,43 +317,16 @@ class ExpandLogic {
       logs.add("Content overwritten to: $key");
     }
 
-    if (enableAudio.value && dc != null) {
-      // 生成的音频只挂到这个字段块上（'a' 里的 'mediaHash' + 'showType'），不动整节的 's'：
-      // 否则一节里问题是章节视频、答案是新音频时，会把视频整个遮蔽掉，'s' 也会把 q 一起改了。
-      // 文件对象登记到这一节自己的 'd' 里（见 VerseField.setMedia），字段块只存 hash。
-      VerseField.setMedia(verse: targetMap, acronym: key, d: dc);
-      VerseField.setStr(targetMap, key, VerseField.showType, RepeatViewEnum.audio.name);
-
-      try {
-        var rootPath = await DocPath.getContentPath();
-        String fullPath = rootPath.joinPath(DocPath.getFilesRelativePath().joinPath(dc.folder).joinPath(dc.name));
-
-        final player = AudioPlayer();
-        final duration = await player.setFilePath(fullPath);
-        await player.dispose();
-
-        int ms = duration?.inMilliseconds ?? 0;
-
-        VerseField.setStr(targetMap, key, VerseField.start, "00:00:00,000");
-        VerseField.setStr(targetMap, key, VerseField.end, Time.convertMsToString(ms));
-        logs.add("Audio saved. Duration: ${Time.convertMsToString(ms)}");
-      } catch (e) {
-        VerseField.setStr(targetMap, key, VerseField.start, "00:00:00,000");
-        VerseField.setStr(targetMap, key, VerseField.end, "00:00:05,000");
-        logs.add("Failed to read duration, using default: $e");
-      }
-    } else {
-      // 这次只出文本：只有该字段之前挂过生成的音频时，才把音频和它的时间区间一起清掉，
-      // 免得还播着跟新文本对不上的旧音频。区间本来就属于整节媒体（比如从字幕导入的）时不能动。
-      // 只清这一节自己写下的 mediaHash：继承自 chapter/book 的媒体不该被一节的改动带走。
-      if (VerseField.getStr(targetMap, key, VerseField.mediaHash) != null) {
-        VerseField.remove(targetMap, key, [
-          VerseField.mediaHash,
-          VerseField.showType,
-          VerseField.start,
-          VerseField.end,
-        ]);
-      }
+    // 只出文本：该字段之前挂过生成的音频（老版本"生成音频"留下的）时，把音频和它的时间区间一起清掉，
+    // 免得还播着跟新文本对不上的旧音频。区间本来就属于整节媒体（比如从字幕导入的）时不能动。
+    // 只清这一节自己写下的 mediaHash：继承自 chapter/book 的媒体不该被一节的改动带走。
+    if (VerseField.getStr(targetMap, key, VerseField.mediaHash) != null) {
+      VerseField.remove(targetMap, key, [
+        VerseField.mediaHash,
+        VerseField.showType,
+        VerseField.start,
+        VerseField.end,
+      ]);
     }
     String jsonStr = jsonEncode(targetMap);
     await Db().db.verseDao.updateVerseContent(verseId, jsonStr);

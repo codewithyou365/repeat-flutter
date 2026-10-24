@@ -339,10 +339,10 @@ class ConfigKo extends Config {
     put(I18nKey.showButtons, "버튼 표시");
     put(I18nKey.instruction, "명령");
     put(I18nKey.targetPosition, "대상 위치");
-    put(I18nKey.generateAudio, "오디오 생성");
     put(I18nKey.behavior, "동작");
     put(I18nKey.behaviorOverwrite, "요청해서 대상 위치를 덮어쓰기");
     put(I18nKey.behaviorPlayOrOverwrite, "저장된 명령이 같으면 재생하고, 다르면 덮어쓰기");
+    put(I18nKey.behaviorNoSave, "저장하지 않고 결과를 대화상자에만 표시");
     put(I18nKey.insertParameter, "삽입");
     put(I18nKey.copyCurl, "CURL 복사");
     put(I18nKey.customizeMenu, "메뉴 사용자 지정");

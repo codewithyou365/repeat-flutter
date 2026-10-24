@@ -339,10 +339,10 @@ class ConfigFr extends Config {
     put(I18nKey.showButtons, "Afficher les boutons");
     put(I18nKey.instruction, "Instruction");
     put(I18nKey.targetPosition, "Position cible");
-    put(I18nKey.generateAudio, "Générer l'audio");
     put(I18nKey.behavior, "Comportement");
     put(I18nKey.behaviorOverwrite, "Envoyer la requête et écraser la position cible");
     put(I18nKey.behaviorPlayOrOverwrite, "Lire si l'instruction enregistrée correspond, sinon écraser");
+    put(I18nKey.behaviorNoSave, "Ne pas enregistrer, afficher seulement le résultat dans une boîte de dialogue");
     put(I18nKey.insertParameter, "Insérer");
     put(I18nKey.copyCurl, "Copier le CURL");
     put(I18nKey.customizeMenu, "Personnaliser le menu");

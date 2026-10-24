@@ -339,10 +339,10 @@ class ConfigPt extends Config {
     put(I18nKey.showButtons, "Mostrar botões");
     put(I18nKey.instruction, "Instrução");
     put(I18nKey.targetPosition, "Posição de destino");
-    put(I18nKey.generateAudio, "Gerar áudio");
     put(I18nKey.behavior, "Comportamento");
     put(I18nKey.behaviorOverwrite, "Fazer a requisição e sobrescrever a posição de destino");
     put(I18nKey.behaviorPlayOrOverwrite, "Reproduzir se a instrução salva for igual a esta; caso contrário, sobrescrever");
+    put(I18nKey.behaviorNoSave, "Não salvar, apenas mostrar o resultado em uma caixa de diálogo");
     put(I18nKey.insertParameter, "Inserir");
     put(I18nKey.copyCurl, "Copiar CURL");
     put(I18nKey.customizeMenu, "Personalizar menu");

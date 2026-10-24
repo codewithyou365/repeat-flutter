@@ -192,14 +192,13 @@ class AtNetParams {
   /// 指令模版原文（不是渲染结果）：里面可以放 {{question}}/{{answer}}/{{tip1}}..{{tip8}}
   /// （取当前小节的正文）和 {{input1}}..{{input10}}（执行前弹框让用户填）。
   String template;
-  bool enableAudio;
 
-  /// ExpandBehavior 的下标：0 请求并覆盖到作用位置，1 作用位置有内容则播放否则覆盖。
+  /// ExpandBehavior 的下标：0 请求并覆盖到作用位置，1 作用位置有内容则播放否则覆盖，
+  /// 2 不保存（结果只在对话框里显示）。
   int behavior;
 
   AtNetParams({
     this.template = '',
-    this.enableAudio = true,
     this.behavior = 0,
   });
 
@@ -209,14 +208,12 @@ class AtNetParams {
     }
     return AtNetParams(
       template: json['tp'] is String ? json['tp'] as String : '',
-      enableAudio: json['au'] is bool ? json['au'] as bool : true,
       behavior: json['bh'] is int ? json['bh'] as int : 0,
     );
   }
 
   Map<String, dynamic> toJson() => {
         'tp': template,
-        'au': enableAudio,
         'bh': behavior,
       };
 }
