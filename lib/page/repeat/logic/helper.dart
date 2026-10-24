@@ -139,11 +139,13 @@ class Helper {
     initialized = true;
     // 内容被改过就把当前这一节重新取一遍 —— 这三份数据是我们自己持有的副本，
     // 不像以前那样由 DAO 顺手 patch 全局缓存。
-    reimportBookSub.on([EventTopic.reimportBook], (int? id) {
-      bookNames.remove(id);
+    // 书名表要重新取而不是 remove：remove 之后没人补回来，位置串就成了 "-2-36"
+    reimportBookSub.on([EventTopic.reimportBook], (int? id) async {
+      bookNames = await BookBriefHelp.loadNameMap(Classroom.curr);
       refetch();
     });
-    updateBookContentSub.on([EventTopic.updateBookContent], (int? id) {
+    updateBookContentSub.on([EventTopic.updateBookContent], (int? id) async {
+      bookNames = await BookBriefHelp.loadNameMap(Classroom.curr);
       refetch();
     });
     updateClassroomContentSub.on([EventTopic.updateClassroomContent], (int? id) async {
