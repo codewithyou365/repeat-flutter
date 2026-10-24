@@ -40,8 +40,6 @@ type ProfileConfig = {
     // 熟词阈值：每个字母允许的毫秒数，0 = 整个"熟词"功能不工作。
     // 一个词从第一个字母敲下到最后一个字母敲下 <= familiarMs * (字母数 - 1) 就算熟词。
     familiarMs: number;
-    // 熟词有效期（天），0 = 不过期。进库超过这个天数的词在 familiarQuery 时被删掉。
-    familiarExpireDays: number;
     // 熟词跳过键：按下时把光标所在的熟词整词补完，空串 = 不启用。
     familiarSkipTrigger: string;
     [key: string]: any;
@@ -56,6 +54,9 @@ type StoredConfig = {
     userProfiles: Record<string, number>;
     // 玩家在游戏界面上停留的遮挡档位：userId -> 'black' | 'typed' | 'off'，下次进来接着用
     userMaskModes: Record<string, string>;
+    // 熟词有效期（天），0 = 不过期。进库超过这个天数的词在 familiarQuery 时被删掉。
+    // 熟词库整台设备共用一份，有效期也是全局的，不跟 profile 走
+    familiarExpireDays: number;
 };
 
 const MASK_MODES = ['black', 'typed', 'off'];
@@ -111,15 +112,15 @@ async function familiarMs(userId: number): Promise<number> {
     return typeof value === 'number' && value > 0 ? value : 0;
 }
 
-// 该玩家生效 profile 的熟词有效期（天），<=0 表示不过期
-async function familiarExpireDays(userId: number): Promise<number> {
+// 熟词有效期（天），<=0 表示不过期（全局一份，不跟 profile 走）
+async function familiarExpireDays(): Promise<number> {
     const stored = await Util.getConfig();
-    const value = stored.profiles[profileIndexOf(stored, userId)].familiarExpireDays;
+    const value = stored.familiarExpireDays;
     return typeof value === 'number' && value > 0 ? value : 0;
 }
 
 function defaultProfileConfig(): ProfileConfig {
-    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "speakLetters": false, "speakWord": true, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "dimOnMask": false, "keyMapping": "", "assistiveTouchBindings": [], "wordAskTrigger": {"key": "", "action": "", "name": ""}, "spellResetLevel": false, "familiarMs": 0, "familiarExpireDays": 0, "familiarSkipTrigger": ""};
+    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "speakLetters": false, "speakWord": true, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "dimOnMask": false, "keyMapping": "", "assistiveTouchBindings": [], "wordAskTrigger": {"key": "", "action": "", "name": ""}, "spellResetLevel": false, "familiarMs": 0, "familiarSkipTrigger": ""};
 }
 
 function defaultStoredConfig(): StoredConfig {
@@ -129,7 +130,7 @@ function defaultStoredConfig(): StoredConfig {
         names.push(`${i + 1}`);
         profiles.push(defaultProfileConfig());
     }
-    return {activeProfile: 0, profileNames: names, profiles: profiles, userProfiles: {}, userMaskModes: {}};
+    return {activeProfile: 0, profileNames: names, profiles: profiles, userProfiles: {}, userMaskModes: {}, familiarExpireDays: 0};
 }
 
 // 补齐/裁剪 profiles/profileNames 到固定的 PROFILE_COUNT 个槽位，activeProfile 越界时夹回范围内
@@ -139,7 +140,10 @@ function normalizeStoredConfig(raw: any): StoredConfig {
     const names: string[] = [];
     for (let i = 0; i < PROFILE_COUNT; i++) {
         const p = raw.profiles && raw.profiles[i];
-        profiles.push(p ? {...defaultProfileConfig(), ...p} : defaultProfileConfig());
+        const profile = p ? {...defaultProfileConfig(), ...p} : defaultProfileConfig();
+        // 有效期以前存在各 profile 里，现在挪到顶层了，profile 里的旧字段不再留着
+        delete profile.familiarExpireDays;
+        profiles.push(profile);
         const n = raw.profileNames && raw.profileNames[i];
         names.push(typeof n === 'string' && n ? n : fallback.profileNames[i]);
     }
@@ -167,7 +171,13 @@ function normalizeStoredConfig(raw: any): StoredConfig {
             }
         }
     }
-    return {activeProfile, profileNames: names, profiles: profiles, userProfiles, userMaskModes};
+    // 熟词有效期：顶层没有就是老数据，沿用当时 activeProfile 里存的那个值
+    let familiarExpireDays = raw.familiarExpireDays;
+    if (typeof familiarExpireDays !== 'number') {
+        const legacy = raw.profiles && raw.profiles[activeProfile];
+        familiarExpireDays = legacy && typeof legacy.familiarExpireDays === 'number' ? legacy.familiarExpireDays : 0;
+    }
+    return {activeProfile, profileNames: names, profiles: profiles, userProfiles, userMaskModes, familiarExpireDays};
 }
 
 // 老版本是扁平的单份配置（没有 profiles 数组），迁移成 profile 0，其余槽位用默认值填充，
@@ -240,6 +250,7 @@ const Util = {
             profiles: data.profiles,
             userProfiles: data.userProfiles,
             userMaskModes: data.userMaskModes,
+            familiarExpireDays: data.familiarExpireDays,
         };
         if (store.inputs !== undefined) {
             next.inputs = store.inputs;
@@ -656,8 +667,12 @@ const Game = {
             if (userId === adminId && adminEnable) {
                 const data = args.data;
                 const stored = await Util.getConfig();
-                const profile = stored.profiles[stored.activeProfile];
-                profile[data.key] = data.value;
+                if (data.key === 'familiarExpireDays') {
+                    // 全局设置，不写进 profile
+                    stored.familiarExpireDays = data.value;
+                } else {
+                    stored.profiles[stored.activeProfile][data.key] = data.value;
+                }
                 await Util.setConfig(stored);
                 return JSON.stringify({});
             } else {
@@ -987,7 +1002,7 @@ const Game = {
             // 进库时间就是 kv 的值（familiarMark 存的 Date.now()）。超过有效期的当场删掉再返回，
             // 免得客户端还按紫色标记去跳一个早就该忘掉的词。
             // 值解析不出数字的当作不过期（老数据兜底），有效期 <=0 时整段跳过。
-            const days = await familiarExpireDays(args.userId);
+            const days = await familiarExpireDays();
             const deadline = days > 0 ? Date.now() - days * 24 * 60 * 60 * 1000 : 0;
             const alive: string[] = [];
             const expired: string[] = [];

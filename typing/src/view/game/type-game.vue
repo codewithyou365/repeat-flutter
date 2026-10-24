@@ -1,5 +1,17 @@
 <template>
-  <div v-if="isAdmin" style="margin: 8px">
+  <div v-if="isAdmin" class="settings-panel" style="margin: 8px">
+    <!-- 熟词库整台设备共用一份，有效期也是全局的，不跟 profile 走，所以放在 profile 选择上面 -->
+    <nut-cell :title="t('familiarExpireDays')">
+      <template #link>
+        <nut-radio-group v-model="familiarExpireDays" direction="horizontal" @change="setFamiliarExpireDays">
+          <nut-radio :label="0">{{ t('familiarExpireNever') }}</nut-radio>
+          <nut-radio :label="3">3</nut-radio>
+          <nut-radio :label="5">5</nut-radio>
+          <nut-radio :label="7">7</nut-radio>
+        </nut-radio-group>
+        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('familiarExpireDaysDesc'))"/>
+      </template>
+    </nut-cell>
     <nut-cell :title="t('profile')">
       <template #link>
         <nut-radio-group v-model="activeProfile" direction="horizontal" @change="setActiveProfile">
@@ -7,11 +19,11 @@
         </nut-radio-group>
       </template>
     </nut-cell>
-    <nut-cell :title="t('profileName')">
+    <nut-cell :title="t('profileName')" class="stacked-cell">
       <template #link>
         <nut-input
             v-model="profileNames[activeProfile]"
-            style="text-align: right"
+            class="stacked-key"
             @blur="setProfileName(activeProfile, profileNames[activeProfile])"
         />
       </template>
@@ -31,103 +43,60 @@
         <nut-switch v-model="ignoreNumber" @change="setIgnoreNumber"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('familiarMs')">
+    <nut-cell :title="t('familiarMs')" class="stacked-cell">
       <template #link>
         <nut-input
             v-model="familiarMsInput"
             type="number"
-            style="text-align: right"
+            class="stacked-key"
             @blur="setFamiliarMs(familiarMsInput)"
         />
         <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('familiarMsDesc'))"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('familiarExpireDays')">
+    <!-- 会出声的几行：第一行照旧是标题 + 触发键/开关，第二行是链接样式的小字，列出这一行用的音色
+         （生词/熟词/字母各用哪个「朗读」动作的 TTS 配置），点它在底部弹层里改。
+         手动播放、打完整词分生词/熟词两套：词在熟词库里就用熟词那套；熟词跳过成功念整词单独一套。 -->
+    <nut-cell :title="t('manualPlayTrigger')" class="stacked-cell">
       <template #link>
-        <nut-radio-group v-model="familiarExpireDays" direction="horizontal" @change="setFamiliarExpireDays">
-          <nut-radio :label="0">{{ t('familiarExpireNever') }}</nut-radio>
-          <nut-radio :label="3">3</nut-radio>
-          <nut-radio :label="5">5</nut-radio>
-          <nut-radio :label="7">7</nut-radio>
-        </nut-radio-group>
-        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('familiarExpireDaysDesc'))"/>
+        <span v-if="hasSpaceKey(manualPlayTrigger)" class="stacked-space">{{ t('spaceKey') }}</span>
+        <nut-input
+            v-model="manualPlayTrigger"
+            class="stacked-key"
+            @blur="setManualPlayTrigger(manualPlayTrigger)"
+        />
+        <nut-button size="mini" type="info" plain class="stacked-add" @click="openKeyPicker('manualPlay')">+</nut-button>
+        <Ask color="#999" width="16px" height="16px" class="cell-help"
+             @click="showHelp(t('familiarVoiceDesc') + '<br/><br/>' + t('ttsActionDesc') + '<br/><br/>' + t('multiKeyDesc'))"/>
+        <div class="voice-line" :class="voiceLinkClass('manualPlay')" @click="openVoicePicker('manualPlay')">{{ voiceSummary('manualPlay') }}</div>
       </template>
     </nut-cell>
-    <!-- 手动播放/逐字母朗读：一行里既设触发键，又挑用哪个「朗读」动作的 TTS 配置来读
-         （排版跟下面的辅助触控绑定行一致）。读的还是打字里的当前单词，只是换一套引擎/音色/语速；
-         选「默认音色」就用 App 里按字段存的那套公共朗读设置。 -->
-    <nut-cell :title="t('manualPlayTrigger')">
+    <nut-cell :title="t('familiarSkipTrigger')" class="stacked-cell">
       <template #link>
-        <div class="assist-binding">
-          <span v-if="hasSpaceKey(manualPlayTrigger)" style="opacity: 0.6">{{ t('spaceKey') }}</span>
-          <nut-input
-              v-model="manualPlayTrigger"
-              class="assist-binding-key"
-              @blur="setManualPlayTrigger(manualPlayTrigger)"
-          />
-          <nut-button size="mini" type="info" plain class="assist-binding-add" @click="openKeyPicker('manualPlay')">+</nut-button>
-          <nut-menu class="assist-binding-action" direction="up">
-            <nut-menu-item
-                :model-value="manualPlayAction"
-                :options="manualPlayOptions"
-                @change="(value: string) => setManualPlayAction(value)"
-            />
-          </nut-menu>
-          <Ask color="#999" width="16px" height="16px" class="cell-help"
-               @click="showHelp(t('ttsActionDesc') + '<br/><br/>' + t('multiKeyDesc'))"/>
-        </div>
-      </template>
-    </nut-cell>
-    <!-- 熟词只换音色、不另占按键：还是按"手动播放触发键"那个键，光标所在的词在熟词库里时
-         改用这一行选的朗读设置。 -->
-    <nut-cell :title="t('familiarPlayAction')">
-      <template #link>
-        <div class="assist-binding">
-          <nut-menu class="assist-binding-action" direction="up">
-            <nut-menu-item
-                :model-value="familiarPlayAction"
-                :options="familiarPlayOptions"
-                @change="(value: string) => setFamiliarPlayAction(value)"
-            />
-          </nut-menu>
-          <Ask color="#999" width="16px" height="16px" class="cell-help"
-               @click="showHelp(t('familiarPlayActionDesc') + '<br/><br/>' + t('ttsActionDesc'))"/>
-        </div>
-      </template>
-    </nut-cell>
-    <nut-cell :title="t('familiarSkipTrigger')">
-      <template #link>
-        <span v-if="hasSpaceKey(familiarSkipTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
+        <span v-if="hasSpaceKey(familiarSkipTrigger)" class="stacked-space">{{ t('spaceKey') }}</span>
         <nut-input
             v-model="familiarSkipTrigger"
-            style="text-align: right"
+            class="stacked-key"
             @blur="setFamiliarSkipTrigger(familiarSkipTrigger)"
         />
-        <nut-button size="mini" type="info" plain @click="openKeyPicker('familiarSkip')">+</nut-button>
+        <nut-button size="mini" type="info" plain class="stacked-add" @click="openKeyPicker('familiarSkip')">+</nut-button>
         <Ask color="#999" width="16px" height="16px" class="cell-help"
-             @click="showHelp(t('familiarSkipTriggerDesc') + '<br/><br/>' + t('multiKeyDesc'))"/>
+             @click="showHelp(t('familiarSkipTriggerDesc') + '<br/><br/>' + t('ttsActionDesc') + '<br/><br/>' + t('multiKeyDesc'))"/>
+        <div class="voice-line" :class="voiceLinkClass('familiarSkip')" @click="openVoicePicker('familiarSkip')">{{ voiceSummary('familiarSkip') }}</div>
       </template>
     </nut-cell>
-    <nut-cell :title="t('spellPlayTrigger')">
+    <nut-cell :title="t('spellPlayTrigger')" class="stacked-cell">
       <template #link>
-        <div class="assist-binding">
-          <span v-if="hasSpaceKey(spellPlayTrigger)" style="opacity: 0.6">{{ t('spaceKey') }}</span>
-          <nut-input
-              v-model="spellPlayTrigger"
-              class="assist-binding-key"
-              @blur="setSpellPlayTrigger(spellPlayTrigger)"
-          />
-          <nut-button size="mini" type="info" plain class="assist-binding-add" @click="openKeyPicker('spellPlay')">+</nut-button>
-          <nut-menu class="assist-binding-action" direction="up">
-            <nut-menu-item
-                :model-value="spellPlayAction"
-                :options="spellPlayOptions"
-                @change="(value: string) => setSpellPlayAction(value)"
-            />
-          </nut-menu>
-          <Ask color="#999" width="16px" height="16px" class="cell-help"
-               @click="showHelp(t('ttsActionDesc') + '<br/><br/>' + t('multiKeyDesc'))"/>
-        </div>
+        <span v-if="hasSpaceKey(spellPlayTrigger)" class="stacked-space">{{ t('spaceKey') }}</span>
+        <nut-input
+            v-model="spellPlayTrigger"
+            class="stacked-key"
+            @blur="setSpellPlayTrigger(spellPlayTrigger)"
+        />
+        <nut-button size="mini" type="info" plain class="stacked-add" @click="openKeyPicker('spellPlay')">+</nut-button>
+        <Ask color="#999" width="16px" height="16px" class="cell-help"
+             @click="showHelp(t('ttsActionDesc') + '<br/><br/>' + t('multiKeyDesc'))"/>
+        <div class="voice-line" :class="voiceLinkClass('spellPlay')" @click="openVoicePicker('spellPlay')">{{ voiceSummary('spellPlay') }}</div>
       </template>
     </nut-cell>
     <nut-cell :title="t('spellResetLevel')">
@@ -135,60 +104,43 @@
         <nut-switch v-model="spellResetLevel" @change="setSpellResetLevel"/>
       </template>
     </nut-cell>
-    <!-- 自动朗读的两处（逐字母、打完整词）也各挑一套朗读设置，跟上面两个触发键一个套路：
-         开关管开不开口，下拉管用谁的引擎/音色/语速。 -->
-    <nut-cell :title="t('speakLetters')">
+    <nut-cell :title="t('speakLetters')" class="voice-cell">
       <template #link>
-        <div class="assist-binding">
-          <nut-switch v-model="speakLetters" @change="setSpeakLetters"/>
-          <nut-menu class="assist-binding-action" direction="up">
-            <nut-menu-item
-                :model-value="speakLettersAction"
-                :options="speakLettersOptions"
-                @change="(value: string) => setSpeakLettersAction(value)"
-            />
-          </nut-menu>
-          <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('ttsActionDesc'))"/>
-        </div>
+        <nut-switch v-model="speakLetters" @change="setSpeakLetters"/>
+        <Ask color="#999" width="16px" height="16px" class="cell-help"
+             @click="showHelp(t('ttsActionDesc'))"/>
+        <div class="voice-line" :class="voiceLinkClass('speakLetters')" @click="openVoicePicker('speakLetters')">{{ voiceSummary('speakLetters') }}</div>
       </template>
     </nut-cell>
-    <nut-cell :title="t('speakWord')">
+    <nut-cell :title="t('speakWord')" class="voice-cell">
       <template #link>
-        <div class="assist-binding">
-          <nut-switch v-model="speakWord" @change="setSpeakWord"/>
-          <nut-menu class="assist-binding-action" direction="up">
-            <nut-menu-item
-                :model-value="speakWordAction"
-                :options="speakWordOptions"
-                @change="(value: string) => setSpeakWordAction(value)"
-            />
-          </nut-menu>
-          <Ask color="#999" width="16px" height="16px" class="cell-help"
-               @click="showHelp(t('speakWordDesc') + '<br/><br/>' + t('ttsActionDesc'))"/>
-        </div>
+        <nut-switch v-model="speakWord" @change="setSpeakWord"/>
+        <Ask color="#999" width="16px" height="16px" class="cell-help"
+             @click="showHelp(t('speakWordDesc') + '<br/><br/>' + t('familiarVoiceDesc') + '<br/><br/>' + t('ttsActionDesc'))"/>
+        <div class="voice-line" :class="voiceLinkClass('speakWord')" @click="openVoicePicker('speakWord')">{{ voiceSummary('speakWord') }}</div>
       </template>
     </nut-cell>
-    <nut-cell :title="t('hintTrigger')">
+    <nut-cell :title="t('hintTrigger')" class="stacked-cell">
       <template #link>
-        <span v-if="hasSpaceKey(hintTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
+        <span v-if="hasSpaceKey(hintTrigger)" class="stacked-space">{{ t('spaceKey') }}</span>
         <nut-input
             v-model="hintTrigger"
-            style="text-align: right"
+            class="stacked-key"
             @blur="setHintTrigger(hintTrigger)"
         />
-        <nut-button size="mini" type="info" plain @click="openKeyPicker('hint')">+</nut-button>
+        <nut-button size="mini" type="info" plain class="stacked-add" @click="openKeyPicker('hint')">+</nut-button>
         <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('multiKeyDesc'))"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('maskTrigger')">
+    <nut-cell :title="t('maskTrigger')" class="stacked-cell">
       <template #link>
-        <span v-if="hasSpaceKey(maskTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
+        <span v-if="hasSpaceKey(maskTrigger)" class="stacked-space">{{ t('spaceKey') }}</span>
         <nut-input
             v-model="maskTrigger"
-            style="text-align: right"
+            class="stacked-key"
             @blur="setMaskTrigger(maskTrigger)"
         />
-        <nut-button size="mini" type="info" plain @click="openKeyPicker('mask')">+</nut-button>
+        <nut-button size="mini" type="info" plain class="stacked-add" @click="openKeyPicker('mask')">+</nut-button>
         <Ask color="#999" width="16px" height="16px" class="cell-help"
              @click="showHelp(t('maskTriggerDesc') + '<br/><br/>' + t('multiKeyDesc'))"/>
       </template>
@@ -205,64 +157,57 @@
         <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('immersiveOnMaskDesc'))"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('deleteTrigger')">
+    <nut-cell :title="t('deleteTrigger')" class="stacked-cell">
       <template #link>
-        <span v-if="hasSpaceKey(deleteTrigger)" style="margin-right: 8px; opacity: 0.6">{{ t('spaceKey') }}</span>
+        <span v-if="hasSpaceKey(deleteTrigger)" class="stacked-space">{{ t('spaceKey') }}</span>
         <nut-input
             v-model="deleteTrigger"
-            style="text-align: right"
+            class="stacked-key"
             @blur="setDeleteTrigger(deleteTrigger)"
         />
-        <nut-button size="mini" type="info" plain @click="openKeyPicker('delete')">+</nut-button>
+        <nut-button size="mini" type="info" plain class="stacked-add" @click="openKeyPicker('delete')">+</nut-button>
         <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(`${t('deleteTriggerDesc')}; ${t('multiKeyDesc')}`)"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('keyMapping')">
+    <nut-cell :title="t('keyMapping')" class="stacked-cell">
       <template #link>
         <nut-input
             v-model="keyMapping"
             placeholder="a:abc•q:def"
-            style="text-align: right"
+            class="stacked-key"
             @blur="setKeyMapping(keyMapping)"
         />
         <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('keyMappingDesc'))"/>
       </template>
     </nut-cell>
     <!-- 一条绑定：普通的按下就执行动作；wordAsk 的额外把光标所在的词当 input1 传过去。
-         两种类型共用同一份数据结构和这一行 UI，只有标题/说明不同。 -->
+         两种类型共用同一份数据结构和这一行 UI，只有标题/说明不同。
+         排版跟上面的触发键行一样分三行：标题 + 删除/问号 / 输入框 + 加号 / 绑的动作（链接，点开在底部弹层里改）。 -->
     <nut-cell
         v-for="(binding, i) in assistiveTouchBindings"
         :key="i"
         :title="binding.wordAsk ? t('wordAskTrigger') : t('assistiveTouchTrigger')"
+        class="stacked-cell stacked-cell-binding"
     >
       <template #link>
-        <div class="assist-binding">
-          <span v-if="hasSpaceKey(binding.key)" style="opacity: 0.6">{{ t('spaceKey') }}</span>
-          <nut-input
-              v-model="binding.key"
-              class="assist-binding-key"
-              @blur="setBindingKey(i, binding.key)"
-          />
-          <nut-button size="mini" type="info" plain class="assist-binding-add" @click="openKeyPicker(i)">+</nut-button>
-          <!-- direction="up": 这些行常年贴在设置页最下方，若按默认向下弹出，
-               选项列表会被弹到屏幕可视区域之外（popup 是 position:fixed，页面滚动也救不回来），
-               导致排在最后的选项（如"后退"）点不到。向上弹出则是在页面已展示的内容区域内展开，不会跑出屏幕。 -->
-          <nut-menu class="assist-binding-action" direction="up">
-            <nut-menu-item
-                :model-value="binding.action"
-                :options="bindingOptionList[i]"
-                @change="(value: string) => setBindingAction(i, value)"
-            />
-          </nut-menu>
-          <Del width="16px" height="16px" class="assist-binding-del" @click="removeBinding(i)"/>
-          <Ask
-              v-if="binding.wordAsk"
-              color="#999"
-              width="16px"
-              height="16px"
-              class="cell-help"
-              @click="showHelp(t('wordAskTriggerDesc'))"
-          />
+        <span v-if="hasSpaceKey(binding.key)" class="stacked-space">{{ t('spaceKey') }}</span>
+        <nut-input
+            v-model="binding.key"
+            class="stacked-key"
+            @blur="setBindingKey(i, binding.key)"
+        />
+        <nut-button size="mini" type="info" plain class="stacked-add" @click="openKeyPicker(i)">+</nut-button>
+        <Del width="16px" height="16px" class="assist-binding-del" @click="removeBinding(i)"/>
+        <Ask
+            v-if="binding.wordAsk"
+            color="#999"
+            width="16px"
+            height="16px"
+            class="cell-help"
+            @click="showHelp(t('wordAskTriggerDesc'))"
+        />
+        <div class="voice-line" :class="bindingPickable(i) ? 'voice-link' : 'voice-text'" @click="openBindingPicker(i)">
+          {{ binding.action ? bindingActionName(binding) : t('assistiveTouchNoAction') }}
         </div>
       </template>
     </nut-cell>
@@ -296,6 +241,36 @@
         :menu-items="specialKeyItems"
         @choose="onChooseSpecialKey"
     />
+    <!-- 音色二级设置：一组一个单选列表，点一下就存 -->
+    <nut-popup v-model:visible="voicePickerVisible" position="bottom" round closeable>
+      <div class="voice-picker">
+        <div class="voice-picker-title">{{ voicePickerRow ? t(voiceRows[voicePickerRow].title) : '' }}</div>
+        <div v-for="group in voicePickerGroups" :key="group.slot.key" class="voice-picker-group">
+          <div class="voice-picker-tag">{{ t(group.tag) }}</div>
+          <nut-radio-group :model-value="group.slot.action.value" @change="(value: string) => setTtsAction(group.slot, value)">
+            <nut-radio v-for="option in group.options"
+                       :key="option.value" :label="option.value" class="voice-picker-option">
+              {{ option.text }}
+            </nut-radio>
+          </nut-radio-group>
+        </div>
+        <div class="voice-picker-desc">{{ voicePickerGroups.length > 1 ? t('familiarVoiceDesc') + '. ' : '' }}{{ t('ttsActionDesc') }}</div>
+      </div>
+    </nut-popup>
+    <!-- 辅助触控绑定的动作二级选择，样式跟音色弹层共用 -->
+    <nut-popup v-model:visible="bindingPickerVisible" position="bottom" round closeable>
+      <div class="voice-picker">
+        <div class="voice-picker-title">{{ bindingPickerTitle }}</div>
+        <div class="voice-picker-group">
+          <nut-radio-group :model-value="bindingPickerAction" @change="(value: string) => setBindingAction(bindingPickerIndex, value)">
+            <nut-radio v-for="option in bindingOptionList[bindingPickerIndex] ?? []"
+                       :key="option.value" :label="option.value" class="voice-picker-option">
+              {{ option.text }}
+            </nut-radio>
+          </nut-radio-group>
+        </div>
+      </div>
+    </nut-popup>
     <!-- 手柄：弹窗期间轮询手柄，按下的第一个键追加成 \pad0 这样的写法 -->
     <nut-dialog
         v-model:visible="gamepadCaptureVisible"
@@ -429,7 +404,13 @@ const speakWordActionName = ref('');
 // 熟词的手动播放用哪一套（跟其它几行一样，空串 = 默认音色）
 const familiarPlayAction = ref('');
 const familiarPlayActionName = ref('');
-// 四处朗读设置的统一描述：key 是存进 profile 的字段名，读配置/存配置/刷新名字快照都按它走
+// 熟词的打完整词朗读用哪一套
+const speakWordFamiliarAction = ref('');
+const speakWordFamiliarActionName = ref('');
+// 熟词跳过成功时念整词用哪一套
+const familiarSkipAction = ref('');
+const familiarSkipActionName = ref('');
+// 各处朗读设置的统一描述：key 是存进 profile 的字段名，读配置/存配置/刷新名字快照都按它走
 type TtsActionSlot = { key: string; action: Ref<string>; name: Ref<string> };
 const ttsActionSlots: TtsActionSlot[] = [
   {key: 'manualPlayAction', action: manualPlayAction, name: manualPlayActionName},
@@ -437,6 +418,8 @@ const ttsActionSlots: TtsActionSlot[] = [
   {key: 'speakLettersAction', action: speakLettersAction, name: speakLettersActionName},
   {key: 'speakWordAction', action: speakWordAction, name: speakWordActionName},
   {key: 'familiarPlayAction', action: familiarPlayAction, name: familiarPlayActionName},
+  {key: 'speakWordFamiliarAction', action: speakWordFamiliarAction, name: speakWordFamiliarActionName},
+  {key: 'familiarSkipAction', action: familiarSkipAction, name: familiarSkipActionName},
 ];
 const spellResetLevel = ref(false);
 const hintTrigger = ref(' ');
@@ -457,7 +440,7 @@ const keyMapping = ref('');
 // 熟词阈值：每个字母允许的毫秒数，0 = 关闭。familiarMsInput 是输入框里的字符串，familiarMs 是判定用的数值
 const familiarMs = ref(0);
 const familiarMsInput = ref('0');
-// 熟词有效期（天）：0 = 不过期。过期判定在服务端 familiarQuery 里做（进库时间就是 kv 的值）
+// 熟词有效期（天）：0 = 不过期。全局一份，不跟 profile 走。过期判定在服务端 familiarQuery 里做（进库时间就是 kv 的值）
 const familiarExpireDays = ref(0);
 const assistiveTouchBindings = ref<AssistiveTouchBinding[]>([]);
 // 每条绑定最后一次成功保存的键，校验失败时用来还原对应的输入框
@@ -597,15 +580,15 @@ const showTips = () => {
   const formatStatus = (val: boolean) => val ? t('enabled') : t('disabled');
 
   const rows = [
+    {label: t('familiarExpireDays'), value: familiarExpireDays.value > 0 ? `${familiarExpireDays.value}` : t('familiarExpireNever')},
     {label: t('profile'), value: profileNames.value[isAdmin.value ? activeProfile.value : playerProfile.value]},
     {label: t('ignoreCase'), value: formatStatus(ignoreCase.value)},
     {label: t('ignorePunctuation'), value: formatStatus(ignorePunctuation.value)},
     {label: t('ignoreNumber'), value: formatStatus(ignoreNumber.value)},
-    {label: t('speakLetters'), value: `${formatStatus(speakLetters.value)} \u2192 ${ttsActionName(speakLettersAction.value, speakLettersActionName.value)}`},
-    {label: t('speakWord'), value: `${formatStatus(speakWord.value)} \u2192 ${ttsActionName(speakWordAction.value, speakWordActionName.value)}`},
-    {label: t('familiarPlayAction'), value: ttsActionName(familiarPlayAction.value, familiarPlayActionName.value)},
-    {label: t('manualPlayTrigger'), value: `${formatTriggerKey(manualPlayTrigger.value)} \u2192 ${ttsActionName(manualPlayAction.value, manualPlayActionName.value)}`},
-    {label: t('spellPlayTrigger'), value: `${formatTriggerKey(spellPlayTrigger.value)} \u2192 ${ttsActionName(spellPlayAction.value, spellPlayActionName.value)}`},
+    {label: t('speakLetters'), value: `${formatStatus(speakLetters.value)} \u2192 ${voiceSummary('speakLetters')}`},
+    {label: t('speakWord'), value: `${formatStatus(speakWord.value)} \u2192 ${voiceSummary('speakWord')}`},
+    {label: t('manualPlayTrigger'), value: `${formatTriggerKey(manualPlayTrigger.value)} \u2192 ${voiceSummary('manualPlay')}`},
+    {label: t('spellPlayTrigger'), value: `${formatTriggerKey(spellPlayTrigger.value)} \u2192 ${voiceSummary('spellPlay')}`},
     {label: t('spellResetLevel'), value: formatStatus(spellResetLevel.value)},
     {label: t('hintTrigger'), value: formatTriggerKey(hintTrigger.value)},
     {label: t('maskTrigger'), value: maskTrigger.value ? formatTriggerKey(maskTrigger.value) : t('disabled')},
@@ -614,8 +597,7 @@ const showTips = () => {
     {label: t('deleteTrigger'), value: deleteTrigger.value ? formatTriggerKey(deleteTrigger.value) : t('disabled')},
     {label: t('keyMapping'), value: keyMapping.value || t('disabled')},
     {label: t('familiarMs'), value: familiarMs.value > 0 ? `${familiarMs.value}ms` : t('disabled')},
-    {label: t('familiarExpireDays'), value: familiarExpireDays.value > 0 ? `${familiarExpireDays.value}` : t('familiarExpireNever')},
-    {label: t('familiarSkipTrigger'), value: familiarSkipTrigger.value ? formatTriggerKey(familiarSkipTrigger.value) : t('disabled')}
+    {label: t('familiarSkipTrigger'), value: familiarSkipTrigger.value ? `${formatTriggerKey(familiarSkipTrigger.value)} \u2192 ${voiceSummary('familiarSkip')}` : t('disabled')}
   ];
 
   // 绑定是变长的，一条一行；一条都没配就显示"未启用"
@@ -675,6 +657,16 @@ const applyProfile = (index: number) => {
     slot.action.value = typeof raw?.action === 'string' ? raw.action : '';
     slot.name.value = typeof raw?.name === 'string' ? raw.name : '';
   }
+  // 熟词的整词朗读是后加的：老配置里没有这个字段时沿用生词那一套，熟词听到的声音跟以前一样
+  if (typeof res['speakWordFamiliarAction']?.action !== 'string') {
+    speakWordFamiliarAction.value = speakWordAction.value;
+    speakWordFamiliarActionName.value = speakWordActionName.value;
+  }
+  // 熟词跳过以前用的是手动播放的熟词那一套，老配置没有这个字段时照旧
+  if (typeof res['familiarSkipAction']?.action !== 'string') {
+    familiarSkipAction.value = familiarPlayAction.value;
+    familiarSkipActionName.value = familiarPlayActionName.value;
+  }
   spellResetLevel.value = typeof res['spellResetLevel'] === 'boolean' ? res['spellResetLevel'] : false;
   hintTrigger.value = typeof res['hintTrigger'] === 'string' ? res['hintTrigger'] : ' ';
   maskTrigger.value = typeof res['maskTrigger'] === 'string' ? res['maskTrigger'] : '';
@@ -691,7 +683,6 @@ const applyProfile = (index: number) => {
   keyMapping.value = typeof res['keyMapping'] === 'string' ? res['keyMapping'] : '';
   familiarMs.value = typeof res['familiarMs'] === 'number' && res['familiarMs'] > 0 ? res['familiarMs'] : 0;
   familiarMsInput.value = `${familiarMs.value}`;
-  familiarExpireDays.value = typeof res['familiarExpireDays'] === 'number' ? res['familiarExpireDays'] : 0;
   const rawBindings = Array.isArray(res['assistiveTouchBindings']) ? res['assistiveTouchBindings'] : [];
   assistiveTouchBindings.value = rawBindings.map((b: any) => ({
     key: typeof b?.key === 'string' ? b.key : '',
@@ -741,6 +732,19 @@ const bindingOptionList = computed(() => assistiveTouchBindings.value.map((bindi
   return options;
 }));
 
+// 绑定动作的二级弹层：没有可选按钮、也没绑过东西时点了没意义，小字退成普通灰字
+const bindingPickable = (index: number) => (bindingOptionList.value[index]?.length ?? 0) > 0;
+const bindingPickerVisible = ref(false);
+const bindingPickerIndex = ref(0);
+const bindingPickerAction = computed(() => assistiveTouchBindings.value[bindingPickerIndex.value]?.action ?? '');
+const bindingPickerTitle = computed(() => assistiveTouchBindings.value[bindingPickerIndex.value]?.wordAsk
+    ? t('wordAskTrigger') : t('assistiveTouchTrigger'));
+const openBindingPicker = (index: number) => {
+  if (!bindingPickable(index)) return;
+  bindingPickerIndex.value = index;
+  bindingPickerVisible.value = true;
+};
+
 // 朗读设置下拉里能选的：「默认音色」+ 辅助触控里所有「朗读」类型的动作。
 // 玩家端不拉按钮列表（options 为空），这时只有"默认音色"一条。
 const ttsActionOptions = computed(() => assistiveTouchOptions.value
@@ -772,11 +776,41 @@ const ttsOptionListOf = (action: string, name: string) => {
   }
   return options;
 };
-const manualPlayOptions = computed(() => ttsOptionListOf(manualPlayAction.value, manualPlayActionName.value));
-const spellPlayOptions = computed(() => ttsOptionListOf(spellPlayAction.value, spellPlayActionName.value));
-const speakLettersOptions = computed(() => ttsOptionListOf(speakLettersAction.value, speakLettersActionName.value));
-const speakWordOptions = computed(() => ttsOptionListOf(speakWordAction.value, speakWordActionName.value));
-const familiarPlayOptions = computed(() => ttsOptionListOf(familiarPlayAction.value, familiarPlayActionName.value));
+// 会出声的每一行各有哪几套音色：title 是这一行的标题，groups 里 tag 是"生词/熟词/字母"标注
+type VoiceRow = 'manualPlay' | 'familiarSkip' | 'spellPlay' | 'speakLetters' | 'speakWord';
+const slotOf = (key: string) => ttsActionSlots.find((slot) => slot.key === key)!;
+const voiceRows: Record<VoiceRow, { title: string; groups: { tag: string; slot: TtsActionSlot }[] }> = {
+  manualPlay: {
+    title: 'manualPlayTrigger',
+    groups: [{tag: 'ttsTagNew', slot: slotOf('manualPlayAction')}, {tag: 'ttsTagFamiliar', slot: slotOf('familiarPlayAction')}],
+  },
+  familiarSkip: {title: 'familiarSkipTrigger', groups: [{tag: 'ttsTagFamiliar', slot: slotOf('familiarSkipAction')}]},
+  spellPlay: {title: 'spellPlayTrigger', groups: [{tag: 'ttsTagLetter', slot: slotOf('spellPlayAction')}]},
+  speakLetters: {title: 'speakLetters', groups: [{tag: 'ttsTagLetter', slot: slotOf('speakLettersAction')}]},
+  speakWord: {
+    title: 'speakWord',
+    groups: [{tag: 'ttsTagNew', slot: slotOf('speakWordAction')}, {tag: 'ttsTagFamiliar', slot: slotOf('speakWordFamiliarAction')}],
+  },
+};
+// 设置行第二行的小字，比如"生词: 默认音色 · 熟词: 美音慢速"
+const voiceSummary = (row: VoiceRow) => voiceRows[row].groups
+    .map((g) => `${t(g.tag)}: ${ttsActionName(g.slot.action.value, g.slot.name.value)}`)
+    .join(' · ');
+// 没有「朗读」动作可选时二级里只有"默认音色"一项，点进去没意义，小字就退成普通灰字；
+// 但这一行还挂着一个已失效的动作时仍然能点，好把它改回默认音色
+const voicePickable = (row: VoiceRow) => ttsActionOptions.value.length > 0
+    || voiceRows[row].groups.some((g) => g.slot.action.value !== '');
+const voiceLinkClass = (row: VoiceRow) => voicePickable(row) ? 'voice-link' : 'voice-text';
+const voicePickerVisible = ref(false);
+const voicePickerRow = ref<VoiceRow | null>(null);
+// 选项列表跟 ttsOptionListOf 的老规矩一样放进 computed，保持引用稳定
+const voicePickerGroups = computed(() => (voicePickerRow.value ? voiceRows[voicePickerRow.value].groups : [])
+    .map((g) => ({...g, options: ttsOptionListOf(g.slot.action.value, g.slot.name.value)})));
+const openVoicePicker = (row: VoiceRow) => {
+  if (!voicePickable(row)) return;
+  voicePickerRow.value = row;
+  voicePickerVisible.value = true;
+};
 
 const getAssistiveTouchActions = async () => {
   try {
@@ -821,6 +855,7 @@ const getConfig = async () => {
   profileNames.value = Array.isArray(res['profileNames']) ? res['profileNames'] : ['1', '2', '3'];
   profiles.value = Array.isArray(res['profiles']) ? res['profiles'] : [];
   playerProfile.value = typeof res['myProfile'] === 'number' ? res['myProfile'] : activeProfile.value;
+  familiarExpireDays.value = typeof res['familiarExpireDays'] === 'number' ? res['familiarExpireDays'] : 0;
   // 依赖 isAdmin，所以 onMounted 里必须先 getAdmin 再 getConfig
   applyProfile(isAdmin.value ? activeProfile.value : playerProfile.value);
   // 上次停在哪一档就接着用；要在 applyProfile 之后，亮度/系统栏得按这套 profile 的 dimOnMask 等开关来
@@ -929,11 +964,7 @@ const setTtsAction = (slot: TtsActionSlot, value: string) => {
   profiles.value[activeProfile.value][slot.key] = stored;
   setConfig(slot.key, stored);
 };
-const setManualPlayAction = (value: string) => setTtsAction(ttsActionSlots[0], value);
-const setSpellPlayAction = (value: string) => setTtsAction(ttsActionSlots[1], value);
-const setSpeakLettersAction = (value: string) => setTtsAction(ttsActionSlots[2], value);
-const setSpeakWordAction = (value: string) => setTtsAction(ttsActionSlots[3], value);
-const setFamiliarPlayAction = (value: string) => setTtsAction(ttsActionSlots[4], value);
+
 const setFamiliarSkipTrigger = (value: string) => {
   if (isKeyTaken(value, 'familiarSkip')) {
     showToast.warn(t('triggerKeyConflict'));
@@ -996,7 +1027,6 @@ const setDeleteTrigger = (value: string) => {
 };
 const setFamiliarExpireDays = (value: number) => {
   familiarExpireDays.value = value;
-  profiles.value[activeProfile.value].familiarExpireDays = value;
   setConfig("familiarExpireDays", value);
 };
 const setFamiliarMs = (value: string) => {
@@ -1319,6 +1349,7 @@ const familiarCandidates = (text: string): { start: number; end: number; word: s
 
 // 当前这句里已经在熟词库里的词（小写）。每换一句从服务端重新拉，服务端是唯一权威。
 const familiarWords = ref<Set<string>>(new Set());
+const isFamiliarWord = (word: string) => familiarWords.value.has(word.toLowerCase());
 
 const familiarCandidateByStart = computed(() => {
   const map = new Map<number, { start: number; end: number; word: string }>();
@@ -1373,7 +1404,7 @@ const markFamiliar = (word: string) => {
 // 别卡打字节奏。
 const onFamiliarSkip = (word: string, skipped: boolean) => {
   if (skipped) {
-    if (word) speak(word, undefined, true, playActionOf(word));
+    if (word) speak(word, undefined, true, familiarSkipAction.value);
     return;
   }
   const req = new Request({
@@ -1442,7 +1473,7 @@ const flushWord = () => {
   // 手动播放这些是另外的开关，各管各的）
   if (pendingWordEnd !== null && speakWord.value) {
     const word = typingRef.value?.getWordAt(pendingWordEnd);
-    if (word) p = speak(word, undefined, false, speakWordAction.value);
+    if (word) p = speak(word, undefined, false, isFamiliarWord(word) ? speakWordFamiliarAction.value : speakWordAction.value);
   }
   pendingWordEnd = null;
   return p;
@@ -1485,9 +1516,9 @@ const onCompleted = async () => {
   await reportComplete(completedRoundId);
 };
 
-// 手动播放这个词该用哪套朗读设置：在熟词库里就用"熟词朗读"那一行的，否则用手动播放那一行的。
+// 手动播放这个词该用哪套朗读设置：在熟词库里就用手动播放那一行的"熟词"下拉，否则用"生词"下拉。
 const playActionOf = (word: string) => {
-  return familiarWords.value.has(word.toLowerCase()) ? familiarPlayAction.value : manualPlayAction.value;
+  return isFamiliarWord(word) ? familiarPlayAction.value : manualPlayAction.value;
 };
 
 const speakCurrentWord = () => {
@@ -1793,33 +1824,10 @@ onUnmounted(() => {
   padding: 0 15px;
 }
 
-/* 一行绑定：键输入框固定窄宽，动作下拉占满剩余空间，删除图标贴右 */
 .cell-help {
   margin-left: 8px;
   cursor: pointer;
   flex-shrink: 0; /* 贴在行尾，别被前面的输入框挤小 */
-}
-
-.assist-binding {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  width: 100%;
-}
-
-/* nut-input 自带 padding:10px 25px 且 box-sizing:border-box，宽度只给 40px 的话
-   左右内边距就把里面真正的 <input> 挤成 0 宽，点上去既不聚焦也弹不出键盘。
-   所以这里必须把左右内边距清掉，并留出够点的宽度。 */
-.assist-binding-key {
-  width: 48px;
-  flex-shrink: 0;
-  padding: 10px 0;
-  text-align: center;
-}
-
-.assist-binding-action {
-  flex: 1;
-  min-width: 0;
 }
 
 .assist-binding-del {
@@ -1827,8 +1835,128 @@ onUnmounted(() => {
   opacity: 0.6;
 }
 
-.assist-binding-add {
+/* nut-input 默认上下 padding 10px，设置面板里一行一个输入框显得太高，统一压矮 */
+.settings-panel :deep(.nut-input) {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+/* 出声设置行：标题和触发键/开关在第一行，音色小字占满最后一行（flex-basis 100% 换到下一行） */
+.voice-cell {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* 带输入框的行窄屏放不下一行，固定分行排：标题 + 问号 / 输入框 + 加号 / 音色小字（没有就只两行）。
+   标题把第一行除问号以外的位置占满，输入框就被挤到第二行；order 决定各块的先后。 */
+.stacked-cell {
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 6px;
+}
+
+.stacked-cell :deep(.nut-cell__title) {
+  order: 0;
+  flex: 1 1 0;
+  min-width: calc(100% - 32px);
+}
+
+.stacked-cell > .cell-help {
+  order: 1;
+}
+
+.stacked-cell > .stacked-space {
+  order: 2;
+  margin-right: 8px;
+  opacity: 0.6;
+}
+
+.stacked-cell > .stacked-key {
+  order: 2;
+  flex: 1;
+  min-width: 0;
+}
+
+.stacked-cell > .stacked-add {
+  order: 3;
   flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.stacked-cell > .voice-line {
+  order: 4;
+}
+
+/* 辅助触控绑定行第一行右边有删除和问号两个图标，标题要多让出一点位置 */
+.stacked-cell-binding :deep(.nut-cell__title) {
+  min-width: calc(100% - 56px);
+}
+
+.stacked-cell-binding > .assist-binding-del {
+  order: 1;
+  margin-left: 8px;
+}
+
+/* 最后一行的小字（音色/绑定的动作）：能点时是链接样式，不能点时是普通灰字 */
+.voice-line {
+  flex-basis: 100%;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.voice-line.voice-link {
+  color: #1989fa;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.nut-theme-dark .voice-line.voice-link {
+  color: #5ca8ff;
+}
+
+.voice-line.voice-text {
+  opacity: 0.6;
+}
+
+/* 弹层里的文字不会从 nut-cell 继承颜色，亮/暗主题都要自己给 */
+.voice-picker {
+  padding: 16px;
+  max-height: 70vh;
+  overflow-y: auto;
+  color: #1a1a1a;
+}
+
+.nut-theme-dark .voice-picker {
+  color: #f5f5f5;
+}
+
+.voice-picker-title {
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.voice-picker-group {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.voice-picker-tag {
+  font-size: 13px;
+  opacity: 0.6;
+  margin-bottom: 4px;
+}
+
+.voice-picker-option {
+  display: flex;
+  padding: 6px 0;
+}
+
+.voice-picker-desc {
+  margin-top: 12px;
+  font-size: 12px;
+  opacity: 0.6;
 }
 
 .eyes-closed-mask {
