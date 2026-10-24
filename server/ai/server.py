@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 import uvicorn
 from fastapi import FastAPI, Form, HTTPException, UploadFile, File
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 
 import catalog as cat
 import downloader as dl
@@ -370,6 +370,58 @@ def _run_asr(samples, lang: str) -> str:
     return engine.recognize(r, samples)
 
 
+def _synthesize(say: str, sid: int, speed: float):
+    """合成一段话，返回 (wav 文件字节 | None, 音频时长 ms)。/v1/infer 和 /v1/tts 共用。"""
+    tts_entry = _selected("tts")
+    if tts_entry.kind == "hf-tts":
+        # transformers 那条路：权重共享，靠内部信号量限流，
+        # 不像 sherpa 那样每个并发都要一份实例
+        inst = hf_tts.get(tts_entry.id, cat.model_dir(_model_root, tts_entry.id),
+                          tts_entry.cfg, engine.num_threads(), engine.tts_workers())
+        out, rate = inst.synthesize(say)
+    else:
+        # **必须走池子**：sherpa 的 OfflineTts 实例不是线程安全的，
+        # 而 TTS 不在全局锁里，多个请求会同时进到这儿。
+        pool = engine.tts_pool(_catalog, _model_root, tts_entry.id)
+        with pool.acquire() as inst:
+            out, rate = engine.synthesize(inst, say, sid, speed)
+    if out is None:
+        return None, 0
+    return wav.write(out, rate), wav.duration_ms(out.size, rate)
+
+
+def _tts_response(text: Optional[str], sid: Optional[int], speed: Optional[float]) -> Response:
+    say = (text or "").strip()
+    if not say:
+        raise HTTPException(status_code=400, detail="text is required")
+    t0 = time.time()
+    data, _ = _synthesize(say,
+                          _selection.tts_sid if sid is None else max(0, sid),
+                          _selection.tts_speed if speed is None else speed)
+    if data is None:
+        raise HTTPException(status_code=400, detail="tts produced no audio")
+    ms = int((time.time() - t0) * 1000)
+    with _stats_lock:
+        _stats.append({"asrMs": 0, "mtMs": 0, "ttsMs": ms, "totalMs": ms,
+                       "audioMs": 0, "kind": "tts-api"})
+        del _stats[:-_STATS_KEEP]
+    # 每次现合成、只在内存里，不落盘：朗读文本千变万化，缓存命中率低，还得管清理
+    return Response(content=data, media_type="audio/wav")
+
+
+@app.get("/v1/tts")
+def tts_get(text: str = "", sid: Optional[int] = None, speed: Optional[float] = None) -> Response:
+    """对外的朗读接口：直接回 audio/wav，手机悬浮球的朗读动作、浏览器、curl 都能直接用。"""
+    return _tts_response(text, sid, speed)
+
+
+@app.post("/v1/tts")
+def tts_post(text: str = Form(""), sid: Optional[int] = Form(None),
+             speed: Optional[float] = Form(None)) -> Response:
+    # 长文本走 POST，不受 URL 长度限制
+    return _tts_response(text, sid, speed)
+
+
 @app.post("/v1/infer")
 async def infer(
     kind: str = Form(...),
@@ -462,23 +514,7 @@ async def infer(
                 dst = say
         if say:
             t = time.time()
-            tts_entry = _selected("tts")
-            if tts_entry.kind == "hf-tts":
-                # transformers 那条路：权重共享，靠内部信号量限流，
-                # 不像 sherpa 那样每个并发都要一份实例
-                inst = hf_tts.get(tts_entry.id, cat.model_dir(_model_root, tts_entry.id),
-                                  tts_entry.cfg, engine.num_threads(), engine.tts_workers())
-                out, rate = inst.synthesize(say)
-            else:
-                # **必须走池子**：sherpa 的 OfflineTts 实例不是线程安全的，
-                # 而 TTS 已经不在全局锁里了，多个请求会同时进到这儿。
-                pool = engine.tts_pool(_catalog, _model_root, tts_entry.id)
-                with pool.acquire() as inst:
-                    out, rate = engine.synthesize(inst, say, _selection.tts_sid,
-                                                  _selection.tts_speed)
-            if out is not None:
-                tts_wav = wav.write(out, rate)
-                tts_ms = wav.duration_ms(out.size, rate)
+            tts_wav, tts_ms = _synthesize(say, _selection.tts_sid, _selection.tts_speed)
             timing["ttsMs"] = int((time.time() - t) * 1000)
 
     timing["totalMs"] = int((time.time() - t0) * 1000)

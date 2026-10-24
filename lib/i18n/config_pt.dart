@@ -273,6 +273,9 @@ class ConfigPt extends Config {
     put(I18nKey.ttsVoice, "Voz");
     put(I18nKey.ttsPitch, "Tom");
     put(I18nKey.ttsSpeechRate, "Velocidade da fala");
+    put(I18nKey.ttsRemoteUrl, "URL do servidor TTS");
+    put(I18nKey.ttsRemoteUrlNone, "No dispositivo");
+    put(I18nKey.remoteTtsFailed, "Falha no TTS remoto, usando o TTS do dispositivo: %s");
     put(I18nKey.advancedEdit, "Edição pela rede");
     put(I18nKey.assistiveTouch, "Toque assistido");
     put(I18nKey.web, "Web");

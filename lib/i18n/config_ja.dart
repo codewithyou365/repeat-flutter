@@ -273,6 +273,9 @@ class ConfigJa extends Config {
     put(I18nKey.ttsVoice, "声");
     put(I18nKey.ttsPitch, "高さ");
     put(I18nKey.ttsSpeechRate, "話す速さ");
+    put(I18nKey.ttsRemoteUrl, "TTS サーバー URL");
+    put(I18nKey.ttsRemoteUrlNone, "端末");
+    put(I18nKey.remoteTtsFailed, "リモート読み上げに失敗、端末の TTS を使用: %s");
     put(I18nKey.advancedEdit, "ネットワーク編集");
     put(I18nKey.assistiveTouch, "アシスティブタッチ");
     put(I18nKey.web, "Web");

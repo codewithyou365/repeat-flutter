@@ -273,6 +273,9 @@ class ConfigKo extends Config {
     put(I18nKey.ttsVoice, "음성");
     put(I18nKey.ttsPitch, "음높이");
     put(I18nKey.ttsSpeechRate, "말하기 속도");
+    put(I18nKey.ttsRemoteUrl, "TTS 서버 URL");
+    put(I18nKey.ttsRemoteUrlNone, "기기");
+    put(I18nKey.remoteTtsFailed, "원격 TTS 실패, 기기 TTS 사용: %s");
     put(I18nKey.advancedEdit, "네트워크 편집");
     put(I18nKey.assistiveTouch, "보조 터치");
     put(I18nKey.web, "웹");

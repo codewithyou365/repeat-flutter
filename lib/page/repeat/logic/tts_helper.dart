@@ -13,12 +13,15 @@ import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/widget/overlay/overlay.dart';
 import 'package:repeat_flutter/widget/row/row_widget.dart';
 import 'package:repeat_flutter/widget/sheet/sheet.dart';
+import 'package:repeat_flutter/widget/snackbar/snackbar.dart';
 
 import 'helper.dart';
+import 'remote_tts.dart';
 
 class TtsHelper {
   final FlutterTts tts = FlutterTts();
   final TtsPage ttsPage = TtsPage();
+  final RemoteTts remoteTts = RemoteTts();
   List<String> availableEngines = [];
   String currEngine = '';
   static String cacheConfig = '';
@@ -139,9 +142,10 @@ class TtsHelper {
 
   /// 配置存在别处（悬浮球 tts 动作存在 classroom.content 里）时用：
   /// 面板上每改一项就回调一次 [save]，由调用方决定怎么落库。
-  Future<bool> openWith(TtsSettings settings, Future<void> Function(TtsSettings) save) async {
+  /// [allowRemote] 为真时面板多一行"TTS 服务链接"（只有悬浮球朗读动作有）。
+  Future<bool> openWith(TtsSettings settings, Future<void> Function(TtsSettings) save, {bool allowRemote = false}) async {
     if (await AwaitUtil.tryDo(() async => await _apply(settings))) {
-      return await ttsPage.open(tts, availableEngines, currEngine, save);
+      return await ttsPage.open(tts, availableEngines, currEngine, save, remoteUrl: allowRemote ? (settings.remoteUrl ?? '') : null);
     }
     return false;
   }
@@ -170,8 +174,23 @@ class TtsHelper {
   }
 
   /// 悬浮球 tts 动作用：语速/音色等直接来自这个动作自己的配置。
+  /// 配了远程链接就先让服务端现合成；失败提示一下，这次改用本机 TTS，保证有声音。
   Future<void> speakTextWith(TtsSettings settings, String text) async {
     if (text.isEmpty) return;
+    final url = settings.remoteUrl?.trim() ?? '';
+    if (url.isNotEmpty) {
+      if (_isSpeaking) return;
+      _isSpeaking = true;
+      try {
+        await remoteTts.speak(url, text);
+        return;
+      } catch (e) {
+        debugPrint("Remote TTS Error: $e");
+        Snackbar.show(I18nKey.remoteTtsFailed.trArgs(['$e']));
+      } finally {
+        _isSpeaking = false;
+      }
+    }
     await _speak(text, () => tryInitWith(settings), null);
   }
 
@@ -198,6 +217,7 @@ class TtsHelper {
     cacheConfig = '';
     _isSpeaking = false;
     tts.stop();
+    remoteTts.stop();
   }
 }
 
@@ -210,6 +230,9 @@ class TtsPage {
   // Converted to RxInt for consistent UI updating
   final RxInt rateIdx = 1.obs;
   final RxInt pitchIdx = 2.obs;
+
+  /// 远程 TTS 链接。null 表示这个面板不提供这一项（按字段类型存的那套 TTS 设置）。
+  RxString? remoteUrl;
 
   List<Map<String, String>> _allVoices = [];
   List<Map<String, String>> _filteredVoices = [];
@@ -259,6 +282,7 @@ class TtsPage {
         voiceIndex: Platform.isAndroid ? voiceIdx.value : null,
         rateIndex: rateIdx.value,
         pitchIndex: pitchIdx.value,
+        remoteUrl: remoteUrl?.value.trim(),
       );
 
   /// 返回值表示是不是点"确定"关的：划走/点外面取消时 Sheet.showBottomSheet 拿到的是 null，
@@ -267,17 +291,36 @@ class TtsPage {
     FlutterTts tts,
     List<String> availableEngines,
     String currEngine,
-    Future<void> Function(TtsSettings) save,
-  ) async {
+    Future<void> Function(TtsSettings) save, {
+    String? remoteUrl,
+  }) async {
     int engineIndex = availableEngines.indexOf(currEngine);
     if (engineIndex == -1) engineIndex = 0;
     var engine = currEngine;
+    final remote = remoteUrl?.obs;
+    this.remoteUrl = remote;
     final confirmed = await Sheet.showBottomSheet<bool>(
       Get.context!,
       head: _buildHeader(),
       ListView(
         shrinkWrap: true,
         children: [
+          if (remote != null) ...[
+            // 填了就走服务端（server/ai 的 /v1/tts）实时合成，下面那些本机参数只在回落时用。
+            // buildTextWithEdit 的输入框自己不刷新、也不关弹框，所以包 Obx、回调里自己关。
+            Obx(
+              () => RowWidget.buildTextWithEdit(
+                I18nKey.ttsRemoteUrl.tr,
+                remote,
+                format: (v) => _shortUrl('${v.value}'),
+                onTextModify: () async {
+                  Get.back();
+                  await save(_current(engine));
+                },
+              ),
+            ),
+            RowWidget.buildDividerWithoutColor(),
+          ],
           if (Platform.isAndroid && availableEngines.isNotEmpty) ...[
             RowWidget.buildCupertinoPicker(
               title: I18nKey.ttsEngine.tr,
@@ -405,6 +448,19 @@ class TtsPage {
         voiceIdx.value = 0;
       }
     }
+  }
+
+  /// 链接很长，行里只显示 host:port/path；空的显示"本机"。
+  static String _shortUrl(String url) {
+    final v = url.trim();
+    if (v.isEmpty) {
+      return I18nKey.ttsRemoteUrlNone.tr;
+    }
+    final i = v.indexOf('://');
+    final rest = i < 0 ? v : v.substring(i + 3);
+    final cut = rest.indexOf('?');
+    final shown = cut < 0 ? rest : rest.substring(0, cut);
+    return shown.length > 24 ? '${shown.substring(0, 24)}…' : shown;
   }
 
   SheetHead _buildHeader() {

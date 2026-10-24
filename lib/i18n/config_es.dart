@@ -273,6 +273,9 @@ class ConfigEs extends Config {
     put(I18nKey.ttsVoice, "Voz");
     put(I18nKey.ttsPitch, "Tono");
     put(I18nKey.ttsSpeechRate, "Velocidad de habla");
+    put(I18nKey.ttsRemoteUrl, "URL del servidor TTS");
+    put(I18nKey.ttsRemoteUrlNone, "En el dispositivo");
+    put(I18nKey.remoteTtsFailed, "Falló el TTS remoto, se usa el del dispositivo: %s");
     put(I18nKey.advancedEdit, "Edición por red");
     put(I18nKey.assistiveTouch, "Toque asistido");
     put(I18nKey.web, "Web");

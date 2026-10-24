@@ -273,6 +273,9 @@ class ConfigVi extends Config {
     put(I18nKey.ttsVoice, "Giọng");
     put(I18nKey.ttsPitch, "Cao độ");
     put(I18nKey.ttsSpeechRate, "Tốc độ nói");
+    put(I18nKey.ttsRemoteUrl, "URL máy chủ TTS");
+    put(I18nKey.ttsRemoteUrlNone, "Trên thiết bị");
+    put(I18nKey.remoteTtsFailed, "TTS từ xa thất bại, dùng TTS của máy: %s");
     put(I18nKey.advancedEdit, "Sửa qua mạng");
     put(I18nKey.assistiveTouch, "Nút trợ năng");
     put(I18nKey.web, "Web");

@@ -273,6 +273,9 @@ class ConfigZh extends Config {
     put(I18nKey.ttsVoice, "声音");
     put(I18nKey.ttsPitch, "语调");
     put(I18nKey.ttsSpeechRate, "语速");
+    put(I18nKey.ttsRemoteUrl, "TTS 服务链接");
+    put(I18nKey.ttsRemoteUrlNone, "本机");
+    put(I18nKey.remoteTtsFailed, "远程朗读失败，已改用本机: %s");
     put(I18nKey.advancedEdit, "网络编辑");
     put(I18nKey.assistiveTouch, "辅助触控");
     put(I18nKey.web, "网络");

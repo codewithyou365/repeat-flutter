@@ -273,6 +273,9 @@ class ConfigFr extends Config {
     put(I18nKey.ttsVoice, "Voix");
     put(I18nKey.ttsPitch, "Hauteur");
     put(I18nKey.ttsSpeechRate, "Débit de parole");
+    put(I18nKey.ttsRemoteUrl, "URL du serveur TTS");
+    put(I18nKey.ttsRemoteUrlNone, "Sur l'appareil");
+    put(I18nKey.remoteTtsFailed, "Échec du TTS distant, TTS de l'appareil utilisé : %s");
     put(I18nKey.advancedEdit, "Édition par le réseau");
     put(I18nKey.assistiveTouch, "Touche d'assistance");
     put(I18nKey.web, "Web");

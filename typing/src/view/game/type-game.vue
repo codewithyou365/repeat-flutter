@@ -85,6 +85,20 @@
         <div class="voice-line" :class="voiceLinkClass('familiarSkip')" @click="openVoicePicker('familiarSkip')">{{ voiceSummary('familiarSkip') }}</div>
       </template>
     </nut-cell>
+    <nut-cell :title="t('skipTrigger')" class="stacked-cell">
+      <template #link>
+        <span v-if="hasSpaceKey(skipTrigger)" class="stacked-space">{{ t('spaceKey') }}</span>
+        <nut-input
+            v-model="skipTrigger"
+            class="stacked-key"
+            @blur="setSkipTrigger(skipTrigger)"
+        />
+        <nut-button size="mini" type="info" plain class="stacked-add" @click="openKeyPicker('skip')">+</nut-button>
+        <Ask color="#999" width="16px" height="16px" class="cell-help"
+             @click="showHelp(t('skipTriggerDesc') + '<br/><br/>' + t('familiarVoiceDesc') + '<br/><br/>' + t('ttsActionDesc') + '<br/><br/>' + t('multiKeyDesc'))"/>
+        <div class="voice-line" :class="voiceLinkClass('skip')" @click="openVoicePicker('skip')">{{ voiceSummary('skip') }}</div>
+      </template>
+    </nut-cell>
     <nut-cell :title="t('spellPlayTrigger')" class="stacked-cell">
       <template #link>
         <span v-if="hasSpaceKey(spellPlayTrigger)" class="stacked-space">{{ t('spaceKey') }}</span>
@@ -247,7 +261,7 @@
         <div class="voice-picker-title">{{ voicePickerRow ? t(voiceRows[voicePickerRow].title) : '' }}</div>
         <div v-for="group in voicePickerGroups" :key="group.slot.key" class="voice-picker-group">
           <div class="voice-picker-tag">{{ t(group.tag) }}</div>
-          <nut-radio-group :model-value="group.slot.action.value" @change="(value: string) => setTtsAction(group.slot, value)">
+          <nut-radio-group :model-value="group.slot.action.value" @update:model-value="(value: string) => setTtsAction(group.slot, value)">
             <nut-radio v-for="option in group.options"
                        :key="option.value" :label="option.value" class="voice-picker-option">
               {{ option.text }}
@@ -262,7 +276,7 @@
       <div class="voice-picker">
         <div class="voice-picker-title">{{ bindingPickerTitle }}</div>
         <div class="voice-picker-group">
-          <nut-radio-group :model-value="bindingPickerAction" @change="(value: string) => setBindingAction(bindingPickerIndex, value)">
+          <nut-radio-group :model-value="bindingPickerAction" @update:model-value="(value: string) => setBindingAction(bindingPickerIndex, value)">
             <nut-radio v-for="option in bindingOptionList[bindingPickerIndex] ?? []"
                        :key="option.value" :label="option.value" class="voice-picker-option">
               {{ option.text }}
@@ -321,6 +335,7 @@
           :key-mapping="keyMapping"
           :familiar-ranges="familiarRanges"
           :familiar-skip-trigger="familiarSkipTrigger"
+          :skip-trigger="skipTrigger"
           @char-filled="onCharFilled"
           @completed="onCompleted"
           @manual-play="onManualPlay"
@@ -330,6 +345,7 @@
           @assist-trigger="onAssistTrigger"
           @user-input-change="onUserInputChange"
           @familiar-skip="onFamiliarSkip"
+          @skip="onSkip"
       />
     </div>
 
@@ -410,6 +426,11 @@ const speakWordFamiliarActionName = ref('');
 // 熟词跳过成功时念整词用哪一套
 const familiarSkipAction = ref('');
 const familiarSkipActionName = ref('');
+// 跳过键成功时念整词用哪一套，生词、熟词各一套
+const skipAction = ref('');
+const skipActionName = ref('');
+const skipFamiliarAction = ref('');
+const skipFamiliarActionName = ref('');
 // 各处朗读设置的统一描述：key 是存进 profile 的字段名，读配置/存配置/刷新名字快照都按它走
 type TtsActionSlot = { key: string; action: Ref<string>; name: Ref<string> };
 const ttsActionSlots: TtsActionSlot[] = [
@@ -420,6 +441,8 @@ const ttsActionSlots: TtsActionSlot[] = [
   {key: 'familiarPlayAction', action: familiarPlayAction, name: familiarPlayActionName},
   {key: 'speakWordFamiliarAction', action: speakWordFamiliarAction, name: speakWordFamiliarActionName},
   {key: 'familiarSkipAction', action: familiarSkipAction, name: familiarSkipActionName},
+  {key: 'skipAction', action: skipAction, name: skipActionName},
+  {key: 'skipFamiliarAction', action: skipFamiliarAction, name: skipFamiliarActionName},
 ];
 const spellResetLevel = ref(false);
 const hintTrigger = ref(' ');
@@ -429,6 +452,8 @@ const immersiveOnMask = ref(true);
 const deleteTrigger = ref('');
 // 熟词跳过键：空串 = 不启用
 const familiarSkipTrigger = ref('');
+// 跳过键：空串 = 不启用
+const skipTrigger = ref('');
 // 各触发键最后一次成功保存的值，用于校验失败时把输入框还原回去
 let manualPlayTriggerSaved = '.';
 let spellPlayTriggerSaved = ',';
@@ -436,6 +461,7 @@ let hintTriggerSaved = ' ';
 let maskTriggerSaved = '';
 let deleteTriggerSaved = '';
 let familiarSkipTriggerSaved = '';
+let skipTriggerSaved = '';
 const keyMapping = ref('');
 // 熟词阈值：每个字母允许的毫秒数，0 = 关闭。familiarMsInput 是输入框里的字符串，familiarMs 是判定用的数值
 const familiarMs = ref(0);
@@ -597,7 +623,8 @@ const showTips = () => {
     {label: t('deleteTrigger'), value: deleteTrigger.value ? formatTriggerKey(deleteTrigger.value) : t('disabled')},
     {label: t('keyMapping'), value: keyMapping.value || t('disabled')},
     {label: t('familiarMs'), value: familiarMs.value > 0 ? `${familiarMs.value}ms` : t('disabled')},
-    {label: t('familiarSkipTrigger'), value: familiarSkipTrigger.value ? `${formatTriggerKey(familiarSkipTrigger.value)} \u2192 ${voiceSummary('familiarSkip')}` : t('disabled')}
+    {label: t('familiarSkipTrigger'), value: familiarSkipTrigger.value ? `${formatTriggerKey(familiarSkipTrigger.value)} \u2192 ${voiceSummary('familiarSkip')}` : t('disabled')},
+    {label: t('skipTrigger'), value: skipTrigger.value ? `${formatTriggerKey(skipTrigger.value)} \u2192 ${voiceSummary('skip')}` : t('disabled')}
   ];
 
   // 绑定是变长的，一条一行；一条都没配就显示"未启用"
@@ -674,12 +701,14 @@ const applyProfile = (index: number) => {
   immersiveOnMask.value = typeof res['immersiveOnMask'] === 'boolean' ? res['immersiveOnMask'] : true;
   deleteTrigger.value = typeof res['deleteTrigger'] === 'string' ? res['deleteTrigger'] : '';
   familiarSkipTrigger.value = typeof res['familiarSkipTrigger'] === 'string' ? res['familiarSkipTrigger'] : '';
+  skipTrigger.value = typeof res['skipTrigger'] === 'string' ? res['skipTrigger'] : '';
   manualPlayTriggerSaved = manualPlayTrigger.value;
   spellPlayTriggerSaved = spellPlayTrigger.value;
   hintTriggerSaved = hintTrigger.value;
   maskTriggerSaved = maskTrigger.value;
   deleteTriggerSaved = deleteTrigger.value;
   familiarSkipTriggerSaved = familiarSkipTrigger.value;
+  skipTriggerSaved = skipTrigger.value;
   keyMapping.value = typeof res['keyMapping'] === 'string' ? res['keyMapping'] : '';
   familiarMs.value = typeof res['familiarMs'] === 'number' && res['familiarMs'] > 0 ? res['familiarMs'] : 0;
   familiarMsInput.value = `${familiarMs.value}`;
@@ -777,7 +806,7 @@ const ttsOptionListOf = (action: string, name: string) => {
   return options;
 };
 // 会出声的每一行各有哪几套音色：title 是这一行的标题，groups 里 tag 是"生词/熟词/字母"标注
-type VoiceRow = 'manualPlay' | 'familiarSkip' | 'spellPlay' | 'speakLetters' | 'speakWord';
+type VoiceRow = 'manualPlay' | 'familiarSkip' | 'skip' | 'spellPlay' | 'speakLetters' | 'speakWord';
 const slotOf = (key: string) => ttsActionSlots.find((slot) => slot.key === key)!;
 const voiceRows: Record<VoiceRow, { title: string; groups: { tag: string; slot: TtsActionSlot }[] }> = {
   manualPlay: {
@@ -785,6 +814,10 @@ const voiceRows: Record<VoiceRow, { title: string; groups: { tag: string; slot: 
     groups: [{tag: 'ttsTagNew', slot: slotOf('manualPlayAction')}, {tag: 'ttsTagFamiliar', slot: slotOf('familiarPlayAction')}],
   },
   familiarSkip: {title: 'familiarSkipTrigger', groups: [{tag: 'ttsTagFamiliar', slot: slotOf('familiarSkipAction')}]},
+  skip: {
+    title: 'skipTrigger',
+    groups: [{tag: 'ttsTagNew', slot: slotOf('skipAction')}, {tag: 'ttsTagFamiliar', slot: slotOf('skipFamiliarAction')}],
+  },
   spellPlay: {title: 'spellPlayTrigger', groups: [{tag: 'ttsTagLetter', slot: slotOf('spellPlayAction')}]},
   speakLetters: {title: 'speakLetters', groups: [{tag: 'ttsTagLetter', slot: slotOf('speakLettersAction')}]},
   speakWord: {
@@ -913,7 +946,7 @@ const setSpeakWord = (value: boolean) => {
 };
 // 所有触发键（四个固定的 + 任意条辅助触控绑定）不能互相重复，比如手动播放和逐字母朗读不能都设成 '.'。
 // exclude 是"正在改的那一个"（固定键用名字，绑定用下标），要排除掉，否则改成原值也会判成冲突。
-type TriggerOwner = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | 'familiarSkip' | number;
+type TriggerOwner = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | 'familiarSkip' | 'skip' | number;
 const isKeyTaken = (value: string, exclude: TriggerOwner) => {
   const specs = parseKeySpecs(value);
   if (specs.length === 0) {
@@ -926,6 +959,7 @@ const isKeyTaken = (value: string, exclude: TriggerOwner) => {
   if (exclude !== 'mask') others.push(maskTrigger.value);
   if (exclude !== 'delete') others.push(deleteTrigger.value);
   if (exclude !== 'familiarSkip') others.push(familiarSkipTrigger.value);
+  if (exclude !== 'skip') others.push(skipTrigger.value);
   assistiveTouchBindings.value.forEach((b, i) => {
     if (exclude !== i) others.push(b.key);
   });
@@ -974,6 +1008,16 @@ const setFamiliarSkipTrigger = (value: string) => {
   familiarSkipTriggerSaved = value;
   profiles.value[activeProfile.value].familiarSkipTrigger = value;
   setConfig("familiarSkipTrigger", value);
+};
+const setSkipTrigger = (value: string) => {
+  if (isKeyTaken(value, 'skip')) {
+    showToast.warn(t('triggerKeyConflict'));
+    skipTrigger.value = skipTriggerSaved;
+    return;
+  }
+  skipTriggerSaved = value;
+  profiles.value[activeProfile.value].skipTrigger = value;
+  setConfig("skipTrigger", value);
 };
 const setSpellResetLevel = (value: boolean) => {
   profiles.value[activeProfile.value].spellResetLevel = value;
@@ -1113,7 +1157,7 @@ const removeBinding = (index: number) => {
 };
 
 // "+"弹出的特殊按键选择器：target 标记要往哪个触发键配置里追加，number 表示第几条辅助触控绑定
-type KeyPickerTarget = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | 'familiarSkip' | number;
+type KeyPickerTarget = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | 'familiarSkip' | 'skip' | number;
 const keyPickerVisible = ref(false);
 const keyPickerTarget = ref<KeyPickerTarget | null>(null);
 // 键盘上打不出/不方便打出来的按键，选中后写成 \name 的形式。
@@ -1199,6 +1243,9 @@ const appendTokenToTarget = (token: string) => {
   } else if (target === 'familiarSkip') {
     familiarSkipTrigger.value = appendKeyToken(familiarSkipTrigger.value, token);
     setFamiliarSkipTrigger(familiarSkipTrigger.value);
+  } else if (target === 'skip') {
+    skipTrigger.value = appendKeyToken(skipTrigger.value, token);
+    setSkipTrigger(skipTrigger.value);
   } else {
     const binding = assistiveTouchBindings.value[target];
     if (binding) {
@@ -1359,9 +1406,9 @@ const familiarCandidateByStart = computed(() => {
   return map;
 });
 
-// 交给 Typing 组件的熟词位置。阈值为 0 时直接空数组，功能整个不工作。
+// 交给 Typing 组件的熟词位置。熟词库是所有 profile 共用的，展示/跳过/挑音色都只看库；
+// 阈值只管要不要往库里记新词（阈值为 0 = 不记新词），所以这里不看阈值。
 const familiarRanges = computed(() => {
-  if (familiarMs.value <= 0) return [];
   const ret: { start: number; end: number }[] = [];
   for (const item of familiarCandidateByStart.value.values()) {
     if (familiarWords.value.has(item.word)) ret.push({start: item.start, end: item.end});
@@ -1371,7 +1418,7 @@ const familiarRanges = computed(() => {
 
 const loadFamiliar = async () => {
   const words = [...familiarCandidateByStart.value.values()].map((c) => c.word);
-  if (familiarMs.value <= 0 || words.length === 0) {
+  if (words.length === 0) {
     familiarWords.value = new Set();
     return;
   }
@@ -1407,6 +1454,20 @@ const onFamiliarSkip = (word: string, skipped: boolean) => {
     if (word) speak(word, undefined, true, familiarSkipAction.value);
     return;
   }
+  playCueSound();
+};
+
+// 按了跳过键：生词熟词都能跳，跳成了按是不是熟词挑"跳过键"那一行的生词/熟词音色念整词；
+// 没跳成（光标不在词上、或者词已经打完了）跟熟词跳过一样只响一声提示音。
+const onSkip = (word: string, skipped: boolean, familiar: boolean) => {
+  if (skipped) {
+    if (word) speak(word, undefined, true, familiar ? skipFamiliarAction.value : skipAction.value);
+    return;
+  }
+  playCueSound();
+};
+
+const playCueSound = () => {
   const req = new Request({
     path: Path.game,
     headers: {'jsMethod': 'Game.playSound'},

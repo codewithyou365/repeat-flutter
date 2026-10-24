@@ -273,6 +273,9 @@ class ConfigId extends Config {
     put(I18nKey.ttsVoice, "Suara");
     put(I18nKey.ttsPitch, "Nada");
     put(I18nKey.ttsSpeechRate, "Kecepatan bicara");
+    put(I18nKey.ttsRemoteUrl, "URL server TTS");
+    put(I18nKey.ttsRemoteUrlNone, "Di perangkat");
+    put(I18nKey.remoteTtsFailed, "TTS jarak jauh gagal, memakai TTS perangkat: %s");
     put(I18nKey.advancedEdit, "Penyuntingan lewat jaringan");
     put(I18nKey.assistiveTouch, "Tombol bantu");
     put(I18nKey.web, "Web");

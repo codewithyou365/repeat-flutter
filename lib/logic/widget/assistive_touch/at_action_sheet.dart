@@ -116,6 +116,7 @@ class AtActionSheet {
                     await logic.repeatLogic.ttsHelper.openWith(
                       action.tts.settings,
                       (s) async => action.tts.apply(s),
+                      allowRemote: true,
                     );
                   },
                 ),

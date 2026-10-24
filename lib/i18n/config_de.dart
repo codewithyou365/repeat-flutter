@@ -273,6 +273,9 @@ class ConfigDe extends Config {
     put(I18nKey.ttsVoice, "Stimme");
     put(I18nKey.ttsPitch, "Tonhöhe");
     put(I18nKey.ttsSpeechRate, "Sprechtempo");
+    put(I18nKey.ttsRemoteUrl, "TTS-Server-URL");
+    put(I18nKey.ttsRemoteUrlNone, "Auf dem Gerät");
+    put(I18nKey.remoteTtsFailed, "Remote-TTS fehlgeschlagen, Geräte-TTS wird verwendet: %s");
     put(I18nKey.advancedEdit, "Bearbeiten über Netzwerk");
     put(I18nKey.assistiveTouch, "Hilfstaste");
     put(I18nKey.web, "Web");

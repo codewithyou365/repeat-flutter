@@ -70,6 +70,25 @@
 melo 是 44.1 k，不是录音的 16 k）。局域网上几百 KB 走 base64 完全够用，
 客户端因此少一套 multipart 解析。
 
+## GET / POST /v1/tts
+
+对外的朗读接口，直接回 `audio/wav`（不是 JSON）。手机悬浮球「自定义动作 → 朗读 → TTS 设置」
+里填 `http://<IP>:8767/v1/tts` 就走它；浏览器、curl 也能直接用。
+
+| 参数 | 说明 |
+|---|---|
+| `text` | 待合成文本，必需。`GET` 走 query，`POST` 走 form（长文本用 POST） |
+| `sid` | 可选，音色。不给用网页上选的 `ttsSid` |
+| `speed` | 可选，语速。不给用网页上选的 `ttsSpeed` |
+
+模型由服务端选（同 `/v1/infer`）。**每次现合成、只在内存里**，不落盘也不缓存。
+出错仍是 `{"error": "..."}`：空文本 / 没产出 / 没有 tts 模型 → 400。
+
+```bash
+curl -o a.wav 'http://127.0.0.1:8767/v1/tts?text=hello%20world'
+curl -F text=你好 http://127.0.0.1:8767/v1/tts -o b.wav
+```
+
 ## GET /v1/models
 
 ```json

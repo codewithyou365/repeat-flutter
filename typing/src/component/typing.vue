@@ -90,6 +90,8 @@ const props = withDefaults(defineProps<{
   familiarRanges?: { start: number; end: number }[];
   // 熟词跳过键：按下时光标所在的词是熟词就整词跳过，否则父组件响一声提示音
   familiarSkipTrigger?: string;
+  // 跳过键：不管生词熟词，光标所在的词还没打完就整词跳过，熟不熟由父组件决定用哪套音色朗读
+  skipTrigger?: string;
 }>(), {
   clickFillCharWhenDisabled: '',
   touchColor: '',
@@ -107,6 +109,7 @@ const props = withDefaults(defineProps<{
   hidePending: false,
   familiarRanges: () => [],
   familiarSkipTrigger: '',
+  skipTrigger: '',
 });
 
 // T9 风格按键映射："a:abc•q:def" -> 按下 a 时，目标字母是 a/b/c 都算对；按下 q 时，
@@ -135,11 +138,12 @@ const hintSpecs = computed(() => parseKeySpecs(props.hintTrigger));
 const maskSpecs = computed(() => parseKeySpecs(props.maskTrigger));
 const deleteSpecs = computed(() => parseKeySpecs(props.deleteTrigger));
 const familiarSkipSpecs = computed(() => parseKeySpecs(props.familiarSkipTrigger));
+const skipSpecs = computed(() => parseKeySpecs(props.skipTrigger));
 // 每条辅助触控绑定各自的配置，raw 是绑定原本的 key 字符串（用于 emit 出去让父组件按原样匹配）
 const assistSpecsList = computed(() => props.assistTriggers.map((raw) => ({raw, specs: parseKeySpecs(raw)})));
 
 const emit = defineEmits<{
-  // skip=true 的字符是"熟词跳过"补出来的，不是用户敲的、也不是被忽略字符自动补的：
+  // skip=true 的字符是"熟词跳过"/"跳过键"补出来的，不是用户敲的、也不是被忽略字符自动补的：
   // 父组件收到要跳过朗读和熟词计时（跳过时已经整词念过一遍了）。
   (e: 'charFilled', index: number, char: string, auto: boolean, correct: boolean, skip: boolean): void;
   (e: 'completed'): void;
@@ -157,6 +161,8 @@ const emit = defineEmits<{
   // 按了熟词跳过键。skipped=true 表示确实跳过了一个熟词（word 是那个词，父组件负责朗读），
   // false 表示光标所在的词不是熟词/已经打完了，什么都没动，父组件响一声提示音就行。
   (e: 'familiarSkip', word: string, skipped: boolean): void;
+  // 按了跳过键。skipped 同上；familiar 表示跳过的是不是熟词，父组件据此挑生词/熟词那套音色。
+  (e: 'skip', word: string, skipped: boolean, familiar: boolean): void;
 }>();
 
 const store = useStore();
@@ -312,7 +318,7 @@ const isIgnore = (c: string, index: number) => {
   return props.ignoreContentIndexes && props.ignoreContentIndexes.includes(index);
 };
 
-// skip=true 的是"熟词跳过"补出来的字符：父组件收到 charFilled 时要跳过朗读和熟词计时
+// skip=true 的是"熟词跳过"/"跳过键"补出来的字符：父组件收到 charFilled 时要跳过朗读和熟词计时
 type FilledEvent = { index: number; auto: boolean; skip?: boolean };
 
 // 把 index 处新落下的字符标记为一个待通知事件；auto=true 表示是被自动跳过/填充的
@@ -362,15 +368,24 @@ const familiarRangeStartingAt = (index: number) => {
 
 // 熟词跳过：光标所在的词是熟词、且还没打完时，把它剩下的字母一次性补上（连同紧跟其后的
 // 标点空格），并让父组件把整词念出来；否则什么都不动，只通知父组件响一声提示音。
+// familiarOnly=false 是"跳过键"：生词也照跳，熟词仍按整个熟词区间（可能是多词短语）跳。
 //
 // 直接改 live 的 userInput/cursorPos（跟 clearCurrentWord 一个写法），所以在 applyInput
 // 里必须走 pendingTriggerEmits 延后执行，不然会被那边末尾的 userInput.value = temp 覆盖掉。
-const doFamiliarSkip = () => {
+const doSkip = (familiarOnly: boolean) => {
   const bounds = getWordBounds(cursorPos.value);
-  const range = bounds ? familiarRangeStartingAt(bounds.start) : null;
+  const familiarRange = bounds ? familiarRangeStartingAt(bounds.start) : null;
+  const range = familiarRange ?? (familiarOnly ? null : bounds);
+  const notify = (word: string, skipped: boolean) => {
+    if (familiarOnly) {
+      emit('familiarSkip', word, skipped);
+    } else {
+      emit('skip', word, skipped, familiarRange !== null);
+    }
+  };
   // 词已经打完（光标停在词尾之后）也算没跳成：这时想再听一遍该用手动播放键
   if (!range || cursorPos.value > range.end) {
-    emit('familiarSkip', '', false);
+    notify('', false);
     return;
   }
   const word = props.content.slice(range.start, range.end + 1);
@@ -401,7 +416,7 @@ const doFamiliarSkip = () => {
   // 同步要排在 emitFilledEvents 前面，理由同 applyInput：后者可能 emit('completed')
   emitUserInputChange(filled.map((item) => item.index));
   emitFilledEvents(filled);
-  emit('familiarSkip', word, true);
+  notify(word, true);
   nextTick(positionInput);
 };
 
@@ -477,9 +492,13 @@ const applyInput = (val: string) => {
       pendingTriggerEmits.push(() => doBackspace());
       continue; // 触发字符本身不写入内容，也不推进 pos
     }
-    // 熟词跳过键：跟删除键同理，doFamiliarSkip 改的是 userInput/cursorPos，必须延后执行
+    // 熟词跳过键：跟删除键同理，doSkip 改的是 userInput/cursorPos，必须延后执行
     if (specsHaveChar(familiarSkipSpecs.value, char)) {
-      pendingTriggerEmits.push(() => doFamiliarSkip());
+      pendingTriggerEmits.push(() => doSkip(true));
+      continue; // 触发字符本身不写入内容，也不推进 pos
+    }
+    if (specsHaveChar(skipSpecs.value, char)) {
+      pendingTriggerEmits.push(() => doSkip(false));
       continue; // 触发字符本身不写入内容，也不推进 pos
     }
     // 绑定到 App 辅助触控按钮的键，数量由用户配置，可以有多个，每条绑定又可以配多个按键
@@ -706,7 +725,11 @@ const handleSpecialKeyTrigger = (keyName: string): boolean => {
     return true;
   }
   if (specsHaveSpecial(familiarSkipSpecs.value, keyName)) {
-    doFamiliarSkip();
+    doSkip(true);
+    return true;
+  }
+  if (specsHaveSpecial(skipSpecs.value, keyName)) {
+    doSkip(false);
     return true;
   }
   const assistMatch = assistSpecsList.value.find(({specs}) => specsHaveSpecial(specs, keyName));

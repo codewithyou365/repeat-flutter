@@ -113,6 +113,10 @@ code{background:var(--soft);border-radius:4px;padding:1px 6px;font-size:13px}
     <code id="lan">…</code>
     <button id="copylan">复制</button>
     <span class="meta">填到手机「AI 模型 → 远程推理 → 服务地址」</span>
+  </div><div class="row">
+    <code id="ttsurl">…</code>
+    <button id="copytts">复制</button>
+    <span class="meta">朗读链接：填到悬浮球「自定义动作 → 朗读 → TTS 设置 → TTS 服务链接」，每次实时合成</span>
   </div></div>
 
   <h2>最近推理</h2>
@@ -173,6 +177,7 @@ async function load(){
   $('#status').innerHTML = `<span class="dot"></span>运行中 · ${DATA.threads} 线程 · `
     + `已装 ${DATA.models.filter(m=>m.ok).length}/${DATA.models.length} · 占用 ${MB(DATA.diskUsage)}`;
   $('#lan').textContent = `http://${DATA.lan}:${DATA.port}`;
+  $('#ttsurl').textContent = `http://${DATA.lan}:${DATA.port}/v1/tts`;
   $('#root').textContent = DATA.root;
   $('#threads').textContent = DATA.threads;
   $('#cver').textContent = `v${DATA.catalogVersion} · ${DATA.models.length} 个模型`
@@ -450,6 +455,7 @@ async function saveSource(){
 }
 
 $('#copylan').onclick = e => copy($('#lan').textContent, e.target);
+$('#copytts').onclick = e => copy($('#ttsurl').textContent, e.target);
 tab(location.hash.slice(1));
 load();
 // 手机在录音时这几个数字会动。切到别的标签页就停——没人看的时候没必要发请求。

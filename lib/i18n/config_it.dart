@@ -273,6 +273,9 @@ class ConfigIt extends Config {
     put(I18nKey.ttsVoice, "Voce");
     put(I18nKey.ttsPitch, "Tono");
     put(I18nKey.ttsSpeechRate, "Velocità di lettura");
+    put(I18nKey.ttsRemoteUrl, "URL del server TTS");
+    put(I18nKey.ttsRemoteUrlNone, "Sul dispositivo");
+    put(I18nKey.remoteTtsFailed, "TTS remoto non riuscito, uso il TTS del dispositivo: %s");
     put(I18nKey.advancedEdit, "Modifica via rete");
     put(I18nKey.assistiveTouch, "Tocco assistito");
     put(I18nKey.web, "Web");

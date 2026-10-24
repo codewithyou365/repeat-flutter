@@ -273,6 +273,9 @@ class ConfigRu extends Config {
     put(I18nKey.ttsVoice, "Голос");
     put(I18nKey.ttsPitch, "Высота тона");
     put(I18nKey.ttsSpeechRate, "Темп речи");
+    put(I18nKey.ttsRemoteUrl, "URL TTS-сервера");
+    put(I18nKey.ttsRemoteUrlNone, "На устройстве");
+    put(I18nKey.remoteTtsFailed, "Ошибка удалённого TTS, используется TTS устройства: %s");
     put(I18nKey.advancedEdit, "Правка по сети");
     put(I18nKey.assistiveTouch, "Вспомогательная кнопка");
     put(I18nKey.web, "Веб");

@@ -273,6 +273,9 @@ class ConfigEn extends Config {
     put(I18nKey.ttsVoice, "Voice");
     put(I18nKey.ttsPitch, "Pitch");
     put(I18nKey.ttsSpeechRate, "Speech Rate");
+    put(I18nKey.ttsRemoteUrl, "TTS server URL");
+    put(I18nKey.ttsRemoteUrlNone, "On device");
+    put(I18nKey.remoteTtsFailed, "Remote TTS failed, using device TTS: %s");
     put(I18nKey.advancedEdit, "Network Edit");
     put(I18nKey.assistiveTouch, "Assistive Touch");
     put(I18nKey.web, "Web");

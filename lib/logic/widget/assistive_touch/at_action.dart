@@ -82,12 +82,18 @@ class TtsSettings {
   int? rateIndex;
   int? pitchIndex;
 
+  /// 远程 TTS 服务链接（server/ai 的 /v1/tts）。非空时朗读改走服务端实时合成，
+  /// 失败才回落本机。只有悬浮球朗读动作有这一项，按字段类型存的那套没有。
+  /// 不进 [cacheKey]：那个只管 FlutterTts 要不要重灌。
+  String? remoteUrl;
+
   TtsSettings({
     this.engine,
     this.languageIndex,
     this.voiceIndex,
     this.rateIndex,
     this.pitchIndex,
+    this.remoteUrl,
   });
 
   /// 判断"配置有没有变"用的缓存串（见 TtsHelper.cacheConfig）。
@@ -115,11 +121,15 @@ class AtTtsConfig {
   /// 空串表示老数据（那时朗读是挑字段的），执行时按 AtAction.target 走老路子。
   String template;
 
+  /// 远程 TTS 服务链接，见 [TtsSettings.remoteUrl]。不分平台：两台手机连的是同一台服务器。
+  String remoteUrl;
+
   AtTtsConfig({
     Map<String, Map<String, dynamic>>? byPlatform,
     this.rateIndex,
     this.pitchIndex,
     this.template = '',
+    this.remoteUrl = '',
   }) : byPlatform = byPlatform ?? {};
 
   static String get _platformKey => Platform.isAndroid ? 'a' : 'i';
@@ -132,6 +142,7 @@ class AtTtsConfig {
       voiceIndex: p['v'] is int ? p['v'] as int : null,
       rateIndex: rateIndex,
       pitchIndex: pitchIndex,
+      remoteUrl: remoteUrl,
     );
   }
 
@@ -144,6 +155,7 @@ class AtTtsConfig {
     };
     rateIndex = s.rateIndex;
     pitchIndex = s.pitchIndex;
+    remoteUrl = s.remoteUrl ?? '';
   }
 
   static AtTtsConfig fromJson(Object? json) {
@@ -162,6 +174,7 @@ class AtTtsConfig {
       rateIndex: json['r'] is int ? json['r'] as int : null,
       pitchIndex: json['p'] is int ? json['p'] as int : null,
       template: json['tp'] is String ? json['tp'] as String : '',
+      remoteUrl: json['u'] is String ? json['u'] as String : '',
     );
   }
 
@@ -170,6 +183,7 @@ class AtTtsConfig {
         if (rateIndex != null) 'r': rateIndex,
         if (pitchIndex != null) 'p': pitchIndex,
         if (template.isNotEmpty) 'tp': template,
+        if (remoteUrl.isNotEmpty) 'u': remoteUrl,
       };
 }
 
