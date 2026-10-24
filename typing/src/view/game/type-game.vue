@@ -290,7 +290,14 @@
         :menu-items="bindingTypeItems"
         @choose="onChooseBindingType"
     />
-    <!-- 各触发键输入框旁的"+"：给不方便直接打出来的特殊按键（Enter、NumLock 等）一个可选列表，
+    <!-- 各触发键输入框旁的"+"：先选是加键盘按键还是手柄按键 -->
+    <nut-action-sheet
+        v-model:visible="keySourceVisible"
+        :title="t('addSpecialKey')"
+        :menu-items="keySourceItems"
+        @choose="onChooseKeySource"
+    />
+    <!-- 键盘：给不方便直接打出来的特殊按键（Enter、NumLock 等）一个可选列表，
          选中后追加成 \enter 这样的写法，多个按键用 • 分隔 -->
     <nut-action-sheet
         v-model:visible="keyPickerVisible"
@@ -298,6 +305,14 @@
         :menu-items="specialKeyItems"
         @choose="onChooseSpecialKey"
     />
+    <!-- 手柄：弹窗期间轮询手柄，按下的第一个键追加成 \pad0 这样的写法 -->
+    <nut-dialog
+        v-model:visible="gamepadCaptureVisible"
+        :title="t('addGamepadKey')"
+        :no-ok-btn="true"
+        :cancelText="t('cancel')">
+      <div style="white-space: pre-line">{{ gamepadCaptureTip }}</div>
+    </nut-dialog>
   </div>
   <nut-cell v-else-if="cantPlayForMaintain">
     {{ t('cantPlayForMaintain') }}
@@ -366,7 +381,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import {onMounted, onUnmounted, ref, inject, Ref, reactive, computed, nextTick} from 'vue';
+import {onMounted, onUnmounted, ref, inject, Ref, reactive, computed, nextTick, watch} from 'vue';
 import {client, Request, Response} from '../../api/ws.ts';
 import {Path} from '../../utils/constant.ts';
 import {raiseSoftKeyboard} from '../../utils/keyboard.ts';
@@ -376,6 +391,7 @@ import {useI18n} from "vue-i18n";
 import {Ask, Voice, Eye, Del} from '@nutui/icons-vue';
 import {showToast} from "@nutui/nutui";
 import {parseKeySpecs, specsHaveChar, specsOverlap, formatKeySpecsDisplay} from '../../utils/keyTrigger.ts';
+import {connectedGamepadIds, gamepadAvailability, gamepadKeyName, watchGamepadPress} from '../../utils/gamepad.ts';
 
 const {t} = useI18n();
 const store = useStore();
@@ -1103,18 +1119,60 @@ const specialKeyNames: { key: string; label?: string }[] = [
   {key: 'F7'}, {key: 'F8'}, {key: 'F9'}, {key: 'F10'}, {key: 'F11'}, {key: 'F12'}];
 const specialKeyItems = computed(() => specialKeyNames.map(({key, label}) => ({name: label ?? key, key})));
 
+const keySourceVisible = ref(false);
+const keySourceItems = computed(() => [{name: t('keySourceKeyboard')}, {name: t('keySourceGamepad')}]);
+
 const openKeyPicker = (target: KeyPickerTarget) => {
   keyPickerTarget.value = target;
-  keyPickerVisible.value = true;
+  keySourceVisible.value = true;
+};
+
+const onChooseKeySource = (_item: any, index: number) => {
+  keySourceVisible.value = false;
+  if (index === 0) {
+    keyPickerVisible.value = true;
+  } else {
+    gamepadCaptureVisible.value = true;
+  }
 };
 
 const appendKeyToken = (current: string, token: string) => current ? `${current}•${token}` : token;
 
 const onChooseSpecialKey = (item: { name: string; key: string }) => {
   keyPickerVisible.value = false;
+  appendTokenToTarget(`\\${item.key.toLowerCase()}`);
+};
+
+// 手柄录键：弹窗打开期间轮询，第一个按下的键就是要加的键。
+// 手柄要在页面里先按一下才会被浏览器暴露出来，所以提示里一直显示当前识别到的手柄。
+const gamepadCaptureVisible = ref(false);
+const gamepadIds = ref<string[]>([]);
+let stopGamepadCapture = () => {};
+let gamepadIdTimer = 0;
+const gamepadCaptureTip = computed(() => {
+  const availability = gamepadAvailability();
+  if (availability === 'insecure') return t('gamepadInsecure');
+  if (availability === 'unsupported') return t('gamepadUnsupported');
+  if (gamepadIds.value.length === 0) return t('gamepadWaiting');
+  return t('gamepadPressKey', {name: gamepadIds.value.join(', ')});
+});
+watch(gamepadCaptureVisible, (visible) => {
+  stopGamepadCapture();
+  window.clearInterval(gamepadIdTimer);
+  if (!visible) return;
+  gamepadIds.value = connectedGamepadIds();
+  gamepadIdTimer = window.setInterval(() => gamepadIds.value = connectedGamepadIds(), 500);
+  stopGamepadCapture = watchGamepadPress((index) => {
+    // 同一帧按下多个键时只取第一个；停止轮询要等 watch 回调，这一帧里还会再进来
+    if (!gamepadCaptureVisible.value) return;
+    gamepadCaptureVisible.value = false;
+    appendTokenToTarget(`\\${gamepadKeyName(index)}`);
+  });
+});
+
+const appendTokenToTarget = (token: string) => {
   const target = keyPickerTarget.value;
   if (target === null) return;
-  const token = `\\${item.key.toLowerCase()}`;
   if (target === 'manualPlay') {
     manualPlayTrigger.value = appendKeyToken(manualPlayTrigger.value, token);
     setManualPlayTrigger(manualPlayTrigger.value);
@@ -1693,6 +1751,8 @@ onMounted(async () => {
 // （App 那边 RepeatLogic.onClose / JsRuntime.dispose 也有兜底，这里是最快的那条）
 onUnmounted(() => {
   document.removeEventListener('visibilitychange', onVisibilityChange);
+  stopGamepadCapture();
+  window.clearInterval(gamepadIdTimer);
   stopWaiting();
   if (maskMode.value !== 'off') {
     applyMaskUi('off');

@@ -60,6 +60,7 @@
 import {onMounted, ref, nextTick, computed, onBeforeUnmount, watch} from 'vue';
 import {useStore} from 'vuex';
 import {parseKeySpecs, specsHaveChar, specsHaveSpecial} from '../utils/keyTrigger.ts';
+import {gamepadKeyName, watchGamepadPress} from '../utils/gamepad.ts';
 
 const props = withDefaults(defineProps<{
   disabled: boolean;
@@ -255,13 +256,21 @@ const setCharRef = (el: Element | null, index: number) => {
   }
 };
 
+// 手柄按键当成 \pad0 这样的特殊按键，跟键盘特殊按键走同一套匹配
+let stopGamepadWatch = () => {};
+
 onMounted(() => {
   window.addEventListener('resize', positionInput);
   focusInput();
+  stopGamepadWatch = watchGamepadPress((index) => {
+    if (props.disabled) return;
+    handleSpecialKeyTrigger(gamepadKeyName(index));
+  });
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', positionInput);
+  stopGamepadWatch();
 });
 
 const focusInput = async () => {
@@ -674,8 +683,8 @@ const doBackspace = () => {
 
 // 特殊按键（Enter、NumLock 等）不会作为字符出现在 input 的 value 里，只能在 keydown 阶段
 // 按 e.key 识别。命中就直接执行对应动作并返回 true，交给 handleKeydown 去 preventDefault。
-const handleSpecialKeyTrigger = (e: KeyboardEvent): boolean => {
-  const keyName = e.key.toLowerCase();
+// 手柄按键也从这里进来，keyName 是 pad0 这样的名字。
+const handleSpecialKeyTrigger = (keyName: string): boolean => {
   if (specsHaveSpecial(manualPlaySpecs.value, keyName)) {
     emit('manualPlay', getWordAt(cursorPos.value));
     return true;
@@ -711,7 +720,7 @@ const handleSpecialKeyTrigger = (e: KeyboardEvent): boolean => {
 const handleKeydown = (e: KeyboardEvent) => {
   if (isComposing.value) return;
 
-  if (handleSpecialKeyTrigger(e)) {
+  if (handleSpecialKeyTrigger(e.key.toLowerCase())) {
     e.preventDefault();
     return;
   }

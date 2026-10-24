@@ -1,3 +1,5 @@
+import {gamepadKeyLabel} from './gamepad.ts';
+
 // 触发键配置的通用解析：一份配置是 • 分隔的多个按键，每个按键要么是一个可打印字符
 // （比如 '.'、','、' '），要么是反斜杠开头的特殊按键名（比如 '\enter'、'\numlock'，
 // 这类键不会作为字符出现在输入框的 value 里，只能从 keydown 事件的 e.key 里识别）。
@@ -44,6 +46,8 @@ export const formatKeySpecsDisplay = (raw: string, spaceLabel: string): string =
   if (specs.length === 0) return '';
   return specs.map((s) => {
     if (s.type === 'special') {
+      const padLabel = gamepadKeyLabel(s.name);
+      if (padLabel) return padLabel;
       return s.name.charAt(0).toUpperCase() + s.name.slice(1);
     }
     return s.char === ' ' ? spaceLabel : s.char;
