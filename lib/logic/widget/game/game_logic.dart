@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/await_util.dart';
-import 'package:repeat_flutter/common/ip.dart';
+import 'package:repeat_flutter/common/lan_host.dart';
 import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/common/ws/server.dart';
@@ -226,10 +226,11 @@ class GameLogic<T extends GetxController> {
           GameState.adminEnable = enable != 0;
           GameState.adminId = await Db().db.kvDao.getInt(K.adminId) ?? 0;
           await web.start(game.classroomId, game.hash, game.service, port.value);
+          await LanHost.start('game');
           state.urls.clear();
-          var ips = await Ip.getLanIps();
-          for (var i = 0; i < ips.length; i++) {
-            String url = ips[i];
+          var hosts = await LanHost.hosts();
+          for (var i = 0; i < hosts.length; i++) {
+            String url = hosts[i];
             state.urls.add('https://$url:${port.value}');
           }
           onOpenWeb();
@@ -257,6 +258,7 @@ class GameLogic<T extends GetxController> {
 
   Future<void> closeWeb() async {
     try {
+      await LanHost.stop('game');
       await web.stop();
       state.urls.clear();
       Snackbar.show('game service stopped');

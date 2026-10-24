@@ -2,6 +2,7 @@ package org.codewithyou365.repeat_flutter
 
 import android.content.Context
 import android.content.Intent
+import android.net.wifi.WifiManager
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
@@ -21,6 +22,14 @@ class MainActivity : FlutterActivity() {
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "showSoftInputForWebView" -> result.success(showSoftInputForWebView())
+                    else -> result.notImplemented()
+                }
+            }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, MULTICAST_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "acquire" -> result.success(acquireMulticastLock())
+                    "release" -> result.success(releaseMulticastLock())
                     else -> result.notImplemented()
                 }
             }
@@ -45,6 +54,37 @@ class MainActivity : FlutterActivity() {
     private fun serviceClassOf(kind: String?): Class<*> = when (kind) {
         "record" -> RecordForegroundService::class.java
         else -> GameForegroundService::class.java
+    }
+
+    private var multicastLock: WifiManager.MulticastLock? = null
+
+    /**
+     * 局域网固定域名（LanHost 的 mDNS 应答器）要收组播。不持锁的话很多机型的 Wi-Fi 驱动
+     * 为了省电直接把组播包丢掉，别人问 xxx.local 就永远收不到。Dart 侧按 owner 计数，
+     * 这里只管一把非计数锁。
+     */
+    private fun acquireMulticastLock(): Boolean {
+        return try {
+            val lock = multicastLock ?: (applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager)
+                .createMulticastLock("repeat_lan_host")
+                .apply { setReferenceCounted(false) }
+            lock.acquire()
+            multicastLock = lock
+            true
+        } catch (e: Exception) {
+            Log.w(TAG, "acquireMulticastLock failed", e)
+            false
+        }
+    }
+
+    private fun releaseMulticastLock(): Boolean {
+        return try {
+            multicastLock?.let { if (it.isHeld) it.release() }
+            true
+        } catch (e: Exception) {
+            Log.w(TAG, "releaseMulticastLock failed", e)
+            false
+        }
     }
 
     private fun startForegroundService(kind: String?): Boolean {
@@ -165,5 +205,6 @@ class MainActivity : FlutterActivity() {
         private const val TAG = "RepeatKeyboard"
         private const val KEYBOARD_CHANNEL = "repeat_flutter/keyboard"
         private const val FOREGROUND_CHANNEL = "repeat_flutter/foreground"
+        private const val MULTICAST_CHANNEL = "repeat_flutter/multicast"
     }
 }

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart' show rootBundle, ByteData;
 import 'package:get/get.dart';
 import 'package:repeat_flutter/common/await_util.dart';
 import 'package:repeat_flutter/common/ip.dart';
+import 'package:repeat_flutter/common/lan_host.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/string_util.dart';
 import 'package:repeat_flutter/common/url.dart';
@@ -164,6 +165,8 @@ class BookEditorLogic<T extends GetxController> {
       Get.back();
       return;
     }
+    await LanHost.start('bookEditor');
+    ips = await LanHost.hosts();
     state.addresses.clear();
     for (var i = 0; i < ips.length; i++) {
       String ip = ips[i];
@@ -187,6 +190,7 @@ class BookEditorLogic<T extends GetxController> {
   }
 
   Future<void> _stopHttpService() async {
+    await LanHost.stop('bookEditor');
     try {
       offEvent();
       if (server.open == false) {

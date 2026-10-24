@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:repeat_flutter/common/await_util.dart';
 import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/ip.dart';
+import 'package:repeat_flutter/common/lan_host.dart';
 import 'package:repeat_flutter/common/path.dart';
 import 'package:repeat_flutter/common/ssl.dart';
 import 'package:repeat_flutter/common/string_util.dart';
@@ -97,6 +98,8 @@ class ScShareLogic extends GetxController {
       Get.back();
       return;
     }
+    await LanHost.start('scShare');
+    ips = await LanHost.hosts();
     state.addresses.clear();
     for (var i = 0; i < ips.length; i++) {
       String ip = ips[i];
@@ -107,6 +110,7 @@ class ScShareLogic extends GetxController {
   }
 
   Future<void> _stopHttpService({tip = true}) async {
+    await LanHost.stop('scShare');
     if (_httpServer != null) {
       await _httpServer!.close();
       if (tip) {

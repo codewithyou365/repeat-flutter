@@ -78,6 +78,9 @@ enum K {
   /// 放 K 不放 CrK：这是使用者对"我这台设备上的内容允不允许出网"的取舍，
   /// 跟在哪个课堂无关。
   contentWebNetwork,
+
+  /// 本机的局域网固定域名（不带 .local），见 LanHost。第一次开分享服务时随机生成。
+  lanHostName,
 }
 
 @Entity(primaryKeys: ['k'])
