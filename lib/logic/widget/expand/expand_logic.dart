@@ -258,11 +258,11 @@ class ExpandLogic {
             Map<String, dynamic> result = data['result'] ?? {};
 
             if (_noSave) {
-              // 临时结果：只记下来给 execute 弹框，不写库。
-              // 没有 text 就把整个 result 原样给出来，至少能看到服务回了什么。
+              // 临时结果：只把 result['text'] 记下来给 execute 弹框，不写库。
+              // 跟覆盖写入一样，text 为空就当没拿到内容，不弹框。
               final text = result['text'];
-              _tempResult = (text is String && text.isNotEmpty) ? text : const JsonEncoder.withIndent('  ').convert(result);
-              hasContent = true;
+              hasContent = text is String && text.isNotEmpty;
+              _tempResult = hasContent ? text as String : null;
             } else {
               await _onTaskComplete(result, msg);
             }
