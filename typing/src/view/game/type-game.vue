@@ -1730,7 +1730,8 @@ onUnmounted(() => {
   width: 32%;
 }
 
-.nut-theme-dark .info-icon {
+.nut-theme-dark .info-icon,
+.nut-theme-dark .info-profile {
   color: white;
 }
 
