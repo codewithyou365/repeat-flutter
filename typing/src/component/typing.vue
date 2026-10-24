@@ -139,7 +139,7 @@ const familiarSkipSpecs = computed(() => parseKeySpecs(props.familiarSkipTrigger
 const assistSpecsList = computed(() => props.assistTriggers.map((raw) => ({raw, specs: parseKeySpecs(raw)})));
 
 const emit = defineEmits<{
-  // skip=true 的字符是"熟词跳过"补出来的，不是用户敲的、也不是间隔模式补的：
+  // skip=true 的字符是"熟词跳过"补出来的，不是用户敲的、也不是被忽略字符自动补的：
   // 父组件收到要跳过朗读和熟词计时（跳过时已经整词念过一遍了）。
   (e: 'charFilled', index: number, char: string, auto: boolean, correct: boolean, skip: boolean): void;
   (e: 'completed'): void;
@@ -849,7 +849,7 @@ watch(() => props.content, async () => {
   charRefs.value = new Array(props.content.length);
   await nextTick();
 
-  // 内容一开始就可能有一串被忽略（自动填充）的字符（比如间隔显示模式下第一个字母就是自动显示的），
+  // 内容一开始就可能有一串被忽略（自动填充）的字符（比如开头是被忽略的标点/数字），
   // 这段要提前把它们写进 userInput，minCursorPos/cursorPos 才会落在第一个真正需要输入的位置上，
   // 同时把这批字符也当作“已落下的字符”通知出去（用于父组件同步朗读等）
   let pos = 0;
@@ -868,7 +868,7 @@ watch(() => props.content, async () => {
   positionInput();
   inputRef.value?.focus();
   // 刚加载新内容时的这批自动填充绝不能触发 'completed'：如果整段内容恰好全是被忽略/自动填充的
-  // 字符（比如很短又被整词遮罩、或间隔模式下把每个字母都藏了），userInput 一上来就 >= 内容长度，
+  // 字符（比如很短又被整词遮罩、或整段只有被忽略的标点/数字），userInput 一上来就 >= 内容长度，
   // 一旦允许完成就会 emit('completed') -> 父组件 tap('tapLeft') -> refresh() 换下一段 -> 又全自动
   // 填充 -> 再次 completed……形成 refresh 无限递归，每轮还会堆一次网络请求和 TTS 队列，最终内存
   // 撑爆导致网页闪退。所以这里显式禁止完成事件。

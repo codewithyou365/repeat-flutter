@@ -2,8 +2,6 @@ declare function sendMessage(method: string, payload: string): any;
 
 type JsonRecord = Record<string, any>;
 
-type IntervalMode = 'none' | 'oddHidden' | 'evenHidden';
-
 // 一条"辅助触控触发键"绑定：按下 key 就执行 App 辅助触控里 action 对应的按钮。
 // action 形如 custom:<AtAction.id>（老配置里还有 builtin:<枚举名>，App 端读到会当作找不到）；
 // name 是选中那一刻的动作名快照，只用于显示（动作被删掉后拿不到真名时还能看出绑的是什么）。
@@ -28,7 +26,6 @@ type ProfileConfig = {
     ignorePunctuation: boolean;
     ignoreNumber: boolean;
     ignoreCase: boolean;
-    intervalMode: IntervalMode;
     speakLetters: boolean;
     speakWord: boolean;
     manualPlayTrigger: string;
@@ -122,7 +119,7 @@ async function familiarExpireDays(userId: number): Promise<number> {
 }
 
 function defaultProfileConfig(): ProfileConfig {
-    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "intervalMode": "none", "speakLetters": false, "speakWord": true, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "dimOnMask": false, "keyMapping": "", "assistiveTouchBindings": [], "wordAskTrigger": {"key": "", "action": "", "name": ""}, "spellResetLevel": false, "familiarMs": 0, "familiarExpireDays": 0, "familiarSkipTrigger": ""};
+    return {"ignorePunctuation": true, "ignoreNumber": true, "ignoreCase": true, "speakLetters": false, "speakWord": true, "manualPlayTrigger": ".", "spellPlayTrigger": ",", "hintTrigger": " ", "maskTrigger": "", "dimOnMask": false, "keyMapping": "", "assistiveTouchBindings": [], "wordAskTrigger": {"key": "", "action": "", "name": ""}, "spellResetLevel": false, "familiarMs": 0, "familiarExpireDays": 0, "familiarSkipTrigger": ""};
 }
 
 function defaultStoredConfig(): StoredConfig {
@@ -755,51 +752,41 @@ const Game = {
         }
     },
 
-    getIntervalMask: function (content: string, mode: IntervalMode, ignorePunctuation: boolean, ignoreNumber: boolean): string {
+    // 生成答案的遮罩：'•' 是必须输入的字母，其余（空格、换行、被忽略的标点/数字）原样保留，由客户端自动填充
+    getMask: function (content: string, ignorePunctuation: boolean, ignoreNumber: boolean): string {
         if (content.length === 0) {
             return content;
         }
         const chars = content.split('');
         const punctuationRegex = /\p{P}/u;
         const numberRegex = /\p{N}/u;
-        let wordPos = 0; // 单词内的字母序号（0-based），遇到空格/换行清零
 
         for (let i = 0; i < chars.length; i++) {
             const char = chars[i];
             if (char === ' ' || char === '\n') {
-                wordPos = 0;
                 continue;
             }
             if (ignorePunctuation && punctuationRegex.test(char)) {
-                continue; // 标点不算字母，也不占用/重置单词内计数
+                continue;
             }
             if (ignoreNumber && numberRegex.test(char)) {
-                continue; // 数字不算字母，也不占用/重置单词内计数
+                continue;
             }
-            // 1-based 字母序号 n = wordPos + 1
-            // none       -> 不间隔，每个字母都必须输入
-            // oddHidden  -> n 为奇数(wordPos 偶数)时隐藏，必须输入
-            // evenHidden -> n 为偶数(wordPos 奇数)时隐藏，必须输入
-            const hide = mode === 'none' ? true : (mode === 'oddHidden' ? (wordPos % 2 === 0) : (wordPos % 2 === 1));
-            if (hide) {
-                chars[i] = '•'; // '•' = 必须输入
-            }
-            wordPos++;
+            chars[i] = '•'; // '•' = 必须输入
         }
         return chars.join('');
     },
 
-    // 间隔遮罩按请求者自己的 profile 算，所以不同玩家拿到的 mask 可以不一样
+    // 遮罩按请求者自己的 profile 算（忽略标点/数字的设置），所以不同玩家拿到的 mask 可以不一样
     answer: async function (args: GameArgs): Promise<string> {
         try {
             const verse = await Util.getVerse();
             const answer = Util.fieldText(verse, 'a');
             const stored = await Util.getConfig();
             const config = stored.profiles[profileIndexOf(stored, args.userId)];
-            const intervalMode: IntervalMode = config.intervalMode || 'none';
             const ignorePunctuation = config.ignorePunctuation ?? true;
             const ignoreNumber = config.ignoreNumber ?? true;
-            const mask = this.getIntervalMask(answer, intervalMode, ignorePunctuation, ignoreNumber);
+            const mask = this.getMask(answer, ignorePunctuation, ignoreNumber);
             // 进打字界面就算玩家，换句时要等他打完。维护中的管理员只是在改设置，不算
             if (!(Util.adminEnable() && args.userId === Util.adminId())) {
                 this.players[args.userId] = true;

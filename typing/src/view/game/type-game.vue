@@ -31,15 +31,6 @@
         <nut-switch v-model="ignoreNumber" @change="setIgnoreNumber"/>
       </template>
     </nut-cell>
-    <nut-cell :title="t('intervalDisplay')">
-      <template #link>
-        <nut-radio-group v-model="intervalMode" direction="horizontal" @change="setIntervalMode">
-          <nut-radio label="none">{{ t('intervalNone') }}</nut-radio>
-          <nut-radio label="oddHidden">{{ t('intervalOddHidden') }}</nut-radio>
-          <nut-radio label="evenHidden">{{ t('intervalEvenHidden') }}</nut-radio>
-        </nut-radio-group>
-      </template>
-    </nut-cell>
     <nut-cell :title="t('familiarMs')">
       <template #link>
         <nut-input
@@ -420,7 +411,6 @@ const playerProfilePickerVisible = ref(false);
 const ignoreCase = ref(false);
 const ignorePunctuation = ref(false);
 const ignoreNumber = ref(true);
-const intervalMode = ref<'none' | 'oddHidden' | 'evenHidden'>('none');
 const speakLetters = ref(false);
 const speakWord = ref(true);
 const manualPlayTrigger = ref('.');
@@ -606,18 +596,11 @@ const showTips = () => {
 
   const formatStatus = (val: boolean) => val ? t('enabled') : t('disabled');
 
-  const formatIntervalMode = (mode: string) => {
-    if (mode === 'oddHidden') return t('intervalOddHidden');
-    if (mode === 'evenHidden') return t('intervalEvenHidden');
-    return t('intervalNone');
-  };
-
   const rows = [
     {label: t('profile'), value: profileNames.value[isAdmin.value ? activeProfile.value : playerProfile.value]},
     {label: t('ignoreCase'), value: formatStatus(ignoreCase.value)},
     {label: t('ignorePunctuation'), value: formatStatus(ignorePunctuation.value)},
     {label: t('ignoreNumber'), value: formatStatus(ignoreNumber.value)},
-    {label: t('intervalDisplay'), value: formatIntervalMode(intervalMode.value)},
     {label: t('speakLetters'), value: `${formatStatus(speakLetters.value)} \u2192 ${ttsActionName(speakLettersAction.value, speakLettersActionName.value)}`},
     {label: t('speakWord'), value: `${formatStatus(speakWord.value)} \u2192 ${ttsActionName(speakWordAction.value, speakWordActionName.value)}`},
     {label: t('familiarPlayAction'), value: ttsActionName(familiarPlayAction.value, familiarPlayActionName.value)},
@@ -683,7 +666,6 @@ const applyProfile = (index: number) => {
   ignorePunctuation.value = res['ignorePunctuation'];
   ignoreNumber.value = typeof res['ignoreNumber'] === 'boolean' ? res['ignoreNumber'] : true;
   ignoreCase.value = res['ignoreCase'];
-  intervalMode.value = res['intervalMode'] || 'none';
   speakLetters.value = typeof res['speakLetters'] === 'boolean' ? res['speakLetters'] : false;
   speakWord.value = typeof res['speakWord'] === 'boolean' ? res['speakWord'] : true;
   manualPlayTrigger.value = typeof res['manualPlayTrigger'] === 'string' ? res['manualPlayTrigger'] : '.';
@@ -885,10 +867,6 @@ const setIgnorePunctuation = (value: boolean) => {
 const setIgnoreNumber = (value: boolean) => {
   profiles.value[activeProfile.value].ignoreNumber = value;
   setConfig("ignoreNumber", value);
-};
-const setIntervalMode = (value: 'none' | 'oddHidden' | 'evenHidden') => {
-  profiles.value[activeProfile.value].intervalMode = value;
-  setConfig("intervalMode", value);
 };
 const setSpeakLetters = (value: boolean) => {
   profiles.value[activeProfile.value].speakLetters = value;
@@ -1221,7 +1199,7 @@ const playerProfileItems = computed(() => profileNames.value.map((name, i) => ({
   name: i === playerProfile.value ? `✓ ${name}` : name,
 })));
 
-// 玩家切 profile：存到服务端自己名下后，间隔遮罩、熟词阈值这些服务端按 profile 算的东西
+// 玩家切 profile：存到服务端自己名下后，遮罩（忽略标点/数字）、熟词阈值这些服务端按 profile 算的东西
 // 都得重新拉一遍，所以走一次 refresh（共享打字进度会在 refresh 里接回来）
 const onChoosePlayerProfile = async (_item: any, index: number) => {
   playerProfilePickerVisible.value = false;
@@ -1291,7 +1269,7 @@ const playWrongSound = async () => {
   }
 };
 
-// TTS 朗读：串行播放，避免间隔模式下一次自动补全多个字母时同时开口
+// TTS 朗读：串行播放，避免一次自动补全多个字符时同时开口
 let speakQueue: Promise<void> = Promise.resolve();
 // action 传了就用那个「朗读」动作存的 TTS 配置来读（引擎/音色/语速），读的还是这里的 text
 const speak = (text: string, rate?: number, manual?: boolean, action?: string) => {
@@ -1441,7 +1419,7 @@ const trackFamiliar = (index: number, auto: boolean, correct: boolean) => {
       valid: true,
     };
   }
-  // 自动填出来的字母（间隔模式）不是用户敲的，打错更不用说，这一遍都不算数
+  // 自动填出来的字符（被忽略的标点/数字）不是用户敲的，打错更不用说，这一遍都不算数
   if (auto || !correct) {
     familiarTrack.valid = false;
   }
@@ -1710,7 +1688,7 @@ const refresh = async () => {
     roundId = typeof res.data.roundId === 'number' ? res.data.roundId : -1;
     updateIgnoreIndexes(res.data.mask);
     // 上次没打完的进度接回来。必须排在 content 赋值之后：Typing 的 watch(props.content)
-    // 会把 userInput 清零并填好间隔模式的自动字符，initUserInput 会等那个 watch 跑完再盖上去
+    // 会把 userInput 清零并填好被忽略的自动字符，initUserInput 会等那个 watch 跑完再盖上去
     const savedInput = typeof res.data.userInput === 'string' ? res.data.userInput : '';
     if (savedInput !== '') {
       await nextTick();
