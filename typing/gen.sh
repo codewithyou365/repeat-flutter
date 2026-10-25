@@ -38,6 +38,7 @@ deal type
 deal blank_it_right
 deal word_slicer
 deal japanese
+deal word_ask
 deal shadow
 (cd dist && zip -r ../dist.zip .)
 

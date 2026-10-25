@@ -221,7 +221,11 @@
             @click="showHelp(t('wordAskTriggerDesc'))"
         />
         <div class="voice-line" :class="bindingPickable(i) ? 'voice-link' : 'voice-text'" @click="openBindingPicker(i)">
-          {{ binding.action ? bindingActionName(binding) : t('assistiveTouchNoAction') }}
+          {{ binding.wordAsk ? t('wordAskNet') + ': ' : '' }}{{ binding.action ? bindingActionName(binding) : t('assistiveTouchNoAction') }}
+        </div>
+        <!-- 单词提问并朗读多一条：问到的结果用哪个朗读动作读 -->
+        <div v-if="binding.wordAsk" class="voice-line" :class="readPickable(i) ? 'voice-link' : 'voice-text'" @click="openReadPicker(i)">
+          {{ t('wordAskRead') }}: {{ readActionName(binding) }}
         </div>
       </template>
     </nut-cell>
@@ -276,8 +280,8 @@
       <div class="voice-picker">
         <div class="voice-picker-title">{{ bindingPickerTitle }}</div>
         <div class="voice-picker-group">
-          <nut-radio-group :model-value="bindingPickerAction" @update:model-value="(value: string) => setBindingAction(bindingPickerIndex, value)">
-            <nut-radio v-for="option in bindingOptionList[bindingPickerIndex] ?? []"
+          <nut-radio-group :model-value="bindingPickerAction" @update:model-value="(value: string) => onPickBinding(value)">
+            <nut-radio v-for="option in bindingPickerOptions"
                        :key="option.value" :label="option.value" class="voice-picker-option">
               {{ option.text }}
             </nut-radio>
@@ -382,13 +386,16 @@ type ProfileConfig = Record<string, any>;
 
 // 一条"辅助触控触发键"绑定：按下 key 就执行 App 辅助触控里 action 对应的按钮。
 // name 是选中那一刻的动作名快照，动作被删掉后拿不到真名时用它显示。
-// wordAsk=true 的那种是"单词提问"：执行前先把光标所在的词标上下划线当 input1 带过去，
-// 约定绑的是只有一个参数的自定义动作。除此之外跟普通绑定完全一样（同一个列表、同一行 UI）。
+// wordAsk=true 的那种是"单词提问并朗读"：action 只能挑联网动作，把光标所在的词标上下划线当 input1 去问，
+// 问到的结果再用 read 那个朗读动作读出来（read 为空就只存不读），readName 是它的名字快照。
+// 除此之外跟普通绑定完全一样（同一个列表、同一行 UI）。
 type AssistiveTouchBinding = {
   key: string;
   action: string;
   name: string;
   wordAsk: boolean;
+  read: string;
+  readName: string;
 };
 
 const activeProfile = ref(0);
@@ -634,7 +641,8 @@ const showTips = () => {
     for (const binding of assistiveTouchBindings.value) {
       const key = binding.key ? formatTriggerKey(binding.key) : t('disabled');
       const label = binding.wordAsk ? t('wordAskTrigger') : t('assistiveTouchTrigger');
-      rows.push({label: label, value: `${key} → ${bindingActionName(binding)}`});
+      const read = binding.wordAsk ? ` → ${readActionName(binding)}` : '';
+      rows.push({label: label, value: `${key} → ${bindingActionName(binding)}${read}`});
     }
   }
 
@@ -718,6 +726,8 @@ const applyProfile = (index: number) => {
     action: typeof b?.action === 'string' ? b.action : '',
     name: typeof b?.name === 'string' ? b.name : '',
     wordAsk: b?.wordAsk === true,
+    read: typeof b?.read === 'string' ? b.read : '',
+    readName: typeof b?.readName === 'string' ? b.readName : '',
   }));
   // 老配置里单词提问是独立的一条，配过键就迁成列表里的一条 wordAsk 绑定。
   // 这里只改内存，不主动回写（玩家端也会走到这里，不该由它写配置）；
@@ -729,6 +739,8 @@ const applyProfile = (index: number) => {
       action: typeof rawWordAsk.action === 'string' ? rawWordAsk.action : '',
       name: typeof rawWordAsk.name === 'string' ? rawWordAsk.name : '',
       wordAsk: true,
+      read: '',
+      readName: '',
     });
     legacyWordAskProfiles.add(index);
   }
@@ -754,7 +766,10 @@ const bindingActionName = (binding: AssistiveTouchBinding) => {
 // 必须用 computed 缓存出稳定的数组引用，不能在模板里现算：nut-menu 的标题依赖 nut-menu-item
 // 的 props，每次渲染都传一个新数组会让两者互相触发更新，直接抛 Maximum recursive updates 把页面刷黑。
 const bindingOptionList = computed(() => assistiveTouchBindings.value.map((binding) => {
-  const options = assistiveTouchOptions.value.map((o) => ({text: o.name, value: o.id}));
+  // 单词提问并朗读只能挑联网动作（type 'n'）：问到的结果要存进它的作用位置
+  const options = assistiveTouchOptions.value
+      .filter((o) => !binding.wordAsk || o.type === 'n')
+      .map((o) => ({text: o.name, value: o.id}));
   if (binding.action && !findOption(binding.action)) {
     options.unshift({text: bindingActionName(binding), value: binding.action});
   }
@@ -763,16 +778,64 @@ const bindingOptionList = computed(() => assistiveTouchBindings.value.map((bindi
 
 // 绑定动作的二级弹层：没有可选按钮、也没绑过东西时点了没意义，小字退成普通灰字
 const bindingPickable = (index: number) => (bindingOptionList.value[index]?.length ?? 0) > 0;
+// 同一个弹层两用：挑绑定的动作（action），或者挑单词提问并朗读的朗读动作（read）
 const bindingPickerVisible = ref(false);
 const bindingPickerIndex = ref(0);
-const bindingPickerAction = computed(() => assistiveTouchBindings.value[bindingPickerIndex.value]?.action ?? '');
-const bindingPickerTitle = computed(() => assistiveTouchBindings.value[bindingPickerIndex.value]?.wordAsk
-    ? t('wordAskTrigger') : t('assistiveTouchTrigger'));
+const bindingPickerRead = ref(false);
+const bindingPickerAction = computed(() => {
+  const binding = assistiveTouchBindings.value[bindingPickerIndex.value];
+  return (bindingPickerRead.value ? binding?.read : binding?.action) ?? '';
+});
+const bindingPickerTitle = computed(() => {
+  if (!assistiveTouchBindings.value[bindingPickerIndex.value]?.wordAsk) {
+    return t('assistiveTouchTrigger');
+  }
+  return `${t('wordAskTrigger')} · ${bindingPickerRead.value ? t('wordAskRead') : t('wordAskNet')}`;
+});
+const bindingPickerOptions = computed(() => bindingPickerRead.value
+    ? readOptionList.value[bindingPickerIndex.value] ?? []
+    : bindingOptionList.value[bindingPickerIndex.value] ?? []);
 const openBindingPicker = (index: number) => {
   if (!bindingPickable(index)) return;
   bindingPickerIndex.value = index;
+  bindingPickerRead.value = false;
   bindingPickerVisible.value = true;
 };
+const openReadPicker = (index: number) => {
+  if (!readPickable(index)) return;
+  bindingPickerIndex.value = index;
+  bindingPickerRead.value = true;
+  bindingPickerVisible.value = true;
+};
+const onPickBinding = (value: string) => {
+  if (bindingPickerRead.value) {
+    setBindingRead(bindingPickerIndex.value, value);
+  } else {
+    setBindingAction(bindingPickerIndex.value, value);
+  }
+};
+
+// 朗读动作那一行显示的名字：没选是"不朗读"，选的动作已经不在了就用快照并标记已失效
+const readActionName = (binding: AssistiveTouchBinding) => {
+  if (!binding.read) {
+    return t('wordAskNoRead');
+  }
+  if (assistiveTouchOptions.value.length === 0) {
+    return binding.readName;
+  }
+  const option = findOption(binding.read);
+  return option ? option.name : `${t('assistiveTouchActionMissing')} ${binding.readName}`;
+};
+// 朗读动作候选：「不朗读」+ 所有朗读动作；跟 bindingOptionList 一样要 computed 保持引用稳定
+const readOptionList = computed(() => assistiveTouchBindings.value.map((binding) => {
+  const options = [{text: t('wordAskNoRead'), value: ''}, ...ttsActionOptions.value];
+  if (binding.read && !options.some((o) => o.value === binding.read)) {
+    options.push({text: readActionName(binding), value: binding.read});
+  }
+  return options;
+}));
+const readPickable = (index: number) => ttsActionOptions.value.length > 0
+    || (assistiveTouchBindings.value[index]?.read ?? '') !== '';
 
 // 朗读设置下拉里能选的：「默认音色」+ 辅助触控里所有「朗读」类型的动作。
 // 玩家端不拉按钮列表（options 为空），这时只有"默认音色"一条。
@@ -859,6 +922,11 @@ const getAssistiveTouchActions = async () => {
       const option = findOption(binding.action);
       if (option && option.name !== binding.name) {
         binding.name = option.name;
+        changed = true;
+      }
+      const readOption = binding.read ? findOption(binding.read) : undefined;
+      if (readOption && readOption.name !== binding.readName) {
+        binding.readName = readOption.name;
         changed = true;
       }
     }
@@ -1088,7 +1156,9 @@ const setKeyMapping = (value: string) => {
 
 // 绑定是变长数组，没法像其它设置那样一个字段一个 setter，统一整份存
 const saveAssistiveTouchBindings = () => {
-  const value = assistiveTouchBindings.value.map((b) => ({key: b.key, action: b.action, name: b.name, wordAsk: b.wordAsk}));
+  const value = assistiveTouchBindings.value.map((b) => ({
+    key: b.key, action: b.action, name: b.name, wordAsk: b.wordAsk, read: b.read, readName: b.readName,
+  }));
   bindingKeysSaved = value.map((b) => b.key);
   profiles.value[activeProfile.value].assistiveTouchBindings = value;
   setConfig("assistiveTouchBindings", value);
@@ -1129,6 +1199,16 @@ const setBindingAction = (index: number, action: string) => {
   saveAssistiveTouchBindings();
 };
 
+const setBindingRead = (index: number, read: string) => {
+  const binding = assistiveTouchBindings.value[index];
+  if (!binding) {
+    return;
+  }
+  binding.read = read;
+  binding.readName = findOption(read)?.name ?? '';
+  saveAssistiveTouchBindings();
+};
+
 // 弹层选项的顺序就是 onChooseBindingType 里的下标顺序
 const bindingTypeItems = computed(() => [
   {name: t('bindingTypeNormal')},
@@ -1141,12 +1221,17 @@ const addBinding = () => {
 
 const onChooseBindingType = (_item: any, index: number) => {
   bindingTypeVisible.value = false;
-  const first = assistiveTouchOptions.value[0];
+  const wordAsk = index === 1;
+  // 单词提问并朗读只能绑联网动作，默认挑第一个联网动作、朗读动作挑第一个朗读动作
+  const first = assistiveTouchOptions.value.find((o) => !wordAsk || o.type === 'n');
+  const firstRead = wordAsk ? assistiveTouchOptions.value.find((o) => o.type === 't') : undefined;
   assistiveTouchBindings.value.push({
     key: '',
     action: first ? first.id : '',
     name: first ? first.name : '',
-    wordAsk: index === 1,
+    wordAsk,
+    read: firstRead ? firstRead.id : '',
+    readName: firstRead ? firstRead.name : '',
   });
   saveAssistiveTouchBindings();
 };
@@ -1727,8 +1812,8 @@ const onAssistTrigger = async (key: string, bounds: { start: number; end: number
   }
 };
 
-// 单词提问：把光标所在的词交给 App，让它在上次那版 input1 的基础上再给这个词标上下划线，
-// 然后执行绑定的自定义动作。跟普通绑定一样不开 overlay，避免打断打字节奏。
+// 单词提问并朗读：把光标所在的词交给 App，只给这一个词标上下划线去问（问过的直接读存好的），
+// 结果用绑定的朗读动作读出来。跟普通绑定一样不开 overlay，避免打断打字节奏。
 const onWordAsk = async (binding: AssistiveTouchBinding, bounds: { start: number; end: number } | null) => {
   if (!bounds || !content.value) {
     return; // 按键时光标不在任何词上
@@ -1737,10 +1822,19 @@ const onWordAsk = async (binding: AssistiveTouchBinding, bounds: { start: number
     const req = new Request({
       path: Path.game,
       headers: {'jsMethod': 'Game.wordAsk'},
-      data: {id: binding.action, sentence: content.value, start: bounds.start, end: bounds.end},
+      data: {
+        id: binding.action,
+        read: binding.read,
+        sentence: content.value,
+        start: bounds.start,
+        end: bounds.end,
+        prefix: t('wordAskKeyWords'),
+      },
     });
     const res = await client.node!.send(req);
-    if (tapFailed(res)) {
+    if (res.status === 200 && !res.error && res.data === 'empty') {
+      showToast.warn(t('wordAskEmpty'));
+    } else if (tapFailed(res)) {
       showToast.warn(`${t('assistiveTouchActionMissing')} ${binding.name}`);
     }
   } catch (error) {

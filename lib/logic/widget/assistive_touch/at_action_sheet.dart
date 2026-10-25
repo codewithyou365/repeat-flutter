@@ -30,9 +30,11 @@ class AtActionSheet {
     final type = action.type.obs;
     final speak = action.net.speak.obs;
 
-    // 服务地址是全局的（所有 net 动作共用一份），单独存在 Kv 里，不进动作。
+    // 服务地址存在动作自己身上。老动作没存过，先拿以前那份全局地址顶上，存一次就落到动作里了。
+    // expand 只给"复制 curl"拼请求用。
     final expand = ExpandLogic();
     await expand.loadSettings();
+    final netUrl = (action.net.url.isNotEmpty ? action.net.url : expand.serviceUrl.value).obs;
 
     final saved = await Sheet.showBottomSheet<bool>(
       Get.context!,
@@ -131,6 +133,7 @@ class AtActionSheet {
                   logic: logic,
                   action: action,
                   expand: expand,
+                  netUrl: netUrl,
                   template: template,
                   speak: speak,
                 ),
@@ -145,6 +148,7 @@ class AtActionSheet {
                   action.net.template = template.text;
                   action.tts.template = ttsTemplate.text;
                   action.net.speak = speak.value;
+                  action.net.url = netUrl.value.trim();
                   await logic.saveAction(action);
                   Get.back(result: true);
                 }),
@@ -227,6 +231,7 @@ class AtActionSheet {
     required AssistiveTouchLogic logic,
     required AtAction action,
     required ExpandLogic expand,
+    required RxString netUrl,
     required TextEditingController template,
     required RxBool speak,
   }) {
@@ -235,11 +240,8 @@ class AtActionSheet {
       Obx(() {
         return RowWidget.buildTextWithEdit(
           I18nKey.serviceUrl.tr,
-          expand.serviceUrl,
-          onTextModify: () async {
-            await expand.saveServiceUrl();
-            Get.back();
-          },
+          netUrl,
+          onTextModify: () => Get.back(),
         );
       }),
       RowWidget.buildDividerWithoutColor(),
@@ -308,6 +310,7 @@ class AtActionSheet {
             }
             values = input;
           }
+          expand.serviceUrl.value = netUrl.value;
           final instruction = expand.render(template.text, inputs: ExpandLogic.inputsOf(numbers, values));
           await Clipboard.setData(ClipboardData(text: expand.toCurl(instruction)));
           Snackbar.show(I18nKey.labelCopiedToClipboard.tr);

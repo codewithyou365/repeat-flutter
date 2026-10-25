@@ -61,6 +61,11 @@ export const routes = [
         path: '/tip/japanese/n',
         component: () => import('../view/tip/japanese.vue'),
     },
+    {
+        // 挂在哪个字段上都是同一个页面，具体是哪个字段由 Tip.asks 返回
+        path: '/tip/word-ask',
+        component: () => import('../view/tip/word_ask.vue'),
+    },
 
 
 ];

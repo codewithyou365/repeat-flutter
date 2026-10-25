@@ -610,5 +610,14 @@ class ConfigZh extends Config {
     put(I18nKey.labelMaxRepeatTimeDesc, "答错后需要连续答对的次数（至少 1）");
     put(I18nKey.labelMaxRepeatTimeInvalid, "次数至少为 1");
     put(I18nKey.ttsContent, "朗读内容");
+    put(I18nKey.domainAlias, "域名别名");
+    put(I18nKey.domainAliasDesc, "像 hosts 文件一样给主机起名字。地址里把主机写成别名（如 http://home-pc:8767/v1/chat），请求时自动换成能连上的那台；目标可以写多个 IP 或 xxx.local（mDNS），按顺序取第一台连得上的");
+    put(I18nKey.domainAliasEmpty, "还没有域名别名");
+    put(I18nKey.domainAliasName, "名称");
+    put(I18nKey.domainAliasTargets, "目标（一行一个 IP 或 xxx.local）");
+    put(I18nKey.domainAliasDeleteConfirm, "确定删除别名 %s？");
+    put(I18nKey.domainAliasInvalid, "名称和目标都不能为空");
+    put(I18nKey.domainAliasHostInvalid, "「%s」不是合法的主机名，不能包含 http、端口或路径");
+    put(I18nKey.domainAliasDuplicated, "已经有叫「%s」的别名了");
   }
 }

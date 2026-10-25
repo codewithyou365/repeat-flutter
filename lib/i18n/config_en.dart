@@ -610,5 +610,14 @@ class ConfigEn extends Config {
     put(I18nKey.labelMaxRepeatTimeDesc, "How many times in a row you must get it right after an error (at least 1)");
     put(I18nKey.labelMaxRepeatTimeInvalid, "The count must be at least 1");
     put(I18nKey.ttsContent, "Speech Text");
+    put(I18nKey.domainAlias, "Domain Aliases");
+    put(I18nKey.domainAliasDesc, "Name hosts like a hosts file. Write the alias as the host in an address (e.g. http://home-pc:8767/v1/chat) and it is replaced with a reachable machine on request. Targets can be several IPs or xxx.local (mDNS); the first reachable one is used");
+    put(I18nKey.domainAliasEmpty, "No domain aliases yet");
+    put(I18nKey.domainAliasName, "Name");
+    put(I18nKey.domainAliasTargets, "Targets (one IP or xxx.local per line)");
+    put(I18nKey.domainAliasDeleteConfirm, "Delete alias %s?");
+    put(I18nKey.domainAliasInvalid, "Name and targets cannot be empty");
+    put(I18nKey.domainAliasHostInvalid, "\"%s\" is not a valid host name; no http, port or path");
+    put(I18nKey.domainAliasDuplicated, "An alias named \"%s\" already exists");
   }
 }

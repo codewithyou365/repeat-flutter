@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
+import 'package:repeat_flutter/common/domain_alias.dart';
 import 'package:repeat_flutter/common/folder.dart';
 import 'package:repeat_flutter/common/hash.dart';
 import 'package:repeat_flutter/common/path.dart';
@@ -27,6 +28,8 @@ class GameSubscriptionHelp {
   static Future<GameManifest?> fetchManifest(String url) async {
     url = url.trim();
     if (url.isEmpty) return null;
+    // 主机可以写域名别名或 xxx.local。订阅本身仍以用户填的原串为主键，只有请求用展开后的。
+    url = await DomainAlias.resolveUrl(url);
     var manifest = await _fetchManifest(url, false);
     if (manifest == null && _lastNeedSkipSsl) {
       // 自签名证书：跟 DownloadDoc 一样，放行一次重试。
@@ -105,6 +108,7 @@ class GameSubscriptionHelp {
     // 服务器注入的 'zip' 是相对 manifest 的地址（go 服务器给的就是 'typing.zip'），
     // 必须相对 manifest 的 URL 解析，不能当绝对地址用。
     final Uri zipUri;
+    manifestUrl = await DomainAlias.resolveUrl(manifestUrl);
     try {
       zipUri = Uri.parse(manifestUrl).resolve(manifest.zip);
     } catch (e) {

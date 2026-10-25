@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:mustache_template/mustache_template.dart';
+import 'package:repeat_flutter/common/domain_alias.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/classroom.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
@@ -37,6 +38,13 @@ enum ExpandBehavior {
 
 class ExpandLogic {
   var serviceUrl = "http://127.0.0.1:8080".obs;
+
+  /// 拼 /start、/status 用的前缀。地址可以带路径（server/ai 的问答是 `http://<IP>:8767/v1/chat`），
+  /// 末尾多敲的 / 去掉，免得拼出 //start 被服务端当成另一个路径。
+  String get _base => serviceUrl.value.trim().replaceAll(RegExp(r'/+$'), '');
+
+  /// [_base] 展开域名别名之后的样子，[startTask] 时算一次。
+  String _resolvedBase = '';
   final TextEditingController textController = TextEditingController();
 
   var hasContent = false;
@@ -140,12 +148,10 @@ class ExpandLogic {
 
   Completer<void>? _taskCompleter;
 
+  /// 以前全局共用的那份服务地址。现在地址存在每个 net 动作自己身上（AtNetParams.url），
+  /// 这里只给没存过地址的老动作兜底，不再写入。
   Future<void> loadSettings() async {
     serviceUrl.value = await Db().db.kvDao.getStr(K.expandServiceUrl) ?? "http://127.0.0.1:8080";
-  }
-
-  Future<void> saveServiceUrl() async {
-    await Db().db.kvDao.insertOrReplace(Kv(K.expandServiceUrl, serviceUrl.value));
   }
 
   /// 统一入口：先按 behavior 判断是播放已有内容还是请求助手服务。
@@ -172,6 +178,39 @@ class ExpandLogic {
       // 覆盖写入后作用位置里的正文就是这段 text。
       await onSpeak?.call(text);
     }
+  }
+
+  /// 打字游戏「单词提问并朗读」：结果按指令存进作用位置的 [VerseField.asks]，不覆盖别的词问出来的结果。
+  /// 这条指令问过就不再请求，直接返回存好的；没问过就请求一次，存下来并把正文改成
+  /// "[prefix]: 词1, 词2" 的摘要。返回这次要读的结果，没拿到返回 null。
+  /// 朗读交给调用方（用游戏绑定的那个朗读动作的配置），这里不管动作自己的"朗读"开关。
+  Future<String?> askWord(String msg, {required String word, required String prefix}) async {
+    final target = targetRef.value;
+    final saved = VerseField.getAsk(verseMap, target, msg);
+    if (saved != null) {
+      return saved;
+    }
+    final lastBehavior = behavior.value;
+    // 借 noSave 的路子只把 result['text'] 记下来，写库由下面自己来。
+    behavior.value = ExpandBehavior.noSave;
+    _resultText = null;
+    try {
+      // 从游戏来的，没有扩展助手的弹层可关。
+      await startTask(msg, closeOnSuccess: false);
+    } finally {
+      behavior.value = lastBehavior;
+    }
+    final text = _resultText;
+    if (text == null || target.isEmpty) {
+      return null;
+    }
+    final words = VerseField.putAsk(verseMap, target, msg, word, text);
+    VerseField.setText(verseMap, target, '$prefix: ${words.join(', ')}');
+    // 正文是摘要，不是哪一条指令生成的，别让 playOrOverwrite 拿它比对。
+    VerseField.setInstruction(verseMap, target, null);
+    _clearGeneratedMedia(verseMap, target);
+    await Db().db.verseDao.updateVerseContent(verseId, jsonEncode(verseMap));
+    return text;
   }
 
   /// 把临时结果放进对话框：内容可能很长，限高滚动；可选中，方便复制。
@@ -207,7 +246,7 @@ class ExpandLogic {
   /// body 用单引号包起来，里面的单引号按 shell 的老办法拆成 '\'' 。
   String toCurl(String msg) {
     final body = jsonEncode(_startBody(msg)).replaceAll("'", "'\\''");
-    return "curl -X POST '${serviceUrl.value}/start' \\\n"
+    return "curl -X POST '$_base/start' \\\n"
         "  -H 'Content-Type: application/json; charset=utf-8' \\\n"
         "  --data-raw '$body'";
   }
@@ -223,8 +262,10 @@ class ExpandLogic {
 
         _taskCompleter = Completer<void>();
 
+        // 主机可能是域名别名或 xxx.local，先换成实际要连的那台；轮询 /status 也用这一份。
+        _resolvedBase = await DomainAlias.resolveUrl(_base);
         final response = await http.post(
-          Uri.parse("$serviceUrl/start"),
+          Uri.parse("$_resolvedBase/start"),
           headers: {"Content-Type": "application/json; charset=utf-8"},
           body: utf8.encode(jsonEncode(_startBody(msg))),
         );
@@ -258,7 +299,7 @@ class ExpandLogic {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
       try {
-        final response = await http.get(Uri.parse("$serviceUrl/status"));
+        final response = await http.get(Uri.parse("$_resolvedBase/status"));
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
 
@@ -330,9 +371,15 @@ class ExpandLogic {
       _resultText = text;
     }
 
-    // 只出文本：该字段之前挂过生成的音频（老版本"生成音频"留下的）时，把音频和它的时间区间一起清掉，
-    // 免得还播着跟新文本对不上的旧音频。区间本来就属于整节媒体（比如从字幕导入的）时不能动。
-    // 只清这一节自己写下的 mediaHash：继承自 chapter/book 的媒体不该被一节的改动带走。
+    _clearGeneratedMedia(targetMap, key);
+    String jsonStr = jsonEncode(targetMap);
+    await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
+  }
+
+  /// 只出文本：该字段之前挂过生成的音频（老版本"生成音频"留下的）时，把音频和它的时间区间一起清掉，
+  /// 免得还播着跟新文本对不上的旧音频。区间本来就属于整节媒体（比如从字幕导入的）时不能动。
+  /// 只清这一节自己写下的 mediaHash：继承自 chapter/book 的媒体不该被一节的改动带走。
+  static void _clearGeneratedMedia(Map<String, dynamic> targetMap, String key) {
     if (VerseField.getStr(targetMap, key, VerseField.mediaHash) != null) {
       VerseField.remove(targetMap, key, [
         VerseField.mediaHash,
@@ -341,7 +388,5 @@ class ExpandLogic {
         VerseField.end,
       ]);
     }
-    String jsonStr = jsonEncode(targetMap);
-    await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
   }
 }

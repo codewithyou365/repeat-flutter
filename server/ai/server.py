@@ -20,7 +20,7 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 import uvicorn
-from fastapi import FastAPI, Form, HTTPException, UploadFile, File
+from fastapi import FastAPI, Form, HTTPException, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 
 import catalog as cat
@@ -420,6 +420,85 @@ def tts_post(text: str = Form(""), sid: Optional[int] = Form(None),
              speed: Optional[float] = Form(None)) -> Response:
     # 长文本走 POST，不受 URL 长度限制
     return _tts_response(text, sid, speed)
+
+
+# ---- /v1/chat：给悬浮球「自定义动作 → 联网」用的自由问答 ----
+#
+# 协议照搬手机端联网动作原来对接的助手服务：POST <服务地址>/start 发任务，
+# 每秒 GET <服务地址>/status 轮询到 running=false 再取 result.text。
+# 所以手机那边服务地址填 http://<IP>:8767/v1/chat 就能用，App 不用改。
+#
+# 跟助手服务一样同一时刻只跑一个任务：状态是全局的一份，谁来轮询看到的都是它。
+# 问答一句要好几秒，排队意义不大，忙的时候直接回 409。
+_chat_lock = threading.Lock()
+_chat: Dict[str, Any] = {"running": False, "log": [], "result": {}}
+
+
+def _chat_model() -> cat.ModelEntry:
+    """问答用哪个模型：选中的翻译模型是通用 LLM 就用它（已经加载好了，省一份显存），
+    否则找任意一个装好的通用 LLM。翻译专用的混元、NMT、whisper 都不行。"""
+    mt = _selection.resolve("mt", _catalog, _model_root)
+    if mt is not None and mt.kind == "llm-mt" and llm_mt.is_chat_model(mt.cfg):
+        return mt
+    for e in _catalog.by_role("mt"):
+        if e.kind == "llm-mt" and llm_mt.is_chat_model(e.cfg) and cat.is_installed(_model_root, e.id):
+            return e
+    raise HTTPException(status_code=400,
+                        detail="问答要一个通用 LLM（如 Qwen2.5 Instruct），请先在网页上装一个；"
+                               "混元 Hy-MT2 是翻译专用模型，答不了问题")
+
+
+def _chat_log(line: str) -> None:
+    with _chat_lock:
+        _chat["log"].append(line)
+
+
+def _run_chat(entry: cat.ModelEntry, text: str) -> None:
+    t0 = time.time()
+    result: Dict[str, Any] = {}
+    try:
+        _chat_log(f"model: {entry.id}")
+        # 第一次用会加载模型（几秒到十几秒），放在线程里，/start 不用等
+        inst = llm_mt.get(entry.id, cat.model_dir(_model_root, entry.id), entry.cfg)
+        result = {"text": inst.chat(text)}
+        _chat_log("done")
+    except Exception as e:
+        _chat_log(f"error: {e}")
+    ms = int((time.time() - t0) * 1000)
+    with _stats_lock:
+        _stats.append({"asrMs": 0, "mtMs": ms, "ttsMs": 0, "totalMs": ms,
+                       "audioMs": 0, "kind": "chat"})
+        del _stats[:-_STATS_KEEP]
+    with _chat_lock:
+        _chat["result"] = result
+        _chat["running"] = False
+
+
+@app.post("/v1/chat/start")
+async def chat_start(request: Request) -> Dict[str, Any]:
+    """body: {"params": {"input": "..."}}（手机联网动作发的形状），也接受 {"input": "..."}。
+    params 里的其它字段（withSpeak 等）忽略。"""
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="body must be json")
+    params = body.get("params") if isinstance(body, dict) and isinstance(body.get("params"), dict) else body
+    text = str((params or {}).get("input") or "").strip() if isinstance(params, dict) else ""
+    if not text:
+        raise HTTPException(status_code=400, detail="input is required")
+    entry = _chat_model()
+    with _chat_lock:
+        if _chat["running"]:
+            raise HTTPException(status_code=409, detail="上一个问答还没跑完")
+        _chat.update({"running": True, "log": ["started"], "result": {}})
+    threading.Thread(target=_run_chat, args=(entry, text), daemon=True).start()
+    return {"ok": True}
+
+
+@app.get("/v1/chat/status")
+def chat_status() -> Dict[str, Any]:
+    with _chat_lock:
+        return {"running": _chat["running"], "log": list(_chat["log"]), "result": dict(_chat["result"])}
 
 
 @app.post("/v1/infer")

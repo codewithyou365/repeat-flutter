@@ -89,6 +89,33 @@ curl -o a.wav 'http://127.0.0.1:8767/v1/tts?text=hello%20world'
 curl -F text=你好 http://127.0.0.1:8767/v1/tts -o b.wav
 ```
 
+## POST /v1/chat/start · GET /v1/chat/status
+
+自由问答，给悬浮球「自定义动作 → 联网」用：服务地址填 `http://<IP>:8767/v1/chat`。
+协议照搬联网动作原来对接的助手服务（发任务 + 每秒轮询），所以 App 不用改。
+
+模型：选中的翻译模型是通用 LLM（`kind=llm-mt` 且 `promptStyle` 为 `chat`，如 Qwen）就用它，
+否则用任意一个装好的通用 LLM；只有翻译专用的混元 / NMT / whisper 时 → 400。
+不套翻译的 system prompt，用户的指令原样当一条 user 消息发给模型；
+回答上限 `cfg.chatMaxTokens`（默认 1024）。
+
+`POST /v1/chat/start`，JSON body：
+
+```json
+{"params": {"input": "用 apple 造三个句子"}}
+```
+
+`{"input": "..."}` 也认；`params` 里其它字段（`withSpeak` 等）忽略。
+回 `{"ok": true}`；空 input / 没有可用模型 → 400；上一个还在跑 → 409（同一时刻只跑一个）。
+
+`GET /v1/chat/status`：
+
+```json
+{"running": false, "log": ["started", "model: qwen2.5-7b", "done"], "result": {"text": "..."}}
+```
+
+`running=false` 之后看 `result.text`；出错时 `result` 为空，原因在 `log` 最后一行。
+
 ## GET /v1/models
 
 ```json

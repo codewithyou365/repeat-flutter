@@ -81,6 +81,9 @@ enum K {
 
   /// 本机的局域网固定域名（不带 .local），见 LanHost。第一次开分享服务时随机生成。
   lanHostName,
+
+  /// 域名别名（JSON 数组），见 DomainAlias。整台设备一份，不跟课堂走、不分享。
+  domainAliases,
 }
 
 @Entity(primaryKeys: ['k'])

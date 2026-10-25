@@ -169,6 +169,12 @@ class JsRuntime {
         return verse.verseContent;
       });
 
+      // 这个提示服务挂在哪个字段上（'q'/'a'/'n'/'t'/'t1'…）。contentKey 只带字段大类（'T'），
+      // 提示有好几条时网页得靠它才知道读第几条。
+      _jsRuntime!.onMessage('tipField', (dynamic args) {
+        return TipState.tip?.t ?? '';
+      });
+
       _jsRuntime!.onMessage('tts', (dynamic args) async {
         if (args is! Map) {
           return 'invalid_args';

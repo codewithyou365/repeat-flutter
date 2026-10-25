@@ -99,6 +99,8 @@ class MlxTranslator:
         except Exception as e:
             raise LlmMtError(f"加载失败（{e}）。文件可能不完整，重新跑 setup_mt.py --model qwen") from e
         self._max_tokens = int(cfg.get("maxTokens", 256))
+        # 自由问答的回答比译文长得多，256 会把回答拦腰截断，单独给一个上限
+        self._chat_max_tokens = int(cfg.get("chatMaxTokens", 1024))
         self._target = cfg.get("tgtLang", "en")
         # prompt 的形状。通用 chat 模型和翻译专用模型的用法完全不同，见 HUNYUAN_TMPL。
         self._style = cfg.get("promptStyle", "chat")
@@ -142,16 +144,31 @@ class MlxTranslator:
             out = self._once(self._prompt(text, repair=out)) or out
         return out
 
-    def _once(self, prompt: str) -> str:
+    def chat(self, text: str) -> str:
+        """自由问答：不套翻译的 system / few-shot，用户写什么就问什么。
+
+        给悬浮球的「联网」动作用（/v1/chat），指令模版由用户自己写，
+        翻译、解释、造句都行。只对通用 chat 模型有意义，翻译专用模型（混元）
+        由调用方挡掉，见 is_chat_model。
+        """
+        text = (text or "").strip()
+        if not text:
+            return ""
+        msgs = [{"role": "user", "content": text}]
+        prompt = self._tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
+        return self._once(prompt, self._chat_max_tokens, clean=False)
+
+    def _once(self, prompt: str, max_tokens: Optional[int] = None, clean: bool = True) -> str:
         from mlx_lm import generate
+        max_tokens = self._max_tokens if max_tokens is None else max_tokens
         with self._lock:
             # mlx-lm 的 generate 签名跨版本变过（sampler / temp 参数进出过好几轮）。
             # 挨个试比锁死一个版本强——装了新版也不该炸。
             out = None
             errs: List[str] = []
             for kwargs in (
-                {"max_tokens": self._max_tokens, "verbose": False},
-                {"max_tokens": self._max_tokens},
+                {"max_tokens": max_tokens, "verbose": False},
+                {"max_tokens": max_tokens},
                 {},
             ):
                 try:
@@ -161,7 +178,8 @@ class MlxTranslator:
                     errs.append(f"{kwargs}: {e}")
             if out is None:
                 raise LlmMtError("mlx_lm.generate 签名不认识：\n  " + "\n  ".join(errs))
-        return _clean(out)
+        # _clean 是剥译文外壳的（"Translation:"、整句引号），问答的回答不能这么剥
+        return _clean(out) if clean else (out or "").strip()
 
 
 def _clean(s: str) -> str:
@@ -174,6 +192,11 @@ def _clean(s: str) -> str:
     if len(s) >= 2 and s[0] in "\"'“「" and s[-1] in "\"'”」":
         s = s[1:-1].strip()
     return s.strip()
+
+
+def is_chat_model(cfg: Dict[str, Any]) -> bool:
+    """能不能拿来自由问答。翻译专用模型（promptStyle=hunyuan-mt）只会翻译，问什么都给你翻一遍。"""
+    return cfg.get("promptStyle", "chat") == "chat"
 
 
 def get(model_id: str, model_dir: str, cfg: Dict[str, Any]) -> MlxTranslator:

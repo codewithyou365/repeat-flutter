@@ -610,5 +610,14 @@ class ConfigVi extends Config {
     put(I18nKey.labelMaxRepeatTimeDesc, "Sau khi sai, bạn phải đúng liên tiếp bao nhiêu lần (ít nhất 1)");
     put(I18nKey.labelMaxRepeatTimeInvalid, "Số lần phải ít nhất là 1");
     put(I18nKey.ttsContent, "Nội dung đọc");
+    put(I18nKey.domainAlias, "Bí danh tên miền");
+    put(I18nKey.domainAliasDesc, "Đặt tên cho máy chủ giống tệp hosts. Viết bí danh làm host trong địa chỉ (vd. http://home-pc:8767/v1/chat), khi gửi yêu cầu sẽ được thay bằng máy kết nối được. Mục tiêu có thể là nhiều IP hoặc xxx.local (mDNS); dùng máy đầu tiên kết nối được");
+    put(I18nKey.domainAliasEmpty, "Chưa có bí danh tên miền");
+    put(I18nKey.domainAliasName, "Tên");
+    put(I18nKey.domainAliasTargets, "Mục tiêu (mỗi dòng một IP hoặc xxx.local)");
+    put(I18nKey.domainAliasDeleteConfirm, "Xóa bí danh %s?");
+    put(I18nKey.domainAliasInvalid, "Tên và mục tiêu không được để trống");
+    put(I18nKey.domainAliasHostInvalid, "\"%s\" không phải tên máy chủ hợp lệ; không có http, cổng hay đường dẫn");
+    put(I18nKey.domainAliasDuplicated, "Đã có bí danh tên \"%s\"");
   }
 }

@@ -610,5 +610,14 @@ class ConfigDe extends Config {
     put(I18nKey.labelMaxRepeatTimeDesc, "Wie oft du es nach einem Fehler hintereinander richtig machen musst (mindestens 1)");
     put(I18nKey.labelMaxRepeatTimeInvalid, "Die Anzahl muss mindestens 1 sein");
     put(I18nKey.ttsContent, "Vorlesetext");
+    put(I18nKey.domainAlias, "Domain-Aliase");
+    put(I18nKey.domainAliasDesc, "Benenne Hosts wie in einer hosts-Datei. Schreibe den Alias als Host in eine Adresse (z. B. http://home-pc:8767/v1/chat); beim Abruf wird ein erreichbarer Rechner eingesetzt. Ziele können mehrere IPs oder xxx.local (mDNS) sein; der erste erreichbare wird verwendet");
+    put(I18nKey.domainAliasEmpty, "Noch keine Domain-Aliase");
+    put(I18nKey.domainAliasName, "Name");
+    put(I18nKey.domainAliasTargets, "Ziele (eine IP oder xxx.local pro Zeile)");
+    put(I18nKey.domainAliasDeleteConfirm, "Alias %s löschen?");
+    put(I18nKey.domainAliasInvalid, "Name und Ziele dürfen nicht leer sein");
+    put(I18nKey.domainAliasHostInvalid, "„%s“ ist kein gültiger Hostname; kein http, Port oder Pfad");
+    put(I18nKey.domainAliasDuplicated, "Ein Alias namens „%s“ existiert bereits");
   }
 }

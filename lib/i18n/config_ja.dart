@@ -610,5 +610,14 @@ class ConfigJa extends Config {
     put(I18nKey.labelMaxRepeatTimeDesc, "まちがえた後、続けて何回正解すればよいか（1 以上）");
     put(I18nKey.labelMaxRepeatTimeInvalid, "回数は 1 以上にしてください");
     put(I18nKey.ttsContent, "読み上げるテキスト");
+    put(I18nKey.domainAlias, "ドメインエイリアス");
+    put(I18nKey.domainAliasDesc, "hosts ファイルのようにホストに名前を付けます。アドレスのホストにエイリアスを書くと（例: http://home-pc:8767/v1/chat）、リクエスト時に接続できるマシンに置き換わります。ターゲットは複数の IP や xxx.local（mDNS）を指定でき、最初に接続できたものを使います");
+    put(I18nKey.domainAliasEmpty, "ドメインエイリアスはまだありません");
+    put(I18nKey.domainAliasName, "名前");
+    put(I18nKey.domainAliasTargets, "ターゲット（1 行に IP か xxx.local を 1 つ）");
+    put(I18nKey.domainAliasDeleteConfirm, "エイリアス %s を削除しますか？");
+    put(I18nKey.domainAliasInvalid, "名前とターゲットは空にできません");
+    put(I18nKey.domainAliasHostInvalid, "「%s」は有効なホスト名ではありません（http・ポート・パスは不可）");
+    put(I18nKey.domainAliasDuplicated, "「%s」という名前のエイリアスは既にあります");
   }
 }

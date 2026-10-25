@@ -6,6 +6,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:repeat_flutter/common/domain_alias.dart';
 
 /// 远程 TTS：把文本丢给 server/ai 的 /v1/tts（或别的回音频的 HTTP 服务），
 /// 拿回来的音频**只在内存里**播，不落盘——朗读文本千变万化，存下来也几乎复用不上。
@@ -38,7 +39,7 @@ class RemoteTts {
       responseType: ResponseType.bytes,
       // 4xx 也要拿到 body 里的 error 文案，所以自己判状态码
       validateStatus: (_) => true,
-    )).getUri<List<int>>(buildUri(url, text));
+    )).getUri<List<int>>(await DomainAlias.resolveUri(buildUri(url, text)));
     final bytes = Uint8List.fromList(resp.data ?? const []);
     final code = resp.statusCode ?? 0;
     if (code < 200 || code >= 300) {

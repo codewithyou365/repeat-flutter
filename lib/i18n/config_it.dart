@@ -610,5 +610,14 @@ class ConfigIt extends Config {
     put(I18nKey.labelMaxRepeatTimeDesc, "Quante volte di fila devi indovinare dopo un errore (almeno 1)");
     put(I18nKey.labelMaxRepeatTimeInvalid, "Il numero deve essere almeno 1");
     put(I18nKey.ttsContent, "Testo da leggere");
+    put(I18nKey.domainAlias, "Alias di dominio");
+    put(I18nKey.domainAliasDesc, "Dai un nome agli host come in un file hosts. Scrivi l'alias come host in un indirizzo (es. http://home-pc:8767/v1/chat): viene sostituito con una macchina raggiungibile. I target possono essere più IP o xxx.local (mDNS); si usa il primo raggiungibile");
+    put(I18nKey.domainAliasEmpty, "Nessun alias di dominio");
+    put(I18nKey.domainAliasName, "Nome");
+    put(I18nKey.domainAliasTargets, "Target (un IP o xxx.local per riga)");
+    put(I18nKey.domainAliasDeleteConfirm, "Eliminare l'alias %s?");
+    put(I18nKey.domainAliasInvalid, "Nome e target non possono essere vuoti");
+    put(I18nKey.domainAliasHostInvalid, "«%s» non è un nome host valido; niente http, porta o percorso");
+    put(I18nKey.domainAliasDuplicated, "Esiste già un alias chiamato «%s»");
   }
 }

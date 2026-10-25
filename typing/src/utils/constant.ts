@@ -47,6 +47,7 @@ export class ContentType {
     static JAPANESE_T = new ContentType(7, '/tip/japanese/t');
     static JAPANESE_N = new ContentType(8, '/tip/japanese/n');
     static SHADOW = new ContentType(9, '/game/shadow-game');
+    static WORD_ASK = new ContentType(10, '/tip/word-ask');
 
     static toContentType(code: String): ContentType {
         switch (code) {
@@ -68,6 +69,11 @@ export class ContentType {
                 return ContentType.JAPANESE_N;
             case 'Shadow':
                 return ContentType.SHADOW;
+            case 'WordAskA':
+            case 'WordAskQ':
+            case 'WordAskT':
+            case 'WordAskN':
+                return ContentType.WORD_ASK;
             default:
                 return ContentType.NONE;
         }

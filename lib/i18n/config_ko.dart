@@ -610,5 +610,14 @@ class ConfigKo extends Config {
     put(I18nKey.labelMaxRepeatTimeDesc, "틀린 뒤 연속으로 몇 번 맞혀야 하는지 (1 이상)");
     put(I18nKey.labelMaxRepeatTimeInvalid, "횟수는 1 이상이어야 합니다");
     put(I18nKey.ttsContent, "읽을 내용");
+    put(I18nKey.domainAlias, "도메인 별칭");
+    put(I18nKey.domainAliasDesc, "hosts 파일처럼 호스트에 이름을 붙입니다. 주소의 호스트에 별칭을 쓰면(예: http://home-pc:8767/v1/chat) 요청 시 연결 가능한 기기로 바뀝니다. 대상은 여러 IP나 xxx.local(mDNS)를 쓸 수 있고, 처음 연결되는 것을 사용합니다");
+    put(I18nKey.domainAliasEmpty, "도메인 별칭이 없습니다");
+    put(I18nKey.domainAliasName, "이름");
+    put(I18nKey.domainAliasTargets, "대상 (한 줄에 IP 또는 xxx.local 하나)");
+    put(I18nKey.domainAliasDeleteConfirm, "별칭 %s을(를) 삭제할까요?");
+    put(I18nKey.domainAliasInvalid, "이름과 대상은 비워 둘 수 없습니다");
+    put(I18nKey.domainAliasHostInvalid, "\"%s\"은(는) 올바른 호스트 이름이 아닙니다 (http, 포트, 경로 불가)");
+    put(I18nKey.domainAliasDuplicated, "\"%s\" 별칭이 이미 있습니다");
   }
 }

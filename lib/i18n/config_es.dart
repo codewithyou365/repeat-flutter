@@ -610,5 +610,14 @@ class ConfigEs extends Config {
     put(I18nKey.labelMaxRepeatTimeDesc, "Cuántas veces seguidas debes acertar después de un error (mínimo 1)");
     put(I18nKey.labelMaxRepeatTimeInvalid, "La cantidad debe ser al menos 1");
     put(I18nKey.ttsContent, "Texto para leer");
+    put(I18nKey.domainAlias, "Alias de dominio");
+    put(I18nKey.domainAliasDesc, "Pon nombre a los hosts como en un archivo hosts. Escribe el alias como host en una dirección (p. ej. http://home-pc:8767/v1/chat) y se sustituye por una máquina accesible. Los destinos pueden ser varias IP o xxx.local (mDNS); se usa la primera accesible");
+    put(I18nKey.domainAliasEmpty, "Aún no hay alias de dominio");
+    put(I18nKey.domainAliasName, "Nombre");
+    put(I18nKey.domainAliasTargets, "Destinos (una IP o xxx.local por línea)");
+    put(I18nKey.domainAliasDeleteConfirm, "¿Eliminar el alias %s?");
+    put(I18nKey.domainAliasInvalid, "El nombre y los destinos no pueden estar vacíos");
+    put(I18nKey.domainAliasHostInvalid, "«%s» no es un nombre de host válido; sin http, puerto ni ruta");
+    put(I18nKey.domainAliasDuplicated, "Ya existe un alias llamado «%s»");
   }
 }

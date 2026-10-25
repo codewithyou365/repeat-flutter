@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/ai/ai_support.dart';
+import 'package:repeat_flutter/logic/widget/domain_alias_sheet.dart';
 import 'package:repeat_flutter/nav.dart';
 
 import 'sc_settings_data_logic.dart';
@@ -54,6 +55,10 @@ class ScSettingsDataPage extends StatelessWidget {
               title: Text(I18nKey.aiModel.tr),
               onTap: () => Nav.scSettingsAi.push(),
             ),
+          ListTile(
+            title: Text(I18nKey.domainAlias.tr),
+            onTap: DomainAliasSheet.open,
+          ),
         ],
       ),
     );

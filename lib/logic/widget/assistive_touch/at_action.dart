@@ -189,6 +189,10 @@ class AtTtsConfig {
 
 /// net 类型独有的参数：请求助手服务，把结果写回作用位置。
 class AtNetParams {
+  /// 助手服务地址。主机可以写域名别名或 xxx.local，请求前由 [DomainAlias.resolveUrl] 展开。
+  /// 以前服务地址是全局一份（K.expandServiceUrl），老动作这里是空的，执行时回落到那一份。
+  String url;
+
   /// 指令模版原文（不是渲染结果）：里面可以放 {{question}}/{{answer}}/{{tip1}}..{{tip8}}
   /// （取当前小节的正文）和 {{input1}}..{{input10}}（执行前弹框让用户填）。
   String template;
@@ -204,6 +208,7 @@ class AtNetParams {
   final AtTtsConfig tts;
 
   AtNetParams({
+    this.url = '',
     this.template = '',
     this.behavior = 0,
     this.speak = false,
@@ -215,6 +220,7 @@ class AtNetParams {
       return AtNetParams();
     }
     return AtNetParams(
+      url: json['u'] is String ? json['u'] as String : '',
       template: json['tp'] is String ? json['tp'] as String : '',
       behavior: json['bh'] is int ? json['bh'] as int : 0,
       speak: json['sp'] is bool ? json['sp'] as bool : false,
@@ -223,6 +229,7 @@ class AtNetParams {
   }
 
   Map<String, dynamic> toJson() => {
+        if (url.isNotEmpty) 'u': url,
         'tp': template,
         'bh': behavior,
         if (speak) 'sp': speak,

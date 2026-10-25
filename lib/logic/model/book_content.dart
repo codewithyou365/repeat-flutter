@@ -212,6 +212,14 @@ class VerseField {
   /// 这份内容是拿哪条指令生成的（扩展助手 playOrOverwrite 拿它跟这次要发的指令比对）。
   /// 以前是用 [_mark] 分隔符挂在正文末尾的，见 [getInstruction]。
   static const String instruction = 'ins';
+
+  /// 打字游戏「单词提问并朗读」的结果表：`{'<指令>': {'w': '<重点词>', 'text': '<结果>'}}`。
+  /// 每次提问只标一个词、指令各自独立，所以按指令当 key 一条条攒着，同一条指令再问就直接读存好的。
+  /// 有它时字段正文（[text]）只是"重点词: like, apple"这样的摘要，完整内容交给提示服务展示。
+  static const String asks = 'asks';
+
+  /// [asks] 里一条的重点词。
+  static const String askWord = 'w';
   static const String fontSize = 'fontSize';
   static const String fontAlias = 'fontAlias';
   static const String fontHash = 'fontHash';
@@ -566,6 +574,31 @@ class VerseField {
   /// 记下这一次内容是拿哪条指令生成的。传 null 就是"这份内容不是生成出来的"。
   static void setInstruction(Map<String, dynamic> content, String fieldRef, String? value) {
     setStr(content, fieldRef, instruction, value);
+  }
+
+  /// [asks] 里这条指令存过的结果，没问过返回 null。
+  static String? getAsk(Map<String, dynamic> content, String fieldRef, String ins) {
+    final all = of(content, fieldRef)?[asks];
+    final item = all is Map ? all[ins] : null;
+    final v = item is Map ? item[text] : null;
+    return v is String && v.isNotEmpty ? v : null;
+  }
+
+  /// 往 [asks] 里记一条（同一条指令再记就是覆盖，位置不变），返回记完后全部的重点词（按提问先后、去重）。
+  static List<String> putAsk(Map<String, dynamic> content, String fieldRef, String ins, String word, String value) {
+    final block = _ensure(content, fieldRef);
+    final raw = block[asks];
+    final all = raw is Map<String, dynamic> ? raw : <String, dynamic>{};
+    all[ins] = <String, dynamic>{askWord: word, text: value};
+    block[asks] = all;
+    final words = <String>[];
+    for (final item in all.values) {
+      final w = item is Map ? item[askWord] : null;
+      if (w is String && w.isNotEmpty && !words.contains(w)) {
+        words.add(w);
+      }
+    }
+    return words;
   }
 
   /// 设置纯正文。字段已经升级成内容数组时，**把里面的裸字符串项整体换成这一段**，

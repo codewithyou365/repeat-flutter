@@ -580,13 +580,34 @@ class AssistiveTouchLogic {
     repeatLogic.update([RepeatLogic.id]);
   }
 
+  /// 按 net 动作配好一个扩展助手（当前小节、作用位置、行为），没有当前小节返回 null。
+  Future<ExpandLogic?> _netLogicOf(AtAction action) async {
+    final verse = repeatLogic.state.helper.getCurrVerse();
+    final map = repeatLogic.state.helper.getCurrVerseMap();
+    if (verse == null || map == null) {
+      return null;
+    }
+    final logic = ExpandLogic();
+    await logic.loadSettings();
+    // 动作自己配了地址就用它的；没配（老动作）沿用 loadSettings 读到的那份全局地址。
+    if (action.net.url.isNotEmpty) {
+      logic.serviceUrl.value = action.net.url;
+    }
+    logic.bookId = verse.bookId;
+    logic.verseId = verse.verseId;
+    logic.verseMap = map;
+    logic.classroomMap = _classroomMap;
+    logic.targetRef.value = action.target;
+    logic.behavior.value = ExpandBehavior.values[action.net.behavior.clamp(0, ExpandBehavior.values.length - 1)];
+    logic.onPlayTarget = playTarget;
+    return logic;
+  }
+
   /// [inputs] 传了（哪怕是空 list）就当程序级调用：不弹框，直接拿它当 input1..inputN，
   /// 不够的补空串、多的丢掉（游戏走这条，见 js_runtime 的 assistiveTouchTap）。
   /// 不传则是人点的：模版里写了参数时弹框让用户依次填，取消就整个不执行。
   Future<void> _executeNet(AtAction action, {List<String>? inputs}) async {
-    final verse = repeatLogic.state.helper.getCurrVerse();
-    final map = repeatLogic.state.helper.getCurrVerseMap();
-    if (verse == null || map == null) {
+    if (repeatLogic.state.helper.getCurrVerseMap() == null) {
       Snackbar.show(I18nKey.labelDataAnomaly.tr);
       return;
     }
@@ -600,15 +621,10 @@ class AssistiveTouchLogic {
       }
     }
     final inputMap = ExpandLogic.inputsOf(inputNumbers, values);
-    final logic = ExpandLogic();
-    await logic.loadSettings();
-    logic.bookId = verse.bookId;
-    logic.verseId = verse.verseId;
-    logic.verseMap = map;
-    logic.classroomMap = _classroomMap;
-    logic.targetRef.value = action.target;
-    logic.behavior.value = ExpandBehavior.values[action.net.behavior.clamp(0, ExpandBehavior.values.length - 1)];
-    logic.onPlayTarget = playTarget;
+    final logic = await _netLogicOf(action);
+    if (logic == null) {
+      return;
+    }
     if (action.net.speak) {
       final settings = action.net.tts.settings;
       logic.onSpeak = (text) => repeatLogic.ttsHelper.speakTextWith(settings, text);
@@ -619,44 +635,18 @@ class AssistiveTouchLogic {
     await logic.execute(instructionText, closeOnSuccess: false);
   }
 
-  /// 反解 input1 用的占位符。用控制字符夹着，正常的模版/正文里不会出现。
-  static const String _input1Sentinel = 'input1';
-
-  /// 这个动作上次执行时用的 input1：作用位置（比如提示1）里存着上次的指令
-  /// （见 VerseField.setInstruction），拿模版反着一比就能把 input1 抠出来。
-  ///
-  /// 做法是先用哨兵渲染一遍模版，得到「前缀 + 哨兵 + 后缀」，再拿前后缀去掐上次的指令——
-  /// 这样模版里的 {{answer}} 等其它占位符怎么渲染都不用管，它们两边渲染出来是一样的。
-  ///
-  /// 只认 input1（这个入口是给游戏的「单词累积提问」用的，动作按约定只有一个参数）。
-  /// 不是 net 类型、没执行过、指令没存过、模版里没写 {{input1}}、模版改过对不上，都返回 null。
-  String? lastInput1Of(AtAction action) {
+  /// 打字游戏「单词提问并朗读」：用 [input1]（只标了这一个词的整句）渲染 net 动作的指令，
+  /// 结果按指令攒进作用位置（见 [ExpandLogic.askWord]），返回这次要读的结果。
+  /// 不是 net 动作、没有当前小节、没拿到结果都返回 null。
+  Future<String?> wordAsk(AtAction action, {required String input1, required String word, required String prefix}) async {
     if (action.type != AtActionType.net) {
       return null;
     }
-    final map = repeatLogic.state.helper.getCurrVerseMap();
-    if (map == null) {
+    final logic = await _netLogicOf(action);
+    if (logic == null) {
       return null;
     }
-    final logic = ExpandLogic();
-    logic.verseMap = map;
-    final instruction = VerseField.getInstruction(map, action.target);
-    if (instruction == null) {
-      return null;
-    }
-    final pattern = logic.render(
-      action.net.template,
-      inputs: {ExpandLogic.inputKeyOf(1): _input1Sentinel},
-    );
-    final at = pattern.indexOf(_input1Sentinel);
-    if (at < 0) {
-      return null;
-    }
-    final prefix = pattern.substring(0, at);
-    final suffix = pattern.substring(at + _input1Sentinel.length);
-    if (instruction.length < prefix.length + suffix.length || !instruction.startsWith(prefix) || !instruction.endsWith(suffix)) {
-      return null;
-    }
-    return instruction.substring(prefix.length, instruction.length - suffix.length);
+    final instructionText = logic.render(action.net.template, inputs: {ExpandLogic.inputKeyOf(1): input1});
+    return await logic.askWord(instructionText, word: word, prefix: prefix);
   }
 }

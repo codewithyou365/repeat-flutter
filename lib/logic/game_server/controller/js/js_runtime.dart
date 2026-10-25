@@ -351,30 +351,44 @@ class JsRuntime {
         return jsonEncode(ret);
       });
 
-      // 取自定义动作上次执行时用的 input1（从作用位置存着的上次指令里反解出来），
-      // 游戏的"单词累积提问"靠它在上次的基础上再加一个词。没有可反解的返回 ''。
-      _jsRuntime!.onMessage('assistiveTouchLastInput', (dynamic args) async {
+      // 打字游戏的「单词提问并朗读」：args = {id, read, input1, word, prefix}。
+      // id 是 net 动作，input1 是只标了这一个词的整句；结果按指令攒进作用位置（问过的直接取存好的），
+      // 再用 read（'custom:<朗读动作id>'）那套 TTS 配置读出来，read 为空或找不到就只存不读。
+      // 返回值跟 assistiveTouchTap 一个规矩：'ok' / 'not_found' / 'unavailable' / 'invalid_args'，
+      // 没拿到结果（请求失败、text 为空）返回 'empty'。
+      _jsRuntime!.onMessage('assistiveTouchWordAsk', (dynamic args) async {
         if (args is! Map) {
-          return '';
+          return 'invalid_args';
         }
         final id = args['id'];
-        if (id is! String || !id.startsWith('custom:')) {
-          return '';
+        final input1 = args['input1'];
+        final word = args['word'];
+        final prefix = args['prefix'];
+        if (id is! String || input1 is! String || input1.isEmpty || word is! String || word.isEmpty || prefix is! String) {
+          return 'invalid_args';
         }
-        final actionId = int.tryParse(id.substring('custom:'.length));
-        if (actionId == null) {
-          return '';
-        }
+        final actionId = id.startsWith('custom:') ? int.tryParse(id.substring('custom:'.length)) : null;
         final logic = _assistiveTouchLogic();
-        if (logic == null) {
-          return '';
+        if (actionId == null || logic == null) {
+          return 'not_found';
         }
         await logic.loadActions();
         final matched = logic.actions.where((e) => e.id == actionId);
-        if (matched.isEmpty) {
-          return '';
+        if (matched.isEmpty || matched.first.type != AtActionType.net) {
+          return 'not_found';
         }
-        return logic.lastInput1Of(matched.first) ?? '';
+        if (!logic.availableForFlow(matched.first)) {
+          return 'unavailable';
+        }
+        final text = await logic.wordAsk(matched.first, input1: input1, word: word, prefix: prefix);
+        if (text == null) {
+          return 'empty';
+        }
+        final settings = await _ttsSettingsOf(args['read']);
+        if (settings != null) {
+          await ttsHelper.speakTextWith(settings, text);
+        }
+        return 'ok';
       });
 
       // 玩家在打字页按下绑定键时执行对应的辅助触控按钮。

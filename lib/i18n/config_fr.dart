@@ -610,5 +610,14 @@ class ConfigFr extends Config {
     put(I18nKey.labelMaxRepeatTimeDesc, "Combien de fois d'affilée il faut réussir après une erreur (au moins 1)");
     put(I18nKey.labelMaxRepeatTimeInvalid, "Le nombre doit être d'au moins 1");
     put(I18nKey.ttsContent, "Texte à lire");
+    put(I18nKey.domainAlias, "Alias de domaine");
+    put(I18nKey.domainAliasDesc, "Nommez des hôtes comme dans un fichier hosts. Écrivez l'alias comme hôte dans une adresse (ex. http://home-pc:8767/v1/chat) : il est remplacé par une machine joignable. Les cibles peuvent être plusieurs IP ou xxx.local (mDNS) ; la première joignable est utilisée");
+    put(I18nKey.domainAliasEmpty, "Aucun alias de domaine");
+    put(I18nKey.domainAliasName, "Nom");
+    put(I18nKey.domainAliasTargets, "Cibles (une IP ou xxx.local par ligne)");
+    put(I18nKey.domainAliasDeleteConfirm, "Supprimer l'alias %s ?");
+    put(I18nKey.domainAliasInvalid, "Le nom et les cibles ne peuvent pas être vides");
+    put(I18nKey.domainAliasHostInvalid, "« %s » n'est pas un nom d'hôte valide ; pas de http, de port ni de chemin");
+    put(I18nKey.domainAliasDuplicated, "Un alias nommé « %s » existe déjà");
   }
 }

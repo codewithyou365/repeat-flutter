@@ -610,5 +610,14 @@ class ConfigRu extends Config {
     put(I18nKey.labelMaxRepeatTimeDesc, "Сколько раз подряд нужно ответить верно после ошибки (не меньше 1)");
     put(I18nKey.labelMaxRepeatTimeInvalid, "Количество должно быть не меньше 1");
     put(I18nKey.ttsContent, "Текст для озвучивания");
+    put(I18nKey.domainAlias, "Псевдонимы доменов");
+    put(I18nKey.domainAliasDesc, "Давайте имена хостам, как в файле hosts. Укажите псевдоним как хост в адресе (например, http://home-pc:8767/v1/chat) — при запросе он заменится доступной машиной. Целями могут быть несколько IP или xxx.local (mDNS); используется первая доступная");
+    put(I18nKey.domainAliasEmpty, "Псевдонимов доменов пока нет");
+    put(I18nKey.domainAliasName, "Имя");
+    put(I18nKey.domainAliasTargets, "Цели (по одному IP или xxx.local в строке)");
+    put(I18nKey.domainAliasDeleteConfirm, "Удалить псевдоним %s?");
+    put(I18nKey.domainAliasInvalid, "Имя и цели не могут быть пустыми");
+    put(I18nKey.domainAliasHostInvalid, "«%s» — недопустимое имя хоста; без http, порта и пути");
+    put(I18nKey.domainAliasDuplicated, "Псевдоним «%s» уже существует");
   }
 }

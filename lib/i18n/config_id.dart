@@ -610,5 +610,14 @@ class ConfigId extends Config {
     put(I18nKey.labelMaxRepeatTimeDesc, "Berapa kali berturut-turut kamu harus benar setelah salah (minimal 1)");
     put(I18nKey.labelMaxRepeatTimeInvalid, "Jumlahnya minimal 1");
     put(I18nKey.ttsContent, "Teks yang dibacakan");
+    put(I18nKey.domainAlias, "Alias domain");
+    put(I18nKey.domainAliasDesc, "Beri nama host seperti file hosts. Tulis alias sebagai host di alamat (mis. http://home-pc:8767/v1/chat) dan akan diganti dengan mesin yang bisa dijangkau. Target bisa beberapa IP atau xxx.local (mDNS); yang pertama bisa dijangkau dipakai");
+    put(I18nKey.domainAliasEmpty, "Belum ada alias domain");
+    put(I18nKey.domainAliasName, "Nama");
+    put(I18nKey.domainAliasTargets, "Target (satu IP atau xxx.local per baris)");
+    put(I18nKey.domainAliasDeleteConfirm, "Hapus alias %s?");
+    put(I18nKey.domainAliasInvalid, "Nama dan target tidak boleh kosong");
+    put(I18nKey.domainAliasHostInvalid, "\"%s\" bukan nama host yang valid; tanpa http, port, atau path");
+    put(I18nKey.domainAliasDuplicated, "Alias bernama \"%s\" sudah ada");
   }
 }
