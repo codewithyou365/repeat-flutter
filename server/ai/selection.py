@@ -82,7 +82,7 @@ class Selection:
         for role in ROLES:
             e = self.resolve(role, cl, root)
             out[role] = None if e is None else {
-                "id": e.id, "name": e.name, "speakers": e.speakers,
+                "id": e.id, "name": e.name, "speakers": e.speakers, "voices": e.voices,
                 # 存的和实际用的不是一个，网页上要提示"已回退"
                 "fellBack": bool(self.get(role)) and e.id != self.get(role),
             }

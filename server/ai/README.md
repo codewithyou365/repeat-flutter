@@ -180,6 +180,26 @@ python setup_mt.py --model qwen3asr       # 约 2.3 GB，ModelScope 直连
 所以单独有个 `kind`（`mlx-audio-stt`）和单独一个模块 `mlx_audio_asr.py`。
 音频是直接喂 numpy 数组进去的，不落临时 wav——mlx-audio 只在输入是路径时才去解码文件。
 
+## 中日英混读合成：Qwen3-TTS（MLX）
+
+Piper / kokoro 一个声音只认一种语言，句子里夹日文或英文就念乱。Qwen3-TTS 不走音素表，
+中英、日英混在一句里都能念对。跑苹果 GPU，实时率约 0.4（M 系列实测）。
+
+```bash
+python setup_mt.py --model qwen3tts       # 0.6B bf16，约 2.4 GB（推荐）
+python setup_mt.py --model qwen3tts17     # 1.7B 8bit，约 2.9 GB，实测混读不比 0.6B 好
+```
+
+装完在网页「概览 → 当前生效 → 合成」里选上，音色推荐 **Vivian / Serena**（中文母语）。
+
+几个实测出来的坑：
+- **中日混在一句里**，auto 模式下音色的母语会压过另一门：中文音色把「ありがとう」念成"阿里嘎多"。
+  所以 `mlx_audio_tts.split_ja` 在"既有假名又有中文"时按标点/引号切段，带假名的段钉 `japanese`，
+  其余保持 `auto`。同一小句里假名和中文搅在一起（「日本語の…は中文的…」）还是救不回来。
+- 日文音色（Ono_Anna）念不了中文，钉 chinese 也不行。
+- 不支持语速：模型没有这个参数，网页上的语速对它无效。
+- 输出 24 kHz。
+
 ## 试 S2ST（端到端语音翻译）
 
 `bench_s2st.py` 是个**一次性的测量脚本，不接进服务**。它回答三个问题：

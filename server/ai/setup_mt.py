@@ -81,6 +81,21 @@ MODELS = {
         "mlx": "mlx_audio",
         "about": "约 2.3 GB，识别跑苹果 GPU，支持四川话等 22 种中国方言",
     },
+    "qwen3tts": {
+        "id": "qwen3-tts-0.6b-customvoice-mlx-bf16",
+        # bf16 而不是 8bit：0.6B 量化只省 0.5 GB，不值得拿音质换
+        "repo": "mlx-community/Qwen3-TTS-12Hz-0.6B-CustomVoice-bf16",
+        "need": None, "keep": None, "convert": False,
+        "mlx": "mlx_audio",
+        "about": "约 2.5 GB，合成跑苹果 GPU，一句话里中日英混着也能念对",
+    },
+    "qwen3tts17": {
+        "id": "qwen3-tts-1.7b-customvoice-mlx-8bit",
+        "repo": "mlx-community/Qwen3-TTS-12Hz-1.7B-CustomVoice-8bit",
+        "need": None, "keep": None, "convert": False,
+        "mlx": "mlx_audio",
+        "about": "约 3.1 GB，0.6B 的大号，音质更好、慢一些",
+    },
     "whisper-turbo-q4": {
         "id": "whisper-large-v3-turbo-q4-mlx",
         "repo": "mlx-community/whisper-large-v3-turbo-q4",
@@ -233,7 +248,7 @@ def main() -> int:
         size = sum(os.path.getsize(os.path.join(r, f))
                    for r, _, fs in os.walk(d) for f in fs)
         print(f"\n装好了：{d}  ({size >> 20} MB)")
-        print("现在去网页的「概览 → 当前生效 → 翻译」把它选上。")
+        print("现在去网页的「概览 → 当前生效」把它选上。")
         return 0
 
     ms.fetch(spec["repo"], need, raw, sizes=sizes)
@@ -262,7 +277,7 @@ def main() -> int:
     size = sum(os.path.getsize(os.path.join(r, f))
                for r, _, fs in os.walk(d) for f in fs)
     print(f"\n装好了：{d}  ({size >> 20} MB)")
-    print("现在去网页的「概览 → 当前生效 → 翻译」把它选上。")
+    print("现在去网页的「概览 → 当前生效」把它选上。")
     return 0
 
 

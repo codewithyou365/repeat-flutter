@@ -30,6 +30,7 @@ import hf_tts
 import llm_mt
 import mlx_asr
 import mlx_audio_asr
+import mlx_audio_tts
 import selection as sel
 import text_mt
 import wav
@@ -58,6 +59,11 @@ async def _mlx_asr_error(_request, exc: mlx_asr.MlxAsrError):
 
 @app.exception_handler(mlx_audio_asr.MlxAudioAsrError)
 async def _mlx_audio_asr_error(_request, exc: mlx_audio_asr.MlxAudioAsrError):
+    return JSONResponse(status_code=400, content={"error": str(exc)})
+
+
+@app.exception_handler(mlx_audio_tts.MlxAudioTtsError)
+async def _mlx_audio_tts_error(_request, exc: mlx_audio_tts.MlxAudioTtsError):
     return JSONResponse(status_code=400, content={"error": str(exc)})
 
 
@@ -196,6 +202,7 @@ def set_selection(role: Optional[str] = Form(None), model: Optional[str] = Form(
     llm_mt.drop_cache()
     mlx_asr.drop_cache()
     mlx_audio_asr.drop_cache()
+    mlx_audio_tts.drop_cache()
     return {**_selection.to_json(), "resolved": _selection.resolved(_catalog, _model_root)}
 
 
@@ -379,6 +386,11 @@ def _synthesize(say: str, sid: int, speed: float):
         inst = hf_tts.get(tts_entry.id, cat.model_dir(_model_root, tts_entry.id),
                           tts_entry.cfg, engine.num_threads(), engine.tts_workers())
         out, rate = inst.synthesize(say)
+    elif tts_entry.kind == "mlx-audio-tts":
+        # MLX 那条路：一份权重，内部一把锁串行。没有语速参数，speed 用不上
+        inst = mlx_audio_tts.get(tts_entry.id, cat.model_dir(_model_root, tts_entry.id),
+                                 tts_entry.cfg, tts_entry.voices)
+        out, rate = inst.synthesize(say, sid)
     else:
         # **必须走池子**：sherpa 的 OfflineTts 实例不是线程安全的，
         # 而 TTS 不在全局锁里，多个请求会同时进到这儿。
@@ -701,6 +713,7 @@ def delete_model(model_id: str) -> Dict[str, Any]:
     llm_mt.drop_cache(model_id)
     mlx_asr.drop_cache(model_id)
     mlx_audio_asr.drop_cache(model_id)
+    mlx_audio_tts.drop_cache(model_id)
     return {"ok": True}
 
 

@@ -27,8 +27,10 @@ def session():
 def file_list(repo: str, rev: str = "master"):
     """仓库里的文件清单 [(path, size)]。"""
     s = session()
+    # 不带 Recursive 只列顶层，子目录只回一个 tree 条目、里面的文件全漏——
+    # Qwen3-TTS 的 speech_tokenizer/ 就是这么丢的，加载不报错，合成时才炸。
     r = s.get(f"https://www.modelscope.cn/api/v1/models/{repo}/repo/files",
-              params={"Revision": rev}, timeout=30)
+              params={"Revision": rev, "Recursive": "true"}, timeout=30)
     r.raise_for_status()
     fs = r.json().get("Data", {}).get("Files", [])
     return [(f["Path"], f.get("Size") or 0) for f in fs if f.get("Type") == "blob"]

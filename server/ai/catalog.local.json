@@ -8,7 +8,8 @@
   "kind=\"hf-tts\" 是拿 transformers 跑的 TTS（SeamlessM4T），不经过 sherpa。只用它发声，翻译仍走 mt 那一档。",
   "Piper 系列（vits-piper-*）是 sherpa 生态里最快的 TTS，比 kokoro 小一个数量级。解压后是 <voice>.onnx + tokens.txt + espeak-ng-data/，外层同名目录会被拍平。",
   "kind=\"llm-mt\" 是用 LLM 翻译，跑在 MLX（Apple Silicon 的 GPU）上。专治 NMT 的复合词拆字和习语问题（魔方->devil、近视->close look）。",
-  "kind=\"mlx-asr\" 是识别跑 MLX（Apple GPU）。和 sherpa 的 CPU int8 是两条路。"
+  "kind=\"mlx-asr\" 是识别跑 MLX（Apple GPU）。和 sherpa 的 CPU int8 是两条路。",
+  "kind=\"mlx-audio-tts\" 是合成跑 mlx-audio（Apple GPU），目前是 Qwen3-TTS。不经过音素表、直接从文字出声音，所以一句话里中日英混着写也能念对；Piper/kokoro 一个声音只认一种语言。"
  ],
  "v": 3,
  "models": [
@@ -444,6 +445,84 @@
      "model.safetensors",
      "preprocessor_config.json",
      "tokenizer_config.json"
+    ]
+   }
+  },
+  {
+   "id": "qwen3-tts-0.6b-customvoice-mlx-bf16",
+   "role": [
+    "tts"
+   ],
+   "kind": "mlx-audio-tts",
+   "name": "Qwen3-TTS 0.6B（MLX/GPU，中日英混读）",
+   "langs": [
+    "*"
+   ],
+   "size": 2500000000,
+   "speakers": 9,
+   "voices": [
+    "Vivian",
+    "Serena",
+    "Uncle_Fu",
+    "Dylan",
+    "Eric",
+    "Ryan",
+    "Aiden",
+    "Ono_Anna",
+    "Sohee"
+   ],
+   "license": "Apache-2.0",
+   "note": "中日英混在一句里也能念对（Piper/kokoro 做不到）。9 个预置音色，不用参考录音；语言默认 auto，别钉死，钉成某一种会让另外的语言带口音。不支持调语速。装法：python setup_mt.py --model qwen3tts",
+   "files": [],
+   "cfg": {
+    "language": "auto",
+    "require": [
+     "config.json",
+     "model.safetensors",
+     "tokenizer_config.json",
+     "vocab.json",
+     "merges.txt",
+     "speech_tokenizer/model.safetensors",
+     "speech_tokenizer/config.json"
+    ]
+   }
+  },
+  {
+   "id": "qwen3-tts-1.7b-customvoice-mlx-8bit",
+   "role": [
+    "tts"
+   ],
+   "kind": "mlx-audio-tts",
+   "name": "Qwen3-TTS 1.7B（MLX/GPU，中日英混读）",
+   "langs": [
+    "*"
+   ],
+   "size": 3080000000,
+   "speakers": 9,
+   "voices": [
+    "Vivian",
+    "Serena",
+    "Uncle_Fu",
+    "Dylan",
+    "Eric",
+    "Ryan",
+    "Aiden",
+    "Ono_Anna",
+    "Sohee"
+   ],
+   "license": "Apache-2.0",
+   "note": "0.6B 的大号，音质和稳定性更好、慢一些。音色同 0.6B。不支持调语速。装法：python setup_mt.py --model qwen3tts17",
+   "files": [],
+   "cfg": {
+    "language": "auto",
+    "require": [
+     "config.json",
+     "model.safetensors",
+     "tokenizer_config.json",
+     "vocab.json",
+     "merges.txt",
+     "speech_tokenizer/model.safetensors",
+     "speech_tokenizer/config.json"
     ]
    }
   },

@@ -216,7 +216,7 @@ function renderSel(){
     const row = document.createElement('div'); row.className='row';
     row.innerHTML = `<span class="k">音色</span><span class="v">
       <select id="sid">${Array.from({length:t.speakers},(_,i)=>
-        `<option value="${i}" ${i===SEL.ttsSid?'selected':''}>${i}</option>`).join('')}</select>
+        `<option value="${i}" ${i===SEL.ttsSid?'selected':''}>${(t.voices||[])[i]||i}</option>`).join('')}</select>
       </span><span class="meta">${t.name} 有 ${t.speakers} 个音色</span>`;
     box.appendChild(row);
   }
