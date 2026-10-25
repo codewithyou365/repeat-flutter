@@ -11,20 +11,11 @@ import 'package:repeat_flutter/common/domain_alias.dart';
 /// 远程 TTS：把文本丢给 server/ai 的 /v1/tts（或别的回音频的 HTTP 服务），
 /// 拿回来的音频**只在内存里**播，不落盘——朗读文本千变万化，存下来也几乎复用不上。
 class RemoteTts {
-  /// 链接里写了它就替换到那个位置，没写就当 query 参数 `text=` 拼上。
-  /// 这样既能直接填 `http://<IP>:8767/v1/tts`，也能接参数名不一样的其它 TTS 服务。
+  /// 链接里写了它就替换到那个位置走 GET（接参数名不一样的其它 TTS 服务）；
+  /// 没写就 POST 表单 `text=`——长文本塞 URL 里既难看又可能超长，server/ai 的 /v1/tts 两种都认。
   static const String textPlaceholder = '{{text}}';
 
   AudioPlayer? _player;
-
-  static Uri buildUri(String url, String text) {
-    final raw = url.trim();
-    if (raw.contains(textPlaceholder)) {
-      return Uri.parse(raw.replaceAll(textPlaceholder, Uri.encodeComponent(text)));
-    }
-    final uri = Uri.parse(raw.contains('://') ? raw : 'http://$raw');
-    return uri.replace(queryParameters: {...uri.queryParameters, 'text': text});
-  }
 
   /// 取音频并播完才返回（跟本机 TTS 的 awaitSpeakCompletion 一个节奏）。
   /// 连不上 / 非 2xx / 回来的不是音频都抛异常，由调用方决定回落本机。
@@ -32,14 +23,28 @@ class RemoteTts {
   /// 不用 just_audio 的 setUrl 直连：iOS 没开 NSAllowsArbitraryLoads，AVPlayer 拉明文 http
   /// 会被 ATS 拦掉；Dart 自己的 HttpClient 不受这个限制。
   Future<void> speak(String url, String text) async {
-    final resp = await Dio(BaseOptions(
+    final raw = url.trim();
+    final dio = Dio(BaseOptions(
       // 局域网内连不上应该立刻知道，别让用户干等
       connectTimeout: const Duration(seconds: 5),
       receiveTimeout: const Duration(seconds: 30),
       responseType: ResponseType.bytes,
       // 4xx 也要拿到 body 里的 error 文案，所以自己判状态码
       validateStatus: (_) => true,
-    )).getUri<List<int>>(await DomainAlias.resolveUri(buildUri(url, text)));
+    ));
+    final Response<List<int>> resp;
+    if (raw.contains(textPlaceholder)) {
+      final uri = Uri.parse(raw.replaceAll(textPlaceholder, Uri.encodeComponent(text)));
+      resp = await dio.getUri<List<int>>(await DomainAlias.resolveUri(uri));
+    } else {
+      final uri = Uri.parse(raw.contains('://') ? raw : 'http://$raw');
+      // 链接里带的 ?sid=1&speed=1.2 也挪进表单，服务端 POST 只读表单
+      resp = await dio.postUri<List<int>>(
+        await DomainAlias.resolveUri(uri.replace(query: '')),
+        data: {...uri.queryParameters, 'text': text},
+        options: Options(contentType: Headers.formUrlEncodedContentType),
+      );
+    }
     final bytes = Uint8List.fromList(resp.data ?? const []);
     final code = resp.statusCode ?? 0;
     if (code < 200 || code >= 300) {
