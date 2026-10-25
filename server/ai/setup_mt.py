@@ -96,6 +96,20 @@ MODELS = {
         "mlx": "mlx_audio",
         "about": "约 3.1 GB，0.6B 的大号，音质更好、慢一些",
     },
+    "voxcpm2": {
+        "id": "voxcpm2-mlx-8bit",
+        "repo": "mlx-community/VoxCPM2-8bit",
+        "need": None, "keep": None, "convert": False,
+        "mlx": "mlx_audio",
+        "about": "约 3.2 GB，合成跑苹果 GPU，语气平稳适合教学，中日英混读",
+    },
+    "omnivoice": {
+        "id": "omnivoice-mlx-bf16",
+        "repo": "mlx-community/OmniVoice-bf16",
+        "need": None, "keep": None, "convert": False,
+        "mlx": "mlx_audio",
+        "about": "约 1.6 GB，比 voxcpm2 快、小，中英混读准，日文略弱",
+    },
     "whisper-turbo-q4": {
         "id": "whisper-large-v3-turbo-q4-mlx",
         "repo": "mlx-community/whisper-large-v3-turbo-q4",
