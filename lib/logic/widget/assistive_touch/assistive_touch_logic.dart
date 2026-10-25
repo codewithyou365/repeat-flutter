@@ -609,6 +609,10 @@ class AssistiveTouchLogic {
     logic.targetRef.value = action.target;
     logic.behavior.value = ExpandBehavior.values[action.net.behavior.clamp(0, ExpandBehavior.values.length - 1)];
     logic.onPlayTarget = playTarget;
+    if (action.net.speak) {
+      final settings = action.net.tts.settings;
+      logic.onSpeak = (text) => repeatLogic.ttsHelper.speakTextWith(settings, text);
+    }
     // instructionText 不是固定字符串：模版里的 {{question}}/{{answer}}/{{tip1}}.. 每次都按当前小节渲染，
     // 这样同一个动作对不同小节执行时取的是各自的文本，而不是创建动作那一刻冻结的内容。
     final instructionText = logic.render(action.net.template, inputs: inputMap);

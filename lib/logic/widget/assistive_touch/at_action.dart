@@ -197,10 +197,18 @@ class AtNetParams {
   /// 2 不保存（结果只在对话框里显示）。
   int behavior;
 
+  /// 拿到结果后要不要朗读：覆盖写入时读写进作用位置的文本，不保存时读 result['text']。
+  bool speak;
+
+  /// 朗读用的 TTS 配置，跟朗读动作同一个结构（按平台分开存引擎/音色）。
+  final AtTtsConfig tts;
+
   AtNetParams({
     this.template = '',
     this.behavior = 0,
-  });
+    this.speak = false,
+    AtTtsConfig? tts,
+  }) : tts = tts ?? AtTtsConfig();
 
   static AtNetParams fromJson(Object? json) {
     if (json is! Map) {
@@ -209,12 +217,16 @@ class AtNetParams {
     return AtNetParams(
       template: json['tp'] is String ? json['tp'] as String : '',
       behavior: json['bh'] is int ? json['bh'] as int : 0,
+      speak: json['sp'] is bool ? json['sp'] as bool : false,
+      tts: AtTtsConfig.fromJson(json['ts']),
     );
   }
 
   Map<String, dynamic> toJson() => {
         'tp': template,
         'bh': behavior,
+        if (speak) 'sp': speak,
+        if (speak) 'ts': tts.toJson(),
       };
 }
 

@@ -28,6 +28,7 @@ class AtActionSheet {
 
     final name = action.name.obs;
     final type = action.type.obs;
+    final speak = action.net.speak.obs;
 
     // 服务地址是全局的（所有 net 动作共用一份），单独存在 Kv 里，不进动作。
     final expand = ExpandLogic();
@@ -131,6 +132,7 @@ class AtActionSheet {
                   action: action,
                   expand: expand,
                   template: template,
+                  speak: speak,
                 ),
               RowWidget.buildDividerWithoutColor(),
               RowWidget.buildButtons([
@@ -142,6 +144,7 @@ class AtActionSheet {
                   action.name = name.value.trim();
                   action.net.template = template.text;
                   action.tts.template = ttsTemplate.text;
+                  action.net.speak = speak.value;
                   await logic.saveAction(action);
                   Get.back(result: true);
                 }),
@@ -225,6 +228,7 @@ class AtActionSheet {
     required AtAction action,
     required ExpandLogic expand,
     required TextEditingController template,
+    required RxBool speak,
   }) {
     return [
       RowWidget.buildDividerWithoutColor(),
@@ -246,6 +250,34 @@ class AtActionSheet {
         hintKey: I18nKey.instruction,
         items: _placeholderItems(logic),
       ),
+      RowWidget.buildDividerWithoutColor(),
+      // 朗读开关自己包一层 Obx：只有下面那行"TTS设置"跟着显隐，不能让外层整张表单监听它
+      // （外层一重建，选择器的滚动控制器会被重建，见类注释）。
+      RowWidget.buildSwitch(
+        title: I18nKey.actionTypeTts.tr,
+        value: speak,
+      ),
+      Obx(() {
+        if (!speak.value) {
+          return const SizedBox.shrink();
+        }
+        return Column(
+          children: [
+            RowWidget.buildDividerWithoutColor(),
+            RowWidget.buildSelect(
+              title: I18nKey.ttsSettings.tr,
+              leading: const Icon(Icons.record_voice_over),
+              onTap: () async {
+                await logic.repeatLogic.ttsHelper.openWith(
+                  action.net.tts.settings,
+                  (s) async => action.net.tts.apply(s),
+                  allowRemote: true,
+                );
+              },
+            ),
+          ],
+        );
+      }),
       RowWidget.buildDividerWithoutColor(),
       RowWidget.buildCupertinoPicker(
         key: const ValueKey('behavior'),

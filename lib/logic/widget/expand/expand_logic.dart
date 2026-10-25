@@ -124,8 +124,12 @@ class ExpandLogic {
 
   bool get _noSave => behavior.value == ExpandBehavior.noSave;
 
-  /// noSave 时这次请求拿到的结果，[execute] 跑完后弹框显示。null 表示没拿到（请求失败等）。
-  String? _tempResult;
+  /// 这次请求拿到的 result['text']：noSave 时弹框显示，开了朗读时拿去读。
+  /// null 表示没拿到（请求失败、text 为空等）。
+  String? _resultText;
+
+  /// 拿到结果后朗读用，由持有 RepeatLogic 的一方注入（动作开了"朗读"才给）。
+  Future<void> Function(String text)? onSpeak;
 
   /// 播放作用位置已有内容的实现由持有 RepeatLogic 的一方注入（AssistiveTouchLogic.playTarget）。
   Future<void> Function(String fieldRef)? onPlayTarget;
@@ -154,11 +158,19 @@ class ExpandLogic {
         return;
       }
     }
-    _tempResult = null;
+    _resultText = null;
     await startTask(msg, closeOnSuccess: closeOnSuccess);
-    final temp = _tempResult;
-    if (_noSave && temp != null) {
-      await showTempResult(temp);
+    final text = _resultText;
+    if (text == null) {
+      return;
+    }
+    if (_noSave) {
+      // 边读边显示：不等读完再弹框，关掉对话框也不打断朗读。
+      unawaited(onSpeak?.call(text));
+      await showTempResult(text);
+    } else {
+      // 覆盖写入后作用位置里的正文就是这段 text。
+      await onSpeak?.call(text);
     }
   }
 
@@ -262,7 +274,7 @@ class ExpandLogic {
               // 跟覆盖写入一样，text 为空就当没拿到内容，不弹框。
               final text = result['text'];
               hasContent = text is String && text.isNotEmpty;
-              _tempResult = hasContent ? text as String : null;
+              _resultText = hasContent ? text as String : null;
             } else {
               await _onTaskComplete(result, msg);
             }
@@ -315,6 +327,7 @@ class ExpandLogic {
       VerseField.setText(targetMap, key, text);
       VerseField.setInstruction(targetMap, key, instruction);
       logs.add("Content overwritten to: $key");
+      _resultText = text;
     }
 
     // 只出文本：该字段之前挂过生成的音频（老版本"生成音频"留下的）时，把音频和它的时间区间一起清掉，
