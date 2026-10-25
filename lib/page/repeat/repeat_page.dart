@@ -458,7 +458,7 @@ class RepeatPage extends StatelessWidget {
         return VerseField.tipNameOf(classroomMap, index) ?? '${I18nKey.labelTips.tr}${index + 1}';
       }
 
-      Widget tab(int index, String label, String ref) {
+      Widget tab(int index, String label) {
         final selected = index == tabIndex;
         // 编辑模式下长按提示 tab、或者再点一次已经选中的那个，都弹"更名/删除"。
         // 改的都是课堂那一层，整个课堂通用。
@@ -485,17 +485,7 @@ class RepeatPage extends StatelessWidget {
                 ),
               ),
             ),
-            if (tipOf(ref) != null)
-              IconButton(
-                icon: const Icon(
-                  Icons.tips_and_updates,
-                  color: Color(0xFF007BFF),
-                  size: 17,
-                ),
-                onPressed: () => onTipIconTap(ref),
-              )
-            else
-              const SizedBox(width: 24),
+            const SizedBox(width: 24),
           ],
         );
       }
@@ -510,7 +500,7 @@ class RepeatPage extends StatelessWidget {
             controller: helper.tipTabScrollController,
             child: Row(
               children: [
-                for (final i in visibleTips) tab(i, tabLabel(i), VerseField.ref(QaType.tip.acronym, i)),
+                for (final i in visibleTips) tab(i, tabLabel(i)),
                 // 编辑模式下能一直加到 8 条（VerseField.maxTip），加满就不显示了。
                 if (isEditMode && tipCount < VerseField.maxTip)
                   GestureDetector(
@@ -521,7 +511,7 @@ class RepeatPage extends StatelessWidget {
                       child: Icon(Icons.add, size: 20, color: Colors.grey),
                     ),
                   ),
-                tab(tipCount, I18nKey.labelNote.tr, QaType.note.acronym),
+                tab(tipCount, I18nKey.labelNote.tr),
               ],
             ),
           ),
@@ -547,6 +537,9 @@ class RepeatPage extends StatelessWidget {
                         }
                       }
                     : null,
+                // 配了提示服务的话，正文末尾（笔的前面）放一个灯泡，这是提示服务唯一的入口。
+                onExtraIcon: tipOf(fieldRef) != null ? () => onTipIconTap(fieldRef) : null,
+                extraIcon: Icons.tips_and_updates,
                 onText: () => logic.assistiveTouchLogic.playFieldRangeIfAny(fieldRef),
               ),
             ),
@@ -673,21 +666,23 @@ class RepeatPage extends StatelessWidget {
     BoxDecoration? iconDecoration;
     Future<void> Function()? onIconCallback;
     IconData? onIconData;
+    Future<void> Function()? onExtraIconCallback;
     if (withIcon) {
+      final bookId = helper.logic.currVerse?.bookId;
+      final tip = logic.state.bookIdToTip[bookId]?[VerseField.baseOf(fieldRef)];
+      Future<void> openTip() => logic.openTip(tip!);
       if (helper.showMode.value == ShowMode.edit) {
         onIconCallback = () async {
           await fullModify(logic, fieldRef);
         };
-      } else {
-        final bookId = helper.logic.currVerse?.bookId;
-        final tip = logic.state.bookIdToTip[bookId]?[VerseField.baseOf(fieldRef)];
+        // 编辑模式下笔占了主图标的位置，配了提示服务的话灯泡排在笔前面一起显示。
         if (tip != null) {
-          onIconCallback = () async {
-            await logic.openTip(tip);
-          };
-          onIconData = Icons.tips_and_updates;
-          iconDecoration = const BoxDecoration();
+          onExtraIconCallback = openTip;
         }
+      } else if (tip != null) {
+        onIconCallback = openTip;
+        onIconData = Icons.tips_and_updates;
+        iconDecoration = const BoxDecoration();
       }
     }
     // 同上：长按选词靠外面这层 SelectionArea，单击仍走里层的 onText。
@@ -699,6 +694,8 @@ class RepeatPage extends StatelessWidget {
         onIcon: onIconCallback,
         iconDecoration: iconDecoration,
         icon: onIconData,
+        onExtraIcon: onExtraIconCallback,
+        extraIcon: Icons.tips_and_updates,
         onText: () => logic.assistiveTouchLogic.playFieldRangeIfAny(fieldRef),
       ),
     );

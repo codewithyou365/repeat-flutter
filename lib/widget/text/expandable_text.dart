@@ -14,6 +14,10 @@ class ExpandableText extends StatefulWidget {
   final IconData? icon;
   final BoxDecoration? iconDecoration;
 
+  /// 排在 [icon] 前面的第二个图标（比如编辑模式下笔旁边的提示服务灯泡），不带下划线。
+  final VoidCallback? onExtraIcon;
+  final IconData? extraIcon;
+
   const ExpandableText({
     Key? key,
     required this.title,
@@ -28,6 +32,8 @@ class ExpandableText extends StatefulWidget {
     this.onText,
     this.icon,
     this.iconDecoration,
+    this.onExtraIcon,
+    this.extraIcon,
   }) : super(key: key);
 
   @override
@@ -112,6 +118,24 @@ class _ExpandableTextState extends State<ExpandableText> {
           style: widget.style,
         ),
       ];
+    }
+
+    if (widget.onExtraIcon != null && widget.extraIcon != null && displayText == fullText) {
+      spans.add(
+        WidgetSpan(
+          child: GestureDetector(
+            onTap: widget.onExtraIcon,
+            child: SizedBox(
+              width: 25,
+              child: Icon(
+                widget.extraIcon,
+                color: Color(0xFF007BFF),
+                size: 17,
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
     if (widget.onIcon != null && displayText == fullText) {
