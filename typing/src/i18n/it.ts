@@ -143,6 +143,8 @@ export default {
     wordAskKeyWords: "Parole chiave",
     wordAskEmpty: "Nessun risultato",
     wordAskTipEmpty: "Nessuna parola chiesta. Premi il tasto «Chiedi parola e leggi» mentre digiti una parola nel gioco",
+    wordAskDelete: "Elimina parola chiave",
+    wordAskDeleteConfirm: "Eliminare la parola chiave «{word}»? Anche i risultati salvati verranno eliminati",
     triggerKeyConflict: "Questo tasto è già usato da un'altra funzione",
     spaceKey: "(Spazio)",
     multiKeyDesc: "Separa più tasti con •; per i tasti che non riesci a digitare usa \\nome (es. \\enter, \\numlock) oppure tocca + per sceglierne uno",

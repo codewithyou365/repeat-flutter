@@ -13,17 +13,14 @@ import 'package:repeat_flutter/common/ws/message.dart' as message;
 import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/game_kv.dart';
-import 'package:repeat_flutter/db/entity/kv.dart';
-import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/ai/shadow_remote.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
 import 'package:repeat_flutter/logic/game_server/shadow_recorder.dart';
-import 'package:repeat_flutter/logic/model/book_content.dart';
+import 'package:repeat_flutter/logic/js_bridge/js_bridge.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/assistive_touch_logic.dart';
 import 'package:repeat_flutter/logic/widget/assistive_touch/at_action.dart';
 import 'package:repeat_flutter/logic/widget/expand/expand_logic.dart';
 import 'package:repeat_flutter/logic/widget/game/game_state.dart';
-import 'package:repeat_flutter/page/repeat/logic/constant.dart';
 import 'package:repeat_flutter/page/repeat/logic/repeat_flow_for_browse.dart';
 import 'package:repeat_flutter/page/repeat/logic/tts_helper.dart';
 import 'package:repeat_flutter/page/repeat/repeat_logic.dart';
@@ -113,6 +110,16 @@ class JsRuntime {
     _jsRuntime = getJavascriptRuntime();
 
     try {
+      JsBridge(
+        active: () => GameState.game != null,
+        ttsHelper: ttsHelper,
+        tapNext: tapNext,
+        tapLeft: tapLeft,
+        tapRight: tapRight,
+        tapMiddle: tapMiddle,
+        longTapMiddle: longTapMiddle,
+        ttsSettingsOf: _ttsSettingsOf,
+      ).register(_jsRuntime!);
       _jsRuntime!.onMessage('gameScoreInc', (dynamic args) async {
         final game = GameState.game;
         if (game == null) return 'no_active_game';
@@ -197,35 +204,6 @@ class JsRuntime {
         }
         return '${GameState.adminEnable}';
       });
-      _jsRuntime!.onMessage('updateCurrVerseContent', (dynamic args) async {
-        final game = GameState.game;
-        if (game == null) return 'no_game';
-        if (args is! Map) return 'invalid_args';
-
-        try {
-          final verseId = await Db().db.kvDao.getInt(K.lastVerseId) ?? 0;
-          if (verseId == 0) return 'no_verse_id';
-
-          final String type = args['type']?.toString() ?? '';
-          final String newStr = args['content']?.toString() ?? '';
-
-          if (type.isEmpty) return 'invalid_type';
-
-          final verse = await Db().db.verseDao.getById(verseId);
-          if (verse == null) return 'verse_not_found';
-
-          Map<String, dynamic> contentMap = jsonDecode(verse.content);
-          contentMap[type] = newStr;
-
-          String jsonStr = jsonEncode(contentMap);
-          await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
-
-          return 'ok';
-        } catch (e) {
-          return e.toString();
-        }
-      });
-
       // 逐字母朗读（拼读）时，如果用户开启了"拼读即置零"，把当前 verse 的学习等级重置为 0。
       // 复用 error() 那套逻辑（errorAndStay）：把 verse.progress 和今日进度都置 0，并刷新缓存/发事件，
       // 但不改动 examine 流程的 step 和 scheduled 顺序，用户可以继续打字；
@@ -248,80 +226,6 @@ class JsRuntime {
         }
       });
 
-
-      _jsRuntime!.onMessage('repeatFlow', (dynamic args) {
-        final game = GameState.game;
-        if (game == null) {
-          return '';
-        }
-        final logic = Get.find<RepeatLogic>();
-        final repeatFlow = logic.repeatFlow;
-        if (repeatFlow == null) {
-          return '';
-        }
-        if (repeatFlow is RepeatFlowForBrowse) {
-          return 'browse';
-        } else {
-          return 'examine';
-        }
-      });
-      _jsRuntime!.onMessage('uiLabel', (dynamic args) {
-        final game = GameState.game;
-        if (game == null) {
-          return '';
-        }
-        if (args is! Map || !args.containsKey('name')) {
-          return '';
-        }
-        final k = args['name'];
-        if (k is! String) {
-          return '';
-        }
-        final logic = Get.find<RepeatLogic>();
-        switch (k) {
-          case 'left':
-            return logic.repeatFlow?.leftLabel ?? '';
-          case 'right':
-            return logic.repeatFlow?.rightLabel ?? '';
-          case 'middle':
-            return I18nKey.tips.tr;
-          default:
-            return '';
-        }
-      });
-      _jsRuntime!.onMessage('uiTap', (dynamic args) {
-        final game = GameState.game;
-        if (game == null) {
-          return 'error: game_not_initialized';
-        }
-        if (args is! Map) {
-          return 'error: invalid_arguments';
-        }
-        final k = args['event'];
-        if (k is! String) {
-          return 'error: event_must_be_string';
-        }
-        switch (k) {
-          case 'tapNext':
-            tapNext();
-            break;
-          case 'tapLeft':
-            tapLeft();
-            break;
-          case 'tapRight':
-            tapRight();
-            break;
-          case 'tapMiddle':
-            tapMiddle();
-            break;
-          case 'longTapMiddle':
-            longTapMiddle();
-            break;
-          default:
-            return 'error: unknown_event_type';
-        }
-        return 'success';
-      });
 
       // 打字游戏的"辅助触控触发键"要在设置面板里列出可绑定的按钮，所以把复习页辅助触控当前显示的
       // 按钮导出成 [{id, name}]。id 形如 custom:<动作id>。
@@ -432,57 +336,6 @@ class JsRuntime {
         return 'not_found';
       });
 
-      _jsRuntime!.onMessage('getVerse', (dynamic args) async {
-        final game = GameState.game;
-        if (game == null) {
-          return '';
-        }
-        final verseId = await Db().db.kvDao.getInt(K.lastVerseId) ?? 0;
-        final verse = await Db().db.scheduleDao.getVerseShowById(verseId);
-        if (verse == null) {
-          return '';
-        }
-        return verse.verseContent;
-      });
-      _jsRuntime!.onMessage('tts', (dynamic args) async {
-        if (args is! Map) {
-          return 'invalid_args';
-        }
-        final payload = args.cast<String, dynamic>();
-        final type = payload['type'];
-        final text = payload['text'];
-        final rateRaw = payload['rate'];
-        final double? rate = rateRaw is num ? rateRaw.toDouble() : null;
-        if (type is! String || type.isEmpty) {
-          return 'invalid_type';
-        }
-        if (text is! String) {
-          return 'invalid_text';
-        }
-        if (text.isEmpty) {
-          return 'empty';
-        }
-        // 提示是多条的，JS 那边可以传 't1'/'t2' 指定第几条；TTS 配置按字段的大类走。
-        final qaType = QaType.fromAcronym(VerseField.baseOf(type));
-        if (qaType == null) {
-          return 'invalid_text';
-        }
-        // 用户在界面上主动点击播放(而非自动朗读)时,同步取消"不自动播放媒体"标记,
-        // 与音频/视频卡片点击播放按钮的行为保持一致
-        if (payload['manual'] == true) {
-          Get.find<RepeatLogic>().state.helper.doNotPlayMedia = false;
-        }
-        // 指定了朗读动作('custom:<id>')就用那个动作自己那套 TTS 配置（引擎/语言/音色/语速/音高）来读，
-        // 读的还是这里传进来的文本（打字游戏的当前单词），跟动作模版无关。
-        // 动作找不到了（被删/改了类型）就当没指定，按字段的公共配置读，不让游戏这边直接哑掉。
-        final settings = await _ttsSettingsOf(payload['action']);
-        if (settings != null) {
-          await ttsHelper.speakTextWith(settings, text);
-          return 'ok';
-        }
-        await ttsHelper.speakText(qaType.ttsKeys, text, rate: rate);
-        return 'ok';
-      });
       _jsRuntime!.onMessage('playWrong', (dynamic args) async {
         if (args is! Map) {
           return 'invalid_args';
@@ -694,41 +547,7 @@ class JsRuntime {
     if (!_isInitialized || _jsRuntime == null) {
       throw Exception("JS Runtime is not initialized.");
     }
-
-    try {
-      final jsonPayload = jsonEncode(payload);
-      final jsCommand = "$methodName($jsonPayload);";
-
-      // 1. 同步 evaluate（可能返回 Promise）
-      final JsEvalResult evalResult = _jsRuntime!.evaluate(jsCommand);
-      JsEvalResult finalResult = evalResult;
-
-      // 2. 如果是 Promise，handlePromise 会等待它完成并返回最终 JsEvalResult
-      try {
-        finalResult = await _jsRuntime!.handlePromise(evalResult, timeout: const Duration(seconds: 5));
-        // 如果超时或不是 promise，会抛异常或直接返回原值（视实现），所以用 try/catch 包裹
-      } catch (e) {
-        // 超时或不是 Promise：按原结果继续（并记录）
-        print("⚠️ handlePromise warning / timeout / not-a-promise: $e");
-      }
-      print("DEBUG: [Dart] JS 执行结果文本: ${evalResult.stringResult}");
-      // 3. 检查错误
-      if (finalResult.isError) {
-        print("⚠️ JS Execution Error (final): ${finalResult.stringResult}");
-        return null;
-      }
-
-      // 4. 解析最终字符串结果为 JSON
-      final resultString = finalResult.stringResult;
-      print("DEBUG: [Dart] JS 最终结果文本: $resultString");
-
-      // 如果 JS 本来就返回了一个对象而非 JSON 字符串，你可能需要调整 JS 端，
-      // 但你当前 JS 已用 JSON.stringify 返回字符串，因此下面直接 jsonDecode 就 OK。
-      return jsonDecode(resultString);
-    } catch (e) {
-      print("❌ JS invoke exception: $e");
-      return null;
-    }
+    return JsBridge.invoke(_jsRuntime!, methodName, payload);
   }
 
   /// 3. 析构代码 (非常重要：释放底层内存)

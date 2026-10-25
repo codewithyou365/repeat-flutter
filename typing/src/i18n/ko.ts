@@ -143,6 +143,8 @@ export default {
     wordAskKeyWords: "핵심 단어",
     wordAskEmpty: "결과가 없습니다",
     wordAskTipEmpty: "아직 질문한 단어가 없습니다. 타자 게임에서 단어를 입력하는 중에 '단어 질문 및 읽기' 키를 누르세요",
+    wordAskDelete: "핵심 단어 삭제",
+    wordAskDeleteConfirm: "핵심 단어 \"{word}\"을(를) 삭제할까요? 저장된 결과도 함께 삭제됩니다",
     triggerKeyConflict: "이 키는 이미 다른 기능이 쓰고 있습니다",
     spaceKey: "(스페이스)",
     multiKeyDesc: "여러 키는 •로 구분합니다. 직접 칠 수 없는 키는 \\이름 (예: \\enter, \\numlock)으로 쓰거나 +를 눌러 고르세요",

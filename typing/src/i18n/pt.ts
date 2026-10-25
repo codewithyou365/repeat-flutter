@@ -143,6 +143,8 @@ export default {
     wordAskKeyWords: "Palavras-chave",
     wordAskEmpty: "Sem resultado",
     wordAskTipEmpty: "Nenhuma palavra perguntada ainda. Prima a tecla «Perguntar palavra e ler» ao digitar uma palavra no jogo",
+    wordAskDelete: "Eliminar palavra-chave",
+    wordAskDeleteConfirm: "Eliminar a palavra-chave «{word}»? Os resultados guardados também serão eliminados",
     triggerKeyConflict: "Esta tecla já é usada por outra função",
     spaceKey: "(Espaço)",
     multiKeyDesc: "Separe várias teclas com •; use \\nome (ex.: \\enter, \\numlock) para as que você não consegue digitar, ou toque em + para escolher uma",

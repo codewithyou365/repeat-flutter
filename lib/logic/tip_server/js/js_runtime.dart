@@ -3,17 +3,13 @@ import 'dart:ui';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_js/flutter_js.dart';
-import 'package:get/get.dart';
 import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/database.dart';
 import 'package:repeat_flutter/db/entity/kv.dart';
-import 'package:repeat_flutter/i18n/i18n_key.dart';
 import 'package:repeat_flutter/logic/event_bus.dart';
+import 'package:repeat_flutter/logic/js_bridge/js_bridge.dart';
 import 'package:repeat_flutter/logic/model/book_content.dart';
 import 'package:repeat_flutter/logic/widget/tip/tip_state.dart' show TipState;
-import 'package:repeat_flutter/page/repeat/logic/constant.dart';
-import 'package:repeat_flutter/page/repeat/logic/repeat_flow_for_browse.dart';
-import 'package:repeat_flutter/page/repeat/repeat_logic.dart';
 import 'package:repeat_flutter/page/repeat/logic/tts_helper.dart';
 
 part 'js_code.dart';
@@ -53,151 +49,43 @@ class JsRuntime {
     _jsRuntime = getJavascriptRuntime();
 
     try {
-      _jsRuntime!.onMessage('updateCurrVerseContent', (dynamic args) async {
-        final tip = TipState.tip;
-        if (tip == null) return 'no_game';
-        if (args is! Map) return 'invalid_args';
-
-        try {
-          final verseId = await Db().db.kvDao.getInt(K.lastVerseId) ?? 0;
-          if (verseId == 0) return 'no_verse_id';
-
-          final String type = args['type']?.toString() ?? '';
-          final String newStr = args['content']?.toString() ?? '';
-
-          if (type.isEmpty) return 'invalid_type';
-
-          final verse = await Db().db.verseDao.getById(verseId);
-          if (verse == null) return 'verse_not_found';
-
-          Map<String, dynamic> contentMap = jsonDecode(verse.content);
-          contentMap[type] = newStr;
-
-          String jsonStr = jsonEncode(contentMap);
-          await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
-
-          return 'ok';
-        } catch (e) {
-          return e.toString();
-        }
-      });
-
-      _jsRuntime!.onMessage('repeatFlow', (dynamic args) {
-        final game = TipState.tip;
-        if (game == null) {
-          return '';
-        }
-        final logic = Get.find<RepeatLogic>();
-        final repeatFlow = logic.repeatFlow;
-        if (repeatFlow == null) {
-          return '';
-        }
-        if (repeatFlow is RepeatFlowForBrowse) {
-          return 'browse';
-        } else {
-          return 'examine';
-        }
-      });
-      _jsRuntime!.onMessage('uiLabel', (dynamic args) {
-        final game = TipState.tip;
-        if (game == null) {
-          return '';
-        }
-        if (args is! Map || !args.containsKey('name')) {
-          return '';
-        }
-        final k = args['name'];
-        if (k is! String) {
-          return '';
-        }
-        final logic = Get.find<RepeatLogic>();
-        switch (k) {
-          case 'left':
-            return logic.repeatFlow?.leftLabel ?? '';
-          case 'right':
-            return logic.repeatFlow?.rightLabel ?? '';
-          case 'middle':
-            return I18nKey.tips.tr;
-          default:
-            return '';
-        }
-      });
-      _jsRuntime!.onMessage('uiTap', (dynamic args) {
-        final game = TipState.tip;
-        if (game == null) {
-          return 'error: game_not_initialized';
-        }
-        if (args is! Map) {
-          return 'error: invalid_arguments';
-        }
-        final k = args['event'];
-        if (k is! String) {
-          return 'error: event_must_be_string';
-        }
-        switch (k) {
-          case 'tapNext':
-            tapNext();
-            break;
-          case 'tapLeft':
-            tapLeft();
-            break;
-          case 'tapRight':
-            tapRight();
-            break;
-          case 'tapMiddle':
-            tapMiddle();
-            break;
-          case 'longTapMiddle':
-            longTapMiddle();
-            break;
-          default:
-            return 'error: unknown_event_type';
-        }
-        return 'success';
-      });
-
-      _jsRuntime!.onMessage('getVerse', (dynamic args) async {
-        final game = TipState.tip;
-        if (game == null) {
-          return '';
-        }
-        final verseId = await Db().db.kvDao.getInt(K.lastVerseId) ?? 0;
-        final verse = await Db().db.scheduleDao.getVerseShowById(verseId);
-        if (verse == null) {
-          return '';
-        }
-        return verse.verseContent;
-      });
-
+      JsBridge(
+        active: () => TipState.tip != null,
+        ttsHelper: ttsHelper,
+        tapNext: tapNext,
+        tapLeft: tapLeft,
+        tapRight: tapRight,
+        tapMiddle: tapMiddle,
+        longTapMiddle: longTapMiddle,
+      ).register(_jsRuntime!);
       // 这个提示服务挂在哪个字段上（'q'/'a'/'n'/'t'/'t1'…）。contentKey 只带字段大类（'T'），
       // 提示有好几条时网页得靠它才知道读第几条。
       _jsRuntime!.onMessage('tipField', (dynamic args) {
         return TipState.tip?.t ?? '';
       });
 
-      _jsRuntime!.onMessage('tts', (dynamic args) async {
-        if (args is! Map) {
-          return 'invalid_args';
+      // 「单词提问并朗读」页删一个重点词：{field, word, prefix}。这个词问过的每一条都删，
+      // 正文摘要按剩下的词重写成 "[prefix]: 词1, 词2"，一个不剩就清空正文。
+      _jsRuntime!.onMessage('removeAskWord', (dynamic args) async {
+        if (TipState.tip == null) return 'no_game';
+        if (args is! Map) return 'invalid_args';
+        final field = args['field']?.toString() ?? '';
+        final word = args['word']?.toString() ?? '';
+        final prefix = args['prefix']?.toString() ?? '';
+        if (field.isEmpty || word.isEmpty) return 'invalid_args';
+        try {
+          final verseId = await Db().db.kvDao.getInt(K.lastVerseId) ?? 0;
+          if (verseId == 0) return 'no_verse_id';
+          final verse = await Db().db.verseDao.getById(verseId);
+          if (verse == null) return 'verse_not_found';
+          final Map<String, dynamic> contentMap = jsonDecode(verse.content);
+          final words = VerseField.removeAskWord(contentMap, field, word);
+          VerseField.setText(contentMap, field, words.isEmpty ? null : '$prefix: ${words.join(', ')}');
+          await Db().db.verseDao.updateVerseContent(verseId, jsonEncode(contentMap));
+          return 'ok';
+        } catch (e) {
+          return e.toString();
         }
-        final payload = args.cast<String, dynamic>();
-        final type = payload['type'];
-        final text = payload['text'];
-        if (type is! String || type.isEmpty) {
-          return 'invalid_type';
-        }
-        if (text is! String) {
-          return 'invalid_text';
-        }
-        if (text.isEmpty) {
-          return 'empty';
-        }
-        // 提示是多条的，JS 那边可以传 't1'/'t2' 指定第几条；TTS 配置按字段的大类走。
-        final qaType = QaType.fromAcronym(VerseField.baseOf(type));
-        if (qaType == null) {
-          return 'invalid_text';
-        }
-        await ttsHelper.speakText(qaType.ttsKeys, text);
-        return 'ok';
       });
 
       _jsRuntime!.onMessage('isMute', (dynamic args) {
@@ -219,41 +107,7 @@ class JsRuntime {
     if (!_isInitialized || _jsRuntime == null) {
       throw Exception("JS Runtime is not initialized.");
     }
-
-    try {
-      final jsonPayload = jsonEncode(payload);
-      final jsCommand = "$methodName($jsonPayload);";
-
-      // 1. 同步 evaluate（可能返回 Promise）
-      final JsEvalResult evalResult = _jsRuntime!.evaluate(jsCommand);
-      JsEvalResult finalResult = evalResult;
-
-      // 2. 如果是 Promise，handlePromise 会等待它完成并返回最终 JsEvalResult
-      try {
-        finalResult = await _jsRuntime!.handlePromise(evalResult, timeout: const Duration(seconds: 5));
-        // 如果超时或不是 promise，会抛异常或直接返回原值（视实现），所以用 try/catch 包裹
-      } catch (e) {
-        // 超时或不是 Promise：按原结果继续（并记录）
-        print("⚠️ handlePromise warning / timeout / not-a-promise: $e");
-      }
-      print("DEBUG: [Dart] JS 执行结果文本: ${evalResult.stringResult}");
-      // 3. 检查错误
-      if (finalResult.isError) {
-        print("⚠️ JS Execution Error (final): ${finalResult.stringResult}");
-        return null;
-      }
-
-      // 4. 解析最终字符串结果为 JSON
-      final resultString = finalResult.stringResult;
-      print("DEBUG: [Dart] JS 最终结果文本: $resultString");
-
-      // 如果 JS 本来就返回了一个对象而非 JSON 字符串，你可能需要调整 JS 端，
-      // 但你当前 JS 已用 JSON.stringify 返回字符串，因此下面直接 jsonDecode 就 OK。
-      return jsonDecode(resultString);
-    } catch (e) {
-      print("❌ JS invoke exception: $e");
-      return null;
-    }
+    return JsBridge.invoke(_jsRuntime!, methodName, payload);
   }
 
   /// 3. 析构代码 (非常重要：释放底层内存)

@@ -143,6 +143,8 @@ export default {
     wordAskKeyWords: "Kata kunci",
     wordAskEmpty: "Tidak ada hasil",
     wordAskTipEmpty: "Belum ada kata yang ditanyakan. Tekan tombol \"Tanya kata & baca\" saat mengetik sebuah kata di permainan mengetik",
+    wordAskDelete: "Hapus kata kunci",
+    wordAskDeleteConfirm: "Hapus kata kunci \"{word}\"? Hasil yang tersimpan juga akan dihapus",
     triggerKeyConflict: "Tombol ini sudah dipakai fungsi lain",
     spaceKey: "(Spasi)",
     multiKeyDesc: "Pisahkan beberapa tombol dengan •; untuk tombol yang tidak bisa diketik langsung pakai \\nama (mis. \\enter, \\numlock), atau ketuk + untuk memilih",

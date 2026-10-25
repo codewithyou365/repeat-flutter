@@ -95,6 +95,22 @@ const Tip = {
             return JSON.stringify({status: 500, error: error.toString()});
         }
     },
+    // data = {word, prefix}：把这个重点词问过的每一条都删掉，prefix 是摘要正文前面的"重点词"字样
+    removeWord: async function (payload: any): Promise<string> {
+        try {
+            const data = payload?.data || {};
+            const word = typeof data.word === 'string' ? data.word : '';
+            const prefix = typeof data.prefix === 'string' ? data.prefix : '';
+            const field = await Util.tipField();
+            const ret = await sendMessage('removeAskWord', JSON.stringify({field, word, prefix}));
+            if (ret !== 'ok') {
+                return JSON.stringify({status: 500, error: String(ret)});
+            }
+            return JSON.stringify({data: 'ok'});
+        } catch (error: any) {
+            return JSON.stringify({status: 500, error: error.toString()});
+        }
+    },
     // data = {text, type}：type 是字段引用串，App 按那个字段大类的 TTS 配置读
     tts: async function (payload: any): Promise<string> {
         try {

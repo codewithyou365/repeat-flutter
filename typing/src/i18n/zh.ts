@@ -143,6 +143,8 @@ export default {
     wordAskKeyWords: "重点词",
     wordAskEmpty: "没有拿到结果",
     wordAskTipEmpty: "还没有问过单词。在打字游戏里输入某个词时按「单词提问并朗读」键",
+    wordAskDelete: "删除重点词",
+    wordAskDeleteConfirm: "删除重点词「{word}」？它问到的结果会一起删掉",
     triggerKeyConflict: "这个键已经被其它触发键占用了",
     spaceKey: "(空格)",
     multiKeyDesc: "多个按键用 • 分隔；打不出来的按键用 \\名字 表示（如 \\enter、 \\numlock），也可点 + 选择",

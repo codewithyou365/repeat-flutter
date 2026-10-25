@@ -143,6 +143,8 @@ export default {
     wordAskKeyWords: "Mots clés",
     wordAskEmpty: "Aucun résultat",
     wordAskTipEmpty: "Aucun mot demandé. Appuyez sur la touche « Question sur le mot & lecture » en tapant un mot dans le jeu de frappe",
+    wordAskDelete: "Supprimer le mot clé",
+    wordAskDeleteConfirm: "Supprimer le mot clé « {word} » ? Ses résultats enregistrés seront aussi supprimés",
     triggerKeyConflict: "Cette touche est déjà utilisée par une autre fonction",
     spaceKey: "(Espace)",
     multiKeyDesc: "Séparez plusieurs touches par • ; utilisez \\nom (p. ex. \\enter, \\numlock) pour celles que vous ne pouvez pas taper, ou touchez + pour en choisir une",

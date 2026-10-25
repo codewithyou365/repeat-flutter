@@ -601,6 +601,29 @@ class VerseField {
     return words;
   }
 
+  /// 把重点词 [word] 从 [asks] 里删掉（它问过的每一条都删），返回删完后剩下的重点词（按提问先后、去重）。
+  /// 一条不剩就把 [asks] 整个清掉。
+  static List<String> removeAskWord(Map<String, dynamic> content, String fieldRef, String word) {
+    final block = of(content, fieldRef);
+    final raw = block?[asks];
+    if (block == null || raw is! Map) {
+      return [];
+    }
+    raw.removeWhere((_, item) => item is Map && item[askWord] == word);
+    if (raw.isEmpty) {
+      block.remove(asks);
+      return [];
+    }
+    final words = <String>[];
+    for (final item in raw.values) {
+      final w = item is Map ? item[askWord] : null;
+      if (w is String && w.isNotEmpty && !words.contains(w)) {
+        words.add(w);
+      }
+    }
+    return words;
+  }
+
   /// 设置纯正文。字段已经升级成内容数组时，**把里面的裸字符串项整体换成这一段**，
   /// 文件项留在原位——扩展助手覆盖答案不该顺手把配图和网页一起冲掉。
   /// 新正文插在原来第一个字符串项的位置上，图在文字前面还是后面因此得以保住。

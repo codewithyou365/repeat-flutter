@@ -143,6 +143,8 @@ export default {
     wordAskKeyWords: "Palabras clave",
     wordAskEmpty: "Sin resultado",
     wordAskTipEmpty: "Aún no se ha preguntado ninguna palabra. Pulsa la tecla «Preguntar palabra y leer» mientras escribes una palabra en el juego",
+    wordAskDelete: "Eliminar palabra clave",
+    wordAskDeleteConfirm: "¿Eliminar la palabra clave «{word}»? También se eliminarán sus resultados guardados",
     triggerKeyConflict: "Esta tecla ya la usa otra función",
     spaceKey: "(Espacio)",
     multiKeyDesc: "Separa varias teclas con •; usa \\nombre (p. ej. \\enter, \\numlock) para las que no puedas escribir directamente, o toca + para elegir una",

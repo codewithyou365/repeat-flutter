@@ -143,6 +143,8 @@ export default {
     wordAskKeyWords: "Key words",
     wordAskEmpty: "No result",
     wordAskTipEmpty: "No words asked yet. Press the Word ask & Read key on a word in the typing game",
+    wordAskDelete: "Delete key word",
+    wordAskDeleteConfirm: "Delete the key word \"{word}\"? Its saved results will be deleted too",
     triggerKeyConflict: "This key is already used by another trigger",
     spaceKey: "(Space)",
     multiKeyDesc: "Separate multiple keys with •; use \\name (e.g. \\enter, \\numlock) for keys you can't type directly, or tap + to pick one",

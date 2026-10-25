@@ -143,6 +143,8 @@ export default {
     wordAskKeyWords: "Schlüsselwörter",
     wordAskEmpty: "Kein Ergebnis",
     wordAskTipEmpty: "Noch keine Wörter gefragt. Drücke im Tippspiel beim Tippen eines Wortes die Taste „Wort fragen & vorlesen“",
+    wordAskDelete: "Schlüsselwort löschen",
+    wordAskDeleteConfirm: "Schlüsselwort „{word}“ löschen? Die gespeicherten Ergebnisse werden ebenfalls gelöscht",
     triggerKeyConflict: "Diese Taste wird bereits von einer anderen Funktion benutzt",
     spaceKey: "(Leertaste)",
     multiKeyDesc: "Mehrere Tasten mit • trennen; für Tasten, die du nicht direkt tippen kannst, \\name verwenden (z. B. \\enter, \\numlock) oder auf + tippen und eine auswählen",

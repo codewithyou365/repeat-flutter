@@ -143,6 +143,8 @@ export default {
     wordAskKeyWords: "Từ khóa",
     wordAskEmpty: "Không có kết quả",
     wordAskTipEmpty: "Chưa hỏi từ nào. Nhấn phím \"Hỏi từ & đọc\" khi đang gõ một từ trong trò chơi gõ chữ",
+    wordAskDelete: "Xóa từ trọng tâm",
+    wordAskDeleteConfirm: "Xóa từ trọng tâm \"{word}\"? Kết quả đã lưu cũng sẽ bị xóa",
     triggerKeyConflict: "Phím này đã được một chức năng khác dùng rồi",
     spaceKey: "(Phím cách)",
     multiKeyDesc: "Nhiều phím thì ngăn cách bằng •; với phím không gõ trực tiếp được, hãy dùng \\tên (ví dụ \\enter, \\numlock), hoặc nhấn + để chọn",

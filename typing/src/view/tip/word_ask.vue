@@ -22,7 +22,10 @@
       >
         <div class="item-head">
           <span class="item-word">{{ item.word }}</span>
-          <Voice width="18px" height="18px" class="item-speak" @click="speak(item.text)"/>
+          <span class="item-actions">
+            <Voice width="18px" height="18px" class="item-speak" @click="speak(item.text)"/>
+            <Del width="18px" height="18px" class="item-del" @click="removeWord(item.word)"/>
+          </span>
         </div>
         <div class="item-text">{{ item.text }}</div>
       </div>
@@ -36,7 +39,8 @@ import {client, Request, Response} from '../../api/ws.ts';
 import {Path} from '../../utils/constant.ts';
 import {useStore} from 'vuex';
 import {useI18n} from 'vue-i18n';
-import {Voice} from '@nutui/icons-vue';
+import {Voice, Del} from '@nutui/icons-vue';
+import {showDialog, showToast} from '@nutui/nutui';
 
 type AskItem = { word: string; text: string };
 
@@ -100,6 +104,33 @@ const speak = async (text: string) => {
   } catch (error) {
     console.error('Error sending tts:', error);
   }
+};
+
+// 删的是重点词本身：它问过的每一条都删，正文摘要里也去掉这个词
+const removeWord = (word: string) => {
+  showDialog({
+    title: t('wordAskDelete'),
+    content: t('wordAskDeleteConfirm', {word}),
+    okText: t('confirm'),
+    cancelText: t('cancel'),
+    onOk: async () => {
+      if (!client.node) return;
+      try {
+        const res = await client.node.send(new Request({
+          path: Path.tip,
+          headers: {'jsMethod': 'Tip.removeWord'},
+          data: {word, prefix: t('wordAskKeyWords')},
+        }));
+        if (res.status !== 200 || res.error) {
+          showToast.fail(res.error || 'error');
+          return;
+        }
+        await refresh();
+      } catch (error) {
+        console.error('Error removing word:', error);
+      }
+    },
+  });
 };
 
 const refresh = async () => {
@@ -224,6 +255,18 @@ onMounted(async () => {
   cursor: pointer;
   opacity: 0.7;
   flex-shrink: 0;
+}
+
+.item-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.item-del {
+  cursor: pointer;
+  opacity: 0.55;
 }
 
 .item-text {

@@ -143,6 +143,8 @@ export default {
     wordAskKeyWords: "重要語",
     wordAskEmpty: "結果がありません",
     wordAskTipEmpty: "まだ単語を質問していません。タイピングゲームで単語の入力中に「単語質問＆読み上げ」キーを押してください",
+    wordAskDelete: "重点語を削除",
+    wordAskDeleteConfirm: "重点語「{word}」を削除しますか？保存された結果も一緒に削除されます",
     triggerKeyConflict: "このキーは別の機能で既に使われています",
     spaceKey: "（スペース）",
     multiKeyDesc: "複数のキーは • で区切ります。直接打てないキーは \\名前（例: \\enter、\\numlock）で表すか、+ を押して選んでください",
