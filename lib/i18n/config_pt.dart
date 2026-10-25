@@ -78,6 +78,7 @@ class ConfigPt extends Config {
     put(I18nKey.loading, "Carregando...");
     put(I18nKey.labelImporting, "Importando...");
     put(I18nKey.labelExporting, "Exportando...");
+    put(I18nKey.labelExecute, "Executar");
     put(I18nKey.labelExecuting, "Executando...");
     put(I18nKey.labelDeleting, "Excluindo...");
     put(I18nKey.labelSaving, "Salvando...");

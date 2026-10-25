@@ -78,6 +78,7 @@ class ConfigRu extends Config {
     put(I18nKey.loading, "Загрузка...");
     put(I18nKey.labelImporting, "Импорт...");
     put(I18nKey.labelExporting, "Экспорт...");
+    put(I18nKey.labelExecute, "Выполнить");
     put(I18nKey.labelExecuting, "Выполнение...");
     put(I18nKey.labelDeleting, "Удаление...");
     put(I18nKey.labelSaving, "Сохранение...");

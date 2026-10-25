@@ -78,6 +78,7 @@ class ConfigDe extends Config {
     put(I18nKey.loading, "Wird geladen ...");
     put(I18nKey.labelImporting, "Wird importiert ...");
     put(I18nKey.labelExporting, "Wird exportiert ...");
+    put(I18nKey.labelExecute, "Ausführen");
     put(I18nKey.labelExecuting, "Wird ausgeführt ...");
     put(I18nKey.labelDeleting, "Wird gelöscht ...");
     put(I18nKey.labelSaving, "Wird gespeichert ...");

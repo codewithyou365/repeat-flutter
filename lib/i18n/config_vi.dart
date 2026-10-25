@@ -78,6 +78,7 @@ class ConfigVi extends Config {
     put(I18nKey.loading, "Đang tải...");
     put(I18nKey.labelImporting, "Đang nhập...");
     put(I18nKey.labelExporting, "Đang xuất...");
+    put(I18nKey.labelExecute, "Thực hiện");
     put(I18nKey.labelExecuting, "Đang thực hiện...");
     put(I18nKey.labelDeleting, "Đang xoá...");
     put(I18nKey.labelSaving, "Đang lưu...");

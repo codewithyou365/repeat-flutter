@@ -78,6 +78,7 @@ class ConfigKo extends Config {
     put(I18nKey.loading, "불러오는 중...");
     put(I18nKey.labelImporting, "가져오는 중...");
     put(I18nKey.labelExporting, "내보내는 중...");
+    put(I18nKey.labelExecute, "실행");
     put(I18nKey.labelExecuting, "실행 중...");
     put(I18nKey.labelDeleting, "삭제 중...");
     put(I18nKey.labelSaving, "저장 중...");

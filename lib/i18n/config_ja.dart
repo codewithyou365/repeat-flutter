@@ -78,6 +78,7 @@ class ConfigJa extends Config {
     put(I18nKey.loading, "読み込み中...");
     put(I18nKey.labelImporting, "インポート中...");
     put(I18nKey.labelExporting, "エクスポート中...");
+    put(I18nKey.labelExecute, "実行");
     put(I18nKey.labelExecuting, "実行中...");
     put(I18nKey.labelDeleting, "削除中...");
     put(I18nKey.labelSaving, "保存中...");

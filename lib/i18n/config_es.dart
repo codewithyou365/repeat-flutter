@@ -78,6 +78,7 @@ class ConfigEs extends Config {
     put(I18nKey.loading, "Cargando...");
     put(I18nKey.labelImporting, "Importando...");
     put(I18nKey.labelExporting, "Exportando...");
+    put(I18nKey.labelExecute, "Ejecutar");
     put(I18nKey.labelExecuting, "Ejecutando...");
     put(I18nKey.labelDeleting, "Eliminando...");
     put(I18nKey.labelSaving, "Guardando...");

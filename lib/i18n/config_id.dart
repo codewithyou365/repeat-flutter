@@ -78,6 +78,7 @@ class ConfigId extends Config {
     put(I18nKey.loading, "Memuat...");
     put(I18nKey.labelImporting, "Mengimpor...");
     put(I18nKey.labelExporting, "Mengekspor...");
+    put(I18nKey.labelExecute, "Jalankan");
     put(I18nKey.labelExecuting, "Menjalankan...");
     put(I18nKey.labelDeleting, "Menghapus...");
     put(I18nKey.labelSaving, "Menyimpan...");

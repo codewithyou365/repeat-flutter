@@ -78,6 +78,7 @@ class ConfigZh extends Config {
     put(I18nKey.loading, "加载中...");
     put(I18nKey.labelImporting, "导入中...");
     put(I18nKey.labelExporting, "导出中...");
+    put(I18nKey.labelExecute, "执行");
     put(I18nKey.labelExecuting, "执行中...");
     put(I18nKey.labelDeleting, "删除中...");
     put(I18nKey.labelSaving, "保存中...");

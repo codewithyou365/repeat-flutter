@@ -77,6 +77,15 @@ class AssistiveTouchSheet {
       ListView(
         shrinkWrap: true,
         children: [
+          // 直接跑一次，改完配置不用关掉设置去点悬浮球就能试。只关这个小菜单，设置面板留着接着改。
+          RowWidget.buildSelect(
+            title: I18nKey.labelExecute.tr,
+            leading: const Icon(Icons.play_arrow),
+            onTap: () {
+              Get.back();
+              logic.execute(action);
+            },
+          ),
           RowWidget.buildSelect(
             title: I18nKey.labelEdit.tr,
             leading: const Icon(Icons.edit),
@@ -110,7 +119,7 @@ class AssistiveTouchSheet {
           RowWidget.buildDivider(),
         ],
       ),
-      rate: 0.3,
+      rate: 0.38,
     );
   }
 

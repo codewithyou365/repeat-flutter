@@ -78,6 +78,7 @@ class ConfigEn extends Config {
     put(I18nKey.loading, "Loading...");
     put(I18nKey.labelImporting, "Importing...");
     put(I18nKey.labelExporting, "Exporting...");
+    put(I18nKey.labelExecute, "Execute");
     put(I18nKey.labelExecuting, "Executing...");
     put(I18nKey.labelDeleting, "Deleting...");
     put(I18nKey.labelSaving, "Saving...");

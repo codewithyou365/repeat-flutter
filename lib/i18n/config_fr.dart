@@ -78,6 +78,7 @@ class ConfigFr extends Config {
     put(I18nKey.loading, "Chargement...");
     put(I18nKey.labelImporting, "Import en cours...");
     put(I18nKey.labelExporting, "Export en cours...");
+    put(I18nKey.labelExecute, "Exécuter");
     put(I18nKey.labelExecuting, "Exécution...");
     put(I18nKey.labelDeleting, "Suppression...");
     put(I18nKey.labelSaving, "Enregistrement...");

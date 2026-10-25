@@ -78,6 +78,7 @@ class ConfigIt extends Config {
     put(I18nKey.loading, "Caricamento...");
     put(I18nKey.labelImporting, "Importazione...");
     put(I18nKey.labelExporting, "Esportazione...");
+    put(I18nKey.labelExecute, "Esegui");
     put(I18nKey.labelExecuting, "Esecuzione...");
     put(I18nKey.labelDeleting, "Eliminazione...");
     put(I18nKey.labelSaving, "Salvataggio...");

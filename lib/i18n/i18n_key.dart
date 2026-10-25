@@ -72,6 +72,7 @@ enum I18nKey {
   loading,
   labelImporting,
   labelExporting,
+  labelExecute,
   labelExecuting,
   labelDeleting,
   labelSaving,
