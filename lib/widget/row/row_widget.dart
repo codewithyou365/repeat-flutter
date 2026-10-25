@@ -575,31 +575,42 @@ class RowWidget {
               title,
               style: const TextStyle(fontSize: titleFontSize),
             ),
-            const Spacer(),
-            InkWell(
-              onTap: () {
-                if (onTap == null) {
-                  MsgBox.strInputWithYesOrNo(value, I18nKey.edit.tr, title, inputType: inputType, yes: onTextModify);
-                } else {
-                  onTap();
-                }
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
-                decoration: const BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: Colors.grey, width: 2.0),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      showValue,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+            const SizedBox(width: 10),
+            // 值可能很长（比如服务地址），占满剩余宽度后省略号截断，不能把整行撑爆。
+            Flexible(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: InkWell(
+                  onTap: () {
+                    if (onTap == null) {
+                      MsgBox.strInputWithYesOrNo(value, I18nKey.edit.tr, title, inputType: inputType, yes: onTextModify);
+                    } else {
+                      onTap();
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: paddingHorizontal),
+                    decoration: const BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: Colors.grey, width: 2.0),
+                      ),
                     ),
-                    const SizedBox(width: 5),
-                    const Icon(Icons.edit),
-                  ],
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            showValue,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        const Icon(Icons.edit),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
