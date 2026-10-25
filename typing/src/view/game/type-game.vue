@@ -99,6 +99,18 @@
         <div class="voice-line" :class="voiceLinkClass('skip')" @click="openVoicePicker('skip')">{{ voiceSummary('skip') }}</div>
       </template>
     </nut-cell>
+    <nut-cell :title="t('nextTrigger')" class="stacked-cell">
+      <template #link>
+        <span v-if="hasSpaceKey(nextTrigger)" class="stacked-space">{{ t('spaceKey') }}</span>
+        <nut-input
+            v-model="nextTrigger"
+            class="stacked-key"
+            @blur="setNextTrigger(nextTrigger)"
+        />
+        <nut-button size="mini" type="info" plain class="stacked-add" @click="openKeyPicker('next')">+</nut-button>
+        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(`${t('nextTriggerDesc')}; ${t('multiKeyDesc')}`)"/>
+      </template>
+    </nut-cell>
     <nut-cell :title="t('spellPlayTrigger')" class="stacked-cell">
       <template #link>
         <span v-if="hasSpaceKey(spellPlayTrigger)" class="stacked-space">{{ t('spaceKey') }}</span>
@@ -304,6 +316,7 @@
   <div v-else-if="ready" class="type-game-container">
     <div class="info-bar">
       <span v-if="waitingNames.length > 0" class="info-waiting">{{ t('waitingOthers', {names: waitingNames.join(', ')}) }}</span>
+      <span v-else-if="readyForNext" class="info-waiting">{{ t('pressNextTip', {key: formatTriggerKey(nextTrigger)}) }}</span>
       <!-- 每个玩家自己挑用哪套 profile，只影响自己这台设备的打字体验。按槽位序号显示成 ①②③，跟图标排在一起 -->
       <span class="info-profile" @click="playerProfilePickerVisible = true">{{ circledNumber(playerProfile + 1) }}</span>
       <Voice class="info-icon" width="18px" height="18px" @click="speakCurrentWord"/>
@@ -340,6 +353,7 @@
           :familiar-ranges="familiarRanges"
           :familiar-skip-trigger="familiarSkipTrigger"
           :skip-trigger="skipTrigger"
+          :next-trigger="nextTrigger"
           @char-filled="onCharFilled"
           @completed="onCompleted"
           @manual-play="onManualPlay"
@@ -350,6 +364,7 @@
           @user-input-change="onUserInputChange"
           @familiar-skip="onFamiliarSkip"
           @skip="onSkip"
+          @next="onNext"
       />
     </div>
 
@@ -461,6 +476,8 @@ const deleteTrigger = ref('');
 const familiarSkipTrigger = ref('');
 // 跳过键：空串 = 不启用
 const skipTrigger = ref('');
+// 下一句键：空串 = 打完自动换下一句；配了就打完先停住，按了这个键才换
+const nextTrigger = ref('');
 // 各触发键最后一次成功保存的值，用于校验失败时把输入框还原回去
 let manualPlayTriggerSaved = '.';
 let spellPlayTriggerSaved = ',';
@@ -469,6 +486,7 @@ let maskTriggerSaved = '';
 let deleteTriggerSaved = '';
 let familiarSkipTriggerSaved = '';
 let skipTriggerSaved = '';
+let nextTriggerSaved = '';
 const keyMapping = ref('');
 // 熟词阈值：每个字母允许的毫秒数，0 = 关闭。familiarMsInput 是输入框里的字符串，familiarMs 是判定用的数值
 const familiarMs = ref(0);
@@ -523,6 +541,10 @@ const isAdmin = computed(() => {
 // 才换下一句（换句后广播 gameRefresh，大家一起 refresh）。单人时打完立刻换，零等待。
 // roundId: 当前这一句的轮次（Game.answer 带回来），打完上报时带上，服务端据此丢掉迟到的请求
 let roundId = -1;
+// 配了下一句键时：打完了、在等用户按键（信息栏显示提示）
+const readyForNext = ref(false);
+// 已经按下一句键上报过的轮次，防止连按重复上报
+let nextReportedRoundId = -1;
 // 自己打完了、还在等的人的名字；空数组 = 没在等
 const waitingNames = ref<string[]>([]);
 let waitingTimer: ReturnType<typeof setTimeout> | null = null;
@@ -595,6 +617,7 @@ const onUserInputChange = (userInput: string, changedIndexes: number[]) => {
   // 退格 / 清词（changedIndexes 为空）：正在计时的这个词重来一遍不算数
   if (changedIndexes.length === 0) {
     familiarTrack = null;
+    readyForNext.value = false;
   }
   pendingSave = {roundId, userInput};
   void saveInput();
@@ -631,7 +654,8 @@ const showTips = () => {
     {label: t('keyMapping'), value: keyMapping.value || t('disabled')},
     {label: t('familiarMs'), value: familiarMs.value > 0 ? `${familiarMs.value}ms` : t('disabled')},
     {label: t('familiarSkipTrigger'), value: familiarSkipTrigger.value ? `${formatTriggerKey(familiarSkipTrigger.value)} \u2192 ${voiceSummary('familiarSkip')}` : t('disabled')},
-    {label: t('skipTrigger'), value: skipTrigger.value ? `${formatTriggerKey(skipTrigger.value)} \u2192 ${voiceSummary('skip')}` : t('disabled')}
+    {label: t('skipTrigger'), value: skipTrigger.value ? `${formatTriggerKey(skipTrigger.value)} \u2192 ${voiceSummary('skip')}` : t('disabled')},
+    {label: t('nextTrigger'), value: nextTrigger.value ? formatTriggerKey(nextTrigger.value) : t('nextTriggerAuto')}
   ];
 
   // 绑定是变长的，一条一行；一条都没配就显示"未启用"
@@ -710,6 +734,7 @@ const applyProfile = (index: number) => {
   deleteTrigger.value = typeof res['deleteTrigger'] === 'string' ? res['deleteTrigger'] : '';
   familiarSkipTrigger.value = typeof res['familiarSkipTrigger'] === 'string' ? res['familiarSkipTrigger'] : '';
   skipTrigger.value = typeof res['skipTrigger'] === 'string' ? res['skipTrigger'] : '';
+  nextTrigger.value = typeof res['nextTrigger'] === 'string' ? res['nextTrigger'] : '';
   manualPlayTriggerSaved = manualPlayTrigger.value;
   spellPlayTriggerSaved = spellPlayTrigger.value;
   hintTriggerSaved = hintTrigger.value;
@@ -717,6 +742,7 @@ const applyProfile = (index: number) => {
   deleteTriggerSaved = deleteTrigger.value;
   familiarSkipTriggerSaved = familiarSkipTrigger.value;
   skipTriggerSaved = skipTrigger.value;
+  nextTriggerSaved = nextTrigger.value;
   keyMapping.value = typeof res['keyMapping'] === 'string' ? res['keyMapping'] : '';
   familiarMs.value = typeof res['familiarMs'] === 'number' && res['familiarMs'] > 0 ? res['familiarMs'] : 0;
   familiarMsInput.value = `${familiarMs.value}`;
@@ -1014,7 +1040,7 @@ const setSpeakWord = (value: boolean) => {
 };
 // 所有触发键（四个固定的 + 任意条辅助触控绑定）不能互相重复，比如手动播放和逐字母朗读不能都设成 '.'。
 // exclude 是"正在改的那一个"（固定键用名字，绑定用下标），要排除掉，否则改成原值也会判成冲突。
-type TriggerOwner = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | 'familiarSkip' | 'skip' | number;
+type TriggerOwner = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | 'familiarSkip' | 'skip' | 'next' | number;
 const isKeyTaken = (value: string, exclude: TriggerOwner) => {
   const specs = parseKeySpecs(value);
   if (specs.length === 0) {
@@ -1028,6 +1054,7 @@ const isKeyTaken = (value: string, exclude: TriggerOwner) => {
   if (exclude !== 'delete') others.push(deleteTrigger.value);
   if (exclude !== 'familiarSkip') others.push(familiarSkipTrigger.value);
   if (exclude !== 'skip') others.push(skipTrigger.value);
+  if (exclude !== 'next') others.push(nextTrigger.value);
   assistiveTouchBindings.value.forEach((b, i) => {
     if (exclude !== i) others.push(b.key);
   });
@@ -1086,6 +1113,16 @@ const setSkipTrigger = (value: string) => {
   skipTriggerSaved = value;
   profiles.value[activeProfile.value].skipTrigger = value;
   setConfig("skipTrigger", value);
+};
+const setNextTrigger = (value: string) => {
+  if (isKeyTaken(value, 'next')) {
+    showToast.warn(t('triggerKeyConflict'));
+    nextTrigger.value = nextTriggerSaved;
+    return;
+  }
+  nextTriggerSaved = value;
+  profiles.value[activeProfile.value].nextTrigger = value;
+  setConfig("nextTrigger", value);
 };
 const setSpellResetLevel = (value: boolean) => {
   profiles.value[activeProfile.value].spellResetLevel = value;
@@ -1242,7 +1279,7 @@ const removeBinding = (index: number) => {
 };
 
 // "+"弹出的特殊按键选择器：target 标记要往哪个触发键配置里追加，number 表示第几条辅助触控绑定
-type KeyPickerTarget = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | 'familiarSkip' | 'skip' | number;
+type KeyPickerTarget = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | 'familiarSkip' | 'skip' | 'next' | number;
 const keyPickerVisible = ref(false);
 const keyPickerTarget = ref<KeyPickerTarget | null>(null);
 // 键盘上打不出/不方便打出来的按键，选中后写成 \name 的形式。
@@ -1331,6 +1368,9 @@ const appendTokenToTarget = (token: string) => {
   } else if (target === 'skip') {
     skipTrigger.value = appendKeyToken(skipTrigger.value, token);
     setSkipTrigger(skipTrigger.value);
+  } else if (target === 'next') {
+    nextTrigger.value = appendKeyToken(nextTrigger.value, token);
+    setNextTrigger(nextTrigger.value);
   } else {
     const binding = assistiveTouchBindings.value[target];
     if (binding) {
@@ -1655,9 +1695,27 @@ const onCharFilled = (index: number, char: string, auto: boolean, correct: boole
 
 const onCompleted = async () => {
   const completedRoundId = roundId;
+  // 配了下一句键就先停在这一句，等 onNext 再上报
+  if (nextTrigger.value) {
+    readyForNext.value = true;
+    await flushWord();
+    return;
+  }
   await flushWord();
   await new Promise((resolve) => setTimeout(resolve, 500));
   // 不直接 tap('tapLeft')：多人时要等大家都打完，由服务端决定什么时候换句
+  if (completedRoundId !== roundId) return;
+  await reportComplete(completedRoundId);
+};
+
+// 下一句键：没打完（含打完又退格的）按了不算；打完了就跟自动换句走同一条上报路径，
+// 只是不用再等那 500ms。上报过一次后再按不重复发，等人的轮询由 reportComplete 自己管
+const onNext = async (completed: boolean) => {
+  if (!completed || nextReportedRoundId === roundId) return;
+  const completedRoundId = roundId;
+  nextReportedRoundId = completedRoundId;
+  readyForNext.value = false;
+  await flushWord();
   if (completedRoundId !== roundId) return;
   await reportComplete(completedRoundId);
 };
@@ -1865,6 +1923,7 @@ const refresh = async () => {
     pendingWordEnd = null;
     pendingSave = null;
     stopWaiting();
+    readyForNext.value = false;
     const req = new Request({
       path: Path.game,
       headers: {'jsMethod': 'Game.answer'},

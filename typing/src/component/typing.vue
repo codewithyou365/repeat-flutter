@@ -92,6 +92,8 @@ const props = withDefaults(defineProps<{
   familiarSkipTrigger?: string;
   // 跳过键：不管生词熟词，光标所在的词还没打完就整词跳过，熟不熟由父组件决定用哪套音色朗读
   skipTrigger?: string;
+  // 下一句键：按下时 emit('next')，带上这一句是否已经打完，换不换句由父组件决定
+  nextTrigger?: string;
 }>(), {
   clickFillCharWhenDisabled: '',
   touchColor: '',
@@ -110,6 +112,7 @@ const props = withDefaults(defineProps<{
   familiarRanges: () => [],
   familiarSkipTrigger: '',
   skipTrigger: '',
+  nextTrigger: '',
 });
 
 // T9 风格按键映射："a:abc•q:def" -> 按下 a 时，目标字母是 a/b/c 都算对；按下 q 时，
@@ -139,6 +142,7 @@ const maskSpecs = computed(() => parseKeySpecs(props.maskTrigger));
 const deleteSpecs = computed(() => parseKeySpecs(props.deleteTrigger));
 const familiarSkipSpecs = computed(() => parseKeySpecs(props.familiarSkipTrigger));
 const skipSpecs = computed(() => parseKeySpecs(props.skipTrigger));
+const nextSpecs = computed(() => parseKeySpecs(props.nextTrigger));
 // 每条辅助触控绑定各自的配置，raw 是绑定原本的 key 字符串（用于 emit 出去让父组件按原样匹配）
 const assistSpecsList = computed(() => props.assistTriggers.map((raw) => ({raw, specs: parseKeySpecs(raw)})));
 
@@ -147,6 +151,8 @@ const emit = defineEmits<{
   // 父组件收到要跳过朗读和熟词计时（跳过时已经整词念过一遍了）。
   (e: 'charFilled', index: number, char: string, auto: boolean, correct: boolean, skip: boolean): void;
   (e: 'completed'): void;
+  // 按了下一句键；completed 是此刻整句是否已经打完（打完后又退格就是 false）
+  (e: 'next', completed: boolean): void;
   (e: 'manualPlay', word: string): void;
   (e: 'spellPlay', word: string): void;
   (e: 'hintTrigger'): void;
@@ -501,6 +507,11 @@ const applyInput = (val: string) => {
       pendingTriggerEmits.push(() => doSkip(false));
       continue; // 触发字符本身不写入内容，也不推进 pos
     }
+    // 下一句键：打完与否要按本批输入全部落下之后的状态算，所以也延后
+    if (specsHaveChar(nextSpecs.value, char)) {
+      pendingTriggerEmits.push(() => emit('next', isAllTyped()));
+      continue; // 触发字符本身不写入内容，也不推进 pos
+    }
     // 绑定到 App 辅助触控按钮的键，数量由用户配置，可以有多个，每条绑定又可以配多个按键
     const assistMatch = assistSpecsList.value.find(({specs}) => specsHaveChar(specs, char));
     if (assistMatch) {
@@ -561,6 +572,8 @@ const applyInput = (val: string) => {
   emitFilledEvents(filled, !blocked);
   for (const fn of pendingTriggerEmits) fn();
 };
+
+const isAllTyped = () => props.content.length > 0 && userInput.value.length >= props.content.length;
 
 const emitFilledEvents = (filled: FilledEvent[], allowCompletion = true) => {
   for (const item of filled) {
@@ -730,6 +743,10 @@ const handleSpecialKeyTrigger = (keyName: string): boolean => {
   }
   if (specsHaveSpecial(skipSpecs.value, keyName)) {
     doSkip(false);
+    return true;
+  }
+  if (specsHaveSpecial(nextSpecs.value, keyName)) {
+    emit('next', isAllTyped());
     return true;
   }
   const assistMatch = assistSpecsList.value.find(({specs}) => specsHaveSpecial(specs, keyName));
