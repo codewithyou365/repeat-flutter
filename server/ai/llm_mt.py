@@ -206,7 +206,13 @@ def get(model_id: str, model_dir: str, cfg: Dict[str, Any]) -> MlxTranslator:
     with _lock:
         e = _engines.get(model_id)
         if e is None:
-            e = MlxTranslator(model_dir, cfg)
+            if cfg.get("backend") == "gemini":
+                # 在线 API，不加载本地权重；translate / chat 接口和 MlxTranslator 一样。
+                # 放在这里 import：gemini_mt 反过来要用本文件的 prompt
+                import gemini_mt
+                e = gemini_mt.GeminiTranslator(cfg)
+            else:
+                e = MlxTranslator(model_dir, cfg)
             _engines[model_id] = e
         return e
 

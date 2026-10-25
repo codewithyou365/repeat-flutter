@@ -639,6 +639,36 @@
      "tokenizer.json"
     ]
    }
+  },
+  {
+   "id": "gemini-api",
+   "role": [
+    "mt"
+   ],
+   "kind": "llm-mt",
+   "name": "Google Gemini（在线 API，免费档）",
+   "langs": [
+    "zh"
+   ],
+   "mtTargets": [
+    "en"
+   ],
+   "size": 0,
+   "license": "Google Gemini API Terms",
+   "note": "在线翻译，不占本地显存，口语和俗语明显强于本地 7B。要联网+代理（setproxy 后再 ./run.sh），key 放 ~/.repeat-ai/gemini.key。免费档：gemini-3.5-flash-lite 每天 500 次，用完或 503 时自动退到 gemma-4-31b（每天 1.44 万次，慢）。免费档的内容会被 Google 拿去训练。点「下载」只是登记，不下东西",
+   "files": [],
+   "cfg": {
+    "backend": "gemini",
+    "tgtLang": "en",
+    "models": [
+     "gemini-3.5-flash-lite",
+     "gemini-3.1-flash-lite",
+     "gemma-4-31b-it",
+     "gemma-4-26b-a4b-it"
+    ],
+    "keyFile": "~/.repeat-ai/gemini.key",
+    "timeoutSec": 30
+   }
   }
  ],
  "presets": []
