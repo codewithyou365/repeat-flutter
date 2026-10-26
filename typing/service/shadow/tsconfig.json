@@ -6,5 +6,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["shadow.ts"]
+  "include": ["../common/bridge.ts", "shadow.ts"]
 }

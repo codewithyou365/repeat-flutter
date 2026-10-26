@@ -6,5 +6,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["word_ask.ts"]
+  "include": ["../common/bridge.ts", "word_ask.ts"]
 }

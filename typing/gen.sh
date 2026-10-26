@@ -8,19 +8,16 @@ deal() {
   local test_js="../assets/service/${name}.js"
 
   local ts_path="$src_ts"
-  local root_dir="service"
   if [ -f "$src_ts_dir" ]; then
     ts_path="$src_ts_dir"
-    root_dir="service/${name}"
   fi
 
-  pnpm exec tsc "$ts_path" \
+  # QuickJS 里是普通脚本、没有模块加载，所以公共的 service/common/bridge.ts 是拼进每个 service 的：
+  # --outFile 把两个文件按顺序编成一个脚本。
+  pnpm exec tsc service/common/bridge.ts "$ts_path" \
     --target ES2020 \
-    --module ES2020 \
-    --moduleResolution Node \
-    --rootDir "$root_dir" \
-    --outDir dist/service \
-    --esModuleInterop \
+    --module None \
+    --outFile "$out_js" \
     --skipLibCheck
   if [ -f "$out_js" ]; then
     cp "$out_js" "$test_js"

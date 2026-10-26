@@ -9,7 +9,12 @@ export const MessageType = {
 
 export const Header = {
     age: 'age',
+    // App 等 JS 方法返回最多等几毫秒（默认 5 秒，最长 120 秒，见 Dart 侧 JsBridge.timeoutOf）。
+    // 要等大模型的方法自己带上；ws 这边的超时也会跟着放长。
+    jsTimeoutMs: 'jsTimeoutMs',
 };
+
+const DEFAULT_TIMEOUT_MS = 10000;
 
 export class Request {
     path: string;
@@ -157,9 +162,12 @@ export class Node {
         const completer = this._createCompleter();
         this.sendId2Log.set(id, log);
 
+        // App 那边等多久，这边就多等 2 秒，免得 App 还在等结果这边先放弃了
+        const jsTimeoutMs = Number(req.headers?.[Header.jsTimeoutMs]);
+        const waitMs = jsTimeoutMs > 0 ? Math.max(DEFAULT_TIMEOUT_MS, jsTimeoutMs + 2000) : DEFAULT_TIMEOUT_MS;
         const timeoutId = setTimeout(() => {
             if (this.sendId2Res.has(id)) {
-                console.warn(`[ws] TIMEOUT - ID: ${id}, Age: ${age} (Wait for 10s)`);
+                console.warn(`[ws] TIMEOUT - ID: ${id}, Age: ${age} (Wait for ${waitMs / 1000}s)`);
                 this.sendId2Res.delete(id);
                 this.sendId2Log.delete(id);
                 completer.resolve(new Response({
@@ -169,7 +177,7 @@ export class Node {
                     age: age,
                 }));
             }
-        }, 10000);
+        }, waitMs);
 
         this.sendId2Res.set(id, {completer, timeoutId});
 

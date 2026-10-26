@@ -6,5 +6,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["japanese.ts"]
+  "include": ["../common/bridge.ts", "japanese.ts"]
 }
