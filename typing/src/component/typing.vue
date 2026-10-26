@@ -339,7 +339,8 @@ const isIgnore = (c: string, index: number) => {
   return props.ignoreContentIndexes && props.ignoreContentIndexes.includes(index);
 };
 
-// skip=true 的是"熟词跳过"/"跳过键"补出来的字符：父组件收到 charFilled 时要跳过朗读和熟词计时
+// skip=true 的是"熟词跳过"/"跳过键"补出来的字符，以及刚加载内容时开头自动填充的被忽略字符：
+// 父组件收到 charFilled 时要跳过朗读和熟词计时
 type FilledEvent = { index: number; auto: boolean; skip?: boolean };
 
 // 把 index 处新落下的字符标记为一个待通知事件；auto=true 表示是被自动跳过/填充的
@@ -934,13 +935,14 @@ watch(() => props.content, async () => {
 
   // 内容一开始就可能有一串被忽略（自动填充）的字符（比如开头是被忽略的标点/数字），
   // 这段要提前把它们写进 userInput，minCursorPos/cursorPos 才会落在第一个真正需要输入的位置上，
-  // 同时把这批字符也当作“已落下的字符”通知出去（用于父组件同步朗读等）
+  // 同时把这批字符也当作“已落下的字符”通知出去。标成 skip：它们跟 initUserInput 恢复出来的已输入内容
+  // 一样是“加载时就在那儿的”，父组件不该逐字母朗读、也不该攒成整词去念（比如圣经开头被忽略的节号）
   let pos = 0;
   let temp = '';
   const filled: FilledEvent[] = [];
   while (pos < props.content.length && isIgnore(props.content[pos], pos)) {
     temp += props.content[pos];
-    filled.push({index: pos, auto: true});
+    filled.push({index: pos, auto: true, skip: true});
     pos++;
   }
   userInput.value = temp;
