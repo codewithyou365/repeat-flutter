@@ -437,4 +437,78 @@ void main() {
       expect(VerseField.getInstruction(m, 'a'), '老指令');
     });
   });
+
+  group('patchField（游戏通过 JS 桥改字段块）', () {
+    test('set/remove 游戏自己的键，值为 null 就是删', () {
+      final m = <String, dynamic>{
+        'a': {'text': '答案', 'asks': {'old': 1}, 'tmp': 'x'},
+      };
+      expect(VerseField.patchField(m, 'a', set: {'asks': {'i': {'w': 'like', 'text': 'r'}}, 'tmp': null}, remove: ['gone']), isNull);
+      expect(m['a'], {
+        'text': '答案',
+        'asks': {'i': {'w': 'like', 'text': 'r'}},
+      });
+    });
+
+    test('App 的键和单字母键一律拒绝，而且一个都不改', () {
+      final m = <String, dynamic>{
+        'a': {'text': '答案'},
+      };
+      expect(VerseField.patchField(m, 'a', set: {'mine': 1, 'mediaHash': 'h'}), 'reserved_key:mediaHash');
+      expect(VerseField.patchField(m, 'a', remove: ['content']), 'reserved_key:content');
+      expect(VerseField.patchField(m, 'a', set: {'k': 'v'}), 'reserved_key:k');
+      expect(VerseField.patchField(m, 'a', set: {'': 1}), 'invalid_key');
+      expect(m['a'], {'text': '答案'});
+    });
+
+    test('只认 q/a/t 字段，只有 t 能带下标', () {
+      final m = <String, dynamic>{
+        'q': {'text': '问题'},
+      };
+      expect(VerseField.patchField(m, 'n', set: {'xx': 1}), 'invalid_ref');
+      expect(VerseField.patchField(m, 'q1', set: {'xx': 1}), 'invalid_ref');
+      expect(VerseField.patchField(m, 'Q', set: {'xx': 1}), 'invalid_ref');
+      expect(VerseField.patchField(m, 't${VerseField.maxTip}', set: {'xx': 1}), 'invalid_ref');
+      expect(m, {
+        'q': {'text': '问题'},
+      });
+      expect(VerseField.patchField(m, 't1', set: {'xx': 1}), isNull);
+      expect(VerseField.getStr(m, 't1', 'xx'), isNull); // 非字符串，用 of 看
+      expect(VerseField.of(m, 't1')?['xx'], 1);
+    });
+
+    test('换正文时保留文件项，清掉指令和生成的音频', () {
+      final m = <String, dynamic>{
+        'a': {
+          'content': ['旧正文', {'h': 'img'}],
+          'ins': '老指令',
+          'mediaHash': 'mh',
+          'start': '00:00:01,000',
+          'end': '00:00:02,000',
+          'asks': {'i': {}},
+        },
+      };
+      expect(VerseField.patchField(m, 'a', setText: true, text: '重点词: like'), isNull);
+      expect(m['a'], {
+        'content': ['重点词: like', {'h': 'img'}],
+        'asks': {'i': {}},
+      });
+    });
+
+    test('不带 setText 时正文不动；text 为 null 就清空正文', () {
+      final m = <String, dynamic>{
+        'a': {'text': '答案', 'asks': {}},
+      };
+      expect(VerseField.patchField(m, 'a', set: {'xx': 1}), isNull);
+      expect(VerseField.getText(m, 'a'), '答案');
+      expect(VerseField.patchField(m, 'a', setText: true, text: null), isNull);
+      expect(VerseField.getText(m, 'a'), isNull);
+    });
+  });
+
+  test('顶层只有单字母键归 App', () {
+    expect(VerseField.isReservedTopKey('q'), isTrue);
+    expect(VerseField.isReservedTopKey('m'), isTrue);
+    expect(VerseField.isReservedTopKey('blankItRightText'), isFalse);
+  });
 }

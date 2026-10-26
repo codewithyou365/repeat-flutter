@@ -36,6 +36,7 @@ class JsRuntime {
   final TtsHelper ttsHelper;
 
   JavascriptRuntime? _jsRuntime;
+  JsBridge? _bridge;
   bool _isInitialized = false;
   final SubList<int> subNewVerse = [];
   // 不能 final:同一个 JsRuntime 会被 dispose 后再 init(换游戏时),dispose 掉的 player
@@ -110,7 +111,7 @@ class JsRuntime {
     _jsRuntime = getJavascriptRuntime();
 
     try {
-      JsBridge(
+      _bridge = JsBridge(
         active: () => GameState.game != null,
         ttsHelper: ttsHelper,
         tapNext: tapNext,
@@ -118,8 +119,9 @@ class JsRuntime {
         tapRight: tapRight,
         tapMiddle: tapMiddle,
         longTapMiddle: longTapMiddle,
-        ttsSettingsOf: _ttsSettingsOf,
-      ).register(_jsRuntime!);
+        assistiveTouch: _assistiveTouchLogic,
+      );
+      _bridge!.register(_jsRuntime!);
       _jsRuntime!.onMessage('gameScoreInc', (dynamic args) async {
         final game = GameState.game;
         if (game == null) return 'no_active_game';
@@ -248,6 +250,8 @@ class JsRuntime {
             'name': action.name,
             // 打字游戏那边要按类型筛（比如手动播放的朗读设置只能挑 't' 朗读动作）。
             'type': action.type.code,
+            // 作用位置（字段引用串），net 动作的结果该放进哪个字段。
+            'target': action.target,
             'inputCount': inputNumbers.length,
             'inputKeys': inputNumbers.map(ExpandLogic.inputKeyOf).toList(),
           });
@@ -288,7 +292,7 @@ class JsRuntime {
         if (text == null) {
           return 'empty';
         }
-        final settings = await _ttsSettingsOf(args['read']);
+        final settings = await _bridge!.ttsSettingsOf(args['read']);
         if (settings != null) {
           await ttsHelper.speakTextWith(settings, text);
         }
@@ -521,33 +525,11 @@ class JsRuntime {
     return Get.find<RepeatLogic>().assistiveTouchLogic;
   }
 
-  /// 'custom:<动作id>' -> 那个朗读动作存的 TTS 配置。
-  /// 没传、不是朗读类型、动作已经不在了，一律返回 null（调用方按"没指定"处理）。
-  Future<TtsSettings?> _ttsSettingsOf(Object? id) async {
-    if (id is! String || !id.startsWith('custom:')) {
-      return null;
-    }
-    final actionId = int.tryParse(id.substring('custom:'.length));
-    if (actionId == null) {
-      return null;
-    }
-    final logic = _assistiveTouchLogic();
-    if (logic == null) {
-      return null;
-    }
-    await logic.loadActions();
-    final matched = logic.actions.where((e) => e.id == actionId && e.type == AtActionType.tts);
-    if (matched.isEmpty) {
-      return null;
-    }
-    return matched.first.tts.settings;
-  }
-
-  Future<dynamic> invoke(String methodName, Map<String, dynamic> payload) async {
+  Future<dynamic> invoke(String methodName, Map<String, dynamic> payload, {Duration timeout = JsBridge.defaultTimeout}) async {
     if (!_isInitialized || _jsRuntime == null) {
       throw Exception("JS Runtime is not initialized.");
     }
-    return JsBridge.invoke(_jsRuntime!, methodName, payload);
+    return JsBridge.invoke(_jsRuntime!, methodName, payload, timeout: timeout);
   }
 
   /// 3. 析构代码 (非常重要：释放底层内存)

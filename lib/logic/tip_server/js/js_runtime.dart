@@ -103,11 +103,11 @@ class JsRuntime {
     }
   }
 
-  Future<dynamic> invoke(String methodName, Map<String, dynamic> payload) async {
+  Future<dynamic> invoke(String methodName, Map<String, dynamic> payload, {Duration timeout = JsBridge.defaultTimeout}) async {
     if (!_isInitialized || _jsRuntime == null) {
       throw Exception("JS Runtime is not initialized.");
     }
-    return JsBridge.invoke(_jsRuntime!, methodName, payload);
+    return JsBridge.invoke(_jsRuntime!, methodName, payload, timeout: timeout);
   }
 
   /// 3. 析构代码 (非常重要：释放底层内存)

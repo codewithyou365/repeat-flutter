@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:repeat_flutter/common/ws/message.dart' as message;
+import 'package:repeat_flutter/logic/js_bridge/js_bridge.dart';
 import 'package:repeat_flutter/logic/tip_server/js/js_runtime.dart';
 
 Future<message.Response?> tip(
@@ -19,7 +20,7 @@ Future<message.Response?> tip(
     "data": req.data,
   };
 
-  final jsResult = await jsRuntime.invoke(jsMethod, payload);
+  final jsResult = await jsRuntime.invoke(jsMethod, payload, timeout: JsBridge.timeoutOf(req.headers['jsTimeoutMs']));
   if (jsResult != null) {
     return message.Response(
       headers: jsResult["headers"] ?? {},

@@ -1,13 +1,14 @@
 """用 Google Gemini API 做翻译（在线，免费档）。
 
 为什么要它：本地 7B 级的混元 / Qwen 碰到口语、俗语还是会翻傻，大模型又装不下。
-Gemini 免费档实测（gemini-3.5-flash-lite）魔方、近视、画大饼、刀子嘴豆腐心都对，
-2~4 秒一句。
+默认用 Gemma 4 26B（也走 Gemini API 免费档），10 秒上下一句。gemini-3.5-flash-lite
+快（2~4 秒）但实际用下来翻得不行，没进默认列表。
 
 免费档的坑（2026-10 实测，额度在 https://aistudio.google.com/rate-limit 看）：
 
-    gemini-3.5-flash-lite   15 次/分  500 次/天    主力
-    gemma-4-31b-it          30 次/分  1.44 万次/天  兜底，慢（10~16 秒），会先吐 thought
+    gemma-4-26b-a4b-it      30 次/分  1.44 万次/天  默认，10~16 秒，会先吐 thought
+    gemma-4-31b-it          30 次/分  1.44 万次/天  兜底
+    gemini-3.5-flash-lite   15 次/分  500 次/天    快，但翻得不行
     gemini-3.8-flash         5 次/分   20 次/天    太少，别用
 
     - 高峰期会回 503 "high demand"，偶尔还会回**空 body 的 404** 或干脆不回包——
@@ -41,9 +42,9 @@ class _Skip(Exception):
 class GeminiTranslator:
     def __init__(self, cfg: Dict[str, Any]):
         self._key = _load_key(cfg)
-        self._models: List[str] = list(cfg.get("models") or ["gemini-3.5-flash-lite"])
+        self._models: List[str] = list(cfg.get("models") or ["gemma-4-26b-a4b-it"])
         self._target = cfg.get("tgtLang", "en")
-        self._timeout = float(cfg.get("timeoutSec", 30))
+        self._timeout = float(cfg.get("timeoutSec", 45))
         proxy = cfg.get("proxy") or ""
         handlers = [urllib.request.ProxyHandler({"http": proxy, "https": proxy})] if proxy else []
         # 不传 ProxyHandler 时 urllib 自己读 https_proxy 环境变量

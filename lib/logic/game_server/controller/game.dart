@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:repeat_flutter/common/ws/message.dart' as message;
+import 'package:repeat_flutter/logic/js_bridge/js_bridge.dart';
 import 'package:repeat_flutter/common/ws/server.dart';
 import 'package:repeat_flutter/db/entity/game_user.dart';
 
@@ -28,7 +29,7 @@ Future<message.Response?> game(
     "userId": user.id,
   };
 
-  final jsResult = await jsRuntime.invoke(jsMethod, payload);
+  final jsResult = await jsRuntime.invoke(jsMethod, payload, timeout: JsBridge.timeoutOf(req.headers['jsTimeoutMs']));
   if (jsResult != null) {
     return message.Response(
       headers: jsResult["headers"] ?? {},

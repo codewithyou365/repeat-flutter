@@ -635,6 +635,33 @@ class AssistiveTouchLogic {
     await logic.execute(instructionText, closeOnSuccess: false);
   }
 
+  /// 只渲染 net 动作的指令，不请求：[inputs] 按位置对应 input1..inputN，不够补空串。
+  /// 不是 net 动作、没有当前小节返回 null。
+  Future<String?> renderNet(AtAction action, List<String> inputs) async {
+    if (action.type != AtActionType.net) {
+      return null;
+    }
+    final logic = await _netLogicOf(action);
+    if (logic == null) {
+      return null;
+    }
+    final inputMap = ExpandLogic.inputsOf(ExpandLogic.inputNumbersOf(action.net.template), inputs);
+    return logic.render(action.net.template, inputs: inputMap);
+  }
+
+  /// 拿渲染好的 [instruction] 请求 net 动作的服务，只返回结果：不写库、不朗读，进度浮层照常显示。
+  /// 不是 net 动作、没有当前小节、没拿到结果都返回 null。
+  Future<String?> sendNet(AtAction action, String instruction) async {
+    if (action.type != AtActionType.net) {
+      return null;
+    }
+    final logic = await _netLogicOf(action);
+    if (logic == null) {
+      return null;
+    }
+    return await logic.request(instruction);
+  }
+
   /// 打字游戏「单词提问并朗读」：用 [input1]（只标了这一个词的整句）渲染 net 动作的指令，
   /// 结果按指令攒进作用位置（见 [ExpandLogic.askWord]），返回这次要读的结果。
   /// 不是 net 动作、没有当前小节、没拿到结果都返回 null。

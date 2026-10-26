@@ -624,6 +624,70 @@ class VerseField {
     return words;
   }
 
+  /// 字段块里归 App 管的键：游戏走 [patchField] 不能直接 set/remove（正文只能走它的 text 参数）。
+  /// 单字母键也一律归 App（提示服务配置 'h'/'k'/'s'/'i'、名字 'n' 都是单字母），见 [isReservedFieldKey]。
+  static const List<String> reservedFieldKeys = [text, content, instruction, mediaHash, start, end, showType, fontSize, fontAlias, fontHash];
+
+  static bool isReservedFieldKey(String key) => key.length <= 1 || reservedFieldKeys.contains(key);
+
+  /// 小节顶层的键：单字母的（'q'/'a'/'t'/'n'/'o'/'m'/'s'/'d'…）都归 App，其余的归游戏。
+  static bool isReservedTopKey(String key) => key.length <= 1;
+
+  /// 游戏通过 JS 桥改一个字段块（JsBridge 的 fieldPatch）。先删 [remove]，再写 [set]（值为 null 就是删），
+  /// [setText] 为 true 时再用 [text] 换正文（null/空串清空），换正文的同时清掉 'ins' 和生成的音频，
+  /// 跟扩展助手写正文的规矩一致。
+  /// 全部校验过了才动 [content]：返回错误码（'invalid_ref' / 'reserved_key:<k>' / 'invalid_key'），成功返回 null。
+  static String? patchField(
+    Map<String, dynamic> content,
+    String fieldRef, {
+    Map<String, dynamic>? set,
+    List<String>? remove,
+    bool setText = false,
+    String? text,
+  }) {
+    // 只有数组字段（'t'）能带下标，'q1' 这种会让 _ensure 把整个 'q' 块换掉。
+    final index = indexOf(fieldRef);
+    if (!RegExp(r'^[a-z]+\d*$').hasMatch(fieldRef) ||
+        !nested(fieldRef) ||
+        index >= maxTip ||
+        (index > 0 && !listAcronyms.contains(baseOf(fieldRef)))) {
+      return 'invalid_ref';
+    }
+    for (final k in [...?remove, ...?set?.keys]) {
+      if (k.isEmpty) {
+        return 'invalid_key';
+      }
+      if (isReservedFieldKey(k)) {
+        return 'reserved_key:$k';
+      }
+    }
+    if (remove != null && remove.isNotEmpty) {
+      VerseField.remove(content, fieldRef, remove);
+    }
+    set?.forEach((k, v) {
+      if (v == null) {
+        VerseField.remove(content, fieldRef, [k]);
+      } else {
+        _ensure(content, fieldRef)[k] = v;
+      }
+    });
+    if (setText) {
+      VerseField.setText(content, fieldRef, text);
+      setInstruction(content, fieldRef, null);
+      clearGeneratedMedia(content, fieldRef);
+    }
+    return null;
+  }
+
+  /// 只出文本：该字段之前挂过生成的音频（老版本"生成音频"留下的）时，把音频和它的时间区间一起清掉，
+  /// 免得还播着跟新文本对不上的旧音频。区间本来就属于整节媒体（比如从字幕导入的）时不能动。
+  /// 只清这一节自己写下的 mediaHash：继承自 chapter/book 的媒体不该被一节的改动带走。
+  static void clearGeneratedMedia(Map<String, dynamic> content, String fieldRef) {
+    if (getStr(content, fieldRef, mediaHash) != null) {
+      VerseField.remove(content, fieldRef, [mediaHash, showType, start, end]);
+    }
+  }
+
   /// 设置纯正文。字段已经升级成内容数组时，**把里面的裸字符串项整体换成这一段**，
   /// 文件项留在原位——扩展助手覆盖答案不该顺手把配图和网页一起冲掉。
   /// 新正文插在原来第一个字符串项的位置上，图在文字前面还是后面因此得以保住。

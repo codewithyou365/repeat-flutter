@@ -180,6 +180,20 @@ class ExpandLogic {
     }
   }
 
+  /// 只请求不落库也不朗读：借 noSave 的路子把 result['text'] 记下来返回，没拿到返回 null。
+  /// 进度浮层照常显示（从游戏来的，没有扩展助手的弹层可关）。
+  Future<String?> request(String msg) async {
+    final lastBehavior = behavior.value;
+    behavior.value = ExpandBehavior.noSave;
+    _resultText = null;
+    try {
+      await startTask(msg, closeOnSuccess: false);
+    } finally {
+      behavior.value = lastBehavior;
+    }
+    return _resultText;
+  }
+
   /// 打字游戏「单词提问并朗读」：结果按指令存进作用位置的 [VerseField.asks]，不覆盖别的词问出来的结果。
   /// 这条指令问过就不再请求，直接返回存好的；没问过就请求一次，存下来并把正文改成
   /// "[prefix]: 词1, 词2" 的摘要。返回这次要读的结果，没拿到返回 null。
@@ -190,17 +204,7 @@ class ExpandLogic {
     if (saved != null) {
       return saved;
     }
-    final lastBehavior = behavior.value;
-    // 借 noSave 的路子只把 result['text'] 记下来，写库由下面自己来。
-    behavior.value = ExpandBehavior.noSave;
-    _resultText = null;
-    try {
-      // 从游戏来的，没有扩展助手的弹层可关。
-      await startTask(msg, closeOnSuccess: false);
-    } finally {
-      behavior.value = lastBehavior;
-    }
-    final text = _resultText;
+    final text = await request(msg);
     if (text == null || target.isEmpty) {
       return null;
     }
@@ -208,7 +212,7 @@ class ExpandLogic {
     VerseField.setText(verseMap, target, '$prefix: ${words.join(', ')}');
     // 正文是摘要，不是哪一条指令生成的，别让 playOrOverwrite 拿它比对。
     VerseField.setInstruction(verseMap, target, null);
-    _clearGeneratedMedia(verseMap, target);
+    VerseField.clearGeneratedMedia(verseMap, target);
     await Db().db.verseDao.updateVerseContent(verseId, jsonEncode(verseMap));
     return text;
   }
@@ -371,22 +375,9 @@ class ExpandLogic {
       _resultText = text;
     }
 
-    _clearGeneratedMedia(targetMap, key);
+    VerseField.clearGeneratedMedia(targetMap, key);
     String jsonStr = jsonEncode(targetMap);
     await Db().db.verseDao.updateVerseContent(verseId, jsonStr);
   }
 
-  /// 只出文本：该字段之前挂过生成的音频（老版本"生成音频"留下的）时，把音频和它的时间区间一起清掉，
-  /// 免得还播着跟新文本对不上的旧音频。区间本来就属于整节媒体（比如从字幕导入的）时不能动。
-  /// 只清这一节自己写下的 mediaHash：继承自 chapter/book 的媒体不该被一节的改动带走。
-  static void _clearGeneratedMedia(Map<String, dynamic> targetMap, String key) {
-    if (VerseField.getStr(targetMap, key, VerseField.mediaHash) != null) {
-      VerseField.remove(targetMap, key, [
-        VerseField.mediaHash,
-        VerseField.showType,
-        VerseField.start,
-        VerseField.end,
-      ]);
-    }
-  }
 }
