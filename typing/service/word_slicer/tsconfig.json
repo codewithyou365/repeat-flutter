@@ -6,5 +6,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["../common/bridge.ts", "word_slicer.ts"]
+  "include": ["../common/*.ts", "word_slicer.ts"]
 }

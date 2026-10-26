@@ -601,29 +601,6 @@ class VerseField {
     return words;
   }
 
-  /// 把重点词 [word] 从 [asks] 里删掉（它问过的每一条都删），返回删完后剩下的重点词（按提问先后、去重）。
-  /// 一条不剩就把 [asks] 整个清掉。
-  static List<String> removeAskWord(Map<String, dynamic> content, String fieldRef, String word) {
-    final block = of(content, fieldRef);
-    final raw = block?[asks];
-    if (block == null || raw is! Map) {
-      return [];
-    }
-    raw.removeWhere((_, item) => item is Map && item[askWord] == word);
-    if (raw.isEmpty) {
-      block.remove(asks);
-      return [];
-    }
-    final words = <String>[];
-    for (final item in raw.values) {
-      final w = item is Map ? item[askWord] : null;
-      if (w is String && w.isNotEmpty && !words.contains(w)) {
-        words.add(w);
-      }
-    }
-    return words;
-  }
-
   /// 字段块里归 App 管的键：游戏走 [patchField] 不能直接 set/remove（正文只能走它的 text 参数）。
   /// 单字母键也一律归 App（提示服务配置 'h'/'k'/'s'/'i'、名字 'n' 都是单字母），见 [isReservedFieldKey]。
   static const List<String> reservedFieldKeys = [text, content, instruction, mediaHash, start, end, showType, fontSize, fontAlias, fontHash];
@@ -636,7 +613,7 @@ class VerseField {
   /// 游戏通过 JS 桥改一个字段块（JsBridge 的 fieldPatch）。先删 [remove]，再写 [set]（值为 null 就是删），
   /// [setText] 为 true 时再用 [text] 换正文（null/空串清空），换正文的同时清掉 'ins' 和生成的音频，
   /// 跟扩展助手写正文的规矩一致。
-  /// 全部校验过了才动 [content]：返回错误码（'invalid_ref' / 'reserved_key:<k>' / 'invalid_key'），成功返回 null。
+  /// 全部校验过了才动 [content]：返回错误码（`invalid_ref` / `reserved_key:<k>` / `invalid_key`），成功返回 null。
   static String? patchField(
     Map<String, dynamic> content,
     String fieldRef, {

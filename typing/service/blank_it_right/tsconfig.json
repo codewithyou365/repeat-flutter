@@ -6,5 +6,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["../common/bridge.ts", "blank_it_right.ts"]
+  "include": ["../common/*.ts", "blank_it_right.ts"]
 }

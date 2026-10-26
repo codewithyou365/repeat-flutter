@@ -383,7 +383,7 @@
 </template>
 <script setup lang="ts">
 import {onMounted, onUnmounted, ref, inject, Ref, reactive, computed, nextTick, watch} from 'vue';
-import {client, Request, Response} from '../../api/ws.ts';
+import {client, Header, Request, Response} from '../../api/ws.ts';
 import {Path} from '../../utils/constant.ts';
 import {raiseSoftKeyboard} from '../../utils/keyboard.ts';
 import Typing from '../../component/typing.vue';
@@ -1879,7 +1879,8 @@ const onWordAsk = async (binding: AssistiveTouchBinding, bounds: { start: number
   try {
     const req = new Request({
       path: Path.game,
-      headers: {'jsMethod': 'Game.wordAsk'},
+      // 没问过的词要等大模型回答，App 默认只等 5 秒，这里放到 90 秒
+      headers: {'jsMethod': 'Game.wordAsk', [Header.jsTimeoutMs]: '90000'},
       data: {
         id: binding.action,
         read: binding.read,

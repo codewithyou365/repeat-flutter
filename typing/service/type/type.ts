@@ -376,15 +376,37 @@ const Util = {
             return 'error';
         }
     },
-    // 单词提问并朗读：让 App 用 net 动作 id 问 input1（只标了一个词的整句），结果按指令攒进作用位置，
-    // 再用朗读动作 read 的 TTS 配置读出来。prefix 是正文摘要的前缀（"重点词"，跟着网页语言）。
-    // 返回 'ok' / 'not_found' / 'unavailable' / 'invalid_args' / 'empty'（没拿到结果）
-    assistiveTouchWordAsk: async function (payload: { id: string; read: string; input1: string; word: string; prefix: string }): Promise<string> {
-        try {
-            return await sendMessage('assistiveTouchWordAsk', JSON.stringify(payload));
-        } catch (e) {
-            return 'error';
+    // 「单词提问并朗读」：用 net 动作 id 渲染指令（input1 是只标了这一个词的整句），这条指令问过就直接读存好的；
+    // 没问过就请求一次，结果攒进动作作用位置的 asks、正文换成"重点词: 词1, 词2"的摘要（见 AskStore），
+    // 再用朗读动作 read 的 TTS 配置读出来，read 为空或动作找不到就只存不读。prefix 是摘要的前缀（跟着网页语言）。
+    // 返回 'ok' / 'not_found' / 'unavailable' / 'empty'（没拿到结果）/ 写库失败的错误码
+    wordAsk: async function (p: { id: string; read: string; input1: string; word: string; prefix: string }): Promise<string> {
+        const rendered = await Bridge.netRender(p.id, [p.input1]);
+        if ('error' in rendered) {
+            return rendered.error === 'no_verse' ? 'empty' : rendered.error;
         }
+        const {instruction, target} = rendered;
+        if (!target) return 'empty';
+        const verse = await Bridge.verseGet();
+        if (!verse) return 'empty';
+        let text = AskStore.of(BridgeField.block(verse.content, target))[instruction]?.text;
+        if (!text) {
+            const sent = await Bridge.netSend(p.id, instruction);
+            if ('error' in sent) return sent.error;
+            const result = sent.text;
+            text = result;
+            const ret = await Bridge.fieldUpdate(target, (v) => {
+                const all = AskStore.of(BridgeField.block(v.content, target));
+                all[instruction] = {w: p.word, text: result};
+                return AskStore.patchOf(all, p.prefix);
+            });
+            if (ret !== 'ok') {
+                console.error('wordAsk save failed:', ret);
+                return ret;
+            }
+        }
+        if (p.read) await Bridge.ttsWith(p.read, text);
+        return 'ok';
     },
     adminId: function (): number {
         try {
@@ -855,7 +877,8 @@ const Game = {
     // prefix 是正文摘要的前缀。
     //
     // 每次只标这一个词，跟之前问过哪些词无关：「I $\underline{like}$ apple」、「I like $\underline{apple}$」。
-    // 同一个词再问指令一模一样，App 那边直接读存好的结果，不再请求。
+    // 同一个词再问指令一模一样，直接读存好的结果，不再请求（见 Util.wordAsk）。
+    // 要等大模型，网页调它时带上 jsTimeoutMs 放长超时。
     wordAsk: async function (args: GameArgs): Promise<string> {
         try {
             const data = args.data || {};
@@ -870,7 +893,7 @@ const Game = {
             }
             const word = sentence.slice(start, end + 1);
             const input1 = sentence.slice(0, start) + UNDERLINE_PREFIX + word + UNDERLINE_SUFFIX + sentence.slice(end + 1);
-            const result = await Util.assistiveTouchWordAsk({id, read, input1, word, prefix});
+            const result = await Util.wordAsk({id, read, input1, word, prefix});
             return JSON.stringify({data: result});
         } catch (error: any) {
             return JSON.stringify({status: 500, error: error.toString()});

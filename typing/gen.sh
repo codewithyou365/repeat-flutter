@@ -12,9 +12,12 @@ deal() {
     ts_path="$src_ts_dir"
   fi
 
-  # QuickJS 里是普通脚本、没有模块加载，所以公共的 service/common/bridge.ts 是拼进每个 service 的：
-  # --outFile 把两个文件按顺序编成一个脚本。
-  pnpm exec tsc service/common/bridge.ts "$ts_path" \
+  # QuickJS 里是普通脚本、没有模块加载，所以 service/common/ 下的公共代码是拼进每个 service 的：
+  # --outFile 把这些文件按顺序编成一个脚本，bridge.ts 打头（别的公共文件会用到它的类型）。
+  local common_ts
+  common_ts=$(ls service/common/*.ts | grep -v '/bridge.ts$')
+  # shellcheck disable=SC2086
+  pnpm exec tsc service/common/bridge.ts $common_ts "$ts_path" \
     --target ES2020 \
     --module None \
     --outFile "$out_js" \
