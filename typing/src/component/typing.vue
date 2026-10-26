@@ -46,6 +46,7 @@
           @compositionstart="handleCompositionStart"
           @compositionend="handleCompositionEnd"
           @keydown="handleKeydown"
+          @keyup="handleKeyup"
           class="overlay-input"
           autocomplete="off"
           autocapitalize="off"
@@ -94,6 +95,8 @@ const props = withDefaults(defineProps<{
   skipTrigger?: string;
   // 下一句键：按下时 emit('next')，带上这一句是否已经打完，换不换句由父组件决定
   nextTrigger?: string;
+  // 摩斯码键：按下/松开都 emit('morse')，按住多久、敲出哪个字母由父组件算，翻译好了再调 inputMorse
+  morseTrigger?: string;
 }>(), {
   clickFillCharWhenDisabled: '',
   touchColor: '',
@@ -113,6 +116,7 @@ const props = withDefaults(defineProps<{
   familiarSkipTrigger: '',
   skipTrigger: '',
   nextTrigger: '',
+  morseTrigger: '',
 });
 
 // T9 风格按键映射："a:abc•q:def" -> 按下 a 时，目标字母是 a/b/c 都算对；按下 q 时，
@@ -143,6 +147,7 @@ const deleteSpecs = computed(() => parseKeySpecs(props.deleteTrigger));
 const familiarSkipSpecs = computed(() => parseKeySpecs(props.familiarSkipTrigger));
 const skipSpecs = computed(() => parseKeySpecs(props.skipTrigger));
 const nextSpecs = computed(() => parseKeySpecs(props.nextTrigger));
+const morseSpecs = computed(() => parseKeySpecs(props.morseTrigger));
 // 每条辅助触控绑定各自的配置，raw 是绑定原本的 key 字符串（用于 emit 出去让父组件按原样匹配）
 const assistSpecsList = computed(() => props.assistTriggers.map((raw) => ({raw, specs: parseKeySpecs(raw)})));
 
@@ -169,6 +174,8 @@ const emit = defineEmits<{
   (e: 'familiarSkip', word: string, skipped: boolean): void;
   // 按了跳过键。skipped 同上；familiar 表示跳过的是不是熟词，父组件据此挑生词/熟词那套音色。
   (e: 'skip', word: string, skipped: boolean, familiar: boolean): void;
+  // 摩斯码键按下（pressed=true）/松开（false）
+  (e: 'morse', pressed: boolean): void;
 }>();
 
 const store = useStore();
@@ -276,7 +283,15 @@ onMounted(() => {
   focusInput();
   stopGamepadWatch = watchGamepadPress((index) => {
     if (props.disabled) return;
-    handleSpecialKeyTrigger(gamepadKeyName(index));
+    const name = gamepadKeyName(index);
+    if (specsHaveSpecial(morseSpecs.value, name)) {
+      emit('morse', true);
+      return;
+    }
+    handleSpecialKeyTrigger(name);
+  }, (index) => {
+    // 松开不看 disabled：按下时还能用、按住期间被禁用了，也得让父组件知道松手了，不然一直算按着
+    if (specsHaveSpecial(morseSpecs.value, gamepadKeyName(index))) emit('morse', false);
   });
 });
 
@@ -450,7 +465,9 @@ const clearCurrentWord = () => {
   nextTick(positionInput);
 };
 
-const applyInput = (val: string) => {
+// raw=true 是摩斯码翻译出来的字符：不再当触发键看（摩斯码的 '.' ',' 是要打的标点，
+// 不能被当成手动播放/逐字母朗读键吃掉）
+const applyInput = (val: string, raw = false) => {
   let pos = cursorPos.value;
   let temp = userInput.value;
   const before = userInput.value;
@@ -474,53 +491,60 @@ const applyInput = (val: string) => {
   };
 
   for (const char of val) {
-    if (specsHaveChar(manualPlaySpecs.value, char)) {
-      const word = getWordAt(pos);
-      pendingTriggerEmits.push(() => emit('manualPlay', word));
-      continue; // 触发字符本身不写入内容，也不推进 pos
-    }
-    if (specsHaveChar(spellPlaySpecs.value, char)) {
-      const word = getWordAt(pos);
-      pendingTriggerEmits.push(() => emit('spellPlay', word));
-      continue; // 触发字符本身不写入内容，也不推进 pos
-    }
-    if (specsHaveChar(hintSpecs.value, char)) {
-      pendingTriggerEmits.push(() => emit('hintTrigger'));
-      continue; // 触发字符本身不写入内容，也不推进 pos
-    }
-    if (specsHaveChar(maskSpecs.value, char)) {
-      pendingTriggerEmits.push(() => emit('maskTrigger'));
-      continue; // 触发字符本身不写入内容，也不推进 pos
-    }
-    // 删除触发键：等同于按了一次退格。跟其它触发键一样只记录、不立刻执行——doBackspace 改的是
-    // userInput/cursorPos，而本函数末尾还会用循环里的快照 temp/pos 覆盖回去，立刻执行等于白删。
-    if (specsHaveChar(deleteSpecs.value, char)) {
-      pendingTriggerEmits.push(() => doBackspace());
-      continue; // 触发字符本身不写入内容，也不推进 pos
-    }
-    // 熟词跳过键：跟删除键同理，doSkip 改的是 userInput/cursorPos，必须延后执行
-    if (specsHaveChar(familiarSkipSpecs.value, char)) {
-      pendingTriggerEmits.push(() => doSkip(true));
-      continue; // 触发字符本身不写入内容，也不推进 pos
-    }
-    if (specsHaveChar(skipSpecs.value, char)) {
-      pendingTriggerEmits.push(() => doSkip(false));
-      continue; // 触发字符本身不写入内容，也不推进 pos
-    }
-    // 下一句键：打完与否要按本批输入全部落下之后的状态算，所以也延后
-    if (specsHaveChar(nextSpecs.value, char)) {
-      pendingTriggerEmits.push(() => emit('next', isAllTyped()));
-      continue; // 触发字符本身不写入内容，也不推进 pos
-    }
-    // 绑定到 App 辅助触控按钮的键，数量由用户配置，可以有多个，每条绑定又可以配多个按键
-    const assistMatch = assistSpecsList.value.find(({specs}) => specsHaveChar(specs, char));
-    if (assistMatch) {
-      // 跟 manualPlay 一样在这里就把词的位置取好：触发字符不写进内容，
-      // 但后面还会继续处理这一批输入，等 emit 真正执行时光标未必还在这个词上。
-      const bounds = getWordBounds(pos);
-      const raw = assistMatch.raw;
-      pendingTriggerEmits.push(() => emit('assistTrigger', raw, bounds));
-      continue; // 触发字符本身不写入内容，也不推进 pos
+    // 触发键检查整段跳过 raw 的字符，直接走到下面的落字逻辑
+    if (!raw) {
+      // 摩斯码键是可打印字符时，keydown 已经 preventDefault 吃掉了；漏进来的（个别输入法）也别写进内容
+      if (specsHaveChar(morseSpecs.value, char)) {
+        continue;
+      }
+      if (specsHaveChar(manualPlaySpecs.value, char)) {
+        const word = getWordAt(pos);
+        pendingTriggerEmits.push(() => emit('manualPlay', word));
+        continue; // 触发字符本身不写入内容，也不推进 pos
+      }
+      if (specsHaveChar(spellPlaySpecs.value, char)) {
+        const word = getWordAt(pos);
+        pendingTriggerEmits.push(() => emit('spellPlay', word));
+        continue; // 触发字符本身不写入内容，也不推进 pos
+      }
+      if (specsHaveChar(hintSpecs.value, char)) {
+        pendingTriggerEmits.push(() => emit('hintTrigger'));
+        continue; // 触发字符本身不写入内容，也不推进 pos
+      }
+      if (specsHaveChar(maskSpecs.value, char)) {
+        pendingTriggerEmits.push(() => emit('maskTrigger'));
+        continue; // 触发字符本身不写入内容，也不推进 pos
+      }
+      // 删除触发键：等同于按了一次退格。跟其它触发键一样只记录、不立刻执行——doBackspace 改的是
+      // userInput/cursorPos，而本函数末尾还会用循环里的快照 temp/pos 覆盖回去，立刻执行等于白删。
+      if (specsHaveChar(deleteSpecs.value, char)) {
+        pendingTriggerEmits.push(() => doBackspace());
+        continue; // 触发字符本身不写入内容，也不推进 pos
+      }
+      // 熟词跳过键：跟删除键同理，doSkip 改的是 userInput/cursorPos，必须延后执行
+      if (specsHaveChar(familiarSkipSpecs.value, char)) {
+        pendingTriggerEmits.push(() => doSkip(true));
+        continue; // 触发字符本身不写入内容，也不推进 pos
+      }
+      if (specsHaveChar(skipSpecs.value, char)) {
+        pendingTriggerEmits.push(() => doSkip(false));
+        continue; // 触发字符本身不写入内容，也不推进 pos
+      }
+      // 下一句键：打完与否要按本批输入全部落下之后的状态算，所以也延后
+      if (specsHaveChar(nextSpecs.value, char)) {
+        pendingTriggerEmits.push(() => emit('next', isAllTyped()));
+        continue; // 触发字符本身不写入内容，也不推进 pos
+      }
+      // 绑定到 App 辅助触控按钮的键，数量由用户配置，可以有多个，每条绑定又可以配多个按键
+      const assistMatch = assistSpecsList.value.find(({specs}) => specsHaveChar(specs, char));
+      if (assistMatch) {
+        // 跟 manualPlay 一样在这里就把词的位置取好：触发字符不写进内容，
+        // 但后面还会继续处理这一批输入，等 emit 真正执行时光标未必还在这个词上。
+        const bounds = getWordBounds(pos);
+        const assistRaw = assistMatch.raw;
+        pendingTriggerEmits.push(() => emit('assistTrigger', assistRaw, bounds));
+        continue; // 触发字符本身不写入内容，也不推进 pos
+      }
     }
 
     autoFill();
@@ -757,8 +781,27 @@ const handleSpecialKeyTrigger = (keyName: string): boolean => {
   return false;
 };
 
+// 摩斯码键：可打印字符按 e.key 原样比，特殊按键按小写名字比
+const isMorseKey = (e: KeyboardEvent) =>
+    specsHaveChar(morseSpecs.value, e.key) || specsHaveSpecial(morseSpecs.value, e.key.toLowerCase());
+
+const handleKeyup = (e: KeyboardEvent) => {
+  if (isMorseKey(e)) {
+    emit('morse', false);
+    e.preventDefault();
+  }
+};
+
 const handleKeydown = (e: KeyboardEvent) => {
   if (isComposing.value) return;
+
+  // 摩斯码键要分按下和松开，不能走 handleSpecialKeyTrigger 那条"按下就执行"的路；
+  // 长按的自动连发 keydown 不算新的一下
+  if (isMorseKey(e)) {
+    if (!e.repeat) emit('morse', true);
+    e.preventDefault();
+    return;
+  }
 
   if (handleSpecialKeyTrigger(e.key.toLowerCase())) {
     e.preventDefault();
@@ -926,6 +969,15 @@ watch([userInput, groups], async () => {
 });
 
 defineExpose({
+  // 摩斯码翻译出来的字符。摩斯码不分大小写，要打的字母是大写就按大写落，
+  // 否则不忽略大小写时大写字母永远打不对
+  inputMorse(ch: string) {
+    let p = cursorPos.value;
+    while (p < props.content.length && isIgnore(props.content[p], p)) p++;
+    const target = props.content[p];
+    applyInput(target && target.toLowerCase() === ch.toLowerCase() ? target : ch, true);
+    nextTick(positionInput);
+  },
   initUserInput(val: string) {
     if (contentLoading) {
       pendingInitInput = val;

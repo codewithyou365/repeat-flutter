@@ -195,6 +195,41 @@
         <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(`${t('deleteTriggerDesc')}; ${t('multiKeyDesc')}`)"/>
       </template>
     </nut-cell>
+    <!-- 摩斯码：给按键很少的游戏手柄用，一个键短按点、长按划。配了键才会在打字区下面出现树形图/字母图 -->
+    <nut-cell :title="t('morseTrigger')" class="stacked-cell">
+      <template #link>
+        <span v-if="hasSpaceKey(morseTrigger)" class="stacked-space">{{ t('spaceKey') }}</span>
+        <nut-input
+            v-model="morseTrigger"
+            class="stacked-key"
+            @blur="setMorseTrigger(morseTrigger)"
+        />
+        <nut-button size="mini" type="info" plain class="stacked-add" @click="openKeyPicker('morse')">+</nut-button>
+        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(`${t('morseTriggerDesc')}; ${t('multiKeyDesc')}`)"/>
+      </template>
+    </nut-cell>
+    <nut-cell v-if="morseTrigger" :title="t('morseDashMs')" class="stacked-cell">
+      <template #link>
+        <nut-input
+            v-model="morseDashMsInput"
+            type="number"
+            class="stacked-key"
+            @blur="setMorseDashMs(morseDashMsInput)"
+        />
+        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('morseDashMsDesc'))"/>
+      </template>
+    </nut-cell>
+    <nut-cell v-if="morseTrigger" :title="t('morseGapMs')" class="stacked-cell">
+      <template #link>
+        <nut-input
+            v-model="morseGapMsInput"
+            type="number"
+            class="stacked-key"
+            @blur="setMorseGapMs(morseGapMsInput)"
+        />
+        <Ask color="#999" width="16px" height="16px" class="cell-help" @click="showHelp(t('morseGapMsDesc'))"/>
+      </template>
+    </nut-cell>
     <nut-cell :title="t('keyMapping')" class="stacked-cell">
       <template #link>
         <nut-input
@@ -354,6 +389,7 @@
           :familiar-skip-trigger="familiarSkipTrigger"
           :skip-trigger="skipTrigger"
           :next-trigger="nextTrigger"
+          :morse-trigger="morseTrigger"
           @char-filled="onCharFilled"
           @completed="onCompleted"
           @manual-play="onManualPlay"
@@ -365,8 +401,25 @@
           @familiar-skip="onFamiliarSkip"
           @skip="onSkip"
           @next="onNext"
+          @morse="onMorseKey"
       />
     </div>
+
+    <MorsePanel
+        v-if="morseTrigger"
+        v-model:view="morseView"
+        :code="morse.state.code"
+        :pressing="morse.state.pressing"
+        :press-id="morse.state.pressId"
+        :release-id="morse.state.releaseId"
+        :last-char="morse.state.lastChar"
+        :last-code="morse.state.lastCode"
+        :dash-ms="morseDashMs"
+        :gap-ms="morseGapMs"
+        :tree-label="t('morseTree')"
+        :letter-label="t('morseLetter')"
+        :start-label="t('morseStart')"
+    />
 
     <div class="actions">
       <nut-button shape="square" type="info" @pointerdown.prevent="tap('tapLeft')">
@@ -387,6 +440,8 @@ import {client, Header, Request, Response} from '../../api/ws.ts';
 import {Path} from '../../utils/constant.ts';
 import {raiseSoftKeyboard} from '../../utils/keyboard.ts';
 import Typing from '../../component/typing.vue';
+import MorsePanel from '../../component/morse-panel.vue';
+import {createMorseInput} from '../../utils/morse.ts';
 import {useStore} from "vuex";
 import {useI18n} from "vue-i18n";
 import {Ask, Voice, Eye, Del} from '@nutui/icons-vue';
@@ -478,6 +533,14 @@ const familiarSkipTrigger = ref('');
 const skipTrigger = ref('');
 // 下一句键：空串 = 打完自动换下一句；配了就打完先停住，按了这个键才换
 const nextTrigger = ref('');
+// 摩斯码键：空串 = 不启用。按住超过 morseDashMs 算划，松手后 morseGapMs 内没再按就定成一个字母
+const morseTrigger = ref('');
+const MORSE_DASH_MS_DEFAULT = 250;
+const MORSE_GAP_MS_DEFAULT = 700;
+const morseDashMs = ref(MORSE_DASH_MS_DEFAULT);
+const morseDashMsInput = ref(`${MORSE_DASH_MS_DEFAULT}`);
+const morseGapMs = ref(MORSE_GAP_MS_DEFAULT);
+const morseGapMsInput = ref(`${MORSE_GAP_MS_DEFAULT}`);
 // 各触发键最后一次成功保存的值，用于校验失败时把输入框还原回去
 let manualPlayTriggerSaved = '.';
 let spellPlayTriggerSaved = ',';
@@ -487,6 +550,7 @@ let deleteTriggerSaved = '';
 let familiarSkipTriggerSaved = '';
 let skipTriggerSaved = '';
 let nextTriggerSaved = '';
+let morseTriggerSaved = '';
 const keyMapping = ref('');
 // 熟词阈值：每个字母允许的毫秒数，0 = 关闭。familiarMsInput 是输入框里的字符串，familiarMs 是判定用的数值
 const familiarMs = ref(0);
@@ -655,7 +719,8 @@ const showTips = () => {
     {label: t('familiarMs'), value: familiarMs.value > 0 ? `${familiarMs.value}ms` : t('disabled')},
     {label: t('familiarSkipTrigger'), value: familiarSkipTrigger.value ? `${formatTriggerKey(familiarSkipTrigger.value)} \u2192 ${voiceSummary('familiarSkip')}` : t('disabled')},
     {label: t('skipTrigger'), value: skipTrigger.value ? `${formatTriggerKey(skipTrigger.value)} \u2192 ${voiceSummary('skip')}` : t('disabled')},
-    {label: t('nextTrigger'), value: nextTrigger.value ? formatTriggerKey(nextTrigger.value) : t('nextTriggerAuto')}
+    {label: t('nextTrigger'), value: nextTrigger.value ? formatTriggerKey(nextTrigger.value) : t('nextTriggerAuto')},
+    {label: t('morseTrigger'), value: morseTrigger.value ? `${formatTriggerKey(morseTrigger.value)} (${morseDashMs.value}ms / ${morseGapMs.value}ms)` : t('disabled')},
   ];
 
   // 绑定是变长的，一条一行；一条都没配就显示"未启用"
@@ -735,6 +800,11 @@ const applyProfile = (index: number) => {
   familiarSkipTrigger.value = typeof res['familiarSkipTrigger'] === 'string' ? res['familiarSkipTrigger'] : '';
   skipTrigger.value = typeof res['skipTrigger'] === 'string' ? res['skipTrigger'] : '';
   nextTrigger.value = typeof res['nextTrigger'] === 'string' ? res['nextTrigger'] : '';
+  morseTrigger.value = typeof res['morseTrigger'] === 'string' ? res['morseTrigger'] : '';
+  morseDashMs.value = typeof res['morseDashMs'] === 'number' && res['morseDashMs'] > 0 ? res['morseDashMs'] : MORSE_DASH_MS_DEFAULT;
+  morseDashMsInput.value = `${morseDashMs.value}`;
+  morseGapMs.value = typeof res['morseGapMs'] === 'number' && res['morseGapMs'] > 0 ? res['morseGapMs'] : MORSE_GAP_MS_DEFAULT;
+  morseGapMsInput.value = `${morseGapMs.value}`;
   manualPlayTriggerSaved = manualPlayTrigger.value;
   spellPlayTriggerSaved = spellPlayTrigger.value;
   hintTriggerSaved = hintTrigger.value;
@@ -743,6 +813,7 @@ const applyProfile = (index: number) => {
   familiarSkipTriggerSaved = familiarSkipTrigger.value;
   skipTriggerSaved = skipTrigger.value;
   nextTriggerSaved = nextTrigger.value;
+  morseTriggerSaved = morseTrigger.value;
   keyMapping.value = typeof res['keyMapping'] === 'string' ? res['keyMapping'] : '';
   familiarMs.value = typeof res['familiarMs'] === 'number' && res['familiarMs'] > 0 ? res['familiarMs'] : 0;
   familiarMsInput.value = `${familiarMs.value}`;
@@ -1040,7 +1111,7 @@ const setSpeakWord = (value: boolean) => {
 };
 // 所有触发键（四个固定的 + 任意条辅助触控绑定）不能互相重复，比如手动播放和逐字母朗读不能都设成 '.'。
 // exclude 是"正在改的那一个"（固定键用名字，绑定用下标），要排除掉，否则改成原值也会判成冲突。
-type TriggerOwner = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | 'familiarSkip' | 'skip' | 'next' | number;
+type TriggerOwner = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | 'familiarSkip' | 'skip' | 'next' | 'morse' | number;
 const isKeyTaken = (value: string, exclude: TriggerOwner) => {
   const specs = parseKeySpecs(value);
   if (specs.length === 0) {
@@ -1055,6 +1126,7 @@ const isKeyTaken = (value: string, exclude: TriggerOwner) => {
   if (exclude !== 'familiarSkip') others.push(familiarSkipTrigger.value);
   if (exclude !== 'skip') others.push(skipTrigger.value);
   if (exclude !== 'next') others.push(nextTrigger.value);
+  if (exclude !== 'morse') others.push(morseTrigger.value);
   assistiveTouchBindings.value.forEach((b, i) => {
     if (exclude !== i) others.push(b.key);
   });
@@ -1123,6 +1195,36 @@ const setNextTrigger = (value: string) => {
   nextTriggerSaved = value;
   profiles.value[activeProfile.value].nextTrigger = value;
   setConfig("nextTrigger", value);
+};
+const setMorseTrigger = (value: string) => {
+  if (isKeyTaken(value, 'morse')) {
+    showToast.warn(t('triggerKeyConflict'));
+    morseTrigger.value = morseTriggerSaved;
+    return;
+  }
+  morseTriggerSaved = value;
+  profiles.value[activeProfile.value].morseTrigger = value;
+  setConfig("morseTrigger", value);
+  if (!value) morse.reset();
+};
+// 输入框里填的不是正整数就退回默认值
+const parseMs = (value: string, fallback: number) => {
+  const parsed = parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+const setMorseDashMs = (value: string) => {
+  const ms = parseMs(value, MORSE_DASH_MS_DEFAULT);
+  morseDashMs.value = ms;
+  morseDashMsInput.value = `${ms}`;
+  profiles.value[activeProfile.value].morseDashMs = ms;
+  setConfig("morseDashMs", ms);
+};
+const setMorseGapMs = (value: string) => {
+  const ms = parseMs(value, MORSE_GAP_MS_DEFAULT);
+  morseGapMs.value = ms;
+  morseGapMsInput.value = `${ms}`;
+  profiles.value[activeProfile.value].morseGapMs = ms;
+  setConfig("morseGapMs", ms);
 };
 const setSpellResetLevel = (value: boolean) => {
   profiles.value[activeProfile.value].spellResetLevel = value;
@@ -1279,7 +1381,7 @@ const removeBinding = (index: number) => {
 };
 
 // "+"弹出的特殊按键选择器：target 标记要往哪个触发键配置里追加，number 表示第几条辅助触控绑定
-type KeyPickerTarget = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | 'familiarSkip' | 'skip' | 'next' | number;
+type KeyPickerTarget = 'manualPlay' | 'spellPlay' | 'hint' | 'mask' | 'delete' | 'familiarSkip' | 'skip' | 'next' | 'morse' | number;
 const keyPickerVisible = ref(false);
 const keyPickerTarget = ref<KeyPickerTarget | null>(null);
 // 键盘上打不出/不方便打出来的按键，选中后写成 \name 的形式。
@@ -1371,6 +1473,9 @@ const appendTokenToTarget = (token: string) => {
   } else if (target === 'next') {
     nextTrigger.value = appendKeyToken(nextTrigger.value, token);
     setNextTrigger(nextTrigger.value);
+  } else if (target === 'morse') {
+    morseTrigger.value = appendKeyToken(morseTrigger.value, token);
+    setMorseTrigger(morseTrigger.value);
   } else {
     const binding = assistiveTouchBindings.value[target];
     if (binding) {
@@ -1832,6 +1937,38 @@ const onMaskTrigger = () => {
   cycleMaskMode();
 };
 
+// ---- 摩斯码 ----
+// 计时和翻译在 createMorseInput 里，Typing 只报按下/松开，翻译出的字符再交回 Typing 落字。
+// 敲出码表里没有的串跟打错一样响错误音。
+const morse = createMorseInput({
+  dashMs: () => morseDashMs.value,
+  gapMs: () => morseGapMs.value,
+  onCommit: (ch) => typingRef.value?.inputMorse(ch),
+  onInvalid: () => void playWrongSound(),
+});
+const onMorseKey = (pressed: boolean) => {
+  if (pressed) morse.down();
+  else morse.up();
+};
+
+// 两张图看哪张只关乎这台设备的屏幕，记在本机浏览器里就行；读写都可能抛（隐私模式等），抛了就用默认
+const MORSE_VIEW_KEY = 'typeGame.morseView';
+const loadMorseView = (): 'tree' | 'letter' => {
+  try {
+    return localStorage.getItem(MORSE_VIEW_KEY) === 'letter' ? 'letter' : 'tree';
+  } catch {
+    return 'tree';
+  }
+};
+const morseView = ref<'tree' | 'letter'>(loadMorseView());
+watch(morseView, (view) => {
+  try {
+    localStorage.setItem(MORSE_VIEW_KEY, view);
+  } catch {
+    // 存不下就算了，下次进来回到默认
+  }
+});
+
 // 空键不算触发键，过滤掉，免得用户还没填键的那一行把普通输入吃掉
 const assistTriggerKeys = computed(() => {
   return assistiveTouchBindings.value.map((b) => b.key).filter((k) => k !== '');
@@ -1908,6 +2045,8 @@ const onWordAsk = async (binding: AssistiveTouchBinding, bounds: { start: number
 // 它会回 stale 让这边自己 refresh。
 const onVisibilityChange = async () => {
   if (document.visibilityState !== 'visible') {
+    // 切走时松手事件收不到，不清掉的话回来会一直当成按着
+    morse.reset();
     return;
   }
   typingRef.value?.focus();
@@ -1923,6 +2062,7 @@ const refresh = async () => {
     overlayVisible.value = true;
     pendingWordEnd = null;
     pendingSave = null;
+    morse.reset();
     stopWaiting();
     readyForNext.value = false;
     const req = new Request({
@@ -1977,6 +2117,7 @@ onUnmounted(() => {
   document.removeEventListener('visibilitychange', onVisibilityChange);
   stopGamepadCapture();
   window.clearInterval(gamepadIdTimer);
+  morse.reset();
   stopWaiting();
   if (maskMode.value !== 'off') {
     applyMaskUi('off');

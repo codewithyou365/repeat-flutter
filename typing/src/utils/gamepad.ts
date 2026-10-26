@@ -38,8 +38,9 @@ export const connectedGamepadIds = (): string[] => readGamepads().map((p) => p.i
 
 // Gamepad API 没有"按下"事件，只能每帧轮询按钮状态，自己判断"上一帧没按、这一帧按了"。
 // 手柄刚出现时没有上一帧，视为全都没按：让揭示手柄的那一次按键也能触发。
+// onRelease 是"上一帧按着、这一帧松了"，摩斯码要靠按住多久区分点划才用得到。
 // 返回停止函数，组件卸载时调用。
-export const watchGamepadPress = (onPress: (index: number) => void): (() => void) => {
+export const watchGamepadPress = (onPress: (index: number) => void, onRelease?: (index: number) => void): (() => void) => {
   if (gamepadAvailability() !== 'ok') return () => {};
   const prev = new Map<number, boolean[]>();
   let raf = 0;
@@ -50,6 +51,7 @@ export const watchGamepadPress = (onPress: (index: number) => void): (() => void
       prev.set(pad.index, now);
       now.forEach((pressed, i) => {
         if (pressed && !before[i]) onPress(i);
+        else if (!pressed && before[i]) onRelease?.(i);
       });
     }
     raf = requestAnimationFrame(tick);
